@@ -72,7 +72,12 @@ BEGIN
   INSERT INTO public.matches (id, team1_id, team2_id, season_id, round_number, iscompleted)
     VALUES (v_match_id, v_team_id, v_team_id, v_season_id, 1, false);
 
-  -- Rows in every affected table for v_user_id.
+  -- Rows in every affected table for v_user_id. Seed with triggers disabled
+  -- (session_replication_role = replica) so the message-identity trigger added
+  -- in a later migration (enforce_message_identity on messages/match_comments)
+  -- doesn't reject these unauthenticated fixture inserts. FK enforcement is
+  -- restored (origin) immediately after, before the violation assertion below.
+  PERFORM set_config('session_replication_role', 'replica', true);
   INSERT INTO public.messages (user_id, username, content, category)
     VALUES (v_user_id, 'fk_user', 'hello', 'general')
     RETURNING id INTO v_msg_id;
@@ -88,6 +93,7 @@ BEGIN
     user_id, submitter_name, submitter_contact, request_type, message
   )
     VALUES (v_user_id, 'FK User', 'fk-user@example.test', 'general', 'hi');
+  PERFORM set_config('session_replication_role', 'origin', true);
 
   -- 3) A bogus user_id now fails with FK violation on a CASCADE-side table.
   BEGIN

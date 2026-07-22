@@ -25,7 +25,6 @@ export {
   fetchPendingMatches,
   fetchPendingScoresMatches,
   fetchScoreSubmissions,
-  fetchUncompletedMatches,
 } from './MatchQueryService';
 export { fetchMatchesForAdmin, fetchScheduleMatches } from './MatchScheduleAdminService';
 export { fetchTeamMatchesData, fetchTeamsByIds, fetchTeamsMap } from './MatchTeamLookupService';

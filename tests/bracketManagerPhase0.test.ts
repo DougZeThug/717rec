@@ -27,6 +27,8 @@ type GlobalWithStorage = typeof globalThis & { __storageMockInstance?: StorageMo
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(),
+    // Final standings are finalized server-side via this RPC (PR-06).
+    rpc: vi.fn(),
   },
 }));
 
@@ -402,7 +404,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
   });
 
   describe('4. calculateFinalStandings() - Public Method', () => {
-    it('should calculate final standings and upsert to playoff_team_records', async () => {
+    it('should finalize standings server-side via the finalize_bracket_standings RPC', async () => {
       const bracketId = 'test-bracket';
 
       // Configure storage mock for standings
@@ -419,28 +421,21 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         return Promise.resolve(null);
       });
 
-      mockSupabaseFrom.upsert.mockResolvedValue({ data: {}, error: null });
+      // Server-side RPC reports two rows written.
+      (supabase.rpc as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        data: 2,
+        error: null,
+      });
 
       await expect(service.calculateFinalStandings(bracketId)).resolves.toEqual({
         written: true,
       });
 
-      // Verify upsert was called with correct data
-      expect(mockSupabaseFrom.upsert).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            team_id: 'team1',
-            bracket_id: bracketId,
-            placement: 1,
-          }),
-          expect.objectContaining({
-            team_id: 'team2',
-            bracket_id: bracketId,
-            placement: 2,
-          }),
-        ]),
-        { onConflict: 'team_id,bracket_id' }
-      );
+      // Finalization goes through the admin-only RPC, never a browser upsert.
+      expect(supabase.rpc).toHaveBeenCalledWith('finalize_bracket_standings', {
+        p_bracket_id: bracketId,
+      });
+      expect(mockSupabaseFrom.upsert).not.toHaveBeenCalled();
     });
 
     it('should return early when no stages found', async () => {
@@ -455,7 +450,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       });
     });
 
-    it('should throw error when upsert fails', async () => {
+    it('returns calculation-error when the finalize RPC reports an error', async () => {
       const bracketId = 'test-bracket';
 
       getStorageMock().select.mockImplementation((table: string, _filter: StorageFilter) => {
@@ -468,14 +463,19 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         return Promise.resolve(null);
       });
 
-      mockSupabaseFrom.upsert.mockResolvedValue({
+      // The RPC surfaces a server-side error (e.g. permission denied). The
+      // service treats this as an expected, non-throwing failure.
+      (supabase.rpc as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         data: null,
-        error: { message: 'Upsert failed' },
+        error: { message: 'permission denied' },
       });
 
-      await expect(service.calculateFinalStandings(bracketId)).rejects.toThrow(
-        'Final standings calculation failed:'
-      );
+      await expect(service.calculateFinalStandings(bracketId)).resolves.toEqual({
+        written: false,
+        reason: 'calculation-error',
+      });
+      // No browser-side upsert happens on any path.
+      expect(mockSupabaseFrom.upsert).not.toHaveBeenCalled();
     });
   });
 

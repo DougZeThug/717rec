@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-import { supabase } from '@/integrations/supabase/client';
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
+import { supabase } from '@/integrations/supabase/client';
 import { OpsHealthService } from '@/services/opsHealth/OpsHealthService';
 
 export type RealtimeConnectionState = 'connecting' | 'connected' | 'error' | 'closed';

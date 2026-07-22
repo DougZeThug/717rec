@@ -130,17 +130,6 @@ export const updateMatch = async (matchId: string, updatePayload: MatchNonResult
 };
 
 /**
- * Refresh team season stats
- * @throws {DatabaseError} When the RPC call fails
- */
-export const upsertTeamSeasonStats = async (): Promise<void> => {
-  const { error } = await supabase.rpc('upsert_team_season_stats');
-  if (error) {
-    handleDatabaseError(error, 'Failed to refresh season stats');
-  }
-};
-
-/**
  * Atomically delete a match and reverse its stats in a single transaction.
  * Uses the delete_match_with_stats_reversal Postgres function so a stats
  * failure rolls back the delete, preventing orphaned wins/losses.

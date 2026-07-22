@@ -6,10 +6,18 @@ import { DatabaseError } from '@/types/errors';
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 import { BracketStandingsService } from '../BracketStandingsService';
 
-// Shared mock for the supabase client used by the service for the stage-matches
-// pre-check and the playoff_team_records upsert.
-const upsertMock = vi.fn().mockResolvedValue({ error: null });
-const stageMatchesResult: { data: unknown; error: unknown } = { data: [], error: null };
+// Shared mock for the supabase client. Since PR-06 the service:
+//   1. Pre-checks the final stage's matches via from('match') (matchEqMock).
+//   2. Finalizes standings via the admin-only finalize_bracket_standings RPC
+//      (server-side). It NEVER upserts playoff_team_records from the browser,
+//      so upsertMock must stay untouched on every path.
+// vi.hoisted keeps these initialised before the hoisted vi.mock factory runs.
+const { upsertMock, rpcMock, matchEqMock, stageMatchesResult } = vi.hoisted(() => ({
+  upsertMock: vi.fn().mockResolvedValue({ error: null }),
+  rpcMock: vi.fn(),
+  matchEqMock: vi.fn(),
+  stageMatchesResult: { data: [] as unknown, error: null as unknown },
+}));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -17,7 +25,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       if (table === 'match') {
         return {
           select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockResolvedValue(stageMatchesResult),
+            eq: matchEqMock,
           }),
         };
       }
@@ -26,6 +34,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       }
       return {};
     }),
+    rpc: rpcMock,
   },
 }));
 
@@ -66,8 +75,12 @@ function makeService(opts: {
 describe('BracketStandingsService.calculateFinalStandings', () => {
   beforeEach(() => {
     upsertMock.mockClear();
+    matchEqMock.mockClear();
     stageMatchesResult.data = [];
     stageMatchesResult.error = null;
+    matchEqMock.mockResolvedValue(stageMatchesResult);
+    rpcMock.mockReset();
+    rpcMock.mockResolvedValue({ data: 1, error: null });
   });
 
   it('returns incomplete-matches without throwing or writing when matches are unresolved', async () => {
@@ -83,22 +96,21 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
         opponent2_id: null,
       },
     ];
-    const finalStandings = vi.fn();
-    const service = makeService({ finalStandings: finalStandings as never });
+    const service = makeService({});
 
     const result = await service.calculateFinalStandings('bracket-1');
 
     expect(result).toEqual({ written: false, reason: 'incomplete-matches' });
-    expect(finalStandings).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
     expect(upsertMock).not.toHaveBeenCalled();
   });
 
-  it('swallows brackets-manager "Participant not found" errors and returns calculation-error', async () => {
+  it('returns calculation-error when the finalize RPC reports an error', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
-    const finalStandings = vi.fn().mockRejectedValue(new Error('Participant not found.'));
-    const service = makeService({ finalStandings });
+    rpcMock.mockResolvedValue({ data: null, error: { message: 'boom', code: 'P0001' } });
+    const service = makeService({});
 
     const result = await service.calculateFinalStandings('bracket-2');
 
@@ -106,52 +118,50 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
     expect(upsertMock).not.toHaveBeenCalled();
   });
 
-  it('writes records and returns written=true on the happy path', async () => {
+  it('finalizes via the server RPC and returns written=true on the happy path', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
+    rpcMock.mockResolvedValue({ data: 1, error: null });
     const service = makeService({});
 
     const result = await service.calculateFinalStandings('bracket-3');
 
     expect(result).toEqual({ written: true });
-    expect(upsertMock).toHaveBeenCalledTimes(1);
-    expect(upsertMock).toHaveBeenCalledWith(
-      [{ team_id: 'team-a', bracket_id: 'bracket-3', placement: 1 }],
-      { onConflict: 'team_id,bracket_id' }
-    );
+    expect(rpcMock).toHaveBeenCalledWith('finalize_bracket_standings', {
+      p_bracket_id: 'bracket-3',
+    });
+    // Standings are written server-side; the browser must never upsert directly.
+    expect(upsertMock).not.toHaveBeenCalled();
   });
 
-  it('picks the highest-numbered stage for standings', async () => {
+  it('uses the highest-numbered stage for the completion pre-check', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
-    const finalStandings = vi.fn().mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]);
     const service = makeService({
       stages: [
         { id: 10, number: 1 },
         { id: 20, number: 2 },
       ],
-      finalStandings,
     });
 
     await service.calculateFinalStandings('bracket-4');
 
-    expect(finalStandings).toHaveBeenCalledWith(20);
+    expect(matchEqMock).toHaveBeenCalledWith('stage_id', 20);
   });
 
-  it('throws a typed DatabaseError when the playoff_team_records upsert fails', async () => {
+  it('returns no-records when the finalize RPC writes zero rows', async () => {
     stageMatchesResult.data = [
       { id: 1, number: 1, group_id: 1, round_id: 1, status: 5, opponent1_id: 1, opponent2_id: 2 },
     ];
-    upsertMock.mockResolvedValueOnce({
-      error: { message: 'permission denied', code: '42501', details: '', hint: '' },
-    });
+    rpcMock.mockResolvedValue({ data: 0, error: null });
     const service = makeService({});
 
-    await expect(service.calculateFinalStandings('bracket-err')).rejects.toBeInstanceOf(
-      DatabaseError
-    );
+    const result = await service.calculateFinalStandings('bracket-none');
+
+    expect(result).toEqual({ written: false, reason: 'no-records' });
+    expect(upsertMock).not.toHaveBeenCalled();
   });
 
   it('wraps unexpected non-service errors in a typed DatabaseError', async () => {

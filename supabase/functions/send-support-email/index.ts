@@ -2,7 +2,11 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
-import { checkRateLimit as defaultCheckRateLimit, hashIp } from '../_shared/rateLimit.ts';
+import {
+  checkRateLimit as defaultCheckRateLimit,
+  getTrustedClientIp,
+  hashIp,
+} from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
@@ -82,10 +86,21 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-function getClientIp(req: Request): string {
-  const fwd = req.headers.get('x-forwarded-for');
-  if (fwd) return fwd.split(',')[0].trim();
-  return req.headers.get('cf-connecting-ip') || req.headers.get('x-real-ip') || 'unknown';
+/**
+ * Remove ASCII control characters (including CR/LF and NUL) from a string.
+ * Defense-in-depth against header/subject injection: the name flows into the
+ * email Subject line, where a raw newline could otherwise split headers.
+ */
+export function stripControlChars(str: string): string {
+  // Drop ASCII control chars (0x00–0x1F and 0x7F). Built with a char-code
+  // filter rather than a control-char regex literal so both deno lint and
+  // eslint (no-control-regex) stay happy without inline disables.
+  let out = '';
+  for (const ch of str) {
+    const code = ch.charCodeAt(0);
+    if (code > 0x1f && code !== 0x7f) out += ch;
+  }
+  return out;
 }
 
 function countUrls(text: string): number {
@@ -111,7 +126,7 @@ async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Method not allowed' }, 405, corsHeaders);
   }
 
-  const ip = getClientIp(req);
+  const ip = getTrustedClientIp(req);
   const ipHash = await hashIp(ip);
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
@@ -127,11 +142,15 @@ async function handleRequest(req: Request): Promise<Response> {
     maxHits: RATE_LIMIT_MAX,
   });
   if (rl.error) {
-    console.warn('[Support] rate-limit RPC error (failing open):', rl.error);
+    // Fail closed (see rateLimit.ts): the RPC error also drives allowed=false.
+    console.warn('[Support] rate-limit RPC error (failing closed):', rl.error);
   }
   if (!rl.allowed) {
-    console.warn('[Support] Rate limit exceeded for ip_hash:', ipHash);
-    return jsonResponse({ error: 'Too many requests. Please try again later.' }, 429, corsHeaders);
+    console.warn('[Support] Rate limited for ip_hash:', ipHash);
+    return jsonResponse({ error: 'Too many requests. Please try again later.' }, 429, {
+      ...corsHeaders,
+      'Retry-After': String(RATE_LIMIT_WINDOW_SECONDS),
+    });
   }
 
   // Parse JSON body defensively.
@@ -165,26 +184,48 @@ async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Message contains too many links' }, 400, corsHeaders);
   }
 
-  // Best-effort store of the ticket. Will silently noop if table is missing.
-  await supabase
-    .from('support_tickets')
-    .insert({
-      name: payload.name,
-      email: payload.email,
-      subject: payload.subject,
-      message: payload.message,
-      status: 'new',
-    })
-    .single();
-
-  if (!RESEND_API_KEY) {
-    console.log('[Support] No Resend API key — ticket stored, email not sent');
-    return jsonResponse({ success: true, message: 'Ticket received' }, 200, corsHeaders);
+  // Load-bearing store of the ticket. We check the error so a lost ticket can
+  // never hide behind a 200 — if the row does NOT persist and the email also
+  // fails, the sender is told to try again (see the 502 below).
+  const { error: storeError } = await supabase.from('support_tickets').insert({
+    name: payload.name,
+    email: payload.email,
+    subject: payload.subject,
+    message: payload.message,
+    status: 'new',
+  });
+  const stored = !storeError;
+  if (storeError) {
+    console.error('[Support] Failed to store ticket:', storeError.message ?? storeError);
   }
 
-  // Send email via Resend — escape all user inputs to prevent XSS.
-  const subjectLabel = SUBJECT_LABELS[payload.subject] ?? escapeHtml(payload.subject);
-  const safeName = escapeHtml(payload.name);
+  if (!RESEND_API_KEY) {
+    if (!stored) {
+      // Neither durable outcome happened: don't pretend we received it.
+      return jsonResponse(
+        {
+          success: false,
+          error: 'We could not receive your message right now. Please try again in a moment.',
+        },
+        502,
+        corsHeaders
+      );
+    }
+    console.log('[Support] No Resend API key — ticket stored, email not sent');
+    return jsonResponse(
+      { success: true, stored: true, emailed: false, message: 'Ticket received' },
+      200,
+      corsHeaders
+    );
+  }
+
+  // Send email via Resend — escape all user inputs to prevent XSS, and strip
+  // control chars from the name first so a newline can't be injected into the
+  // Subject header (defense-in-depth).
+  const cleanName = stripControlChars(payload.name);
+  const subjectLabel =
+    SUBJECT_LABELS[payload.subject] ?? escapeHtml(stripControlChars(payload.subject));
+  const safeName = escapeHtml(cleanName);
   const safeEmail = escapeHtml(payload.email);
   const safeMessage = escapeHtml(payload.message);
   const emailHtml = `
@@ -206,35 +247,64 @@ async function handleRequest(req: Request): Promise<Response> {
     </div>
   `;
 
-  const resendResponse = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: '717REC Support <noreply@717rec.com>',
-      to: ['admin@717rec.com'],
-      reply_to: payload.email,
-      subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
-      html: emailHtml,
-    }),
-  });
+  let emailSent = false;
+  try {
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: '717REC Support <noreply@717rec.com>',
+        to: ['admin@717rec.com'],
+        reply_to: payload.email,
+        subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
+        html: emailHtml,
+      }),
+    });
 
-  if (!resendResponse.ok) {
-    const errorText = await resendResponse.text();
-    console.error('[Support] Resend API error:', errorText);
+    if (resendResponse.ok) {
+      const resendData = (await resendResponse.json()) as { id?: string };
+      console.log('[Support] Email sent successfully:', resendData.id);
+      emailSent = true;
+    } else {
+      const errorText = await resendResponse.text();
+      console.error('[Support] Resend API error:', errorText);
+    }
+  } catch (err) {
+    // A network-level failure (fetch rejects, body parse throws) must NOT bubble
+    // up to the outer 500 handler when the ticket is already stored — otherwise
+    // the client retries and duplicates a ticket we actually kept.
+    console.error('[Support] Resend request failed:', err instanceof Error ? err.message : err);
+  }
+
+  if (emailSent) {
     return jsonResponse(
-      { success: true, message: 'Ticket received (email pending)' },
+      { success: true, stored, emailed: true, message: 'Message sent successfully' },
       200,
       corsHeaders
     );
   }
 
-  const resendData = (await resendResponse.json()) as { id?: string };
-  console.log('[Support] Email sent successfully:', resendData.id);
-
-  return jsonResponse({ success: true, message: 'Message sent successfully' }, 200, corsHeaders);
+  // Email did not send (non-2xx status or a network failure).
+  if (!stored) {
+    // Nothing survived: neither stored nor emailed.
+    return jsonResponse(
+      {
+        success: false,
+        error: 'We could not send your message right now. Please try again in a moment.',
+      },
+      502,
+      corsHeaders
+    );
+  }
+  // The ticket is safely stored; the email will be picked up from there.
+  return jsonResponse(
+    { success: true, stored: true, emailed: false, message: 'Ticket received (email pending)' },
+    200,
+    corsHeaders
+  );
 }
 
 export { handleRequest };

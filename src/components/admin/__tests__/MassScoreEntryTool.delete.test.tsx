@@ -4,10 +4,21 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockDeleteMatchWithStatsReversal = vi.fn();
-const mockInvalidateAllDataQueries = vi.fn();
-const mockToast = vi.fn();
-const mockRemoveMatch = vi.fn();
+// vi.hoisted keeps these initialised before the hoisted vi.mock factories run.
+// Two factories below (MatchWriteService, queryInvalidation) read their mock fn
+// eagerly, so a plain `const mock… = vi.fn()` would hit the temporal dead zone
+// when MassScoreEntryTool imports those modules.
+const {
+  mockDeleteMatchWithStatsReversal,
+  mockInvalidateAllDataQueries,
+  mockToast,
+  mockRemoveMatch,
+} = vi.hoisted(() => ({
+  mockDeleteMatchWithStatsReversal: vi.fn(),
+  mockInvalidateAllDataQueries: vi.fn(),
+  mockToast: vi.fn(),
+  mockRemoveMatch: vi.fn(),
+}));
 
 const baseHookState = {
   matches: [
