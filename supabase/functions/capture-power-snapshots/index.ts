@@ -67,11 +67,10 @@ const compareTeamsForRanking = (a: TeamDetailsRow, b: TeamDetailsRow): number =>
 // This write used to happen client-side whenever an admin merely *viewed* the
 // rankings page; it lives here now so rendering a page never writes to the
 // database. Failures are logged but do not block the power-score snapshot.
-async function captureRankingSnapshots(
-  // deno-lint-ignore no-explicit-any
-  supabase: any,
-  seasonId: string
-): Promise<void> {
+// The esm.sh Deno import exposes no local types for the client, so the
+// parameter cannot be typed more precisely in this repo's TS setup.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function captureRankingSnapshots(supabase: any, seasonId: string): Promise<void> {
   try {
     const { data, error } = await supabase
       .from('v_team_details')

@@ -30,6 +30,7 @@ vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
 vi.mock('@/components/admin/mass-score-entry/hooks/fetching/useMatchesFetching', () => ({
   useMatchesFetching: () => ({
     fetchMatches: mockFetchMatches,
+    fetchMatchesOrThrow: mockFetchMatches,
   }),
 }));
 
@@ -38,7 +39,7 @@ vi.mock('@/components/admin/mass-score-entry/hooks/useMatchEventListeners', () =
 }));
 
 vi.mock('@/hooks/brackets/useBracketsQuery', () => ({
-  useBracketsQuery: () => ({ brackets: [] }),
+  useBracketsQuery: () => ({ brackets: [], error: null, isLoading: false, refetch: vi.fn() }),
 }));
 
 vi.mock('@/utils/logger', () => ({

@@ -170,6 +170,43 @@ describe('useScoreEntryData - initial load', () => {
   });
 });
 
+describe('useScoreEntryData - load failure', () => {
+  it('surfaces a load error instead of masquerading as an empty list', async () => {
+    vi.mocked(fetchMatchesForAdmin).mockRejectedValue(new Error('network down'));
+
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.loadError).toBeInstanceOf(Error));
+    expect(result.current.loading).toBe(false);
+    expect(result.current.matches).toEqual([]);
+    expect(typeof result.current.refetchMatches).toBe('function');
+  });
+});
+
+describe('useScoreEntryData - filter changes', () => {
+  it('refetches on filter change and keeps unsaved edits for rows still shown', async () => {
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.handleScoreChange(0, 1, 0);
+    });
+    const editedId = result.current.matches[0].id;
+
+    act(() => {
+      result.current.setFilterDate(new Date('2026-06-25T18:00:00.000Z'));
+    });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.matches.length).toBeGreaterThan(0));
+
+    const edited = result.current.matches.find((m) => m.id === editedId);
+    expect(edited?.isEdited).toBe(true);
+    expect(edited?.team1Score).toBe(1);
+  });
+});
+
 describe('useScoreEntryData - score handling', () => {
   it('handleScoreChange updates scores, marks edited, and validates', async () => {
     const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });

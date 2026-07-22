@@ -28,11 +28,15 @@ const MassScoreEntryTool: React.FC = () => {
     matches,
     submittableMatchesCount,
     loading,
+    loadError,
+    refetchMatches,
     submitting,
     lastBatchSummary,
     failedMatches,
     errorMessages,
     brackets,
+    bracketsError,
+    refetchBrackets,
     filters,
     handleScoreChange,
     handleGameWinsChange,
@@ -54,9 +58,9 @@ const MassScoreEntryTool: React.FC = () => {
       // back the delete and prevents standings drift.
       await deleteMatchWithStatsReversal(deleteMatchId);
 
-      // The tool's match list comes from a hand-rolled useEffect fetch
-      // (useScoreEntryData), so invalidateAllDataQueries alone will NOT
-      // refresh it — drop the deleted row from local state explicitly.
+      // removeMatch drops the row from both the tool's local state and its
+      // query cache, preserving unsaved edits on other rows — an invalidation
+      // refetch alone would clobber those edits.
       removeMatch(deleteMatchId);
       toast({ title: 'Match deleted', description: 'The match has been removed successfully.' });
       invalidateAllDataQueries(queryClient);
@@ -134,6 +138,17 @@ const MassScoreEntryTool: React.FC = () => {
         </CardHeader>
 
         <CardContent className="p-3 sm:p-4">
+          {bracketsError && (
+            <ErrorAlert
+              message="Couldn't load brackets — retry."
+              onRetry={() => refetchBrackets()}
+            />
+          )}
+
+          {loadError && (
+            <ErrorAlert message="Couldn't load matches — retry." onRetry={() => refetchMatches()} />
+          )}
+
           <ErrorAlert
             failedMatches={failedMatches}
             savedCount={lastBatchSummary?.saved}
