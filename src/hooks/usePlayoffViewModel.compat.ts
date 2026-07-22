@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useTeamsArray } from '@/hooks/teams';
@@ -42,7 +42,7 @@ export const usePlayoffData = (
       const data: BracketsOverviewRow[] = await fetchBracketsOverview(seasonId);
 
       // Transform to domain objects
-      let brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
+      const brackets: PlayoffBracket[] = (data ?? []).map((br) => ({
         id: br.id,
         name: br.title,
         division: br.divisions?.name ?? undefined,
@@ -60,20 +60,22 @@ export const usePlayoffData = (
         uses_brackets_manager: br.uses_brackets_manager ?? false,
       }));
 
-      // For current/active season: hide completed brackets (original behavior)
-      // For past seasons: show only completed brackets
-      if (isViewingPastSeason) {
-        // Show all brackets for past seasons (they should all be completed)
-        bracketLog('Showing all brackets for past season:', { total: brackets.length });
-      } else {
-        // Current season: filter out completed brackets
-        const originalCount = brackets.length;
-        brackets = brackets.filter((b) => b.state !== 'completed');
-        bracketLog('Filtered brackets:', { total: originalCount, active: brackets.length });
-      }
-
       return brackets;
     },
+    // Filter client-side via `select` so switching active seasons (which changes
+    // `isViewingPastSeason` without changing the query key) recomputes correctly.
+    select: useCallback(
+      (data: PlayoffBracket[]) => {
+        if (isViewingPastSeason) {
+          bracketLog('Showing all brackets for past season:', { total: data.length });
+          return data;
+        }
+        const filtered = data.filter((b) => b.state !== 'completed');
+        bracketLog('Filtered brackets:', { total: data.length, active: filtered.length });
+        return filtered;
+      },
+      [isViewingPastSeason]
+    ),
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',
