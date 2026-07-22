@@ -21,12 +21,14 @@ type StorageMock = {
 };
 type StorageFilter = number | string | Record<string, unknown> | undefined;
 type SupabaseFromMock = Record<string, ReturnType<typeof vi.fn>>;
+type SupabaseMock = { from: ReturnType<typeof vi.fn>; rpc: ReturnType<typeof vi.fn> };
 type GlobalWithStorage = typeof globalThis & { __storageMockInstance?: StorageMock };
 
 // Mock supabase client
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(),
+    rpc: vi.fn(),
   },
 }));
 
@@ -140,7 +142,9 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       upsert: vi.fn().mockResolvedValue({ data: {}, error: null }),
       maybeSingle: vi.fn().mockReturnThis(),
     };
-    (supabase.from as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockSupabaseFrom);
+    const supabaseMock = supabase as unknown as SupabaseMock;
+    supabaseMock.from.mockReturnValue(mockSupabaseFrom);
+    supabaseMock.rpc.mockResolvedValue({ data: 2, error: null });
 
     service = new BracketManagerService();
   });
@@ -419,28 +423,15 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         return Promise.resolve(null);
       });
 
-      mockSupabaseFrom.upsert.mockResolvedValue({ data: {}, error: null });
-
       await expect(service.calculateFinalStandings(bracketId)).resolves.toEqual({
         written: true,
       });
 
-      // Verify upsert was called with correct data
-      expect(mockSupabaseFrom.upsert).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            team_id: 'team1',
-            bracket_id: bracketId,
-            placement: 1,
-          }),
-          expect.objectContaining({
-            team_id: 'team2',
-            bracket_id: bracketId,
-            placement: 2,
-          }),
-        ]),
-        { onConflict: 'team_id,bracket_id' }
+      expect((supabase as unknown as SupabaseMock).rpc).toHaveBeenCalledWith(
+        'finalize_bracket_standings',
+        { p_bracket_id: bracketId }
       );
+      expect(mockSupabaseFrom.upsert).not.toHaveBeenCalled();
     });
 
     it('should return early when no stages found', async () => {
@@ -455,7 +446,7 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       });
     });
 
-    it('should throw error when upsert fails', async () => {
+    it('should return calculation-error when RPC finalization fails', async () => {
       const bracketId = 'test-bracket';
 
       getStorageMock().select.mockImplementation((table: string, _filter: StorageFilter) => {
@@ -468,14 +459,15 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
         return Promise.resolve(null);
       });
 
-      mockSupabaseFrom.upsert.mockResolvedValue({
+      (supabase as unknown as SupabaseMock).rpc.mockResolvedValueOnce({
         data: null,
-        error: { message: 'Upsert failed' },
+        error: { message: 'RPC failed' },
       });
 
-      await expect(service.calculateFinalStandings(bracketId)).rejects.toThrow(
-        'Final standings calculation failed:'
-      );
+      await expect(service.calculateFinalStandings(bracketId)).resolves.toEqual({
+        written: false,
+        reason: 'calculation-error',
+      });
     });
   });
 

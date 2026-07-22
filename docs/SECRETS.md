@@ -11,13 +11,15 @@ Rule of thumb: if the key name starts with `VITE_`, it ends up in the public JS 
 
 ## Env vars used
 
-| Variable | Purpose | Public? |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Supabase project URL | Yes (ships in client bundle) |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key, gated by RLS | Yes (ships in client bundle) |
-| `VITE_SUPABASE_PROJECT_ID` | Supabase project ref | Yes |
+| Variable                        | Purpose                                                  | Public?                      |
+| ------------------------------- | -------------------------------------------------------- | ---------------------------- |
+| `VITE_SUPABASE_URL`             | Supabase project URL                                     | Yes (ships in client bundle) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key, gated by RLS                          | Yes (ships in client bundle) |
+| `VITE_SUPABASE_PROJECT_ID`      | Supabase project ref                                     | Yes                          |
+| `IP_HASH_SALT`                  | Server-only salt for Edge Function rate-limit IP hashes  | No                           |
+| `SUPABASE_TRUSTED_PROXY_HOPS`   | Number of trusted Supabase proxy hops to select from XFF | No                           |
 
-All three are **publishable** — safe to expose in the browser. Access control is enforced server-side via Row Level Security.
+The `VITE_*` variables are **publishable** — safe to expose in the browser. Access control is enforced server-side via Row Level Security. `IP_HASH_SALT` and `SUPABASE_TRUSTED_PROXY_HOPS` are required Edge Function runtime secrets and must be configured in Supabase/Lovable secrets, not in frontend `.env` files. Set `SUPABASE_TRUSTED_PROXY_HOPS` only after verifying the Supabase Edge Runtime X-Forwarded-For chain for the deployed project; `1` means the right-most hop is platform-owned.
 
 ## Where they come from
 
@@ -40,6 +42,7 @@ Service-role keys and DB passwords must **never** appear in client code or `.env
 ## Rotation
 
 ### Anon / publishable key
+
 Only needed if the project is migrated, the key format changes, or you suspect Supabase compromise (rare — the key is public by design).
 
 1. Supabase Dashboard → Project Settings → API → reset the anon key.
@@ -48,6 +51,7 @@ Only needed if the project is migrated, the key format changes, or you suspect S
 4. Redeploy.
 
 ### Service-role key
+
 Rotate immediately if ever exposed.
 
 1. Supabase Dashboard → Project Settings → API → reset service role key.

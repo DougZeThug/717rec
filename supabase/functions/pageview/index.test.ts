@@ -1,6 +1,6 @@
-import 'https://deno.land/std@0.224.0/dotenv/load.ts';
+import 'https://deno.land/std@0.190.0/dotenv/load.ts';
 
-import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
+import { assertEquals } from 'https://deno.land/std@0.190.0/assert/mod.ts';
 
 import { computeAnonDayId } from './index.ts';
 

@@ -1,4 +1,4 @@
-import 'https://deno.land/std@0.224.0/dotenv/load.ts';
+import 'https://deno.land/std@0.190.0/dotenv/load.ts';
 
 // Provide required env BEFORE importing the function under test so
 // createClient() inside handleRequest() doesn't throw.
@@ -7,13 +7,15 @@ Deno.env.set(
   'SUPABASE_SERVICE_ROLE_KEY',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'test-service-key'
 );
+Deno.env.set('IP_HASH_SALT', Deno.env.get('IP_HASH_SALT') ?? 'test-ip-hash-salt');
+Deno.env.set('SUPABASE_TRUSTED_PROXY_HOPS', Deno.env.get('SUPABASE_TRUSTED_PROXY_HOPS') ?? '1');
 Deno.env.delete('RESEND_API_KEY'); // skip Resend branch in tests
 
 import {
   assertEquals,
   assertExists,
   assertStringIncludes,
-} from 'https://deno.land/std@0.224.0/assert/mod.ts';
+} from 'https://deno.land/std@0.190.0/assert/mod.ts';
 
 import { handleRequest, setRateLimiter } from './index.ts';
 
@@ -22,7 +24,7 @@ function makeReq(body: unknown, init: RequestInit = {}): Request {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-forwarded-for': '127.0.0.1',
+      'x-forwarded-for': '203.0.113.10, 127.0.0.1',
       origin: 'http://localhost:3000',
       ...((init.headers as Record<string, string> | undefined) ?? {}),
     },
@@ -253,6 +255,136 @@ Deno.test({
       assertEquals(res.headers.get('X-Content-Type-Options'), 'nosniff');
       assertEquals(res.headers.get('X-Frame-Options'), 'DENY');
     } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'store fails and email fails returns 502',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    const previousKey = Deno.env.get('RESEND_API_KEY');
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    globalThis.fetch = ((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('api.resend.com')) {
+        return Promise.resolve(new Response('resend failed', { status: 500 }));
+      }
+      if (url.includes('/rest/v1/support_tickets')) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ message: 'relation does not exist' }), {
+            status: 500,
+          })
+        );
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }) as typeof fetch;
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 502);
+      const body = await res.json();
+      assertEquals(body.stored, false);
+      assertEquals(body.emailed, false);
+    } finally {
+      if (previousKey === undefined) Deno.env.delete('RESEND_API_KEY');
+      else Deno.env.set('RESEND_API_KEY', previousKey);
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'email subject strips control characters from name',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    const previousKey = Deno.env.get('RESEND_API_KEY');
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    let resendBody = '';
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('api.resend.com')) {
+        resendBody = String(init?.body ?? '');
+        return Promise.resolve(new Response(JSON.stringify({ id: 'stub' }), { status: 200 }));
+      }
+      if (url.includes('/rest/v1/support_tickets')) {
+        return Promise.resolve(new Response('[]', { status: 201 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }) as typeof fetch;
+    try {
+      const res = await handleRequest(
+        makeReq({
+          ...validPayload,
+          name: 'Alice\r\nBcc: attacker@example.com',
+        })
+      );
+      assertEquals(res.status, 200);
+      const parsed = JSON.parse(resendBody);
+      assertEquals(parsed.subject.includes('\r'), false);
+      assertEquals(parsed.subject.includes('\n'), false);
+    } finally {
+      if (previousKey === undefined) Deno.env.delete('RESEND_API_KEY');
+      else Deno.env.set('RESEND_API_KEY', previousKey);
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'control-only normalized name returns 400 before storage or email',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch();
+    try {
+      const res = await handleRequest(makeReq({ ...validPayload, name: '\u0000\u0001' }));
+      assertEquals(res.status, 400);
+      const body = await res.json();
+      assertEquals(body.error, 'Invalid request');
+      assertExists(body.issues.name);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'stored ticket plus Resend transport failure returns email pending success',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    const previousKey = Deno.env.get('RESEND_API_KEY');
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    globalThis.fetch = ((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('api.resend.com')) {
+        return Promise.reject(new Error('network timeout'));
+      }
+      if (url.includes('/rest/v1/support_tickets')) {
+        return Promise.resolve(new Response('[]', { status: 201 }));
+      }
+      return Promise.resolve(new Response('{}', { status: 200 }));
+    }) as typeof fetch;
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.stored, true);
+      assertEquals(body.emailed, false);
+    } finally {
+      if (previousKey === undefined) Deno.env.delete('RESEND_API_KEY');
+      else Deno.env.set('RESEND_API_KEY', previousKey);
       restoreFetch();
       reset();
     }

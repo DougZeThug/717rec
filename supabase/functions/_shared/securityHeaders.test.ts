@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from 'https://deno.land/std@0.224.0/assert/mod.ts';
+import { assertEquals, assertStringIncludes } from 'https://deno.land/std@0.190.0/assert/mod.ts';
 
 import { SECURITY_HEADERS } from './securityHeaders.ts';
 

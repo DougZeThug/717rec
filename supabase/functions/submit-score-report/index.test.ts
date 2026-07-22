@@ -1,4 +1,4 @@
-import 'https://deno.land/std@0.224.0/dotenv/load.ts';
+import 'https://deno.land/std@0.190.0/dotenv/load.ts';
 
 // Provide required env BEFORE importing the function under test so
 // createClient() inside handleRequest() doesn't throw.
@@ -7,8 +7,10 @@ Deno.env.set(
   'SUPABASE_SERVICE_ROLE_KEY',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'test-service-key'
 );
+Deno.env.set('IP_HASH_SALT', Deno.env.get('IP_HASH_SALT') ?? 'test-ip-hash-salt');
+Deno.env.set('SUPABASE_TRUSTED_PROXY_HOPS', Deno.env.get('SUPABASE_TRUSTED_PROXY_HOPS') ?? '1');
 
-import { assertEquals } from 'https://deno.land/std@0.224.0/assert/mod.ts';
+import { assertEquals } from 'https://deno.land/std@0.190.0/assert/mod.ts';
 
 import { handleRequest, setRateLimiter } from './index.ts';
 
@@ -19,7 +21,7 @@ function makeReq(body: unknown, init: RequestInit = {}): Request {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-forwarded-for': '127.0.0.1',
+      'x-forwarded-for': '203.0.113.10, 127.0.0.1',
       origin: 'http://localhost:3000',
       ...((init.headers as Record<string, string> | undefined) ?? {}),
     },
