@@ -16,7 +16,7 @@ in the same PR that resolves a brief.
 | PR-09 test coverage admin blind spots | Open | Coverage still below stretch target; no dedicated PR merged. |
 | PR-10 hooks cache correctness | Resolved | Cache invalidation + realtime fixes across matches, timeslots, playoffs. |
 | PR-11 data-page error/empty states | Resolved | Timeslot name fix + WeeklyRecap `.maybeSingle()`. |
-| PR-12 a11y focus and polish | Open | No dedicated pass merged. |
+| PR-12 a11y focus and polish | Resolved | Admin axe coverage (Timeslots/Scores/Teams); fetchPriority + /stats ref-warning fixes. |
 | PR-13 brackets simplification | Superseded | Rolled into PR-06 playoff integrity work. |
 | PR-14 third-party script hygiene | Resolved | Self-hosted fonts; editor script dev-only. |
 | PR-15 doc truth sweep | Resolved | This PR. |
