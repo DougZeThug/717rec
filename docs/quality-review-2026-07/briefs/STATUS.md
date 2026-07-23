@@ -24,3 +24,27 @@ in the same PR that resolves a brief.
 
 Individual brief files remain unchanged for historical context; consult this
 table before treating any brief as an open finding.
+
+## npm audit sweep — 2026-07-23
+
+Baseline `npm ci` reported 8 advisories (3 low / 3 moderate / 2 high). After a
+non-breaking `npm audit fix`:
+
+- **Upgraded (safe, semver-compatible)**: `brace-expansion` (high),
+  `undici` (high), `@babel/core` (low), `body-parser` (low).
+- **Allowlisted** in `.github/audit-allowlist.json` (see file for full
+  justifications, expires 2026-10-21):
+  - `@hono/node-server` GHSA-frvp-7c67-39w9 — Windows-only path traversal;
+    used only server-side under `@lovable.dev/mcp-js` → edge function on
+    Deno/Linux. No upstream fix.
+  - `esbuild` GHSA-g7r4-m6w7-qqqr — nested copy under `@lovable.dev/mcp-js`;
+    Windows-only dev-server bug, this nested copy is never invoked as a dev
+    server. Top-level `esbuild` already fixed. Waiting on upstream mcp-js bump.
+- **Cannot fix here** (transitively pinned by allowlisted chain, no independent
+  upgrade path): `@lovable.dev/mcp-js`, `@modelcontextprotocol/sdk` — both
+  moderate, both inherit the same non-exploitable server-side classification.
+
+Post-sweep state: **0 high, 3 moderate, 1 low** — all four scoped to the MCP
+server-side path, never bundled into the browser client. CI `npm audit
+--omit=dev` gate (high+critical) is clean. Revisit at next quarterly review
+or when `@lovable.dev/mcp-js` ships a fix.
