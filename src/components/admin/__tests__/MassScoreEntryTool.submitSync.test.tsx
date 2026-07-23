@@ -382,7 +382,6 @@ describe('MassScoreEntryTool submit -> table sync (real hook + real MatchesTable
     await clickScoreButton(user, '2–0');
 
     const submitBtn = await screen.findByRole('button', { name: /submit \(1\) changes/i });
-    const fetchesBeforeSubmit = mockFetchMatches.mock.calls.length;
 
     // Let any post-edit reactive fetch fire and settle against the initial
     // data BEFORE we flip the mutable to []. Otherwise a fetch invoked
