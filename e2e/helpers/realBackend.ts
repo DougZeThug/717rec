@@ -54,9 +54,7 @@ export const ensureTestUserIsAdmin = async (
   if (!user) throw new Error(`Cannot promote missing user ${env.email}`);
   // Ensure a profiles row exists (handle_new_user trigger should have created
   // one, but seed defensively for freshly-provisioned projects).
-  await admin
-    .from('profiles')
-    .upsert({ id: user.id, is_admin: true }, { onConflict: 'id' });
+  await admin.from('profiles').upsert({ id: user.id, is_admin: true }, { onConflict: 'id' });
 };
 
 // ---------------------------------------------------------------------------
@@ -74,7 +72,7 @@ const safeDelete = async (
   const { error } = await filtered;
   if (error) {
     // Idempotent: log-and-continue so a partial teardown never wedges reruns.
-    // eslint-disable-next-line no-console
+
     console.warn(`[e2e cleanup] ${table}.${column} delete failed: ${error.message}`);
   }
 };
@@ -224,8 +222,9 @@ export const seedScheduleFixture = async (
     ])
     .select('id, name');
   if (teamErr || !teams || teams.length !== 2) throw teamErr ?? new Error('schedule teams');
-  const team1 = teams.find((t) => t.name === team1Name)!;
-  const team2 = teams.find((t) => t.name === team2Name)!;
+  const team1 = teams.find((t) => t.name === team1Name);
+  const team2 = teams.find((t) => t.name === team2Name);
+  if (!team1 || !team2) throw new Error('schedule teams lookup failed');
 
   // Schedule for the near future so it renders in the public schedule view.
   const future = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -311,8 +310,9 @@ export const seedStandingsFixture = async (
     ])
     .select('id, name');
   if (teamErr || !teams || teams.length !== 2) throw teamErr ?? new Error('standings teams');
-  const team1 = teams.find((t) => t.name === team1Name)!;
-  const team2 = teams.find((t) => t.name === team2Name)!;
+  const team1 = teams.find((t) => t.name === team1Name);
+  const team2 = teams.find((t) => t.name === team2Name);
+  if (!team1 || !team2) throw new Error('standings teams lookup failed');
 
   const past = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data: match, error: matchErr } = await admin
@@ -467,8 +467,9 @@ export const seedAdminScoreFixture = async (
     ])
     .select('id, name');
   if (teamErr || !teams || teams.length !== 2) throw teamErr ?? new Error('admin teams');
-  const team1 = teams.find((t) => t.name === team1Name)!;
-  const team2 = teams.find((t) => t.name === team2Name)!;
+  const team1 = teams.find((t) => t.name === team1Name);
+  const team2 = teams.find((t) => t.name === team2Name);
+  if (!team1 || !team2) throw new Error('admin teams lookup failed');
 
   const when = new Date().toISOString();
   const { data: match, error: matchErr } = await admin
