@@ -396,9 +396,7 @@ describe('MassScoreEntryTool submit -> table sync (real hook + real MatchesTable
     await user.click(submitBtn);
 
     await waitFor(() => expect(mockHandleSubmitScore).toHaveBeenCalledTimes(1));
-    await waitFor(() =>
-      expect(mockFetchMatches.mock.calls.length).toBeGreaterThan(settledFetches)
-    );
+    await waitFor(() => expect(mockFetchMatches.mock.calls.length).toBeGreaterThan(settledFetches));
 
     // The original row is still present because the empty refetch was ignored.
     expect(screen.getByText('Alpha Team')).toBeInTheDocument();
