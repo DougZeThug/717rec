@@ -54,9 +54,7 @@ export const ensureTestUserIsAdmin = async (
   if (!user) throw new Error(`Cannot promote missing user ${env.email}`);
   // Ensure a profiles row exists (handle_new_user trigger should have created
   // one, but seed defensively for freshly-provisioned projects).
-  await admin
-    .from('profiles')
-    .upsert({ id: user.id, is_admin: true }, { onConflict: 'id' });
+  await admin.from('profiles').upsert({ id: user.id, is_admin: true }, { onConflict: 'id' });
 };
 
 // ---------------------------------------------------------------------------
@@ -74,7 +72,7 @@ const safeDelete = async (
   const { error } = await filtered;
   if (error) {
     // Idempotent: log-and-continue so a partial teardown never wedges reruns.
-    // eslint-disable-next-line no-console
+
     console.warn(`[e2e cleanup] ${table}.${column} delete failed: ${error.message}`);
   }
 };
