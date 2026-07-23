@@ -1,4 +1,17 @@
 {
-  "advisories": [],
+  "advisories": [
+    {
+      "id": "GHSA-frvp-7c67-39w9",
+      "package": "@hono/node-server",
+      "reason": "Transitive dep of @lovable.dev/mcp-js -> @modelcontextprotocol/sdk. Used only inside the Supabase edge function (supabase/functions/mcp) and MCP tools under src/lib/mcp — never bundled into the browser client. Advisory is Windows-only path traversal in serve-static; the edge function runs on Deno/Linux and does not serve static files. No upstream fix available.",
+      "expires": "2026-10-21"
+    },
+    {
+      "id": "GHSA-g7r4-m6w7-qqqr",
+      "package": "esbuild",
+      "reason": "Nested under node_modules/@lovable.dev/mcp-js/node_modules/esbuild. Advisory affects only the esbuild dev server on Windows; this copy is never invoked as a dev server (mcp-js uses esbuild as a build helper). Project's top-level esbuild is already on a fixed version. Waiting on upstream mcp-js to bump.",
+      "expires": "2026-10-21"
+    }
+  ],
   "notes": "Add { \"id\": \"<GHSA/npm advisory id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known non-exploitable PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. Reviewed quarterly."
 }
