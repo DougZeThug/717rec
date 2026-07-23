@@ -106,7 +106,6 @@ When "Prioritize Match Quality" is enabled:
 
 **Blossom Scheduler:**
 - `src/utils/autoSchedule/blossomPairingAlgorithm.ts` - Main algorithm
-- `src/utils/autoSchedule/pairingAlgorithm.ts` - Legacy version
 
 **Integration:**
 - `src/hooks/scheduling/usePairingGenerator.ts` - Hook that switches between algorithms
