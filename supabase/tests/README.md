@@ -26,6 +26,13 @@ so a non-zero exit code means drift was detected.
   matches with stats reversal, finalizing/reopening live matches,
   update/reverse team stat guardrails, season-stat refreshes, and scorer
   authorization for admins and approved team members.
+- `season_rollover_workflow.sql` — end-to-end season rollover coverage for
+  partial archive activation, active-season uniqueness, match archival, season
+  stats preservation, team counter reset, playoff finalization snapshots, and
+  archived-season reactivation guards.
+- `blind_draw_workflow.sql` — blind draw smoke coverage for public signup
+  permissions, admin-only visibility/deletion, public signup counts, settings
+  updates, and clear-signups behavior.
 - `playoff_status_mapping.sql` — asserts the match → playoff_matches sync
   triggers map every brackets-manager status correctly
   (`map_bm_status_to_playoff_status`): 3 Running → 'in_progress',
