@@ -20,7 +20,7 @@ in the same PR that resolves a brief.
 | PR-13 brackets simplification | Superseded | Rolled into PR-06 playoff integrity work. |
 | PR-14 third-party script hygiene | Resolved | Self-hosted fonts; editor script dev-only. |
 | PR-15 doc truth sweep | Resolved | This PR. |
-| PR-16 production settings runbook | Resolved | `docs/OPERATIONS.md` + League Night status tab. |
+| PR-16 production settings runbook | Resolved | `docs/PRODUCTION_SETTINGS.md` baseline + `docs/OPERATIONS.md` playbook + League Night status tab. |
 
 Individual brief files remain unchanged for historical context; consult this
 table before treating any brief as an open finding.
