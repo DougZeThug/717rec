@@ -40,6 +40,7 @@ type QueryChain = PromiseLike<QueryResult> & {
   order: (column: string, options?: unknown) => QueryChain;
   limit: (count: number) => QueryChain;
   single: () => Promise<QueryResult>;
+  maybeSingle: () => Promise<QueryResult>;
 };
 
 type QuerySpy = {
@@ -53,6 +54,7 @@ type QuerySpy = {
   order: ReturnType<typeof vi.fn>;
   limit: ReturnType<typeof vi.fn>;
   single: ReturnType<typeof vi.fn>;
+  maybeSingle: ReturnType<typeof vi.fn>;
 };
 
 const emptyState = { weekNumber: null, upsets: [], hotStreaks: [], hasData: false };
@@ -76,6 +78,7 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
     const order = vi.fn(() => query);
     const limit = vi.fn(() => query);
     const single = vi.fn(() => Promise.resolve(result));
+    const maybeSingle = vi.fn(() => Promise.resolve(result));
 
     Object.assign(query, {
       eq,
@@ -88,6 +91,7 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
       order,
       limit,
       single,
+      maybeSingle,
       then: (
         onFulfilled: (value: QueryResult) => unknown,
         onRejected?: (reason: unknown) => unknown
@@ -95,7 +99,19 @@ function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
     });
 
     if (!querySpies[table]) querySpies[table] = [];
-    querySpies[table].push({ eq, is, not, in: inFn, neq, gte, lt, order, limit, single });
+    querySpies[table].push({
+      eq,
+      is,
+      not,
+      in: inFn,
+      neq,
+      gte,
+      lt,
+      order,
+      limit,
+      single,
+      maybeSingle,
+    });
 
     return {
       select: vi.fn(() => query),
