@@ -28,9 +28,7 @@ const InlineEmptyState: React.FC<InlineEmptyStateProps> = ({
         <Icon className="size-6 text-muted-foreground" />
       </div>
       <p className="text-sm font-medium text-muted-foreground">{message}</p>
-      {description && (
-        <p className="text-xs text-muted-foreground/70 mt-1 max-w-xs">{description}</p>
-      )}
+      {description && <p className="text-xs text-muted-foreground mt-1 max-w-xs">{description}</p>}
     </div>
   );
 };
