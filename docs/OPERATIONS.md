@@ -159,7 +159,7 @@ Branch protection matches checks by their **exact job name**. These are the curr
 | `Build and bundle size` | production build + bundle size budgets | **Yes** |
 | `Browser smoke, a11y, and Lighthouse` | Playwright smoke tests, axe accessibility scan, Lighthouse | **Yes** |
 | `React Doctor` | third-party advisory scan | No — advisory |
-| `E2E (real Supabase)` | real-backend e2e — currently self-skips because its secrets aren't set (see PR-03 brief) | No — do **not** require until PR-03 lands |
+| `E2E (real Supabase)` | real-backend e2e — **not currently defined in `ci.yml`**; the spec (`e2e/real-backend.spec.ts`) runs locally only. Re-adding the job is tracked in the PR-03 brief | No — n/a until PR-03 re-adds the job |
 | `supabase db lint`, `Apply migrations + SQL smoke tests`, `Edge function Deno tests` | database CI — runs only when `supabase/**` changes | No — must stay advisory: the workflow is path-filtered, so requiring any of these would freeze every non-database PR on "Expected — waiting for status" |
 | `npm audit`, `Gitleaks`, `No committed local env files` | security workflow — runs only when dependency/security-related files change | No — must stay advisory (also path-filtered, same freeze risk) |
 

@@ -171,14 +171,14 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-07-06.
+Last measured: 2026-07-23.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 62.98%  |
-| Statements | 61.56%  |
-| Functions  | 56.65%  |
-| Branches   | 51.32%  |
+| Lines      | 66.11%  |
+| Statements | 64.69%  |
+| Functions  | 60.47%  |
+| Branches   | 54.21%  |
 
 The overall number is moderate because component coverage is still uneven,
 though the 2026-07 dead-code cleanup removed most zero-coverage orphans and
@@ -202,17 +202,28 @@ Be precise about which kind of confidence a claim rests on:
   automated gate.
 - **Automated in a real browser (blocking since the CI consolidation):** the
   Playwright suite in `e2e/` (smoke, score submission, admin access, mass
-  score entry, playoff bracket) runs in the `browser` job of
-  `.github/workflows/ci.yml` on every PR, and failures fail the job. Most
-  browser specs mock all Supabase traffic; `real-backend.spec.ts` is skipped
-  unless the live Supabase credentials above are configured — CI provides
-  them in the dedicated `e2e-real-backend` job, where it verifies one
-  login/schedule/score-submission path against the real backend.
-- **Manual only — no automated coverage:** anything that executes inside the
-  database (RLS policies, Postgres RPCs, triggers, migrations), real
-  authentication against Supabase, image upload/storage, realtime
-  subscriptions, and most of the visual component layer. Confidence here
-  comes from the manual checks documented below, nothing else.
+  score entry, playoff bracket) plus the axe a11y scan run in the `browser`
+  job of `.github/workflows/ci.yml` on every PR, and failures fail the job.
+  These specs mock all Supabase traffic (`page.route`), so they exercise the
+  real UI against canned data, not a live backend or real RLS.
+  `real-backend.spec.ts` is the one live-backend spec, but it is **not
+  currently run in CI** — `ci.yml` has no `e2e-real-backend` job. It runs only
+  locally/manually when the `E2E_SUPABASE_*` and `E2E_TEST_USER_*` variables
+  are set (`npx playwright test --project=real-backend`). Wiring it back into
+  CI is tracked in
+  `docs/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`.
+- **Automated at the database layer (advisory, path-filtered):** when
+  `supabase/**` changes, `supabase-ci.yml` applies every migration and runs
+  the SQL smoke tests under `supabase/tests/` (e.g. finalize standings,
+  score-submission dedupe, counter drift) plus the Deno edge-function tests
+  under `supabase/functions/`. These are real automated checks, but they run
+  only on database-touching PRs, are advisory (non-required), and do not cover
+  every RLS policy, RPC, or trigger.
+- **Manual only — no automated coverage:** broad RLS-policy enforcement across
+  all tables and RPCs, real authentication against Supabase, image
+  upload/storage, realtime subscriptions, and most of the visual component
+  layer. The JS/Vitest suite never touches the database. Confidence here comes
+  from the manual checks documented below.
 
 ## Coverage threshold policy (enforced)
 
@@ -312,35 +323,35 @@ run `npm run test:coverage:sync-docs`.
 
 ## Coverage by area
 
-Line coverage snapshot by folder, measured 2026-07-02 from
+Line coverage snapshot by folder, measured 2026-07-23 from
 `coverage/coverage-summary.json`. Targets are what we want each area to reach
 over time; anything already above target is just "keep it green".
 
 | Area                               | Lines today | Target | Notes                                        |
 | ---------------------------------- | ----------- | ------ | -------------------------------------------- |
-| `src/services/**`                  | 75%         | 70%    | Data access layer — on target                |
+| `src/services/**`                  | 81%         | 70%    | Data access layer — on target                |
 | `src/services/auth`                | 100%        | 70%    | On target                                    |
-| `src/hooks/**`                     | 46%         | 60%    | React Query hooks wrapping services          |
-| `src/hooks/matches`                | 47%         | 60%    | Coverage spread across many small hooks      |
-| `src/utils/**` (aggregate)         | 70%         | 85%    | Strong gains from logic-heavy utility tests  |
+| `src/hooks/**`                     | 59%         | 60%    | React Query hooks wrapping services          |
+| `src/hooks/matches`                | 92%         | 60%    | Now well above target                        |
+| `src/utils/**` (aggregate)         | 80%         | 85%    | Strong gains from logic-heavy utility tests  |
 | `src/utils/career`                 | 89%         | 85%    | On target                                    |
-| `src/utils/rankingUtils`           | 74%         | 85%    | Fell below target as new code landed         |
+| `src/utils/rankingUtils`           | 100%        | 85%    | On target                                    |
 | `src/utils/predictions`            | 96%         | 85%    | On target                                    |
 | `src/utils/playoffs`               | 100%        | 85%    | On target                                    |
 | `src/utils/matchUtils`             | 100%        | 85%    | On target                                    |
 | `src/utils/brackets/mappers`       | 100%        | 85%    | On target                                    |
 | `src/utils/brackets/validators`    | 100%        | 85%    | On target                                    |
 | `src/utils/auth`                   | 90%         | 85%    | On target                                    |
-| `src/utils/autoSchedule`           | 66%         | 85%    | Complex scheduling algorithms — gradual      |
-| `src/utils/autoSchedule/dualBlock` | 85%         | 85%    | On target                                    |
-| `src/utils/scheduling/greedy`      | 70%         | 85%    | `swapRepair` improved but still below target |
+| `src/utils/autoSchedule`           | 68%         | 85%    | Complex scheduling algorithms — gradual      |
+| `src/utils/autoSchedule/dualBlock` | 89%         | 85%    | On target                                    |
+| `src/utils/scheduling/greedy`      | 86%         | 85%    | Now at target                                |
 | `src/utils/colors`                 | 91%         | 60%    | On target                                    |
 | `src/utils/timezone`               | 90%         | 60%    | On target                                    |
-| `src/utils/teamDetailsUtils`       | 73%         | 60%    | On target                                    |
+| `src/utils/teamDetailsUtils`       | 92%         | 60%    | On target                                    |
 | `src/utils/teamStatsUtils`         | 100%        | 60%    | On target                                    |
-| `src/pages/**`                     | 67%         | 40%    | Big gains from late-June page-test ratchet   |
-| `src/components/**` (non-UI)       | 41%         | 40%    | Improved, but very uneven — many 0% folders  |
-| `src/types`                        | 82%         | —      | Types only — no target                       |
+| `src/pages/**`                     | 73%         | 40%    | Big gains from late-June page-test ratchet   |
+| `src/components/**` (non-UI)       | 57%         | 40%    | Improved, but very uneven — many 0% folders  |
+| `src/types`                        | 100%        | —      | Types only — no target                       |
 
 This table is a manual snapshot and drifts as code lands. Only the top-level
 baseline table above is auto-synced by `npm run test:coverage:sync-docs`; when
@@ -430,9 +441,10 @@ Before merging any PR, confirm:
 - [ ] Admin score submission flow checked when score/match logic changed
 - [ ] Bracket/playoff flow checked when bracket, seeding, or playoff code
       changed
-- [ ] Supabase migration / RLS / RPC changes reviewed extra carefully — outside
-      the `real-backend` golden path these have **no automated coverage**; run
-      the relevant manual checks below
+- [ ] Supabase migration / RLS / RPC changes reviewed extra carefully — the
+      only automated coverage is the advisory, path-filtered `supabase-ci.yml`
+      (migrations apply + SQL smoke tests + Deno edge-function tests), which does
+      not exercise every RLS policy or RPC, so run the relevant manual checks below
 - [ ] No new `any` usage unless justified in the PR description
 - [ ] No docs claiming test coverage that does not exist — if you touch
       thresholds or add/remove suites, update this file in the same PR
