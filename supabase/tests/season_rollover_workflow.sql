@@ -39,6 +39,10 @@ BEGIN
     (v_team2_id, 'Rollover Team 2', v_division_id, 1, 4, 4, 9);
   INSERT INTO public.matches (id, team1_id, team2_id, winner_id, loser_id, season_id, round_number, iscompleted, team1_game_wins, team2_game_wins)
   VALUES (v_match_id, v_team1_id, v_team2_id, v_team1_id, v_team2_id, v_old_season_id, 1, true, 2, 1);
+  INSERT INTO public.team_season_stats (season_id, team_id, match_wins, match_losses, game_wins, game_losses, division_name, recorded_at)
+  VALUES
+    (v_old_season_id, v_team1_id, 4, 1, 9, 4, 'Rollover Division', now()),
+    (v_old_season_id, v_team2_id, 1, 4, 4, 9, 'Rollover Division', now());
 
   PERFORM auth.set_test_claims(v_admin_id);
   PERFORM public.activate_season_with_partial_archive(v_new_season_id);
@@ -58,18 +62,28 @@ BEGIN
   IF EXISTS (SELECT 1 FROM public.matches WHERE id = v_match_id) THEN
     RAISE EXCEPTION 'completed regular-season match stayed in matches after partial archive';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.team_season_stats WHERE season_id = v_old_season_id AND team_id = v_team1_id AND match_wins = 1 AND game_wins = 2) THEN
+  IF NOT EXISTS (SELECT 1 FROM public.team_season_stats WHERE season_id = v_old_season_id AND team_id = v_team1_id AND match_wins = 4 AND game_wins = 9) THEN
     RAISE EXCEPTION 'old-season team stats were not preserved/refreshed during rollover';
   END IF;
   IF EXISTS (SELECT 1 FROM public.teams WHERE id IN (v_team1_id, v_team2_id) AND (wins <> 0 OR losses <> 0 OR game_wins <> 0 OR game_losses <> 0)) THEN
     RAISE EXCEPTION 'team counters were not reset for new season';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND tablename = 'team_details_archive'
+      AND indexname = 'team_details_archive_season_team_unique'
+  ) THEN
+    RAISE EXCEPTION 'team_details_archive is missing season/team uniqueness required by finalize_playoffs';
+  END IF;
+
   PERFORM public.finalize_playoffs(v_old_season_id, v_team1_id, v_team2_id, NULL);
   IF NOT EXISTS (SELECT 1 FROM public.seasons WHERE id = v_old_season_id AND is_active = false AND is_archived = true AND playoffs_active = false AND champion_team_id = v_team1_id AND runner_up_team_id = v_team2_id) THEN
     RAISE EXCEPTION 'finalize_playoffs did not complete archived season side effects';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.team_details_archive WHERE season_id = v_old_season_id AND team_id = v_team1_id AND wins = 1 AND game_wins = 2) THEN
+  IF NOT EXISTS (SELECT 1 FROM public.team_details_archive WHERE season_id = v_old_season_id AND team_id = v_team1_id AND wins = 4 AND game_wins = 9) THEN
     RAISE EXCEPTION 'finalize_playoffs did not preserve season stats in team_details_archive';
   END IF;
 
