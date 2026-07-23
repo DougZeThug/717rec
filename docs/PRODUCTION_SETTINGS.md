@@ -148,8 +148,10 @@ auto-provided by the platform — you don't set them, but they must be present.
 | `SUPABASE_SERVICE_ROLE_KEY` | all functions | yes (auto) | platform-provided | Bypasses RLS. Never expose in client code. See [`SECRETS.md`](SECRETS.md). | _needs DW_ |
 | `CRON_WEBHOOK_SECRET` | `capture-power-snapshots` | **yes** | Edge Functions → Secrets | Function returns 500 (fails closed) if unset. The same value must be in the cron job header — see §5. | _needs DW_ |
 | `RESEND_API_KEY` | `send-support-email` | yes if support email is used | Edge Functions → Secrets | Without it, support emails silently skip the send step. | _needs DW_ |
+| `PAGEVIEW_SALT` | `pageview` | **yes** (if the first-party traffic beacon is used) | Edge Functions → Secrets | Salts the hashed visitor IP for the first-party pageview beacon. Function returns 500 (fails closed) if unset, so the Traffic chart on the League Night Status tab records nothing. | _needs DW_ |
 | `IP_HASH_SALT` | `_shared/rateLimit.ts` (score/contact submit) | recommended | Edge Functions → Secrets | Salts the hashed IP used for rate-limiting so it isn't trivially reversible. Unset = empty salt (rate limiting still works, hashes just weaker). PR-07 runbook item. | _needs DW_ |
 | `TRUSTED_PROXY_COUNT` | `_shared/rateLimit.ts` | optional | Edge Functions → Secrets | How many proxy hops to trust when reading the client IP. Defaults to `1`. Only change if the real client IP is being mis-read. PR-07 runbook item. | _needs DW_ |
+| `RATE_LIMIT_DEBUG_HEADERS` | `_shared/rateLimit.ts` | optional (debug only) | Edge Functions → Secrets | Set to `1` to emit rate-limit debug headers while tuning `TRUSTED_PROXY_COUNT`. Leave unset in normal operation. | _needs DW_ |
 
 > **`ALLOWED_ORIGINS` is not a secret.** Each function hardcodes its own set in
 > code (`submit-score-report`, `submit-contact-request`, `send-support-email`).
@@ -205,7 +207,7 @@ Do this once when adopting this doc, then re-check quarterly (see §9). Fill in 
 - [ ] **§1f** SMTP: recorded custom-vs-built-in; sent a real password-reset to a throwaway address and noted delivered/spam/failed + date.
 - [ ] **§2** Backups: daily backups on, retention written in; PITR on/off noted; you've located the Restore button.
 - [ ] **§3** API: exposed schemas = `public` (+ `graphql_public`) only; RLS spot-check query returns zero rows.
-- [ ] **§4** Edge Functions → Secrets: `CRON_WEBHOOK_SECRET` and `RESEND_API_KEY` present (record **presence** only, never values).
+- [ ] **§4** Edge Functions → Secrets: `CRON_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `PAGEVIEW_SALT` present (record **presence** only, never values).
 - [ ] **§5** SQL editor: `SELECT jobname, schedule FROM cron.job;` shows the `capture-power-snapshots` job at the expected cadence.
 - [ ] **§6** Hosting: custom domain live, HTTPS enforced (visit `http://717rec.app` → it should redirect to `https://`).
 
