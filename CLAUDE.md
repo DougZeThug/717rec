@@ -57,6 +57,17 @@ export const ExampleService = {
 - `.npmrc` has `legacy-peer-deps=true` — don't remove it
 - Returning null is OK when it means "no data" (e.g., no match history). Returning null for errors is not OK — throw instead.
 
+## Docs Maintenance
+
+- Update docs **in the same PR as the behavior they describe.** If a PR renames
+  a table, moves a file, or removes a script, fix every doc that references it
+  in the same change — don't leave the drift for a later sweep.
+- `src/integrations/supabase/types.ts` is the source of truth for table names
+  cited in `ARCHITECTURE.md` and audit docs.
+- Executed/abandoned plan files should be deleted, not kept as historical
+  artifacts. Archive long-lived roadmaps under `docs/audits/archive/` with a
+  pointer to the current review.
+
 <important if="adding new features">
 
 - Data flow: **Components → Hooks** (TanStack Query) **→ Services → Supabase**

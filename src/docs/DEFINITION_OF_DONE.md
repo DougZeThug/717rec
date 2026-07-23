@@ -21,8 +21,9 @@ Every feature or bugfix must satisfy this checklist before it's considered "done
 - [ ] No `any` types (use proper typing or `unknown`)
 
 ### Formatting
-- [ ] Code formatted with Prettier (`npm run format` or auto-save)
-- [ ] Imports sorted correctly (handled by ESLint plugin)
+- [ ] Code formatted with Prettier — run via `npx prettier --write <files>` or
+      rely on editor auto-save (this repo does not define an `npm run format` script)
+- [ ] Imports sorted correctly (handled by ESLint plugin; `npm run lint -- --fix`)
 
 ### Error Handling
 - [ ] API calls wrapped in try/catch or use React Query error states
