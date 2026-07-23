@@ -146,7 +146,6 @@ globalThis.IntersectionObserver =
     thresholds: ReadonlyArray<number> = [];
     scrollMargin = '0px';
 
-    constructor() {}
     /** Starts observing an element; no-op in jsdom tests. */
     observe() {
       return null;
