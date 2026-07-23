@@ -226,7 +226,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           </ScrollArea>
 
           {selectedTeamIds.length > 0 && (
-            <div className="text-sm text-primary">
+            <div className="text-sm text-primary dark:text-blue-300">
               {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
             </div>
           )}
@@ -277,7 +277,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                       ${
                         isSelected
                           ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white border-transparent hover:from-amber-400 hover:to-orange-400'
-                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10'
+                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10 dark:border-blue-300 dark:text-blue-300 dark:hover:bg-blue-300/10'
                       }
                     `}
                 >
@@ -304,10 +304,10 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                     time === 'BYE'
                       ? selectedTimeslot === time
                         ? 'bg-orange-600 text-white'
-                        : 'border-orange-600 text-orange-600 hover:bg-orange-50'
+                        : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-300 dark:text-orange-300 dark:hover:bg-orange-300/10'
                       : selectedTimeslot === time
                         ? 'bg-cornhole-navy text-white'
-                        : 'border-cornhole-navy text-cornhole-navy'
+                        : 'border-cornhole-navy text-cornhole-navy dark:border-blue-300 dark:text-blue-300'
                   }
                 `}
               >

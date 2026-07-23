@@ -8,8 +8,10 @@ interface RouteFocusManagerProps {
 
 /**
  * Moves keyboard/screen-reader focus to the page's main landmark after client
- * side route changes. Initial page load and POP navigations are skipped so the
- * browser can keep its normal focus/scroll restoration behavior.
+ * side route changes. This deliberately focuses `<main>` instead of page `<h1>`
+ * so the next Tab lands inside page content without adding focus styles to
+ * headings across routes. Initial page load and POP navigations are skipped so
+ * the browser can keep its normal focus/scroll restoration behavior.
  */
 export const RouteFocusManager: React.FC<RouteFocusManagerProps> = ({ mainRef }) => {
   const { pathname } = useLocation();
