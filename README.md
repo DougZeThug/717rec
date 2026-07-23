@@ -101,5 +101,6 @@ Domains ([guide](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | Stack, project structure, routing, data flow, service-layer rules |
 | [`TESTING.md`](TESTING.md) | Test commands, coverage baseline and thresholds, E2E setup, manual QA checklists |
 | [`CLAUDE.md`](CLAUDE.md) | Working agreements for AI agents (and humans): architecture rules, service template, test-running notes |
-| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Production settings inventory, league-night incident playbook, standings reconciliation query |
+| [`docs/PRODUCTION_SETTINGS.md`](docs/PRODUCTION_SETTINGS.md) | Checked baseline of every out-of-repo dashboard setting (expected value + last-verified date): auth, backups, API/RLS, edge secrets, cron, hosting |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | League-night incident playbook, recovery + standings reconciliation, and the merge gate |
 | [`docs/`](docs/) | Deep dives: secrets handling, release runbook, Supabase CI, RLS notes, bracket schema, past audits |

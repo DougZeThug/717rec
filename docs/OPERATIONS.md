@@ -3,6 +3,7 @@
 Audience: Doug at 9pm on a Tuesday. Plain language. If something in here is out of date, fix it before you close the laptop.
 
 Companion docs:
+- [`PRODUCTION_SETTINGS.md`](PRODUCTION_SETTINGS.md) — the checked baseline of every dashboard setting (expected value + last-verified date). This doc is the *actions*; that one is the *settings*.
 - [`SECRETS.md`](SECRETS.md) — which env vars exist and how to rotate them.
 - [`RELEASE_AND_DEPLOYMENT.md`](RELEASE_AND_DEPLOYMENT.md) — version bumps, publish steps, rollback.
 - [`E2E_REAL_BACKEND.md`](E2E_REAL_BACKEND.md) — real-backend end-to-end tests.
@@ -11,55 +12,16 @@ Companion docs:
 
 ## 1. Production settings inventory
 
-Everything below lives outside the repo (Supabase Dashboard, Lovable, Cloudflare, third-party services). It cannot be checked in CI, so it lives here. When you touch a row, update **Last verified**.
+The full inventory of every out-of-repo dashboard setting — Supabase Auth,
+passwords, rate limits, backups/PITR, API schemas + RLS, edge-function secrets,
+the pg_cron job, hosting/DNS/HTTPS, monitoring — now lives in one place:
 
-### 1a. Supabase Auth
+**➡️ [`PRODUCTION_SETTINGS.md`](PRODUCTION_SETTINGS.md)** — the checked baseline
+(setting · where · expected value · why · last verified).
 
-| Setting | Where | Required value | Why | Last verified |
-|---|---|---|---|---|
-| Email confirmations on signup | Dashboard → Authentication → Sign In / Up → Email | **OFF** | Internal rec-league app used by trusted team members — email deliverability isn't part of the security model, and the extra click hurts signup completion more than it helps. Matches `supabase/config.toml` (`enable_confirmations = false`). | _fill me in_ |
-| Leaked-password protection | Dashboard → Authentication → Attack protection | **ON** | Rejects passwords that appear in known breach corpora (HaveIBeenPwned). Free, zero UX cost beyond the occasional "pick another password". | _fill me in_ |
-| MFA (TOTP) | Dashboard → Authentication → Multi-Factor Authentication | **ON (optional for users)** | Not required for players, but leave the provider enabled so admins (Doug + anyone else with `is_admin = true`) can opt in. | _fill me in_ |
-| Site URL / redirect URLs | Dashboard → Authentication → URL Configuration | `https://717rec.app`, `https://717rec.lovable.app`, plus any preview domain in active use | Sign-in magic links and password resets fail silently if the redirect isn't on the allowlist. | _fill me in_ |
-
-### 1b. Supabase Database — backups & recovery
-
-| Setting | Where | Required value | Why | Last verified |
-|---|---|---|---|---|
-| Daily backups | Dashboard → Database → Backups | Enabled, retention noted here → **____ days** | Non-negotiable. Free plan gives 7 days of daily backups; paid plans give more. Write the actual retention in the blank. | _fill me in_ |
-| Point-in-time recovery (PITR) | Dashboard → Database → Backups | Noted: **on** / **off** (paid plan only) | If PITR is off, the RPO is "last night". Document it so nobody is surprised mid-incident. | _fill me in_ |
-
-### 1c. Edge function secrets
-
-Every `Deno.env.get(...)` key across every function in `supabase/functions/`. `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are auto-provided by the Supabase platform — you don't set them, but they must be present.
-
-| Secret | Used by | Required? | Where to set | Notes | Last verified |
-|---|---|---|---|---|---|
-| `SUPABASE_URL` | all functions, `_shared/auth.ts` | yes (auto) | platform-provided | — | _fill me in_ |
-| `SUPABASE_ANON_KEY` | `_shared/auth.ts` | yes (auto) | platform-provided | — | _fill me in_ |
-| `SUPABASE_SERVICE_ROLE_KEY` | all functions | yes (auto) | platform-provided | Never expose in client code. See `SECRETS.md`. | _fill me in_ |
-| `CRON_WEBHOOK_SECRET` | `capture-power-snapshots` | **yes** | Dashboard → Edge Functions → Secrets | Function returns 500 (fails closed) if unset. Same value must be pasted into the cron job header — see §1d. | _fill me in_ |
-| `RESEND_API_KEY` | `send-support-email` | yes if support email is used | Dashboard → Edge Functions → Secrets | Without it, support emails silently no-op the send step. | _fill me in_ |
-
-**`ALLOWED_ORIGINS` is not an env var.** Each function hardcodes its own set (`ALLOWED_ORIGINS = new Set<string>([...])` in `submit-score-report/index.ts`, `submit-contact-request/index.ts`, `send-support-email/index.ts`). If a new production domain is added, update the code and redeploy — do not go looking for a secret to change.
-
-### 1d. Scheduled jobs (pg_cron)
-
-| Job | Cadence | Calls | Notes | Last verified |
-|---|---|---|---|---|
-| `weekly-power-score-snapshot-v2` → `capture-power-snapshots` | Weekly, Fridays 04:00 UTC (= Thursday ~11pm–midnight ET) | `https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/capture-power-snapshots` | Header must be `Authorization: Bearer <CRON_WEBHOOK_SECRET>` (the function rejects anything else with 401). Secret is stored in Postgres Vault as `CRON_WEBHOOK_SECRET` and read by pg_cron at execution time — do NOT paste the raw value into a migration file. Verify with `SELECT jobname, schedule FROM cron.job;`. Manual test: `curl -X POST -H "Authorization: Bearer $CRON_WEBHOOK_SECRET" https://wcitdamvochthvxvtxyb.supabase.co/functions/v1/capture-power-snapshots` should return `{"success":true,...}`. **Known cleanup item:** an older duplicate `weekly-power-score-snapshot` (jobid 1) is owned by the dashboard `postgres` role and can only be removed from Dashboard → SQL editor as that role: `SELECT cron.unschedule(1);`. It fires alongside v2 and 401s harmlessly, but should be removed. | 2026-07-15 (job present + manual invocation returned 200 / 27 snapshots) |
-
-### 1e. Hosting & DNS
-
-| Setting | Where | Value | Why | Last verified |
-|---|---|---|---|---|
-| Custom domain | Lovable → Project → Settings → Domains | `717rec.app` (primary), `717rec.lovable.app` (staging) | See root `README.md`. | _fill me in_ |
-| DNS records | Registrar | A `@` → `185.158.133.1`, A `www` → `185.158.133.1`, TXT `_lovable` verification | Lovable custom-domain requirement. | _fill me in_ |
-| HTTP security headers | `public/_headers` | Served by Cloudflare | Change via PR, not dashboard. | _fill me in_ |
-
-### 1f. Monitoring (optional, note only)
-
-The repo has hooks for Sentry (`src/utils/logger-types.ts`, various lazy-loaded tracking). If a Sentry project is connected, its DSN lives as a build/runtime env var — record its name here when adopted. No monitoring is currently required to operate the league.
+It's kept separate so there's a single source of truth for "what should each switch
+be set to," and this runbook can stay focused on "what do I do when something
+breaks." When you re-verify a setting, date the row **there**, not here.
 
 ---
 
@@ -67,31 +29,48 @@ The repo has hooks for Sentry (`src/utils/logger-types.ts`, various lazy-loaded 
 
 Symptom-first. Skim the bold lines; drop into the sub-steps only when you're the one clicking.
 
-### 2a. Live scoring is stuck (round won't advance, throws don't register)
+### 2a. A score won't submit (public score-report form)
+
+The public form has an app-level rate limit: **5 submissions per 10 minutes per IP**, after which it returns "Too many requests. Please try again later." (HTTP 429). This is enforced in the `submit-score-report` edge function, not a dashboard setting.
+
+1. **Did it maybe already go through?** Check the pending queue first: **Admin → League Night Status → Pending queues → Score reports** (or the Scores tab). A submitted-but-unapproved report sits there — it isn't lost.
+2. **Rate-limited?** If they've retried several times within a few minutes, they've likely hit the 5-per-10-min cap. Wait it out, or just enter the score yourself via **Mass Score Entry**.
+3. **Nothing lands at all, for anyone?** Treat it as "Site is down" (§2f) and check Supabase status.
+
+### 2b. Live scoring is stuck (round won't advance, throws don't register)
 
 1. **Refresh the scorer's browser once.** Realtime channels re-subscribe on mount; a stale WebSocket is the most common cause.
 2. **Check Supabase Realtime status** — Dashboard → Project status. If red, wait; nothing on our side to do.
 3. **Open Admin → Live Corrections for that match.** You can edit or delete any round, or use "Reopen match" (`reopen_live_match` RPC) if the match was accidentally finalized. State rolls back atomically.
 4. **Last resort: Mass Score Entry.** Enter the final game scores manually. This bypasses live scoring entirely and reverses/re-applies stats.
 
-### 2b. Wrong score was approved
+### 2c. Wrong score was approved
 
 1. In Admin → Match management, open the match.
 2. Either: use **Mark as tie** (`mark_match_as_tie`) to zero it out, then re-approve the correct submission; or edit directly if you know the right numbers.
 3. Standings and streaks recompute on the next query invalidation — usually within seconds. If not, hit refresh.
 
-### 2c. A submitter reports a score dispute and it looks like a duplicate got swallowed
+### 2d. Standings look wrong (a team's W-L doesn't match its games)
+
+Stored win/loss counters can drift from the real match history after manual DB edits, a restore, or a bulk import. There's a built-in checker — no SQL required:
+
+1. **Admin → League Night Status → "Standings counters" card.** It reads the `v_counter_drift` view and tells you, in plain language, whether every team is in sync or lists the ones that aren't.
+2. If any are out of sync, click **Repair now** — it recomputes every team's wins/losses/game counts from completed matches (`reconcile_team_counters()`) and refreshes the stats cache. Safe to run any time; it does nothing when counters already match.
+3. **Prefer SQL, or no admin UI handy?** The equivalent reconciliation query and the manual `UPDATE` fix are in §3b.
+
+### 2e. A submitter reports a score dispute and it looks like a duplicate got swallowed
 
 Dedupe key is `(match_id, md5(message), submitter_name)` — two different submitters with the same text are kept separately. If a genuine dupe from the same submitter needs to be re-opened, delete it from `score_submissions` in the SQL editor and ask them to re-submit.
 
-### 2d. Site is down
+### 2f. Site is down
 
 1. **Is it just you?** Open `https://717rec.app` in an incognito window on cellular.
 2. **Lovable status:** https://status.lovable.dev
 3. **Cloudflare status:** https://www.cloudflarestatus.com
-4. **Rollback:** if a recent publish broke things, follow `RELEASE_AND_DEPLOYMENT.md` → Rollback → Option A (redeploy previous tag from Lovable). Two clicks.
+4. **Supabase status:** https://status.supabase.com — if the database/API is down, the site loads but nothing saves.
+5. **Rollback:** if a recent publish broke things, follow `RELEASE_AND_DEPLOYMENT.md` → Rollback → Option A (redeploy previous tag from Lovable). Two clicks.
 
-### 2e. Who to contact
+### 2g. Who to contact
 
 - Lovable support: in-app chat, or support@lovable.dev
 - Supabase support: dashboard → Help
@@ -148,18 +127,18 @@ If drift is found, the fix is a targeted `UPDATE teams SET wins = <calc>, losses
 
 ---
 
-## 4. Doug's one-time verification checklist
+## 4. Verification checklist
 
-Do this once when adopting this doc, then re-check quarterly. Fill in the "Last verified" cells above as you go.
+The dashboard-settings checklist — every Auth, backup, API, secret, cron, and
+hosting row, in one walk — lives with the settings it verifies:
 
-- [ ] Dashboard → Authentication → Sign In / Up: email confirmations set to the value in §1a. Record date.
-- [ ] Authentication → Attack protection: leaked-password protection ON. Record date.
-- [ ] Authentication → Multi-Factor Authentication: TOTP provider enabled. Record date.
-- [ ] Authentication → URL Configuration: production + staging URLs present. Record date.
-- [ ] Database → Backups: schedule confirmed, retention noted in §1b. Record date.
-- [ ] Edge Functions → Secrets: `CRON_WEBHOOK_SECRET` and `RESEND_API_KEY` both listed (values stay secret — record **presence** only). Record date.
-- [ ] SQL editor: `SELECT jobname, schedule FROM cron.job;` — confirm the `capture-power-snapshots` job exists at the expected cadence. Record date.
-- [ ] SQL editor: run the reconciliation query in §3b. Expect zero rows. Record date.
+**➡️ [`PRODUCTION_SETTINGS.md` §8](PRODUCTION_SETTINGS.md#8-verification-checklist-doug)** —
+do it once when adopting the doc, then quarterly (§9 there sets the cadence).
+
+One data-integrity check belongs here rather than there, because it's about the
+database's contents, not a dashboard toggle:
+
+- [ ] SQL editor: run the reconciliation query in §3b. Expect zero rows. Record the date.
 
 Nothing here changes code. If any step surfaces a surprise, open an issue instead of fixing it silently — future-you will thank present-you.
 
