@@ -1,7 +1,8 @@
 # 717rec — Confidence Assessment & Improvement Roadmap
 
-> **Status:** Living document. The score is a snapshot (refreshed **2026-06-26**; previously **2026-05-28**); the roadmap is updated as phases land.
-> **How to use this:** Each improvement PR should reference the phase it implements, e.g. _"Implements Phase 1 of `IMPROVEMENT-ROADMAP.md`."_
+> **Status: ARCHIVED (2026-07-23).** Superseded by
+> [`docs/quality-review-2026-07/`](../../quality-review-2026-07/). Kept for
+> historical context only — do not treat statements below as current.
 
 ## Context
 
