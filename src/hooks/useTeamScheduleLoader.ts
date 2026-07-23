@@ -111,47 +111,11 @@ export const useTeamScheduleLoader = () => {
     return { total, odd };
   }, [timeBlockTeams]);
 
-  /**
-   * Get counts specifically for dual block mode
-   */
-  const getDualBlockCountStatus = useCallback(() => {
-    if (Object.keys(pairedTimeBlockTeams).length === 0) {
-      return { total: 0, paired: 0, unpaired: 0, odd: false };
-    }
-
-    // Get first pair (typically there's only one in dual mode)
-    const pair = Object.values(pairedTimeBlockTeams)[0];
-
-    // Count teams in each block
-    const primaryCount = pair.primaryTeams.length;
-    const secondaryCount = pair.secondaryTeams.length;
-    const total = primaryCount + secondaryCount;
-
-    // Determine if either block has an odd count
-    const odd = primaryCount % 2 !== 0 || secondaryCount % 2 !== 0;
-
-    // Create map of team IDs from primary block
-    const primaryTeamIds = new Set(pair.primaryTeams.map((team) => team.id));
-
-    // Count teams that appear in both blocks
-    const teamsInBothBlocks = pair.secondaryTeams.filter((team) =>
-      primaryTeamIds.has(team.id)
-    ).length;
-
-    return {
-      total,
-      paired: teamsInBothBlocks,
-      unpaired: total - teamsInBothBlocks,
-      odd,
-    };
-  }, [pairedTimeBlockTeams]);
-
   return {
     isLoading,
     timeBlockTeams,
     pairedTimeBlockTeams,
     loadTeamsForDate,
     getTeamCountStatus,
-    getDualBlockCountStatus,
   };
 };
