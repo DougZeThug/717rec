@@ -23,12 +23,12 @@ running locally):
 | `E2E_TEST_USER_EMAIL` | Login account |
 | `E2E_TEST_USER_PASSWORD` | Login password. Rotated onto the user on each run. |
 
-In CI, the `e2e-real-backend` job fails fast: its first step
-(`Require E2E secrets`) checks all five values and fails the job with an
-explicit error if any is missing. A green "E2E (real Supabase)" check therefore
-always means the spec actually ran and passed — it can no longer be green while
-silently skipping. When running locally, the spec still self-skips if the env
-vars are absent.
+When wired into CI (see **CI status** below), the `e2e-real-backend` job is
+designed to fail fast: its first step (`Require E2E secrets`) checks all five
+values and fails the job with an explicit error if any is missing, so a green
+"E2E (real Supabase)" check means the spec actually ran and passed rather than
+silently skipping. When running locally, the spec self-skips if the env vars
+are absent.
 
 The job only runs where GitHub can deliver repo secrets: pushes and pull
 requests from branches in this repo (excluding Dependabot). On Dependabot and
@@ -61,13 +61,18 @@ delete from matches where location = 'E2E Court';
 delete from teams where name like 'E2E Alpha %' or name like 'E2E Beta %';
 ```
 
-## CI
+## CI status
 
-Job: `e2e-real-backend` in `.github/workflows/ci.yml`. The job's first step
-(`Require E2E secrets`) fails the run if any of the five secrets above is
-unset, so on pushes and same-repo PRs the job stays red until the secrets are
-configured. Mark it required in branch protection to block merges on failure —
-but note that Dependabot and fork PRs show the job as skipped (GitHub withholds
-repo secrets from those runs), and a skipped job satisfies a required check.
-The HTML report is uploaded as `playwright-report-real-backend` on every run
-that executes.
+**As of 2026-07-23, `.github/workflows/ci.yml` does not define an
+`e2e-real-backend` job** — the real-backend spec runs locally only (see
+"Running locally" above). Wiring it into CI, with the guard step below so it
+can't be green while skipping, is tracked in
+`docs/quality-review-2026-07/briefs/PR-03-make-soft-ci-gates-honest.md`.
+
+Once added, the job's first step (`Require E2E secrets`) should fail the run if
+any of the five secrets above is unset, so on pushes and same-repo PRs the job
+stays red until the secrets are configured. Mark it required in branch
+protection to block merges on failure — but note that Dependabot and fork PRs
+show the job as skipped (GitHub withholds repo secrets from those runs), and a
+skipped job satisfies a required check. The HTML report is uploaded as
+`playwright-report-real-backend` on every run that executes.
