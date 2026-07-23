@@ -5,7 +5,7 @@ import { PlayoffBracket, PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import { transformBracket, transformGames, transformMatches } from './MatchTransformer';
 import { transformParticipants, transformStoredParticipants } from './ParticipantTransformer';
-import { calculateSourceNodeIds } from './SourceNodeCalculator';
+import { calculateSourceNodeIds, SlotPositionMarkers } from './SourceNodeCalculator';
 import { transformFromSql } from './SqlBracketTransformer';
 import {
   BracketGroupRow,
@@ -56,8 +56,19 @@ export const BracketsViewerAdapter = {
     const groups = (bracketData.group || []) as BracketGroupRow[];
     const rounds = (bracketData.round || []) as BracketRoundRow[];
 
+    // JSONB is brackets-manager's native dump, so opponent positions here are
+    // the library's own feeder markers — usable for ordering-aware LB routing.
+    const slotPositions = new Map<string, SlotPositionMarkers>();
+    matches.forEach((match) => {
+      const p1 = match.opponent1?.position;
+      const p2 = match.opponent2?.position;
+      if (p1 != null || p2 != null) {
+        slotPositions.set(String(match.id), { opponent1: p1, opponent2: p2 });
+      }
+    });
+
     // Calculate source_node_id for connectors (CRITICAL FIX)
-    const matchesWithSources = calculateSourceNodeIds(matches, groups, rounds);
+    const matchesWithSources = calculateSourceNodeIds(matches, groups, rounds, slotPositions);
 
     bracketLog('transformFromJsonb: Wired sources for JSONB path', {
       totalMatches: matchesWithSources.length,

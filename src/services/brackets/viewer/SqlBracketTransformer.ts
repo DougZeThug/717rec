@@ -4,7 +4,11 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, debugLog, errorLog } from '@/utils/logger';
 
 import { mapStatusToString } from './bracketViewerUtils';
-import { calculateSourceNodeIds, toViewerOpponent } from './SourceNodeCalculator';
+import {
+  calculateSourceNodeIds,
+  SlotPositionMarkers,
+  toViewerOpponent,
+} from './SourceNodeCalculator';
 import {
   BracketGroupRow,
   BracketRoundRow,
@@ -54,7 +58,7 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
       supabase
         .from('match')
         .select(
-          'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, status'
+          'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position, status'
         )
         .eq('stage_id', stageId),
       supabase
@@ -197,8 +201,26 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     };
   });
 
+  // brackets-manager's persisted feeder markers (ordering-aware WB→LB routing).
+  // Passed out-of-band — they must NOT land on viewer opponents, where later-
+  // round positions would trip the library's Toornament detection.
+  const slotPositions = new Map<string, SlotPositionMarkers>();
+  matches.forEach((match) => {
+    if (match.opponent1_position != null || match.opponent2_position != null) {
+      slotPositions.set(String(match.id), {
+        opponent1: match.opponent1_position,
+        opponent2: match.opponent2_position,
+      });
+    }
+  });
+
   // Calculate source_node_id for connectors
-  const matchesWithSources = calculateSourceNodeIds(transformedMatches, groups, rounds);
+  const matchesWithSources = calculateSourceNodeIds(
+    transformedMatches,
+    groups,
+    rounds,
+    slotPositions
+  );
 
   bracketLog('Calculated source_node_ids:', {
     totalMatches: matchesWithSources.length,

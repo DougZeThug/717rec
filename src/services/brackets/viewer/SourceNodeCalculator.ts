@@ -37,14 +37,35 @@ function ensureOpponentObject(match: ViewerMatch, key: 'opponent1' | 'opponent2'
 }
 
 /**
+ * brackets-manager's own feeder markers for a match's slots: the `position`
+ * value it stores on a loser-bracket drop-in slot is the NUMBER of the
+ * winners-bracket match (within its round) whose loser fills that slot,
+ * already accounting for the stage's loser seed orderings (reverse,
+ * reverse_half_shift, ...). Persisted as match.opponentN_position in SQL.
+ */
+export interface SlotPositionMarkers {
+  opponent1?: number | null;
+  opponent2?: number | null;
+}
+
+/**
  * Calculate source_node_id for each opponent in matches
  * This determines which previous match each opponent came from
  * Handles Winners→Winners, Losers→Losers, and Winners→Losers drop-ins
+ *
+ * Loser-bracket structure (matches brackets-manager's double_elimination):
+ * round 1 pairs off WB round-1 losers; even rounds are minor rounds where one
+ * slot is a WB drop-in (named by its position marker) and the other continues
+ * the same-numbered LB match; odd rounds >= 3 pair the previous round's
+ * winners. Do NOT pass seed positions as markers — only brackets-manager's
+ * own opponent position markers (the legacy transform stores seeds there,
+ * which is why markers are an explicit parameter and never read off opponents).
  */
 export function calculateSourceNodeIds(
   matches: ViewerMatch[],
   groups: BracketGroupRow[],
-  rounds: BracketRoundRow[]
+  rounds: BracketRoundRow[],
+  slotPositions?: Map<string, SlotPositionMarkers>
 ): ViewerMatch[] {
   // AUDIT LOG: Track object references at start
   debugLog('AUDIT: calculateSourceNodeIds START', {
@@ -107,96 +128,67 @@ export function calculateSourceNodeIds(
     }
   };
 
-  // Helper: Add Losers→Losers progression sources
-  const addLosersProgressionSources = (match: ViewerMatch) => {
-    const currentRound = roundsById.get(match.round_id);
-    if (!currentRound || currentRound.number === 1) return; // First LB round gets drop-ins only
-
-    const keyPrev = `${currentRound.group_id}:${currentRound.number - 1}`;
-    const prevMatches = matchesByGroupRound.get(keyPrev);
-    if (!prevMatches) return;
-
-    // Same binary pairing within losers bracket
-    const prevMatch1 = prevMatches[(match.number - 1) * 2];
-    const prevMatch2 = prevMatches[(match.number - 1) * 2 + 1];
-
-    // Only set if not already sourced (to avoid overwriting drop-ins)
-    if (prevMatch1) {
-      const o1 = ensureOpponentObject(match, 'opponent1');
-      if (!o1.source_node_id) {
-        o1.source_node_id = String(prevMatch1.id);
-        o1.source_type = 'winner';
-      }
-    }
-
-    if (prevMatch2) {
-      const o2 = ensureOpponentObject(match, 'opponent2');
-      if (!o2.source_node_id) {
-        o2.source_node_id = String(prevMatch2.id);
-        o2.source_type = 'winner';
-      }
-    }
-  };
-
-  // Helper: Add Winners→Losers drop-in connectors
-  const addWinnersToLosersDropIns = (match: ViewerMatch) => {
+  // Helper: Add all Losers-bracket sources (LB→LB progression + WB drop-ins)
+  const addLoserBracketSources = (match: ViewerMatch) => {
     const lbRound = roundsById.get(match.round_id);
     if (!lbRound) return;
 
     const lbGroup = groupsById.get(lbRound.group_id);
     if (!lbGroup || lbGroup.number !== 2) return; // Only losers bracket (group 2)
 
-    // Find winners bracket group (group.number === 1)
     const wbGroup = [...groupsById.values()].find((g) => g.number === 1);
-    if (!wbGroup) return;
+    const markers = slotPositions?.get(String(match.id));
 
-    // FIX 1: LB Round 1 gets TWO sources from WB Round 1 (binary tree pairing)
+    const setSource = (
+      side: 'opponent1' | 'opponent2',
+      source: ViewerMatch | undefined,
+      type: 'winner' | 'loser'
+    ) => {
+      if (!source) return;
+      const opponent = ensureOpponentObject(match, side);
+      opponent.source_node_id = String(source.id);
+      opponent.source_type = type;
+    };
+
+    const findWbMatch = (wbRoundNumber: number, matchNumber: number | null | undefined) =>
+      wbGroup && matchNumber != null
+        ? matchesByGroupRound
+            .get(`${wbGroup.id}:${wbRoundNumber}`)
+            ?.find((m) => m.number === matchNumber)
+        : undefined;
+
+    // LB Round 1: both slots receive WB Round 1 losers. The position marker
+    // names the exact WB match number; fall back to binary pairing.
     if (lbRound.number === 1) {
-      const keyWB = `${wbGroup.id}:1`;
-      const wbMatches = matchesByGroupRound.get(keyWB);
-      if (!wbMatches) return;
-
-      // LB R1 Match N gets losers from WB R1 matches (2N-1) and (2N)
-      const wbMatch1 = wbMatches[(match.number - 1) * 2];
-      const wbMatch2 = wbMatches[(match.number - 1) * 2 + 1];
-
-      if (wbMatch1) {
-        const o1 = ensureOpponentObject(match, 'opponent1');
-        o1.source_node_id = String(wbMatch1.id);
-        o1.source_type = 'loser';
-      }
-
-      if (wbMatch2) {
-        const o2 = ensureOpponentObject(match, 'opponent2');
-        o2.source_node_id = String(wbMatch2.id);
-        o2.source_type = 'loser';
-      }
+      setSource('opponent1', findWbMatch(1, markers?.opponent1 ?? match.number * 2 - 1), 'loser');
+      setSource('opponent2', findWbMatch(1, markers?.opponent2 ?? match.number * 2), 'loser');
       return;
     }
 
-    // FIX 2: Later LB rounds get drop-ins on ODD rounds only (3, 5, 7...)
-    // Standard DE layout: LB R3 = WB R2 losers, LB R5 = WB R3 losers, etc.
-    const hasDropIns = lbRound.number % 2 === 1;
-    if (!hasDropIns) return;
+    const prevMatches = matchesByGroupRound.get(`${lbGroup.id}:${lbRound.number - 1}`);
 
-    // Map LB odd round to corresponding WB round
-    const wbRoundNumber = Math.ceil(lbRound.number / 2);
-    const keyWB = `${wbGroup.id}:${wbRoundNumber}`;
-    const wbMatches = matchesByGroupRound.get(keyWB);
-    if (!wbMatches) return;
+    // Even (minor) LB rounds: one slot is a WB drop-in — the slot carrying the
+    // position marker — and the other continues the same-numbered LB match.
+    // LB round 2 receives WB round 2 losers, LB round 4 WB round 3, etc.
+    if (lbRound.number % 2 === 0) {
+      const dropSide =
+        markers?.opponent2 != null && markers?.opponent1 == null ? 'opponent2' : 'opponent1';
+      const carrySide = dropSide === 'opponent1' ? 'opponent2' : 'opponent1';
+      const wbRoundNumber = lbRound.number / 2 + 1;
 
-    // Each WB loser drops into corresponding LB match by match number
-    const wbMatch = wbMatches[match.number - 1];
-    if (!wbMatch) return;
+      setSource(dropSide, findWbMatch(wbRoundNumber, markers?.[dropSide] ?? match.number), 'loser');
+      setSource(
+        carrySide,
+        prevMatches?.find((m) => m.number === match.number),
+        'winner'
+      );
+      return;
+    }
 
-    // Fill the slot that doesn't already have a source (from LB progression)
-    const o1 = ensureOpponentObject(match, 'opponent1');
-    const o2 = ensureOpponentObject(match, 'opponent2');
-    const targetSlot = o1.source_node_id ? 'opponent2' : 'opponent1';
-    const targetOpp = targetSlot === 'opponent1' ? o1 : o2;
-
-    targetOpp.source_node_id = String(wbMatch.id);
-    targetOpp.source_type = 'loser';
+    // Odd LB rounds >= 3: internal halving round — binary pairing of the
+    // previous round's winners, no WB drop-ins.
+    setSource('opponent1', prevMatches?.[(match.number - 1) * 2], 'winner');
+    setSource('opponent2', prevMatches?.[(match.number - 1) * 2 + 1], 'winner');
   };
 
   // Helper: Add Grand Final sources (WB Final winner + LB Final winner)
@@ -264,9 +256,8 @@ export function calculateSourceNodeIds(
       // Winners bracket: simple progression
       addWinnersProgressionSources(match);
     } else if (group.number === 2) {
-      // Losers bracket: apply LB→LB first, then WB→LB drop-ins
-      addLosersProgressionSources(match);
-      addWinnersToLosersDropIns(match);
+      // Losers bracket: LB→LB progression + WB→LB drop-ins
+      addLoserBracketSources(match);
     } else if (group.number === 3) {
       // Grand Final: WB Final winner + LB Final winner
       addGrandFinalSources(match);
