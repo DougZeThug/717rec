@@ -3,12 +3,6 @@ import type { StorageGroup, StorageRound } from '../../types/BracketServiceTypes
 
 export class LbStructureService {
   constructor(private storage: SupabaseSqlStorage) {}
-  private readonly roundsPerWinnerRound = 2;
-  private readonly roundAdjustment = 2;
-
-  calculateLBRounds(bracketSize: number): number {
-    return Math.log2(bracketSize) * this.roundsPerWinnerRound - this.roundAdjustment;
-  }
 
   async findLbGroup(stageId: number): Promise<StorageGroup | null> {
     const groups = await this.storage.select('group', { stage_id: stageId });
@@ -64,15 +58,5 @@ export class LbStructureService {
 
     const maxRoundNumber = Math.max(...wbRounds.map((round) => round.number));
     return wbRounds.find((round) => round.number === maxRoundNumber) || null;
-  }
-
-  async isWbFinalRound(roundId: number, stageId: number): Promise<boolean> {
-    const wbFinal = await this.findWbFinalRound(stageId);
-    return !!wbFinal && wbFinal.id === roundId;
-  }
-
-  async isLbFinalRound(roundId: number, stageId: number): Promise<boolean> {
-    const lbFinal = await this.findLbFinalRound(stageId);
-    return !!lbFinal && lbFinal.id === roundId;
   }
 }
