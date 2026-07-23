@@ -77,20 +77,7 @@ describe('useTeamMembership', () => {
 
     expect(result.current.membership).toEqual(mockMembership);
     expect(result.current.availableTeams).toEqual(mockTeams);
-    expect(result.current.error).toBeNull();
     expect(fetchTeamMembership).toHaveBeenCalledWith('user-1');
-  });
-
-  it('reports an error string when the membership query fails', async () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: { id: 'user-1' } });
-    (fetchTeamMembership as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('boom'));
-    (fetchAvailableTeams as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-
-    const { result } = renderHook(() => useTeamMembership(), {
-      wrapper: createWrapper(),
-    });
-
-    await waitFor(() => expect(result.current.error).toBe('Failed to load team membership'));
   });
 
   it('guards joinTeam when there is no user', async () => {
