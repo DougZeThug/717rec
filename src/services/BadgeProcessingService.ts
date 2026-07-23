@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Phase3TeamStreakRpcResult as TeamStreakRpcResult } from '@/types/phase3';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { badgeLog } from '@/utils/logger';
 
@@ -80,36 +79,6 @@ export const BadgeProcessingService = {
     if (error) handleDatabaseError(error, 'Failed to process consistent performer badge');
 
     badgeLog('Consistent performer badge processed', data);
-    return data;
-  },
-
-  /**
-   * Calculate current streak for a specific team
-   */
-  async calculateTeamStreak(
-    teamId: string
-  ): Promise<{ streak_type: string; streak_count: number } | null> {
-    const { data, error } = await supabase.rpc('calculate_team_streak', {
-      p_team_id: teamId,
-    });
-
-    if (error) handleDatabaseError(error, 'Failed to calculate team streak');
-
-    const rows = (data as TeamStreakRpcResult[] | null) ?? [];
-    return rows.length > 0 ? rows[0] : null;
-  },
-
-  /**
-   * Award streak badges for a specific team
-   */
-  async awardStreakBadges(teamId: string): Promise<unknown> {
-    const { data, error } = await supabase.rpc('award_streak_badges', {
-      p_team_id: teamId,
-    });
-
-    if (error) handleDatabaseError(error, 'Failed to award streak badges');
-
-    badgeLog('Streak badges awarded', data);
     return data;
   },
 

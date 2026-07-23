@@ -138,53 +138,6 @@ describe('BadgeProcessingService.processConsistentPerformerBadge', () => {
   });
 });
 
-// ─── calculateTeamStreak ──────────────────────────────────────────────────────
-
-describe('BadgeProcessingService.calculateTeamStreak', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns first streak element when data exists', async () => {
-    const row = { streak_type: 'win', streak_count: 5 };
-    mockRpc.mockResolvedValue({ data: [row], error: null });
-    const result = await BadgeProcessingService.calculateTeamStreak('t1');
-    expect(result).toMatchObject({ streak_count: 5 });
-    expect(mockRpc).toHaveBeenCalledWith('calculate_team_streak', { p_team_id: 't1' });
-  });
-
-  it('returns null when data is empty array', async () => {
-    mockRpc.mockResolvedValue({ data: [], error: null });
-    expect(await BadgeProcessingService.calculateTeamStreak('t1')).toBeNull();
-  });
-
-  it('returns null when data is null', async () => {
-    mockRpc.mockResolvedValue({ data: null, error: null });
-    expect(await BadgeProcessingService.calculateTeamStreak('t1')).toBeNull();
-  });
-
-  it('throws DatabaseError on rpc error', async () => {
-    mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.calculateTeamStreak('t1')).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── awardStreakBadges ────────────────────────────────────────────────────────
-
-describe('BadgeProcessingService.awardStreakBadges', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns data on success', async () => {
-    mockRpc.mockResolvedValue({ data: { awarded: true }, error: null });
-    const result = (await BadgeProcessingService.awardStreakBadges('t1')) as { awarded: boolean };
-    expect(mockRpc).toHaveBeenCalledWith('award_streak_badges', { p_team_id: 't1' });
-    expect(result.awarded).toBe(true);
-  });
-
-  it('throws DatabaseError on rpc error', async () => {
-    mockRpc.mockResolvedValue({ data: null, error: pgError() });
-    await expect(BadgeProcessingService.awardStreakBadges('t1')).rejects.toThrow(DatabaseError);
-  });
-});
-
 // ─── processIceColdBadge ──────────────────────────────────────────────────────
 
 describe('BadgeProcessingService.processIceColdBadge', () => {
