@@ -758,9 +758,11 @@ export type Database = {
           id: number
           number: number
           opponent1_id: number | null
+          opponent1_position: number | null
           opponent1_result: string | null
           opponent1_score: number | null
           opponent2_id: number | null
+          opponent2_position: number | null
           opponent2_result: string | null
           opponent2_score: number | null
           round_id: number
@@ -773,9 +775,11 @@ export type Database = {
           id?: number
           number: number
           opponent1_id?: number | null
+          opponent1_position?: number | null
           opponent1_result?: string | null
           opponent1_score?: number | null
           opponent2_id?: number | null
+          opponent2_position?: number | null
           opponent2_result?: string | null
           opponent2_score?: number | null
           round_id: number
@@ -788,9 +792,11 @@ export type Database = {
           id?: number
           number?: number
           opponent1_id?: number | null
+          opponent1_position?: number | null
           opponent1_result?: string | null
           opponent1_score?: number | null
           opponent2_id?: number | null
+          opponent2_position?: number | null
           opponent2_result?: string | null
           opponent2_score?: number | null
           round_id?: number
@@ -5537,6 +5543,10 @@ export type Database = {
           p_table_name?: string
         }
         Returns: undefined
+      }
+      map_bm_status_to_playoff_status: {
+        Args: { p_status: number }
+        Returns: string
       }
       mark_match_as_tie: { Args: { p_match_id: string }; Returns: boolean }
       partial_archive_season: {
