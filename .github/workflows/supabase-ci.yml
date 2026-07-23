@@ -159,7 +159,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v1
         with:
-          # deno.lock is lockfile version 5, which requires Deno 2.x.
+          # Pinned to Deno 2.x to match local dev; no repo-level deno.lock is
+          # committed (edge functions import via URL/npm specifiers and rely on
+          # the module cache). If a lockfile is added later, also add
+          # `deno.json` and pass `--frozen` to the test command below.
           deno-version: v2.x
       - name: Cache Deno dependencies
         uses: actions/cache@v4
