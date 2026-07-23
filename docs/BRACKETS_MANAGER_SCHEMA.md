@@ -248,6 +248,8 @@ await service.updateMatch({
 | Add `round.stage_id` | 2025-10-22 | Added denormalized stage_id to round table |
 | Add `match.child_count` | 2025-10-22 | Added child_count tracking to match table |
 | Add FK constraints | 2025-10-22 | Added all foreign key constraints with CASCADE |
+| Fix playoff status mapping | 2026-07-22 | Shared `map_bm_status_to_playoff_status()` used by the match → playoff_matches sync triggers (PR-13) |
+| Add `match.opponent1_position` / `opponent2_position` | 2026-07-22 | Persist brackets-manager's structural feeder positions on opponent slots (PR-13) |
 
 ---
 
@@ -291,6 +293,11 @@ Run tests with: `npm test tests/bracketManagerSchema.test.ts`
 **Error: "column X does not exist"**
 - Ensure all migrations have been run
 - Check that `round.stage_id` and `match.child_count` exist
+- PGRST204 "Could not find the 'opponent1_position' column of 'match'" means
+  migration `20260722170000_add_match_opponent_positions.sql` was never
+  applied to the live database. Migrations merged through GitHub are NOT
+  applied automatically — see "Applying database migrations to production"
+  in `docs/OPERATIONS.md`
 
 **Error: "violates foreign key constraint"**
 - Ensure parent records exist before creating child records

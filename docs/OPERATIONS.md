@@ -205,3 +205,31 @@ The Supabase workflow keeps its `supabase/**` path filter — that's fine, becau
 - **Lighthouse is still warn-only** inside the Browser check until PR-03 lands — a Lighthouse score drop alone won't block a merge yet. Failing tests, build, bundle budgets, smoke, and axe all hard-block already.
 - **If Lovable can't commit to a branch** (Option B in the PR-02 brief): note that the 5b rule as written would hard-block Lovable — it rejects *all* direct pushes to `main`, so the bot's edits would fail outright rather than sneak through. Running Option B means deliberately punching a hole for the bot: set the protection up as a repository **ruleset** instead of a classic rule, with the Lovable app on the ruleset's bypass list (a classic rule can't exempt one app from required status checks). Then add a fast-repair routine (open an issue or fix PR within the hour whenever `main` goes red). That is a stop-gap, not a gate — record here that the gate is not fully in force, and revisit when Lovable ships branch support.
 - **Rollback:** delete the branch protection rule (Settings → Branches) and revert the docs/workflow commit. Nothing in the product changes either way.
+
+---
+
+## 6. Applying database migrations to production
+
+New files in `supabase/migrations/` do **not** reach the live database on
+their own. Only schema changes made *through Lovable* are applied by
+Lovable; the database CI job ("Apply migrations + SQL smoke tests", see
+`docs/SUPABASE_CI.md`) replays migrations in a throwaway container to check
+they run — it never touches the real project.
+
+So whenever a PR merged through GitHub adds a migration file, someone must
+apply it to production by hand:
+
+1. Open the Supabase dashboard → SQL Editor.
+2. Paste the contents of each new migration file, oldest timestamp first.
+3. Run each one. Repo migrations are written to be idempotent
+   (`IF NOT EXISTS` / `CREATE OR REPLACE`), so re-running is safe.
+4. If the migration changed tables or columns, the next Lovable schema
+   change will refresh the auto-generated
+   `src/integrations/supabase/types.ts`; until then that file lags the live
+   schema (compile-time only — runtime is unaffected).
+
+Skipping this step leaves the app's code ahead of the database. That is
+exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
+(`20260722160000`, `20260722170000`) were merged on GitHub but never
+applied, so every bracket-creation insert failed with PGRST204 "Could not
+find the 'opponent1_position' column of 'match'".
