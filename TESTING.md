@@ -254,7 +254,11 @@ they catch regressions without blocking normal work:
 
 - `src/services/**`: 72% lines / 71% statements / 72% functions / 58% branches
 - `src/hooks/**`: 44% lines / 43% statements / 38% functions / 34% branches
+- `src/hooks/auth/**`: 66% lines / 64% statements / 56% functions / 53% branches
+- `src/components/admin/**`: 5% lines / 5% statements / 5% functions / 3% branches
+- `src/components/admin/live-corrections/**`: 40% lines / 38% statements / 33% functions / 21% branches
 - `src/utils/**`: 67% lines / 66% statements / 64% functions / 55% branches
+- `src/utils/autoSchedule/**`: 65% lines / 64% statements / 63% functions / 50% branches
 
 These values are below current measured coverage for those areas and are meant
 as a floor, not a final target.
