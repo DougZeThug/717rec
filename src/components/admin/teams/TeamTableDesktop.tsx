@@ -55,7 +55,7 @@ const TeamDivisionCell = ({ team, divisions, actions }: TeamTableRowProps) => (
     onValueChange={(value) => actions.onDivisionChange(team.id, value)}
     disabled={actions.isUpdatingTeam(team.id)}
   >
-    <SelectTrigger className="w-40">
+    <SelectTrigger aria-label={`Set division for ${team.name}`} className="w-40">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>

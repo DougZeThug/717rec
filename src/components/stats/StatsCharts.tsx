@@ -67,20 +67,11 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
           isLight ? gradients.card.blueOrange : ''
         )}
       >
-        <CollapsibleTrigger asChild>
-          {/* asChild puts aria-expanded/type=button on this element. Since it
-              renders a <div>, add role="button" (so aria-expanded is valid per
-              axe aria-allowed-attr / WCAG 4.1.2) plus tabIndex + keyboard
-              activation. Safe: this header has no focusable descendants. */}
+        <CollapsibleTrigger className="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          {/* The whole chart header is the trigger and has no focusable descendants.
+              Avoid `asChild` here so Radix Slot does not inspect the child ref,
+              which can emit React's "ref is not a prop" warning on /stats. */}
           <CardHeader
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                e.currentTarget.click();
-              }
-            }}
             className={cn(
               isMobile ? 'py-2.5 px-3' : 'py-4',
               isWinterTheme

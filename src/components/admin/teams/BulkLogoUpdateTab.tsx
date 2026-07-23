@@ -157,7 +157,7 @@ const BulkLogoUpdateTab: React.FC = () => {
               />
             </div>
             <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
-              <SelectTrigger className="w-full sm:w-40">
+              <SelectTrigger aria-label="Filter teams by logo status" className="w-full sm:w-40">
                 <SelectValue placeholder="Filter status" />
               </SelectTrigger>
               <SelectContent>
@@ -168,7 +168,10 @@ const BulkLogoUpdateTab: React.FC = () => {
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-              <SelectTrigger className="w-full sm:w-40">
+              <SelectTrigger
+                aria-label="Sort teams for bulk logo update"
+                className="w-full sm:w-40"
+              >
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
