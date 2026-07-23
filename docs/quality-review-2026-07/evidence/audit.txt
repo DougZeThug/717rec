@@ -1,2 +1,139 @@
-found 0 vulnerabilities
-audit exit: 0
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@hono/node-server": {
+      "name": "@hono/node-server",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1124006,
+          "name": "@hono/node-server",
+          "dependency": "@hono/node-server",
+          "title": "Node.js Adapter for Hono: Path traversal in `serve-static` on Windows via encoded backslash (`%5C`)",
+          "url": "https://github.com/advisories/GHSA-frvp-7c67-39w9",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N"
+          },
+          "range": "<2.0.5"
+        }
+      ],
+      "effects": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "range": "<2.0.5",
+      "nodes": [
+        "node_modules/@hono/node-server"
+      ],
+      "fixAvailable": false
+    },
+    "@lovable.dev/mcp-js": {
+      "name": "@lovable.dev/mcp-js",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@modelcontextprotocol/sdk"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@lovable.dev/mcp-js"
+      ],
+      "fixAvailable": false
+    },
+    "@modelcontextprotocol/sdk": {
+      "name": "@modelcontextprotocol/sdk",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@hono/node-server"
+      ],
+      "effects": [
+        "@lovable.dev/mcp-js"
+      ],
+      "range": ">=1.25.0",
+      "nodes": [
+        "node_modules/@modelcontextprotocol/sdk"
+      ],
+      "fixAvailable": false
+    },
+    "esbuild": {
+      "name": "esbuild",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1120680,
+          "name": "esbuild",
+          "dependency": "esbuild",
+          "title": "esbuild allows arbitrary file read when running the development server on Windows",
+          "url": "https://github.com/advisories/GHSA-g7r4-m6w7-qqqr",
+          "severity": "low",
+          "cwe": [
+            "CWE-22"
+          ],
+          "cvss": {
+            "score": 2.5,
+            "vectorString": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N"
+          },
+          "range": ">=0.27.3 <0.28.1"
+        }
+      ],
+      "effects": [],
+      "range": "0.27.3 - 0.28.0",
+      "nodes": [
+        "node_modules/@lovable.dev/mcp-js/node_modules/esbuild"
+      ],
+      "fixAvailable": true
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 1,
+      "moderate": 3,
+      "high": 0,
+      "critical": 0,
+      "total": 4
+    },
+    "dependencies": {
+      "prod": 308,
+      "dev": 652,
+      "optional": 88,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 985
+    }
+  }
+}
+# npm audit report
+
+@hono/node-server  <2.0.5
+Severity: moderate
+Node.js Adapter for Hono: Path traversal in `serve-static` on Windows via encoded backslash (`%5C`) - https://github.com/advisories/GHSA-frvp-7c67-39w9
+No fix available
+node_modules/@hono/node-server
+  @modelcontextprotocol/sdk  >=1.25.0
+  Depends on vulnerable versions of @hono/node-server
+  node_modules/@modelcontextprotocol/sdk
+    @lovable.dev/mcp-js  *
+    Depends on vulnerable versions of @modelcontextprotocol/sdk
+    node_modules/@lovable.dev/mcp-js
+
+esbuild  0.27.3 - 0.28.0
+esbuild allows arbitrary file read when running the development server on Windows - https://github.com/advisories/GHSA-g7r4-m6w7-qqqr
+fix available via `npm audit fix`
+node_modules/@lovable.dev/mcp-js/node_modules/esbuild
+
+4 vulnerabilities (1 low, 3 moderate)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
