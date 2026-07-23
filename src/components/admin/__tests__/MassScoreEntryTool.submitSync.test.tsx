@@ -382,7 +382,13 @@ describe('MassScoreEntryTool submit -> table sync (real hook + real MatchesTable
     await clickScoreButton(user, '2–0');
 
     const submitBtn = await screen.findByRole('button', { name: /submit \(1\) changes/i });
-    const fetchesBeforeSubmit = mockFetchMatches.mock.calls.length;
+
+    // Let any post-edit reactive fetch fire and settle against the initial
+    // data BEFORE we flip the mutable to []. Otherwise a fetch invoked
+    // between the edit click and the submit click could capture [] and blank
+    // the row before submit even runs.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const settledFetches = mockFetchMatches.mock.calls.length;
 
     // Post-submit refetch returns [] (fetchMatches returns [] on failure); the
     // hook must NOT blank the list in that case.
@@ -391,7 +397,7 @@ describe('MassScoreEntryTool submit -> table sync (real hook + real MatchesTable
 
     await waitFor(() => expect(mockHandleSubmitScore).toHaveBeenCalledTimes(1));
     await waitFor(() =>
-      expect(mockFetchMatches.mock.calls.length).toBeGreaterThan(fetchesBeforeSubmit)
+      expect(mockFetchMatches.mock.calls.length).toBeGreaterThan(settledFetches)
     );
 
     // The original row is still present because the empty refetch was ignored.
