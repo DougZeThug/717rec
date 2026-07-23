@@ -101,3 +101,6 @@ against the real project.
   under CI guards — only deterministic, offline-safe tests run.
 - Data migrations / backfills aren't verified against production-shape
   data; this is a structural check.
+- It does not apply anything to the live project. Migrations merged via
+  GitHub must be applied to production by hand — see "Applying database
+  migrations to production" in `docs/OPERATIONS.md`.
