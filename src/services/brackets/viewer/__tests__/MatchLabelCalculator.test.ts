@@ -228,6 +228,50 @@ describe('buildSlotHints', () => {
     expect(hints.has('15')).toBe(false);
   });
 
+  it('skips BYE-sentinel slots even when their bye feeder match is not terminal', () => {
+    // Real bye-bracket shape: WB 1.1 is a bye match and stays 'locked'
+    // forever, and the LB slot awaiting its (nonexistent) loser carries the
+    // SQL 'bye' result sentinel. No hint must be written there.
+    const matches = withSlots({
+      8: {
+        opponent1: makeOpponent(null, {
+          result: 'bye',
+          source_node_id: '3',
+          source_type: 'loser',
+        }),
+        opponent2: makeOpponent(null),
+      },
+    });
+
+    const hints = buildSlotHints(matches, deGroups, deRounds, 'double_elimination');
+
+    expect(hints.has('8')).toBe(false);
+  });
+
+  it('keeps hints on pre-marked walkover slots that will still receive a team', () => {
+    // Real bye-bracket shape: the slot opposite a BYE is pre-marked
+    // {id: null, result: 'win'} — the incoming loser lands there and wins by
+    // walkover, so "Loser of ..." is correct information.
+    const matches = withSlots({
+      8: {
+        opponent1: makeOpponent(null, {
+          result: 'bye',
+          source_node_id: '3',
+          source_type: 'loser',
+        }),
+        opponent2: makeOpponent(null, {
+          result: 'win',
+          source_node_id: '4',
+          source_type: 'loser',
+        }),
+      },
+    });
+
+    const hints = buildSlotHints(matches, deGroups, deRounds, 'double_elimination');
+
+    expect(hints.get('8')).toEqual({ opponent2: 'Loser of WB 1.4' });
+  });
+
   it('skips hints whose source match already finished (bye/walkover voids)', () => {
     const matches = withSlots({
       3: { status: 'completed' },

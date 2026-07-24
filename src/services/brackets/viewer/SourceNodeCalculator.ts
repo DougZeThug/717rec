@@ -18,7 +18,7 @@ export function toViewerOpponent(
   return {
     id: id ?? null,
     score: score ?? undefined,
-    result: result as 'win' | 'loss' | undefined,
+    result: result as 'win' | 'loss' | 'bye' | undefined,
     position,
     // These will be populated by calculateSourceNodeIds() for connector drawing
     source_node_id: undefined as string | undefined,

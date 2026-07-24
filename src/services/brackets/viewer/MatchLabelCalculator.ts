@@ -1,3 +1,5 @@
+import { BYE_RESULT_SENTINEL } from '@/services/brackets/manager/SupabaseSqlStorage/matchTransforms';
+
 import { BracketGroupRow, BracketRoundRow, ViewerMatch } from './types';
 
 /**
@@ -18,8 +20,10 @@ export type SlotHintMap = Map<string, SlotHintEntry>;
 
 /**
  * Matches in these statuses have already sent their winner/loser onward — a
- * slot still empty at that point was a bye/walkover void, so a flow hint
- * pointing at it would never resolve.
+ * slot still empty at that point (e.g. after a double forfeit) can never
+ * fill, so a flow hint pointing at it would never resolve. Note this does NOT
+ * cover BYE feeders: brackets-manager leaves bye matches 'locked', which is
+ * why BYE slots are additionally skipped via their result sentinel below.
  */
 const TERMINAL_STATUSES = new Set<ViewerMatch['status']>(['completed', 'archived']);
 
@@ -122,6 +126,12 @@ export function buildSlotHints(
     for (const side of ['opponent1', 'opponent2'] as const) {
       const opponent = match[side];
       if (!opponent || opponent.id !== null || !opponent.source_node_id) continue;
+
+      // A BYE slot (SQL sentinel) never receives a team — its bye feeder
+      // match stays 'locked', so the terminal-source guard can't catch it.
+      // Pre-marked walkover slots ({id: null, result: 'win'}) DO fill and
+      // keep their hint.
+      if (opponent.result === BYE_RESULT_SENTINEL) continue;
 
       const source = matchesById.get(String(opponent.source_node_id));
       const label = source ? labels.get(String(source.id)) : undefined;
