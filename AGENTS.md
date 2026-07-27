@@ -27,6 +27,21 @@ npx vitest run src/path/to/File.test.tsx
 ./node_modules/.bin/vitest run src/path/to/File.test.tsx
 ```
 
+## Typechecking
+
+The root `tsconfig.json` has `"files": []` and delegates to
+`tsconfig.app.json` / `tsconfig.node.json` via project references. A bare
+`tsc --noEmit` compiles an empty file list and exits 0 **even when types are
+broken** — it is silently useless, not a clean pass.
+
+```bash
+# The real check
+npm run typecheck
+
+# Ignore stale build info
+npm run typecheck:full
+```
+
 ## Coverage
 
 See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial fallback is `npm run test:coverage:serial`. For diagnosing a slow or stuck non-coverage run, use `npm run test:debug` (serial + verbose, 10-min cap).
