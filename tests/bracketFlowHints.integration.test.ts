@@ -1,6 +1,7 @@
 /**
  * Integration guard for bracket flow hints across every bracket size the app
- * can create (4-17 teams, i.e. bracket sizes 4/8/16/32 with 0-15 BYEs).
+ * can create (4-17 teams, i.e. bracket sizes 4/8/16/32 with 0-15 BYEs, plus a
+ * full 32-team bracket with no BYEs).
  *
  * Spans the REAL brackets-manager (pinned 1.11.0) + brackets-memory-db, the
  * SQL storage adapter's BYE sentinel round-trip, SourceNodeCalculator and
@@ -51,13 +52,6 @@ interface RawMatch {
   opponent2: RawSlot;
 }
 
-/** Mirrors BracketCreationService's size-dependent loser seed orderings. */
-const LB_ORDERINGS: Record<number, string[]> = {
-  4: ['natural', 'reverse'],
-  8: ['natural', 'reverse', 'natural'],
-  16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
-};
-
 const buildBracket = async (teamCount: number) => {
   const size = Math.pow(2, Math.ceil(Math.log2(teamCount)));
   const storage = new InMemoryDatabase();
@@ -72,7 +66,9 @@ const buildBracket = async (teamCount: number) => {
       ...Array(size - teamCount).fill(null),
     ],
     settings: {
-      seedOrdering: ['inner_outer', ...(LB_ORDERINGS[size] || LB_ORDERINGS[16])],
+      // Mirrors BracketCreationService: WB first round only; the library
+      // resolves every LB ordering from its own size-keyed table.
+      seedOrdering: ['inner_outer'],
       grandFinal: 'double',
     },
   } as never);
@@ -161,7 +157,9 @@ const findImpossibleHints = (
 };
 
 describe('bracket flow hints across bracket sizes', () => {
-  const teamCounts = Array.from({ length: 14 }, (_, i) => i + 4); // 4..17
+  // 4..17 covers bracket sizes 4/8/16/32 with 0-15 BYEs; 32 adds the full
+  // 32-team bracket (zero BYEs), the size whose LB orderings were wrong.
+  const teamCounts = [...Array.from({ length: 14 }, (_, i) => i + 4), 32];
 
   it.each(teamCounts)('never promises an impossible team for %i teams', async (teamCount) => {
     const { groups, rounds, raw } = await buildBracket(teamCount);

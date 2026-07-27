@@ -81,19 +81,15 @@ export class BracketCreationService {
       // Step 4: Create bracket stage with brackets-manager
       bracketLog('📝 Step 4/5: Creating bracket stage with brackets-manager...');
 
-      // Dynamic LB seed orderings based on bracket size (per brackets-manager docs).
-      // Single elimination REQUIRES exactly one ordering entry — the library
-      // rejects the multi-entry list with "You must specify one seed ordering
-      // method." (Passing the DE list for SE was a long-standing creation bug.)
-      const lbOrderings: Record<number, string[]> = {
-        4: ['natural', 'reverse'],
-        8: ['natural', 'reverse', 'natural'],
-        16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
-      };
-      const seedOrdering =
-        format === 'single_elimination'
-          ? ['inner_outer']
-          : ['inner_outer', ...(lbOrderings[bracketSize] || lbOrderings[16])];
+      // brackets-manager owns the lower-bracket seed orderings. For any ordering
+      // index we don't supply it falls back to its own `defaultMinorOrdering`
+      // table, keyed by bracket size (4/8/16/32/64/128) — so supplying only the
+      // winners-bracket first round is correct at every size. Hard-coding the LB
+      // list here previously capped it at 16 and silently mis-seeded the lower
+      // bracket of 32-team brackets.
+      // Single elimination also REQUIRES exactly one entry; the library rejects a
+      // longer list with "You must specify one seed ordering method."
+      const seedOrdering: SeedOrdering[] = ['inner_outer'];
 
       const stageConfig: {
         name: string;
@@ -110,7 +106,7 @@ export class BracketCreationService {
         type: format,
         seeding,
         settings: {
-          seedOrdering: seedOrdering as SeedOrdering[],
+          seedOrdering,
           grandFinal: (format === 'double_elimination'
             ? options.grandFinalType || 'simple'
             : 'none') as 'simple' | 'double' | 'none',

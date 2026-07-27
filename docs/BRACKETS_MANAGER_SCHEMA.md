@@ -273,16 +273,35 @@ The `round.stage_id` column is intentionally denormalized (duplicates data from 
 
 ## Testing
 
-Comprehensive test coverage is provided in `tests/bracketManagerSchema.test.ts`:
+Schema-level coverage is provided in `tests/bracketManagerSchema.test.ts`:
 
 - ✅ Schema verification for all 6 tables
-- ✅ Single elimination bracket creation (4, 8, 16 teams)
+- ✅ Single elimination bracket creation (4, 8 teams)
 - ✅ Double elimination bracket creation (4, 8 teams)
 - ✅ Edge cases (odd number of teams, BYE handling)
 - ✅ Match updates and progression
 - ✅ Foreign key cascade behavior
 
-Run tests with: `npm test tests/bracketManagerSchema.test.ts`
+Run tests with: `npm run test:file -- tests/bracketManagerSchema.test.ts`
+
+Bracket sizes above 8 are covered elsewhere:
+
+- `tests/bracketManagerLibraryNative.test.ts` — pins the seed orderings the
+  library resolves for double elimination at sizes 4/8/16/32, and that a
+  32-team lower bracket is laid out differently from a 16-team one.
+- `tests/bracketFlowHints.integration.test.ts` — 4–17 teams (bracket sizes
+  4/8/16/32 with 0–15 BYEs) plus a full 32-team bracket.
+- `src/services/brackets/manager/services/__tests__/BracketCreationService.test.ts`
+  — what the app hands to `create.stage`, including at 32 teams.
+
+### Seed orderings
+
+`BracketCreationService` passes only the winners-bracket first-round method
+(`inner_outer`). Every lower-bracket ordering is resolved by `brackets-manager`
+from its own `defaultMinorOrdering` table, keyed by bracket size
+(4/8/16/32/64/128), and written back onto `stage.settings.seedOrdering` at
+creation. Do not reintroduce a hard-coded list in app code — the previous one
+stopped at 16 and silently mis-seeded the lower bracket of 32-team brackets.
 
 ---
 
