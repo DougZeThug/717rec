@@ -280,7 +280,7 @@ export const fetchSeasonOpponentHistory = async (): Promise<SeasonOpponentData |
       divisionName: teamInfo.divisionName,
       opponents: opponentRecords,
       uniqueOpponentCount: opponentRecords.length,
-      totalMatches: totalMatches / 2, // Each match counted twice (once per team)
+      totalMatches,
     });
   });
 

@@ -197,7 +197,8 @@ describe('fetchSeasonOpponentHistory', () => {
     { id: 't2', name: 'Hawks', division_id: 'd1', divisions: { name: 'Div A' } },
   ];
 
-  it('returns opponent history on success', async () => {
+  /** Routes the seasons/matches/teams queries to fixed fixtures. */
+  const mockSeasonQueries = (seasonMatches: typeof matches) => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
         return {
@@ -210,7 +211,7 @@ describe('fetchSeasonOpponentHistory', () => {
         return {
           select: () => ({
             eq: () => ({
-              eq: () => ({ is: () => Promise.resolve({ data: matches, error: null }) }),
+              eq: () => ({ is: () => Promise.resolve({ data: seasonMatches, error: null }) }),
             }),
           }),
         };
@@ -220,11 +221,48 @@ describe('fetchSeasonOpponentHistory', () => {
       }
       return { select: () => Promise.resolve({ data: null, error: null }) };
     });
+  };
+
+  it('returns opponent history on success', async () => {
+    mockSeasonQueries(matches);
 
     const result = await fetchSeasonOpponentHistory();
 
     expect(result).toMatchObject({ seasonId: 'season-1' });
-    expect(result?.teams.length).toBeGreaterThan(0);
+    expect(result?.teams).toHaveLength(2);
+  });
+
+  it('counts every match the team played, without halving', async () => {
+    mockSeasonQueries(matches);
+
+    const result = await fetchSeasonOpponentHistory();
+
+    // Both teams played the same 2 matches against each other.
+    result?.teams.forEach((team) => {
+      expect(team.totalMatches).toBe(2);
+      expect(team.uniqueOpponentCount).toBe(1);
+      expect(team.opponents[0].matchCount).toBe(2);
+    });
+  });
+
+  it('reports a whole number for an odd match count', async () => {
+    // 3 matches between the same two teams: t1 wins two, t2 wins one.
+    mockSeasonQueries([
+      { id: 'm-1', team1_id: 't1', team2_id: 't2', winner_id: 't1', iscompleted: true },
+      { id: 'm-2', team1_id: 't1', team2_id: 't2', winner_id: 't1', iscompleted: true },
+      { id: 'm-3', team1_id: 't1', team2_id: 't2', winner_id: 't2', iscompleted: true },
+    ]);
+
+    const result = await fetchSeasonOpponentHistory();
+
+    result?.teams.forEach((team) => {
+      expect(Number.isInteger(team.totalMatches)).toBe(true);
+      expect(team.totalMatches).toBe(3);
+      // totalMatches must agree with the per-opponent breakdown it summarises.
+      expect(team.totalMatches).toBe(
+        team.opponents.reduce((sum, opponent) => sum + opponent.matchCount, 0)
+      );
+    });
   });
 
   it('returns null when no active season', async () => {
