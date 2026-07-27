@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { assertNever } from '@/utils/assertNever';
 import { validateTeamCounts } from '@/utils/autoSchedule/edgeCaseUtils';
 
 import { TimeBlockTeamsList } from './TimeBlockTeamsList';
@@ -131,10 +132,8 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
         }
         break;
 
-      default: {
-        const exhaustiveCheck: never = confirmAction.type;
-        throw new Error(`Unhandled team operation: ${exhaustiveCheck}`);
-      }
+      default:
+        assertNever(confirmAction.type, 'team operation');
     }
 
     onTeamUpdate?.(updatedTeams);

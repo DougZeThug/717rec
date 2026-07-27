@@ -1,8 +1,6 @@
-export type LogoStatus = 'optimized' | 'legacy' | 'missing';
+import { assertNever } from '@/utils/assertNever';
 
-const assertNever = (value: never): never => {
-  throw new Error(`Unhandled logo status: ${String(value)}`);
-};
+export type LogoStatus = 'optimized' | 'legacy' | 'missing';
 
 export const getLogoStatus = (imageUrl: string | null | undefined): LogoStatus => {
   if (!imageUrl) return 'missing';
@@ -25,7 +23,7 @@ export const getStatusColor = (status: LogoStatus): string => {
     case 'missing':
       return 'text-red-500';
     default:
-      return assertNever(status);
+      return assertNever(status, 'logo status');
   }
 };
 
@@ -38,7 +36,7 @@ export const getStatusLabel = (status: LogoStatus): string => {
     case 'missing':
       return 'Missing';
     default:
-      return assertNever(status);
+      return assertNever(status, 'logo status');
   }
 };
 
@@ -51,6 +49,6 @@ export const getStatusIcon = (status: LogoStatus): string => {
     case 'missing':
       return '🔴';
     default:
-      return assertNever(status);
+      return assertNever(status, 'logo status');
   }
 };
