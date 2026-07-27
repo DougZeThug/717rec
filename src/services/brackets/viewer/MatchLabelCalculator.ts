@@ -11,7 +11,8 @@ import { BracketGroupRow, BracketRoundRow, ViewerMatch } from './types';
  * matches by the labels the user actually sees on screen.
  */
 
-export interface SlotHintEntry {
+/** Module-private: consumers read hints through `SlotHintMap`, never by name. */
+interface SlotHintEntry {
   opponent1?: string;
   opponent2?: string;
 }
