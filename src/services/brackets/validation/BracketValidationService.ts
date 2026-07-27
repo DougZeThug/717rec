@@ -1,4 +1,3 @@
-import { ValidationError } from '@/types/errors';
 import { validationLog } from '@/utils/logger';
 import { isValidUUID } from '@/utils/validation';
 
@@ -7,10 +6,6 @@ import { BracketFormData } from '../types/BracketFormData';
 export interface ValidationResult {
   isValid: boolean;
   errors: string[];
-}
-
-export interface TeamValidationResult extends ValidationResult {
-  invalidTeams: string[];
 }
 
 // Type guard to ensure we have valid form data
@@ -79,99 +74,5 @@ export const BracketValidationService = {
       isValid: errors.length === 0,
       errors,
     };
-  },
-
-  /**
-   * Validates team selection array
-   */
-  validateTeamSelection(teamIds: unknown): TeamValidationResult {
-    const errors: string[] = [];
-    const invalidTeams: string[] = [];
-
-    validationLog('Validating team selection');
-
-    if (!Array.isArray(teamIds)) {
-      errors.push('Team selection must be an array');
-      return { isValid: false, invalidTeams: [], errors };
-    }
-
-    teamIds.forEach((teamId, index) => {
-      if (!teamId || typeof teamId !== 'string') {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Empty or invalid team ID at position ${index + 1}`);
-      } else if (teamId.trim() === '') {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Empty team ID at position ${index + 1}`);
-      } else if (teamId === 'undefined' || teamId === 'null') {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Invalid team ID value at position ${index + 1}`);
-      } else if (!isValidUUID(teamId)) {
-        invalidTeams.push(`Team at position ${index + 1}`);
-        errors.push(`Invalid team ID format at position ${index + 1}: ${teamId}`);
-      }
-    });
-
-    const result = {
-      isValid: errors.length === 0,
-      invalidTeams,
-      errors,
-    };
-
-    validationLog('Team validation result:', {
-      isValid: result.isValid,
-      invalidCount: invalidTeams.length,
-    });
-    return result;
-  },
-
-  /**
-   * Sanitizes form data to prevent invalid submissions
-   */
-  sanitizeFormData(data: unknown): BracketFormData {
-    validationLog('Sanitizing bracket form data');
-
-    // Type guard check
-    if (!isValidBracketFormData(data)) {
-      throw new ValidationError('Invalid form data structure for sanitization');
-    }
-
-    const sanitized = {
-      title: (data.title || '').trim(),
-      divisionId:
-        data.divisionId && typeof data.divisionId === 'string' ? data.divisionId.trim() : '',
-      format: data.format,
-      teams: Array.isArray(data.teams)
-        ? data.teams.filter(
-            (id) => id && typeof id === 'string' && id.trim() !== '' && isValidUUID(id)
-          )
-        : [],
-    };
-
-    validationLog('Data sanitized:', { teamCount: sanitized.teams.length });
-    return sanitized as BracketFormData;
-  },
-
-  /**
-   * Comprehensive pre-submission validation
-   */
-  validateForSubmission(data: unknown): ValidationResult {
-    validationLog('Validating for submission');
-
-    const sanitizedData = BracketValidationService.sanitizeFormData(data);
-    const formValidation = BracketValidationService.validateFormData(sanitizedData);
-
-    if (!formValidation.isValid) {
-      return formValidation;
-    }
-
-    const teamValidation = BracketValidationService.validateTeamSelection(sanitizedData.teams);
-    if (!teamValidation.isValid) {
-      return {
-        isValid: false,
-        errors: teamValidation.errors,
-      };
-    }
-
-    return { isValid: true, errors: [] };
   },
 };
