@@ -187,14 +187,16 @@ var get_schedule_default = defineTool6({
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
     let query = supabase.from("matches").select(
-      "id, match_date, team1_id, team1_name, team2_id, team2_name, team1_score, team2_score, is_completed, division_name"
+      `id, date, team1_id, team2_id, team1_score, team2_score, iscompleted,
+         team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
+         team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
     ).eq("season_id", seasonId).limit(limit);
     if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
     if (scope === "upcoming")
-      query = query.eq("is_completed", false).order("match_date", { ascending: true });
+      query = query.eq("iscompleted", false).order("date", { ascending: true });
     else if (scope === "recent")
-      query = query.eq("is_completed", true).order("match_date", { ascending: false });
-    else query = query.order("match_date", { ascending: false });
+      query = query.eq("iscompleted", true).order("date", { ascending: false });
+    else query = query.order("date", { ascending: false });
     const { data, error } = await query;
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
