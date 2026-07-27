@@ -90,6 +90,17 @@ export const ExampleService = {
   ```
   Use `npm` only — this repo does not use `pnpm` or `yarn`.
 
+- **Typechecking: never use bare `tsc --noEmit`.** The root `tsconfig.json` has
+  `"files": []` and delegates through project references, so `npx tsc --noEmit`
+  compiles nothing and exits 0 **even when types are broken**. It looks like a
+  clean pass and proves nothing. Use:
+  ```bash
+  npm run typecheck        # tsc -b — the real check, follows the references
+  npm run typecheck:full   # tsc -b --force, ignores stale build info
+  ```
+  CI runs `npm run typecheck` (`.github/workflows/ci.yml`), so this is only a
+  hazard when checking by hand.
+
 - **Supabase env vars are not required for tests.** `src/setupTests.ts` injects
   safe placeholder values when `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
   are missing, so you do **not** need to prefix test commands with them in
@@ -128,4 +139,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-07-14*
+*Last updated: 2026-07-27*
