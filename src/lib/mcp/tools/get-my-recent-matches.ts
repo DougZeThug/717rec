@@ -27,11 +27,15 @@ export default defineTool({
 
     const { data, error } = await supabase
       .from('matches')
-      .select('id, match_date, team1_name, team2_name, team1_score, team2_score, division_name')
+      .select(
+        `id, date, team1_id, team2_id, team1_score, team2_score,
+         team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
+         team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
+      )
       .eq('season_id', seasonId)
-      .eq('is_completed', true)
+      .eq('iscompleted', true)
       .or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`)
-      .order('match_date', { ascending: false })
+      .order('date', { ascending: false })
       .limit(limit);
     if (error) return errorResult(error.message);
     return textResult(data ?? []);

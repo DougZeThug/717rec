@@ -83,7 +83,11 @@ var get_my_recent_matches_default = defineTool2({
     const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!mem?.team_id) return textResult([]);
-    const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, team1_score, team2_score, division_name").eq("season_id", seasonId).eq("is_completed", true).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: false }).limit(limit);
+    const { data, error } = await supabase.from("matches").select(
+      `id, date, team1_id, team2_id, team1_score, team2_score,
+         team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
+         team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
+    ).eq("season_id", seasonId).eq("iscompleted", true).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("date", { ascending: false }).limit(limit);
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
   }
@@ -102,12 +106,17 @@ var get_my_team_default = defineTool3({
     const supabase = userClient(ctx);
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult(null);
-    const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, division_name, wins, losses, power_score)").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
+    const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, wins, losses, division:divisions(name))").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!membership) return textResult(null);
     const { data: roster, error: rosterErr } = await supabase.from("team_players").select("id, display_name, profile_id").eq("team_id", membership.team_id);
     if (rosterErr) return errorResult(rosterErr.message);
-    return textResult({ team: membership.teams, roster: roster ?? [] });
+    const { data: seasonStats } = await supabase.from("team_season_stats").select("power_score, sos, division_name, match_wins, match_losses, game_wins, game_losses").eq("season_id", seasonId).eq("team_id", membership.team_id).maybeSingle();
+    return textResult({
+      team: membership.teams,
+      season_stats: seasonStats ?? null,
+      roster: roster ?? []
+    });
   }
 });
 
@@ -128,7 +137,11 @@ var get_my_upcoming_matches_default = defineTool4({
     const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!mem?.team_id) return textResult([]);
-    const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, division_name").eq("season_id", seasonId).eq("is_completed", false).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: true }).limit(limit);
+    const { data, error } = await supabase.from("matches").select(
+      `id, date, team1_id, team2_id,
+         team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
+         team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
+    ).eq("season_id", seasonId).eq("iscompleted", false).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("date", { ascending: true }).limit(limit);
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
   }
@@ -179,14 +192,16 @@ var get_schedule_default = defineTool6({
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
     let query = supabase.from("matches").select(
-      "id, match_date, team1_id, team1_name, team2_id, team2_name, team1_score, team2_score, is_completed, division_name"
+      `id, date, team1_id, team2_id, team1_score, team2_score, iscompleted,
+         team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
+         team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
     ).eq("season_id", seasonId).limit(limit);
     if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
     if (scope === "upcoming")
-      query = query.eq("is_completed", false).order("match_date", { ascending: true });
+      query = query.eq("iscompleted", false).order("date", { ascending: true });
     else if (scope === "recent")
-      query = query.eq("is_completed", true).order("match_date", { ascending: false });
-    else query = query.order("match_date", { ascending: false });
+      query = query.eq("iscompleted", true).order("date", { ascending: false });
+    else query = query.order("date", { ascending: false });
     const { data, error } = await query;
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
