@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast';
+import { assertNever } from '@/utils/assertNever';
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -72,10 +73,6 @@ const addToRemoveQueue = (toastId: string) => {
 
 /** Toast state reducer: add, update, dismiss (queues removal), and remove actions. */
 // skipcq: JS-0045 -- the switch is exhaustive over Action and TS enforces it
-const assertNever = (value: never): never => {
-  throw new Error(`Unhandled toast action: ${JSON.stringify(value)}`);
-};
-
 const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_TOAST':
@@ -128,7 +125,7 @@ const reducer = (state: State, action: Action): State => {
       };
 
     default:
-      return assertNever(action);
+      return assertNever(action, 'toast action');
   }
 };
 
