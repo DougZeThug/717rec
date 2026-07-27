@@ -1,5 +1,4 @@
 import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
-import { ValidationError } from '@/types/errors';
 import { validationLog } from '@/utils/logger';
 import { isValidUUID } from '@/utils/validation';
 

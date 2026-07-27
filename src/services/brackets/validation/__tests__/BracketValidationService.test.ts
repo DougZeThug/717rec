@@ -1,8 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { MAX_BRACKET_TEAMS } from '@/constants/brackets';
-import { ValidationError } from '@/types/errors';
-import { describe, expect, it } from 'vitest';
 
 import { BracketValidationService } from '../BracketValidationService';
 
