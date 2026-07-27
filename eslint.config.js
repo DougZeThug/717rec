@@ -99,6 +99,10 @@ export default tseslint.config(
       // General Quality - AUTO-FIXABLE
       'prefer-const': 'error',
       'no-var': 'error',
+
+      // Every switch needs a default — for finite unions use
+      // assertNever() from @/utils/assertNever so TS catches new members too.
+      'default-case': 'error',
     },
   },
   // Allowed exceptions to the Supabase client import restriction:
