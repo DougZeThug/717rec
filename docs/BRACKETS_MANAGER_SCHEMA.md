@@ -124,10 +124,12 @@ back as TBD.
 - `fk_match_round`: `round_id` → `round(id)` ON DELETE CASCADE
 
 **Status Values:**
-1. `LOCKED` (1) - Match not yet ready
-2. `READY` (2) - Match ready to be played
-3. `RUNNING` (3) - Match in progress
-4. `COMPLETED` (4) - Match finished
+1. `LOCKED` (0) - Match not yet ready
+2. `WAITING` (1) - One opponent resolved, awaiting the other
+3. `READY` (2) - Match ready to be played
+4. `RUNNING` (3) - Match in progress
+5. `COMPLETED` (4) - Match finished
+6. `ARCHIVED` (5) - Match locked after stage completion (admin corrections unlock to `COMPLETED`)
 
 ---
 
