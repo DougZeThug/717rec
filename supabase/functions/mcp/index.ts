@@ -106,12 +106,17 @@ var get_my_team_default = defineTool3({
     const supabase = userClient(ctx);
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult(null);
-    const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, division_name, wins, losses, power_score)").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
+    const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, wins, losses, division:divisions(name))").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!membership) return textResult(null);
     const { data: roster, error: rosterErr } = await supabase.from("team_players").select("id, display_name, profile_id").eq("team_id", membership.team_id);
     if (rosterErr) return errorResult(rosterErr.message);
-    return textResult({ team: membership.teams, roster: roster ?? [] });
+    const { data: seasonStats } = await supabase.from("team_season_stats").select("power_score, sos, division_name, match_wins, match_losses, game_wins, game_losses").eq("season_id", seasonId).eq("team_id", membership.team_id).maybeSingle();
+    return textResult({
+      team: membership.teams,
+      season_stats: seasonStats ?? null,
+      roster: roster ?? []
+    });
   }
 });
 
