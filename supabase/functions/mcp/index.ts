@@ -83,7 +83,11 @@ var get_my_recent_matches_default = defineTool2({
     const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
     if (!mem?.team_id) return textResult([]);
-    const { data, error } = await supabase.from("matches").select("id, match_date, team1_name, team2_name, team1_score, team2_score, division_name").eq("season_id", seasonId).eq("is_completed", true).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("match_date", { ascending: false }).limit(limit);
+    const { data, error } = await supabase.from("matches").select(
+      `id, date, team1_id, team2_id, team1_score, team2_score,
+         team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
+         team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
+    ).eq("season_id", seasonId).eq("iscompleted", true).or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`).order("date", { ascending: false }).limit(limit);
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
   }
