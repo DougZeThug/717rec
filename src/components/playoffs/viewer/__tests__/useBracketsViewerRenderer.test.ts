@@ -164,6 +164,30 @@ const flushAsync = async () => {
   });
 };
 
+/** Append a brackets-viewer-shaped match skeleton to the test container. */
+const appendMatchDom = (
+  matchId: number | string,
+  slots: Array<{ participantId?: number; name?: string }>
+): HTMLElement => {
+  const match = document.createElement('div');
+  match.className = 'match';
+  match.setAttribute('data-match-id', String(matchId));
+  for (const slot of slots) {
+    const participant = document.createElement('div');
+    participant.className = 'participant';
+    if (slot.participantId !== undefined) {
+      participant.setAttribute('data-participant-id', String(slot.participantId));
+    }
+    const name = document.createElement('div');
+    name.className = 'name';
+    if (slot.name) name.textContent = slot.name;
+    participant.appendChild(name);
+    match.appendChild(participant);
+  }
+  container.appendChild(match);
+  return match;
+};
+
 beforeEach(() => {
   // resetAllMocks (not clearAllMocks) so mockImplementations from previous
   // tests (e.g. a throwing render) do not leak forward.
@@ -620,6 +644,123 @@ describe('useBracketsViewerRenderer', () => {
       });
 
       expect(errorLog).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('post-render decorations', () => {
+    // Same 4-team shape as makeResult, but the final's TBD slots carry real
+    // source references (round 1 of a 2-round bracket renders as semis).
+    const withHintableFinal = () =>
+      makeResult({
+        matches: [
+          makeMatch(1, makeOpponent(1), makeOpponent(2)),
+          makeMatch(2, makeOpponent(3), makeOpponent(4), { number: 2 }),
+          makeMatch(
+            3,
+            makeOpponent(null, { source_node_id: '1', source_type: 'winner' }),
+            makeOpponent(null, { source_node_id: '2', source_type: 'winner' }),
+            { round_id: 2, status: 'locked' }
+          ),
+        ],
+      });
+
+    it('adds flow hints to empty slots after a successful render', async () => {
+      mockedAdapter.transformFromSql.mockResolvedValue(withHintableFinal());
+      renderMock.mockImplementation(() => {
+        appendMatchDom(3, [{}, {}]);
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      const names = container.querySelectorAll('.match[data-match-id="3"] .name');
+      expect(names[0].textContent).toBe('Winner of Semi 1');
+      expect(names[0].classList.contains('hint')).toBe(true);
+      expect((names[0] as HTMLElement).title).toBe('Winner of Semi 1');
+      expect(names[1].textContent).toBe('Winner of Semi 2');
+    });
+
+    it('adds persistent seed badges to filled slots', async () => {
+      mockedAdapter.transformFromSql.mockResolvedValue(
+        makeResult({
+          participants: [
+            { ...makeParticipant(1, 'Team A'), position: 1 },
+            { ...makeParticipant(2, 'Team B'), position: 4 },
+            makeParticipant(3, 'Team C'),
+            makeParticipant(4, 'Team D'),
+          ],
+        })
+      );
+      renderMock.mockImplementation(() => {
+        appendMatchDom(1, [
+          { participantId: 1, name: 'Team A' },
+          { participantId: 2, name: 'Team B' },
+        ]);
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      const names = container.querySelectorAll('.match[data-match-id="1"] .name');
+      expect(names[0].textContent).toBe('#1 Team A');
+      expect(names[0].querySelector('.seed-badge')?.textContent).toBe('#1 ');
+      expect(names[1].textContent).toBe('#4 Team B');
+    });
+
+    it('does not duplicate decorations when the cleanup pass re-runs', async () => {
+      vi.useFakeTimers();
+      mockedAdapter.transformFromSql.mockResolvedValue(withHintableFinal());
+      renderMock.mockImplementation(() => {
+        appendMatchDom(3, [{}, {}]);
+      });
+
+      renderRenderer({ bracket: makeBracket() });
+      await flushAsync();
+      expect(renderMock).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const names = container.querySelectorAll('.match[data-match-id="3"] .name');
+      expect(names[0].textContent).toBe('Winner of Semi 1');
+      expect(names[0].querySelectorAll('*')).toHaveLength(0);
+    });
+
+    it('decorates matches whose DOM appears only after render (cleanup pass)', async () => {
+      vi.useFakeTimers();
+      mockedAdapter.transformFromSql.mockResolvedValue(withHintableFinal());
+      renderMock.mockImplementation(() => {});
+
+      renderRenderer({ bracket: makeBracket() });
+      await flushAsync();
+      expect(renderMock).toHaveBeenCalledTimes(1);
+
+      appendMatchDom(3, [{}, {}]);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      const names = container.querySelectorAll('.match[data-match-id="3"] .name');
+      expect(names[0].textContent).toBe('Winner of Semi 1');
+      expect(names[0].classList.contains('hint')).toBe(true);
+    });
+
+    it('still initializes when rendered match ids are unknown to the dataset', async () => {
+      renderMock.mockImplementation(() => {
+        appendMatchDom(999, [{}, {}]);
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      expect(warnLog).not.toHaveBeenCalledWith(
+        'Bracket decoration failed (non-fatal):',
+        expect.anything()
+      );
+      const names = container.querySelectorAll('.match[data-match-id="999"] .name');
+      expect(names[0].classList.contains('hint')).toBe(false);
+      expect(names[0].textContent).toBe('');
     });
   });
 

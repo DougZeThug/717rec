@@ -135,7 +135,7 @@ describe('BracketsViewerAdapter.transformFromSql', () => {
     );
     expect(mockSelect).toHaveBeenCalledWith(
       'match',
-      'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, status'
+      'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position, status'
     );
     expect(result.data.stages).toHaveLength(1);
     expect(result.data.matches).toHaveLength(1);

@@ -6,6 +6,8 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
+import { decorateBracketDom } from './bracketDecorations';
+
 type BracketsViewerCustomRoundInfo = {
   groupType?: 'final-group' | 'winner-bracket' | 'loser-bracket' | string;
   roundNumber: number;
@@ -206,6 +208,22 @@ export const useBracketsViewerRenderer = ({
           participants: result.data.participants,
         };
 
+        // Post-render decoration: flow hints on TBD slots + persistent seed
+        // badges. Cosmetic only — a failure here must never break the render.
+        const runDecorations = (el: HTMLElement) => {
+          try {
+            decorateBracketDom(el, {
+              matches: viewerData.matches,
+              groups: viewerData.groups,
+              rounds: viewerData.rounds,
+              participants: viewerData.participants,
+              stageType: viewerData.stages[0]?.type,
+            });
+          } catch (decorationError) {
+            warnLog('Bracket decoration failed (non-fatal):', decorationError);
+          }
+        };
+
         // Check if symbol tags survived (object identity validation)
         const tagsMissing = viewerData.matches.filter((match) => {
           const need1 = !!match.opponent1;
@@ -247,6 +265,7 @@ export const useBracketsViewerRenderer = ({
 
           bracketLog('brackets-viewer.render() completed successfully');
           window.dispatchEvent(new Event('resize'));
+          runDecorations(container);
         } catch (renderError) {
           errorLog('brackets-viewer.render() threw an error:', renderError);
           setError('Failed to render bracket visualization');
@@ -265,6 +284,9 @@ export const useBracketsViewerRenderer = ({
           }
 
           hideUuidNodes(el);
+          // render() is async and unawaited — if its DOM landed after the
+          // immediate decoration pass, this delayed pass picks it up.
+          runDecorations(el);
         }, 1000);
 
         setIsInitialized(true);

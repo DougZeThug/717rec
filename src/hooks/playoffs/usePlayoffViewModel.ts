@@ -98,8 +98,13 @@ export function usePlayoffViewModel(bracketId: string | null): PlayoffViewModel 
     }
   };
 
-  // Safely convert error to string for consistent interface
-  const processedError = convertErrorToString(bracketQuery.error || matchesQuery.error);
+  // Surface the first fetch error from any of the three parallel queries so
+  // consumers can show a retryable state instead of a silently empty screen.
+  // Teams failing must not blank the bracket — callers decide how to render
+  // this, and no current caller gates the bracket on it.
+  const processedError = convertErrorToString(
+    bracketQuery.error ?? matchesQuery.error ?? teamsQuery.error
+  );
 
   return {
     // Bracket data with matches combined

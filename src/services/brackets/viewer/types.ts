@@ -23,7 +23,9 @@ export interface ViewerMatch {
   opponent1: {
     id: number | null;
     position?: number;
-    result?: 'win' | 'loss';
+    // 'bye' is the SQL path's BYE_RESULT_SENTINEL passed through verbatim —
+    // it marks a slot no participant will ever occupy.
+    result?: 'win' | 'loss' | 'bye';
     score?: number;
     source_node_id?: string;
     source_type?: 'winner' | 'loser';
@@ -31,7 +33,7 @@ export interface ViewerMatch {
   opponent2: {
     id: number | null;
     position?: number;
-    result?: 'win' | 'loss';
+    result?: 'win' | 'loss' | 'bye';
     score?: number;
     source_node_id?: string;
     source_type?: 'winner' | 'loser';
