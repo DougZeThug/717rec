@@ -41,6 +41,7 @@ vi.mock('brackets-manager', () => {
     update = {
       match: vi.fn().mockImplementation(() => Promise.resolve()),
       seeding: vi.fn().mockImplementation(() => Promise.resolve()),
+      confirmSeeding: vi.fn().mockImplementation(() => Promise.resolve()),
     };
     get = {
       finalStandings: vi.fn().mockResolvedValue([

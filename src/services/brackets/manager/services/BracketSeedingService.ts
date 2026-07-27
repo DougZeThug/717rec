@@ -80,7 +80,16 @@ export class BracketSeedingService {
       // Step 6: Update seeding via brackets-manager
       await this.manager.update.seeding(stageId, seedingArray, keepSameSize);
 
-      // Step 7: Re-read participants and re-sync seed positions by team_id.
+      // Step 7: Confirm the seeding. `update.seeding()` treats the null entries
+      // above as TBD placeholders and writes them as `{ id: null }`; only
+      // `confirmSeeding()` converts those TBDs back into real BYEs (strict
+      // null) and propagates their winners. Without it, every BYE match is
+      // left looking like it has an opponent still to be decided, which blocks
+      // scoring and stalls the bracket. Unconditional: it is a no-op on a
+      // bracket with no BYEs.
+      await this.manager.update.confirmSeeding(stageId);
+
+      // Step 8: Re-read participants and re-sync seed positions by team_id.
       // (team_id itself is stable: existing rows keep theirs; any new rows
       // were inserted by the library with team_id from the seeding objects.)
       const participants = await this.storage.select('participant', {

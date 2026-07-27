@@ -123,6 +123,12 @@ interface UpdateSeedingOptions {
 - Creates seeding array in seed order
 - Loads participants into cache
 - Calls `manager.update.seeding()`
+- Calls `manager.update.confirmSeeding()` — **required second step.**
+  `update.seeding()` writes the padded `null` BYEs as `{ id: null }` TBD
+  placeholders; only `confirmSeeding()` converts them back to real (strict
+  `null`) BYEs and propagates their winners. Skipping it leaves BYE matches
+  looking like they have an opponent still to be decided, which blocks scoring
+  and stalls the bracket.
 - Updates participant positions in database
 
 **Success Case:**
@@ -401,7 +407,10 @@ All public methods must have integration tests covering:
 
 - ✅ `createBracket()` - Has basic tests (need to fix interfaces)
 - ✅ `updateMatch()` - Has basic tests (need to fix interfaces)
-- ❌ `updateSeeding()` - **MISSING TESTS**
+- ✅ `updateSeeding()` - Unit tests in
+  `src/services/brackets/manager/services/__tests__/BracketSeedingService.test.ts`;
+  BYE-preservation semantics pinned against the real library in
+  `tests/updateSeedingByePreservation.test.ts`
 - ❌ `calculateFinalStandings()` - **MISSING TESTS**
 - ❌ `checkByeEligibility()` - **MISSING TESTS**
 - ❌ `adminToggleByeReady()` - **MISSING TESTS**

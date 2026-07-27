@@ -53,7 +53,9 @@ type RecordedUpdate = { payload: Record<string, unknown>; column: string; id: un
 describe('BracketSeedingService.updateSeeding', () => {
   let service: BracketSeedingService;
   let mockStorage: SupabaseSqlStorage;
-  let mockManager: { update: { seeding: ReturnType<typeof vi.fn> } };
+  let mockManager: {
+    update: { seeding: ReturnType<typeof vi.fn>; confirmSeeding: ReturnType<typeof vi.fn> };
+  };
   let participantUpdates: RecordedUpdate[];
   // Given a pending update, return an error object to inject (or null for success).
   let updateErrorFor: (update: RecordedUpdate) => { message: string; code?: string } | null;
@@ -84,6 +86,7 @@ describe('BracketSeedingService.updateSeeding', () => {
     mockManager = {
       update: {
         seeding: vi.fn(),
+        confirmSeeding: vi.fn(),
       },
     };
 
@@ -279,6 +282,91 @@ describe('BracketSeedingService.updateSeeding', () => {
         { payload: { position: 1 }, column: 'id', id: 1 },
         { payload: { position: null }, column: 'id', id: 9 },
       ]);
+    });
+  });
+
+  // Regression: `update.seeding()` alone leaves BYE slots as `{ id: null }`
+  // TBDs rather than strict nulls, which every downstream BYE check in the app
+  // misreads as a real opponent — the match becomes unscorable and the bracket
+  // cannot be completed. `update.confirmSeeding()` is the library's documented
+  // second step ("convert TBDs to BYEs and propagate them"). The underlying
+  // library behaviour is pinned in `tests/updateSeedingByePreservation.test.ts`.
+  describe('BYE confirmation', () => {
+    const wireThreeTeams = () =>
+      wireSelect({
+        stages: [stage()],
+        participants: [
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 2, tournament_id: BRACKET_ID, name: 'Beta', team_id: 't2' },
+          { id: 3, tournament_id: BRACKET_ID, name: 'Gamma', team_id: 't3' },
+        ],
+      });
+
+    const threeTeamSeeding = [
+      team('t1', 'Alpha', 1),
+      team('t2', 'Beta', 2),
+      team('t3', 'Gamma', 3),
+    ];
+
+    it('confirms the seeding after updating it, so padded BYEs stay real BYEs', async () => {
+      wireThreeTeams();
+
+      await service.updateSeeding({ bracketId: BRACKET_ID, newSeeding: threeTeamSeeding });
+
+      expect(mockManager.update.confirmSeeding).toHaveBeenCalledWith(STAGE_ID);
+      expect(mockManager.update.confirmSeeding).toHaveBeenCalledTimes(1);
+    });
+
+    it('confirms only after seeding — order matters, confirm reads back what seeding wrote', async () => {
+      wireThreeTeams();
+
+      await service.updateSeeding({ bracketId: BRACKET_ID, newSeeding: threeTeamSeeding });
+
+      expect(mockManager.update.seeding.mock.invocationCallOrder[0]).toBeLessThan(
+        mockManager.update.confirmSeeding.mock.invocationCallOrder[0]
+      );
+    });
+
+    it('confirms even when the field is a power of two (no BYEs to convert)', async () => {
+      wireSelect({
+        stages: [stage()],
+        participants: [
+          { id: 1, tournament_id: BRACKET_ID, name: 'Alpha', team_id: 't1' },
+          { id: 2, tournament_id: BRACKET_ID, name: 'Beta', team_id: 't2' },
+        ],
+      });
+
+      await service.updateSeeding({
+        bracketId: BRACKET_ID,
+        newSeeding: [team('t1', 'Alpha', 1), team('t2', 'Beta', 2)],
+      });
+
+      // Unconditional: confirm is a no-op on a full bracket, and keeping it
+      // unconditional means no seeding path can skip it.
+      expect(mockManager.update.confirmSeeding).toHaveBeenCalledWith(STAGE_ID);
+    });
+
+    it('does not sync participant slots if confirming the seeding fails', async () => {
+      wireThreeTeams();
+      mockManager.update.confirmSeeding.mockRejectedValue(new Error('confirm exploded'));
+
+      await expect(
+        service.updateSeeding({ bracketId: BRACKET_ID, newSeeding: threeTeamSeeding })
+      ).rejects.toThrow(BusinessLogicError);
+
+      // A half-applied reseed is worse than a failed one: bail before writing.
+      expect(participantUpdates).toEqual([]);
+    });
+
+    it('never confirms a seeding that brackets-manager rejected', async () => {
+      wireThreeTeams();
+      mockManager.update.seeding.mockRejectedValue(new Error('has existing results'));
+
+      await expect(
+        service.updateSeeding({ bracketId: BRACKET_ID, newSeeding: threeTeamSeeding })
+      ).rejects.toThrow(BusinessLogicError);
+
+      expect(mockManager.update.confirmSeeding).not.toHaveBeenCalled();
     });
   });
 
