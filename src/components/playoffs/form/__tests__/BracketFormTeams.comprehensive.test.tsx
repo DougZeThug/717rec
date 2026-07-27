@@ -2,6 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { MAX_BRACKET_TEAMS } from '@/constants/brackets';
+
 import { BracketFormTeamsContainer } from '../bracket-teams/components/BracketFormTeamsContainer';
 import type {
   BracketFormStateResult,
@@ -186,11 +188,15 @@ describe('BracketFormTeamsContainer - Comprehensive Tests', () => {
       expect(screen.getByTestId('bracket-form-teams-container')).toBeInTheDocument();
     });
 
-    it('handles zero maxTeams', () => {
+    it('falls back to the bracket maximum when maxTeams is zero', () => {
+      // An unusable bound falls back to MAX_BRACKET_TEAMS rather than being
+      // shown verbatim. The displayed limit and the limit selection actually
+      // enforces must be the same number — they used to differ (0 shown, 16
+      // enforced), which read as "no teams allowed" while 16 still worked.
       const props = { ...createBasicProps(), maxTeams: 0 };
       render(<BracketFormTeamsContainer {...props} />);
 
-      expect(screen.getByTestId('max-teams')).toHaveTextContent('0');
+      expect(screen.getByTestId('max-teams')).toHaveTextContent(String(MAX_BRACKET_TEAMS));
     });
 
     it('handles large maxTeams values', () => {

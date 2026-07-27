@@ -1,3 +1,4 @@
+import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { validationLog } from '@/utils/logger';
 import { isValidUUID } from '@/utils/validation';
 
@@ -60,9 +61,12 @@ export const BracketValidationService = {
       errors.push('Format selection is required');
     }
 
-    // Teams validation
-    if (!Array.isArray(data.teams) || data.teams.length < 2) {
-      errors.push('At least 2 teams must be selected');
+    // Teams validation — both bounds, so the service agrees with the form
+    // rather than silently accepting a bracket size the UI forbids.
+    if (!Array.isArray(data.teams) || data.teams.length < MIN_BRACKET_TEAMS) {
+      errors.push(`At least ${MIN_BRACKET_TEAMS} teams must be selected`);
+    } else if (data.teams.length > MAX_BRACKET_TEAMS) {
+      errors.push(`Maximum ${MAX_BRACKET_TEAMS} teams allowed per bracket`);
     }
 
     validationLog('Validation result:', {

@@ -9,8 +9,11 @@
  * them, this suite is the early-warning system.
  *
  * Probe outcomes that later refactor steps rely on:
- *  - SE stages REQUIRE exactly one seedOrdering entry; the app's current
- *    3-entry list makes `create.stage` throw (bug fixed in the identity step).
+ *  - SE stages REQUIRE exactly one seedOrdering entry; a multi-entry list makes
+ *    `create.stage` throw (an app bug fixed in the identity step).
+ *  - DE stages accept a short list and resolve the rest from the library's own
+ *    size-keyed `defaultMinorOrdering`, so the app supplies only 'inner_outer'
+ *    and gets the right lower bracket at 4/8/16/32 alike.
  *  - Seeding with objects ({ name, team_id }) persists extra fields onto
  *    participant rows, in seeding order → team_id identity needs no name match.
  *  - BYE matches are auto-resolved AT CREATION (result 'win', status stays
@@ -58,20 +61,14 @@ function seedingWithByes(names: string[]): (string | null)[] {
   return [...names, ...Array<null>(bracketSize - names.length).fill(null)];
 }
 
-/** The app's LB orderings keyed by bracket size (BracketCreationService). */
-const LB_ORDERINGS: Record<number, string[]> = {
-  4: ['natural', 'reverse'],
-  8: ['natural', 'reverse', 'natural'],
-  16: ['natural', 'reverse_half_shift', 'reverse', 'natural'],
-};
-
-function appSeedOrdering(
-  format: 'single_elimination' | 'double_elimination',
-  size: number
-): string[] {
-  // SE requires exactly one ordering (pinned below); DE takes WB + LB lists.
-  if (format === 'single_elimination') return ['inner_outer'];
-  return ['inner_outer', ...(LB_ORDERINGS[size] ?? LB_ORDERINGS[16])];
+/**
+ * Mirrors BracketCreationService: the app supplies only the WB first-round
+ * method and lets the library resolve every LB ordering from its own
+ * size-keyed `defaultMinorOrdering` table. SE requires exactly one entry
+ * (pinned below); DE accepts a short list and fills in the rest.
+ */
+function appSeedOrdering(): string[] {
+  return ['inner_outer'];
 }
 
 async function createStage(
@@ -87,7 +84,7 @@ async function createStage(
     type: format,
     seeding,
     settings: {
-      seedOrdering: appSeedOrdering(format, seeding.length) as never,
+      seedOrdering: appSeedOrdering() as never,
       grandFinal,
     },
   });
@@ -140,6 +137,41 @@ async function snapshotGrid(ctx: TestContext, stageId: number): Promise<string[]
 }
 
 /**
+ * Renders only the lower bracket, by drop-in slot rather than by participant:
+ *   "LB R2 M1: p8 vs TBD"
+ * `position` is the marker the library writes to say which upper-bracket loser
+ * feeds this slot — it is exactly what the LB seed orderings permute, so this
+ * is the view that shows an ordering change.
+ */
+async function lbSlotPositions(ctx: TestContext, stageId: number): Promise<string[]> {
+  const groups = ((await ctx.storage.select<Group>('group', { stage_id: stageId })) ??
+    []) as Group[];
+  const rounds = ((await ctx.storage.select<Round>('round', { stage_id: stageId })) ??
+    []) as Round[];
+  const matches = ((await ctx.storage.select<Match>('match', { stage_id: stageId })) ??
+    []) as Match[];
+
+  const lbGroupId = groups.find((g) => g.number === 2)?.id;
+  if (lbGroupId === undefined) throw new Error('no lower-bracket group');
+
+  const renderSlot = (opponent: ParticipantResult | null): string => {
+    if (opponent === null) return 'BYE';
+    const { position } = opponent as ParticipantResult & { position?: number };
+    if (position !== undefined) return `p${position}`;
+    return opponent.id === null || opponent.id === undefined ? 'TBD' : `#${opponent.id}`;
+  };
+
+  return matches
+    .filter((m) => m.group_id === lbGroupId)
+    .sort((a, b) => (a.id as number) - (b.id as number))
+    .map(
+      (m) =>
+        `LB R${rounds.find((r) => r.id === m.round_id)?.number} M${m.number}: ` +
+        `${renderSlot(m.opponent1)} vs ${renderSlot(m.opponent2)}`
+    );
+}
+
+/**
  * Repeatedly scores the lowest-id Ready match until none remain.
  * pickOpponent1Winner decides the winner side per match (default: opponent1).
  */
@@ -175,10 +207,11 @@ async function gfGroupId(ctx: TestContext, stageId: number): Promise<number> {
 
 describe('brackets-manager library-native characterization', () => {
   describe('stage creation constraints', () => {
-    it("rejects the app's current 3-entry seedOrdering for single elimination", async () => {
-      // The production BracketCreationService passes the full DE ordering list
-      // for every format; the pinned library refuses it for SE. This is the
-      // root cause of broken SE bracket creation, fixed in the identity step.
+    it('rejects a multi-entry seedOrdering for single elimination', async () => {
+      // BracketCreationService once passed the full DE ordering list for every
+      // format; the pinned library refuses it for SE. This was the root cause of
+      // broken SE bracket creation, fixed in the identity step. Pinned here so
+      // the single-entry SE contract cannot be broken again.
       const ctx = createContext();
       await expect(
         ctx.manager.create.stage({
@@ -200,9 +233,88 @@ describe('brackets-manager library-native characterization', () => {
       const stored = (await ctx.storage.select<Stage>('stage', stage.id as number)) as Stage;
       expect(stored.settings).toMatchObject({
         grandFinal: 'double',
-        seedOrdering: ['inner_outer', 'natural', 'reverse', 'natural'],
+        // The app supplies only 'inner_outer'; the library resolves the LB
+        // orderings from defaultMinorOrdering[8] and writes the full list back
+        // (ensureSeedOrdering). The last minor round is skipped — one
+        // participant to order — so no fourth entry is ever resolved.
+        seedOrdering: ['inner_outer', 'natural', 'reverse'],
         size: 8,
       });
+    });
+
+    it.each([
+      [4, ['inner_outer', 'natural']],
+      [8, ['inner_outer', 'natural', 'reverse']],
+      [16, ['inner_outer', 'natural', 'reverse_half_shift', 'reverse']],
+      [32, ['inner_outer', 'natural', 'reverse', 'half_shift', 'natural']],
+    ])(
+      'resolves the library LB orderings for a %i-team double elimination',
+      async (size, expected) => {
+        // Regression guard for the 32-team bug: BracketCreationService used to
+        // hard-code the LB list for 4/8/16 only and fall back to the 16-team
+        // list for anything larger, so size 32 got 'reverse_half_shift, reverse'
+        // where the library intends 'reverse, half_shift'. Sizes 4/8/16 are
+        // included to pin that delegating to the library did NOT change them.
+        const ctx = createContext();
+        const stage = await createStage(ctx, 'double_elimination', size, 'double');
+        const stored = (await ctx.storage.select<Stage>('stage', stage.id as number)) as Stage;
+        expect(stored.settings).toMatchObject({ seedOrdering: expected, size });
+      }
+    );
+
+    it('places 32-team LB seeds differently than the old 16-team fallback', async () => {
+      // The fix is invisible unless something asserts the match layout actually
+      // moved. 12 of the 30 LB matches change; LB round 2 is the clearest.
+      const fixed = createContext();
+      const fixedStage = await createStage(fixed, 'double_elimination', 32, 'double');
+
+      const legacy = createContext();
+      const legacyStage = await legacy.manager.create.stage({
+        name: 'characterization',
+        tournamentId: 0,
+        type: 'double_elimination',
+        seeding: seedingWithByes(teamNames(32)),
+        settings: {
+          seedOrdering: [
+            'inner_outer',
+            'natural',
+            'reverse_half_shift',
+            'reverse',
+            'natural',
+          ] as never,
+          grandFinal: 'double',
+        },
+      });
+
+      const fixedLb = await lbSlotPositions(fixed, fixedStage.id as number);
+      const legacyLb = await lbSlotPositions(legacy, legacyStage.id as number);
+
+      expect(fixedLb).toHaveLength(30);
+      expect(fixedLb.filter((line, i) => line !== legacyLb[i])).toHaveLength(12);
+
+      // LB round 1 is identical (it is fed by the WB first round, ordered by
+      // 'inner_outer' in both). Round 2 is where the orderings diverge.
+      expect(fixedLb.slice(0, 8)).toEqual(legacyLb.slice(0, 8));
+      expect(fixedLb.slice(8, 16)).toEqual([
+        'LB R2 M1: p8 vs TBD',
+        'LB R2 M2: p7 vs TBD',
+        'LB R2 M3: p6 vs TBD',
+        'LB R2 M4: p5 vs TBD',
+        'LB R2 M5: p4 vs TBD',
+        'LB R2 M6: p3 vs TBD',
+        'LB R2 M7: p2 vs TBD',
+        'LB R2 M8: p1 vs TBD',
+      ]);
+      expect(legacyLb.slice(8, 16)).toEqual([
+        'LB R2 M1: p4 vs TBD',
+        'LB R2 M2: p3 vs TBD',
+        'LB R2 M3: p2 vs TBD',
+        'LB R2 M4: p1 vs TBD',
+        'LB R2 M5: p8 vs TBD',
+        'LB R2 M6: p7 vs TBD',
+        'LB R2 M7: p6 vs TBD',
+        'LB R2 M8: p5 vs TBD',
+      ]);
     });
   });
 

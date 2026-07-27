@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { useToast } from '@/hooks/useToast';
 import { createBracket } from '@/services/bracket-creator';
 import { BracketFormData } from '@/services/brackets/types/BracketFormData';
@@ -118,8 +119,10 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
           return { ...team, seed };
         });
 
-      if (selectedTeams.length < 2) {
-        const error = 'At least 2 teams are required for a bracket';
+      // Defence in depth: the form schema already enforces these bounds, but the
+      // dialog is the last gate before the creation service runs.
+      if (selectedTeams.length < MIN_BRACKET_TEAMS) {
+        const error = `At least ${MIN_BRACKET_TEAMS} teams are required for a bracket`;
         setDialogError(error);
         toast({
           title: 'Insufficient Teams',
@@ -129,8 +132,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         return;
       }
 
-      if (selectedTeams.length > 64) {
-        const error = 'Maximum 64 teams allowed per bracket';
+      if (selectedTeams.length > MAX_BRACKET_TEAMS) {
+        const error = `Maximum ${MAX_BRACKET_TEAMS} teams allowed per bracket`;
         setDialogError(error);
         toast({
           title: 'Too Many Teams',
