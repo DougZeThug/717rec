@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { MAX_BRACKET_TEAMS } from '@/constants/brackets';
 import { ValidationError } from '@/types/errors';
 
 import { BracketValidationService } from '../BracketValidationService';
@@ -7,6 +8,10 @@ import { BracketValidationService } from '../BracketValidationService';
 const VALID_UUID_1 = '123e4567-e89b-42d3-a456-426614174000';
 const VALID_UUID_2 = '123e4567-e89b-42d3-b456-426614174001';
 const VALID_UUID_3 = '123e4567-e89b-42d3-8456-426614174002';
+
+/** N distinct valid v4-shaped UUIDs, for exercising the team-count bounds. */
+const uuids = (count: number): string[] =>
+  Array.from({ length: count }, (_, i) => `123e4567-e89b-42d3-a456-${String(i).padStart(12, '0')}`);
 
 const validPayload = {
   title: 'Championship Bracket',
@@ -67,6 +72,27 @@ describe('BracketValidationService.validateFormData', () => {
 
     expect(result.isValid).toBe(false);
     expect(result.errors).toContain(expectedError);
+  });
+
+  it(`returns error when more than ${MAX_BRACKET_TEAMS} teams are provided`, () => {
+    // The service used to enforce only a lower bound, so it accepted bracket
+    // sizes the form forbids. Both gates now derive from the same constants.
+    const result = BracketValidationService.validateFormData({
+      ...validPayload,
+      teams: uuids(MAX_BRACKET_TEAMS + 1),
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.errors).toContain(`Maximum ${MAX_BRACKET_TEAMS} teams allowed per bracket`);
+  });
+
+  it(`accepts exactly ${MAX_BRACKET_TEAMS} teams`, () => {
+    const result = BracketValidationService.validateFormData({
+      ...validPayload,
+      teams: uuids(MAX_BRACKET_TEAMS),
+    });
+
+    expect(result).toEqual({ isValid: true, errors: [] });
   });
 
   it('returns valid for a fully valid payload', () => {

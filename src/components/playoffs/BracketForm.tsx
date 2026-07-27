@@ -5,6 +5,7 @@ import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { Division, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 
@@ -108,7 +109,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
     isExplicitSubmissionRef.current = false;
 
     // Additional validation before submission
-    if (!data.teams || data.teams.length < 2) {
+    if (!data.teams || data.teams.length < MIN_BRACKET_TEAMS) {
       errorLog('BracketForm: Insufficient teams selected - blocking submission');
       return;
     }
@@ -138,8 +139,8 @@ const BracketForm: React.FC<BracketFormProps> = ({
   };
 
   const selectedTeamCount = selectedTeams.length;
-  const minTeams = 2;
-  const maxTeams = 32;
+  const minTeams = MIN_BRACKET_TEAMS;
+  const maxTeams = MAX_BRACKET_TEAMS;
 
   // Simplified button state logic - check individual field requirements
   const isButtonEnabled = !!(

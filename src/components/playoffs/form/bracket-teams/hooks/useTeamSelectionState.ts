@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
+
 import { BracketFormStateResult } from '../types';
 
 /**
@@ -10,11 +12,13 @@ export const useTeamSelectionState = (
   maxTeams: number,
   initialSelected: Set<string> = new Set(),
   availableTeamsCount = 0,
-  minTeams = 2
+  minTeams = MIN_BRACKET_TEAMS
 ): BracketFormStateResult => {
-  // Ensure we have valid numbers to prevent React errors
-  const validMaxTeams = typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16;
-  const validMinTeams = typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2;
+  // Ensure we have valid numbers to prevent React errors. The fallbacks are the
+  // real bracket limits — a bad prop must not silently cap selection lower than
+  // the form allows (this used to fall back to 16 against a max of 32).
+  const validMaxTeams = typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : MAX_BRACKET_TEAMS;
+  const validMinTeams = typeof minTeams === 'number' && minTeams > 0 ? minTeams : MIN_BRACKET_TEAMS;
   const validAvailableCount = typeof availableTeamsCount === 'number' ? availableTeamsCount : 0;
 
   // Simple team selection state

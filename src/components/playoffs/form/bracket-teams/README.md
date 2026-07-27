@@ -35,8 +35,8 @@ import BracketFormTeamsContainer from './bracket-teams/components/BracketFormTea
 <BracketFormTeamsContainer
   divisionId={selectedDivisionId}
   teams={teamsArray} // Optional - will fetch if not provided
-  maxTeams={16}
-  minTeams={2}
+  maxTeams={MAX_BRACKET_TEAMS} // from '@/constants/brackets'
+  minTeams={MIN_BRACKET_TEAMS}
   divisions={availableDivisions}
   onChange={({ ids, isValid }) => {
     // Handle team selection changes

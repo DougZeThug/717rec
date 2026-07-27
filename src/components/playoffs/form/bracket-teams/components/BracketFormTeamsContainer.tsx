@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { useToast } from '@/hooks/useToast';
 import { warnLog } from '@/utils/logger';
 import { isDivisionArray, isDivisionIdValid, isTeamArray } from '@/utils/typeGuards';
@@ -23,7 +24,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   divisionId,
   teams: teamsProp,
   maxTeams,
-  minTeams = 2,
+  minTeams = MIN_BRACKET_TEAMS,
   divisions = EMPTY_DIVISIONS,
   onChange,
   onSeedChange,
@@ -120,20 +121,28 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     return processedTeams;
   }, [processedTeams]);
 
+  // Resolve the bounds once so selection state and validation agree — passing
+  // the raw props to one and the fallbacks to the other let the picker cap
+  // selection at a different number than the message told the user.
+  const resolvedMaxTeams =
+    typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : MAX_BRACKET_TEAMS;
+  const resolvedMinTeams =
+    typeof minTeams === 'number' && minTeams > 0 ? minTeams : MIN_BRACKET_TEAMS;
+
   // Manage form state - no onChange parameter passed to hook
   const formState = useTeamSelectionState(
-    typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : 16,
+    resolvedMaxTeams,
     new Set(), // initialSelected
     Array.isArray(filteredTeams) ? filteredTeams.length : 0,
-    typeof minTeams === 'number' && minTeams > 0 ? minTeams : 2
+    resolvedMinTeams
   );
 
   // Unified validation
   const validation = useBracketFormValidation(
     formState.count,
     filteredTeams.length,
-    minTeams,
-    maxTeams
+    resolvedMinTeams,
+    resolvedMaxTeams
   );
 
   // Single-path parent notification via useEffect - ONLY updates parent state
@@ -188,8 +197,8 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
       <TeamSelectionForm
         teams={filteredTeams}
         formState={formState}
-        maxTeams={maxTeams}
-        minTeams={minTeams}
+        maxTeams={resolvedMaxTeams}
+        minTeams={resolvedMinTeams}
         divisionId={validDivisionId ?? undefined}
         seedValidation={seedValidation}
         onSeedChange={handleSeedChange}
