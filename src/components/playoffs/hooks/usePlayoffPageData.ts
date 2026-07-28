@@ -27,6 +27,9 @@ export interface PlayoffPageData {
   error: string | null;
   divisionsError: string | null;
   bracketsError: string | null;
+  /** Non-null when the selected bracket failed to load; `ready` stays false. */
+  selectedBracketError: string | null;
+  retrySelectedBracket: () => void;
   divisions: Division[];
   divisionsLoading: boolean;
   availableDivisions: string[];
@@ -117,7 +120,7 @@ export function usePlayoffPageData(): PlayoffPageData {
   const {
     data: selectedBracket,
     isLoading: selectedBracketLoading,
-    error: _selectedBracketError,
+    error: selectedBracketError,
     refetch: refetchSelectedBracket,
   } = useBracketData(selectedBracketId);
 
@@ -305,6 +308,11 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   const finalDivisionsError = convertErrorToString(divisionsError);
   const finalBracketsError = convertErrorToString(bracketsDataError);
+  const finalSelectedBracketError = convertErrorToString(selectedBracketError);
+
+  const retrySelectedBracket = useCallback(() => {
+    void refetchSelectedBracket();
+  }, [refetchSelectedBracket]);
 
   return {
     profile: null,
@@ -315,6 +323,8 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: combinedError,
     divisionsError: finalDivisionsError,
     bracketsError: finalBracketsError,
+    selectedBracketError: finalSelectedBracketError,
+    retrySelectedBracket,
     divisions: Array.isArray(divisions) ? divisions : [],
     divisionsLoading,
     availableDivisions,

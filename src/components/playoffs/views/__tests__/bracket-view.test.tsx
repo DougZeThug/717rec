@@ -172,6 +172,8 @@ const makeAdminData = (overrides = {}) => ({
   error: null,
   divisionsError: null,
   bracketsError: null,
+  selectedBracketError: null,
+  retrySelectedBracket: vi.fn(),
   divisions: [],
   divisionsLoading: false,
   availableDivisions: ['Recreational'],

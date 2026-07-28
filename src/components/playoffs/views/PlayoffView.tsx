@@ -5,6 +5,7 @@ import BracketList from '@/components/playoffs/BracketList';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
+import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface PlayoffViewProps {
   bracketDialogOpen: boolean;
@@ -27,6 +28,8 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
 
   return (
     <>
+      <PlayoffErrorBanners data={data} />
+
       {/* Show BracketList only when no bracket is selected */}
       <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
         <BracketList

@@ -8,6 +8,7 @@ import BracketList from '../BracketList';
 import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import TeamDivisionTable from '../TeamDivisionTable';
+import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface AdminViewProps {
   bracketDialogOpen: boolean;
@@ -53,6 +54,8 @@ const AdminView: React.FC<AdminViewProps> = ({
       </TabsList>
 
       <TabsContent value="brackets" className="space-y-6">
+        <PlayoffErrorBanners data={data} />
+
         <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
           <BracketList
             divisions={data.availableDivisions}
