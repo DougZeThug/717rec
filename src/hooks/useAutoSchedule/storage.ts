@@ -19,6 +19,9 @@ export interface PersistedAutoScheduleState {
   // Date the current generatedPairings were generated for (ISO string)
   generationDate: string | null;
 
+  // Date the current timeBlockTeams were loaded for (ISO string)
+  teamsLoadedDate: string | null;
+
   // Tab and mode state
   activeTab: string;
   isEditMode: boolean;
@@ -49,6 +52,7 @@ export interface PersistedAutoScheduleState {
 const getDefaultPersistedState = (): PersistedAutoScheduleState => ({
   selectedDate: new Date().toISOString(),
   generationDate: null,
+  teamsLoadedDate: null,
   activeTab: 'teams',
   isEditMode: false,
   avoidRematches: true,
@@ -111,6 +115,10 @@ const isPersistedAutoScheduleState = (value: unknown): value is PersistedAutoSch
     (value.generationDate === undefined ||
       value.generationDate === null ||
       isString(value.generationDate)) &&
+    // Absent in state saved before teamsLoadedDate existed — treat as unknown
+    (value.teamsLoadedDate === undefined ||
+      value.teamsLoadedDate === null ||
+      isString(value.teamsLoadedDate)) &&
     isString(value.activeTab) &&
     isBoolean(value.isEditMode) &&
     isBoolean(value.avoidRematches) &&

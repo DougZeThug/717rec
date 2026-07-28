@@ -69,6 +69,7 @@ export const usePairingOperations = (
     async (
       selectedDate: Date | null,
       timeBlockTeams: TimeBlockTeamsMap,
+      teamsLoadedDate: Date | null,
       avoidRematches: boolean,
       prioritizeQuality: boolean,
       dualMatchMode: boolean,
@@ -103,6 +104,21 @@ export const usePairingOperations = (
           title: 'Error',
           description:
             'No teams found for the selected date. Please load teams first or check if teams are assigned to time slots for this date.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Reject teams loaded for a different calendar day. Team lists come from
+      // date-specific timeslot rows, so pairing them against another date would
+      // schedule teams that have no timeslot on the date being generated.
+      if (
+        teamsLoadedDate &&
+        normalizeScheduleDate(teamsLoadedDate) !== normalizeScheduleDate(selectedDate)
+      ) {
+        toast({
+          title: 'Teams Out of Date',
+          description: `These teams were loaded for ${normalizeScheduleDate(teamsLoadedDate)}. Please load teams for the selected date before generating.`,
           variant: 'destructive',
         });
         return;

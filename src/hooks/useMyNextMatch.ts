@@ -1,3 +1,4 @@
+import { format, isValid, parseISO } from 'date-fns';
 import { useMemo } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
@@ -26,11 +27,17 @@ interface MyNextMatchResult {
 }
 
 /**
- * Helper to get the date string (YYYY-MM-DD) from a match date
+ * Helper to get the date string (YYYY-MM-DD) from a match date.
+ * Match times are stored as UTC timestamps, so the key must be built in local
+ * time — otherwise a late-evening game that falls after UTC midnight gets a
+ * different key from earlier games on the same local day and is dropped from
+ * the group. Local time also matches the day the UI renders for the match.
  */
 const getMatchDateKey = (match: Match): string | null => {
   if (!match.date) return null;
-  return match.date.split('T')[0];
+  const matchDate = parseISO(match.date);
+  if (!isValid(matchDate)) return null;
+  return format(matchDate, 'yyyy-MM-dd');
 };
 
 /**

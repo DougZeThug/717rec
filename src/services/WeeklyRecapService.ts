@@ -146,17 +146,19 @@ async function _fetchUpsets(
     (id): id is string => id !== null
   );
 
-  // Fetch team info (name/logo) and career stats in parallel
-  const [teamDetailsResult, careerStatsResult] = await Promise.all([
+  // Fetch team info (name/logo/division), career stats, and visible divisions in parallel
+  const [teamDetailsResult, careerStatsResult, visibleDivisionsResult] = await Promise.all([
     supabase
       .from('v_team_details')
-      .select('team_id, name, logo_url, image_url')
+      .select('team_id, name, logo_url, image_url, division_id')
       .in('team_id', teamIds),
     supabase
       .from('team_season_stats')
       .select('team_id, power_score')
       .in('team_id', teamIds)
       .not('power_score', 'is', null),
+    // Hidden divisions are excluded from the frontend, same rule _fetchHotStreaks applies
+    supabase.from('divisions').select('id').neq('display_division', 'Hidden'),
   ]);
 
   if (teamDetailsResult.error) {
@@ -169,6 +171,13 @@ async function _fetchUpsets(
     handleDatabaseError(
       careerStatsResult.error,
       'Failed to fetch career stats for upset detection'
+    );
+  }
+  // Must surface: an empty visible-division set silently filters out every upset
+  if (visibleDivisionsResult.error) {
+    handleDatabaseError(
+      visibleDivisionsResult.error,
+      'Failed to fetch visible divisions for upset detection'
     );
   }
 
@@ -187,6 +196,9 @@ async function _fetchUpsets(
   );
 
   const teamInfoMap = new Map(teamDetailsResult.data.map((t) => [t.team_id, t]));
+  const visibleDivisionIds = new Set(visibleDivisionsResult.data?.map((d) => d.id) ?? []);
+  const isVisible = (divisionId: string | null | undefined): boolean =>
+    !!divisionId && visibleDivisionIds.has(divisionId);
 
   // Build a single upset record for a match, or null if it doesn't qualify.
   // Extracted so the surrounding fetch/aggregation stays low-complexity.
@@ -195,6 +207,8 @@ async function _fetchUpsets(
     const winnerInfo = teamInfoMap.get(match.winner_id);
     const loserInfo = teamInfoMap.get(match.loser_id);
     if (!winnerInfo || !loserInfo) return null;
+    // Skip matches involving a team an admin has moved to a hidden division
+    if (!isVisible(winnerInfo.division_id) || !isVisible(loserInfo.division_id)) return null;
 
     const winnerScore = careerScoreMap.get(match.winner_id) ?? 0;
     const loserScore = careerScoreMap.get(match.loser_id) ?? 0;

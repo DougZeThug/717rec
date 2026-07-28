@@ -25,6 +25,13 @@ export const useTeamOperations = () => {
     () => persistedState.current?.originalTimeBlockTeams || {}
   );
   const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
+  // The date timeBlockTeams was loaded for. Team lists come from date-specific
+  // timeslot rows, so pairing must refuse to run once the selected date moves on.
+  const [teamsLoadedDate, setTeamsLoadedDate] = useState<Date | null>(() =>
+    persistedState.current?.teamsLoadedDate
+      ? new Date(persistedState.current.teamsLoadedDate)
+      : null
+  );
   // Derived: Maps team ID to array of block names (supports double headers in multiple blocks)
   // Using useMemo ensures this stays in sync when teams are manually reassigned between blocks
   const teamBlockMap = useMemo(() => {
@@ -46,9 +53,10 @@ export const useTeamOperations = () => {
         timeBlockTeams,
         originalTimeBlockTeams,
         teamBlockMap,
+        teamsLoadedDate: teamsLoadedDate ? teamsLoadedDate.toISOString() : null,
       });
     }
-  }, [timeBlockTeams, originalTimeBlockTeams, teamBlockMap]);
+  }, [timeBlockTeams, originalTimeBlockTeams, teamBlockMap, teamsLoadedDate]);
 
   /**
    * Load teams for all back-to-back pairs for a specific date
@@ -138,6 +146,7 @@ export const useTeamOperations = () => {
         // Update state with back-to-back structure
         setTimeBlockTeams(backToBackTeams);
         setOriginalTimeBlockTeams(backToBackTeams); // Store original loaded teams
+        setTeamsLoadedDate(date); // Remember which date these teams belong to
 
         // If dual block mode is enabled, create paired blocks structure
         if (dualBlockMode) {
@@ -154,11 +163,13 @@ export const useTeamOperations = () => {
         setTimeBlockTeams({});
         setOriginalTimeBlockTeams({});
         setPairedTimeBlockTeams({});
+        setTeamsLoadedDate(null);
         // Clear persisted team data to prevent stale state on reload
         saveAutoScheduleState({
           timeBlockTeams: {},
           originalTimeBlockTeams: {},
           teamBlockMap: {},
+          teamsLoadedDate: null,
         });
         toast({
           title: 'Failed to Load Teams',
@@ -196,6 +207,7 @@ export const useTeamOperations = () => {
     originalTimeBlockTeams,
     pairedTimeBlockTeams,
     teamBlockMap,
+    teamsLoadedDate,
     setTimeBlockTeams,
     setPairedTimeBlockTeams,
     handleLoadTeams,

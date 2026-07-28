@@ -128,6 +128,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         null,
         { Early: [buildTeam('1')] },
+        null,
         false,
         false,
         false,
@@ -144,6 +145,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         new Date('2026-04-20T00:00:00.000Z'),
         { Early: [buildTeam('1')] },
+        null,
         false,
         false,
         false,
@@ -160,6 +162,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         new Date('2026-04-20T00:00:00.000Z'),
         {},
+        null,
         false,
         false,
         false,
@@ -171,6 +174,84 @@ describe('usePairingOperations', () => {
       expect.objectContaining({ description: expect.stringContaining('No teams found') })
     );
     expect(mockGenerateMatchPairings).not.toHaveBeenCalled();
+  });
+
+  describe('stale loaded-teams guard', () => {
+    const loadedTeams: TimeBlockTeamsMap = {
+      Early: [buildTeam('1'), buildTeam('2'), buildTeam('3'), buildTeam('4')],
+    };
+
+    it('refuses to generate when teams were loaded for a different calendar day', async () => {
+      const setIsProcessing = vi.fn();
+      const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+      await act(async () => {
+        await result.current.handleGenerateClick(
+          new Date(2026, 3, 21, 10, 0, 0, 0), // selected date
+          loadedTeams,
+          new Date(2026, 3, 20, 10, 0, 0, 0), // teams loaded a day earlier
+          false,
+          false,
+          false,
+          setIsProcessing
+        );
+      });
+
+      expect(mockGenerateMatchPairings).not.toHaveBeenCalled();
+      expect(result.current.generationDate).toBeNull();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Teams Out of Date', variant: 'destructive' })
+      );
+    });
+
+    it('generates when teams were loaded for the same day at a different time', async () => {
+      mockGenerateMatchPairings.mockResolvedValue({
+        pairings: buildPairings(),
+        unmatchedTeamIds: [],
+      });
+      const setIsProcessing = vi.fn();
+      const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+      await act(async () => {
+        await result.current.handleGenerateClick(
+          new Date(2026, 3, 20, 0, 0, 0, 0),
+          loadedTeams,
+          new Date(2026, 3, 20, 18, 45, 0, 0),
+          false,
+          false,
+          false,
+          setIsProcessing
+        );
+      });
+
+      expect(mockGenerateMatchPairings).toHaveBeenCalled();
+      expect(mockToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Teams Out of Date' })
+      );
+    });
+
+    it('generates when the load date is unknown (state saved before it was tracked)', async () => {
+      mockGenerateMatchPairings.mockResolvedValue({
+        pairings: buildPairings(),
+        unmatchedTeamIds: [],
+      });
+      const setIsProcessing = vi.fn();
+      const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+      await act(async () => {
+        await result.current.handleGenerateClick(
+          new Date(2026, 3, 20, 0, 0, 0, 0),
+          loadedTeams,
+          null,
+          false,
+          false,
+          false,
+          setIsProcessing
+        );
+      });
+
+      expect(mockGenerateMatchPairings).toHaveBeenCalled();
+    });
   });
 
   it('generates successfully, wires config flags/weights, updates state, and activates matches tab', async () => {
@@ -190,6 +271,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         selectedDate,
         timeBlockTeams,
+        selectedDate,
         true,
         true,
         true,
@@ -235,6 +317,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         selectedDate,
         timeBlockTeams,
+        selectedDate,
         false,
         false,
         false,
@@ -267,6 +350,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         new Date('2026-04-20T00:00:00.000Z'),
         { Early: [buildTeam('1'), buildTeam('2')] },
+        null,
         false,
         false,
         false,
@@ -285,6 +369,7 @@ describe('usePairingOperations', () => {
       await result.current.handleGenerateClick(
         new Date('2026-04-21T00:00:00.000Z'),
         { Early: [buildTeam('1'), buildTeam('2')] },
+        null,
         false,
         false,
         false,
@@ -402,6 +487,7 @@ describe('usePairingOperations', () => {
         await result.current.handleGenerateClick(
           generationDate,
           { Early: [buildTeam('1'), buildTeam('2'), buildTeam('3'), buildTeam('4')] },
+          generationDate,
           false,
           false,
           false,

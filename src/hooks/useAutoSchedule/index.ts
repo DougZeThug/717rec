@@ -81,6 +81,7 @@ export function useAutoSchedule() {
     timeBlockTeams,
     originalTimeBlockTeams,
     teamBlockMap: loadedTeamBlockMap,
+    teamsLoadedDate,
     setTimeBlockTeams, // Expose this function for manual team assignment
     handleLoadTeams,
     getTeamCountStatus,
@@ -116,6 +117,7 @@ export function useAutoSchedule() {
     await handleGenerateClick(
       selectedDate,
       timeBlockTeams,
+      teamsLoadedDate,
       avoidRematches,
       prioritizeQuality,
       dualMatchMode,
