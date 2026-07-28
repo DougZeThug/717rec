@@ -300,10 +300,7 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
     .neq('display_division', 'Hidden');
 
   if (visibleDivisionsError) {
-    handleDatabaseError(
-      visibleDivisionsError,
-      'Failed to fetch visible divisions for hot streaks'
-    );
+    handleDatabaseError(visibleDivisionsError, 'Failed to fetch visible divisions for hot streaks');
   }
 
   const visibleDivisionIds = new Set(visibleDivisions?.map((d) => d.id) ?? []);
