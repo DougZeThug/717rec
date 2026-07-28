@@ -292,11 +292,19 @@ async function _fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
 
   if (!teamDetails) return [];
 
-  // Get visible divisions to exclude hidden ones
-  const { data: visibleDivisions } = await supabase
+  // Get visible divisions to exclude hidden ones.
+  // Must surface: an empty visible-division set silently filters out every hot streak.
+  const { data: visibleDivisions, error: visibleDivisionsError } = await supabase
     .from('divisions')
     .select('id')
     .neq('display_division', 'Hidden');
+
+  if (visibleDivisionsError) {
+    handleDatabaseError(
+      visibleDivisionsError,
+      'Failed to fetch visible divisions for hot streaks'
+    );
+  }
 
   const visibleDivisionIds = new Set(visibleDivisions?.map((d) => d.id) ?? []);
 
