@@ -13,6 +13,9 @@ let bracketCache: {
   bracketDivisionWeights: Record<string, number>;
   bracketDivisionDisplayNames: Record<string, string>;
   bracketSeasonMap: Record<string, string>;
+  /** Every bracket id already queried — including ids the query returned no row
+   *  for, so a deleted bracket isn't re-queried on every call. */
+  queriedBracketIds: Set<string>;
   timestamp: number;
 } | null = null;
 const BRACKET_CACHE_TTL = QUERY_STALE_TIMES.STANDARD; // 5 minutes
@@ -115,8 +118,38 @@ function groupSeasonStats(data: unknown, teamIdSet: Set<string>): Map<string, Ra
 }
 
 /**
+ * Fetches the given bracket ids and writes them into the supplied lookup maps.
+ */
+async function fetchBracketsInto(
+  bracketIds: string[],
+  bracketDivisionWeights: Record<string, number>,
+  bracketDivisionDisplayNames: Record<string, string>,
+  bracketSeasonMap: Record<string, string>
+): Promise<void> {
+  if (bracketIds.length === 0) return;
+
+  const { data: bracketData } = await supabase
+    .from('brackets')
+    .select('id, season_id, divisions(division_weight, display_division)')
+    .in('id', bracketIds);
+
+  for (const bracket of bracketData ?? []) {
+    const divisions = bracket.divisions as {
+      division_weight: number;
+      display_division: string | null;
+    } | null;
+    bracketDivisionWeights[bracket.id] = divisions?.division_weight ?? 0.85;
+    bracketDivisionDisplayNames[bracket.id] = divisions?.display_division ?? '';
+    if (bracket.season_id) bracketSeasonMap[bracket.id] = bracket.season_id;
+  }
+}
+
+/**
  * Returns bracket lookup maps (division weights, display names, season map).
- * Uses a module-level cache keyed by TTL to avoid redundant DB queries.
+ * Uses a module-level cache keyed by TTL to avoid redundant DB queries. A cache
+ * hit still fetches any bracket ids it has not seen before: a bracket created
+ * within the TTL would otherwise be missing from the maps and fall back to the
+ * 0.85 intermediate weight, undercounting competitive playoff wins.
  */
 async function loadBracketLookups(allPlayoffMatches: PlayoffMatchData[]): Promise<{
   bracketDivisionWeights: Record<string, number>;
@@ -124,40 +157,49 @@ async function loadBracketLookups(allPlayoffMatches: PlayoffMatchData[]): Promis
   bracketSeasonMap: Record<string, string>;
 }> {
   const now = Date.now();
+  const requestedBracketIds = [
+    ...new Set(allPlayoffMatches.map((m) => m.bracket_id).filter(Boolean)),
+  ] as string[];
+
   if (bracketCache && now - bracketCache.timestamp < BRACKET_CACHE_TTL) {
-    const { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap } = bracketCache;
-    return { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap };
+    const cache = bracketCache;
+    const missingIds = requestedBracketIds.filter((id) => !cache.queriedBracketIds.has(id));
+
+    if (missingIds.length > 0) {
+      await fetchBracketsInto(
+        missingIds,
+        cache.bracketDivisionWeights,
+        cache.bracketDivisionDisplayNames,
+        cache.bracketSeasonMap
+      );
+      // Record even ids with no matching row so they aren't re-queried every call.
+      // The timestamp is left alone so merging never extends the cache's lifetime.
+      for (const id of missingIds) cache.queriedBracketIds.add(id);
+    }
+
+    return {
+      bracketDivisionWeights: cache.bracketDivisionWeights,
+      bracketDivisionDisplayNames: cache.bracketDivisionDisplayNames,
+      bracketSeasonMap: cache.bracketSeasonMap,
+    };
   }
 
   const bracketDivisionWeights: Record<string, number> = {};
   const bracketDivisionDisplayNames: Record<string, string> = {};
   const bracketSeasonMap: Record<string, string> = {};
 
-  const allBracketIds = [
-    ...new Set(allPlayoffMatches.map((m) => m.bracket_id).filter(Boolean)),
-  ] as string[];
-
-  if (allBracketIds.length > 0) {
-    const { data: bracketData } = await supabase
-      .from('brackets')
-      .select('id, season_id, divisions(division_weight, display_division)')
-      .in('id', allBracketIds);
-
-    for (const bracket of bracketData ?? []) {
-      const divisions = bracket.divisions as {
-        division_weight: number;
-        display_division: string | null;
-      } | null;
-      bracketDivisionWeights[bracket.id] = divisions?.division_weight ?? 0.85;
-      bracketDivisionDisplayNames[bracket.id] = divisions?.display_division ?? '';
-      if (bracket.season_id) bracketSeasonMap[bracket.id] = bracket.season_id;
-    }
-  }
+  await fetchBracketsInto(
+    requestedBracketIds,
+    bracketDivisionWeights,
+    bracketDivisionDisplayNames,
+    bracketSeasonMap
+  );
 
   bracketCache = {
     bracketDivisionWeights,
     bracketDivisionDisplayNames,
     bracketSeasonMap,
+    queriedBracketIds: new Set(requestedBracketIds),
     timestamp: now,
   };
   return { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap };

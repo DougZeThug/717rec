@@ -186,3 +186,110 @@ describe('fetchAllTeamsCareerData', () => {
     expect(result.has('t-other')).toBe(false);
   });
 });
+
+// ─── Bracket lookup cache ─────────────────────────────────────────────────────
+
+const BRACKET_ROWS: Record<string, unknown> = {
+  'b-old': {
+    id: 'b-old',
+    season_id: 's-1',
+    divisions: { division_weight: 0.9, display_division: 'Competitive' },
+  },
+  'b-new': {
+    id: 'b-new',
+    season_id: 's-1',
+    divisions: { division_weight: 1.0, display_division: 'Competitive' },
+  },
+};
+
+const playoffMatchIn = (bracketId: string) => ({
+  winner_id: 't1',
+  loser_id: 't2',
+  team1_score: 2,
+  team2_score: 1,
+  team1_id: 't1',
+  team2_id: 't2',
+  bracket_id: bracketId,
+});
+
+/** Like buildFromMock, but serves 'brackets' from BRACKET_ROWS and records the ids asked for. */
+function buildFromMockWithBrackets(
+  overrides: Record<string, { data: unknown; error: unknown }>,
+  bracketIdCalls: string[][]
+) {
+  const base = buildFromMock(overrides);
+  return (table: string) => {
+    if (table !== 'brackets') return base(table);
+    return {
+      select: () => ({
+        in: (_column: string, ids: string[]) => {
+          bracketIdCalls.push([...ids]);
+          return Promise.resolve({
+            data: ids.map((id) => BRACKET_ROWS[id]).filter(Boolean),
+            error: null,
+          });
+        },
+      }),
+    };
+  };
+}
+
+describe('bracket lookup cache', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('resolves brackets first seen after the cache was populated, without re-querying known ones', async () => {
+    // Fresh module so the module-level bracket cache starts empty
+    vi.resetModules();
+    const { fetchAllTeamsCareerData: freshFetch } = await import('../CareerBulkFetchService');
+
+    const bracketIdCalls: string[][] = [];
+    const withPlayoffMatches = (bracketIds: string[]) =>
+      buildFromMockWithBrackets(
+        {
+          ...successOverrides,
+          playoff_matches: { data: bracketIds.map(playoffMatchIn), error: null },
+        },
+        bracketIdCalls
+      );
+
+    mockFrom.mockImplementation(withPlayoffMatches(['b-old']));
+    const first = await freshFetch(['t1']);
+    expect(first.get('t1')?.bracketDivisionWeights).toEqual({ 'b-old': 0.9 });
+
+    // A bracket created within the cache TTL must not fall back to the 0.85 default
+    mockFrom.mockImplementation(withPlayoffMatches(['b-old', 'b-new']));
+    const second = await freshFetch(['t1']);
+    expect(second.get('t1')?.bracketDivisionWeights).toEqual({ 'b-old': 0.9, 'b-new': 1.0 });
+    expect(second.get('t1')?.bracketDivisionDisplayNames['b-new']).toBe('Competitive');
+    expect(second.get('t1')?.bracketSeasonMap['b-new']).toBe('s-1');
+
+    // Only the unseen id was fetched the second time
+    expect(bracketIdCalls).toEqual([['b-old'], ['b-new']]);
+
+    // A third call adds nothing new, so it must not hit the database at all
+    const third = await freshFetch(['t1']);
+    expect(third.get('t1')?.bracketDivisionWeights).toEqual({ 'b-old': 0.9, 'b-new': 1.0 });
+    expect(bracketIdCalls).toHaveLength(2);
+  });
+
+  it('does not re-query a bracket id that returned no row', async () => {
+    vi.resetModules();
+    const { fetchAllTeamsCareerData: freshFetch } = await import('../CareerBulkFetchService');
+
+    const bracketIdCalls: string[][] = [];
+    mockFrom.mockImplementation(
+      buildFromMockWithBrackets(
+        {
+          ...successOverrides,
+          playoff_matches: { data: [playoffMatchIn('b-deleted')], error: null },
+        },
+        bracketIdCalls
+      )
+    );
+
+    await freshFetch(['t1']);
+    await freshFetch(['t1']);
+
+    expect(bracketIdCalls).toEqual([['b-deleted']]);
+  });
+});
