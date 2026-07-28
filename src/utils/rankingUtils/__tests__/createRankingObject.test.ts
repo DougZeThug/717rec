@@ -57,10 +57,10 @@ describe('createRankingObject', () => {
     expect(result.powerScore).toBe(42.5);
   });
 
-  it('defaults powerScore to 0 when team.power_score is undefined', () => {
+  it('preserves null powerScore when team.power_score is undefined (no data)', () => {
     const t = makeTeam('t1', { power_score: undefined });
     const result = createRankingObject(t, [t], [], {}, divisionWeights);
-    expect(result.powerScore).toBe(0);
+    expect(result.powerScore).toBeNull();
   });
 
   it('sets previousRank and initialises rankChange to 0 before sorting', () => {
