@@ -44,6 +44,14 @@ export async function adminToggleByeReady(
     const isCompletedMatch = check.ok && check.meta?.status === 4;
 
     if (isCompletedMatch && !makeReady) {
+      // Read the match up front, before anything destructive runs. This read is
+      // the only prerequisite the reopen path adds, and failing it after the
+      // cascade below had already blanked the downstream chain would leave the
+      // bracket half-cleared. Hoisting costs nothing: collectDownstreamChain
+      // excludes this match, so the cascade cannot change what we read here.
+      const currentMatch = (await deps.storage.select('match', matchId)) as StorageMatch | null;
+      if (!currentMatch) throw new BusinessLogicError('Cannot reopen: Match data unavailable');
+
       if (!clearDownstream) {
         const downstream = await collectDownstreamChain(deps, matchId);
         if (downstream.length > 0) {
@@ -78,9 +86,6 @@ export async function adminToggleByeReady(
           clearedIds: downstream.map((match) => match.id),
         });
       }
-
-      const currentMatch = (await deps.storage.select('match', matchId)) as StorageMatch | null;
-      if (!currentMatch) throw new BusinessLogicError('Cannot reopen: Match data unavailable');
 
       const { error: reopenError } = await supabase
         .from('match')
