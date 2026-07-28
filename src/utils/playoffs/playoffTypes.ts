@@ -46,11 +46,10 @@ export interface PlayoffMatch {
 /**
  * playoff_matches.status values, synced from brackets-manager match statuses:
  * 'archived' = finished AND superseded by downstream rounds (bm status 5).
- * A match is over when its status is 'completed' OR 'archived' — use
- * isPlayoffMatchFinished() from playoffUtils rather than comparing to
- * 'completed' directly.
+ * A match is over when its status is 'completed' OR 'archived' — check both
+ * rather than comparing to 'completed' alone.
  */
-export type PlayoffMatchStatus = 'pending' | 'in_progress' | 'completed' | 'archived';
+type PlayoffMatchStatus = 'pending' | 'in_progress' | 'completed' | 'archived';
 
 export interface PlayoffGame {
   id: string;
