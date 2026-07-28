@@ -196,6 +196,49 @@ describe('useTeamOperations', () => {
     expect(result.current.getTeamCountStatus()).toEqual({ total: 6, odd: 2 });
   });
 
+  it('records the date teams were loaded for, and clears it when the load fails', async () => {
+    const loadDate = new Date('2026-04-20T00:00:00.000Z');
+    mockGetAllBackToBackTeams.mockResolvedValueOnce({ Early: [buildTeam('1'), buildTeam('2')] });
+
+    const { result } = renderHook(() => useTeamOperations());
+
+    expect(result.current.teamsLoadedDate).toBeNull();
+
+    await act(async () => {
+      await result.current.handleLoadTeams(loadDate);
+    });
+
+    expect(result.current.teamsLoadedDate).toEqual(loadDate);
+
+    await waitFor(() => {
+      expect(mockSaveAutoScheduleState).toHaveBeenCalledWith(
+        expect.objectContaining({ teamsLoadedDate: loadDate.toISOString() })
+      );
+    });
+
+    mockGetAllBackToBackTeams.mockRejectedValueOnce(new Error('load failed'));
+
+    await act(async () => {
+      await result.current.handleLoadTeams(new Date('2026-04-21T00:00:00.000Z'));
+    });
+
+    expect(result.current.teamsLoadedDate).toBeNull();
+    expect(mockSaveAutoScheduleState).toHaveBeenCalledWith(
+      expect.objectContaining({ teamsLoadedDate: null })
+    );
+  });
+
+  it('hydrates the loaded date from persisted state', () => {
+    mockLoadAutoScheduleState.mockReturnValue({
+      timeBlockTeams: { Early: [buildTeam('1')] },
+      teamsLoadedDate: '2026-04-20T00:00:00.000Z',
+    });
+
+    const { result } = renderHook(() => useTeamOperations());
+
+    expect(result.current.teamsLoadedDate).toEqual(new Date('2026-04-20T00:00:00.000Z'));
+  });
+
   it('persists non-empty state changes and skips fully empty baseline state', async () => {
     const { result } = renderHook(() => useTeamOperations());
 
