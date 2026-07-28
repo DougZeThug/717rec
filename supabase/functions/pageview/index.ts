@@ -86,7 +86,7 @@ export async function handleRequest(req: Request): Promise<Response> {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-  const ip = getClientIp(req);
+  const ip = getTrustedClientIp(req);
   const ipHash = await hashIp(ip);
 
   const rl = await checkRateLimit(supabase, {
