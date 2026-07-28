@@ -92,7 +92,7 @@ export interface Ranking {
   gamesLost: number;
   gameWinPercentage: number;
   sos: number;
-  powerScore: number;
+  powerScore: number | null;
   streak?: string;
   rankChange?: number;
   previousRank?: number;
