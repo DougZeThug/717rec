@@ -148,6 +148,12 @@ export const useMessageReactions = (messageId: string) => {
                   );
                   return;
                 }
+                // If the mutationFn already marked this reaction for deletion
+                // (raced ahead of the INSERT event), do not re-insert it into
+                // the cache. Wait for the DELETE event to reconcile state.
+                if (realtimeDeletesRef.current.has(newReaction.id)) {
+                  return;
+                }
                 realtimeDeletesRef.current.delete(newReaction.id);
                 realtimeInsertsRef.current.set(newReaction.id, newReaction);
                 queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) => {
