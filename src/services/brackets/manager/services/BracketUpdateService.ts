@@ -15,9 +15,25 @@ import type {
   StorageStage,
   UpdateMatchOptions,
 } from '../types/BracketServiceTypes';
+import { collectDownstreamChain } from './BracketAdmin/queries';
 import type { BracketNormalizationService } from './BracketNormalizationService';
 import type { BracketUpdateContext } from './BracketUpdate';
 import { markBracketCompleteIfDone } from './BracketUpdate';
+
+/**
+ * Which side of a match is recorded as the winner, or null when neither is.
+ *
+ * Used to tell a harmless score correction (same winner, new numbers) apart from
+ * a winner flip, which is the only edit that re-propagates through later rounds.
+ */
+function winnerSide(
+  opponent1Result: 'win' | 'loss' | 'draw' | null | undefined,
+  opponent2Result: 'win' | 'loss' | 'draw' | null | undefined
+): 1 | 2 | null {
+  if (opponent1Result === 'win') return 1;
+  if (opponent2Result === 'win') return 2;
+  return null;
+}
 
 /**
  * Service responsible for bracket match updates.
@@ -80,6 +96,12 @@ export class BracketUpdateService {
 
         const stage = (await this.storage.select('stage', currentMatch.stage_id)) as StorageStage;
 
+        // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
+        // rollback, so refusing here leaves the archived match exactly as it was.
+        if (currentMatch.status === 5) {
+          await this.assertArchivedFlipIsSafe(matchId, currentMatch, scores);
+        }
+
         await this.applyMatchUpdate(matchId, scores, currentMatch);
         await this.archiveResetMatchIfDecided(matchId, stage);
 
@@ -109,6 +131,53 @@ export class BracketUpdateService {
       manager: this.manager,
       normalizationService: this.normalizationService,
     };
+  }
+
+  /**
+   * Refuse an archived-match correction that would rewrite matches already played.
+   *
+   * Unlocking an Archived match (5 → 4) hands it back to the library, which
+   * re-propagates its winner forward. `setNextOpponent` *replaces* the downstream
+   * opponent object wholesale, so any score already stored there is dropped and the
+   * new arrival inherits a result it never earned — a later round showing a win for
+   * a team that never played it.
+   *
+   * Only a winner FLIP propagates. Correcting the score while the same team still
+   * wins re-writes this match alone and stays allowed.
+   *
+   * Both continuations are checked: a flip swaps who advances AND who drops to the
+   * losers bracket, and the loser's LB match can already be played while the
+   * winner's next match is not.
+   */
+  private async assertArchivedFlipIsSafe(
+    matchId: number,
+    currentMatch: StorageMatch,
+    scores: UpdateMatchOptions['scores']
+  ): Promise<void> {
+    const currentWinner = winnerSide(
+      currentMatch.opponent1?.result,
+      currentMatch.opponent2?.result
+    );
+    const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
+
+    // Score-only correction, or no decisive winner on either side: nothing propagates.
+    if (currentWinner === null || nextWinner === null || currentWinner === nextWinner) return;
+
+    const downstream = await collectDownstreamChain({ storage: this.storage }, matchId, {
+      includeLoser: true,
+    });
+    const played = downstream.filter(
+      (match) =>
+        match.opponent1?.score != null || match.opponent2?.score != null || match.status >= 4
+    );
+
+    if (played.length > 0) {
+      throw new BusinessLogicError(
+        `Cannot change the winner of this archived match: ${played.length} later ` +
+          `match${played.length === 1 ? ' has' : 'es have'} already been played. ` +
+          'Use the "Reopen + Clear Downstream" admin action to clear those results first.'
+      );
+    }
   }
 
   private async applyMatchUpdate(

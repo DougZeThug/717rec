@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -107,5 +107,40 @@ describe('useMatchEditorState', () => {
       await result.current.handleSave();
     });
     expect(bracketManagerService.updateMatch).toHaveBeenCalledTimes(1);
+  });
+
+  describe('BYE status toggle direction', () => {
+    // The hook picks unlock vs revert from the current status, and must stay in
+    // step with the buttons ByeStatusControl renders for that same status.
+    it.each([
+      [0, 'Locked', true],
+      [1, 'Waiting', true],
+      [2, 'Ready', false],
+      [3, 'Running', false],
+      [4, 'Completed', false],
+    ])('sends makeReady=%s for status %i (%s)', async (status, statusName, makeReady) => {
+      const { bracketManagerService } = await import('@/services/brackets/manager');
+      vi.mocked(bracketManagerService.checkByeEligibility).mockResolvedValue({
+        ok: true,
+        meta: { status, currentStatusName: statusName },
+      } as never);
+      vi.mocked(bracketManagerService.adminToggleByeReady).mockResolvedValue({
+        matchId: 1,
+        status: 1,
+        statusName: 'Waiting',
+        message: 'done',
+      } as never);
+
+      const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
+        wrapper,
+      });
+      await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(status));
+
+      await act(async () => {
+        await result.current.handleToggleByeStatus();
+      });
+
+      expect(bracketManagerService.adminToggleByeReady).toHaveBeenCalledWith(1, makeReady, false);
+    });
   });
 });

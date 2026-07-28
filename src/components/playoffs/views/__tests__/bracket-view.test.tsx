@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Radix dialogs/selects expect these browser APIs in jsdom.
@@ -73,12 +74,12 @@ vi.mock('@/services/brackets/BracketReadService', () => ({
   fetchFinalStandings: vi.fn(),
 }));
 
-vi.mock('@/utils/logger', () => ({
-  bracketLog: vi.fn(),
-  debugLog: vi.fn(),
-  errorLog: vi.fn(),
-  log: vi.fn(),
-}));
+// Stub every logger export, not a hand-picked few: this tree pulls in components
+// (TeamDivisionTable, via the Teams tab) that reach for other loggers.
+vi.mock('@/utils/logger', async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  return Object.fromEntries(Object.keys(actual).map((key) => [key, vi.fn()]));
+});
 
 vi.mock('@/components/playoffs/viewer', () => ({
   BracketsViewerComponent: (props: Parameters<typeof mockBracketsViewer>[0]) =>
@@ -172,6 +173,8 @@ const makeAdminData = (overrides = {}) => ({
   error: null,
   divisionsError: null,
   bracketsError: null,
+  selectedBracketError: null,
+  retrySelectedBracket: vi.fn(),
   divisions: [],
   divisionsLoading: false,
   availableDivisions: ['Recreational'],
@@ -287,6 +290,28 @@ describe('bracket display and admin interaction views', () => {
     );
 
     expect(screen.getByText('No Playoff Brackets Yet')).toBeInTheDocument();
+  });
+
+  it('keeps error banners visible on the Teams tab, not just the Brackets tab', async () => {
+    // TeamDivisionTable on the Teams tab is driven by the same divisions query,
+    // so burying the banner inside the brackets TabsContent hid the failure on
+    // the tab it affects most.
+    sessionStorage.setItem('playoffViewActiveTab', 'teams');
+
+    // The Teams tab mounts TeamDivisionTable, which reaches for router context.
+    render(
+      <MemoryRouter>
+        <AdminView
+          bracketDialogOpen={false}
+          setBracketDialogOpen={vi.fn()}
+          onCreateBracket={vi.fn()}
+          onDeleteBracket={vi.fn()}
+          data={makeAdminData({ divisionsError: 'divisions unavailable' })}
+        />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('divisions unavailable')).toBeInTheDocument();
   });
 
   it('renders the selected AdminView bracket with admin actions, score editing, and champion state', () => {

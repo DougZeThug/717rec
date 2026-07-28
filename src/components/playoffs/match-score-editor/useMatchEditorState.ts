@@ -176,7 +176,9 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
     try {
       setIsTogglingStatus(true);
 
-      const makeReady = byeEligible.currentStatus !== 2 && byeEligible.currentStatus !== 4;
+      // Mirrors ByeStatusControl's buttons: Ready (2) and Running (3) revert,
+      // Completed (4) reopens, everything else unlocks to Ready.
+      const makeReady = ![2, 3, 4].includes(byeEligible.currentStatus);
 
       const result = await bracketManagerService.adminToggleByeReady(
         matchId,

@@ -540,6 +540,58 @@ describe('BracketManagerService - Phase 0 Public API Tests', () => {
       expect(result.ok).toBe(false);
       expect(result.reason).toBe('Match not found');
     });
+
+    describe('status gate', () => {
+      const matchId = 1;
+
+      /** A losers-bracket BYE match at the given status; only status varies. */
+      const wireByeMatchAtStatus = (status: number) => {
+        getStorageMock().select.mockImplementation((table: string, id: number) => {
+          if (table === 'match' && id === matchId) {
+            return Promise.resolve({
+              id: matchId,
+              opponent1: { id: 1 },
+              opponent2: null, // BYE
+              status,
+              round_id: 1,
+            });
+          }
+          if (table === 'round' && id === 1) return Promise.resolve({ id: 1, group_id: 2 });
+          if (table === 'group' && id === 2) return Promise.resolve({ id: 2, number: 2 });
+          if (table === 'participant' && id === 1) {
+            return Promise.resolve({ id: 1, name: 'Team 1' });
+          }
+          return Promise.resolve(null);
+        });
+      };
+
+      // Ready and Running are revertable by adminToggleByeReady (its guard is
+      // `status >= 4`), but used to fail this check, which hid the revert control.
+      it.each([
+        [0, 'Locked'],
+        [1, 'Waiting'],
+        [2, 'Ready'],
+        [3, 'Running'],
+        [4, 'Completed'],
+      ])('allows status %i (%s)', async (status, statusName) => {
+        wireByeMatchAtStatus(status);
+
+        const result = await service.checkByeEligibility(matchId);
+
+        expect(result.ok).toBe(true);
+        expect(result.meta?.currentStatusName).toBe(statusName);
+      });
+
+      it('still refuses Archived (5)', async () => {
+        wireByeMatchAtStatus(5);
+
+        const result = await service.checkByeEligibility(matchId);
+
+        expect(result.ok).toBe(false);
+        expect(result.reason).toContain('Archived matches cannot be toggled');
+        expect(result.meta?.status).toBe(5);
+      });
+    });
   });
 
   describe('6. adminToggleByeReady() - Public Method', () => {

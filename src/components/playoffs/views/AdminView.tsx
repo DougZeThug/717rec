@@ -8,6 +8,7 @@ import BracketList from '../BracketList';
 import { usePlayoffHandlers } from '../hooks/usePlayoffHandlers';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import TeamDivisionTable from '../TeamDivisionTable';
+import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface AdminViewProps {
   bracketDialogOpen: boolean;
@@ -51,6 +52,14 @@ const AdminView: React.FC<AdminViewProps> = ({
         <TabsTrigger value="brackets">Brackets</TabsTrigger>
         <TabsTrigger value="teams">Teams</TabsTrigger>
       </TabsList>
+
+      {/*
+       * Outside TabsContent on purpose: the Teams tab renders TeamDivisionTable
+       * from the same divisions query, so a divisions failure has to be visible
+       * there too. Inside the brackets tab it would be hidden on the very tab
+       * the error affects most.
+       */}
+      <PlayoffErrorBanners data={data} />
 
       <TabsContent value="brackets" className="space-y-6">
         <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>

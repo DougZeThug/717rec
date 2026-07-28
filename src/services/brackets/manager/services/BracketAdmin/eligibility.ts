@@ -62,7 +62,11 @@ function buildEligibility(context: MatchEligibilityContext): ByeEligibilityResul
     !matchData.opponent2?.id ||
     opponent2Name === null;
 
-  const lockedOrWaiting = matchData.status === 0 || matchData.status === 1;
+  // Locked/Waiting unlock to Ready; Ready/Running revert back to Waiting, which
+  // adminToggleByeReady has always allowed (its guard is `status >= 4`). Leaving
+  // 2 and 3 out here hid the revert control the service was willing to perform —
+  // reopening the editor on a Ready BYE match offered no way back.
+  const isTogglable = matchData.status <= 3;
   const isCompletedMatch = matchData.status === 4;
 
   const meta = {
@@ -75,16 +79,15 @@ function buildEligibility(context: MatchEligibilityContext): ByeEligibilityResul
     opponent2Name,
   };
 
-  const isEligible =
-    isLosers && exactlyOneReal && isByeSide && (lockedOrWaiting || isCompletedMatch);
+  const isEligible = isLosers && exactlyOneReal && isByeSide && (isTogglable || isCompletedMatch);
   if (isEligible) return { ok: true, meta };
 
   const reasons: string[] = [];
   if (!isLosers) reasons.push('Not in Losers Bracket.');
   if (!exactlyOneReal) reasons.push('Must have exactly one real team.');
   if (!isByeSide) reasons.push('No BYE detected.');
-  if (!lockedOrWaiting && !isCompletedMatch) {
-    reasons.push(`Status is ${meta.currentStatusName} (must be Locked, Waiting, or Completed).`);
+  if (!isTogglable && !isCompletedMatch) {
+    reasons.push(`Status is ${meta.currentStatusName} (Archived matches cannot be toggled).`);
   }
 
   return { ok: false, reason: `Not eligible: ${reasons.join(' ')}`.trim(), meta };

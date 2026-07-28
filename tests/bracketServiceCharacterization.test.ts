@@ -598,6 +598,40 @@ describe('bracket service characterization (real service + real library over fak
         opponent1_result: 'win',
       });
     });
+
+    it('refuses to flip the winner once later matches have been played, changing nothing', async () => {
+      // Unlocking 5 → 4 hands the match back to the library, which re-propagates
+      // its winner forward. The library's setNextOpponent REPLACES the downstream
+      // opponent object, so a flip drops scores already stored there and hands the
+      // arriving team a result it never played for. Refuse the edit instead.
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+      await playAllReadyMatches(service);
+
+      const archived = mustFindMatch((m) => m.status === 5, 'an archived match');
+      const before = snapshotSqlGrid();
+
+      // playAllReadyMatches gave opponent1 every win, so this flips the winner.
+      await expect(
+        service.updateMatch({
+          matchId: archived.id,
+          scores: {
+            opponent1: { score: 1, result: 'loss' },
+            opponent2: { score: 3, result: 'win' },
+          },
+        })
+      ).rejects.toThrow(/Cannot change the winner of this archived match/);
+
+      // The refusal happens before the 5 → 4 unlock, so nothing moved at all.
+      expect(snapshotSqlGrid()).toEqual(before);
+      expect(matchRows().find((m) => m.id === archived.id)?.status).toBe(5);
+    });
   });
 
   describe('seeding update before play', () => {

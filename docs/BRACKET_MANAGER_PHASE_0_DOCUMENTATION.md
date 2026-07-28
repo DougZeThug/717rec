@@ -194,7 +194,8 @@ async checkByeEligibility(matchId: number): Promise<{
 - Public wrapper for private `isLosersByeMatch()` method
 - Checks if match is in Losers Bracket (group number === 2)
 - Checks if exactly one real team exists (other slot is null or BYE)
-- Allows Locked (0), Waiting (1), or Completed (4) status matches
+- Allows every status except Archived (5): Locked (0) and Waiting (1) unlock to
+  Ready, Ready (2) and Running (3) revert to Waiting, Completed (4) reopens
 
 **Success Case:**
 - Returns: Object with `ok: true` and `meta` object containing match details
