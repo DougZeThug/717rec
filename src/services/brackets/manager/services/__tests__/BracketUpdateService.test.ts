@@ -211,6 +211,94 @@ describe('BracketUpdateService', () => {
       expect(manager.update.match).toHaveBeenCalled();
     });
 
+    describe('archived winner flips', () => {
+      const ARCHIVED_WITH_WINNER = {
+        ...REAL_MATCH,
+        status: 5,
+        opponent1: { id: 10, score: 2, result: 'win' as const },
+        opponent2: { id: 20, score: 0, result: 'loss' as const },
+      };
+
+      /** Round 2 match the archived winner (10) already advanced into and won. */
+      const DOWNSTREAM_PLAYED = {
+        id: 8,
+        stage_id: 1,
+        group_id: 1,
+        round_id: 2,
+        number: 1,
+        status: 4,
+        opponent1: { id: 10, score: 3, result: 'win' as const },
+        opponent2: { id: 30, score: 1, result: 'loss' as const },
+      };
+
+      /**
+       * collectDownstreamChain reads round-by-id and round-by-filter differently,
+       * which the shared wireStorage router flattens, so wire storage directly.
+       */
+      const wireDownstream = (downstream: Record<string, unknown>[]) => {
+        storage.select.mockImplementation((table: string, filter: unknown) => {
+          if (table === 'match' && typeof filter === 'number') {
+            return Promise.resolve(ARCHIVED_WITH_WINNER);
+          }
+          if (table === 'stage') return Promise.resolve(STAGE);
+          if (table === 'round' && typeof filter === 'number') {
+            return Promise.resolve({ id: 1, stage_id: 1, group_id: 1, number: 1 });
+          }
+          if (table === 'round') {
+            return Promise.resolve([
+              { id: 1, number: 1 },
+              { id: 2, number: 2 },
+            ]);
+          }
+          if (table === 'match') return Promise.resolve([ARCHIVED_WITH_WINNER, ...downstream]);
+          return Promise.resolve(null);
+        });
+      };
+
+      const flip = {
+        opponent1: { score: 0, result: 'loss' as const },
+        opponent2: { score: 2, result: 'win' as const },
+      };
+
+      it('refuses the flip and leaves the match archived when a later match was played', async () => {
+        wireDownstream([DOWNSTREAM_PLAYED]);
+
+        await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
+          /Cannot change the winner of this archived match/
+        );
+
+        // Refused before the 5 → 4 unlock, so no write and no propagation.
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
+      it('allows a score-only correction even when later matches were played', async () => {
+        wireDownstream([DOWNSTREAM_PLAYED]);
+
+        await service.updateMatch({
+          matchId: 7,
+          scores: {
+            opponent1: { score: 5, result: 'win' },
+            opponent2: { score: 1, result: 'loss' },
+          },
+        });
+
+        expect(directUpdates).toEqual([{ table: 'match', payload: { status: 4 }, id: 7 }]);
+        expect(manager.update.match).toHaveBeenCalled();
+      });
+
+      it('allows the flip when the downstream chain has no results yet', async () => {
+        wireDownstream([
+          { ...DOWNSTREAM_PLAYED, status: 2, opponent1: { id: 10 }, opponent2: null },
+        ]);
+
+        await service.updateMatch({ matchId: 7, scores: flip });
+
+        expect(directUpdates).toEqual([{ table: 'match', payload: { status: 4 }, id: 7 }]);
+        expect(manager.update.match).toHaveBeenCalled();
+      });
+    });
+
     it('propagates library errors loudly as BusinessLogicError', async () => {
       wireStorage({ match: REAL_MATCH });
       manager.update.match.mockRejectedValue(new Error('The match is locked.'));
