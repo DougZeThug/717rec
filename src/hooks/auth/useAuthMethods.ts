@@ -120,7 +120,6 @@ export const useAuthMethods = (
       } else {
         handleAuthError(new Error('Failed to log out'), 'Logout');
       }
-      throw error;
     }
   }, [clearAuthError, handleAuthError, navigate]);
 
