@@ -261,7 +261,8 @@ export class BracketManagerService {
    * Check if a match is eligible for BYE status toggle
    *
    * Checks if match is in Losers Bracket (group number === 2), has exactly one real team
-   * (other slot is null or BYE), and has Locked (0), Waiting (1), or Completed (4) status.
+   * (other slot is null or BYE), and is not Archived (5). Locked (0) and Waiting (1)
+   * unlock to Ready, Ready (2) and Running (3) revert to Waiting, Completed (4) reopens.
    *
    * @param matchId - Match ID to check
    *

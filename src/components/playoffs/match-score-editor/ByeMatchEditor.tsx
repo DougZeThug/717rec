@@ -125,6 +125,11 @@ const ByeStatusControl: React.FC<{
   isTogglingStatus: boolean;
   onToggleByeStatus: (clearDownstream: boolean) => void;
 }> = ({ byeEligible, isTogglingStatus, onToggleByeStatus }) => {
+  // Ready (2) and Running (3) both revert to Waiting — adminToggleByeReady's revert
+  // path accepts anything below Completed. Only Locked (0) and Waiting (1) unlock,
+  // so Running must not be offered "Unlock to Ready", which would downgrade it.
+  const isRevertable = byeEligible.currentStatus === 2 || byeEligible.currentStatus === 3;
+
   return (
     <div className="bg-muted/50 border border-border rounded-lg p-3 sm:p-4 space-y-3">
       <div className="space-y-3">
@@ -166,22 +171,7 @@ const ByeStatusControl: React.FC<{
                 Reopen + Clear Downstream
               </Button>
             </>
-          ) : byeEligible.currentStatus !== 2 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onToggleByeStatus(false)}
-              disabled={isTogglingStatus}
-              className="border-green-600 text-green-600 hover:bg-green-50 w-full sm:w-auto text-xs sm:text-sm"
-            >
-              {isTogglingStatus ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <span className="mr-2">🔓</span>
-              )}
-              Unlock to Ready
-            </Button>
-          ) : (
+          ) : isRevertable ? (
             <Button
               variant="outline"
               size="sm"
@@ -195,6 +185,21 @@ const ByeStatusControl: React.FC<{
                 <span className="mr-2">🔒</span>
               )}
               Revert to Waiting
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onToggleByeStatus(false)}
+              disabled={isTogglingStatus}
+              className="border-green-600 text-green-600 hover:bg-green-50 w-full sm:w-auto text-xs sm:text-sm"
+            >
+              {isTogglingStatus ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <span className="mr-2">🔓</span>
+              )}
+              Unlock to Ready
             </Button>
           )}
         </div>
@@ -214,13 +219,17 @@ const ByeStatusControl: React.FC<{
               caution!
             </p>
           </div>
-        ) : byeEligible.currentStatus !== 2 ? (
+        ) : byeEligible.currentStatus === 3 ? (
+          <p>
+            ▶️ This BYE match is in progress. Click &quot;Revert to Waiting&quot; to lock it again.
+          </p>
+        ) : isRevertable ? (
+          <p>✅ Match is ready. You can now enter scores below or revert if needed.</p>
+        ) : (
           <p>
             ⚠️ This BYE match is currently locked. Click &quot;Unlock to Ready&quot; to enable score
             entry.
           </p>
-        ) : (
-          <p>✅ Match is ready. You can now enter scores below or revert if needed.</p>
         )}
       </div>
     </div>

@@ -114,7 +114,7 @@ export async function adminToggleByeReady(
     if (makeReady) {
       if (!check.ok) {
         throw new BusinessLogicError(
-          `Cannot set to Ready: ${check.reason}. Match must be a Losers Bracket BYE match in Locked/Waiting status.`
+          `Cannot set to Ready: ${check.reason}. Match must be a Losers Bracket BYE match that is not Archived.`
         );
       }
 
