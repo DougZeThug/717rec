@@ -104,8 +104,7 @@ export function useLeagueInsights(): LeagueInsightsData {
     // Only include teams that have played matches AND have a computed power score.
     // Teams with a NULL power score (no data) must not be coerced to 0.
     const activeTeams = rankings.filter(
-      (r): r is typeof r & { powerScore: number } =>
-        r.wins + r.losses > 0 && r.powerScore !== null
+      (r): r is typeof r & { powerScore: number } => r.wins + r.losses > 0 && r.powerScore !== null
     );
     if (activeTeams.length === 0) {
       return { overview: null, divisionStrength: [], parity: null, topPerformers: [] };

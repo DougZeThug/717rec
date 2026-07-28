@@ -21,16 +21,18 @@ export const useChartData = (rankings: Ranking[], chartLimit: number) => {
 
   // Process data for power score chart - sort by power score
   const powerScoreData = useMemo(() => {
-    return [...rankings]
-      // Exclude teams without a power score (no matches yet) so the chart doesn't render a red 0.
-      .filter((team): team is typeof team & { powerScore: number } => team.powerScore !== null)
-      .sort((a, b) => b.powerScore - a.powerScore) // Sort by power score
-      .slice(0, 8) // Show top 8 by power score
-      .map((team) => ({
-        name: team.teamName,
-        powerScore: team.powerScore,
-        id: team.teamId,
-      }));
+    return (
+      [...rankings]
+        // Exclude teams without a power score (no matches yet) so the chart doesn't render a red 0.
+        .filter((team): team is typeof team & { powerScore: number } => team.powerScore !== null)
+        .sort((a, b) => b.powerScore - a.powerScore) // Sort by power score
+        .slice(0, 8) // Show top 8 by power score
+        .map((team) => ({
+          name: team.teamName,
+          powerScore: team.powerScore,
+          id: team.teamId,
+        }))
+    );
   }, [rankings]);
 
   return {
