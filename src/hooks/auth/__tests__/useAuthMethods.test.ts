@@ -87,7 +87,7 @@ describe('useAuthMethods', () => {
     mockSignOutUser.mockRejectedValueOnce(new Error('network gone'));
     rerender();
 
-    await expect(result.current.signOut()).rejects.toThrow('network gone');
+    await expect(result.current.signOut()).resolves.toBeUndefined();
     expect(handleAuthError).toHaveBeenCalledWith(expect.any(Error), 'Logout');
   });
 
