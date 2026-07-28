@@ -76,7 +76,8 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
     // Season mode
     if (!rankings || rankings.length === 0) return [];
 
-    const allPowerScores = rankings.map((r) => r.powerScore);
+    // Teams without a power score contribute 0 to percentile math only (display layers show "N/A" separately).
+    const allPowerScores = rankings.map((r) => r.powerScore ?? 0);
     const allWinPcts = rankings.map((r) => r.winPercentage);
     const allSos = rankings.map((r) => r.sos);
     const allGameWinPcts = rankings.map((r) => r.gameWinPercentage);
@@ -90,7 +91,7 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
     return rankings
       .map((team, idx) => {
         const overallGrade = calculateGrade(
-          calculatePercentile(team.powerScore, allPowerScores, true).percentile
+          calculatePercentile(team.powerScore ?? 0, allPowerScores, true).percentile
         );
         const consistencyGrade = calculateGrade(
           calculatePercentile(team.winPercentage, allWinPcts, true).percentile
