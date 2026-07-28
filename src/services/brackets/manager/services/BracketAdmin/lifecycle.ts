@@ -3,9 +3,33 @@ import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 
+import type { StorageMatch } from '../../types/BracketServiceTypes';
 import { isLosersByeMatch } from './eligibility';
 import { collectDownstreamChain } from './queries';
 import type { BracketAdminDeps, ToggleByeReadyResult } from './types';
+
+/**
+ * Which of a match's two "result" columns may be blanked when we clear it.
+ *
+ * A side that is a structural BYE — no team can ever play there — is recorded
+ * by storing the word 'bye' in that side's result column. That column is the
+ * ONLY place the BYE is written down: blank it and the slot silently becomes
+ * an ordinary "team to be decided", and nothing ever puts the BYE back.
+ *
+ * Storage hands such a side back to us as exactly `null`, so `=== null` is the
+ * test. For those sides we leave the field OUT of the returned payload —
+ * Supabase writes only the fields we name, so the stored 'bye' survives
+ * untouched. adminCompleteByeMatch protects the same marker the same way.
+ */
+function resultFieldsToClear(match: StorageMatch): {
+  opponent1_result?: null;
+  opponent2_result?: null;
+} {
+  const fields: { opponent1_result?: null; opponent2_result?: null } = {};
+  if (match.opponent1 !== null) fields.opponent1_result = null;
+  if (match.opponent2 !== null) fields.opponent2_result = null;
+  return fields;
+}
 
 export async function adminToggleByeReady(
   deps: BracketAdminDeps,
@@ -20,6 +44,14 @@ export async function adminToggleByeReady(
     const isCompletedMatch = check.ok && check.meta?.status === 4;
 
     if (isCompletedMatch && !makeReady) {
+      // Read the match up front, before anything destructive runs. This read is
+      // the only prerequisite the reopen path adds, and failing it after the
+      // cascade below had already blanked the downstream chain would leave the
+      // bracket half-cleared. Hoisting costs nothing: collectDownstreamChain
+      // excludes this match, so the cascade cannot change what we read here.
+      const currentMatch = (await deps.storage.select('match', matchId)) as StorageMatch | null;
+      if (!currentMatch) throw new BusinessLogicError('Cannot reopen: Match data unavailable');
+
       if (!clearDownstream) {
         const downstream = await collectDownstreamChain(deps, matchId);
         if (downstream.length > 0) {
@@ -38,8 +70,7 @@ export async function adminToggleByeReady(
               status: 1,
               opponent1_id: null,
               opponent2_id: null,
-              opponent1_result: null,
-              opponent2_result: null,
+              ...resultFieldsToClear(downstreamMatch),
               opponent1_score: null,
               opponent2_score: null,
             })
@@ -59,8 +90,7 @@ export async function adminToggleByeReady(
       const { error: reopenError } = await supabase
         .from('match')
         .update({
-          opponent1_result: null,
-          opponent2_result: null,
+          ...resultFieldsToClear(currentMatch),
           opponent1_score: null,
           opponent2_score: null,
           status: 2,

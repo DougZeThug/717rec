@@ -228,8 +228,16 @@ async adminToggleByeReady(
 - Checks eligibility via `isLosersByeMatch()`
 - **For reopening completed matches** (status 4, makeReady = false):
   - If `clearDownstream = false`, checks if downstream matches populated and throws error if they are
-  - If `clearDownstream = true`, nullifies all downstream matches
-  - Clears current match results and sets status to 2 (Ready)
+  - If `clearDownstream = true`, nullifies all downstream matches (a side marked
+    as a BYE keeps its `'bye'` marker — see below)
+  - Clears current match results and sets status to 2 (Ready) (again, a side
+    marked as a BYE keeps its marker)
+
+  A structural BYE side is recorded by storing `'bye'` in that side's
+  `opponent{1,2}_result` column, and that column is the only place it is written
+  down. Both clears therefore omit the result column for any side that storage
+  inflates to `null`, rather than blanking it — otherwise the slot silently
+  degrades to an ordinary "to be decided" and nothing ever restores it.
 - **For normal toggle to Ready** (makeReady = true):
   - Validates eligibility
   - Sets status to 2 (Ready)

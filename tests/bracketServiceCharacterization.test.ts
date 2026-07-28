@@ -717,13 +717,24 @@ describe('bracket service characterization (real service + real library over fak
       const eligibility = await service.checkByeEligibility(lbByeMatch.id);
       expect(eligibility.ok).toBe(true);
 
+      // Fixture orientation: the structural BYE sits on opponent1 here (the
+      // creation grid above pins 'LB R1 M1: BYE vs TBD'), and the WB loser
+      // dropped onto opponent2.
+      expect(lbByeMatch.opponent1_result).toBe('bye');
+
       // Reopen it, cascading a clear of the downstream chain.
       const reopened = await service.adminToggleByeReady(lbByeMatch.id, false, true);
       expect(reopened).toMatchObject({ status: 2, statusName: 'Ready' });
       const afterReopen = matchRows().find((m) => m.id === lbByeMatch.id);
       expect(afterReopen).toMatchObject({
         status: 2,
-        opponent1_result: null,
+        // The played side is cleared...
+        opponent2_result: null,
+        opponent2_score: null,
+        // ...but the structural BYE marker survives. Blanking it would turn a
+        // slot no team can ever occupy into an ordinary "to be decided" slot,
+        // and nothing downstream ever puts the marker back.
+        opponent1_result: 'bye',
         opponent1_score: null,
       });
 

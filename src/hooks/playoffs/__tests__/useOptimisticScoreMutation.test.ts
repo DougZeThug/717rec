@@ -125,11 +125,37 @@ describe('useOptimisticScoreMutation', () => {
       result.current.rollback();
     });
 
-    const data = queryClient.getQueryData<{ matches: { opponent1_score: number | null }[] }>([
+    const data = queryClient.getQueryData<{
+      matches: { opponent1_score: number | null; status: number }[];
+    }>(['bracket-data', BRACKET_ID]);
+    expect(data?.matches[0].opponent1_score).toBe(5);
+    expect(data?.matches[0].status).toBe(4);
+  });
+
+  it('rollback restores a Running (3) status instead of collapsing it to Ready (2)', () => {
+    // Rollback must put back exactly what was snapshotted. Statuses other than
+    // Ready(2)/Completed(4) — here Running(3) — are the ones a two-way
+    // completed-or-not choice silently rewrites.
+    queryClient.setQueryData(['bracket-data', BRACKET_ID], {
+      matches: [makeBmMatch({ opponent1_score: 1, opponent2_score: 1, status: 3 })],
+    });
+    const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+      wrapper: createWrapper(),
+    });
+
+    act(() => {
+      result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
+    });
+
+    act(() => {
+      result.current.rollback();
+    });
+
+    const data = queryClient.getQueryData<{ matches: { status: number }[] }>([
       'bracket-data',
       BRACKET_ID,
     ]);
-    expect(data?.matches[0].opponent1_score).toBe(5);
+    expect(data?.matches[0].status).toBe(3);
   });
 
   it('onError calls rollback and shows destructive toast', () => {
