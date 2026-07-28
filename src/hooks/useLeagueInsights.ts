@@ -128,7 +128,9 @@ export function useLeagueInsights(): LeagueInsightsData {
     };
 
     // === Division Strength ===
-    const divisionMap = new Map<string, Ranking[]>();
+    // activeTeams already has non-null powerScore; keep that narrowing through the map.
+    type ActiveTeam = (typeof activeTeams)[number];
+    const divisionMap = new Map<string, ActiveTeam[]>();
     for (const r of activeTeams) {
       const div = r.divisionName || 'Unassigned';
       const divisionRankings = divisionMap.get(div) ?? [];
