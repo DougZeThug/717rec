@@ -259,7 +259,7 @@ async function handleRequest(req: Request): Promise<Response> {
         from: '717REC Support <noreply@717rec.com>',
         to: ['admin@717rec.com'],
         reply_to: payload.email,
-        subject: `[717REC Support] ${subjectLabel} from ${safeName}`,
+        subject: `[717REC Support] ${subjectLabel} from ${cleanName}`,
         html: emailHtml,
       }),
     });
