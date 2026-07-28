@@ -265,6 +265,16 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
               team1_game_wins: 2,
               team2_game_wins: 1,
             },
+            {
+              // Biggest gap of all, but both teams sit in a hidden division
+              id: 'hidden-division-upset',
+              team1_id: 't-hid-w',
+              team2_id: 't-hid-l',
+              winner_id: 't-hid-w',
+              loser_id: 't-hid-l',
+              team1_game_wins: 2,
+              team2_game_wins: 0,
+            },
           ],
           error: null,
         },
@@ -317,19 +327,33 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       v_team_details: [
         {
           data: [
-            { team_id: 't-a', name: 'A', image_url: null, logo_url: 'a.png' },
-            { team_id: 't-b', name: 'B', image_url: null, logo_url: 'b.png' },
-            { team_id: 't-c', name: 'C', image_url: null, logo_url: 'c.png' },
-            { team_id: 't-d', name: 'D', image_url: null, logo_url: 'd.png' },
-            { team_id: 't-e', name: 'E', image_url: null, logo_url: 'e.png' },
-            { team_id: 't-f', name: 'F', image_url: null, logo_url: 'f.png' },
-            { team_id: 't-g', name: 'G', image_url: null, logo_url: 'g.png' },
-            { team_id: 't-h', name: 'H', image_url: null, logo_url: 'h.png' },
-            { team_id: 't-i', name: 'I', image_url: null, logo_url: 'i.png' },
-            { team_id: 't-j', name: 'J', image_url: null, logo_url: 'j.png' },
-            { team_id: 't-k', name: 'K', image_url: null, logo_url: 'k.png' },
-            { team_id: 't-m', name: 'M', image_url: null, logo_url: 'm.png' },
-            { team_id: 't-n', name: 'N', image_url: null, logo_url: 'n.png' },
+            { team_id: 't-a', name: 'A', image_url: null, logo_url: 'a.png', division_id: 'd-1' },
+            { team_id: 't-b', name: 'B', image_url: null, logo_url: 'b.png', division_id: 'd-1' },
+            { team_id: 't-c', name: 'C', image_url: null, logo_url: 'c.png', division_id: 'd-2' },
+            { team_id: 't-d', name: 'D', image_url: null, logo_url: 'd.png', division_id: 'd-2' },
+            { team_id: 't-e', name: 'E', image_url: null, logo_url: 'e.png', division_id: 'd-1' },
+            { team_id: 't-f', name: 'F', image_url: null, logo_url: 'f.png', division_id: 'd-1' },
+            { team_id: 't-g', name: 'G', image_url: null, logo_url: 'g.png', division_id: 'd-2' },
+            { team_id: 't-h', name: 'H', image_url: null, logo_url: 'h.png', division_id: 'd-2' },
+            { team_id: 't-i', name: 'I', image_url: null, logo_url: 'i.png', division_id: 'd-1' },
+            { team_id: 't-j', name: 'J', image_url: null, logo_url: 'j.png', division_id: 'd-1' },
+            { team_id: 't-k', name: 'K', image_url: null, logo_url: 'k.png', division_id: 'd-1' },
+            { team_id: 't-m', name: 'M', image_url: null, logo_url: 'm.png', division_id: 'd-1' },
+            { team_id: 't-n', name: 'N', image_url: null, logo_url: 'n.png', division_id: 'd-1' },
+            {
+              team_id: 't-hid-w',
+              name: 'Hidden Winner',
+              image_url: null,
+              logo_url: 'hw.png',
+              division_id: 'd-hidden',
+            },
+            {
+              team_id: 't-hid-l',
+              name: 'Hidden Loser',
+              image_url: null,
+              logo_url: 'hl.png',
+              division_id: 'd-hidden',
+            },
           ],
           error: null,
         },
@@ -419,11 +443,17 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
             { team_id: 't-k', power_score: 0.2 },
             { team_id: 't-l', power_score: 0.8 },
             { team_id: 't-n', power_score: 0.7 },
+            { team_id: 't-hid-w', power_score: 0.05 },
+            { team_id: 't-hid-l', power_score: 0.95 },
           ],
           error: null,
         },
       ],
-      divisions: [{ data: [{ id: 'd-1' }, { id: 'd-2' }], error: null }],
+      // Queried once by _fetchUpsets and once by _fetchHotStreaks
+      divisions: [
+        { data: [{ id: 'd-1' }, { id: 'd-2' }], error: null },
+        { data: [{ id: 'd-1' }, { id: 'd-2' }], error: null },
+      ],
     });
 
     mockCalculateStreak.mockImplementation((teamId: string) => {
@@ -445,6 +475,7 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(result.weekNumber).toBe(3);
 
     expect(result.upsets).toHaveLength(3);
+    // t-hid-w has the biggest gap (90) but is in a hidden division, so it is dropped
     expect(result.upsets.map((u) => u.winnerId)).toEqual(['t-a', 't-c', 't-g']);
     expect(result.upsets.map((u) => u.powerScoreGap)).toEqual([60, 45, 40]);
     expect(result.upsets[0].matchResult).toBe('2–0');
@@ -519,8 +550,8 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       v_team_details: [
         {
           data: [
-            { team_id: 'a', name: 'A', logo_url: 'a.png', image_url: null },
-            { team_id: 'b', name: 'B', logo_url: 'b.png', image_url: null },
+            { team_id: 'a', name: 'A', logo_url: 'a.png', image_url: null, division_id: 'd-1' },
+            { team_id: 'b', name: 'B', logo_url: 'b.png', image_url: null, division_id: 'd-1' },
           ],
           error: { message: 'team details for upsets failed' },
         },
@@ -555,7 +586,11 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
           error: { message: 'career stats failed' },
         },
       ],
-      divisions: [{ data: [{ id: 'd-1' }], error: null }],
+      // Queried once by _fetchUpsets and once by _fetchHotStreaks
+      divisions: [
+        { data: [{ id: 'd-1' }], error: null },
+        { data: [{ id: 'd-1' }], error: null },
+      ],
     });
 
     mockCalculateStreak.mockImplementation((teamId: string) => (teamId === 's1' ? 'W3' : 'L2'));
