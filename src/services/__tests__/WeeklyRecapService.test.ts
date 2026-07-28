@@ -501,6 +501,56 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(result.hasData).toBe(true);
   });
 
+  it('surfaces a failure to load visible divisions instead of silently dropping every upset', async () => {
+    createSupabaseMock({
+      seasons: [{ data: { id: 's-div', start_date: '2026-01-01T00:00:00Z' }, error: null }],
+      matches: [
+        { data: { date: '2026-01-12T00:00:00Z' }, error: null },
+        {
+          data: [
+            {
+              id: 'up-1',
+              team1_id: 'a',
+              team2_id: 'b',
+              winner_id: 'a',
+              loser_id: 'b',
+              team1_game_wins: 2,
+              team2_game_wins: 1,
+            },
+          ],
+          error: null,
+        },
+        { data: [], error: null },
+      ],
+      v_team_details: [
+        {
+          data: [
+            { team_id: 'a', name: 'A', logo_url: 'a.png', image_url: null, division_id: 'd-1' },
+            { team_id: 'b', name: 'B', logo_url: 'b.png', image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
+      ],
+      team_season_stats: [
+        {
+          data: [
+            { team_id: 'a', power_score: 0.2 },
+            { team_id: 'b', power_score: 0.9 },
+          ],
+          error: null,
+        },
+      ],
+      divisions: [{ data: null, error: { message: 'divisions query failed' } }],
+    });
+
+    await WeeklyRecapService.fetchWeeklyRecap();
+
+    expect(mockHandleDatabaseError).toHaveBeenCalledWith(
+      { message: 'divisions query failed' },
+      'Failed to fetch visible divisions for upset detection'
+    );
+  });
+
   it('returns safe empty response when top-level flow throws', async () => {
     mockFrom.mockImplementation(() => {
       throw new Error('boom');

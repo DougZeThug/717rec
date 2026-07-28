@@ -173,6 +173,13 @@ async function _fetchUpsets(
       'Failed to fetch career stats for upset detection'
     );
   }
+  // Must surface: an empty visible-division set silently filters out every upset
+  if (visibleDivisionsResult.error) {
+    handleDatabaseError(
+      visibleDivisionsResult.error,
+      'Failed to fetch visible divisions for upset detection'
+    );
+  }
 
   if (!teamDetailsResult.data || !careerStatsResult.data) return [];
 

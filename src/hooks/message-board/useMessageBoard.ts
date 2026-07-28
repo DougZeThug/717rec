@@ -334,15 +334,13 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       realtimeMessagesRef.current.delete(deletedMessage.id);
       realtimeDeletesRef.current.add(deletedMessage.id);
       pruneRealtimeBuffers();
-      queryClient.setQueriesData<MessagePages>(
-        { queryKey: messageBoardKeys.all },
-        (curr) =>
-          curr
-            ? buildMessagePages(
-                curr.pages.flat().filter((msg) => msg.id !== deletedMessage.id),
-                curr.pages.at(-1)?.hasMore
-              )
-            : curr
+      queryClient.setQueriesData<MessagePages>({ queryKey: messageBoardKeys.all }, (curr) =>
+        curr
+          ? buildMessagePages(
+              curr.pages.flat().filter((msg) => msg.id !== deletedMessage.id),
+              curr.pages.at(-1)?.hasMore
+            )
+          : curr
       );
     },
     [queryClient, pruneRealtimeBuffers]
