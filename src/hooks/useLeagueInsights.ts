@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
-import { Ranking } from '@/types';
 
 export interface DivisionStrength {
   division: string;
