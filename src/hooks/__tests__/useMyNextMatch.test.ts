@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Match } from '@/types';
 
@@ -128,5 +128,67 @@ describe('useMyNextMatch', () => {
     const { result } = renderHook(() => useMyNextMatch());
     expect(result.current.matches).toEqual([]);
     expect(result.current.hasTeamMembership).toBe(true);
+  });
+
+  // Matches are stored as UTC timestamps. In a timezone behind UTC, a late
+  // evening game lands on the *next* UTC day, so grouping must use local dates.
+  describe('grouping across a UTC day boundary (America/New_York)', () => {
+    const originalTz = process.env.TZ;
+
+    beforeAll(() => {
+      process.env.TZ = 'America/New_York';
+    });
+
+    afterAll(() => {
+      process.env.TZ = originalTz;
+    });
+
+    // Both on Wed Jul 15 local: 7:00 PM EDT and 10:00 PM EDT.
+    const earlyEvening = '2026-07-15T23:00:00.000Z';
+    const lateEvening = '2026-07-16T02:00:00.000Z';
+
+    it('keeps both upcoming matches from the same local evening', () => {
+      (useTeamMatches as ReturnType<typeof vi.fn>).mockReturnValue({
+        upcomingMatches: [makeMatch('m-7pm', earlyEvening), makeMatch('m-10pm', lateEvening)],
+        pastMatches: [],
+        isLoadingMatches: false,
+      });
+
+      const { result } = renderHook(() => useMyNextMatch());
+
+      expect(result.current.matches.map((m) => m.match.id)).toEqual(['m-7pm', 'm-10pm']);
+    });
+
+    it('keeps both past matches from the same local evening', () => {
+      (useTeamMatches as ReturnType<typeof vi.fn>).mockReturnValue({
+        upcomingMatches: [],
+        pastMatches: [
+          makeMatch('m-7pm', earlyEvening, true),
+          makeMatch('m-10pm', lateEvening, true),
+        ],
+        isLoadingMatches: false,
+      });
+
+      const { result } = renderHook(() => useMyNextMatch());
+
+      expect(result.current.isPreviousMatches).toBe(true);
+      expect(result.current.matches.map((m) => m.match.id)).toEqual(['m-7pm', 'm-10pm']);
+    });
+
+    it('still separates matches on different local days', () => {
+      (useTeamMatches as ReturnType<typeof vi.fn>).mockReturnValue({
+        upcomingMatches: [
+          makeMatch('m-10pm', lateEvening),
+          // 7:00 PM EDT the next local day (Thu Jul 16)
+          makeMatch('m-next-day', '2026-07-16T23:00:00.000Z'),
+        ],
+        pastMatches: [],
+        isLoadingMatches: false,
+      });
+
+      const { result } = renderHook(() => useMyNextMatch());
+
+      expect(result.current.matches.map((m) => m.match.id)).toEqual(['m-10pm']);
+    });
   });
 });
