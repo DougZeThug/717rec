@@ -287,6 +287,30 @@ describe('BracketUpdateService', () => {
         expect(manager.update.match).toHaveBeenCalled();
       });
 
+      it('refuses the flip when only the LOSER has played on, in the losers bracket', async () => {
+        // Double elimination sends the loser (20) into the losers bracket. That
+        // match can be played while the winner's next match is not, so following
+        // the winner alone would miss it and let the flip corrupt it.
+        wireDownstream([
+          {
+            id: 9,
+            stage_id: 1,
+            group_id: 2, // losers bracket
+            round_id: 2,
+            number: 1,
+            status: 4,
+            opponent1: { id: 20, score: 2, result: 'win' as const },
+            opponent2: { id: 40, score: 0, result: 'loss' as const },
+          },
+        ]);
+
+        await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
+          /Cannot change the winner of this archived match/
+        );
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
       it('allows the flip when the downstream chain has no results yet', async () => {
         wireDownstream([
           { ...DOWNSTREAM_PLAYED, status: 2, opponent1: { id: 10 }, opponent2: null },

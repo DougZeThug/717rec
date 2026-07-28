@@ -1,9 +1,21 @@
 import type { StorageMatch, StorageRound } from '../../types/BracketServiceTypes';
 import type { BracketAdminDeps } from './types';
 
+/**
+ * Matches fed by this one, found by following participants forward.
+ *
+ * By default it seeds from the winner alone, which is what the reopen cascade
+ * wants: clearing a match un-advances the team it sent onward.
+ *
+ * `includeLoser` also seeds from the losing side. Double elimination sends the
+ * loser into the losers bracket, so anything asking "would changing this result
+ * disturb matches already played?" has to look down both continuations — the
+ * loser's LB match can be played while the winner's next match is not.
+ */
 export async function collectDownstreamChain(
   deps: BracketAdminDeps,
-  matchId: number
+  matchId: number,
+  options: { includeLoser?: boolean } = {}
 ): Promise<StorageMatch[]> {
   const currentMatch = (await deps.storage.select('match', matchId)) as StorageMatch | null;
   if (!currentMatch) return [];
@@ -36,13 +48,20 @@ export async function collectDownstreamChain(
   });
 
   const trackedIds = new Set<number | string>();
-  const winnerId =
-    currentMatch.opponent1?.result === 'win'
-      ? currentMatch.opponent1.id
-      : currentMatch.opponent2?.result === 'win'
-        ? currentMatch.opponent2?.id
-        : null;
+  const winnerIsOpponent1 = currentMatch.opponent1?.result === 'win';
+  const winnerIsOpponent2 = currentMatch.opponent2?.result === 'win';
+  const winnerId = winnerIsOpponent1
+    ? currentMatch.opponent1?.id
+    : winnerIsOpponent2
+      ? currentMatch.opponent2?.id
+      : null;
   if (winnerId) trackedIds.add(winnerId);
+
+  if (options.includeLoser && (winnerIsOpponent1 || winnerIsOpponent2)) {
+    const loserId = winnerIsOpponent1 ? currentMatch.opponent2?.id : currentMatch.opponent1?.id;
+    if (loserId) trackedIds.add(loserId);
+  }
+
   if (trackedIds.size === 0) return [];
 
   const result: StorageMatch[] = [];

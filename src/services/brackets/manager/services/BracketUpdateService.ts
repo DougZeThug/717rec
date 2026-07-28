@@ -145,8 +145,9 @@ export class BracketUpdateService {
    * Only a winner FLIP propagates. Correcting the score while the same team still
    * wins re-writes this match alone and stays allowed.
    *
-   * Note: collectDownstreamChain follows the winner's path, so in double elimination
-   * the loser's drop into the losers bracket is not covered by this check.
+   * Both continuations are checked: a flip swaps who advances AND who drops to the
+   * losers bracket, and the loser's LB match can already be played while the
+   * winner's next match is not.
    */
   private async assertArchivedFlipIsSafe(
     matchId: number,
@@ -162,7 +163,9 @@ export class BracketUpdateService {
     // Score-only correction, or no decisive winner on either side: nothing propagates.
     if (currentWinner === null || nextWinner === null || currentWinner === nextWinner) return;
 
-    const downstream = await collectDownstreamChain({ storage: this.storage }, matchId);
+    const downstream = await collectDownstreamChain({ storage: this.storage }, matchId, {
+      includeLoser: true,
+    });
     const played = downstream.filter(
       (match) =>
         match.opponent1?.score != null || match.opponent2?.score != null || match.status >= 4
