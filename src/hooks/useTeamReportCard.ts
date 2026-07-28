@@ -124,7 +124,7 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
     const teamRanking = rankings.find((r) => r.teamId === teamId);
     if (!teamRanking) return null;
 
-    const allPowerScores = rankings.map((r) => r.powerScore);
+    const allPowerScores = rankings.map((r) => r.powerScore ?? 0);
     const allWinPcts = rankings.map((r) => r.winPercentage);
     const allSos = rankings.map((r) => r.sos);
     const allGameWinPcts = rankings.map((r) => r.gameWinPercentage);
@@ -142,7 +142,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
     const teamClutchRecord = calculateClutchRecord(teamId, pastMatches);
     const teamSweepStats = calculateSweepRate(teamId, pastMatches);
 
-    const overallPercentile = calculatePercentile(teamRanking.powerScore, allPowerScores, true);
+    const overallPercentile = calculatePercentile(
+      teamRanking.powerScore ?? 0,
+      allPowerScores,
+      true
+    );
     const overall: GradeCategory = {
       label: 'Overall',
       grade: calculateGrade(overallPercentile.percentile),
