@@ -120,7 +120,9 @@ When "Prioritize Match Quality" is enabled:
 ```
 User selects date & settings
     ↓
-Load teams from team_timeslots table
+Load teams from team_timeslots table (the load date is remembered)
+    ↓
+Generate is blocked if the date changed since teams were loaded
     ↓
 usePairingGenerator.generateMatchPairings()
     ↓
@@ -145,6 +147,16 @@ Calculate quality metrics
     ↓
 Display preview & apply to database
 ```
+
+### Date staleness guards
+
+Team lists are specific to the selected date, so two checks stop a schedule from
+being built against the wrong day:
+
+- **Generate** refuses to run when the date picker moved after teams were
+  loaded ("Teams Out of Date") — reload teams for the new date first.
+- **Apply** refuses to run when the pairings on screen were generated for a
+  different date ("Schedule Stale") — regenerate first.
 
 ---
 
