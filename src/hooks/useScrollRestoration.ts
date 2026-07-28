@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigationType } from 'react-router';
 
 const SCROLL_POSITIONS_KEY = 'scroll_positions';
 
@@ -20,6 +20,7 @@ const IS_RESTORING_RESET_DELAY_MS = 100;
  */
 const useScrollRestoration = (routeKey?: string) => {
   const location = useLocation();
+  const navigationType = useNavigationType();
   const key = routeKey || location.pathname;
   const isRestoring = useRef(false);
   const pendingTimeoutRef = useRef<number | null>(null);
@@ -59,11 +60,8 @@ const useScrollRestoration = (routeKey?: string) => {
   // Restore scroll position on mount (only when navigating back)
   // Using useLayoutEffect to run synchronously after DOM mutations but before paint
   useLayoutEffect(() => {
-    // Check if this is a back/forward navigation
-    const navEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
-    const isBackNavigation = navEntries.length > 0 && navEntries[0].type === 'back_forward';
-
-    // Only restore on back/forward navigation
+    // Only restore on back/forward (POP) navigation within the SPA
+    const isBackNavigation = navigationType === 'POP';
     if (!isBackNavigation) return;
 
     let retryCount = 0;
@@ -113,7 +111,7 @@ const useScrollRestoration = (routeKey?: string) => {
       }
       isRestoring.current = false;
     };
-  }, [key]);
+  }, [key, navigationType]);
 };
 
 export default useScrollRestoration;
