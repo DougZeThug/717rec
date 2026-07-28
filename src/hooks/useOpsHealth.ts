@@ -46,7 +46,7 @@ export const useRealtimeHealth = (): RealtimeHealth => {
       label: 'ops-health-heartbeat',
       build: () =>
         supabase
-          .channel('ops-health-heartbeat')
+          .channel(`ops-health-heartbeat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
           .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
             // no-op; presence of a message means the socket is alive
           }),
