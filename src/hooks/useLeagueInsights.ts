@@ -101,8 +101,12 @@ export function useLeagueInsights(): LeagueInsightsData {
       };
     }
 
-    // Only include teams that have played matches
-    const activeTeams = rankings.filter((r) => r.wins + r.losses > 0);
+    // Only include teams that have played matches AND have a computed power score.
+    // Teams with a NULL power score (no data) must not be coerced to 0.
+    const activeTeams = rankings.filter(
+      (r): r is typeof r & { powerScore: number } =>
+        r.wins + r.losses > 0 && r.powerScore !== null
+    );
     if (activeTeams.length === 0) {
       return { overview: null, divisionStrength: [], parity: null, topPerformers: [] };
     }
@@ -124,7 +128,9 @@ export function useLeagueInsights(): LeagueInsightsData {
     };
 
     // === Division Strength ===
-    const divisionMap = new Map<string, Ranking[]>();
+    // activeTeams already has non-null powerScore; keep that narrowing through the map.
+    type ActiveTeam = (typeof activeTeams)[number];
+    const divisionMap = new Map<string, ActiveTeam[]>();
     for (const r of activeTeams) {
       const div = r.divisionName || 'Unassigned';
       const divisionRankings = divisionMap.get(div) ?? [];

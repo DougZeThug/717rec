@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { getPowerScoreColor } from '@/utils/colors/powerScoreColors';
 
 interface PowerScoreGaugeProps {
-  score: number; // 0-100 scale from v_team_details view
+  score: number | null; // 0-100 scale from v_team_details view; null when the team has no data
   size?: 'sm' | 'md' | 'lg';
   showLabel?: boolean;
   className?: string;
@@ -28,9 +28,10 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
   const radius = (config.width - config.strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  // Score is already on 0-100 scale
-  const displayScore = score;
-  const colorClass = getPowerScoreColor(score);
+  // Score is already on 0-100 scale; treat null as "no data" so the gauge shows N/A in neutral gray.
+  const hasScore = score !== null && score !== undefined;
+  const displayScore = hasScore ? score : 0;
+  const colorClass = getPowerScoreColor(hasScore ? score : null);
 
   // Animate the score number
   const [displayValue, setDisplayValue] = useState(0);
@@ -50,6 +51,7 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
 
   // Get color for the ring based on score
   const getRingColor = () => {
+    if (!hasScore) return 'stroke-muted';
     if (displayScore >= 75) return 'stroke-green-500';
     if (displayScore >= 60) return 'stroke-yellow-500';
     if (displayScore >= 45) return 'stroke-orange-500';
@@ -89,7 +91,7 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={cn('font-bold font-mono', config.fontSize, colorClass)}>
-          {displayValue.toFixed(1)}
+          {hasScore ? displayValue.toFixed(1) : 'N/A'}
         </span>
         {showLabel && (
           <span className={cn('text-muted-foreground uppercase tracking-wider', config.labelSize)}>

@@ -85,7 +85,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             winPercentage: team.win_percentage || 0,
             gameWinPercentage: team.game_win_percentage || 0,
             sos: team.sos || 0.5,
-            powerScore: team.power_score || 0, // Convert NULL to 0 for sorting, but keep original for display
+            powerScore: team.power_score ?? null,
             streak,
             divisionName: team.divisionName || 'Unassigned',
             previousRank,

@@ -94,7 +94,7 @@ describe('useTeamRankings', () => {
     });
     const { result } = renderHook(() => useTeamRankings());
     await waitFor(() => expect(result.current.rankings.length).toBeGreaterThan(0));
-    const scores = result.current.rankings.map((r) => r.powerScore);
+    const scores = result.current.rankings.map((r) => r.powerScore ?? -Infinity);
     expect(scores[0]).toBeGreaterThanOrEqual(scores[1]);
     expect(scores[1]).toBeGreaterThanOrEqual(scores[2]);
   });

@@ -41,9 +41,9 @@ export const createRankingObject = (
     allMatches
   );
 
-  // Use power_score directly from the database view (v_team_details)
-  // which now includes the weighted calculation with division weights
-  const powerScore = team.power_score || 0;
+  // Use power_score directly from the database view (v_team_details).
+  // Preserve NULL so display layers render "N/A" instead of a red 0.0.
+  const powerScore = team.power_score ?? null;
 
   return {
     teamId: team.id,
