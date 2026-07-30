@@ -34,16 +34,7 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
   };
 
   if (!user) {
-    return (
-      <LoginRequired
-        message="Sign in to comment on matches"
-        fallback={
-          <div className="bg-muted/30 rounded-md px-4 py-3 text-sm text-muted-foreground">
-            Sign in to comment on this match
-          </div>
-        }
-      />
-    );
+    return <LoginRequired message="Sign in to comment on this match" />;
   }
 
   return (
