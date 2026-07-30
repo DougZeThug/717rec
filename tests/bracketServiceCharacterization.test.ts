@@ -760,6 +760,61 @@ describe('bracket service characterization (real service + real library over fak
       });
     });
 
+    it('rolls the whole stage back when propagation fails partway through', async () => {
+      // The library writes the match itself BEFORE propagating (updater.js:
+      // applyMatchUpdate, then updateRelatedMatches), and none of it is
+      // transactional. A failure partway used to leave the new score saved while
+      // the rounds around it still held the old one. Nothing may survive now.
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+
+      const ready = mustFindMatch((m) => m.status === 2, 'a ready match');
+      const before = snapshotSqlGrid();
+
+      // Spy on the storage INSTANCE, not the prototype: BracketsManager's
+      // constructor calls instrumentStorage(), which installs its own bound
+      // `update` property on the instance — a prototype spy is shadowed by it
+      // and never runs.
+      //
+      // Let the first write through (that is the match itself), then fail — the
+      // exact shape of a mid-propagation storage error.
+      const storage = service.getStorage() as unknown as {
+        update: (...args: unknown[]) => Promise<boolean>;
+      };
+      const originalUpdate = storage.update.bind(storage);
+      let writes = 0;
+      const updateSpy = vi.spyOn(storage, 'update').mockImplementation(async (...args) => {
+        writes += 1;
+        if (writes > 1) throw new Error('simulated storage failure during propagation');
+        return originalUpdate(...args);
+      });
+
+      try {
+        await expect(
+          service.updateMatch({
+            matchId: ready.id,
+            scores: {
+              opponent1: { score: 5, result: 'win' },
+              opponent2: { score: 2, result: 'loss' },
+            },
+          })
+        ).rejects.toThrow(/simulated storage failure during propagation/);
+      } finally {
+        updateSpy.mockRestore();
+      }
+
+      // Verify the failure really did write something before dying, otherwise
+      // this test would pass vacuously.
+      expect(writes).toBeGreaterThan(1);
+      expect(snapshotSqlGrid()).toEqual(before);
+    });
+
     it('refuses to flip the winner once later matches have been played, changing nothing', async () => {
       // Unlocking 5 → 4 hands the match back to the library, which re-propagates
       // its winner forward. The library's setNextOpponent REPLACES the downstream

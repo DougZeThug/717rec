@@ -254,6 +254,11 @@ export function usePlayoffPageData(): PlayoffPageData {
   const handleBracketCreated = useCallback(async () => {
     playoffLog('Handling bracket creation');
 
+    // Start every attempt from a clean slate. Nothing else clears this state,
+    // so without it a single past failure leaves a banner the user cannot
+    // dismiss — still on screen above data that refreshed successfully.
+    setError(null);
+
     try {
       await originalHandleBracketCreated();
 
@@ -275,6 +280,10 @@ export function usePlayoffPageData(): PlayoffPageData {
 
   const refetchBrackets = useCallback(async () => {
     cacheLog('Refetching all brackets data');
+
+    // See handleBracketCreated: clear the previous failure so a successful
+    // retry actually removes the banner instead of leaving it stuck forever.
+    setError(null);
 
     try {
       const cacheInvalidationPromises = [
