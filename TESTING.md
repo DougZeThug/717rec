@@ -344,7 +344,6 @@ over time; anything already above target is just "keep it green".
 | `src/utils/playoffs`               | 100%        | 85%    | On target                                    |
 | `src/utils/matchUtils`             | 100%        | 85%    | On target                                    |
 | `src/utils/brackets/mappers`       | 100%        | 85%    | On target                                    |
-| `src/utils/brackets/validators`    | 100%        | 85%    | On target                                    |
 | `src/utils/auth`                   | 90%         | 85%    | On target                                    |
 | `src/utils/autoSchedule`           | 68%         | 85%    | Complex scheduling algorithms — gradual      |
 | `src/utils/autoSchedule/dualBlock` | 89%         | 85%    | On target                                    |
