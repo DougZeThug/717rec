@@ -571,6 +571,21 @@ describe('bracket service characterization (real service + real library over fak
       );
     });
 
+    it('leaves the match unscored when the winner cannot be advanced', async () => {
+      // Placement is resolved before the completion write, so a refusal leaves
+      // nothing half-done — no match marked Completed with its winner stranded.
+      seedHalvingBracket({ opponent1_id: 3, opponent2_id: 4 });
+      const service = new BracketManagerService();
+
+      await expect(service.adminCompleteByeMatch(1, 21)).rejects.toThrow(/Cannot advance the team/);
+
+      expect(rowById(1)).toMatchObject({
+        status: 2,
+        opponent1_score: null,
+        opponent1_result: null,
+      });
+    });
+
     it('advances an odd-numbered feeder into opponent1', async () => {
       seedHalvingBracket();
       const service = new BracketManagerService();
