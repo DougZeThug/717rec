@@ -57,5 +57,4 @@ export const TimeslotTransformer = {
 
     return grouped;
   },
-
 };
