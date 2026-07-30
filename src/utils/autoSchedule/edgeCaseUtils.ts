@@ -46,8 +46,7 @@ export function handleOddTeams(timeBlockTeams: TimeBlockTeamsMap): {
           teamName: removedTeam.name,
           block: pairName,
         });
-      }
-
+}
       adjustedTeams[pairName] = teamsCopy;
     }
   });
@@ -212,4 +211,3 @@ export function validateBackToBackPairAssignments(timeBlockTeams: TimeBlockTeams
     warnings,
   };
 }
-
