@@ -21,50 +21,6 @@ type SeasonStatsAccordionRow = Pick<
 };
 
 export const SeasonStatsService = {
-  // From useSeasonStats.ts (fetchSeasons)
-  fetchSeasonStatIds: async () => {
-    const { data, error } = await supabase
-      .from('team_season_stats')
-      .select('season_id')
-      .order('season_id');
-
-    if (error) handleDatabaseError(error, 'Failed to fetch season stat IDs');
-
-    // Process the data to get unique season_ids
-    const seasonIds = data.map((item) => item.season_id);
-    const uniqueSeasons = [...new Set(seasonIds)];
-    return uniqueSeasons;
-  },
-
-  // From useSeasonStats.ts (fetchStatsBySeason)
-  fetchStatsBySeason: async (seasonId: string) => {
-    const { data, error } = await supabase
-      .from('team_season_stats')
-      .select(
-        `
-          season_id,
-          team_id,
-          match_wins,
-          match_losses,
-          game_wins,
-          game_losses,
-          power_score,
-          sos,
-          recorded_at,
-          teams:team_id (name)
-        `
-      )
-      .eq('season_id', seasonId)
-      .order('power_score', { ascending: false });
-
-    if (error) handleDatabaseError(error, 'Failed to fetch stats by season');
-
-    return data.map((stat) => ({
-      ...stat,
-      team_name: stat.teams?.name,
-    }));
-  },
-
   // From SeasonAccordion.tsx (useSeasonData queryFn)
   fetchSeasonStatsForAccordion: async (seasonId: string) => {
     const { data, error } = await supabase
