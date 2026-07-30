@@ -260,7 +260,7 @@ export const usePlayoffEditMatch = () => {
         await updateMatch(matchId, team1Score, team2Score, games, team1GameWins, team2GameWins);
 
         // 5. Confirm optimistic update succeeded
-        optimisticMutation.onSuccess();
+        optimisticMutation.onSuccess(matchId);
 
         // 6. Refresh UI for final consistency (realtime will also trigger)
         if (refetchBrackets) {
@@ -269,7 +269,7 @@ export const usePlayoffEditMatch = () => {
       } catch (error) {
         // 7. Rollback on error
         errorLog('Error saving match score:', error);
-        optimisticMutation.onError(error as Error);
+        optimisticMutation.onError(error as Error, matchId);
         throw error;
       }
     },

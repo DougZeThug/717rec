@@ -233,7 +233,9 @@ describe('usePlayoffEditMatch', () => {
 
       expect(mockApplyOptimisticUpdate).toHaveBeenCalled();
       expect(mockUpdateMatch).toHaveBeenCalledWith('42', 2, 1, [], 2, 1);
-      expect(mockOnSuccess).toHaveBeenCalled();
+      // With the match id: rollback state is per-match, so confirming a save must
+      // clear that match's snapshot and not another in-flight save's.
+      expect(mockOnSuccess).toHaveBeenCalledWith('42');
       expect(mockRefetch).toHaveBeenCalled();
     });
 
@@ -254,7 +256,7 @@ describe('usePlayoffEditMatch', () => {
         }
       });
 
-      expect(mockOnError).toHaveBeenCalled();
+      expect(mockOnError).toHaveBeenCalledWith(expect.any(Error), '42');
     });
 
     it('shows optimistic success toast before mutation resolves', async () => {
