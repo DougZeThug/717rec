@@ -275,6 +275,26 @@ describe('BracketUpdateService', () => {
         expect(manager.update.match).not.toHaveBeenCalled();
       });
 
+      it('refuses a tied payload on a match that already has a winner', async () => {
+        // A non-decisive payload skipped the guard entirely and went to the
+        // library, which would try to un-decide a match whose winner has already
+        // advanced. Both UI callers send decisive results, so this is a backstop.
+        wireDownstream([DOWNSTREAM_PLAYED]);
+
+        await expect(
+          service.updateMatch({
+            matchId: 7,
+            scores: {
+              opponent1: { score: 1, result: 'loss' },
+              opponent2: { score: 1, result: 'loss' },
+            },
+          })
+        ).rejects.toThrow(/already has a winner/);
+
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
       it('refuses the flip on a COMPLETED match too, not just an archived one', async () => {
         // A Completed match needs no unlock, so it used to reach the library with
         // no guard at all — the same propagation, the same corruption, silently.

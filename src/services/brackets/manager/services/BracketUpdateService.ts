@@ -232,8 +232,20 @@ export class BracketUpdateService {
     );
     const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
 
-    // Score-only correction, or no decisive winner on either side: nothing propagates.
-    if (currentWinner === null || nextWinner === null || currentWinner === nextWinner) return;
+    // Nothing has propagated from this match yet, so there is nothing to disturb.
+    if (currentWinner === null) return;
+
+    // A settled match being handed a tied or result-less payload. The library would
+    // try to un-decide a match whose winner has already moved on; refuse instead.
+    if (nextWinner === null) {
+      throw new ValidationError(
+        'This match already has a winner. Enter a decisive score, or reopen the ' +
+          'match to clear the result first.'
+      );
+    }
+
+    // Same winner: handled by applyScoreOnlyCorrection before reaching this guard.
+    if (currentWinner === nextWinner) return;
 
     const downstream = await collectDownstreamChain({ storage: this.storage }, matchId, {
       includeLoser: true,
