@@ -89,7 +89,7 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
             streak,
             divisionName: team.divisionName || 'Unassigned',
             previousRank,
-            rankChange: 0, // Will be calculated after sorting
+            rankChange: undefined, // Will be calculated after sorting
             headToHead: {}, // Will be populated if needed
             closeMatchLosses: team.close_match_losses || 0,
           };

@@ -40,7 +40,7 @@
       {
         "name": "get_standings",
         "title": "Get standings",
-        "description": "Get current active-season standings sorted by rank. Optional division filter.",
+        "description": "Get current active-season standings sorted by power score. Optional division filter.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,

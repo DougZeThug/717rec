@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth-context';
@@ -18,6 +18,7 @@ const LoginRequired: React.FC<LoginRequiredProps> = ({
 }) => {
   const { user, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showLoading, setShowLoading] = useState(true);
 
   // Set a timeout to show loading state for a minimum time
@@ -53,7 +54,14 @@ const LoginRequired: React.FC<LoginRequiredProps> = ({
   return (
     <div className="border rounded-md p-4 flex flex-col items-center justify-center text-center gap-2 bg-muted/50">
       <p className="text-muted-foreground">{message}</p>
-      <Button size="sm" onClick={() => navigate('/auth')}>
+      <Button
+        size="sm"
+        onClick={() =>
+          navigate('/auth', {
+            state: { returnTo: `${location.pathname}${location.search}${location.hash}` },
+          })
+        }
+      >
         Login / Sign Up
       </Button>
     </div>

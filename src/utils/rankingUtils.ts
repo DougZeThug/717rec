@@ -92,10 +92,12 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
     const currentRank = index + 1;
     const previousRank = ranking.previousRank;
 
-    let rankChange = 0;
-    if (previousRank && previousRank !== currentRank) {
-      rankChange = previousRank - currentRank;
+    // No prior ranking (new team) -> undefined, so the UI can show "-" instead of "0".
+    if (previousRank === undefined || previousRank === null) {
+      return { ...ranking, rankChange: undefined };
     }
+
+    const rankChange = previousRank !== currentRank ? previousRank - currentRank : 0;
 
     return {
       ...ranking,
