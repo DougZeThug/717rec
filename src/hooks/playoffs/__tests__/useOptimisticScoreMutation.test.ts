@@ -343,6 +343,30 @@ describe('useOptimisticScoreMutation', () => {
       expect(scoresById()).toEqual({ '99': 5, '100': 3 });
     });
 
+    it('drops pending rollback timers when the hook unmounts', () => {
+      vi.useFakeTimers();
+      queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+      });
+      queryClient.setQueryData(['bracket-data', BRACKET_ID], {
+        matches: [makeBmMatch({ opponent1_score: 5 }), makeOtherBmMatch()],
+      });
+      const { result, unmount } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+        wrapper: createWrapper(),
+      });
+
+      applyBoth(result);
+      unmount();
+      act(() => {
+        vi.advanceTimersByTime(20000);
+      });
+
+      // Navigating away must not fire a destructive toast or rewrite the cache for
+      // a screen that is gone.
+      expect(mockToast).not.toHaveBeenCalled();
+      expect(scoresById()).toEqual({ '99': 2, '100': 3 });
+    });
+
     it('a match missing from the cache does not roll back a different match', () => {
       // No snapshot can be taken for a match that is not cached. That must mean
       // "nothing to undo", not "undo whatever was snapshotted last".

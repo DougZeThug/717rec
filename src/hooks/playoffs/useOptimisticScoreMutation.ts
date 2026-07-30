@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { errorLog, scoreLog } from '@/utils/logger';
@@ -61,6 +61,19 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       clearTimeout(timeout);
       rollbackTimeoutsRef.current.delete(matchId);
     }
+  }, []);
+
+  // Drop pending timers when the page goes away. Otherwise navigating off mid-save
+  // leaves them to fire up to 15s later, writing to a cache and raising a
+  // destructive toast for a screen that no longer exists.
+  useEffect(() => {
+    // Captured into a local: reading ref.current inside the cleanup closure is
+    // exactly what react-hooks/exhaustive-deps warns about.
+    const timeouts = rollbackTimeoutsRef.current;
+    return () => {
+      for (const timeout of timeouts.values()) clearTimeout(timeout);
+      timeouts.clear();
+    };
   }, []);
 
   // Rollback to previous state (declared before applyOptimisticUpdate so the
