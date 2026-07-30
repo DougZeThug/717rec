@@ -14,11 +14,7 @@ export const MessageReactionsService = {
   },
 
   /** Upsert a reaction and return the stored row id (null if unavailable). */
-  addReaction: async (
-    messageId: string,
-    userId: string,
-    emoji: string
-  ): Promise<string | null> => {
+  addReaction: async (messageId: string, userId: string, emoji: string): Promise<string | null> => {
     const { data, error } = await supabase
       .from('message_reactions')
       .upsert(
