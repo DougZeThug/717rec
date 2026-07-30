@@ -478,6 +478,110 @@ describe('bracket service characterization (real service + real library over fak
     });
   });
 
+  describe('admin BYE completion — downstream placement', () => {
+    /**
+     * Two one-sided round-1 matches feeding a single round-2 match. Two matches
+     * collapsing into one is the "halving" shape, where topology fixes which slot
+     * each feeder owns: match 2N-1 → opponent1, match 2N → opponent2.
+     */
+    function seedHalvingBracket(nextMatch: Partial<MatchRow> = {}): void {
+      seedBracketRow();
+      db().seed('stage', [
+        {
+          id: 1,
+          tournament_id: BRACKET_ID,
+          name: 'S',
+          type: 'single_elimination',
+          number: 1,
+          settings: {},
+        },
+      ]);
+      db().seed('group', [{ id: 1, stage_id: 1, number: 1 }]);
+      db().seed('round', [
+        { id: 1, stage_id: 1, group_id: 1, number: 1 },
+        { id: 2, stage_id: 1, group_id: 1, number: 2 },
+      ]);
+      db().seed(
+        'participant',
+        [1, 2, 3, 4].map((n) => ({
+          id: n,
+          tournament_id: BRACKET_ID,
+          name: `T${n}`,
+          team_id: `uuid-${n}`,
+          position: n,
+        }))
+      );
+      const oneSided = (id: number, number: number, participantId: number) => ({
+        id,
+        stage_id: 1,
+        group_id: 1,
+        round_id: 1,
+        number,
+        status: 2,
+        child_count: 0,
+        opponent1_id: participantId,
+        opponent1_score: null,
+        opponent1_result: null,
+        opponent2_id: null,
+        opponent2_score: null,
+        opponent2_result: 'bye',
+      });
+      db().seed('match', [
+        oneSided(1, 1, 1),
+        oneSided(2, 2, 2),
+        {
+          id: 3,
+          stage_id: 1,
+          group_id: 1,
+          round_id: 2,
+          number: 1,
+          status: 1,
+          child_count: 0,
+          opponent1_id: null,
+          opponent1_score: null,
+          opponent1_result: null,
+          opponent2_id: null,
+          opponent2_score: null,
+          opponent2_result: null,
+          ...nextMatch,
+        },
+      ]);
+    }
+
+    const rowById = (id: number): MatchRow => mustFindMatch((m) => m.id === id, `match ${id}`);
+
+    it('names a downstream BYE as a BYE rather than reporting it occupied', async () => {
+      // A strictly-null slot is a stored BYE: no team can ever play there, so it
+      // cannot receive a winner. Calling that "occupied" sends an admin looking for
+      // a team that does not exist.
+      seedHalvingBracket({ opponent1_result: 'bye', opponent2_id: 3 });
+      const service = new BracketManagerService();
+
+      await expect(service.adminCompleteByeMatch(1, 21)).rejects.toThrow(
+        /opponent1 is a BYE \(no team can ever play there\) and opponent2 is already taken/
+      );
+    });
+
+    it('reports both slots taken when two other teams already hold them', async () => {
+      seedHalvingBracket({ opponent1_id: 3, opponent2_id: 4 });
+      const service = new BracketManagerService();
+
+      await expect(service.adminCompleteByeMatch(1, 21)).rejects.toThrow(
+        /opponent1 is already taken and opponent2 is already taken/
+      );
+    });
+
+    it('advances an odd-numbered feeder into opponent1', async () => {
+      seedHalvingBracket();
+      const service = new BracketManagerService();
+
+      const result = await service.adminCompleteByeMatch(1, 21);
+
+      expect(result.placedInMatchId).toBe(3);
+      expect(rowById(3)).toMatchObject({ opponent1_id: 1, opponent2_id: null });
+    });
+  });
+
   describe('completion detection (markBracketCompleteIfDone)', () => {
     it('unpopulated TBD matches BLOCK completion (fixed: they used to be skipped)', async () => {
       // A downstream match whose opponent slots were never populated (silent

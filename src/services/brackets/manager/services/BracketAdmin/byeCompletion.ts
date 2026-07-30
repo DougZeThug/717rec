@@ -102,6 +102,25 @@ export async function adminCompleteByeMatch(
 }
 
 /**
+ * How a downstream slot can be occupied, for reporting purposes.
+ *
+ * A strictly-null slot is a stored BYE — no team can ever play there, and it must
+ * NOT receive a winner (matchTransforms.ts flattens it to the 'bye' sentinel;
+ * MatchPropagationRepairService and lifecycle.ts protect the same marker). It is
+ * unavailable for the same reason a taken slot is, but for a different cause, and
+ * saying "occupied" for both leaves an admin hunting for a team that isn't there.
+ *
+ * `undefined` classifies as 'empty', exactly as the previous inline check did.
+ */
+type SlotState = 'bye' | 'empty' | 'taken';
+
+const slotState = (slot: StorageMatch['opponent1']): SlotState =>
+  slot === null ? 'bye' : slot?.id == null ? 'empty' : 'taken';
+
+const describeSlot = (state: SlotState): string =>
+  state === 'bye' ? 'a BYE (no team can ever play there)' : 'already taken';
+
+/**
  * Place the winner into the next round's matching slot, if that slot is
  * still empty. Round mapping mirrors bracket topology: same match count in
  * the next round → same match number (1:1), halved → ceil(number / 2).
@@ -146,15 +165,14 @@ async function placeWinnerDownstream(
     return null;
   }
 
-  const emptySlot =
-    nextMatch.opponent1 !== null && nextMatch.opponent1?.id == null
-      ? 'opponent1'
-      : nextMatch.opponent2 !== null && nextMatch.opponent2?.id == null
-        ? 'opponent2'
-        : null;
+  const slot1 = slotState(nextMatch.opponent1);
+  const slot2 = slotState(nextMatch.opponent2);
+
+  const emptySlot = slot1 === 'empty' ? 'opponent1' : slot2 === 'empty' ? 'opponent2' : null;
   if (!emptySlot) {
     throw new BusinessLogicError(
-      `Cannot advance the team: both slots of the next match (${nextMatch.id}) are occupied.`
+      `Cannot advance the team to match ${nextMatch.id}: opponent1 is ` +
+        `${describeSlot(slot1)} and opponent2 is ${describeSlot(slot2)}.`
     );
   }
 
