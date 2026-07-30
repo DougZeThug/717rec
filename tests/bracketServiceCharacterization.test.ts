@@ -787,7 +787,7 @@ describe('bracket service characterization (real service + real library over fak
             opponent2: { score: 3, result: 'win' },
           },
         })
-      ).rejects.toThrow(/Cannot change the winner of this archived match/);
+      ).rejects.toThrow(/Cannot change the winner of this match/);
 
       // The refusal happens before the 5 → 4 unlock, so nothing moved at all.
       expect(snapshotSqlGrid()).toEqual(before);

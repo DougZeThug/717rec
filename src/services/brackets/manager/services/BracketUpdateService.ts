@@ -102,8 +102,10 @@ export class BracketUpdateService {
         } else {
           // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
           // rollback, so refusing here leaves the archived match exactly as it was.
-          if (currentMatch.status === 5) {
-            await this.assertArchivedFlipIsSafe(matchId, currentMatch, scores);
+          // Completed (4) needs the same guard — it re-propagates just as an
+          // unlocked Archived match does, it simply skips the unlock to get there.
+          if (currentMatch.status >= 4) {
+            await this.assertWinnerFlipIsSafe(matchId, currentMatch, scores);
           }
 
           await this.applyMatchUpdate(matchId, scores, currentMatch);
@@ -201,22 +203,25 @@ export class BracketUpdateService {
   }
 
   /**
-   * Refuse an archived-match correction that would rewrite matches already played.
+   * Refuse a winner flip on a settled match that would rewrite matches already played.
    *
-   * Unlocking an Archived match (5 → 4) hands it back to the library, which
-   * re-propagates its winner forward. `setNextOpponent` *replaces* the downstream
-   * opponent object wholesale, so any score already stored there is dropped and the
-   * new arrival inherits a result it never earned — a later round showing a win for
-   * a team that never played it.
+   * Handing a settled match back to the library re-propagates its winner forward.
+   * `setNextOpponent` *replaces* the downstream opponent object wholesale, so any
+   * score already stored there is dropped and the new arrival inherits a result it
+   * never earned — a later round showing a win for a team that never played it.
    *
-   * Only a winner FLIP propagates. Correcting the score while the same team still
-   * wins re-writes this match alone and stays allowed.
+   * Applies to Completed (4) as well as Archived (5). The unlock an Archived match
+   * needs first is incidental; what does the damage is the propagation, and a
+   * Completed match reaches it directly.
+   *
+   * Only a winner FLIP gets this far. Same-winner corrections are written directly
+   * by applyScoreOnlyCorrection and never reach the library at all.
    *
    * Both continuations are checked: a flip swaps who advances AND who drops to the
    * losers bracket, and the loser's LB match can already be played while the
    * winner's next match is not.
    */
-  private async assertArchivedFlipIsSafe(
+  private async assertWinnerFlipIsSafe(
     matchId: number,
     currentMatch: StorageMatch,
     scores: UpdateMatchOptions['scores']
@@ -240,7 +245,7 @@ export class BracketUpdateService {
 
     if (played.length > 0) {
       throw new BusinessLogicError(
-        `Cannot change the winner of this archived match: ${played.length} later ` +
+        `Cannot change the winner of this match: ${played.length} later ` +
           `match${played.length === 1 ? ' has' : 'es have'} already been played. ` +
           'Use the "Reopen + Clear Downstream" admin action to clear those results first.'
       );

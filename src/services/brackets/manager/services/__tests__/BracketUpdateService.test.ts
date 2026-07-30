@@ -235,10 +235,13 @@ describe('BracketUpdateService', () => {
        * collectDownstreamChain reads round-by-id and round-by-filter differently,
        * which the shared wireStorage router flattens, so wire storage directly.
        */
-      const wireDownstream = (downstream: Record<string, unknown>[]) => {
+      const wireDownstream = (
+        downstream: Record<string, unknown>[],
+        source: Record<string, unknown> = ARCHIVED_WITH_WINNER
+      ) => {
         storage.select.mockImplementation((table: string, filter: unknown) => {
           if (table === 'match' && typeof filter === 'number') {
-            return Promise.resolve(ARCHIVED_WITH_WINNER);
+            return Promise.resolve(source);
           }
           if (table === 'stage') return Promise.resolve(STAGE);
           if (table === 'round' && typeof filter === 'number') {
@@ -250,7 +253,7 @@ describe('BracketUpdateService', () => {
               { id: 2, number: 2 },
             ]);
           }
-          if (table === 'match') return Promise.resolve([ARCHIVED_WITH_WINNER, ...downstream]);
+          if (table === 'match') return Promise.resolve([source, ...downstream]);
           return Promise.resolve(null);
         });
       };
@@ -264,10 +267,23 @@ describe('BracketUpdateService', () => {
         wireDownstream([DOWNSTREAM_PLAYED]);
 
         await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
-          /Cannot change the winner of this archived match/
+          /Cannot change the winner of this match/
         );
 
         // Refused before the 5 → 4 unlock, so no write and no propagation.
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
+      it('refuses the flip on a COMPLETED match too, not just an archived one', async () => {
+        // A Completed match needs no unlock, so it used to reach the library with
+        // no guard at all — the same propagation, the same corruption, silently.
+        wireDownstream([DOWNSTREAM_PLAYED], { ...ARCHIVED_WITH_WINNER, status: 4 });
+
+        await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
+          /Cannot change the winner of this match/
+        );
+
         expect(directUpdates).toEqual([]);
         expect(manager.update.match).not.toHaveBeenCalled();
       });
@@ -320,7 +336,7 @@ describe('BracketUpdateService', () => {
         ]);
 
         await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
-          /Cannot change the winner of this archived match/
+          /Cannot change the winner of this match/
         );
         expect(directUpdates).toEqual([]);
         expect(manager.update.match).not.toHaveBeenCalled();
