@@ -168,7 +168,35 @@ async function placeWinnerDownstream(
   const slot1 = slotState(nextMatch.opponent1);
   const slot2 = slotState(nextMatch.opponent2);
 
-  const emptySlot = slot1 === 'empty' ? 'opponent1' : slot2 === 'empty' ? 'opponent2' : null;
+  // Under the halving mapping, matches 2k-1 and 2k both feed next match k, and
+  // topology fixes which slot each owns: odd feeder → opponent1, even → opponent2
+  // (SourceNodeCalculator.ts, "match N gets winners from matches (2N-1) and (2N)").
+  // Taking whichever slot happened to be empty transposed the pair whenever the
+  // even feeder was completed first.
+  //
+  // Not applied to the 1:1 mapping: that is a losers-bracket minor round, where one
+  // slot takes the LB progression winner and the other a winners-bracket drop-in.
+  // The feeder's number says nothing about which, so parity there would be a guess.
+  const preferredSlot = isOneToOne ? null : match.number % 2 === 1 ? 'opponent1' : 'opponent2';
+  const preferredState = preferredSlot === 'opponent1' ? slot1 : preferredSlot ? slot2 : null;
+
+  if (preferredSlot && preferredState !== 'empty') {
+    // Legacy brackets are already inconsistent by the time this tool is reached;
+    // fall back rather than refuse, but leave a trace of the mismatch.
+    bracketLog(
+      `Feeder parity wanted ${preferredSlot} of match ${nextMatch.id} for match ` +
+        `${match.number}, but it is ${preferredState} — falling back to first empty slot`
+    );
+  }
+
+  const emptySlot =
+    preferredSlot && preferredState === 'empty'
+      ? preferredSlot
+      : slot1 === 'empty'
+        ? 'opponent1'
+        : slot2 === 'empty'
+          ? 'opponent2'
+          : null;
   if (!emptySlot) {
     throw new BusinessLogicError(
       `Cannot advance the team to match ${nextMatch.id}: opponent1 is ` +

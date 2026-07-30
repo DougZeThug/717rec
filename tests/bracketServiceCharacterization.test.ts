@@ -484,7 +484,7 @@ describe('bracket service characterization (real service + real library over fak
      * collapsing into one is the "halving" shape, where topology fixes which slot
      * each feeder owns: match 2N-1 → opponent1, match 2N → opponent2.
      */
-    function seedHalvingBracket(nextMatch: Partial<MatchRow> = {}): void {
+    function seedHalvingBracket(nextMatch: Partial<MatchRow> = {}, nextRoundMatchCount = 1): void {
       seedBracketRow();
       db().seed('stage', [
         {
@@ -529,12 +529,12 @@ describe('bracket service characterization (real service + real library over fak
       db().seed('match', [
         oneSided(1, 1, 1),
         oneSided(2, 2, 2),
-        {
-          id: 3,
+        ...Array.from({ length: nextRoundMatchCount }, (_, i) => ({
+          id: 3 + i,
           stage_id: 1,
           group_id: 1,
           round_id: 2,
-          number: 1,
+          number: i + 1,
           status: 1,
           child_count: 0,
           opponent1_id: null,
@@ -544,7 +544,7 @@ describe('bracket service characterization (real service + real library over fak
           opponent2_score: null,
           opponent2_result: null,
           ...nextMatch,
-        },
+        })),
       ]);
     }
 
@@ -579,6 +579,45 @@ describe('bracket service characterization (real service + real library over fak
 
       expect(result.placedInMatchId).toBe(3);
       expect(rowById(3)).toMatchObject({ opponent1_id: 1, opponent2_id: null });
+    });
+
+    it('advances an even-numbered feeder into opponent2', async () => {
+      seedHalvingBracket();
+      const service = new BracketManagerService();
+
+      const result = await service.adminCompleteByeMatch(2, 21);
+
+      expect(result.placedInMatchId).toBe(3);
+      expect(rowById(3)).toMatchObject({ opponent1_id: null, opponent2_id: 2 });
+    });
+
+    it('keeps the pair in feeder order when the even match is completed first', async () => {
+      // The regression: taking whichever slot was empty put the even feeder's
+      // winner in opponent1 purely because it was completed first, transposing the
+      // pair relative to what the library writes for the other feeder.
+      seedHalvingBracket();
+      const service = new BracketManagerService();
+
+      await service.adminCompleteByeMatch(2, 21);
+      await service.adminCompleteByeMatch(1, 21);
+
+      expect(rowById(3)).toMatchObject({ opponent1_id: 1, opponent2_id: 2 });
+    });
+
+    it('does not apply feeder parity when rounds map one-to-one', async () => {
+      // A 1:1 round pairing is a losers-bracket minor round: one slot takes the LB
+      // progression winner, the other a winners-bracket drop-in. Nothing in the
+      // feeder's number decides which, so parity must not be invented there.
+      // Two feeders into two next-round matches: same count each side, so 1:1.
+      seedHalvingBracket({}, 2);
+      const service = new BracketManagerService();
+
+      // Match 2 is even, but with two next-round matches it maps 1:1 to next
+      // match #2 and takes that match's first empty slot.
+      const result = await service.adminCompleteByeMatch(2, 21);
+
+      expect(result.placedInMatchId).toBe(4);
+      expect(rowById(4)).toMatchObject({ opponent1_id: 2, opponent2_id: null });
     });
   });
 
