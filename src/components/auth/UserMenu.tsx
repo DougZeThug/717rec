@@ -1,6 +1,6 @@
 import { LogIn, LogOut, Settings, Shield, User } from 'lucide-react';
 import React, { useCallback } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +24,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
   const { membership } = useTeamMembership();
   const { isAdminAccessGranted } = useAdminAccess();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = React.useState(false);
 
   // Close dropdown when clicking a menu item
@@ -33,8 +34,10 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
 
   // Memoize handlers to prevent recreating on each render
   const handleLoginClick = useCallback(() => {
-    navigate('/auth');
-  }, [navigate]);
+    navigate('/auth', {
+      state: { returnTo: `${location.pathname}${location.search}${location.hash}` },
+    });
+  }, [navigate, location.pathname, location.search, location.hash]);
 
   const handleSignOut = useCallback(() => {
     signOut();
