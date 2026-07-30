@@ -214,7 +214,7 @@ import { z as z4 } from "npm:zod@^4.4.3";
 var get_standings_default = defineTool7({
   name: "get_standings",
   title: "Get standings",
-  description: "Get current active-season standings sorted by rank. Optional division filter.",
+  description: "Get current active-season standings sorted by power score. Optional division filter.",
   inputSchema: {
     division: z4.string().optional().describe("Optional division filter.")
   },
@@ -225,15 +225,19 @@ var get_standings_default = defineTool7({
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
     let query = supabase.from("team_season_stats").select(
-      "team_id, team_name, division_name, wins, losses, ties, game_wins, game_losses, power_score, current_rank"
+      "team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name)"
     ).eq("season_id", seasonId);
     if (division) query = query.ilike("division_name", division);
-    const { data, error } = await query.order("current_rank", {
-      ascending: true,
+    const { data, error } = await query.order("power_score", {
+      ascending: false,
       nullsFirst: false
     });
     if (error) return errorResult(error.message);
-    return textResult(data ?? []);
+    const rows = (data ?? []).map((row, index) => {
+      const { teams, ...rest } = row;
+      return { rank: index + 1, team_name: teams?.name ?? null, ...rest };
+    });
+    return textResult(rows);
   }
 });
 
@@ -253,14 +257,18 @@ var list_teams_default = defineTool8({
     const supabase = userClient(ctx);
     const seasonId = await getActiveSeasonId(supabase);
     if (!seasonId) return textResult([]);
-    let query = supabase.from("team_season_stats").select("team_id, team_name, division_name, wins, losses, power_score").eq("season_id", seasonId);
+    let query = supabase.from("team_season_stats").select("team_id, division_name, match_wins, match_losses, power_score, teams(name)").eq("season_id", seasonId);
     if (division) query = query.ilike("division_name", division);
     const { data, error } = await query.order("power_score", {
       ascending: false,
       nullsFirst: false
     });
     if (error) return errorResult(error.message);
-    return textResult(data ?? []);
+    const rows = (data ?? []).map((row) => {
+      const { teams, ...rest } = row;
+      return { team_name: teams?.name ?? null, ...rest };
+    });
+    return textResult(rows);
   }
 });
 
