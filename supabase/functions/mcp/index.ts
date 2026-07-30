@@ -162,7 +162,7 @@ var get_ops_health_default = defineTool5({
       return errorResult("Admin access required");
     const [pending, requests, snap] = await Promise.all([
       supabase.from("score_submissions").select("id", { count: "exact", head: true }).eq("status", "pending"),
-      supabase.from("team_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("team_requests").select("id", { count: "exact", head: true }).eq("status", "PENDING"),
       supabase.from("power_score_snapshots").select("captured_at").order("captured_at", { ascending: false }).limit(1).maybeSingle()
     ]);
     return textResult({
