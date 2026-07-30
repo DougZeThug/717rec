@@ -32,12 +32,13 @@ export function useTeamManagement() {
   );
 
   const handleDeleteTeam = useCallback(async () => {
-    if (!deleteTeamId) return;
+    const deletingId = deleteTeamId;
+    if (!deletingId) return;
 
     setIsDeleting(true);
     try {
-      await deleteTeam(deleteTeamId);
-      setDeleteTeamId(null);
+      await deleteTeam(deletingId);
+      setDeleteTeamId((current) => (current === deletingId ? null : current));
       toast({
         title: 'Team Deleted',
         description: 'The team has been successfully deleted.',
