@@ -63,19 +63,6 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
     }
   }, []);
 
-  // Drop pending timers when the page goes away. Otherwise navigating off mid-save
-  // leaves them to fire up to 15s later, writing to a cache and raising a
-  // destructive toast for a screen that no longer exists.
-  useEffect(() => {
-    // Captured into a local: reading ref.current inside the cleanup closure is
-    // exactly what react-hooks/exhaustive-deps warns about.
-    const timeouts = rollbackTimeoutsRef.current;
-    return () => {
-      for (const timeout of timeouts.values()) clearTimeout(timeout);
-      timeouts.clear();
-    };
-  }, []);
-
   // Rollback to previous state (declared before applyOptimisticUpdate so the
   // setTimeout callback inside applyOptimisticUpdate can reference it).
   const rollback = useCallback(
@@ -127,6 +114,40 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
     },
     [bracketId, queryClient, clearRollbackTimeout]
   );
+
+  // Lets the unmount cleanup below reach the current rollback without re-running
+  // (and so re-arming) on every change to it.
+  const rollbackRef = useRef(rollback);
+  useEffect(() => {
+    rollbackRef.current = rollback;
+  }, [rollback]);
+
+  /**
+   * Undo anything still in flight when the page goes away.
+   *
+   * The rollback timer is the only thing that ever corrects a save that never
+   * lands, and the query cache outlives this component: `useBracketData` keeps
+   * bracket data for 5 minutes with `refetchOnMount: false`, so an optimistic
+   * score left behind here is shown again on return without a refetch, and a
+   * score that was never persisted looks saved.
+   *
+   * So don't just drop the timers — roll their matches back. That still silences
+   * the "Update Timeout" toast for a screen that no longer exists (rollback itself
+   * raises nothing), while leaving the cache holding only confirmed values. A save
+   * that does land afterwards re-writes the true score via refetch and realtime.
+   */
+  useEffect(() => {
+    // Captured into locals: reading ref.current inside the cleanup closure is
+    // exactly what react-hooks/exhaustive-deps warns about.
+    const timeouts = rollbackTimeoutsRef.current;
+    const snapshots = snapshotsRef.current;
+    const rollbackPending = rollbackRef;
+    return () => {
+      for (const timeout of timeouts.values()) clearTimeout(timeout);
+      timeouts.clear();
+      for (const matchId of [...snapshots.keys()]) rollbackPending.current(matchId);
+    };
+  }, []);
 
   // Apply optimistic update to bracket-data cache
   const applyOptimisticUpdate = useCallback(

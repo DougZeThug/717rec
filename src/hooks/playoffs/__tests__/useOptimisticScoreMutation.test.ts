@@ -343,7 +343,10 @@ describe('useOptimisticScoreMutation', () => {
       expect(scoresById()).toEqual({ '99': 5, '100': 3 });
     });
 
-    it('drops pending rollback timers when the hook unmounts', () => {
+    it('rolls pending saves back when the hook unmounts, without a toast', () => {
+      // The cache outlives the component — useBracketData holds bracket data for
+      // 5 minutes with refetchOnMount: false — so an optimistic score abandoned
+      // here is shown again on return and looks saved when it never was. Undo it.
       vi.useFakeTimers();
       queryClient = new QueryClient({
         defaultOptions: { queries: { retry: false, gcTime: Infinity } },
@@ -357,14 +360,18 @@ describe('useOptimisticScoreMutation', () => {
 
       applyBoth(result);
       unmount();
+
+      // Both matches are back to their pre-save values.
+      expect(scoresById()).toEqual({ '99': 5, '100': 7 });
+
       act(() => {
         vi.advanceTimersByTime(20000);
       });
 
-      // Navigating away must not fire a destructive toast or rewrite the cache for
-      // a screen that is gone.
+      // And the timers are gone, so no destructive toast fires for a screen that
+      // is no longer on display.
       expect(mockToast).not.toHaveBeenCalled();
-      expect(scoresById()).toEqual({ '99': 2, '100': 3 });
+      expect(scoresById()).toEqual({ '99': 5, '100': 7 });
     });
 
     it('a match missing from the cache does not roll back a different match', () => {
