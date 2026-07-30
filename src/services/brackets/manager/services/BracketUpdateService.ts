@@ -346,15 +346,12 @@ export class BracketUpdateService {
       ((data ?? []) as unknown as MatchSnapshotRow[]).map((row) => [row.id, row])
     );
 
-    const rollbacks = snapshot
-      .map((before) => {
-        const after = current.get(before.id);
-        const changed = after
-          ? RESTORABLE_MATCH_COLUMNS.filter((column) => after[column] !== before[column])
-          : [];
-        return { before, changed };
-      })
-      .filter(({ changed }) => changed.length > 0);
+    const rollbacks = snapshot.flatMap((before) => {
+      const after = current.get(before.id);
+      if (!after) return [];
+      const changed = RESTORABLE_MATCH_COLUMNS.filter((column) => after[column] !== before[column]);
+      return changed.length > 0 ? [{ before, changed }] : [];
+    });
 
     if (rollbacks.length === 0) return;
 
