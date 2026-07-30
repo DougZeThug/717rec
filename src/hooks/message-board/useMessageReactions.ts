@@ -231,11 +231,7 @@ export const useMessageReactions = (messageId: string) => {
   const addReactionMutation = useMutation({
     mutationFn: async (emoji: string) => {
       if (!currentUserId) throw new Error('User is required to add a reaction');
-      const insertedId = await MessageReactionsService.addReaction(
-        messageId,
-        currentUserId,
-        emoji
-      );
+      const insertedId = await MessageReactionsService.addReaction(messageId, currentUserId, emoji);
       const removalKey = optimisticRemovalKey(currentUserId, emoji);
       if (pendingOptimisticRemovalsRef.current.delete(removalKey)) {
         // Tombstone the inserted row BEFORE any further await so a realtime
