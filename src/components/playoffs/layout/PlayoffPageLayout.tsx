@@ -93,6 +93,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
           setBracketDialogOpen={view.setBracketDialogOpen}
           onCreateBracket={view.handleCreateBracket}
           onDeleteBracket={view.handleDeleteBracket}
+          onEditMatch={handlers.handleEditMatch}
           data={data}
         />
 
