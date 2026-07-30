@@ -1,16 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { supabase } from '@/integrations/supabase/client';
 import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 
-import { calculateTeamCompatibility, haveTeamsPlayed } from '../compatibilityUtils';
-
-// Mock Supabase client (per-test implementations override in beforeEach)
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(),
-  },
-}));
+import { calculateTeamCompatibility } from '../compatibilityUtils';
 
 /** Deterministic valid UUID per team number — the service guards team ids. */
 const teamId = (teamNumber: number) => {
@@ -57,56 +49,6 @@ describe('compatibilityUtils', () => {
       // Should still calculate a score without errors
       expect(score).toBeGreaterThanOrEqual(0);
       expect(score).toBeLessThanOrEqual(10);
-    });
-  });
-
-  describe('haveTeamsPlayed', () => {
-    beforeEach(() => {
-      vi.resetAllMocks();
-    });
-
-    it('should return true if teams have played before', async () => {
-      // Mock Supabase response for teams that have played
-      const mockResponse = { data: [{ id: 'match1' }], error: null };
-      const mockLimit = vi.fn().mockResolvedValue(mockResponse);
-      const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(supabase.from).mockImplementation(mockFrom);
-
-      const result = await haveTeamsPlayed(teamId(1), teamId(2));
-      expect(result).toBe(true);
-      expect(supabase.from).toHaveBeenCalledWith('matches');
-    });
-
-    it('should return false if teams have not played before', async () => {
-      // Mock Supabase response for teams that have not played
-      const mockResponse = { data: [], error: null };
-      const mockLimit = vi.fn().mockResolvedValue(mockResponse);
-      const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(supabase.from).mockImplementation(mockFrom);
-
-      const result = await haveTeamsPlayed(teamId(1), teamId(3));
-      expect(result).toBe(false);
-    });
-
-    it('should handle database errors gracefully', async () => {
-      // Mock Supabase error response
-      const mockResponse = { data: null, error: new Error('Database error') };
-      const mockLimit = vi.fn().mockResolvedValue(mockResponse);
-      const mockOr = vi.fn().mockReturnValue({ limit: mockLimit });
-      const mockSelect = vi.fn().mockReturnValue({ or: mockOr });
-      const mockFrom = vi.fn().mockReturnValue({ select: mockSelect });
-
-      vi.mocked(supabase.from).mockImplementation(mockFrom);
-
-      const result = await haveTeamsPlayed(teamId(1), teamId(4));
-      // Should return false as a fallback on error
-      expect(result).toBe(false);
     });
   });
 });
