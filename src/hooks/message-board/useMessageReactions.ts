@@ -231,12 +231,24 @@ export const useMessageReactions = (messageId: string) => {
   const addReactionMutation = useMutation({
     mutationFn: async (emoji: string) => {
       if (!currentUserId) throw new Error('User is required to add a reaction');
-      await MessageReactionsService.addReaction(messageId, currentUserId, emoji);
+      const insertedId = await MessageReactionsService.addReaction(
+        messageId,
+        currentUserId,
+        emoji
+      );
       const removalKey = optimisticRemovalKey(currentUserId, emoji);
       if (pendingOptimisticRemovalsRef.current.delete(removalKey)) {
-        const savedReaction = (await MessageReactionsService.fetchReactions(messageId)).find(
-          (reaction) => reaction.user_id === currentUserId && reaction.emoji === emoji
-        );
+        // Tombstone the inserted row BEFORE any further await so a realtime
+        // INSERT arriving in the async gap cannot resurrect the reaction.
+        if (insertedId) {
+          realtimeInsertsRef.current.delete(insertedId);
+          realtimeDeletesRef.current.add(insertedId);
+        }
+        const savedReaction = insertedId
+          ? { id: insertedId }
+          : (await MessageReactionsService.fetchReactions(messageId)).find(
+              (reaction) => reaction.user_id === currentUserId && reaction.emoji === emoji
+            );
         if (savedReaction) {
           realtimeInsertsRef.current.delete(savedReaction.id);
           realtimeDeletesRef.current.add(savedReaction.id);
