@@ -53,6 +53,17 @@ export async function adminCompleteByeMatch(
   const winnerSide = opponent1Real ? 'opponent1' : 'opponent2';
   const winnerParticipantId = (opponent1Real ? match.opponent1?.id : match.opponent2?.id) as number;
 
+  // Resolve the destination BEFORE completing anything. If the winner has nowhere
+  // to go this throws having written nothing, instead of leaving the match marked
+  // Completed with its winner stranded in the previous round.
+  //
+  // Not a transaction: if the completion write lands and the placement write then
+  // fails on a database error, the match is complete and the winner is not advanced.
+  // That is unavoidable without transactions here, it fails loudly, and it is
+  // recoverable — this tool is safely re-runnable on a Completed match, since the
+  // "winner already downstream" check short-circuits a second placement.
+  const placement = await resolveWinnerPlacement(deps, match, winnerParticipantId);
+
   // Complete the match: winner side gets the score and a win result; the
   // empty side is left untouched (preserving a stored BYE sentinel).
   const completionFields: {
@@ -76,7 +87,9 @@ export async function adminCompleteByeMatch(
 
   bracketLog(`✅ BYE match ${matchId} completed. Winner participant: ${winnerParticipantId}`);
 
-  const placedInMatchId = await placeWinnerDownstream(deps, match, winnerParticipantId);
+  const placedInMatchId = placement
+    ? await applyWinnerPlacement(placement, winnerParticipantId)
+    : null;
 
   // If this was the last outstanding real match, the bracket must flip to
   // 'completed' exactly as a normal score save would (which also fires the
@@ -102,15 +115,46 @@ export async function adminCompleteByeMatch(
 }
 
 /**
- * Place the winner into the next round's matching slot, if that slot is
- * still empty. Round mapping mirrors bracket topology: same match count in
- * the next round → same match number (1:1), halved → ceil(number / 2).
+ * How a downstream slot can be occupied, for reporting purposes.
+ *
+ * A strictly-null slot is a stored BYE — no team can ever play there, and it must
+ * NOT receive a winner (matchTransforms.ts flattens it to the 'bye' sentinel;
+ * MatchPropagationRepairService and lifecycle.ts protect the same marker). It is
+ * unavailable for the same reason a taken slot is, but for a different cause, and
+ * saying "occupied" for both leaves an admin hunting for a team that isn't there.
+ *
+ * `undefined` classifies as 'empty', exactly as the previous inline check did.
  */
-async function placeWinnerDownstream(
+type SlotState = 'bye' | 'empty' | 'taken';
+
+const slotState = (slot: StorageMatch['opponent1']): SlotState =>
+  slot === null ? 'bye' : slot?.id == null ? 'empty' : 'taken';
+
+const describeSlot = (state: SlotState): string =>
+  state === 'bye' ? 'a BYE (no team can ever play there)' : 'already taken';
+
+/** Where a winner is going, resolved and validated but not yet written. */
+interface WinnerPlacement {
+  nextMatch: StorageMatch;
+  slot: 'opponent1' | 'opponent2';
+  markReady: boolean;
+}
+
+/**
+ * Work out which next-round slot the winner belongs in, WITHOUT writing anything.
+ * Round mapping mirrors bracket topology: same match count in the next round →
+ * same match number (1:1), halved → ceil(number / 2).
+ *
+ * Returns null when there is nothing to do — no next round, no matching next
+ * match, or the winner is already there. Throws when a slot is needed but none is
+ * available, which is why this runs before the completion write: refusing here
+ * leaves the match exactly as it was.
+ */
+async function resolveWinnerPlacement(
   deps: BracketAdminDeps,
   match: StorageMatch,
   winnerParticipantId: number
-): Promise<number | null> {
+): Promise<WinnerPlacement | null> {
   const rounds = await deps.storage.select('round', { group_id: match.group_id });
   const roundsArray = (Array.isArray(rounds) ? rounds : [rounds]) as StorageRound[];
   const currentRound = roundsArray.find((r) => r.id === match.round_id);
@@ -146,28 +190,69 @@ async function placeWinnerDownstream(
     return null;
   }
 
+  const slot1 = slotState(nextMatch.opponent1);
+  const slot2 = slotState(nextMatch.opponent2);
+
+  // Under the halving mapping, matches 2k-1 and 2k both feed next match k, and
+  // topology fixes which slot each owns: odd feeder → opponent1, even → opponent2
+  // (SourceNodeCalculator.ts, "match N gets winners from matches (2N-1) and (2N)").
+  // Taking whichever slot happened to be empty transposed the pair whenever the
+  // even feeder was completed first.
+  //
+  // Not applied to the 1:1 mapping: that is a losers-bracket minor round, where one
+  // slot takes the LB progression winner and the other a winners-bracket drop-in.
+  // The feeder's number says nothing about which, so parity there would be a guess.
+  const preferredSlot = isOneToOne ? null : match.number % 2 === 1 ? 'opponent1' : 'opponent2';
+  const preferredState = preferredSlot === 'opponent1' ? slot1 : preferredSlot ? slot2 : null;
+
+  if (preferredSlot && preferredState !== 'empty') {
+    // Legacy brackets are already inconsistent by the time this tool is reached;
+    // fall back rather than refuse, but leave a trace of the mismatch.
+    bracketLog(
+      `Feeder parity wanted ${preferredSlot} of match ${nextMatch.id} for match ` +
+        `${match.number}, but it is ${preferredState} — falling back to first empty slot`
+    );
+  }
+
   const emptySlot =
-    nextMatch.opponent1 !== null && nextMatch.opponent1?.id == null
-      ? 'opponent1'
-      : nextMatch.opponent2 !== null && nextMatch.opponent2?.id == null
-        ? 'opponent2'
-        : null;
+    preferredSlot && preferredState === 'empty'
+      ? preferredSlot
+      : slot1 === 'empty'
+        ? 'opponent1'
+        : slot2 === 'empty'
+          ? 'opponent2'
+          : null;
   if (!emptySlot) {
     throw new BusinessLogicError(
-      `Cannot advance the team: both slots of the next match (${nextMatch.id}) are occupied.`
+      `Cannot advance the team to match ${nextMatch.id}: opponent1 is ` +
+        `${describeSlot(slot1)} and opponent2 is ${describeSlot(slot2)}.`
     );
   }
 
   const otherSlotFilled =
     emptySlot === 'opponent1' ? nextMatch.opponent2?.id != null : nextMatch.opponent1?.id != null;
 
+  return {
+    nextMatch,
+    slot: emptySlot,
+    markReady: nextMatch.status <= 1 && otherSlotFilled,
+  };
+}
+
+/** Write a placement resolved by resolveWinnerPlacement. */
+async function applyWinnerPlacement(
+  placement: WinnerPlacement,
+  winnerParticipantId: number
+): Promise<number> {
+  const { nextMatch, slot, markReady } = placement;
+
   const placementFields: { opponent1_id?: number; opponent2_id?: number; status?: number } = {};
-  if (emptySlot === 'opponent1') {
+  if (slot === 'opponent1') {
     placementFields.opponent1_id = winnerParticipantId;
   } else {
     placementFields.opponent2_id = winnerParticipantId;
   }
-  if (nextMatch.status <= 1 && otherSlotFilled) {
+  if (markReady) {
     placementFields.status = 2;
   }
 
@@ -179,6 +264,6 @@ async function placeWinnerDownstream(
     handleDatabaseError(placeError, `Failed to advance the team to match ${nextMatch.id}`);
   }
 
-  bracketLog(`✅ Winner ${winnerParticipantId} placed in ${emptySlot} of match ${nextMatch.id}`);
+  bracketLog(`✅ Winner ${winnerParticipantId} placed in ${slot} of match ${nextMatch.id}`);
   return nextMatch.id;
 }

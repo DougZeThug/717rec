@@ -235,12 +235,24 @@ describe('BracketUpdateService', () => {
        * collectDownstreamChain reads round-by-id and round-by-filter differently,
        * which the shared wireStorage router flattens, so wire storage directly.
        */
-      const wireDownstream = (downstream: Record<string, unknown>[]) => {
+      const wireDownstream = (
+        downstream: Record<string, unknown>[],
+        source: Record<string, unknown> = ARCHIVED_WITH_WINNER
+      ) => {
         storage.select.mockImplementation((table: string, filter: unknown) => {
           if (table === 'match' && typeof filter === 'number') {
-            return Promise.resolve(ARCHIVED_WITH_WINNER);
+            return Promise.resolve(source);
           }
           if (table === 'stage') return Promise.resolve(STAGE);
+          if (table === 'group') {
+            // WB / LB / GF. Round numbers restart in each, so the chain has to
+            // order by group first.
+            return Promise.resolve([
+              { id: 1, number: 1 },
+              { id: 2, number: 2 },
+              { id: 3, number: 3 },
+            ]);
+          }
           if (table === 'round' && typeof filter === 'number') {
             return Promise.resolve({ id: 1, stage_id: 1, group_id: 1, number: 1 });
           }
@@ -248,9 +260,13 @@ describe('BracketUpdateService', () => {
             return Promise.resolve([
               { id: 1, number: 1 },
               { id: 2, number: 2 },
+              // Losers-bracket round 1 — a LOWER number than the WB round the
+              // flip starts from, which is exactly why round numbers alone are
+              // not enough to order the chain.
+              { id: 3, number: 1 },
             ]);
           }
-          if (table === 'match') return Promise.resolve([ARCHIVED_WITH_WINNER, ...downstream]);
+          if (table === 'match') return Promise.resolve([source, ...downstream]);
           return Promise.resolve(null);
         });
       };
@@ -264,10 +280,43 @@ describe('BracketUpdateService', () => {
         wireDownstream([DOWNSTREAM_PLAYED]);
 
         await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
-          /Cannot change the winner of this archived match/
+          /Cannot change the winner of this match/
         );
 
         // Refused before the 5 → 4 unlock, so no write and no propagation.
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
+      it('refuses a tied payload on a match that already has a winner', async () => {
+        // A non-decisive payload skipped the guard entirely and went to the
+        // library, which would try to un-decide a match whose winner has already
+        // advanced. Both UI callers send decisive results, so this is a backstop.
+        wireDownstream([DOWNSTREAM_PLAYED]);
+
+        await expect(
+          service.updateMatch({
+            matchId: 7,
+            scores: {
+              opponent1: { score: 1, result: 'loss' },
+              opponent2: { score: 1, result: 'loss' },
+            },
+          })
+        ).rejects.toThrow(/already has a winner/);
+
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
+      it('refuses the flip on a COMPLETED match too, not just an archived one', async () => {
+        // A Completed match needs no unlock, so it used to reach the library with
+        // no guard at all — the same propagation, the same corruption, silently.
+        wireDownstream([DOWNSTREAM_PLAYED], { ...ARCHIVED_WITH_WINNER, status: 4 });
+
+        await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
+          /Cannot change the winner of this match/
+        );
+
         expect(directUpdates).toEqual([]);
         expect(manager.update.match).not.toHaveBeenCalled();
       });
@@ -283,8 +332,23 @@ describe('BracketUpdateService', () => {
           },
         });
 
-        expect(directUpdates).toEqual([{ table: 'match', payload: { status: 4 }, id: 7 }]);
-        expect(manager.update.match).toHaveBeenCalled();
+        // Written straight to the score/result columns. The match is NOT unlocked
+        // to 4 and the library is never invoked: re-propagating a winner who is
+        // already downstream only lets setNextOpponent wipe the scores recorded
+        // there.
+        expect(directUpdates).toEqual([
+          {
+            table: 'match',
+            payload: {
+              opponent1_score: 5,
+              opponent1_result: 'win',
+              opponent2_score: 1,
+              opponent2_result: 'loss',
+            },
+            id: 7,
+          },
+        ]);
+        expect(manager.update.match).not.toHaveBeenCalled();
       });
 
       it('refuses the flip when only the LOSER has played on, in the losers bracket', async () => {
@@ -305,7 +369,32 @@ describe('BracketUpdateService', () => {
         ]);
 
         await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
-          /Cannot change the winner of this archived match/
+          /Cannot change the winner of this match/
+        );
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
+      it('refuses the flip when the loser played a LOSERS ROUND 1 match', async () => {
+        // The realistic shape: a WB round-1 loser drops into LB round 1, whose
+        // round NUMBER is 1 — not greater than the WB round the flip starts from.
+        // Comparing round numbers across the whole stage dropped this match out of
+        // the chain entirely, so the flip sailed past the guard.
+        wireDownstream([
+          {
+            id: 9,
+            stage_id: 1,
+            group_id: 2, // losers bracket
+            round_id: 3, // LB round 1
+            number: 1,
+            status: 4,
+            opponent1: { id: 20, score: 2, result: 'win' as const },
+            opponent2: { id: 40, score: 0, result: 'loss' as const },
+          },
+        ]);
+
+        await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
+          /Cannot change the winner of this match/
         );
         expect(directUpdates).toEqual([]);
         expect(manager.update.match).not.toHaveBeenCalled();

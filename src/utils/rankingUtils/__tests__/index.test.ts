@@ -247,9 +247,12 @@ describe('updateRankChanges', () => {
     expect(result[2].rankChange).toBe(0);
   });
 
-  it('leaves rankChange at 0 when previousRank is undefined', () => {
+  it('leaves rankChange undefined when previousRank is undefined', () => {
+    // A team with no prior ranking has no movement to report, which is different
+    // from having moved zero places. undefined is what makes RankTrendIndicator
+    // render "-" instead of a literal "0" a new team never earned.
     const result = updateRankChanges([ranking({ teamId: 'new-team' })]);
-    expect(result[0].rankChange).toBe(0);
+    expect(result[0].rankChange).toBeUndefined();
   });
 });
 

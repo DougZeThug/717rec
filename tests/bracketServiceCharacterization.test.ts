@@ -478,6 +478,164 @@ describe('bracket service characterization (real service + real library over fak
     });
   });
 
+  describe('admin BYE completion — downstream placement', () => {
+    /**
+     * Two one-sided round-1 matches feeding a single round-2 match. Two matches
+     * collapsing into one is the "halving" shape, where topology fixes which slot
+     * each feeder owns: match 2N-1 → opponent1, match 2N → opponent2.
+     */
+    function seedHalvingBracket(nextMatch: Partial<MatchRow> = {}, nextRoundMatchCount = 1): void {
+      seedBracketRow();
+      db().seed('stage', [
+        {
+          id: 1,
+          tournament_id: BRACKET_ID,
+          name: 'S',
+          type: 'single_elimination',
+          number: 1,
+          settings: {},
+        },
+      ]);
+      db().seed('group', [{ id: 1, stage_id: 1, number: 1 }]);
+      db().seed('round', [
+        { id: 1, stage_id: 1, group_id: 1, number: 1 },
+        { id: 2, stage_id: 1, group_id: 1, number: 2 },
+      ]);
+      db().seed(
+        'participant',
+        [1, 2, 3, 4].map((n) => ({
+          id: n,
+          tournament_id: BRACKET_ID,
+          name: `T${n}`,
+          team_id: `uuid-${n}`,
+          position: n,
+        }))
+      );
+      const oneSided = (id: number, number: number, participantId: number) => ({
+        id,
+        stage_id: 1,
+        group_id: 1,
+        round_id: 1,
+        number,
+        status: 2,
+        child_count: 0,
+        opponent1_id: participantId,
+        opponent1_score: null,
+        opponent1_result: null,
+        opponent2_id: null,
+        opponent2_score: null,
+        opponent2_result: 'bye',
+      });
+      db().seed('match', [
+        oneSided(1, 1, 1),
+        oneSided(2, 2, 2),
+        ...Array.from({ length: nextRoundMatchCount }, (_, i) => ({
+          id: 3 + i,
+          stage_id: 1,
+          group_id: 1,
+          round_id: 2,
+          number: i + 1,
+          status: 1,
+          child_count: 0,
+          opponent1_id: null,
+          opponent1_score: null,
+          opponent1_result: null,
+          opponent2_id: null,
+          opponent2_score: null,
+          opponent2_result: null,
+          ...nextMatch,
+        })),
+      ]);
+    }
+
+    const rowById = (id: number): MatchRow => mustFindMatch((m) => m.id === id, `match ${id}`);
+
+    it('names a downstream BYE as a BYE rather than reporting it occupied', async () => {
+      // A strictly-null slot is a stored BYE: no team can ever play there, so it
+      // cannot receive a winner. Calling that "occupied" sends an admin looking for
+      // a team that does not exist.
+      seedHalvingBracket({ opponent1_result: 'bye', opponent2_id: 3 });
+      const service = new BracketManagerService();
+
+      await expect(service.adminCompleteByeMatch(1, 21)).rejects.toThrow(
+        /opponent1 is a BYE \(no team can ever play there\) and opponent2 is already taken/
+      );
+    });
+
+    it('reports both slots taken when two other teams already hold them', async () => {
+      seedHalvingBracket({ opponent1_id: 3, opponent2_id: 4 });
+      const service = new BracketManagerService();
+
+      await expect(service.adminCompleteByeMatch(1, 21)).rejects.toThrow(
+        /opponent1 is already taken and opponent2 is already taken/
+      );
+    });
+
+    it('leaves the match unscored when the winner cannot be advanced', async () => {
+      // Placement is resolved before the completion write, so a refusal leaves
+      // nothing half-done — no match marked Completed with its winner stranded.
+      seedHalvingBracket({ opponent1_id: 3, opponent2_id: 4 });
+      const service = new BracketManagerService();
+
+      await expect(service.adminCompleteByeMatch(1, 21)).rejects.toThrow(/Cannot advance the team/);
+
+      expect(rowById(1)).toMatchObject({
+        status: 2,
+        opponent1_score: null,
+        opponent1_result: null,
+      });
+    });
+
+    it('advances an odd-numbered feeder into opponent1', async () => {
+      seedHalvingBracket();
+      const service = new BracketManagerService();
+
+      const result = await service.adminCompleteByeMatch(1, 21);
+
+      expect(result.placedInMatchId).toBe(3);
+      expect(rowById(3)).toMatchObject({ opponent1_id: 1, opponent2_id: null });
+    });
+
+    it('advances an even-numbered feeder into opponent2', async () => {
+      seedHalvingBracket();
+      const service = new BracketManagerService();
+
+      const result = await service.adminCompleteByeMatch(2, 21);
+
+      expect(result.placedInMatchId).toBe(3);
+      expect(rowById(3)).toMatchObject({ opponent1_id: null, opponent2_id: 2 });
+    });
+
+    it('keeps the pair in feeder order when the even match is completed first', async () => {
+      // The regression: taking whichever slot was empty put the even feeder's
+      // winner in opponent1 purely because it was completed first, transposing the
+      // pair relative to what the library writes for the other feeder.
+      seedHalvingBracket();
+      const service = new BracketManagerService();
+
+      await service.adminCompleteByeMatch(2, 21);
+      await service.adminCompleteByeMatch(1, 21);
+
+      expect(rowById(3)).toMatchObject({ opponent1_id: 1, opponent2_id: 2 });
+    });
+
+    it('does not apply feeder parity when rounds map one-to-one', async () => {
+      // A 1:1 round pairing is a losers-bracket minor round: one slot takes the LB
+      // progression winner, the other a winners-bracket drop-in. Nothing in the
+      // feeder's number decides which, so parity must not be invented there.
+      // Two feeders into two next-round matches: same count each side, so 1:1.
+      seedHalvingBracket({}, 2);
+      const service = new BracketManagerService();
+
+      // Match 2 is even, but with two next-round matches it maps 1:1 to next
+      // match #2 and takes that match's first empty slot.
+      const result = await service.adminCompleteByeMatch(2, 21);
+
+      expect(result.placedInMatchId).toBe(4);
+      expect(rowById(4)).toMatchObject({ opponent1_id: 2, opponent2_id: null });
+    });
+  });
+
   describe('completion detection (markBracketCompleteIfDone)', () => {
     it('unpopulated TBD matches BLOCK completion (fixed: they used to be skipped)', async () => {
       // A downstream match whose opponent slots were never populated (silent
@@ -570,7 +728,7 @@ describe('bracket service characterization (real service + real library over fak
   });
 
   describe('admin correction of an archived match', () => {
-    it('unlocks 5→4 and lets the library update the score in place', async () => {
+    it('corrects the score in place, staying Archived and not re-propagating', async () => {
       seedBracketRow();
       const service = new BracketManagerService();
       await service.createBracket({
@@ -592,7 +750,10 @@ describe('bracket service characterization (real service + real library over fak
 
       const corrected = matchRows().find((m) => m.id === archived.id);
       expect(corrected).toMatchObject({
-        status: 4,
+        // Was 4: the match used to be unlocked 5 → 4 and handed to the library,
+        // which re-propagated the same winner and wiped downstream scores on the
+        // way. A same-winner correction is now written directly and stays Archived.
+        status: 5,
         opponent1_score: 3,
         opponent2_score: 1,
         opponent1_result: 'win',
@@ -626,11 +787,45 @@ describe('bracket service characterization (real service + real library over fak
             opponent2: { score: 3, result: 'win' },
           },
         })
-      ).rejects.toThrow(/Cannot change the winner of this archived match/);
+      ).rejects.toThrow(/Cannot change the winner of this match/);
 
       // The refusal happens before the 5 → 4 unlock, so nothing moved at all.
       expect(snapshotSqlGrid()).toEqual(before);
       expect(matchRows().find((m) => m.id === archived.id)?.status).toBe(5);
+    });
+
+    it('leaves already-played later matches untouched when only the score changes', async () => {
+      // Correcting a score without changing who won must not disturb anything
+      // downstream. Handing the match back to the library re-propagates the same
+      // winner, and setNextOpponent REPLACES the downstream opponent object with
+      // just {id, position} — so the score already recorded there is flattened
+      // back to NULL even though nobody's result changed.
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+      await playAllReadyMatches(service);
+
+      const archived = mustFindMatch((m) => m.status === 5, 'an archived match');
+      const before = snapshotSqlGrid();
+
+      // Same winner as playAllReadyMatches recorded — only the numbers move.
+      await service.updateMatch({
+        matchId: archived.id,
+        scores: {
+          opponent1: { score: 5, result: 'win' },
+          opponent2: { score: 1, result: 'loss' },
+        },
+      });
+
+      const after = snapshotSqlGrid();
+      const changed = after.filter((line, i) => line !== before[i]);
+      expect(changed).toHaveLength(1);
+      expect(changed[0]).toContain('(5)');
     });
   });
 

@@ -2,6 +2,7 @@ import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError, ValidationError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 import { assertNonNegativeNumber } from '@/utils/validation';
 
@@ -96,13 +97,19 @@ export class BracketUpdateService {
 
         const stage = (await this.storage.select('stage', currentMatch.stage_id)) as StorageStage;
 
-        // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
-        // rollback, so refusing here leaves the archived match exactly as it was.
-        if (currentMatch.status === 5) {
-          await this.assertArchivedFlipIsSafe(matchId, currentMatch, scores);
-        }
+        if (this.isScoreOnlyCorrection(currentMatch, scores)) {
+          await this.applyScoreOnlyCorrection(matchId, scores);
+        } else {
+          // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
+          // rollback, so refusing here leaves the archived match exactly as it was.
+          // Completed (4) needs the same guard — it re-propagates just as an
+          // unlocked Archived match does, it simply skips the unlock to get there.
+          if (currentMatch.status >= 4) {
+            await this.assertWinnerFlipIsSafe(matchId, currentMatch, scores);
+          }
 
-        await this.applyMatchUpdate(matchId, scores, currentMatch);
+          await this.applyMatchUpdate(matchId, scores, currentMatch);
+        }
         await this.archiveResetMatchIfDecided(matchId, stage);
 
         bracketLog('Match updated successfully in SQL tables');
@@ -134,22 +141,87 @@ export class BracketUpdateService {
   }
 
   /**
-   * Refuse an archived-match correction that would rewrite matches already played.
+   * A settled match (Completed or Archived) whose winner is unchanged: only the
+   * numbers move, so nothing downstream should be touched.
+   */
+  private isScoreOnlyCorrection(
+    currentMatch: StorageMatch,
+    scores: UpdateMatchOptions['scores']
+  ): boolean {
+    if (currentMatch.status < 4) return false; // 4 Completed, 5 Archived
+    const currentWinner = winnerSide(
+      currentMatch.opponent1?.result,
+      currentMatch.opponent2?.result
+    );
+    const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
+    return currentWinner !== null && nextWinner !== null && currentWinner === nextWinner;
+  }
+
+  /**
+   * Write a same-winner correction directly, bypassing the library.
    *
-   * Unlocking an Archived match (5 → 4) hands it back to the library, which
-   * re-propagates its winner forward. `setNextOpponent` *replaces* the downstream
-   * opponent object wholesale, so any score already stored there is dropped and the
-   * new arrival inherits a result it never earned — a later round showing a win for
-   * a team that never played it.
+   * The library treats every Completed → Completed update as a result change and
+   * re-propagates, and its `setNextOpponent` REPLACES the downstream opponent
+   * object with just `{id, position}`. The storage adapter then flattens the
+   * missing score as NULL and applies it verbatim, so a later round loses a score
+   * a human entered even though nobody's result changed. Re-propagating a winner
+   * who is already downstream buys nothing, so skip it entirely.
    *
-   * Only a winner FLIP propagates. Correcting the score while the same team still
-   * wins re-writes this match alone and stays allowed.
+   * Only the four score/result columns are written. Status is left alone (an
+   * Archived match stays Archived), as are the ids and the `*_position` feeder
+   * markers the library relies on.
+   *
+   * Safe to write these columns directly: updateMatch has already rejected BYE
+   * matches (strict-null slots) and TBD matches above, so both result columns hold
+   * a real 'win'/'loss' and the stored 'bye' sentinel cannot be clobbered here.
+   */
+  private async applyScoreOnlyCorrection(
+    matchId: number,
+    scores: UpdateMatchOptions['scores']
+  ): Promise<void> {
+    bracketLog(`Score-only correction for match ${matchId} — not re-propagating`);
+
+    const correctionFields: {
+      opponent1_score?: number | null;
+      opponent1_result?: string | null;
+      opponent2_score?: number | null;
+      opponent2_result?: string | null;
+    } = {};
+    if (scores.opponent1) {
+      correctionFields.opponent1_score = scores.opponent1.score ?? null;
+      correctionFields.opponent1_result = scores.opponent1.result ?? null;
+    }
+    if (scores.opponent2) {
+      correctionFields.opponent2_score = scores.opponent2.score ?? null;
+      correctionFields.opponent2_result = scores.opponent2.result ?? null;
+    }
+
+    const { error } = await supabase.from('match').update(correctionFields).eq('id', matchId);
+    if (error) {
+      handleDatabaseError(error, `Failed to correct the score of match ${matchId}`);
+    }
+  }
+
+  /**
+   * Refuse a winner flip on a settled match that would rewrite matches already played.
+   *
+   * Handing a settled match back to the library re-propagates its winner forward.
+   * `setNextOpponent` *replaces* the downstream opponent object wholesale, so any
+   * score already stored there is dropped and the new arrival inherits a result it
+   * never earned — a later round showing a win for a team that never played it.
+   *
+   * Applies to Completed (4) as well as Archived (5). The unlock an Archived match
+   * needs first is incidental; what does the damage is the propagation, and a
+   * Completed match reaches it directly.
+   *
+   * Only a winner FLIP gets this far. Same-winner corrections are written directly
+   * by applyScoreOnlyCorrection and never reach the library at all.
    *
    * Both continuations are checked: a flip swaps who advances AND who drops to the
    * losers bracket, and the loser's LB match can already be played while the
    * winner's next match is not.
    */
-  private async assertArchivedFlipIsSafe(
+  private async assertWinnerFlipIsSafe(
     matchId: number,
     currentMatch: StorageMatch,
     scores: UpdateMatchOptions['scores']
@@ -160,8 +232,20 @@ export class BracketUpdateService {
     );
     const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
 
-    // Score-only correction, or no decisive winner on either side: nothing propagates.
-    if (currentWinner === null || nextWinner === null || currentWinner === nextWinner) return;
+    // Nothing has propagated from this match yet, so there is nothing to disturb.
+    if (currentWinner === null) return;
+
+    // A settled match being handed a tied or result-less payload. The library would
+    // try to un-decide a match whose winner has already moved on; refuse instead.
+    if (nextWinner === null) {
+      throw new ValidationError(
+        'This match already has a winner. Enter a decisive score, or reopen the ' +
+          'match to clear the result first.'
+      );
+    }
+
+    // Same winner: handled by applyScoreOnlyCorrection before reaching this guard.
+    if (currentWinner === nextWinner) return;
 
     const downstream = await collectDownstreamChain({ storage: this.storage }, matchId, {
       includeLoser: true,
@@ -173,7 +257,7 @@ export class BracketUpdateService {
 
     if (played.length > 0) {
       throw new BusinessLogicError(
-        `Cannot change the winner of this archived match: ${played.length} later ` +
+        `Cannot change the winner of this match: ${played.length} later ` +
           `match${played.length === 1 ? ' has' : 'es have'} already been played. ` +
           'Use the "Reopen + Clear Downstream" admin action to clear those results first.'
       );

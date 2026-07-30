@@ -126,6 +126,12 @@ const firstRoundMatch: PlayoffMatch = {
   status: 'pending',
 };
 
+/**
+ * Drives the score dialog from local state on purpose: this test covers bracket
+ * creation → score entry → champion advancement, not the handler wiring. The
+ * production AdminView → PlayoffDialogs chain is covered by
+ * playoffMatchEditorWiring.integration.test.tsx.
+ */
 function IntegrationHarness() {
   const [bracketDialogOpen, setBracketDialogOpen] = React.useState(false);
   const [editingMatch, setEditingMatch] = React.useState<PlayoffMatch | null>(null);
@@ -139,6 +145,7 @@ function IntegrationHarness() {
         setBracketDialogOpen={setBracketDialogOpen}
         onCreateBracket={() => setBracketDialogOpen(true)}
         onDeleteBracket={vi.fn()}
+        onEditMatch={vi.fn()}
         data={
           {
             ready: true,
