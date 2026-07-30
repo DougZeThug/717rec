@@ -99,7 +99,15 @@ describe('Bracket Manager Schema Integration Tests', () => {
     vi.clearAllMocks();
     // Setup mock Supabase client with chainable insert().select() and update().eq() patterns
     mockSupabaseFrom = {
-      select: vi.fn().mockResolvedValue({ data: [], error: null }),
+      // Awaitable on its own, and chainable via .eq() for the snapshot/rollback
+      // read BracketUpdateService takes before handing a match to the library.
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+        then: (resolve: (...args: unknown[]) => unknown) =>
+          Promise.resolve({ data: [], error: null }).then(resolve),
+        catch: (reject: (...args: unknown[]) => unknown) =>
+          Promise.resolve({ data: [], error: null }).catch(reject),
+      }),
       insert: createInsertMock(),
       update: vi.fn().mockReturnValue({
         eq: vi.fn().mockReturnValue({

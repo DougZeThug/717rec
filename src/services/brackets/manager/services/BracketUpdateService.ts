@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
@@ -35,6 +36,32 @@ function winnerSide(
   if (opponent2Result === 'win') return 2;
   return null;
 }
+
+/**
+ * The match columns `manager.update.match` can rewrite, and therefore the ones
+ * a rollback has to be able to put back.
+ *
+ * `*_position` are the feeder markers the library propagates by, and the
+ * `*_result` columns carry the stored 'bye' sentinel — restoring a stale value
+ * into either would corrupt the bracket, so they are captured verbatim.
+ */
+const RESTORABLE_MATCH_COLUMNS = [
+  'status',
+  'opponent1_id',
+  'opponent1_score',
+  'opponent1_result',
+  'opponent1_position',
+  'opponent2_id',
+  'opponent2_score',
+  'opponent2_result',
+  'opponent2_position',
+] as const;
+
+/** `child_count` rides along only so the rollback can tell when it is incomplete. */
+const MATCH_SNAPSHOT_COLUMNS = `id, child_count, ${RESTORABLE_MATCH_COLUMNS.join(', ')}`;
+
+type RestorableMatchColumn = (typeof RESTORABLE_MATCH_COLUMNS)[number];
+type MatchSnapshotRow = Pick<Tables<'match'>, 'id' | 'child_count' | RestorableMatchColumn>;
 
 /**
  * Service responsible for bracket match updates.
@@ -100,11 +127,10 @@ export class BracketUpdateService {
         if (this.isScoreOnlyCorrection(currentMatch, scores)) {
           await this.applyScoreOnlyCorrection(matchId, scores);
         } else {
-          // Runs BEFORE applyMatchUpdate on purpose: refusing here means the library
-          // never runs, so nothing propagates and the match is untouched. That method
-          // does roll its 5 → 4 unlock back when the library throws, but that is a
-          // best-effort repair of one status column — it cannot undo a propagation
-          // that already overwrote later rounds.
+          // Runs BEFORE applyMatchUpdate on purpose: this refuses an edit that WOULD
+          // succeed, which no rollback can help with. applyMatchUpdate can undo a
+          // failed update, but a flip that the library accepts is not a failure — it
+          // silently overwrites scores in later rounds and nothing rolls back.
           // Completed (4) needs the same guard — it re-propagates just as an
           // unlocked Archived match does, it simply skips the unlock to get there.
           if (currentMatch.status >= 4) {
@@ -267,17 +293,113 @@ export class BracketUpdateService {
     }
   }
 
+  /**
+   * Capture every match in the stage exactly as stored, so a failed update can
+   * be undone.
+   *
+   * Deliberately reads the raw columns instead of going through
+   * `storage.select`: that path runs `inflateOpponentSlot`, which turns a
+   * stored 'bye' sentinel into `null`. Writing that back would quietly demote a
+   * structural BYE to an ordinary TBD slot.
+   *
+   * Scoped to the whole stage rather than the downstream chain because
+   * `updateRelatedMatches` propagates BOTH ways — `updatePrevious` rewrites
+   * feeder matches too, so a downstream-only snapshot would miss rows.
+   *
+   * Throws if the snapshot cannot be taken. Nothing has been written at that
+   * point, so failing costs nothing — whereas continuing would silently drop
+   * the ability to roll back.
+   */
+  private async snapshotStageMatches(stageId: number): Promise<MatchSnapshotRow[]> {
+    const { data, error } = await supabase
+      .from('match')
+      .select(MATCH_SNAPSHOT_COLUMNS)
+      .eq('stage_id', stageId);
+
+    if (error) {
+      handleDatabaseError(error, `Failed to snapshot stage ${stageId} before updating a match`);
+    }
+    return (data ?? []) as unknown as MatchSnapshotRow[];
+  }
+
+  /**
+   * Put every row the failed update touched back the way the snapshot found it.
+   *
+   * Re-reads and writes back only the rows that actually differ, so the usual
+   * rollback is one or two writes and the log names exactly what was undone.
+   *
+   * Best-effort throughout: the caller re-throws the original failure, and
+   * nothing here may replace it with a rollback error.
+   */
+  private async restoreStageMatches(snapshot: MatchSnapshotRow[], stageId: number): Promise<void> {
+    const { data, error } = await supabase
+      .from('match')
+      .select(MATCH_SNAPSHOT_COLUMNS)
+      .eq('stage_id', stageId);
+
+    if (error) {
+      failureLog(`Could not re-read stage ${stageId} to roll back a failed match update`, error);
+      return;
+    }
+
+    const current = new Map(
+      ((data ?? []) as unknown as MatchSnapshotRow[]).map((row) => [row.id, row])
+    );
+
+    const rollbacks = snapshot
+      .map((before) => {
+        const after = current.get(before.id);
+        const changed = after
+          ? RESTORABLE_MATCH_COLUMNS.filter((column) => after[column] !== before[column])
+          : [];
+        return { before, changed };
+      })
+      .filter(({ changed }) => changed.length > 0);
+
+    if (rollbacks.length === 0) return;
+
+    // The library also writes match_game rows, but only for matches with child
+    // games (child_count > 0). This app never creates multi-game series, so
+    // there is nothing to undo there — say so out loud if that ever changes.
+    if (snapshot.some((row) => (row.child_count ?? 0) > 0)) {
+      failureLog(
+        `Stage ${stageId} rollback is incomplete`,
+        'matches have child games; match_game rows are not covered'
+      );
+    }
+
+    await Promise.all(
+      rollbacks.map(async ({ before, changed }) => {
+        const payload = Object.fromEntries(
+          changed.map((column) => [column, before[column]])
+        ) as Partial<Pick<Tables<'match'>, RestorableMatchColumn>>;
+        const { error: restoreError } = await supabase
+          .from('match')
+          .update(payload)
+          .eq('id', before.id);
+
+        if (restoreError) {
+          failureLog(`Failed to roll back match ${before.id} after a failed update`, restoreError);
+        } else {
+          bracketLog(`↩️ Rolled back match ${before.id}: ${changed.join(', ')}`);
+        }
+      })
+    );
+  }
+
   private async applyMatchUpdate(
     matchId: number,
     scores: UpdateMatchOptions['scores'],
     currentMatch: StorageMatch
   ): Promise<void> {
+    // Taken before the unlock, so the rollback covers the status flip too.
+    const snapshot = await this.snapshotStageMatches(currentMatch.stage_id);
+
     // ⭐ Admin corrections: the library refuses to update Archived matches
     // ("The match is locked."), but admins legitimately need to fix scores on
     // matches whose downstream rounds already progressed. Temporarily flip
     // 5 → 4 (Completed, which the library edits and re-propagates from).
-    const wasArchived = currentMatch.status === 5;
-    if (wasArchived) {
+    if (currentMatch.status === 5) {
       bracketLog(`🔓 Match ${matchId} is Archived — unlocking to Completed for admin correction`);
       const { error: unlockError } = await supabase
         .from('match')
@@ -309,21 +431,13 @@ export class BracketUpdateService {
     try {
       await this.manager.update.match(updatePayload);
     } catch (error) {
-      // The unlock above is already committed. Put the match back the way we
-      // found it, or a failed correction silently leaves it Completed forever
-      // — which re-enables admin actions that are deliberately barred for
-      // Archived matches (adminCompleteByeMatch, the BYE-ready toggle) and
-      // changes how it renders. Best-effort: never mask the real failure.
-      if (wasArchived) {
-        const { error: restoreError } = await supabase
-          .from('match')
-          .update({ status: 5 })
-          .eq('id', matchId);
-
-        if (restoreError) {
-          failureLog(`Failed to restore Archived status for match ${matchId}`, restoreError);
-        }
-      }
+      // The library writes the match itself BEFORE propagating (updater.js
+      // applyMatchUpdate, then updateRelatedMatches), so a mid-propagation
+      // failure leaves the corrected score saved while the rounds around it
+      // still hold results derived from the old one — plus, for an archived
+      // match, the unlock already committed. Undo the whole attempt so a failed
+      // correction changes nothing. Best-effort: never mask the real failure.
+      await this.restoreStageMatches(snapshot, currentMatch.stage_id);
       throw error;
     }
     bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);

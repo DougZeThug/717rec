@@ -43,6 +43,8 @@ describe('BracketUpdateService', () => {
   let service: BracketUpdateService;
   let directUpdates: { table: string; payload: Record<string, unknown>; id: unknown }[];
   let bracketsUpdates: Record<string, unknown>[];
+  /** Raw `match` rows the snapshot/rollback path reads via supabase.select. */
+  let stageRows: Record<string, unknown>[];
 
   const REAL_MATCH = {
     id: 7,
@@ -106,6 +108,9 @@ describe('BracketUpdateService', () => {
     vi.clearAllMocks();
     directUpdates = [];
     bracketsUpdates = [];
+    // Default: the stage holds only match 7, unchanged by the update. A test
+    // that wants a rollback reassigns this to model a partially-written stage.
+    stageRows = [{ id: 7, child_count: 0, status: 2 }];
 
     storage = { select: vi.fn(), update: vi.fn() };
     manager = { update: { match: vi.fn().mockResolvedValue(undefined) } };
@@ -129,6 +134,10 @@ describe('BracketUpdateService', () => {
             directUpdates.push({ table, payload, id });
             return Promise.resolve({ error: null });
           },
+        }),
+        // Snapshot / rollback re-read of the stage's raw match rows.
+        select: () => ({
+          eq: () => Promise.resolve({ data: stageRows, error: null }),
         }),
       };
     });
@@ -216,7 +225,12 @@ describe('BracketUpdateService', () => {
         match: { ...REAL_MATCH, status: 5 },
         stageMatches: [{ ...REAL_MATCH, status: 4 }],
       });
-      manager.update.match.mockRejectedValue(new Error('storage write failed'));
+      // Snapshot sees Archived; after the unlock the row reads back as Completed.
+      stageRows = [{ id: 7, child_count: 0, status: 5 }];
+      manager.update.match.mockImplementation(() => {
+        stageRows = [{ id: 7, child_count: 0, status: 4 }];
+        return Promise.reject(new Error('storage write failed'));
+      });
 
       // The unlock is already committed by this point. Without the rollback the
       // match is stranded at Completed (4), which re-enables admin actions that
@@ -231,9 +245,63 @@ describe('BracketUpdateService', () => {
       ]);
     });
 
-    it('does not write a restore when the match was never Archived', async () => {
+    it('restores a score the library wrote before it failed mid-propagation', async () => {
+      wireStorage({ match: REAL_MATCH, stageMatches: [{ ...REAL_MATCH, status: 4 }] });
+      // The library writes the match itself before propagating, so a failure
+      // during propagation leaves the new score saved on a NON-archived match.
+      stageRows = [
+        { id: 7, child_count: 0, status: 2, opponent1_score: null, opponent1_result: null },
+      ];
+      manager.update.match.mockImplementation(() => {
+        stageRows = [
+          { id: 7, child_count: 0, status: 4, opponent1_score: 2, opponent1_result: 'win' },
+        ];
+        return Promise.reject(new Error('propagation failed'));
+      });
+
+      await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(
+        /Match update failed: propagation failed/
+      );
+
+      // Every column the library touched goes back, not just status.
+      expect(directUpdates).toEqual([
+        {
+          table: 'match',
+          payload: { status: 2, opponent1_score: null, opponent1_result: null },
+          id: 7,
+        },
+      ]);
+    });
+
+    it('rolls back downstream matches the propagation already rewrote', async () => {
+      wireStorage({ match: REAL_MATCH, stageMatches: [{ ...REAL_MATCH, status: 4 }] });
+      stageRows = [
+        { id: 7, child_count: 0, status: 2 },
+        { id: 8, child_count: 0, status: 1, opponent1_id: null },
+        { id: 9, child_count: 0, status: 1, opponent1_id: null },
+      ];
+      manager.update.match.mockImplementation(() => {
+        stageRows = [
+          { id: 7, child_count: 0, status: 4 },
+          { id: 8, child_count: 0, status: 2, opponent1_id: 10 },
+          // Match 9 was never reached, so it must NOT be written.
+          { id: 9, child_count: 0, status: 1, opponent1_id: null },
+        ];
+        return Promise.reject(new Error('propagation failed'));
+      });
+
+      await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(BusinessLogicError);
+
+      expect(directUpdates).toEqual([
+        { table: 'match', payload: { status: 2 }, id: 7 },
+        { table: 'match', payload: { status: 1, opponent1_id: null }, id: 8 },
+      ]);
+    });
+
+    it('writes nothing back when the failure changed no rows', async () => {
       wireStorage({ match: REAL_MATCH });
-      manager.update.match.mockRejectedValue(new Error('boom'));
+      // The library refused the update outright — nothing was persisted.
+      manager.update.match.mockRejectedValue(new Error('The match is locked.'));
 
       await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(BusinessLogicError);
 
@@ -245,9 +313,9 @@ describe('BracketUpdateService', () => {
         match: { ...REAL_MATCH, status: 5 },
         stageMatches: [{ ...REAL_MATCH, status: 4 }],
       });
-      manager.update.match.mockRejectedValue(new Error('storage write failed'));
+      stageRows = [{ id: 7, child_count: 0, status: 5 }];
 
-      // The unlock succeeds; the restore that follows it does not.
+      // The unlock succeeds; the rollback write that follows it does not.
       let writes = 0;
       mockFrom.mockImplementation((table: string) => ({
         update: (payload: Record<string, unknown>) => ({
@@ -259,7 +327,13 @@ describe('BracketUpdateService', () => {
             );
           },
         }),
+        select: () => ({ eq: () => Promise.resolve({ data: stageRows, error: null }) }),
       }));
+
+      manager.update.match.mockImplementation(() => {
+        stageRows = [{ id: 7, child_count: 0, status: 4 }];
+        return Promise.reject(new Error('storage write failed'));
+      });
 
       // A best-effort restore must never overwrite the real reason for the failure.
       await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(
@@ -270,6 +344,23 @@ describe('BracketUpdateService', () => {
         { table: 'match', payload: { status: 4 }, id: 7 },
         { table: 'match', payload: { status: 5 }, id: 7 },
       ]);
+    });
+
+    it('fails the update when the safety snapshot cannot be taken', async () => {
+      wireStorage({ match: REAL_MATCH });
+      mockFrom.mockImplementation(() => ({
+        update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+        select: () => ({
+          eq: () => Promise.resolve({ data: null, error: { message: 'permission denied' } }),
+        }),
+      }));
+
+      // Nothing has been written yet, so refusing is free — and safer than
+      // proceeding with no way back.
+      await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(
+        /Failed to snapshot stage 1/
+      );
+      expect(manager.update.match).not.toHaveBeenCalled();
     });
 
     describe('archived winner flips', () => {
@@ -497,6 +588,7 @@ describe('BracketUpdateService', () => {
         }
         return {
           update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+          select: () => ({ eq: () => Promise.resolve({ data: stageRows, error: null }) }),
         };
       });
 
