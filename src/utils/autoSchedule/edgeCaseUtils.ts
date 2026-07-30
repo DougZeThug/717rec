@@ -213,16 +213,3 @@ export function validateBackToBackPairAssignments(timeBlockTeams: TimeBlockTeams
   };
 }
 
-/**
- * Get recommended team count for optimal back-to-back scheduling
- */
-export function getRecommendedTeamCount(currentCount: number): number {
-  if (currentCount <= 0) return 4; // Minimum for 2 matches
-
-  // Round up to next even number if odd
-  if (currentCount % 2 !== 0) {
-    return currentCount + 1;
-  }
-
-  return currentCount;
-}

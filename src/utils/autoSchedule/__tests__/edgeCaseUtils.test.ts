@@ -4,7 +4,6 @@ import { createMockTeam, createMockTimeBlockTeams } from '@/utils/test/autoSched
 
 import {
   generateTeamDistributionSummary,
-  getRecommendedTeamCount,
   handleOddTeams,
   validateBackToBackPairAssignments,
   validateTeamCounts,
@@ -173,21 +172,4 @@ describe('Edge Case Utils', () => {
     });
   });
 
-  describe('getRecommendedTeamCount', () => {
-    it('returns 4 for 0 or negative input', () => {
-      expect(getRecommendedTeamCount(0)).toBe(4);
-      expect(getRecommendedTeamCount(-1)).toBe(4);
-    });
-
-    it('returns same value for an even count', () => {
-      expect(getRecommendedTeamCount(4)).toBe(4);
-      expect(getRecommendedTeamCount(6)).toBe(6);
-    });
-
-    it('rounds up odd count to next even number', () => {
-      expect(getRecommendedTeamCount(3)).toBe(4);
-      expect(getRecommendedTeamCount(5)).toBe(6);
-      expect(getRecommendedTeamCount(7)).toBe(8);
-    });
-  });
 });
