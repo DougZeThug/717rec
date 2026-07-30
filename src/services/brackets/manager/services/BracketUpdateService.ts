@@ -2,6 +2,7 @@ import { BracketsManager } from 'brackets-manager';
 
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError, ValidationError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 import { assertNonNegativeNumber } from '@/utils/validation';
 
@@ -96,13 +97,17 @@ export class BracketUpdateService {
 
         const stage = (await this.storage.select('stage', currentMatch.stage_id)) as StorageStage;
 
-        // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
-        // rollback, so refusing here leaves the archived match exactly as it was.
-        if (currentMatch.status === 5) {
-          await this.assertArchivedFlipIsSafe(matchId, currentMatch, scores);
-        }
+        if (this.isScoreOnlyCorrection(currentMatch, scores)) {
+          await this.applyScoreOnlyCorrection(matchId, scores);
+        } else {
+          // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
+          // rollback, so refusing here leaves the archived match exactly as it was.
+          if (currentMatch.status === 5) {
+            await this.assertArchivedFlipIsSafe(matchId, currentMatch, scores);
+          }
 
-        await this.applyMatchUpdate(matchId, scores, currentMatch);
+          await this.applyMatchUpdate(matchId, scores, currentMatch);
+        }
         await this.archiveResetMatchIfDecided(matchId, stage);
 
         bracketLog('Match updated successfully in SQL tables');
@@ -131,6 +136,68 @@ export class BracketUpdateService {
       manager: this.manager,
       normalizationService: this.normalizationService,
     };
+  }
+
+  /**
+   * A settled match (Completed or Archived) whose winner is unchanged: only the
+   * numbers move, so nothing downstream should be touched.
+   */
+  private isScoreOnlyCorrection(
+    currentMatch: StorageMatch,
+    scores: UpdateMatchOptions['scores']
+  ): boolean {
+    if (currentMatch.status < 4) return false; // 4 Completed, 5 Archived
+    const currentWinner = winnerSide(
+      currentMatch.opponent1?.result,
+      currentMatch.opponent2?.result
+    );
+    const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
+    return currentWinner !== null && nextWinner !== null && currentWinner === nextWinner;
+  }
+
+  /**
+   * Write a same-winner correction directly, bypassing the library.
+   *
+   * The library treats every Completed → Completed update as a result change and
+   * re-propagates, and its `setNextOpponent` REPLACES the downstream opponent
+   * object with just `{id, position}`. The storage adapter then flattens the
+   * missing score as NULL and applies it verbatim, so a later round loses a score
+   * a human entered even though nobody's result changed. Re-propagating a winner
+   * who is already downstream buys nothing, so skip it entirely.
+   *
+   * Only the four score/result columns are written. Status is left alone (an
+   * Archived match stays Archived), as are the ids and the `*_position` feeder
+   * markers the library relies on.
+   *
+   * Safe to write these columns directly: updateMatch has already rejected BYE
+   * matches (strict-null slots) and TBD matches above, so both result columns hold
+   * a real 'win'/'loss' and the stored 'bye' sentinel cannot be clobbered here.
+   */
+  private async applyScoreOnlyCorrection(
+    matchId: number,
+    scores: UpdateMatchOptions['scores']
+  ): Promise<void> {
+    bracketLog(`Score-only correction for match ${matchId} — not re-propagating`);
+
+    const correctionFields: {
+      opponent1_score?: number | null;
+      opponent1_result?: string | null;
+      opponent2_score?: number | null;
+      opponent2_result?: string | null;
+    } = {};
+    if (scores.opponent1) {
+      correctionFields.opponent1_score = scores.opponent1.score ?? null;
+      correctionFields.opponent1_result = scores.opponent1.result ?? null;
+    }
+    if (scores.opponent2) {
+      correctionFields.opponent2_score = scores.opponent2.score ?? null;
+      correctionFields.opponent2_result = scores.opponent2.result ?? null;
+    }
+
+    const { error } = await supabase.from('match').update(correctionFields).eq('id', matchId);
+    if (error) {
+      handleDatabaseError(error, `Failed to correct the score of match ${matchId}`);
+    }
   }
 
   /**

@@ -283,8 +283,23 @@ describe('BracketUpdateService', () => {
           },
         });
 
-        expect(directUpdates).toEqual([{ table: 'match', payload: { status: 4 }, id: 7 }]);
-        expect(manager.update.match).toHaveBeenCalled();
+        // Written straight to the score/result columns. The match is NOT unlocked
+        // to 4 and the library is never invoked: re-propagating a winner who is
+        // already downstream only lets setNextOpponent wipe the scores recorded
+        // there.
+        expect(directUpdates).toEqual([
+          {
+            table: 'match',
+            payload: {
+              opponent1_score: 5,
+              opponent1_result: 'win',
+              opponent2_score: 1,
+              opponent2_result: 'loss',
+            },
+            id: 7,
+          },
+        ]);
+        expect(manager.update.match).not.toHaveBeenCalled();
       });
 
       it('refuses the flip when only the LOSER has played on, in the losers bracket', async () => {

@@ -728,7 +728,7 @@ describe('bracket service characterization (real service + real library over fak
   });
 
   describe('admin correction of an archived match', () => {
-    it('unlocks 5→4 and lets the library update the score in place', async () => {
+    it('corrects the score in place, staying Archived and not re-propagating', async () => {
       seedBracketRow();
       const service = new BracketManagerService();
       await service.createBracket({
@@ -750,7 +750,10 @@ describe('bracket service characterization (real service + real library over fak
 
       const corrected = matchRows().find((m) => m.id === archived.id);
       expect(corrected).toMatchObject({
-        status: 4,
+        // Was 4: the match used to be unlocked 5 → 4 and handed to the library,
+        // which re-propagated the same winner and wiped downstream scores on the
+        // way. A same-winner correction is now written directly and stays Archived.
+        status: 5,
         opponent1_score: 3,
         opponent2_score: 1,
         opponent1_result: 'win',
@@ -789,6 +792,40 @@ describe('bracket service characterization (real service + real library over fak
       // The refusal happens before the 5 → 4 unlock, so nothing moved at all.
       expect(snapshotSqlGrid()).toEqual(before);
       expect(matchRows().find((m) => m.id === archived.id)?.status).toBe(5);
+    });
+
+    it('leaves already-played later matches untouched when only the score changes', async () => {
+      // Correcting a score without changing who won must not disturb anything
+      // downstream. Handing the match back to the library re-propagates the same
+      // winner, and setNextOpponent REPLACES the downstream opponent object with
+      // just {id, position} — so the score already recorded there is flattened
+      // back to NULL even though nobody's result changed.
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(4),
+        grandFinalType: 'simple',
+      });
+      await playAllReadyMatches(service);
+
+      const archived = mustFindMatch((m) => m.status === 5, 'an archived match');
+      const before = snapshotSqlGrid();
+
+      // Same winner as playAllReadyMatches recorded — only the numbers move.
+      await service.updateMatch({
+        matchId: archived.id,
+        scores: {
+          opponent1: { score: 5, result: 'win' },
+          opponent2: { score: 1, result: 'loss' },
+        },
+      });
+
+      const after = snapshotSqlGrid();
+      const changed = after.filter((line, i) => line !== before[i]);
+      expect(changed).toHaveLength(1);
+      expect(changed[0]).toContain('(5)');
     });
   });
 
