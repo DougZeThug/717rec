@@ -23,7 +23,7 @@ export default defineTool({
       supabase
         .from('team_requests')
         .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending'),
+        .eq('status', 'PENDING'),
       supabase
         .from('power_score_snapshots')
         .select('captured_at')
