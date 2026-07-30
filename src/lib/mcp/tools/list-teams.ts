@@ -20,7 +20,7 @@ export default defineTool({
 
     let query = supabase
       .from('team_season_stats')
-      .select('team_id, team_name, division_name, wins, losses, power_score')
+      .select('team_id, division_name, match_wins, match_losses, power_score, teams(name)')
       .eq('season_id', seasonId);
     if (division) query = query.ilike('division_name', division);
     const { data, error } = await query.order('power_score', {
@@ -28,6 +28,11 @@ export default defineTool({
       nullsFirst: false,
     });
     if (error) return errorResult(error.message);
-    return textResult(data ?? []);
+
+    const rows = (data ?? []).map((row) => {
+      const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
+      return { team_name: teams?.name ?? null, ...rest };
+    });
+    return textResult(rows);
   },
 });
