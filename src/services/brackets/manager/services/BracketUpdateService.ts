@@ -100,8 +100,11 @@ export class BracketUpdateService {
         if (this.isScoreOnlyCorrection(currentMatch, scores)) {
           await this.applyScoreOnlyCorrection(matchId, scores);
         } else {
-          // Runs BEFORE applyMatchUpdate on purpose: that method flips 5 → 4 with no
-          // rollback, so refusing here leaves the archived match exactly as it was.
+          // Runs BEFORE applyMatchUpdate on purpose: refusing here means the library
+          // never runs, so nothing propagates and the match is untouched. That method
+          // does roll its 5 → 4 unlock back when the library throws, but that is a
+          // best-effort repair of one status column — it cannot undo a propagation
+          // that already overwrote later rounds.
           // Completed (4) needs the same guard — it re-propagates just as an
           // unlocked Archived match does, it simply skips the unlock to get there.
           if (currentMatch.status >= 4) {
@@ -273,7 +276,8 @@ export class BracketUpdateService {
     // ("The match is locked."), but admins legitimately need to fix scores on
     // matches whose downstream rounds already progressed. Temporarily flip
     // 5 → 4 (Completed, which the library edits and re-propagates from).
-    if (currentMatch.status === 5) {
+    const wasArchived = currentMatch.status === 5;
+    if (wasArchived) {
       bracketLog(`🔓 Match ${matchId} is Archived — unlocking to Completed for admin correction`);
       const { error: unlockError } = await supabase
         .from('match')
@@ -302,7 +306,26 @@ export class BracketUpdateService {
     bracketLog('CALLING manager.update.match() with:', updatePayload);
     // No tolerated errors: if the library refuses the update or propagation
     // fails, the whole operation fails loudly.
-    await this.manager.update.match(updatePayload);
+    try {
+      await this.manager.update.match(updatePayload);
+    } catch (error) {
+      // The unlock above is already committed. Put the match back the way we
+      // found it, or a failed correction silently leaves it Completed forever
+      // — which re-enables admin actions that are deliberately barred for
+      // Archived matches (adminCompleteByeMatch, the BYE-ready toggle) and
+      // changes how it renders. Best-effort: never mask the real failure.
+      if (wasArchived) {
+        const { error: restoreError } = await supabase
+          .from('match')
+          .update({ status: 5 })
+          .eq('id', matchId);
+
+        if (restoreError) {
+          failureLog(`Failed to restore Archived status for match ${matchId}`, restoreError);
+        }
+      }
+      throw error;
+    }
     bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
   }
 

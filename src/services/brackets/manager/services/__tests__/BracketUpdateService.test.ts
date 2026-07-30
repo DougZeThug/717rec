@@ -211,6 +211,67 @@ describe('BracketUpdateService', () => {
       expect(manager.update.match).toHaveBeenCalled();
     });
 
+    it('restores Archived status when the library update fails', async () => {
+      wireStorage({
+        match: { ...REAL_MATCH, status: 5 },
+        stageMatches: [{ ...REAL_MATCH, status: 4 }],
+      });
+      manager.update.match.mockRejectedValue(new Error('storage write failed'));
+
+      // The unlock is already committed by this point. Without the rollback the
+      // match is stranded at Completed (4), which re-enables admin actions that
+      // are deliberately barred for Archived matches.
+      await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(
+        /Match update failed: storage write failed/
+      );
+
+      expect(directUpdates).toEqual([
+        { table: 'match', payload: { status: 4 }, id: 7 },
+        { table: 'match', payload: { status: 5 }, id: 7 },
+      ]);
+    });
+
+    it('does not write a restore when the match was never Archived', async () => {
+      wireStorage({ match: REAL_MATCH });
+      manager.update.match.mockRejectedValue(new Error('boom'));
+
+      await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(BusinessLogicError);
+
+      expect(directUpdates).toEqual([]);
+    });
+
+    it('reports the original failure even when the restore itself fails', async () => {
+      wireStorage({
+        match: { ...REAL_MATCH, status: 5 },
+        stageMatches: [{ ...REAL_MATCH, status: 4 }],
+      });
+      manager.update.match.mockRejectedValue(new Error('storage write failed'));
+
+      // The unlock succeeds; the restore that follows it does not.
+      let writes = 0;
+      mockFrom.mockImplementation((table: string) => ({
+        update: (payload: Record<string, unknown>) => ({
+          eq: (_col: string, id: unknown) => {
+            writes += 1;
+            directUpdates.push({ table, payload, id });
+            return Promise.resolve(
+              writes === 1 ? { error: null } : { error: { message: 'restore denied' } }
+            );
+          },
+        }),
+      }));
+
+      // A best-effort restore must never overwrite the real reason for the failure.
+      await expect(service.updateMatch({ matchId: 7, scores })).rejects.toThrow(
+        /Match update failed: storage write failed/
+      );
+
+      expect(directUpdates).toEqual([
+        { table: 'match', payload: { status: 4 }, id: 7 },
+        { table: 'match', payload: { status: 5 }, id: 7 },
+      ]);
+    });
+
     describe('archived winner flips', () => {
       const ARCHIVED_WITH_WINNER = {
         ...REAL_MATCH,
