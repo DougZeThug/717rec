@@ -5,6 +5,7 @@ import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog } from '@/utils/logger';
 
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { BYE_RESULT_SENTINEL } from '../../SupabaseSqlStorage/matchTransforms';
 import type { StorageMatch } from '../../types/BracketServiceTypes';
 import { LbStructureService } from './LbStructureService';
 
@@ -41,12 +42,16 @@ export class LosersRoundNormalizationService {
           `[NORMALIZE] DUPLICATE DETECTED in LB R1 Match ${match.id}: Participant ${opponent1Id} in both slots — clearing opponent2`
         );
 
+        // The emptied slot is a structural BYE, not a TBD: no participant can
+        // ever arrive there. The sentinel in the result column is the only
+        // record of that. Left null, the slot reads back as "to be decided" and
+        // the viewer paints it with a "Winner of …" hint it can never fulfil.
         const { error } = await supabase
           .from('match')
           .update({
             opponent2_id: null,
             opponent2_score: null,
-            opponent2_result: null,
+            opponent2_result: BYE_RESULT_SENTINEL,
             opponent1_result: 'win',
             opponent1_score: 0,
             status: 4,

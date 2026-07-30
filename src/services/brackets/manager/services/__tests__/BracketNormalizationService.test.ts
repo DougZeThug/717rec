@@ -19,6 +19,7 @@ vi.mock('@/utils/logger', () => ({
 import { DatabaseError } from '@/types/errors';
 
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
+import { BYE_RESULT_SENTINEL } from '../../SupabaseSqlStorage/matchTransforms';
 import { BracketNormalizationService } from '../BracketNormalizationService';
 
 type StorageDouble = {
@@ -300,10 +301,12 @@ describe('BracketNormalizationService', () => {
 
       expect(mockFrom).toHaveBeenCalledWith('match');
       expect(eq).toHaveBeenCalledWith('id', 31);
+      // 'bye', not null: the cleared slot can never receive a participant, and
+      // the sentinel is what stops the viewer promising a "Winner of …" there.
       expect(update).toHaveBeenCalledWith({
         opponent2_id: null,
         opponent2_score: null,
-        opponent2_result: null,
+        opponent2_result: BYE_RESULT_SENTINEL,
         opponent1_result: 'win',
         opponent1_score: 0,
         status: 4,
