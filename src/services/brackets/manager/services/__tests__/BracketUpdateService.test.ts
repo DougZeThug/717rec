@@ -244,6 +244,15 @@ describe('BracketUpdateService', () => {
             return Promise.resolve(source);
           }
           if (table === 'stage') return Promise.resolve(STAGE);
+          if (table === 'group') {
+            // WB / LB / GF. Round numbers restart in each, so the chain has to
+            // order by group first.
+            return Promise.resolve([
+              { id: 1, number: 1 },
+              { id: 2, number: 2 },
+              { id: 3, number: 3 },
+            ]);
+          }
           if (table === 'round' && typeof filter === 'number') {
             return Promise.resolve({ id: 1, stage_id: 1, group_id: 1, number: 1 });
           }
@@ -251,6 +260,10 @@ describe('BracketUpdateService', () => {
             return Promise.resolve([
               { id: 1, number: 1 },
               { id: 2, number: 2 },
+              // Losers-bracket round 1 — a LOWER number than the WB round the
+              // flip starts from, which is exactly why round numbers alone are
+              // not enough to order the chain.
+              { id: 3, number: 1 },
             ]);
           }
           if (table === 'match') return Promise.resolve([source, ...downstream]);
@@ -348,6 +361,31 @@ describe('BracketUpdateService', () => {
             stage_id: 1,
             group_id: 2, // losers bracket
             round_id: 2,
+            number: 1,
+            status: 4,
+            opponent1: { id: 20, score: 2, result: 'win' as const },
+            opponent2: { id: 40, score: 0, result: 'loss' as const },
+          },
+        ]);
+
+        await expect(service.updateMatch({ matchId: 7, scores: flip })).rejects.toThrow(
+          /Cannot change the winner of this match/
+        );
+        expect(directUpdates).toEqual([]);
+        expect(manager.update.match).not.toHaveBeenCalled();
+      });
+
+      it('refuses the flip when the loser played a LOSERS ROUND 1 match', async () => {
+        // The realistic shape: a WB round-1 loser drops into LB round 1, whose
+        // round NUMBER is 1 — not greater than the WB round the flip starts from.
+        // Comparing round numbers across the whole stage dropped this match out of
+        // the chain entirely, so the flip sailed past the guard.
+        wireDownstream([
+          {
+            id: 9,
+            stage_id: 1,
+            group_id: 2, // losers bracket
+            round_id: 3, // LB round 1
             number: 1,
             status: 4,
             opponent1: { id: 20, score: 2, result: 'win' as const },
