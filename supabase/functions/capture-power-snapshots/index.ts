@@ -31,6 +31,11 @@ interface TeamDetailsRow {
   power_score: number | null;
 }
 
+// PostgREST caps every response at `max_rows` (1000, see supabase/config.toml).
+// The league is far below that today; the guard below logs loudly if it is ever hit
+// so a truncated baseline can never pass unnoticed.
+const POSTGREST_MAX_ROWS = 1000;
+
 // Mirrors getTierFromDivision in src/utils/autoSchedule/blossom/tierUtils.ts.
 const getTierFromDivision = (divisionName: string | null | undefined): number => {
   if (!divisionName) return 2; // Default to intermediate
@@ -48,7 +53,7 @@ const getDisplayedPowerScore = (powerScore: number | null | undefined): number |
 // Must stay in lockstep with the client sort in src/hooks/useTeamRankings.ts so
 // the stored baseline compares like-for-like with what the site displays:
 // 1-decimal power score desc, NULL scores last, then division tier, win %, name.
-const compareTeamsForRanking = (a: TeamDetailsRow, b: TeamDetailsRow): number => {
+export const compareTeamsForRanking = (a: TeamDetailsRow, b: TeamDetailsRow): number => {
   const aScore = getDisplayedPowerScore(a.power_score);
   const bScore = getDisplayedPowerScore(b.power_score);
   if (aScore === null && bScore !== null) return 1;
@@ -63,16 +68,41 @@ const compareTeamsForRanking = (a: TeamDetailsRow, b: TeamDetailsRow): number =>
   return (a.name || '').localeCompare(b.name || '');
 };
 
+// Sort the visible teams and stamp them with 1..N rank positions.
+export const buildRankingSnapshots = (
+  teams: TeamDetailsRow[],
+  seasonId: string
+): Array<{ team_id: string; season_id: string; rank_position: number }> =>
+  [...teams].sort(compareTeamsForRanking).map((team, index) => ({
+    team_id: team.team_id,
+    season_id: seasonId,
+    rank_position: index + 1,
+  }));
+
 // Refresh the ranking_snapshots baseline that powers the site's trend arrows.
 // This write used to happen client-side whenever an admin merely *viewed* the
 // rankings page; it lives here now so rendering a page never writes to the
 // database. Failures are logged but do not block the power-score snapshot.
+//
+// readClient MUST be the anon-key client, never the service-role one. Teams that
+// opted out of the active season are hidden by RLS on public.teams
+// ("Public read teams" USING NOT public.is_team_opted_out_active(id)), and
+// v_team_details is security_invoker so that filter flows through. service_role
+// has BYPASSRLS, so reading with it counts opted-out teams when assigning rank
+// positions while the live site does not — every team below an opted-out team
+// then gets a bogus trend arrow. Reading as anon is what the site itself sees.
+//
 // The esm.sh Deno import exposes no local types for the client, so the
-// parameter cannot be typed more precisely in this repo's TS setup.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function captureRankingSnapshots(supabase: any, seasonId: string): Promise<void> {
+// parameters cannot be typed more precisely in this repo's TS setup.
+export async function captureRankingSnapshots(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readClient: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  writeClient: any,
+  seasonId: string
+): Promise<void> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await readClient
       .from('v_team_details')
       .select('team_id, name, divisionname, win_percentage, power_score');
 
@@ -84,13 +114,17 @@ async function captureRankingSnapshots(supabase: any, seasonId: string): Promise
       return;
     }
 
-    const snapshots = [...teams].sort(compareTeamsForRanking).map((team, index) => ({
-      team_id: team.team_id,
-      season_id: seasonId,
-      rank_position: index + 1,
-    }));
+    if (teams.length >= POSTGREST_MAX_ROWS) {
+      console.error(
+        `[capture-power-snapshots] v_team_details returned ${teams.length} rows, at or above the ` +
+          `PostgREST cap of ${POSTGREST_MAX_ROWS}. The ranking baseline is probably truncated — ` +
+          'this read needs pagination.'
+      );
+    }
 
-    const { error: upsertError } = await supabase
+    const snapshots = buildRankingSnapshots(teams, seasonId);
+
+    const { error: upsertError } = await writeClient
       .from('ranking_snapshots')
       .upsert(snapshots, { onConflict: 'team_id,season_id', ignoreDuplicates: false });
 
@@ -140,6 +174,12 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // RLS-respecting client, used only to read the team list for the ranking
+    // baseline so opted-out teams are excluded exactly as they are for visitors.
+    const supabaseAnonKey =
+      Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_PUBLISHABLE_KEY');
+    const readClient = supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+
     console.log('[capture-power-snapshots] Starting weekly snapshot capture...');
 
     // 1. Get active season
@@ -163,7 +203,17 @@ Deno.serve(async (req) => {
 
     // 1b. Refresh the trend-arrow ranking baseline on every run — before the
     // weekly skip below, which only applies to power_score_snapshots.
-    await captureRankingSnapshots(supabase, activeSeason.id);
+    // Skipped rather than falling back to the service client when the anon key is
+    // missing: a stale baseline is harmless, a baseline that counts opted-out
+    // teams silently corrupts every trend arrow below one.
+    if (readClient) {
+      await captureRankingSnapshots(readClient, supabase, activeSeason.id);
+    } else {
+      console.error(
+        '[capture-power-snapshots] SUPABASE_ANON_KEY not configured; skipping ranking ' +
+          'baseline refresh (reading with the service role would include opted-out teams)'
+      );
+    }
 
     // 2. Calculate current week number
     const { data: weekData, error: weekError } = await supabase.rpc('get_season_week_number', {
