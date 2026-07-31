@@ -95,4 +95,46 @@ describe('OpponentHistoryModal', () => {
     expect(screen.getByText('Games: 1 - 2')).toBeInTheDocument();
     expect(screen.getByText('Court 3')).toBeInTheDocument();
   });
+
+  // The RPC does not normalise which side the viewing team lands on, so the
+  // badge has to hold up with the viewing team in either slot.
+  describe('win/loss badge', () => {
+    const renderWithMatch = (overrides: Partial<typeof match>) => {
+      mockUseOpponentHistory.mockReturnValue({
+        data: { summary, matches: [{ ...match, ...overrides }] },
+        isLoading: false,
+      });
+      renderModal();
+    };
+
+    it('shows L when the viewing team is team1 and lost', () => {
+      renderWithMatch({ team1_name: 'My Team', team2_name: 'Rivals', winner_name: 'Rivals' });
+      expect(screen.getByText('L')).toBeInTheDocument();
+      expect(screen.queryByText('W')).not.toBeInTheDocument();
+    });
+
+    it('shows W when the viewing team is team1 and won', () => {
+      renderWithMatch({ team1_name: 'My Team', team2_name: 'Rivals', winner_name: 'My Team' });
+      expect(screen.getByText('W')).toBeInTheDocument();
+      expect(screen.queryByText('L')).not.toBeInTheDocument();
+    });
+
+    it('shows W when the viewing team is team2 and won', () => {
+      renderWithMatch({ team1_name: 'Rivals', team2_name: 'My Team', winner_name: 'My Team' });
+      expect(screen.getByText('W')).toBeInTheDocument();
+      expect(screen.queryByText('L')).not.toBeInTheDocument();
+    });
+
+    it('shows L when the viewing team is team2 and lost', () => {
+      renderWithMatch({ team1_name: 'Rivals', team2_name: 'My Team', winner_name: 'Rivals' });
+      expect(screen.getByText('L')).toBeInTheDocument();
+      expect(screen.queryByText('W')).not.toBeInTheDocument();
+    });
+
+    it('shows L when the match has no winner', () => {
+      renderWithMatch({ winner_name: null as unknown as string });
+      expect(screen.getByText('L')).toBeInTheDocument();
+      expect(screen.queryByText('W')).not.toBeInTheDocument();
+    });
+  });
 });

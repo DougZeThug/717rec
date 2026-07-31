@@ -101,9 +101,17 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           ) : (
             <div className="space-y-3">
               {matches.map((match) => {
-                const isWin =
-                  match.winner_name ===
-                  (teamId === match.team1_name ? match.team1_name : match.team2_name);
+                // get_opponent_match_history returns names only (no ids) and does
+                // not normalise which side the viewing team lands on, so work the
+                // viewing team out by elimination: of the two teams in the match,
+                // it is whichever one is not the opponent. Comparing teamId (a
+                // uuid) against team1_name is never true, which silently reduced
+                // this to "did team2 win" and inverted the badge whenever the
+                // viewing team was stored as team1.
+                const viewingTeamName =
+                  match.team1_name === opponentName ? match.team2_name : match.team1_name;
+                // winner_name is NULL for a tie / no result — not a win.
+                const isWin = match.winner_name != null && match.winner_name === viewingTeamName;
                 return (
                   <Card key={match.id}>
                     <CardContent className="p-4">
