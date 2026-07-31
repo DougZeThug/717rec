@@ -33,21 +33,68 @@ const pgError = (msg = 'query failed') => ({
   name: 'PostgrestError',
 });
 
+type Page = { data: unknown; error: unknown };
+
+/** Records every .order() column so tests can assert stable pagination ordering. */
+const orderCalls: { table: string; column: string }[] = [];
+
+/**
+ * Chain for a range-paginated table: .select().in()/.eq()/.not()....order().range().
+ * `pages` are returned by successive .range() calls; a single-element list yields
+ * one short page so the pagination loop runs exactly once.
+ *
+ * Reuse ONE chain instance per table across pages — the pagination loop calls
+ * supabase.from(table) again for each page, and the counter lives on the chain.
+ */
+const rangeTableChain = (table: string, pages: Page[]) => {
+  let call = 0;
+  const chain: Record<string, (...args: unknown[]) => unknown> = {
+    select: () => chain,
+    in: () => chain,
+    eq: () => chain,
+    not: () => chain,
+    order: (column: unknown) => {
+      orderCalls.push({ table, column: String(column) });
+      return chain;
+    },
+    range: () => {
+      const page = pages[call] ?? { data: [], error: null };
+      call += 1;
+      return Promise.resolve(page);
+    },
+  };
+  return chain;
+};
+
+/** `teams` and `seasons` are not paginated — they end at .in() / .eq().single(). */
+const plainTableChain = (result: Page) => ({
+  select: () => ({
+    in: () => Promise.resolve(result),
+    eq: () => ({ single: () => Promise.resolve(result) }),
+  }),
+});
+
+const PAGINATED_TABLES = new Set([
+  'team_season_stats',
+  'matches',
+  'matches_archive',
+  'team_details_archive',
+  'playoff_matches',
+]);
+
 function buildFromMock(overrides: Record<string, { data: unknown; error: unknown }>) {
   const defaultResult = { data: null, error: null };
+  // One chain per table, created lazily, so a table's page counter survives the
+  // repeated supabase.from() calls the pagination loop makes.
+  const chains = new Map<string, ReturnType<typeof rangeTableChain>>();
   return (table: string) => {
     const result = overrides[table] ?? defaultResult;
-    // eq() is thenable (matches, matches_archive end at .eq()) and has .single()
-    const eqResult = Object.assign(Promise.resolve(result), {
-      single: () => Promise.resolve(result),
-    });
-    // select() is thenable (team_details_archive) and has .in()/.eq()/.not()
-    const selectResult = Object.assign(Promise.resolve(result), {
-      in: () => Promise.resolve(result),
-      eq: () => eqResult,
-      not: () => Promise.resolve(result),
-    });
-    return { select: () => selectResult };
+    if (!PAGINATED_TABLES.has(table)) return plainTableChain(result);
+    const existing = chains.get(table);
+    if (existing) return existing;
+    const chain = rangeTableChain(table, [result]);
+    chains.set(table, chain);
+    return chain;
   };
 }
 
@@ -86,7 +133,63 @@ const successOverrides = {
 // ─── fetchAllTeamsCareerData ──────────────────────────────────────────────────
 
 describe('fetchAllTeamsCareerData', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    orderCalls.length = 0;
+  });
+
+  it('orders every paginated query by a stable key before ranging', async () => {
+    mockFrom.mockImplementation(buildFromMock(successOverrides));
+
+    await fetchAllTeamsCareerData(['t1']);
+
+    // Range pagination over an unstable order can skip or repeat rows across page
+    // boundaries. matches/matches_archive/playoff_matches sort by their unique id;
+    // team_season_stats and team_details_archive have no id column, so they sort by
+    // their composite natural key.
+    expect(orderCalls).toEqual(
+      expect.arrayContaining([
+        { table: 'matches', column: 'id' },
+        { table: 'matches_archive', column: 'id' },
+        { table: 'playoff_matches', column: 'id' },
+        { table: 'team_season_stats', column: 'season_id' },
+        { table: 'team_season_stats', column: 'team_id' },
+        { table: 'team_details_archive', column: 'team_id' },
+        { table: 'team_details_archive', column: 'season_id' },
+      ])
+    );
+  });
+
+  it('paginates past the 1,000-row cap instead of silently truncating', async () => {
+    const fullPage = Array.from({ length: 1000 }, (_, i) => ({
+      winner_id: 't1',
+      loser_id: 't2',
+      team1_game_wins: 2,
+      team2_game_wins: 0,
+      team1_id: 't1',
+      team2_id: 't2',
+      season_id: `s-${i}`,
+      team1: null,
+      team2: null,
+    }));
+    const shortPage = [{ ...fullPage[0], season_id: 's-last' }];
+
+    // One chain instance for `matches` so its page counter survives the repeated
+    // supabase.from('matches') calls the pagination loop makes.
+    const matchesChain = rangeTableChain('matches', [
+      { data: fullPage, error: null },
+      { data: shortPage, error: null },
+    ]);
+    const base = buildFromMock(successOverrides);
+    mockFrom.mockImplementation((table: string) =>
+      table === 'matches' ? matchesChain : base(table)
+    );
+
+    const result = await fetchAllTeamsCareerData(['t1']);
+
+    // 1001, not 1000: the row past the cap must survive.
+    expect(result.get('t1')?.currentMatches).toHaveLength(1001);
+  });
 
   it('returns empty Map when teamIds is empty', async () => {
     const result = await fetchAllTeamsCareerData([]);
@@ -137,22 +240,29 @@ describe('fetchAllTeamsCareerData', () => {
     await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(DatabaseError);
   });
 
-  it('continues and returns data when non-critical queries fail', async () => {
+  // These used to warn and fall through to null, which meant a failed query and a
+  // truncated one both produced quietly-wrong career stats. They now throw.
+  it.each([
+    ['matches', 'Failed to fetch bulk matches'],
+    ['matches_archive', 'Failed to fetch bulk archived matches'],
+    ['team_details_archive', 'Failed to fetch bulk team details archive'],
+    ['playoff_matches', 'Failed to fetch bulk playoff matches'],
+  ])('throws when the %s query fails', async (table, message) => {
     mockFrom.mockImplementation(
       buildFromMock({
         ...successOverrides,
-        matches: { data: null, error: pgError('matches failed') },
-        matches_archive: { data: null, error: pgError('archive failed') },
-        playoff_matches: { data: null, error: pgError('playoff failed') },
+        [table]: { data: null, error: pgError(`${table} failed`) },
       })
     );
 
-    const result = await fetchAllTeamsCareerData(['t1']);
-    expect(result.size).toBe(1);
-    const data = result.get('t1');
-    expect(data?.currentMatches).toBeNull();
-    expect(data?.archivedMatches).toBeNull();
-    expect(data?.playoffMatches).toBeNull();
+    await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(DatabaseError);
+    mockFrom.mockImplementation(
+      buildFromMock({
+        ...successOverrides,
+        [table]: { data: null, error: pgError(`${table} failed`) },
+      })
+    );
+    await expect(fetchAllTeamsCareerData(['t1'])).rejects.toThrow(message);
   });
 
   it('groups matches for the correct team', async () => {

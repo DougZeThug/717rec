@@ -1,8 +1,8 @@
 import { QUERY_STALE_TIMES } from '@/config/cache';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllPages } from '@/services/shared/pagination';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
-import { warnLog } from '@/utils/logger';
 
 import { CareerData, TeamDetailsArchive } from './CareerTypes';
 
@@ -218,23 +218,32 @@ export const fetchAllTeamsCareerData = async (
 
   const teamIdSet = new Set(teamIds);
 
-  // 1. Fetch all data in parallel (~7-9 queries total regardless of team count)
+  // 1. Fetch all data in parallel (a fixed handful of queries regardless of team count).
+  //
+  // Every league-wide query below is paginated: PostgREST caps a single response
+  // at SUPABASE_PAGE_SIZE rows and truncates the rest *without* an error, which
+  // silently fed partial match history into the career calculations. Each
+  // paginated query MUST apply a stable, total ORDER BY before .range() (see
+  // fetchAllPages) — range pagination over an unstable order can skip or
+  // duplicate rows across page boundaries.
   const [
     allTeamDivisionsResult,
-    allSeasonStatsResult,
-    allMatchesResult,
-    allArchivedMatchesResult,
-    allTeamDetailsArchiveResult,
-    allPlayoffMatchesResult,
+    allSeasonStats,
+    allMatches,
+    allArchivedMatches,
+    allTeamDetailsArchive,
+    allPlayoffMatches,
     activeSeasonResult,
   ] = await Promise.all([
-    // All teams with division weights
+    // All teams with division weights (bounded by teamIds)
     supabase.from('teams').select('id, divisions(division_weight)').in('id', teamIds),
     // All team_season_stats (includes power_score for power score calculation)
-    supabase
-      .from('team_season_stats')
-      .select(
-        `
+    fetchAllPages<RawSeasonStatsRow>(
+      (from, to) =>
+        supabase
+          .from('team_season_stats')
+          .select(
+            `
         team_id,
         match_wins,
         match_losses,
@@ -249,13 +258,23 @@ export const fetchAllTeamsCareerData = async (
         power_score,
         seasons!inner(name)
       `
-      )
-      .in('team_id', teamIds),
+          )
+          .in('team_id', teamIds)
+          .order('season_id', { ascending: true })
+          .order('team_id', { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{
+          data: RawSeasonStatsRow[] | null;
+          error: unknown;
+        }>,
+      'Failed to fetch bulk team season stats'
+    ),
     // All completed matches with team division info
-    supabase
-      .from('matches')
-      .select(
-        `
+    fetchAllPages<MatchData>(
+      (from, to) =>
+        supabase
+          .from('matches')
+          .select(
+            `
         winner_id,
         loser_id,
         team1_game_wins,
@@ -266,13 +285,19 @@ export const fetchAllTeamsCareerData = async (
         team1:teams!matches_team1_id_fkey(id, divisions(name)),
         team2:teams!matches_team2_id_fkey(id, divisions(name))
       `
-      )
-      .eq('iscompleted', true),
+          )
+          .eq('iscompleted', true)
+          .order('id', { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{ data: MatchData[] | null; error: unknown }>,
+      'Failed to fetch bulk matches'
+    ),
     // All completed archived matches
-    supabase
-      .from('matches_archive')
-      .select(
-        `
+    fetchAllPages<ArchivedMatchData>(
+      (from, to) =>
+        supabase
+          .from('matches_archive')
+          .select(
+            `
         winner_id,
         loser_id,
         team1_game_wins,
@@ -281,15 +306,39 @@ export const fetchAllTeamsCareerData = async (
         team2_id,
         season_id
       `
-      )
-      .eq('iscompleted', true),
-    // All team details archive — unfiltered so opponent division history is available for division records
-    supabase.from('team_details_archive').select('team_id, season_id, divisionname'),
+          )
+          .eq('iscompleted', true)
+          .order('id', { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{
+          data: ArchivedMatchData[] | null;
+          error: unknown;
+        }>,
+      'Failed to fetch bulk archived matches'
+    ),
+    // All team details archive — unfiltered so opponent division history is
+    // available for division records. Truncation here is especially damaging:
+    // calculateDivisionRecords skips any match whose division it cannot resolve,
+    // so missing rows drop matches from the records silently.
+    fetchAllPages<TeamDetailsArchive>(
+      (from, to) =>
+        supabase
+          .from('team_details_archive')
+          .select('team_id, season_id, divisionname')
+          .order('team_id', { ascending: true })
+          .order('season_id', { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{
+          data: TeamDetailsArchive[] | null;
+          error: unknown;
+        }>,
+      'Failed to fetch bulk team details archive'
+    ),
     // All completed playoff matches
-    supabase
-      .from('playoff_matches')
-      .select(
-        `
+    fetchAllPages<PlayoffMatchData>(
+      (from, to) =>
+        supabase
+          .from('playoff_matches')
+          .select(
+            `
         winner_id,
         loser_id,
         team1_score,
@@ -298,28 +347,23 @@ export const fetchAllTeamsCareerData = async (
         team2_id,
         bracket_id
       `
-      )
-      .not('winner_id', 'is', null),
+          )
+          .not('winner_id', 'is', null)
+          .order('id', { ascending: true })
+          .range(from, to) as unknown as PromiseLike<{
+          data: PlayoffMatchData[] | null;
+          error: unknown;
+        }>,
+      'Failed to fetch bulk playoff matches'
+    ),
     // Active season (just one row)
     supabase.from('seasons').select('id').eq('is_active', true).single(),
   ]);
 
-  // Handle critical error
-  if (allSeasonStatsResult.error) {
-    handleDatabaseError(allSeasonStatsResult.error, 'Failed to fetch bulk team season stats');
-  }
-
-  // Log non-critical errors
-  if (allMatchesResult.error) warnLog('Error fetching bulk matches:', allMatchesResult.error);
-  if (allArchivedMatchesResult.error)
-    warnLog('Error fetching bulk archived matches:', allArchivedMatchesResult.error);
-  if (allPlayoffMatchesResult.error)
-    warnLog('Error fetching bulk playoff matches:', allPlayoffMatchesResult.error);
-
   // 2. Build shared lookup maps (computed once, shared across all teams)
   const { teamDivisionWeights, teamDivisionMap } = buildTeamDivisionMaps(
     allTeamDivisionsResult.data as { id: string; divisions: unknown }[] | null,
-    allTeamDetailsArchiveResult.data as TeamDetailsArchive[] | null
+    allTeamDetailsArchive
   );
 
   // Active season lookup: PGRST116 (no rows) is a valid empty state; any other
@@ -331,23 +375,13 @@ export const fetchAllTeamsCareerData = async (
   const currentSeasonId = (activeSeasonResult.data as { id: string } | null)?.id || null;
 
   // 3. Group per-team data from bulk results
-  const seasonStatsByTeam = groupSeasonStats(allSeasonStatsResult.data, teamIdSet);
+  const seasonStatsByTeam = groupSeasonStats(allSeasonStats, teamIdSet);
 
-  const currentMatchesByTeam = groupMatchesByTeam(
-    (allMatchesResult.data as unknown as MatchData[]) || [],
-    teamIdSet
-  );
-  const archivedMatchesByTeam = groupMatchesByTeam(
-    (allArchivedMatchesResult.data as ArchivedMatchData[]) || [],
-    teamIdSet
-  );
-  const playoffMatchesByTeam = groupMatchesByTeam(
-    (allPlayoffMatchesResult.data as PlayoffMatchData[]) || [],
-    teamIdSet
-  );
+  const currentMatchesByTeam = groupMatchesByTeam(allMatches, teamIdSet);
+  const archivedMatchesByTeam = groupMatchesByTeam(allArchivedMatches, teamIdSet);
+  const playoffMatchesByTeam = groupMatchesByTeam(allPlayoffMatches, teamIdSet);
 
   // 4. Load bracket lookup maps (cache-backed)
-  const allPlayoffMatches = (allPlayoffMatchesResult.data as PlayoffMatchData[]) || [];
   const { bracketDivisionWeights, bracketDivisionDisplayNames, bracketSeasonMap } =
     await loadBracketLookups(allPlayoffMatches);
 
