@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ interface ByeMatchEditorProps {
   onSave: () => void;
   onClose: () => void;
   onToggleByeStatus: (clearDownstream: boolean) => void;
+  /** Admin-only, losers bracket only: move the team into a sibling match. */
+  onSwapTeams?: () => void;
   status?: number;
 }
 
@@ -38,6 +40,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   onSave,
   onClose,
   onToggleByeStatus,
+  onSwapTeams,
   status,
 }) => {
   return (
@@ -96,6 +99,20 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
           </p>
         </div>
       </div>
+
+      {onSwapTeams && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSwapTeams}
+          disabled={isSaving || isTogglingStatus}
+          className="w-full sm:w-auto sm:self-start"
+          title="Move the team into a different losers-bracket match in this round"
+        >
+          <Shuffle className="mr-1 size-4" />
+          Move team to another match
+        </Button>
+      )}
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">
         <Button

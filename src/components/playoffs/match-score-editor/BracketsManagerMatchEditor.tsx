@@ -2,8 +2,11 @@ import { Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import EditMatchParticipantsDialog from '@/components/playoffs/admin/EditMatchParticipantsDialog';
+import SwapLoserSlotsDialog from '@/components/playoffs/admin/SwapLoserSlotsDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useLoserSwapEligibility } from '@/hooks/playoffs/usePlayoffLoserSwap';
 import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
+import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 import { ByeMatchEditor } from './ByeMatchEditor';
 import { RegularMatchEditor } from './RegularMatchEditor';
@@ -41,6 +44,14 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
 
   const { data: teams } = usePlayoffTeams();
   const [isEditTeamsOpen, setIsEditTeamsOpen] = useState(false);
+  const [isSwapTeamsOpen, setIsSwapTeamsOpen] = useState(false);
+
+  // The losers-bracket swap is admin-only: the editor itself can open for
+  // non-admins, so the action gets its own explicit gate here.
+  const { isAdminAccessGranted } = useAdminAccess();
+  const { data: swapEligibility } = useLoserSwapEligibility(isAdminAccessGranted ? matchId : null);
+  const canSwapTeams = isAdminAccessGranted && swapEligibility?.ok === true;
+  const onSwapTeams = canSwapTeams ? () => setIsSwapTeamsOpen(true) : undefined;
 
   if (isLoading) {
     return (
@@ -94,6 +105,16 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
       />
     ) : null;
 
+  const swapTeamsDialog =
+    matchId !== null ? (
+      <SwapLoserSlotsDialog
+        open={isSwapTeamsOpen}
+        onOpenChange={setIsSwapTeamsOpen}
+        bracketId={bracketId}
+        matchId={matchId}
+      />
+    ) : null;
+
   if (isBye && byeWinner) {
     return (
       <>
@@ -112,9 +133,11 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             onClose={onClose}
             onToggleByeStatus={handleToggleByeStatus}
             status={matchData.status}
+            onSwapTeams={onSwapTeams}
           />
         </Dialog>
         {editTeamsDialog}
+        {swapTeamsDialog}
       </>
     );
   }
@@ -137,9 +160,11 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
           onEditTeams={() => setIsEditTeamsOpen(true)}
           canEditTeams={canEditTeams}
           status={matchData.status}
+          onSwapTeams={onSwapTeams}
         />
       </Dialog>
       {editTeamsDialog}
+      {swapTeamsDialog}
     </>
   );
 };

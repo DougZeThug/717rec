@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Loader2 } from 'lucide-react';
+import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,8 @@ interface RegularMatchEditorProps {
   onClose: () => void;
   onEditTeams?: () => void;
   canEditTeams?: boolean;
+  /** Admin-only, losers bracket only: move a team into a sibling match. */
+  onSwapTeams?: () => void;
   status?: number;
 }
 
@@ -42,6 +44,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   onClose,
   onEditTeams,
   canEditTeams,
+  onSwapTeams,
   status,
 }) => {
   return (
@@ -98,7 +101,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
       </div>
 
       <div className="flex items-center justify-between gap-2">
-        <div>
+        <div className="flex gap-1">
           {onEditTeams && (
             <Button
               variant="ghost"
@@ -113,6 +116,18 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
             >
               <ArrowLeftRight className="mr-1 size-4" />
               Edit teams
+            </Button>
+          )}
+          {onSwapTeams && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSwapTeams}
+              disabled={isSaving}
+              title="Move a team into a different losers-bracket match in this round"
+            >
+              <Shuffle className="mr-1 size-4" />
+              Move team
             </Button>
           )}
         </div>

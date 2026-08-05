@@ -55,9 +55,11 @@ interface MatchRow {
   opponent1_id: number | null;
   opponent1_score: number | null;
   opponent1_result: string | null;
+  opponent1_position?: number | null;
   opponent2_id: number | null;
   opponent2_score: number | null;
   opponent2_result: string | null;
+  opponent2_position?: number | null;
 }
 
 function teams(count: number): { id: string; name: string; seed: number }[] {
@@ -159,7 +161,7 @@ async function playAllReadyMatches(
 beforeAll(() => {
   // The facade constructs BracketsManager with VERBOSE=true, which logs every
   // storage call straight to console.log — silence it for readable test output.
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'log').mockImplementation(() => undefined);
 });
 
 beforeEach(() => {
@@ -617,6 +619,21 @@ describe('bracket service characterization (real service + real library over fak
       await service.adminCompleteByeMatch(1, 21);
 
       expect(rowById(3)).toMatchObject({ opponent1_id: 1, opponent2_id: 2 });
+    });
+
+    it('prefers the unmarked carry slot when a 1:1 destination also has an empty marked drop-in slot', async () => {
+      // A losers-bracket minor-round match keeps its winners-bracket drop-in
+      // slot marked with a feeder position even while empty, and the library
+      // writes the arriving WB loser into that slot regardless of contents.
+      // Completing the LB feeder first must therefore take the UNMARKED slot,
+      // or the drop-in would later overwrite the placed winner.
+      seedHalvingBracket({ opponent1_position: 9 }, 2);
+      const service = new BracketManagerService();
+
+      const result = await service.adminCompleteByeMatch(2, 21);
+
+      expect(result.placedInMatchId).toBe(4);
+      expect(rowById(4)).toMatchObject({ opponent1_id: null, opponent2_id: 2 });
     });
 
     it('does not apply feeder parity when rounds map one-to-one', async () => {

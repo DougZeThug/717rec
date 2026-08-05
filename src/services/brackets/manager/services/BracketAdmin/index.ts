@@ -3,6 +3,8 @@ import { adminCompleteByeMatch } from './byeCompletion';
 import { isLosersByeMatch } from './eligibility';
 import { adminToggleByeReady } from './lifecycle';
 import { editMatchParticipants } from './participants';
+import type { SwapLoserSlotsParams } from './swap';
+import { adminSwapLoserBracketSlots, checkLoserSwapEligibility } from './swap';
 
 /**
  * Service for admin operations on brackets (BYE handling, match status control)
@@ -33,5 +35,13 @@ export class BracketAdminService {
       newOpponent1TeamId,
       newOpponent2TeamId
     );
+  }
+
+  checkLoserSwapEligibility(matchId: number) {
+    return checkLoserSwapEligibility({ storage: this.storage }, matchId);
+  }
+
+  adminSwapLoserBracketSlots(params: SwapLoserSlotsParams) {
+    return adminSwapLoserBracketSlots({ storage: this.storage }, params);
   }
 }
