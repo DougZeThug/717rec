@@ -251,9 +251,9 @@ export async function checkLoserSwapEligibility(
     };
 
     const sides: OpponentSide[] = ['opponent1', 'opponent2'];
-    const slots = sides
-      .filter((side) => shapeOf(match[side]) === 'team')
-      .map((side) => toSlot(match, side));
+    const slots = sides.flatMap((side) =>
+      shapeOf(match[side]) === 'team' ? [toSlot(match, side)] : []
+    );
     if (slots.length === 0) {
       return { ok: false, reason: 'This match has no team that can be moved.' };
     }
@@ -428,13 +428,17 @@ export async function adminSwapLoserBracketSlots(
 
   // Resolve every write before performing any. Each match receives the other's
   // named slot; walkover changes are planned against the next round.
-  const plans: MatchWritePlan[] = [];
-  for (const partial of [
+  const partials = [
     buildMatchWritePlan(source.match, sourceSide, targetSlot),
     buildMatchWritePlan(target.match, targetSide, sourceSlot),
-  ]) {
-    plans.push({ ...partial, nextTarget: await findNextRoundMatch(deps, partial.match) });
-  }
+  ];
+  const nextTargets = await Promise.all(
+    partials.map((partial) => findNextRoundMatch(deps, partial.match))
+  );
+  const plans: MatchWritePlan[] = partials.map((partial, index) => ({
+    ...partial,
+    nextTarget: nextTargets[index],
+  }));
 
   // Simulated slot states of the next-round matches, shared across both plans —
   // sibling matches in a halved round feed the SAME destination, so one plan's
@@ -501,7 +505,11 @@ export async function adminSwapLoserBracketSlots(
   }
 
   // Writes, in dependency order: undo stale advancements, rewrite the two
-  // matches, then apply the new automatic advancements.
+  // matches, then apply the new automatic advancements. Each write awaits the
+  // previous ON PURPOSE — the fixed order is what keeps a mid-sequence
+  // database failure diagnosable and recoverable (see the doc comment above),
+  // and the placement step re-reads storage, so it must see the writes that
+  // precede it. Do not parallelize with Promise.all.
   const downstreamClearedMatchIds: number[] = [];
   for (const clear of clears) {
     const fields: MatchUpdateFields = idField(clear.side, null);
@@ -521,6 +529,9 @@ export async function adminSwapLoserBracketSlots(
     }
   }
 
+  // Sequential on purpose: two placements can land in the SAME next-round
+  // match, and resolveWinnerPlacement picks a slot from a fresh read — the
+  // second placement must see the first, or both take the same slot.
   const walkoverCompletedMatchIds: number[] = [];
   let cascadePending = false;
   for (const plan of plans) {
