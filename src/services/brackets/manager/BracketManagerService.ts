@@ -1,5 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
+import { matchUpdateQueue } from './MatchUpdateQueue';
+import type { SwapLoserSlotsParams } from './services/BracketAdmin/swap';
 import { BracketAdminService } from './services/BracketAdminService';
 import { BracketCreationService } from './services/BracketCreationService';
 import { BracketNormalizationService } from './services/BracketNormalizationService';
@@ -369,6 +371,50 @@ export class BracketManagerService {
     newOpponent2TeamId: string | null
   ) {
     return this.adminService.editMatchParticipants(matchId, newOpponent1TeamId, newOpponent2TeamId);
+  }
+
+  /**
+   * Check whether a losers-bracket match can take part in a same-round team swap,
+   * and list the movable teams and the sibling slots they could trade with.
+   *
+   * Requires a double-elimination stage, group number 2 (losers bracket), every
+   * slot of the match resolved (a real team or a stored BYE), and the match not
+   * played/archived. Never throws — the UI shows or hides the swap action off
+   * this result.
+   *
+   * @param matchId - Match ID to check
+   *
+   * @example
+   * const result = await bracketManagerService.checkLoserSwapEligibility(42);
+   * if (result.ok) console.log(result.candidates);
+   */
+  checkLoserSwapEligibility(matchId: number) {
+    return this.adminService.checkLoserSwapEligibility(matchId);
+  }
+
+  /**
+   * Admin-only: swap two opponent slots between two losers-bracket matches in
+   * the same round — for leagues that hand-seed the losers bracket differently
+   * than the library's automatic pairing.
+   *
+   * Moves each slot as a unit (team id + feeder-position marker + BYE sentinel)
+   * and recomputes walkover state: a team newly facing a BYE advances
+   * automatically; a team pulled off a BYE has its automatic advancement undone.
+   * Serialized through matchUpdateQueue so it cannot interleave with score saves.
+   *
+   * @throws {ValidationError} For wrong bracket type/group, cross-round swaps,
+   *   TBD slots, or swaps that would create a match with two BYEs
+   * @throws {BusinessLogicError} If a match was played/archived or a downstream
+   *   match already built on the advancement being undone
+   *
+   * @example
+   * await bracketManagerService.adminSwapLoserBracketSlots({
+   *   sourceMatchId: 42, sourceSide: 'opponent1',
+   *   targetMatchId: 43, targetSide: 'opponent1',
+   * });
+   */
+  adminSwapLoserBracketSlots(params: SwapLoserSlotsParams) {
+    return matchUpdateQueue.enqueue(() => this.adminService.adminSwapLoserBracketSlots(params));
   }
 }
 

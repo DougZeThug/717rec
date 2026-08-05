@@ -1,0 +1,577 @@
+import { supabase } from '@/integrations/supabase/client';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
+import { handleDatabaseError } from '@/utils/errorHandler';
+import { bracketLog, errorLog, successLog } from '@/utils/logger';
+
+import type {
+  StorageGroup,
+  StorageMatch,
+  StorageParticipant,
+  StorageRound,
+  StorageStage,
+} from '../../types/BracketServiceTypes';
+import { markBracketCompleteIfDone } from '../BracketUpdate/completion';
+import type { NextRoundTarget } from './placement';
+import {
+  applyWinnerPlacement,
+  findNextRoundMatch,
+  resolveWinnerPlacement,
+  slotState,
+} from './placement';
+import type { BracketAdminDeps } from './types';
+
+export type OpponentSide = 'opponent1' | 'opponent2';
+
+export interface SwapLoserSlotsParams {
+  sourceMatchId: number;
+  sourceSide: OpponentSide;
+  targetMatchId: number;
+  targetSide: OpponentSide;
+}
+
+export interface SwapLoserSlotsResult {
+  sourceMatchId: number;
+  targetMatchId: number;
+  /** Matches that became team-vs-BYE and were auto-completed as walkovers. */
+  walkoverCompletedMatchIds: number[];
+  /** Next-round matches from which a stale walkover winner was removed. */
+  downstreamClearedMatchIds: number[];
+  message: string;
+}
+
+export interface LoserSwapSlot {
+  matchId: number;
+  matchNumber: number;
+  side: OpponentSide;
+  participantId: number | null;
+  participantName: string | null;
+  isBye: boolean;
+  /** True when the other slot of the same match is a stored BYE. */
+  partnerIsBye: boolean;
+}
+
+export interface LoserSwapEligibilityResult {
+  ok: boolean;
+  reason?: string;
+  roundNumber?: number;
+  /** The clicked match's movable (real-team) slots. */
+  slots?: LoserSwapSlot[];
+  /** Slots in sibling same-round matches available to swap with. */
+  candidates?: LoserSwapSlot[];
+}
+
+const otherSide = (side: OpponentSide): OpponentSide =>
+  side === 'opponent1' ? 'opponent2' : 'opponent1';
+
+/** The match columns a swap is allowed to touch, named so Supabase's typed update accepts them. */
+type MatchUpdateFields = {
+  status?: number;
+  opponent1_id?: number | null;
+  opponent2_id?: number | null;
+  opponent1_position?: number | null;
+  opponent2_position?: number | null;
+  opponent1_score?: number | null;
+  opponent2_score?: number | null;
+  opponent1_result?: string | null;
+  opponent2_result?: string | null;
+};
+
+const slotFields = (
+  side: OpponentSide,
+  values: {
+    id: number | null;
+    position: number | null;
+    score: number | null;
+    result: string | null;
+  }
+): MatchUpdateFields =>
+  side === 'opponent1'
+    ? {
+        opponent1_id: values.id,
+        opponent1_position: values.position,
+        opponent1_score: values.score,
+        opponent1_result: values.result,
+      }
+    : {
+        opponent2_id: values.id,
+        opponent2_position: values.position,
+        opponent2_score: values.score,
+        opponent2_result: values.result,
+      };
+
+const resultFields = (
+  side: OpponentSide,
+  result: string | null,
+  score: number | null
+): MatchUpdateFields =>
+  side === 'opponent1'
+    ? { opponent1_result: result, opponent1_score: score }
+    : { opponent2_result: result, opponent2_score: score };
+
+const idField = (side: OpponentSide, id: number | null): MatchUpdateFields =>
+  side === 'opponent1' ? { opponent1_id: id } : { opponent2_id: id };
+
+/**
+ * Storage hands back three slot shapes: strict null is a stored BYE (the 'bye'
+ * sentinel — no team will ever play there), an object with a null id is TBD
+ * (a team arrives once an earlier match resolves), and an object with an id is
+ * a real team. An undefined slot never comes out of a faithful read, so it is
+ * treated as TBD — the refusing shape.
+ */
+type SlotShape = 'team' | 'bye' | 'tbd';
+
+const shapeOf = (slot: StorageMatch['opponent1']): SlotShape =>
+  slot === null ? 'bye' : slot?.id != null ? 'team' : 'tbd';
+
+const winnerSideOf = (match: StorageMatch): OpponentSide | null =>
+  match.opponent1?.result === 'win'
+    ? 'opponent1'
+    : match.opponent2?.result === 'win'
+      ? 'opponent2'
+      : null;
+
+/**
+ * An unplayed walkover: one real team, one stored BYE, and a 'win' already
+ * recorded for the team. The library writes these as Locked (0); the app's
+ * admin tools write Completed (4). Both count — nobody actually played, so a
+ * swap may still rearrange them (after undoing the automatic advancement).
+ */
+const isUnplayedWalkover = (match: StorageMatch): boolean => {
+  const shape1 = shapeOf(match.opponent1);
+  const shape2 = shapeOf(match.opponent2);
+  const oneTeamOneBye =
+    (shape1 === 'team' && shape2 === 'bye') || (shape1 === 'bye' && shape2 === 'team');
+  return oneTeamOneBye && winnerSideOf(match) !== null;
+};
+
+/** Why a match cannot take part in a swap, or null when it can. */
+function matchBlockReason(match: StorageMatch): string | null {
+  if (match.status === 3) return 'is currently being played';
+  if (match.status === 5) return 'is archived';
+  if (shapeOf(match.opponent1) === 'tbd' || shapeOf(match.opponent2) === 'tbd') {
+    return 'is still waiting on a team from an earlier match';
+  }
+  if (isUnplayedWalkover(match)) return null;
+  const hasRecordedResult =
+    match.opponent1?.result != null ||
+    match.opponent2?.result != null ||
+    match.opponent1?.score != null ||
+    match.opponent2?.score != null;
+  if (match.status === 4 || hasRecordedResult) return 'has already been played';
+  return null;
+}
+
+interface RoundContext {
+  stage: StorageStage;
+  group: StorageGroup;
+  round: StorageRound;
+  match: StorageMatch;
+  roundMatches: StorageMatch[];
+}
+
+async function loadRoundContext(
+  deps: BracketAdminDeps,
+  matchId: number
+): Promise<{ context?: RoundContext; reason?: string }> {
+  const match = (await deps.storage.select('match', matchId)) as StorageMatch | null;
+  if (!match) return { reason: `Match ${matchId} not found` };
+
+  const round = (await deps.storage.select(
+    'round',
+    match.round_id
+  )) as unknown as StorageRound | null;
+  if (!round) return { reason: 'Round not found' };
+
+  const group = (await deps.storage.select(
+    'group',
+    round.group_id
+  )) as unknown as StorageGroup | null;
+  if (!group) return { reason: 'Group not found' };
+
+  const stage = (await deps.storage.select(
+    'stage',
+    match.stage_id
+  )) as unknown as StorageStage | null;
+  if (!stage) return { reason: 'Stage not found' };
+
+  const roundMatchesRaw = await deps.storage.select('match', { round_id: round.id });
+  const roundMatches = (
+    Array.isArray(roundMatchesRaw) ? roundMatchesRaw : roundMatchesRaw ? [roundMatchesRaw] : []
+  ) as StorageMatch[];
+  roundMatches.sort((a, b) => a.number - b.number);
+
+  return { context: { stage, group, round, match, roundMatches } };
+}
+
+async function loadParticipantNames(
+  deps: BracketAdminDeps,
+  tournamentId: string
+): Promise<Map<number, string | null>> {
+  const raw = await deps.storage.select('participant', { tournament_id: tournamentId });
+  const list = (Array.isArray(raw) ? raw : raw ? [raw] : []) as StorageParticipant[];
+  return new Map(list.map((participant) => [participant.id, participant.name ?? null]));
+}
+
+/**
+ * Can this losers-bracket match take part in a same-round team swap, and if so,
+ * which of its teams can move and which sibling slots can they trade with?
+ * Never throws — the UI shows/hides the action off this result.
+ */
+export async function checkLoserSwapEligibility(
+  deps: BracketAdminDeps,
+  matchId: number
+): Promise<LoserSwapEligibilityResult> {
+  try {
+    const { context, reason } = await loadRoundContext(deps, matchId);
+    if (!context) return { ok: false, reason };
+    const { stage, group, round, match, roundMatches } = context;
+
+    if (stage.type !== 'double_elimination') {
+      return { ok: false, reason: 'Team swaps are only available in double-elimination brackets.' };
+    }
+    if (group.number !== 2) {
+      return { ok: false, reason: 'Teams can only be swapped between losers-bracket matches.' };
+    }
+    const blocked = matchBlockReason(match);
+    if (blocked) return { ok: false, reason: `This match ${blocked}.` };
+
+    const names = await loadParticipantNames(deps, String(stage.tournament_id));
+    const toSlot = (slotMatch: StorageMatch, side: OpponentSide): LoserSwapSlot => {
+      const slot = slotMatch[side];
+      const participantId = slot?.id ?? null;
+      return {
+        matchId: slotMatch.id,
+        matchNumber: slotMatch.number,
+        side,
+        participantId,
+        participantName: participantId != null ? (names.get(participantId) ?? null) : null,
+        isBye: slot === null,
+        partnerIsBye: slotMatch[otherSide(side)] === null,
+      };
+    };
+
+    const sides: OpponentSide[] = ['opponent1', 'opponent2'];
+    const slots = sides
+      .filter((side) => shapeOf(match[side]) === 'team')
+      .map((side) => toSlot(match, side));
+    if (slots.length === 0) {
+      return { ok: false, reason: 'This match has no team that can be moved.' };
+    }
+
+    const candidates: LoserSwapSlot[] = [];
+    for (const sibling of roundMatches) {
+      if (sibling.id === match.id) continue;
+      if (matchBlockReason(sibling)) continue;
+      // A BYE-vs-BYE sibling has no next-round spot a team could advance into —
+      // moving a team there always fails downstream, so don't offer it.
+      if (shapeOf(sibling.opponent1) === 'bye' && shapeOf(sibling.opponent2) === 'bye') continue;
+      for (const side of sides) {
+        candidates.push(toSlot(sibling, side));
+      }
+    }
+    if (candidates.length === 0) {
+      return { ok: false, reason: 'No other match in this round is able to swap right now.' };
+    }
+
+    return { ok: true, roundNumber: round.number, slots, candidates };
+  } catch (error) {
+    errorLog('Error checking loser swap eligibility:', error);
+    return {
+      ok: false,
+      reason: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    };
+  }
+}
+
+/** Everything one match needs written, resolved before any write happens. */
+interface MatchWritePlan {
+  match: StorageMatch;
+  side: OpponentSide;
+  incoming: StorageMatch['opponent1'];
+  fields: MatchUpdateFields;
+  becomesWalkover: boolean;
+  newWinnerId: number | null;
+  staleWinnerId: number | null;
+  nextTarget: NextRoundTarget | null;
+}
+
+function buildMatchWritePlan(
+  match: StorageMatch,
+  side: OpponentSide,
+  incoming: StorageMatch['opponent1']
+): Omit<MatchWritePlan, 'nextTarget'> {
+  const partnerSide = otherSide(side);
+  const partner = match[partnerSide];
+  const incomingIsTeam = incoming != null && incoming.id != null;
+  const partnerIsTeam = shapeOf(partner) === 'team';
+
+  const staleWinnerSide = winnerSideOf(match);
+  const staleWinnerId = staleWinnerSide ? (match[staleWinnerSide]?.id ?? null) : null;
+
+  // The whole slot travels: id, feeder-position marker, and BYE sentinel. The
+  // position is what the viewer's "Loser of WB x.y" labels and the library's
+  // reverse traversal read, so it must follow the occupant. Prior results and
+  // scores never carry across — they are recomputed from the new match shape.
+  let fields: MatchUpdateFields = slotFields(side, {
+    id: incoming?.id ?? null,
+    position: incoming?.position ?? null,
+    score: null,
+    result: incoming === null ? 'bye' : null,
+  });
+
+  let becomesWalkover = false;
+  let newWinnerId: number | null = null;
+  if (incomingIsTeam && partnerIsTeam) {
+    fields = { ...fields, ...resultFields(partnerSide, null, null), status: 2 };
+  } else {
+    becomesWalkover = true;
+    const winnerSide = incomingIsTeam ? side : partnerSide;
+    newWinnerId = (incomingIsTeam ? incoming?.id : partner?.id) ?? null;
+    fields = { ...fields, ...resultFields(winnerSide, 'win', 0), status: 4 };
+  }
+
+  return { match, side, incoming, fields, becomesWalkover, newWinnerId, staleWinnerId };
+}
+
+/** Why a next-round match cannot absorb an advancement change, or null when it can. */
+function destinationBlockReason(destination: StorageMatch): string | null {
+  if (destination.status === 3) return 'is currently being played';
+  if (destination.status >= 4) return 'has already been played';
+  const hasRecordedResult =
+    destination.opponent1?.result != null ||
+    destination.opponent2?.result != null ||
+    destination.opponent1?.score != null ||
+    destination.opponent2?.score != null;
+  if (hasRecordedResult) return 'already has results recorded';
+  return null;
+}
+
+/**
+ * Admin-only: swap two opponent slots between two losers-bracket matches in the
+ * same round.
+ *
+ * The library routes each winners-bracket loser into the losers bracket
+ * dynamically when the result is entered, so this tool only accepts matches
+ * whose every slot is already resolved (a real team or a stored BYE) — at that
+ * point the routing has happened and nothing will overwrite the swap. Within a
+ * round, a swap preserves the bracket's structure: each slot still feeds the
+ * same next-round match.
+ *
+ * Walkover state is recomputed after the swap: a team newly facing a BYE is
+ * advanced automatically, and a team pulled off a BYE has its automatic
+ * advancement undone (refused if the downstream match has been played).
+ *
+ * All validation happens before the first write. Not transactional: a database
+ * failure mid-sequence fails loudly, and Repair Bracket is the recovery tool —
+ * the same stance as adminCompleteByeMatch.
+ */
+export async function adminSwapLoserBracketSlots(
+  deps: BracketAdminDeps,
+  params: SwapLoserSlotsParams
+): Promise<SwapLoserSlotsResult> {
+  const { sourceMatchId, sourceSide, targetMatchId, targetSide } = params;
+  bracketLog('Admin losers-bracket swap requested', { ...params });
+
+  if (sourceMatchId === targetMatchId) {
+    throw new ValidationError('Choose two different matches to swap between.');
+  }
+
+  const sourceLoad = await loadRoundContext(deps, sourceMatchId);
+  if (!sourceLoad.context) throw new ValidationError(sourceLoad.reason ?? 'Match not found');
+  const targetLoad = await loadRoundContext(deps, targetMatchId);
+  if (!targetLoad.context) throw new ValidationError(targetLoad.reason ?? 'Match not found');
+  const source = sourceLoad.context;
+  const target = targetLoad.context;
+
+  if (source.match.stage_id !== target.match.stage_id) {
+    throw new ValidationError('Both matches must belong to the same bracket.');
+  }
+  if (source.stage.type !== 'double_elimination') {
+    throw new ValidationError('Team swaps are only available in double-elimination brackets.');
+  }
+  if (source.group.number !== 2 || target.group.number !== 2) {
+    throw new ValidationError('Teams can only be swapped between losers-bracket matches.');
+  }
+  if (source.match.round_id !== target.match.round_id) {
+    throw new ValidationError(
+      'Teams can only be swapped between matches in the same losers-bracket round.'
+    );
+  }
+
+  for (const context of [source, target]) {
+    const blocked = matchBlockReason(context.match);
+    if (blocked) {
+      throw new BusinessLogicError(`Match ${context.match.number} ${blocked}.`);
+    }
+  }
+
+  const sourceSlot = source.match[sourceSide] ?? null;
+  const targetSlot = target.match[targetSide] ?? null;
+  const sourcePartner = source.match[otherSide(sourceSide)] ?? null;
+  const targetPartner = target.match[otherSide(targetSide)] ?? null;
+
+  if (shapeOf(sourceSlot) !== 'team' && shapeOf(targetSlot) !== 'team') {
+    throw new ValidationError('Nothing to swap — both selected spots are BYEs.');
+  }
+  if (
+    (shapeOf(targetSlot) === 'bye' && shapeOf(sourcePartner) === 'bye') ||
+    (shapeOf(sourceSlot) === 'bye' && shapeOf(targetPartner) === 'bye')
+  ) {
+    throw new ValidationError(
+      'This swap would leave a match with two BYEs and no teams. Swap the two teams directly instead.'
+    );
+  }
+
+  const names = await loadParticipantNames(deps, String(source.stage.tournament_id));
+  const nameOf = (participantId: number | null | undefined): string =>
+    (participantId != null ? names.get(participantId) : null) ?? 'the team';
+
+  // Resolve every write before performing any. Each match receives the other's
+  // named slot; walkover changes are planned against the next round.
+  const plans: MatchWritePlan[] = [];
+  for (const partial of [
+    buildMatchWritePlan(source.match, sourceSide, targetSlot),
+    buildMatchWritePlan(target.match, targetSide, sourceSlot),
+  ]) {
+    plans.push({ ...partial, nextTarget: await findNextRoundMatch(deps, partial.match) });
+  }
+
+  // Simulated slot states of the next-round matches, shared across both plans —
+  // sibling matches in a halved round feed the SAME destination, so one plan's
+  // cleared slot can be the other plan's landing spot.
+  const destinationStates = new Map<number, Record<OpponentSide, ReturnType<typeof slotState>>>();
+  const getDestinationState = (destination: StorageMatch): Record<OpponentSide, string> => {
+    let state = destinationStates.get(destination.id);
+    if (!state) {
+      state = {
+        opponent1: slotState(destination.opponent1),
+        opponent2: slotState(destination.opponent2),
+      };
+      destinationStates.set(destination.id, state);
+    }
+    return state;
+  };
+
+  const clears: { matchId: number; side: OpponentSide; demote: boolean; staleWinnerId: number }[] =
+    [];
+  for (const plan of plans) {
+    if (
+      plan.staleWinnerId == null ||
+      plan.staleWinnerId === plan.newWinnerId ||
+      plan.nextTarget === null
+    ) {
+      continue;
+    }
+    const destination = plan.nextTarget.nextMatch;
+    const staleSide: OpponentSide | null =
+      destination.opponent1?.id === plan.staleWinnerId
+        ? 'opponent1'
+        : destination.opponent2?.id === plan.staleWinnerId
+          ? 'opponent2'
+          : null;
+    if (!staleSide) continue; // walkover recorded but never propagated — nothing to undo
+
+    const blocked = destinationBlockReason(destination);
+    if (blocked) {
+      throw new BusinessLogicError(
+        `Cannot swap: ${nameOf(plan.staleWinnerId)} already advanced to a match that ${blocked}. ` +
+          'Undo that advancement first (Reopen + Clear Downstream in the BYE editor), then retry.'
+      );
+    }
+    clears.push({
+      matchId: destination.id,
+      side: staleSide,
+      demote: destination.status === 2,
+      staleWinnerId: plan.staleWinnerId,
+    });
+    getDestinationState(destination)[staleSide] = 'empty';
+  }
+
+  for (const plan of plans) {
+    if (!plan.becomesWalkover || plan.newWinnerId == null || plan.nextTarget === null) continue;
+    const state = getDestinationState(plan.nextTarget.nextMatch);
+    const freeSide = (['opponent1', 'opponent2'] as const).find((side) => state[side] === 'empty');
+    if (!freeSide) {
+      throw new BusinessLogicError(
+        `Cannot move ${nameOf(plan.newWinnerId)} there: the next round has no open spot ` +
+          'for the automatic advancement it would trigger.'
+      );
+    }
+    state[freeSide] = 'taken';
+  }
+
+  // Writes, in dependency order: undo stale advancements, rewrite the two
+  // matches, then apply the new automatic advancements.
+  const downstreamClearedMatchIds: number[] = [];
+  for (const clear of clears) {
+    const fields: MatchUpdateFields = idField(clear.side, null);
+    if (clear.demote) fields.status = 1;
+    const { error } = await supabase.from('match').update(fields).eq('id', clear.matchId);
+    if (error) {
+      handleDatabaseError(error, `Failed to undo the advancement in match ${clear.matchId}`);
+    }
+    downstreamClearedMatchIds.push(clear.matchId);
+    bracketLog(`Cleared stale walkover winner ${clear.staleWinnerId} from match ${clear.matchId}`);
+  }
+
+  for (const plan of plans) {
+    const { error } = await supabase.from('match').update(plan.fields).eq('id', plan.match.id);
+    if (error) {
+      handleDatabaseError(error, `Failed to update match ${plan.match.id} during swap`);
+    }
+  }
+
+  const walkoverCompletedMatchIds: number[] = [];
+  let cascadePending = false;
+  for (const plan of plans) {
+    if (!plan.becomesWalkover || plan.newWinnerId == null) continue;
+    walkoverCompletedMatchIds.push(plan.match.id);
+    const placement = await resolveWinnerPlacement(deps, plan.match, plan.newWinnerId);
+    if (placement) {
+      await applyWinnerPlacement(placement, plan.newWinnerId);
+      if (placement.nextMatch[otherSide(placement.slot)] === null) cascadePending = true;
+    }
+  }
+
+  await markBracketCompleteIfDone({ storage: deps.storage }, String(source.stage.tournament_id));
+
+  const movedNames = [sourceSlot?.id, targetSlot?.id]
+    .filter((id): id is number => id != null)
+    .map((id) => nameOf(id));
+  const parts: string[] = [];
+  parts.push(
+    movedNames.length === 2
+      ? `Swapped ${movedNames[0]} and ${movedNames[1]}.`
+      : `Moved ${movedNames[0]} to the other match; a BYE took its old spot.`
+  );
+  for (const clear of clears) {
+    parts.push(`${nameOf(clear.staleWinnerId)}'s automatic advancement was undone.`);
+  }
+  for (const plan of plans) {
+    if (plan.becomesWalkover && plan.newWinnerId != null) {
+      parts.push(
+        `${nameOf(plan.newWinnerId)} has no opponent in match ${plan.match.number} and advances automatically.`
+      );
+    }
+  }
+  if (cascadePending) {
+    parts.push(
+      'A follow-up automatic advancement may be waiting in a later round — use the BYE editor or Repair Bracket if a team looks stuck.'
+    );
+  }
+  const message = parts.join(' ');
+
+  successLog(
+    `Admin swapped losers-bracket slots: match ${sourceMatchId} (${sourceSide}) ↔ ` +
+      `match ${targetMatchId} (${targetSide})`,
+    message
+  );
+
+  return {
+    sourceMatchId,
+    targetMatchId,
+    walkoverCompletedMatchIds,
+    downstreamClearedMatchIds,
+    message,
+  };
+}
