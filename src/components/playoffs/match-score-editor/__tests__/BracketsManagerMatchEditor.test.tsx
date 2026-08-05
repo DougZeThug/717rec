@@ -60,6 +60,22 @@ vi.mock('@/components/playoffs/admin/EditMatchParticipantsDialog', () => ({
     open ? <div data-testid="edit-participants-dialog" /> : null,
 }));
 
+// The losers-bracket swap action needs auth (admin gate) and react-query
+// (eligibility) — both out of scope here, so stub them to "not an admin".
+vi.mock('@/hooks/useAdminAccess', () => ({
+  useAdminAccess: () => ({ isAdminAccessGranted: false }),
+}));
+
+vi.mock('@/hooks/playoffs/usePlayoffLoserSwap', () => ({
+  useLoserSwapEligibility: () => ({ data: undefined, isLoading: false }),
+  usePlayoffSwapLoserSlots: () => ({ mutate: vi.fn(), isPending: false }),
+}));
+
+vi.mock('@/components/playoffs/admin/SwapLoserSlotsDialog', () => ({
+  default: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="swap-loser-slots-dialog" /> : null,
+}));
+
 vi.mock('@/components/playoffs/match-score-editor/ByeMatchEditor', () => ({
   ByeMatchEditor: ({ onClose }: { onClose: () => void }) => (
     <div data-testid="bye-match-editor">
