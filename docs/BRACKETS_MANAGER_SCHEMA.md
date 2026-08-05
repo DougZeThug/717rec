@@ -114,6 +114,15 @@ the otherwise-unused result column of the BYE side and re-inflates it to a
 strict `null` on read. Rows created before this convention (no sentinel) read
 back as TBD.
 
+**Losers-bracket slot swaps** (`BracketAdmin/swap.ts`): the admin tool that
+moves teams between losers-bracket matches operates on these columns directly
+and must move `opponentN_id`, `opponentN_position`, and the BYE sentinel **as a
+unit** — the position marker is what the library's reverse traversal and the
+viewer's "Loser of WB x.y" labels read, so it follows the occupant. Swaps are
+same-round only, and only once every slot of both matches is resolved (team or
+stored BYE): the library routes winners-bracket losers dynamically at result
+time and would overwrite a slot whose feeder match hasn't finished.
+
 **Indexes:**
 - `idx_match_stage` on `stage_id`
 - `idx_match_round` on `round_id`
