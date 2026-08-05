@@ -45,12 +45,7 @@ function wireEligibility(data: unknown, isLoading = false): void {
 
 function renderDialog(): void {
   render(
-    <SwapLoserSlotsDialog
-      open={true}
-      onOpenChange={vi.fn()}
-      bracketId="bracket-uuid-1"
-      matchId={201}
-    />
+    <SwapLoserSlotsDialog open onOpenChange={vi.fn()} bracketId="bracket-uuid-1" matchId={201} />
   );
 }
 

@@ -24,7 +24,7 @@ vi.mock('@/utils/logger', async (importOriginal) => {
 });
 
 vi.mock('../../BracketUpdate/completion', () => ({
-  markBracketCompleteIfDone: vi.fn().mockResolvedValue(undefined),
+  markBracketCompleteIfDone: vi.fn(() => Promise.resolve()),
 }));
 
 import { markBracketCompleteIfDone } from '../../BracketUpdate/completion';

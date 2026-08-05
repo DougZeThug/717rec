@@ -140,7 +140,7 @@ async function buildScenario(service: BracketManagerService): Promise<void> {
 beforeAll(() => {
   // The facade constructs BracketsManager with VERBOSE=true, which logs every
   // storage call straight to console.log — silence it for readable test output.
-  vi.spyOn(console, 'log').mockImplementation(() => {});
+  vi.spyOn(console, 'log').mockImplementation(() => undefined);
 });
 
 beforeEach(() => {

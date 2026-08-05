@@ -377,6 +377,53 @@ export async function adminSwapLoserBracketSlots(
   const { sourceMatchId, sourceSide, targetMatchId, targetSide } = params;
   bracketLog('Admin losers-bracket swap requested', { ...params });
 
+  const { source, target, sourceSlot, targetSlot } = await loadValidatedSwapContexts(deps, params);
+
+  const names = await loadParticipantNames(deps, String(source.stage.tournament_id));
+  const nameOf: NameOf = (participantId) =>
+    (participantId != null ? names.get(participantId) : null) ?? 'the team';
+
+  // Resolve every write before performing any. Each match receives the other's
+  // named slot; walkover changes are planned against the next round.
+  const plans = await buildSwapPlans(deps, source, target, params, sourceSlot, targetSlot);
+  const clears = planDownstreamChanges(plans, nameOf);
+
+  const outcome = await executeSwapWrites(deps, plans, clears);
+
+  await markBracketCompleteIfDone({ storage: deps.storage }, String(source.stage.tournament_id));
+
+  const message = buildSwapMessage(nameOf, sourceSlot, targetSlot, plans, clears, outcome);
+  successLog(
+    `Admin swapped losers-bracket slots: match ${sourceMatchId} (${sourceSide}) ↔ ` +
+      `match ${targetMatchId} (${targetSide})`,
+    message
+  );
+
+  return {
+    sourceMatchId,
+    targetMatchId,
+    walkoverCompletedMatchIds: outcome.walkoverCompletedMatchIds,
+    downstreamClearedMatchIds: outcome.downstreamClearedMatchIds,
+    message,
+  };
+}
+
+type NameOf = (participantId: number | null | undefined) => string;
+
+interface ValidatedSwapContexts {
+  source: RoundContext;
+  target: RoundContext;
+  sourceSlot: StorageMatch['opponent1'];
+  targetSlot: StorageMatch['opponent1'];
+}
+
+/** Load both matches and refuse everything the swap must not touch. Read-only. */
+async function loadValidatedSwapContexts(
+  deps: BracketAdminDeps,
+  params: SwapLoserSlotsParams
+): Promise<ValidatedSwapContexts> {
+  const { sourceMatchId, sourceSide, targetMatchId, targetSide } = params;
+
   if (sourceMatchId === targetMatchId) {
     throw new ValidationError('Choose two different matches to swap between.');
   }
@@ -427,24 +474,41 @@ export async function adminSwapLoserBracketSlots(
     );
   }
 
-  const names = await loadParticipantNames(deps, String(source.stage.tournament_id));
-  const nameOf = (participantId: number | null | undefined): string =>
-    (participantId != null ? names.get(participantId) : null) ?? 'the team';
+  return { source, target, sourceSlot, targetSlot };
+}
 
-  // Resolve every write before performing any. Each match receives the other's
-  // named slot; walkover changes are planned against the next round.
+/** Build both matches' write plans, with their next-round targets resolved. Read-only. */
+async function buildSwapPlans(
+  deps: BracketAdminDeps,
+  source: RoundContext,
+  target: RoundContext,
+  params: SwapLoserSlotsParams,
+  sourceSlot: StorageMatch['opponent1'],
+  targetSlot: StorageMatch['opponent1']
+): Promise<MatchWritePlan[]> {
   const partials = [
-    buildMatchWritePlan(source.match, sourceSide, targetSlot),
-    buildMatchWritePlan(target.match, targetSide, sourceSlot),
+    buildMatchWritePlan(source.match, params.sourceSide, targetSlot),
+    buildMatchWritePlan(target.match, params.targetSide, sourceSlot),
   ];
   const nextTargets = await Promise.all(
     partials.map((partial) => findNextRoundMatch(deps, partial.match))
   );
-  const plans: MatchWritePlan[] = partials.map((partial, index) => ({
-    ...partial,
-    nextTarget: nextTargets[index],
-  }));
+  return partials.map((partial, index) => ({ ...partial, nextTarget: nextTargets[index] }));
+}
 
+interface DownstreamClear {
+  matchId: number;
+  side: OpponentSide;
+  demote: boolean;
+  staleWinnerId: number;
+}
+
+/**
+ * Work out which stale walkover winners must be un-placed downstream, and
+ * verify every new walkover has an open landing spot. Throws before any write
+ * when a downstream match has been built on. Read-only.
+ */
+function planDownstreamChanges(plans: MatchWritePlan[], nameOf: NameOf): DownstreamClear[] {
   // Simulated slot states of the next-round matches, shared across both plans —
   // sibling matches in a halved round feed the SAME destination, so one plan's
   // cleared slot can be the other plan's landing spot.
@@ -461,8 +525,7 @@ export async function adminSwapLoserBracketSlots(
     return state;
   };
 
-  const clears: { matchId: number; side: OpponentSide; demote: boolean; staleWinnerId: number }[] =
-    [];
+  const clears: DownstreamClear[] = [];
   for (const plan of plans) {
     if (
       plan.staleWinnerId == null ||
@@ -509,12 +572,28 @@ export async function adminSwapLoserBracketSlots(
     state[freeSide] = 'taken';
   }
 
-  // Writes, in dependency order: undo stale advancements, rewrite the two
-  // matches, then apply the new automatic advancements. Each write awaits the
-  // previous ON PURPOSE — the fixed order is what keeps a mid-sequence
-  // database failure diagnosable and recoverable (see the doc comment above),
-  // and the placement step re-reads storage, so it must see the writes that
-  // precede it. Do not parallelize with Promise.all.
+  return clears;
+}
+
+interface SwapWriteOutcome {
+  walkoverCompletedMatchIds: number[];
+  downstreamClearedMatchIds: number[];
+  cascadePending: boolean;
+}
+
+/**
+ * Perform the writes, in dependency order: undo stale advancements, rewrite
+ * the two matches, then apply the new automatic advancements. Each write
+ * awaits the previous ON PURPOSE — the fixed order is what keeps a
+ * mid-sequence database failure diagnosable and recoverable, and the
+ * placement step re-reads storage, so it must see the writes that precede it.
+ * Do not parallelize with Promise.all.
+ */
+async function executeSwapWrites(
+  deps: BracketAdminDeps,
+  plans: MatchWritePlan[],
+  clears: DownstreamClear[]
+): Promise<SwapWriteOutcome> {
   const downstreamClearedMatchIds: number[] = [];
   for (const clear of clears) {
     const fields: MatchUpdateFields = idField(clear.side, null);
@@ -549,8 +628,18 @@ export async function adminSwapLoserBracketSlots(
     }
   }
 
-  await markBracketCompleteIfDone({ storage: deps.storage }, String(source.stage.tournament_id));
+  return { walkoverCompletedMatchIds, downstreamClearedMatchIds, cascadePending };
+}
 
+/** Assemble the plain-language summary shown in the admin's success toast. */
+function buildSwapMessage(
+  nameOf: NameOf,
+  sourceSlot: StorageMatch['opponent1'],
+  targetSlot: StorageMatch['opponent1'],
+  plans: MatchWritePlan[],
+  clears: DownstreamClear[],
+  outcome: SwapWriteOutcome
+): string {
   const movedNames = [sourceSlot?.id, targetSlot?.id]
     .filter((id): id is number => id != null)
     .map((id) => nameOf(id));
@@ -570,24 +659,10 @@ export async function adminSwapLoserBracketSlots(
       );
     }
   }
-  if (cascadePending) {
+  if (outcome.cascadePending) {
     parts.push(
       'A follow-up automatic advancement may be waiting in a later round — use the BYE editor or Repair Bracket if a team looks stuck.'
     );
   }
-  const message = parts.join(' ');
-
-  successLog(
-    `Admin swapped losers-bracket slots: match ${sourceMatchId} (${sourceSide}) ↔ ` +
-      `match ${targetMatchId} (${targetSide})`,
-    message
-  );
-
-  return {
-    sourceMatchId,
-    targetMatchId,
-    walkoverCompletedMatchIds,
-    downstreamClearedMatchIds,
-    message,
-  };
+  return parts.join(' ');
 }

@@ -41,42 +41,6 @@ const candidateLabel = (slot: LoserSwapSlot): string =>
     ? `Match ${slot.matchNumber}: take the BYE spot and play ${slot.partnerName ?? 'the team there'}`
     : `Match ${slot.matchNumber}: swap with ${slot.participantName ?? 'Unknown team'}`;
 
-/**
- * Admin dialog: move a team from this losers-bracket match into another match
- * of the same round — either trading places with the team there, or taking a
- * BYE spot. Exists because the bracket library assigns losers-bracket matchups
- * automatically, and the league sometimes seeds them differently on the court.
- */
-const SwapLoserSlotsDialog: React.FC<SwapLoserSlotsDialogProps> = ({
-  open,
-  onOpenChange,
-  bracketId,
-  matchId,
-}) => (
-  <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Shuffle className="size-5" />
-          Move Team to Another Match
-        </DialogTitle>
-        <DialogDescription>
-          Move a team from this losers-bracket match into another match of the same round.
-        </DialogDescription>
-      </DialogHeader>
-      {/* Selection state lives in the body, keyed by match: switching matches
-          remounts it fresh, and the closed dialog unmounts it entirely — so
-          the picks reset without any state-syncing effects. */}
-      <SwapLoserSlotsBody
-        key={matchId ?? 'none'}
-        bracketId={bracketId}
-        matchId={matchId}
-        onOpenChange={onOpenChange}
-      />
-    </DialogContent>
-  </Dialog>
-);
-
 const SwapLoserSlotsBody: React.FC<Omit<SwapLoserSlotsDialogProps, 'open'>> = ({
   onOpenChange,
   bracketId,
@@ -199,5 +163,41 @@ const SwapLoserSlotsBody: React.FC<Omit<SwapLoserSlotsDialogProps, 'open'>> = ({
     </>
   );
 };
+
+/**
+ * Admin dialog: move a team from this losers-bracket match into another match
+ * of the same round — either trading places with the team there, or taking a
+ * BYE spot. Exists because the bracket library assigns losers-bracket matchups
+ * automatically, and the league sometimes seeds them differently on the court.
+ */
+const SwapLoserSlotsDialog: React.FC<SwapLoserSlotsDialogProps> = ({
+  open,
+  onOpenChange,
+  bracketId,
+  matchId,
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent className="sm:max-w-md">
+      <DialogHeader>
+        <DialogTitle className="flex items-center gap-2">
+          <Shuffle className="size-5" />
+          Move Team to Another Match
+        </DialogTitle>
+        <DialogDescription>
+          Move a team from this losers-bracket match into another match of the same round.
+        </DialogDescription>
+      </DialogHeader>
+      {/* Selection state lives in the body, keyed by match: switching matches
+          remounts it fresh, and the closed dialog unmounts it entirely — so
+          the picks reset without any state-syncing effects. */}
+      <SwapLoserSlotsBody
+        key={matchId ?? 'none'}
+        bracketId={bracketId}
+        matchId={matchId}
+        onOpenChange={onOpenChange}
+      />
+    </DialogContent>
+  </Dialog>
+);
 
 export default SwapLoserSlotsDialog;
