@@ -22,7 +22,7 @@ export type SlotState = 'bye' | 'empty' | 'taken';
 export const slotState = (slot: StorageMatch['opponent1']): SlotState =>
   slot === null ? 'bye' : slot?.id == null ? 'empty' : 'taken';
 
-export const describeSlot = (state: SlotState): string =>
+const describeSlot = (state: SlotState): string =>
   state === 'bye' ? 'a BYE (no team can ever play there)' : 'already taken';
 
 /** The next-round match a given match feeds, plus how the rounds map onto each other. */

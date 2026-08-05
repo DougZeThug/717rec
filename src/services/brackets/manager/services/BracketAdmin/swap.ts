@@ -20,7 +20,7 @@ import {
 } from './placement';
 import type { BracketAdminDeps } from './types';
 
-export type OpponentSide = 'opponent1' | 'opponent2';
+type OpponentSide = 'opponent1' | 'opponent2';
 
 export interface SwapLoserSlotsParams {
   sourceMatchId: number;
