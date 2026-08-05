@@ -114,10 +114,21 @@ export async function resolveWinnerPlacement(
   // Taking whichever slot happened to be empty transposed the pair whenever the
   // even feeder was completed first.
   //
-  // Not applied to the 1:1 mapping: that is a losers-bracket minor round, where one
-  // slot takes the LB progression winner and the other a winners-bracket drop-in.
-  // The feeder's number says nothing about which, so parity there would be a guess.
-  const preferredSlot = isOneToOne ? null : match.number % 2 === 1 ? 'opponent1' : 'opponent2';
+  // The 1:1 mapping is a losers-bracket minor round, where the feeder's number
+  // says nothing about sides — but the slots are still not interchangeable: the
+  // winners-bracket drop-in slot keeps its feeder position marker even while
+  // empty, and the library writes the arriving WB loser into it regardless of
+  // contents. Prefer the unmarked (carry) slot so a feeder completed before the
+  // drop-in arrives never squats on the drop-in's reserved slot.
+  const hasFeederMarker = (slot: StorageMatch['opponent1']): boolean =>
+    slot != null && slot.position !== undefined;
+  const preferredSlot = isOneToOne
+    ? ((['opponent1', 'opponent2'] as const).find(
+        (side) => slotState(nextMatch[side]) === 'empty' && !hasFeederMarker(nextMatch[side])
+      ) ?? null)
+    : match.number % 2 === 1
+      ? 'opponent1'
+      : 'opponent2';
   const preferredState = preferredSlot === 'opponent1' ? slot1 : preferredSlot ? slot2 : null;
 
   if (preferredSlot && preferredState !== 'empty') {
@@ -126,6 +137,11 @@ export async function resolveWinnerPlacement(
     bracketLog(
       `Feeder parity wanted ${preferredSlot} of match ${nextMatch.id} for match ` +
         `${match.number}, but it is ${preferredState} — falling back to first empty slot`
+    );
+  }
+  if (isOneToOne && !preferredSlot && (slot1 === 'empty' || slot2 === 'empty')) {
+    bracketLog(
+      `Only a marked drop-in slot is free in match ${nextMatch.id} — using it as a last resort`
     );
   }
 

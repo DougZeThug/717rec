@@ -48,6 +48,8 @@ export interface LoserSwapSlot {
   isBye: boolean;
   /** True when the other slot of the same match is a stored BYE. */
   partnerIsBye: boolean;
+  /** Name of the team in the other slot of the same match, when there is one. */
+  partnerName: string | null;
 }
 
 export interface LoserSwapEligibilityResult {
@@ -239,6 +241,8 @@ export async function checkLoserSwapEligibility(
     const toSlot = (slotMatch: StorageMatch, side: OpponentSide): LoserSwapSlot => {
       const slot = slotMatch[side];
       const participantId = slot?.id ?? null;
+      const partner = slotMatch[otherSide(side)];
+      const partnerId = partner?.id ?? null;
       return {
         matchId: slotMatch.id,
         matchNumber: slotMatch.number,
@@ -246,7 +250,8 @@ export async function checkLoserSwapEligibility(
         participantId,
         participantName: participantId != null ? (names.get(participantId) ?? null) : null,
         isBye: slot === null,
-        partnerIsBye: slotMatch[otherSide(side)] === null,
+        partnerIsBye: partner === null,
+        partnerName: partnerId != null ? (names.get(partnerId) ?? null) : null,
       };
     };
 

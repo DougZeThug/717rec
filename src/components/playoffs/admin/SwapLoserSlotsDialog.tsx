@@ -33,9 +33,12 @@ interface SwapLoserSlotsDialogProps {
 
 const slotKey = (slot: LoserSwapSlot): string => `${slot.matchId}:${slot.side}`;
 
+// Taking a BYE spot does NOT advance the moved team: they fill the empty slot
+// and play the team that was about to walk over there (whose walkover is
+// undone) — while the moved team's old opponent gets the walkover instead.
 const candidateLabel = (slot: LoserSwapSlot): string =>
   slot.isBye
-    ? `Match ${slot.matchNumber}: take the BYE spot (advances automatically)`
+    ? `Match ${slot.matchNumber}: take the BYE spot and play ${slot.partnerName ?? 'the team there'}`
     : `Match ${slot.matchNumber}: swap with ${slot.participantName ?? 'Unknown team'}`;
 
 /**

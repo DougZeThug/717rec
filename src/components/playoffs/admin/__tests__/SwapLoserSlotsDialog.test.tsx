@@ -22,7 +22,8 @@ const slot = (
   matchNumber: number,
   side: 'opponent1' | 'opponent2',
   participant: { id: number; name: string } | null,
-  partnerIsBye = false
+  partnerIsBye = false,
+  partnerName: string | null = null
 ): LoserSwapSlot => ({
   matchId,
   matchNumber,
@@ -31,6 +32,7 @@ const slot = (
   participantName: participant?.name ?? null,
   isBye: participant === null,
   partnerIsBye,
+  partnerName,
 });
 
 const mutateMock = vi.fn();
@@ -87,7 +89,7 @@ describe('SwapLoserSlotsDialog', () => {
       ],
       candidates: [
         slot(204, 4, 'opponent1', { id: 7, name: 'T7' }, true),
-        slot(204, 4, 'opponent2', null, false),
+        slot(204, 4, 'opponent2', null, false, 'T7'),
       ],
     });
     renderDialog();
@@ -97,6 +99,11 @@ describe('SwapLoserSlotsDialog', () => {
     await user.click(screen.getByRole('option', { name: 'T5' }));
 
     await user.click(screen.getByLabelText(/where should they go/i));
+    // The BYE spot is labeled with its real effect: the mover would PLAY the
+    // team whose walkover gets undone, not advance automatically.
+    expect(
+      screen.getByRole('option', { name: /match 4: take the BYE spot and play T7/i })
+    ).toBeInTheDocument();
     await user.click(screen.getByRole('option', { name: /match 4: swap with T7/i }));
 
     await user.click(screen.getByRole('button', { name: /^move team$/i }));
