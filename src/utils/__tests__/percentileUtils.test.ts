@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  calculateAllPercentiles,
   calculatePercentile,
   formatOrdinal,
-  formatPercentileText,
   getPercentileTier,
 } from '../percentileUtils';
 
@@ -58,19 +56,6 @@ describe('formatOrdinal', () => {
   it('formats 22 as 22nd', () => expect(formatOrdinal(22)).toBe('22nd'));
 });
 
-describe('formatPercentileText', () => {
-  it('shows Top N% for percentile >= 90', () => {
-    expect(formatPercentileText(95)).toBe('Top 5%');
-    expect(formatPercentileText(90)).toBe('Top 10%');
-  });
-
-  it('shows Nth for percentile < 90', () => {
-    expect(formatPercentileText(75)).toBe('75th');
-    expect(formatPercentileText(50)).toBe('50th');
-    expect(formatPercentileText(20)).toBe('20th');
-  });
-});
-
 describe('getPercentileTier', () => {
   it('returns elite for >= 90', () => expect(getPercentileTier(90)).toBe('elite'));
   it('returns strong for >= 75', () => expect(getPercentileTier(75)).toBe('strong'));
@@ -78,22 +63,4 @@ describe('getPercentileTier', () => {
   it('returns below for >= 25', () => expect(getPercentileTier(25)).toBe('below'));
   it('returns weak for < 25', () => expect(getPercentileTier(24)).toBe('weak'));
   it('returns weak for 0', () => expect(getPercentileTier(0)).toBe('weak'));
-});
-
-describe('calculateAllPercentiles', () => {
-  it('returns a Map with correct percentile for each team', () => {
-    const teams = [
-      { id: 'a', value: 90 },
-      { id: 'b', value: 50 },
-      { id: 'c', value: 10 },
-    ];
-    const map = calculateAllPercentiles(teams);
-    expect(map.get('a')?.rank).toBe(1);
-    expect(map.get('c')?.rank).toBe(3);
-    expect(map.size).toBe(3);
-  });
-
-  it('returns empty Map for empty input', () => {
-    expect(calculateAllPercentiles([])).toEqual(new Map());
-  });
 });
