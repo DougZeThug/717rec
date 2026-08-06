@@ -3,10 +3,10 @@
 // supabase function: mcp
 // Bundled from src/lib/mcp/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/index.ts
-import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.26.1";
 
 // src/lib/mcp/tools/get-counter-drift.ts
-import { defineTool } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.1";
 
 // src/lib/mcp/tools/_supabase.ts
 import { createClient } from "npm:@supabase/supabase-js@^2.110.3";
@@ -67,7 +67,7 @@ var get_counter_drift_default = defineTool({
 });
 
 // src/lib/mcp/tools/get-my-recent-matches.ts
-import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z } from "npm:zod@^4.4.3";
 var get_my_recent_matches_default = defineTool2({
   name: "get_my_recent_matches",
@@ -94,7 +94,7 @@ var get_my_recent_matches_default = defineTool2({
 });
 
 // src/lib/mcp/tools/get-my-team.ts
-import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.1";
 var get_my_team_default = defineTool3({
   name: "get_my_team",
   title: "Get my team",
@@ -121,7 +121,7 @@ var get_my_team_default = defineTool3({
 });
 
 // src/lib/mcp/tools/get-my-upcoming-matches.ts
-import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z2 } from "npm:zod@^4.4.3";
 var get_my_upcoming_matches_default = defineTool4({
   name: "get_my_upcoming_matches",
@@ -148,7 +148,7 @@ var get_my_upcoming_matches_default = defineTool4({
 });
 
 // src/lib/mcp/tools/get-ops-health.ts
-import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool5 } from "npm:@lovable.dev/mcp-js@0.26.1";
 var get_ops_health_default = defineTool5({
   name: "get_ops_health",
   title: "Get ops health (admin)",
@@ -176,7 +176,7 @@ var get_ops_health_default = defineTool5({
 });
 
 // src/lib/mcp/tools/get-schedule.ts
-import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool6 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z3 } from "npm:zod@^4.4.3";
 var get_schedule_default = defineTool6({
   name: "get_schedule",
@@ -211,7 +211,7 @@ var get_schedule_default = defineTool6({
 });
 
 // src/lib/mcp/tools/get-standings.ts
-import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool7 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z4 } from "npm:zod@^4.4.3";
 var get_standings_default = defineTool7({
   name: "get_standings",
@@ -244,7 +244,7 @@ var get_standings_default = defineTool7({
 });
 
 // src/lib/mcp/tools/list-teams.ts
-import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool8 } from "npm:@lovable.dev/mcp-js@0.26.1";
 import { z as z5 } from "npm:zod@^4.4.3";
 var list_teams_default = defineTool8({
   name: "list_teams",
@@ -275,7 +275,7 @@ var list_teams_default = defineTool8({
 });
 
 // src/lib/mcp/tools/reconcile-counter-drift.ts
-import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.24.0";
+import { defineTool as defineTool9 } from "npm:@lovable.dev/mcp-js@0.26.1";
 var reconcile_counter_drift_default = defineTool9({
   name: "reconcile_counter_drift",
   title: "Reconcile counter drift (admin)",
@@ -323,5 +323,5 @@ var mcp_default = defineMcp({
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.24.0/stacks/supabase";
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.1/stacks/supabase";
 Deno.serve(createSupabaseHandler(mcp_default, { functionName: "mcp" }));
