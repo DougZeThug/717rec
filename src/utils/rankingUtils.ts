@@ -104,4 +104,3 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
     };
   });
 };
-
