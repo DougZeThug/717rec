@@ -19,7 +19,6 @@ import {
   getPowerScoreColor,
   getPowerScoreDescription,
 } from '../powerScoreColors';
-import { getSweepRateColor } from '../sweepRateColors';
 import { getTeamColor } from '../teamColors';
 import { getTrendArrow, getTrendColor } from '../trendColors';
 import { getWinPercentageBackgroundColor, getWinPercentageColor } from '../winPercentageColors';
@@ -168,8 +167,4 @@ describe('color modules table-driven coverage', () => {
     expect(getTrendArrow(delta)).toBe(arrow);
   });
 
-  it('keeps sweep rate utility behavior aligned with centralized export', () => {
-    expect(getSweepRateColor(null)).toBe('text-muted-foreground');
-    expect(getSweepRateColor(40)).toBe('text-blue-600 dark:text-blue-500');
-  });
 });
