@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@/utils/timezone', () => ({
+vi.mock('@/utils/timezone/formatters', () => ({
   extractTimeSlotFromUTC: vi.fn(),
 }));
 
-import { extractTimeSlotFromUTC } from '@/utils/timezone';
+import { extractTimeSlotFromUTC } from '@/utils/timezone/formatters';
 
 import { groupMatchesByTimeSlot } from '../timeUtils';
 
