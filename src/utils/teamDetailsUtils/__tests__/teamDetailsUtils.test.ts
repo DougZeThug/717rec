@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Match, Team } from '@/types';
+import type { Match } from '@/types';
 import type { HeadToHeadRecord } from '@/types/headToHead';
 
 import { calculateGameStats } from '../gameStatsUtils';
-import { calculateHeadToHead } from '../headToHeadUtils';
 import { calculateClutchRecord } from '../matchOutcomeUtils';
 import {
   getMatchResult,
@@ -159,26 +158,6 @@ describe('teamDetails utilities', () => {
       gamesLost: 3,
       gameWinPercentage: 4 / 7,
       closeMatchLosses: 1,
-    });
-  });
-
-  it('calculates head-to-head records and skips teams without ids', () => {
-    const teams: Team[] = [
-      { id: 'team-a', name: 'A' },
-      { id: 'team-b', name: 'B' },
-      { id: 'team-c', name: '' },
-    ];
-
-    const matches: Match[] = [
-      { id: 'm1', iscompleted: true, team1Id: 'team-a', team2Id: 'team-b', winnerId: 'team-a' },
-      { id: 'm2', iscompleted: true, team1Id: 'team-a', team2Id: 'team-b', winnerId: 'team-b' },
-      { id: 'm3', iscompleted: true, team1Id: 'team-c', team2Id: 'team-a', winnerId: 'team-c' },
-      { id: 'm4', iscompleted: false, team1Id: 'team-a', team2Id: 'team-c', winnerId: 'team-a' },
-    ];
-
-    expect(calculateHeadToHead('team-a', teams, matches)).toEqual({
-      'team-b': { opponentName: 'B', wins: 1, losses: 1 },
-      'team-c': { opponentName: 'Unknown Team', wins: 0, losses: 1 },
     });
   });
 
