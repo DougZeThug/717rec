@@ -69,7 +69,7 @@ const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
       </div>
     );
   }
-  if (error || !board || !arrangement) {
+  if (error || !board || !baseline || !arrangement) {
     return (
       <p className="py-4 text-sm text-muted-foreground">
         {error instanceof Error ? error.message : 'This bracket cannot be rearranged right now.'}
