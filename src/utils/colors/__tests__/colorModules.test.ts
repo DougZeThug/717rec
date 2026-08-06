@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  getChampionshipColor,
-  getRunnerUpColor,
-} from '../championshipColors';
+import { getChampionshipColor, getRunnerUpColor } from '../championshipColors';
 import {
   getDivisionBadgeColor,
   getDivisionGradientClass,
