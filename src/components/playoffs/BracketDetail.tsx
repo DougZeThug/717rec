@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Edit, ListOrdered, Loader2, RefreshCw, Trash, Wrench } from 'lucide-react';
+import { Edit, ListOrdered, Loader2, RefreshCw, Shuffle, Trash, Wrench } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
 
@@ -18,6 +18,7 @@ import {
 import { blueAmber } from '@/styles/design-system';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
+import RearrangeBracketDialog from './admin/RearrangeBracketDialog';
 import { SeedingUpdateDialog } from './SeedingUpdateDialog';
 
 interface BracketDetailProps {
@@ -52,6 +53,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
   const [seedingDialogOpen, setSeedingDialogOpen] = useState(false);
+  const [rearrangeDialogOpen, setRearrangeDialogOpen] = useState(false);
 
   // Fetch current participants for seeding updates
   const { data: participants } = useQuery({
@@ -168,6 +170,16 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                 variant="outline"
                 size="sm"
                 className="hidden md:flex"
+                onClick={() => setRearrangeDialogOpen(true)}
+                disabled={bracket.state === 'completed'}
+              >
+                <Shuffle className="size-4 mr-2" /> Rearrange Teams
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="hidden md:flex"
                 onClick={() => setSeedingDialogOpen(true)}
                 disabled={bracket.state === 'completed'}
               >
@@ -223,6 +235,12 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
         bracketName={bracket.name ?? ''}
         currentParticipants={(participants || []).map((p) => ({ ...p, name: p.name ?? '' }))}
         bracketState={bracket.state || 'pending'}
+      />
+
+      <RearrangeBracketDialog
+        open={rearrangeDialogOpen}
+        onOpenChange={setRearrangeDialogOpen}
+        bracketId={bracketId}
       />
     </Card>
   );
