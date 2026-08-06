@@ -49,19 +49,6 @@ export function formatOrdinal(n: number): string {
 }
 
 /**
- * Get display text for percentile (e.g., "Top 5%", "85th")
- */
-export function formatPercentileText(percentile: number, _rank?: number, _total?: number): string {
-  if (percentile >= 90) {
-    return `Top ${100 - percentile}%`;
-  }
-  if (percentile >= 50) {
-    return `${percentile}th`;
-  }
-  return `${percentile}th`;
-}
-
-/**
  * Get the display tier based on percentile
  */
 export type PercentileTier = 'elite' | 'strong' | 'average' | 'below' | 'weak';
@@ -72,21 +59,4 @@ export function getPercentileTier(percentile: number): PercentileTier {
   if (percentile >= 50) return 'average';
   if (percentile >= 25) return 'below';
   return 'weak';
-}
-
-/**
- * Batch calculate percentiles for all teams for a specific stat
- */
-export function calculateAllPercentiles(
-  teams: { id: string; value: number }[],
-  higherIsBetter = true
-): Map<string, PercentileResult> {
-  const values = teams.map((t) => t.value);
-  const result = new Map<string, PercentileResult>();
-
-  for (const team of teams) {
-    result.set(team.id, calculatePercentile(team.value, values, higherIsBetter));
-  }
-
-  return result;
 }
