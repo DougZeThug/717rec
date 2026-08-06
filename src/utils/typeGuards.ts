@@ -43,17 +43,3 @@ export function isDivisionIdValid(divisions: Division[], id: unknown): id is str
   if (typeof id !== 'string' || !id) return false;
   return divisions.some((d) => d.id === id);
 }
-
-/**
- * Type guard to validate if a value is a valid string
- */
-export function isValidString(maybe: unknown): maybe is string {
-  return typeof maybe === 'string' && maybe.length > 0;
-}
-
-/**
- * Type guard to validate if a value is a valid number
- */
-export function isValidNumber(maybe: unknown): maybe is number {
-  return typeof maybe === 'number' && !isNaN(maybe) && isFinite(maybe);
-}
