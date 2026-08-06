@@ -1,13 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import {
-  bulkUpdateTeamSeeds as bulkUpdateTeamSeedsService,
-  updateTeamSeed as updateTeamSeedService,
-} from '@/services/teams/TeamSeedService';
-import type {
-  BulkTeamSeedUpdateResult,
-  TeamSeedUpdateInput,
-  TeamSeedUpdateResult,
-} from '@/types/seeding';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { dbLog } from '@/utils/logger';
 
@@ -91,43 +82,9 @@ export const updatePlayoffMatchScores = async (
 };
 
 /**
- * Delete all playoff games for a match
- * Used by usePlayoffMatchUpdate hook (legacy path)
- */
-export const deletePlayoffGames = async (matchId: string): Promise<void> => {
-  const { error } = await supabase.from('playoff_games').delete().eq('match_id', matchId);
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to delete playoff games');
-  }
-};
-
-/**
- * Insert multiple playoff game records
- * Used by usePlayoffMatchUpdate hook (legacy path)
- */
-export const insertPlayoffGames = async (
-  games: Array<{
-    match_id: string;
-    game_number: number;
-    team1_score: number;
-    team2_score: number;
-    winner_id: string | null;
-  }>
-): Promise<void> => {
-  const { error } = await supabase.from('playoff_games').insert(games);
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to insert playoff games');
-  }
-};
-
-/**
- * Atomically replace all playoff_games rows for a match.
- *
- * Wraps DELETE + INSERT in a single SECURITY DEFINER Postgres function so a
- * failed insert no longer leaves the match with an empty game list. Prefer
- * this over calling 'deletePlayoffGames' + 'insertPlayoffGames' separately.
+ * Atomically replace all playoff_games rows for a match via a SECURITY DEFINER
+ * Postgres function so a failed insert no longer leaves the match with an empty
+ * game list.
  */
 export const replacePlayoffGames = async (
   matchId: string,
@@ -147,20 +104,3 @@ export const replacePlayoffGames = async (
     handleDatabaseError(error, 'Failed to replace playoff games');
   }
 };
-
-/**
- * Update a single team's seed value
- * Used by useOptimisticTeamMutations hook
- */
-export const updateTeamSeed = (
-  teamId: string,
-  seed: number | null
-): Promise<TeamSeedUpdateResult> => updateTeamSeedService(teamId, seed);
-
-/**
- * Batch update team seeds via RPC
- * Used by useOptimisticTeamMutations hook
- */
-export const batchUpdateTeamSeeds = (
-  updates: TeamSeedUpdateInput[]
-): Promise<BulkTeamSeedUpdateResult[]> => bulkUpdateTeamSeedsService(updates);
