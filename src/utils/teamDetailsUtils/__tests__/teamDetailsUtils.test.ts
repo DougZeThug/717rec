@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Match, Team } from '@/types';
+import type { Match } from '@/types';
 import type { HeadToHeadRecord } from '@/types/headToHead';
 
 import { calculateGameStats } from '../gameStatsUtils';
