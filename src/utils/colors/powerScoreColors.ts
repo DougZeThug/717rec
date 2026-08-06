@@ -51,36 +51,3 @@ export const getPowerScoreBackgroundColor = (score: number | null | undefined): 
   if (score >= 20) return 'bg-purple-100 dark:bg-purple-900/20'; // Struggling
   return 'bg-red-100 dark:bg-red-900/20'; // Critical
 };
-
-export const getPowerScoreBorderColor = (score: number | null | undefined): string => {
-  if (score === null || score === undefined) {
-    return 'border-gray-300 dark:border-gray-700';
-  }
-
-  // Score is already on 0-100 scale
-  if (score >= 85) return 'border-yellow-300 dark:border-yellow-700'; // Elite/Championship
-  if (score >= 70) return 'border-green-300 dark:border-green-700'; // Excellent
-  if (score >= 60) return 'border-blue-300 dark:border-blue-700'; // Strong
-  if (score >= 50) return 'border-orange-300 dark:border-orange-700'; // Average
-  if (score >= 40) return 'border-amber-300 dark:border-amber-700'; // Below Average
-  if (score >= 30) return 'border-pink-300 dark:border-pink-700'; // Poor
-  if (score >= 20) return 'border-purple-300 dark:border-purple-700'; // Struggling
-  return 'border-red-300 dark:border-red-700'; // Critical
-};
-
-// Power score interpretation helper
-export const getPowerScoreDescription = (score: number | null | undefined): string => {
-  if (score === null || score === undefined) {
-    return 'No Data';
-  }
-
-  // Score is already on 0-100 scale
-  if (score >= 85) return 'Elite Performance'; // Championship level
-  if (score >= 70) return 'Excellent'; // Strong competitive
-  if (score >= 60) return 'Very Good'; // Above average
-  if (score >= 50) return 'Average'; // Solid performance
-  if (score >= 40) return 'Below Average'; // Needs improvement
-  if (score >= 30) return 'Poor'; // Struggling
-  if (score >= 20) return 'Struggling'; // Critical issues
-  return 'Critical Performance'; // Bottom tier
-};
