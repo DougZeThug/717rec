@@ -173,4 +173,3 @@ export const getAllBackToBackTeams = async (date: Date): Promise<Record<string, 
 
   return results;
 };
-
