@@ -26,16 +26,19 @@ export default defineTool({
         .eq('status', 'PENDING'),
       supabase
         .from('power_score_snapshots')
-        .select('captured_at')
-        .order('captured_at', { ascending: false })
+        .select('created_at')
+        .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle(),
     ]);
 
+    const failure = pending.error ?? requests.error ?? snap.error;
+    if (failure) return errorResult(`Failed to load ops health: ${failure.message}`);
+
     return textResult({
       pending_score_submissions: pending.count ?? 0,
       pending_team_requests: requests.count ?? 0,
-      last_power_snapshot_at: snap.data?.captured_at ?? null,
+      last_power_snapshot_at: snap.data?.created_at ?? null,
     });
   },
 });
