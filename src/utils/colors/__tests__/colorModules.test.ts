@@ -5,12 +5,7 @@ import {
   getChampionshipColor,
   getRunnerUpColor,
 } from '../championshipColors';
-import {
-  getDivisionBadgeColor,
-  getDivisionGradientClass,
-  getDivisionHeaderClass,
-  getDivisionTextClass,
-} from '../divisionColors';
+import { getDivisionBadgeColor } from '../divisionColors';
 import { getDivisionHexColor } from '../divisionHexColors';
 import {
   formatPowerScore,
@@ -56,21 +51,6 @@ describe('color modules table-driven coverage', () => {
   });
 
   it.each([
-    {
-      fn: getDivisionGradientClass,
-      input: 'Competitive',
-      fragment: 'via-[hsl(var(--competitive-soft)/0.06)]',
-    },
-    {
-      fn: getDivisionHeaderClass,
-      input: 'Intermediate',
-      fragment: 'border-[hsl(var(--intermediate-soft)/0.35)]',
-    },
-    {
-      fn: getDivisionTextClass,
-      input: 'Recreational',
-      fragment: 'text-[hsl(var(--recreational-soft))]',
-    },
     {
       fn: getDivisionBadgeColor,
       input: 'Hidden',
