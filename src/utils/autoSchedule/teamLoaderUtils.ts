@@ -152,31 +152,6 @@ export const getTeamsByBackToBackPair = async (date: Date, pairName: string): Pr
 };
 
 /**
- * Legacy function - now redirects to back-to-back pair loading
- * @deprecated Use getTeamsByBackToBackPair instead
- */
-export const getTeamsByTimeBlock = (date: Date, timeBlock: string): Promise<Team[]> => {
-  warnLog(`getTeamsByTimeBlock is deprecated. Converting ${timeBlock} to back-to-back pair.`);
-
-  // Map legacy time blocks to pair names
-  const pairName =
-    timeBlock === 'Early'
-      ? 'Early'
-      : timeBlock === 'Mid'
-        ? 'Mid'
-        : timeBlock === 'Late'
-          ? 'Late'
-          : null;
-
-  if (!pairName) {
-    errorLog(`Cannot map legacy time block ${timeBlock} to back-to-back pair`);
-    return Promise.resolve([]);
-  }
-
-  return getTeamsByBackToBackPair(date, pairName);
-};
-
-/**
  * Load teams for all back-to-back pairs
  */
 export const getAllBackToBackTeams = async (date: Date): Promise<Record<string, Team[]>> => {
@@ -199,52 +174,3 @@ export const getAllBackToBackTeams = async (date: Date): Promise<Record<string, 
   return results;
 };
 
-/**
- * Validate that a team has complete back-to-back assignments
- */
-export const validateTeamBackToBackAssignment = async (
-  date: Date,
-  teamId: string,
-  pairName: string
-): Promise<boolean> => {
-  const pairConfig = getPairConfig(pairName);
-  if (!pairConfig) return false;
-
-  const formattedDate = normalizeScheduleDate(date, 'validateTeamBackToBackAssignment');
-
-  try {
-    const data = await TimeslotService.fetchTimeslotValidation(
-      formattedDate,
-      teamId,
-      pairConfig.primary,
-      pairConfig.secondary
-    );
-
-    if (!data) return false;
-
-    // Check that team has both sequence 1 and sequence 2
-    const sequences = data.map((slot) => slot.match_sequence);
-    return sequences.includes(1) && sequences.includes(2);
-  } catch (error) {
-    errorLog('Error validating team back-to-back assignment:', error);
-    return false;
-  }
-};
-
-/**
- * Create a map of team availability across back-to-back pairs
- */
-export const createBackToBackAvailabilityMap = (
-  pairTeams: Record<string, Team[]>
-): Map<string, string[]> => {
-  const teamAvailabilityMap = new Map<string, string[]>();
-
-  Object.entries(pairTeams).forEach(([pairName, teams]) => {
-    teams.forEach((team) => {
-      const currentAvailability = teamAvailabilityMap.get(team.id) || [];
-      teamAvailabilityMap.set(team.id, [...currentAvailability, pairName]);
-    });
-  });
-
-  return teamAvailabilityMap;
-};
