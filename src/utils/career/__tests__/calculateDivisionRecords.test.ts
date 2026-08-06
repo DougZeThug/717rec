@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  calculateDivisionRecords,
-  categorizeDivision,
-} from '../calculateDivisionRecords';
+import { calculateDivisionRecords, categorizeDivision } from '../calculateDivisionRecords';
 import { ArchivedMatchData, MatchData, PlayoffMatchData } from '../types';
 
 describe('categorizeDivision', () => {
