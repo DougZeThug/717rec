@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Division, Team } from '@/types';
 
-import {
-  isDivisionArray,
-  isDivisionIdValid,
-  isTeamArray,
-} from '../typeGuards';
+import { isDivisionArray, isDivisionIdValid, isTeamArray } from '../typeGuards';
 
 function makeTeam(overrides: Partial<Team> = {}): Team {
   return {
