@@ -3,6 +3,9 @@ import { adminCompleteByeMatch } from './byeCompletion';
 import { isLosersByeMatch } from './eligibility';
 import { adminToggleByeReady } from './lifecycle';
 import { editMatchParticipants } from './participants';
+import { applyLoserBracketRearrange } from './rearrange/apply';
+import { loadRearrangeBoard } from './rearrange/board';
+import type { SlotAssignment } from './rearrange/types';
 import type { SwapLoserSlotsParams } from './swap';
 import { adminSwapLoserBracketSlots, checkLoserSwapEligibility } from './swap';
 
@@ -43,5 +46,13 @@ export class BracketAdminService {
 
   adminSwapLoserBracketSlots(params: SwapLoserSlotsParams) {
     return adminSwapLoserBracketSlots({ storage: this.storage }, params);
+  }
+
+  getLoserRearrangeBoard(bracketId: string) {
+    return loadRearrangeBoard({ storage: this.storage }, bracketId);
+  }
+
+  applyLoserBracketRearrange(bracketId: string, assignments: SlotAssignment[]) {
+    return applyLoserBracketRearrange({ storage: this.storage }, bracketId, assignments);
   }
 }

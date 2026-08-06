@@ -1,4 +1,5 @@
 import type { MatchUpdateFields } from '../shapes';
+import { otherSide } from '../shapes';
 import type {
   PlannedMatchWrite,
   RearrangePlanResult,
@@ -281,6 +282,18 @@ export function simulateRearrange(
     narrateLandingChange(currentContent, nextContent, labelOf(landingMatch), nameOf, consequences);
     landingState[landing.side] = nextContent;
     landingState.dirty = true;
+
+    // The library pre-records a walkover 'win' on a still-empty drop-in slot
+    // facing a stored BYE. Once a real team lands in that BYE spot, the
+    // anticipated walkover is off: clear the notation and let the match wait
+    // for its team like any other.
+    if (!landingMatch.editable && nextContent.shape === 'team') {
+      const partner = landingState[otherSide(landing.side)];
+      if (partner.shape === 'tbd' && partner.result === 'win' && partner.score == null) {
+        partner.result = null;
+        if (landingState.status === 0) landingState.status = 1;
+      }
+    }
   }
 
   // ── 5. Diff the working state against the database state ─────────────────
@@ -316,6 +329,12 @@ function landingBlockReason(state: WorkingMatch): string | null {
   for (const side of SIDES) {
     const slot = state[side];
     if (slot.shape === 'bye') continue;
+    // A 'win' pre-recorded on a TBD slot facing a stored BYE is the library's
+    // anticipated walkover — advance notation, not a played result.
+    const partnerIsBye = state[otherSide(side)].shape === 'bye';
+    if (slot.shape === 'tbd' && slot.result === 'win' && slot.score == null && partnerIsBye) {
+      continue;
+    }
     if (slot.result != null || slot.score != null) {
       return lockedReason ?? 'already has results recorded';
     }

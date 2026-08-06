@@ -110,6 +110,22 @@ export function matchBlockReason(match: StorageMatch): string | null {
   return null;
 }
 
+/**
+ * The library's advance notation for a walkover it can already see coming:
+ * one side is a stored BYE, the other is still TBD (no team yet) but carries
+ * a 'win' — whoever arrives there advances automatically. Nothing real has
+ * happened, so that recorded 'win' must not be treated as a played result
+ * when deciding whether the match can absorb an automatic change.
+ */
+export const isAnticipatedWalkover = (match: StorageMatch): boolean => {
+  const sides = [match.opponent1, match.opponent2];
+  const byeIndex = sides.findIndex((slot) => slot === null);
+  if (byeIndex === -1) return false;
+  const other = sides[1 - byeIndex];
+  if (other == null || other.id != null) return false;
+  return match.status <= 1 && other.result === 'win' && other.score == null;
+};
+
 /** Why a next-round match cannot absorb an advancement change, or null when it can. */
 export function destinationBlockReason(destination: StorageMatch): string | null {
   if (destination.status === 3) return 'is currently being played';

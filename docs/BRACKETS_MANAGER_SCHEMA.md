@@ -123,6 +123,36 @@ same-round only, and only once every slot of both matches is resolved (team or
 stored BYE): the library routes winners-bracket losers dynamically at result
 time and would overwrite a slot whose feeder match hasn't finished.
 
+**Losers-bracket rearrange** (`BracketAdmin/rearrange/`): the whole-bracket
+generalization of the swap. Every slot in an unplayed losers-bracket match is
+either an **origin** slot (a team that dropped in from the winners bracket, a
+team that won a played match, or a stored BYE — the only slots the admin
+assigns) or a **derived** slot (the landing spot of another editable match's
+automatic result — never assigned, recomputed by simulation). A pure
+simulation (`simulate.ts`) applies the desired occupancy of every origin slot,
+then ripples walkovers and BYE propagation forward one round at a time,
+producing a single diff-based update per changed match. Invariants it
+maintains, beyond the swap's slot-as-a-unit rule:
+
+- Landing writes touch ids/results only, never `opponentN_position` — landing
+  slots (minor-round carries, major-round winner spots) are structurally
+  unmarked, and only occupants carry markers.
+- A match written as two stored BYEs (status 0, both sentinels) is a
+  legitimate shape — the library itself creates them in brackets with many
+  first-round BYEs (e.g. 10 teams), and the simulation passes their BYE on to
+  the next round.
+- The library pre-records a walkover `'win'` on a still-empty (TBD) drop-in
+  slot that faces a stored BYE — an **anticipated walkover**. That notation is
+  not a played result: it never blocks a rearrangement, and it is cleared when
+  a rearrangement lands a real team in the facing BYE spot.
+- The last losers-bracket round feeds the grand final, which the tool does not
+  touch: its matches must keep the same outcome spot (locked outright once
+  their outcome is decided).
+- Apply (`apply.ts`) re-plans server-side against a fresh read; a bracket that
+  changed under the screen fails the assignment-coverage check and is refused
+  whole. Writes are sequential in ascending round order; Repair Bracket is the
+  recovery tool, the same stance as the swap.
+
 **Indexes:**
 - `idx_match_stage` on `stage_id`
 - `idx_match_round` on `round_id`

@@ -9,7 +9,13 @@ import type {
   StorageStage,
 } from '../../../types/BracketServiceTypes';
 import type { OpponentSide } from '../shapes';
-import { destinationBlockReason, matchBlockReason, shapeOf, winnerSideOf } from '../shapes';
+import {
+  destinationBlockReason,
+  isAnticipatedWalkover,
+  matchBlockReason,
+  shapeOf,
+  winnerSideOf,
+} from '../shapes';
 import type { BracketAdminDeps } from '../types';
 import type {
   RearrangeBoard,
@@ -353,7 +359,9 @@ function classifyMatches(
         const landingMatch = matchById.get(landing.matchId);
         const landingEditable = editableById.get(landing.matchId) ?? false;
         const blocked =
-          landingMatch && !landingEditable ? destinationBlockReason(landingMatch) : null;
+          landingMatch && !landingEditable && !isAnticipatedWalkover(landingMatch)
+            ? destinationBlockReason(landingMatch)
+            : null;
         if (blocked) {
           const winnerSide = winnerSideOf(match);
           const winnerId = winnerSide ? (match[winnerSide]?.id ?? null) : null;

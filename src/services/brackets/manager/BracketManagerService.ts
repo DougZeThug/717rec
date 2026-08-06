@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { matchUpdateQueue } from './MatchUpdateQueue';
+import type { SlotAssignment } from './services/BracketAdmin/rearrange/types';
 import type { SwapLoserSlotsParams } from './services/BracketAdmin/swap';
 import { BracketAdminService } from './services/BracketAdminService';
 import { BracketCreationService } from './services/BracketCreationService';
@@ -415,6 +416,49 @@ export class BracketManagerService {
    */
   adminSwapLoserBracketSlots(params: SwapLoserSlotsParams) {
     return matchUpdateQueue.enqueue(() => this.adminService.adminSwapLoserBracketSlots(params));
+  }
+
+  /**
+   * Load the "Rearrange Teams" board for a bracket's losers bracket: every
+   * match classified as rearrangeable or locked (with a plain-language
+   * reason), every slot classified as movable team / BYE destination /
+   * automatically-filled, and the snapshot the pure simulation runs against.
+   *
+   * Read-only — the UI calls simulateRearrange on the returned snapshot for
+   * live validation as the admin drags teams around.
+   *
+   * @throws {NotFoundError} If the bracket has no stage
+   * @throws {ValidationError} If the bracket is not double elimination
+   *
+   * @example
+   * const board = await bracketManagerService.getLoserRearrangeBoard('bracket-uuid');
+   */
+  getLoserRearrangeBoard(bracketId: string) {
+    return this.adminService.getLoserRearrangeBoard(bracketId);
+  }
+
+  /**
+   * Admin-only: apply a whole losers-bracket rearrangement in one batch — any
+   * round, BYE spots included. The desired occupancy of every movable spot is
+   * validated and simulated against a fresh read (walkovers recomputed, BYEs
+   * passed on, stale automatic advancements undone), then written match by
+   * match. Refused outright when it would touch a match that has really been
+   * played. Serialized through matchUpdateQueue so it cannot interleave with
+   * score saves.
+   *
+   * @throws {BusinessLogicError} When the arrangement is invalid, the bracket
+   *   changed since the board was loaded, or a played match would be affected
+   *
+   * @example
+   * await bracketManagerService.applyLoserBracketRearrange('bracket-uuid', [
+   *   { matchId: 42, side: 'opponent1', participantId: 7 },
+   *   { matchId: 43, side: 'opponent2', participantId: null }, // leave as BYE
+   * ]);
+   */
+  applyLoserBracketRearrange(bracketId: string, assignments: SlotAssignment[]) {
+    return matchUpdateQueue.enqueue(() =>
+      this.adminService.applyLoserBracketRearrange(bracketId, assignments)
+    );
   }
 }
 
