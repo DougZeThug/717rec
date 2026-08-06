@@ -19,6 +19,7 @@ import type {
 } from '@/services/brackets/manager/services/BracketAdmin/rearrange/types';
 
 import type { Arrangement } from './dropLogic';
+import { dropFromDragEnd } from './dropLogic';
 import type { RearrangeCellModel } from './RearrangeSlotCell';
 import { RearrangeSlotCell } from './RearrangeSlotCell';
 
@@ -94,9 +95,8 @@ export const RearrangeBoard: React.FC<RearrangeBoardProps> = ({
   const handleDragStart = (event: DragStartEvent) => setActiveKey(String(event.active.id));
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveKey(null);
-    if (event.over && event.active.id !== event.over.id) {
-      onDrop(String(event.active.id), String(event.over.id));
-    }
+    const drop = dropFromDragEnd(event);
+    if (drop) onDrop(drop[0], drop[1]);
   };
 
   const activeLabel = activeKey != null ? nameOf(arrangement.get(activeKey) ?? null) : null;

@@ -178,6 +178,17 @@ function tenTeamSnapshot(): RearrangeSnapshot {
         opponent1: tbdSlot(),
         opponent2: teamSlot(D4, { isOrigin: false, isDerived: true }),
       }),
+      // Losers round 4: entirely open.
+      match({
+        id: 601,
+        number: 1,
+        roundNumber: 4,
+        status: 1,
+        editable: false,
+        lockedReason: 'is still waiting on a team from an earlier match',
+        opponent1: tbdSlot(),
+        opponent2: tbdSlot(),
+      }),
     ],
     landings: {
       301: { matchId: 401, side: 'opponent2' },
@@ -188,8 +199,9 @@ function tenTeamSnapshot(): RearrangeSnapshot {
       402: { matchId: 501, side: 'opponent2' },
       403: { matchId: 502, side: 'opponent1' },
       404: { matchId: 502, side: 'opponent2' },
-      501: null,
-      502: null,
+      501: { matchId: 601, side: 'opponent1' },
+      502: { matchId: 601, side: 'opponent2' },
+      601: null,
     },
     names: NAMES,
   };
@@ -356,6 +368,54 @@ describe('simulateRearrange', () => {
     });
     // D2 still ends up in Round 3 Match 1 — no downstream write needed.
     expect(fieldsFor(result, 501)).toBeUndefined();
+  });
+
+  it('marks a waiting match Ready once the cascade fills both of its spots', () => {
+    const snapshot = tenTeamSnapshot();
+    // T9 leaves Round 1 Match 1 to face T10 in Match 3: Match 1 becomes a
+    // double BYE, so D1 walks over and joins D2 — who already advanced — in
+    // Round 3 Match 1, which now has both teams and must be Ready.
+    let assignments = identityAssignments(snapshot);
+    assignments = withAssignment(assignments, 301, 'opponent2', null);
+    assignments = withAssignment(assignments, 303, 'opponent1', T9);
+    const result = simulateRearrange(snapshot, assignments);
+
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(fieldsFor(result, 501)).toEqual({ opponent1_id: D1, status: 2 });
+    expect(result.consequences).toEqual(
+      expect.arrayContaining(['Round 3 Match 1 is now D1 vs D2, ready to play.'])
+    );
+  });
+
+  it('completes a walkover created inside a waiting match and advances its winner', () => {
+    const snapshot = tenTeamSnapshot();
+    // Both feeders of Round 3 Match 1 end up producing BYEs on one side while
+    // D2 stays on the other: the waiting match becomes D2's walkover, and D2
+    // advances a further round — two cascades beyond anything the admin
+    // touched directly.
+    let assignments = identityAssignments(snapshot);
+    assignments = withAssignment(assignments, 301, 'opponent2', null);
+    assignments = withAssignment(assignments, 401, 'opponent1', null);
+    assignments = withAssignment(assignments, 303, 'opponent1', D1);
+    assignments = withAssignment(assignments, 304, 'opponent1', T9);
+    const result = simulateRearrange(snapshot, assignments);
+
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(fieldsFor(result, 501)).toEqual({
+      opponent1_result: 'bye',
+      opponent2_result: 'win',
+      opponent2_score: 0,
+      status: 4,
+    });
+    expect(fieldsFor(result, 601)).toEqual({ opponent1_id: D2 });
+    expect(result.consequences).toEqual(
+      expect.arrayContaining([
+        'D2 has no opponent in Round 3 Match 1 and advances automatically.',
+        'D2 advances automatically into Round 4 Match 1.',
+      ])
+    );
   });
 
   it('refuses to place the same team in two spots', () => {

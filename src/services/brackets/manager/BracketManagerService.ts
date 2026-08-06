@@ -446,6 +446,12 @@ export class BracketManagerService {
    * played. Serialized through matchUpdateQueue so it cannot interleave with
    * score saves.
    *
+   * Pass the occupancy the screen was LOADED with as expectedBaseline: it is
+   * the optimistic-concurrency token, and the save is refused if another
+   * admin rearranged the bracket in the meantime — even a permutation that
+   * keeps the same movable spots and teams. Omitting it skips that check
+   * (last write wins).
+   *
    * @throws {BusinessLogicError} When the arrangement is invalid, the bracket
    *   changed since the board was loaded, or a played match would be affected
    *
@@ -453,11 +459,15 @@ export class BracketManagerService {
    * await bracketManagerService.applyLoserBracketRearrange('bracket-uuid', [
    *   { matchId: 42, side: 'opponent1', participantId: 7 },
    *   { matchId: 43, side: 'opponent2', participantId: null }, // leave as BYE
-   * ]);
+   * ], boardBaseline);
    */
-  applyLoserBracketRearrange(bracketId: string, assignments: SlotAssignment[]) {
+  applyLoserBracketRearrange(
+    bracketId: string,
+    assignments: SlotAssignment[],
+    expectedBaseline?: SlotAssignment[]
+  ) {
     return matchUpdateQueue.enqueue(() =>
-      this.adminService.applyLoserBracketRearrange(bracketId, assignments)
+      this.adminService.applyLoserBracketRearrange(bracketId, assignments, expectedBaseline)
     );
   }
 }

@@ -1,3 +1,5 @@
+import type { DragEndEvent } from '@dnd-kit/core';
+
 import type {
   RearrangeBoard,
   SlotAssignment,
@@ -46,6 +48,16 @@ export function applyDrop(
   return next;
 }
 
+/**
+ * Map a dnd-kit drag-end event to the [source, target] slot keys of a drop,
+ * or null when the gesture landed nowhere new. Kept out of the component so
+ * the wiring between dnd-kit and applyDrop is unit-testable.
+ */
+export const dropFromDragEnd = (event: DragEndEvent): [string, string] | null =>
+  event.over && event.active.id !== event.over.id
+    ? [String(event.active.id), String(event.over.id)]
+    : null;
+
 /** The arrangement in the shape the service expects. */
 export function toAssignments(arrangement: Arrangement): SlotAssignment[] {
   return [...arrangement.entries()].map(([key, participantId]) => {
@@ -58,10 +70,16 @@ export function toAssignments(arrangement: Arrangement): SlotAssignment[] {
   });
 }
 
-/** True when any spot differs from the board's current state. */
+/**
+ * True when any spot differs from the board's current state. The key sets can
+ * diverge if the board refetches while drags are held (a spot appearing or
+ * disappearing) — that counts as dirty, so the simulation's stale-board
+ * problem surfaces instead of the screen silently looking clean.
+ */
 export function isDirty(baseline: Arrangement, arrangement: Arrangement): boolean {
+  if (baseline.size !== arrangement.size) return true;
   for (const [key, value] of arrangement) {
-    if (baseline.get(key) !== value) return true;
+    if (!baseline.has(key) || baseline.get(key) !== value) return true;
   }
   return false;
 }

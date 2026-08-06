@@ -93,6 +93,16 @@ describe('rearrange drop logic', () => {
     expect(isDirty(baseline, baseline)).toBe(false);
   });
 
+  it('treats a changed key set as dirty, so a stale board is surfaced', () => {
+    const baseline = baselineArrangement(boardStub);
+    // The board refetched and gained a movable spot the held arrangement
+    // doesn't know about — occupants alone look identical.
+    const grown = new Map(baseline);
+    grown.set('999:opponent1', null);
+    expect(isDirty(grown, baseline)).toBe(true);
+    expect(isDirty(baseline, grown)).toBe(true);
+  });
+
   it('serializes the arrangement into service assignments', () => {
     const baseline = baselineArrangement(boardStub);
     expect(toAssignments(baseline)).toEqual([

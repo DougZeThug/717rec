@@ -19,6 +19,16 @@ export const useLoserRearrangeBoard = (bracketId: string | null, enabled: boolea
     enabled: enabled && bracketId !== null,
   });
 
+export interface ApplyRearrangeInput {
+  /** The desired occupancy of every movable spot. */
+  assignments: SlotAssignment[];
+  /**
+   * The occupancy the screen was loaded with — the optimistic-concurrency
+   * token. The save is refused if the bracket no longer matches it.
+   */
+  baseline: SlotAssignment[];
+}
+
 /**
  * Admin mutation hook: apply a whole losers-bracket rearrangement in one
  * batch. Many matches can change (walkovers recomputed, automatic
@@ -30,17 +40,24 @@ export const usePlayoffApplyRearrange = (bracketId: string | null) => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (assignments: SlotAssignment[]) => {
+    mutationFn: ({ assignments, baseline }: ApplyRearrangeInput) => {
       bracketLog('usePlayoffApplyRearrange - calling service', {
         bracketId,
         assignments: assignments.length,
       });
-      return bracketManagerService.applyLoserBracketRearrange(bracketId as string, assignments);
+      return bracketManagerService.applyLoserBracketRearrange(
+        bracketId as string,
+        assignments,
+        baseline
+      );
     },
     onSuccess: async (result) => {
       await invalidateMatchRelatedQueries(queryClient);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        // A rearrangement can complete a bracket, and the overview list
+        // filters by completed state — its key doesn't start with 'brackets'.
+        queryClient.invalidateQueries({ queryKey: ['playoffs-brackets-overview'] }),
         queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
         queryClient.invalidateQueries({ queryKey: ['brackets-manager-match'] }),
         queryClient.invalidateQueries({ queryKey: ['loser-swap-eligibility'] }),

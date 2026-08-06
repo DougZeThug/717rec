@@ -74,6 +74,12 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
   const { repair, isRepairing } = useRepairBracket(bracketId);
 
+  // Rearranging needs a losers bracket managed by brackets-manager; the
+  // format field is a display string ("Double Elimination"), so match loosely.
+  const canRearrange =
+    bracket?.uses_brackets_manager === true &&
+    (bracket?.format ?? '').toLowerCase().includes('double');
+
   // Early return if bracket is not loaded
   if (!bracket) {
     return (
@@ -166,15 +172,17 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                 </Button>
               )}
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden md:flex"
-                onClick={() => setRearrangeDialogOpen(true)}
-                disabled={bracket.state === 'completed'}
-              >
-                <Shuffle className="size-4 mr-2" /> Rearrange Teams
-              </Button>
+              {canRearrange && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden md:flex"
+                  onClick={() => setRearrangeDialogOpen(true)}
+                  disabled={bracket.state === 'completed'}
+                >
+                  <Shuffle className="size-4 mr-2" /> Rearrange Teams
+                </Button>
+              )}
 
               <Button
                 variant="outline"

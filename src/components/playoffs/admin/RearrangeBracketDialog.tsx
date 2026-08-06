@@ -76,7 +76,10 @@ const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
     setOverride(applyDrop(arrangement, sourceKey, targetKey));
 
   const handleSave = () =>
-    mutation.mutate(toAssignments(arrangement), { onSuccess: () => onOpenChange(false) });
+    mutation.mutate(
+      { assignments: toAssignments(arrangement), baseline: toAssignments(baseline ?? arrangement) },
+      { onSuccess: () => onOpenChange(false) }
+    );
 
   if (step === 'confirm') {
     return (

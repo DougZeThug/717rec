@@ -24,7 +24,7 @@ export interface SlotAssignment extends SlotRef {
  * - 'derived' — filled automatically by another editable match; read-only
  * - 'locked'  — belongs to a match that cannot be rearranged
  */
-export type RearrangeSlotKind = 'team' | 'bye' | 'derived' | 'locked';
+type RearrangeSlotKind = 'team' | 'bye' | 'derived' | 'locked';
 
 export interface RearrangeSlotView {
   matchId: number;

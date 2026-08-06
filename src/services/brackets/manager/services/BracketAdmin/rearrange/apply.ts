@@ -7,7 +7,8 @@ import { markBracketCompleteIfDone } from '../../BracketUpdate/completion';
 import type { BracketAdminDeps } from '../types';
 import { loadRearrangeBoard } from './board';
 import { simulateRearrange } from './simulate';
-import type { RearrangeApplyResult, SlotAssignment } from './types';
+import type { RearrangeApplyResult, RearrangeSnapshot, SlotAssignment } from './types';
+import { slotKeyOf } from './types';
 
 /**
  * Admin-only: apply a whole losers-bracket rearrangement in one batch.
@@ -26,7 +27,8 @@ import type { RearrangeApplyResult, SlotAssignment } from './types';
 export async function applyLoserBracketRearrange(
   deps: BracketAdminDeps,
   bracketId: string,
-  assignments: SlotAssignment[]
+  assignments: SlotAssignment[],
+  expectedBaseline?: SlotAssignment[]
 ): Promise<RearrangeApplyResult> {
   bracketLog('Admin losers-bracket rearrange requested', {
     bracketId,
@@ -34,6 +36,7 @@ export async function applyLoserBracketRearrange(
   });
 
   const board = await loadRearrangeBoard(deps, bracketId);
+  if (expectedBaseline) assertBaselineUnchanged(board.snapshot, expectedBaseline);
   const plan = simulateRearrange(board.snapshot, assignments);
   if (!plan.ok) {
     throw new BusinessLogicError(plan.problems.map((problem) => problem.message).join(' '));
@@ -54,4 +57,37 @@ export async function applyLoserBracketRearrange(
     'Nothing changed — teams were already there.';
   successLog(`Admin rearranged losers bracket for ${bracketId}`, message);
   return { changedMatchIds, message };
+}
+
+/**
+ * Optimistic concurrency: the screen sends the occupancy it was LOADED with,
+ * and it must still match the fresh read. A concurrent rearrangement by
+ * another admin can permute teams while leaving the movable-spot keys and the
+ * team roster identical — invisible to the assignment-coverage check — so the
+ * occupancy itself is the version token. Any difference refuses the save
+ * instead of silently overwriting the newer arrangement.
+ */
+function assertBaselineUnchanged(
+  snapshot: RearrangeSnapshot,
+  expectedBaseline: SlotAssignment[]
+): void {
+  const fresh = new Map<string, number | null>();
+  for (const match of snapshot.matches) {
+    for (const side of ['opponent1', 'opponent2'] as const) {
+      if (match[side].isOrigin) {
+        fresh.set(slotKeyOf({ matchId: match.id, side }), match[side].participantId);
+      }
+    }
+  }
+  const changed =
+    expectedBaseline.length !== fresh.size ||
+    expectedBaseline.some((slot) => {
+      const key = slotKeyOf(slot);
+      return !fresh.has(key) || fresh.get(key) !== slot.participantId;
+    });
+  if (changed) {
+    throw new BusinessLogicError(
+      'The bracket changed since this screen was opened. Close it and reopen to continue.'
+    );
+  }
 }

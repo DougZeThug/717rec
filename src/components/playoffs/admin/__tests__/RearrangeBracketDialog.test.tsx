@@ -20,6 +20,7 @@ import {
 } from '@/hooks/playoffs/usePlayoffRearrange';
 
 import type { Arrangement } from '../rearrange/dropLogic';
+import { dropFromDragEnd } from '../rearrange/dropLogic';
 import RearrangeBracketDialog from '../RearrangeBracketDialog';
 
 const T9 = 9;
@@ -301,14 +302,18 @@ describe('RearrangeBracketDialog', () => {
       screen.getByText('T9 has no opponent in Round 1 Match 2 and advances automatically.')
     ).toBeInTheDocument();
 
-    mutateMock.mockImplementation((_assignments, options) => options?.onSuccess?.());
+    mutateMock.mockImplementation((_input, options) => options?.onSuccess?.());
     await user.click(screen.getByRole('button', { name: 'Save arrangement' }));
 
     expect(mutateMock).toHaveBeenCalledTimes(1);
-    const assignments = mutateMock.mock.calls[0][0];
+    const { assignments, baseline } = mutateMock.mock.calls[0][0];
     expect(assignments).toContainEqual({ matchId: 302, side: 'opponent2', participantId: T9 });
     expect(assignments).toContainEqual({ matchId: 301, side: 'opponent2', participantId: null });
     expect(assignments).toHaveLength(6);
+    // The concurrency token: the occupancy the screen was loaded with.
+    expect(baseline).toContainEqual({ matchId: 301, side: 'opponent2', participantId: T9 });
+    expect(baseline).toContainEqual({ matchId: 302, side: 'opponent2', participantId: null });
+    expect(baseline).toHaveLength(6);
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -346,5 +351,28 @@ describe('RearrangeBracketDialog', () => {
     expect(
       screen.getByText('Teams can only be rearranged in a double-elimination bracket.')
     ).toBeInTheDocument();
+  });
+
+  it('wires each spot to its drag/drop id, and drag-end maps onto a drop', () => {
+    wireBoard(fixtureBoard());
+    renderDialog();
+
+    // The cells carry the slot keys the drop handler trades occupants by.
+    expect(screen.getByTestId('slot-301:opponent2')).toContainElement(
+      screen.getByRole('button', { name: 'Move T9' })
+    );
+    expect(screen.getByTestId('slot-302:opponent1')).toHaveTextContent('BYE — drop a team here');
+
+    // The dnd-kit event → drop mapping used by the board.
+    const over = (id: string | null) => (id === null ? null : { id });
+    expect(
+      dropFromDragEnd({ active: { id: '301:opponent2' }, over: over('302:opponent1') } as never)
+    ).toEqual(['301:opponent2', '302:opponent1']);
+    expect(
+      dropFromDragEnd({ active: { id: '301:opponent2' }, over: over('301:opponent2') } as never)
+    ).toBeNull();
+    expect(
+      dropFromDragEnd({ active: { id: '301:opponent2' }, over: over(null) } as never)
+    ).toBeNull();
   });
 });

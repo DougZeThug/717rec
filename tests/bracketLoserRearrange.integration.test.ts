@@ -213,11 +213,12 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     expect(placeholderView?.locked).toBe(false);
     expect(placeholderView?.slots.map((slot) => slot.kind)).toEqual(['bye', 'bye']);
 
-    // Move T9 into the placeholder.
-    let assignments = assignmentsFromBoard(board);
-    assignments = setSlot(assignments, lbR1M1.id, 'opponent2', null);
+    // Move T9 into the placeholder, sending the loaded occupancy as the
+    // concurrency token — the normal path the screen uses.
+    const baseline = assignmentsFromBoard(board);
+    let assignments = setSlot(baseline, lbR1M1.id, 'opponent2', null);
     assignments = setSlot(assignments, lbR1M2.id, 'opponent2', t9);
-    const result = await service.applyLoserBracketRearrange(BRACKET_ID, assignments);
+    const result = await service.applyLoserBracketRearrange(BRACKET_ID, assignments, baseline);
     expect(result.message).toContain('T9 moves from Round 1 Match 1 to Round 1 Match 2.');
 
     // Old match: double BYE. New match: T9's walkover, marker along for the ride.
@@ -476,5 +477,43 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     await expect(service.applyLoserBracketRearrange(BRACKET_ID, staleAssignments)).rejects.toThrow(
       /bracket changed since this screen was opened/
     );
+  });
+
+  it('refuses a save whose loaded occupancy was overtaken by a concurrent rearrangement', async () => {
+    const service = new BracketManagerService();
+    db().seed('brackets', [{ id: BRACKET_ID, state: 'pending', uses_brackets_manager: true }]);
+    await service.createBracket({
+      bracketId: BRACKET_ID,
+      format: 'double_elimination',
+      teams: teams(9),
+      grandFinalType: 'simple',
+    });
+    await playWinnersBracketThroughRound(service, 2);
+
+    const t5 = participantIdByName('T5');
+    const t7 = participantIdByName('T7');
+    const lbR2M1 = matchBy(2, 2, 1);
+    const lbR2M4 = matchBy(2, 2, 4);
+
+    // Admin A loads the screen.
+    const boardA = await service.getLoserRearrangeBoard(BRACKET_ID);
+    const baselineA = assignmentsFromBoard(boardA);
+
+    // Admin B rearranges first: swap T5 and T7. Same movable spots, same
+    // teams — invisible to every shape/eligibility check.
+    const boardB = await service.getLoserRearrangeBoard(BRACKET_ID);
+    let swapByB = assignmentsFromBoard(boardB);
+    swapByB = setSlot(swapByB, lbR2M1.id, 'opponent1', t7);
+    swapByB = setSlot(swapByB, lbR2M4.id, 'opponent1', t5);
+    await service.applyLoserBracketRearrange(BRACKET_ID, swapByB, assignmentsFromBoard(boardB));
+
+    // Admin A now saves the arrangement as they saw it. With the loaded
+    // occupancy sent along, the save is refused instead of silently undoing
+    // B's change.
+    const before = matchRows();
+    await expect(
+      service.applyLoserBracketRearrange(BRACKET_ID, baselineA, baselineA)
+    ).rejects.toThrow(/bracket changed since this screen was opened/);
+    expect(matchRows()).toEqual(before);
   });
 });

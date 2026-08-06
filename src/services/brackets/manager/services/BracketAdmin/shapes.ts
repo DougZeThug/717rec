@@ -85,7 +85,7 @@ export const winnerSideOf = (match: StorageMatch): OpponentSide | null =>
  * admin tools write Completed (4). Both count — nobody actually played, so a
  * swap may still rearrange them (after undoing the automatic advancement).
  */
-export const isUnplayedWalkover = (match: StorageMatch): boolean => {
+const isUnplayedWalkover = (match: StorageMatch): boolean => {
   const shape1 = shapeOf(match.opponent1);
   const shape2 = shapeOf(match.opponent2);
   const oneTeamOneBye =

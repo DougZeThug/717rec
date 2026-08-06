@@ -52,7 +52,16 @@ export class BracketAdminService {
     return loadRearrangeBoard({ storage: this.storage }, bracketId);
   }
 
-  applyLoserBracketRearrange(bracketId: string, assignments: SlotAssignment[]) {
-    return applyLoserBracketRearrange({ storage: this.storage }, bracketId, assignments);
+  applyLoserBracketRearrange(
+    bracketId: string,
+    assignments: SlotAssignment[],
+    expectedBaseline?: SlotAssignment[]
+  ) {
+    return applyLoserBracketRearrange(
+      { storage: this.storage },
+      bracketId,
+      assignments,
+      expectedBaseline
+    );
   }
 }
