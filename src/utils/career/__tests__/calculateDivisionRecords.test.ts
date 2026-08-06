@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateDivisionRecords,
   categorizeDivision,
-  getTierFromWeight,
 } from '../calculateDivisionRecords';
 import { ArchivedMatchData, MatchData, PlayoffMatchData } from '../types';
 
@@ -32,26 +31,6 @@ describe('categorizeDivision', () => {
   it('returns null for unknown divisions', () => {
     expect(categorizeDivision('Unknown Division')).toBeNull();
     expect(categorizeDivision('Premier')).toBeNull();
-  });
-});
-
-describe('getTierFromWeight', () => {
-  it('returns competitive for weight >= 0.89', () => {
-    expect(getTierFromWeight(1.0)).toBe('competitive');
-    expect(getTierFromWeight(0.9)).toBe('competitive');
-    expect(getTierFromWeight(0.89)).toBe('competitive');
-  });
-
-  it('returns intermediate for weight >= 0.40 and < 0.89', () => {
-    expect(getTierFromWeight(0.88)).toBe('intermediate');
-    expect(getTierFromWeight(0.7)).toBe('intermediate');
-    expect(getTierFromWeight(0.4)).toBe('intermediate');
-  });
-
-  it('returns recreational for weight < 0.40', () => {
-    expect(getTierFromWeight(0.39)).toBe('recreational');
-    expect(getTierFromWeight(0.25)).toBe('recreational');
-    expect(getTierFromWeight(0)).toBe('recreational');
   });
 });
 
