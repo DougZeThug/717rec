@@ -17,6 +17,13 @@ export const useLoserRearrangeBoard = (bracketId: string | null, enabled: boolea
     queryKey: ['loser-rearrange-board', bracketId],
     queryFn: () => bracketManagerService.getLoserRearrangeBoard(bracketId as string),
     enabled: enabled && bracketId !== null,
+    // The screen edits against this board as a stable working copy: a
+    // background refetch mid-drag would swap the board (and the concurrency
+    // token derived from it) underneath the admin. Never refetch while the
+    // screen is open; never serve a cached board on reopen.
+    staleTime: Infinity,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
   });
 
 export interface ApplyRearrangeInput {

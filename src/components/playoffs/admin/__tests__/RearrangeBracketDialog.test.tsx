@@ -227,27 +227,42 @@ function wireBoard(board: RearrangeBoard | null, error: Error | null = null): vo
   } as unknown as ReturnType<typeof useLoserRearrangeBoard>);
 }
 
-function renderDialog(initialArrangement?: Arrangement): void {
+function renderDialog(initialWorking?: { arrangement: Arrangement; baseline: Arrangement }): void {
   render(
     <RearrangeBracketDialog
       open
       onOpenChange={onOpenChange}
       bracketId="bracket-uuid-1"
-      initialArrangement={initialArrangement}
+      initialWorking={initialWorking}
     />
   );
 }
 
-/** The fixture's baseline with T9 dragged from Match 1 into the placeholder. */
-function arrangementWithT9Moved(): Arrangement {
+/** The fixture board's own occupancy of the movable spots. */
+function fixtureBaseline(): Arrangement {
   return new Map<string, number | null>([
     ['301:opponent1', null],
-    ['301:opponent2', null],
+    ['301:opponent2', T9],
     ['302:opponent1', null],
-    ['302:opponent2', T9],
+    ['302:opponent2', null],
     ['401:opponent1', D1],
     ['402:opponent1', D2],
   ]);
+}
+
+/** The edit state after dragging T9 from Match 1 into the placeholder. */
+function workingWithT9Moved(): { arrangement: Arrangement; baseline: Arrangement } {
+  return {
+    arrangement: new Map<string, number | null>([
+      ['301:opponent1', null],
+      ['301:opponent2', null],
+      ['302:opponent1', null],
+      ['302:opponent2', T9],
+      ['401:opponent1', D1],
+      ['402:opponent1', D2],
+    ]),
+    baseline: fixtureBaseline(),
+  };
 }
 
 beforeAll(() => {
@@ -286,7 +301,7 @@ describe('RearrangeBracketDialog', () => {
 
   it('walks through review and saves the whole arrangement in one call', async () => {
     wireBoard(fixtureBoard());
-    renderDialog(arrangementWithT9Moved());
+    renderDialog(workingWithT9Moved());
     const user = userEvent.setup();
 
     // The live panel narrates the automatic knock-on changes.
@@ -317,11 +332,34 @@ describe('RearrangeBracketDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it('sends the baseline captured at edit time, not one recomputed at save time', async () => {
+    wireBoard(fixtureBoard());
+    // The edit was started against an older board state: its captured
+    // baseline differs from the current board's occupancy (D1 and D2 were
+    // since swapped by someone else). The save must send the CAPTURED
+    // occupancy so the server can refuse it — a baseline recomputed from the
+    // fresh board would always match and let the stale edit through.
+    const working = workingWithT9Moved();
+    working.baseline.set('401:opponent1', D2);
+    working.baseline.set('402:opponent1', D1);
+    working.arrangement.set('401:opponent1', D2);
+    working.arrangement.set('402:opponent1', D1);
+    renderDialog(working);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: /review changes/i }));
+    await user.click(screen.getByRole('button', { name: 'Save arrangement' }));
+
+    const { baseline } = mutateMock.mock.calls[0][0];
+    expect(baseline).toContainEqual({ matchId: 401, side: 'opponent1', participantId: D2 });
+    expect(baseline).toContainEqual({ matchId: 402, side: 'opponent1', participantId: D1 });
+  });
+
   it('flags problems live and blocks review for an invalid arrangement', () => {
     wireBoard(fixtureBoard());
     // T9 placed twice: still in Match 1 AND dropped into the placeholder.
-    const duplicated = arrangementWithT9Moved();
-    duplicated.set('301:opponent2', T9);
+    const duplicated = workingWithT9Moved();
+    duplicated.arrangement.set('301:opponent2', T9);
     renderDialog(duplicated);
 
     expect(

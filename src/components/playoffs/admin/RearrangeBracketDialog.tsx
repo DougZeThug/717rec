@@ -21,26 +21,38 @@ import type { Arrangement } from './rearrange/dropLogic';
 import { applyDrop, baselineArrangement, isDirty, toAssignments } from './rearrange/dropLogic';
 import { RearrangeBoard } from './rearrange/RearrangeBoard';
 
+/**
+ * The in-progress edit: the arrangement being built, together with the
+ * baseline it started from. The baseline is captured at the FIRST drag and
+ * never recomputed — it is the optimistic-concurrency token the save sends,
+ * so it must describe the board the admin actually edited, even if the board
+ * query were to refresh underneath the open screen.
+ */
+interface WorkingState {
+  arrangement: Arrangement;
+  baseline: Arrangement;
+}
+
 interface RearrangeBracketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bracketId: string | null;
-  /** @internal Test seam: start from a pre-dragged arrangement. */
-  initialArrangement?: Arrangement;
+  /** @internal Test seam: start from a pre-dragged edit. */
+  initialWorking?: WorkingState;
 }
 
 const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
   onOpenChange,
   bracketId,
-  initialArrangement,
+  initialWorking,
 }) => {
   const { data: board, isLoading, error } = useLoserRearrangeBoard(bracketId, true);
   const mutation = usePlayoffApplyRearrange(bracketId);
   const [step, setStep] = useState<'board' | 'confirm'>('board');
-  const [override, setOverride] = useState<Arrangement | null>(initialArrangement ?? null);
+  const [working, setWorking] = useState<WorkingState | null>(initialWorking ?? null);
 
   const baseline = useMemo(() => (board ? baselineArrangement(board) : null), [board]);
-  const arrangement = override ?? baseline;
+  const arrangement = working?.arrangement ?? baseline;
   // The same pure simulation the server runs at save time, re-run on every
   // drag — the preview and the eventual save can never disagree.
   const plan = useMemo(
@@ -73,11 +85,17 @@ const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
   }
 
   const handleDrop = (sourceKey: string, targetKey: string) =>
-    setOverride(applyDrop(arrangement, sourceKey, targetKey));
+    setWorking({
+      arrangement: applyDrop(arrangement, sourceKey, targetKey),
+      baseline: working?.baseline ?? baseline,
+    });
 
   const handleSave = () =>
     mutation.mutate(
-      { assignments: toAssignments(arrangement), baseline: toAssignments(baseline ?? arrangement) },
+      {
+        assignments: toAssignments(arrangement),
+        baseline: toAssignments(working?.baseline ?? baseline),
+      },
       { onSuccess: () => onOpenChange(false) }
     );
 
@@ -160,7 +178,7 @@ const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
         )}
       </div>
       <DialogFooter className="gap-2">
-        <Button variant="ghost" onClick={() => setOverride(null)} disabled={!dirty}>
+        <Button variant="ghost" onClick={() => setWorking(null)} disabled={!dirty}>
           Reset
         </Button>
         <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -185,7 +203,7 @@ const RearrangeBracketDialog: React.FC<RearrangeBracketDialogProps> = ({
   open,
   onOpenChange,
   bracketId,
-  initialArrangement,
+  initialWorking,
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="flex max-h-[85vh] flex-col overflow-y-auto sm:max-w-5xl">
@@ -205,7 +223,7 @@ const RearrangeBracketDialog: React.FC<RearrangeBracketDialogProps> = ({
         key={bracketId ?? 'none'}
         bracketId={bracketId}
         onOpenChange={onOpenChange}
-        initialArrangement={initialArrangement}
+        initialWorking={initialWorking}
       />
     </DialogContent>
   </Dialog>
