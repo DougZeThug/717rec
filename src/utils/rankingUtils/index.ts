@@ -10,8 +10,6 @@ export * from '@/utils/teamDetailsUtils/gameStatsUtils';
 
 // Export functions from the main rankingUtils file to avoid circular dependencies
 export {
-  loadRankingsFromStorage,
-  saveRankingsToStorage,
   sortRankings,
   updateRankChanges,
 } from '../rankingUtils';

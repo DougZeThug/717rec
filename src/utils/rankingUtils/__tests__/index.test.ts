@@ -1,23 +1,9 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import type { Ranking } from '@/types';
 
-vi.mock('@/services/rankings/RankingPersistenceService', () => ({
-  saveRankingsToDatabase: vi.fn(),
-  loadRankingsFromDatabase: vi.fn(),
-  migrateLocalStorageToDatabase: vi.fn(),
-}));
-
-import {
-  loadRankingsFromDatabase,
-  migrateLocalStorageToDatabase,
-  saveRankingsToDatabase,
-} from '@/services/rankings/RankingPersistenceService';
-
 // Import through the barrel so index.ts re-exports are exercised too.
 import {
-  loadRankingsFromStorage,
-  saveRankingsToStorage,
   sortRankings,
   updateRankChanges,
 } from '../index';
@@ -253,134 +239,5 @@ describe('updateRankChanges', () => {
     // render "-" instead of a literal "0" a new team never earned.
     const result = updateRankChanges([ranking({ teamId: 'new-team' })]);
     expect(result[0].rankChange).toBeUndefined();
-  });
-});
-
-describe('saveRankingsToStorage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    localStorage.clear();
-  });
-
-  const twoRankings = [ranking({ teamId: 't1' }), ranking({ teamId: 't2' })];
-
-  it('persists to database and localStorage by default', async () => {
-    vi.mocked(saveRankingsToDatabase).mockResolvedValue(undefined as never);
-
-    await saveRankingsToStorage(twoRankings, 'season-1');
-
-    expect(saveRankingsToDatabase).toHaveBeenCalledWith(twoRankings, 'season-1');
-    expect(JSON.parse(localStorage.getItem('previousRankings') ?? '{}')).toEqual({
-      t1: 1,
-      t2: 2,
-    });
-    expect(localStorage.getItem('rankingsLastUpdated')).toBeTruthy();
-  });
-
-  it('skips the database when persistToDatabase is false but still saves locally', async () => {
-    await saveRankingsToStorage(twoRankings, 'season-1', { persistToDatabase: false });
-
-    expect(saveRankingsToDatabase).not.toHaveBeenCalled();
-    expect(JSON.parse(localStorage.getItem('previousRankings') ?? '{}')).toEqual({
-      t1: 1,
-      t2: 2,
-    });
-  });
-
-  it('still saves to localStorage when the database save fails', async () => {
-    vi.mocked(saveRankingsToDatabase).mockRejectedValue(new Error('db down'));
-
-    await expect(saveRankingsToStorage(twoRankings, 'season-1')).resolves.toBeUndefined();
-
-    expect(JSON.parse(localStorage.getItem('previousRankings') ?? '{}')).toEqual({
-      t1: 1,
-      t2: 2,
-    });
-  });
-
-  it('swallows localStorage failures instead of throwing', async () => {
-    vi.mocked(saveRankingsToDatabase).mockResolvedValue(undefined as never);
-    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('quota exceeded');
-    });
-
-    try {
-      await expect(saveRankingsToStorage(twoRankings)).resolves.toBeUndefined();
-    } finally {
-      setItemSpy.mockRestore();
-    }
-  });
-});
-
-describe('loadRankingsFromStorage', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    localStorage.clear();
-  });
-
-  it('returns database rankings when available', async () => {
-    vi.mocked(loadRankingsFromDatabase).mockResolvedValue({ t1: 1, t2: 2 });
-
-    const result = await loadRankingsFromStorage('season-1');
-
-    expect(loadRankingsFromDatabase).toHaveBeenCalledWith('season-1');
-    expect(result.rankings).toEqual({ t1: 1, t2: 2 });
-    expect(result.lastUpdated).toBeTruthy();
-    expect(migrateLocalStorageToDatabase).not.toHaveBeenCalled();
-  });
-
-  it('migrates localStorage data when the database is empty', async () => {
-    localStorage.setItem('previousRankings', JSON.stringify({ t1: 1 }));
-    vi.mocked(loadRankingsFromDatabase)
-      .mockResolvedValueOnce({}) // first check: DB empty
-      .mockResolvedValueOnce({ t1: 1 }); // after migration
-    vi.mocked(migrateLocalStorageToDatabase).mockResolvedValue(undefined as never);
-
-    const result = await loadRankingsFromStorage();
-
-    expect(migrateLocalStorageToDatabase).toHaveBeenCalledTimes(1);
-    expect(result.rankings).toEqual({ t1: 1 });
-  });
-
-  it('falls back to localStorage when migration yields nothing', async () => {
-    localStorage.setItem('previousRankings', JSON.stringify({ t9: 9 }));
-    localStorage.setItem('rankingsLastUpdated', '2026-01-01T00:00:00.000Z');
-    vi.mocked(loadRankingsFromDatabase).mockResolvedValue({});
-    vi.mocked(migrateLocalStorageToDatabase).mockResolvedValue(undefined as never);
-
-    const result = await loadRankingsFromStorage();
-
-    expect(result.rankings).toEqual({ t9: 9 });
-    expect(result.lastUpdated).toBe('2026-01-01T00:00:00.000Z');
-  });
-
-  it('returns empty rankings when database and localStorage are both empty', async () => {
-    vi.mocked(loadRankingsFromDatabase).mockResolvedValue({});
-
-    const result = await loadRankingsFromStorage();
-
-    expect(result.rankings).toEqual({});
-    expect(result.lastUpdated).toBeNull();
-    expect(migrateLocalStorageToDatabase).not.toHaveBeenCalled();
-  });
-
-  it('falls back to localStorage when the database load throws', async () => {
-    localStorage.setItem('previousRankings', JSON.stringify({ t5: 5 }));
-    localStorage.setItem('rankingsLastUpdated', '2026-02-02T00:00:00.000Z');
-    vi.mocked(loadRankingsFromDatabase).mockRejectedValue(new Error('db offline'));
-
-    const result = await loadRankingsFromStorage();
-
-    expect(result.rankings).toEqual({ t5: 5 });
-    expect(result.lastUpdated).toBe('2026-02-02T00:00:00.000Z');
-  });
-
-  it('returns a safe empty result when even localStorage is corrupted', async () => {
-    localStorage.setItem('previousRankings', 'not-valid-json{');
-    vi.mocked(loadRankingsFromDatabase).mockRejectedValue(new Error('db offline'));
-
-    const result = await loadRankingsFromStorage();
-
-    expect(result).toEqual({ rankings: {}, lastUpdated: null });
   });
 });
