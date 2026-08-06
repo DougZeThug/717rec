@@ -84,7 +84,7 @@ exports[`Help sections > matches snapshot for quick links section 1`] = `
               rx="2"
               width="18"
               x="3"
-                y="3"
+              y="3"
             />
             <path
               d="M3 9h18"

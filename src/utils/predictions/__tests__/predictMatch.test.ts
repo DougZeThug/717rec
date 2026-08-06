@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { TeamStats } from '../predictMatch';
-import {
-  formatBreakdown,
-  isUpset,
-  predictMatch,
-  UPSET_THRESHOLD,
-} from '../predictMatch';
+import { formatBreakdown, isUpset, predictMatch, UPSET_THRESHOLD } from '../predictMatch';
 
 // Helper to create team stats
 const createTeamStats = (
