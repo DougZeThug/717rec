@@ -137,11 +137,13 @@ export class BracketManagerService {
    * The library's own state machine performs the score write, winner/loser
    * propagation, BYE resolution, and archival. Updates are serialized via
    * matchUpdateQueue; errors are thrown loudly (no automatic repair — see
-   * repairBracket for the explicit admin action). Archived matches are
-   * temporarily unlocked so admins can correct earlier scores; with a double
-   * grand final, the unneeded reset match is archived when the first
-   * grand-final match is decisive. Bracket completion is re-evaluated after
-   * every update.
+   * repairBracket for the explicit admin action). A same-winner correction on
+   * an Archived or Completed match is written directly to the score/result
+   * columns (the match is not re-propagated); a winner flip still goes through
+   * the library, temporarily unlocking Archived to Completed first, and is
+   * refused when later rounds have already been played. With a double grand
+   * final, the unneeded reset match is archived when the first grand-final
+   * match is decisive. Bracket completion is re-evaluated after every update.
    *
    * @param options - Match update options
    * @param options.matchId - Match ID in the brackets-manager database
