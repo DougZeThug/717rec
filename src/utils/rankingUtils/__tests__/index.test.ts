@@ -3,10 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Ranking } from '@/types';
 
 // Import through the barrel so index.ts re-exports are exercised too.
-import {
-  sortRankings,
-  updateRankChanges,
-} from '../index';
+import { sortRankings, updateRankChanges } from '../index';
 
 const ranking = (overrides: Partial<Ranking> = {}): Ranking =>
   ({
