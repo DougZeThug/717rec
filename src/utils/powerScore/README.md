@@ -40,7 +40,6 @@ Match Results → update_team_stats RPC → team_season_stats (0-1)
 | File | Purpose |
 |------|---------|
 | `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales |
-| `getTrendingTeams.ts` | Finds teams with biggest recent power score gains |
 
 ## Related Code
 
