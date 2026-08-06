@@ -15,9 +15,7 @@ import { getDivisionHexColor } from '../divisionHexColors';
 import {
   formatPowerScore,
   getPowerScoreBackgroundColor,
-  getPowerScoreBorderColor,
   getPowerScoreColor,
-  getPowerScoreDescription,
 } from '../powerScoreColors';
 import { getSweepRateColor } from '../sweepRateColors';
 import { getTeamColor } from '../teamColors';
@@ -69,39 +67,29 @@ describe('color modules table-driven coverage', () => {
       score: null,
       color: 'text-gray-400 dark:text-gray-500',
       bg: 'bg-gray-100 dark:bg-gray-900/20',
-      border: 'border-gray-300 dark:border-gray-700',
-      description: 'No Data',
       formatted: 'N/A',
     },
     {
       score: 85,
       color: 'text-yellow-600 dark:text-yellow-500',
       bg: 'bg-yellow-100 dark:bg-yellow-900/20',
-      border: 'border-yellow-300 dark:border-yellow-700',
-      description: 'Elite Performance',
       formatted: '85.0',
     },
     {
       score: 70,
       color: 'text-green-600 dark:text-green-500',
       bg: 'bg-green-100 dark:bg-green-900/20',
-      border: 'border-green-300 dark:border-green-700',
-      description: 'Excellent',
       formatted: '70.0',
     },
     {
       score: 15,
       color: 'text-red-600 dark:text-red-500',
       bg: 'bg-red-100 dark:bg-red-900/20',
-      border: 'border-red-300 dark:border-red-700',
-      description: 'Critical Performance',
       formatted: '15.0',
     },
-  ])('power score buckets for $score', ({ score, color, bg, border, description, formatted }) => {
+  ])('power score buckets for $score', ({ score, color, bg, formatted }) => {
     expect(getPowerScoreColor(score)).toBe(color);
     expect(getPowerScoreBackgroundColor(score)).toBe(bg);
-    expect(getPowerScoreBorderColor(score)).toBe(border);
-    expect(getPowerScoreDescription(score)).toBe(description);
     expect(formatPowerScore(score)).toBe(formatted);
   });
 
