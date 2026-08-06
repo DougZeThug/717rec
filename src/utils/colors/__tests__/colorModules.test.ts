@@ -166,5 +166,4 @@ describe('color modules table-driven coverage', () => {
     expect(getTrendColor(delta)).toBe(color);
     expect(getTrendArrow(delta)).toBe(arrow);
   });
-
 });
