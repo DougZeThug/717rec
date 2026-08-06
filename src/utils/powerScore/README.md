@@ -190,7 +190,6 @@ seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
 |------|---------|
 | `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales |
 | `formatPowerScore.ts` | Renders a score to 1 decimal, `—` when null |
-| `getTrendingTeams.ts` | Finds teams with biggest recent power score gains |
 
 ## Related Code
 
