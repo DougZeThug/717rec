@@ -11,7 +11,20 @@
       "package": "esbuild",
       "reason": "Nested under node_modules/@lovable.dev/mcp-js/node_modules/esbuild. Advisory affects only the esbuild dev server on Windows; this copy is never invoked as a dev server (mcp-js uses esbuild as a build helper). Project's top-level esbuild is already on a fixed version. Waiting on upstream mcp-js to bump.",
       "expires": "2026-10-21"
+    },
+    {
+      "id": "1124282",
+      "package": "react-router",
+      "reason": "Advisory GHSA-qwww-vcr4-c8h2 affects React Router RSC (React Server Components) mode only. This app is a standard React SPA and does not use RSC mode, so the CSRF bypass vector does not apply. Fix requires upgrading to react-router v8 which is a breaking major-version change. Tracking separately.",
+      "expires": "2026-11-06"
     }
   ],
-  "notes": "Add { \"id\": \"<GHSA/npm advisory id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known non-exploitable PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. Reviewed quarterly."
+  "transitive_packages": [
+    {
+      "package": "react-router-dom",
+      "reason": "Reported solely as a transitive dependent of react-router (advisory 1124282, allowlisted above). Has no own advisory source IDs.",
+      "expires": "2026-11-06"
+    }
+  ],
+  "notes": "Add { \"id\": \"<GHSA/npm advisory id or npm numeric source id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known non-exploitable PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. Reviewed quarterly. The transitive_packages array allowlists packages that have no own advisory IDs (they appear only as transitive reporters of an already-allowlisted advisory)."
 }
