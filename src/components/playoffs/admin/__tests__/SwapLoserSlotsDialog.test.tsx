@@ -114,6 +114,40 @@ describe('SwapLoserSlotsDialog', () => {
     );
   });
 
+  it('clears the picked destination when the team to move changes', async () => {
+    // The destination is relative to the moving team, so a stale pick must
+    // not survive a team change — otherwise the save silently pairs the new
+    // team with the old destination.
+    wireEligibility({
+      ok: true,
+      roundNumber: 2,
+      slots: [
+        slot(201, 1, 'opponent1', { id: 5, name: 'T5' }),
+        slot(201, 1, 'opponent2', { id: 9, name: 'T9' }),
+      ],
+      candidates: [
+        slot(204, 4, 'opponent1', { id: 7, name: 'T7' }, true),
+        slot(204, 4, 'opponent2', null, false, 'T7'),
+      ],
+    });
+    renderDialog();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText(/which team do you want to move/i));
+    await user.click(screen.getByRole('option', { name: 'T5' }));
+    await user.click(screen.getByLabelText(/where should they go/i));
+    await user.click(screen.getByRole('option', { name: /match 4: swap with T7/i }));
+
+    await user.click(screen.getByLabelText(/which team do you want to move/i));
+    await user.click(screen.getByRole('option', { name: 'T9' }));
+
+    // The destination is back to unpicked and the save cannot fire.
+    expect(screen.queryByText(/match 4: swap with T7/i)).not.toBeInTheDocument();
+    expect(screen.getByText('Select destination')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^move team$/i })).toBeDisabled();
+    expect(mutateMock).not.toHaveBeenCalled();
+  });
+
   it('does not offer a BYE spot to a team whose own match partner is a BYE', async () => {
     // Moving that team onto another BYE would leave its old match with two
     // BYEs — the service refuses it, so the dialog must not offer it.

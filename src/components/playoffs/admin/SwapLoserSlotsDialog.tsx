@@ -97,7 +97,17 @@ const SwapLoserSlotsBody: React.FC<Omit<SwapLoserSlotsDialogProps, 'open'>> = ({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="swap-team">Which team do you want to move?</Label>
-            <Select value={selectedSlotKey ?? ''} onValueChange={setPickedSlotKey}>
+            <Select
+              value={selectedSlotKey ?? ''}
+              onValueChange={(value) => {
+                setPickedSlotKey(value);
+                // The destination depends on which team is moving (its labels
+                // and its BYE-spot filtering are relative to that team), so a
+                // change of team invalidates the picked destination — clear it
+                // rather than silently pairing the new team with the old pick.
+                setSelectedCandidateKey(null);
+              }}
+            >
               <SelectTrigger id="swap-team">
                 <SelectValue placeholder="Select team" />
               </SelectTrigger>
