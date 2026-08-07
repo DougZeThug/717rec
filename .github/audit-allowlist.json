@@ -11,6 +11,12 @@
       "package": "esbuild",
       "reason": "Nested under node_modules/@lovable.dev/mcp-js/node_modules/esbuild. Advisory affects only the esbuild dev server on Windows; this copy is never invoked as a dev server (mcp-js uses esbuild as a build helper). Project's top-level esbuild is already on a fixed version. Waiting on upstream mcp-js to bump.",
       "expires": "2026-10-21"
+    },
+    {
+      "id": "1124282",
+      "package": "react-router",
+      "reason": "GHSA-qwww-vcr4-c8h2: CSRF bypass applies only to React Server Components (RSC) mode. This project is a client-side Vite SPA using react-router-dom in browser mode; RSC is not enabled. Downgrade to 7.11.0 is a breaking change. No non-breaking fix available upstream.",
+      "expires": "2026-11-07"
     }
   ],
   "notes": "Add { \"id\": \"<GHSA/npm advisory id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known non-exploitable PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. Reviewed quarterly."
