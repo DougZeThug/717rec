@@ -14,8 +14,8 @@ const EMPTY_RANKINGS: Record<string, number> = {};
 /**
  * Load the previous-rankings baseline used for trend arrows.
  * Database first (ranking_snapshots), falling back to the localStorage backup
- * written by saveRankingsToStorage (a plain teamId → rank map). Pure read —
- * never writes to storage or the database.
+ * (a plain teamId → rank map). Pure read — never writes to storage or the
+ * database.
  */
 const loadPreviousRankings = async (): Promise<PreviousRankingsResult> => {
   try {
