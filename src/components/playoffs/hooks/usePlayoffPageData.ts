@@ -137,7 +137,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets: originalRefetchBrackets,
     error: bracketsDataError,
-  } = usePlayoffData(isAdmin, selectedSeasonId, activeSeason?.id ?? null);
+  } = usePlayoffData(isAdmin, selectedSeasonId);
 
   // Memoize derived data transformations to prevent recalculation on every render.
   // Capture any processing error in the memo's return value and surface it via

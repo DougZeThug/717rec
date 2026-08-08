@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { usePlayoffViewModel } from '@/hooks/playoffs/usePlayoffViewModel';
 import { useTeamsArray } from '@/hooks/teams';
@@ -11,11 +11,7 @@ import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
-export const usePlayoffData = (
-  isAdmin = false,
-  seasonId?: string | null,
-  activeSeasonId?: string | null
-) => {
+export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
   // Call the view model without a bracketId to get overview data
   const vm = usePlayoffViewModel(null);
 
@@ -24,9 +20,6 @@ export const usePlayoffData = (
 
   // Fetch teams data to populate teamsByDivision
   const { teams, isLoading: teamsLoading } = useTeamsArray();
-
-  // Determine if we're viewing a past season (any selected season that isn't the active one)
-  const isViewingPastSeason = !!seasonId && !!activeSeasonId && seasonId !== activeSeasonId;
 
   // Fetch brackets data from Supabase with matches included
   const {
@@ -62,20 +55,11 @@ export const usePlayoffData = (
 
       return brackets;
     },
-    // Filter client-side via `select` so switching active seasons (which changes
-    // `isViewingPastSeason` without changing the query key) recomputes correctly.
-    select: useCallback(
-      (data: PlayoffBracket[]) => {
-        if (isViewingPastSeason) {
-          bracketLog('Showing all brackets for past season:', { total: data.length });
-          return data;
-        }
-        const filtered = data.filter((b) => b.state !== 'completed');
-        bracketLog('Filtered brackets:', { total: data.length, active: filtered.length });
-        return filtered;
-      },
-      [isViewingPastSeason]
-    ),
+    // Every bracket for the selected season is shown, completed ones included.
+    // Hiding completed brackets made a finished bracket vanish from the page
+    // the moment its last match was scored — the division card fell back to
+    // "No brackets yet for this division" while the season was still open.
+    // Season scoping already happens server-side in fetchBracketsOverview.
     staleTime: 0,
     gcTime: 0,
     refetchOnMount: 'always',

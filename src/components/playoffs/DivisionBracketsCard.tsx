@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BRACKET_STATES } from '@/constants/brackets';
 import { cn } from '@/lib/utils';
 import { PlayoffBracket } from '@/types';
 import { bracketLog } from '@/utils/logger';
@@ -80,51 +81,61 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
       <div className="px-4 py-3">
         {brackets.length > 0 ? (
           <div className="space-y-3">
-            {brackets.map((bracket) => (
-              <div
-                key={bracket.id}
-                className="flex flex-col gap-2.5 py-2 border-b border-border/30 last:border-0 last:pb-0"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-foreground truncate">
-                        {bracket.name}
-                      </span>
-                      {!bracket.uses_brackets_manager && (
-                        <Badge variant="secondary" className="text-xs shrink-0">
-                          Legacy
-                        </Badge>
-                      )}
+            {brackets.map((bracket) => {
+              const isCompleted = bracket.state === BRACKET_STATES.COMPLETED;
+              return (
+                <div
+                  key={bracket.id}
+                  className="flex flex-col gap-2.5 py-2 border-b border-border/30 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm text-foreground truncate">
+                          {bracket.name}
+                        </span>
+                        {isCompleted && (
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            Completed
+                          </Badge>
+                        )}
+                        {!bracket.uses_brackets_manager && (
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            Legacy
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground">{bracket.format}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{bracket.format}</span>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-2">
+                    {onViewBracket && (
+                      <Button
+                        size="sm"
+                        className={cn('flex-1 text-xs h-8', getDivisionButtonClass(division))}
+                        onClick={() => bracket.id && handleViewBracket(bracket.id)}
+                      >
+                        {isCompleted ? 'View Final Results' : 'View Live Bracket'}
+                      </Button>
+                    )}
+                    {onDeleteBracket && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs h-8 text-destructive hover:text-destructive"
+                        onClick={() =>
+                          bracket.id && onDeleteBracket(bracket.id, bracket.name ?? '')
+                        }
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
-
-                {/* Action buttons */}
-                <div className="flex gap-2">
-                  {onViewBracket && (
-                    <Button
-                      size="sm"
-                      className={cn('flex-1 text-xs h-8', getDivisionButtonClass(division))}
-                      onClick={() => bracket.id && handleViewBracket(bracket.id)}
-                    >
-                      View Live Bracket
-                    </Button>
-                  )}
-                  {onDeleteBracket && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs h-8 text-destructive hover:text-destructive"
-                      onClick={() => bracket.id && onDeleteBracket(bracket.id, bracket.name ?? '')}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-5 text-center">
