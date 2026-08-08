@@ -86,27 +86,31 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
             return (
               <div
                 key={team.id}
-                className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent"
+                className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 text-center font-bold">{record.placement}</div>
-                  {getPlacementIcon(record.placement)}
-                  <div className="flex items-center gap-2">
-                    {(team.image_url || team.logo_url) && (
-                      <img
-                        src={team.image_url || team.logo_url || undefined}
-                        alt={team.name}
-                        loading="lazy"
-                        decoding="async"
-                        className="size-8 rounded-full object-cover"
-                      />
-                    )}
-                    <span className="font-medium">{team.name}</span>
-                  </div>
+                <div className="w-6 shrink-0 text-center font-bold tabular-nums">
+                  {record.placement}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {record.wins ?? 0}-{record.losses ?? 0} ({record.game_wins ?? 0}-
-                  {record.game_losses ?? 0} games)
+                <div className="shrink-0">{getPlacementIcon(record.placement)}</div>
+                {(team.image_url || team.logo_url) && (
+                  <img
+                    src={team.image_url || team.logo_url || undefined}
+                    alt={team.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="size-9 shrink-0 rounded-md object-cover"
+                  />
+                )}
+                <span className="min-w-0 flex-1 font-medium leading-snug break-words">
+                  {team.name}
+                </span>
+                <div className="shrink-0 text-right">
+                  <div className="text-lg font-bold tabular-nums leading-none">
+                    {record.wins ?? 0}-{record.losses ?? 0}
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground tabular-nums">
+                    {record.game_wins ?? 0}-{record.game_losses ?? 0} games
+                  </div>
                 </div>
               </div>
             );
