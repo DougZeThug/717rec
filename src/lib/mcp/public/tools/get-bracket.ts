@@ -40,15 +40,8 @@ export default defineTool({
 
     const ids = brackets.map((b) => b.id);
 
-    const [stages, rounds, matches, participants] = await Promise.all([
+    const [stages, participants] = await Promise.all([
       supabase.from('stage').select('id, name, number, type, tournament_id').in('tournament_id', ids),
-      supabase.from('round').select('id, name, number, stage_id, group_id').in('stage_id', []),
-      supabase
-        .from('match')
-        .select(
-          'id, number, stage_id, group_id, round_id, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
-        )
-        .in('stage_id', []),
       supabase.from('participant').select('id, name, team_id, position, tournament_id').in('tournament_id', ids),
     ]);
 
@@ -56,9 +49,6 @@ export default defineTool({
     if (participants.error) return errorResult(participants.error.message);
 
     const stageIds = (stages.data ?? []).map((s) => s.id);
-    void rounds;
-    void matches;
-
     const [roundRows, matchRows] = await Promise.all([
       supabase.from('round').select('id, name, number, stage_id, group_id').in('stage_id', stageIds),
       supabase
