@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mcpPlugin(),
-    mcpPlugin({ entry: 'src/lib/mcp/public/index.ts', functionName: 'mcp-public' }),
+    mcpPlugin({ mcpEntry: 'src/lib/mcp/public/index.ts', functionName: 'mcp-public' }),
     mode === 'development' && componentTagger(),
     mode === 'development' && lovableEditorDevPlugin(),
     mode === 'production' &&
