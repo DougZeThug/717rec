@@ -89,7 +89,9 @@ describe('usePlayoffPageData selected-bracket errors', () => {
   });
 
   it('retrySelectedBracket refetches the failed query', () => {
-    const refetch = vi.fn();
+    // react-query's refetch returns a promise, and retrySelectedBracket chains
+    // .catch() onto it — a bare vi.fn() returning undefined would throw.
+    const refetch = vi.fn().mockResolvedValue(undefined);
     bracketQueryRef.current = {
       data: null,
       isLoading: false,
