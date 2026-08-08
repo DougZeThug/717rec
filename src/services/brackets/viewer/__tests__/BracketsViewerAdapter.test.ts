@@ -217,6 +217,20 @@ describe('BracketsViewerAdapter.transformFromSql', () => {
     expect(result.data.matches[0].opponent2).toMatchObject({ id: 2 });
   });
 
+  it('skips the match-game query entirely when the stage has no matches', async () => {
+    // A bracket mid-creation can have participants but no matches yet. That is a
+    // supported empty dataset — it must not turn into `.in('match_id', [])`.
+    setupSupabaseForTransform({ match: { data: [], error: null } });
+
+    const result = await BracketsViewerAdapter.transformFromSql('b1');
+
+    expect(mockFrom).not.toHaveBeenCalledWith('match_game');
+    expect(mockFilter).not.toHaveBeenCalledWith('match_game', 'match_id', []);
+    expect(result.data.matches).toEqual([]);
+    expect(result.data.matchGames).toEqual([]);
+    expect(result.data.participants).toHaveLength(2);
+  });
+
   it('handles null optional datasets as valid empty results', async () => {
     setupSupabaseForTransform({
       match: { data: null, error: null },

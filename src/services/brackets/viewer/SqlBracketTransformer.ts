@@ -105,10 +105,17 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
   debugLog('Fetching team details for team ids:', teamIds);
 
   const [matchGamesResult, teamsResult] = await Promise.all([
-    supabase
-      .from('match_game')
-      .select('id, number, match_id, status, opponent1_score, opponent2_score')
-      .in('match_id', matchIds),
+    // A stage with no matches yet — bracket creation has written participants
+    // but not matches — is a supported empty dataset, not an error. Skip the
+    // query rather than sending `.in('match_id', [])`: it can only ever return
+    // nothing, and an empty `in.()` list is not reliably accepted by PostgREST
+    // (see the same guard in HeadToHeadService.ts).
+    matchIds.length > 0
+      ? supabase
+          .from('match_game')
+          .select('id, number, match_id, status, opponent1_score, opponent2_score')
+          .in('match_id', matchIds)
+      : Promise.resolve({ data: [], error: null }),
     supabase.from('teams').select('id, name, logo_url, image_url').in('id', teamIds),
   ]);
 
