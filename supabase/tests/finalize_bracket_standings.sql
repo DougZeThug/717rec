@@ -1,3 +1,5 @@
+\set ON_ERROR_STOP on
+
 -- PR-06 smoke test: server-side finalization of playoff bracket standings.
 -- Verifies:
 --   * A completed 4-team single-elimination bracket produces the expected
