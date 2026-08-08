@@ -52,36 +52,41 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
 
   const stageId = stages[0].id;
 
-  // Fetch all data from SQL tables including groups and rounds for connectors
-  const [matchesResult, matchGamesResult, participantsResult, groupsResult, roundsResult] =
-    await Promise.all([
-      supabase
-        .from('match')
-        .select(
-          'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position, status'
-        )
-        .eq('stage_id', stageId),
-      supabase
-        .from('match_game')
-        .select('id, number, match_id, status, opponent1_score, opponent2_score'),
-      supabase
-        .from('participant')
-        .select('id, name, tournament_id, position, team_id')
-        .eq('tournament_id', bracketId),
-      supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
-      supabase.from('round').select('id, group_id, number'),
-    ]);
+  // Fetch all data from SQL tables including groups and rounds for connectors.
+  // Every query here is scoped to this bracket: an unscoped read would silently
+  // truncate at PostgREST's default row cap once the tables grow past it, and
+  // this bracket's rows are the newest — exactly the ones a cap would drop.
+  const [matchesResult, participantsResult, groupsResult, roundsResult] = await Promise.all([
+    supabase
+      .from('match')
+      .select(
+        'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position, status'
+      )
+      .eq('stage_id', stageId),
+    supabase
+      .from('participant')
+      .select('id, name, tournament_id, position, team_id')
+      .eq('tournament_id', bracketId),
+    supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
+    supabase.from('round').select('id, group_id, number').eq('stage_id', stageId),
+  ]);
 
   if (matchesResult.error)
     handleDatabaseError(matchesResult.error, 'Failed to fetch bracket matches');
-  if (matchGamesResult.error)
-    handleDatabaseError(matchGamesResult.error, 'Failed to fetch bracket match games');
   if (participantsResult.error)
     handleDatabaseError(participantsResult.error, 'Failed to fetch bracket participants');
   if (groupsResult.error) handleDatabaseError(groupsResult.error, 'Failed to fetch bracket groups');
   if (roundsResult.error) handleDatabaseError(roundsResult.error, 'Failed to fetch bracket rounds');
 
-  const matches = matchesResult.data || [];
+  // brackets-viewer decides how many grand-final columns to draw from the FIRST
+  // element of the final group's array — a null opponent1 there means "only draw
+  // one". Postgres returns rows in physical order, which shifts whenever a row is
+  // updated, so once grand final round 1 is populated it can come back *after*
+  // the untouched round-2 reset match and the viewer then renders only the empty
+  // reset match. Order explicitly so render order never depends on storage order.
+  const matches = (matchesResult.data ?? [])
+    .slice()
+    .sort((a, b) => a.group_id - b.group_id || a.round_id - b.round_id || a.number - b.number);
   const participants = participantsResult.data || [];
   const groups = groupsResult.data || [];
   const rounds = roundsResult.data || [];
@@ -91,16 +96,33 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     participants.map((p) => ({ id: p.id, name: p.name }))
   );
 
-  // Fetch team data (logos + canonical names) by participant.team_id —
-  // id-keyed so a mid-playoffs team rename can't break logos or labels.
+  // Second wave — both of these key off ids from the first wave. match_game has
+  // no stage column, so it is scoped by this stage's match ids; teams are keyed
+  // by participant.team_id so a mid-playoffs rename can't break logos or labels.
   const teamIds = participants.map((p) => p.team_id).filter((id): id is string => id !== null);
+  const matchIds = matches.map((m) => m.id);
 
   debugLog('Fetching team details for team ids:', teamIds);
 
-  const { data: teamsData, error: teamsError } = await supabase
-    .from('teams')
-    .select('id, name, logo_url, image_url')
-    .in('id', teamIds);
+  const [matchGamesResult, teamsResult] = await Promise.all([
+    // A stage with no matches yet — bracket creation has written participants
+    // but not matches — is a supported empty dataset, not an error. Skip the
+    // query rather than sending `.in('match_id', [])`: it can only ever return
+    // nothing, and an empty `in.()` list is not reliably accepted by PostgREST
+    // (see the same guard in HeadToHeadService.ts).
+    matchIds.length > 0
+      ? supabase
+          .from('match_game')
+          .select('id, number, match_id, status, opponent1_score, opponent2_score')
+          .in('match_id', matchIds)
+      : Promise.resolve({ data: [], error: null }),
+    supabase.from('teams').select('id, name, logo_url, image_url').in('id', teamIds),
+  ]);
+
+  if (matchGamesResult.error)
+    handleDatabaseError(matchGamesResult.error, 'Failed to fetch bracket match games');
+
+  const { data: teamsData, error: teamsError } = teamsResult;
 
   if (teamsError) {
     errorLog('Error fetching team logos:', teamsError);
@@ -143,9 +165,8 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     };
   });
 
-  // Filter match games by the matches we have
-  const matchIds = new Set(matches.map((m) => m.id));
-  const matchGames = (matchGamesResult.data || []).filter((g) => matchIds.has(g.match_id));
+  // Already scoped to this stage's matches by the query above.
+  const matchGames = matchGamesResult.data || [];
 
   // Build reverse match ID map: brackets-manager match.id (integer) -> match.id as string
   const reverseMatchIdMap = new Map<number, string>();
