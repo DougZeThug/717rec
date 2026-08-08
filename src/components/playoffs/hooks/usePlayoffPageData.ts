@@ -137,7 +137,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     handleTeamDivisionChange,
     refetchBrackets: originalRefetchBrackets,
     error: bracketsDataError,
-  } = usePlayoffData(isAdmin, selectedSeasonId, activeSeason?.id ?? null);
+  } = usePlayoffData(isAdmin, selectedSeasonId);
 
   // Memoize derived data transformations to prevent recalculation on every render.
   // Capture any processing error in the memo's return value and surface it via
@@ -320,7 +320,9 @@ export function usePlayoffPageData(): PlayoffPageData {
   const finalSelectedBracketError = convertErrorToString(selectedBracketError);
 
   const retrySelectedBracket = useCallback(() => {
-    void refetchSelectedBracket();
+    // Fire and forget: the query records its own failure in `selectedBracketError`,
+    // so swallow here rather than leaving an unhandled rejection.
+    refetchSelectedBracket().catch(() => undefined);
   }, [refetchSelectedBracket]);
 
   return {
@@ -328,7 +330,7 @@ export function usePlayoffPageData(): PlayoffPageData {
     isAdmin,
     selectedBracketId,
     setSelectedBracketId,
-    ready: !!selectedBracketId && !!selectedBracket && !selectedBracketLoading,
+    ready: Boolean(selectedBracketId) && Boolean(selectedBracket) && !selectedBracketLoading,
     error: combinedError,
     divisionsError: finalDivisionsError,
     bracketsError: finalBracketsError,

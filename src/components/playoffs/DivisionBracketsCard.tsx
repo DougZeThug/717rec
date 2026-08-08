@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { BRACKET_STATES } from '@/constants/brackets';
 import { cn } from '@/lib/utils';
 import { PlayoffBracket } from '@/types';
 import { bracketLog } from '@/utils/logger';
@@ -43,6 +44,85 @@ const getDivisionButtonClass = (division: string): string => {
   return 'bg-primary hover:bg-primary/90 text-primary-foreground';
 };
 
+interface BracketTitleProps {
+  bracket: Partial<PlayoffBracket>;
+  isCompleted: boolean;
+}
+
+/** Bracket name plus its status badges. Split out to keep the row's JSX shallow. */
+const BracketTitle: React.FC<BracketTitleProps> = ({ bracket, isCompleted }) => (
+  <div className="flex items-center gap-2">
+    <span className="font-medium text-sm text-foreground truncate">{bracket.name}</span>
+    {isCompleted && (
+      <Badge variant="secondary" className="text-xs shrink-0">
+        Completed
+      </Badge>
+    )}
+    {!bracket.uses_brackets_manager && (
+      <Badge variant="secondary" className="text-xs shrink-0">
+        Legacy
+      </Badge>
+    )}
+  </div>
+);
+
+interface BracketRowProps {
+  bracket: Partial<PlayoffBracket>;
+  division: string;
+  onViewBracket?: (bracketId: string) => void;
+  onDeleteBracket?: (id: string, name: string) => void;
+}
+
+/** One bracket inside a division card. Split out to keep the card's JSX shallow. */
+const BracketRow: React.FC<BracketRowProps> = ({
+  bracket,
+  division,
+  onViewBracket,
+  onDeleteBracket,
+}) => {
+  const isCompleted = bracket.state === BRACKET_STATES.COMPLETED;
+
+  const handleViewBracket = () => {
+    if (!bracket.id) return;
+    bracketLog('View bracket clicked for ID:', bracket.id);
+    onViewBracket?.(bracket.id);
+  };
+
+  return (
+    <div className="flex flex-col gap-2.5 py-2 border-b border-border/30 last:border-0 last:pb-0">
+      {/* Merged with a single-child `flex items-start justify-between` wrapper that
+          had no layout effect; stretching to full width keeps `truncate` working. */}
+      <div className="flex flex-col gap-0.5 min-w-0">
+        <BracketTitle bracket={bracket} isCompleted={isCompleted} />
+        <span className="text-xs text-muted-foreground">{bracket.format}</span>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        {onViewBracket && (
+          <Button
+            size="sm"
+            className={cn('flex-1 text-xs h-8', getDivisionButtonClass(division))}
+            onClick={handleViewBracket}
+          >
+            {isCompleted ? 'View Final Results' : 'View Live Bracket'}
+          </Button>
+        )}
+        {onDeleteBracket && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-xs h-8 text-destructive hover:text-destructive"
+            onClick={() => bracket.id && onDeleteBracket(bracket.id, bracket.name ?? '')}
+          >
+            Delete
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   division,
   brackets,
@@ -50,11 +130,6 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   onViewBracket,
   onDeleteBracket,
 }) => {
-  const handleViewBracket = (bracketId: string) => {
-    bracketLog('View bracket clicked for ID:', bracketId);
-    onViewBracket?.(bracketId);
-  };
-
   return (
     <div
       className={cn(
@@ -81,49 +156,13 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
         {brackets.length > 0 ? (
           <div className="space-y-3">
             {brackets.map((bracket) => (
-              <div
+              <BracketRow
                 key={bracket.id}
-                className="flex flex-col gap-2.5 py-2 border-b border-border/30 last:border-0 last:pb-0"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-foreground truncate">
-                        {bracket.name}
-                      </span>
-                      {!bracket.uses_brackets_manager && (
-                        <Badge variant="secondary" className="text-xs shrink-0">
-                          Legacy
-                        </Badge>
-                      )}
-                    </div>
-                    <span className="text-xs text-muted-foreground">{bracket.format}</span>
-                  </div>
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex gap-2">
-                  {onViewBracket && (
-                    <Button
-                      size="sm"
-                      className={cn('flex-1 text-xs h-8', getDivisionButtonClass(division))}
-                      onClick={() => bracket.id && handleViewBracket(bracket.id)}
-                    >
-                      View Live Bracket
-                    </Button>
-                  )}
-                  {onDeleteBracket && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-xs h-8 text-destructive hover:text-destructive"
-                      onClick={() => bracket.id && onDeleteBracket(bracket.id, bracket.name ?? '')}
-                    >
-                      Delete
-                    </Button>
-                  )}
-                </div>
-              </div>
+                bracket={bracket}
+                division={division}
+                onViewBracket={onViewBracket}
+                onDeleteBracket={onDeleteBracket}
+              />
             ))}
           </div>
         ) : (

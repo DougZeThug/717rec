@@ -105,7 +105,8 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {record.wins}-{record.losses} ({record.game_wins}-{record.game_losses} games)
+                  {record.wins ?? 0}-{record.losses ?? 0} ({record.game_wins ?? 0}-
+                  {record.game_losses ?? 0} games)
                 </div>
               </div>
             );

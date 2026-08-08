@@ -40,6 +40,12 @@ so a non-zero exit code means drift was detected.
   (`map_bm_status_to_playoff_status`): 3 Running → 'in_progress',
   5 Archived → 'archived', and mapped statuses on INSERT (not hardcoded
   'pending').
+- `finalize_bracket_standings.sql` — covers the bracket-completion trigger and
+  `_do_finalize_bracket_standings`: placements and win/loss + game records for a
+  single-elimination bracket, a double-elimination bracket whose grand-final
+  reset match is materialized but never played (must not tie both finalists at
+  placement 1, and must not count toward any record), a BYE-only participant
+  still receiving a placement, and idempotency on re-run.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.
