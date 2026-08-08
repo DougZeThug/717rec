@@ -2,9 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DatabaseError } from '@/types/errors';
 
-const { mockFrom, mockSelect } = vi.hoisted(() => ({
+const { mockFrom, mockSelect, mockFilter } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockSelect: vi.fn(),
+  mockFilter: vi.fn(),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -109,13 +110,14 @@ const setupSupabaseForTransform = (overrides: Partial<Record<string, QueryResult
   mockFrom.mockImplementation((table: string) => ({
     select: (columns: string) => {
       mockSelect(table, columns);
-      if (table === 'teams') {
-        return { in: vi.fn().mockResolvedValue(responses.teams) };
-      }
-      if (table === 'round') {
-        return Promise.resolve(responses.round);
-      }
-      return { eq: vi.fn().mockResolvedValue(responses[table as keyof typeof responses]) };
+      const result = responses[table as keyof typeof responses];
+      const record = (column: string, value: unknown) => {
+        mockFilter(table, column, value);
+        return Promise.resolve(result);
+      };
+      // teams and match_game are scoped with .in(); everything else with .eq().
+      if (table === 'teams' || table === 'match_game') return { in: record };
+      return { eq: record };
     },
   }));
 };
@@ -145,6 +147,21 @@ describe('BracketsViewerAdapter.transformFromSql', () => {
   it('throws DatabaseError when stage query fails', async () => {
     setupSupabaseForTransform({ stage: { data: null, error: pgError() } });
     await expect(BracketsViewerAdapter.transformFromSql('b1')).rejects.toThrow(DatabaseError);
+  });
+
+  it('scopes every fetch to this bracket so none can be silently truncated', async () => {
+    // An unscoped read returns the whole table and is cut off at PostgREST's
+    // default row cap once that table outgrows it — dropping the newest rows,
+    // which are the ones the bracket being viewed actually needs.
+    setupSupabaseForTransform();
+
+    await BracketsViewerAdapter.transformFromSql('b1');
+
+    expect(mockFilter).toHaveBeenCalledWith('match', 'stage_id', 11);
+    expect(mockFilter).toHaveBeenCalledWith('group', 'stage_id', 11);
+    expect(mockFilter).toHaveBeenCalledWith('round', 'stage_id', 11);
+    expect(mockFilter).toHaveBeenCalledWith('participant', 'tournament_id', 'b1');
+    expect(mockFilter).toHaveBeenCalledWith('match_game', 'match_id', [100]);
   });
 
   it('orders the final group by round so the grand final precedes the reset match', async () => {

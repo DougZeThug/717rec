@@ -41,8 +41,9 @@ export function buildMatchLabelMap(
   stageType?: string
 ): Map<string, string> {
   const groupsById = new Map(groups.map((g) => [g.id, g]));
-  // The upstream round query is not stage-filtered — drop rows whose group
-  // belongs to a different bracket before computing round counts.
+  // Defensive: callers pass rounds scoped to one bracket, but a round whose
+  // group is missing from this dataset would otherwise inflate a round count
+  // and mislabel every match in that group.
   const knownRounds = rounds.filter((r) => groupsById.has(r.group_id));
   const roundsById = new Map(knownRounds.map((r) => [r.id, r]));
 

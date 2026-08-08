@@ -52,30 +52,27 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
 
   const stageId = stages[0].id;
 
-  // Fetch all data from SQL tables including groups and rounds for connectors
-  const [matchesResult, matchGamesResult, participantsResult, groupsResult, roundsResult] =
-    await Promise.all([
-      supabase
-        .from('match')
-        .select(
-          'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position, status'
-        )
-        .eq('stage_id', stageId),
-      supabase
-        .from('match_game')
-        .select('id, number, match_id, status, opponent1_score, opponent2_score'),
-      supabase
-        .from('participant')
-        .select('id, name, tournament_id, position, team_id')
-        .eq('tournament_id', bracketId),
-      supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
-      supabase.from('round').select('id, group_id, number'),
-    ]);
+  // Fetch all data from SQL tables including groups and rounds for connectors.
+  // Every query here is scoped to this bracket: an unscoped read would silently
+  // truncate at PostgREST's default row cap once the tables grow past it, and
+  // this bracket's rows are the newest — exactly the ones a cap would drop.
+  const [matchesResult, participantsResult, groupsResult, roundsResult] = await Promise.all([
+    supabase
+      .from('match')
+      .select(
+        'id, stage_id, group_id, round_id, number, child_count, opponent1_id, opponent1_score, opponent1_result, opponent1_position, opponent2_id, opponent2_score, opponent2_result, opponent2_position, status'
+      )
+      .eq('stage_id', stageId),
+    supabase
+      .from('participant')
+      .select('id, name, tournament_id, position, team_id')
+      .eq('tournament_id', bracketId),
+    supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
+    supabase.from('round').select('id, group_id, number').eq('stage_id', stageId),
+  ]);
 
   if (matchesResult.error)
     handleDatabaseError(matchesResult.error, 'Failed to fetch bracket matches');
-  if (matchGamesResult.error)
-    handleDatabaseError(matchGamesResult.error, 'Failed to fetch bracket match games');
   if (participantsResult.error)
     handleDatabaseError(participantsResult.error, 'Failed to fetch bracket participants');
   if (groupsResult.error) handleDatabaseError(groupsResult.error, 'Failed to fetch bracket groups');
@@ -99,16 +96,26 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     participants.map((p) => ({ id: p.id, name: p.name }))
   );
 
-  // Fetch team data (logos + canonical names) by participant.team_id —
-  // id-keyed so a mid-playoffs team rename can't break logos or labels.
+  // Second wave — both of these key off ids from the first wave. match_game has
+  // no stage column, so it is scoped by this stage's match ids; teams are keyed
+  // by participant.team_id so a mid-playoffs rename can't break logos or labels.
   const teamIds = participants.map((p) => p.team_id).filter((id): id is string => id !== null);
+  const matchIds = matches.map((m) => m.id);
 
   debugLog('Fetching team details for team ids:', teamIds);
 
-  const { data: teamsData, error: teamsError } = await supabase
-    .from('teams')
-    .select('id, name, logo_url, image_url')
-    .in('id', teamIds);
+  const [matchGamesResult, teamsResult] = await Promise.all([
+    supabase
+      .from('match_game')
+      .select('id, number, match_id, status, opponent1_score, opponent2_score')
+      .in('match_id', matchIds),
+    supabase.from('teams').select('id, name, logo_url, image_url').in('id', teamIds),
+  ]);
+
+  if (matchGamesResult.error)
+    handleDatabaseError(matchGamesResult.error, 'Failed to fetch bracket match games');
+
+  const { data: teamsData, error: teamsError } = teamsResult;
 
   if (teamsError) {
     errorLog('Error fetching team logos:', teamsError);
@@ -151,9 +158,8 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
     };
   });
 
-  // Filter match games by the matches we have
-  const matchIds = new Set(matches.map((m) => m.id));
-  const matchGames = (matchGamesResult.data || []).filter((g) => matchIds.has(g.match_id));
+  // Already scoped to this stage's matches by the query above.
+  const matchGames = matchGamesResult.data || [];
 
   // Build reverse match ID map: brackets-manager match.id (integer) -> match.id as string
   const reverseMatchIdMap = new Map<number, string>();
