@@ -148,5 +148,6 @@
   },
   "engines": {
     "node": ">=24"
-  }
+  },
+  "packageManager": "npm@10.9.2"
 }
