@@ -81,7 +81,15 @@ export async function transformFromSql(bracketId: string): Promise<ViewerDataWit
   if (groupsResult.error) handleDatabaseError(groupsResult.error, 'Failed to fetch bracket groups');
   if (roundsResult.error) handleDatabaseError(roundsResult.error, 'Failed to fetch bracket rounds');
 
-  const matches = matchesResult.data || [];
+  // brackets-viewer decides how many grand-final columns to draw from the FIRST
+  // element of the final group's array — a null opponent1 there means "only draw
+  // one". Postgres returns rows in physical order, which shifts whenever a row is
+  // updated, so once grand final round 1 is populated it can come back *after*
+  // the untouched round-2 reset match and the viewer then renders only the empty
+  // reset match. Order explicitly so render order never depends on storage order.
+  const matches = (matchesResult.data ?? [])
+    .slice()
+    .sort((a, b) => a.group_id - b.group_id || a.round_id - b.round_id || a.number - b.number);
   const participants = participantsResult.data || [];
   const groups = groupsResult.data || [];
   const rounds = roundsResult.data || [];

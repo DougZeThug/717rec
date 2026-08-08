@@ -147,6 +147,59 @@ describe('BracketsViewerAdapter.transformFromSql', () => {
     await expect(BracketsViewerAdapter.transformFromSql('b1')).rejects.toThrow(DatabaseError);
   });
 
+  it('orders the final group by round so the grand final precedes the reset match', async () => {
+    // Regression: Postgres returns unordered rows in physical storage order,
+    // which shifts when a row is updated. Once grand final round 1 receives its
+    // finalists it can come back AFTER the never-touched round-2 reset match —
+    // and brackets-viewer reads the FIRST final-group entry to decide how many
+    // grand final columns to draw, so it then renders only the empty reset match.
+    setupSupabaseForTransform({
+      match: {
+        data: [
+          // Reset match (group 3, round 2) listed first, both slots still empty.
+          {
+            id: 2954,
+            stage_id: 11,
+            group_id: 3,
+            round_id: 1296,
+            number: 1,
+            child_count: 0,
+            opponent1_id: null,
+            opponent1_score: null,
+            opponent1_result: null,
+            opponent2_id: null,
+            opponent2_score: null,
+            opponent2_result: null,
+            status: 0,
+          },
+          // The real grand final (group 3, round 1) with both finalists.
+          {
+            id: 2953,
+            stage_id: 11,
+            group_id: 3,
+            round_id: 1295,
+            number: 1,
+            child_count: 0,
+            opponent1_id: 1,
+            opponent1_score: null,
+            opponent1_result: null,
+            opponent2_id: 2,
+            opponent2_score: null,
+            opponent2_result: null,
+            status: 2,
+          },
+        ],
+        error: null,
+      },
+    });
+
+    const result = await BracketsViewerAdapter.transformFromSql('b1');
+
+    expect(result.data.matches.map((match) => match.id)).toEqual([2953, 2954]);
+    expect(result.data.matches[0].opponent1).toMatchObject({ id: 1 });
+    expect(result.data.matches[0].opponent2).toMatchObject({ id: 2 });
+  });
+
   it('handles null optional datasets as valid empty results', async () => {
     setupSupabaseForTransform({
       match: { data: null, error: null },
