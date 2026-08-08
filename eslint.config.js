@@ -17,6 +17,7 @@ export default tseslint.config(
       'public/**',
       'src/integrations/supabase/types.ts',
       'supabase/functions/mcp/**',
+      'supabase/functions/mcp-public/**',
     ],
   },
   {
