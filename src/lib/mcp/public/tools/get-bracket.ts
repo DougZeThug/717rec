@@ -41,8 +41,14 @@ export default defineTool({
     const ids = brackets.map((b) => b.id);
 
     const [stages, participants] = await Promise.all([
-      supabase.from('stage').select('id, name, number, type, tournament_id').in('tournament_id', ids),
-      supabase.from('participant').select('id, name, team_id, position, tournament_id').in('tournament_id', ids),
+      supabase
+        .from('stage')
+        .select('id, name, number, type, tournament_id')
+        .in('tournament_id', ids),
+      supabase
+        .from('participant')
+        .select('id, name, team_id, position, tournament_id')
+        .in('tournament_id', ids),
     ]);
 
     if (stages.error) return errorResult(stages.error.message);
@@ -50,7 +56,10 @@ export default defineTool({
 
     const stageIds = (stages.data ?? []).map((s) => s.id);
     const [roundRows, matchRows] = await Promise.all([
-      supabase.from('round').select('id, name, number, stage_id, group_id').in('stage_id', stageIds),
+      supabase
+        .from('round')
+        .select('id, name, number, stage_id, group_id')
+        .in('stage_id', stageIds),
       supabase
         .from('match')
         .select(
@@ -96,12 +105,14 @@ export default defineTool({
                   number: m.number,
                   status: STATUS_LABELS[m.status] ?? m.status,
                   opponent1: {
-                    name: m.opponent1_id != null ? (participantName.get(m.opponent1_id) ?? null) : null,
+                    name:
+                      m.opponent1_id != null ? (participantName.get(m.opponent1_id) ?? null) : null,
                     score: m.opponent1_score,
                     result: m.opponent1_result,
                   },
                   opponent2: {
-                    name: m.opponent2_id != null ? (participantName.get(m.opponent2_id) ?? null) : null,
+                    name:
+                      m.opponent2_id != null ? (participantName.get(m.opponent2_id) ?? null) : null,
                     score: m.opponent2_score,
                     result: m.opponent2_result,
                   },
