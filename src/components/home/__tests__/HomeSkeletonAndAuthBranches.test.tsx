@@ -14,7 +14,13 @@ import MyNextMatchSkeleton from '../MyNextMatchSkeleton';
 import WeeklyRecapCard from '../WeeklyRecapCard';
 import WeeklyRecapSkeleton from '../WeeklyRecapSkeleton';
 
-const recapData: WeeklyRecapData = { weekNumber: 10, upsets: [], hotStreaks: [], hasData: false };
+const recapData: WeeklyRecapData = {
+  weekNumber: 10,
+  mode: 'regular',
+  upsets: [],
+  hotStreaks: [],
+  hasData: false,
+};
 const recapRiser: WeeklyPowerScoreTrend = {
   teamId: 't1',
   teamName: 'Heat',

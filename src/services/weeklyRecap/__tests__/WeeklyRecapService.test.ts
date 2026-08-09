@@ -57,7 +57,13 @@ type QuerySpy = {
   maybeSingle: ReturnType<typeof vi.fn>;
 };
 
-const emptyState = { weekNumber: null, upsets: [], hotStreaks: [], hasData: false };
+const emptyState = {
+  weekNumber: null,
+  mode: 'regular',
+  upsets: [],
+  hotStreaks: [],
+  hasData: false,
+};
 
 function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
   const querySpies: Record<string, QuerySpy[]> = {};
@@ -672,5 +678,69 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       { message: 'team details for streaks failed' },
       'Failed to fetch team details for streak display'
     );
+  });
+
+  describe('recap mode', () => {
+    // Built fresh per test: createSupabaseMock consumes these queues with shift().
+    const seasonOnly = () => ({
+      seasons: [{ data: { id: 's-1', start_date: '2026-01-01T00:00:00Z' }, error: null }],
+      matches: [{ data: null, error: null }],
+    });
+
+    it('stays in regular mode when the season has no brackets', async () => {
+      createSupabaseMock({ ...seasonOnly(), brackets: [{ data: [], error: null }] });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.mode).toBe('regular');
+    });
+
+    it('stays in regular mode when brackets exist but no playoff game has a result', async () => {
+      createSupabaseMock({
+        ...seasonOnly(),
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [{ data: [], error: null }],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.mode).toBe('regular');
+    });
+
+    it('switches to playoffs mode and suppresses the week number once a playoff game is complete', async () => {
+      createSupabaseMock({
+        ...seasonOnly(),
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [
+          {
+            data: [
+              {
+                id: 'pm-1',
+                bracket_id: 'br-1',
+                round: 1,
+                position: 1,
+                match_type: 'winners',
+                team1_id: 't-1',
+                team2_id: 't-2',
+                team1_score: 2,
+                team2_score: 0,
+                team1_seed: 1,
+                team2_seed: 8,
+                winner_id: 't-1',
+                loser_id: 't-2',
+                created_at: '2026-02-01T00:00:00Z',
+                updated_at: '2026-02-02T00:00:00Z',
+              },
+            ],
+            error: null,
+          },
+        ],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.mode).toBe('playoffs');
+      expect(result.weekNumber).toBeNull();
+    });
   });
 });

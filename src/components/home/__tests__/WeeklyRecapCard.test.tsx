@@ -7,6 +7,7 @@ import WeeklyRecapCard from '../WeeklyRecapCard';
 
 const recapBase = {
   weekNumber: 7,
+  mode: 'regular' as const,
   upsets: [],
   hotStreaks: [],
   hasData: false,

@@ -56,6 +56,7 @@ const baseTeam: Team = {
 
 const weeklyRecapBase: WeeklyRecapData = {
   weekNumber: 8,
+  mode: 'regular' as const,
   upsets: [],
   hotStreaks: [],
   hasData: false,

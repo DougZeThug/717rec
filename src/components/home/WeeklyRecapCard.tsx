@@ -43,7 +43,11 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
         )}
       />
       <CardContent className="relative p-3 md:p-6 space-y-3 md:space-y-5">
-        <WeeklyRecapHeader weekNumber={data.weekNumber} winter={shouldApplyWinter} />
+        <WeeklyRecapHeader
+          weekNumber={data.weekNumber}
+          mode={data.mode}
+          winter={shouldApplyWinter}
+        />
         <UpsetsSection upsets={data.upsets} winter={shouldApplyWinter} />
         {hasUpsets && (hasStreaks || hasMovers) && (
           <div className="hidden md:block border-t border-border/50" />
