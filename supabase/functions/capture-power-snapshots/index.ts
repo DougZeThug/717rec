@@ -211,41 +211,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const teamIds = teams.map((t) => t.team_id);
-
-    // 4. Check which teams already have snapshots for this week
-    const { data: existingSnapshots } = await supabase
-      .from('power_score_snapshots')
-      .select('team_id')
-      .eq('season_id', activeSeason.id)
-      .eq('week_number', weekNumber)
-      .in('team_id', teamIds);
-
-    const teamsWithSnapshots = new Set(existingSnapshots?.map((s) => s.team_id) || []);
-    const teamsNeedingSnapshots = teams.filter((t) => !teamsWithSnapshots.has(t.team_id));
-
-    // If all teams already have snapshots, skip
-    if (teamsNeedingSnapshots.length === 0) {
-      console.log(
-        `[capture-power-snapshots] Snapshots already exist for all ${teamIds.length} teams in week ${weekNumber}`
-      );
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: `Snapshots already exist for all ${teamIds.length} teams in week ${weekNumber}`,
-          skipped: true,
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(
-      `[capture-power-snapshots] ${teamsWithSnapshots.size} teams already have snapshots, creating for ${teamsNeedingSnapshots.length} remaining teams`
-    );
-
-    // 5. Prepare snapshot records only for teams that don't have one
+    // 4. Prepare snapshot records for every team.
+    // This used to skip any team that already had a row for the week, which kept
+    // the write safe to retry but also froze the week: results entered after the
+    // first run never reached the snapshot, so Movers reported stale numbers.
+    // The unique key on (team_id, season_id, week_number) lets us refresh instead.
     const snapshotDate = new Date().toISOString().split('T')[0];
-    const snapshots = teamsNeedingSnapshots.map((team) => ({
+    const snapshots = teams.map((team) => ({
       team_id: team.team_id,
       season_id: activeSeason.id,
       week_number: weekNumber,
@@ -259,15 +231,17 @@ Deno.serve(async (req) => {
       division_id: team.division_id,
     }));
 
-    // 6. Batch insert into power_score_snapshots
-    const { error: insertError } = await supabase.from('power_score_snapshots').insert(snapshots);
+    // 5. Batch upsert into power_score_snapshots
+    const { error: insertError } = await supabase
+      .from('power_score_snapshots')
+      .upsert(snapshots, { onConflict: 'team_id,season_id,week_number', ignoreDuplicates: false });
 
     if (insertError) {
-      console.error('[capture-power-snapshots] Error inserting snapshots:', insertError);
+      console.error('[capture-power-snapshots] Error upserting snapshots:', insertError);
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Failed to insert snapshots',
+          error: 'Failed to upsert snapshots',
           details: insertError.message,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
