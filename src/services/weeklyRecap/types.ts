@@ -11,7 +11,8 @@ export interface WeeklyUpset {
   powerScoreGap: number;
   /** e.g. "21–15" */
   matchResult: string;
-  weekNumber: number;
+  /** null for playoff upsets, which do not belong to a calendar week. */
+  weekNumber: number | null;
 }
 
 export interface TeamStreakInfo {

@@ -742,5 +742,80 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       expect(result.mode).toBe('playoffs');
       expect(result.weekNumber).toBeNull();
     });
+
+    it('detects upsets in bracket games, with no week window applied', async () => {
+      createSupabaseMock({
+        ...seasonOnly(),
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [
+          {
+            data: [
+              {
+                // An 8 seed beating a 1 seed: the underdog has the weaker career score.
+                id: 'pm-1',
+                bracket_id: 'br-1',
+                round: 2,
+                position: 1,
+                match_type: 'winners',
+                team1_id: 't-underdog',
+                team2_id: 't-favorite',
+                team1_score: 2,
+                team2_score: 1,
+                team1_seed: 8,
+                team2_seed: 1,
+                winner_id: 't-underdog',
+                loser_id: 't-favorite',
+                created_at: '2026-02-01T00:00:00Z',
+                updated_at: '2026-02-02T00:00:00Z',
+              },
+            ],
+            error: null,
+          },
+        ],
+        v_team_details: [
+          {
+            data: [
+              {
+                team_id: 't-underdog',
+                name: 'Massive Sacks',
+                image_url: null,
+                logo_url: null,
+                division_id: 'd-visible',
+              },
+              {
+                team_id: 't-favorite',
+                name: 'Smooth Sliders',
+                image_url: null,
+                logo_url: null,
+                division_id: 'd-visible',
+              },
+            ],
+            error: null,
+          },
+        ],
+        team_season_stats: [
+          {
+            data: [
+              { team_id: 't-underdog', power_score: 0.48 },
+              { team_id: 't-favorite', power_score: 0.75 },
+            ],
+            error: null,
+          },
+        ],
+        divisions: [{ data: [{ id: 'd-visible' }], error: null }],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.upsets).toHaveLength(1);
+      expect(result.upsets[0]).toMatchObject({
+        winnerId: 't-underdog',
+        loserId: 't-favorite',
+        matchResult: '2–1',
+        weekNumber: null,
+      });
+      expect(result.upsets[0].powerScoreGap).toBeCloseTo(27, 5);
+      expect(result.hasData).toBe(true);
+    });
   });
 });

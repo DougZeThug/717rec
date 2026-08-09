@@ -45,6 +45,23 @@ export const WeeklyRecapService = {
       const playoffMatches = await fetchCompletedPlayoffMatchesForSeason(seasonId);
       const mode: RecapMode = playoffMatches.length > 0 ? 'playoffs' : 'regular';
 
+      if (mode === 'playoffs') {
+        // Playoff games carry no date, so there is no week to window on — the whole
+        // bracket is the recap.
+        const [upsets, hotStreaks] = await Promise.all([
+          fetchUpsets(seasonId, { mode: 'playoffs', matches: playoffMatches }),
+          fetchHotStreaks(seasonId),
+        ]);
+
+        return {
+          weekNumber: null,
+          mode,
+          upsets,
+          hotStreaks,
+          hasData: upsets.length > 0 || hotStreaks.length > 0,
+        };
+      }
+
       // 3. Find the most recent match date from completed regular-season matches
       const { data: latestMatchRow } = await supabase
         .from('matches')
@@ -77,16 +94,14 @@ export const WeeklyRecapService = {
 
       // 6. Fetch upsets and hot streaks in parallel
       const [upsetsResult, matchHistoryResult] = await Promise.all([
-        fetchUpsets(seasonId, weekStart, weekEnd, weekNumber),
+        fetchUpsets(seasonId, { mode: 'regular', weekStart, weekEnd, weekNumber }),
         fetchHotStreaks(seasonId),
       ]);
 
       const hasData = upsetsResult.length > 0 || matchHistoryResult.length > 0;
 
       return {
-        // The week counter keeps advancing off the season start date, so it is
-        // meaningless once the regular season is over — suppress it in playoffs mode.
-        weekNumber: mode === 'playoffs' ? null : weekNumber,
+        weekNumber,
         mode,
         upsets: upsetsResult,
         hotStreaks: matchHistoryResult,

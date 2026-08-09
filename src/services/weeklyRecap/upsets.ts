@@ -1,35 +1,79 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { SeasonPlayoffMatch } from '@/services/brackets/read/PlayoffSeasonMatchService';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 import type { WeeklyUpset } from './types';
 
-export async function fetchUpsets(
-  seasonId: string,
-  weekStart: Date,
-  weekEnd: Date,
-  weekNumber: number
-): Promise<WeeklyUpset[]> {
-  // Get completed regular-season matches within the week's date window
-  const { data: matches, error: matchError } = await supabase
-    .from('matches')
-    .select(
-      'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score, team1_game_wins, team2_game_wins'
-    )
-    .eq('season_id', seasonId)
-    .eq('iscompleted', true)
-    .is('bracket_id', null)
-    .not('winner_id', 'is', null)
-    .gte('date', weekStart.toISOString())
-    .lt('date', weekEnd.toISOString());
+/**
+ * The minimum a match needs for upset detection, so regular-season rows and
+ * playoff rows can share one code path.
+ */
+interface UpsetCandidate {
+  team1Id: string | null;
+  team2Id: string | null;
+  winnerId: string | null;
+  loserId: string | null;
+  team1GameWins: number | null;
+  team2GameWins: number | null;
+}
 
-  if (matchError) {
-    handleDatabaseError(matchError, 'Failed to fetch matches for upset detection');
+/**
+ * Where the week's upsets come from. During the regular season that is a date
+ * window; once the bracket is running it is the season's playoff matches, which
+ * have no dates to window on.
+ */
+export type UpsetSource =
+  | { mode: 'regular'; weekStart: Date; weekEnd: Date; weekNumber: number }
+  | { mode: 'playoffs'; matches: SeasonPlayoffMatch[] };
+
+const toPlayoffCandidates = (matches: SeasonPlayoffMatch[]): UpsetCandidate[] =>
+  matches.map((m) => ({
+    team1Id: m.team1Id,
+    team2Id: m.team2Id,
+    winnerId: m.winnerId,
+    loserId: m.loserId,
+    team1GameWins: m.team1GameWins,
+    team2GameWins: m.team2GameWins,
+  }));
+
+export async function fetchUpsets(seasonId: string, source: UpsetSource): Promise<WeeklyUpset[]> {
+  const weekNumber = source.mode === 'regular' ? source.weekNumber : null;
+  let candidates: UpsetCandidate[];
+
+  if (source.mode === 'playoffs') {
+    candidates = toPlayoffCandidates(source.matches);
+  } else {
+    // Get completed regular-season matches within the week's date window
+    const { data: matches, error: matchError } = await supabase
+      .from('matches')
+      .select(
+        'id, team1_id, team2_id, winner_id, loser_id, team1_score, team2_score, team1_game_wins, team2_game_wins'
+      )
+      .eq('season_id', seasonId)
+      .eq('iscompleted', true)
+      .is('bracket_id', null)
+      .not('winner_id', 'is', null)
+      .gte('date', source.weekStart.toISOString())
+      .lt('date', source.weekEnd.toISOString());
+
+    if (matchError) {
+      handleDatabaseError(matchError, 'Failed to fetch matches for upset detection');
+    }
+
+    candidates = (matches ?? []).map((m) => ({
+      team1Id: m.team1_id,
+      team2Id: m.team2_id,
+      winnerId: m.winner_id,
+      loserId: m.loser_id,
+      team1GameWins: m.team1_game_wins,
+      team2GameWins: m.team2_game_wins,
+    }));
   }
 
-  if (!matches || matches.length === 0) return [];
+  if (candidates.length === 0) return [];
 
   // Collect all team IDs involved
-  const teamIds = [...new Set(matches.flatMap((m) => [m.team1_id, m.team2_id]))].filter(
+  const teamIds = [...new Set(candidates.flatMap((m) => [m.team1Id, m.team2Id]))].filter(
     (id): id is string => id !== null
   );
 
@@ -89,16 +133,16 @@ export async function fetchUpsets(
 
   // Build a single upset record for a match, or null if it doesn't qualify.
   // Extracted so the surrounding fetch/aggregation stays low-complexity.
-  const buildUpset = (match: (typeof matches)[number]): WeeklyUpset | null => {
-    if (!match.winner_id || !match.loser_id) return null;
-    const winnerInfo = teamInfoMap.get(match.winner_id);
-    const loserInfo = teamInfoMap.get(match.loser_id);
+  const buildUpset = (match: UpsetCandidate): WeeklyUpset | null => {
+    if (!match.winnerId || !match.loserId) return null;
+    const winnerInfo = teamInfoMap.get(match.winnerId);
+    const loserInfo = teamInfoMap.get(match.loserId);
     if (!winnerInfo || !loserInfo) return null;
     // Skip matches involving a team an admin has moved to a hidden division
     if (!isVisible(winnerInfo.division_id) || !isVisible(loserInfo.division_id)) return null;
 
-    const winnerScore = careerScoreMap.get(match.winner_id) ?? 0;
-    const loserScore = careerScoreMap.get(match.loser_id) ?? 0;
+    const winnerScore = careerScoreMap.get(match.winnerId) ?? 0;
+    const loserScore = careerScoreMap.get(match.loserId) ?? 0;
     // Skip if either team has no career history to compare
     if (winnerScore === 0 || loserScore === 0) return null;
 
@@ -107,18 +151,18 @@ export async function fetchUpsets(
     if (gap <= 0) return null;
 
     // Build score string like "21–15"
-    const isWinnerTeam1 = match.winner_id === match.team1_id;
-    const winnerGameWins = isWinnerTeam1 ? match.team1_game_wins : match.team2_game_wins;
-    const loserGameWins = isWinnerTeam1 ? match.team2_game_wins : match.team1_game_wins;
+    const isWinnerTeam1 = match.winnerId === match.team1Id;
+    const winnerGameWins = isWinnerTeam1 ? match.team1GameWins : match.team2GameWins;
+    const loserGameWins = isWinnerTeam1 ? match.team2GameWins : match.team1GameWins;
     const matchResult =
       winnerGameWins != null && loserGameWins != null ? `${winnerGameWins}–${loserGameWins}` : '';
 
     return {
-      winnerId: match.winner_id,
+      winnerId: match.winnerId,
       winnerName: winnerInfo.name ?? '',
       winnerLogoUrl: winnerInfo.image_url ?? winnerInfo.logo_url ?? undefined,
       winnerPowerScore: winnerScore,
-      loserId: match.loser_id,
+      loserId: match.loserId,
       loserName: loserInfo.name ?? '',
       loserLogoUrl: loserInfo.image_url ?? loserInfo.logo_url ?? undefined,
       loserPowerScore: loserScore,
@@ -128,7 +172,7 @@ export async function fetchUpsets(
     };
   };
 
-  const upsets = matches.map(buildUpset).filter((u): u is WeeklyUpset => u !== null);
+  const upsets = candidates.map(buildUpset).filter((u): u is WeeklyUpset => u !== null);
 
   // Sort by biggest gap first, return top 2
   return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 3);
