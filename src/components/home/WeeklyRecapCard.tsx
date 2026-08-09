@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { WeeklyRecapData } from '@/services/WeeklyRecapService';
+import { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 import WeeklyRecapHeader from './WeeklyRecapHeader';

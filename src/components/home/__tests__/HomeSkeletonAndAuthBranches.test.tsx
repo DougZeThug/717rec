@@ -3,7 +3,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
-import { WeeklyRecapData } from '@/services/WeeklyRecapService';
+import { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 const mockAuth = vi.hoisted(() => vi.fn());

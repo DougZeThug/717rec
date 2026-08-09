@@ -1,4 +1,4 @@
-import { TeamStreakInfo, WeeklyUpset } from '@/services/WeeklyRecapService';
+import { TeamStreakInfo, WeeklyUpset } from '@/services/weeklyRecap/WeeklyRecapService';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 export interface UpsetRowProps {
