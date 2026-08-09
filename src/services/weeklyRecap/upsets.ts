@@ -129,7 +129,7 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
   const teamInfoMap = new Map(teamDetailsResult.data.map((t) => [t.team_id, t]));
   const visibleDivisionIds = new Set(visibleDivisionsResult.data?.map((d) => d.id) ?? []);
   const isVisible = (divisionId: string | null | undefined): boolean =>
-    !!divisionId && visibleDivisionIds.has(divisionId);
+    divisionId != null && visibleDivisionIds.has(divisionId);
 
   // Build a single upset record for a match, or null if it doesn't qualify.
   // Extracted so the surrounding fetch/aggregation stays low-complexity.
