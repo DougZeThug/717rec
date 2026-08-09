@@ -13,7 +13,8 @@ function WeeklyRecapHeader({
   mode: RecapMode;
   winter: boolean;
 }) {
-  const label = mode === 'playoffs' ? 'Playoffs' : weekNumber !== null ? `Week ${weekNumber}` : null;
+  const label =
+    mode === 'playoffs' ? 'Playoffs' : weekNumber !== null ? `Week ${weekNumber}` : null;
 
   return (
     <div className="flex items-center justify-between">

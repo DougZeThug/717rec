@@ -86,7 +86,10 @@ describe('buildOrderedMatchesForStreaks', () => {
 
   it('sorts undated regular matches first rather than dropping them', () => {
     const undated = { ...regular('r0', 'team-1', ''), date: undefined } as Match;
-    const result = buildOrderedMatchesForStreaks([regular('r1', 'team-1', '2026-01-01'), undated], []);
+    const result = buildOrderedMatchesForStreaks(
+      [regular('r1', 'team-1', '2026-01-01'), undated],
+      []
+    );
 
     expect(result.map((m) => m.id)).toEqual(['r0', 'r1']);
   });
