@@ -8,6 +8,7 @@ import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { formatPowerScore } from '@/utils/colors/powerScoreColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
+import { isVisibleMover } from './weeklyRecapMovers';
 import { MoverRowProps } from './weeklyRecapTypes';
 
 function MoverRow({ trend, direction, winter }: MoverRowProps) {
@@ -60,8 +61,9 @@ function MoversSection({
   faller?: WeeklyPowerScoreTrend;
   winter: boolean;
 }) {
-  const hasMovers = risers.length > 0 || Boolean(faller);
-  if (!hasMovers) return null;
+  const visibleRisers = risers.filter(isVisibleMover);
+  const visibleFaller = faller && faller.delta < 0 && isVisibleMover(faller) ? faller : undefined;
+  if (visibleRisers.length === 0 && !visibleFaller) return null;
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-1.5 mb-1">
@@ -75,10 +77,10 @@ function MoversSection({
           Movers
         </span>
       </div>
-      {risers.map((trend) => (
+      {visibleRisers.map((trend) => (
         <MoverRow key={trend.teamId} trend={trend} direction="up" winter={winter} />
       ))}
-      {faller && faller.delta < 0 && <MoverRow trend={faller} direction="down" winter={winter} />}
+      {visibleFaller && <MoverRow trend={visibleFaller} direction="down" winter={winter} />}
     </section>
   );
 }
