@@ -215,13 +215,23 @@ Deno.serve(async (req) => {
     // This used to skip any team that already had a row for the week, which kept
     // the write safe to retry but also froze the week: results entered after the
     // first run never reached the snapshot, so Movers reported stale numbers.
-    // The unique key on (team_id, season_id, week_number) lets us refresh instead.
-    const snapshotDate = new Date().toISOString().split('T')[0];
+    // The table's UNIQUE(team_id, season_id, week_number) constraint lets us
+    // refresh instead.
+    //
+    // created_at is written explicitly, not left to its column default. Ops Health
+    // reads it as "when the snapshot last ran" (OpsHealthService, get-ops-health),
+    // and an ON CONFLICT update only touches the columns present in the payload —
+    // so without this a successful mid-week refresh would keep reporting the first
+    // run's time and could trip the "Stale" badge. One timestamp is shared by the
+    // whole batch so the health card's "N teams captured" count stays correct.
+    const capturedAt = new Date();
+    const snapshotDate = capturedAt.toISOString().split('T')[0];
     const snapshots = teams.map((team) => ({
       team_id: team.team_id,
       season_id: activeSeason.id,
       week_number: weekNumber,
       snapshot_date: snapshotDate,
+      created_at: capturedAt.toISOString(),
       power_score: team.power_score,
       sos: team.sos,
       match_wins: team.wins || 0,
