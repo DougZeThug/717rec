@@ -93,7 +93,12 @@ COMMENT ON VIEW public.v_power_score_match_source IS
 -- is_active lookup would drop the bracket exactly when the bracket is the only
 -- thing happening. Active season first, so that a newly activated season keeps the
 -- outgoing season's bracket out of its own standings; the playoffs-active season
--- only as the fallback. Same order the app uses (usePlayoffPageData).
+-- only as the fallback.
+--
+-- Note this is the opposite order from usePlayoffPageData, deliberately. That page
+-- is showing the bracket, so it prefers the season still playing one; the standings
+-- describe whichever season is currently being played, which is the new one as soon
+-- as it exists. Matches fetchRankingsData.
 -- ---------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.current_standings_season_id()
 RETURNS uuid

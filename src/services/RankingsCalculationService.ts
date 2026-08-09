@@ -30,8 +30,10 @@ export const fetchRankingsData = async (): Promise<Match[]> => {
   // between the regular season being archived and the playoffs being finalized the
   // active-season lookup finds nothing — and the bracket would drop out of the
   // streak column. Active first, so a newly activated season correctly keeps the
-  // outgoing season's bracket out of its own standings. Same order as
-  // usePlayoffPageData.
+  // outgoing season's bracket out of its own standings — the opposite order from
+  // usePlayoffPageData, deliberately: that page is showing the bracket, so it
+  // prefers the season still playing one. Matches current_standings_season_id(),
+  // which scopes the SQL side of the same standings.
   const season =
     (await SeasonQueryService.fetchActiveSeason()) ??
     (await SeasonQueryService.fetchPlayoffActiveSeason());
