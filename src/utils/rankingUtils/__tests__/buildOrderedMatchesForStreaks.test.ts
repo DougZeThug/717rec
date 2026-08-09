@@ -102,6 +102,34 @@ describe('buildOrderedMatchesForStreaks', () => {
     expect(result.map((m) => m.id)).toEqual(['semi-stamped', 'final-unstamped']);
   });
 
+  it('orders a mix of stamped and unstamped rows the same way whatever order they arrive in', () => {
+    // Deciding per pair whether to use timestamps would be non-transitive here —
+    // r1 before r2 (round), r2 before r3 (round), but r3 before r1 (timestamp) —
+    // and sort() would then depend on the input order.
+    const rows = [
+      playoff('r1-stamped-late', 'team-1', {
+        round: 1,
+        position: 1,
+        recordedAt: '2026-08-10T00:00:00.000Z',
+      }),
+      playoff('r2-unstamped', 'team-1', { round: 2, position: 1, recordedAt: null }),
+      playoff('r3-stamped-early', 'team-1', {
+        round: 3,
+        position: 1,
+        recordedAt: '2026-08-01T00:00:00.000Z',
+      }),
+    ];
+    const expected = ['r1-stamped-late', 'r2-unstamped', 'r3-stamped-early'];
+
+    expect(buildOrderedMatchesForStreaks([], rows).map((m) => m.id)).toEqual(expected);
+    expect(buildOrderedMatchesForStreaks([], [...rows].reverse()).map((m) => m.id)).toEqual(
+      expected
+    );
+    expect(buildOrderedMatchesForStreaks([], [rows[2], rows[0], rows[1]]).map((m) => m.id)).toEqual(
+      expected
+    );
+  });
+
   it('ends a win streak with an unstamped playoff loss', () => {
     const matches = buildOrderedMatchesForStreaks(
       [regular('r1', 'team-1', '2026-01-01'), regular('r2', 'team-1', '2026-01-08')],
