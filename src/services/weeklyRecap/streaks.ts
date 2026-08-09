@@ -1,10 +1,16 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { SeasonPlayoffMatch } from '@/services/brackets/read/PlayoffSeasonMatchService';
+import type { Match } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { buildOrderedMatchesForStreaks } from '@/utils/rankingUtils/buildOrderedMatchesForStreaks';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 import { MIN_STREAK_COUNT, type TeamStreakInfo } from './types';
 
-export async function fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[]> {
+export async function fetchHotStreaks(
+  seasonId: string,
+  playoffMatches: SeasonPlayoffMatch[] = []
+): Promise<TeamStreakInfo[]> {
   // Get all completed regular-season matches for the season
   const { data: allMatches, error: matchError } = await supabase
     .from('matches')
@@ -18,24 +24,35 @@ export async function fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[
     handleDatabaseError(matchError, 'Failed to fetch matches for streak calculation');
   }
 
-  if (!allMatches || allMatches.length === 0) return [];
+  if ((!allMatches || allMatches.length === 0) && playoffMatches.length === 0) return [];
 
   // Map to the shape calculateStreak() expects
-  const matchesForStreak = allMatches.map((m) => ({
-    id: m.id,
-    team1Id: m.team1_id,
-    team2Id: m.team2_id,
-    winnerId: m.winner_id,
-    loserId: m.loser_id,
-    date: m.date,
-    iscompleted: m.iscompleted,
-    roundNumber: m.round_number,
-  }));
-
-  // Find unique team IDs
-  const teamIds = [...new Set(allMatches.flatMap((m) => [m.team1_id, m.team2_id]))].filter(
-    (id): id is string => id !== null
+  const regularForStreak = (allMatches ?? []).map(
+    (m) =>
+      ({
+        id: m.id,
+        team1Id: m.team1_id,
+        team2Id: m.team2_id,
+        winnerId: m.winner_id,
+        loserId: m.loser_id,
+        date: m.date,
+        iscompleted: m.iscompleted,
+        round_number: m.round_number,
+      }) as Match
   );
+
+  // Playoff games have no date, so ordering is pinned explicitly — otherwise a
+  // playoff loss could sort before the regular season and leave a streak intact.
+  const matchesForStreak = buildOrderedMatchesForStreaks(regularForStreak, playoffMatches);
+
+  // Find unique team IDs across both sources, so a team that only appears in the
+  // bracket still gets a streak
+  const teamIds = [
+    ...new Set([
+      ...(allMatches ?? []).flatMap((m) => [m.team1_id, m.team2_id]),
+      ...playoffMatches.flatMap((m) => [m.team1Id, m.team2Id]),
+    ]),
+  ].filter((id): id is string => id !== null);
 
   // Get team details for all participating teams
   const { data: teamDetails, error: teamError } = await supabase
@@ -70,10 +87,7 @@ export async function fetchHotStreaks(seasonId: string): Promise<TeamStreakInfo[
     const team = teamMap.get(teamId);
     if (!team || !team.division_id || !visibleDivisionIds.has(team.division_id)) continue;
 
-    const streak = calculateStreak(
-      teamId,
-      matchesForStreak as Parameters<typeof calculateStreak>[1]
-    );
+    const streak = calculateStreak(teamId, matchesForStreak);
     if (!streak) continue;
 
     // Only show win streaks (W prefix) meeting minimum threshold

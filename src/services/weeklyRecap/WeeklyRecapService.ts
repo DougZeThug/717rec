@@ -50,7 +50,7 @@ export const WeeklyRecapService = {
         // bracket is the recap.
         const [upsets, hotStreaks] = await Promise.all([
           fetchUpsets(seasonId, { mode: 'playoffs', matches: playoffMatches }),
-          fetchHotStreaks(seasonId),
+          fetchHotStreaks(seasonId, playoffMatches),
         ]);
 
         return {
@@ -77,7 +77,7 @@ export const WeeklyRecapService = {
 
       if (!latestMatchRow?.date) {
         // No completed matches with dates — still fetch hot streaks
-        const hotStreaks = await fetchHotStreaks(seasonId);
+        const hotStreaks = await fetchHotStreaks(seasonId, playoffMatches);
         return { ...emptyRecap(mode), hotStreaks, hasData: hotStreaks.length > 0 };
       }
 
@@ -95,7 +95,7 @@ export const WeeklyRecapService = {
       // 6. Fetch upsets and hot streaks in parallel
       const [upsetsResult, matchHistoryResult] = await Promise.all([
         fetchUpsets(seasonId, { mode: 'regular', weekStart, weekEnd, weekNumber }),
-        fetchHotStreaks(seasonId),
+        fetchHotStreaks(seasonId, playoffMatches),
       ]);
 
       const hasData = upsetsResult.length > 0 || matchHistoryResult.length > 0;

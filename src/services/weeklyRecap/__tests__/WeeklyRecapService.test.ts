@@ -817,5 +817,83 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       expect(result.upsets[0].powerScoreGap).toBeCloseTo(27, 5);
       expect(result.hasData).toBe(true);
     });
+
+    it('feeds playoff results into streaks, so a bracket loss ends a win streak', async () => {
+      // Mirrors the live bug: a team unbeaten in the regular season that lost the
+      // grand final was still being shown on a long winning streak.
+      mockCalculateStreak.mockImplementation((_teamId: string, matches: unknown) => {
+        const list = matches as Array<{ id: string; orderKey?: number }>;
+        // Assert the playoff game is ordered last, then report the real streak.
+        return list[list.length - 1]?.id === 'pm-final' ? 'L1' : 'W12';
+      });
+
+      createSupabaseMock({
+        seasons: [{ data: { id: 's-1', start_date: '2026-01-01T00:00:00Z' }, error: null }],
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [
+          {
+            data: [
+              {
+                id: 'pm-final',
+                bracket_id: 'br-1',
+                round: 1,
+                position: 1,
+                match_type: 'finals',
+                team1_id: 't-champ',
+                team2_id: 't-runnerup',
+                team1_score: 2,
+                team2_score: 1,
+                team1_seed: 3,
+                team2_seed: 1,
+                winner_id: 't-champ',
+                loser_id: 't-runnerup',
+                created_at: '2026-08-01T00:00:00Z',
+                updated_at: '2026-08-02T00:00:00Z',
+              },
+            ],
+            error: null,
+          },
+        ],
+        matches: [
+          {
+            data: [
+              {
+                id: 'reg-1',
+                team1_id: 't-runnerup',
+                team2_id: 't-other',
+                winner_id: 't-runnerup',
+                loser_id: 't-other',
+                date: '2026-02-01T00:00:00Z',
+                iscompleted: true,
+                round_number: 1,
+              },
+            ],
+            error: null,
+          },
+        ],
+        v_team_details: [
+          { data: [], error: null },
+          {
+            data: [
+              {
+                team_id: 't-runnerup',
+                name: "Cuzzo's Clinic",
+                image_url: null,
+                logo_url: null,
+                divisionname: 'Competitive',
+                division_id: 'd-visible',
+              },
+            ],
+            error: null,
+          },
+        ],
+        divisions: [{ data: [{ id: 'd-visible' }], error: null }],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      // The streak resolved to L1, so the team is filtered out of Winning Streaks.
+      expect(result.hotStreaks).toEqual([]);
+    });
   });
 });
