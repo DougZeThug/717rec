@@ -32,6 +32,12 @@ export interface Match {
   winnerId?: string;
   loserId?: string;
   date?: string;
+  /**
+   * Optional explicit chronological rank, used when `date` cannot order matches
+   * correctly — playoff matches have no date, and results that cascade through a
+   * bracket share one timestamp. Falls back to `date` when absent.
+   */
+  orderKey?: number;
   location?: string;
   iscompleted?: boolean;
   round_number?: number;

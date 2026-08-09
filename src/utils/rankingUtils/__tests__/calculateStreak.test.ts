@@ -77,4 +77,41 @@ describe('calculateStreak', () => {
     // The tie should be skipped; streak should be W2 from the two wins
     expect(calculateStreak(T, matches)).toBe('W2');
   });
+
+  describe('orderKey', () => {
+    const keyed = (id: string, winner: string, orderKey: number, date?: string): Match =>
+      ({
+        id,
+        team1Id: T,
+        team2Id: 'opponent',
+        winnerId: winner,
+        iscompleted: true,
+        orderKey,
+        date,
+      }) as Match;
+
+    it('orders by orderKey in preference to date', () => {
+      // Dates say the win is most recent; orderKey says the loss is.
+      const matches = [
+        keyed('win', T, 0, '2024-06-01'),
+        keyed('loss', 'opponent', 1, '2024-01-01'),
+      ];
+      expect(calculateStreak(T, matches)).toBe('L1');
+    });
+
+    it('sorts keyed matches after dated ones when keys exceed date timestamps', () => {
+      // This is how playoff matches are pinned after the regular season.
+      const matches = [
+        match('reg-1', T, 'opponent', T, '2024-01-01'),
+        match('reg-2', T, 'opponent', T, '2024-01-08'),
+        keyed('playoff-loss', 'opponent', Number.MAX_SAFE_INTEGER),
+      ];
+      expect(calculateStreak(T, matches)).toBe('L1');
+    });
+
+    it('handles a keyed match with no date at all', () => {
+      const matches = [keyed('only', T, 5)];
+      expect(calculateStreak(T, matches)).toBe('W1');
+    });
+  });
 });
