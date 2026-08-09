@@ -887,10 +887,26 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
             error: null,
           },
         ],
-        divisions: [{ data: [{ id: 'd-visible' }], error: null }],
+        // Two entries: fetchUpsets and fetchHotStreaks each query divisions, and
+        // fetchUpsets runs first. With only one queued, fetchHotStreaks would fall
+        // through to the mock default, see no visible divisions, skip every team
+        // and never reach calculateStreak — the assertions below would then pass
+        // no matter what the ordering did.
+        divisions: [
+          { data: [{ id: 'd-visible' }], error: null },
+          { data: [{ id: 'd-visible' }], error: null },
+        ],
       });
 
       const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      // The streak really was evaluated, with the playoff game ordered last.
+      expect(mockCalculateStreak).toHaveBeenCalled();
+      const [, orderedMatches] = mockCalculateStreak.mock.calls[0] as [
+        string,
+        Array<{ id: string }>,
+      ];
+      expect(orderedMatches.map((m) => m.id)).toEqual(['reg-1', 'pm-final']);
 
       // The streak resolved to L1, so the team is filtered out of Winning Streaks.
       expect(result.hotStreaks).toEqual([]);
