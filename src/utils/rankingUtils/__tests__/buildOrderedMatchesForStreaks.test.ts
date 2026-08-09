@@ -84,6 +84,42 @@ describe('buildOrderedMatchesForStreaks', () => {
     expect(result.map((m) => m.id)).toEqual(['losers-r1', 'winners-r2']);
   });
 
+  it('falls back to round and position when a playoff row has never been stamped', () => {
+    // Bracket rows are created with created_at and updated_at both null, so an
+    // unstamped later round must not sort ahead of a stamped earlier one.
+    const result = buildOrderedMatchesForStreaks(
+      [],
+      [
+        playoff('final-unstamped', 'team-1', { round: 3, position: 1, recordedAt: null }),
+        playoff('semi-stamped', 'team-1', {
+          round: 2,
+          position: 1,
+          recordedAt: '2026-08-01T00:00:00.000Z',
+        }),
+      ]
+    );
+
+    expect(result.map((m) => m.id)).toEqual(['semi-stamped', 'final-unstamped']);
+  });
+
+  it('ends a win streak with an unstamped playoff loss', () => {
+    const matches = buildOrderedMatchesForStreaks(
+      [regular('r1', 'team-1', '2026-01-01'), regular('r2', 'team-1', '2026-01-08')],
+      [
+        playoff('semi', 'team-1', { round: 1, position: 1, recordedAt: null }),
+        playoff('final', 'opponent', {
+          round: 2,
+          position: 1,
+          recordedAt: null,
+          team1GameWins: 1,
+          team2GameWins: 2,
+        }),
+      ]
+    );
+
+    expect(calculateStreak('team-1', matches)).toBe('L1');
+  });
+
   it('sorts undated regular matches first rather than dropping them', () => {
     const undated = { ...regular('r0', 'team-1', ''), date: undefined } as Match;
     const result = buildOrderedMatchesForStreaks(

@@ -28,9 +28,10 @@ const timeOf = (value: string | null | undefined): number =>
  * Playoff matches have no date, so they cannot be interleaved by timestamp alone.
  * They are placed after every regular-season match by construction — the playoffs
  * follow the regular season — and ordered among themselves by when the result was
- * recorded, falling back to bracket round and position. That fallback matters:
- * a result cascading through a bracket updates several rows inside one
- * transaction, so their timestamps are identical.
+ * recorded, falling back to bracket round and position whenever the timestamps
+ * cannot decide it. That fallback carries most of the weight: a result cascading
+ * through a bracket updates several rows inside one transaction, so their
+ * timestamps are identical, and a row nothing has stamped yet has none at all.
  *
  * The returned matches are safe to hand to `calculateStreak`, which prefers
  * `orderKey` over `date`.
@@ -41,10 +42,17 @@ export const buildOrderedMatchesForStreaks = (
 ): Match[] => {
   const regular = [...regularMatches].sort((a, b) => timeOf(a.date) - timeOf(b.date));
 
-  const playoff = [...playoffMatches].sort(
-    (a, b) =>
-      timeOf(a.recordedAt) - timeOf(b.recordedAt) || a.round - b.round || a.position - b.position
-  );
+  const playoff = [...playoffMatches].sort((a, b) => {
+    // Only trust the timestamps when both rows have one. playoff_matches.created_at
+    // and .updated_at are both nullable with no default, and the trigger that
+    // creates bracket rows writes neither — so an unstamped row would otherwise
+    // read as the epoch and sort ahead of every dated game regardless of its round.
+    if (a.recordedAt && b.recordedAt) {
+      const delta = timeOf(a.recordedAt) - timeOf(b.recordedAt);
+      if (delta !== 0) return delta;
+    }
+    return a.round - b.round || a.position - b.position;
+  });
 
   const asMatch = (p: PlayoffMatchForOrdering): Match =>
     ({
