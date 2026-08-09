@@ -84,9 +84,32 @@ COMMENT ON VIEW public.v_power_score_match_source IS
 --
 -- v_team_details has no season filter and relies on old seasons having been moved
 -- into matches_archive. brackets/playoff_matches are not archived that way, so the
--- playoff half has to be restricted to the active season explicitly or every past
+-- playoff half has to be restricted to one season explicitly or every past
 -- season's bracket would leak into the live standings.
+--
+-- Which season that is needs a little care. partial_archive_season clears
+-- is_active and sets playoffs_active, so between the regular season being archived
+-- and the playoffs being finalized there is no active season at all — and a plain
+-- is_active lookup would drop the bracket exactly when the bracket is the only
+-- thing happening. Active season first, so that a newly activated season keeps the
+-- outgoing season's bracket out of its own standings; the playoffs-active season
+-- only as the fallback. Same order the app uses (usePlayoffPageData).
 -- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.current_standings_season_id()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+AS $$
+  SELECT COALESCE(
+    (SELECT id FROM public.seasons WHERE is_active = true LIMIT 1),
+    (SELECT id FROM public.seasons WHERE playoffs_active = true LIMIT 1)
+  );
+$$;
+
+COMMENT ON FUNCTION public.current_standings_season_id() IS
+  'The season the live standings describe: the active season, falling back to the '
+  'season whose playoffs are still running after a partial archive.';
+
 CREATE OR REPLACE VIEW public.v_power_score_match_source_current
 WITH (security_invoker = on) AS
 SELECT *
@@ -94,12 +117,12 @@ FROM public.v_power_score_match_source
 WHERE source = 'regular'
    OR (
      source = 'playoff'
-     AND season_id = (SELECT id FROM public.seasons WHERE is_active = true LIMIT 1)
+     AND season_id = public.current_standings_season_id()
    );
 
 COMMENT ON VIEW public.v_power_score_match_source_current IS
   'v_power_score_match_source limited to the live season: all regular-season rows '
-  'plus playoff rows for the active season only.';
+  'plus playoff rows for the current standings season only.';
 
 -- ---------------------------------------------------------------------------
 -- 3. The canonical formula. The only place these weights are defined.
@@ -221,7 +244,7 @@ LEFT JOIN public.divisions d_opp ON d_opp.id = t_opp.division_id
 WHERE tm.source = 'regular'
    OR (
      tm.source = 'playoff'
-     AND tm.season_id = (SELECT id FROM public.seasons WHERE is_active = true LIMIT 1)
+     AND tm.season_id = public.current_standings_season_id()
    )
 GROUP BY tm.team_id;
 

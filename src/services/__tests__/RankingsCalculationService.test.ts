@@ -1,9 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockFrom, mockHandleDatabaseError, mockFetchPlayoffMatches } = vi.hoisted(() => ({
+const {
+  mockFrom,
+  mockHandleDatabaseError,
+  mockFetchPlayoffMatches,
+  mockFetchActiveSeason,
+  mockFetchPlayoffActiveSeason,
+} = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockHandleDatabaseError: vi.fn(),
   mockFetchPlayoffMatches: vi.fn(),
+  mockFetchActiveSeason: vi.fn(),
+  mockFetchPlayoffActiveSeason: vi.fn(),
 }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -16,6 +24,13 @@ vi.mock('@/utils/errorHandler', () => ({
 
 vi.mock('@/services/brackets/read/PlayoffSeasonMatchService', () => ({
   fetchCompletedPlayoffMatchesForSeason: (...args: unknown[]) => mockFetchPlayoffMatches(...args),
+}));
+
+vi.mock('@/services/seasons/SeasonQueryService', () => ({
+  SeasonQueryService: {
+    fetchActiveSeason: () => mockFetchActiveSeason(),
+    fetchPlayoffActiveSeason: () => mockFetchPlayoffActiveSeason(),
+  },
 }));
 
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
@@ -74,12 +89,14 @@ describe('fetchRankingsData', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchPlayoffMatches.mockResolvedValue([]);
+    mockFetchActiveSeason.mockResolvedValue({ id: 's-1' });
+    mockFetchPlayoffActiveSeason.mockResolvedValue(null);
   });
 
-  it('returns regular-season matches unchanged when there is no active season', async () => {
+  it('returns regular-season matches unchanged when no season can be resolved', async () => {
+    mockFetchActiveSeason.mockResolvedValue(null);
     createSupabaseMock({
       matches: [{ data: [regularRow('r1', 'team-1', '2026-01-01')], error: null }],
-      seasons: [{ data: null, error: null }],
     });
 
     const result = await fetchRankingsData();
@@ -88,10 +105,38 @@ describe('fetchRankingsData', () => {
     expect(mockFetchPlayoffMatches).not.toHaveBeenCalled();
   });
 
+  it('falls back to the playoffs-active season once the regular season is archived', async () => {
+    // partial_archive_season clears is_active and sets playoffs_active. Without the
+    // fallback the bracket drops out of the streak column for the whole playoff run.
+    mockFetchActiveSeason.mockResolvedValue(null);
+    mockFetchPlayoffActiveSeason.mockResolvedValue({ id: 's-playoffs' });
+    mockFetchPlayoffMatches.mockResolvedValue([playoffRow]);
+    createSupabaseMock({
+      matches: [{ data: [regularRow('r1', 'team-1', '2026-01-01')], error: null }],
+    });
+
+    const result = await fetchRankingsData();
+
+    expect(mockFetchPlayoffMatches).toHaveBeenCalledWith('s-playoffs');
+    expect(result.map((m) => m.id)).toEqual(['pm-final', 'r1']);
+  });
+
+  it('prefers the active season, so a new season does not inherit the old bracket', async () => {
+    mockFetchActiveSeason.mockResolvedValue({ id: 's-new' });
+    mockFetchPlayoffActiveSeason.mockResolvedValue({ id: 's-old' });
+    createSupabaseMock({
+      matches: [{ data: [regularRow('r1', 'team-1', '2026-01-01')], error: null }],
+    });
+
+    await fetchRankingsData();
+
+    expect(mockFetchPlayoffMatches).toHaveBeenCalledWith('s-new');
+    expect(mockFetchPlayoffActiveSeason).not.toHaveBeenCalled();
+  });
+
   it('returns regular-season matches unchanged when the season has no playoff results', async () => {
     createSupabaseMock({
       matches: [{ data: [regularRow('r1', 'team-1', '2026-01-01')], error: null }],
-      seasons: [{ data: { id: 's-1' }, error: null }],
     });
 
     const result = await fetchRankingsData();
@@ -112,7 +157,6 @@ describe('fetchRankingsData', () => {
           error: null,
         },
       ],
-      seasons: [{ data: { id: 's-1' }, error: null }],
     });
     mockFetchPlayoffMatches.mockResolvedValue([playoffRow]);
 
@@ -134,7 +178,6 @@ describe('fetchRankingsData', () => {
           error: null,
         },
       ],
-      seasons: [{ data: { id: 's-1' }, error: null }],
     });
     mockFetchPlayoffMatches.mockResolvedValue([playoffRow]);
 
@@ -146,7 +189,6 @@ describe('fetchRankingsData', () => {
   it('surfaces a matches query error', async () => {
     createSupabaseMock({
       matches: [{ data: null, error: { message: 'boom' } }],
-      seasons: [{ data: null, error: null }],
     });
 
     await fetchRankingsData();

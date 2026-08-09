@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCompletedPlayoffMatchesForSeason } from '@/services/brackets/read/PlayoffSeasonMatchService';
+import { SeasonQueryService } from '@/services/seasons/SeasonQueryService';
 import { Match } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
@@ -24,16 +25,20 @@ export const fetchRankingsData = async (): Promise<Match[]> => {
   if (error) handleDatabaseError(error, 'Failed to fetch rankings data');
   const regularMatches = transformDatabaseMatches(data ?? [], { normalizeDate: false });
 
-  const { data: activeSeason, error: seasonError } = await supabase
-    .from('seasons')
-    .select('id')
-    .eq('is_active', true)
-    .maybeSingle();
+  // Which season's bracket belongs in the standings. The active season normally,
+  // but partial_archive_season clears is_active while setting playoffs_active, so
+  // between the regular season being archived and the playoffs being finalized the
+  // active-season lookup finds nothing — and the bracket would drop out of the
+  // streak column. Active first, so a newly activated season correctly keeps the
+  // outgoing season's bracket out of its own standings. Same order as
+  // usePlayoffPageData.
+  const season =
+    (await SeasonQueryService.fetchActiveSeason()) ??
+    (await SeasonQueryService.fetchPlayoffActiveSeason());
 
-  if (seasonError) handleDatabaseError(seasonError, 'Failed to fetch active season for rankings');
-  if (!activeSeason) return regularMatches;
+  if (!season) return regularMatches;
 
-  const playoffMatches = await fetchCompletedPlayoffMatchesForSeason(activeSeason.id);
+  const playoffMatches = await fetchCompletedPlayoffMatchesForSeason(season.id);
   if (playoffMatches.length === 0) return regularMatches;
 
   // The helper returns oldest first; reverse to keep this function's newest-first
