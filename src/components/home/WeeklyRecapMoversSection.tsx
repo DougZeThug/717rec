@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { cn } from '@/lib/utils';
+import type { RecapMode } from '@/services/weeklyRecap/WeeklyRecapService';
 import { typeScale } from '@/styles/design-system';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { formatPowerScore } from '@/utils/colors/powerScoreColors';
@@ -56,10 +57,12 @@ function MoversSection({
   risers,
   faller,
   winter,
+  mode = 'regular',
 }: {
   risers: WeeklyPowerScoreTrend[];
   faller?: WeeklyPowerScoreTrend;
   winter: boolean;
+  mode?: RecapMode;
 }) {
   const visibleRisers = risers.filter(isVisibleMover);
   const visibleFaller = faller && faller.delta < 0 && isVisibleMover(faller) ? faller : undefined;
@@ -74,7 +77,7 @@ function MoversSection({
             'font-semibold uppercase tracking-wider text-muted-foreground'
           )}
         >
-          Movers
+          {mode === 'playoffs' ? 'Playoff Movers' : 'Movers'}
         </span>
       </div>
       {visibleRisers.map((trend) => (

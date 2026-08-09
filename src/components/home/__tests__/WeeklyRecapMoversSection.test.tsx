@@ -59,6 +59,16 @@ describe('WeeklyRecapMoversSection', () => {
 
     expect(screen.queryByText('Movers')).not.toBeInTheDocument();
   });
+
+  it('labels the section Playoff Movers during the playoffs', () => {
+    render(
+      <MemoryRouter>
+        <MoversSection risers={[trend('a', 1.2)]} winter={false} mode="playoffs" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Playoff Movers')).toBeInTheDocument();
+  });
 });
 
 describe('WeeklyRecapCard movers consistency', () => {
