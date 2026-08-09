@@ -82,6 +82,23 @@ describe('updatePlayoffMatchResult', () => {
     expect(mockFrom).toHaveBeenCalledWith('playoff_matches');
   });
 
+  it('stamps updated_at, which season stats use to order playoff results', async () => {
+    const update = vi.fn(() => ({ eq: () => Promise.resolve({ error: null }) }));
+    mockFrom.mockReturnValue({ update });
+
+    await updatePlayoffMatchResult('m-1', {
+      winner_id: 't1',
+      loser_id: 't2',
+      team1_score: 2,
+      team2_score: 1,
+      status: 'complete',
+    });
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({ updated_at: expect.any(String) })
+    );
+  });
+
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
       update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),

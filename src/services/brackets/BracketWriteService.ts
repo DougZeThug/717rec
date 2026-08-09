@@ -31,6 +31,10 @@ export const deleteBracket = async (bracketId: string): Promise<void> => {
 /**
  * Update a playoff match result (winner, scores, status)
  * Used by usePlayoffActions hook
+ *
+ * updated_at is stamped here rather than left to the caller: playoff_matches has
+ * no updated_at trigger, and season stats order playoff results by that column
+ * (PlayoffSeasonMatchService.recordedAt) to work out current streaks.
  */
 export const updatePlayoffMatchResult = async (
   matchId: string,
@@ -42,7 +46,10 @@ export const updatePlayoffMatchResult = async (
     status: string;
   }
 ): Promise<void> => {
-  const { error } = await supabase.from('playoff_matches').update(data).eq('id', matchId);
+  const { error } = await supabase
+    .from('playoff_matches')
+    .update({ ...data, updated_at: new Date().toISOString() })
+    .eq('id', matchId);
 
   if (error) {
     handleDatabaseError(error, 'Failed to update playoff match result');
