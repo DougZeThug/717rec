@@ -227,16 +227,19 @@ BEGIN
     RAISE EXCEPTION 'Admin access required';
   END IF;
 
-  IF to_regclass('public.team_season_stats_pre_unification') IS NULL THEN
-    RAISE EXCEPTION 'The power-score unification has not been applied to this database yet, so there is nothing to revert';
-  END IF;
-
   v_agg_unified := COALESCE(
     position('power_score_100' in pg_get_viewdef(to_regclass('public.v_team_season_agg'), true)) > 0,
     false);
   v_details_unified := COALESCE(
     position('power_score_100' in pg_get_viewdef(to_regclass('public.v_team_details'), true)) > 0,
     false);
+
+  IF to_regclass('public.team_season_stats_pre_unification') IS NULL THEN
+    IF v_agg_unified OR v_details_unified THEN
+      RAISE EXCEPTION 'The pre-unification backup tables have been dropped, so revert is no longer available';
+    END IF;
+    RAISE EXCEPTION 'The power-score unification has not been applied to this database yet, so there is nothing to revert';
+  END IF;
 
   IF NOT v_agg_unified AND NOT v_details_unified THEN
     RETURN 'already_reverted';
@@ -753,6 +756,7 @@ BEGIN
   -- The actual data revert: re-derive every season's stored stats from the
   -- restored (old-formula) v_team_season_agg.
   PERFORM public.upsert_team_season_stats();
+  PERFORM public.prune_team_season_stats_not_in_agg();
 
   RETURN 'reverted';
 END;
@@ -986,6 +990,7 @@ BEGIN
   EXECUTE 'GRANT SELECT ON public.v_team_season_agg TO anon, authenticated';
 
   PERFORM public.upsert_team_season_stats();
+  PERFORM public.prune_team_season_stats_not_in_agg();
 
   RETURN 'applied';
 END;
@@ -1097,6 +1102,61 @@ COMMENT ON FUNCTION public.recreate_power_view_dependents() IS
   'v_team_strength_of_schedule after the CASCADE drops.';
 
 -- ---------------------------------------------------------------------------
+-- 6. Second shared helper: drop team_season_stats rows the live
+--    v_team_season_agg no longer emits. The two formulas emit different row
+--    SETS, not just different numbers — the old view counts a playoff bye as
+--    a match, the canonical one does not — so a team whose only result in a
+--    season is a bye gains a stored row under the old formula that
+--    upsert_team_season_stats() (insert/update only) can never remove when
+--    the canonical formula comes back. Without this, revert → reapply would
+--    leave that phantom old-formula row behind. Skips the delete entirely if
+--    the view returns no rows at all, so a broken/empty view can never wipe
+--    the table.
+-- ---------------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.prune_team_season_stats_not_in_agg()
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = 'pg_catalog', 'public'
+AS $fn$
+DECLARE
+  v_view_has_rows boolean;
+  v_pruned integer := 0;
+BEGIN
+  IF NOT public.current_user_is_admin() THEN
+    RAISE EXCEPTION 'Admin access required';
+  END IF;
+
+  -- Dynamic SQL throughout: the view was just dropped and recreated by the
+  -- caller within this same transaction.
+  EXECUTE 'SELECT EXISTS (SELECT 1 FROM public.v_team_season_agg
+           WHERE team_id IS NOT NULL AND season_id IS NOT NULL)'
+    INTO v_view_has_rows;
+
+  IF v_view_has_rows THEN
+    EXECUTE 'WITH pruned AS (
+               DELETE FROM public.team_season_stats ts
+               WHERE NOT EXISTS (
+                 SELECT 1 FROM public.v_team_season_agg agg
+                 WHERE agg.season_id = ts.season_id
+                   AND agg.team_id = ts.team_id
+               )
+               RETURNING 1
+             )
+             SELECT count(*) FROM pruned'
+      INTO v_pruned;
+  END IF;
+
+  RETURN v_pruned;
+END;
+$fn$;
+
+COMMENT ON FUNCTION public.prune_team_season_stats_not_in_agg() IS
+  'Internal helper for admin_revert/admin_reapply_power_score_unification: '
+  'deletes team_season_stats rows the live v_team_season_agg no longer emits '
+  '(e.g. bye-only playoff rows after moving to the canonical formula).';
+
+-- ---------------------------------------------------------------------------
 -- Privileges: admins authenticate as `authenticated`; the in-function
 -- current_user_is_admin() check does the real gating. anon gets nothing.
 -- ---------------------------------------------------------------------------
@@ -1106,6 +1166,7 @@ REVOKE EXECUTE ON FUNCTION public.admin_get_pre_unification_team_power() FROM PU
 REVOKE EXECUTE ON FUNCTION public.admin_revert_power_score_unification() FROM PUBLIC, anon;
 REVOKE EXECUTE ON FUNCTION public.admin_reapply_power_score_unification() FROM PUBLIC, anon;
 REVOKE EXECUTE ON FUNCTION public.recreate_power_view_dependents() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.prune_team_season_stats_not_in_agg() FROM PUBLIC, anon;
 
 GRANT EXECUTE ON FUNCTION public.admin_power_unification_status() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_get_pre_unification_season_stats() TO authenticated, service_role;
@@ -1113,3 +1174,29 @@ GRANT EXECUTE ON FUNCTION public.admin_get_pre_unification_team_power() TO authe
 GRANT EXECUTE ON FUNCTION public.admin_revert_power_score_unification() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_reapply_power_score_unification() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.recreate_power_view_dependents() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.prune_team_season_stats_not_in_agg() TO authenticated, service_role;
+
+-- ---------------------------------------------------------------------------
+-- One-time cleanup on apply. The 20260809125000 migration switched
+-- v_team_season_agg to the canonical formula and ran the upsert, but the
+-- upsert cannot delete, so bye-only rows created under the old formula
+-- survive it. Prune them here the same way revert/reapply do. Inline SQL
+-- rather than the helper above: migrations run with no JWT, so the helper's
+-- admin gate would reject the call. Skips cleanly when the unification (or
+-- its data) is not present.
+-- ---------------------------------------------------------------------------
+DO $cleanup$
+BEGIN
+  IF COALESCE(
+       position('power_score_100' in pg_get_viewdef(to_regclass('public.v_team_season_agg'), true)) > 0,
+       false)
+     AND EXISTS (SELECT 1 FROM public.v_team_season_agg
+                 WHERE team_id IS NOT NULL AND season_id IS NOT NULL) THEN
+    DELETE FROM public.team_season_stats ts
+    WHERE NOT EXISTS (
+      SELECT 1 FROM public.v_team_season_agg agg
+      WHERE agg.season_id = ts.season_id
+        AND agg.team_id = ts.team_id
+    );
+  END IF;
+END $cleanup$;

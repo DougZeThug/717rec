@@ -20,9 +20,11 @@ DECLARE
   v_division_id uuid := '00000000-0000-0000-0000-00000000e202';
   v_team1_id uuid := '00000000-0000-0000-0000-00000000e301';
   v_team2_id uuid := '00000000-0000-0000-0000-00000000e302';
+  v_team3_id uuid := '00000000-0000-0000-0000-00000000e303';
   v_match_id uuid := '00000000-0000-0000-0000-00000000e401';
   v_bracket_id uuid := '00000000-0000-0000-0000-00000000e402';
   v_bye_id uuid := '00000000-0000-0000-0000-00000000e403';
+  v_bye2_id uuid := '00000000-0000-0000-0000-00000000e404';
   v_backup_present boolean;
   v_status text;
   v_result text;
@@ -31,15 +33,16 @@ DECLARE
   v_backup_power numeric;
   v_cnt integer;
   v_err_text text;
+  v_fn text;
 BEGIN
   v_backup_present := to_regclass('public.team_season_stats_pre_unification') IS NOT NULL;
 
   -- Fixture reset (harmless on a clean CI database; helps local reruns)
-  DELETE FROM public.playoff_matches WHERE id = v_bye_id;
+  DELETE FROM public.playoff_matches WHERE id IN (v_bye_id, v_bye2_id);
   DELETE FROM public.brackets WHERE id = v_bracket_id;
   DELETE FROM public.matches WHERE id = v_match_id;
   DELETE FROM public.team_season_stats WHERE season_id = v_season_id;
-  DELETE FROM public.teams WHERE id IN (v_team1_id, v_team2_id);
+  DELETE FROM public.teams WHERE id IN (v_team1_id, v_team2_id, v_team3_id);
   DELETE FROM public.divisions WHERE id = v_division_id;
   DELETE FROM public.seasons WHERE id = v_season_id;
   DELETE FROM public.profiles WHERE id IN (v_admin_id, v_member_id);
@@ -83,6 +86,21 @@ BEGIN
       IF v_err_text NOT LIKE '%not been applied%' THEN RAISE; END IF;
     END;
 
+    -- The backup readers surface undefined_table (42P01) here — the exact
+    -- contract the frontend maps to its "not applied yet" state.
+    BEGIN
+      PERFORM * FROM public.admin_get_pre_unification_season_stats();
+      RAISE EXCEPTION 'season backup reader ran without the backup tables';
+    EXCEPTION WHEN undefined_table THEN
+      NULL; -- expected
+    END;
+    BEGIN
+      PERFORM * FROM public.admin_get_pre_unification_team_power();
+      RAISE EXCEPTION 'team power backup reader ran without the backup tables';
+    EXCEPTION WHEN undefined_table THEN
+      NULL; -- expected
+    END;
+
     RAISE NOTICE 'power_unification_admin: transition cases skipped (unification backup not present yet)';
   ELSE
     -- Full replay: unification is in place.
@@ -106,7 +124,8 @@ BEGIN
     VALUES (v_division_id, 'Power Division', 'Power Division', 1.0);
     INSERT INTO public.teams (id, name, division_id, wins, losses, game_wins, game_losses) VALUES
       (v_team1_id, 'PU Team 1', v_division_id, 0, 0, 0, 0),
-      (v_team2_id, 'PU Team 2', v_division_id, 0, 0, 0, 0);
+      (v_team2_id, 'PU Team 2', v_division_id, 0, 0, 0, 0),
+      (v_team3_id, 'PU Team 3', v_division_id, 0, 0, 0, 0);
     INSERT INTO public.matches
       (id, team1_id, team2_id, season_id, round_number, iscompleted,
        team1_game_wins, team2_game_wins, winner_id, loser_id)
@@ -114,11 +133,14 @@ BEGIN
       (v_match_id, v_team1_id, v_team2_id, v_season_id, 1, true, 2, 1, v_team1_id, v_team2_id);
     INSERT INTO public.brackets (id, title, season_id, division_id)
     VALUES (v_bracket_id, 'PU Bracket', v_season_id, v_division_id);
+    -- team3's ONLY result is a bye: a stored row exists under the old formula
+    -- and must disappear under the canonical one.
     INSERT INTO public.playoff_matches
       (id, bracket_id, team1_id, team2_id, team1_score, team2_score,
        winner_id, "position", round, status)
     VALUES
-      (v_bye_id, v_bracket_id, v_team1_id, NULL, 1, 0, v_team1_id, 1, 1, 'completed');
+      (v_bye_id, v_bracket_id, v_team1_id, NULL, 1, 0, v_team1_id, 1, 1, 'completed'),
+      (v_bye2_id, v_bracket_id, v_team3_id, NULL, 1, 0, v_team3_id, 2, 1, 'completed');
 
     PERFORM public.upsert_team_season_stats();
 
@@ -132,6 +154,12 @@ BEGIN
     END IF;
     IF abs(v_power - 0.95) > 1e-6 THEN
       RAISE EXCEPTION 'canonical power score should be 0.95, got %', v_power;
+    END IF;
+    SELECT count(*) INTO v_cnt
+    FROM public.team_season_stats ts
+    WHERE ts.season_id = v_season_id AND ts.team_id = v_team3_id;
+    IF v_cnt <> 0 THEN
+      RAISE EXCEPTION 'bye-only team should have no canonical stats row, got %', v_cnt;
     END IF;
 
     -- Backup rows for team1, holding the OLD formula values computed by hand:
@@ -187,6 +215,12 @@ BEGIN
     IF abs(v_power - v_backup_power) > 1e-6 THEN
       RAISE EXCEPTION 'reverted power score % does not match backup %', v_power, v_backup_power;
     END IF;
+    SELECT count(*) INTO v_cnt
+    FROM public.team_season_stats ts
+    WHERE ts.season_id = v_season_id AND ts.team_id = v_team3_id;
+    IF v_cnt <> 1 THEN
+      RAISE EXCEPTION 'bye-only team should regain its row on revert, got %', v_cnt;
+    END IF;
 
     SELECT public.admin_revert_power_score_unification() INTO v_result;
     IF v_result <> 'already_reverted' THEN
@@ -208,34 +242,56 @@ BEGIN
     IF v_match_wins <> 1 OR abs(v_power - 0.95) > 1e-6 THEN
       RAISE EXCEPTION 'reapplied stats wrong: % wins, power %', v_match_wins, v_power;
     END IF;
+    -- The bye-only phantom row must be pruned, not merely left un-updated —
+    -- the upsert alone cannot delete it.
+    SELECT count(*) INTO v_cnt
+    FROM public.team_season_stats ts
+    WHERE ts.season_id = v_season_id AND ts.team_id = v_team3_id;
+    IF v_cnt <> 0 THEN
+      RAISE EXCEPTION 'bye-only phantom row survived reapply, got % rows', v_cnt;
+    END IF;
   END IF;
 
-  -- Authenticated non-admin is rejected by every control.
+  -- Authenticated non-admin is rejected by every control (the admin gate is
+  -- the first statement in each function, so this holds in both branches).
   PERFORM auth.set_test_claims(v_member_id);
-  BEGIN
-    PERFORM * FROM public.admin_power_unification_status();
-    RAISE EXCEPTION 'status was callable by a non-admin';
-  EXCEPTION WHEN OTHERS THEN
-    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
-    IF v_err_text <> 'Admin access required' THEN RAISE; END IF;
-  END;
-  BEGIN
-    PERFORM public.admin_revert_power_score_unification();
-    RAISE EXCEPTION 'revert was callable by a non-admin';
-  EXCEPTION WHEN OTHERS THEN
-    GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
-    IF v_err_text <> 'Admin access required' THEN RAISE; END IF;
-  END;
+  FOREACH v_fn IN ARRAY ARRAY[
+    'admin_power_unification_status',
+    'admin_get_pre_unification_season_stats',
+    'admin_get_pre_unification_team_power',
+    'admin_revert_power_score_unification',
+    'admin_reapply_power_score_unification',
+    'recreate_power_view_dependents',
+    'prune_team_season_stats_not_in_agg'
+  ] LOOP
+    BEGIN
+      EXECUTE format('SELECT * FROM public.%I()', v_fn);
+      RAISE EXCEPTION '% was callable by a non-admin', v_fn;
+    EXCEPTION WHEN OTHERS THEN
+      GET STACKED DIAGNOSTICS v_err_text = MESSAGE_TEXT;
+      IF v_err_text <> 'Admin access required' THEN RAISE; END IF;
+    END;
+  END LOOP;
 
-  -- anon has EXECUTE revoked outright.
+  -- anon has EXECUTE revoked outright on all of them.
   PERFORM auth.set_test_claims(NULL);
   SET LOCAL role anon;
-  BEGIN
-    PERFORM * FROM public.admin_power_unification_status();
-    RAISE EXCEPTION 'status was callable by anon';
-  EXCEPTION WHEN insufficient_privilege THEN
-    NULL; -- expected
-  END;
+  FOREACH v_fn IN ARRAY ARRAY[
+    'admin_power_unification_status',
+    'admin_get_pre_unification_season_stats',
+    'admin_get_pre_unification_team_power',
+    'admin_revert_power_score_unification',
+    'admin_reapply_power_score_unification',
+    'recreate_power_view_dependents',
+    'prune_team_season_stats_not_in_agg'
+  ] LOOP
+    BEGIN
+      EXECUTE format('SELECT * FROM public.%I()', v_fn);
+      RAISE EXCEPTION '% was callable by anon', v_fn;
+    EXCEPTION WHEN insufficient_privilege THEN
+      NULL; -- expected
+    END;
+  END LOOP;
   RESET role;
 
   RAISE NOTICE 'power_unification_admin smoke test passed';
