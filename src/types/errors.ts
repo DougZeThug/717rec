@@ -99,3 +99,17 @@ export class LiveScoringNotEnabledError extends ServiceError {
     this.name = 'LiveScoringNotEnabledError';
   }
 }
+
+/**
+ * The power-score migration backup tables/functions don't exist yet
+ * (the unification migrations have not been applied to the database)
+ */
+export class PowerMigrationNotAppliedError extends ServiceError {
+  constructor() {
+    super(
+      'The power score update has not been applied to the database yet',
+      'POWER_MIGRATION_NOT_APPLIED'
+    );
+    this.name = 'PowerMigrationNotAppliedError';
+  }
+}

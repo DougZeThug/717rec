@@ -19,7 +19,7 @@ import { BulkTeamCareerData, fetchAllTeamsCareerData } from './useCareerData';
  * All calculation functions are pure (no DB access).
  * The only async call is calculateCareerPowerScore, which receives pre-fetched data.
  */
-async function computeTotalsFromBulkData(
+export async function computeTotalsFromBulkData(
   teamId: string,
   data: BulkTeamCareerData,
   currentTeamPowerData: {
