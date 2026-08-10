@@ -233,3 +233,45 @@ exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
 (`20260722160000`, `20260722170000`) were merged on GitHub but never
 applied, so every bracket-creation insert failed with PGRST204 "Could not
 find the 'opponent1_position' column of 'match'".
+
+### 6a. Power-score unification: review, revert, reapply
+
+The power-score unification (migrations `20260809120000`–`20260809125000`)
+rewrites every historical `team_season_stats` row onto one canonical formula,
+which re-orders Career Statistics on the Stats page. Before the rewrite, the
+old numbers are snapshotted into `team_season_stats_pre_unification` and
+`team_details_power_pre_unification`.
+
+Admin panel → **Power Score Review** (migration `20260810120000`) is the
+control surface for it:
+
+- **Status** — shows whether the unified formula is live, when the backup was
+  taken, and how many rows it holds. Shows a friendly "not applied yet" card
+  when the migrations haven't reached production. Status is derived from the
+  live view definitions in `pg_catalog`, so it stays correct even after
+  hand-run SQL.
+- **Comparison** — before/after Career Standings (rank movement, career power
+  score deltas, per-season detail), computed with the same client-side
+  calculators the Stats page uses. "Before" means the site as it looked at the
+  backup timestamp.
+- **Revert / Re-apply** — one click plus a confirm. Revert restores the old
+  view/function definitions (`v_team_details`, `v_team_match_stats`,
+  `v_team_season_agg`, `get_season_team_power_scores`) and re-runs
+  `upsert_team_season_stats()`, so history is *recomputed* under the old
+  formula — games played after the unification are kept, nothing is copied
+  from the backup. Re-apply mirrors it with the unified definitions. Both are
+  idempotent (`admin_revert_power_score_unification()` /
+  `admin_reapply_power_score_unification()`, admin-gated, `SECURITY DEFINER`).
+
+Caveats:
+
+- `power_score_snapshots` rows captured under the other formula are left
+  alone, so the homepage Movers deltas can look off for one week after a
+  flip. The `capture-power-snapshots` function upserts per
+  (team, season, week), so re-running it refreshes the current week.
+- The backup tables are the comparison baseline and the audit trail. Drop
+  them only after the new numbers have been accepted for good (see the
+  comment in migration `20260809121000`).
+
+Smoke coverage: `supabase/tests/power_unification_admin.sql` (self-skips on
+databases where the unification migrations aren't present).
