@@ -131,17 +131,21 @@ export async function buildPowerMigrationComparison({
       const isNewSinceBackup = teamBackupSeasons.length === 0 && !teamBackupPower;
 
       if (!isNewSinceBackup) {
-        const beforeData: BulkTeamCareerData = {
-          ...liveData,
-          seasonStats: teamBackupSeasons.map(toSeasonStats),
-          seasonPowerScores: teamBackupSeasons
-            .filter((row) => row.power_score !== null)
-            .map((row) => ({
+        const backupPowerScores: BulkTeamCareerData['seasonPowerScores'] = [];
+        for (const row of teamBackupSeasons) {
+          if (row.power_score !== null) {
+            backupPowerScores.push({
               power_score: row.power_score,
               match_wins: row.match_wins,
               match_losses: row.match_losses,
               season_id: row.season_id,
-            })),
+            });
+          }
+        }
+        const beforeData: BulkTeamCareerData = {
+          ...liveData,
+          seasonStats: teamBackupSeasons.map(toSeasonStats),
+          seasonPowerScores: backupPowerScores,
         };
         const beforePower = teamBackupPower
           ? {
@@ -155,11 +159,10 @@ export async function buildPowerMigrationComparison({
       }
 
       // Per-season detail: union of the seasons on either side.
-      const liveBySeason = new Map(
-        (liveData.seasonStats ?? [])
-          .filter((s) => s.season_id)
-          .map((s) => [s.season_id as string, s])
-      );
+      const liveBySeason = new Map<string, SeasonStats>();
+      for (const s of liveData.seasonStats ?? []) {
+        if (s.season_id) liveBySeason.set(s.season_id, s);
+      }
       const seasonIds = [
         ...new Set([...teamBackupSeasons.map((row) => row.season_id), ...liveBySeason.keys()]),
       ];

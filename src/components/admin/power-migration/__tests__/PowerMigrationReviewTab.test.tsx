@@ -173,25 +173,47 @@ describe('PowerMigrationReviewTab', () => {
     await waitFor(() => expect(revertMutation.mutateAsync).toHaveBeenCalledTimes(1));
   });
 
-  it('offers re-apply when reverted', async () => {
+  it('offers re-apply when reverted, hiding the old-vs-old comparison', async () => {
     const reapplyMutation = mutationResult({
       mutateAsync: vi.fn().mockResolvedValue('applied'),
     });
     mockStatus.mockReturnValue(
       queryResult({ data: { ...appliedStatus, status: 'reverted' as const } })
     );
-    mockComparison.mockReturnValue(
-      queryResult({ data: { backedUpAt: appliedStatus.backedUpAt, rows: comparisonRows } })
-    );
     mockReapply.mockReturnValue(reapplyMutation);
     render(<PowerMigrationReviewTab />);
 
     expect(screen.getByText(/old formula is currently active/i)).toBeInTheDocument();
+    // While reverted the live numbers ARE the old formula, so no comparison
+    // table — an explanation is shown instead.
+    expect(screen.getByText(/nothing new to compare/i)).toBeInTheDocument();
+    expect(screen.queryByText(/before vs\. after/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /revert to old scores/i })).not.toBeInTheDocument();
+
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: /re-apply new scores/i }));
     const dialog = await screen.findByRole('alertdialog');
     await user.click(within(dialog).getByRole('button', { name: /^re-apply$/i }));
     await waitFor(() => expect(reapplyMutation.mutateAsync).toHaveBeenCalledTimes(1));
+  });
+
+  it('disables revert and the comparison once the backup tables are dropped', () => {
+    mockStatus.mockReturnValue(
+      queryResult({
+        data: {
+          ...appliedStatus,
+          backedUpAt: null,
+          backupSeasonRows: 0,
+          backupTeamRows: 0,
+        },
+      })
+    );
+    render(<PowerMigrationReviewTab />);
+
+    expect(screen.getByText(/new unified formula is live/i)).toBeInTheDocument();
+    expect(screen.getByText(/backup is no longer on the database/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /revert to old scores/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/before vs\. after/i)).not.toBeInTheDocument();
   });
 
   it('expands a team row to the per-season breakdown', async () => {

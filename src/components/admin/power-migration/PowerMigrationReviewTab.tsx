@@ -83,12 +83,19 @@ const StatusBanner: React.FC<{ status: PowerMigrationStatus }> = ({ status }) =>
             ? 'The new unified formula is live.'
             : 'The old formula is currently active (update reverted).'}
         </p>
-        <p className="text-muted-foreground">
-          Old numbers were backed up on {formatDate(status.backedUpAt)} — {status.backupSeasonRows}{' '}
-          season row{status.backupSeasonRows === 1 ? '' : 's'} and {status.backupTeamRows} team row
-          {status.backupTeamRows === 1 ? '' : 's'} saved ({status.liveSeasonRows} season rows live
-          today).
-        </p>
+        {status.backedUpAt !== null ? (
+          <p className="text-muted-foreground">
+            Old numbers were backed up on {formatDate(status.backedUpAt)} —{' '}
+            {status.backupSeasonRows} season row{status.backupSeasonRows === 1 ? '' : 's'} and{' '}
+            {status.backupTeamRows} team row{status.backupTeamRows === 1 ? '' : 's'} saved (
+            {status.liveSeasonRows} season rows live today).
+          </p>
+        ) : (
+          <p className="text-muted-foreground">
+            The pre-migration backup is no longer on the database (its tables have been dropped), so
+            the comparison and the Revert option are no longer available.
+          </p>
+        )}
       </div>
     </div>
   );
@@ -102,7 +109,8 @@ const StatusBanner: React.FC<{ status: PowerMigrationStatus }> = ({ status }) =>
 const PowerMigrationReviewTab: React.FC = () => {
   const statusQuery = usePowerMigrationStatus();
   const status = statusQuery.data;
-  const comparisonQuery = usePowerMigrationComparison(status?.status);
+  const backupAvailable = status?.backedUpAt != null;
+  const comparisonQuery = usePowerMigrationComparison(status);
   const revert = useRevertPowerMigration();
   const reapply = useReapplyPowerMigration();
   const [confirmAction, setConfirmAction] = useState<'revert' | 'reapply' | null>(null);
@@ -165,7 +173,7 @@ const PowerMigrationReviewTab: React.FC = () => {
               <StatusBanner status={status} />
 
               <div className="flex flex-wrap gap-2">
-                {status.status !== 'reverted' && (
+                {status.status !== 'reverted' && backupAvailable && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -184,31 +192,49 @@ const PowerMigrationReviewTab: React.FC = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <div>
-                  <h3 className="text-base font-semibold">Career Standings: before vs. after</h3>
-                  <p className="text-sm text-muted-foreground">
-                    "Before" shows Career Standings the way the site computed them as of the backup
-                    on {formatDate(status.backedUpAt)}. Games played since then are included on both
-                    sides.
-                  </p>
-                </div>
+              {status.status === 'reverted' && (
+                <Card>
+                  <CardContent className="pt-6 text-sm text-muted-foreground">
+                    The site is back on the old formula, so the live numbers are the "before" side
+                    and there is nothing new to compare against. The before/after comparison is
+                    shown while the new formula is applied — use Re-apply to switch back and review
+                    it again.
+                  </CardContent>
+                </Card>
+              )}
 
-                {comparisonQuery.isLoading && (
-                  <LoadingState variant="section" message="Building comparison..." />
-                )}
-                {comparisonQuery.isError && !comparisonQuery.isLoading && (
-                  <Card>
-                    <CardContent className="pt-6 space-y-2">
-                      <p className="text-sm text-red-500">Couldn't build the comparison.</p>
-                      <Button size="sm" variant="outline" onClick={() => comparisonQuery.refetch()}>
-                        Retry
-                      </Button>
-                    </CardContent>
-                  </Card>
-                )}
-                {comparisonQuery.data && <ComparisonTable rows={comparisonQuery.data.rows} />}
-              </div>
+              {status.status !== 'reverted' && backupAvailable && (
+                <div className="space-y-2">
+                  <div>
+                    <h3 className="text-base font-semibold">Career Standings: before vs. after</h3>
+                    <p className="text-sm text-muted-foreground">
+                      "Before" shows Career Standings the way the site computed them when the backup
+                      was taken on {formatDate(status.backedUpAt)}. Games played since then still
+                      count toward the records on both sides, but the "before" power scores stay
+                      frozen at the backup.
+                    </p>
+                  </div>
+
+                  {comparisonQuery.isLoading && (
+                    <LoadingState variant="section" message="Building comparison..." />
+                  )}
+                  {comparisonQuery.isError && !comparisonQuery.isLoading && (
+                    <Card>
+                      <CardContent className="pt-6 space-y-2">
+                        <p className="text-sm text-red-500">Couldn't build the comparison.</p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => comparisonQuery.refetch()}
+                        >
+                          Retry
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                  {comparisonQuery.data && <ComparisonTable rows={comparisonQuery.data.rows} />}
+                </div>
+              )}
             </>
           )}
 
