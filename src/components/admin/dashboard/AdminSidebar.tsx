@@ -13,6 +13,7 @@ import {
   ListChecks,
   Mail,
   Palette,
+  Scale,
   Search,
   Shuffle,
   Sparkles,
@@ -70,6 +71,9 @@ const LiveCorrectionsSection = lazy(
 const LeagueNightStatusTab = lazy(
   () => import('@/components/admin/league-night-status/LeagueNightStatusTab')
 );
+const PowerMigrationReviewTab = lazy(
+  () => import('@/components/admin/power-migration/PowerMigrationReviewTab')
+);
 
 const adminMenuItems: AdminMenuItem[] = [
   { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
@@ -114,6 +118,12 @@ const adminMenuItems: AdminMenuItem[] = [
     label: 'League Night',
     icon: Activity,
     Component: LeagueNightStatusTab,
+  },
+  {
+    id: 'power-migration',
+    label: 'Power Score Review',
+    icon: Scale,
+    Component: PowerMigrationReviewTab,
   },
 ];
 
