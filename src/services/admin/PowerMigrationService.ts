@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { PowerMigrationNotAppliedError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
-export type PowerMigrationState =
+/** Consumed through PowerMigrationStatus['status']; not exported on its own. */
+type PowerMigrationState =
   /** Both views use the unified formula */
   | 'applied'
   /** Backup exists and the old formula has been restored */

@@ -12,6 +12,7 @@ import { buildPowerMigrationComparison } from './buildPowerMigrationComparison';
 const STATUS_KEY = ['admin', 'power-migration', 'status'] as const;
 const COMPARISON_KEY = ['admin', 'power-migration', 'comparison'] as const;
 
+/** Where the power-score unification stands on the live database. */
 export const usePowerMigrationStatus = () =>
   useQuery({
     queryKey: STATUS_KEY,
@@ -58,7 +59,7 @@ export const usePowerMigrationComparison = (status: PowerMigrationStatus | undef
         backupTeamPower,
       });
     },
-    enabled: enabled && !!teams,
+    enabled: enabled && Boolean(teams),
     staleTime: 5 * 60_000,
   });
 };
@@ -79,7 +80,9 @@ const useFlipMutation = (mutationFn: () => Promise<string>) => {
   });
 };
 
+/** Restore the old formula and recompute every season's stats under it. */
 export const useRevertPowerMigration = () => useFlipMutation(() => PowerMigrationService.revert());
 
+/** Restore the unified formula and recompute every season's stats under it. */
 export const useReapplyPowerMigration = () =>
   useFlipMutation(() => PowerMigrationService.reapply());
