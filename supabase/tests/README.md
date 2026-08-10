@@ -46,6 +46,12 @@ so a non-zero exit code means drift was detected.
   reset match is materialized but never played (must not tie both finalists at
   placement 1, and must not count toward any record), a BYE-only participant
   still receiving a placement, and idempotency on re-run.
+- `power_unification_admin.sql` — covers the power-unification admin controls
+  (`20260810120000`): status detection from live view definitions, admin
+  gating and anon EXECUTE revocation, and the revert/reapply round-trip
+  actually flipping the stored `team_season_stats.power_score` formula
+  (asserted with exact expected values either side). Self-skips when the
+  `20260809*` unification migrations are not part of the replay.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.
