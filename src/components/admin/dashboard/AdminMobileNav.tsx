@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   Clock,
   HelpCircle,
+  History,
   Inbox,
   LayoutGrid,
   ListChecks,
@@ -60,6 +61,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
   { id: 'help', label: 'Help', icon: HelpCircle },
   { id: 'league-night-status', label: 'League Night', icon: Activity },
+  { id: 'power-migration', label: 'Power Score Review', icon: History },
 ];
 
 const tabGroups: TabGroup[] = [
@@ -97,7 +99,7 @@ const tabGroups: TabGroup[] = [
     id: 'operations',
     label: 'Operations',
     icon: Activity,
-    tabs: ['league-night-status'],
+    tabs: ['league-night-status', 'power-migration'],
   },
 ];
 
