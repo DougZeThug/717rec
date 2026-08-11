@@ -204,4 +204,77 @@ describe('calculateCareerPowerScore', () => {
 
     expect(result).toBe(50);
   });
+
+  it('ignores v_team_details when no season is active (partial-archive window)', async () => {
+    // Regression test for the window between partial_archive_season and
+    // finalize_playoffs. No season is is_active, so currentSeasonId is null and
+    // nothing is excluded from team_season_stats — but v_team_details still
+    // reports the archiving season's playoff-only record, because
+    // current_standings_season_id() falls back to playoffs_active.
+    //
+    // Past season:      10 matches, power 0.80 (= 80)
+    // Archiving season: 15 matches, power 0.70 (= 70), already playoff-inclusive
+    // v_team_details:    3 matches, power 60 — the playoff-only slice
+    const result = await calculateCareerPowerScore({
+      teamId: 'team-1',
+      championshipDivisions: [],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      // currentSeasonId intentionally omitted — no season is active
+      prefetchedSeasonStats: [
+        { power_score: 0.8, match_wins: 7, match_losses: 3, season_id: 'past-season' },
+        { power_score: 0.7, match_wins: 11, match_losses: 4, season_id: 'archiving-season' },
+      ],
+      prefetchedCurrentTeamData: { power_score: 60, wins: 1, losses: 2 },
+    });
+
+    // With the fix: (80*10 + 70*15) / 25 = 74
+    // Without the fix (bug): (80*10 + 70*15 + 60*3) / 28 = 72.5
+    expect(result).toBe(74);
+  });
+
+  it('still adds live data for an active season with no stored row yet', async () => {
+    // The guard must not starve a brand-new season that has no
+    // team_season_stats row yet. currentSeasonId is set, so v_team_details is
+    // the only source for it and must still be counted.
+    const result = await calculateCareerPowerScore({
+      teamId: 'team-1',
+      championshipDivisions: [],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      currentSeasonId: 'current-season',
+      prefetchedSeasonStats: [
+        { power_score: 0.8, match_wins: 7, match_losses: 3, season_id: 'past-season' },
+      ],
+      prefetchedCurrentTeamData: { power_score: 60, wins: 7, losses: 3 },
+    });
+
+    // (80*10 + 60*10) / 20 = 70
+    expect(result).toBe(70);
+  });
+
+  it('returns 50 when no season is active and there are no stored stats', async () => {
+    const result = await calculateCareerPowerScore({
+      teamId: 'team-1',
+      championshipDivisions: [],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      // currentSeasonId intentionally omitted — no season is active
+      prefetchedSeasonStats: [],
+      prefetchedCurrentTeamData: { power_score: 60, wins: 1, losses: 2 },
+    });
+
+    // With the fix there is no match data at all, so the neutral 50 applies.
+    // Without the fix this returns 60.
+    expect(result).toBe(50);
+  });
 });

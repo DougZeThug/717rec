@@ -22,7 +22,9 @@ interface CareerPowerScoreInput {
   competitivePlayoffWins: number;
   teamDivisionWeight: number;
   // Current season ID — used to exclude current season from team_season_stats
-  // so it isn't double-counted with v_team_details data
+  // so it isn't double-counted with v_team_details data.
+  // null/undefined means no season is active: every stored season is historical,
+  // nothing is excluded, and v_team_details must be ignored (see below).
   currentSeasonId?: string | null;
   // Optional pre-fetched data to avoid redundant DB queries (used by batch mode)
   prefetchedSeasonStats?: SeasonPowerScoreData[] | null;
@@ -111,8 +113,16 @@ export const calculateCareerPowerScore = async ({
     }
   }
 
-  // Add current season data if available (power score already on 0-100 scale)
+  // Add current season data if available (power score already on 0-100 scale).
+  //
+  // Only add the live season when its stored row was excluded above. Between
+  // partial_archive_season and finalize_playoffs no season is is_active, so
+  // resolvedCurrentSeasonId is null and nothing was excluded — but
+  // v_team_details still reports that season's playoff record, because
+  // current_standings_season_id() falls back to playoffs_active. Adding it
+  // would weight those playoff games into the average a second time.
   if (
+    resolvedCurrentSeasonId &&
     currentTeamData &&
     currentTeamData.power_score !== null &&
     currentTeamData.wins !== null &&
