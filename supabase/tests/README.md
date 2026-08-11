@@ -46,6 +46,18 @@ so a non-zero exit code means drift was detected.
   reset match is materialized but never played (must not tie both finalists at
   placement 1, and must not count toward any record), a BYE-only participant
   still receiving a placement, and idempotency on re-run.
+- `power_unification_admin.sql` — smoke coverage for the power-unification
+  admin controls: the applied → reverted → applied round trip, guard behavior on
+  a database without the unification, and admin/anon gating on all seven RPCs.
+- `power_score_weighted_denominators.sql` — pins the power score formula.
+  Asserts that `weighted_win_pct` and `weighted_game_win_pct` are true weighted
+  averages (a perfect team reads 1.0 on both whatever it played, so the old
+  `100 × average opponent weight` ceiling is gone), that strength of schedule
+  still separates identical records, that beating a stronger opponent is worth
+  more than beating a weaker one, and that Hidden-division matches are excluded
+  from the three weighted terms while still counting in the W-L record (the
+  exclusion is one-directional — a Hidden team keeps a rating of its own for
+  the admin surfaces that fetch it deliberately).
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.
