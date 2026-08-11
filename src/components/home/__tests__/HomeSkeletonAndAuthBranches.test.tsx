@@ -3,7 +3,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
-import { WeeklyRecapData } from '@/services/WeeklyRecapService';
+import { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 const mockAuth = vi.hoisted(() => vi.fn());
@@ -14,7 +14,13 @@ import MyNextMatchSkeleton from '../MyNextMatchSkeleton';
 import WeeklyRecapCard from '../WeeklyRecapCard';
 import WeeklyRecapSkeleton from '../WeeklyRecapSkeleton';
 
-const recapData: WeeklyRecapData = { weekNumber: 10, upsets: [], hotStreaks: [], hasData: false };
+const recapData: WeeklyRecapData = {
+  weekNumber: 10,
+  mode: 'regular',
+  upsets: [],
+  hotStreaks: [],
+  hasData: false,
+};
 const recapRiser: WeeklyPowerScoreTrend = {
   teamId: 't1',
   teamName: 'Heat',

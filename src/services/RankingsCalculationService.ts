@@ -1,9 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
+import { fetchCompletedPlayoffMatchesForSeason } from '@/services/brackets/read/PlayoffSeasonMatchService';
+import { SeasonQueryService } from '@/services/seasons/SeasonQueryService';
 import { Match } from '@/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
+import { buildOrderedMatchesForStreaks } from '@/utils/rankingUtils/buildOrderedMatchesForStreaks';
 
-/** Fetch all matches (newest first) with the columns needed for rankings calculations. */
+/**
+ * Fetch all matches (newest first) with the columns needed for rankings calculations.
+ *
+ * Playoff games are included so the Standings streak column and the game stats
+ * recomputed client-side describe the same games as the record and rating in
+ * v_team_details. They carry no date, so the merged list is stamped with an
+ * explicit order.
+ */
 export const fetchRankingsData = async (): Promise<Match[]> => {
   const { data, error } = await supabase
     .from('matches')
@@ -13,5 +23,27 @@ export const fetchRankingsData = async (): Promise<Match[]> => {
     .order('date', { ascending: false });
 
   if (error) handleDatabaseError(error, 'Failed to fetch rankings data');
-  return transformDatabaseMatches(data ?? [], { normalizeDate: false });
+  const regularMatches = transformDatabaseMatches(data ?? [], { normalizeDate: false });
+
+  // Which season's bracket belongs in the standings. The active season normally,
+  // but partial_archive_season clears is_active while setting playoffs_active, so
+  // between the regular season being archived and the playoffs being finalized the
+  // active-season lookup finds nothing — and the bracket would drop out of the
+  // streak column. Active first, so a newly activated season correctly keeps the
+  // outgoing season's bracket out of its own standings — the opposite order from
+  // usePlayoffPageData, deliberately: that page is showing the bracket, so it
+  // prefers the season still playing one. Matches current_standings_season_id(),
+  // which scopes the SQL side of the same standings.
+  const season =
+    (await SeasonQueryService.fetchActiveSeason()) ??
+    (await SeasonQueryService.fetchPlayoffActiveSeason());
+
+  if (!season) return regularMatches;
+
+  const playoffMatches = await fetchCompletedPlayoffMatchesForSeason(season.id);
+  if (playoffMatches.length === 0) return regularMatches;
+
+  // The helper returns oldest first; reverse to keep this function's newest-first
+  // contract. orderKey travels with each match, so streaks still resolve correctly.
+  return buildOrderedMatchesForStreaks(regularMatches, playoffMatches).reverse();
 };

@@ -6,7 +6,7 @@
 
 - When a data query fails, the public data pages (Stats/Standings, Compare, Insights, team detail sections) leave users on **indefinite skeletons** — no message, no retry. Verified in this review's sandbox: with the backend unreachable, /stats rendered only the shell (195 chars of nav/footer) with skeletons that never resolve or explain. (First flagged in the 2026-07-13 review; unchanged.)
 - The admin Timeslots section shows "**Unknown Team**" for every assigned timeslot (screenshot `evidence/screenshots/admin-section-timeslots.png`, captured with live production data on 2026-07-15): timeslot rows aren't resolving team names — either the client-side join misses, or the team lookup excludes teams (e.g. the `is_team_opted_out_active` filter on the public `teams` SELECT policy also applies to admin reads through the same cached query). Diagnose then fix.
-- Home page fires a `406` console error on every load — `.single()` used where zero rows is legitimate (e.g. `WeeklyRecapService.ts:55`); should be `.maybeSingle()`.
+- Home page fires a `406` console error on every load — `.single()` used where zero rows is legitimate (e.g. `src/services/weeklyRecap/WeeklyRecapService.ts`); should be `.maybeSingle()`.
 - `/schedule` at desktop logged a React "Maximum update depth exceeded" warning during the walk-through — a setState loop in a schedule component that needs diagnosis (evidence: `exploration-results-anon.json`, route `/schedule`, desktop-1440).
 
 ## 2. Objective
@@ -22,7 +22,7 @@ Shared error-state component + adoption on the affected pages; timeslot name-res
 - `src/components/ui/error-display.tsx` — **reuse/extend this existing component** (it already implements icon + message + retry and is used by e.g. `TeamList.tsx`); do NOT introduce a parallel abstraction. Add an `EmptyState` variant beside it if none exists.
 - Stats/Standings, Compare, Insights page components (adopt error/empty states)
 - `src/components/timeslots/TimeslotList.tsx` — **this is the renderer that actually prints "Unknown Team"**: it resolves names from its `teams` prop even though the timeslot query already carries a joined team (its own test at `__tests__/TimeslotList.test.tsx:53` documents the fallback). Include `TimeslotsTab` and the team-query inputs feeding that prop; fixing only the query/service would leave the table unchanged.
-- `src/services/WeeklyRecapService.ts` (+ any other `.single()`-on-optional: grep `\.single()` and audit each)
+- `src/services/weeklyRecap/WeeklyRecapService.ts` (+ any other `.single()`-on-optional: grep `\.single()` and audit each)
 - The offending schedule component (diagnose via the warning's component stack in dev)
 
 ## 5. Implementation steps

@@ -1,6 +1,16 @@
 import { Match } from '@/types';
 
 /**
+ * Chronological rank of a match, newest last.
+ *
+ * Callers that mix in matches without a usable date (playoff matches have none)
+ * set `orderKey` explicitly to pin the order; everything else sorts by date, with
+ * a missing date sorting oldest.
+ */
+const orderOf = (match: Match): number =>
+  match.orderKey ?? (match.date ? new Date(match.date).getTime() : 0);
+
+/**
  * Calculate the current streak for a team
  */
 export const calculateStreak = (teamId: string, allMatches: Match[] | undefined) => {
@@ -14,11 +24,7 @@ export const calculateStreak = (teamId: string, allMatches: Match[] | undefined)
         match.winnerId != null &&
         (match.team1Id === teamId || match.team2Id === teamId)
     )
-    .sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0;
-      const dateB = b.date ? new Date(b.date).getTime() : 0;
-      return dateB - dateA;
-    });
+    .sort((a, b) => orderOf(b) - orderOf(a));
 
   if (teamMatches.length === 0) return undefined;
 

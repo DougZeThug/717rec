@@ -57,7 +57,13 @@ type QuerySpy = {
   maybeSingle: ReturnType<typeof vi.fn>;
 };
 
-const emptyState = { weekNumber: null, upsets: [], hotStreaks: [], hasData: false };
+const emptyState = {
+  weekNumber: null,
+  mode: 'regular',
+  upsets: [],
+  hotStreaks: [],
+  hasData: false,
+};
 
 function createSupabaseMock(queuedByTable: Record<string, QueryResult[]>) {
   const querySpies: Record<string, QuerySpy[]> = {};
@@ -672,5 +678,238 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       { message: 'team details for streaks failed' },
       'Failed to fetch team details for streak display'
     );
+  });
+
+  describe('recap mode', () => {
+    // Built fresh per test: createSupabaseMock consumes these queues with shift().
+    const seasonOnly = () => ({
+      seasons: [{ data: { id: 's-1', start_date: '2026-01-01T00:00:00Z' }, error: null }],
+      matches: [{ data: null, error: null }],
+    });
+
+    it('stays in regular mode when the season has no brackets', async () => {
+      createSupabaseMock({ ...seasonOnly(), brackets: [{ data: [], error: null }] });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.mode).toBe('regular');
+    });
+
+    it('stays in regular mode when brackets exist but no playoff game has a result', async () => {
+      createSupabaseMock({
+        ...seasonOnly(),
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [{ data: [], error: null }],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.mode).toBe('regular');
+    });
+
+    it('switches to playoffs mode and suppresses the week number once a playoff game is complete', async () => {
+      createSupabaseMock({
+        ...seasonOnly(),
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [
+          {
+            data: [
+              {
+                id: 'pm-1',
+                bracket_id: 'br-1',
+                round: 1,
+                position: 1,
+                match_type: 'winners',
+                team1_id: 't-1',
+                team2_id: 't-2',
+                team1_score: 2,
+                team2_score: 0,
+                team1_seed: 1,
+                team2_seed: 8,
+                winner_id: 't-1',
+                loser_id: 't-2',
+                created_at: '2026-02-01T00:00:00Z',
+                updated_at: '2026-02-02T00:00:00Z',
+              },
+            ],
+            error: null,
+          },
+        ],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.mode).toBe('playoffs');
+      expect(result.weekNumber).toBeNull();
+    });
+
+    it('detects upsets in bracket games, with no week window applied', async () => {
+      createSupabaseMock({
+        ...seasonOnly(),
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [
+          {
+            data: [
+              {
+                // An 8 seed beating a 1 seed: the underdog has the weaker career score.
+                id: 'pm-1',
+                bracket_id: 'br-1',
+                round: 2,
+                position: 1,
+                match_type: 'winners',
+                team1_id: 't-underdog',
+                team2_id: 't-favorite',
+                team1_score: 2,
+                team2_score: 1,
+                team1_seed: 8,
+                team2_seed: 1,
+                winner_id: 't-underdog',
+                loser_id: 't-favorite',
+                created_at: '2026-02-01T00:00:00Z',
+                updated_at: '2026-02-02T00:00:00Z',
+              },
+            ],
+            error: null,
+          },
+        ],
+        v_team_details: [
+          {
+            data: [
+              {
+                team_id: 't-underdog',
+                name: 'Massive Sacks',
+                image_url: null,
+                logo_url: null,
+                division_id: 'd-visible',
+              },
+              {
+                team_id: 't-favorite',
+                name: 'Smooth Sliders',
+                image_url: null,
+                logo_url: null,
+                division_id: 'd-visible',
+              },
+            ],
+            error: null,
+          },
+        ],
+        team_season_stats: [
+          {
+            data: [
+              { team_id: 't-underdog', power_score: 0.48 },
+              { team_id: 't-favorite', power_score: 0.75 },
+            ],
+            error: null,
+          },
+        ],
+        divisions: [{ data: [{ id: 'd-visible' }], error: null }],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      expect(result.upsets).toHaveLength(1);
+      expect(result.upsets[0]).toMatchObject({
+        winnerId: 't-underdog',
+        loserId: 't-favorite',
+        matchResult: '2–1',
+        weekNumber: null,
+      });
+      expect(result.upsets[0].powerScoreGap).toBeCloseTo(27, 5);
+      expect(result.hasData).toBe(true);
+    });
+
+    it('feeds playoff results into streaks, so a bracket loss ends a win streak', async () => {
+      // Mirrors the live bug: a team unbeaten in the regular season that lost the
+      // grand final was still being shown on a long winning streak.
+      mockCalculateStreak.mockImplementation((_teamId: string, matches: unknown) => {
+        const list = matches as Array<{ id: string; orderKey?: number }>;
+        // Assert the playoff game is ordered last, then report the real streak.
+        return list[list.length - 1]?.id === 'pm-final' ? 'L1' : 'W12';
+      });
+
+      createSupabaseMock({
+        seasons: [{ data: { id: 's-1', start_date: '2026-01-01T00:00:00Z' }, error: null }],
+        brackets: [{ data: [{ id: 'br-1' }], error: null }],
+        playoff_matches: [
+          {
+            data: [
+              {
+                id: 'pm-final',
+                bracket_id: 'br-1',
+                round: 1,
+                position: 1,
+                match_type: 'finals',
+                team1_id: 't-champ',
+                team2_id: 't-runnerup',
+                team1_score: 2,
+                team2_score: 1,
+                team1_seed: 3,
+                team2_seed: 1,
+                winner_id: 't-champ',
+                loser_id: 't-runnerup',
+                created_at: '2026-08-01T00:00:00Z',
+                updated_at: '2026-08-02T00:00:00Z',
+              },
+            ],
+            error: null,
+          },
+        ],
+        matches: [
+          {
+            data: [
+              {
+                id: 'reg-1',
+                team1_id: 't-runnerup',
+                team2_id: 't-other',
+                winner_id: 't-runnerup',
+                loser_id: 't-other',
+                date: '2026-02-01T00:00:00Z',
+                iscompleted: true,
+                round_number: 1,
+              },
+            ],
+            error: null,
+          },
+        ],
+        v_team_details: [
+          { data: [], error: null },
+          {
+            data: [
+              {
+                team_id: 't-runnerup',
+                name: "Cuzzo's Clinic",
+                image_url: null,
+                logo_url: null,
+                divisionname: 'Competitive',
+                division_id: 'd-visible',
+              },
+            ],
+            error: null,
+          },
+        ],
+        // Two entries: fetchUpsets and fetchHotStreaks each query divisions, and
+        // fetchUpsets runs first. With only one queued, fetchHotStreaks would fall
+        // through to the mock default, see no visible divisions, skip every team
+        // and never reach calculateStreak — the assertions below would then pass
+        // no matter what the ordering did.
+        divisions: [
+          { data: [{ id: 'd-visible' }], error: null },
+          { data: [{ id: 'd-visible' }], error: null },
+        ],
+      });
+
+      const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+      // The streak really was evaluated, with the playoff game ordered last.
+      expect(mockCalculateStreak).toHaveBeenCalled();
+      const [, orderedMatches] = mockCalculateStreak.mock.calls[0] as [
+        string,
+        Array<{ id: string }>,
+      ];
+      expect(orderedMatches.map((m) => m.id)).toEqual(['reg-1', 'pm-final']);
+
+      // The streak resolved to L1, so the team is filtered out of Winning Streaks.
+      expect(result.hotStreaks).toEqual([]);
+    });
   });
 });

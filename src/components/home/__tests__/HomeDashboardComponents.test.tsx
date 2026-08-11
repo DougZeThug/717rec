@@ -3,7 +3,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
-import { WeeklyRecapData } from '@/services/WeeklyRecapService';
+import { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import { Team } from '@/types';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
@@ -56,6 +56,7 @@ const baseTeam: Team = {
 
 const weeklyRecapBase: WeeklyRecapData = {
   weekNumber: 8,
+  mode: 'regular' as const,
   upsets: [],
   hotStreaks: [],
   hasData: false,

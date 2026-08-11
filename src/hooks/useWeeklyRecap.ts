@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { WeeklyRecapService } from '@/services/WeeklyRecapService';
+import { WeeklyRecapService } from '@/services/weeklyRecap/WeeklyRecapService';
 
 export const useWeeklyRecap = () => {
   return useQuery({

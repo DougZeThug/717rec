@@ -2,8 +2,20 @@ import { ClipboardList } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import type { RecapMode } from '@/services/weeklyRecap/WeeklyRecapService';
 
-function WeeklyRecapHeader({ weekNumber, winter }: { weekNumber: number | null; winter: boolean }) {
+function WeeklyRecapHeader({
+  weekNumber,
+  mode,
+  winter,
+}: {
+  weekNumber: number | null;
+  mode: RecapMode;
+  winter: boolean;
+}) {
+  const label =
+    mode === 'playoffs' ? 'Playoffs' : weekNumber !== null ? `Week ${weekNumber}` : null;
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -17,12 +29,12 @@ function WeeklyRecapHeader({ weekNumber, winter }: { weekNumber: number | null; 
           Weekly Recap
         </span>
       </div>
-      {weekNumber !== null && (
+      {label !== null && (
         <Badge
           variant={winter ? 'winter' : 'outline'}
           className={cn('text-xs', !winter && 'border-muted-foreground/30')}
         >
-          Week {weekNumber}
+          {label}
         </Badge>
       )}
     </div>
