@@ -23,8 +23,11 @@ interface CareerPowerScoreInput {
   teamDivisionWeight: number;
   // Current season ID — used to exclude current season from team_season_stats
   // so it isn't double-counted with v_team_details data.
-  // null/undefined means no season is active: every stored season is historical,
-  // nothing is excluded, and v_team_details must be ignored (see below).
+  // Omitting it does NOT mean the same thing in both modes: in single-team mode it
+  // is resolved from seasons.is_active before the exclusion decision, whereas in
+  // prefetched (batch) mode it is taken at face value. Only the resolved value is
+  // null when no season is active — see the KNOWN GAP note below for what that
+  // means during the archive window.
   currentSeasonId?: string | null;
   // Optional pre-fetched data to avoid redundant DB queries (used by batch mode)
   prefetchedSeasonStats?: SeasonPowerScoreData[] | null;
@@ -115,14 +118,26 @@ export const calculateCareerPowerScore = async ({
 
   // Add current season data if available (power score already on 0-100 scale).
   //
-  // Only add the live season when its stored row was excluded above. Between
-  // partial_archive_season and finalize_playoffs no season is is_active, so
-  // resolvedCurrentSeasonId is null and nothing was excluded — but
-  // v_team_details still reports that season's playoff record, because
-  // current_standings_season_id() falls back to playoffs_active. Adding it
-  // would weight those playoff games into the average a second time.
+  // KNOWN GAP — between partial_archive_season and finalize_playoffs no season is
+  // is_active, so resolvedCurrentSeasonId is null and nothing was excluded above,
+  // yet v_team_details still reports that season's playoff record because
+  // current_standings_season_id() falls back to playoffs_active.
+  //
+  // Whether that is a double count depends on how fresh the stored row is, and the
+  // stored row's freshness is not guaranteed: upsert_team_season_stats() runs on
+  // archive/finalize and on regular-match RPCs, but the playoff write path
+  // (usePlayoffActions -> updatePlayoffMatchResult) writes playoff_matches
+  // directly and never refreshes it.
+  //   - Playoffs finished before the archive: the stored row is playoff-inclusive,
+  //     and adding v_team_details counts those games twice.
+  //   - Archive before the playoffs are played: the stored row is regular-only,
+  //     and adding v_team_details is the only way those games are counted at all.
+  //
+  // Gating this on resolvedCurrentSeasonId fixes the first case and breaks the
+  // second, so it is deliberately NOT gated here. The real fix is to refresh
+  // team_season_stats when a playoff result is written, which makes the stored row
+  // always authoritative; then this block can be gated safely.
   if (
-    resolvedCurrentSeasonId &&
     currentTeamData &&
     currentTeamData.power_score !== null &&
     currentTeamData.wins !== null &&
