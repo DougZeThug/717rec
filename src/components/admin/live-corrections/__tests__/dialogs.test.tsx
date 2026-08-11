@@ -160,6 +160,60 @@ describe('live correction dialogs', () => {
     await waitFor(() => expect(team1Score).toHaveValue(5));
   });
 
+  // PR-09 named this the "remote-change clobber" risk (EditRoundDialog's reset
+  // effect keys on the `round` object). The reset effect cannot tell a genuinely
+  // different round from a realtime refresh of the round already being edited,
+  // so a refresh of the SAME round discards whatever the admin has typed.
+  //
+  // This is a characterization test: it locks in what the component does today
+  // so the behaviour cannot change unnoticed. It is NOT an endorsement — PR-09
+  // lists product fixes as a non-goal, so the risk is documented here rather
+  // than fixed. Flip both assertions if the reset is ever narrowed to fire only
+  // on a real round change.
+  it('discards in-progress edits when realtime refreshes the same round (known clobber risk)', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <EditRoundDialog
+        open
+        onOpenChange={vi.fn()}
+        round={baseRound}
+        team1Name="Team A"
+        team2Name="Team B"
+        team1Players={team1Players}
+        team2Players={team2Players}
+        rosterById={rosterById}
+        onSubmit={vi.fn()}
+        isSubmitting={false}
+      />
+    );
+
+    const team1Score = screen.getByLabelText('Score', { selector: '#team1-score' });
+    await user.clear(team1Score);
+    await user.type(team1Score, '9');
+    expect(team1Score).toHaveValue(9);
+
+    // Same round id and same stored values — only the object identity changes,
+    // which is exactly what a realtime refetch produces.
+    rerender(
+      <EditRoundDialog
+        open
+        onOpenChange={vi.fn()}
+        round={{ ...baseRound }}
+        team1Name="Team A"
+        team2Name="Team B"
+        team1Players={team1Players}
+        team2Players={team2Players}
+        rosterById={rosterById}
+        onSubmit={vi.fn()}
+        isSubmitting={false}
+      />
+    );
+
+    // The unsaved 9 is lost and the field snaps back to the stored score.
+    await waitFor(() => expect(team1Score).toHaveValue(baseRound.team1_score));
+    expect(screen.getByRole('heading', { name: 'Edit round 3' })).toBeInTheDocument();
+  });
+
   it('requires valid bag math before saving a round', () => {
     const onSubmit = vi.fn();
 

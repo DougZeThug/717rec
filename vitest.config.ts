@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => {
         thresholds: {
           lines: 67,
           functions: 61,
-          branches: 54,
+          branches: 55,
           statements: 65,
           'src/services/**': {
             lines: 86,
@@ -115,21 +115,21 @@ export default defineConfig(({ mode }) => {
           },
           'src/components/**': {
             lines: 58,
-            functions: 54,
-            branches: 46,
-            statements: 56,
+            functions: 55,
+            branches: 47,
+            statements: 57,
           },
           'src/components/admin/**': {
-            lines: 56,
-            functions: 48,
-            branches: 44,
-            statements: 55,
+            lines: 58,
+            functions: 51,
+            branches: 47,
+            statements: 57,
           },
           'src/components/admin/live-corrections/**': {
-            lines: 42,
-            functions: 35,
-            branches: 23,
-            statements: 40,
+            lines: 91,
+            functions: 81,
+            branches: 72,
+            statements: 88,
           },
           'src/pages/**': {
             lines: 70,

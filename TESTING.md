@@ -175,15 +175,15 @@ Last measured: 2026-08-11.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 70.14%  |
-| Statements | 68.71%  |
-| Functions  | 64.24%  |
-| Branches   | 57.76%  |
+| Lines      | 70.41%  |
+| Statements | 68.97%  |
+| Functions  | 64.66%  |
+| Branches   | 58.14%  |
 
-Measured from a full passing run: 509 test files / 3823 tests.
+Measured from a full passing run: 511 test files / 3839 tests.
 
 The overall number is held down by the component layer, which is still uneven
-at 61% lines even after the 2026-08 test expansion. The logic-heavy areas
+at 62% lines even after the 2026-08 test expansion. The logic-heavy areas
 (utils, scheduling, rankings, career math) and the service layer are in much
 better shape — services now sit at 89% lines — see the per-area table below.
 As of this ratchet, `src/components/**` and `src/pages/**` have their own
@@ -242,7 +242,7 @@ current baseline:
 - Lines: **67%**
 - Statements: **65%**
 - Functions: **61%**
-- Branches: **54%**
+- Branches: **55%**
 
 If a PR drops any global metric below those numbers, the coverage job fails.
 
@@ -268,9 +268,9 @@ area, so they catch regressions without blocking normal work:
 | `src/hooks/**` | 59% | 57% | 52% | 45% |
 | `src/hooks/auth/**` | 69% | 67% | 60% | 55% |
 | `src/hooks/scheduling/**` | 61% | 60% | 62% | 43% |
-| `src/components/**` | 58% | 56% | 54% | 46% |
-| `src/components/admin/**` | 56% | 55% | 48% | 44% |
-| `src/components/admin/live-corrections/**` | 42% | 40% | 35% | 23% |
+| `src/components/**` | 58% | 57% | 55% | 47% |
+| `src/components/admin/**` | 58% | 57% | 51% | 47% |
+| `src/components/admin/live-corrections/**` | 91% | 88% | 81% | 72% |
 | `src/pages/**` | 70% | 70% | 68% | 62% |
 | `src/utils/**` | 77% | 76% | 76% | 68% |
 | `src/utils/autoSchedule/**` | 68% | 67% | 66% | 54% |
@@ -285,19 +285,25 @@ as a floor, not a final target.
 
 ### Stage 2 ratchet history
 
-- **2026-08-11**: Ratchet + close the components/pages floor gap. Measured a
-  full passing run (509 files / 3823 tests) and pinned every floor ~3 points
-  under it. Global gates went 62/61/56/51 → **67/65/61/54**
+- **2026-08-11**: Ratchet, close the components/pages floor gap, and finish
+  PR-09. Measured a full passing run (511 files / 3839 tests) and pinned every
+  floor ~3 points under it. Global gates went 62/61/56/51 → **67/65/61/55**
   (lines/statements/functions/branches). Folder floors rose across the board —
   services 72→**86** lines, hooks 44→**59**, hooks/auth 66→**69**, utils
-  67→**77**, autoSchedule 65→**68**, live-corrections 40→**42**, and
-  `src/components/admin/**` 5→**56** (that floor had been left at a token 5%
-  and no longer reflected reality). Added five new floors:
-  `src/components/**` and `src/pages/**` — the specific hole PR-09 called out,
-  where component regressions previously only dented the global aggregate —
-  plus `src/services/brackets/viewer/**`, `src/hooks/scheduling/**`, and
-  `src/utils/autoSchedule/blossom/**`. No test or product code changed in this
-  pass; the suite was already green.
+  67→**77**, autoSchedule 65→**68**, and `src/components/admin/**` 5→**58**
+  (that floor had been left at a token 5% and no longer reflected reality).
+  Added five new floors: `src/components/**` and `src/pages/**` — the specific
+  hole PR-09 called out, where component regressions previously only dented the
+  global aggregate — plus `src/services/brackets/viewer/**`,
+  `src/hooks/scheduling/**`, and `src/utils/autoSchedule/blossom/**`.
+
+  This pass also closed PR-09's last open acceptance criterion. Live
+  corrections had two entirely untested container files
+  (`LiveCorrectionsSection`, `MatchCorrectionsPanel`) holding the folder at 45%
+  lines against a ≥60% bar; both gained suites, lifting the folder to **94%**
+  lines and its floor 40→**91**. The `EditRoundDialog` remote-change clobber
+  case that PR-09 named by hand also gained a test — see "Known risks with a
+  characterization test" below. No product code changed.
 - **2026-07-02**: Documentation audit. Re-synced this doc with reality: the
   late-June ratchets (below) had raised enforced thresholds without updating
   this file, the E2E section still claimed a single smoke spec (there are
@@ -394,9 +400,9 @@ global gate.
 | `src/utils/teamDetailsUtils`               | 92%         | —     | 60%    | On target                                      |
 | `src/utils/teamStatsUtils`                 | 100%        | —     | 60%    | On target                                      |
 | `src/pages/**`                             | 73%         | 70%   | 40%    | New floor this ratchet — above target          |
-| `src/components/**` (non-UI)               | 61%         | 58%   | 40%    | New floor this ratchet; still uneven by folder |
-| `src/components/admin/**`                  | 59%         | 56%   | 40%    | Floor raised from a token 5% to match reality  |
-| `src/components/admin/live-corrections/**` | 45%         | 42%   | 60%    | Highest-risk admin surface — keep climbing     |
+| `src/components/**` (non-UI)               | 62%         | 58%   | 40%    | New floor this ratchet; still uneven by folder |
+| `src/components/admin/**`                  | 62%         | 58%   | 40%    | Floor raised from a token 5% to match reality  |
+| `src/components/admin/live-corrections/**` | 94%         | 91%   | 60%    | Now above target — closed PR-09's last gap     |
 | `src/types`                                | 100%        | —     | —      | Types only — no target                         |
 
 This table is a manual snapshot and drifts as code lands. Only the top-level
@@ -406,7 +412,7 @@ per-area numbers matter for a decision, recompute them from a fresh
 
 ## What's tested today
 
-509 test files / 3823 tests as of 2026-08-11. Highlights by layer:
+511 test files / 3839 tests as of 2026-08-11. Highlights by layer:
 
 **Services (89% lines):** the data-access layer is the best-covered area.
 Suites exist for `ProfileService`, `HeadToHeadService`, team fetch/create/
@@ -451,6 +457,32 @@ challonge-fallback, live-corrections), `playoffs` (40), `stats` (28),
 layout, help, a11y, navigation, and auth. Coverage is still uneven folder to
 folder — the new `src/components/**` floor guards the aggregate, not each
 subtree.
+
+**Live corrections (94% lines):** the highest-risk admin surface — it edits and
+deletes completed live-scoring rounds and changes game winners — is now covered
+end to end. `LiveCorrectionsSection` covers season filtering, the loading /
+error / empty states, match selection, and clearing it.
+`MatchCorrectionsPanel` covers the game and round listing, the finalized-match
+warning, the change-winner action appearing only for completed games, and the
+wiring of all three mutations (round edit, round delete, winner change) through
+`useAdminCorrections`. The dialogs themselves cover bag-math validation,
+patch shape, and delete confirmation.
+
+### Known risks with a characterization test
+
+Some tests exist to pin down behavior we are **not** happy with, so it cannot
+change unnoticed. Read the test name and comment before treating one as a
+specification.
+
+- `EditRoundDialog` **discards an admin's unsaved edits when realtime refreshes
+  the round being edited.** The reset effect keys on the `round` object and
+  cannot distinguish a genuinely different round from a refetch of the same
+  one, so any realtime update to that round wipes in-progress typing. PR-09
+  flagged this as a known waiver risk and lists product fixes as a non-goal, so
+  `dialogs.test.tsx` documents the current behavior rather than asserting the
+  desired one. Fixing it means narrowing the effect to fire only on a real
+  round change (e.g. keying on `round.id`) and flipping that test's
+  assertions.
 
 **Season workflow:** `SeasonService` (incl. `partial_archive`, `finalize_playoffs`,
 `activate_season_with_partial_archive`, `fetchPlayoffActiveSeason`),

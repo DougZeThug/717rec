@@ -243,16 +243,16 @@ Error: useNavigation must be used within a NavigationProvider
     at innerInvokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
     at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
 
- Test Files  509 passed (509)
-      Tests  3823 passed (3823)
-   Start at  18:55:41
-   Duration  317.98s (transform 28.81s, setup 151.00s, import 203.05s, tests 161.54s, environment 513.32s)
+ Test Files  511 passed (511)
+      Tests  3839 passed (3839)
+   Start at  19:32:29
+   Duration  308.31s (transform 19.14s, setup 149.57s, import 182.61s, tests 163.55s, environment 501.61s)
 
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|-------------------
 File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 -------------------|---------|----------|---------|---------|-------------------
-All files          |   68.71 |    57.76 |   64.24 |   70.14 |                   
+All files          |   68.97 |    58.14 |   64.66 |   70.41 |                   
  src               |   56.25 |       20 |   23.33 |      75 |                   
   App.tsx          |   65.21 |       50 |   24.13 |    91.3 | 64-72             
   main.tsx         |       0 |        0 |       0 |       0 | 10-59             
@@ -336,12 +336,12 @@ All files          |   68.71 |    57.76 |   64.24 |   70.14 |
   ...DriftCard.tsx |    87.5 |    67.85 |      80 |    87.5 | 39,65             
   ...StatusTab.tsx |   91.83 |       74 |     100 |   90.69 | 39-41,53-55       
   ...MiniChart.tsx |       0 |        0 |       0 |       0 | 16-81             
- ...ve-corrections |   43.28 |    26.25 |   38.46 |      45 |                   
+ ...ve-corrections |   91.04 |    75.62 |   84.61 |   94.16 |                   
   ...nerDialog.tsx |    87.5 |       50 |      75 |   85.71 | 77                
   ...undDialog.tsx |     100 |       50 |     100 |     100 | 44                
   ...undDialog.tsx |   84.48 |    63.79 |   76.19 |      92 | 146,210,238,279   
-  ...nsSection.tsx |       0 |        0 |       0 |       0 | 19-127            
-  ...ionsPanel.tsx |       0 |        0 |       0 |       0 | 24-221            
+  ...nsSection.tsx |     100 |       90 |     100 |     100 | 53,94             
+  ...ionsPanel.tsx |   96.29 |    83.87 |   90.47 |   95.91 | 174,208           
  ...ss-score-entry |   88.88 |    90.19 |      75 |   88.23 |                   
   FilterBar.tsx    |      60 |    83.33 |   33.33 |      60 | 63-73             
   MatchRow.tsx     |      80 |    88.46 |   57.14 |      80 | 56-59,84,128      
@@ -1231,8 +1231,8 @@ All files          |   68.71 |    57.76 |   64.24 |   70.14 |
 -------------------|---------|----------|---------|---------|-------------------
 
 =============================== Coverage summary ===============================
-Statements   : 68.71% ( 16600/24158 )
-Branches     : 57.76% ( 11886/20577 )
-Functions    : 64.24% ( 3658/5694 )
-Lines        : 70.14% ( 15312/21828 )
+Statements   : 68.97% ( 16664/24158 )
+Branches     : 58.14% ( 11965/20577 )
+Functions    : 64.66% ( 3682/5694 )
+Lines        : 70.41% ( 15371/21828 )
 ================================================================================
