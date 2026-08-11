@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { calculateSourceNodeIds, SlotPositionMarkers } from '../SourceNodeCalculator';
+import {
+  calculateSourceNodeIds,
+  SlotPositionMarkers,
+  toViewerOpponent,
+} from '../SourceNodeCalculator';
 import type { BracketGroupRow, BracketRoundRow, ViewerMatch } from '../types';
 
 /**
@@ -71,7 +75,17 @@ const sourceOf = (matches: ViewerMatch[], id: number, side: 'opponent1' | 'oppon
   return opponent ? `${opponent.source_node_id ?? '-'}:${opponent.source_type ?? '-'}` : 'null';
 };
 
+afterEach(() => vi.resetAllMocks());
+
 describe('calculateSourceNodeIds', () => {
+  it('normalizes opponent values for the viewer', () => {
+    expect(toViewerOpponent(null, null, null, 3)).toMatchObject({
+      id: null,
+      score: undefined,
+      result: null,
+      position: 3,
+    });
+  });
   it('wires the winners bracket by binary pairing', () => {
     const matches = calculateSourceNodeIds(makeMatches(), groups, rounds, markers);
 
