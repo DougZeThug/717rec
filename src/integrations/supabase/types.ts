@@ -5690,6 +5690,52 @@ export type Database = {
           issue: string
         }[]
       }
+      admin_get_pre_unification_season_stats: {
+        Args: never
+        Returns: {
+          backed_up_at: string
+          champion: boolean
+          division_name: string
+          game_losses: number
+          game_wins: number
+          match_losses: number
+          match_wins: number
+          playoff_rank: number
+          power_score: number
+          recorded_at: string
+          runner_up: boolean
+          season_id: string
+          season_name: string
+          sos: number
+          team_id: string
+        }[]
+      }
+      admin_get_pre_unification_team_power: {
+        Args: never
+        Returns: {
+          backed_up_at: string
+          game_losses: number
+          game_win_percentage: number
+          game_wins: number
+          losses: number
+          power_score: number
+          team_id: string
+          win_percentage: number
+          wins: number
+        }[]
+      }
+      admin_power_unification_status: {
+        Args: never
+        Returns: {
+          backed_up_at: string
+          backup_season_rows: number
+          backup_team_rows: number
+          live_season_rows: number
+          status: string
+        }[]
+      }
+      admin_reapply_power_score_unification: { Args: never; Returns: string }
+      admin_revert_power_score_unification: { Args: never; Returns: string }
       approve_match_result: {
         Args: {
           p_loser_game_wins?: number
@@ -5984,7 +6030,9 @@ export type Database = {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
       }
+      prune_team_season_stats_not_in_agg: { Args: never; Returns: number }
       reconcile_team_counters: { Args: never; Returns: number }
+      recreate_power_view_dependents: { Args: never; Returns: undefined }
       reopen_live_match: { Args: { p_match_id: string }; Returns: boolean }
       replace_playoff_games: {
         Args: { p_games: Json; p_match_id: string }
