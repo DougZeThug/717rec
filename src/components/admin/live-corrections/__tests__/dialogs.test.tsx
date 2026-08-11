@@ -74,7 +74,7 @@ describe('live correction dialogs', () => {
   });
 
   it('submits edited scores, bags, and throwers as an update patch', async () => {
-    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const onSubmit = vi.fn().mockImplementation(() => Promise.resolve());
     const user = userEvent.setup();
 
     render(
@@ -160,17 +160,11 @@ describe('live correction dialogs', () => {
     await waitFor(() => expect(team1Score).toHaveValue(5));
   });
 
-  // PR-09 named this the "remote-change clobber" risk (EditRoundDialog's reset
-  // effect keys on the `round` object). The reset effect cannot tell a genuinely
-  // different round from a realtime refresh of the round already being edited,
-  // so a refresh of the SAME round discards whatever the admin has typed.
-  //
-  // This is a characterization test: it locks in what the component does today
-  // so the behaviour cannot change unnoticed. It is NOT an endorsement — PR-09
-  // lists product fixes as a non-goal, so the risk is documented here rather
-  // than fixed. Flip both assertions if the reset is ever narrowed to fire only
-  // on a real round change.
-  it('discards in-progress edits when realtime refreshes the same round (known clobber risk)', async () => {
+  // PR-09's "remote-change clobber" risk. The reset effect must distinguish a
+  // genuinely different round from a realtime refetch of the round already
+  // being edited; keying it on the `round` object rather than `round.id` made
+  // every refetch wipe the admin's unsaved input mid-correction.
+  it('keeps in-progress edits when realtime refreshes the same round', async () => {
     const user = userEvent.setup();
     const { rerender } = render(
       <EditRoundDialog
@@ -192,13 +186,13 @@ describe('live correction dialogs', () => {
     await user.type(team1Score, '9');
     expect(team1Score).toHaveValue(9);
 
-    // Same round id and same stored values — only the object identity changes,
-    // which is exactly what a realtime refetch produces.
+    // Same round id, new object identity — exactly what a realtime refetch
+    // produces, including when another admin edits the same row.
     rerender(
       <EditRoundDialog
         open
         onOpenChange={vi.fn()}
-        round={{ ...baseRound }}
+        round={{ ...baseRound, team1_score: 5 }}
         team1Name="Team A"
         team2Name="Team B"
         team1Players={team1Players}
@@ -209,9 +203,40 @@ describe('live correction dialogs', () => {
       />
     );
 
-    // The unsaved 9 is lost and the field snaps back to the stored score.
-    await waitFor(() => expect(team1Score).toHaveValue(baseRound.team1_score));
+    // The unsaved 9 survives; the refetch does not overwrite what was typed.
     expect(screen.getByRole('heading', { name: 'Edit round 3' })).toBeInTheDocument();
+    await waitFor(() => expect(team1Score).toHaveValue(9));
+  });
+
+  it('reloads stored values when the dialog is reopened on the same round', async () => {
+    const user = userEvent.setup();
+    const props = {
+      onOpenChange: vi.fn(),
+      round: baseRound,
+      team1Name: 'Team A',
+      team2Name: 'Team B',
+      team1Players,
+      team2Players,
+      rosterById,
+      onSubmit: vi.fn(),
+      isSubmitting: false,
+    };
+    const { rerender } = render(<EditRoundDialog open {...props} />);
+
+    const team1Score = screen.getByLabelText('Score', { selector: '#team1-score' });
+    await user.clear(team1Score);
+    await user.type(team1Score, '9');
+    expect(team1Score).toHaveValue(9);
+
+    // Close without saving, then reopen: the abandoned edit must not persist.
+    rerender(<EditRoundDialog open={false} {...props} />);
+    rerender(<EditRoundDialog open {...props} />);
+
+    await waitFor(() =>
+      expect(screen.getByLabelText('Score', { selector: '#team1-score' })).toHaveValue(
+        baseRound.team1_score
+      )
+    );
   });
 
   it('requires valid bag math before saving a round', () => {
@@ -244,7 +269,7 @@ describe('live correction dialogs', () => {
   });
 
   it('submits the selected game winner', async () => {
-    const onConfirm = vi.fn().mockResolvedValue(undefined);
+    const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
     const user = userEvent.setup();
 
     render(

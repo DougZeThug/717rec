@@ -27,10 +27,12 @@ vi.mock('@/hooks/live-scoring/useAdminCorrections', () => ({
 
 vi.mock('@/services/liveScoring/TeamPlayersService', () => ({
   TeamPlayersService: {
-    fetchTeamPlayers: vi.fn(async (teamId: string) =>
-      teamId === 'team-1'
-        ? [makeRosterPlayer('p1', 'Alice', 'team-1'), makeRosterPlayer('p2', 'Ava', 'team-1')]
-        : [makeRosterPlayer('p3', 'Bert', 'team-2'), makeRosterPlayer('p4', 'Bea', 'team-2')]
+    fetchTeamPlayers: vi.fn((teamId: string) =>
+      Promise.resolve(
+        teamId === 'team-1'
+          ? [makeRosterPlayer('p1', 'Alice', 'team-1'), makeRosterPlayer('p2', 'Ava', 'team-1')]
+          : [makeRosterPlayer('p3', 'Bert', 'team-2'), makeRosterPlayer('p4', 'Bea', 'team-2')]
+      )
     ),
   },
 }));
@@ -150,9 +152,9 @@ describe('MatchCorrectionsPanel', () => {
       deleteRound: mockDeleteRound,
       changeGameWinner: mockChangeGameWinner,
     });
-    mockUpdateRound.mutateAsync.mockResolvedValue(undefined);
-    mockDeleteRound.mutateAsync.mockResolvedValue(undefined);
-    mockChangeGameWinner.mutateAsync.mockResolvedValue(undefined);
+    mockUpdateRound.mutateAsync.mockImplementation(() => Promise.resolve());
+    mockDeleteRound.mutateAsync.mockImplementation(() => Promise.resolve());
+    mockChangeGameWinner.mutateAsync.mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -177,7 +179,7 @@ describe('MatchCorrectionsPanel', () => {
     setLiveMatch({ bundle: makeBundle(), derived: makeDerived() });
     renderPanel();
 
-    expect(screen.getByText(/Game 1 · Team A 2 – 1 Team B/)).toBeInTheDocument();
+    expect(screen.getByText(/Game 1 · Team A 2 – 1 Team B/u)).toBeInTheDocument();
     expect(screen.getByText('Winner: Team A')).toBeInTheDocument();
     expect(screen.getByText('Round 1')).toBeInTheDocument();
     // Game 2 has no rounds recorded yet.

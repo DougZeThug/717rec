@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { format } from 'date-fns';
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -112,7 +113,10 @@ describe('LiveCorrectionsSection', () => {
     render(<LiveCorrectionsSection />);
 
     expect(screen.getByText('Team A vs Team B')).toBeInTheDocument();
-    expect(screen.getByText('Aug 1, 2026')).toBeInTheDocument();
+    // Anchored to the same formatting the component uses. A date-only column
+    // parses as UTC midnight, so a hardcoded 'Aug 1, 2026' would render as
+    // 'Jul 31, 2026' for anyone west of UTC and fail off the CI runner.
+    expect(screen.getByText(format(new Date('2026-08-01'), 'MMM d, yyyy'))).toBeInTheDocument();
     expect(screen.getByText('2 games · 9 rounds · finalized')).toBeInTheDocument();
 
     // Singular wording and the missing-date fallback.

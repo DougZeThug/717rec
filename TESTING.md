@@ -175,12 +175,12 @@ Last measured: 2026-08-11.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 70.41%  |
-| Statements | 68.97%  |
+| Lines      | 70.42%  |
+| Statements | 68.98%  |
 | Functions  | 64.66%  |
-| Branches   | 58.14%  |
+| Branches   | 58.15%  |
 
-Measured from a full passing run: 511 test files / 3839 tests.
+Measured from a full passing run: 511 test files / 3840 tests.
 
 The overall number is held down by the component layer, which is still uneven
 at 62% lines even after the 2026-08 test expansion. The logic-heavy areas
@@ -286,7 +286,7 @@ as a floor, not a final target.
 ### Stage 2 ratchet history
 
 - **2026-08-11**: Ratchet, close the components/pages floor gap, and finish
-  PR-09. Measured a full passing run (511 files / 3839 tests) and pinned every
+  PR-09. Measured a full passing run (511 files / 3840 tests) and pinned every
   floor ~3 points under it. Global gates went 62/61/56/51 → **67/65/61/55**
   (lines/statements/functions/branches). Folder floors rose across the board —
   services 72→**86** lines, hooks 44→**59**, hooks/auth 66→**69**, utils
@@ -302,8 +302,10 @@ as a floor, not a final target.
   (`LiveCorrectionsSection`, `MatchCorrectionsPanel`) holding the folder at 45%
   lines against a ≥60% bar; both gained suites, lifting the folder to **94%**
   lines and its floor 40→**91**. The `EditRoundDialog` remote-change clobber
-  case that PR-09 named by hand also gained a test — see "Known risks with a
-  characterization test" below. No product code changed.
+  that PR-09 named by hand was also **fixed** — a realtime refetch of the round
+  being edited no longer discards the admin's unsaved input — with regression
+  tests covering same-round refetch, different-round reset, and reopen. This is
+  the only product change in the ratchet.
 - **2026-07-02**: Documentation audit. Re-synced this doc with reality: the
   late-June ratchets (below) had raised enforced thresholds without updating
   this file, the E2E section still claimed a single smoke spec (there are
@@ -412,7 +414,7 @@ per-area numbers matter for a decision, recompute them from a fresh
 
 ## What's tested today
 
-511 test files / 3839 tests as of 2026-08-11. Highlights by layer:
+511 test files / 3840 tests as of 2026-08-11. Highlights by layer:
 
 **Services (89% lines):** the data-access layer is the best-covered area.
 Suites exist for `ProfileService`, `HeadToHeadService`, team fetch/create/
@@ -447,7 +449,7 @@ team details/stats, `sanitizeReturnTo`.
 `Help`, `Auth`, `ProfileSetup`, `AdminDashboard`, `NotificationsAdmin`,
 `Timeslots`, and `NotFound`.
 
-**Components (61% lines, uneven):** heaviest coverage in `admin` (46 suites —
+**Components (62% lines, uneven):** heaviest coverage in `admin` (48 suites —
 mass-score-entry incl. delete/submit-sync/brackets-error paths, auto-schedule,
 batch-matches, divisions, seasons, teams, timeslots, requests, scores, theme,
 hero-cards, league-night-status, power-migration, participation,
@@ -468,21 +470,15 @@ wiring of all three mutations (round edit, round delete, winner change) through
 `useAdminCorrections`. The dialogs themselves cover bag-math validation,
 patch shape, and delete confirmation.
 
-### Known risks with a characterization test
-
-Some tests exist to pin down behavior we are **not** happy with, so it cannot
-change unnoticed. Read the test name and comment before treating one as a
-specification.
-
-- `EditRoundDialog` **discards an admin's unsaved edits when realtime refreshes
-  the round being edited.** The reset effect keys on the `round` object and
-  cannot distinguish a genuinely different round from a refetch of the same
-  one, so any realtime update to that round wipes in-progress typing. PR-09
-  flagged this as a known waiver risk and lists product fixes as a non-goal, so
-  `dialogs.test.tsx` documents the current behavior rather than asserting the
-  desired one. Fixing it means narrowing the effect to fire only on a real
-  round change (e.g. keying on `round.id`) and flipping that test's
-  assertions.
+The `EditRoundDialog` remote-change clobber that PR-09 flagged as a known
+waiver risk is **fixed**, not just documented. The reset effect keyed on the
+`round` object, so it could not tell a genuinely different round from a
+realtime refetch of the round already open — and every refetch wiped the
+admin's unsaved typing mid-correction. It now tracks the loaded `round.id` and
+reloads only when the dialog opens or a different round is selected. Three
+tests hold the behavior in place: a same-round refetch keeps in-progress
+edits, a different round still resets the form, and reopening the dialog
+reloads stored values so an abandoned edit does not persist.
 
 **Season workflow:** `SeasonService` (incl. `partial_archive`, `finalize_playoffs`,
 `activate_season_with_partial_archive`, `fetchPlayoffActiveSeason`),
