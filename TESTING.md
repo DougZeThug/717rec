@@ -171,20 +171,24 @@ Do not use `pnpm` or `yarn` — neither is installed.
 
 ## Current baseline
 
-Last measured: 2026-07-23.
+Last measured: 2026-08-11.
 
 | Metric     | Covered |
 | ---------- | ------- |
-| Lines      | 66.11%  |
-| Statements | 64.69%  |
-| Functions  | 60.47%  |
-| Branches   | 54.21%  |
+| Lines      | 70.14%  |
+| Statements | 68.71%  |
+| Functions  | 64.24%  |
+| Branches   | 57.76%  |
 
-The overall number is moderate because component coverage is still uneven,
-though the 2026-07 dead-code cleanup removed most zero-coverage orphans and
-the admin request/timeslot/division flows now have suites. The logic-heavy
-areas (utils, scheduling, rankings, career math) and the service layer are in
-much better shape — see the per-area table below.
+Measured from a full passing run: 509 test files / 3823 tests.
+
+The overall number is held down by the component layer, which is still uneven
+at 61% lines even after the 2026-08 test expansion. The logic-heavy areas
+(utils, scheduling, rankings, career math) and the service layer are in much
+better shape — services now sit at 89% lines — see the per-area table below.
+As of this ratchet, `src/components/**` and `src/pages/**` have their own
+enforced floors, so the component layer can no longer regress silently behind
+the global aggregate.
 
 Full baseline output is saved to `coverage-baseline.txt` at the repo root.
 
@@ -235,12 +239,17 @@ Vitest coverage thresholds are now enforced in CI and locally via
 Global thresholds in `vitest.config.ts` are pinned a few points below the
 current baseline:
 
-- Lines: **62%**
-- Statements: **61%**
-- Functions: **56%**
-- Branches: **51%**
+- Lines: **67%**
+- Statements: **65%**
+- Functions: **61%**
+- Branches: **54%**
 
 If a PR drops any global metric below those numbers, the coverage job fails.
+
+The global set covers **every** file in the coverage scope, including files
+that a folder glob below also matches. Vitest does not subtract glob-matched
+files from the global set, so folder floors add protection rather than carve
+holes in the global one.
 
 The PR gate (`npm run test:coverage:deepsource`, run in the `deepsource-coverage`
 CI job) measures the same full `src/**` scope as local coverage, including
@@ -249,22 +258,46 @@ doc and the config disagree, the config wins and this doc needs a sync.
 
 ### Stage 2 (active now): folder thresholds
 
-These floors sit a few points below current measured coverage for each area, so
-they catch regressions without blocking normal work:
+These floors sit ~3 points below the 2026-08-11 measured coverage for each
+area, so they catch regressions without blocking normal work:
 
-- `src/services/**`: 72% lines / 71% statements / 72% functions / 58% branches
-- `src/hooks/**`: 44% lines / 43% statements / 38% functions / 34% branches
-- `src/hooks/auth/**`: 66% lines / 64% statements / 56% functions / 53% branches
-- `src/components/admin/**`: 5% lines / 5% statements / 5% functions / 3% branches
-- `src/components/admin/live-corrections/**`: 40% lines / 38% statements / 33% functions / 21% branches
-- `src/utils/**`: 67% lines / 66% statements / 64% functions / 55% branches
-- `src/utils/autoSchedule/**`: 65% lines / 64% statements / 63% functions / 50% branches
+| Folder glob | Lines | Statements | Functions | Branches |
+| --- | --- | --- | --- | --- |
+| `src/services/**` | 86% | 83% | 87% | 70% |
+| `src/services/brackets/viewer/**` | 82% | 81% | 82% | 63% |
+| `src/hooks/**` | 59% | 57% | 52% | 45% |
+| `src/hooks/auth/**` | 69% | 67% | 60% | 55% |
+| `src/hooks/scheduling/**` | 61% | 60% | 62% | 43% |
+| `src/components/**` | 58% | 56% | 54% | 46% |
+| `src/components/admin/**` | 56% | 55% | 48% | 44% |
+| `src/components/admin/live-corrections/**` | 42% | 40% | 35% | 23% |
+| `src/pages/**` | 70% | 70% | 68% | 62% |
+| `src/utils/**` | 77% | 76% | 76% | 68% |
+| `src/utils/autoSchedule/**` | 68% | 67% | 66% | 54% |
+| `src/utils/autoSchedule/blossom/**` | 60% | 58% | 56% | 47% |
+
+Nested globs are cumulative, not exclusive. A file under
+`src/hooks/scheduling/**` is also measured by `src/hooks/**` and by the global
+set, so a narrow floor tightens an area without loosening the broader one.
 
 These values are below current measured coverage for those areas and are meant
 as a floor, not a final target.
 
 ### Stage 2 ratchet history
 
+- **2026-08-11**: Ratchet + close the components/pages floor gap. Measured a
+  full passing run (509 files / 3823 tests) and pinned every floor ~3 points
+  under it. Global gates went 62/61/56/51 → **67/65/61/54**
+  (lines/statements/functions/branches). Folder floors rose across the board —
+  services 72→**86** lines, hooks 44→**59**, hooks/auth 66→**69**, utils
+  67→**77**, autoSchedule 65→**68**, live-corrections 40→**42**, and
+  `src/components/admin/**` 5→**56** (that floor had been left at a token 5%
+  and no longer reflected reality). Added five new floors:
+  `src/components/**` and `src/pages/**` — the specific hole PR-09 called out,
+  where component regressions previously only dented the global aggregate —
+  plus `src/services/brackets/viewer/**`, `src/hooks/scheduling/**`, and
+  `src/utils/autoSchedule/blossom/**`. No test or product code changed in this
+  pass; the suite was already green.
 - **2026-07-02**: Documentation audit. Re-synced this doc with reality: the
   late-June ratchets (below) had raised enforced thresholds without updating
   this file, the E2E section still claimed a single smoke spec (there are
@@ -327,35 +360,44 @@ run `npm run test:coverage:sync-docs`.
 
 ## Coverage by area
 
-Line coverage snapshot by folder, measured 2026-07-23 from
+Line coverage snapshot by folder, measured 2026-08-11 from
 `coverage/coverage-summary.json`. Targets are what we want each area to reach
-over time; anything already above target is just "keep it green".
+over time; anything already above target is just "keep it green". The "Floor"
+column is the enforced threshold from `vitest.config.ts` — blank means the
+area has no floor of its own and is covered only by a parent glob and the
+global gate.
 
-| Area                               | Lines today | Target | Notes                                        |
-| ---------------------------------- | ----------- | ------ | -------------------------------------------- |
-| `src/services/**`                  | 81%         | 70%    | Data access layer — on target                |
-| `src/services/auth`                | 100%        | 70%    | On target                                    |
-| `src/hooks/**`                     | 59%         | 60%    | React Query hooks wrapping services          |
-| `src/hooks/matches`                | 92%         | 60%    | Now well above target                        |
-| `src/utils/**` (aggregate)         | 80%         | 85%    | Strong gains from logic-heavy utility tests  |
-| `src/utils/career`                 | 89%         | 85%    | On target                                    |
-| `src/utils/rankingUtils`           | 100%        | 85%    | On target                                    |
-| `src/utils/predictions`            | 96%         | 85%    | On target                                    |
-| `src/utils/playoffs`               | 100%        | 85%    | On target                                    |
-| `src/utils/matchUtils`             | 100%        | 85%    | On target                                    |
-| `src/utils/brackets/mappers`       | 100%        | 85%    | On target                                    |
-| `src/utils/brackets/validators`    | 100%        | 85%    | On target                                    |
-| `src/utils/auth`                   | 90%         | 85%    | On target                                    |
-| `src/utils/autoSchedule`           | 68%         | 85%    | Complex scheduling algorithms — gradual      |
-| `src/utils/autoSchedule/dualBlock` | 89%         | 85%    | On target                                    |
-| `src/utils/scheduling/greedy`      | 86%         | 85%    | Now at target                                |
-| `src/utils/colors`                 | 91%         | 60%    | On target                                    |
-| `src/utils/timezone`               | 90%         | 60%    | On target                                    |
-| `src/utils/teamDetailsUtils`       | 92%         | 60%    | On target                                    |
-| `src/utils/teamStatsUtils`         | 100%        | 60%    | On target                                    |
-| `src/pages/**`                     | 73%         | 40%    | Big gains from late-June page-test ratchet   |
-| `src/components/**` (non-UI)       | 57%         | 40%    | Improved, but very uneven — many 0% folders  |
-| `src/types`                        | 100%        | —      | Types only — no target                       |
+| Area                                       | Lines today | Floor | Target | Notes                                          |
+| ------------------------------------------ | ----------- | ----- | ------ | ---------------------------------------------- |
+| `src/services/**`                          | 89%         | 86%   | 70%    | Data access layer — well above target          |
+| `src/services/auth`                        | 100%        | —     | 70%    | On target                                      |
+| `src/services/brackets/viewer`             | 86%         | 82%   | 70%    | New floor this ratchet                         |
+| `src/hooks/**`                             | 62%         | 59%   | 60%    | React Query hooks wrapping services — at target |
+| `src/hooks/matches`                        | 92%         | —     | 60%    | Well above target                              |
+| `src/hooks/auth`                           | 72%         | 69%   | 60%    | Above target                                   |
+| `src/hooks/scheduling`                     | 65%         | 61%   | 60%    | New floor this ratchet                         |
+| `src/utils/**` (aggregate)                 | 81%         | 77%   | 85%    | Strong gains from logic-heavy utility tests    |
+| `src/utils/career`                         | 89%         | —     | 85%    | On target                                      |
+| `src/utils/rankingUtils`                   | 100%        | —     | 85%    | On target                                      |
+| `src/utils/predictions`                    | 96%         | —     | 85%    | On target                                      |
+| `src/utils/playoffs`                       | 100%        | —     | 85%    | On target                                      |
+| `src/utils/matchUtils`                     | 100%        | —     | 85%    | On target                                      |
+| `src/utils/brackets/mappers`               | 100%        | —     | 85%    | On target                                      |
+| `src/utils/brackets/validators`            | 100%        | —     | 85%    | On target                                      |
+| `src/utils/auth`                           | 90%         | —     | 85%    | On target                                      |
+| `src/utils/autoSchedule`                   | 72%         | 68%   | 85%    | Complex scheduling algorithms — gradual        |
+| `src/utils/autoSchedule/dualBlock`         | 89%         | —     | 85%    | On target                                      |
+| `src/utils/autoSchedule/blossom`           | 63%         | 60%   | 85%    | New floor; weakest autoSchedule sub-area       |
+| `src/utils/scheduling/greedy`              | 86%         | —     | 85%    | On target                                      |
+| `src/utils/colors`                         | 90%         | —     | 60%    | On target                                      |
+| `src/utils/timezone`                       | 90%         | —     | 60%    | On target                                      |
+| `src/utils/teamDetailsUtils`               | 92%         | —     | 60%    | On target                                      |
+| `src/utils/teamStatsUtils`                 | 100%        | —     | 60%    | On target                                      |
+| `src/pages/**`                             | 73%         | 70%   | 40%    | New floor this ratchet — above target          |
+| `src/components/**` (non-UI)               | 61%         | 58%   | 40%    | New floor this ratchet; still uneven by folder |
+| `src/components/admin/**`                  | 59%         | 56%   | 40%    | Floor raised from a token 5% to match reality  |
+| `src/components/admin/live-corrections/**` | 45%         | 42%   | 60%    | Highest-risk admin surface — keep climbing     |
+| `src/types`                                | 100%        | —     | —      | Types only — no target                         |
 
 This table is a manual snapshot and drifts as code lands. Only the top-level
 baseline table above is auto-synced by `npm run test:coverage:sync-docs`; when
@@ -364,25 +406,51 @@ per-area numbers matter for a decision, recompute them from a fresh
 
 ## What's tested today
 
-**Services:** `ProfileService`, `HeadToHeadService`, `TeamFetchService`,
-`TeamCreateService`, `TeamUpdateService`, `MatchReadService`,
-`MatchWriteService`, `RankingCareerService`, `RankingPersistenceService`,
-`RankingCurrentService`, `RankingTrendsService`.
+509 test files / 3823 tests as of 2026-08-11. Highlights by layer:
 
-**Hooks:** `usePendingMatches`, `useTeamScheduleLoader`, `usePairingGenerator`,
-`useMatchComments`, match-submission and match-update hooks,
-match query-cache utilities, team-stats util.
+**Services (89% lines):** the data-access layer is the best-covered area.
+Suites exist for `ProfileService`, `HeadToHeadService`, team fetch/create/
+update, match read/write, the ranking services (career, persistence, current,
+trends), `SeasonService`, `DivisionService`, `BlindDrawService`,
+`BadgeProcessingService`, `RankingsCalculationService`, plus the brackets
+subtree — `brackets/manager` (SQL storage, admin/rearrange services, utils),
+`brackets/read`, `brackets/validation`, and `brackets/viewer` (86% lines:
+adapter, match/participant transformers, label and source-node calculators).
+Also covered: admin, auth, career, contact, insights, live-scoring, messages,
+notifications, ops-health, profile, selectors, support, teams, timeslots.
 
-**Utils:** ranking calculations (SOS, head-to-head, streaks, win %, power
-score), career stats (match stats, playoff stats, sweep rate, clutch rate,
-narratives, career SOS), predictions, playoffs, match utilities, bracket
-validators/mappers, error handler, auto-schedule (blossom algorithm,
-dual-block pairing, validation, edge cases), greedy scheduler (feasibility,
-constraints, rematch repair), `sanitizeReturnTo`.
+**Hooks (62% lines):** ~40 top-level hook suites (admin access, auth form,
+divisions, seasons, teams, timeslots, team rankings/details/matches, pending
+matches/memberships, score submissions, ops health, power-score trends, and
+more), plus subtree suites for `matches` (92% lines, incl. updates and
+validation), `playoffs`, `live-scoring`, `brackets`, `auth` (72% lines),
+`useAutoSchedule`, and `scheduling` (65% lines — dual-block scheduler and
+scheduling helpers).
 
-**Components / pages (sampled):** Playoff bracket form (many sub-pieces),
-mass-score-entry, batch-matches auto-schedule warnings, history page,
-`ProtectedAdminRoute`, `AdminDashboard`, `Auth` page.
+**Utils (81% lines):** ranking calculations (SOS, head-to-head, streaks,
+win %, power score), career stats (match stats, playoff stats, sweep rate,
+clutch rate, narratives, career SOS), predictions, playoffs, match utilities,
+bracket validators/mappers, error handler, auto-schedule (blossom algorithm at
+63% lines, dual-block pairing at 89%, validation, edge cases), greedy
+scheduler (feasibility, constraints, rematch repair), colors, timezone,
+team details/stats, `sanitizeReturnTo`.
+
+**Pages (73% lines):** 20 of the 21 page components have suites — `Index`,
+`Schedule`, `Stats`, `TeamsPage`, `TeamDetails`, `MyTeam`, `Playoffs`,
+`LiveScoring`, `History`, `Compare`, `Insights`, `MessageBoard`, `Contact`,
+`Help`, `Auth`, `ProfileSetup`, `AdminDashboard`, `NotificationsAdmin`,
+`Timeslots`, and `NotFound`.
+
+**Components (61% lines, uneven):** heaviest coverage in `admin` (46 suites —
+mass-score-entry incl. delete/submit-sync/brackets-error paths, auto-schedule,
+batch-matches, divisions, seasons, teams, timeslots, requests, scores, theme,
+hero-cards, league-night-status, power-migration, participation,
+challonge-fallback, live-corrections), `playoffs` (40), `stats` (28),
+`schedule` (22), `message-board` (11), `live-scoring` (9), `teams` (8),
+`home` (8), `history` (5), plus timeslots, notifications, insights, hero,
+layout, help, a11y, navigation, and auth. Coverage is still uneven folder to
+folder — the new `src/components/**` floor guards the aggregate, not each
+subtree.
 
 **Season workflow:** `SeasonService` (incl. `partial_archive`, `finalize_playoffs`,
 `activate_season_with_partial_archive`, `fetchPlayoffActiveSeason`),
@@ -511,7 +579,8 @@ Already in place and enforced:
 - Typecheck must pass (CI: `quality` job in `ci.yml`)
 - Build must pass (CI: `build-size` job in `ci.yml`)
 - Existing tests must pass (CI: `quality` job in `ci.yml`)
-- Coverage floors enforced on services/hooks/utils (CI: `deepsource-coverage` job in `ci.yml`)
+- Coverage floors enforced globally and on services, hooks, utils, components,
+  and pages (CI: `deepsource-coverage` job in `ci.yml`)
 - a11y scan blocking on public routes (CI: `browser` job in `ci.yml`)
 - Manual smoke expectations documented (this file)
 

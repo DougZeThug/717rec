@@ -13,7 +13,7 @@ in the same PR that resolves a brief.
 | PR-06 playoff results integrity | Resolved | `finalize_bracket_standings` RPC + tie rejection + seed resync. |
 | PR-07 edge function hardening | Partially resolved | Rate limiter shipped; production tasks (`IP_HASH_SALT`, `TRUSTED_PROXY_COUNT` verification) are runbook items. |
 | PR-08 mass score entry reliability | Resolved | Covered by PR-04 atomic delete. |
-| PR-09 test coverage admin blind spots | Open | Coverage still below stretch target; no dedicated PR merged. |
+| PR-09 test coverage admin blind spots | Resolved | Admin blind spots now covered (auto-schedule 71.69% lines, live-corrections 45.00%, `src/hooks/auth` 72.00%); `src/components/**` and `src/pages/**` floors added, closing the gap this brief called out. |
 | PR-10 hooks cache correctness | Resolved | Cache invalidation + realtime fixes across matches, timeslots, playoffs. |
 | PR-11 data-page error/empty states | Resolved | Timeslot name fix + WeeklyRecap `.maybeSingle()`. |
 | PR-12 a11y focus and polish | Resolved | Admin axe coverage (Timeslots/Scores/Teams); fetchPriority + /stats ref-warning fixes. |
