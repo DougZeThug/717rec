@@ -36,6 +36,14 @@ Not implemented: Window's getComputedStyle() method: with pseudo-elements
 Not implemented: Window's getComputedStyle() method: with pseudo-elements
 Not implemented: Window's getComputedStyle() method: with pseudo-elements
 Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
+Not implemented: Window's getComputedStyle() method: with pseudo-elements
 Error: Boom
     at Bomb (/home/user/717rec/src/components/__tests__/ErrorBoundary.test.tsx:15:9)
     at renderWithHooks (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
@@ -168,6 +176,28 @@ Error: Boom
     at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
     at HTMLUnknownElementImpl._dispatch (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
     at HTMLUnknownElementImpl.dispatchEvent (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:114:17)
+Error: kaboom
+    at Boom (/home/user/717rec/src/components/playoffs/__tests__/BracketErrorBoundary.test.tsx:15:9)
+    at renderWithHooks (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
+    at beginWork (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/home/user/717rec/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at HTMLUnknownElementImpl._dispatch (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:114:17)
+Error: kaboom
+    at Boom (/home/user/717rec/src/components/playoffs/__tests__/BracketErrorBoundary.test.tsx:15:9)
+    at renderWithHooks (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
+    at mountIndeterminateComponent (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
+    at beginWork (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
+    at HTMLUnknownElement.callCallback (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
+    at HTMLUnknownElement.callTheUserObjectsOperation (/home/user/717rec/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
+    at innerInvokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
+    at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
+    at HTMLUnknownElementImpl._dispatch (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:114:17)
 Error: useAuth must be used within an AuthProvider
     at useAuth (/home/user/717rec/src/contexts/auth-context.ts:13:11)
     at /home/user/717rec/src/contexts/__tests__/context-hooks.test.tsx:43:35
@@ -212,39 +242,17 @@ Error: useNavigation must be used within a NavigationProvider
     at HTMLUnknownElement.callTheUserObjectsOperation (/home/user/717rec/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
     at innerInvokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
     at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
-Error: kaboom
-    at Boom (/home/user/717rec/src/components/playoffs/__tests__/BracketErrorBoundary.test.tsx:15:9)
-    at renderWithHooks (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
-    at mountIndeterminateComponent (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
-    at beginWork (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
-    at HTMLUnknownElement.callCallback (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
-    at HTMLUnknownElement.callTheUserObjectsOperation (/home/user/717rec/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
-    at innerInvokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
-    at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
-    at HTMLUnknownElementImpl._dispatch (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
-    at HTMLUnknownElementImpl.dispatchEvent (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:114:17)
-Error: kaboom
-    at Boom (/home/user/717rec/src/components/playoffs/__tests__/BracketErrorBoundary.test.tsx:15:9)
-    at renderWithHooks (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:15486:18)
-    at mountIndeterminateComponent (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:20103:13)
-    at beginWork (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:21626:16)
-    at HTMLUnknownElement.callCallback (/home/user/717rec/node_modules/react-dom/cjs/react-dom.development.js:4164:14)
-    at HTMLUnknownElement.callTheUserObjectsOperation (/home/user/717rec/node_modules/jsdom/lib/generated/idl/EventListener.js:26:30)
-    at innerInvokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:360:16)
-    at invokeEventListeners (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:296:3)
-    at HTMLUnknownElementImpl._dispatch (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:243:9)
-    at HTMLUnknownElementImpl.dispatchEvent (/home/user/717rec/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:114:17)
 
- Test Files  468 passed (468)
-      Tests  3496 passed (3496)
-   Start at  13:45:42
-   Duration  259.53s (transform 16.97s, setup 125.39s, import 147.11s, tests 125.44s, environment 445.39s)
+ Test Files  511 passed (511)
+      Tests  3840 passed (3840)
+   Start at  19:58:00
+   Duration  290.16s (transform 18.52s, setup 139.86s, import 165.46s, tests 148.03s, environment 483.83s)
 
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|-------------------
 File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
 -------------------|---------|----------|---------|---------|-------------------
-All files          |   64.69 |    54.21 |   60.47 |   66.11 |                   
+All files          |   68.98 |    58.15 |   64.66 |   70.42 |                   
  src               |   56.25 |       20 |   23.33 |      75 |                   
   App.tsx          |   65.21 |       50 |   24.13 |    91.3 | 64-72             
   main.tsx         |       0 |        0 |       0 |       0 | 10-59             
@@ -277,8 +285,8 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...PairsList.tsx |      85 |    82.14 |    92.3 |   88.88 | 45,191            
   ...atePicker.tsx |   30.76 |     37.5 |      25 |   30.76 | 18,24-40,72       
   ...hMatchForm.ts |     100 |    85.71 |     100 |     100 | 21,125-173        
- .../auto-schedule |   15.69 |    12.13 |    6.15 |   16.88 |                   
-  ...lePreview.tsx |       0 |        0 |       0 |       0 | 31-259            
+ .../auto-schedule |   15.78 |    12.13 |    6.15 |   16.99 |                   
+  ...lePreview.tsx |       0 |        0 |       0 |       0 | 32-258            
   ...iringItem.tsx |   11.11 |        0 |       0 |   11.11 | 24-45             
   ...ationStep.tsx |      50 |      100 |       0 |      50 | 23                
   ...esPreview.tsx |    3.84 |        0 |       0 |    4.34 | 27-156            
@@ -301,8 +309,8 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
  .../admin/contact |   38.46 |     12.9 |      25 |    40.9 |                   
   ...oxSection.tsx |   38.46 |     12.9 |      25 |    40.9 | 41-45,78-174      
  ...dmin/dashboard |       0 |        0 |       0 |       0 |                   
-  ...MobileNav.tsx |       0 |        0 |       0 |       0 | 44-275            
-  AdminSidebar.tsx |       0 |        0 |       0 |       0 | 45-249            
+  ...MobileNav.tsx |       0 |        0 |       0 |       0 | 45-277            
+  AdminSidebar.tsx |       0 |        0 |       0 |       0 | 46-259            
  ...dmin/divisions |   86.95 |    66.03 |   76.47 |    88.5 |                   
   ...ionDialog.tsx |   87.87 |       75 |      80 |   90.32 | 72-73,94          
   DivisionRow.tsx  |   84.61 |    59.45 |      70 |   85.71 | 87,102,205-241    
@@ -328,12 +336,12 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...DriftCard.tsx |    87.5 |    67.85 |      80 |    87.5 | 39,65             
   ...StatusTab.tsx |   91.83 |       74 |     100 |   90.69 | 39-41,53-55       
   ...MiniChart.tsx |       0 |        0 |       0 |       0 | 16-81             
- ...ve-corrections |   43.28 |    26.25 |   38.46 |      45 |                   
+ ...ve-corrections |   91.42 |    76.54 |   84.61 |    94.4 |                   
   ...nerDialog.tsx |    87.5 |       50 |      75 |   85.71 | 77                
   ...undDialog.tsx |     100 |       50 |     100 |     100 | 44                
-  ...undDialog.tsx |   84.48 |    63.79 |   76.19 |      92 | 146,210,238,279   
-  ...nsSection.tsx |       0 |        0 |       0 |       0 | 19-127            
-  ...ionsPanel.tsx |       0 |        0 |       0 |       0 | 24-221            
+  ...undDialog.tsx |   85.93 |    66.66 |   76.19 |   92.72 | 159,223,251,292   
+  ...nsSection.tsx |     100 |       90 |     100 |     100 | 53,94             
+  ...ionsPanel.tsx |   96.29 |    83.87 |   90.47 |   95.91 | 174,208           
  ...ss-score-entry |   88.88 |    90.19 |      75 |   88.23 |                   
   FilterBar.tsx    |      60 |    83.33 |   33.33 |      60 | 63-73             
   MatchRow.tsx     |      80 |    88.46 |   57.14 |      80 | 56-59,84,128      
@@ -358,11 +366,13 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...istoryTab.tsx |       0 |        0 |       0 |       0 | 26-183            
  .../participation |   54.71 |    32.69 |   36.84 |    61.9 |                   
   ...pationTab.tsx |   54.71 |    32.69 |   36.84 |    61.9 | ...83-102,132-229 
+ ...ower-migration |   90.24 |    77.86 |   89.65 |   93.05 |                   
+  ...isonTable.tsx |   94.11 |    80.39 |     100 |   96.66 | 62                
+  ...ReviewTab.tsx |    87.5 |    76.25 |   82.35 |   90.47 | 75,155,284,302    
  ...admin/requests |   88.88 |    84.21 |      80 |    92.3 |                   
   RequestsTab.tsx  |   88.88 |    84.21 |      80 |    92.3 | 78,220            
- ...s/admin/scores |       0 |        0 |       0 |       0 |                   
+ ...s/admin/scores |   77.77 |      100 |      80 |   77.77 |                   
   ...ScoresTab.tsx |       0 |      100 |       0 |       0 | 5-6               
-  ...sionsList.tsx |       0 |        0 |       0 |       0 | 16-83             
  .../admin/seasons |   59.11 |       50 |   55.55 |   59.06 |                   
   ...onActions.tsx |       0 |      100 |       0 |       0 | 15-43             
   ...ionDialog.tsx |     100 |       95 |     100 |     100 | 60                
@@ -379,16 +389,16 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...gementTab.tsx |   68.75 |    58.62 |   76.47 |   70.68 | ...12-213,240,265 
   ...provalTab.tsx |     100 |       75 |     100 |     100 | 65,104-122        
   ...leDesktop.tsx |   84.61 |    55.55 |   77.77 |      80 | 55,101            
- ...ts/admin/theme |       0 |        0 |       0 |       0 |                   
-  ...gementTab.tsx |       0 |        0 |       0 |       0 | 11-79             
+ ...ts/admin/theme |   89.47 |    61.11 |   71.42 |   88.88 |                   
+  ...gementTab.tsx |   89.47 |    61.11 |   71.42 |   88.88 | 34-37             
  ...dmin/timeslots |   83.33 |    69.23 |   85.71 |   82.92 |                   
   TimeslotsTab.tsx |   83.33 |    69.23 |   85.71 |   82.92 | ...97,126-127,152 
- ...omponents/auth |   32.39 |     23.8 |   16.66 |   32.85 |                   
+ ...omponents/auth |    31.5 |     23.8 |   16.66 |   31.94 |                   
   ...Container.tsx |       0 |        0 |       0 |       0 | 20-26             
   AuthForm.tsx     |       0 |        0 |       0 |       0 | 18-68             
-  ...nRequired.tsx |       0 |        0 |       0 |       0 | 14-56             
+  ...nRequired.tsx |       0 |        0 |       0 |       0 | 14-60             
   ...thButtons.tsx |       0 |        0 |       0 |       0 | 13-19             
-  UserMenu.tsx     |       0 |        0 |       0 |       0 | 22-137            
+  UserMenu.tsx     |       0 |        0 |       0 |       0 | 22-140            
  ...ponents/badges |    3.07 |        0 |       0 |    3.17 |                   
   TeamBadge.tsx    |     2.5 |        0 |       0 |     2.5 | 29-159            
   ...ollection.tsx |       4 |        0 |       0 |    4.34 | 37-108            
@@ -418,14 +428,13 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...ngSection.tsx |       0 |      100 |       0 |       0 | 6-7               
   ...nSections.tsx |       0 |      100 |       0 |       0 | 10-11             
   ...upSection.tsx |       0 |      100 |       0 |       0 | 6-7               
- ...omponents/hero |    4.23 |      5.2 |    1.78 |    4.62 |                   
+ ...omponents/hero |    8.05 |     7.22 |    3.57 |    8.79 |                   
   ...tHeroCard.tsx |     100 |    81.81 |     100 |     100 | 22-35,63,82       
   ...sHeroCard.tsx |       0 |        0 |       0 |       0 | 14-331            
   ...Countdown.tsx |       0 |        0 |       0 |       0 | 14-20             
   EventDetails.tsx |       0 |        0 |       0 |       0 | 16-45             
   ...tHeroCard.tsx |       0 |        0 |       0 |       0 | 30-99             
   ...rHeroCard.tsx |       0 |        0 |       0 |       0 | 9-34              
-  HeroCard.tsx     |       0 |        0 |       0 |       0 | 17-32             
   HeroCardBase.tsx |       0 |        0 |       0 |       0 | 32-64             
   ...dSkeleton.tsx |       0 |      100 |       0 |       0 | 5-6               
   ...nHeroCard.tsx |       0 |        0 |       0 |       0 | 29-237            
@@ -450,9 +459,9 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...ionHeader.tsx |    3.12 |        0 |       0 |    3.12 | 27-85             
   ...sionPanel.tsx |    8.33 |        0 |       0 |      10 | 30-76             
   ...agOverlay.tsx |   33.33 |        0 |       0 |   33.33 | 16-20             
- .../history/hooks |    1.89 |        0 |       0 |    2.36 |                   
-  ...oryEditing.ts |    1.89 |        0 |       0 |    2.36 | 55-311            
- ...omponents/home |   57.37 |    42.92 |   61.53 |   57.14 |                   
+ .../history/hooks |   82.27 |    58.62 |   98.11 |   88.18 |                   
+  ...oryEditing.ts |   82.27 |    58.62 |   98.11 |   88.18 | ...67,187,203-205 
+ ...omponents/home |   58.43 |    44.39 |   62.02 |   57.85 |                   
   ...ignupForm.tsx |       0 |        0 |       0 |       0 | 11-112            
   ContactPanel.tsx |      75 |    77.41 |   58.33 |    74.5 | ...36-148,196-222 
   HeroSection.tsx  |     100 |       50 |     100 |     100 | 40-173            
@@ -468,9 +477,9 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...kSkeleton.tsx |       0 |      100 |       0 |       0 | 7-8               
   TeamStats.tsx    |      25 |        0 |       0 |      25 | 14-24             
   TopTeams.tsx     |   83.33 |    66.66 |   83.33 |   81.81 | 40-42,80          
-  ...RecapCard.tsx |     100 |    84.21 |     100 |     100 | 31-48             
-  ...capHeader.tsx |     100 |       70 |     100 |     100 | 10-14,22          
-  ...rsSection.tsx |   85.71 |       80 |     100 |     100 | 23,63-64          
+  ...RecapCard.tsx |     100 |    77.27 |     100 |     100 | 28,35-56          
+  ...capHeader.tsx |     100 |    64.28 |     100 |     100 | 17-26,34          
+  ...rsSection.tsx |     100 |    95.45 |     100 |     100 | 25                
   ...ksSection.tsx |     100 |    66.66 |     100 |     100 | 21-44             
   ...tsSection.tsx |     100 |    71.42 |     100 |     100 | 27-45,85-101      
   ...hRowStyles.ts |       0 |        0 |       0 |       0 | 20-56             
@@ -505,7 +514,7 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
  ...onents/matches |       0 |      100 |       0 |       0 |                   
   ...eractions.tsx |       0 |      100 |       0 |       0 | 14-15             
  ...tches/comments |       0 |        0 |       0 |       0 |                   
-  ...mmentForm.tsx |       0 |        0 |       0 |       0 | 14-59             
+  ...mmentForm.tsx |       0 |        0 |       0 |       0 | 14-50             
   ...mmentItem.tsx |       0 |        0 |       0 |       0 | 32-116            
   ...hComments.tsx |       0 |        0 |       0 |       0 | 18-61             
  ...ches/reactions |       0 |        0 |       0 |       0 |                   
@@ -542,17 +551,17 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
  .../notifications |   97.87 |    86.04 |     100 |     100 |                   
   ...ationItem.tsx |     100 |       80 |     100 |     100 | 20                
   ...ationForm.tsx |      95 |    69.23 |     100 |     100 | 20-29,54          
- ...nents/playoffs |   51.73 |    46.01 |   51.38 |   53.52 |                   
-  ...ionDialog.tsx |   54.08 |    34.09 |   63.63 |   54.08 | ...27,242-243,282 
+ ...nents/playoffs |   53.94 |    48.57 |    54.1 |   55.31 |                   
+  ...ionDialog.tsx |   54.08 |    34.09 |   63.63 |   54.08 | ...30,245-246,285 
   ...rBoundary.tsx |    9.52 |      3.7 |   33.33 |      10 | 29-92,97-133      
-  ...ketDetail.tsx |   56.66 |    52.94 |   22.22 |   59.25 | ...,68,77,138-224 
+  ...ketDetail.tsx |    60.6 |    56.14 |      30 |   63.33 | ...,70,85,146-244 
   ...rBoundary.tsx |      90 |      100 |      80 |      90 | 46                
-  BracketForm.tsx  |      80 |       75 |   83.33 |   79.16 | ...04,112-113,135 
+  BracketForm.tsx  |      80 |       75 |   83.33 |   79.16 | ...05,113-114,136 
   BracketList.tsx  |     100 |       70 |     100 |     100 | 45-71             
-  BracketView.tsx  |   74.24 |       70 |   81.81 |      75 | ...79-180,225-230 
+  BracketView.tsx  |    80.3 |    73.33 |    90.9 |   81.25 | ...79-180,225-230 
   ...onDisplay.tsx |    9.09 |        0 |       0 |    12.5 | 18-76             
   ...ketDialog.tsx |      50 |       50 |   33.33 |      50 | 31,56-57          
-  ...cketsCard.tsx |   59.45 |    47.36 |   55.55 |   64.51 | ...,54-55,110-142 
+  ...cketsCard.tsx |   69.76 |    59.52 |      70 |   71.42 | ...88,116,180-181 
   ...Standings.tsx |    3.44 |        0 |       0 |       4 | 17-86             
   ...sSkeleton.tsx |   33.33 |      100 |       0 |   33.33 | 12-22             
   ...tE2EProof.tsx |   97.67 |    88.23 |     100 |     100 | 106-110,146       
@@ -560,18 +569,24 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...nSelector.tsx |       0 |        0 |       0 |       0 | 17-37             
   ...ateDialog.tsx |    1.61 |        0 |       0 |    1.92 | 69-263            
   ...ionDialog.tsx |      50 |    33.33 |   44.44 |      50 | 87,113-165        
-  ...sionTable.tsx |   84.84 |    66.66 |    90.9 |    87.5 | 42,66,79,88       
- ...playoffs/admin |   11.53 |        0 |       0 |   13.04 |                   
+  ...sionTable.tsx |    90.9 |    82.05 |     100 |   90.62 | 42,79,88          
+ ...playoffs/admin |    66.3 |    68.33 |   59.45 |   67.85 |                   
   ...ntsDialog.tsx |   11.53 |        0 |       0 |   13.04 | 39-46,75-113      
- ...ayoffs/dialogs |   33.33 |       50 |   33.33 |      50 |                   
-  ...ffDialogs.tsx |   33.33 |       50 |   33.33 |      50 | 110-147           
+  ...ketDialog.tsx |   85.71 |    84.31 |   73.33 |   85.29 | 66,88,135,181-184 
+  ...otsDialog.tsx |   90.32 |    79.59 |   84.61 |   92.59 | 79,156            
+ ...dmin/rearrange |   89.85 |    79.01 |   84.21 |   91.93 |                   
+  ...angeBoard.tsx |   79.41 |    67.44 |   72.72 |   83.87 | 86,97-99,110      
+  ...eSlotCell.tsx |     100 |    85.71 |     100 |     100 | 29,55             
+  dropLogic.ts     |     100 |    95.83 |     100 |     100 | 44                
+ ...ayoffs/dialogs |   33.33 |    66.66 |   33.33 |      50 |                   
+  ...ffDialogs.tsx |   33.33 |    66.66 |   33.33 |      50 | 110-147           
  ...layoffs/embeds |     100 |    93.75 |     100 |     100 |                   
   ...eFallback.tsx |     100 |    93.75 |     100 |     100 | 29                
  .../playoffs/form |   87.17 |    66.66 |   93.33 |   89.18 |                   
   ...mDivision.tsx |   85.18 |    71.42 |   88.88 |      88 | 80,97-101         
   ...randFinal.tsx |      80 |       50 |     100 |      80 | 14                
- ...ams/components |   55.74 |    61.16 |   37.73 |   60.64 |                   
-  ...Container.tsx |   85.18 |    90.32 |   83.33 |      86 | ...46,158-159,175 
+ ...ams/components |   56.25 |    61.16 |   37.73 |   61.14 |                   
+  ...Container.tsx |   85.71 |    90.32 |   83.33 |   86.53 | ...47,167-168,184 
   ...erlayItem.tsx |      50 |        0 |       0 |      50 | 14                
   ...OrderList.tsx |    6.25 |        0 |       0 |    8.69 | 47-54,75-132      
   ...eControls.tsx |    4.34 |        0 |       0 |       5 | 32-94             
@@ -585,21 +600,21 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...ateManager.ts |   69.23 |       25 |      50 |   66.66 | 46-50,55          
   ...Management.ts |   71.69 |    60.86 |   64.28 |   70.58 | ...31,135-137,141 
   ...edMutation.ts |       4 |        0 |       0 |       4 | 28-102            
-  ...ctionState.ts |     100 |     82.6 |   83.33 |     100 | 16-35             
+  ...ctionState.ts |     100 |     82.6 |   83.33 |     100 | 20-39             
  ...et-teams/utils |   35.13 |    28.57 |   33.33 |   37.11 |                   
   ...orHandling.ts |    9.09 |        0 |       0 |    9.83 | ...12-115,125-302 
   ...Assignment.ts |   73.33 |    59.57 |     100 |   83.33 | 55-61,65,84       
- ...playoffs/hooks |   33.54 |    36.25 |   34.78 |   33.54 |                   
+ ...playoffs/hooks |   56.28 |    44.87 |      52 |    57.5 |                   
   ...ffHandlers.ts |   33.33 |      100 |      50 |   33.33 | 18-25             
-  ...ffPageData.ts |   44.34 |    40.84 |   46.66 |   44.14 | ...52-269,274-302 
-  ...fViewState.ts |       0 |        0 |       0 |       0 | 13-68             
-  ...wSelection.ts |       0 |        0 |       0 |       0 | 6-10              
- ...ffs/indicators |       0 |        0 |       0 |       0 |                   
-  ...Indicator.tsx |       0 |        0 |       0 |       0 | 7-12              
- ...layoffs/layout |       0 |        0 |       0 |       0 |                   
-  ...adingView.tsx |       0 |        0 |       0 |       0 | 8-9               
-  ...ageLayout.tsx |       0 |        0 |       0 |       0 | 24-65             
-  ...wSelector.tsx |       0 |        0 |       0 |       0 | 19-52             
+  ...ffPageData.ts |   65.28 |    46.37 |   58.82 |   66.37 | ...27-248,304-305 
+  ...fViewState.ts |   29.41 |       20 |      20 |    30.3 | ...28,32-52,58-64 
+  ...wSelection.ts |   66.66 |       50 |     100 |     100 | 6-10              
+ ...ffs/indicators |      75 |       50 |     100 |      75 |                   
+  ...Indicator.tsx |      75 |       50 |     100 |      75 | 12                
+ ...layoffs/layout |      75 |       50 |      50 |      75 |                   
+  ...adingView.tsx |      50 |        0 |       0 |      50 | 9                 
+  ...ageLayout.tsx |   91.66 |    63.63 |      50 |   91.66 | 51                
+  ...wSelector.tsx |      50 |       25 |     100 |      50 | 32,45-56          
  ...ffs/match-card |   16.66 |    19.31 |    7.69 |   20.51 |                   
   ...Indicator.tsx |       0 |        0 |       0 |       0 | 10-13             
   ...ardHeader.tsx |       0 |        0 |       0 |       0 | 9-10              
@@ -613,13 +628,12 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...eractions.tsx |     100 |    66.66 |     100 |     100 | 15-22             
   ...CardState.tsx |   86.36 |    48.27 |     100 |   94.73 | 40                
   ...ardStyles.tsx |   71.42 |    45.83 |     100 |   71.42 | 22-29             
- ...h-score-editor |   72.13 |    60.24 |   66.66 |   73.94 |                   
-  ...tchEditor.tsx |   94.11 |    87.09 |      50 |   94.11 | 137               
-  ...tchEditor.tsx |   71.42 |    58.33 |   42.85 |   71.42 | 143-188           
+ ...h-score-editor |   86.92 |    70.62 |      75 |   89.68 |                   
+  ...tchEditor.tsx |   91.66 |    79.48 |   33.33 |   95.65 | 160               
+  ...tchEditor.tsx |      80 |    77.27 |   57.14 |      80 | 165-179,210       
   ...oreEditor.tsx |      50 |      100 |       0 |      50 | 32                
-  ...atusBadge.tsx |   58.33 |    54.54 |     100 |   58.33 | 33-42,59-75       
-  ...tchEditor.tsx |      80 |    33.33 |      75 |      80 | 87                
-  ...ditorState.ts |   69.44 |    56.92 |   81.81 |   72.46 | ...62-163,174-208 
+  ...tchEditor.tsx |      80 |       35 |      75 |      80 | 90                
+  ...ditorState.ts |   86.11 |    66.66 |     100 |   89.85 | ...62-163,203-204 
  ...tchScoreEditor |   59.18 |     32.5 |      60 |   56.81 |                   
   ...oreEditor.tsx |   59.18 |     32.5 |      60 |   56.81 | ...95,102-105,115 
  ...tor/components |   88.88 |    71.42 |   77.77 |   88.23 |                   
@@ -642,14 +656,16 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   useTeamData.ts   |     100 |       50 |     100 |     100 | 8-12              
  ...reEditor/utils |    42.1 |    18.75 |     100 |    42.1 |                   
   ...ptionUtils.ts |    42.1 |    18.75 |     100 |    42.1 | 27-41             
- ...layoffs/viewer |   93.71 |    84.72 |   96.55 |   97.34 |                   
+ ...layoffs/viewer |   93.15 |    85.24 |   97.29 |    97.4 |                   
   ...Component.tsx |     100 |    93.93 |     100 |     100 | 80,145            
-  ...erRenderer.ts |   92.85 |     83.5 |     100 |   97.34 | 160,180-181       
+  ...ecorations.ts |      92 |    87.17 |     100 |     100 | 51,56,59,91,94    
+  ...erRenderer.ts |   92.42 |     83.5 |     100 |   96.63 | 162,182-183,223   
   ...ewerScript.ts |   91.66 |    71.42 |     100 |   96.87 | 20                
   ...ndleLoader.ts |      50 |      100 |       0 |      50 | 8                 
- ...playoffs/views |      50 |     42.3 |    37.5 |      50 |                   
-  AdminView.tsx    |   69.23 |      100 |      60 |   69.23 | 35-36,80-81       
-  PlayoffView.tsx  |       0 |        0 |       0 |       0 | 17-36             
+ ...playoffs/views |      72 |       80 |   58.33 |   73.91 |                   
+  AdminView.tsx    |   66.66 |      100 |      60 |   66.66 | 41-42,94-95       
+  ...orBanners.tsx |    87.5 |      100 |      75 |     100 |                   
+  PlayoffView.tsx  |      60 |    46.66 |   33.33 |      60 | 26,39             
  ...onents/profile |   80.43 |    74.19 |     100 |   83.33 |                   
   ProfileForm.tsx  |   79.54 |    72.41 |     100 |    82.5 | ...05-112,125-126 
  ...nents/schedule |   81.65 |    67.59 |   82.92 |   82.06 |                   
@@ -761,9 +777,9 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...erSection.tsx |      20 |        0 |       0 |      20 | 26-32             
  src/contexts      |   79.16 |      100 |   66.66 |   79.16 |                   
   AuthContext.tsx  |       0 |      100 |       0 |       0 | 8-46              
- src/hooks         |   51.76 |    35.73 |   49.58 |   52.84 |                   
+ src/hooks         |   54.08 |    39.22 |    52.1 |   55.33 |                   
   ...dminAccess.ts |      90 |      100 |   66.66 |   88.88 | 9                 
-  ...eportCards.ts |       0 |        0 |       0 |       0 | 19-129            
+  ...eportCards.ts |       0 |        0 |       0 |       0 | 19-130            
   ...owerScores.ts |       0 |      100 |       0 |       0 | 16-17             
   useAuthForm.ts   |   98.41 |    56.25 |     100 |   98.36 | 70                
   ...HeadToHead.ts |       0 |        0 |       0 |       0 | 30-97             
@@ -779,7 +795,7 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   useHeadToHead.ts |     100 |       75 |     100 |     100 | 8-21              
   useHeroCards.ts  |       0 |      100 |       0 |       0 | 8-104             
   ...onMatchups.ts |    84.9 |       75 |   71.42 |   93.18 | 102-106           
-  ...ueInsights.ts |   95.23 |    71.79 |     100 |   97.22 | 107,242           
+  ...ueInsights.ts |   95.23 |    73.17 |     100 |   97.26 | 109,246           
   ...ercentiles.ts |       0 |        0 |       0 |       0 | 22-67             
   useLongPress.ts  |       0 |        0 |       0 |       0 | 10-56             
   ...chCreation.ts |       0 |        0 |       0 |       0 | 10-85             
@@ -788,7 +804,7 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...Prediction.ts |       0 |        0 |       0 |       0 | 54-135            
   ...hTimeslots.ts |       0 |        0 |       0 |       0 | 10-85             
   useMobile.ts     |   78.94 |    66.66 |     100 |   83.33 | 16,36,44          
-  ...yNextMatch.ts |   97.36 |    83.78 |     100 |     100 | 32,74,87-92,99    
+  ...yNextMatch.ts |   95.12 |    82.05 |     100 |     100 | ...9,81,94-99,106 
   ...vePlatform.ts |       0 |      100 |       0 |       0 | 5-14              
   useOpsHealth.ts  |    90.9 |       50 |      90 |   94.73 | 57                
   ...ingMatches.ts |   71.73 |    30.76 |   71.42 |      75 | ...64,131-132,149 
@@ -796,13 +812,13 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...emberships.ts |     100 |       75 |     100 |     100 | 32                
   ...resMatches.ts |   76.19 |    52.94 |   85.71 |      75 | 41-47,90-91       
   ...istedState.ts |   65.21 |    46.15 |      75 |   65.21 | 8,48-61           
-  ...del.compat.ts |       0 |        0 |       0 |       0 | 14-137            
+  ...del.compat.ts |   93.93 |    67.39 |   81.81 |   93.75 | 109,121           
   ...eStandings.ts |   89.47 |    66.66 |     100 |   94.44 | 36                
   ...airBracket.ts |       0 |        0 |       0 |       0 | 14-55             
   ...heduleData.ts |       0 |        0 |       0 |       0 | 7-83              
   ...heduleTabs.ts |       0 |        0 |       0 |       0 | 3-74              
   ...ubmissions.ts |   95.34 |    63.63 |   94.11 |   97.36 | 85                
-  ...estoration.ts |       0 |        0 |       0 |       0 | 4-114             
+  ...estoration.ts |       0 |        0 |       0 |       0 | 4-112             
   ...nMutations.ts |   71.42 |      100 |   45.45 |   71.42 | 43,48-50,57,87-89 
   ...entHistory.ts |       0 |      100 |       0 |       0 | 10-13             
   ...ticipation.ts |       0 |        0 |       0 |       0 | 9-58              
@@ -812,40 +828,41 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...PowerScore.ts |       0 |        0 |       0 |       0 | 5-10              
   ...Comparison.ts |       0 |        0 |       0 |       0 | 53-134            
   ...eamDetails.ts |     100 |       50 |     100 |     100 | 8                 
-  ...Management.ts |   51.35 |       50 |      60 |   54.28 | 30,37-55,60-70    
+  ...Management.ts |   53.33 |     37.5 |      60 |   59.25 | 28,35-54          
   ...eamMatches.ts |   92.85 |    68.75 |     100 |     100 | 10,42-43          
   ...Membership.ts |   36.84 |       30 |      60 |   37.83 | ...83-104,109-110 
   ...mMutations.ts |   93.93 |       60 |     100 |   93.93 | 57-58             
   ...owerScores.ts |       0 |        0 |       0 |       0 | 11-33             
   ...amRankings.ts |   78.78 |    61.76 |     100 |   81.35 | ...33-136,144-145 
-  ...ReportCard.ts |    97.4 |    87.09 |     100 |     100 | 24,125,137-139    
+  ...ReportCard.ts |    97.4 |    82.85 |     100 |     100 | ...25-127,137-146 
   ...amRequests.ts |   58.62 |       25 |   53.84 |   60.71 | 27-31,49-77       
-  ...duleLoader.ts |   59.18 |    28.57 |    62.5 |   60.41 | 50-69,118-141     
+  ...duleLoader.ts |   77.77 |    35.29 |     100 |   77.77 | 50-69             
   ...references.ts |       0 |        0 |       0 |       0 | 17-33             
   ...onsistency.ts |   36.36 |       50 |      50 |   36.36 | 17-24             
   ...meSettings.ts |       0 |        0 |       0 |       0 | 5-28              
   ...otMutation.ts |     100 |    69.23 |     100 |     100 | 42-69,108,169-231 
   ...eslotQuery.ts |      80 |    83.33 |     100 |    92.3 | 13                
-  useToast.ts      |   53.57 |     9.52 |    42.1 |   55.55 | ...31,155,169,198 
+  useToast.ts      |    53.7 |     9.52 |   44.44 |   55.76 | ...28,152,166,195 
   useUpdateTeam.ts |       0 |      100 |       0 |       0 | 6-25              
   ...ualization.ts |      80 |    66.66 |     100 |      80 | 40                
   ...lotsByTeam.ts |       0 |        0 |       0 |       0 | 5-8               
   ...coreTrends.ts |       0 |        0 |       0 |       0 | 6-9               
   ...eeklyRecap.ts |       0 |      100 |       0 |       0 | 5-8               
   useWindowSize.ts |     100 |       50 |     100 |     100 | 10-11             
- src/hooks/auth    |   69.65 |    58.18 |    61.9 |   71.28 |                   
+ src/hooks/admin   |      75 |       50 |   58.62 |    77.1 |                   
+  ...Comparison.ts |   98.33 |    61.76 |     100 |     100 | ...80,199,206-207 
+  ...tionReview.ts |       0 |        0 |       0 |       0 | 12-88             
+ src/hooks/auth    |    69.5 |    58.18 |    61.9 |   71.13 |                   
   index.ts         |    89.9 |    76.38 |   88.88 |    91.5 | ...57,199-204,230 
-  ...uthMethods.ts |      60 |    32.14 |   71.42 |   60.86 | ...55-162,169-177 
+  ...uthMethods.ts |   59.42 |    32.14 |   71.42 |   60.29 | ...54-161,168-176 
   ...uthProfile.ts |       0 |        0 |       0 |       0 | 12-51             
- ...oks/auth/utils |   16.66 |        0 |       0 |   16.66 |                   
-  ...rorHandler.ts |   16.66 |        0 |       0 |   16.66 | 14-24             
  ...hooks/brackets |   46.36 |    23.07 |   51.42 |   47.59 |                   
   ...eCoalescer.ts |   95.65 |     87.5 |     100 |     100 | 46                
   ...racketData.ts |    6.52 |        0 |       0 |     7.5 | ...9,55-58,89-163 
   ...racketData.ts |    3.92 |        0 |       0 |    4.08 | 75-209            
   ...erRealtime.ts |   94.44 |    76.19 |     100 |   94.23 | 64,128-129        
- src/hooks/career  |    42.3 |    24.13 |      40 |   43.75 |                   
-  ...eamsTotals.ts |    2.27 |        0 |       0 |    2.77 | 43-134,157-194    
+ src/hooks/career  |   70.51 |    39.65 |      64 |   71.87 |                   
+  ...eamsTotals.ts |   52.27 |    28.12 |   46.15 |   52.77 | 111-116,157-194   
   ...lsComputed.ts |   94.11 |    53.84 |   83.33 |   96.42 | 121               
  src/hooks/contact |       0 |        0 |       0 |       0 |                   
   ...ctRequests.ts |       0 |        0 |       0 |       0 | 13-81             
@@ -870,55 +887,55 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
  .../matches/utils |   99.06 |    94.79 |     100 |   99.04 |                   
   ...abaseUtils.ts |   97.22 |    85.71 |     100 |   97.22 | 52                
   teamDataUtils.ts |     100 |    93.47 |     100 |     100 | 30-31,37          
- .../message-board |   30.07 |    19.89 |   28.09 |   32.41 |                   
+ .../message-board |   29.71 |    19.28 |   28.09 |   31.97 |                   
   ...eBoardKeys.ts |   66.66 |      100 |      50 |   66.66 | 6                 
   useMessageApi.ts |    22.5 |     5.55 |      40 |    22.5 | ...4,59-95,99-120 
   ...ssageBoard.ts |   65.11 |    38.14 |   67.39 |   69.03 | ...72,302-325,359 
-  ...eReactions.ts |       0 |        0 |       0 |       0 | 14-323            
+  ...eReactions.ts |       0 |        0 |       0 |       0 | 14-337            
   ...geRealtime.ts |       0 |        0 |       0 |       0 | 7-65              
  .../notifications |       0 |        0 |       0 |       0 |                   
   ...nMutations.ts |       0 |      100 |       0 |       0 | 13-34             
   ...tionsQuery.ts |       0 |        0 |       0 |       0 | 8-13              
   ...nsRealtime.ts |       0 |        0 |       0 |       0 | 10-29             
   ...ifications.ts |       0 |        0 |       0 |       0 | 7-66              
- ...hooks/playoffs |   56.92 |    39.01 |      50 |   58.89 |                   
+ ...hooks/playoffs |   59.89 |    46.49 |   45.58 |      61 |                   
   ...nagerMatch.ts |    12.5 |        0 |       0 |   14.28 | 37-73             
-  ...reMutation.ts |   89.39 |    66.66 |     100 |   96.61 | 79,175            
+  ...reMutation.ts |   97.61 |    84.44 |     100 |     100 | ...84-185,187-194 
   ...offActions.ts |     100 |       80 |     100 |     100 | 79-83             
   ...racketData.ts |       0 |        0 |       0 |       0 | 7-22              
   ...fEditMatch.ts |   88.15 |    60.56 |   66.66 |   89.33 | ...40,193,202-203 
   ...rticipants.ts |    7.14 |        0 |       0 |    7.14 | 21-49             
+  ...fLoserSwap.ts |   11.11 |        0 |       0 |   11.76 | 17,26-60          
   ...atchUpdate.ts |       0 |        0 |       0 |       0 | 20-195            
   ...offMatches.ts |   83.33 |       50 |     100 |   83.33 | 14-15             
-  ...fViewModel.ts |       0 |        0 |       0 |       0 | 13-104            
+  ...fRearrange.ts |   11.11 |        0 |       0 |   11.76 | 18,46-86          
+  ...fViewModel.ts |   40.54 |     62.5 |   11.11 |   44.11 | 14-22,45-64,89-97 
   ...Validation.ts |      80 |       50 |     100 |     100 | 16                
  ...hooks/rankings |   78.94 |      100 |   66.66 |   78.94 |                   
   ...usRankings.ts |    87.5 |      100 |     100 |    87.5 | 37-38             
   ...nkingsData.ts |   33.33 |      100 |       0 |   33.33 | 11-17             
  ...hooks/realtime |   75.43 |    51.85 |   83.33 |   82.69 |                   
   ...eWithRetry.ts |   75.43 |    51.85 |   83.33 |   82.69 | 63,68,89-97       
- ...oks/scheduling |   32.33 |    11.59 |   36.84 |    32.3 |                   
-  ...BlockLogic.ts |   15.38 |        0 |       0 |   15.38 | 15-34,42-44       
+ ...oks/scheduling |   50.37 |    26.08 |   63.15 |   50.76 |                   
+  ...BlockLogic.ts |     100 |       50 |     100 |     100 | 15-20             
   ...gGenerator.ts |   86.66 |     42.1 |     100 |   86.36 | 103-116           
   ...ulePreview.ts |    1.63 |        0 |       0 |    1.69 | 23-224            
-  ...Validation.ts |    7.14 |        0 |       0 |    7.14 | 10-49             
- ...heduling/utils |    49.7 |    39.78 |   42.85 |   50.63 |                   
+ ...heduling/utils |   74.26 |    61.29 |   67.85 |   75.94 |                   
   ...kScheduler.ts |   94.31 |    80.43 |     100 |    97.5 | 162-163           
-  ...rsionUtils.ts |    2.22 |        0 |       0 |    2.43 | 20-133            
+  ...rsionUtils.ts |   95.55 |    74.07 |     100 |     100 | 45-102            
   ...ardPairing.ts |    2.63 |        0 |       0 |     2.7 | 24-100            
  src/hooks/teams   |   52.94 |     87.5 |   57.14 |   52.94 |                   
   useTeamsQuery.ts |   52.94 |     87.5 |   57.14 |   52.94 | 25,51-61          
- ...easonBreakdown |       0 |        0 |       0 |       0 |                   
-  ...nBreakdown.ts |       0 |      100 |       0 |       0 | 4-5               
+ ...easonBreakdown |   33.33 |        0 |   33.33 |   33.33 |                   
   ...nBreakdown.ts |       0 |        0 |       0 |       0 | 5-18              
- ...seAutoSchedule |   78.45 |    63.25 |   73.03 |   80.35 |                   
-  index.ts         |      72 |     37.5 |   66.66 |   71.42 | ...,73-74,148-173 
-  storage.ts       |       0 |        0 |       0 |       0 | 10-189            
+ ...seAutoSchedule |    78.8 |    63.63 |   73.33 |    80.7 |                   
+  index.ts         |      72 |     37.5 |   66.66 |   71.42 | ...,73-74,150-175 
+  storage.ts       |       0 |        0 |       0 |       0 | 10-197            
   ...heduleSave.ts |     100 |    81.81 |     100 |     100 | 57-60,84-117      
   ...eduleState.ts |   95.55 |    85.71 |     100 |   95.34 | 46,58             
   ...bleMatches.ts |   69.23 |    78.94 |      60 |   72.97 | ...12-113,122-124 
-  ...Operations.ts |   93.81 |    82.66 |     100 |   93.75 | 300-308,337-343   
-  ...Operations.ts |   97.61 |    84.78 |     100 |   97.53 | 102,133           
+  ...Operations.ts |      94 |    83.54 |     100 |   93.93 | 316-324,353-359   
+  ...Operations.ts |   97.72 |       86 |     100 |   97.64 | 110,141           
  src/icons         |      50 |        0 |       0 |      60 |                   
   ...phRegistry.ts |      50 |        0 |       0 |      60 | 52-53             
  src/icons/winter  |      50 |        0 |       0 |     100 |                   
@@ -936,18 +953,24 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   client.ts        |    87.5 |       60 |     100 |    87.5 | 28                
  src/lib/mcp       |       0 |        0 |     100 |       0 |                   
   index.ts         |       0 |        0 |     100 |       0 | 17                
+ ...p/public/tools |       0 |        0 |       0 |       0 |                   
+  _supabase.ts     |       0 |        0 |       0 |       0 | 9-80              
+  get-bracket.ts   |       0 |        0 |       0 |       0 | 6-125             
+  get-schedule.ts  |       0 |        0 |       0 |       0 | 18-41             
+  get-standings.ts |       0 |        0 |       0 |       0 | 16-37             
+  list-teams.ts    |       0 |        0 |       0 |       0 | 16-35             
  src/lib/mcp/tools |       0 |        0 |       0 |       0 |                   
   _supabase.ts     |       0 |        0 |       0 |       0 | 6-49              
   ...nter-drift.ts |       0 |        0 |       0 |       0 | 13-23             
-  ...nt-matches.ts |       0 |        0 |       0 |       0 | 14-37             
-  get-my-team.ts   |       0 |        0 |       0 |       0 | 12-32             
-  ...ng-matches.ts |       0 |        0 |       0 |       0 | 13-36             
-  ...ops-health.ts |       0 |        0 |       0 |       0 | 13-35             
-  get-schedule.ts  |       0 |        0 |       0 |       0 | 18-40             
-  get-standings.ts |       0 |        0 |       0 |       0 | 15-32             
-  list-teams.ts    |       0 |        0 |       0 |       0 | 16-31             
+  ...nt-matches.ts |       0 |        0 |       0 |       0 | 14-41             
+  get-my-team.ts   |       0 |        0 |       0 |       0 | 12-39             
+  ...ng-matches.ts |       0 |        0 |       0 |       0 | 13-40             
+  ...ops-health.ts |       0 |        0 |       0 |       0 | 13-38             
+  get-schedule.ts  |       0 |        0 |       0 |       0 | 18-42             
+  get-standings.ts |       0 |        0 |       0 |       0 | 16-38             
+  list-teams.ts    |       0 |        0 |       0 |       0 | 16-36             
   ...nter-drift.ts |       0 |        0 |       0 |       0 | 18-24             
- src/pages         |   70.74 |    64.52 |   69.52 |   70.39 |                   
+ src/pages         |   71.17 |    64.78 |   69.52 |   70.86 |                   
   Auth.tsx         |   94.73 |      100 |   83.33 |   94.44 | 116               
   Compare.tsx      |   94.44 |     91.3 |   83.33 |    93.1 | 58-59             
   Contact.tsx      |   95.83 |      100 |    87.5 |   95.83 | 111               
@@ -956,72 +979,76 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   MessageBoard.tsx |      50 |      100 |      50 |      50 | 36-50             
   OAuthConsent.tsx |       0 |        0 |       0 |       0 | 27-125            
   ProfileSetup.tsx |     100 |    95.12 |     100 |     100 | 52,70             
-  Schedule.tsx     |   67.69 |    45.09 |   47.36 |   67.74 | ...51,153,227-257 
+  Schedule.tsx     |   70.76 |    47.05 |   47.36 |   70.96 | ...51,153,227-257 
   Stats.tsx        |     100 |       50 |     100 |     100 | 26-55             
   TeamDetails.tsx  |   88.67 |     62.5 |      80 |   87.75 | 234-237,264,296   
   TeamsPage.tsx    |   83.33 |       50 |   66.66 |   83.33 | 25                
   Timeslots.tsx    |   31.11 |    42.85 |   16.66 |   31.81 | ...,81-98,107-127 
  src/pages/admin   |   86.11 |     70.9 |   84.21 |   88.05 |                   
   ...ionsAdmin.tsx |   86.11 |     70.9 |   84.21 |   88.05 | ...08,123-125,225 
- src/services      |      75 |     66.1 |   75.55 |   79.69 |                   
+ src/services      |   73.39 |    66.36 |   74.32 |   77.62 |                   
   ...ionService.ts |   24.32 |    22.22 |      40 |   25.92 | 41-104            
   ...onsService.ts |   64.81 |    51.56 |   69.23 |   71.27 | ...18,292-340,349 
   ...eadService.ts |     100 |    86.36 |     100 |     100 | 27,45-50          
   ...ardService.ts |       4 |        0 |       0 |     5.4 | 22-130            
-  ...ionService.ts |      20 |        0 |       0 |      25 | 8-16              
-  ...ngsService.ts |       0 |        0 |       0 |       0 | 13-30             
-  ...capService.ts |   94.44 |    78.26 |     100 |     100 | ...87,301,311-313 
   ...et-creator.ts |    91.3 |     83.9 |     100 |   98.24 | 185               
- ...services/admin |     100 |     87.5 |     100 |     100 |                   
+ ...services/admin |   97.61 |    76.19 |     100 |   97.05 |                   
   DriftService.ts  |     100 |     87.5 |     100 |     100 | 30                
+  ...ionService.ts |   96.96 |    73.52 |     100 |   96.29 | 128               
  src/services/auth |     100 |    91.66 |     100 |     100 |                   
   AuthService.ts   |     100 |    91.66 |     100 |     100 | 14                
  ...vices/brackets |    90.9 |    85.71 |   88.88 |    90.9 |                   
-  ...iteService.ts |    90.9 |    85.71 |   88.88 |    90.9 | 141-147           
- ...ackets/manager |   98.09 |    84.78 |   96.42 |      99 |                   
-  ...gerService.ts |   96.77 |      100 |   91.66 |   96.77 | 370               
+  ...iteService.ts |    90.9 |    85.71 |   88.88 |    90.9 | 148-154           
+ ...ackets/manager |   98.19 |    84.78 |   97.05 |   99.04 |                   
+  ...gerService.ts |   97.29 |      100 |   94.44 |   97.22 | 374               
   ...SqlStorage.ts |   98.52 |    84.09 |     100 |     100 | ...,68-70,136,143 
  ...baseSqlStorage |     100 |    85.71 |     100 |     100 |                   
   ...Transforms.ts |     100 |    85.71 |     100 |     100 | 101-114           
- ...nager/services |   94.98 |     76.7 |   97.87 |   97.07 |                   
-  ...ionService.ts |   94.23 |       75 |     100 |   95.91 | 151,178           
+ ...nager/services |   94.25 |    76.72 |   98.33 |   96.35 |                   
+  ...ionService.ts |   94.11 |       75 |     100 |   95.83 | 147,174           
   ...airService.ts |   91.48 |     67.5 |      90 |   95.34 | 121-122           
   ...ingService.ts |     100 |    91.66 |     100 |     100 | 90-92             
   ...ngsService.ts |   96.87 |    74.07 |     100 |   96.77 | 81                
-  ...ateService.ts |   93.05 |    78.94 |     100 |   96.82 | 131,203           
- ...s/BracketAdmin |   78.62 |    69.09 |     100 |   81.56 |                   
-  byeCompletion.ts |   82.53 |    67.69 |     100 |   85.96 | ...56,168,171,179 
-  eligibility.ts   |   93.18 |    88.13 |     100 |   94.44 | 102-103           
-  lifecycle.ts     |    87.8 |    69.69 |     100 |    87.5 | 48,70,96,110,120  
+  ...ateService.ts |   92.41 |    77.77 |     100 |   95.27 | ...42,362,407,490 
+ ...s/BracketAdmin |   87.56 |    76.81 |     100 |   90.12 |                   
+  byeCompletion.ts |   80.76 |    79.31 |     100 |      84 | 38,46,51,86       
+  eligibility.ts   |   93.18 |    89.47 |     100 |   94.44 | 105-106           
+  lifecycle.ts     |      88 |    71.79 |     100 |   89.13 | ...00,126,140,150 
   participants.ts  |   49.12 |     37.5 |     100 |   48.97 | ...12,120,148-153 
-  queries.ts       |   86.84 |    73.52 |     100 |     100 | ...34,42-46,56-57 
+  placement.ts     |   93.33 |    81.42 |     100 |   96.29 | 143,195           
+  queries.ts       |   94.91 |    82.25 |     100 |     100 | ...3,73,86-88,101 
+  shapes.ts        |     100 |    96.61 |     100 |     100 | 37,61             
+  swap.ts          |   90.76 |    71.34 |     100 |   94.82 | ...62,498,507,558 
+ ...dmin/rearrange |   94.04 |     82.9 |   96.29 |   95.08 |                   
+  apply.ts         |   96.42 |     87.5 |     100 |      96 | 48                
+  board.ts         |   89.93 |    73.64 |    91.3 |   91.17 | ...97-311,350-351 
+  simulate.ts      |   96.61 |    89.83 |     100 |   97.82 | 303-304,353,457   
  .../BracketUpdate |   96.42 |    88.46 |     100 |     100 |                   
   completion.ts    |   96.42 |    88.46 |     100 |     100 | 57-60             
- .../normalization |   83.73 |     65.5 |    87.5 |   88.94 |                   
+ .../normalization |   85.18 |    66.66 |   94.59 |   91.04 |                   
   ...ionService.ts |   93.05 |    77.38 |   85.71 |   98.41 | 15                
-  ...ureService.ts |   83.33 |    55.55 |      85 |   86.48 | 10,70-76          
-  ...ionService.ts |     100 |    94.11 |     100 |     100 | 31                
+  ...ureService.ts |   91.11 |     62.5 |     100 |     100 | 9,15,21-27,38-60  
+  ...ionService.ts |     100 |    94.11 |     100 |     100 | 32                
   ...airService.ts |   73.78 |    53.26 |    90.9 |      80 | ...54,196-199,226 
  .../manager/utils |   28.57 |    22.72 |     100 |   36.36 |                   
   ...ErrorUtils.ts |   13.04 |       15 |     100 |   17.64 | 18-41             
- .../brackets/read |   96.12 |       74 |     100 |   95.93 |                   
+ .../brackets/read |   96.47 |    75.92 |     100 |   96.24 |                   
   ...nfoService.ts |     100 |       80 |     100 |     100 | 70-79,82,132      
   ...eadService.ts |   95.12 |       75 |     100 |   94.73 | 178,181           
   ...antService.ts |   96.77 |    68.33 |     100 |   96.55 | 70                
   ...ageService.ts |   89.47 |    72.72 |     100 |   89.47 | 21,69             
- ...brackets/utils |      50 |    32.43 |      60 |   45.94 |                   
-  ScoreParser.ts   |      50 |    32.43 |      60 |   45.94 | ...19,121,140-145 
- ...ets/validation |   95.16 |    92.42 |     100 |   95.16 |                   
-  ...ionService.ts |   95.16 |    92.42 |     100 |   95.16 | 56,103-104        
- ...rackets/viewer |   20.77 |     15.3 |   27.77 |   20.49 |                   
-  ...werAdapter.ts |    8.57 |        0 |   11.11 |    8.57 | 29,48-166         
-  ...ransformer.ts |       0 |        0 |       0 |       0 | 10-184            
-  ...ransformer.ts |       0 |        0 |       0 |       0 | 19-47             
-  ...Calculator.ts |       0 |        0 |       0 |       0 | 18-316            
-  ...ransformer.ts |    92.3 |    71.42 |   86.36 |   95.45 | 46,102,208        
-  ...iewerUtils.ts |       0 |        0 |       0 |       0 | 9-33              
- ...ervices/career |   75.33 |    59.85 |      80 |   75.17 |                   
-  ...tchService.ts |   80.68 |    64.63 |   88.88 |    81.7 | ...37,141-153,286 
+ ...ets/validation |   96.15 |    97.22 |     100 |   96.15 |                   
+  ...ionService.ts |   96.15 |    97.22 |     100 |   96.15 | 52                
+ ...rackets/viewer |   84.74 |    66.66 |   85.22 |   85.83 |                   
+  ...werAdapter.ts |    7.31 |        0 |      10 |    7.31 | 29,48-177         
+  ...Calculator.ts |   97.22 |    93.54 |     100 |     100 | 79,82,119-120     
+  ...ransformer.ts |   93.75 |    54.54 |      80 |   93.61 | 103,107,111       
+  ...ransformer.ts |     100 |    66.66 |     100 |     100 | 29-51             
+  ...Calculator.ts |   89.93 |    71.42 |     100 |   95.41 | ...83,286-287,304 
+  ...ransformer.ts |   93.97 |    76.38 |   95.65 |   94.44 | 50,128,231,251    
+  ...iewerUtils.ts |     100 |       90 |     100 |     100 | 33                
+ ...ervices/career |   81.64 |    64.74 |   88.23 |   80.82 |                   
+  ...tchService.ts |   90.62 |    72.61 |     100 |    90.8 | 69-74,96-97,328   
   ...tchService.ts |   59.18 |    42.22 |   33.33 |   59.18 | ...67-180,191-192 
  ...rvices/contact |   88.88 |       80 |     100 |     100 |                   
   ...estService.ts |   88.88 |       80 |     100 |     100 | 27,49-57          
@@ -1040,8 +1067,8 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...oryService.ts |   89.77 |    71.66 |   91.66 |   93.67 | ...97,272-273,290 
   ...minService.ts |   85.71 |    71.42 |     100 |   88.88 | 98-99             
   ...iteService.ts |   47.22 |    31.37 |   38.46 |      50 | ...58-267,275-280 
- ...vices/messages |      50 |    53.12 |   28.57 |   55.88 |                   
-  ...onsService.ts |   45.45 |       50 |   33.33 |      50 | 17-36             
+ ...vices/messages |   48.78 |       50 |   28.57 |   54.28 |                   
+  ...onsService.ts |   41.66 |       40 |   33.33 |   44.44 | 18-42             
   ...ageService.ts |   51.72 |    54.16 |      25 |   57.69 | ...9,55,59,80-102 
  .../notifications |   94.44 |     92.3 |     100 |     100 |                   
   ...ionService.ts |   94.44 |     92.3 |     100 |     100 | 57                
@@ -1083,8 +1110,9 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...tchService.ts |   82.75 |     87.5 |   83.33 |   79.16 | 78-84             
   ...eryService.ts |     100 |    96.42 |     100 |     100 | 40                
   ...ransformer.ts |     100 |    92.85 |     100 |     100 | 26-27,36          
- ...rvices/traffic |       0 |        0 |       0 |       0 |                   
-  ...ficService.ts |       0 |        0 |       0 |       0 | 13-31             
+ ...es/weeklyRecap |   97.03 |    86.77 |     100 |   99.09 |                   
+  streaks.ts       |      95 |       85 |     100 |   96.77 | 77                
+  upsets.ts        |   96.87 |    85.29 |     100 |     100 | ...45,155-162,166 
  src/styles        |      60 |       75 |   66.66 |   64.28 |                   
   ...ket-styles.ts |      25 |        0 |       0 |   28.57 | 13-25             
   ...ctionUtils.ts |     100 |    85.71 |     100 |     100 | 21,29             
@@ -1094,7 +1122,7 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   divisions.ts     |   48.27 |    37.03 |   66.66 |      56 | 55,58,69-81,100   
  src/types         |     100 |    83.33 |     100 |     100 |                   
   errors.ts        |     100 |    83.33 |     100 |     100 | 20                
- src/utils         |   74.25 |    70.91 |   69.77 |   74.18 |                   
+ src/utils         |      75 |    72.66 |   71.11 |   74.53 |                   
   analytics.ts     |       0 |        0 |       0 |       0 | 10-96             
   ...eduleUtils.ts |   81.81 |      100 |     100 |   81.81 | 21-23             
   badgeConfig.ts   |    61.9 |       40 |     100 |      60 | 290-291,300-316   
@@ -1104,15 +1132,15 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...tyPageview.ts |   62.96 |    56.25 |      50 |      60 | 21-23,39-48       
   ...atDateSafe.ts |      70 |     61.9 |      75 |   82.35 | 19,43-44          
   ...cationDate.ts |    87.5 |      100 |     100 |   85.71 | 36,44             
-  ...isionUtils.ts |   69.23 |    69.23 |     100 |      80 | 15,19,24,46       
+  ...isionUtils.ts |   80.76 |    80.76 |     100 |      85 | 15,19,24          
   imageUpload.ts   |   73.11 |    55.31 |   91.66 |   72.72 | ...18-219,229-230 
   logger-types.ts  |   85.71 |       75 |     100 |     100 | 21-26             
-  logger.ts        |   93.75 |       90 |   82.75 |     100 | 15,53,62,80-92    
-  ...tatusUtils.ts |   84.61 |    83.33 |      80 |      84 | 4,28,41,54        
-  ...ansformers.ts |   29.03 |    35.97 |   27.27 |   33.33 | 130-144,211-286   
+  logger.ts        |      95 |       90 |    86.2 |     100 | 15,53,62,80-92    
+  ...tatusUtils.ts |    87.5 |    83.33 |     100 |   86.95 | 26,39,52          
+  ...ansformers.ts |    38.7 |     44.6 |   36.36 |    37.5 | 130-144,221-286   
   nativeAuth.ts    |       0 |        0 |       0 |       0 | 8-63              
   parseMetadata.ts |   84.21 |    76.92 |     100 |   84.21 | 58,61,64,67,70,92 
-  rankingUtils.ts  |     100 |    85.13 |     100 |     100 | ...0,80-81,84,186 
+  rankingUtils.ts  |     100 |    85.52 |     100 |     100 | ...0,80-81,84,188 
   routePrefetch.ts |   15.38 |        0 |       0 |   15.38 | 8-19,39-41,50-63  
   sentry.ts        |      81 |    85.91 |   58.82 |    80.2 | ...72,279,288-292 
   teamGrouping.ts  |     100 |       80 |     100 |     100 | 35                
@@ -1133,10 +1161,10 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...oaderUtils.ts |   47.87 |    55.84 |   28.57 |      50 | ...10-230,240-249 
   validation.ts    |    93.1 |    86.11 |     100 |   96.36 | 67,117            
   ...ationUtils.ts |     100 |       75 |     100 |     100 | 35,48-53,73-78    
- ...hedule/blossom |   52.39 |    37.58 |   56.79 |   53.89 |                   
+ ...hedule/blossom |   61.74 |    50.35 |   59.25 |    63.3 |                   
   feasibility.ts   |   59.32 |    53.57 |    37.5 |   61.11 | ...95-117,123-130 
   ...tePairings.ts |   50.81 |     62.5 |    37.5 |   52.63 | ...30-147,159-167 
-  graphBuilder.ts  |      40 |     19.6 |   77.77 |   39.72 | 15-16,65,93-195   
+  graphBuilder.ts  |   96.25 |    90.19 |     100 |   95.89 | 65,108,115        
   historyUtils.ts  |      75 |       50 |     100 |      75 | 17                
   ...hingRunner.ts |   83.33 |       75 |     100 |   82.22 | ...44,51-52,93-94 
   repair.ts        |   34.67 |       23 |   34.78 |   37.73 | 33,79-83,123-254  
@@ -1149,9 +1177,9 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...gGenerator.ts |   81.03 |     61.9 |   66.66 |   81.03 | 55,90,143-159     
   teamBalancer.ts  |   69.81 |    50.81 |     100 |   73.33 | ...04-105,117-127 
   ...ationUtils.ts |     100 |    91.66 |     100 |     100 | 51                
- src/utils/career  |   87.12 |    70.03 |     100 |    88.5 |                   
-  ...MatchStats.ts |   62.16 |    42.52 |     100 |   61.29 | 64-80             
-  ...PowerScore.ts |    85.1 |    71.15 |     100 |   84.78 | 42,49,80-89       
+ src/utils/career  |   87.55 |    71.38 |     100 |      89 |                   
+  ...MatchStats.ts |   64.86 |    45.97 |     100 |   64.51 | 66-80             
+  ...PowerScore.ts |    85.1 |    73.07 |     100 |   84.78 | 42,49,80-89       
   ...ClutchRate.ts |   88.88 |    84.37 |     100 |   95.23 | 54                
   ...ionRecords.ts |   95.91 |    80.85 |     100 |     100 | 58-103,114        
   ...Narratives.ts |     100 |    91.66 |     100 |     100 | 22                
@@ -1175,9 +1203,10 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   ...Formatting.ts |     100 |     92.3 |     100 |     100 | 55,57             
   ...ionRatings.ts |   70.58 |    66.66 |     100 |   70.58 | 54-58,66          
   ...ionScoring.ts |     100 |       50 |     100 |     100 | 9-14              
- ...s/rankingUtils |   98.29 |    96.77 |     100 |     100 |                   
+ ...s/rankingUtils |    98.5 |    95.32 |     100 |     100 |                   
+  ...ForStreaks.ts |     100 |    78.57 |     100 |     100 | 69-72             
   ...HeadToHead.ts |   94.73 |    96.29 |     100 |     100 | 30                
-  ...lateStreak.ts |   95.45 |    90.47 |     100 |     100 | 18,30             
+  ...lateStreak.ts |   95.45 |    95.23 |     100 |     100 | 36                
  ...eduling/greedy |   81.97 |    71.67 |   78.18 |   85.17 |                   
   feasibility.ts   |   95.23 |    92.85 |     100 |     100 | 42,63             
   ...tSelection.ts |   96.87 |    89.47 |     100 |     100 | 77,84,94-95       
@@ -1188,12 +1217,12 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
   swapRepair.ts    |   92.59 |    78.18 |    90.9 |   97.01 | 68,152            
  ...eedy/__tests__ |   96.15 |    52.63 |   92.85 |     100 |                   
   testHelpers.ts   |   96.15 |    52.63 |   92.85 |     100 | 40-49,79          
- ...amDetailsUtils |   91.83 |    75.62 |   93.93 |   91.79 |                   
+ ...amDetailsUtils |   92.41 |    75.62 |   96.87 |   92.42 |                   
   ...StatsUtils.ts |   88.88 |       60 |     100 |      88 | 23,39-40          
   ...oHeadUtils.ts |     100 |    89.47 |     100 |     100 | 28,31             
   ...tcomeUtils.ts |     100 |    90.47 |     100 |     100 | 34,41             
   matchUtils.ts    |   91.66 |    62.96 |    87.5 |   95.45 | 18                
-  rivalryUtils.ts  |   86.36 |    78.12 |    90.9 |   83.78 | 62,69,81,85-89    
+  rivalryUtils.ts  |   88.09 |    78.12 |     100 |   85.71 | 63,78,82-86       
   ...pRateUtils.ts |      95 |    90.47 |     100 |   94.73 | 46                
  ...utils/timezone |   90.07 |    83.72 |     100 |   89.78 |                   
   converters.ts    |   92.85 |      100 |     100 |   92.85 | 111-112           
@@ -1202,8 +1231,8 @@ All files          |   64.69 |    54.21 |   60.47 |   66.11 |
 -------------------|---------|----------|---------|---------|-------------------
 
 =============================== Coverage summary ===============================
-Statements   : 64.69% ( 14719/22753 )
-Branches     : 54.21% ( 10386/19157 )
-Functions    : 60.47% ( 3258/5387 )
-Lines        : 66.11% ( 13636/20624 )
+Statements   : 68.98% ( 16670/24164 )
+Branches     : 58.15% ( 11968/20579 )
+Functions    : 64.66% ( 3682/5694 )
+Lines        : 70.42% ( 15376/21833 )
 ================================================================================

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -95,29 +95,42 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
     )
   );
 
-  useEffect(() => {
-    if (open) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- reset form when dialog opens on a new round
-      setSide1(
-        toSide(
-          round.team1_score,
-          round.team1_bags_in,
-          round.team1_bags_on,
-          round.team1_bags_off,
-          round.team1_thrower_id
-        )
-      );
+  // Which round the form currently holds. Cleared on close so reopening always
+  // reloads stored values.
+  const loadedRoundIdRef = useRef<string | null>(null);
 
-      setSide2(
-        toSide(
-          round.team2_score,
-          round.team2_bags_in,
-          round.team2_bags_on,
-          round.team2_bags_off,
-          round.team2_thrower_id
-        )
-      );
+  // Load the round into the form when the dialog opens and when a genuinely
+  // different round is selected — but NOT when realtime hands us a fresh object
+  // for the round already being edited. Keying this on the `round` object
+  // instead of its id would rerun on every refetch and silently discard the
+  // admin's unsaved input mid-correction.
+  useEffect(() => {
+    if (!open) {
+      loadedRoundIdRef.current = null;
+      return;
     }
+    if (loadedRoundIdRef.current === round.id) return;
+    loadedRoundIdRef.current = round.id;
+
+    setSide1(
+      toSide(
+        round.team1_score,
+        round.team1_bags_in,
+        round.team1_bags_on,
+        round.team1_bags_off,
+        round.team1_thrower_id
+      )
+    );
+
+    setSide2(
+      toSide(
+        round.team2_score,
+        round.team2_bags_in,
+        round.team2_bags_on,
+        round.team2_bags_off,
+        round.team2_thrower_id
+      )
+    );
   }, [open, round]);
 
   const validation = useMemo(() => {
