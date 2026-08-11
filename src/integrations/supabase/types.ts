@@ -4994,6 +4994,77 @@ export type Database = {
           },
         ]
       }
+      v_power_score_components: {
+        Row: {
+          game_losses: number | null
+          game_wins: number | null
+          losses: number | null
+          matches_played: number | null
+          season_id: string | null
+          sos: number | null
+          team_id: string | null
+          weighted_game_win_pct: number | null
+          weighted_win_pct: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
+      v_power_score_components_current: {
+        Row: {
+          game_losses: number | null
+          game_wins: number | null
+          losses: number | null
+          matches_played: number | null
+          sos: number | null
+          team_id: string | null
+          weighted_game_win_pct: number | null
+          weighted_win_pct: number | null
+          wins: number | null
+        }
+        Relationships: []
+      }
+      v_power_score_match_source: {
+        Row: {
+          id: string | null
+          loser_id: string | null
+          season_id: string | null
+          source: string | null
+          team1_game_wins: number | null
+          team1_id: string | null
+          team2_game_wins: number | null
+          team2_id: string | null
+          winner_id: string | null
+        }
+        Relationships: []
+      }
+      v_power_score_match_source_current: {
+        Row: {
+          id: string | null
+          loser_id: string | null
+          season_id: string | null
+          source: string | null
+          team1_game_wins: number | null
+          team1_id: string | null
+          team2_game_wins: number | null
+          team2_id: string | null
+          winner_id: string | null
+        }
+        Relationships: []
+      }
+      v_power_score_team_matches: {
+        Row: {
+          game_losses: number | null
+          game_wins: number | null
+          is_loss: boolean | null
+          is_win: boolean | null
+          match_id: string | null
+          opponent_id: string | null
+          season_id: string | null
+          source: string | null
+          team_id: string | null
+        }
+        Relationships: []
+      }
       v_team_details: {
         Row: {
           close_match_losses: number | null
@@ -5375,6 +5446,7 @@ export type Database = {
         Args: { p_season_id: string; p_team_id: string }
         Returns: undefined
       }
+      current_standings_season_id: { Args: never; Returns: string }
       current_user_is_admin: { Args: never; Returns: boolean }
       delete_match_with_stats_reversal: {
         Args: { p_match_id: string }
@@ -5572,6 +5644,14 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      power_score_100: {
+        Args: {
+          p_sos: number
+          p_weighted_game_win_pct: number
+          p_weighted_win_pct: number
+        }
+        Returns: number
       }
       process_match_badges: {
         Args: { p_team1_id: string; p_team2_id: string }
