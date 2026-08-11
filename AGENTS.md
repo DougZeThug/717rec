@@ -2,6 +2,13 @@
 
 This repo uses **npm**. It does **not** use pnpm, yarn, or bun.
 
+## Communication style
+
+- **Always talk in ASD-STE100 Simplified Technical English** — short sentences,
+  simple approved words, active voice, one instruction per sentence.
+- **Always talk to me like I have ADHD** — give the answer first, keep it short,
+  use bullets, make the key point bold, no walls of text.
+
 ## Package manager
 
 - Use `npm install` / `npm ci`.
