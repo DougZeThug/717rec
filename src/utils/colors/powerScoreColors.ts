@@ -68,6 +68,24 @@ export const getPowerScoreBorderColor = (score: number | null | undefined): stri
   return 'border-red-300 dark:border-red-700'; // Critical
 };
 
+// SVG stroke variant, for the ring on PowerScoreGauge. Same bands as
+// getPowerScoreColor so the ring and the number beside it never disagree.
+export const getPowerScoreRingColor = (score: number | null | undefined): string => {
+  if (score === null || score === undefined) {
+    return 'stroke-muted';
+  }
+
+  // Score is already on 0-100 scale
+  if (score >= 85) return 'stroke-yellow-500'; // Elite/Championship
+  if (score >= 70) return 'stroke-green-500'; // Excellent
+  if (score >= 60) return 'stroke-blue-500'; // Strong
+  if (score >= 50) return 'stroke-orange-500'; // Average
+  if (score >= 40) return 'stroke-amber-500'; // Below Average
+  if (score >= 30) return 'stroke-pink-500'; // Poor
+  if (score >= 20) return 'stroke-purple-500'; // Struggling
+  return 'stroke-red-500'; // Critical
+};
+
 // Power score interpretation helper
 export const getPowerScoreDescription = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {

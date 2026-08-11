@@ -2,7 +2,7 @@ import { m, useSpring } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
-import { getPowerScoreColor } from '@/utils/colors/powerScoreColors';
+import { getPowerScoreColor, getPowerScoreRingColor } from '@/utils/colors/powerScoreColors';
 
 interface PowerScoreGaugeProps {
   score: number | null; // 0-100 scale from v_team_details view; null when the team has no data
@@ -49,14 +49,9 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
   const progress = Math.min(Math.max(displayScore / 100, 0), 1);
   const strokeDashoffset = circumference * (1 - progress);
 
-  // Get color for the ring based on score
-  const getRingColor = () => {
-    if (!hasScore) return 'stroke-muted';
-    if (displayScore >= 75) return 'stroke-green-500';
-    if (displayScore >= 60) return 'stroke-yellow-500';
-    if (displayScore >= 45) return 'stroke-orange-500';
-    return 'stroke-red-500';
-  };
+  // Ring color shares getPowerScoreColor's bands, so it can never disagree with
+  // the number rendered inside it.
+  const ringColorClass = getPowerScoreRingColor(hasScore ? displayScore : null);
 
   return (
     <div className={cn('relative inline-flex items-center justify-center', className)}>
@@ -80,7 +75,7 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
           fill="none"
           strokeWidth={config.strokeWidth}
           strokeLinecap="round"
-          className={getRingColor()}
+          className={ringColorClass}
           strokeDasharray={circumference}
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset }}
