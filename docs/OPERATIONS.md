@@ -233,3 +233,47 @@ exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
 (`20260722160000`, `20260722170000`) were merged on GitHub but never
 applied, so every bracket-creation insert failed with PGRST204 "Could not
 find the 'opponent1_position' column of 'match'".
+
+## 6a. Power-score unification: review, revert, reapply
+
+The power-score unification (migrations `20260809*`) put every page on one
+formula: playoff games count, byes do not, and historical ratings are
+division-weighted. Because `upsert_team_season_stats()` re-derives **all**
+seasons, Career Statistics on `/stats` re-orders when it is applied. The old
+numbers are snapshotted first into two RLS-locked backup tables
+(`team_season_stats_pre_unification`, `team_details_power_pre_unification`).
+
+Migration `20260810120000` adds the admin controls for that change, surfaced
+in the admin panel under **Operations → Power Score Review**:
+
+- **Status banner** — whether the unification is applied, reverted, or not on
+  the live database at all, plus when the backup was taken and how many rows
+  it holds. A friendly "not applied yet" card (never an error) shows until the
+  migrations reach production (see §6 for why merged ≠ applied).
+- **Career Standings comparison** — old rank → new rank, old/new career power
+  score, per-team deltas, and an expandable per-season breakdown. "Before" is
+  computed by feeding the backup through the same career calculators `/stats`
+  uses, so it shows the site as of the backup date. Teams created since are
+  flagged "New since backup"; backup rows of deleted teams are ignored. The
+  comparison is shown while the new formula is applied; in the reverted state
+  the live site *is* the old formula, so the tab explains that instead of
+  showing an old-vs-old table.
+- **Revert / Re-apply** — one click each, behind a confirmation dialog.
+  Revert does **not** copy backup rows back: it restores the old view
+  definitions and recomputes every season from match history, so games played
+  after the backup are kept, not lost. Re-apply is the mirror image. Both also
+  prune stored season rows the active formula no longer produces (a team whose
+  only playoff result was a bye has a row under the old formula but not the
+  new one). Both are idempotent and admin-only (`Admin access required` for
+  everyone else).
+
+Caveats:
+
+- The homepage **Movers** section diffs against last week's
+  `power_score_snapshots` row, so it can look skewed for up to a week after a
+  revert or re-apply. It self-corrects at the next weekly snapshot (or run the
+  `capture-power-snapshots` edge function manually).
+- The backup tables are safe to drop only once the new numbers have been
+  reviewed and accepted on the live site. After that the tab hides the Revert
+  button and the comparison and says the backup is gone, rather than offering
+  actions that would fail.
