@@ -2,6 +2,10 @@
 
 ## Developer Preferences
 
+- **Always talk in ASD-STE100 Simplified Technical English** — short sentences,
+  simple approved words, active voice, one instruction per sentence
+- **Always talk to me like I have ADHD** — give the answer first, keep it short,
+  use bullets, make the key point bold, no walls of text
 - **I am NOT a coder** — always explain what you're doing in plain language, avoid jargon
 - **Small, safe diffs** — one bug fix or one feature per commit, only change what's necessary
 - **Explain your steps**: (1) tell me what you're about to do and why, (2) show the specific changes, (3) confirm what changed and how to verify
@@ -139,4 +143,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-07-27*
+*Last updated: 2026-08-11*
