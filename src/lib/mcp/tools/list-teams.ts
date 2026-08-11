@@ -1,7 +1,13 @@
 import { defineTool } from '@lovable.dev/mcp-js';
 import { z } from 'zod';
 
-import { errorResult, getActiveSeasonId, textResult, userClient } from './_supabase';
+import {
+  errorResult,
+  getActiveSeasonId,
+  isHiddenDivision,
+  textResult,
+  userClient,
+} from './_supabase';
 
 export default defineTool({
   name: 'list_teams',
@@ -29,10 +35,12 @@ export default defineTool({
     });
     if (error) return errorResult(error.message);
 
-    const rows = (data ?? []).map((row) => {
-      const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
-      return { team_name: teams?.name ?? null, ...rest };
-    });
+    const rows = (data ?? [])
+      .filter((row) => !isHiddenDivision(row.division_name))
+      .map((row) => {
+        const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
+        return { team_name: teams?.name ?? null, ...rest };
+      });
     return textResult(rows);
   },
 });

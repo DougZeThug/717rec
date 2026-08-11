@@ -48,3 +48,13 @@ export async function getActiveSeasonId(supabase: SupabaseClient): Promise<strin
   const { data } = await supabase.from('seasons').select('id').eq('is_active', true).maybeSingle();
   return data?.id ?? null;
 }
+
+/**
+ * Hidden-division teams are administrative placeholders, not league entrants.
+ * The frontend already skips them (src/utils/teamGrouping.ts); public tool
+ * output must skip them too, or they surface in the standings.
+ * Covers both seeded rows, "Hidden" and "Hidden2", via display_division.
+ */
+export function isHiddenDivision(divisionName: string | null | undefined): boolean {
+  return (divisionName ?? '').toLowerCase().startsWith('hidden');
+}

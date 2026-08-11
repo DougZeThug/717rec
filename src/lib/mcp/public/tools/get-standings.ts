@@ -1,7 +1,13 @@
 import { defineTool } from '@lovable.dev/mcp-js';
 import { z } from 'zod';
 
-import { anonClient, errorResult, getActiveSeasonId, textResult } from './_supabase';
+import {
+  anonClient,
+  errorResult,
+  getActiveSeasonId,
+  isHiddenDivision,
+  textResult,
+} from './_supabase';
 
 export default defineTool({
   name: 'get_standings',
@@ -30,10 +36,13 @@ export default defineTool({
     });
     if (error) return errorResult(error.message);
 
-    const rows = (data ?? []).map((row, index) => {
-      const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
-      return { rank: index + 1, team_name: teams?.name ?? null, ...rest };
-    });
+    // Filter before ranking, so ranks stay contiguous.
+    const rows = (data ?? [])
+      .filter((row) => !isHiddenDivision(row.division_name))
+      .map((row, index) => {
+        const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
+        return { rank: index + 1, team_name: teams?.name ?? null, ...rest };
+      });
     return textResult(rows);
   },
 });
