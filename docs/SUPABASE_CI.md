@@ -93,6 +93,30 @@ depends on a Supabase object we haven't stubbed, extend the bootstrap
 rather than skip the apply job. The stubs are CI-only and never run
 against the real project.
 
+## Re-applied migrations in the ledger
+
+Six files dated `20260811142827`–`20260811143430` are **re-applications**, not
+new work. Five are byte-identical to their `20260809*`/`20260810*` originals
+(`power_score_shared_match_source`, `power_score_pre_unification_backup`,
+`season_power_scores_canonical`, `team_details_playoff_inclusive`,
+`team_season_agg_canonical`); the sixth, `power_unification_admin_controls`,
+differs slightly. Treat them as duplicates when reading the history — do not
+delete them, since they are already in the ledger and removing a file that has
+been applied breaks replay.
+
+Every statement in them is `CREATE OR REPLACE` or otherwise guarded, so the
+second apply caused no corruption. It did have one side effect worth knowing:
+`20260811143049` ends with `SELECT public.upsert_team_season_stats()`, which
+re-derives **every** season's stored power score. If an admin had used the
+Revert control in the power-migration panel beforehand, that revert was
+silently undone. Check the current state with
+`admin_power_unification_status()` (surfaced in the admin Power Migration tab)
+rather than inferring it from the migration list.
+
+Lesson for future migrations: a migration that ends in a backfill is not
+idempotent from the *data's* point of view, even when every DDL statement in it
+is. Re-applying one overwrites whatever the operator did in between.
+
 ## What this does NOT cover
 
 - It does not run the full `supabase start` stack (PostgREST, GoTrue,

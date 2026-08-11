@@ -26,7 +26,7 @@ const FAQ_JSON_LD = {
       name: 'How is the Power Score calculated?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Power Score combines win percentage (70%) and strength of schedule (30%) to create a balanced ranking metric.',
+        text: 'Power Score is a 0-100 rating made of three parts: 40% match win rate, 45% strength of schedule and 15% game win rate. Wins and games are weighted by the division of the opponent played, so beating a stronger team is worth more than beating a weaker one.',
       },
     },
     {
@@ -34,7 +34,7 @@ const FAQ_JSON_LD = {
       name: 'What does SOS (Strength of Schedule) mean?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: "SOS measures the average win percentage of all opponents you've faced. A higher SOS means you've played tougher competition.",
+        text: "SOS is the average division strength of the opponents you've faced. A higher SOS means you've played tougher competition, and it raises your Power Score -- which is why two teams with the same record can be ranked differently.",
       },
     },
     {
