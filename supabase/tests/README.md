@@ -58,6 +58,22 @@ so a non-zero exit code means drift was detected.
   from the three weighted terms while still counting in the W-L record (the
   exclusion is one-directional — a Hidden team keeps a rating of its own for
   the admin surfaces that fetch it deliberately).
+- `power_score_historical_opponent_division.sql` — pins that an opponent is
+  rated by the division they were **actually in when the match was played**.
+  Reproduces the real defect (a team plays in Recreational, drops out, is moved
+  to Hidden) and asserts the match still rates at the Recreational weight via
+  the weekly snapshot. Also covers: every rated match resolving to a real
+  `divisions` row rather than a name, nothing ever resolving to a hidden or
+  weightless division, `Hidden2` being caught despite its positive weight,
+  division weights being versioned so a re-weight cannot move a past match,
+  archived seasons being frozen against routine recomputes while
+  `admin_recompute_season_power()` can still move them, and a coverage floor of
+  zero `unresolved` matches.
+- `member_team_update_guard.sql` — asserts an approved non-admin can rename
+  their own team but cannot change `division_id` or the win/loss counters.
+  Regression cover for `prevent_member_competitive_field_updates()`, which
+  referenced a `teams.is_hidden` column that never existed and therefore threw
+  on every non-admin team update.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

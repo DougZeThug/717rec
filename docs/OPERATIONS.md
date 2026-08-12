@@ -277,3 +277,37 @@ Caveats:
   reviewed and accepted on the live site. After that the tab hides the Revert
   button and the comparison and says the backup is gone, rather than offering
   actions that would fail.
+
+### Archived seasons are frozen (from 2026-08-12)
+
+`upsert_team_season_stats()` no longer updates `power_score`, `sos` or
+`division_name` for a season once `seasons.is_archived` is true. This closes the
+defect where changing a team's division — or re-weighting a division — silently
+rewrote finished seasons, because the rating used to resolve every opponent
+through their *current* division.
+
+Consequences to know:
+
+- **A data repair on an archived season will not show up on its own.** Run
+  `SELECT public.admin_recompute_season_power('<season_id>');` (admin only). It
+  returns the number of rows updated.
+- **The one-time backfill already ran** in migration
+  `20260812130000_power_score_historical_opponent_division.sql`, before the
+  freeze was installed. Pre-change values are in
+  `team_season_stats_pre_division_history`.
+- **Movers will show a one-time jump** the week that migration ships, because
+  `power_score_snapshots` rows are deliberately left alone — they record what
+  was true that week and rewriting them would erase the trend history. It
+  self-corrects at the next weekly snapshot.
+
+Two related tables are worth knowing about:
+
+- `division_weight_history` — every division's weight over time, maintained by a
+  trigger on `divisions`. A match is rated with the weight in effect on its
+  date. History starts at the migration above; earlier weight edits were never
+  recorded and cannot be recovered.
+- `division_archive_distrust` — seasons whose `team_details_archive.division_id`
+  must not be trusted as a point-in-time division. Summer 1 and Summer 2 2025
+  are seeded, because theirs were backfilled in Jan 2026 from then-current
+  values. Add a row (with a reason) rather than editing a view if another season
+  turns out to be affected.

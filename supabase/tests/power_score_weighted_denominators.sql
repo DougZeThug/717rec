@@ -142,11 +142,20 @@ BEGIN
       v_score_a - v_score_b;
   END IF;
 
-  -- 4. The Hidden match drops out of all three weighted terms, so D scores the
-  --    same as a team that only played the Competitive opponent. Before the fix
-  --    the -1.0 weight dragged this to roughly 28.
+  -- 4. This pins the LAST RESORT of the resolution chain, not a "Hidden is
+  --    always excluded" rule -- that rule no longer exists. Since
+  --    20260812130000, a match against a team that is Hidden *today* is rated at
+  --    the division that team was actually in when the match was played; see
+  --    supabase/tests/power_score_historical_opponent_division.sql.
+  --
+  --    This fixture's Hidden team has no snapshot, no archive row and no
+  --    bracket, so every step of the chain fails and it resolves to
+  --    'unresolved' -- which drops it from the three weighted terms. D
+  --    therefore scores the same as a team that only played the Competitive
+  --    opponent. Before the denominator fix, the -1.0 weight dragged this to
+  --    roughly 28.
   IF abs(v_score_d - 96.625) > 1e-6 THEN
-    RAISE EXCEPTION 'a win over a Hidden team must not change the score, got %', v_score_d;
+    RAISE EXCEPTION 'an unresolvable opponent must not change the score, got %', v_score_d;
   END IF;
 
   -- 5. ...but the record still counts it. Only the rating terms filter.

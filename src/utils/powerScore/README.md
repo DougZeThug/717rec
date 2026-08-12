@@ -36,37 +36,74 @@ Power Score = (weighted match win rate × 40)
 
 ### Division weights
 
-Set per division in the `divisions` table. Opponents with no division default
-to `0.85` (mirrored client-side as `DEFAULT_DIVISION_WEIGHT` in
-`src/utils/rankingUtils/divisionWeightsCache.ts`).
+> **Never copy weight values into code, tests, or documentation.** `divisions`
+> is edited through the admin UI (`src/services/DivisionService.ts`), so it holds
+> rows and values no migration ever created. The values seeded in the migrations
+> are **not** the live ones. Always resolve a `division_id` and read
+> `divisions.division_weight`. The live table is the only source of truth, and
+> the admin Divisions screen is the place to see it.
 
-| Division | Weight |
-|---|---|
-| Competitive Low | 0.925 |
-| cuspers | 0.90 |
-| Intermediate High | 0.85 |
-| Hidden2 | 0.75 |
-| Intermediate Low | 0.60 |
-| Recreational High | 0.50 |
-| Hidden | -1.0 (sentinel — excluded from all rating maths) |
+Weights are versioned in `division_weight_history`, written by a trigger on
+`divisions`. A match is rated with the weight that was in effect **on the match
+date**, so re-weighting a division no longer rewrites finished seasons. That
+history starts at the migration that introduced it — earlier weight edits were
+never recorded.
 
-Because no division reaches weight 1.0, the SOS term caps below 45 points, so a
-perfect Competitive team lands near 97 rather than exactly 100. The realistic
-league range is roughly 22 to 97.
+No division carries weight `1.0`, so the SOS term caps below 45 points and a
+perfect team lands short of 100. The exact ceiling is
+`100 × (top division weight)` and moves if you re-weight.
 
-### Hidden teams
+### Which division a team counts as
 
-Matches against Hidden-division teams are excluded from all three weighted
-terms, in both numerator and denominator, so they neither help nor hurt. W-L
-records are unaffected — `matches_played`, `wins`, `losses`, `game_wins` and
-`game_losses` still count every match.
+An opponent is rated by the division they were in **when the match was played**,
+not the division they sit in today. This matters because there is no "withdrawn"
+flag: a team that drops out is moved to the `Hidden` division, which overwrites
+their real division with no history.
 
-The exclusion is one-directional: a Hidden team still gets a rating of its own
-from whoever it played, because `useCareerRankingsWithHidden` and the admin
-power-migration comparison fetch Hidden teams deliberately and expect a number.
-Keeping them out of public listings is a read-layer concern — the frontend
-skips them in `src/utils/teamGrouping.ts`, and the MCP `get_standings` /
-`list_teams` tools skip them via `isHiddenDivision()`.
+`v_power_score_team_matches_rated` resolves this through a chain, and **every
+step returns a real `divisions.id`** — no step turns a division *name* into a
+weight. Names cannot be reversed: `division_name` has several writers with
+different meanings, and for a season with two brackets in one display division
+it holds synthetic strings like `'Intermediate 1'` that match no row in
+`divisions` at all.
+
+| Priority | Source | `resolved_by` |
+|---|---|---|
+| 1 | newest weekly snapshot at or before the match date | `snapshot_at_date` |
+| 2 | earliest snapshot that season | `snapshot_earliest_in_season` |
+| 3 | `team_details_archive.division_id`, cross-checked against `divisionname` | `archive_division_id` |
+| 4 | playoff bracket participation | `bracket_division_id` |
+| 5 | current `teams.division_id` | `current_division` |
+| 6 | last division ever observed for that team | `last_known_division` |
+| 7 | nothing resolves → dropped from the weighted terms only | `unresolved` |
+
+Hidden and weightless divisions are filtered out by `v_division_rateable`, so
+the chain can never resolve to one. Seasons listed in
+`division_archive_distrust` skip step 3.
+
+Coverage is inspectable:
+
+```sql
+SELECT resolved_by, count(*) FROM v_power_score_team_matches_rated GROUP BY 1;
+```
+
+**W-L records are never affected** — `matches_played`, `wins`, `losses`,
+`game_wins` and `game_losses` count every match, including unresolved ones.
+Only the three weighted terms filter.
+
+Keeping Hidden teams out of public listings is a separate, read-layer concern:
+the frontend skips them in `src/utils/teamGrouping.ts` and the MCP
+`get_standings` / `list_teams` tools skip them via `isHiddenDivision()`. A
+Hidden team still gets a rating of its own, because
+`useCareerRankingsWithHidden` and the admin power-migration comparison fetch
+them deliberately and expect a number.
+
+### Archived seasons are frozen
+
+Once `seasons.is_archived` is true, `upsert_team_season_stats()` stops updating
+that season's `power_score`, `sos` and `division_name`. Nothing you edit
+afterwards — a division, a weight, a team — can move a finished season. Use
+`admin_recompute_season_power(season_id)` for a deliberate repair.
 
 ## Data Flow
 
@@ -75,7 +112,11 @@ matches + playoff_matches
         ↓
 v_power_score_match_source            (shared match set; byes excluded)
         ↓
-v_power_score_team_matches            (one row per team per match)
+v_power_score_team_matches            (one row per team per match, + match_date)
+        ↓
+v_power_score_team_matches_rated      (+ opponent division AS OF match_date,
+                                         its weight as of the same date,
+                                         and resolved_by)
         ↓
 v_power_score_components              (weighted_win_pct, sos, weighted_game_win_pct)
         ↓
@@ -89,8 +130,10 @@ Standings UI            team_season_stats          power_score_snapshots
 ```
 
 `upsert_team_season_stats()` copies `v_team_season_agg.power_score` into
-`team_season_stats`. It takes no season parameter — it re-derives **every**
-season on every call, so a formula change propagates to all history at once.
+`team_season_stats`. It takes no season parameter — it re-derives every season
+on every call, so a formula change propagates broadly at once. **Archived
+seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
+(see above).
 
 ## Utilities in This Directory
 
@@ -107,5 +150,8 @@ season on every call, so a formula change propagates to all history at once.
 - `supabase/migrations/20260809120000_power_score_shared_match_source.sql` —
   `power_score_100()` and the component views
 - `supabase/migrations/20260811210000_power_score_weighted_denominators.sql` —
-  weighted denominators and the Hidden exclusion
+  weighted denominators
+- `supabase/migrations/20260812130000_power_score_historical_opponent_division.sql`
+  — the resolution chain, `division_weight_history`, and the archived-season
+  freeze
 - `src/integrations/supabase/types.ts` — auto-generated, never edit by hand
