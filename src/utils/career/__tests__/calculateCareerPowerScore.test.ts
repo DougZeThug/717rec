@@ -84,6 +84,43 @@ describe('calculateCareerPowerScore', () => {
     expect(result).toBe(100);
   });
 
+  it('scales the bonus cap by division strength for soft-division titles', async () => {
+    // Three Intermediate titles (weight 0.7) should not reach the same ceiling as
+    // three Competitive titles. The bonus cap is 15 * (max weight)^2.
+    const intermediateResult = await calculateCareerPowerScore({
+      teamId: 'team-soft',
+      championshipDivisions: ['Intermediate', 'Intermediate', 'Intermediate'],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 0.7,
+      prefetchedSeasonStats: [
+        { power_score: 0.5, match_wins: 5, match_losses: 5, season_id: 'season-1' },
+      ],
+      prefetchedCurrentTeamData: null,
+    });
+
+    const competitiveResult = await calculateCareerPowerScore({
+      teamId: 'team-hard',
+      championshipDivisions: ['Competitive', 'Competitive', 'Competitive'],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      prefetchedSeasonStats: [
+        { power_score: 0.5, match_wins: 5, match_losses: 5, season_id: 'season-1' },
+      ],
+      prefetchedCurrentTeamData: null,
+    });
+
+    // Base 50 + soft bonus (capped at 15 * 0.7^2 = 7.35) should be ~57.35
+    // Base 50 + hard bonus (capped at 15 * 1.0^2 = 15) should be 65
+    expect(intermediateResult).toBeLessThan(competitiveResult);
+    expect(intermediateResult).toBeCloseTo(57.35, 2);
+  });
+
   it('applies championship weight based on division name', async () => {
     const baseInput = {
       runnerUpDivisions: [] as string[],
