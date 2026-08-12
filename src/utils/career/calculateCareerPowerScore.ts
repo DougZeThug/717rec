@@ -43,6 +43,10 @@ interface CareerPowerScoreInput {
  * Title and runner-up bonuses are scaled by the SQUARE of the live division
  * weight, so a title won in a soft field cannot out-earn a strong record made
  * against a hard schedule. Weights always come from the `divisions` table.
+ *
+ * The total bonus cap is also scaled by the strongest division the team earned
+ * bonuses in, so three soft-division titles do not reach the same maximum as a
+ * Competitive championship.
  */
 export const calculateCareerPowerScore = async ({
   teamId,
