@@ -58,3 +58,38 @@ export async function getActiveSeasonId(supabase: SupabaseClient): Promise<strin
 export function isHiddenDivision(divisionName: string | null | undefined): boolean {
   return (divisionName ?? '').toLowerCase().startsWith('hidden');
 }
+
+type EmbeddedDivision = { name?: string | null; display_division?: string | null } | null;
+type EmbeddedTeam = { divisions?: EmbeddedDivision | EmbeddedDivision[] } | null;
+
+/**
+ * PostgREST returns a to-one embed as an object, but the generated types model
+ * these relationships as arrays. Accept either shape rather than casting the
+ * discrepancy away.
+ */
+function firstOrSelf<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+/**
+ * Hidden check for a team_season_stats row.
+ *
+ * Prefers the team's CURRENT division over the cached
+ * team_season_stats.division_name. That column is a denormalised copy which only
+ * refreshes on the next stats upsert, so a team just moved to Hidden can linger
+ * in listings until some unrelated match is scored. These tools only ever query
+ * the active season, so current membership is the authoritative answer.
+ *
+ * Falls back to the cached label when the division join is absent.
+ */
+export function isHiddenTeamRow(
+  divisionName: string | null | undefined,
+  team: EmbeddedTeam | EmbeddedTeam[] | undefined
+): boolean {
+  const live = firstOrSelf(firstOrSelf(team)?.divisions);
+  if (live) {
+    return isHiddenDivision(live.display_division) || isHiddenDivision(live.name);
+  }
+  return isHiddenDivision(divisionName);
+}

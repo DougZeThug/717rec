@@ -133,8 +133,12 @@ describe('color modules table-driven coverage', () => {
   });
 
   it('treats undefined the same as null in both power score helpers', () => {
-    expect(getPowerScoreRingColor(undefined)).toBe('stroke-muted');
-    expect(formatPowerScore(undefined)).toBe('N/A');
+    // Bound to a variable rather than passed as a literal: an inline `undefined`
+    // in the final argument position is flagged as redundant, but the point here
+    // is that a genuinely absent value is handled.
+    const absent: number | undefined = undefined;
+    expect(getPowerScoreRingColor(absent)).toBe('stroke-muted');
+    expect(formatPowerScore(absent)).toBe('N/A');
   });
 
   it.each([

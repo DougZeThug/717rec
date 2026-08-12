@@ -246,6 +246,33 @@ BEGIN
       v_arch_before, v_arch_after;
   END IF;
 
+  -- 8b. The formula controls must still be able to write archived seasons.
+  --     admin_revert_power_score_unification() and its re-apply twin both end
+  --     with upsert_team_season_stats(); under a blanket freeze they reported
+  --     success while archived History and Career kept the previous formula.
+  --     The explicit opt-in is what makes those controls honest again.
+  PERFORM public.upsert_team_season_stats(true);
+
+  SELECT power_score INTO v_arch_after
+  FROM public.team_season_stats
+  WHERE season_id = v_season_arch AND team_id = v_team_x;
+  IF v_arch_after IS NOT DISTINCT FROM v_arch_before THEN
+    RAISE EXCEPTION 'upsert_team_season_stats(true) must bypass the archived freeze';
+  END IF;
+
+  -- ...and the default really is the frozen behaviour, not an accident of
+  -- argument order.
+  UPDATE public.team_season_stats SET power_score = 0.654321
+   WHERE season_id = v_season_arch AND team_id = v_team_x;
+  PERFORM public.upsert_team_season_stats();
+  SELECT power_score INTO v_arch_after
+  FROM public.team_season_stats
+  WHERE season_id = v_season_arch AND team_id = v_team_x;
+  IF v_arch_after IS DISTINCT FROM 0.654321 THEN
+    RAISE EXCEPTION 'the zero-argument call must still freeze archived seasons, got %', v_arch_after;
+  END IF;
+  v_arch_before := 0.654321;
+
   -- 9. ...but a deliberate admin repair still can.
   SELECT public.admin_recompute_season_power(v_season_arch) INTO v_rows;
   IF v_rows < 1 THEN

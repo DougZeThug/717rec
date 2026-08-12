@@ -291,6 +291,11 @@ Consequences to know:
 - **A data repair on an archived season will not show up on its own.** Run
   `SELECT public.admin_recompute_season_power('<season_id>');` (admin only). It
   returns the number of rows updated.
+- **The Revert / Re-apply formula controls are exempt.** Both end with
+  `upsert_team_season_stats(true)`, which bypasses the freeze, so a formula
+  change still reaches archived seasons. Without that opt-in the controls would
+  report success while History and Career silently kept the previous formula.
+  Every other caller uses the zero-argument form and stays frozen.
 - **The one-time backfill already ran** in migration
   `20260812130000_power_score_historical_opponent_division.sql`, before the
   freeze was installed. Pre-change values are in
