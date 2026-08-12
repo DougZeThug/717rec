@@ -112,7 +112,7 @@ Career score is a **different** number, computed client-side in
 
 ```
 Career = weighted average of season Power Scores   (weighted by matches played)
-       + playoff bonuses                            (capped at +15)
+       + playoff bonuses                            (capped by division strength)
 ```
 
 Bonuses:
@@ -135,6 +135,20 @@ score already carries schedule strength through the season SOS term, so a
 linear bonus let a team that dominated a soft division out-earn a mid-pack
 Competitive team. Squaring keeps a Competitive title at full value while
 shrinking a soft-field title toward the schedule it was won against.
+
+The total bonus cap is also **scaled by division strength**:
+
+```
+Cap = 15 × (max weight of divisions where bonuses were earned)²
+```
+
+A team that won three titles in Intermediate (weight 0.7) can gain at most
+`15 × 0.7² = 7.35` bonus points, while a team that earned its bonuses in
+Competitive (weight 1.0) can gain the full 15. This prevents a pile of soft-
+division titles from saturating the same ceiling as a strong-division record.
+
+If no title, runner-up, or playoff division is provided, the cap falls back to
+`15 × (current division weight)²`, so the limit is always tied to a real division.
 
 ## Data Flow
 
