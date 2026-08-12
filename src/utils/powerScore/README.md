@@ -105,6 +105,37 @@ that season's `power_score`, `sos` and `division_name`. Nothing you edit
 afterwards — a division, a weight, a team — can move a finished season. Use
 `admin_recompute_season_power(season_id)` for a deliberate repair.
 
+## Career Power Score
+
+Career score is a **different** number, computed client-side in
+`src/utils/career/calculateCareerPowerScore.ts`. It is not the season formula.
+
+```
+Career = weighted average of season Power Scores   (weighted by matches played)
+       + playoff bonuses                            (capped at +15)
+```
+
+Bonuses:
+
+| Bonus | Value |
+|---|---|
+| Championship | `7 × weight²` |
+| Runner-up | `4 × weight²` |
+| Playoff record over .500 | `(winRate − 0.5) × 4 × weight` |
+| Competitive playoff win | `+0.5` each |
+
+`weight` is the **live** `divisions.division_weight` of the division the result
+happened in — resolved in `src/utils/career/divisionBonusWeight.ts`, never
+hardcoded. Only the *name* mapping lives in code, because
+`team_season_stats.division_name` holds synthetic labels ("Intermediate 1",
+"Intermediate 2") that match no row in `divisions`.
+
+The title and runner-up bonuses are **squared** on purpose. The base career
+score already carries schedule strength through the season SOS term, so a
+linear bonus let a team that dominated a soft division out-earn a mid-pack
+Competitive team. Squaring keeps a Competitive title at full value while
+shrinking a soft-field title toward the schedule it was won against.
+
 ## Data Flow
 
 ```

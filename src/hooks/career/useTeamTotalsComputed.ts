@@ -129,6 +129,7 @@ const computeTeamTotals = async (teamId: string): Promise<TeamTotals | null> => 
     careerPlayoffLosses: playoffStats.career_playoff_losses,
     competitivePlayoffWins: playoffStats.competitive_playoff_wins,
     teamDivisionWeight,
+    playoffDivisions: playoff_finishes.map((finish) => finish.division_name),
     currentSeasonId,
   });
 

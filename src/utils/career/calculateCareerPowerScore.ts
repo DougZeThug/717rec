@@ -1,4 +1,7 @@
 import { CareerQueryService } from '@/services/career/CareerQueryService';
+import { fetchDivisionWeightsByName } from '@/utils/rankingUtils/divisionWeightsCache';
+
+import { averageDivisionBonusWeight, resolveDivisionBonusWeight } from './divisionBonusWeight';
 
 interface SeasonPowerScoreData {
   power_score: number | null;
@@ -21,6 +24,10 @@ interface CareerPowerScoreInput {
   careerPlayoffLosses: number;
   competitivePlayoffWins: number;
   teamDivisionWeight: number;
+  // Division names of the seasons the team actually reached the playoffs in.
+  // Used so an old playoff run is rated by the division it happened in,
+  // not by the division the team sits in today.
+  playoffDivisions?: string[];
   // Current season ID — used to exclude current season from team_season_stats
   // so it isn't double-counted with v_team_details data
   currentSeasonId?: string | null;
@@ -30,30 +37,12 @@ interface CareerPowerScoreInput {
 }
 
 /**
- * Gets championship weight based on division name.
- * Matches the 4 playoff division tiers.
- */
-const getChampionshipWeight = (divisionName: string): number => {
-  const name = divisionName.toLowerCase();
-  // Competitive playoff (weight 1.0)
-  if (name.includes('competitive')) return 1.0;
-  // Intermediate High playoff (weight 0.70)
-  if (name.includes('intermediate high') || name.includes('intermediate 1') || name === 'cuspers')
-    return 0.7;
-  // Intermediate Low playoff (weight 0.45)
-  if (
-    name.includes('intermediate low') ||
-    name.includes('intermediate 2') ||
-    name === 'intermediate'
-  )
-    return 0.45;
-  // Recreational (weight 0.25)
-  return 0.25;
-};
-
-/**
  * Calculates career power score as weighted average of season power scores + playoff bonuses.
  * Accepts optional pre-fetched data to skip DB queries when called in batch mode.
+ *
+ * Title and runner-up bonuses are scaled by the SQUARE of the live division
+ * weight, so a title won in a soft field cannot out-earn a strong record made
+ * against a hard schedule. Weights always come from the `divisions` table.
  */
 export const calculateCareerPowerScore = async ({
   teamId,
@@ -63,6 +52,7 @@ export const calculateCareerPowerScore = async ({
   careerPlayoffLosses,
   competitivePlayoffWins,
   teamDivisionWeight,
+  playoffDivisions,
   currentSeasonId,
   prefetchedSeasonStats,
   prefetchedCurrentTeamData,
@@ -128,22 +118,31 @@ export const calculateCareerPowerScore = async ({
   // Base career score is the weighted average (no division penalties applied)
   const baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 50;
 
-  // Calculate championship bonus - each scaled by its historical division weight
+  // Live division weights, keyed by name. Never hardcode these values.
+  const weightsByName = await fetchDivisionWeightsByName();
+
+  // Championship bonus — scaled by the SQUARED live weight of the division the
+  // title was actually won in, so soft-field titles cannot out-earn a hard schedule.
   let championshipBonus = 0;
   for (const divName of championshipDivisions) {
-    championshipBonus += 7 * getChampionshipWeight(divName);
+    const weight = resolveDivisionBonusWeight(divName, weightsByName);
+    championshipBonus += 7 * weight * weight;
   }
 
-  // Calculate runner-up bonus - each scaled by its historical division weight
+  // Runner-up bonus — same squared scaling
   let runnerUpBonus = 0;
   for (const divName of runnerUpDivisions) {
-    runnerUpBonus += 4 * getChampionshipWeight(divName);
+    const weight = resolveDivisionBonusWeight(divName, weightsByName);
+    runnerUpBonus += 4 * weight * weight;
   }
 
-  // Playoff performance bonus from playoff record (uses current division weight)
+  // Playoff performance bonus — rated by the divisions the playoff runs actually
+  // happened in, falling back to the team's current division weight.
+  const playoffWeight =
+    averageDivisionBonusWeight(playoffDivisions ?? [], weightsByName) ?? teamDivisionWeight;
   const totalPlayoffMatches = careerPlayoffWins + careerPlayoffLosses;
   const playoffWinRate = totalPlayoffMatches > 0 ? careerPlayoffWins / totalPlayoffMatches : 0;
-  const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4 * teamDivisionWeight);
+  const otherPlayoffBonus = Math.max(0, (playoffWinRate - 0.5) * 4 * playoffWeight);
 
   // Competitive playoff bonus: +0.5 for each win in competitive division playoffs
   const competitivePlayoffBonus = competitivePlayoffWins * 0.5;
