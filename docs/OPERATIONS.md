@@ -234,6 +234,11 @@ exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
 applied, so every bracket-creation insert failed with PGRST204 "Could not
 find the 'opponent1_position' column of 'match'".
 
+> **Applying the 2026-08 power-score rollout** (`20260811205000` –
+> `20260812140000`) has its own runbook, because it rewrites stored history and
+> ships a tested way back: **`docs/POWER_SCORE_ROLLOUT.md`**. Run the backup
+> migration first, and do not skip its verification output.
+
 ## 6a. Power-score unification: review, revert, reapply
 
 The power-score unification (migrations `20260809*`) put every page on one
