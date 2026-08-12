@@ -58,6 +58,89 @@ It captures three things:
 
 Then apply the remaining five, in order.
 
+### Lovable prompts
+
+Two prompts, deliberately separate. The backup is cheap, additive and changes no
+behaviour, so there is no reason to couple it to the risky part — and if it
+captured less than expected you want to know *before* the rollout runs, not
+after.
+
+**Prompt 1 — backup only:**
+
+```text
+Apply exactly one SQL migration to the database, using the file contents
+verbatim from the repo. Do not modify, reformat, or "improve" the SQL, and do
+not change any other file.
+
+  supabase/migrations/20260811205000_power_score_rollout_backup.sql
+
+This migration is backup-only: it creates three snapshot tables and changes no
+behaviour.
+
+When it finishes, report back:
+
+1. The exact NOTICE line it printed. It should look like:
+     power-score rollout backup: N stat rows, 15 object definitions captured
+
+2. The result of:
+     SELECT (SELECT count(*) FROM public.team_season_stats)                    AS live_rows,
+            (SELECT count(*) FROM public.team_season_stats_pre_power_rollout)  AS backup_rows,
+            (SELECT count(*) FROM public.power_score_rollout_ddl_backup)       AS ddl_rows;
+
+live_rows and backup_rows must match, and ddl_rows must be greater than zero.
+
+Do not apply any other migration. Stop after this one.
+```
+
+**Prompt 2 — the rollout, only once prompt 1 has been confirmed:**
+
+```text
+Apply these five SQL migrations to the database, in this exact order, using the
+file contents verbatim from the repo. Do not modify, reformat, or "improve" the
+SQL, and do not change any other file.
+
+  1. supabase/migrations/20260811210000_power_score_weighted_denominators.sql
+  2. supabase/migrations/20260812110000_fix_member_update_guard_is_hidden.sql
+  3. supabase/migrations/20260812120000_power_score_match_date.sql
+  4. supabase/migrations/20260812130000_power_score_historical_opponent_division.sql
+  5. supabase/migrations/20260812140000_power_score_formula_control_bypass.sql
+
+PREREQUISITE. 20260811205000_power_score_rollout_backup.sql must already have
+been applied. Check first:
+
+  SELECT count(*) FROM public.power_score_rollout_ddl_backup;
+
+If that errors or returns 0, STOP and report it. Do not apply anything.
+
+Notes:
+- These rewrite stored power scores across seasons. That is intended.
+- File 4 runs a data backfill and then installs a freeze on archived seasons.
+  The statement order inside that file is load-bearing: do not reorder it, split
+  it, or run parts of it separately.
+- Do not edit src/integrations/supabase/types.ts, any React component, or any
+  other application code.
+
+When all five are applied, report the output of both:
+
+  SELECT resolved_by, count(*)
+  FROM public.v_power_score_team_matches_rated
+  GROUP BY 1 ORDER BY 2 DESC;
+
+  SELECT t.name,
+         round(b.power_score, 1) AS before,
+         round(d.power_score, 1) AS after,
+         round(d.power_score - b.power_score, 1) AS delta
+  FROM public.team_details_pre_power_rollout b
+  JOIN public.v_team_details d ON d.team_id = b.team_id
+  JOIN public.teams t ON t.id = b.team_id
+  WHERE b.power_score IS NOT NULL
+  ORDER BY abs(d.power_score - b.power_score) DESC NULLS LAST
+  LIMIT 25;
+
+If 'unresolved' is a large share of the first result, say so explicitly rather
+than treating the rollout as finished.
+```
+
 ## 2. Verify
 
 **Coverage — run this first.** It shows which source answered for each match:
