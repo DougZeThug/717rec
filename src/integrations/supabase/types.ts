@@ -5482,6 +5482,7 @@ export type Database = {
         Row: {
           id: string | null
           loser_id: string | null
+          match_date: string | null
           season_id: string | null
           source: string | null
           team1_game_wins: number | null
@@ -5496,6 +5497,7 @@ export type Database = {
         Row: {
           id: string | null
           loser_id: string | null
+          match_date: string | null
           season_id: string | null
           source: string | null
           team1_game_wins: number | null
@@ -5512,6 +5514,7 @@ export type Database = {
           game_wins: number | null
           is_loss: boolean | null
           is_win: boolean | null
+          match_date: string | null
           match_id: string | null
           opponent_id: string | null
           season_id: string | null
