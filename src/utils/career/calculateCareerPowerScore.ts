@@ -151,9 +151,24 @@ export const calculateCareerPowerScore = async ({
   // Competitive playoff bonus: +0.5 for each win in competitive division playoffs
   const competitivePlayoffBonus = competitivePlayoffWins * 0.5;
 
-  // Total playoff bonus (capped at +15 points)
+  // Total bonus cap is scaled by the strongest division the team earned bonuses in.
+  // This prevents a pile of soft-division titles from reaching the same ceiling as
+  // a Competitive championship. If no bonus-qualifying divisions exist, fall back to
+  // the team's current division weight so the cap is still tied to a real division.
+  const bonusDivisionNames = [
+    ...championshipDivisions,
+    ...runnerUpDivisions,
+    ...(playoffDivisions ?? []),
+  ];
+  const maxBonusWeight =
+    bonusDivisionNames.length > 0
+      ? Math.max(...bonusDivisionNames.map((name) => resolveDivisionBonusWeight(name, weightsByName)))
+      : teamDivisionWeight;
+  const bonusCap = 15 * maxBonusWeight * maxBonusWeight;
+
+  // Total playoff bonus (capped by division strength)
   const totalPlayoffBonus = Math.min(
-    15,
+    bonusCap,
     championshipBonus + runnerUpBonus + otherPlayoffBonus + competitivePlayoffBonus
   );
 
