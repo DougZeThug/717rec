@@ -1,3 +1,5 @@
+import type { ToolContext } from '@lovable.dev/mcp-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Only the Supabase client construction and the season lookup are stubbed. The
@@ -29,6 +31,16 @@ interface QueryCalls {
   ilike: [string, string][];
 }
 
+/** The fake builder implements only the methods the handlers actually call. */
+function asClient(stub: object): SupabaseClient {
+  return stub as SupabaseClient;
+}
+
+/** Handlers use isAuthenticated/getToken only; the rest of ToolContext is irrelevant here. */
+function asCtx(stub: Partial<ToolContext>): ToolContext {
+  return stub as ToolContext;
+}
+
 /**
  * Minimal stand-in for the PostgREST builder. Only .order() resolves, matching
  * the real call shape: await supabase.from(t).select(s).eq(...).order(...).
@@ -52,12 +64,12 @@ function makeClient(rows: Row[], error: { message: string } | null = null) {
     },
   };
   return {
-    client: {
+    client: asClient({
       from(table: string) {
         calls.table = table;
         return builder;
       },
-    },
+    }),
     calls,
   };
 }
@@ -71,7 +83,9 @@ function parse(result: unknown) {
   return JSON.parse(textOf(result) ?? 'null');
 }
 
-const ctx = { isAuthenticated: () => true, getToken: () => 'tok' } as never;
+const AUTHED = asCtx({ isAuthenticated: () => true, getToken: () => 'tok' });
+const ANON = asCtx({ isAuthenticated: () => false });
+const NO_FILTER = { division: undefined };
 
 // A team whose cached division_name is stale: team_season_stats still says
 // Recreational, but the team has actually been moved to Hidden.
@@ -108,6 +122,11 @@ const VISIBLE_B: Row = {
   teams: { name: 'Bravo', divisions: { display_division: 'Competitive', name: 'Competitive Low' } },
 };
 
+const usePublicClient = (client: SupabaseClient) =>
+  vi.mocked(publicSupabase.anonClient).mockReturnValue(client);
+const useAuthedClient = (client: SupabaseClient) =>
+  vi.mocked(authedSupabase.userClient).mockReturnValue(client);
+
 beforeEach(() => {
   vi.mocked(publicSupabase.getActiveSeasonId).mockResolvedValue('season-1');
   vi.mocked(authedSupabase.getActiveSeasonId).mockResolvedValue('season-1');
@@ -116,9 +135,9 @@ beforeEach(() => {
 describe('public get_standings handler', () => {
   it('drops a team whose live division is Hidden even though the cached label is not', async () => {
     const { client } = makeClient([VISIBLE_A, STALE_HIDDEN, VISIBLE_B]);
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    const rows = parse(await publicGetStandings.handler({ division: undefined }, ctx));
+    const rows = parse(await publicGetStandings.handler(NO_FILTER, AUTHED));
 
     expect(rows.map((r: Row) => r.team_id)).toEqual(['a', 'b']);
     expect(rows.some((r: Row) => r.team_name === 'Dropped Out')).toBe(false);
@@ -128,18 +147,18 @@ describe('public get_standings handler', () => {
   // team would leave a gap and the list would read 1, 3.
   it('keeps ranks contiguous after filtering', async () => {
     const { client } = makeClient([VISIBLE_A, STALE_HIDDEN, VISIBLE_B]);
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    const rows = parse(await publicGetStandings.handler({ division: undefined }, ctx));
+    const rows = parse(await publicGetStandings.handler(NO_FILTER, AUTHED));
 
     expect(rows.map((r: Row) => r.rank)).toEqual([1, 2]);
   });
 
   it('does not leak the embedded join into the payload', async () => {
     const { client } = makeClient([VISIBLE_A]);
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    const rows = parse(await publicGetStandings.handler({ division: undefined }, ctx));
+    const rows = parse(await publicGetStandings.handler(NO_FILTER, AUTHED));
 
     expect(rows[0]).not.toHaveProperty('teams');
     expect(rows[0]).not.toHaveProperty('divisions');
@@ -148,9 +167,9 @@ describe('public get_standings handler', () => {
 
   it('passes a division filter through to the query', async () => {
     const { client, calls } = makeClient([VISIBLE_A]);
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    await publicGetStandings.handler({ division: 'Competitive' }, ctx);
+    await publicGetStandings.handler({ division: 'Competitive' }, AUTHED);
 
     expect(calls.ilike).toEqual([['division_name', 'Competitive']]);
   });
@@ -158,16 +177,16 @@ describe('public get_standings handler', () => {
   it('returns an empty list when there is no active season', async () => {
     vi.mocked(publicSupabase.getActiveSeasonId).mockResolvedValue(null);
     const { client } = makeClient([VISIBLE_A]);
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    expect(parse(await publicGetStandings.handler({ division: undefined }, ctx))).toEqual([]);
+    expect(parse(await publicGetStandings.handler(NO_FILTER, AUTHED))).toEqual([]);
   });
 
   it('surfaces a query error instead of returning rows', async () => {
     const { client } = makeClient([], { message: 'boom' });
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    const result = await publicGetStandings.handler({ division: undefined }, ctx);
+    const result = await publicGetStandings.handler(NO_FILTER, AUTHED);
 
     expect(result.isError).toBe(true);
     expect(textOf(result)).toBe('boom');
@@ -177,9 +196,9 @@ describe('public get_standings handler', () => {
 describe('public list_teams handler', () => {
   it('applies the same live-division filter', async () => {
     const { client } = makeClient([VISIBLE_A, STALE_HIDDEN]);
-    vi.mocked(publicSupabase.anonClient).mockReturnValue(client as never);
+    usePublicClient(client);
 
-    const rows = parse(await publicListTeams.handler({ division: undefined }, ctx));
+    const rows = parse(await publicListTeams.handler(NO_FILTER, AUTHED));
 
     expect(rows.map((r: Row) => r.team_id)).toEqual(['a']);
   });
@@ -187,26 +206,22 @@ describe('public list_teams handler', () => {
 
 describe('authenticated tools', () => {
   it('get_standings refuses an unauthenticated caller', async () => {
-    const result = await authedGetStandings.handler({ division: undefined }, {
-      isAuthenticated: () => false,
-    } as never);
+    const result = await authedGetStandings.handler(NO_FILTER, ANON);
 
     expect(result.isError).toBe(true);
   });
 
   it('list_teams refuses an unauthenticated caller', async () => {
-    const result = await authedListTeams.handler({ division: undefined }, {
-      isAuthenticated: () => false,
-    } as never);
+    const result = await authedListTeams.handler(NO_FILTER, ANON);
 
     expect(result.isError).toBe(true);
   });
 
   it('get_standings filters hidden teams for authenticated callers too', async () => {
     const { client } = makeClient([VISIBLE_A, STALE_HIDDEN]);
-    vi.mocked(authedSupabase.userClient).mockReturnValue(client as never);
+    useAuthedClient(client);
 
-    const rows = parse(await authedGetStandings.handler({ division: undefined }, ctx));
+    const rows = parse(await authedGetStandings.handler(NO_FILTER, AUTHED));
 
     expect(rows.map((r: Row) => r.team_id)).toEqual(['a']);
   });
@@ -218,17 +233,15 @@ describe('authenticated tools', () => {
 // notice, because the fixtures always supply the embed.
 describe('every standings query requests the division join', () => {
   it.each([
-    ['public get_standings', publicGetStandings, publicSupabase, 'anonClient'],
-    ['public list_teams', publicListTeams, publicSupabase, 'anonClient'],
-    ['authed get_standings', authedGetStandings, authedSupabase, 'userClient'],
-    ['authed list_teams', authedListTeams, authedSupabase, 'userClient'],
-  ] as const)('%s', async (_label, tool, mod, clientFn) => {
+    { label: 'public get_standings', tool: publicGetStandings, useClient: usePublicClient },
+    { label: 'public list_teams', tool: publicListTeams, useClient: usePublicClient },
+    { label: 'authed get_standings', tool: authedGetStandings, useClient: useAuthedClient },
+    { label: 'authed list_teams', tool: authedListTeams, useClient: useAuthedClient },
+  ])('$label', async ({ tool, useClient }) => {
     const { client, calls } = makeClient([]);
-    vi.mocked((mod as Record<string, unknown>)[clientFn] as () => unknown).mockReturnValue(
-      client as never
-    );
+    useClient(client);
 
-    await tool.handler({ division: undefined }, ctx);
+    await tool.handler(NO_FILTER, AUTHED);
 
     expect(calls.table).toBe('team_season_stats');
     expect(calls.select).toContain('divisions(name, display_division)');
