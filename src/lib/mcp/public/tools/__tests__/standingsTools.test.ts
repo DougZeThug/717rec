@@ -2,6 +2,16 @@ import type { ToolContext } from '@lovable.dev/mcp-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getActiveSeasonId as getAuthedSeasonId, userClient } from '../../../tools/_supabase';
+import authedGetStandings from '../../../tools/get-standings';
+import authedListTeams from '../../../tools/list-teams';
+import { anonClient, getActiveSeasonId as getPublicSeasonId } from '../_supabase';
+import publicGetStandings from '../get-standings';
+import publicListTeams from '../list-teams';
+
+// vi.mock is hoisted above the imports by Vitest, so declaring it here keeps the
+// imports together at the top.
+//
 // Only the Supabase client construction and the season lookup are stubbed. The
 // real isHiddenTeamRow / textResult / errorResult run, so these tests exercise
 // the handler wiring rather than a reimplementation of it.
@@ -15,13 +25,6 @@ vi.mock('../../../tools/_supabase', async (importOriginal) => ({
   userClient: vi.fn(),
   getActiveSeasonId: vi.fn(),
 }));
-
-import * as authedSupabase from '../../../tools/_supabase';
-import authedGetStandings from '../../../tools/get-standings';
-import authedListTeams from '../../../tools/list-teams';
-import * as publicSupabase from '../_supabase';
-import publicGetStandings from '../get-standings';
-import publicListTeams from '../list-teams';
 
 type Row = Record<string, unknown>;
 
@@ -122,14 +125,12 @@ const VISIBLE_B: Row = {
   teams: { name: 'Bravo', divisions: { display_division: 'Competitive', name: 'Competitive Low' } },
 };
 
-const usePublicClient = (client: SupabaseClient) =>
-  vi.mocked(publicSupabase.anonClient).mockReturnValue(client);
-const useAuthedClient = (client: SupabaseClient) =>
-  vi.mocked(authedSupabase.userClient).mockReturnValue(client);
+const usePublicClient = (client: SupabaseClient) => vi.mocked(anonClient).mockReturnValue(client);
+const useAuthedClient = (client: SupabaseClient) => vi.mocked(userClient).mockReturnValue(client);
 
 beforeEach(() => {
-  vi.mocked(publicSupabase.getActiveSeasonId).mockResolvedValue('season-1');
-  vi.mocked(authedSupabase.getActiveSeasonId).mockResolvedValue('season-1');
+  vi.mocked(getPublicSeasonId).mockResolvedValue('season-1');
+  vi.mocked(getAuthedSeasonId).mockResolvedValue('season-1');
 });
 
 describe('public get_standings handler', () => {
@@ -175,7 +176,7 @@ describe('public get_standings handler', () => {
   });
 
   it('returns an empty list when there is no active season', async () => {
-    vi.mocked(publicSupabase.getActiveSeasonId).mockResolvedValue(null);
+    vi.mocked(getPublicSeasonId).mockResolvedValue(null);
     const { client } = makeClient([VISIBLE_A]);
     usePublicClient(client);
 
