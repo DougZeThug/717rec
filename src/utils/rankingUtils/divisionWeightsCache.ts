@@ -11,6 +11,8 @@ type DivisionWeightsMap = Map<string, number>;
 
 let cachedWeights: DivisionWeightsMap | null = null;
 let cachePromise: Promise<DivisionWeightsMap> | null = null;
+let cachedWeightsByName: DivisionWeightsMap | null = null;
+let namePromise: Promise<DivisionWeightsMap> | null = null;
 
 const DEFAULT_DIVISION_WEIGHT = 0.85;
 
@@ -71,6 +73,42 @@ export const clearDivisionWeightsCache = () => {
   cacheLog('Division weights cache cleared');
   cachedWeights = null;
   cachePromise = null;
+  cachedWeightsByName = null;
+  namePromise = null;
+};
+
+/**
+ * Fetch division weights keyed by lowercased division NAME (with caching).
+ * Used where only a historical division name is available (career bonuses).
+ */
+export const fetchDivisionWeightsByName = (): Promise<DivisionWeightsMap> => {
+  if (cachedWeightsByName) return Promise.resolve(cachedWeightsByName);
+  if (namePromise) return namePromise;
+
+  namePromise = (async () => {
+    try {
+      const data = await DivisionService.fetchDivisionWeightsMap();
+
+      const weights = new Map<string, number>();
+      data.forEach((div) => {
+        if (!div.name) return;
+        weights.set(div.name.trim().toLowerCase(), div.division_weight ?? DEFAULT_DIVISION_WEIGHT);
+      });
+
+      if (weights.size > 0) {
+        cachedWeightsByName = weights;
+      } else {
+        namePromise = null;
+      }
+
+      return weights;
+    } catch (err) {
+      namePromise = null;
+      throw err;
+    }
+  })();
+
+  return namePromise;
 };
 
 /**
