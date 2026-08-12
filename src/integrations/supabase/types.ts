@@ -6906,7 +6906,10 @@ export type Database = {
             Returns: Json
           }
         | { Args: { team_id: string }; Returns: undefined }
-      upsert_team_season_stats: { Args: never; Returns: undefined }
+      upsert_team_season_stats: {
+        Args: { p_include_archived?: boolean }
+        Returns: undefined
+      }
       user_belongs_to_team: { Args: { p_team_id: string }; Returns: boolean }
       user_can_score_match: { Args: { p_match_id: string }; Returns: boolean }
       user_is_team_member: {
