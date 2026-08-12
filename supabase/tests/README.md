@@ -46,6 +46,34 @@ so a non-zero exit code means drift was detected.
   reset match is materialized but never played (must not tie both finalists at
   placement 1, and must not count toward any record), a BYE-only participant
   still receiving a placement, and idempotency on re-run.
+- `power_unification_admin.sql` — smoke coverage for the power-unification
+  admin controls: the applied → reverted → applied round trip, guard behavior on
+  a database without the unification, and admin/anon gating on all seven RPCs.
+- `power_score_weighted_denominators.sql` — pins the power score formula.
+  Asserts that `weighted_win_pct` and `weighted_game_win_pct` are true weighted
+  averages (a perfect team reads 1.0 on both whatever it played, so the old
+  `100 × average opponent weight` ceiling is gone), that strength of schedule
+  still separates identical records, that beating a stronger opponent is worth
+  more than beating a weaker one, and that Hidden-division matches are excluded
+  from the three weighted terms while still counting in the W-L record (the
+  exclusion is one-directional — a Hidden team keeps a rating of its own for
+  the admin surfaces that fetch it deliberately).
+- `power_score_historical_opponent_division.sql` — pins that an opponent is
+  rated by the division they were **actually in when the match was played**.
+  Reproduces the real defect (a team plays in Recreational, drops out, is moved
+  to Hidden) and asserts the match still rates at the Recreational weight via
+  the weekly snapshot. Also covers: every rated match resolving to a real
+  `divisions` row rather than a name, nothing ever resolving to a hidden or
+  weightless division, `Hidden2` being caught despite its positive weight,
+  division weights being versioned so a re-weight cannot move a past match,
+  archived seasons being frozen against routine recomputes while
+  `admin_recompute_season_power()` can still move them, and a coverage floor of
+  zero `unresolved` matches.
+- `member_team_update_guard.sql` — asserts an approved non-admin can rename
+  their own team but cannot change `division_id` or the win/loss counters.
+  Regression cover for `prevent_member_competitive_field_updates()`, which
+  referenced a `teams.is_hidden` column that never existed and therefore threw
+  on every non-admin team update.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

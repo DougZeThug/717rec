@@ -1,6 +1,8 @@
 # Power Score System
 
-The Power Score is 717REC's team ranking metric that combines win rate, game performance, and strength of schedule into a single normalized value.
+The Power Score is 717REC's team rating. It combines how often you win, how
+strong your opponents were, and how many individual games you take, into a
+single 0-100 number.
 
 ## Scale and Storage
 
@@ -12,38 +14,144 @@ The Power Score is 717REC's team ranking metric that combines win rate, game per
 
 The `normalizePowerScore()` utility handles conversion between these scales.
 
+`power_score` is **nullable**. The view returns `NULL` for a team that has not
+played a match, and for teams in the Hidden division. Always handle null —
+`formatPowerScore()` renders `—` for it.
+
 ## Calculation Formula
 
-Power Score is calculated by the `update_team_stats` RPC function in the database:
+There is exactly one definition, the `power_score_100()` SQL function:
 
 ```
-Power Score = (Win% × 0.4) + (Game Win% × 0.3) + (SOS × 0.3)
+Power Score = (weighted match win rate × 40)
+            + (strength of schedule     × 45)
+            + (weighted game win rate   × 15)
 ```
 
-Where:
-- **Win%**: Match win percentage (matches won / matches played)
-- **Game Win%**: Individual game win percentage across all matches
-- **SOS (Strength of Schedule)**: Average power score of opponents faced
+| Term | Meaning |
+|------|---------|
+| **Weighted match win rate** | `SUM(win × opponent division weight) / SUM(opponent division weight)`. A true weighted average on a 0-1 scale. Beating a strong opponent counts more than beating a weak one, but winning every match still reads as 1.0 whoever you played. |
+| **Strength of schedule (SOS)** | Average `division_weight` of the opponents faced, clamped to `[0.1, 1.0]`. This is the term that rewards a harder schedule. It is **not** the average power score of opponents. |
+| **Weighted game win rate** | `SUM(game wins × opponent weight) / SUM(total games × opponent weight)`. Same weighted-average shape as the match term. |
+
+### Division weights
+
+> **Never copy weight values into code, tests, or documentation.** `divisions`
+> is edited through the admin UI (`src/services/DivisionService.ts`), so it holds
+> rows and values no migration ever created. The values seeded in the migrations
+> are **not** the live ones. Always resolve a `division_id` and read
+> `divisions.division_weight`. The live table is the only source of truth, and
+> the admin Divisions screen is the place to see it.
+
+Weights are versioned in `division_weight_history`, written by a trigger on
+`divisions`. A match is rated with the weight that was in effect **on the match
+date**, so re-weighting a division no longer rewrites finished seasons. That
+history starts at the migration that introduced it — earlier weight edits were
+never recorded.
+
+No division carries weight `1.0`, so the SOS term caps below 45 points and a
+perfect team lands short of 100. The exact ceiling is
+`100 × (top division weight)` and moves if you re-weight.
+
+### Which division a team counts as
+
+An opponent is rated by the division they were in **when the match was played**,
+not the division they sit in today. This matters because there is no "withdrawn"
+flag: a team that drops out is moved to the `Hidden` division, which overwrites
+their real division with no history.
+
+`v_power_score_team_matches_rated` resolves this through a chain, and **every
+step returns a real `divisions.id`** — no step turns a division *name* into a
+weight. Names cannot be reversed: `division_name` has several writers with
+different meanings, and for a season with two brackets in one display division
+it holds synthetic strings like `'Intermediate 1'` that match no row in
+`divisions` at all.
+
+| Priority | Source | `resolved_by` |
+|---|---|---|
+| 1 | newest weekly snapshot at or before the match date | `snapshot_at_date` |
+| 2 | earliest snapshot that season | `snapshot_earliest_in_season` |
+| 3 | `team_details_archive.division_id`, cross-checked against `divisionname` | `archive_division_id` |
+| 4 | playoff bracket participation | `bracket_division_id` |
+| 5 | current `teams.division_id` | `current_division` |
+| 6 | last division ever observed for that team | `last_known_division` |
+| 7 | nothing resolves → dropped from the weighted terms only | `unresolved` |
+
+Hidden and weightless divisions are filtered out by `v_division_rateable`, so
+the chain can never resolve to one. Seasons listed in
+`division_archive_distrust` skip step 3.
+
+Coverage is inspectable:
+
+```sql
+SELECT resolved_by, count(*) FROM v_power_score_team_matches_rated GROUP BY 1;
+```
+
+**W-L records are never affected** — `matches_played`, `wins`, `losses`,
+`game_wins` and `game_losses` count every match, including unresolved ones.
+Only the three weighted terms filter.
+
+Keeping Hidden teams out of public listings is a separate, read-layer concern:
+the frontend skips them in `src/utils/teamGrouping.ts` and the MCP
+`get_standings` / `list_teams` tools skip them via `isHiddenDivision()`. A
+Hidden team still gets a rating of its own, because
+`useCareerRankingsWithHidden` and the admin power-migration comparison fetch
+them deliberately and expect a number.
+
+### Archived seasons are frozen
+
+Once `seasons.is_archived` is true, `upsert_team_season_stats()` stops updating
+that season's `power_score`, `sos` and `division_name`. Nothing you edit
+afterwards — a division, a weight, a team — can move a finished season. Use
+`admin_recompute_season_power(season_id)` for a deliberate repair.
 
 ## Data Flow
 
 ```
-Match Results → update_team_stats RPC → team_season_stats (0-1)
-                                              ↓
-                                    v_team_details view (0-100)
-                                              ↓
-                                    UI Components (displayed as 85.8)
+matches + playoff_matches
+        ↓
+v_power_score_match_source            (shared match set; byes excluded)
+        ↓
+v_power_score_team_matches            (one row per team per match, + match_date)
+        ↓
+v_power_score_team_matches_rated      (+ opponent division AS OF match_date,
+                                         its weight as of the same date,
+                                         and resolved_by)
+        ↓
+v_power_score_components              (weighted_win_pct, sos, weighted_game_win_pct)
+        ↓
+power_score_100()                     ← the only place the 40/45/15 weights live
+        ↓
+   ┌────┴─────────────────────┬──────────────────────────┐
+v_team_details (0-100)   v_team_season_agg (0-1)   get_season_team_power_scores
+   ↓                          ↓                          ↓
+Standings UI            team_season_stats          power_score_snapshots
+                        (History, Career)          (trends, movers)
 ```
+
+`upsert_team_season_stats()` copies `v_team_season_agg.power_score` into
+`team_season_stats`. It takes no season parameter — it re-derives every season
+on every call, so a formula change propagates broadly at once. **Archived
+seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
+(see above).
 
 ## Utilities in This Directory
 
 | File | Purpose |
 |------|---------|
 | `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales |
+| `formatPowerScore.ts` | Renders a score to 1 decimal, `—` when null |
 | `getTrendingTeams.ts` | Finds teams with biggest recent power score gains |
 
 ## Related Code
 
-- `src/integrations/supabase/types.ts` - Database type definitions
-- `v_team_details` view - Aggregates team stats with normalized power score
-- `update_team_stats` RPC - Core calculation logic (in database)
+- `src/utils/colors/powerScoreColors.ts` — color bands and the `stroke-*` ring
+  variant. Both share one set of thresholds (85/70/60/50/40/30/20).
+- `supabase/migrations/20260809120000_power_score_shared_match_source.sql` —
+  `power_score_100()` and the component views
+- `supabase/migrations/20260811210000_power_score_weighted_denominators.sql` —
+  weighted denominators
+- `supabase/migrations/20260812130000_power_score_historical_opponent_division.sql`
+  — the resolution chain, `division_weight_history`, and the archived-season
+  freeze
+- `src/integrations/supabase/types.ts` — auto-generated, never edit by hand

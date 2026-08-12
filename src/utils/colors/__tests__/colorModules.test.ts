@@ -18,6 +18,7 @@ import {
   getPowerScoreBorderColor,
   getPowerScoreColor,
   getPowerScoreDescription,
+  getPowerScoreRingColor,
 } from '../powerScoreColors';
 import { getSweepRateColor } from '../sweepRateColors';
 import { getTeamColor } from '../teamColors';
@@ -72,6 +73,7 @@ describe('color modules table-driven coverage', () => {
       border: 'border-gray-300 dark:border-gray-700',
       description: 'No Data',
       formatted: 'N/A',
+      ring: 'stroke-muted',
     },
     {
       score: 85,
@@ -80,6 +82,7 @@ describe('color modules table-driven coverage', () => {
       border: 'border-yellow-300 dark:border-yellow-700',
       description: 'Elite Performance',
       formatted: '85.0',
+      ring: 'stroke-yellow-500',
     },
     {
       score: 70,
@@ -88,6 +91,7 @@ describe('color modules table-driven coverage', () => {
       border: 'border-green-300 dark:border-green-700',
       description: 'Excellent',
       formatted: '70.0',
+      ring: 'stroke-green-500',
     },
     {
       score: 15,
@@ -96,13 +100,45 @@ describe('color modules table-driven coverage', () => {
       border: 'border-red-300 dark:border-red-700',
       description: 'Critical Performance',
       formatted: '15.0',
+      ring: 'stroke-red-500',
     },
-  ])('power score buckets for $score', ({ score, color, bg, border, description, formatted }) => {
-    expect(getPowerScoreColor(score)).toBe(color);
-    expect(getPowerScoreBackgroundColor(score)).toBe(bg);
-    expect(getPowerScoreBorderColor(score)).toBe(border);
-    expect(getPowerScoreDescription(score)).toBe(description);
-    expect(formatPowerScore(score)).toBe(formatted);
+  ])(
+    'power score buckets for $score',
+    ({ score, color, bg, border, description, formatted, ring }) => {
+      expect(getPowerScoreColor(score)).toBe(color);
+      expect(getPowerScoreBackgroundColor(score)).toBe(bg);
+      expect(getPowerScoreBorderColor(score)).toBe(border);
+      expect(getPowerScoreDescription(score)).toBe(description);
+      expect(formatPowerScore(score)).toBe(formatted);
+      expect(getPowerScoreRingColor(score)).toBe(ring);
+    }
+  );
+
+  // The gauge ring used to carry its own 75/60/45 thresholds while the number
+  // inside it used 85/70/60/50, so the two could disagree. They share bands now.
+  it.each([
+    { score: 90, ring: 'stroke-yellow-500' },
+    { score: 75, ring: 'stroke-green-500' },
+    { score: 65, ring: 'stroke-blue-500' },
+    { score: 55, ring: 'stroke-orange-500' },
+    { score: 45, ring: 'stroke-amber-500' },
+    { score: 35, ring: 'stroke-pink-500' },
+    { score: 25, ring: 'stroke-purple-500' },
+    { score: 10, ring: 'stroke-red-500' },
+  ])('ring colour tracks the text band at $score', ({ score, ring }) => {
+    expect(getPowerScoreRingColor(score)).toBe(ring);
+    // Both helpers must name the same hue for the same score.
+    const hue = ring.replace('stroke-', '').replace('-500', '');
+    expect(getPowerScoreColor(score)).toContain(hue);
+  });
+
+  it('treats undefined the same as null in both power score helpers', () => {
+    // Bound to a variable rather than passed as a literal: an inline `undefined`
+    // in the final argument position is flagged as redundant, but the point here
+    // is that a genuinely absent value is handled.
+    const absent: number | undefined = undefined;
+    expect(getPowerScoreRingColor(absent)).toBe('stroke-muted');
+    expect(formatPowerScore(absent)).toBe('N/A');
   });
 
   it.each([

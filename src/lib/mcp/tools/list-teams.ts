@@ -1,7 +1,13 @@
 import { defineTool } from '@lovable.dev/mcp-js';
 import { z } from 'zod';
 
-import { errorResult, getActiveSeasonId, textResult, userClient } from './_supabase';
+import {
+  errorResult,
+  getActiveSeasonId,
+  isHiddenTeamRow,
+  textResult,
+  userClient,
+} from './_supabase';
 
 export default defineTool({
   name: 'list_teams',
@@ -20,7 +26,9 @@ export default defineTool({
 
     let query = supabase
       .from('team_season_stats')
-      .select('team_id, division_name, match_wins, match_losses, power_score, teams(name)')
+      .select(
+        'team_id, division_name, match_wins, match_losses, power_score, teams(name, divisions(name, display_division))'
+      )
       .eq('season_id', seasonId);
     if (division) query = query.ilike('division_name', division);
     const { data, error } = await query.order('power_score', {
@@ -29,10 +37,12 @@ export default defineTool({
     });
     if (error) return errorResult(error.message);
 
-    const rows = (data ?? []).map((row) => {
-      const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
-      return { team_name: teams?.name ?? null, ...rest };
-    });
+    const rows = (data ?? [])
+      .filter((row) => !isHiddenTeamRow(row.division_name, row.teams))
+      .map((row) => {
+        const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
+        return { team_name: teams?.name ?? null, ...rest };
+      });
     return textResult(rows);
   },
 });
