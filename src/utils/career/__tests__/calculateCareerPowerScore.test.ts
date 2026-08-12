@@ -4,17 +4,18 @@ import { calculateCareerPowerScore } from '../calculateCareerPowerScore';
 
 // Live division weights come from the divisions table — mock the cache, not values in code.
 vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
-  fetchDivisionWeightsByName: vi.fn(async () =>
-    new Map<string, number>([
-      ['competitive', 1.0],
-      ['competitive low', 0.95],
-      ['cuspers', 0.9],
-      ['intermediate high', 0.8],
-      ['intermediate', 0.7],
-      ['intermediate low', 0.6],
-      ['recreational high', 0.6],
-      ['recreational', 0.35],
-    ])
+  fetchDivisionWeightsByName: vi.fn(
+    async () =>
+      new Map<string, number>([
+        ['competitive', 1.0],
+        ['competitive low', 0.95],
+        ['cuspers', 0.9],
+        ['intermediate high', 0.8],
+        ['intermediate', 0.7],
+        ['intermediate low', 0.6],
+        ['recreational high', 0.6],
+        ['recreational', 0.35],
+      ])
   ),
   getDefaultDivisionWeight: () => 0.85,
 }));
