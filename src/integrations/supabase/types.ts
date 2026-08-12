@@ -2699,6 +2699,27 @@ export type Database = {
           },
         ]
       }
+      power_score_rollout_ddl_backup: {
+        Row: {
+          captured_at: string
+          definition: string
+          object_name: string
+          object_type: string
+        }
+        Insert: {
+          captured_at?: string
+          definition: string
+          object_name: string
+          object_type: string
+        }
+        Update: {
+          captured_at?: string
+          definition?: string
+          object_name?: string
+          object_type?: string
+        }
+        Relationships: []
+      }
       power_score_snapshots: {
         Row: {
           created_at: string | null
@@ -4042,6 +4063,57 @@ export type Database = {
         }
         Relationships: []
       }
+      team_details_pre_power_rollout: {
+        Row: {
+          backed_up_at: string | null
+          divisionname: string | null
+          game_losses: number | null
+          game_win_percentage: number | null
+          game_wins: number | null
+          losses: number | null
+          name: string | null
+          power_score: number | null
+          sos: number | null
+          team_id: string | null
+          weighted_game_win_percentage: number | null
+          weighted_win_percentage: number | null
+          win_percentage: number | null
+          wins: number | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          divisionname?: string | null
+          game_losses?: number | null
+          game_win_percentage?: number | null
+          game_wins?: number | null
+          losses?: number | null
+          name?: string | null
+          power_score?: number | null
+          sos?: number | null
+          team_id?: string | null
+          weighted_game_win_percentage?: number | null
+          weighted_win_percentage?: number | null
+          win_percentage?: number | null
+          wins?: number | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          divisionname?: string | null
+          game_losses?: number | null
+          game_win_percentage?: number | null
+          game_wins?: number | null
+          losses?: number | null
+          name?: string | null
+          power_score?: number | null
+          sos?: number | null
+          team_id?: string | null
+          weighted_game_win_percentage?: number | null
+          weighted_win_percentage?: number | null
+          win_percentage?: number | null
+          wins?: number | null
+        }
+        Relationships: []
+      }
       team_memberships: {
         Row: {
           approved_at: string | null
@@ -4667,6 +4739,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      team_season_stats_pre_power_rollout: {
+        Row: {
+          backed_up_at: string | null
+          champion: boolean | null
+          division_name: string | null
+          game_losses: number | null
+          game_wins: number | null
+          match_losses: number | null
+          match_wins: number | null
+          playoff_rank: number | null
+          power_score: number | null
+          recorded_at: string | null
+          runner_up: boolean | null
+          season_id: string | null
+          sos: number | null
+          team_id: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          champion?: boolean | null
+          division_name?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          match_losses?: number | null
+          match_wins?: number | null
+          playoff_rank?: number | null
+          power_score?: number | null
+          recorded_at?: string | null
+          runner_up?: boolean | null
+          season_id?: string | null
+          sos?: number | null
+          team_id?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          champion?: boolean | null
+          division_name?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          match_losses?: number | null
+          match_wins?: number | null
+          playoff_rank?: number | null
+          power_score?: number | null
+          recorded_at?: string | null
+          runner_up?: boolean | null
+          season_id?: string | null
+          sos?: number | null
+          team_id?: string | null
+        }
+        Relationships: []
       }
       team_season_stats_pre_unification: {
         Row: {
