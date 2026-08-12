@@ -162,7 +162,9 @@ export const calculateCareerPowerScore = async ({
   ];
   const maxBonusWeight =
     bonusDivisionNames.length > 0
-      ? Math.max(...bonusDivisionNames.map((name) => resolveDivisionBonusWeight(name, weightsByName)))
+      ? Math.max(
+          ...bonusDivisionNames.map((name) => resolveDivisionBonusWeight(name, weightsByName))
+        )
       : teamDivisionWeight;
   const bonusCap = 15 * maxBonusWeight * maxBonusWeight;
 
