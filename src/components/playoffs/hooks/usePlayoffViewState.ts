@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
 
+import { useToast } from '@/hooks/useToast';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { bracketLog, errorLog } from '@/utils/logger';
 
@@ -17,6 +17,7 @@ export function usePlayoffViewState(
   const [teamDialogOpen, setTeamDialogOpen] = useState(false);
   const [deletingBracket, setDeletingBracket] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
 
   const handleCreateBracket = () => {
     bracketLog('usePlayoffViewState: Create bracket clicked, setting dialog open to true');
