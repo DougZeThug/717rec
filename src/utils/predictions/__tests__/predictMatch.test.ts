@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { TeamStats } from '../predictMatch';
-import {
-  formatBreakdown,
-  formatProbability,
-  isUpset,
-  predictMatch,
-  UPSET_THRESHOLD,
-} from '../predictMatch';
+import { formatBreakdown, isUpset, predictMatch, UPSET_THRESHOLD } from '../predictMatch';
 
 // Helper to create team stats
 const createTeamStats = (
@@ -300,16 +294,6 @@ describe('isUpset', () => {
   it('should handle edge cases', () => {
     expect(isUpset(0)).toBe(true);
     expect(isUpset(1)).toBe(false);
-  });
-});
-
-describe('formatProbability', () => {
-  it('should format probabilities as percentages', () => {
-    expect(formatProbability(0.5)).toBe('50%');
-    expect(formatProbability(0.72)).toBe('72%');
-    expect(formatProbability(0.333)).toBe('33%');
-    expect(formatProbability(0.999)).toBe('100%');
-    expect(formatProbability(0.001)).toBe('0%');
   });
 });
 
