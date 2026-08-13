@@ -6,6 +6,7 @@ import { errorLog, scoreLog } from '@/utils/logger';
 
 interface CachedMatchSnapshot {
   matchId: string;
+  bracketId: string;
   team1Score: number | null;
   team2Score: number | null;
   winnerId: string | null;
@@ -68,51 +69,54 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
   const rollback = useCallback(
     (matchId: string) => {
       const snapshot = snapshotsRef.current.get(matchId);
-      if (!bracketId || !snapshot) return;
+      if (!snapshot) return;
 
       // A rolled-back save is settled: drop its pending timer so it cannot fire a
       // second, spurious "Update Timeout" toast 15s later.
       clearRollbackTimeout(matchId);
       scoreLog('Rolling back score update', snapshot);
 
-      queryClient.setQueryData<BracketCacheData>(['bracket-data', bracketId], (oldData) => {
-        if (!oldData?.matches) return oldData;
+      queryClient.setQueryData<BracketCacheData>(
+        ['bracket-data', snapshot.bracketId],
+        (oldData) => {
+          if (!oldData?.matches) return oldData;
 
-        return {
-          ...oldData,
-          matches: oldData.matches.map((match) => {
-            const isMatch = matchIdMatches(match.id, snapshot.matchId);
-            if (!isMatch) return match;
+          return {
+            ...oldData,
+            matches: oldData.matches.map((match) => {
+              const isMatch = matchIdMatches(match.id, snapshot.matchId);
+              if (!isMatch) return match;
 
-            if ('opponent1_score' in match || 'opponent1_id' in match) {
-              return {
-                ...match,
-                opponent1_score: snapshot.team1Score,
-                opponent2_score: snapshot.team2Score,
-                status: snapshot.status,
-              };
-            } else {
-              return {
-                ...match,
-                team1Score: snapshot.team1Score,
-                team2Score: snapshot.team2Score,
-                team1_score: snapshot.team1Score,
-                team2_score: snapshot.team2Score,
-                winnerId: snapshot.winnerId,
-                winner_id: snapshot.winnerId,
-                status: snapshot.status,
-              };
-            }
-          }),
-        };
-      });
+              if ('opponent1_score' in match || 'opponent1_id' in match) {
+                return {
+                  ...match,
+                  opponent1_score: snapshot.team1Score,
+                  opponent2_score: snapshot.team2Score,
+                  status: snapshot.status,
+                };
+              } else {
+                return {
+                  ...match,
+                  team1Score: snapshot.team1Score,
+                  team2Score: snapshot.team2Score,
+                  team1_score: snapshot.team1Score,
+                  team2_score: snapshot.team2Score,
+                  winnerId: snapshot.winnerId,
+                  winner_id: snapshot.winnerId,
+                  status: snapshot.status,
+                };
+              }
+            }),
+          };
+        }
+      );
 
       snapshotsRef.current.delete(matchId);
 
       // Force refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
+      queryClient.invalidateQueries({ queryKey: ['bracket-data', snapshot.bracketId] });
     },
-    [bracketId, queryClient, clearRollbackTimeout]
+    [queryClient, clearRollbackTimeout]
   );
 
   // Lets the unmount cleanup below reach the current rollback without re-running
@@ -181,6 +185,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         if (currentMatch) {
           snapshotsRef.current.set(matchId, {
             matchId,
+            bracketId,
             team1Score: currentMatch.opponent1_score ?? currentMatch.team1Score ?? null,
             team2Score: currentMatch.opponent2_score ?? currentMatch.team2Score ?? null,
             winnerId: currentMatch.winner_id ?? currentMatch.winnerId ?? null,
