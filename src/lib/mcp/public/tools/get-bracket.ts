@@ -55,23 +55,48 @@ export default defineTool({
     if (participants.error) return errorResult(participants.error.message);
 
     const stageIds = (stages.data ?? []).map((s) => s.id);
-    let roundRows: { data: typeof roundRowsT | null; error: { message: string } | null } = { data: [], error: null };
-    let matchRows: { data: typeof matchRowsT | null; error: { message: string } | null } = { data: [], error: null };
 
-    if (stageIds.length > 0) {
-      [roundRows, matchRows] = await Promise.all([
-        supabase
-          .from('round')
-          .select('id, name, number, stage_id, group_id')
-          .in('stage_id', stageIds),
-        supabase
-          .from('match')
-          .select(
-            'id, number, stage_id, group_id, round_id, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
-          )
-          .in('stage_id', stageIds),
-      ]);
-    }
+    const emptyResult = <T>(): { data: T[]; error: null } => ({ data: [], error: null });
+
+    const [roundRows, matchRows] = await Promise.all([
+      stageIds.length > 0
+        ? supabase
+            .from('round')
+            .select('id, name, number, stage_id, group_id')
+            .in('stage_id', stageIds)
+        : Promise.resolve(
+            emptyResult<{
+              id: number;
+              name: string | null;
+              number: number;
+              stage_id: number;
+              group_id: number;
+            }>()
+          ),
+      stageIds.length > 0
+        ? supabase
+            .from('match')
+            .select(
+              'id, number, stage_id, group_id, round_id, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
+            )
+            .in('stage_id', stageIds)
+        : Promise.resolve(
+            emptyResult<{
+              id: number;
+              number: number;
+              stage_id: number;
+              group_id: number;
+              round_id: number;
+              status: number;
+              opponent1_id: number | null;
+              opponent1_score: number | null;
+              opponent1_result: string | null;
+              opponent2_id: number | null;
+              opponent2_score: number | null;
+              opponent2_result: string | null;
+            }>()
+          ),
+    ]);
     if (roundRows.error) return errorResult(roundRows.error.message);
     if (matchRows.error) return errorResult(matchRows.error.message);
 
