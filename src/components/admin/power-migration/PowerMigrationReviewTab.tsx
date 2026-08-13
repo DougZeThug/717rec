@@ -281,11 +281,13 @@ const PowerMigrationReviewTab: React.FC = () => {
 
   const runConfirmedAction = async () => {
     const action = confirmAction;
-    setConfirmAction(null);
     if (!action) return;
+
+    setIsFlipping(true);
     try {
       const result = action === 'revert' ? await revert.mutateAsync() : await reapply.mutateAsync();
       const wasNoOp = result === 'already_reverted' || result === 'already_applied';
+      setConfirmAction(null); // close only after success
       toast({
         title: wasNoOp
           ? 'Nothing to do'
@@ -302,6 +304,9 @@ const PowerMigrationReviewTab: React.FC = () => {
         description: err instanceof Error ? err.message : 'Unknown error',
         variant: 'destructive',
       });
+      // keep dialog open on error so the user sees the failure in context
+    } finally {
+      setIsFlipping(false);
     }
   };
 
