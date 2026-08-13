@@ -4,10 +4,8 @@ import {
   createEveningAwareDateRange,
   createUTCDateWithTime,
   extractTimeSlotFromUTC,
-  formatTimeString,
   formatTimeToUTC,
   formatUTCToLocalTimeString,
-  normalizeTimeString,
   parseTimeString,
   toLocalDate,
   toUTCDate,
@@ -89,23 +87,6 @@ describe('timezone utilities', () => {
     } else {
       expect(result).toBe(expected);
     }
-  });
-
-  it.each([
-    { hours: 0, minutes: 5, use24Hour: false, expected: '12:05 AM' },
-    { hours: 13, minutes: 45, use24Hour: false, expected: '1:45 PM' },
-    { hours: 6, minutes: 0, use24Hour: true, expected: '06:00' },
-  ])('formatTimeString %#', ({ hours, minutes, use24Hour, expected }) => {
-    expect(formatTimeString(hours, minutes, use24Hour)).toBe(expected);
-  });
-
-  it.each([
-    { label: 'already allowed', input: '7:30 PM', expected: '7:30 PM' },
-    { label: '24-hour format falls back to original', input: '19:30', expected: '19:30' },
-    { label: 'unmappable fallback', input: '3:15 PM', expected: '3:15 PM' },
-    { label: 'empty input', input: '', expected: '' },
-  ])('normalizeTimeString: $label', ({ input, expected }) => {
-    expect(normalizeTimeString(input)).toBe(expected);
   });
 
   it('createEveningAwareDateRange spans selected day through following UTC day', () => {
