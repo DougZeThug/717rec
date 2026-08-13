@@ -21,10 +21,7 @@ const FinalStandingsSkeleton: React.FC = () => {
       <CardContent>
         <div className="space-y-2">
           {[1, 2, 3].map((placement) => (
-            <div
-              key={placement}
-              className="flex items-center gap-3 p-3 rounded-lg border"
-            >
+            <div key={placement} className="flex items-center gap-3 p-3 rounded-lg border">
               {/* Placement number */}
               <ShimmerSkeleton className="w-6 h-6 shrink-0" />
               {/* Placement icon */}
