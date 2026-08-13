@@ -163,38 +163,6 @@ export const TimeslotQueryService = {
   },
 
   /**
-   * Fetch team timeslots for a given date and timeslot (used by autoScheduleUtils)
-   */
-  async fetchTeamsByTimeslot(formattedDate: string, timeslot: string) {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .select(
-        `
-        team_id,
-        teams:team_id (
-          id,
-          name,
-          logo_url,
-          image_url,
-          division_id,
-          divisionName:divisions(name),
-          wins,
-          losses,
-          game_wins,
-          game_losses,
-          sos,
-          power_score
-        )
-      `
-      )
-      .eq('match_date', formattedDate)
-      .eq('timeslot', timeslot);
-
-    if (error) handleDatabaseError(error, 'Failed to fetch teams by timeslot');
-    return data ?? [];
-  },
-
-  /**
    * Fetch timeslot assignments for validation (used by teamLoaderUtils.validateTeamBackToBackAssignment)
    */
   async fetchTimeslotValidation(

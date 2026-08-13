@@ -72,14 +72,6 @@ const selectEqInEqChain = (result: { data: unknown; error: unknown }) => ({
   }),
 });
 
-const selectEqEqChain = (result: { data: unknown; error: unknown }) => ({
-  select: () => ({
-    eq: () => ({
-      eq: () => Promise.resolve(result),
-    }),
-  }),
-});
-
 // ─── fetchByDate ──────────────────────────────────────────────────────────────
 
 describe('TimeslotQueryService.fetchByDate', () => {
@@ -221,33 +213,6 @@ describe('TimeslotQueryService.fetchTimeslotsForPair', () => {
     mockFrom.mockReturnValue(selectEqInEqChain({ data: null, error: pgError() }));
     await expect(
       TimeslotQueryService.fetchTimeslotsForPair('2026-04-17', '6:30 PM', '7:00 PM')
-    ).rejects.toThrow(DatabaseError);
-  });
-});
-
-// ─── fetchTeamsByTimeslot ─────────────────────────────────────────────────────
-
-describe('TimeslotQueryService.fetchTeamsByTimeslot', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns rows for the given timeslot', async () => {
-    mockFrom.mockReturnValue(
-      selectEqEqChain({ data: [{ team_id: 'team-1', teams: null }], error: null })
-    );
-    const result = await TimeslotQueryService.fetchTeamsByTimeslot('2026-04-17', '6:30 PM');
-    expect(result).toHaveLength(1);
-  });
-
-  it('returns empty array when no rows', async () => {
-    mockFrom.mockReturnValue(selectEqEqChain({ data: null, error: null }));
-    const result = await TimeslotQueryService.fetchTeamsByTimeslot('2026-04-17', '6:30 PM');
-    expect(result).toEqual([]);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(selectEqEqChain({ data: null, error: pgError() }));
-    await expect(
-      TimeslotQueryService.fetchTeamsByTimeslot('2026-04-17', '6:30 PM')
     ).rejects.toThrow(DatabaseError);
   });
 });
