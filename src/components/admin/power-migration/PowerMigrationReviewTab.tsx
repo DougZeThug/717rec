@@ -181,33 +181,48 @@ const FlipDialogBody: React.FC<{ action: FlipAction }> = ({ action }) => (
 
 interface ConfirmFlipDialogProps {
   action: FlipAction;
+  isFlipping: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
 
 /** Confirmation gate in front of the revert/re-apply mutations. */
-const ConfirmFlipDialog: React.FC<ConfirmFlipDialogProps> = ({ action, onClose, onConfirm }) => (
-  <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>
-          {action === 'revert'
-            ? 'Go back to the old power scores?'
-            : 'Apply the new unified power scores?'}
-        </AlertDialogTitle>
-        <AlertDialogDescription className="space-y-2">
-          <FlipDialogBody action={action} />
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction onClick={onConfirm}>
-          {action === 'revert' ? 'Revert' : 'Re-apply'}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
+const ConfirmFlipDialog: React.FC<ConfirmFlipDialogProps> = ({
+  action,
+  isFlipping,
+  onClose,
+  onConfirm,
+}) => {
+  const label = action === 'revert' ? 'Revert' : 'Re-apply';
+  return (
+    <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {action === 'revert'
+              ? 'Go back to the old power scores?'
+              : 'Apply the new unified power scores?'}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2">
+            <FlipDialogBody action={action} />
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isFlipping}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              onConfirm();
+            }}
+            disabled={isFlipping}
+          >
+            {isFlipping ? 'Processing…' : label}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
 
 interface FlipActionsProps {
   status: PowerMigrationStatus;
@@ -256,8 +271,9 @@ const PowerMigrationReviewTab: React.FC = () => {
   const revert = useRevertPowerMigration();
   const reapply = useReapplyPowerMigration();
   const [confirmAction, setConfirmAction] = useState<FlipAction>(null);
+  const [isFlipping, setIsFlipping] = useState(false);
 
-  const isBusy = revert.isPending || reapply.isPending;
+  const isBusy = revert.isPending || reapply.isPending || isFlipping;
   const notApplied =
     status !== undefined &&
     (status.status === 'controls_missing' || status.status === 'not_applied');
@@ -265,11 +281,13 @@ const PowerMigrationReviewTab: React.FC = () => {
 
   const runConfirmedAction = async () => {
     const action = confirmAction;
-    setConfirmAction(null);
     if (!action) return;
+
+    setIsFlipping(true);
     try {
       const result = action === 'revert' ? await revert.mutateAsync() : await reapply.mutateAsync();
       const wasNoOp = result === 'already_reverted' || result === 'already_applied';
+      setConfirmAction(null); // close only after success
       toast({
         title: wasNoOp
           ? 'Nothing to do'
@@ -286,6 +304,9 @@ const PowerMigrationReviewTab: React.FC = () => {
         description: err instanceof Error ? err.message : 'Unknown error',
         variant: 'destructive',
       });
+      // keep dialog open on error so the user sees the failure in context
+    } finally {
+      setIsFlipping(false);
     }
   };
 
@@ -325,6 +346,7 @@ const PowerMigrationReviewTab: React.FC = () => {
 
         <ConfirmFlipDialog
           action={confirmAction}
+          isFlipping={isFlipping}
           onClose={() => setConfirmAction(null)}
           onConfirm={runConfirmedAction}
         />

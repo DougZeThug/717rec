@@ -173,6 +173,39 @@ describe('PowerMigrationReviewTab', () => {
     await waitFor(() => expect(revertMutation.mutateAsync).toHaveBeenCalledTimes(1));
   });
 
+  it('keeps the dialog open and shows a loading state while revert runs', async () => {
+    let resolveMutation: (value: string) => void = () => {};
+    const revertMutation = mutationResult({
+      mutateAsync: vi.fn(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveMutation = resolve;
+          })
+      ),
+    });
+    mockStatus.mockReturnValue(queryResult({ data: appliedStatus }));
+    mockComparison.mockReturnValue(
+      queryResult({ data: { backedUpAt: appliedStatus.backedUpAt, rows: comparisonRows } })
+    );
+    mockRevert.mockReturnValue(revertMutation);
+    render(<PowerMigrationReviewTab />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /revert to old scores/i }));
+    const dialog = await screen.findByRole('alertdialog');
+    const confirmButton = within(dialog).getByRole('button', { name: /^revert$/i });
+
+    await user.click(confirmButton);
+    await waitFor(() => expect(revertMutation.mutateAsync).toHaveBeenCalledTimes(1));
+
+    expect(dialog).toBeInTheDocument();
+    expect(confirmButton).toBeDisabled();
+    expect(confirmButton).toHaveTextContent(/processing/i);
+
+    resolveMutation('reverted');
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  });
+
   it('offers re-apply when reverted, hiding the old-vs-old comparison', async () => {
     const reapplyMutation = mutationResult({
       mutateAsync: vi.fn().mockResolvedValue('applied'),
