@@ -346,6 +346,7 @@ const PowerMigrationReviewTab: React.FC = () => {
 
         <ConfirmFlipDialog
           action={confirmAction}
+          isFlipping={isFlipping}
           onClose={() => setConfirmAction(null)}
           onConfirm={runConfirmedAction}
         />
