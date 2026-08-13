@@ -195,7 +195,10 @@ seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
 ## Related Code
 
 - `src/utils/colors/powerScoreColors.ts` — color bands and the `stroke-*` ring
-  variant. Both share one set of thresholds (85/70/60/50/40/30/20).
+  variant. Both share one set of thresholds (85/70/60/50/40/30/20). The bands
+  did not need to change when the floor was lowered; they already cover the full
+  0-100 range and now bottom-tier teams will simply fall into the red/purple
+  bands they previously could not reach.
 - `supabase/migrations/20260809120000_power_score_shared_match_source.sql` —
   `power_score_100()` and the component views
 - `supabase/migrations/20260811210000_power_score_weighted_denominators.sql` —
@@ -203,4 +206,6 @@ seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
 - `supabase/migrations/20260812130000_power_score_historical_opponent_division.sql`
   — the resolution chain, `division_weight_history`, and the archived-season
   freeze
+- `supabase/migrations/20260813000000_earned_schedule_power_score.sql` — the
+  earned-schedule floor adjustment (this change)
 - `src/integrations/supabase/types.ts` — auto-generated, never edit by hand
