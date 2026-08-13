@@ -266,20 +266,6 @@ export const captureMessage = (
 };
 
 /**
- * Set user context for error tracking
- */
-export const setUser = (user: { id: string; email?: string; username?: string } | null) => {
-  Sentry.setUser(user);
-};
-
-/**
- * Add breadcrumb for debugging
- */
-export const addBreadcrumb = (breadcrumb: Sentry.Breadcrumb) => {
-  Sentry.addBreadcrumb(breadcrumb);
-};
-
-/**
  * Thin metrics helpers — wraps Sentry.metrics for convenience.
  * Metrics only fire in production (guarded by the Sentry client's 'enabled' flag).
  */
