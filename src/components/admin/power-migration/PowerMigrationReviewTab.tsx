@@ -181,33 +181,48 @@ const FlipDialogBody: React.FC<{ action: FlipAction }> = ({ action }) => (
 
 interface ConfirmFlipDialogProps {
   action: FlipAction;
+  isFlipping: boolean;
   onClose: () => void;
   onConfirm: () => void;
 }
 
 /** Confirmation gate in front of the revert/re-apply mutations. */
-const ConfirmFlipDialog: React.FC<ConfirmFlipDialogProps> = ({ action, onClose, onConfirm }) => (
-  <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>
-          {action === 'revert'
-            ? 'Go back to the old power scores?'
-            : 'Apply the new unified power scores?'}
-        </AlertDialogTitle>
-        <AlertDialogDescription className="space-y-2">
-          <FlipDialogBody action={action} />
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>Cancel</AlertDialogCancel>
-        <AlertDialogAction onClick={onConfirm}>
-          {action === 'revert' ? 'Revert' : 'Re-apply'}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
+const ConfirmFlipDialog: React.FC<ConfirmFlipDialogProps> = ({
+  action,
+  isFlipping,
+  onClose,
+  onConfirm,
+}) => {
+  const label = action === 'revert' ? 'Revert' : 'Re-apply';
+  return (
+    <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {action === 'revert'
+              ? 'Go back to the old power scores?'
+              : 'Apply the new unified power scores?'}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2">
+            <FlipDialogBody action={action} />
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isFlipping}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              onConfirm();
+            }}
+            disabled={isFlipping}
+          >
+            {isFlipping ? 'Processing…' : label}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
 
 interface FlipActionsProps {
   status: PowerMigrationStatus;
