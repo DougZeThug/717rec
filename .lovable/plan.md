@@ -2,26 +2,34 @@
 
 ## The problem
 
-Today every team gets **45 free points** for strength of schedule, no matter how they play.
 The Great Cornholios win 21% of their matches and still collect about 29 of those 45 points, so they
 land at 41.6 PWR — right next to teams with a far better record. Strength of schedule is meant to be
 45% of the rating, not 45 free points for showing up.
+
+## How "performance" is measured
+
+"Performance" is a 0-to-1 blend of the two parts of the score that come from actual wins:
+
+```text
+performance = (40 x match win rate + 15 x game win rate) / 55
+```
+
+A .500 team with a normal game win rate is at 0.50. The Cornholios, at 21% match wins and 21% game wins,
+sit around 0.21. The threshold is set at 0.30, so teams clearly below 30% of the possible win performance
+lose some of their schedule credit, but teams above 30% keep it all.
 
 ## The fix
 
 Make the schedule points **earned**, not free.
 
-- Match win rate (40 points) and game win rate (15 points) stay exactly as they are.
-- The 45 schedule points get multiplied by how much of those 55 performance points the team earned,
-  but the multiplier tops out early so only the bottom is affected.
-- Any team at or above **35% performance keeps the full 45 points** — everyone from mid-table up is
-  unchanged, or moves less than a point.
-- Below that line the schedule credit shrinks in proportion. A team with a godawful record no longer
-  gets a free 29 points for playing a normal schedule.
+Match win rate (40 points) and game win rate (15 points) stay exactly as they are. The 45 schedule points
+are multiplied by a schedule credit. The schedule credit is 1.0 for any team at or above 30% performance,
+and it shrinks proportionally below that. Teams above 30% are unchanged. Teams with a terrible record lose
+the free schedule points.
 
 ```text
 performance    = (40 x match win rate + 15 x game win rate) / 55
-schedule credit= min(1, performance / 0.35)
+schedule credit= min(1, performance / 0.30)
 Power Score    = 40 x match win rate
                + 15 x game win rate
                + 45 x SOS x schedule credit
@@ -31,24 +39,23 @@ Power Score    = 40 x match win rate
 
 | Team | Now | After |
 |---|---|---|
-| Team | Now | After |
-|---|---|---|
 | Cuzzo's Clinic | 86.7 | 86.7 |
 | Jager Bombers | 78.1 | 78.1 |
-| Pepperoni Cheesers | 69.5 | 69.5 |
-| Buttery Nips | 64.5 | 64.3 |
+| Pepperoni Cheesers | 69.6 | 69.6 |
+| Buttery Nips | 64.9 | 64.9 |
 | Zoo Pals | 62.1 | 62.1 |
 | Miracle @ Marion | 59.3 | 59.3 |
-| Here for Fireball | 46.1 | 42.9 |
-| Jerm | 42.0 | 30.2 |
-| Killa Queens | 41.3 | 32.6 |
-| The Great Cornholios | 41.6 | 29.5 |
-| Corn Kitties | 34.3 | 17.3 |
-| Smacked | 29.6 | 11.0 |
+| Here for Fireball | 46.1 | 43.9 |
+| The Cornholy Trinity | 47.3 | 47.0 |
+| Jerm | 42.2 | 30.9 |
+| Killa Queens | 42.0 | 35.1 |
+| The Great Cornholios | 43.3 | 37.1 |
+| Corn Kitties | 34.2 | 18.4 |
+| Smacked | 29.6 | 12.0 |
 
-Everything from mid-table up is unchanged or within a point. The bottom stops sitting in a
-30-45 cluster next to decent teams and spreads out from about 10 to 30.
-A hard schedule still helps — it just no longer carries a team that never wins.
+Teams above the 30% performance line are unchanged or within a point. The worst teams drop from a 30-45
+cluster to a real 10-35 range, with the very bottom falling below 20. A hard schedule still helps — it just
+no longer carries a team that never wins.
 
 ## Technical changes
 
