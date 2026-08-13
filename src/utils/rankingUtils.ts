@@ -1,6 +1,5 @@
 import { Ranking } from '@/types';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
-import { errorLog, warnLog } from '@/utils/logger';
 
 const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
   if (powerScore === null || powerScore === undefined) return null;
@@ -106,92 +105,4 @@ export const updateRankChanges = (rankings: Ranking[]): Ranking[] => {
       rankChange,
     };
   });
-};
-
-export const saveRankingsToStorage = async (
-  rankings: Ranking[],
-  seasonId?: string,
-  options: { persistToDatabase?: boolean } = {}
-): Promise<void> => {
-  // Default to true to preserve existing behavior for callers that don't pass
-  // the option. Admin-gated callers (e.g. useTeamRankings) pass 'false' for
-  // non-admins so we don't trip RLS on 'ranking_snapshots'.
-  const { persistToDatabase = true } = options;
-
-  try {
-    if (persistToDatabase) {
-      // Import database service dynamically to avoid circular dependencies
-      const { saveRankingsToDatabase } =
-        await import('@/services/rankings/RankingPersistenceService');
-      try {
-        await saveRankingsToDatabase(rankings, seasonId);
-      } catch (error) {
-        warnLog('Database save failed, falling back to localStorage:', error);
-      }
-    }
-
-    // Also save to localStorage as a backup
-    const rankingMap = rankings.reduce(
-      (acc, ranking, index) => {
-        acc[ranking.teamId] = index + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-
-    localStorage.setItem('previousRankings', JSON.stringify(rankingMap));
-    localStorage.setItem('rankingsLastUpdated', new Date().toISOString());
-  } catch (error) {
-    errorLog('Failed to save rankings to storage:', error);
-  }
-};
-
-export const loadRankingsFromStorage = async (
-  seasonId?: string
-): Promise<{
-  rankings: Record<string, number>;
-  lastUpdated: string | null;
-}> => {
-  // Import database service dynamically to avoid circular dependencies
-  const { loadRankingsFromDatabase, migrateLocalStorageToDatabase } =
-    await import('@/services/rankings/RankingPersistenceService');
-
-  try {
-    // Try to load from database first for the specified season (or active season)
-    const dbRankings = await loadRankingsFromDatabase(seasonId);
-
-    // If database has rankings, use them
-    if (Object.keys(dbRankings).length > 0) {
-      return { rankings: dbRankings, lastUpdated: new Date().toISOString() };
-    }
-
-    // If database is empty, try to migrate from localStorage
-    const localRankings = localStorage.getItem('previousRankings');
-    if (localRankings) {
-      // Attempt migration
-      await migrateLocalStorageToDatabase();
-
-      // Try loading from database again after migration
-      const migratedRankings = await loadRankingsFromDatabase(seasonId);
-      if (Object.keys(migratedRankings).length > 0) {
-        return { rankings: migratedRankings, lastUpdated: new Date().toISOString() };
-      }
-    }
-
-    // Fallback to localStorage if all else fails
-    const rankings = JSON.parse(localStorage.getItem('previousRankings') || '{}');
-    const lastUpdated = localStorage.getItem('rankingsLastUpdated');
-    return { rankings, lastUpdated };
-  } catch (error) {
-    errorLog('Failed to load rankings from storage:', error);
-
-    // Final fallback to localStorage
-    try {
-      const rankings = JSON.parse(localStorage.getItem('previousRankings') || '{}');
-      const lastUpdated = localStorage.getItem('rankingsLastUpdated');
-      return { rankings, lastUpdated };
-    } catch {
-      return { rankings: {}, lastUpdated: null };
-    }
-  }
 };
