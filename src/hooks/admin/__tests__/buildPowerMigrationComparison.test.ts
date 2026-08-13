@@ -1,4 +1,32 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Live division weights come from the DB — mock the cache so tests stay offline.
+vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+  fetchDivisionWeightsByName: vi.fn(
+    async () =>
+      new Map<string, number>([
+        ['competitive', 1.0],
+        ['intermediate', 0.7],
+        ['recreational', 0.35],
+      ])
+  ),
+  fetchDivisionWeights: vi.fn(async () => new Map<string, number>()),
+  clearDivisionWeightsCache: vi.fn(),
+  getDefaultDivisionWeight: () => 0.85,
+}));
+
+// Prevent any accidental real Supabase connections.
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    from: vi.fn(() => ({
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({ data: [], error: null })),
+        not: vi.fn(() => ({ data: [], error: null })),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      })),
+    })),
+  },
+}));
 
 import { BackupSeasonStatsRow, BackupTeamPowerRow } from '@/services/admin/PowerMigrationService';
 import { BulkTeamCareerData } from '@/services/career/CareerService';
