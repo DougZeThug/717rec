@@ -8,18 +8,10 @@ import { describe, expect, it } from 'vitest';
  * make the formula behavior testable in JSDOM without a database connection.
  * If the SQL formula changes, this helper must be updated to match.
  */
-function powerScore100(
-  weightedWinPct: number,
-  sos: number,
-  weightedGameWinPct: number
-): number {
+function powerScore100(weightedWinPct: number, sos: number, weightedGameWinPct: number): number {
   const performance = (weightedWinPct * 40 + weightedGameWinPct * 15) / 55;
-  const scheduleCredit = Math.min(1, performance / 0.30);
-  return (
-    weightedWinPct * 40 +
-    weightedGameWinPct * 15 +
-    sos * 45 * scheduleCredit
-  );
+  const scheduleCredit = Math.min(1, performance / 0.3);
+  return weightedWinPct * 40 + weightedGameWinPct * 15 + sos * 45 * scheduleCredit;
 }
 
 describe('powerScoreFormula', () => {
@@ -28,12 +20,12 @@ describe('powerScoreFormula', () => {
   });
 
   it('is unchanged at exactly the 30% performance threshold', () => {
-    const weightedWinPct = 0.30;
-    const weightedGameWinPct = 0.30;
+    const weightedWinPct = 0.3;
+    const weightedGameWinPct = 0.3;
     const sos = 0.85;
 
     const performance = (weightedWinPct * 40 + weightedGameWinPct * 15) / 55;
-    expect(performance).toBeCloseTo(0.30, 2);
+    expect(performance).toBeCloseTo(0.3, 2);
 
     const score = powerScore100(weightedWinPct, sos, weightedGameWinPct);
     const oldFormulaScore = weightedWinPct * 40 + weightedGameWinPct * 15 + sos * 45;
@@ -46,20 +38,17 @@ describe('powerScoreFormula', () => {
     const sos = 0.85;
 
     const performance = (weightedWinPct * 40 + weightedGameWinPct * 15) / 55;
-    const scheduleCredit = performance / 0.30; // 0.5
+    const scheduleCredit = performance / 0.3; // 0.5
     const expectedSosPoints = sos * 45 * scheduleCredit;
     const expected = weightedWinPct * 40 + weightedGameWinPct * 15 + expectedSosPoints;
 
-    expect(powerScore100(weightedWinPct, sos, weightedGameWinPct)).toBeCloseTo(
-      expected,
-      1
-    );
+    expect(powerScore100(weightedWinPct, sos, weightedGameWinPct)).toBeCloseTo(expected, 1);
   });
 
   it('keeps high-performing teams unchanged regardless of SOS', () => {
     const weightedWinPct = 0.75;
-    const weightedGameWinPct = 0.70;
-    const sos = 0.90;
+    const weightedGameWinPct = 0.7;
+    const sos = 0.9;
 
     const score = powerScore100(weightedWinPct, sos, weightedGameWinPct);
     const oldFormulaScore = weightedWinPct * 40 + weightedGameWinPct * 15 + sos * 45;
