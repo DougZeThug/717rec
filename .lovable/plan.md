@@ -12,13 +12,16 @@ is not earned — it is given for showing up against a normal schedule.
 Make the schedule points **earned**, not free.
 
 - Match win rate (40 points) and game win rate (15 points) stay exactly as they are.
-- The 45 schedule points get multiplied by how much of those 55 performance points the team earned.
-- Teams at or above **65% performance keep the full 45 points**, so the top of the table does not move.
-- Below that line the schedule credit shrinks in proportion, so weak teams fall away.
+- The 45 schedule points get multiplied by how much of those 55 performance points the team earned,
+  but the multiplier tops out early so only the bottom is affected.
+- Any team at or above **35% performance keeps the full 45 points** — everyone from mid-table up is
+  unchanged, or moves less than a point.
+- Below that line the schedule credit shrinks in proportion. A team with a godawful record no longer
+  gets a free 29 points for playing a normal schedule.
 
 ```text
 performance    = (40 x match win rate + 15 x game win rate) / 55
-schedule credit= min(1, performance / 0.65)
+schedule credit= min(1, performance / 0.35)
 Power Score    = 40 x match win rate
                + 15 x game win rate
                + 45 x SOS x schedule credit
@@ -28,19 +31,24 @@ Power Score    = 40 x match win rate
 
 | Team | Now | After |
 |---|---|---|
+| Team | Now | After |
+|---|---|---|
 | Cuzzo's Clinic | 86.7 | 86.7 |
-| Offdogs | 83.7 | 83.7 |
-| Degeneration X | 81.3 | 81.3 |
-| Jager Bombers | 78.1 | 76.6 |
-| Pepperoni Cheesers | 69.5 | 62.6 |
-| Buttery Nips | 64.5 | 62.4 |
-| Here for Fireball | 46.1 | 34.1 |
-| Killa Queens | 41.3 | 27.2 |
-| The Great Cornholios | 41.6 | 21.2 |
-| Smacked | 29.6 | 8.2 |
+| Jager Bombers | 78.1 | 78.1 |
+| Pepperoni Cheesers | 69.5 | 69.5 |
+| Buttery Nips | 64.5 | 64.3 |
+| Zoo Pals | 62.1 | 62.1 |
+| Miracle @ Marion | 59.3 | 59.3 |
+| Here for Fireball | 46.1 | 42.9 |
+| Jerm | 42.0 | 30.2 |
+| Killa Queens | 41.3 | 32.6 |
+| The Great Cornholios | 41.6 | 29.5 |
+| Corn Kitties | 34.3 | 17.3 |
+| Smacked | 29.6 | 11.0 |
 
-Top three do not move. The bottom drops from a 30-40 cluster to a real 8-30 spread.
-A hard schedule still helps — it just no longer carries a losing team.
+Everything from mid-table up is unchanged or within a point. The bottom stops sitting in a
+30-45 cluster next to decent teams and spreads out from about 10 to 30.
+A hard schedule still helps — it just no longer carries a team that never wins.
 
 ## Technical changes
 
