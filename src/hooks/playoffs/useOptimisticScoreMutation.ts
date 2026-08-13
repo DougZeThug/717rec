@@ -76,37 +76,40 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       clearRollbackTimeout(matchId);
       scoreLog('Rolling back score update', snapshot);
 
-      queryClient.setQueryData<BracketCacheData>(['bracket-data', snapshot.bracketId], (oldData) => {
-        if (!oldData?.matches) return oldData;
+      queryClient.setQueryData<BracketCacheData>(
+        ['bracket-data', snapshot.bracketId],
+        (oldData) => {
+          if (!oldData?.matches) return oldData;
 
-        return {
-          ...oldData,
-          matches: oldData.matches.map((match) => {
-            const isMatch = matchIdMatches(match.id, snapshot.matchId);
-            if (!isMatch) return match;
+          return {
+            ...oldData,
+            matches: oldData.matches.map((match) => {
+              const isMatch = matchIdMatches(match.id, snapshot.matchId);
+              if (!isMatch) return match;
 
-            if ('opponent1_score' in match || 'opponent1_id' in match) {
-              return {
-                ...match,
-                opponent1_score: snapshot.team1Score,
-                opponent2_score: snapshot.team2Score,
-                status: snapshot.status,
-              };
-            } else {
-              return {
-                ...match,
-                team1Score: snapshot.team1Score,
-                team2Score: snapshot.team2Score,
-                team1_score: snapshot.team1Score,
-                team2_score: snapshot.team2Score,
-                winnerId: snapshot.winnerId,
-                winner_id: snapshot.winnerId,
-                status: snapshot.status,
-              };
-            }
-          }),
-        };
-      });
+              if ('opponent1_score' in match || 'opponent1_id' in match) {
+                return {
+                  ...match,
+                  opponent1_score: snapshot.team1Score,
+                  opponent2_score: snapshot.team2Score,
+                  status: snapshot.status,
+                };
+              } else {
+                return {
+                  ...match,
+                  team1Score: snapshot.team1Score,
+                  team2Score: snapshot.team2Score,
+                  team1_score: snapshot.team1Score,
+                  team2_score: snapshot.team2Score,
+                  winnerId: snapshot.winnerId,
+                  winner_id: snapshot.winnerId,
+                  status: snapshot.status,
+                };
+              }
+            }),
+          };
+        }
+      );
 
       snapshotsRef.current.delete(matchId);
 
