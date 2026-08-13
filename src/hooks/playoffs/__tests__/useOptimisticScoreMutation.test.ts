@@ -396,5 +396,55 @@ describe('useOptimisticScoreMutation', () => {
 
       expect(scoresById()).toEqual({ '99': 2 });
     });
+
+    it('rolls back to the snapshot bracket, not the current bracket, when bracketId changes before unmount', () => {
+      const BRACKET_A = 'bracket-a';
+      const BRACKET_B = 'bracket-b';
+      queryClient.setQueryData(['bracket-data', BRACKET_A], {
+        matches: [makeBmMatch({ opponent1_score: 5 })],
+      });
+      queryClient.setQueryData(['bracket-data', BRACKET_B], {
+        matches: [makeBmMatch({ id: 99, opponent1_score: 11 })],
+      });
+
+      const { result, rerender, unmount } = renderHook(
+        ({ id }) => useOptimisticScoreMutation(id),
+        {
+          initialProps: { id: BRACKET_A },
+          wrapper: createWrapper(),
+        }
+      );
+
+      act(() => {
+        result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
+      });
+
+      // Bracket A is optimistically updated.
+      expect(
+        queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>([
+          'bracket-data',
+          BRACKET_A,
+        ])?.matches[0].opponent1_score
+      ).toBe(2);
+
+      // Switch to bracket B before unmounting.
+      rerender({ id: BRACKET_B });
+
+      unmount();
+
+      // Bracket A should be rolled back to its original value.
+      const bracketA = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>([
+        'bracket-data',
+        BRACKET_A,
+      ]);
+      expect(bracketA?.matches[0].opponent1_score).toBe(5);
+
+      // Bracket B should remain untouched.
+      const bracketB = queryClient.getQueryData<{ matches: { opponent1_score: number }[] }>([
+        'bracket-data',
+        BRACKET_B,
+      ]);
+      expect(bracketB?.matches[0].opponent1_score).toBe(11);
+    });
   });
 });
