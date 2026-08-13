@@ -7,7 +7,6 @@
  * New code should import directly from the relevant module:
  *   - teamFetch.types.ts      — shared TypeScript interfaces
  *   - TeamQueryService.ts     — fetch team lists, details, and stats data
- *   - TeamAnalysisService.ts  — coach notes and analysis
  *   - TeamRequestService.ts   — join requests (submit, list, approve/reject)
  *   - TeamMembershipService.ts — membership (join, leave, admin approvals)
  *   - TeamBadgeService.ts     — achievement badges
