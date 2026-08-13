@@ -3,9 +3,9 @@
 ## The problem
 
 Today every team gets **45 free points** for strength of schedule, no matter how they play.
-A team that wins 21% of its matches still collects about 29 of those 45 points, so it lands near 41 PWR
-while a solid team lands near 66. Bad records look close to good records because most of the score
-is not earned — it is given for showing up against a normal schedule.
+The Great Cornholios win 21% of their matches and still collect about 29 of those 45 points, so they
+land at 41.6 PWR — right next to teams with a far better record. Strength of schedule is meant to be
+45% of the rating, not 45 free points for showing up.
 
 ## The fix
 
