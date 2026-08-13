@@ -271,8 +271,9 @@ const PowerMigrationReviewTab: React.FC = () => {
   const revert = useRevertPowerMigration();
   const reapply = useReapplyPowerMigration();
   const [confirmAction, setConfirmAction] = useState<FlipAction>(null);
+  const [isFlipping, setIsFlipping] = useState(false);
 
-  const isBusy = revert.isPending || reapply.isPending;
+  const isBusy = revert.isPending || reapply.isPending || isFlipping;
   const notApplied =
     status !== undefined &&
     (status.status === 'controls_missing' || status.status === 'not_applied');
