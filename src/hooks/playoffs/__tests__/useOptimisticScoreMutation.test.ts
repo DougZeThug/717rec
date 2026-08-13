@@ -407,13 +407,10 @@ describe('useOptimisticScoreMutation', () => {
         matches: [makeBmMatch({ id: 99, opponent1_score: 11 })],
       });
 
-      const { result, rerender, unmount } = renderHook(
-        ({ id }) => useOptimisticScoreMutation(id),
-        {
-          initialProps: { id: BRACKET_A },
-          wrapper: createWrapper(),
-        }
-      );
+      const { result, rerender, unmount } = renderHook(({ id }) => useOptimisticScoreMutation(id), {
+        initialProps: { id: BRACKET_A },
+        wrapper: createWrapper(),
+      });
 
       act(() => {
         result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
