@@ -41,18 +41,21 @@ export function usePlayoffViewState(
       await data.deleteBracket(deletingBracket.id, deletingBracket.name);
       bracketLog('usePlayoffViewState: Bracket deleted successfully');
 
-      // Clear selection if we deleted the currently selected bracket
-      if (data.selectedBracketId === deletingBracket.id) {
-        data.setSelectedBracketId(null);
-      }
-
       // Refresh the brackets list
       await data.refetchBrackets();
+
+      // Close the dialog only after a successful delete
+      setDeletingBracket(null);
     } catch (error) {
       errorLog('usePlayoffViewState: Error deleting bracket:', error);
+      const message = getUIErrorMessage(error, 'Failed to delete bracket');
+      toast({
+        title: 'Delete failed',
+        description: message,
+        variant: 'destructive',
+      });
     } finally {
       setIsDeleting(false);
-      setDeletingBracket(null);
     }
   };
 
