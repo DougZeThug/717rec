@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { calculateCareerMatchStats } from '../calculateCareerMatchStats';
-import { MatchData, SeasonStats } from '../types';
+import { MatchData, PlayoffMatchData, SeasonStats } from '../types';
 
 describe('calculateCareerMatchStats', () => {
   const teamId = 'team-1';
@@ -261,6 +261,60 @@ describe('calculateCareerMatchStats', () => {
       career_match_losses: 0,
       career_game_wins: 0,
       career_game_losses: 0,
+    });
+  });
+
+  it('keeps the stored record for the archiving season when no season is active', () => {
+    // Guard rail for the window between partial_archive_season and
+    // finalize_playoffs. The season's regular games have already moved to
+    // matches_archive (which this function never reads), so team_season_stats is
+    // the only record of them. A null currentSeasonId must exclude NOTHING.
+    //
+    // This test fails loudly if anyone resolves the season the way
+    // current_standings_season_id() does (is_active falling back to
+    // playoffs_active) — that would drop the whole regular season.
+    const seasonStats: SeasonStats[] = [
+      {
+        match_wins: 11,
+        match_losses: 4,
+        game_wins: 25,
+        game_losses: 14,
+        champion: false,
+        runner_up: false,
+        playoff_rank: null,
+        sos: null,
+        division_name: 'Competitive',
+        season_id: 'archiving-season',
+      },
+    ];
+
+    const playoffMatches: PlayoffMatchData[] = [
+      {
+        winner_id: 'team-1',
+        loser_id: 'team-2',
+        team1_score: 2,
+        team2_score: 1,
+        team1_id: 'team-1',
+        team2_id: 'team-2',
+        bracket_id: 'bracket-1',
+      },
+    ];
+
+    const result = calculateCareerMatchStats({
+      seasonStats,
+      currentMatches: [],
+      teamId,
+      currentSeasonId: null,
+      playoffMatches,
+      bracketSeasonMap: { 'bracket-1': 'archiving-season' },
+    });
+
+    // The stored row is already playoff-inclusive. Counted exactly once.
+    expect(result).toEqual({
+      career_match_wins: 11,
+      career_match_losses: 4,
+      career_game_wins: 25,
+      career_game_losses: 14,
     });
   });
 });

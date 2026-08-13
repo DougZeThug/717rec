@@ -26,6 +26,12 @@ export const calculateCareerMatchStats = ({
 }: CareerMatchStatsInput): CareerMatchStatsResult => {
   // Filter out current season from historical stats to avoid double-counting
   // (current season matches are counted separately from the matches table)
+  //
+  // A null currentSeasonId must exclude NOTHING. Do not "fix" this by resolving
+  // the season the way current_standings_season_id() does (is_active falling back
+  // to playoffs_active). After partial_archive_season the season's regular games
+  // have already moved to matches_archive, which this function never reads, so
+  // excluding it would drop that whole regular season from career totals.
   const historicalStats = currentSeasonId
     ? seasonStats?.filter((stat) => stat.season_id !== currentSeasonId)
     : seasonStats;

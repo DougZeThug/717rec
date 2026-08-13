@@ -259,4 +259,86 @@ describe('calculateCareerPowerScore', () => {
 
     expect(result).toBe(50);
   });
+
+  it('KNOWN GAP: counts the archiving season twice while no season is active', async () => {
+    // Characterization test for the window between partial_archive_season and
+    // finalize_playoffs. No season is is_active, so currentSeasonId is null and
+    // nothing is excluded from team_season_stats — but v_team_details still
+    // reports that season's playoff-only record, because
+    // current_standings_season_id() falls back to playoffs_active.
+    //
+    // This asserts CURRENT behaviour, not desired behaviour. When the stored row
+    // is playoff-inclusive (playoffs finished before the archive) those games are
+    // weighted in twice. It cannot be fixed by gating on currentSeasonId alone:
+    // when the archive happens before the playoffs are played the stored row is
+    // regular-only and this block is the only thing counting them.
+    //
+    // The fix is to refresh team_season_stats when a playoff result is written.
+    // Once that lands, expect 74 here and gate the block.
+    //
+    // Past season:      10 matches, power 0.80 (= 80)
+    // Archiving season: 15 matches, power 0.70 (= 70), already playoff-inclusive
+    // v_team_details:    3 matches, power 60 — the playoff-only slice counted again
+    const result = await calculateCareerPowerScore({
+      teamId: 'team-1',
+      championshipDivisions: [],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      // currentSeasonId intentionally omitted — no season is active
+      prefetchedSeasonStats: [
+        { power_score: 0.8, match_wins: 7, match_losses: 3, season_id: 'past-season' },
+        { power_score: 0.7, match_wins: 11, match_losses: 4, season_id: 'archiving-season' },
+      ],
+      prefetchedCurrentTeamData: { power_score: 60, wins: 1, losses: 2 },
+    });
+
+    // (80*10 + 70*15 + 60*3) / 28 = 72.5 — the archiving season's playoff games
+    // are weighted in twice. Correct once the stored row is authoritative: 74.
+    expect(result).toBe(72.5);
+  });
+
+  it('adds live data for an active season with no stored row yet', async () => {
+    // The guard must not starve a brand-new season that has no
+    // team_season_stats row yet. currentSeasonId is set, so v_team_details is
+    // the only source for it and must still be counted.
+    const result = await calculateCareerPowerScore({
+      teamId: 'team-1',
+      championshipDivisions: [],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      currentSeasonId: 'current-season',
+      prefetchedSeasonStats: [
+        { power_score: 0.8, match_wins: 7, match_losses: 3, season_id: 'past-season' },
+      ],
+      prefetchedCurrentTeamData: { power_score: 60, wins: 7, losses: 3 },
+    });
+
+    // (80*10 + 60*10) / 20 = 70
+    expect(result).toBe(70);
+  });
+
+  it('uses v_team_details alone when there are no stored stats', async () => {
+    // A team whose only record is the live view — for example its first season,
+    // before upsert_team_season_stats() has written a row for it.
+    const result = await calculateCareerPowerScore({
+      teamId: 'team-1',
+      championshipDivisions: [],
+      runnerUpDivisions: [],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      prefetchedSeasonStats: [],
+      prefetchedCurrentTeamData: { power_score: 60, wins: 1, losses: 2 },
+    });
+
+    // (60*3) / 3 = 60
+    expect(result).toBe(60);
+  });
 });
