@@ -59,15 +59,6 @@
   --frost-border-opacity: 0.4;
   --aurora-violet: 270 60% 65%;
   --icicle-color: 199 80% 75%;
-  
-  /* Sidebar adjustments for winter */
-  --sidebar-background: 222 47% 6%;
-  --sidebar-foreground: 210 40% 96%;
-  --sidebar-primary: 199 89% 62%;
-  --sidebar-primary-foreground: 222 47% 8%;
-  --sidebar-accent: 222 30% 18%;
-  --sidebar-accent-foreground: 210 40% 96%;
-  --sidebar-border: 220 30% 18%;
 }
 
 /* ==========================================================================
