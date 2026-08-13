@@ -2,11 +2,12 @@ import { Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AvatarSkeleton, ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
+import { ShimmerSkeleton } from '@/components/ui/shimmer-skeleton';
 
 /**
- * Skeleton loader for FinalStandings component
- * Matches the structure: Card with header + 3 placement rows
+ * Skeleton loader for FinalStandings component.
+ * Mirrors the refactored FinalStandings layout: flat row with gap-3,
+ * fixed placement width, rounded-md team avatar, and two-line stats block.
  */
 const FinalStandingsSkeleton: React.FC = () => {
   return (
@@ -20,23 +21,20 @@ const FinalStandingsSkeleton: React.FC = () => {
       <CardContent>
         <div className="space-y-2">
           {[1, 2, 3].map((placement) => (
-            <div
-              key={placement}
-              className="flex items-center justify-between p-3 rounded-lg border"
-            >
-              <div className="flex items-center gap-3">
-                {/* Placement number */}
-                <ShimmerSkeleton className="w-8 h-6" />
-                {/* Placement icon */}
-                <ShimmerSkeleton circle className="size-5" />
-                {/* Team avatar and name */}
-                <div className="flex items-center gap-2">
-                  <AvatarSkeleton size="sm" />
-                  <ShimmerSkeleton className="h-4 w-24" />
-                </div>
+            <div key={placement} className="flex items-center gap-3 p-3 rounded-lg border">
+              {/* Placement number */}
+              <ShimmerSkeleton className="w-6 h-6 shrink-0" />
+              {/* Placement icon */}
+              <ShimmerSkeleton circle className="size-5 shrink-0" />
+              {/* Team avatar */}
+              <ShimmerSkeleton className="size-9 shrink-0 rounded-md" />
+              {/* Team name */}
+              <ShimmerSkeleton className="h-4 flex-1" />
+              {/* Two-line stats block */}
+              <div className="shrink-0 space-y-1 text-right">
+                <ShimmerSkeleton className="h-5 w-16 ml-auto" />
+                <ShimmerSkeleton className="h-3 w-16 ml-auto" />
               </div>
-              {/* Stats */}
-              <ShimmerSkeleton className="h-4 w-32" />
             </div>
           ))}
         </div>
