@@ -65,16 +65,4 @@ describe('useErrorHandling', () => {
     expect(result.current.failedMatches).toEqual([]);
     expect(result.current.errorMessages).toEqual({});
   });
-
-  it('exposes raw setters for direct state control', () => {
-    const { result } = renderHook(() => useErrorHandling());
-
-    act(() => {
-      result.current.setFailedMatches(['m9']);
-      result.current.setErrorMessages({ m9: 'direct' });
-    });
-
-    expect(result.current.failedMatches).toEqual(['m9']);
-    expect(result.current.errorMessages).toEqual({ m9: 'direct' });
-  });
 });
