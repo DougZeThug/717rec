@@ -1,10 +1,24 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BackupSeasonStatsRow, BackupTeamPowerRow } from '@/services/admin/PowerMigrationService';
 import { BulkTeamCareerData } from '@/services/career/CareerService';
 import { Team } from '@/types';
 
 import { buildPowerMigrationComparison } from '../buildPowerMigrationComparison';
+
+// Mock the division weights cache so tests don't attempt real DB fetches.
+vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+  fetchDivisionWeightsByName: vi.fn(
+    async () =>
+      new Map<string, number>([
+        ['competitive', 1.0],
+        ['recreational', 0.35],
+      ])
+  ),
+  fetchDivisionWeights: vi.fn(async () => new Map<string, number>()),
+  clearDivisionWeightsCache: vi.fn(),
+  getDefaultDivisionWeight: () => 0.85,
+}));
 
 // Fixtures run through the REAL career calculators (no mocks): one archived
 // season ('s1') plus the current season ('s2') represented by the
