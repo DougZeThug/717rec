@@ -1,8 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BackupSeasonStatsRow, BackupTeamPowerRow } from '@/services/admin/PowerMigrationService';
 import { BulkTeamCareerData } from '@/services/career/CareerService';
 import { Team } from '@/types';
+
+// Live division weights come from the divisions table — mock the cache so no
+// network call is attempted during unit tests.
+vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+  fetchDivisionWeightsByName: vi.fn(async () => new Map<string, number>()),
+  fetchDivisionWeights: vi.fn(async () => new Map<string, number>()),
+  getDefaultDivisionWeight: () => 0.85,
+  clearDivisionWeightsCache: vi.fn(),
+}));
 
 import { buildPowerMigrationComparison } from '../buildPowerMigrationComparison';
 
