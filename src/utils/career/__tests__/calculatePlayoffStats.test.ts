@@ -169,4 +169,66 @@ describe('calculatePlayoffStats', () => {
 
     expect(result.career_playoff_wins).toBe(1);
   });
+
+  describe('byes', () => {
+    // "Playoff games count, byes do not" (docs/OPERATIONS.md §6a). A bye is a
+    // row with a winner and no opponent, so without an opponent check it reads
+    // as a free playoff win — and feeds career power score and standings order.
+    const bye: PlayoffMatchData = {
+      winner_id: teamId,
+      loser_id: null,
+      team1_id: teamId,
+      team2_id: null,
+      team1_score: 0,
+      team2_score: null,
+      bracket_id: 'bracket-competitive',
+    };
+
+    it('does not count a bye as a playoff win', () => {
+      const result = calculatePlayoffStats({
+        playoffMatches: [bye],
+        bracketDivisionWeights: { 'bracket-competitive': 1.0 },
+        teamId,
+      });
+
+      expect(result).toEqual({
+        career_playoff_wins: 0,
+        career_playoff_losses: 0,
+        competitive_playoff_wins: 0,
+      });
+    });
+
+    it('does not count a bye as a competitive-division win', () => {
+      const realWin: PlayoffMatchData = {
+        winner_id: teamId,
+        loser_id: 'team-2',
+        team1_id: teamId,
+        team2_id: 'team-2',
+        team1_score: 2,
+        team2_score: 1,
+        bracket_id: 'bracket-competitive',
+      };
+
+      const result = calculatePlayoffStats({
+        playoffMatches: [bye, realWin],
+        bracketDivisionWeights: { 'bracket-competitive': 1.0 },
+        teamId,
+      });
+
+      expect(result.career_playoff_wins).toBe(1);
+      expect(result.competitive_playoff_wins).toBe(1);
+    });
+
+    it('skips a bye recorded in the second slot', () => {
+      const byeInSlot2: PlayoffMatchData = { ...bye, team1_id: null, team2_id: teamId };
+
+      const result = calculatePlayoffStats({
+        playoffMatches: [byeInSlot2],
+        bracketDivisionWeights: {},
+        teamId,
+      });
+
+      expect(result.career_playoff_wins).toBe(0);
+    });
+  });
 });

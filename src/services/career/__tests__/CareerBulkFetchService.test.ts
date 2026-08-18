@@ -5,6 +5,7 @@ import { DatabaseError } from '@/types/errors';
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
+const mockNot = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from: (table: string) => mockFrom(table) },
@@ -41,11 +42,21 @@ function buildFromMock(overrides: Record<string, { data: unknown; error: unknown
     const eqResult = Object.assign(Promise.resolve(result), {
       single: () => Promise.resolve(result),
     });
+    // The playoff query chains THREE .not() calls (winner_id, then team1_id and
+    // team2_id to exclude byes), so not() must return a thenable that itself
+    // exposes not(). A bare promise here would throw "not is not a function".
+    type NotChain = Promise<typeof result> & { not: (...args: unknown[]) => NotChain };
+    const notChain: NotChain = Object.assign(Promise.resolve(result), {
+      not: (...args: unknown[]) => {
+        mockNot(...args);
+        return notChain;
+      },
+    });
     // select() is thenable (team_details_archive) and has .in()/.eq()/.not()
     const selectResult = Object.assign(Promise.resolve(result), {
       in: () => Promise.resolve(result),
       eq: () => eqResult,
-      not: () => Promise.resolve(result),
+      not: (...args: unknown[]) => notChain.not(...args),
     });
     return { select: () => selectResult };
   };
@@ -184,6 +195,24 @@ describe('fetchAllTeamsCareerData', () => {
     mockFrom.mockImplementation(buildFromMock(successOverrides));
     const result = await fetchAllTeamsCareerData(['t1']);
     expect(result.has('t-other')).toBe(false);
+  });
+
+  it('excludes playoff byes at the query level', async () => {
+    // A bye is a row with a winner and no opponent. Counting one hands the team
+    // a free career win and reorders the Career Standings table, contradicting
+    // the league formula ("playoff games count, byes do not" —
+    // docs/OPERATIONS.md §6a).
+    mockFrom.mockImplementation(buildFromMock(successOverrides));
+
+    await fetchAllTeamsCareerData(['t1']);
+
+    expect(mockNot.mock.calls).toEqual(
+      expect.arrayContaining([
+        ['winner_id', 'is', null],
+        ['team1_id', 'is', null],
+        ['team2_id', 'is', null],
+      ])
+    );
   });
 });
 

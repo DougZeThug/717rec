@@ -66,6 +66,10 @@ export const calculateCareerMatchStats = ({
       const bracketSeasonId = match.bracket_id ? bracketSeasonMap[match.bracket_id] : null;
       if (bracketSeasonId !== currentSeasonId) continue;
       if (!match.winner_id) continue;
+      // A bye is a row with a winner and no opponent — not a game played.
+      // The fetch layer filters these out; this guard keeps the count
+      // honest for any caller that passes an unfiltered array.
+      if (!match.team1_id || !match.team2_id) continue;
 
       if (match.winner_id === teamId) {
         career_match_wins++;

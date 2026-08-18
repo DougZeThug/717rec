@@ -302,7 +302,13 @@ export const fetchAllTeamsCareerData = async (
         bracket_id
       `
       )
-      .not('winner_id', 'is', null),
+      .not('winner_id', 'is', null)
+      // A bye is a row with a winner and no opponent. Counting one hands the
+      // team a free win, and the league formula is explicit that playoff
+      // games count but byes do not (docs/OPERATIONS.md §6a). Mirrors
+      // PlayoffSeasonMatchService and the v_power_score_match_source view.
+      .not('team1_id', 'is', null)
+      .not('team2_id', 'is', null),
     // Active season (just one row)
     supabase.from('seasons').select('id').eq('is_active', true).single(),
   ]);

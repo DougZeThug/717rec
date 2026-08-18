@@ -28,6 +28,11 @@ export const calculatePlayoffStats = ({
   }
 
   for (const match of playoffMatches) {
+    // A bye is a row with a winner and no opponent — not a game played.
+    // The fetch layer filters these out; this guard keeps the count
+    // honest for any caller that passes an unfiltered array.
+    if (!match.team1_id || !match.team2_id) continue;
+
     const bracketDivisionWeight = bracketDivisionWeights[match.bracket_id || ''] || 0.85;
     const isCompetitiveDivision = bracketDivisionWeight >= 0.89;
 

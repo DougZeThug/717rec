@@ -5,6 +5,7 @@ import { DatabaseError } from '@/types/errors';
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
+const mockNot = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: { from: (table: string) => mockFrom(table) },
@@ -51,17 +52,27 @@ describe('fetchCareerData', () => {
 
   // Builds a fully-thenable chain that covers all query shapes in CareerFetchService
   function makeSelectChain(result: { data: unknown; error: unknown }) {
+    // The playoff query chains THREE .not() calls (winner_id, then team1_id and
+    // team2_id to exclude byes), so not() must return a thenable that itself
+    // exposes not(). A bare promise here would throw "not is not a function".
+    type NotChain = Promise<typeof result> & { not: (...args: unknown[]) => NotChain };
+    const notChain: NotChain = Object.assign(Promise.resolve(result), {
+      not: (...args: unknown[]) => {
+        mockNot(...args);
+        return notChain;
+      },
+    });
     // eq() is itself thenable (team_season_stats ends at .eq()) and has .single()/.not()
     const eqResult = Object.assign(Promise.resolve(result), {
       single: () => Promise.resolve(result),
-      not: () => Promise.resolve(result),
+      not: (...args: unknown[]) => notChain.not(...args),
     });
     // select() is thenable (team_details_archive awaits it directly) and has .eq()/.or()
     return Object.assign(Promise.resolve(result), {
       eq: () => eqResult,
       or: () => ({
         eq: () => Promise.resolve(result), // matches, matches_archive
-        not: () => Promise.resolve(result), // playoff_matches
+        not: (...args: unknown[]) => notChain.not(...args), // playoff_matches
       }),
       in: () => Promise.resolve({ data: [], error: null }),
     });
@@ -106,5 +117,23 @@ describe('fetchCareerData', () => {
     // Non-critical errors are logged but don't throw
     const result = await fetchCareerData('team-1');
     expect(result).not.toBeNull();
+  });
+
+  it('excludes playoff byes at the query level', async () => {
+    // A bye is a row with a winner and no opponent. Counting one hands the team
+    // a free career win, which contradicts the league formula ("playoff games
+    // count, byes do not" — docs/OPERATIONS.md §6a). Same filter trio as
+    // PlayoffSeasonMatchService and the v_power_score_match_source view.
+    mockFrom.mockImplementation(makeFromImpl(successResults));
+
+    await fetchCareerData('team-1');
+
+    expect(mockNot.mock.calls).toEqual(
+      expect.arrayContaining([
+        ['winner_id', 'is', null],
+        ['team1_id', 'is', null],
+        ['team2_id', 'is', null],
+      ])
+    );
   });
 });
