@@ -284,14 +284,27 @@ async normalizeLosersR1(stageId: number): Promise<void>
 ```
 
 **Behavior:**
-- Clears participant cache
 - Finds LB group (group number 2)
 - Finds LB Round 1 (minimum round number in LB group)
-- Checks all LB R1 matches for duplicates
-- **Critical Fix:** Detects if same participant is in both opponent slots
-  - Uses direct SQL to bypass defensive merge
-  - Clears opponent2 and sets status to 4 (Waiting/BYE)
-- Shifts opponent2 to opponent1 if opponent1 is empty
+- Repairs two shapes of legacy damage in LB R1 rows:
+  - **Duplicate participant** (same participant in both slots): clears
+    `opponent2` and completes the match as a walkover — `opponent2_result`
+    is set to the `'bye'` sentinel, `opponent1_result` to `win`, status to
+    4 (Completed). Written with direct SQL so the untouched columns
+    (`opponent1_id`, both `*_position` markers) are preserved.
+  - **Lone second-slot participant** (slot 1 is a legacy TBD, `{ id: null }`):
+    shifts the participant into `opponent1` and records the vacated
+    `opponent2` as a **strictly null** slot, which the storage adapter
+    flattens to the `'bye'` sentinel. Status is left as-is — no winner is
+    declared, because slot 1 may legitimately have been awaiting a losing
+    team. A strict-null slot 1 is the library-native "BYE vs X" layout and
+    is left alone.
+
+In both repairs the emptied slot is a structural BYE, not a TBD. Recorded as
+a TBD it reads back as "to be decided", which makes `isMatchSettled` treat
+the match as outstanding and block bracket completion, and makes the viewer
+paint a "Winner of …" hint on a slot that can never fill. See
+[BRACKETS_MANAGER_SCHEMA.md](./BRACKETS_MANAGER_SCHEMA.md) "BYE vs TBD".
 
 **Success Case:**
 - Returns: `Promise<void>` (resolves on success)
@@ -301,7 +314,9 @@ async normalizeLosersR1(stageId: number): Promise<void>
 **Error Cases:**
 - Returns early with log if no LB group found
 - Returns early with log if no LB R1 found
-- Logs errors but does NOT throw (defensive, non-critical)
+- Database failures are THROWN via `handleDatabaseError` — this pass runs
+  only from the explicit admin Repair Bracket action, and a silent failure
+  would leave the bracket in an unknown state
 
 **Database Tables Modified:**
 - `match` (direct SQL updates to opponent fields and status)

@@ -19,7 +19,11 @@ vi.mock('@/utils/logger', () => ({
 import { DatabaseError } from '@/types/errors';
 
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
-import { BYE_RESULT_SENTINEL } from '../../SupabaseSqlStorage/matchTransforms';
+import {
+  BYE_RESULT_SENTINEL,
+  transformMatchFromDb,
+  transformMatchToDb,
+} from '../../SupabaseSqlStorage/matchTransforms';
 import { BracketNormalizationService } from '../BracketNormalizationService';
 
 type StorageDouble = {
@@ -338,15 +342,44 @@ describe('BracketNormalizationService', () => {
       const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
       await service.normalizeLosersR1(100);
 
+      // opponent2 is strictly null, not { id: null }: nothing feeds the slot
+      // once the participant moves out, so it is a BYE. As a TBD it reads back
+      // as "to be decided" and blocks bracket completion forever.
       expect(storage.update).toHaveBeenCalledWith(
         'match',
         { id: 32 },
         {
           opponent1: { id: 44, score: null, result: null },
-          opponent2: { id: null, score: null, result: null },
+          opponent2: null,
           status: 3,
         }
       );
+    });
+
+    it('persists the vacated shift slot as a BYE, so the match stops blocking completion', async () => {
+      const storage = createStorageDouble();
+      storage.select
+        .mockResolvedValueOnce([{ id: 11, number: 2 }])
+        .mockResolvedValueOnce([{ id: 21, number: 1 }])
+        .mockResolvedValueOnce([
+          { id: 32, status: 3, opponent1: { id: null }, opponent2: { id: 44 } },
+        ]);
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await service.normalizeLosersR1(100);
+
+      // Run the written payload through the real storage transform to prove the
+      // sentinel actually lands in the column — the shape alone does not say so.
+      const written = storage.update.mock.calls[0][2] as Parameters<typeof transformMatchToDb>[0];
+      expect(transformMatchToDb(written)).toMatchObject({
+        opponent1_id: 44,
+        opponent2_id: null,
+        opponent2_result: BYE_RESULT_SENTINEL,
+      });
+
+      // And re-inflating gives a strict-null slot, which is what lets
+      // isMatchSettled see a BYE instead of an unresolved TBD.
+      expect(transformMatchFromDb(transformMatchToDb(written)).opponent2).toBeNull();
     });
 
     it('leaves the library-native "BYE vs X" layout untouched (strict-null opponent1)', async () => {

@@ -72,7 +72,14 @@ export class LosersRoundNormalizationService {
         bracketLog(`[NORMALIZE] Shifting opponent2 to opponent1 in LB R1 Match ${match.id}`);
         await this.storage.update('match', { id: match.id }, {
           opponent1: { id: opponent2Id, score: null, result: null },
-          opponent2: { id: null, score: null, result: null },
+          // Strictly null, NOT { id: null }: once the participant moves out,
+          // nothing feeds this slot, so it is a structural BYE rather than a
+          // TBD. flattenOpponentSlot turns a strictly-null slot into the
+          // BYE_RESULT_SENTINEL. Left as a TBD the slot reads back as "to be
+          // decided", which makes isMatchSettled treat the match as
+          // outstanding and block bracket completion forever. Same reasoning
+          // as the duplicate-clear above.
+          opponent2: null,
           status: match.status,
         } as unknown as Partial<DataTypes['match']>);
       }
