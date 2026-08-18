@@ -5,9 +5,10 @@ import {
   PowerMigrationStatus,
 } from '@/services/admin/PowerMigrationService';
 import { fetchAllTeamsCareerData } from '@/services/career/CareerService';
+import { SeasonQueryService } from '@/services/seasons/SeasonQueryService';
 
 import { useTeamsQuery } from '../teams/useTeamsQuery';
-import { buildPowerMigrationComparison } from './buildPowerMigrationComparison';
+import { buildPowerMigrationComparison, resolveSeasonIdAt } from './buildPowerMigrationComparison';
 
 const STATUS_KEY = ['admin', 'power-migration', 'status'] as const;
 const COMPARISON_KEY = ['admin', 'power-migration', 'comparison'] as const;
@@ -44,19 +45,27 @@ export const usePowerMigrationComparison = (status: PowerMigrationStatus | undef
     // query lands rather than keep a mix of pre- and post-flip data.
     queryKey: [
       ...COMPARISON_KEY,
+      status?.backedUpAt ?? null,
       teams?.map((t) => [t.id, t.power_score ?? null, t.wins ?? null, t.losses ?? null]),
     ],
     queryFn: async () => {
-      const [bulkData, backupSeasonStats, backupTeamPower] = await Promise.all([
+      const [bulkData, backupSeasonStats, backupTeamPower, seasons] = await Promise.all([
         fetchAllTeamsCareerData(teams?.map((t) => t.id) ?? []),
         PowerMigrationService.fetchBackupSeasonStats(),
         PowerMigrationService.fetchBackupTeamPower(),
+        SeasonQueryService.fetchHistoricalSeasons(),
       ]);
+      const backedUpAt =
+        status?.backedUpAt ??
+        backupSeasonStats[0]?.backed_up_at ??
+        backupTeamPower[0]?.backed_up_at ??
+        null;
       return buildPowerMigrationComparison({
         teams: teams ?? [],
         bulkData,
         backupSeasonStats,
         backupTeamPower,
+        backupCurrentSeasonId: resolveSeasonIdAt(seasons ?? [], backedUpAt),
       });
     },
     enabled: enabled && Boolean(teams),
