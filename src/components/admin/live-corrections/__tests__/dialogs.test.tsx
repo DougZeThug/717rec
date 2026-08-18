@@ -268,6 +268,40 @@ describe('live correction dialogs', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('rejects partial bag input and shows an error instead of silently dropping it', () => {
+    const onSubmit = vi.fn();
+
+    render(
+      <EditRoundDialog
+        open
+        onOpenChange={vi.fn()}
+        round={{
+          ...baseRound,
+          team1_bags_in: null,
+          team1_bags_on: null,
+          team1_bags_off: null,
+        }}
+        team1Name="Team A"
+        team2Name="Team B"
+        team1Players={team1Players}
+        team2Players={team2Players}
+        rosterById={rosterById}
+        onSubmit={onSubmit}
+        isSubmitting={false}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText('In', { selector: '#team1-in' }), {
+      target: { value: '2' },
+    });
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Team A: fill all bag fields or leave all blank'
+    );
+    expect(screen.getByRole('button', { name: 'Save changes' })).toBeDisabled();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
   it('submits the selected game winner', async () => {
     const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
     const user = userEvent.setup();
