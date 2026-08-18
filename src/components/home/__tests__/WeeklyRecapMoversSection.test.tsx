@@ -104,6 +104,16 @@ describe('WeeklyRecapCard movers consistency', () => {
     expect(screen.queryByText('Weekly Recap')).not.toBeInTheDocument();
   });
 
+  it('hides the entire card when only negative-delta risers are provided', () => {
+    render(
+      <MemoryRouter>
+        <WeeklyRecapCard data={recapBase} risers={[trend('a', -0.3), trend('b', -0.1)]} />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText('Weekly Recap')).not.toBeInTheDocument();
+  });
+
   it('renders the card when a mover clears the threshold', () => {
     render(
       <MemoryRouter>
