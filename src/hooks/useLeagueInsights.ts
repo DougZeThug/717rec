@@ -229,7 +229,7 @@ export function useLeagueInsights(): LeagueInsightsData {
 
     // Most improved (from risers)
     const topRiser = risersData?.trends?.[0];
-    if (topRiser) {
+    if (topRiser && topRiser.delta > 0) {
       topPerformers.push({
         category: 'Most Improved',
         teamName: topRiser.teamName,

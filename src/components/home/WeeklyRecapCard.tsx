@@ -25,7 +25,8 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
   // Must match the filtering inside MoversSection, or the dividers and the
   // whole-card empty check disagree with what actually renders.
   const hasMovers =
-    risers.some(isVisibleMover) || Boolean(faller && faller.delta < 0 && isVisibleMover(faller));
+    risers.some((trend) => trend.delta > 0 && isVisibleMover(trend)) ||
+    Boolean(faller && faller.delta < 0 && isVisibleMover(faller));
   if (!hasUpsets && !hasStreaks && !hasMovers) return null;
 
   return (

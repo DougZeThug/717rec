@@ -54,6 +54,20 @@ describe('WeeklyRecapMoversSection', () => {
     expect(screen.queryByText('Movers')).not.toBeInTheDocument();
   });
 
+  it('does not render a negative-delta team as a riser', () => {
+    renderSection([trend('a', -0.3)]);
+
+    expect(screen.queryByText('Movers')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team a')).not.toBeInTheDocument();
+  });
+
+  it('drops negative-delta rows while keeping positive risers', () => {
+    renderSection([trend('riser', 1.2), trend('notRiser', -0.3)]);
+
+    expect(screen.getByText('Team riser')).toBeInTheDocument();
+    expect(screen.queryByText('Team notRiser')).not.toBeInTheDocument();
+  });
+
   it('hides the whole section when nothing moved', () => {
     renderSection([trend('a', 0), trend('b', 0)]);
 
@@ -84,6 +98,16 @@ describe('WeeklyRecapCard movers consistency', () => {
     render(
       <MemoryRouter>
         <WeeklyRecapCard data={recapBase} risers={[trend('a', 0), trend('b', 0.02)]} />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByText('Weekly Recap')).not.toBeInTheDocument();
+  });
+
+  it('hides the entire card when only negative-delta risers are provided', () => {
+    render(
+      <MemoryRouter>
+        <WeeklyRecapCard data={recapBase} risers={[trend('a', -0.3), trend('b', -0.1)]} />
       </MemoryRouter>
     );
 
