@@ -299,6 +299,7 @@ describe('fetchPowerScoreTrends', () => {
 
     expect(result).toEqual([]);
   });
+});
 
 // ─── fetchWeeklyPowerScoreTrends ─────────────────────────────────────────────
 
