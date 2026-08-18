@@ -21,12 +21,12 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 describe('usePlayoffViewState', () => {
-  const createData = () => ({
+  const createData = (): Partial<PlayoffPageData> => ({
     deleteBracket: vi.fn(),
     refetchBrackets: vi.fn(),
   });
 
-  const createHandlers = () => ({
+  const createHandlers = (): Partial<ReturnType<typeof usePlayoffHandlers>> => ({
     handleBracketCreatedWithNavigation: vi.fn(),
   });
 
@@ -36,10 +36,12 @@ describe('usePlayoffViewState', () => {
 
   it('closes the dialog and refetches after a successful delete', async () => {
     const data = createData();
-    data.deleteBracket.mockResolvedValue(undefined);
-    data.refetchBrackets.mockResolvedValue(undefined);
+    data.deleteBracket?.mockResolvedValue(undefined);
+    data.refetchBrackets?.mockResolvedValue(undefined);
 
-    const { result } = renderHook(() => usePlayoffViewState(data as any, createHandlers() as any));
+    const { result } = renderHook(() =>
+      usePlayoffViewState(data as PlayoffPageData, createHandlers() as ReturnType<typeof usePlayoffHandlers>)
+    );
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
