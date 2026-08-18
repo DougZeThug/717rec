@@ -41,11 +41,22 @@ export function usePlayoffViewState(
       await data.deleteBracket(deletingBracket.id, deletingBracket.name);
       bracketLog('usePlayoffViewState: Bracket deleted successfully');
 
-      // Refresh the brackets list
-      await data.refetchBrackets();
-
-      // Close the dialog only after a successful delete
+      // Close the dialog immediately after a successful delete, regardless of refresh
       setDeletingBracket(null);
+
+      // Refresh the brackets list best-effort; do not misattribute a refresh failure
+      // as a delete failure now that the bracket is already gone.
+      try {
+        await data.refetchBrackets();
+      } catch (refetchError) {
+        errorLog('usePlayoffViewState: Bracket deleted, but failed to refresh brackets:', refetchError);
+        const message = getUIErrorMessage(refetchError, 'Failed to refresh bracket list');
+        toast({
+          title: 'Bracket deleted',
+          description: `Deleted, but list could not refresh: ${message}`,
+          variant: 'default',
+        });
+      }
     } catch (error) {
       errorLog('usePlayoffViewState: Error deleting bracket:', error);
       const message = getUIErrorMessage(error, 'Failed to delete bracket');
