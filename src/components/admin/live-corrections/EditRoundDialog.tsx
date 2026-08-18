@@ -139,7 +139,11 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
     if (!isValidRoundScore(s1)) return { ok: false, message: `${team1Name} score is invalid` };
     if (!isValidRoundScore(s2)) return { ok: false, message: `${team2Name} score is invalid` };
     const hasBags1 = side1.bagsIn !== '' || side1.bagsOn !== '' || side1.bagsOff !== '';
-    if (hasBags1) {
+    const allBags1 = side1.bagsIn !== '' && side1.bagsOn !== '' && side1.bagsOff !== '';
+    if (hasBags1 && !allBags1) {
+      return { ok: false, message: `${team1Name}: fill all bag fields or leave all blank` };
+    }
+    if (allBags1) {
       const b = {
         bagsIn: Number(side1.bagsIn),
         bagsOn: Number(side1.bagsOn),
@@ -149,7 +153,11 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
         return { ok: false, message: `${team1Name} bag breakdown doesn't add up` };
     }
     const hasBags2 = side2.bagsIn !== '' || side2.bagsOn !== '' || side2.bagsOff !== '';
-    if (hasBags2) {
+    const allBags2 = side2.bagsIn !== '' && side2.bagsOn !== '' && side2.bagsOff !== '';
+    if (hasBags2 && !allBags2) {
+      return { ok: false, message: `${team2Name}: fill all bag fields or leave all blank` };
+    }
+    if (allBags2) {
       const b = {
         bagsIn: Number(side2.bagsIn),
         bagsOn: Number(side2.bagsOn),
