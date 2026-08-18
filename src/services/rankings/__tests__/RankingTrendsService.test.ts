@@ -225,7 +225,80 @@ describe('fetchPowerScoreTrends', () => {
 
     expect(result).toHaveLength(2);
   });
-});
+
+  it('filters out negative deltas when direction is up', async () => {
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
+    queueResult('seasons', {
+      data: { id: 's1', start_date: '2024-01-01' },
+      error: null,
+    });
+    queueResult('v_team_details', {
+      data: [
+        {
+          team_id: 't1',
+          name: 'Alpha',
+          divisionname: 'Open',
+          division_id: 'd1',
+          logo_url: null,
+          image_url: null,
+          power_score: 60,
+        },
+        {
+          team_id: 't2',
+          name: 'Beta',
+          divisionname: 'Open',
+          division_id: 'd1',
+          logo_url: null,
+          image_url: null,
+          power_score: 55,
+        },
+      ],
+      error: null,
+    });
+    queueResult('team_season_stats', {
+      data: [
+        { team_id: 't1', power_score: 0.7 },
+        { team_id: 't2', power_score: 0.6 },
+      ],
+      error: null,
+    });
+    queueResult('divisions', { data: [{ id: 'd1' }], error: null });
+
+    const result = await fetchPowerScoreTrends('up');
+
+    expect(result).toEqual([]);
+  });
+
+  it('filters out positive deltas when direction is down', async () => {
+    queueResult('seasons', { data: { id: 's2', start_date: '2025-01-01' }, error: null });
+    queueResult('seasons', {
+      data: { id: 's1', start_date: '2024-01-01' },
+      error: null,
+    });
+    queueResult('v_team_details', {
+      data: [
+        {
+          team_id: 't1',
+          name: 'Alpha',
+          divisionname: 'Open',
+          division_id: 'd1',
+          logo_url: null,
+          image_url: null,
+          power_score: 80,
+        },
+      ],
+      error: null,
+    });
+    queueResult('team_season_stats', {
+      data: [{ team_id: 't1', power_score: 0.7 }],
+      error: null,
+    });
+    queueResult('divisions', { data: [{ id: 'd1' }], error: null });
+
+    const result = await fetchPowerScoreTrends('down');
+
+    expect(result).toEqual([]);
+  });
 
 // ─── fetchWeeklyPowerScoreTrends ─────────────────────────────────────────────
 
