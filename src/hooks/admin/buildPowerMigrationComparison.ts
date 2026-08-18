@@ -47,6 +47,42 @@ export interface PowerMigrationComparisonInput {
   bulkData: Map<string, BulkTeamCareerData>;
   backupSeasonStats: BackupSeasonStatsRow[];
   backupTeamPower: BackupTeamPowerRow[];
+  /**
+   * The season that was current when the backup was taken. The backup captures
+   * that season TWICE — once as a team_season_stats row and once as the
+   * v_team_details current-season power/record row — so the "before" dataset
+   * must exclude it from the historical side. When omitted, the live current
+   * season is used, which is only correct while the season has not rolled over.
+   */
+  backupCurrentSeasonId?: string | null;
+}
+
+interface SeasonWindow {
+  id: string;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+/**
+ * Which season was current at `timestamp`. Prefers a season whose window
+ * contains the timestamp; otherwise the most recent season that had started.
+ */
+export function resolveSeasonIdAt(
+  seasons: SeasonWindow[],
+  timestamp: string | null
+): string | null {
+  if (!timestamp) return null;
+  const at = new Date(timestamp).getTime();
+  if (Number.isNaN(at)) return null;
+
+  const started = seasons
+    .filter((s) => s.start_date && new Date(s.start_date).getTime() <= at)
+    .sort((a, b) => new Date(b.start_date as string).getTime() - new Date(a.start_date as string).getTime());
+
+  const containing = started.find(
+    (s) => !s.end_date || new Date(`${s.end_date}T23:59:59Z`).getTime() >= at
+  );
+  return containing?.id ?? started[0]?.id ?? null;
 }
 
 /** Map a backup season row to the SeasonStats shape the career calculators eat. */
@@ -91,6 +127,7 @@ export async function buildPowerMigrationComparison({
   bulkData,
   backupSeasonStats,
   backupTeamPower,
+  backupCurrentSeasonId,
 }: PowerMigrationComparisonInput): Promise<PowerMigrationComparison> {
   const backupSeasonsByTeam = new Map<string, BackupSeasonStatsRow[]>();
   for (const row of backupSeasonStats) {
@@ -144,6 +181,10 @@ export async function buildPowerMigrationComparison({
         }
         const beforeData: BulkTeamCareerData = {
           ...liveData,
+          // Never inherit the live (review-time) current season: if the season
+          // rolled over since the backup, the backup-time current season would
+          // be counted both as historical and as the current contribution.
+          currentSeasonId: backupCurrentSeasonId ?? liveData.currentSeasonId,
           seasonStats: teamBackupSeasons.map(toSeasonStats),
           seasonPowerScores: backupPowerScores,
         };
