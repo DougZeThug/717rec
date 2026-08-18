@@ -20,14 +20,16 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
+type MockFn = ReturnType<typeof vi.fn>;
+
 describe('usePlayoffViewState', () => {
-  const createData = (): Partial<PlayoffPageData> => ({
-    deleteBracket: vi.fn(),
-    refetchBrackets: vi.fn(),
+  const createData = () => ({
+    deleteBracket: vi.fn() as MockFn,
+    refetchBrackets: vi.fn() as MockFn,
   });
 
-  const createHandlers = (): Partial<ReturnType<typeof usePlayoffHandlers>> => ({
-    handleBracketCreatedWithNavigation: vi.fn(),
+  const createHandlers = () => ({
+    handleBracketCreatedWithNavigation: vi.fn() as MockFn,
   });
 
   beforeEach(() => {
@@ -36,11 +38,14 @@ describe('usePlayoffViewState', () => {
 
   it('closes the dialog and refetches after a successful delete', async () => {
     const data = createData();
-    data.deleteBracket?.mockResolvedValue(undefined);
-    data.refetchBrackets?.mockResolvedValue(undefined);
+    data.deleteBracket.mockResolvedValue(undefined);
+    data.refetchBrackets.mockResolvedValue(undefined);
 
     const { result } = renderHook(() =>
-      usePlayoffViewState(data as PlayoffPageData, createHandlers() as ReturnType<typeof usePlayoffHandlers>)
+      usePlayoffViewState(
+        data as unknown as PlayoffPageData,
+        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
+      )
     );
 
     act(() => {
@@ -64,7 +69,12 @@ describe('usePlayoffViewState', () => {
     const data = createData();
     data.deleteBracket.mockRejectedValue(new Error('Delete failed'));
 
-    const { result } = renderHook(() => usePlayoffViewState(data as any, createHandlers() as any));
+    const { result } = renderHook(() =>
+      usePlayoffViewState(
+        data as unknown as PlayoffPageData,
+        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
+      )
+    );
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
@@ -91,7 +101,12 @@ describe('usePlayoffViewState', () => {
     data.deleteBracket.mockResolvedValue(undefined);
     data.refetchBrackets.mockRejectedValue(new Error('Refetch failed'));
 
-    const { result } = renderHook(() => usePlayoffViewState(data as any, createHandlers() as any));
+    const { result } = renderHook(() =>
+      usePlayoffViewState(
+        data as unknown as PlayoffPageData,
+        createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>
+      )
+    );
 
     act(() => {
       result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
