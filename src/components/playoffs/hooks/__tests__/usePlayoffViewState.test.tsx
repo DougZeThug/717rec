@@ -1,6 +1,10 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { usePlayoffViewState } from '../usePlayoffViewState';
+import type { PlayoffPageData } from '../usePlayoffPageData';
+import type { usePlayoffHandlers } from '../usePlayoffHandlers';
+
 const mockToast = vi.fn();
 
 vi.mock('@/hooks/useToast', () => ({
@@ -15,8 +19,6 @@ vi.mock('@/utils/logger', () => ({
   bracketLog: vi.fn(),
   errorLog: vi.fn(),
 }));
-
-import { usePlayoffViewState } from '../usePlayoffViewState';
 
 describe('usePlayoffViewState', () => {
   const createData = () => ({
