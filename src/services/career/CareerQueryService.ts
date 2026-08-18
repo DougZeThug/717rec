@@ -13,7 +13,7 @@ export const CareerQueryService = {
   fetchTeamSeasonPowerScores: async (teamId: string) => {
     const { data, error } = await supabase
       .from('team_season_stats')
-      .select('power_score, match_wins, match_losses, season_id')
+      .select('power_score, career_power_score, match_wins, match_losses, season_id')
       .eq('team_id', teamId)
       .not('power_score', 'is', null);
 
@@ -27,7 +27,7 @@ export const CareerQueryService = {
   fetchCurrentTeamPower: async (teamId: string) => {
     const { data, error } = await supabase
       .from('v_team_details')
-      .select('power_score, wins, losses')
+      .select('power_score, career_power_score, wins, losses')
       .eq('team_id', teamId)
       .maybeSingle();
 
