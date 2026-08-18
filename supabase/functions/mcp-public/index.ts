@@ -66,8 +66,11 @@ function errorResult(message) {
   };
 }
 async function getActiveSeasonId(supabase) {
-  const { data } = await supabase.from("seasons").select("id").eq("is_active", true).maybeSingle();
-  return data?.id ?? null;
+  const { data, error } = await supabase.from("seasons").select("id").eq("is_active", true).maybeSingle();
+  if (error) {
+    return { data: null, error: error.message };
+  }
+  return { data: data?.id ?? null, error: null };
 }
 function isHiddenDivision(divisionName) {
   return (divisionName ?? "").toLowerCase().startsWith("hidden");
@@ -192,7 +195,8 @@ var get_schedule_default = defineTool2({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ scope, teamId, limit }) => {
     const supabase = anonClient();
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
     let query = supabase.from("matches").select(
       `id, date, team1_id, team2_id, team1_score, team2_score, iscompleted,
