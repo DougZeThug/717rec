@@ -49,7 +49,10 @@ export function usePlayoffViewState(
       try {
         await data.refetchBrackets();
       } catch (refetchError) {
-        errorLog('usePlayoffViewState: Bracket deleted, but failed to refresh brackets:', refetchError);
+        errorLog(
+          'usePlayoffViewState: Bracket deleted, but failed to refresh brackets:',
+          refetchError
+        );
         const message = getUIErrorMessage(refetchError, 'Failed to refresh bracket list');
         toast({
           title: 'Bracket deleted',
