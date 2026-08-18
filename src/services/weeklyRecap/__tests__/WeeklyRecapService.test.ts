@@ -201,6 +201,26 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(result.hasData).toBe(true);
   });
 
+  it('keeps an evening EST match in its own week (stored as next-day UTC)', async () => {
+    // 8 PM EST on Jan 21 is stored as 2026-01-22T01:00:00Z. League week is 3.
+    const querySpies = createSupabaseMock({
+      seasons: [{ data: { id: 's-est', start_date: '2026-01-01' }, error: null }],
+      matches: [
+        { data: { date: '2026-01-22T01:00:00Z' }, error: null },
+        { data: [], error: null },
+      ],
+      v_team_details: [{ data: [], error: null }],
+      divisions: [{ data: [{ id: 'd-visible' }], error: null }],
+    });
+
+    const result = await WeeklyRecapService.fetchWeeklyRecap();
+
+    expect(result.weekNumber).toBe(3);
+    const upsetMatchQuery = querySpies.matches[1];
+    expect(upsetMatchQuery.gte).toHaveBeenCalledWith('date', '2026-01-15T05:00:00.000Z');
+    expect(upsetMatchQuery.lt).toHaveBeenCalledWith('date', '2026-01-22T05:00:00.000Z');
+  });
+
   it('computes week number and returns filtered/sorted/capped upsets and hot streaks', async () => {
     const querySpies = createSupabaseMock({
       seasons: [{ data: { id: 's-2026', start_date: '2026-01-01T00:00:00Z' }, error: null }],
