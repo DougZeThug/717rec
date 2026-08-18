@@ -36,8 +36,9 @@ export const WeeklyRecapService = {
       }
 
       const seasonId = activeSeason.id;
-      // start_date is a calendar date (YYYY-MM-DD) in league time.
+      // start_date is a calendar date in league time; tolerate an ISO timestamp form.
       const [seasonYear, seasonMonth, seasonDay] = activeSeason.start_date
+        .slice(0, 10)
         .split('-')
         .map(Number);
 
