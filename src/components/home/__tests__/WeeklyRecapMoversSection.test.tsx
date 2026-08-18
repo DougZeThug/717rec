@@ -68,6 +68,12 @@ describe('WeeklyRecapMoversSection', () => {
     expect(screen.queryByText('Team notRiser')).not.toBeInTheDocument();
   });
 
+  it('hides the whole section when nothing moved', () => {
+    renderSection([trend('a', 0), trend('b', 0)]);
+
+    expect(screen.queryByText('Movers')).not.toBeInTheDocument();
+  });
+
   it('labels the section Playoff Movers during the playoffs', () => {
     render(
       <MemoryRouter>
