@@ -72,7 +72,7 @@ describe('color modules table-driven coverage', () => {
       bg: 'bg-gray-100 dark:bg-gray-900/20',
       border: 'border-gray-300 dark:border-gray-700',
       description: 'No Data',
-      formatted: 'N/A',
+      formatted: '—',
       ring: 'stroke-muted',
     },
     {
@@ -138,7 +138,7 @@ describe('color modules table-driven coverage', () => {
     // is that a genuinely absent value is handled.
     const absent: number | undefined = undefined;
     expect(getPowerScoreRingColor(absent)).toBe('stroke-muted');
-    expect(formatPowerScore(absent)).toBe('N/A');
+    expect(formatPowerScore(absent)).toBe('—');
   });
 
   it.each([
