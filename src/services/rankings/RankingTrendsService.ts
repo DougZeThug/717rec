@@ -137,9 +137,7 @@ export async function fetchPowerScoreTrends(
     }
   });
 
-  const signedTrends = sortedTrends.filter((t) =>
-    direction === 'up' ? t.delta > 0 : t.delta < 0
-  );
+  const signedTrends = sortedTrends.filter((t) => (direction === 'up' ? t.delta > 0 : t.delta < 0));
 
   // Return top N teams
   return signedTrends.slice(0, limit);
@@ -311,9 +309,7 @@ export async function fetchWeeklyPowerScoreTrends(
     }
   });
 
-  const signedTrends = sortedTrends.filter((t) =>
-    direction === 'up' ? t.delta > 0 : t.delta < 0
-  );
+  const signedTrends = sortedTrends.filter((t) => (direction === 'up' ? t.delta > 0 : t.delta < 0));
 
   return {
     trends: signedTrends.slice(0, limit),
