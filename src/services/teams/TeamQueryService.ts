@@ -33,6 +33,7 @@ export const fetchTeamsFromApi = async () => {
       divisionname,
       sos,
       power_score,
+      career_power_score,
       win_percentage,
       game_win_percentage,
       close_match_losses
@@ -75,6 +76,7 @@ export const fetchTeamsWithOptions = async (options?: TeamsQueryOptions): Promis
       divisionname,
       sos,
       power_score,
+      career_power_score,
       win_percentage,
       game_win_percentage,
       players,
@@ -142,6 +144,7 @@ export const fetchTeamDetails = async (teamId: string): Promise<Team> => {
       divisionname,
       sos,
       power_score,
+      career_power_score,
       win_percentage,
       game_win_percentage,
       players,

@@ -4376,6 +4376,57 @@ export type Database = {
         }
         Relationships: []
       }
+      team_details_pre_career_split: {
+        Row: {
+          backed_up_at: string | null
+          divisionname: string | null
+          game_losses: number | null
+          game_win_percentage: number | null
+          game_wins: number | null
+          losses: number | null
+          name: string | null
+          power_score: number | null
+          sos: number | null
+          team_id: string | null
+          weighted_game_win_percentage: number | null
+          weighted_win_percentage: number | null
+          win_percentage: number | null
+          wins: number | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          divisionname?: string | null
+          game_losses?: number | null
+          game_win_percentage?: number | null
+          game_wins?: number | null
+          losses?: number | null
+          name?: string | null
+          power_score?: number | null
+          sos?: number | null
+          team_id?: string | null
+          weighted_game_win_percentage?: number | null
+          weighted_win_percentage?: number | null
+          win_percentage?: number | null
+          wins?: number | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          divisionname?: string | null
+          game_losses?: number | null
+          game_win_percentage?: number | null
+          game_wins?: number | null
+          losses?: number | null
+          name?: string | null
+          power_score?: number | null
+          sos?: number | null
+          team_id?: string | null
+          weighted_game_win_percentage?: number | null
+          weighted_win_percentage?: number | null
+          win_percentage?: number | null
+          wins?: number | null
+        }
+        Relationships: []
+      }
       team_details_pre_floor_adjustment: {
         Row: {
           backed_up_at: string | null
@@ -4994,6 +5045,7 @@ export type Database = {
       }
       team_season_stats: {
         Row: {
+          career_power_score: number | null
           champion: boolean | null
           division_name: string | null
           game_losses: number
@@ -5009,6 +5061,7 @@ export type Database = {
           team_id: string
         }
         Insert: {
+          career_power_score?: number | null
           champion?: boolean | null
           division_name?: string | null
           game_losses: number
@@ -5024,6 +5077,7 @@ export type Database = {
           team_id: string
         }
         Update: {
+          career_power_score?: number | null
           champion?: boolean | null
           division_name?: string | null
           game_losses?: number
@@ -5138,6 +5192,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      team_season_stats_pre_career_split: {
+        Row: {
+          backed_up_at: string | null
+          champion: boolean | null
+          division_name: string | null
+          game_losses: number | null
+          game_wins: number | null
+          match_losses: number | null
+          match_wins: number | null
+          playoff_rank: number | null
+          power_score: number | null
+          recorded_at: string | null
+          runner_up: boolean | null
+          season_id: string | null
+          sos: number | null
+          team_id: string | null
+        }
+        Insert: {
+          backed_up_at?: string | null
+          champion?: boolean | null
+          division_name?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          match_losses?: number | null
+          match_wins?: number | null
+          playoff_rank?: number | null
+          power_score?: number | null
+          recorded_at?: string | null
+          runner_up?: boolean | null
+          season_id?: string | null
+          sos?: number | null
+          team_id?: string | null
+        }
+        Update: {
+          backed_up_at?: string | null
+          champion?: boolean | null
+          division_name?: string | null
+          game_losses?: number | null
+          game_wins?: number | null
+          match_losses?: number | null
+          match_wins?: number | null
+          playoff_rank?: number | null
+          power_score?: number | null
+          recorded_at?: string | null
+          runner_up?: boolean | null
+          season_id?: string | null
+          sos?: number | null
+          team_id?: string | null
+        }
+        Relationships: []
       }
       team_season_stats_pre_division_history: {
         Row: {
@@ -6122,6 +6227,7 @@ export type Database = {
       }
       v_team_details: {
         Row: {
+          career_power_score: number | null
           close_match_losses: number | null
           created_at: string | null
           division_id: string | null
@@ -6435,6 +6541,7 @@ export type Database = {
       }
       v_team_season_agg: {
         Row: {
+          career_power_score: number | null
           division_name: string | null
           game_losses: number | null
           game_win_percentage: number | null
@@ -6968,6 +7075,14 @@ export type Database = {
         }
       }
       power_score_100: {
+        Args: {
+          p_sos: number
+          p_weighted_game_win_pct: number
+          p_weighted_win_pct: number
+        }
+        Returns: number
+      }
+      power_score_100_career: {
         Args: {
           p_sos: number
           p_weighted_game_win_pct: number

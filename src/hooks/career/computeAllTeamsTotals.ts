@@ -24,6 +24,7 @@ export async function computeTotalsFromBulkData(
   data: BulkTeamCareerData,
   currentTeamPowerData: {
     power_score: number | null;
+    career_power_score?: number | null;
     wins: number | null;
     losses: number | null;
   } | null
@@ -163,11 +164,17 @@ export const computeAllTeamsTotals = async (teams: Team[]): Promise<Map<string, 
   // Build power score lookup from the teams array (already fetched from v_team_details)
   const teamPowerDataMap = new Map<
     string,
-    { power_score: number | null; wins: number | null; losses: number | null }
+    {
+      power_score: number | null;
+      career_power_score: number | null;
+      wins: number | null;
+      losses: number | null;
+    }
   >();
   for (const team of teams) {
     teamPowerDataMap.set(team.id, {
       power_score: team.power_score ?? null,
+      career_power_score: team.career_power_score ?? null,
       wins: team.wins ?? null,
       losses: team.losses ?? null,
     });

@@ -15,6 +15,8 @@ export interface Team {
   seed?: number;
 
   power_score?: number | null;
+  /** Floored (earned-schedule) rating used by Career rankings only. */
+  career_power_score?: number | null;
   sos?: number | null;
   win_percentage?: number;
   game_win_percentage?: number;
