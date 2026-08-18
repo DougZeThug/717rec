@@ -128,7 +128,7 @@ export async function fetchPowerScoreTrends(
       };
     });
 
-  // Sort based on direction
+  // Sort based on direction and filter to trends that match the requested sign
   const sortedTrends = trends.sort((a, b) => {
     if (direction === 'up') {
       return b.delta - a.delta; // Largest positive delta first
@@ -137,8 +137,12 @@ export async function fetchPowerScoreTrends(
     }
   });
 
+  const signedTrends = sortedTrends.filter((t) =>
+    direction === 'up' ? t.delta > 0 : t.delta < 0
+  );
+
   // Return top N teams
-  return sortedTrends.slice(0, limit);
+  return signedTrends.slice(0, limit);
 }
 
 /**
@@ -298,7 +302,7 @@ export async function fetchWeeklyPowerScoreTrends(
       };
     });
 
-  // 7. Sort based on direction
+  // Sort based on direction and filter to trends that match the requested sign
   const sortedTrends = trends.sort((a, b) => {
     if (direction === 'up') {
       return b.delta - a.delta;
@@ -307,8 +311,12 @@ export async function fetchWeeklyPowerScoreTrends(
     }
   });
 
+  const signedTrends = sortedTrends.filter((t) =>
+    direction === 'up' ? t.delta > 0 : t.delta < 0
+  );
+
   return {
-    trends: sortedTrends.slice(0, limit),
+    trends: signedTrends.slice(0, limit),
     hasData: true,
     latestWeek: currentWeek,
   };
