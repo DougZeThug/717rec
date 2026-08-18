@@ -64,7 +64,7 @@ function MoversSection({
   winter: boolean;
   mode?: RecapMode;
 }) {
-  const visibleRisers = risers.filter(isVisibleMover);
+  const visibleRisers = risers.filter((trend) => trend.delta > 0 && isVisibleMover(trend));
   const visibleFaller = faller && faller.delta < 0 && isVisibleMover(faller) ? faller : undefined;
   if (visibleRisers.length === 0 && !visibleFaller) return null;
   return (
