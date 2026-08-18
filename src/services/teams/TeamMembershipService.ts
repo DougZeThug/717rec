@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { DatabaseError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TeamMembershipForAdmin, TeamMembershipRecord } from './teamFetch.types';
@@ -169,19 +170,41 @@ export const updateMembershipApproval = async (
   membershipId: string,
   approved: boolean
 ): Promise<void> => {
+  // Rejecting a pending request removes the row: flipping is_approved to false
+  // on an already-pending row is a no-op and leaves it in the queue forever.
+  if (!approved) {
+    const { data, error } = await supabase
+      .from('team_memberships')
+      .delete()
+      .eq('id', membershipId)
+      .select('id');
+
+    if (error) handleDatabaseError(error, 'Failed to reject membership');
+    if (!data || data.length === 0) {
+      throw new DatabaseError(
+        'Failed to reject membership: no row was changed. You may not have permission.'
+      );
+    }
+    return;
+  }
+
   const updateData: { is_approved: boolean; approved_at?: string; approved_by?: string } = {
     is_approved: approved,
   };
 
-  if (approved) {
-    updateData.approved_at = new Date().toISOString();
-    updateData.approved_by = (await supabase.auth.getUser()).data.user?.id;
-  }
+  updateData.approved_at = new Date().toISOString();
+  updateData.approved_by = (await supabase.auth.getUser()).data.user?.id;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('team_memberships')
     .update(updateData)
-    .eq('id', membershipId);
+    .eq('id', membershipId)
+    .select('id');
 
   if (error) handleDatabaseError(error, 'Failed to update membership approval');
+  if (!data || data.length === 0) {
+    throw new DatabaseError(
+      'Failed to update membership approval: no row was changed. You may not have permission.'
+    );
+  }
 };
