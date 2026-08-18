@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { DatabaseError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TeamMembershipForAdmin, TeamMembershipRecord } from './teamFetch.types';
