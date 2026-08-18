@@ -237,23 +237,41 @@ describe('updateMembershipApproval', () => {
   it('resolves on successful approval', async () => {
     mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+      update: () => ({
+        eq: () => ({ select: () => Promise.resolve({ data: [{ id: 'mem-1' }], error: null }) }),
+      }),
     });
     await expect(updateMembershipApproval('mem-1', true)).resolves.toBeUndefined();
   });
 
-  it('resolves on rejection (approved=false, no auth needed)', async () => {
+  it('deletes the row on rejection (approved=false, no auth needed)', async () => {
+    const deleteFn = vi.fn(() => ({
+      eq: () => ({ select: () => Promise.resolve({ data: [{ id: 'mem-1' }], error: null }) }),
+    }));
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: null }) }),
+      delete: deleteFn,
     });
     await expect(updateMembershipApproval('mem-1', false)).resolves.toBeUndefined();
+    expect(deleteFn).toHaveBeenCalled();
     expect(mockAuth.getUser).not.toHaveBeenCalled();
+  });
+
+  it('throws when the approval update affects no rows (RLS blocked)', async () => {
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    mockFrom.mockReturnValue({
+      update: () => ({
+        eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }),
+      }),
+    });
+    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(DatabaseError);
   });
 
   it('throws DatabaseError on update error', async () => {
     mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
     mockFrom.mockReturnValue({
-      update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
+      update: () => ({
+        eq: () => ({ select: () => Promise.resolve({ data: null, error: pgError() }) }),
+      }),
     });
     await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(DatabaseError);
   });
