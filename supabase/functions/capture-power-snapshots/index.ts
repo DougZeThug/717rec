@@ -180,6 +180,21 @@ Deno.serve(async (req) => {
     }
 
     const weekNumber = weekData as number;
+
+    if (!weekNumber || weekNumber < 1) {
+      console.warn(
+        `[capture-power-snapshots] Season has not started yet (week number: ${weekNumber})`
+      );
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Season has not started yet',
+          weekNumber,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
+    }
+
     console.log(`[capture-power-snapshots] Current week number: ${weekNumber}`);
 
     // 3. Fetch season-scoped power scores via RPC (filters matches by season)
