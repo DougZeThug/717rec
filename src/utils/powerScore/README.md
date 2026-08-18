@@ -20,23 +20,39 @@ played a match, and for teams in the Hidden division. Always handle null —
 
 ## Calculation Formula
 
-There is exactly one definition, the `power_score_100()` SQL function:
+There are two SQL definitions. Standings, team pages and per-season records use
+`power_score_100()`. Career rankings use `power_score_100_career()`.
+
+**Standings / season — `power_score_100()`** (no floor):
+
+```
+Power Score = (weighted match win rate × 40)
+            + (weighted game win rate   × 15)
+            + (strength of schedule     × 45)
+```
+
+**Career — `power_score_100_career()`** (earned schedule credit):
 
 ```
 performance = (weighted match win rate × 40 + weighted game win rate × 15) / 55
 scheduleCredit = min(1, performance / 0.30)
 
-Power Score = (weighted match win rate × 40)
-            + (weighted game win rate   × 15)
-            + (strength of schedule     × 45 × scheduleCredit)
+Career Power Score = (weighted match win rate × 40)
+                   + (weighted game win rate   × 15)
+                   + (strength of schedule     × 45 × scheduleCredit)
 ```
+
+A single rough season should not crush a live standing, so the floor applies only
+to the long-run career rating. `v_team_details` and `v_team_season_agg` expose both
+numbers: `power_score` (plain) and `career_power_score` (floored). `team_season_stats`
+stores both per season.
 
 | Term | Meaning |
 |------|---------|
 | **Weighted match win rate** | `SUM(win × opponent division weight) / SUM(opponent division weight)`. A true weighted average on a 0-1 scale. Beating a strong opponent counts more than beating a weak one, but winning every match still reads as 1.0 whoever you played. |
 | **Strength of schedule (SOS)** | Average `division_weight` of the opponents faced, clamped to `[0.1, 1.0]`. This is the term that rewards a harder schedule. It is **not** the average power score of opponents. |
 | **Weighted game win rate** | `SUM(game wins × opponent weight) / SUM(total games × opponent weight)`. Same weighted-average shape as the match term. |
-| **Performance** | The blend of the two win-rate terms on a 0-1 scale. A team at 0.30 performance keeps 100% of its SOS credit; a team at 0.15 performance keeps 50%. This is what lowers the floor for teams with very poor records without touching teams above the threshold. |
+| **Performance** (career only) | The blend of the two win-rate terms on a 0-1 scale. A team at 0.30 performance keeps 100% of its SOS credit; a team at 0.15 performance keeps 50%. This lowers the career floor for teams with very poor long-run records without touching teams above the threshold. |
 
 ### Division weights
 
