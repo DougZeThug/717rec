@@ -129,9 +129,10 @@ const usePublicClient = (client: SupabaseClient) => vi.mocked(anonClient).mockRe
 const useAuthedClient = (client: SupabaseClient) => vi.mocked(userClient).mockReturnValue(client);
 
 beforeEach(() => {
-  vi.mocked(getPublicSeasonId).mockResolvedValue('season-1');
-  vi.mocked(getAuthedSeasonId).mockResolvedValue('season-1');
+  vi.mocked(getPublicSeasonId).mockResolvedValue({ data: 'season-1', error: null });
+  vi.mocked(getAuthedSeasonId).mockResolvedValue({ data: 'season-1', error: null });
 });
+
 
 describe('public get_standings handler', () => {
   it('drops a team whose live division is Hidden even though the cached label is not', async () => {
@@ -176,12 +177,24 @@ describe('public get_standings handler', () => {
   });
 
   it('returns an empty list when there is no active season', async () => {
-    vi.mocked(getPublicSeasonId).mockResolvedValue(null);
+    vi.mocked(getPublicSeasonId).mockResolvedValue({ data: null, error: null });
     const { client } = makeClient([VISIBLE_A]);
     usePublicClient(client);
 
     expect(parse(await publicGetStandings.handler(NO_FILTER, AUTHED))).toEqual([]);
   });
+
+  it('surfaces an active-season lookup error instead of returning empty', async () => {
+    vi.mocked(getPublicSeasonId).mockResolvedValue({ data: null, error: 'connection lost' });
+    const { client } = makeClient([VISIBLE_A]);
+    usePublicClient(client);
+
+    const result = await publicGetStandings.handler(NO_FILTER, AUTHED);
+
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toBe('connection lost');
+  });
+
 
   it('surfaces a query error instead of returning rows', async () => {
     const { client } = makeClient([], { message: 'boom' });

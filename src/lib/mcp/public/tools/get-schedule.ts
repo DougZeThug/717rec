@@ -16,8 +16,10 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ scope, teamId, limit }) => {
     const supabase = anonClient();
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
+
 
     let query = supabase
       .from('matches')

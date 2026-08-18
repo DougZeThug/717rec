@@ -42,8 +42,11 @@ function errorResult(message) {
   };
 }
 async function getActiveSeasonId(supabase) {
-  const { data } = await supabase.from("seasons").select("id").eq("is_active", true).maybeSingle();
-  return data?.id ?? null;
+  const { data, error } = await supabase.from("seasons").select("id").eq("is_active", true).maybeSingle();
+  if (error) {
+    return { data: null, error: error.message };
+  }
+  return { data: data?.id ?? null, error: null };
 }
 function isHiddenDivision(divisionName) {
   return (divisionName ?? "").toLowerCase().startsWith("hidden");
@@ -92,7 +95,8 @@ var get_my_recent_matches_default = defineTool2({
   handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
     const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
@@ -118,7 +122,8 @@ var get_my_team_default = defineTool3({
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult(null);
     const { data: membership, error: memErr } = await supabase.from("team_memberships").select("team_id, teams(id, name, wins, losses, division:divisions(name))").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
@@ -146,7 +151,8 @@ var get_my_upcoming_matches_default = defineTool4({
   handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
     const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
     if (memErr) return errorResult(memErr.message);
@@ -205,7 +211,8 @@ var get_schedule_default = defineTool6({
   handler: async ({ scope, teamId, limit }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
     let query = supabase.from("matches").select(
       `id, date, team1_id, team2_id, team1_score, team2_score, iscompleted,
@@ -238,7 +245,8 @@ var get_standings_default = defineTool7({
   handler: async ({ division }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
     let query = supabase.from("team_season_stats").select(
       "team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name, divisions(name, display_division))"
@@ -271,7 +279,8 @@ var list_teams_default = defineTool8({
   handler: async ({ division }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult("Not authenticated");
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
     let query = supabase.from("team_season_stats").select(
       "team_id, division_name, match_wins, match_losses, power_score, teams(name, divisions(name, display_division))"

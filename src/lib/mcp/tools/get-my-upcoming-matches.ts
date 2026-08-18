@@ -12,8 +12,10 @@ export default defineTool({
   handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) return errorResult('Not authenticated');
     const supabase = userClient(ctx);
-    const seasonId = await getActiveSeasonId(supabase);
+    const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
+    if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
+
 
     const { data: mem, error: memErr } = await supabase
       .from('team_memberships')

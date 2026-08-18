@@ -75,10 +75,20 @@ export function errorResult(message: string) {
   };
 }
 
-export async function getActiveSeasonId(supabase: SupabaseClient): Promise<string | null> {
-  const { data } = await supabase.from('seasons').select('id').eq('is_active', true).maybeSingle();
-  return data?.id ?? null;
+export async function getActiveSeasonId(
+  supabase: SupabaseClient
+): Promise<{ data: string | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('is_active', true)
+    .maybeSingle();
+  if (error) {
+    return { data: null, error: error.message };
+  }
+  return { data: data?.id ?? null, error: null };
 }
+
 
 /**
  * Hidden-division teams are administrative placeholders, not league entrants.
