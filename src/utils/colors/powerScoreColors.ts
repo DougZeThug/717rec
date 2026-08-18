@@ -5,7 +5,7 @@
 
 export const formatPowerScore = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {
-    return 'N/A';
+    return '—';
   }
   return score.toFixed(1);
 };
