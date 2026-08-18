@@ -43,7 +43,7 @@ export interface BulkTeamCareerData extends CareerData {
   /** Season stats with power_score included (for calculateCareerPowerScore) */
   seasonPowerScores: {
     power_score: number | null;
-    career_power_score: number | null;
+    career_power_score?: number | null;
     match_wins: number | null;
     match_losses: number | null;
     season_id: string | null;
