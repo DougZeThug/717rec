@@ -1,9 +1,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { usePlayoffViewState } from '../usePlayoffViewState';
-import type { PlayoffPageData } from '../usePlayoffPageData';
 import type { usePlayoffHandlers } from '../usePlayoffHandlers';
+import type { PlayoffPageData } from '../usePlayoffPageData';
+import { usePlayoffViewState } from '../usePlayoffViewState';
 
 const mockToast = vi.fn();
 
