@@ -439,4 +439,40 @@ describe('fetchWeeklyPowerScoreTrends', () => {
       'Failed to fetch current weekly power score snapshots: current snapshots failed'
     );
   });
+
+  it('filters out negative deltas when direction is up', async () => {
+    queueResult('seasons', { data: { id: 's1' }, error: null });
+    queueResult('power_score_snapshots', {
+      data: [{ week_number: 2 }, { week_number: 1 }],
+      error: null,
+    });
+    queueResult('divisions', { data: [{ id: 'd1' }], error: null });
+    queueResult('power_score_snapshots', {
+      data: [{ team_id: 't1', power_score: 60 }],
+      error: null,
+    });
+    queueResult('power_score_snapshots', {
+      data: [{ team_id: 't1', power_score: 70 }],
+      error: null,
+    });
+    queueResult('v_team_details', {
+      data: [
+        {
+          team_id: 't1',
+          name: 'Alpha',
+          divisionname: 'Open',
+          division_id: 'd1',
+          logo_url: null,
+          image_url: null,
+        },
+      ],
+      error: null,
+    });
+
+    const result = await fetchWeeklyPowerScoreTrends('up');
+
+    expect(result.hasData).toBe(true);
+    expect(result.latestWeek).toBe(2);
+    expect(result.trends).toEqual([]);
+  });
 });
