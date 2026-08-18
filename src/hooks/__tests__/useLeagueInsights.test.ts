@@ -120,6 +120,25 @@ describe('useLeagueInsights', () => {
     expect(mostImproved?.value).toBe('+5.5');
   });
 
+  it('does not include a negative-delta riser as Most Improved', () => {
+    (useTeamRankings as ReturnType<typeof vi.fn>).mockReturnValue({
+      rankings: [makeRanking('a', 90, 3, 1)],
+      isLoading: false,
+    });
+    (useWeeklyPowerScoreTrends as ReturnType<typeof vi.fn>)
+      .mockReturnValueOnce({
+        data: { trends: [{ teamId: 'a', teamName: 'Team a', delta: -0.3, logoUrl: null }] },
+        isLoading: false,
+      })
+      .mockReturnValueOnce({
+        data: undefined,
+        isLoading: false,
+      });
+    const { result } = renderHook(() => useLeagueInsights());
+    const mostImproved = result.current.topPerformers.find((p) => p.category === 'Most Improved');
+    expect(mostImproved).toBeUndefined();
+  });
+
   it('propagates a rankings fetch error', () => {
     const rankingsError = new Error('rankings down');
     (useTeamRankings as ReturnType<typeof vi.fn>).mockReturnValue({
