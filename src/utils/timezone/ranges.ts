@@ -2,6 +2,44 @@ import { timezoneLog } from '@/utils/logger';
 
 import { DateRange } from './types';
 
+const LEAGUE_TIME_ZONE = 'America/New_York';
+
+/**
+ * Return the calendar date (year/month/day) of an instant as seen in league
+ * time (America/New_York). Use this whenever "which day did this match happen"
+ * matters — an 8 PM EST match is stored as the next UTC day.
+ */
+export const getLeagueCalendarDate = (
+  date: Date
+): { year: number; month: number; day: number } => {
+  // en-CA formats as YYYY-MM-DD.
+  const [year, month, day] = new Intl.DateTimeFormat('en-CA', {
+    timeZone: LEAGUE_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+    .format(date)
+    .split('-')
+    .map(Number);
+
+  return { year, month, day };
+};
+
+/**
+ * Return the UTC instant of midnight (start of day) in league time for the
+ * given calendar date. Month is 1-based; day values may overflow (e.g. day 40)
+ * and roll into the next month, matching Date.UTC semantics.
+ */
+export const getLeagueMidnightUtc = (year: number, month: number, day: number): Date => {
+  const naive = Date.UTC(year, month - 1, day, 0, 0, 0);
+  // Offset of league time at that instant, in ms (e.g. +4h in EDT).
+  const asLeagueTime = new Date(
+    new Date(naive).toLocaleString('en-US', { timeZone: LEAGUE_TIME_ZONE })
+  ).getTime();
+  return new Date(naive + (naive - asLeagueTime));
+};
+
 /**
  * Create a date range that includes the evening session
  * This ensures that evening matches (which may be stored as next-day UTC)
