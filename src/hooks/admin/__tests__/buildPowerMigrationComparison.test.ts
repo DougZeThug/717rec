@@ -4,7 +4,7 @@ import { BackupSeasonStatsRow, BackupTeamPowerRow } from '@/services/admin/Power
 import { BulkTeamCareerData } from '@/services/career/CareerService';
 import { Team } from '@/types';
 
-import { buildPowerMigrationComparison } from '../buildPowerMigrationComparison';
+import { buildPowerMigrationComparison, resolveSeasonIdAt } from '../buildPowerMigrationComparison';
 
 // Fixtures run through the REAL career calculators (no mocks): one archived
 // season ('s1') plus the current season ('s2') represented by the
@@ -163,5 +163,53 @@ describe('buildPowerMigrationComparison', () => {
 
     // Charlie has no season history on either side
     expect(rows.find((r) => r.teamId === 'c')?.perSeason).toEqual([]);
+  });
+
+  it('does not double-count the backup-time current season after a season rollover', async () => {
+    // Backup was taken during s2; review happens during s3.
+    const liveData: BulkTeamCareerData = { ...bulk(0.7), currentSeasonId: 's3' };
+    const s2Backup: BackupSeasonStatsRow = {
+      ...backupSeason('a', 0.5),
+      season_id: 's2',
+      season_name: 'Season 2',
+    };
+
+    const input = {
+      teams: [teams[0]],
+      bulkData: new Map<string, BulkTeamCareerData>([['a', liveData]]),
+      backupSeasonStats: [backupSeason('a', 0.9), s2Backup],
+      backupTeamPower: [backupPower('a', 90)],
+    };
+
+    const fixed = await buildPowerMigrationComparison({ ...input, backupCurrentSeasonId: 's2' });
+    const buggy = await buildPowerMigrationComparison(input);
+
+    // Correct: s1 historical (90×10) + backup current (90×2) → 90
+    expect(fixed.rows[0].beforeScore).toBeCloseTo(90, 6);
+    // Without the backup season id, s2 is counted historically AND as current.
+    expect(buggy.rows[0].beforeScore).not.toBeCloseTo(90, 6);
+  });
+});
+
+describe('resolveSeasonIdAt', () => {
+  const seasons = [
+    { id: 's1', start_date: '2026-01-01', end_date: '2026-04-30' },
+    { id: 's2', start_date: '2026-05-01', end_date: '2026-08-10' },
+    { id: 's3', start_date: '2026-08-11', end_date: null },
+  ];
+
+  it('returns the season whose window contains the timestamp', () => {
+    expect(resolveSeasonIdAt(seasons, '2026-08-09T12:00:00Z')).toBe('s2');
+    expect(resolveSeasonIdAt(seasons, '2026-02-01T12:00:00Z')).toBe('s1');
+  });
+
+  it('returns the latest started season for an open-ended window', () => {
+    expect(resolveSeasonIdAt(seasons, '2026-09-01T12:00:00Z')).toBe('s3');
+  });
+
+  it('returns null for a missing or invalid timestamp', () => {
+    expect(resolveSeasonIdAt(seasons, null)).toBeNull();
+    expect(resolveSeasonIdAt(seasons, 'not-a-date')).toBeNull();
+    expect(resolveSeasonIdAt(seasons, '2025-01-01T00:00:00Z')).toBeNull();
   });
 });
