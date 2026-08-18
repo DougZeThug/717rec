@@ -50,8 +50,7 @@ export function transformTeamRow(row: TeamRowData): Team {
     // Preserve NULL/undefined values for SOS and power score (can be null for 0-0 teams)
     sos: typeof row.sos === 'number' ? row.sos : null,
     power_score: typeof row.power_score === 'number' ? row.power_score : null,
-    career_power_score:
-      typeof row.career_power_score === 'number' ? row.career_power_score : null,
+    career_power_score: typeof row.career_power_score === 'number' ? row.career_power_score : null,
     win_percentage: row.win_percentage || 0,
     game_win_percentage: row.game_win_percentage || 0,
     close_match_losses: row.close_match_losses,
