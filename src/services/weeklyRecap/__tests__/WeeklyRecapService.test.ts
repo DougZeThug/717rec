@@ -501,8 +501,9 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(upsetMatchQuery.eq).toHaveBeenCalledWith('iscompleted', true);
     expect(upsetMatchQuery.is).toHaveBeenCalledWith('bracket_id', null);
     expect(upsetMatchQuery.not).toHaveBeenCalledWith('winner_id', 'is', null);
-    expect(upsetMatchQuery.gte).toHaveBeenCalledWith('date', '2026-01-15T00:00:00.000Z');
-    expect(upsetMatchQuery.lt).toHaveBeenCalledWith('date', '2026-01-22T00:00:00.000Z');
+    // Week boundaries are midnight in league time (EST = UTC-5 in January).
+    expect(upsetMatchQuery.gte).toHaveBeenCalledWith('date', '2026-01-15T05:00:00.000Z');
+    expect(upsetMatchQuery.lt).toHaveBeenCalledWith('date', '2026-01-22T05:00:00.000Z');
 
     expect(result.hasData).toBe(true);
   });
