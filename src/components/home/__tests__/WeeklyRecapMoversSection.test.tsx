@@ -54,10 +54,18 @@ describe('WeeklyRecapMoversSection', () => {
     expect(screen.queryByText('Movers')).not.toBeInTheDocument();
   });
 
-  it('hides the whole section when nothing moved', () => {
-    renderSection([trend('a', 0), trend('b', 0)]);
+  it('does not render a negative-delta team as a riser', () => {
+    renderSection([trend('a', -0.3)]);
 
     expect(screen.queryByText('Movers')).not.toBeInTheDocument();
+    expect(screen.queryByText('Team a')).not.toBeInTheDocument();
+  });
+
+  it('drops negative-delta rows while keeping positive risers', () => {
+    renderSection([trend('riser', 1.2), trend('notRiser', -0.3)]);
+
+    expect(screen.getByText('Team riser')).toBeInTheDocument();
+    expect(screen.queryByText('Team notRiser')).not.toBeInTheDocument();
   });
 
   it('labels the section Playoff Movers during the playoffs', () => {
