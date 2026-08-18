@@ -76,6 +76,7 @@ export const fetchTeamsWithOptions = async (options?: TeamsQueryOptions): Promis
       divisionname,
       sos,
       power_score,
+      career_power_score,
       win_percentage,
       game_win_percentage,
       players,
