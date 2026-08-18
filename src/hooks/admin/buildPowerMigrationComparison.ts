@@ -77,7 +77,10 @@ export function resolveSeasonIdAt(
 
   const started = seasons
     .filter((s) => s.start_date && new Date(s.start_date).getTime() <= at)
-    .sort((a, b) => new Date(b.start_date as string).getTime() - new Date(a.start_date as string).getTime());
+    .sort(
+      (a, b) =>
+        new Date(b.start_date as string).getTime() - new Date(a.start_date as string).getTime()
+    );
 
   const containing = started.find(
     (s) => !s.end_date || new Date(`${s.end_date}T23:59:59Z`).getTime() >= at

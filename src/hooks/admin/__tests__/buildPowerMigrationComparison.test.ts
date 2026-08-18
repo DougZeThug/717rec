@@ -168,7 +168,11 @@ describe('buildPowerMigrationComparison', () => {
   it('does not double-count the backup-time current season after a season rollover', async () => {
     // Backup was taken during s2; review happens during s3.
     const liveData: BulkTeamCareerData = { ...bulk(0.7), currentSeasonId: 's3' };
-    const s2Backup: BackupSeasonStatsRow = { ...backupSeason('a', 0.5), season_id: 's2', season_name: 'Season 2' };
+    const s2Backup: BackupSeasonStatsRow = {
+      ...backupSeason('a', 0.5),
+      season_id: 's2',
+      season_name: 'Season 2',
+    };
 
     const input = {
       teams: [teams[0]],
