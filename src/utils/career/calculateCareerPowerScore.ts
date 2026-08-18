@@ -5,6 +5,8 @@ import { averageDivisionBonusWeight, resolveDivisionBonusWeight } from './divisi
 
 interface SeasonPowerScoreData {
   power_score: number | null;
+  /** Floored (earned-schedule) value. Career uses this when present. */
+  career_power_score?: number | null;
   match_wins: number | null;
   match_losses: number | null;
   season_id?: string | null;
@@ -12,6 +14,7 @@ interface SeasonPowerScoreData {
 
 interface CurrentTeamPowerData {
   power_score: number | null;
+  career_power_score?: number | null;
   wins: number | null;
   losses: number | null;
 }
@@ -98,23 +101,22 @@ export const calculateCareerPowerScore = async ({
   if (historicalStats && historicalStats.length > 0) {
     for (const season of historicalStats) {
       const seasonMatches = (season.match_wins || 0) + (season.match_losses || 0);
-      if (seasonMatches > 0 && season.power_score !== null) {
-        totalWeightedScore += season.power_score * 100 * seasonMatches;
+      // Prefer the career (floored) score; fall back to the standings score for
+      // rows recorded before the two formulas were split.
+      const seasonScore = season.career_power_score ?? season.power_score;
+      if (seasonMatches > 0 && seasonScore !== null && seasonScore !== undefined) {
+        totalWeightedScore += seasonScore * 100 * seasonMatches;
         totalMatches += seasonMatches;
       }
     }
   }
 
   // Add current season data if available (power score already on 0-100 scale)
-  if (
-    currentTeamData &&
-    currentTeamData.power_score !== null &&
-    currentTeamData.wins !== null &&
-    currentTeamData.losses !== null
-  ) {
+  if (currentTeamData && currentTeamData.wins !== null && currentTeamData.losses !== null) {
+    const currentScore = currentTeamData.career_power_score ?? currentTeamData.power_score;
     const currentSeasonMatches = (currentTeamData.wins || 0) + (currentTeamData.losses || 0);
-    if (currentSeasonMatches > 0) {
-      totalWeightedScore += currentTeamData.power_score * currentSeasonMatches;
+    if (currentSeasonMatches > 0 && currentScore !== null && currentScore !== undefined) {
+      totalWeightedScore += currentScore * currentSeasonMatches;
       totalMatches += currentSeasonMatches;
     }
   }
