@@ -33,11 +33,35 @@ export const getLeagueCalendarDate = (
  */
 export const getLeagueMidnightUtc = (year: number, month: number, day: number): Date => {
   const naive = Date.UTC(year, month - 1, day, 0, 0, 0);
-  // Offset of league time at that instant, in ms (e.g. +4h in EDT).
-  const asLeagueTime = new Date(
-    new Date(naive).toLocaleString('en-US', { timeZone: LEAGUE_TIME_ZONE })
-  ).getTime();
-  return new Date(naive + (naive - asLeagueTime));
+  // Compute the offset of league time at that instant (e.g. +4h in EDT).
+  // Use formatToParts to avoid re-parsing toLocaleString output in the runtime's local TZ.
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: LEAGUE_TIME_ZONE,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(new Date(naive));
+  const getPart = (type: string): number => {
+    const value = parts.find((part) => part.type === type)?.value;
+    return value ? Number(value) : 0;
+  };
+
+  const localMs = Date.UTC(
+    getPart('year'),
+    getPart('month') - 1,
+    getPart('day'),
+    getPart('hour'),
+    getPart('minute'),
+    getPart('second')
+  );
+
+  return new Date(naive + (naive - localMs));
 };
 
 /**
