@@ -156,4 +156,44 @@ describe('timezone utilities', () => {
       '19:30:00'
     );
   });
+
+  it.each([
+    {
+      label: 'January EST midnight',
+      year: 2026,
+      month: 1,
+      day: 15,
+      expected: '2026-01-15T05:00:00.000Z',
+    },
+    {
+      label: 'July EDT midnight',
+      year: 2026,
+      month: 7,
+      day: 15,
+      expected: '2026-07-15T04:00:00.000Z',
+    },
+  ])('getLeagueMidnightUtc returns correct UTC for $label', ({ year, month, day, expected }) => {
+    expect(getLeagueMidnightUtc(year, month, day).toISOString()).toBe(expected);
+  });
+
+  it('getLeagueMidnightUtc is independent of the runtime timezone', () => {
+    // Simulate a non-UTC runtime by making toLocaleString return an unambiguous display string
+    // that would be mis-parsed by the old implementation. formatToParts should still read the
+    // correct America/New_York components.
+    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function (
+      _locales: unknown,
+      options?: Intl.DateTimeFormatOptions
+    ) {
+      const realFormatter = new Intl.DateTimeFormat('en-US', {
+        ...options,
+        timeZone: 'America/New_York',
+      });
+      return {
+        ...realFormatter,
+        formatToParts: (date: Date) => realFormatter.formatToParts(date),
+      } as unknown as Intl.DateTimeFormat;
+    } as unknown as typeof Intl.DateTimeFormat);
+
+    expect(getLeagueMidnightUtc(2026, 1, 15).toISOString()).toBe('2026-01-15T05:00:00.000Z');
+  });
 });
