@@ -89,7 +89,6 @@ export async function getActiveSeasonId(
   return { data: data?.id ?? null, error: null };
 }
 
-
 /**
  * Hidden-division teams are administrative placeholders, not league entrants.
  * The frontend already skips them (src/utils/teamGrouping.ts); public tool

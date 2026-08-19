@@ -15,7 +15,6 @@ export default defineTool({
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult(null);
 
-
     const { data: membership, error: memErr } = await supabase
       .from('team_memberships')
       .select('team_id, teams(id, name, wins, losses, division:divisions(name))')

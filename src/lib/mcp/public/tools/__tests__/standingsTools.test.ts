@@ -133,7 +133,6 @@ beforeEach(() => {
   vi.mocked(getAuthedSeasonId).mockResolvedValue({ data: 'season-1', error: null });
 });
 
-
 describe('public get_standings handler', () => {
   it('drops a team whose live division is Hidden even though the cached label is not', async () => {
     const { client } = makeClient([VISIBLE_A, STALE_HIDDEN, VISIBLE_B]);
@@ -194,7 +193,6 @@ describe('public get_standings handler', () => {
     expect(result.isError).toBe(true);
     expect(textOf(result)).toBe('connection lost');
   });
-
 
   it('surfaces a query error instead of returning rows', async () => {
     const { client } = makeClient([], { message: 'boom' });

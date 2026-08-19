@@ -11,7 +11,6 @@ import { groupTeamsByDivision } from '@/utils/teamGrouping';
 
 /** Temporary shim exposing the legacy shape for Playoffs.tsx */
 export const usePlayoffData = (isAdmin = false, seasonId?: string | null) => {
-
   // Fetch divisions data using the proper hook
   const { divisions, isLoading: divisionsLoading } = useDivisions();
 

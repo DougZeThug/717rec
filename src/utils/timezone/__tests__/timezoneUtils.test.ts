@@ -7,6 +7,7 @@ import {
   formatTimeString,
   formatTimeToUTC,
   formatUTCToLocalTimeString,
+  getLeagueMidnightUtc,
   normalizeTimeString,
   parseTimeString,
   toLocalDate,
@@ -154,5 +155,24 @@ describe('timezone utilities', () => {
     expect(formatUTCToLocalTimeString(date, { use24Hour: true, includeSeconds: true })).toBe(
       '19:30:00'
     );
+  });
+
+  it.each([
+    {
+      label: 'January EST midnight',
+      year: 2026,
+      month: 1,
+      day: 15,
+      expected: '2026-01-15T05:00:00.000Z',
+    },
+    {
+      label: 'July EDT midnight',
+      year: 2026,
+      month: 7,
+      day: 15,
+      expected: '2026-07-15T04:00:00.000Z',
+    },
+  ])('getLeagueMidnightUtc returns correct UTC for $label', ({ year, month, day, expected }) => {
+    expect(getLeagueMidnightUtc(year, month, day).toISOString()).toBe(expected);
   });
 });
