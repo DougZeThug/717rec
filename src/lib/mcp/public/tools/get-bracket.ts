@@ -28,7 +28,6 @@ export default defineTool({
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
 
-
     let bracketQuery = supabase
       .from('brackets')
       .select('id, title, format, state, season_id, created_at')

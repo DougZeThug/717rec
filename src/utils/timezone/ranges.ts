@@ -9,9 +9,7 @@ const LEAGUE_TIME_ZONE = 'America/New_York';
  * time (America/New_York). Use this whenever "which day did this match happen"
  * matters — an 8 PM EST match is stored as the next UTC day.
  */
-export const getLeagueCalendarDate = (
-  date: Date
-): { year: number; month: number; day: number } => {
+export const getLeagueCalendarDate = (date: Date): { year: number; month: number; day: number } => {
   // en-CA formats as YYYY-MM-DD.
   const [year, month, day] = new Intl.DateTimeFormat('en-CA', {
     timeZone: LEAGUE_TIME_ZONE,

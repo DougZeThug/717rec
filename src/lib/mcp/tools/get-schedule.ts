@@ -21,7 +21,6 @@ export default defineTool({
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
 
-
     let query = supabase
       .from('matches')
       .select(
