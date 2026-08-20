@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import type { ToolContext } from '@lovable.dev/mcp-js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import getMyTeam from '../get-my-team';
 
