@@ -24,7 +24,11 @@ export default defineTool({
     const { data: membership, error: memErr } = await getApprovedTeamId<{
       team_id: string;
       teams: unknown;
-    }>(supabase, ctx.getUserId(), 'team_id, teams(id, name, wins, losses, division:divisions(name))');
+    }>(
+      supabase,
+      ctx.getUserId(),
+      'team_id, teams(id, name, wins, losses, division:divisions(name))'
+    );
     if (memErr) return errorResult(memErr);
     if (!membership) return textResult(null);
 

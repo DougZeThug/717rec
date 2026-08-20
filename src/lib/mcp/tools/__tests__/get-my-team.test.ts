@@ -10,8 +10,21 @@ const { mockFrom, mockSupabase } = vi.hoisted(() => {
 
 vi.mock('../_supabase', () => ({
   userClient: () => mockSupabase,
+  getApprovedTeamId: async (supabase: typeof mockSupabase) => {
+    const { data, error } = await supabase
+      .from('team_memberships')
+      .select('team_id')
+      .eq('user_id', 'user-1')
+      .eq('is_approved', true)
+      .maybeSingle();
+    return { data: data ?? null, error: error?.message ?? null };
+  },
   getActiveSeasonId: async (supabase: typeof mockSupabase) => {
-    const { data, error } = await supabase.from('seasons').select('id').eq('is_active', true).maybeSingle();
+    const { data, error } = await supabase
+      .from('seasons')
+      .select('id')
+      .eq('is_active', true)
+      .maybeSingle();
     return { data: data?.id ?? null, error: error?.message ?? null };
   },
   errorResult: (message: string) => ({
@@ -39,7 +52,15 @@ const baseScenario: Scenario = {
   season: { id: 'season-1' },
   membership: { team_id: 'team-1', teams: { name: 'Eagles' } },
   roster: [{ id: 'player-1', display_name: 'Alice', profile_id: 'profile-1' }],
-  seasonStats: { power_score: 72, sos: 0.5, division_name: 'Recreational', match_wins: 2, match_losses: 0, game_wins: 4, game_losses: 1 },
+  seasonStats: {
+    power_score: 72,
+    sos: 0.5,
+    division_name: 'Recreational',
+    match_wins: 2,
+    match_losses: 0,
+    game_wins: 4,
+    game_losses: 1,
+  },
 };
 
 const buildMockFrom = (scenario: Scenario) => (table: string) => {
@@ -48,7 +69,8 @@ const buildMockFrom = (scenario: Scenario) => (table: string) => {
     return {
       select: () => ({
         eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: merged.season ?? null, error: merged.seasonError ?? null }),
+          maybeSingle: () =>
+            Promise.resolve({ data: merged.season ?? null, error: merged.seasonError ?? null }),
         }),
       }),
     };
@@ -58,7 +80,11 @@ const buildMockFrom = (scenario: Scenario) => (table: string) => {
       select: () => ({
         eq: () => ({
           eq: () => ({
-            maybeSingle: () => Promise.resolve({ data: merged.membership ?? null, error: merged.membershipError ?? null }),
+            maybeSingle: () =>
+              Promise.resolve({
+                data: merged.membership ?? null,
+                error: merged.membershipError ?? null,
+              }),
           }),
         }),
       }),
@@ -76,7 +102,11 @@ const buildMockFrom = (scenario: Scenario) => (table: string) => {
       select: () => ({
         eq: () => ({
           eq: () => ({
-            maybeSingle: () => Promise.resolve({ data: merged.seasonStats ?? null, error: merged.seasonStatsError ?? null }),
+            maybeSingle: () =>
+              Promise.resolve({
+                data: merged.seasonStats ?? null,
+                error: merged.seasonStatsError ?? null,
+              }),
           }),
         }),
       }),
@@ -92,7 +122,9 @@ const createContext = (): ToolContext =>
     getToken: () => 'token',
   }) as unknown as ToolContext;
 
-const textOf = (result: unknown) => ((result as { content?: { text?: string }[] }).content?.[0] as { text?: string } | undefined)?.text ?? '';
+const textOf = (result: unknown) =>
+  ((result as { content?: { text?: string }[] }).content?.[0] as { text?: string } | undefined)
+    ?.text ?? '';
 
 describe('get_my_team', () => {
   beforeEach(() => {
@@ -100,7 +132,9 @@ describe('get_my_team', () => {
   });
 
   it('surfaces team_season_stats infrastructure errors as tool errors', async () => {
-    mockFrom.mockImplementation(buildMockFrom({ seasonStatsError: { message: 'ETIMEDOUT', code: 'ETIMEDOUT' } }));
+    mockFrom.mockImplementation(
+      buildMockFrom({ seasonStatsError: { message: 'ETIMEDOUT', code: 'ETIMEDOUT' } })
+    );
 
     const result = await getMyTeam.handler({}, createContext());
 

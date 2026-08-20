@@ -138,7 +138,11 @@ var get_my_team_default = defineTool3({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult(null);
-    const { data: membership, error: memErr } = await getApprovedTeamId(supabase, ctx.getUserId(), "team_id, teams(id, name, wins, losses, division:divisions(name))");
+    const { data: membership, error: memErr } = await getApprovedTeamId(
+      supabase,
+      ctx.getUserId(),
+      "team_id, teams(id, name, wins, losses, division:divisions(name))"
+    );
     if (memErr) return errorResult(memErr);
     if (!membership) return textResult(null);
     const { data: roster, error: rosterErr } = await supabase.from("team_players").select("id, display_name, profile_id").eq("team_id", membership.team_id);
