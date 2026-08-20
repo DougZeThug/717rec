@@ -31,14 +31,8 @@ interface BracketDetailProps {
   onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
 
-// Get the division color class based on division name
-const getDivisionColorClass = (division: string) => {
-  const divisionLower = division.toLowerCase();
-  if (divisionLower.includes('recreational')) return 'border-green-400 dark:border-green-600';
-  if (divisionLower.includes('intermediate')) return 'border-blue-400 dark:border-blue-600';
-  if (divisionLower.includes('competitive')) return 'border-amber-400 dark:border-amber-600';
-  return 'border-gray-400 dark:border-gray-600';
-};
+// Softer, league-standard tier accent for the bracket card top border
+const getDivisionColorClass = (division: string) => getDivisionSoftClasses(division).borderTop;
 
 const BracketDetail: React.FC<BracketDetailProps> = ({
   bracketId,
