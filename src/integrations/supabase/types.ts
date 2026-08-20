@@ -3124,6 +3124,36 @@ export type Database = {
           },
         ]
       }
+      power_score_weight_history: {
+        Row: {
+          applied_at: string
+          applied_by: string | null
+          game_weight: number
+          id: number
+          note: string | null
+          sos_weight: number
+          win_weight: number
+        }
+        Insert: {
+          applied_at?: string
+          applied_by?: string | null
+          game_weight: number
+          id?: never
+          note?: string | null
+          sos_weight: number
+          win_weight: number
+        }
+        Update: {
+          applied_at?: string
+          applied_by?: string | null
+          game_weight?: number
+          id?: never
+          note?: string | null
+          sos_weight?: number
+          win_weight?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -6788,6 +6818,11 @@ export type Database = {
         Returns: number
       }
       admin_revert_power_score_unification: { Args: never; Returns: string }
+      admin_revert_power_score_weights: { Args: never; Returns: Json }
+      admin_set_power_score_weights: {
+        Args: { p_game: number; p_note?: string; p_sos: number; p_win: number }
+        Returns: Json
+      }
       approve_match_result: {
         Args: {
           p_loser_game_wins?: number
@@ -6982,6 +7017,17 @@ export type Database = {
           tournament_id: string
         }[]
       }
+      get_power_score_weights: {
+        Args: never
+        Returns: {
+          applied_at: string
+          game_weight: number
+          id: number
+          note: string
+          sos_weight: number
+          win_weight: number
+        }[]
+      }
       get_season_badges: {
         Args: { p_season_id: string }
         Returns: {
@@ -7089,6 +7135,10 @@ export type Database = {
           p_weighted_win_pct: number
         }
         Returns: number
+      }
+      power_score_weights_regenerate: {
+        Args: { p_game: number; p_sos: number; p_win: number }
+        Returns: undefined
       }
       process_match_badges: {
         Args: { p_team1_id: string; p_team2_id: string }
