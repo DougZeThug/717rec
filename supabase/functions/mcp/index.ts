@@ -130,7 +130,8 @@ var get_my_team_default = defineTool3({
     if (!membership) return textResult(null);
     const { data: roster, error: rosterErr } = await supabase.from("team_players").select("id, display_name, profile_id").eq("team_id", membership.team_id);
     if (rosterErr) return errorResult(rosterErr.message);
-    const { data: seasonStats } = await supabase.from("team_season_stats").select("power_score, sos, division_name, match_wins, match_losses, game_wins, game_losses").eq("season_id", seasonId).eq("team_id", membership.team_id).maybeSingle();
+    const { data: seasonStats, error: statsError } = await supabase.from("team_season_stats").select("power_score, sos, division_name, match_wins, match_losses, game_wins, game_losses").eq("season_id", seasonId).eq("team_id", membership.team_id).maybeSingle();
+    if (statsError) return errorResult(statsError.message);
     return textResult({
       team: membership.teams,
       season_stats: seasonStats ?? null,
