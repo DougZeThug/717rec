@@ -76,6 +76,48 @@ export const getDivisionTextClass = (division: string): string => {
 };
 
 // Division badge color classes (for small badges/chips)
+/**
+ * Softer, theme-friendly division styling.
+ * Same hue identity as the standard tier colors, but desaturated so large
+ * surfaces (playoff cards) do not fight the app theme.
+ */
+export interface DivisionSoftClasses {
+  text: string;
+  border: string;
+  borderLeft: string;
+  borderTop: string;
+  iconBg: string;
+  button: string;
+}
+
+const buildSoftClasses = (token: string): DivisionSoftClasses => ({
+  text: `text-[hsl(var(--${token}))]`,
+  border: `border-[hsl(var(--${token})/0.35)]`,
+  borderLeft: `border-l-[hsl(var(--${token})/0.55)]`,
+  borderTop: `border-t-[hsl(var(--${token})/0.5)]`,
+  iconBg: `bg-[hsl(var(--${token})/0.12)]`,
+  button: `bg-[hsl(var(--${token})/0.15)] hover:bg-[hsl(var(--${token})/0.25)] text-[hsl(var(--${token}))] border border-[hsl(var(--${token})/0.35)]`,
+});
+
+const NEUTRAL_SOFT: DivisionSoftClasses = {
+  text: 'text-muted-foreground',
+  border: 'border-border',
+  borderLeft: 'border-l-muted-foreground/50',
+  borderTop: 'border-t-muted-foreground/50',
+  iconBg: 'bg-muted',
+  button: 'bg-muted hover:bg-muted/80 text-foreground border border-border',
+};
+
+export const getDivisionSoftClasses = (
+  division: string | null | undefined
+): DivisionSoftClasses => {
+  const d = (division ?? '').toLowerCase();
+  if (d.includes('competitive')) return buildSoftClasses('competitive-soft');
+  if (d.includes('intermediate')) return buildSoftClasses('intermediate-soft');
+  if (d.includes('recreational')) return buildSoftClasses('recreational-soft');
+  return NEUTRAL_SOFT;
+};
+
 export const getDivisionBadgeColor = (division: string): string => {
   const divisionNameLower = division.toLowerCase();
 
