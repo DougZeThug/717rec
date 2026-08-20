@@ -16,6 +16,7 @@ import {
   Scale,
   Search,
   Shuffle,
+  SlidersHorizontal,
   Sparkles,
   Timer,
   Trophy,
@@ -74,6 +75,9 @@ const LeagueNightStatusTab = lazy(
 const PowerMigrationReviewTab = lazy(
   () => import('@/components/admin/power-migration/PowerMigrationReviewTab')
 );
+const PowerScoreSandboxTab = lazy(
+  () => import('@/components/admin/power-sandbox/PowerScoreSandboxTab')
+);
 
 const adminMenuItems: AdminMenuItem[] = [
   { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
@@ -124,6 +128,12 @@ const adminMenuItems: AdminMenuItem[] = [
     label: 'Power Score Review',
     icon: Scale,
     Component: PowerMigrationReviewTab,
+  },
+  {
+    id: 'power-sandbox',
+    label: 'Power Score Sandbox',
+    icon: SlidersHorizontal,
+    Component: PowerScoreSandboxTab,
   },
 ];
 

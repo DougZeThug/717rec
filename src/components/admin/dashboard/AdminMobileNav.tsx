@@ -14,6 +14,7 @@ import {
   Scale,
   Search,
   Shuffle,
+  SlidersHorizontal,
   Sparkles,
   Timer,
   Trophy,
@@ -62,6 +63,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'help', label: 'Help', icon: HelpCircle },
   { id: 'league-night-status', label: 'League Night', icon: Activity },
   { id: 'power-migration', label: 'Power Score Review', icon: Scale },
+  { id: 'power-sandbox', label: 'Power Score Sandbox', icon: SlidersHorizontal },
 ];
 
 const tabGroups: TabGroup[] = [
@@ -75,7 +77,7 @@ const tabGroups: TabGroup[] = [
     id: 'scores-stats',
     label: 'Scores & Stats',
     icon: ListChecks,
-    tabs: ['scores', 'matchups', 'pending-matches'],
+    tabs: ['scores', 'matchups', 'pending-matches', 'power-sandbox'],
   },
   {
     id: 'corrections',

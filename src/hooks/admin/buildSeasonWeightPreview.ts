@@ -2,7 +2,7 @@ import { PowerScoreComponentRow } from '@/services/admin/PowerWeightSandboxServi
 import { Team } from '@/types';
 import { powerScore100, PowerScoreWeights } from '@/utils/powerScore/weights';
 
-export interface SeasonPreviewRow {
+interface SeasonPreviewRow {
   teamId: string;
   teamName: string;
   /** 0-100, computed from the live components under the baseline triple */

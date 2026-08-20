@@ -30,7 +30,7 @@ export const DEFAULT_POWER_SCORE_WEIGHTS: PowerScoreWeights = { win: 40, sos: 45
  * Career floor: below this performance (0-1), SOS points scale away linearly.
  * A constant in both implementations — the sandbox only varies the weights.
  */
-export const CAREER_SCHEDULE_FLOOR = 0.3;
+const CAREER_SCHEDULE_FLOOR = 0.3;
 
 /** COALESCE rules shared with the SQL: missing win/game rates read as 0, missing SOS as 0.5. */
 const coalesce = (
