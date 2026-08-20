@@ -1,5 +1,5 @@
 // Power score color utilities for the corrected 0-100 scale
-// Now properly aligned with the 40/45/15 database calculation
+// Aligned with the database calculation (admin-configurable weights, default 40/45/15)
 
 // Power score utilities - expects 0-100 scale input (database view returns 0-100)
 

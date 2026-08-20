@@ -46,7 +46,8 @@ export const fetchTeamsFromApi = async () => {
   }
 
   // Transform data using the centralized teamTransformer utility
-  // The power_score and sos are calculated correctly in the database using the 40/45/15 formula
+  // The power_score and sos are calculated in the database, with admin-configurable
+  // weights (default 40/45/15 — see the Power Score Sandbox)
   return (data || []).map((team) => transformTeamRow(team as TeamRowData));
 };
 

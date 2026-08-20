@@ -16,8 +16,12 @@ import { WelcomeSection } from '@/components/help/sections/WelcomeSection';
 import SeoHead from '@/components/seo/SeoHead';
 import { Accordion } from '@/components/ui/accordion';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
+import { usePowerScoreWeights } from '@/hooks/usePowerScoreWeights';
+import { PowerScoreWeights } from '@/utils/powerScore/weights';
 
-const FAQ_JSON_LD = {
+// Inside the component (not module scope) because the Power Score answer
+// quotes the LIVE weights, which are admin-adjustable.
+const buildFaqJsonLd = (weights: PowerScoreWeights) => ({
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
   mainEntity: [
@@ -26,7 +30,7 @@ const FAQ_JSON_LD = {
       name: 'How is the Power Score calculated?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Power Score is a 0-100 rating made of three parts: 40% match win rate, 45% strength of schedule and 15% game win rate. Wins and games are weighted by the division of the opponent played, so beating a stronger team is worth more than beating a weaker one.',
+        text: `Power Score is a 0-100 rating made of three parts: ${weights.win}% match win rate, ${weights.sos}% strength of schedule and ${weights.game}% game win rate. Wins and games are weighted by the division of the opponent played, so beating a stronger team is worth more than beating a weaker one.`,
       },
     },
     {
@@ -54,10 +58,11 @@ const FAQ_JSON_LD = {
       },
     },
   ],
-};
+});
 
 const Help: React.FC = () => {
   const { isAdminAccessGranted } = useAdminAccess();
+  const weights = usePowerScoreWeights();
 
   return (
     <>
@@ -65,7 +70,7 @@ const Help: React.FC = () => {
         title="Help & Getting Started | 717REC"
         description="Learn how 717REC standings, schedules, playoffs, and power scores work."
         path="/help"
-        jsonLd={FAQ_JSON_LD}
+        jsonLd={buildFaqJsonLd(weights)}
       />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
