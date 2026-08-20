@@ -119,7 +119,7 @@ export const usePowerWeightPreview = (
  * invalidation is the smallest change that is guaranteed to leave no stale
  * number on screen (same reasoning as the power migration controls).
  */
-const useWeightMutation = <TVariables>(
+const useWeightMutation = <TVariables = undefined>(
   mutationFn: (variables: TVariables) => Promise<PowerWeightMutationResult>
 ) => {
   const qc = useQueryClient();
@@ -137,6 +137,6 @@ export const useApplyPowerWeights = () =>
     PowerWeightSandboxService.applyWeights(variables.weights, variables.note)
   );
 
-/** Go back to the previous triple. */
+/** Go back to the previous triple (no payload — the generic defaults to undefined). */
 export const useRevertPowerWeights = () =>
-  useWeightMutation<void>(() => PowerWeightSandboxService.revertWeights());
+  useWeightMutation(() => PowerWeightSandboxService.revertWeights());
