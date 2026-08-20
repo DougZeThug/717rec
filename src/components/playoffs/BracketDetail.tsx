@@ -16,6 +16,7 @@ import {
   fetchFinalStandings,
 } from '@/services/brackets/BracketReadService';
 import { blueAmber } from '@/styles/design-system';
+import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
 import RearrangeBracketDialog from './admin/RearrangeBracketDialog';
