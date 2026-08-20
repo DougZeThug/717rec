@@ -20,10 +20,12 @@ interface WeightControlsProps {
   /** Debounced (~300ms): the parsed triple the preview should compute against */
   onChange: (weights: PowerScoreWeights) => void;
   /**
-   * Instant, on every keystroke: what the inputs say RIGHT NOW — null while a
-   * field is blank or not a number. Save must key on this, not on `value`,
-   * or a cleared field / the debounce window would leave Save armed with a
-   * stale triple the inputs no longer show.
+   * Instant, from every user edit: what the inputs say RIGHT NOW — null
+   * while a field is blank or not a number. Save must key on this, not on
+   * `value`, or a cleared field / the debounce window would leave Save armed
+   * with a stale triple the inputs no longer show. Not re-fired on external
+   * `value` syncs — the parent already knows those, and until the next edit
+   * a stale live value only over-locks Save, never under-locks it.
    */
   onLiveChange: (weights: PowerScoreWeights | null) => void;
 }
@@ -84,10 +86,6 @@ const WeightControls: React.FC<WeightControlsProps> = ({
   }, [value]);
 
   useEffect(() => {
-    onLiveChange(parseFields(fields));
-  }, [fields, onLiveChange]);
-
-  useEffect(() => {
     const parsed = parseFields(fields);
     if (!parsed || weightsEqual(parsed, lastEmitted.current)) return undefined;
     const timer = setTimeout(() => {
@@ -97,9 +95,16 @@ const WeightControls: React.FC<WeightControlsProps> = ({
     return () => clearTimeout(timer);
   }, [fields, onChange]);
 
+  // Every user-driven field change flows through here, so the parent learns
+  // the instantaneous state from the event itself (no sync effect needed).
+  const applyFields = (next: FieldStrings) => {
+    setFields(next);
+    onLiveChange(parseFields(next));
+  };
+
   const commitPreset = (weights: PowerScoreWeights) => {
     lastEmitted.current = weights;
-    setFields(toFields(weights));
+    applyFields(toFields(weights));
     onChange(weights);
   };
 
@@ -109,7 +114,7 @@ const WeightControls: React.FC<WeightControlsProps> = ({
     if (fields.win.trim() === '' || fields.game.trim() === '') return;
     if (!Number.isFinite(win) || !Number.isFinite(game)) return;
     const sos = Math.max(0, Math.round((100 - win - game) * 10) / 10);
-    setFields((prev) => ({ ...prev, sos: String(sos) }));
+    applyFields({ ...fields, sos: String(sos) });
   };
 
   const sumParsed = parseFields(fields);
@@ -133,7 +138,7 @@ const WeightControls: React.FC<WeightControlsProps> = ({
               step={1}
               value={fields[field.key]}
               disabled={disabled}
-              onChange={(e) => setFields((prev) => ({ ...prev, [field.key]: e.target.value }))}
+              onChange={(e) => applyFields({ ...fields, [field.key]: e.target.value })}
             />
             <p className="text-xs text-muted-foreground">{field.hint}</p>
           </div>
