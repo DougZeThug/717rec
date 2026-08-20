@@ -1,7 +1,13 @@
 import { defineTool } from '@lovable.dev/mcp-js';
 import { z } from 'zod';
 
-import { errorResult, getActiveSeasonId, textResult, userClient } from './_supabase';
+import {
+  errorResult,
+  getActiveSeasonId,
+  getApprovedTeamId,
+  textResult,
+  userClient,
+} from './_supabase';
 
 export default defineTool({
   name: 'get_my_upcoming_matches',
@@ -16,13 +22,8 @@ export default defineTool({
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
 
-    const { data: mem, error: memErr } = await supabase
-      .from('team_memberships')
-      .select('team_id')
-      .eq('user_id', ctx.getUserId())
-      .eq('is_approved', true)
-      .maybeSingle();
-    if (memErr) return errorResult(memErr.message);
+    const { data: mem, error: memErr } = await getApprovedTeamId(supabase, ctx.getUserId());
+    if (memErr) return errorResult(memErr);
     if (!mem?.team_id) return textResult([]);
 
     const { data, error } = await supabase

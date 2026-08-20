@@ -201,7 +201,15 @@ export const updateMembershipApproval = async (
     .eq('id', membershipId)
     .select('id');
 
-  if (error) handleDatabaseError(error, 'Failed to update membership approval');
+  if (error) {
+    // idx_one_approved_membership_per_user: one approved membership per user.
+    if (error.code === '23505') {
+      throw new DatabaseError(
+        'This user already has an approved membership on another team. Remove that membership first.'
+      );
+    }
+    handleDatabaseError(error, 'Failed to update membership approval');
+  }
   if (!data || data.length === 0) {
     throw new DatabaseError(
       'Failed to update membership approval: no row was changed. You may not have permission.'

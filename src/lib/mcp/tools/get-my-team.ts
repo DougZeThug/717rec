@@ -1,6 +1,12 @@
 import { defineTool } from '@lovable.dev/mcp-js';
 
-import { errorResult, getActiveSeasonId, textResult, userClient } from './_supabase';
+import {
+  errorResult,
+  getActiveSeasonId,
+  getApprovedTeamId,
+  textResult,
+  userClient,
+} from './_supabase';
 
 export default defineTool({
   name: 'get_my_team',
@@ -15,13 +21,15 @@ export default defineTool({
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult(null);
 
-    const { data: membership, error: memErr } = await supabase
-      .from('team_memberships')
-      .select('team_id, teams(id, name, wins, losses, division:divisions(name))')
-      .eq('user_id', ctx.getUserId())
-      .eq('is_approved', true)
-      .maybeSingle();
-    if (memErr) return errorResult(memErr.message);
+    const { data: membership, error: memErr } = await getApprovedTeamId<{
+      team_id: string;
+      teams: unknown;
+    }>(
+      supabase,
+      ctx.getUserId(),
+      'team_id, teams(id, name, wins, losses, division:divisions(name))'
+    );
+    if (memErr) return errorResult(memErr);
     if (!membership) return textResult(null);
 
     const { data: roster, error: rosterErr } = await supabase

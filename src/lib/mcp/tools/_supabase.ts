@@ -59,6 +59,38 @@ export async function getActiveSeasonId(
 }
 
 /**
+ * Resolve the signed-in user's single approved team membership.
+ *
+ * A user must have exactly one approved membership (enforced by the partial
+ * unique index idx_one_approved_membership_per_user). We still fetch two rows
+ * and fail loudly if duplicates exist, because `maybeSingle()` would silently
+ * return an arbitrary team.
+ */
+export async function getApprovedTeamId<T extends { team_id: string } = { team_id: string }>(
+  supabase: SupabaseClient,
+  userId: string | undefined,
+  columns = 'team_id'
+): Promise<{ data: T | null; error: string | null }> {
+  if (!userId) return { data: null, error: 'Not authenticated' };
+  const { data, error } = await supabase
+    .from('team_memberships')
+    .select(columns)
+    .eq('user_id', userId)
+    .eq('is_approved', true)
+    .limit(2);
+  if (error) return { data: null, error: error.message };
+  const rows = (data ?? []) as unknown as T[];
+  if (rows.length > 1) {
+    return {
+      data: null,
+      error:
+        'Multiple approved team memberships found for this user. Ask an admin to remove the extra membership before using this tool.',
+    };
+  }
+  return { data: rows[0] ?? null, error: null };
+}
+
+/**
  * Hidden-division teams are administrative placeholders, not league entrants.
  * The frontend already skips them (src/utils/teamGrouping.ts); public tool
  * output must skip them too, or they surface in the standings.
