@@ -92,7 +92,7 @@ const createContext = (): ToolContext =>
     getToken: () => 'token',
   }) as unknown as ToolContext;
 
-const getText = (result: { content?: { text?: string }[] }) => result.content?.[0]?.text ?? '';
+const textOf = (result: unknown) => ((result as { content?: { text?: string }[] }).content?.[0] as { text?: string } | undefined)?.text ?? '';
 
 describe('get_my_team', () => {
   beforeEach(() => {
