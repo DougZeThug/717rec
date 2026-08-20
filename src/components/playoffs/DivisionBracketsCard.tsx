@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { BRACKET_STATES } from '@/constants/brackets';
 import { cn } from '@/lib/utils';
 import { PlayoffBracket } from '@/types';
+import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
 import { bracketLog } from '@/utils/logger';
 
 interface DivisionBracketsCardProps {
@@ -17,32 +18,13 @@ interface DivisionBracketsCardProps {
   onDeleteBracket?: (id: string, name: string) => void;
 }
 
-const getDivisionBorderColor = (division: string): string => {
-  const d = division.toLowerCase();
-  if (d.includes('competitive')) return 'border-l-[hsl(var(--competitive))]';
-  if (d.includes('intermediate')) return 'border-l-[hsl(var(--intermediate))]';
-  if (d.includes('recreational')) return 'border-l-[hsl(var(--recreational))]';
-  return 'border-l-muted-foreground';
-};
+const getDivisionBorderColor = (division: string): string =>
+  getDivisionSoftClasses(division).borderLeft;
 
-const getDivisionTextColor = (division: string): string => {
-  const d = division.toLowerCase();
-  if (d.includes('competitive')) return 'text-[hsl(var(--competitive))]';
-  if (d.includes('intermediate')) return 'text-[hsl(var(--intermediate))]';
-  if (d.includes('recreational')) return 'text-[hsl(var(--recreational))]';
-  return 'text-muted-foreground';
-};
+const getDivisionTextColor = (division: string): string => getDivisionSoftClasses(division).text;
 
-const getDivisionButtonClass = (division: string): string => {
-  const d = division.toLowerCase();
-  if (d.includes('competitive'))
-    return 'bg-[hsl(var(--competitive))] hover:bg-[hsl(var(--competitive)/0.9)] text-white';
-  if (d.includes('intermediate'))
-    return 'bg-[hsl(var(--intermediate))] hover:bg-[hsl(var(--intermediate)/0.9)] text-white';
-  if (d.includes('recreational'))
-    return 'bg-[hsl(var(--recreational))] hover:bg-[hsl(var(--recreational)/0.9)] text-white';
-  return 'bg-primary hover:bg-primary/90 text-primary-foreground';
-};
+const getDivisionButtonClass = (division: string): string =>
+  getDivisionSoftClasses(division).button;
 
 interface BracketTitleProps {
   bracket: Partial<PlayoffBracket>;
@@ -167,7 +149,12 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-5 text-center">
-            <div className="size-10 rounded-full bg-muted flex items-center justify-center mb-2.5">
+            <div
+              className={cn(
+                'size-10 rounded-full flex items-center justify-center mb-2.5',
+                getDivisionSoftClasses(division).iconBg
+              )}
+            >
               <Trophy className={cn('size-5', getDivisionTextColor(division))} />
             </div>
             <p className="text-sm text-muted-foreground mb-3">No brackets yet for this division</p>

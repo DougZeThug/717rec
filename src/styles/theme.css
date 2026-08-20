@@ -47,6 +47,11 @@
   --competitive: 0 84% 50%;
   --intermediate: 45 93% 47%;
   --recreational: 142 71% 45%;
+
+  /* Softer division tones for calm surfaces (playoff brackets) */
+  --competitive-soft: 0 48% 48%;
+  --intermediate-soft: 38 58% 42%;
+  --recreational-soft: 150 34% 38%;
 }
 
 .dark {
@@ -82,4 +87,9 @@
   --competitive: 0 84% 60%;
   --intermediate: 45 93% 55%;
   --recreational: 142 71% 50%;
+
+  /* Softer division tones - dark mode */
+  --competitive-soft: 0 52% 64%;
+  --intermediate-soft: 38 60% 62%;
+  --recreational-soft: 150 36% 56%;
 }
