@@ -124,7 +124,7 @@ describe('get_my_team', () => {
     const result = await getMyTeam.handler({}, createContext());
 
     expect(result.isError).toBe(false);
-    const payload = JSON.parse(result.content[0].text);
+    const payload = JSON.parse(textOf(result));
     expect(payload.season_stats?.power_score).toBe(72);
     expect(payload.team?.name).toBe('Eagles');
     expect(payload.roster).toHaveLength(1);
