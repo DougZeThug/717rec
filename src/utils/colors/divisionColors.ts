@@ -70,6 +70,10 @@ export interface DivisionSoftClasses {
   borderTop: string;
   iconBg: string;
   button: string;
+  /** Tinted surface only, no text/border. */
+  softBg: string;
+  /** Small badge/chip: tinted fill + tier text + hairline border. */
+  badge: string;
 }
 
 const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', DivisionSoftClasses> =
