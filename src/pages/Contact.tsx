@@ -5,10 +5,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle, Mail, MessageSquare, Send } from 'lucide-react';
 import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 
 import PageLayout from '@/components/layout/PageLayout';
+import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
