@@ -1,8 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { BackupSeasonStatsRow, BackupTeamPowerRow } from '@/services/admin/PowerMigrationService';
 import { BulkTeamCareerData } from '@/services/career/CareerService';
 import { Team } from '@/types';
+
+// The career pipeline resolves live division weights for playoff bonuses.
+// These fixtures earn none (the weights never touch an expected value), and
+// tests must not depend on a reachable Supabase: CI runs without real env
+// vars (see CLAUDE.md), so the unmocked fetch hit the placeholder localhost
+// URL and failed the whole file with ECONNREFUSED.
+vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+  fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(new Map<string, number>())),
+  getDefaultDivisionWeight: () => 0.85,
+}));
 
 import { buildPowerMigrationComparison, resolveSeasonIdAt } from '../buildPowerMigrationComparison';
 

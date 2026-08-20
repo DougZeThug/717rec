@@ -113,3 +113,17 @@ export class PowerMigrationNotAppliedError extends ServiceError {
     this.name = 'PowerMigrationNotAppliedError';
   }
 }
+
+/**
+ * The power score weight sandbox functions/table don't exist yet
+ * (migration 20260820120000 has not been applied to the database)
+ */
+export class PowerWeightsNotAppliedError extends ServiceError {
+  constructor() {
+    super(
+      'The power score weight controls have not been applied to the database yet',
+      'POWER_WEIGHTS_NOT_APPLIED'
+    );
+    this.name = 'PowerWeightsNotAppliedError';
+  }
+}

@@ -1,17 +1,21 @@
 import { HelpCircle } from 'lucide-react';
 import React from 'react';
 
+import { usePowerScoreWeights } from '@/hooks/usePowerScoreWeights';
+
 import { HelpAccordionItem } from '../HelpAccordionItem';
 
 export const FAQSection: React.FC = () => {
+  const weights = usePowerScoreWeights();
   return (
     <HelpAccordionItem value="faq" icon={HelpCircle} title="Frequently Asked Questions">
       <div>
         <p className="font-medium">How is the Power Score calculated?</p>
         <p className="text-muted-foreground mt-1">
-          Power Score is a 0-100 rating made of three parts: 40% match win rate, 45% strength of
-          schedule, and 15% game win rate. Wins and games are weighted by the division of the
-          opponent you played, so beating a stronger team is worth more than beating a weaker one.
+          Power Score is a 0-100 rating made of three parts: {weights.win}% match win rate,{' '}
+          {weights.sos}% strength of schedule, and {weights.game}% game win rate. Wins and games are
+          weighted by the division of the opponent you played, so beating a stronger team is worth
+          more than beating a weaker one.
         </p>
       </div>
       <div>

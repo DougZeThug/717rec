@@ -239,6 +239,9 @@ find the 'opponent1_position' column of 'match'".
 > ships a tested way back: **`docs/POWER_SCORE_ROLLOUT.md`**. Run the backup
 > migration first, and do not skip its verification output.
 
+> **Applying the power score weight sandbox** (`20260820120000`) also has its
+> own runbook: **§6b** below.
+
 ## 6a. Power-score unification: review, revert, reapply
 
 The power-score unification (migrations `20260809*`) put every page on one
@@ -321,3 +324,66 @@ Two related tables are worth knowing about:
   are seeded, because theirs were backfilled in Jan 2026 from then-current
   values. Add a row (with a reason) rather than editing a view if another season
   turns out to be affected.
+
+## 6b. Power score weight sandbox: preview, save, revert
+
+The **Power Score Sandbox** (Admin → Scores & Stats → Power Score Sandbox)
+lets you change how much the three parts of the Power Score count — match
+wins, strength of schedule, game wins. The standard mix is 40/45/15. You can
+preview any mix safely: nothing changes until you press **Save & rescore**.
+
+### One-time setup (its migration, applied by hand — see §6 for why)
+
+1. Merge the PR. The site deploys the new tab first. The tab shows a friendly
+   "controls aren't on the live database yet" card. Previews still work
+   (against the standard 40/45/15), Save stays locked, and nothing changes for
+   players. Doing this step and step 2 in the other order is also fine.
+2. Open the Supabase dashboard → SQL Editor. Paste the **full** contents of
+   `supabase/migrations/20260820120000_power_score_weight_sandbox.sql` and
+   Run. Success looks like:
+
+   ```
+   NOTICE: power score weight sandbox installed: weights 40/45/15, NNN season rows
+   ```
+
+   Prefer Lovable? Ask it, verbatim: *"Apply the SQL migration file
+   `supabase/migrations/20260820120000_power_score_weight_sandbox.sql` from
+   the GitHub repo to the project database, then regenerate the Supabase
+   types."* That also refreshes `src/integrations/supabase/types.ts`, which
+   otherwise lags harmlessly (compile-time only).
+3. Verify, still in the SQL editor — all three:
+   - `SELECT * FROM get_power_score_weights();` → one row, `40 / 45 / 15`
+   - `SELECT power_score_100(1, 1, 1);` → `100`
+   - `SELECT * FROM admin_audit_coverage_drift();` → no rows
+4. Reload the admin panel. The tab now shows the live-weights banner and Save
+   works. **No scores have changed yet** — the seeded weights are the same
+   40/45/15 the site has always used. Re-running the migration later is safe:
+   it re-reads the latest weights instead of resetting them.
+
+### Using it day to day
+
+- Type a new mix (the three numbers must add up to 100 — **Balance SOS**
+  fills in whatever is left) and watch both previews re-rank live: the
+  current season by division, and the full Career standings. The preview is
+  computed in the browser; the database is untouched.
+- **Save & rescore** applies the mix for real: every stored season is
+  recomputed under it, **archived seasons included**, in one transaction.
+  Who changed what, when, and any note you typed is recorded in
+  `power_score_weight_history` (append-only — nothing is ever overwritten).
+- **Revert** goes back to the previous mix the same way, and reverting a
+  revert toggles back again. Saving the numbers that are already live changes
+  nothing — it just re-checks every season ("reasserted").
+
+Caveats:
+
+- The homepage **Movers** section compares against last week's
+  `power_score_snapshots` row, which is deliberately never rewritten, so it
+  can look off for up to a week after a save or revert. It corrects itself at
+  the next weekly snapshot (or run the `capture-power-snapshots` edge function
+  manually). The tab's confirmation dialog warns about this too.
+- The §6a **Revert** control restores the old pre-unification views, which
+  carry their own built-in numbers — while that state is active, sandbox
+  weights have no effect. (Known, pre-existing, and not caused by the
+  sandbox: §6a's **Re-apply** has drifted from the newer
+  `career_power_score` column and would currently fail; it needs its own
+  fix before anyone uses the §6a controls again.)

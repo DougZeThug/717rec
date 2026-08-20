@@ -23,7 +23,13 @@ played a match, and for teams in the Hidden division. Always handle null —
 There are two SQL definitions. Standings, team pages and per-season records use
 `power_score_100()`. Career rankings use `power_score_100_career()`.
 
-**Standings / season — `power_score_100()`** (no floor):
+**The three weights are admin-adjustable.** The live triple is the latest row
+of `power_score_weight_history` (seeded 40/45/15), and the two SQL functions
+are *regenerated* from it by the admin **Power Score Sandbox** tab
+(`admin_set_power_score_weights()` — see the sandbox architecture below). The
+formulas here show the default weights.
+
+**Standings / season — `power_score_100()`** (no floor; default 40/45/15):
 
 ```
 Power Score = (weighted match win rate × 40)
@@ -41,6 +47,10 @@ Career Power Score = (weighted match win rate × 40)
                    + (weighted game win rate   × 15)
                    + (strength of schedule     × 45 × scheduleCredit)
 ```
+
+The `55` performance denominator is not a constant of its own — it is the
+match weight plus the game weight, and follows them when the triple changes.
+The `0.30` floor stays fixed whatever the weights.
 
 A single rough season should not crush a live standing, so the floor applies only
 to the long-run career rating. `v_team_details` and `v_team_season_agg` expose both
@@ -185,7 +195,7 @@ v_power_score_team_matches_rated      (+ opponent division AS OF match_date,
         ↓
 v_power_score_components              (weighted_win_pct, sos, weighted_game_win_pct)
         ↓
-power_score_100()                     ← the only place the 40/45/15 weights live
+power_score_100()                     ← generated from power_score_weight_history
         ↓
    ┌────┴─────────────────────┬──────────────────────────┐
 v_team_details (0-100)   v_team_season_agg (0-1)   get_season_team_power_scores
@@ -199,6 +209,28 @@ Standings UI            team_season_stats          power_score_snapshots
 on every call, so a formula change propagates broadly at once. **Archived
 seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
 (see above).
+
+### The weight sandbox
+
+The weights inside `power_score_100()` / `power_score_100_career()` are data,
+not literals (migration `20260820120000_power_score_weight_sandbox.sql`):
+
+- `power_score_weight_history` — append-only triple history, latest row wins.
+  Seeded 40/45/15; public read; written only by the admin RPCs.
+- `admin_set_power_score_weights()` / `admin_revert_power_score_weights()` —
+  validate, record, regenerate both functions (OID-preserving
+  `CREATE OR REPLACE`, so no view is recreated), then
+  `upsert_team_season_stats(true)` — all in one transaction, archived seasons
+  included.
+- `get_power_score_weights()` — current + previous triple, readable by anyone
+  (the Help page quotes the live weights via `usePowerScoreWeights`).
+
+The client mirror lives in `src/utils/powerScore/weights.ts` and powers the
+admin **Power Score Sandbox** tab's live previews
+(`src/components/admin/power-sandbox/`). Its fixture triples are asserted on
+both sides (`weights.test.ts` ↔ `supabase/tests/power_score_weight_sandbox.sql`)
+so SQL and TS cannot drift silently. Runbook for applying the migration:
+`docs/OPERATIONS.md` §6b.
 
 ## Utilities in This Directory
 
@@ -222,6 +254,8 @@ seasons are exempt**: their `power_score`, `sos` and `division_name` are frozen
 - `supabase/migrations/20260812130000_power_score_historical_opponent_division.sql`
   — the resolution chain, `division_weight_history`, and the archived-season
   freeze
-- `supabase/migrations/20260813000000_earned_schedule_power_score.sql` — the
-  earned-schedule floor adjustment (this change)
+- `supabase/migrations/20260818194322_3a510dc9-8b2a-4e99-a42d-933ff97807d3.sql`
+  — the standings/career formula split (earned-schedule floor on career only)
+- `supabase/migrations/20260820120000_power_score_weight_sandbox.sql` — the
+  admin-adjustable weights (see "The weight sandbox" above)
 - `src/integrations/supabase/types.ts` — auto-generated, never edit by hand
