@@ -88,13 +88,11 @@ export default function Contact() {
   if (isSuccess) {
     return (
       <PageLayout>
-        <Helmet>
-          <title>Contact Support | 717REC</title>
-          <meta
-            name="description"
-            content="Contact 717REC support for help with your account, reporting issues, or general inquiries."
-          />
-        </Helmet>
+        <SeoHead
+          title="Contact Support | 717REC Cornhole League"
+          description="Contact 717REC support for help with your account, team requests, score corrections, or general league questions."
+          path="/contact"
+        />
         <PageTransition>
           <div className="container max-w-2xl py-12">
             <Card>
@@ -119,13 +117,11 @@ export default function Contact() {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>Contact Support | 717REC</title>
-        <meta
-          name="description"
-          content="Contact 717REC support for help with your account, reporting issues, or general inquiries."
-        />
-      </Helmet>
+      <SeoHead
+        title="Contact Support | 717REC Cornhole League"
+        description="Contact 717REC support for help with your account, team requests, score corrections, or general league questions."
+        path="/contact"
+      />
       <PageTransition>
         <div className="container max-w-2xl py-12">
           <div className="text-center mb-8">
