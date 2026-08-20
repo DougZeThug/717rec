@@ -48,6 +48,19 @@ async function getActiveSeasonId(supabase) {
   }
   return { data: data?.id ?? null, error: null };
 }
+async function getApprovedTeamId(supabase, userId, columns = "team_id") {
+  if (!userId) return { data: null, error: "Not authenticated" };
+  const { data, error } = await supabase.from("team_memberships").select(columns).eq("user_id", userId).eq("is_approved", true).limit(2);
+  if (error) return { data: null, error: error.message };
+  const rows = data ?? [];
+  if (rows.length > 1) {
+    return {
+      data: null,
+      error: "Multiple approved team memberships found for this user. Ask an admin to remove the extra membership before using this tool."
+    };
+  }
+  return { data: rows[0] ?? null, error: null };
+}
 function isHiddenDivision(divisionName) {
   return (divisionName ?? "").toLowerCase().startsWith("hidden");
 }
@@ -98,8 +111,8 @@ var get_my_recent_matches_default = defineTool2({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
-    if (memErr) return errorResult(memErr.message);
+    const { data: mem, error: memErr } = await getApprovedTeamId(supabase, ctx.getUserId());
+    if (memErr) return errorResult(memErr);
     if (!mem?.team_id) return textResult([]);
     const { data, error } = await supabase.from("matches").select(
       `id, date, team1_id, team2_id, team1_score, team2_score,
@@ -155,8 +168,8 @@ var get_my_upcoming_matches_default = defineTool4({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    const { data: mem, error: memErr } = await supabase.from("team_memberships").select("team_id").eq("user_id", ctx.getUserId()).eq("is_approved", true).maybeSingle();
-    if (memErr) return errorResult(memErr.message);
+    const { data: mem, error: memErr } = await getApprovedTeamId(supabase, ctx.getUserId());
+    if (memErr) return errorResult(memErr);
     if (!mem?.team_id) return textResult([]);
     const { data, error } = await supabase.from("matches").select(
       `id, date, team1_id, team2_id,
