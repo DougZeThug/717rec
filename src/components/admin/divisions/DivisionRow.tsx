@@ -88,7 +88,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
     });
   };
 
-  const displayClass = getDivisionStyles(division.display_division, 'text');
+  const displayClass = getDivisionStyles(division.display_division, 'text', { soft: true });
 
   const editFields = (
     <>

@@ -1,6 +1,8 @@
 /**
  * Extended division color system - now uses display_division for consistent grouping
  */
+import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
+
 const divisionColors = {
   competitive: {
     primary: 'hsl(var(--competitive))',
@@ -43,9 +45,18 @@ const divisionColors = {
  */
 export function getDivisionStyles(
   divisionName: string | null | undefined,
-  type: 'text' | 'bg' | 'border' | 'hover' | 'bgLight' | 'textLight' = 'text'
+  type: 'text' | 'bg' | 'border' | 'hover' | 'bgLight' | 'textLight' = 'text',
+  options?: { soft?: boolean }
 ) {
   if (!divisionName) return '';
+
+  if (options?.soft) {
+    const soft = getDivisionSoftClasses(divisionName);
+    if (type === 'text' || type === 'textLight') return soft.text;
+    if (type === 'bg' || type === 'bgLight') return soft.softBg;
+    if (type === 'border') return soft.border;
+    return '';
+  }
 
   const lowerDivName = divisionName.toLowerCase();
   if (lowerDivName.includes('competitive')) {

@@ -99,8 +99,9 @@ export const TimeslotMatchRowMobile = ({
         <Badge
           className={cn(
             'text-[10px] font-medium px-2 py-0',
-            getDivisionStyles(teamTimeslot.teams.divisionName, 'bg'),
-            getDivisionStyles(teamTimeslot.teams.divisionName, 'text')
+            getDivisionStyles(teamTimeslot.teams.divisionName, 'bg', { soft: true }),
+            getDivisionStyles(teamTimeslot.teams.divisionName, 'text', { soft: true }),
+            getDivisionStyles(teamTimeslot.teams.divisionName, 'border', { soft: true })
           )}
         >
           {teamTimeslot.teams.divisionName}
@@ -126,8 +127,9 @@ const DivisionBadge = ({ divisionName }: { divisionName: string }) => (
   <Badge
     className={cn(
       'text-xs font-medium px-2.5 py-0.5',
-      getDivisionStyles(divisionName, 'bg'),
-      getDivisionStyles(divisionName, 'text')
+      getDivisionStyles(divisionName, 'bg', { soft: true }),
+      getDivisionStyles(divisionName, 'text', { soft: true }),
+      getDivisionStyles(divisionName, 'border', { soft: true })
     )}
   >
     {divisionName}

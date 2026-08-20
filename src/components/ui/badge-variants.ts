@@ -12,12 +12,14 @@ export const badgeVariants = cva(
         destructive:
           'border-transparent bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground',
         outline: 'text-foreground border border-gray-200 dark:border-gray-700',
+        // Tier badges use the muted division tokens so large lists of team
+        // cards stay inside the app theme instead of shouting.
         recreational:
-          'border-transparent bg-gradient-to-br from-green-500 to-green-600 text-white hover:from-green-400 hover:to-green-500',
+          'border border-[hsl(var(--recreational-soft)/0.3)] bg-[hsl(var(--recreational-soft)/0.15)] text-[hsl(var(--recreational-soft))] hover:bg-[hsl(var(--recreational-soft)/0.25)]',
         intermediate:
-          'border-transparent bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:from-blue-400 hover:to-blue-500',
+          'border border-[hsl(var(--intermediate-soft)/0.3)] bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft))] hover:bg-[hsl(var(--intermediate-soft)/0.25)]',
         competitive:
-          'border-transparent bg-gradient-to-br from-amber-500 to-amber-600 text-white hover:from-amber-400 hover:to-amber-500',
+          'border border-[hsl(var(--competitive-soft)/0.3)] bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft))] hover:bg-[hsl(var(--competitive-soft)/0.25)]',
         blueorange:
           'border-transparent bg-gradient-to-br from-blue-500 to-amber-500 text-white hover:from-blue-400 hover:to-amber-400',
         // Winter theme variants - frosted pills

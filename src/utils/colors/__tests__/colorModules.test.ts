@@ -56,10 +56,26 @@ describe('color modules table-driven coverage', () => {
   });
 
   it.each([
-    { fn: getDivisionGradientClass, input: 'Competitive', fragment: 'via-red-50/30' },
-    { fn: getDivisionHeaderClass, input: 'Intermediate', fragment: 'border-amber-200' },
-    { fn: getDivisionTextClass, input: 'Recreational', fragment: 'text-emerald-700' },
-    { fn: getDivisionBadgeColor, input: 'Hidden', fragment: 'bg-red-500/20' },
+    {
+      fn: getDivisionGradientClass,
+      input: 'Competitive',
+      fragment: 'via-[hsl(var(--competitive-soft)/0.06)]',
+    },
+    {
+      fn: getDivisionHeaderClass,
+      input: 'Intermediate',
+      fragment: 'border-[hsl(var(--intermediate-soft)/0.35)]',
+    },
+    {
+      fn: getDivisionTextClass,
+      input: 'Recreational',
+      fragment: 'text-[hsl(var(--recreational-soft))]',
+    },
+    {
+      fn: getDivisionBadgeColor,
+      input: 'Hidden',
+      fragment: 'bg-[hsl(var(--competitive-soft)/0.15)]',
+    },
     { fn: getDivisionBadgeColor, input: 'Unknown', fragment: 'bg-muted' },
   ])('division classes include expected fragment for $input', ({ fn, input, fragment }) => {
     expect(fn(input)).toContain(fragment);
