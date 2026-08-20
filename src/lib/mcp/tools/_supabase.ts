@@ -66,11 +66,11 @@ export async function getActiveSeasonId(
  * and fail loudly if duplicates exist, because `maybeSingle()` would silently
  * return an arbitrary team.
  */
-export async function getApprovedTeamId(
+export async function getApprovedTeamId<T extends { team_id: string } = { team_id: string }>(
   supabase: SupabaseClient,
   userId: string | undefined,
   columns = 'team_id'
-): Promise<{ data: Record<string, unknown> | null; error: string | null }> {
+): Promise<{ data: T | null; error: string | null }> {
   if (!userId) return { data: null, error: 'Not authenticated' };
   const { data, error } = await supabase
     .from('team_memberships')
@@ -79,7 +79,7 @@ export async function getApprovedTeamId(
     .eq('is_approved', true)
     .limit(2);
   if (error) return { data: null, error: error.message };
-  const rows = (data ?? []) as unknown as Record<string, unknown>[];
+  const rows = (data ?? []) as unknown as T[];
   if (rows.length > 1) {
     return {
       data: null,
