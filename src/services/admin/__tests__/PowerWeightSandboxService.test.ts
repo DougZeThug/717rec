@@ -8,7 +8,9 @@ const mockFrom = vi.fn((_table: string) => ({ select: mockSelect }));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    rpc: (fn: string, args?: Record<string, unknown>) => mockRpc(fn, args),
+    // Spread so an args-less service call arrives as ONE argument here and
+    // the assertions can state the call shape without a trailing undefined.
+    rpc: (...args: unknown[]) => mockRpc(...args),
     from: (table: string) => mockFrom(table),
   },
 }));
@@ -52,7 +54,7 @@ describe('PowerWeightSandboxService.fetchWeightState', () => {
     expect(state.controlsApplied).toBe(true);
     expect(state.current?.win_weight).toBe(50);
     expect(state.previous?.win_weight).toBe(40);
-    expect(mockRpc).toHaveBeenCalledWith('get_power_score_weights', undefined);
+    expect(mockRpc).toHaveBeenCalledWith('get_power_score_weights');
   });
 
   it('reports no previous row with a single-row history', async () => {
@@ -179,7 +181,7 @@ describe('PowerWeightSandboxService.applyWeights / revertWeights', () => {
       status: 'nothing_to_revert',
       seasonRows: 0,
     });
-    expect(mockRpc).toHaveBeenCalledWith('admin_revert_power_score_weights', undefined);
+    expect(mockRpc).toHaveBeenCalledWith('admin_revert_power_score_weights');
   });
 
   it('throws PowerWeightsNotAppliedError while the migration is missing', async () => {

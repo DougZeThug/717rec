@@ -204,6 +204,23 @@ describe('PowerScoreSandboxTab', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 
+  it('locks Save the moment an input is cleared, even after a valid edit', async () => {
+    render(<PowerScoreSandboxTab />);
+
+    const user = userEvent.setup();
+    const winInput = screen.getByLabelText(/match wins/i);
+    await user.clear(winInput);
+    await user.type(winInput, '50');
+    await user.click(screen.getByRole('button', { name: /balance sos/i }));
+    const saveButton = screen.getByRole('button', { name: /save & rescore/i });
+    await waitFor(() => expect(saveButton).toBeEnabled());
+
+    // Blank input → the committed triple no longer matches what is on
+    // screen, so Save must lock instantly (no debounce on the lock).
+    await user.clear(winInput);
+    expect(saveButton).toBeDisabled();
+  });
+
   it('offers Revert to the previous triple and runs it through its own dialog', async () => {
     const revertMutation = mutationResult({
       mutateAsync: vi.fn().mockResolvedValue({ status: 'reverted', seasonRows: 116 }),

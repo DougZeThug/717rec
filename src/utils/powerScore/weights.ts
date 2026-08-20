@@ -50,8 +50,8 @@ export function powerScore100(
   weightedGameWinPct: number | null | undefined,
   weights: PowerScoreWeights = DEFAULT_POWER_SCORE_WEIGHTS
 ): number {
-  const v = coalesce(weightedWinPct, sos, weightedGameWinPct);
-  return v.win * weights.win + v.game * weights.game + v.sos * weights.sos;
+  const terms = coalesce(weightedWinPct, sos, weightedGameWinPct);
+  return terms.win * weights.win + terms.game * weights.game + terms.sos * weights.sos;
 }
 
 /**
@@ -67,10 +67,13 @@ export function powerScore100Career(
   weightedGameWinPct: number | null | undefined,
   weights: PowerScoreWeights = DEFAULT_POWER_SCORE_WEIGHTS
 ): number {
-  const v = coalesce(weightedWinPct, sos, weightedGameWinPct);
-  const performance = (v.win * weights.win + v.game * weights.game) / (weights.win + weights.game);
+  const terms = coalesce(weightedWinPct, sos, weightedGameWinPct);
+  const performance =
+    (terms.win * weights.win + terms.game * weights.game) / (weights.win + weights.game);
   const scheduleCredit = Math.min(1, performance / CAREER_SCHEDULE_FLOOR);
-  return v.win * weights.win + v.game * weights.game + v.sos * weights.sos * scheduleCredit;
+  return (
+    terms.win * weights.win + terms.game * weights.game + terms.sos * weights.sos * scheduleCredit
+  );
 }
 
 /**

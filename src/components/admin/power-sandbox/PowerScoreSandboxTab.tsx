@@ -36,6 +36,18 @@ type SandboxAction = 'save' | 'revert' | null;
 const formatDate = (iso: string | null | undefined): string =>
   iso ? new Date(iso).toLocaleDateString() : 'unknown date';
 
+/** Compact error state with a retry button. */
+const RetryCard: React.FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => (
+  <Card>
+    <CardContent className="pt-6 space-y-2">
+      <p className="text-sm text-red-500">{message}</p>
+      <Button size="sm" variant="outline" onClick={onRetry}>
+        Retry
+      </Button>
+    </CardContent>
+  </Card>
+);
+
 /** Friendly card for the pre-migration state — never an error. */
 const NotAppliedCard: React.FC = () => (
   <Card>
@@ -109,6 +121,29 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
 }
 
+/** Title + consequence copy for the pending action. */
+const ConfirmDialogHeader: React.FC<
+  Omit<ConfirmDialogProps, 'isMutating' | 'onClose' | 'onConfirm'>
+> = ({ action, baseline, candidate, previous, seasonRowsHint }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>
+      {action === 'revert'
+        ? `Go back to the ${previous ? formatTriple(previous) : 'previous'} weights?`
+        : `Change the weights from ${formatTriple(baseline)} to ${formatTriple(candidate)}?`}
+    </AlertDialogTitle>
+    <AlertDialogDescription className="space-y-2">
+      <span className="block">
+        This rescores {seasonRowsHint}, archived seasons included, so Standings, Career and History
+        change for real. It is fully reversible — the previous weights stay one Revert away.
+      </span>
+      <span className="block">
+        Heads up: the homepage &quot;Movers&quot; section may look off for up to a week afterwards.
+        It corrects itself at the next weekly snapshot.
+      </span>
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
 /** Confirmation gate in front of the save/revert mutations. */
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   action,
@@ -119,45 +154,59 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isMutating,
   onClose,
   onConfirm,
-}) => {
-  const label = action === 'revert' ? 'Revert' : 'Save';
-  return (
-    <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {action === 'revert'
-              ? `Go back to the ${previous ? formatTriple(previous) : 'previous'} weights?`
-              : `Change the weights from ${formatTriple(baseline)} to ${formatTriple(candidate)}?`}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <span className="block">
-              This rescores {seasonRowsHint}, archived seasons included, so Standings, Career and
-              History change for real. It is fully reversible — the previous weights stay one Revert
-              away.
-            </span>
-            <span className="block">
-              Heads up: the homepage &quot;Movers&quot; section may look off for up to a week
-              afterwards. It corrects itself at the next weekly snapshot.
-            </span>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isMutating}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={(e) => {
-              e.preventDefault();
-              onConfirm();
-            }}
-            disabled={isMutating}
-          >
-            {isMutating ? 'Rescoring…' : label}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
+}) => (
+  <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialogContent>
+      <ConfirmDialogHeader
+        action={action}
+        baseline={baseline}
+        candidate={candidate}
+        previous={previous}
+        seasonRowsHint={seasonRowsHint}
+      />
+      <AlertDialogFooter>
+        <AlertDialogCancel disabled={isMutating}>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={(e) => {
+            e.preventDefault();
+            onConfirm();
+          }}
+          disabled={isMutating}
+        >
+          {isMutating ? 'Rescoring…' : action === 'revert' ? 'Revert' : 'Save'}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+/** The Save / Revert row. */
+interface SandboxActionsProps {
+  canSave: boolean;
+  isMutating: boolean;
+  previous: PowerScoreWeights | null;
+  onAction: (action: 'save' | 'revert') => void;
+}
+
+const SandboxActions: React.FC<SandboxActionsProps> = ({
+  canSave,
+  isMutating,
+  previous,
+  onAction,
+}) => (
+  <div className="flex flex-wrap gap-2">
+    <Button size="sm" disabled={!canSave} onClick={() => onAction('save')}>
+      <Save className="size-4 mr-2" aria-hidden="true" />
+      {isMutating ? 'Rescoring…' : 'Save & rescore'}
+    </Button>
+    {previous && (
+      <Button variant="outline" size="sm" disabled={isMutating} onClick={() => onAction('revert')}>
+        <RotateCcw className="size-4 mr-2" aria-hidden="true" />
+        Revert to {formatTriple(previous)}
+      </Button>
+    )}
+  </div>
+);
 
 /**
  * Admin sandbox for the power score weights: adjust the three weights, watch
@@ -171,6 +220,10 @@ const PowerScoreSandboxTab: React.FC = () => {
   const baseline = baselineWeights(state);
 
   const [draft, setDraft] = useState<PowerScoreWeights | null>(null);
+  // What the inputs say RIGHT NOW (null while blank/not numbers). Save keys
+  // on this so a cleared field or the input debounce can never leave Save
+  // armed with a triple the inputs no longer show.
+  const [liveInputs, setLiveInputs] = useState<PowerScoreWeights | null>(null);
   const candidate = draft ?? baseline;
   const previewQuery = usePowerWeightPreview(candidate, state);
 
@@ -180,7 +233,9 @@ const PowerScoreSandboxTab: React.FC = () => {
   const [isMutating, setIsMutating] = useState(false);
 
   const unchanged = weightsEqual(candidate, baseline);
-  const canSave = controlsApplied && isValidWeights(candidate) && !unchanged && !isMutating;
+  const inputsSettled = liveInputs !== null && weightsEqual(liveInputs, candidate);
+  const canSave =
+    controlsApplied && inputsSettled && isValidWeights(candidate) && !unchanged && !isMutating;
   const previous = state?.previous ? toPowerScoreWeights(state.previous) : null;
   const seasonRowsHint = previewQuery.data
     ? `all ${previewQuery.data.career.length} teams across every stored season`
@@ -239,14 +294,10 @@ const PowerScoreSandboxTab: React.FC = () => {
         )}
 
         {stateQuery.isError && !stateQuery.isLoading && (
-          <Card>
-            <CardContent className="pt-6 space-y-2">
-              <p className="text-sm text-red-500">Couldn&apos;t check the live weights.</p>
-              <Button size="sm" variant="outline" onClick={() => stateQuery.refetch()}>
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
+          <RetryCard
+            message="Couldn't check the live weights."
+            onRetry={() => stateQuery.refetch()}
+          />
         )}
 
         {state !== undefined && (
@@ -258,6 +309,7 @@ const PowerScoreSandboxTab: React.FC = () => {
               baseline={baseline}
               disabled={isMutating}
               onChange={setDraft}
+              onLiveChange={setLiveInputs}
             />
 
             <ConsequencesNote />
@@ -268,23 +320,12 @@ const PowerScoreSandboxTab: React.FC = () => {
               previewQuery={previewQuery}
             />
 
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" disabled={!canSave} onClick={() => setConfirmAction('save')}>
-                <Save className="size-4 mr-2" aria-hidden="true" />
-                {isMutating ? 'Rescoring…' : 'Save & rescore'}
-              </Button>
-              {controlsApplied && previous && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={isMutating}
-                  onClick={() => setConfirmAction('revert')}
-                >
-                  <RotateCcw className="size-4 mr-2" aria-hidden="true" />
-                  Revert to {formatTriple(previous)}
-                </Button>
-              )}
-            </div>
+            <SandboxActions
+              canSave={canSave}
+              isMutating={isMutating}
+              previous={controlsApplied ? previous : null}
+              onAction={setConfirmAction}
+            />
           </>
         )}
 

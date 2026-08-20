@@ -17,7 +17,15 @@ interface WeightControlsProps {
   /** The live triple — the "Current" preset and the change-detection anchor */
   baseline: PowerScoreWeights;
   disabled?: boolean;
+  /** Debounced (~300ms): the parsed triple the preview should compute against */
   onChange: (weights: PowerScoreWeights) => void;
+  /**
+   * Instant, on every keystroke: what the inputs say RIGHT NOW — null while a
+   * field is blank or not a number. Save must key on this, not on `value`,
+   * or a cleared field / the debounce window would leave Save armed with a
+   * stale triple the inputs no longer show.
+   */
+  onLiveChange: (weights: PowerScoreWeights | null) => void;
 }
 
 interface FieldStrings {
@@ -55,7 +63,13 @@ const parseFields = (fields: FieldStrings): PowerScoreWeights | null => {
  * sum-to-100 badge. Typing is debounced ~300ms before it reaches the parent
  * (and thus the preview computation); preset clicks commit immediately.
  */
-const WeightControls: React.FC<WeightControlsProps> = ({ value, baseline, disabled, onChange }) => {
+const WeightControls: React.FC<WeightControlsProps> = ({
+  value,
+  baseline,
+  disabled,
+  onChange,
+  onLiveChange,
+}) => {
   const [fields, setFields] = useState<FieldStrings>(() => toFields(value));
   // The last triple this component handed to the parent. Lets the sync
   // effect below tell "our own echo" from a real outside change (a preset in
@@ -70,8 +84,12 @@ const WeightControls: React.FC<WeightControlsProps> = ({ value, baseline, disabl
   }, [value]);
 
   useEffect(() => {
+    onLiveChange(parseFields(fields));
+  }, [fields, onLiveChange]);
+
+  useEffect(() => {
     const parsed = parseFields(fields);
-    if (!parsed || weightsEqual(parsed, lastEmitted.current)) return;
+    if (!parsed || weightsEqual(parsed, lastEmitted.current)) return undefined;
     const timer = setTimeout(() => {
       lastEmitted.current = parsed;
       onChange(parsed);

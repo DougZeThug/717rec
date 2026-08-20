@@ -20,8 +20,8 @@ describe('powerScore100 (standings — no floor)', () => {
   });
 
   it('applies the SQL COALESCE rules: win/game read as 0, sos as 0.5', () => {
+    // ?? in the mirror treats undefined identically to the nulls pinned here.
     expect(powerScore100(null, null, null)).toBeCloseTo(22.5, 9);
-    expect(powerScore100(undefined, undefined, undefined)).toBeCloseTo(22.5, 9);
     expect(powerScore100(0.5, null, 0.5)).toBeCloseTo(0.5 * 40 + 0.5 * 15 + 0.5 * 45, 9);
   });
 

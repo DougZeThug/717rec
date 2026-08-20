@@ -34,9 +34,24 @@ export interface SeasonWeightPreviewInput {
   candidate: PowerScoreWeights;
 }
 
-/** Rank ids by score descending, team name as the stable tie-break. */
-const rankByScore = (entries: { teamId: string; name: string; score: number }[]) => {
-  const sorted = [...entries].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
+/** Scores tie on /standings when they agree to the displayed tenth. */
+const displayedScore = (score: number) => Math.round(score * 10) / 10;
+
+/**
+ * Rank ids the way sortRankings() orders a division on /standings: the
+ * one-decimal displayed score first, then win percentage, then team name.
+ * (sortRankings also breaks ties by division tier, but rows here are already
+ * grouped per division, so tiers are always equal.)
+ */
+const rankByScore = (
+  entries: { teamId: string; name: string; score: number; winPct: number }[]
+) => {
+  const sorted = [...entries].sort(
+    (a, b) =>
+      displayedScore(b.score) - displayedScore(a.score) ||
+      b.winPct - a.winPct ||
+      a.name.localeCompare(b.name)
+  );
   return new Map(sorted.map((entry, index) => [entry.teamId, index + 1]));
 };
 
@@ -82,6 +97,10 @@ export function buildSeasonWeightPreview({
     const scored = rated.map(({ team, component }) => ({
       teamId: team.id,
       name: team.name,
+      winPct:
+        component.wins + component.losses > 0
+          ? component.wins / (component.wins + component.losses)
+          : 0,
       baselineScore: powerScore100(
         component.weighted_win_pct,
         component.sos,
@@ -97,10 +116,20 @@ export function buildSeasonWeightPreview({
     }));
 
     const baselineRanks = rankByScore(
-      scored.map((s) => ({ teamId: s.teamId, name: s.name, score: s.baselineScore }))
+      scored.map((s) => ({
+        teamId: s.teamId,
+        name: s.name,
+        score: s.baselineScore,
+        winPct: s.winPct,
+      }))
     );
     const candidateRanks = rankByScore(
-      scored.map((s) => ({ teamId: s.teamId, name: s.name, score: s.candidateScore }))
+      scored.map((s) => ({
+        teamId: s.teamId,
+        name: s.name,
+        score: s.candidateScore,
+        winPct: s.winPct,
+      }))
     );
 
     const rows: SeasonPreviewRow[] = scored.map((s) => {

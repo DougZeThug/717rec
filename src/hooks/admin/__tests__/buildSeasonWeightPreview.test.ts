@@ -111,4 +111,23 @@ describe('buildSeasonWeightPreview', () => {
     });
     expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Yankee', 'Zulu']);
   });
+
+  it('ties at the displayed tenth and breaks by win percentage, like sortRankings', () => {
+    // Xray 83.0405 raw vs Yankee 83.0 raw under the baseline — /standings
+    // rounds both to 83.0 and then ranks the better record first, so the
+    // preview must put Yankee ahead despite the lower raw score.
+    const pair = [team('x', 'Xray', 'Competitive'), team('y', 'Yankee', 'Competitive')];
+    const nearTied = [
+      { ...component('x', 0.8, 0.9, 0.7027), wins: 5, losses: 5 },
+      { ...component('y', 0.8, 0.9, 0.7), wins: 9, losses: 1 },
+    ];
+    const preview = buildSeasonWeightPreview({
+      teams: pair,
+      components: nearTied,
+      baseline,
+      candidate,
+    });
+    expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Yankee', 'Xray']);
+    expect(preview[0].rows[0].baselineRank).toBe(1);
+  });
 });

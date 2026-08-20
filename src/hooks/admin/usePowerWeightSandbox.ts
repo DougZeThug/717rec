@@ -139,4 +139,4 @@ export const useApplyPowerWeights = () =>
 
 /** Go back to the previous triple. */
 export const useRevertPowerWeights = () =>
-  useWeightMutation((_variables: void) => PowerWeightSandboxService.revertWeights());
+  useWeightMutation<void>(() => PowerWeightSandboxService.revertWeights());
