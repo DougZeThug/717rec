@@ -90,14 +90,36 @@ export interface DivisionSoftClasses {
   button: string;
 }
 
-const buildSoftClasses = (token: string): DivisionSoftClasses => ({
-  text: `text-[hsl(var(--${token}))]`,
-  border: `border-[hsl(var(--${token})/0.35)]`,
-  borderLeft: `border-l-[hsl(var(--${token})/0.55)]`,
-  borderTop: `border-t-[hsl(var(--${token})/0.5)]`,
-  iconBg: `bg-[hsl(var(--${token})/0.12)]`,
-  button: `bg-[hsl(var(--${token})/0.15)] hover:bg-[hsl(var(--${token})/0.25)] text-[hsl(var(--${token}))] border border-[hsl(var(--${token})/0.35)]`,
-});
+const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', DivisionSoftClasses> =
+  {
+    competitive: {
+      text: 'text-[hsl(var(--competitive-soft))]',
+      border: 'border-[hsl(var(--competitive-soft)/0.35)]',
+      borderLeft: 'border-l-[hsl(var(--competitive-soft)/0.55)]',
+      borderTop: 'border-t-[hsl(var(--competitive-soft)/0.5)]',
+      iconBg: 'bg-[hsl(var(--competitive-soft)/0.12)]',
+      button:
+        'bg-[hsl(var(--competitive-soft)/0.15)] hover:bg-[hsl(var(--competitive-soft)/0.25)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.35)]',
+    },
+    intermediate: {
+      text: 'text-[hsl(var(--intermediate-soft))]',
+      border: 'border-[hsl(var(--intermediate-soft)/0.35)]',
+      borderLeft: 'border-l-[hsl(var(--intermediate-soft)/0.55)]',
+      borderTop: 'border-t-[hsl(var(--intermediate-soft)/0.5)]',
+      iconBg: 'bg-[hsl(var(--intermediate-soft)/0.12)]',
+      button:
+        'bg-[hsl(var(--intermediate-soft)/0.15)] hover:bg-[hsl(var(--intermediate-soft)/0.25)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.35)]',
+    },
+    recreational: {
+      text: 'text-[hsl(var(--recreational-soft))]',
+      border: 'border-[hsl(var(--recreational-soft)/0.35)]',
+      borderLeft: 'border-l-[hsl(var(--recreational-soft)/0.55)]',
+      borderTop: 'border-t-[hsl(var(--recreational-soft)/0.5)]',
+      iconBg: 'bg-[hsl(var(--recreational-soft)/0.12)]',
+      button:
+        'bg-[hsl(var(--recreational-soft)/0.15)] hover:bg-[hsl(var(--recreational-soft)/0.25)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.35)]',
+    },
+  };
 
 const NEUTRAL_SOFT: DivisionSoftClasses = {
   text: 'text-muted-foreground',
@@ -112,9 +134,9 @@ export const getDivisionSoftClasses = (
   division: string | null | undefined
 ): DivisionSoftClasses => {
   const d = (division ?? '').toLowerCase();
-  if (d.includes('competitive')) return buildSoftClasses('competitive-soft');
-  if (d.includes('intermediate')) return buildSoftClasses('intermediate-soft');
-  if (d.includes('recreational')) return buildSoftClasses('recreational-soft');
+  if (d.includes('competitive')) return SOFT_CLASSES.competitive;
+  if (d.includes('intermediate')) return SOFT_CLASSES.intermediate;
+  if (d.includes('recreational')) return SOFT_CLASSES.recreational;
   return NEUTRAL_SOFT;
 };
 
