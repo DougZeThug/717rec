@@ -1,6 +1,8 @@
 /**
  * Extended division color system - now uses display_division for consistent grouping
  */
+import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
+
 const divisionColors = {
   competitive: {
     primary: 'hsl(var(--competitive))',
