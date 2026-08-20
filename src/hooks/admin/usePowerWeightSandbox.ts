@@ -1,7 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
-  PowerWeightMutationResult,
   PowerWeightSandboxService,
   PowerWeightState,
   toPowerScoreWeights,
@@ -119,24 +118,28 @@ export const usePowerWeightPreview = (
  * invalidation is the smallest change that is guaranteed to leave no stale
  * number on screen (same reasoning as the power migration controls).
  */
-const useWeightMutation = <TVariables = undefined>(
-  mutationFn: (variables: TVariables) => Promise<PowerWeightMutationResult>
-) => {
+const useInvalidateAllOnSuccess = () => {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn,
-    onSuccess: () => {
-      qc.invalidateQueries();
-    },
-  });
+  return () => {
+    qc.invalidateQueries();
+  };
 };
 
 /** Apply a candidate triple for real (recomputes all seasons, archived included). */
-export const useApplyPowerWeights = () =>
-  useWeightMutation((variables: { weights: PowerScoreWeights; note?: string }) =>
-    PowerWeightSandboxService.applyWeights(variables.weights, variables.note)
-  );
+export const useApplyPowerWeights = () => {
+  const onSuccess = useInvalidateAllOnSuccess();
+  return useMutation({
+    mutationFn: (variables: { weights: PowerScoreWeights; note?: string }) =>
+      PowerWeightSandboxService.applyWeights(variables.weights, variables.note),
+    onSuccess,
+  });
+};
 
-/** Go back to the previous triple (no payload — the generic defaults to undefined). */
-export const useRevertPowerWeights = () =>
-  useWeightMutation(() => PowerWeightSandboxService.revertWeights());
+/** Go back to the previous triple. */
+export const useRevertPowerWeights = () => {
+  const onSuccess = useInvalidateAllOnSuccess();
+  return useMutation({
+    mutationFn: () => PowerWeightSandboxService.revertWeights(),
+    onSuccess,
+  });
+};
