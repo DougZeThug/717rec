@@ -11,7 +11,11 @@ export const deleteTeamApi = async (teamId: string): Promise<void> => {
   const teamPath = `teams/${teamId}`;
 
   // List all files for this team in the storage bucket
-  const { data: storageFiles } = await supabase.storage.from('teams').list(teamPath);
+  const { data: storageFiles, error: listError } = await supabase.storage.from('teams').list(teamPath);
+
+  if (listError) {
+    warnLog('Error listing team files:', listError);
+  }
 
   // If files exist for this team, delete them
   if (storageFiles && storageFiles.length > 0) {
