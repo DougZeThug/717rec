@@ -85,11 +85,14 @@ const buildMockFrom = (scenario: Scenario) => (table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 };
 
-const createContext = () => ({
-  isAuthenticated: () => true,
-  getUserId: () => 'user-1',
-  getToken: () => 'token',
-});
+const createContext = (): ToolContext =>
+  ({
+    isAuthenticated: () => true,
+    getUserId: () => 'user-1',
+    getToken: () => 'token',
+  }) as unknown as ToolContext;
+
+const getText = (result: { content?: { text?: string }[] }) => result.content?.[0]?.text ?? '';
 
 describe('get_my_team', () => {
   beforeEach(() => {
