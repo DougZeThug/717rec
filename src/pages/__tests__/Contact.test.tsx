@@ -13,6 +13,8 @@ vi.mock('react-helmet-async', () => ({
   Helmet: ({ children }: { children: React.ReactNode }) => children,
 }));
 
+vi.mock('@/components/seo/SeoHead', () => ({ default: () => null }));
+
 vi.mock('react-hook-form', () => ({
   useForm: () => ({
     control: {},
