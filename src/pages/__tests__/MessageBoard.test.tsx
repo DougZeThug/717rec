@@ -17,6 +17,7 @@ vi.mock('@/hooks/useToast', () => ({ toast: (...args: unknown[]) => mockToast(..
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
+vi.mock('@/components/seo/SeoHead', () => ({ default: () => null }));
 vi.mock('@/components/layout/PageHeader', () => ({
   default: ({ title }: { title: React.ReactNode }) => <h1>{title}</h1>,
 }));

@@ -5,10 +5,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CheckCircle, Mail, MessageSquare, Send } from 'lucide-react';
 import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useForm } from 'react-hook-form';
 
 import PageLayout from '@/components/layout/PageLayout';
+import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,13 +88,11 @@ export default function Contact() {
   if (isSuccess) {
     return (
       <PageLayout>
-        <Helmet>
-          <title>Contact Support | 717REC</title>
-          <meta
-            name="description"
-            content="Contact 717REC support for help with your account, reporting issues, or general inquiries."
-          />
-        </Helmet>
+        <SeoHead
+          title="Contact Support | 717REC Cornhole League"
+          description="Contact 717REC support for help with your account, team requests, score corrections, or general league questions."
+          path="/contact"
+        />
         <PageTransition>
           <div className="container max-w-2xl py-12">
             <Card>
@@ -119,13 +117,11 @@ export default function Contact() {
 
   return (
     <PageLayout>
-      <Helmet>
-        <title>Contact Support | 717REC</title>
-        <meta
-          name="description"
-          content="Contact 717REC support for help with your account, reporting issues, or general inquiries."
-        />
-      </Helmet>
+      <SeoHead
+        title="Contact Support | 717REC Cornhole League"
+        description="Contact 717REC support for help with your account, team requests, score corrections, or general league questions."
+        path="/contact"
+      />
       <PageTransition>
         <div className="container max-w-2xl py-12">
           <div className="text-center mb-8">

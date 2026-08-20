@@ -7,6 +7,7 @@ import LoginPrompt from '@/components/message-board/LoginPrompt';
 import MessageFeed from '@/components/message-board/MessageFeed';
 import MessageFilterBar from '@/components/message-board/MessageFilterBar';
 import MessageInput from '@/components/message-board/MessageInput';
+import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useAuth } from '@/contexts/auth-context';
 import { useMessageBoard } from '@/hooks/useMessageBoard';
@@ -52,6 +53,11 @@ const MessageBoard: React.FC = () => {
   }, [refreshMessages]);
   return (
     <PageLayout>
+      <SeoHead
+        title="Message Board | 717REC Cornhole League"
+        description="Talk with other 717REC teams: league night chatter, match talk, and announcements from Lancaster's cornhole community."
+        path="/message-board"
+      />
       <PageTransition animation="fadeInSlideDown">
         <div className="container max-w-4xl mx-auto pb-20 md:pb-24 px-px">
           <div
