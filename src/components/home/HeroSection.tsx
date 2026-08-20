@@ -138,7 +138,6 @@ const HeroSection = () => {
           {shouldApplyWinter ? (
             <SnowtopText
               as="div"
-              aria-hidden
               className="text-5xl lg:text-6xl uppercase tracking-wide font-normal mb-2 leading-tight"
             >
               717Rec
