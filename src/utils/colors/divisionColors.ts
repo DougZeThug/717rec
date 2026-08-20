@@ -76,45 +76,44 @@ export interface DivisionSoftClasses {
   badge: string;
 }
 
-const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', DivisionSoftClasses> =
-  {
-    competitive: {
-      text: 'text-[hsl(var(--competitive-soft))]',
-      border: 'border-[hsl(var(--competitive-soft)/0.35)]',
-      borderLeft: 'border-l-[hsl(var(--competitive-soft)/0.55)]',
-      borderTop: 'border-t-[hsl(var(--competitive-soft)/0.5)]',
-      iconBg: 'bg-[hsl(var(--competitive-soft)/0.12)]',
-      softBg: 'bg-[hsl(var(--competitive-soft)/0.12)]',
-      badge:
-        'bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.3)]',
-      button:
-        'bg-[hsl(var(--competitive-soft)/0.15)] hover:bg-[hsl(var(--competitive-soft)/0.25)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.35)]',
-    },
-    intermediate: {
-      text: 'text-[hsl(var(--intermediate-soft))]',
-      border: 'border-[hsl(var(--intermediate-soft)/0.35)]',
-      borderLeft: 'border-l-[hsl(var(--intermediate-soft)/0.55)]',
-      borderTop: 'border-t-[hsl(var(--intermediate-soft)/0.5)]',
-      iconBg: 'bg-[hsl(var(--intermediate-soft)/0.12)]',
-      softBg: 'bg-[hsl(var(--intermediate-soft)/0.12)]',
-      badge:
-        'bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.3)]',
-      button:
-        'bg-[hsl(var(--intermediate-soft)/0.15)] hover:bg-[hsl(var(--intermediate-soft)/0.25)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.35)]',
-    },
-    recreational: {
-      text: 'text-[hsl(var(--recreational-soft))]',
-      border: 'border-[hsl(var(--recreational-soft)/0.35)]',
-      borderLeft: 'border-l-[hsl(var(--recreational-soft)/0.55)]',
-      borderTop: 'border-t-[hsl(var(--recreational-soft)/0.5)]',
-      iconBg: 'bg-[hsl(var(--recreational-soft)/0.12)]',
-      softBg: 'bg-[hsl(var(--recreational-soft)/0.12)]',
-      badge:
-        'bg-[hsl(var(--recreational-soft)/0.15)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.3)]',
-      button:
-        'bg-[hsl(var(--recreational-soft)/0.15)] hover:bg-[hsl(var(--recreational-soft)/0.25)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.35)]',
-    },
-  };
+const SOFT_CLASSES: Record<'competitive' | 'intermediate' | 'recreational', DivisionSoftClasses> = {
+  competitive: {
+    text: 'text-[hsl(var(--competitive-soft))]',
+    border: 'border-[hsl(var(--competitive-soft)/0.35)]',
+    borderLeft: 'border-l-[hsl(var(--competitive-soft)/0.55)]',
+    borderTop: 'border-t-[hsl(var(--competitive-soft)/0.5)]',
+    iconBg: 'bg-[hsl(var(--competitive-soft)/0.12)]',
+    softBg: 'bg-[hsl(var(--competitive-soft)/0.12)]',
+    badge:
+      'bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.3)]',
+    button:
+      'bg-[hsl(var(--competitive-soft)/0.15)] hover:bg-[hsl(var(--competitive-soft)/0.25)] text-[hsl(var(--competitive-soft))] border border-[hsl(var(--competitive-soft)/0.35)]',
+  },
+  intermediate: {
+    text: 'text-[hsl(var(--intermediate-soft))]',
+    border: 'border-[hsl(var(--intermediate-soft)/0.35)]',
+    borderLeft: 'border-l-[hsl(var(--intermediate-soft)/0.55)]',
+    borderTop: 'border-t-[hsl(var(--intermediate-soft)/0.5)]',
+    iconBg: 'bg-[hsl(var(--intermediate-soft)/0.12)]',
+    softBg: 'bg-[hsl(var(--intermediate-soft)/0.12)]',
+    badge:
+      'bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.3)]',
+    button:
+      'bg-[hsl(var(--intermediate-soft)/0.15)] hover:bg-[hsl(var(--intermediate-soft)/0.25)] text-[hsl(var(--intermediate-soft))] border border-[hsl(var(--intermediate-soft)/0.35)]',
+  },
+  recreational: {
+    text: 'text-[hsl(var(--recreational-soft))]',
+    border: 'border-[hsl(var(--recreational-soft)/0.35)]',
+    borderLeft: 'border-l-[hsl(var(--recreational-soft)/0.55)]',
+    borderTop: 'border-t-[hsl(var(--recreational-soft)/0.5)]',
+    iconBg: 'bg-[hsl(var(--recreational-soft)/0.12)]',
+    softBg: 'bg-[hsl(var(--recreational-soft)/0.12)]',
+    badge:
+      'bg-[hsl(var(--recreational-soft)/0.15)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.3)]',
+    button:
+      'bg-[hsl(var(--recreational-soft)/0.15)] hover:bg-[hsl(var(--recreational-soft)/0.25)] text-[hsl(var(--recreational-soft))] border border-[hsl(var(--recreational-soft)/0.35)]',
+  },
+};
 
 const NEUTRAL_SOFT: DivisionSoftClasses = {
   text: 'text-muted-foreground',
