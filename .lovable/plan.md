@@ -1,52 +1,28 @@
-# Admin panel visual audit + Auto Scheduler bleed fix
+# Softer division colors for playoff brackets
 
-## What I found
+## Goal
+Keep the red / amber / green division identity, but make the playoff page use muted, theme-friendly versions instead of the full-saturation neon tones.
 
-The Auto Scheduler top row has two real overflow causes on desktop:
+## What changes visually
+- Division headings ("Competitive Division") become a softer, desaturated tint of their color instead of pure bright red / yellow / green.
+- The left accent bar on each division card becomes a low-opacity version of the tier color.
+- The trophy icon and empty-state icon use the same softer tone.
+- "Create Bracket" buttons stop using saturated tier fills; they use a subtle tinted background with tier-colored text and border.
+- `BracketDetail` border colors get corrected too (they currently use blue for Intermediate and amber for Competitive, which does not match the league standard).
 
-1. **Step tab strip bleeds past the card edge.** The `1. Teams / 2. Matches / 3. Export`
-   strip is a full-width grey block placed flush inside a rounded `Card` that has no
-   `overflow-hidden`. Its corners stick out past the card's rounded border, which reads as
-   "bleed" at the top row.
-2. **Header buttons crowd the numbers.** Inside the Teams tab the title/description and the
-   `Reset to Auto-Loaded` + `Edit Teams` buttons sit in one non-wrapping
-   `flex justify-between` row. On desktop this card is only 2 of 3 grid columns wide, so at
-   1280-1440px the buttons squeeze or push out of the row.
+Standings, teams, stats and badges keep their current colors. Only the playoff surfaces change.
 
-Other admin areas share the same two patterns, so the fix is the same shape everywhere.
-
-## Fix plan (presentation only, no logic changes)
-
-### A. Auto Scheduler (the reported bug)
-- Clip the tab strip to the card: add `overflow-hidden` to the workflow card and remove the
-  square corners from the flush `TabsList`.
-- Let the step labels shrink gracefully: allow truncation and reduce label size on smaller
-  desktop widths so `1. Teams` etc. never push the strip wider than the card.
-- Make the Teams tab header row wrap: `flex-wrap` with the button group allowed to drop to a
-  second line, buttons `shrink-0`, text block `min-w-0`.
-- Same wrap treatment for the Matches tab header (edit-mode toggle + save buttons) and the
-  Export tab header.
-- Diagnostic panel: let the trigger row shrink (`min-w-0` + truncate on the title) so the
-  chevron stays inside the card.
-
-### B. Audit sweep — same defects elsewhere
-Check and apply the identical wrap/clip pattern where present:
-- Batch Match Creation (auto-schedule section header + action row)
-- Mass Score Entry header controls
-- Team Management, Divisions, Requests table headers
-- Season Management and League Night Status stat rows
-- Any admin `TabsList` with a fixed `grid-cols-N` that must hold long labels
-
-### C. Mobile check
-- Confirm no admin panel forces horizontal page scroll at 390px.
-- Wide tab strips become horizontally scrollable instead of squashed.
-- Stat/number rows stack instead of clipping.
+## Technical details
+1. `src/styles/theme.css` — add soft tier tokens next to existing ones, for light and dark blocks:
+   - `--competitive-soft`, `--intermediate-soft`, `--recreational-soft`
+   - Same hue, lower saturation and tuned lightness so they read calm on the dark navy background (roughly `0 55% 62%`, `38 65% 60%`, `150 40% 55%` in dark; slightly darker in light mode for contrast).
+2. `tailwind.config.ts` — register `competitive-soft`, `intermediate-soft`, `recreational-soft` colors so utilities are available.
+3. `src/utils/colors/divisionColors.ts` — add a `getDivisionSoftClasses(division)` helper returning `{ text, border, iconBg, buttonClass }` built on the new tokens.
+4. `src/components/playoffs/DivisionBracketsCard.tsx` — replace `getDivisionBorderColor`, `getDivisionTextColor`, `getDivisionButtonClass` with the shared soft helper.
+5. `src/components/playoffs/BracketDetail.tsx` — replace hardcoded `border-green/blue/amber` with the soft tier tokens, mapped to the correct tier.
+6. Check remaining playoff components (`FinalStandings`, `PlayoffPageLayout`, match cards) for hardcoded saturated tier colors and switch them to the soft helper.
 
 ## Verification
-- Screenshot the Auto Scheduler at 1280, 1440 and 390px wide, before and after.
-- Run `npm run typecheck`, `npx eslint .`, and the admin component tests.
-
-## Notes
-- Only Tailwind class changes in admin components — no data, hooks, or service changes.
-- I could not sign into the admin preview from here (external Supabase), so the audit list is
-  built from the code patterns; I will screenshot-verify each fixed area during the build.
+- `npm run typecheck`
+- `npm run test:file -- src/pages/__tests__/Playoffs.test.tsx`
+- Screenshot the playoffs page in dark mode to confirm the calmer look.
