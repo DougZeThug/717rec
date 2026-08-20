@@ -105,7 +105,7 @@ describe('get_my_team', () => {
     const result = await getMyTeam.handler({}, createContext());
 
     expect(result.isError).toBe(true);
-    expect(result.content[0].text).toContain('ETIMEDOUT');
+    expect(getText(result)).toContain('ETIMEDOUT');
   });
 
   it('returns null season stats when no stats row exists', async () => {
