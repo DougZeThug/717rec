@@ -3,7 +3,7 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "types": ["node", "vitest/globals", "@playwright/test"],
+    "types": ["node", "vite/client", "vitest/globals", "@playwright/test"],
     "lib": [
       "ES2022",
       "DOM",

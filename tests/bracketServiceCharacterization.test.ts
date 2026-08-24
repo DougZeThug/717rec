@@ -369,7 +369,7 @@ describe('bracket service characterization (real service + real library over fak
       await expect(
         service.updateMatch({
           matchId: byeMatch.id,
-          scores: { opponent1: { score: 21, result: 'win' } },
+          scores: { opponent1: { score: 21, result: 'win' }, opponent2: {} },
         })
       ).rejects.toThrow('This match has a BYE and resolves automatically');
 
@@ -381,7 +381,7 @@ describe('bracket service characterization (real service + real library over fak
       await expect(
         service.updateMatch({
           matchId: tbdMatch.id,
-          scores: { opponent1: { score: 2, result: 'win' } },
+          scores: { opponent1: { score: 2, result: 'win' }, opponent2: {} },
         })
       ).rejects.toThrow('This match is still waiting on earlier results');
     });
