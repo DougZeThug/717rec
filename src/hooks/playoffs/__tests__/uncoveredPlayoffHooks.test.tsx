@@ -3,7 +3,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const m = vi.hoisted(() => ({
+const mocks = vi.hoisted(() => ({
   bracket: vi.fn(),
   bmMatch: vi.fn(),
   teams: vi.fn(),
@@ -23,32 +23,36 @@ const m = vi.hoisted(() => ({
   error: vi.fn(),
 }));
 vi.mock('@/services/brackets/BracketReadService', () => ({
-  fetchPlayoffBracketData: m.bracket,
-  fetchBracketsManagerMatchData: m.bmMatch,
-  fetchPlayoffTeams: m.teams,
-  fetchBmMatchData: m.bmMatch,
-  fetchParticipantsByIds: m.participants,
-  fetchPlayoffMatchTeams: m.legacyTeams,
+  fetchPlayoffBracketData: mocks.bracket,
+  fetchBracketsManagerMatchData: mocks.bmMatch,
+  fetchPlayoffTeams: mocks.teams,
+  fetchBmMatchData: mocks.bmMatch,
+  fetchParticipantsByIds: mocks.participants,
+  fetchPlayoffMatchTeams: mocks.legacyTeams,
 }));
 vi.mock('@/services/brackets/BracketWriteService', () => ({
-  updatePlayoffMatchScores: m.scores,
-  replacePlayoffGames: m.games,
+  updatePlayoffMatchScores: mocks.scores,
+  replacePlayoffGames: mocks.games,
 }));
 vi.mock('@/services/brackets/manager', () => ({
   bracketManagerService: {
-    checkLoserSwapEligibility: m.eligibility,
-    adminSwapLoserBracketSlots: m.swap,
-    getLoserRearrangeBoard: m.board,
-    applyLoserBracketRearrange: m.rearrange,
-    editMatchParticipants: m.edit,
-    updateMatch: m.update,
+    checkLoserSwapEligibility: mocks.eligibility,
+    adminSwapLoserBracketSlots: mocks.swap,
+    getLoserRearrangeBoard: mocks.board,
+    applyLoserBracketRearrange: mocks.rearrange,
+    editMatchParticipants: mocks.edit,
+    updateMatch: mocks.update,
   },
 }));
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
-  invalidateMatchRelatedQueries: m.invalidateRelated,
+  invalidateMatchRelatedQueries: mocks.invalidateRelated,
 }));
-vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: m.toast }) }));
-vi.mock('@/utils/logger', () => ({ bracketLog: m.log, scoreLog: m.log, errorLog: m.error }));
+vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: mocks.toast }) }));
+vi.mock('@/utils/logger', () => ({
+  bracketLog: mocks.log,
+  scoreLog: mocks.log,
+  errorLog: mocks.error,
+}));
 
 import { useBracketsManagerMatch } from '../useBracketsManagerMatch';
 import { usePlayoffBracketData } from '../usePlayoffBracketData';
@@ -70,27 +74,27 @@ const setup = () => {
 describe('uncovered playoff hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    m.invalidateRelated.mockResolvedValue(undefined);
+    mocks.invalidateRelated.mockResolvedValue();
   });
   it('returns null bracket data without a service call', async () => {
     const { wrapper } = setup();
     const { result } = renderHook(() => usePlayoffBracketData(null), { wrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toBeNull();
-    expect(m.bracket).not.toHaveBeenCalled();
+    expect(mocks.bracket).not.toHaveBeenCalled();
   });
   it('fetches bracket data and playoff teams', async () => {
-    m.bracket.mockResolvedValue({ id: 'b1' });
-    m.teams.mockResolvedValue([{ id: 't1' }]);
+    mocks.bracket.mockResolvedValue({ id: 'b1' });
+    mocks.teams.mockResolvedValue([{ id: 't1' }]);
     const { wrapper } = setup();
     const bracket = renderHook(() => usePlayoffBracketData('b1'), { wrapper });
     const teams = renderHook(() => usePlayoffTeams(), { wrapper });
     await waitFor(() => expect(bracket.result.current.data).toEqual({ id: 'b1' }));
     await waitFor(() => expect(teams.result.current.data).toEqual([{ id: 't1' }]));
-    expect(m.bracket).toHaveBeenCalledWith('b1');
+    expect(mocks.bracket).toHaveBeenCalledWith('b1');
   });
   it('maps a brackets-manager match and stays idle for null', async () => {
-    m.bmMatch.mockResolvedValue({
+    mocks.bmMatch.mockResolvedValue({
       matchData: {
         id: 4,
         stage_id: 1,
@@ -123,40 +127,44 @@ describe('uncovered playoff hooks', () => {
     const { wrapper } = setup();
     renderHook(() => useLoserSwapEligibility(null), { wrapper });
     renderHook(() => useLoserRearrangeBoard('b1', false), { wrapper });
-    expect(m.eligibility).not.toHaveBeenCalled();
-    expect(m.board).not.toHaveBeenCalled();
-    m.eligibility.mockResolvedValue({ allowed: true });
-    m.board.mockResolvedValue({ matches: [] });
+    expect(mocks.eligibility).not.toHaveBeenCalled();
+    expect(mocks.board).not.toHaveBeenCalled();
+    mocks.eligibility.mockResolvedValue({ allowed: true });
+    mocks.board.mockResolvedValue({ matches: [] });
     const eligible = renderHook(() => useLoserSwapEligibility(2), { wrapper });
     const board = renderHook(() => useLoserRearrangeBoard('b1', true), { wrapper });
     await waitFor(() => expect(eligible.result.current.isSuccess).toBe(true));
     await waitFor(() => expect(board.result.current.isSuccess).toBe(true));
-    expect(m.eligibility).toHaveBeenCalledWith(2);
-    expect(m.board).toHaveBeenCalledWith('b1');
+    expect(mocks.eligibility).toHaveBeenCalledWith(2);
+    expect(mocks.board).toHaveBeenCalledWith('b1');
   });
   it('edits participants and refreshes bracket caches', async () => {
-    m.edit.mockResolvedValue({});
+    mocks.edit.mockResolvedValue({});
     const { client, wrapper } = setup();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const refetch = vi.spyOn(client, 'refetchQueries');
     const { result } = renderHook(() => usePlayoffEditMatchParticipants('b1'), { wrapper });
-    await act(async () =>
-      result.current.mutateAsync({ matchId: 2, opponent1TeamId: 'a', opponent2TeamId: null })
-    );
-    expect(m.edit).toHaveBeenCalledWith(2, 'a', null);
+    await act(async () => {
+      await result.current.mutateAsync({
+        matchId: 2,
+        opponent1TeamId: 'a',
+        opponent2TeamId: null,
+      });
+    });
+    expect(mocks.edit).toHaveBeenCalledWith(2, 'a', null);
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
     expect(refetch).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
-    expect(m.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Teams updated' }));
+    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Teams updated' }));
   });
   it('reports participant edit errors', async () => {
-    m.edit.mockRejectedValue(new Error('played'));
+    mocks.edit.mockRejectedValue(new Error('played'));
     const { wrapper } = setup();
     const { result } = renderHook(() => usePlayoffEditMatchParticipants(null), { wrapper });
     await expect(
       result.current.mutateAsync({ matchId: 2, opponent1TeamId: null, opponent2TeamId: null })
     ).rejects.toThrow('played');
     await waitFor(() =>
-      expect(m.toast).toHaveBeenCalledWith(
+      expect(mocks.toast).toHaveBeenCalledWith(
         expect.objectContaining({
           title: 'Could not update teams',
           description: 'played',
@@ -166,48 +174,52 @@ describe('uncovered playoff hooks', () => {
     );
   });
   it('swaps loser slots and invalidates affected matches', async () => {
-    m.swap.mockResolvedValue({ message: 'Done' });
+    mocks.swap.mockResolvedValue({ message: 'Done' });
     const { client, wrapper } = setup();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(() => usePlayoffSwapLoserSlots(null), { wrapper });
     const params = { sourceMatchId: 1, targetMatchId: 2, sourcePosition: 1, targetPosition: 2 };
-    await act(async () => result.current.mutateAsync(params as never));
-    expect(m.swap).toHaveBeenCalledWith(params);
+    await act(async () => {
+      await result.current.mutateAsync(params as never);
+    });
+    expect(mocks.swap).toHaveBeenCalledWith(params);
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['brackets-manager-match', 1] });
-    expect(m.toast).toHaveBeenCalledWith({ title: 'Teams moved', description: 'Done' });
+    expect(mocks.toast).toHaveBeenCalledWith({ title: 'Teams moved', description: 'Done' });
   });
   it('applies a rearrangement and shows service errors', async () => {
-    m.rearrange
+    mocks.rearrange
       .mockResolvedValueOnce({ message: 'Saved' })
       .mockRejectedValueOnce(new Error('stale'));
     const { wrapper } = setup();
     const { result } = renderHook(() => usePlayoffApplyRearrange('b1'), { wrapper });
-    await act(async () => result.current.mutateAsync({ assignments: [], baseline: [] }));
-    expect(m.rearrange).toHaveBeenCalledWith('b1', [], []);
-    expect(m.toast).toHaveBeenCalledWith({ title: 'Teams rearranged', description: 'Saved' });
+    await act(async () => {
+      await result.current.mutateAsync({ assignments: [], baseline: [] });
+    });
+    expect(mocks.rearrange).toHaveBeenCalledWith('b1', [], []);
+    expect(mocks.toast).toHaveBeenCalledWith({ title: 'Teams rearranged', description: 'Saved' });
     await expect(result.current.mutateAsync({ assignments: [], baseline: [] })).rejects.toThrow(
       'stale'
     );
     await waitFor(() =>
-      expect(m.toast).toHaveBeenCalledWith(
+      expect(mocks.toast).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Could not rearrange teams', variant: 'destructive' })
       )
     );
   });
   it('updates a legacy match and replaces its games', async () => {
-    m.legacyTeams.mockResolvedValue({ team1_id: 't1', team2_id: 't2' });
-    m.scores.mockResolvedValue({});
-    m.games.mockResolvedValue({});
+    mocks.legacyTeams.mockResolvedValue({ team1_id: 't1', team2_id: 't2' });
+    mocks.scores.mockResolvedValue({});
+    mocks.games.mockResolvedValue({});
     const { wrapper } = setup();
     const { result } = renderHook(
       () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: false } as never),
       { wrapper }
     );
     expect(result.current.useBracketsManager).toBe(false);
-    await act(async () =>
-      result.current.updateMatch('m1', 21, 18, [{ team1Score: 21, team2Score: 18 }], 2, 0)
-    );
-    expect(m.scores).toHaveBeenCalledWith(
+    await act(async () => {
+      await result.current.updateMatch('m1', 21, 18, [{ team1Score: 21, team2Score: 18 }], 2, 0);
+    });
+    expect(mocks.scores).toHaveBeenCalledWith(
       'm1',
       expect.objectContaining({
         team1_score: 2,
@@ -217,22 +229,24 @@ describe('uncovered playoff hooks', () => {
         status: 'completed',
       })
     );
-    expect(m.games).toHaveBeenCalledWith('m1', [
+    expect(mocks.games).toHaveBeenCalledWith('m1', [
       { game_number: 1, team1_score: 21, team2_score: 18, winner_id: 't1' },
     ]);
   });
   it('updates a brackets-manager match and refreshes its bracket', async () => {
-    m.bmMatch.mockResolvedValue({ opponent1_id: 1, opponent2_id: 2 });
-    m.participants.mockResolvedValue([]);
-    m.update.mockResolvedValue({});
+    mocks.bmMatch.mockResolvedValue({ opponent1_id: 1, opponent2_id: 2 });
+    mocks.participants.mockResolvedValue([]);
+    mocks.update.mockResolvedValue({});
     const { client, wrapper } = setup();
     const refetch = vi.spyOn(client, 'refetchQueries');
     const { result } = renderHook(
       () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: true } as never),
       { wrapper }
     );
-    await act(async () => result.current.updateMatch('9', 0, 0, [], 1, 2));
-    expect(m.update).toHaveBeenCalledWith({
+    await act(async () => {
+      await result.current.updateMatch('9', 0, 0, [], 1, 2);
+    });
+    expect(mocks.update).toHaveBeenCalledWith({
       matchId: 9,
       scores: { opponent1: { score: 1, result: 'loss' }, opponent2: { score: 2, result: 'win' } },
     });
