@@ -13,6 +13,9 @@ vi.mock('react-helmet-async', () => ({
   Helmet: ({ children }: { children: React.ReactNode }) => children,
 }));
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
+vi.mock('@/hooks/usePowerScoreWeights', () => ({
+  usePowerScoreWeights: () => ({ win: 40, sos: 45, game: 15 }),
+}));
 vi.mock('@/components/help/HelpQuickLinks', () => ({ HelpQuickLinks: () => <p>Quick Links</p> }));
 vi.mock('@/components/help/HelpAdminCTA', () => ({ HelpAdminCTA: () => <p>Admin CTA</p> }));
 vi.mock('@/components/help/sections/WelcomeSection', () => ({
