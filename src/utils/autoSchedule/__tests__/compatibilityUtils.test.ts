@@ -12,6 +12,12 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+/** Deterministic valid v4 UUID per team number — the service guards team ids. */
+const teamId = (n: number) => {
+  const d = String(n);
+  return `${d.repeat(8)}-${d.repeat(4)}-4${d.repeat(3)}-8${d.repeat(3)}-${d.repeat(12)}`;
+};
+
 describe('compatibilityUtils', () => {
   describe('calculateTeamCompatibility', () => {
     it('should calculate higher compatibility for teams with similar stats', () => {
@@ -63,7 +69,7 @@ describe('compatibilityUtils', () => {
 
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
-      const result = await haveTeamsPlayed('team1', 'team2');
+      const result = await haveTeamsPlayed(teamId(1), teamId(2));
       expect(result).toBe(true);
       expect(supabase.from).toHaveBeenCalledWith('matches');
     });
@@ -78,7 +84,7 @@ describe('compatibilityUtils', () => {
 
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
-      const result = await haveTeamsPlayed('team1', 'team3');
+      const result = await haveTeamsPlayed(teamId(1), teamId(3));
       expect(result).toBe(false);
     });
 
@@ -92,7 +98,7 @@ describe('compatibilityUtils', () => {
 
       vi.mocked(supabase.from).mockImplementation(mockFrom);
 
-      const result = await haveTeamsPlayed('team1', 'team4');
+      const result = await haveTeamsPlayed(teamId(1), teamId(4));
       // Should return false as a fallback on error
       expect(result).toBe(false);
     });

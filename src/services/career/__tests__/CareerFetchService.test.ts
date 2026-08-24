@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { DatabaseError, ValidationError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -24,6 +24,9 @@ vi.mock('@/config/cache', () => ({
 import { fetchCareerData } from '../CareerFetchService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Valid v4 UUID — fetchCareerData guards its teamId before querying.
+const TEAM_ID = '11111111-1111-4111-8111-111111111111';
 
 const pgError = (msg = 'query failed') => ({
   message: msg,
@@ -77,7 +80,7 @@ describe('fetchCareerData', () => {
   it('returns CareerData on success with all queries resolving', async () => {
     mockFrom.mockImplementation(makeFromImpl(successResults));
 
-    const result = await fetchCareerData('team-1');
+    const result = await fetchCareerData(TEAM_ID);
 
     expect(result).toMatchObject({ currentSeasonId: 'season-1', teamDivisionWeight: 0.85 });
   });
@@ -90,7 +93,7 @@ describe('fetchCareerData', () => {
       })
     );
 
-    await expect(fetchCareerData('team-1')).rejects.toThrow(DatabaseError);
+    await expect(fetchCareerData(TEAM_ID)).rejects.toThrow(DatabaseError);
   });
 
   it('returns result even when non-critical queries fail (matches, archived, playoff)', async () => {
@@ -104,7 +107,12 @@ describe('fetchCareerData', () => {
     );
 
     // Non-critical errors are logged but don't throw
-    const result = await fetchCareerData('team-1');
+    const result = await fetchCareerData(TEAM_ID);
     expect(result).not.toBeNull();
+  });
+
+  it('rejects an invalid teamId before querying Supabase', async () => {
+    await expect(fetchCareerData('team-1')).rejects.toThrow(ValidationError);
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });

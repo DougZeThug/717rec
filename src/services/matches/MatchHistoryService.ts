@@ -80,6 +80,9 @@ export const fetchMatchPairsInSeason = async (
  * @throws {DatabaseError} When database operations fail
  */
 export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Promise<boolean> => {
+  assertValidUuid(team1Id, 'team1Id');
+  assertValidUuid(team2Id, 'team2Id');
+
   const { data, error } = await supabase
     .from('matches')
     .select('id')
@@ -97,6 +100,9 @@ export const checkTeamsEverPlayed = async (team1Id: string, team2Id: string): Pr
  * Used by autoScheduleUtils.
  */
 export const haveTeamsPlayedBefore = async (team1Id: string, team2Id: string): Promise<boolean> => {
+  assertValidUuid(team1Id, 'team1Id');
+  assertValidUuid(team2Id, 'team2Id');
+
   const { data, error } = await supabase
     .from('matches')
     .select('id')

@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { assertValidUuid } from '@/utils/validation';
 
 /**
  * Service layer for team data lookup operations
@@ -49,6 +50,8 @@ type TeamDetailsRow = Pick<
 export const fetchTeamMatchesData = async (
   teamId: string
 ): Promise<MatchWithTeamDetails[] | null> => {
+  assertValidUuid(teamId, 'teamId');
+
   // Get active season first to filter matches
   const { data: activeSeason } = await supabase
     .from('seasons')
