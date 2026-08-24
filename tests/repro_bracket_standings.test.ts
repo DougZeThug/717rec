@@ -4,7 +4,8 @@ import { BracketStandingsService } from '../src/services/brackets/manager/servic
 
 type BracketStandingsServiceArgs = ConstructorParameters<typeof BracketStandingsService>;
 type StandingsStorage = Pick<BracketStandingsServiceArgs[0], 'select'>;
-type StandingsManager = Pick<BracketStandingsServiceArgs[1], 'get'>;
+type StandingsGet = BracketStandingsServiceArgs[1]['get'];
+type StandingsManager = { get: Pick<StandingsGet, 'finalStandings'> };
 
 // Since PR-06, final standings are computed server-side by the
 // finalize_bracket_standings RPC. The regression guarded here — that the LAST
