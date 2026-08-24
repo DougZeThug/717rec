@@ -21,10 +21,16 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
-/** Deterministic valid v4 UUID per team number — the service guards team ids. */
-const teamId = (n: number) => {
-  const d = String(n);
-  return `${d.repeat(8)}-${d.repeat(4)}-4${d.repeat(3)}-8${d.repeat(3)}-${d.repeat(12)}`;
+/** Deterministic valid UUID per team number — the service guards team ids. */
+const teamId = (teamNumber: number) => {
+  const digit = String(teamNumber);
+  return [
+    digit.repeat(8),
+    digit.repeat(4),
+    `4${digit.repeat(3)}`,
+    `8${digit.repeat(3)}`,
+    digit.repeat(12),
+  ].join('-');
 };
 
 const createMockTeam = (id: string, name: string): Team =>
