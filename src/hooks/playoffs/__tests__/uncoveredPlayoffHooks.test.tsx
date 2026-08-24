@@ -74,7 +74,7 @@ const setup = () => {
 describe('uncovered playoff hooks', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.invalidateRelated.mockResolvedValue();
+    mocks.invalidateRelated.mockImplementation(() => Promise.resolve());
   });
   it('returns null bracket data without a service call', async () => {
     const { wrapper } = setup();

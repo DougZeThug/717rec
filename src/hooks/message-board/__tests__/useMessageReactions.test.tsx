@@ -104,7 +104,7 @@ describe('useMessageReactions', () => {
   });
   it('adds and removes reactions through the service', async () => {
     mocks.add.mockResolvedValue('server-id');
-    mocks.remove.mockResolvedValue();
+    mocks.remove.mockImplementation(() => Promise.resolve());
     mocks.fetch.mockResolvedValue([reaction('r1', 'u1')]);
     const { wrapper } = setup();
     const { result } = renderHook(() => useMessageReactions('m1'), { wrapper });
