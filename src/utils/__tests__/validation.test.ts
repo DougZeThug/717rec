@@ -16,15 +16,26 @@ import {
 const VALID_V4_UUID = '550e8400-e29b-41d4-a716-446655440000';
 
 describe('isValidUUID', () => {
-  it('returns true for a valid v4 UUID', () => {
-    expect(isValidUUID(VALID_V4_UUID)).toBe(true);
+  it.each([
+    { label: 'a v4 UUID', value: VALID_V4_UUID },
+    { label: 'a v1 UUID', value: '550e8400-e29b-11d4-a716-446655440000' },
+    // Seeded by supabase/migrations/00000000000000_baseline.sql — version and
+    // variant nibbles are not v4, but the row is a real team.
+    {
+      label: 'a stored team id with non-v4 nibbles',
+      value: 'f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c',
+    },
+    { label: 'the nil UUID', value: '00000000-0000-0000-0000-000000000000' },
+  ])('returns true for $label', ({ value }) => {
+    expect(isValidUUID(value)).toBe(true);
   });
 
   it.each([
     { label: 'empty string', value: '' as unknown as string },
     { label: 'non-string input', value: 123 as unknown as string },
     { label: 'malformed UUID', value: '550e8400-e29b-41d4-a716-44665544' as unknown as string },
-    { label: 'non-v4 UUID', value: '550e8400-e29b-11d4-a716-446655440000' as unknown as string },
+    { label: 'UUID with a non-hex character', value: '550e8400-e29b-41d4-a716-44665544000g' },
+    { label: 'UUID with wrong group lengths', value: '550e840-0e29b-41d4-a716-446655440000' },
   ])('returns false for $label', ({ value }) => {
     expect(isValidUUID(value)).toBe(false);
   });

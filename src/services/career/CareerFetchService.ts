@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArchivedMatchData, MatchData, PlayoffMatchData, SeasonStats } from '@/utils/career/types';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
+import { assertValidUuid } from '@/utils/validation';
 
 import { CareerData, TeamData, TeamDetailsArchive } from './CareerTypes';
 
@@ -10,6 +11,8 @@ import { CareerData, TeamData, TeamDetailsArchive } from './CareerTypes';
  * Returns raw data that can be processed by calculation utilities.
  */
 export const fetchCareerData = async (teamId: string): Promise<CareerData | null> => {
+  assertValidUuid(teamId, 'teamId');
+
   // Fetch all independent queries in parallel
   const [
     teamDataResult,

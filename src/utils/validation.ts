@@ -5,15 +5,21 @@
 import { ValidationError } from '@/types/errors';
 
 /**
- * Validates if a string is a valid UUID format
+ * Validates if a string is a valid UUID format.
+ *
+ * Accepts canonical UUID syntax of any version, which is what a PostgreSQL
+ * `uuid` column stores. A version-4-only check would reject legitimate rows:
+ * the baseline migration seeds team ids such as
+ * `f8a9b0c1-d2e3-4f5a-6b7c-8d9e0f1a2b3c` whose version/variant nibbles are not
+ * v4, and guards built on this helper would then throw for real teams.
  */
 export function isValidUUID(uuid: string): boolean {
   if (!uuid || typeof uuid !== 'string') {
     return false;
   }
 
-  // UUID v4 regex pattern
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  // 8-4-4-4-12 hex groups, any version/variant (also matches the nil UUID)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   return uuidRegex.test(uuid);
 }
 

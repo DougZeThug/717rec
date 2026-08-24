@@ -21,6 +21,18 @@ vi.mock('@/integrations/supabase/client', () => ({
   },
 }));
 
+/** Deterministic valid UUID per team number — the service guards team ids. */
+const teamId = (teamNumber: number) => {
+  const digit = String(teamNumber);
+  return [
+    digit.repeat(8),
+    digit.repeat(4),
+    `4${digit.repeat(3)}`,
+    `8${digit.repeat(3)}`,
+    digit.repeat(12),
+  ].join('-');
+};
+
 const createMockTeam = (id: string, name: string): Team =>
   ({
     id,
@@ -50,30 +62,32 @@ describe('autoScheduleUtils', () => {
 
   describe('filterPairsWithPreviousMatches', () => {
     it('should filter out pairs that have played before', async () => {
-      // Process pairs in order: team-1/2 (no), team-3/4 (yes), team-5/6 (no)
+      // Process pairs in order: teams 1/2 (no), 3/4 (yes), 5/6 (no)
       mockLimit
-        .mockResolvedValueOnce({ data: [], error: null }) // team-1/team-2: not played
-        .mockResolvedValueOnce({ data: [{ id: 'match-1' }], error: null }) // team-3/team-4: played
-        .mockResolvedValueOnce({ data: [], error: null }); // team-5/team-6: not played
+        .mockResolvedValueOnce({ data: [], error: null }) // teams 1/2: not played
+        .mockResolvedValueOnce({ data: [{ id: 'match-1' }], error: null }) // teams 3/4: played
+        .mockResolvedValueOnce({ data: [], error: null }); // teams 5/6: not played
 
       const pairs: TeamPair[] = [
-        createMockPair('team-1', 'team-2', false), // No previous match
-        createMockPair('team-3', 'team-4', true), // Has played before
-        createMockPair('team-5', 'team-6', false), // No previous match
+        createMockPair(teamId(1), teamId(2), false), // No previous match
+        createMockPair(teamId(3), teamId(4), true), // Has played before
+        createMockPair(teamId(5), teamId(6), false), // No previous match
       ];
 
       const filtered = await filterPairsWithPreviousMatches(pairs);
 
       // Should only include pairs that haven't played before
       expect(filtered.length).toBe(2);
-      expect(filtered.some((p) => p.team1.id === 'team-3' && p.team2.id === 'team-4')).toBe(false);
+      expect(filtered.some((p) => p.team1.id === teamId(3) && p.team2.id === teamId(4))).toBe(
+        false
+      );
     });
 
     it('should return all pairs when none have played before', async () => {
       const pairs: TeamPair[] = [
-        createMockPair('team-1', 'team-2', false),
-        createMockPair('team-3', 'team-4', false),
-        createMockPair('team-5', 'team-6', false),
+        createMockPair(teamId(1), teamId(2), false),
+        createMockPair(teamId(3), teamId(4), false),
+        createMockPair(teamId(5), teamId(6), false),
       ];
 
       const filtered = await filterPairsWithPreviousMatches(pairs);
@@ -88,8 +102,8 @@ describe('autoScheduleUtils', () => {
         .mockResolvedValueOnce({ data: [{ id: 'match-2' }], error: null });
 
       const pairs: TeamPair[] = [
-        createMockPair('team-1', 'team-2', true),
-        createMockPair('team-3', 'team-4', true),
+        createMockPair(teamId(1), teamId(2), true),
+        createMockPair(teamId(3), teamId(4), true),
       ];
 
       const filtered = await filterPairsWithPreviousMatches(pairs);

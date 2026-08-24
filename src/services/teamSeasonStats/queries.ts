@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { assertValidUuid } from '@/utils/validation';
 
 import type { DivisionRelation, MatchRecord, PlayoffMatchRecord, SeasonStatRow } from './types';
 
@@ -20,6 +21,8 @@ export interface FetchSeasonBreakdownQueryResults {
 export const fetchSeasonBreakdownQueries = async (
   teamId: string
 ): Promise<FetchSeasonBreakdownQueryResults> => {
+  assertValidUuid(teamId, 'teamId');
+
   const [
     seasonStatsResult,
     allTeamSeasonStatsResult,

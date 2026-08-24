@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { DatabaseError, ValidationError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -21,6 +21,9 @@ vi.mock('@/utils/logger', () => ({
 import { fetchTeamMatchesData, fetchTeamsByIds, fetchTeamsMap } from '../MatchTeamLookupService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Valid v4 UUID — fetchTeamMatchesData guards its teamId before querying.
+const TEAM_ID = '11111111-1111-4111-8111-111111111111';
 
 const pgError = (msg = 'query failed') => ({
   message: msg,
@@ -75,7 +78,7 @@ describe('fetchTeamMatchesData', () => {
       };
     });
 
-    const result = await fetchTeamMatchesData('team-1');
+    const result = await fetchTeamMatchesData(TEAM_ID);
     expect(result).toHaveLength(1);
     expect(mockFrom).toHaveBeenCalledWith('seasons');
     expect(mockFrom).toHaveBeenCalledWith('matches');
@@ -87,7 +90,7 @@ describe('fetchTeamMatchesData', () => {
         eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
       }),
     });
-    const result = await fetchTeamMatchesData('team-1');
+    const result = await fetchTeamMatchesData(TEAM_ID);
     expect(result).toBeNull();
   });
 
@@ -106,7 +109,7 @@ describe('fetchTeamMatchesData', () => {
         }),
       };
     });
-    const result = await fetchTeamMatchesData('team-1');
+    const result = await fetchTeamMatchesData(TEAM_ID);
     expect(result).toEqual([]);
   });
 
@@ -127,7 +130,12 @@ describe('fetchTeamMatchesData', () => {
         }),
       };
     });
-    await expect(fetchTeamMatchesData('team-1')).rejects.toThrow(DatabaseError);
+    await expect(fetchTeamMatchesData(TEAM_ID)).rejects.toThrow(DatabaseError);
+  });
+
+  it('rejects an invalid teamId before querying Supabase', async () => {
+    await expect(fetchTeamMatchesData('team-1')).rejects.toThrow(ValidationError);
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 });
 

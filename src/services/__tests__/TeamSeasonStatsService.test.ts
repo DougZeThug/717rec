@@ -132,6 +132,9 @@ const seasonRow = (overrides?: Partial<SeasonRow>): SeasonRow => ({
   ...overrides,
 });
 
+// Valid v4 UUID — fetchSeasonBreakdownQueries guards teamId before querying.
+const TEAM_ID = '11111111-1111-4111-8111-111111111111';
+
 describe('fetchSeasonBreakdown', () => {
   const selectCalls: Record<string, string[]> = {
     team_season_stats: [],
@@ -154,7 +157,7 @@ describe('fetchSeasonBreakdown', () => {
       },
       all_team_season_stats: {
         data: [
-          { team_id: 'team-1', season_id: 's1', division_name: 'Alpha' },
+          { team_id: TEAM_ID, season_id: 's1', division_name: 'Alpha' },
           { team_id: 'team-2', season_id: 's1', division_name: 'Beta' },
         ],
         error: null,
@@ -162,20 +165,20 @@ describe('fetchSeasonBreakdown', () => {
       matches: {
         data: [
           {
-            winner_id: 'team-1',
+            winner_id: TEAM_ID,
             loser_id: 'team-2',
             team1_game_wins: 2,
             team2_game_wins: 1,
-            team1_id: 'team-1',
+            team1_id: TEAM_ID,
             team2_id: 'team-2',
             season_id: 's1',
           },
           {
-            winner_id: 'team-1',
+            winner_id: TEAM_ID,
             loser_id: 'team-3',
             team1_game_wins: 2,
             team2_game_wins: 0,
-            team1_id: 'team-1',
+            team1_id: TEAM_ID,
             team2_id: 'team-3',
             season_id: 's2',
           },
@@ -186,11 +189,11 @@ describe('fetchSeasonBreakdown', () => {
       playoff_matches: {
         data: [
           {
-            winner_id: 'team-1',
+            winner_id: TEAM_ID,
             loser_id: 'team-4',
             team1_score: 2,
             team2_score: 1,
-            team1_id: 'team-1',
+            team1_id: TEAM_ID,
             team2_id: 'team-4',
             bracket_id: 'b1',
           },
@@ -227,7 +230,7 @@ describe('fetchSeasonBreakdown', () => {
   it('filters and groups records by season, then computes aggregated values', async () => {
     setupQueries();
 
-    const result = await fetchSeasonBreakdown('team-1');
+    const result = await fetchSeasonBreakdown(TEAM_ID);
 
     expect(result?.seasons).toHaveLength(2);
     expect(result?.seasons.map((s) => s.seasonId)).toEqual(['s1', 's2']);
@@ -239,7 +242,7 @@ describe('fetchSeasonBreakdown', () => {
   it('returns null when no season rows exist', async () => {
     setupQueries({ team_season_stats: { data: [], error: null } });
 
-    const result = await fetchSeasonBreakdown('team-1');
+    const result = await fetchSeasonBreakdown(TEAM_ID);
 
     expect(result).toBeNull();
   });
@@ -258,7 +261,7 @@ describe('fetchSeasonBreakdown', () => {
       },
     });
 
-    await expect(fetchSeasonBreakdown('team-1')).rejects.toThrow(DatabaseError);
+    await expect(fetchSeasonBreakdown(TEAM_ID)).rejects.toThrow(DatabaseError);
   });
 
   it.each([
@@ -280,13 +283,13 @@ describe('fetchSeasonBreakdown', () => {
       [resultKey]: { data: null, error: enrichmentError },
     });
 
-    await expect(fetchSeasonBreakdown('team-1')).rejects.toThrow(DatabaseError);
+    await expect(fetchSeasonBreakdown(TEAM_ID)).rejects.toThrow(DatabaseError);
   });
 
   it('does not query brackets when playoff matches have no bracket ids', async () => {
     setupQueries({ playoff_matches: { data: [], error: null } });
 
-    const result = await fetchSeasonBreakdown('team-1');
+    const result = await fetchSeasonBreakdown(TEAM_ID);
 
     expect(result?.seasons).toHaveLength(2);
     expect(selectCalls.brackets).toHaveLength(0);
@@ -295,7 +298,7 @@ describe('fetchSeasonBreakdown', () => {
   it('uses explicit column lists in all select queries', async () => {
     setupQueries();
 
-    await fetchSeasonBreakdown('team-1');
+    await fetchSeasonBreakdown(TEAM_ID);
 
     const allSelects = [
       ...selectCalls.team_season_stats,
