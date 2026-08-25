@@ -298,58 +298,58 @@ Status is one of `not started`, `drafted`, or `verified`.
 | foundations/navigation.md | drafted |
 | foundations/saving-and-freshness.md | drafted |
 | foundations/messages-to-the-user.md | drafted |
-| getting-started/sign-in-and-sign-up.md | not started |
-| getting-started/set-up-your-profile.md | not started |
-| getting-started/join-a-team.md | not started |
-| getting-started/authorize-an-app.md | not started |
-| home/the-home-page.md | not started |
-| home/your-next-match.md | not started |
-| teams/browse-teams.md | not started |
-| teams/team-details.md | not started |
-| teams/my-team.md | not started |
-| teams/compare-teams.md | not started |
-| schedule/the-schedule-page.md | not started |
-| schedule/a-match-card.md | not started |
-| schedule/timeslot-preferences.md | not started |
-| scores/submit-a-score.md | not started |
-| scores/confirm-or-dispute-a-score.md | not started |
-| scores/pending-scores.md | not started |
+| getting-started/sign-in-and-sign-up.md | drafted |
+| getting-started/set-up-your-profile.md | drafted |
+| getting-started/join-a-team.md | drafted |
+| getting-started/authorize-an-app.md | drafted |
+| home/the-home-page.md | drafted |
+| home/your-next-match.md | drafted |
+| teams/browse-teams.md | drafted |
+| teams/team-details.md | drafted |
+| teams/my-team.md | drafted |
+| teams/compare-teams.md | drafted |
+| schedule/the-schedule-page.md | drafted |
+| schedule/a-match-card.md | drafted |
+| schedule/timeslot-preferences.md | drafted |
+| scores/submit-a-score.md | drafted |
+| scores/confirm-or-dispute-a-score.md | drafted |
+| scores/pending-scores.md | drafted |
 | live-scoring/start-a-live-match.md | drafted |
 | live-scoring/set-up-a-game.md | drafted |
 | live-scoring/enter-a-round.md | drafted |
 | live-scoring/correct-a-round.md | drafted |
 | live-scoring/finish-a-game.md | drafted |
 | live-scoring/finish-the-match.md | drafted |
-| playoffs/the-playoffs-page.md | not started |
-| playoffs/read-a-bracket.md | not started |
-| playoffs/blind-draw-signup.md | not started |
-| stats/standings-and-rankings.md | not started |
-| stats/power-score.md | not started |
-| stats/team-and-player-stats.md | not started |
-| stats/insights.md | not started |
+| playoffs/the-playoffs-page.md | drafted |
+| playoffs/read-a-bracket.md | drafted |
+| playoffs/blind-draw-signup.md | drafted |
+| stats/standings-and-rankings.md | drafted |
+| stats/power-score.md | drafted |
+| stats/team-and-player-stats.md | drafted |
+| stats/insights.md | drafted |
 | stats/badges.md | not started |
-| history/past-seasons.md | not started |
-| history/head-to-head.md | not started |
-| message-board/read-the-board.md | not started |
-| message-board/post-and-reply.md | not started |
-| help/the-help-page.md | not started |
+| history/past-seasons.md | drafted |
+| history/head-to-head.md | drafted |
+| message-board/read-the-board.md | drafted |
+| message-board/post-and-reply.md | drafted |
+| help/the-help-page.md | drafted |
 | help/contact-the-league.md | drafted |
-| admin/the-admin-dashboard.md | not started |
-| admin/manage-seasons.md | not started |
-| admin/manage-teams-and-divisions.md | not started |
-| admin/build-the-schedule.md | not started |
-| admin/manage-timeslots.md | not started |
-| admin/enter-scores-in-bulk.md | not started |
-| admin/correct-a-live-match.md | not started |
-| admin/handle-requests.md | not started |
-| admin/run-the-playoffs.md | not started |
-| admin/send-notifications.md | not started |
-| admin/site-settings.md | not started |
-| cross-cutting/permissions.md | not started |
-| cross-cutting/errors-and-offline.md | not started |
-| cross-cutting/on-a-phone.md | not started |
-| cross-cutting/accessibility.md | not started |
-| cross-cutting/what-the-league-sees.md | not started |
+| admin/the-admin-dashboard.md | drafted |
+| admin/manage-seasons.md | drafted |
+| admin/manage-teams-and-divisions.md | drafted |
+| admin/build-the-schedule.md | drafted |
+| admin/manage-timeslots.md | drafted |
+| admin/enter-scores-in-bulk.md | drafted |
+| admin/correct-a-live-match.md | drafted |
+| admin/handle-requests.md | drafted |
+| admin/run-the-playoffs.md | drafted |
+| admin/send-notifications.md | drafted |
+| admin/site-settings.md | drafted |
+| cross-cutting/permissions.md | drafted |
+| cross-cutting/errors-and-offline.md | drafted |
+| cross-cutting/on-a-phone.md | drafted |
+| cross-cutting/accessibility.md | drafted |
+| cross-cutting/what-the-league-sees.md | drafted |
 
 ## Reference
 

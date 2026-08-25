@@ -56,7 +56,18 @@ and no exponential backoff on ordinary reads.
   queries that are now wrong and they re-fetch.
 - A realtime message arriving, on the one screen that subscribes to them.
 
-Nothing polls. The app never re-fetches on a timer.
+**A few things do poll**, on a timer, and they are the exception rather than the
+rule:
+
+| What | How often |
+| --- | --- |
+| The timeslots for a chosen date, on the schedule and on the admin timeslots page | every 60 seconds |
+| Team join requests, for an admin | every 30 seconds |
+| The league's operational health panel | every 30 and 60 seconds |
+| The daily traffic figures | every 5 minutes |
+
+Each of these stops polling while the tab is hidden or the device is offline, and
+resumes on return. Nothing else in the app re-fetches on a timer.
 
 ## What "saved" means
 
@@ -88,10 +99,23 @@ nothing, they are not.
 
 Realtime means the league pushes a change to the browser without being asked.
 
-**Only live scoring subscribes to anything.** On `/matches/:matchId/live` the
-browser holds an open channel and receives games and rounds as they are entered
-by whoever is scoring, which is what lets two phones at the same match stay in
-step, and lets anyone else watch.
+**Live scoring is the fullest use of it**, and the one the user notices. On
+`/matches/:matchId/live` the browser holds an open channel and receives games and
+rounds as they are entered by whoever is scoring, which is what lets two phones at
+the same match stay in step, and lets anyone else watch.
+
+It is not the only one. These also subscribe:
+
+| Where | What arrives |
+| --- | --- |
+| A match's comments and reactions, wherever a match card is expanded | new comments and reactions from other people |
+| The message board | new messages and reactions |
+| The playoffs bracket | bracket changes as results land |
+| Notifications | new notifications |
+| Contact requests, for an admin | new requests |
+| The operational health panel, for an admin | health changes |
+
+Every one of them uses the same connection handling described below.
 
 The connection looks after itself. If it drops, the app rebuilds it, waiting
 longer between each attempt — one second, then two, then four, up to thirty
@@ -99,15 +123,16 @@ seconds, with a little randomness so several browsers do not all retry at once.
 Every time it reconnects, it re-fetches the match rather than trusting that it
 missed nothing while it was away. The screen shows the connection's state.
 
-**Everywhere else in the app there is no realtime at all.** When an admin
-approves a membership, changes a division, or activates a season, other people's
-browsers do not find out. They keep showing the old value until something makes
-them re-fetch: switching away from the tab and back, navigating to a page they
-have not opened recently, or reloading.
+**Everywhere else there is no realtime.** Standings, team records, power scores,
+the schedule itself, memberships, divisions, and seasons have no subscription at
+all. When an admin approves a membership, changes a division, or activates a
+season, other people's browsers do not find out. They keep showing the old value
+until something makes them re-fetch: switching away from the tab and back,
+navigating to a page they have not opened recently, or reloading.
 
-This is the single biggest gap between what the app looks like it does and what
-it does. A user watching the standings during league night is not watching them
-update.
+That is the gap worth knowing about. A user watching the **standings** during
+league night is not watching them update, even though the match card two pages
+away is receiving comments live.
 
 ## Offline
 
@@ -146,7 +171,7 @@ moment they press one.
 | The session expires | Reads of public data still work. | Writes fail. The cache still holds data read while signed in, so the app keeps *looking* signed in. |
 | The same record changed in another tab, or by another user | On live scoring the change arrives. Everywhere else it does not, and the user keeps the old value. | Same. Two people editing the same thing outside live scoring will overwrite each other with no warning and no sign that it happened. |
 | Browser autofill or a password manager writes into the form | No effect on the cache. | No effect on the cache. |
-| The window loses focus | Nothing. | **Returning refetches anything past its fresh window.** A number can change under the user's cursor the moment they come back to the tab. |
+| The window loses focus | Polling stops while the tab is hidden. | **Returning refetches anything past its fresh window**, and restarts the pollers. A number can change under the user's cursor the moment they come back to the tab. |
 
 After an interrupt, whatever reached the database is what happened. The app makes
 no attempt to reconcile a user's screen with a write it never saw the answer to.
@@ -200,6 +225,8 @@ yet moved.
 - **Reconnecting to live scoring re-fetches the whole match**, so a brief drop is
   invisible; a long one shows the connection state changing.
 - **The pending matches list is never cached**, so it always costs a request.
+- **A polling page keeps its previous data on screen while it re-polls**, so a
+  timeslot list never goes blank mid-refresh.
 
 ## Open questions and verification
 
@@ -216,7 +243,9 @@ yet moved.
   shows in each state.
 - Not confirmed by hand: whether a browser tab suspended for a long time on a
   phone recovers cleanly or shows stale data indefinitely.
-- Assumption: nothing polls. No interval-based refetch was found, but a
-  feature-level one could exist that this pass did not reach.
+- Corrected on review: an earlier draft of this document said nothing polls and
+  that only live scoring subscribes to realtime. Both were wrong; the tables
+  above are read from the hooks. Not confirmed by hand is whether the pollers
+  actually pause when the tab is hidden, as their code intends.
 
 Verified against `717rec` commit `ea5c8f4`.

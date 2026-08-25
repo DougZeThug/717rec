@@ -118,8 +118,15 @@ comment as agreed with the league admin):
 - A *pending score submission* is waiting for review. A *pending match* is a match
   completed with no winner — a tie — waiting for an admin. These are different
   things and the word "pending" must always be qualified.
-- Approving a submission writes the result onto the match. Reopening a completed
-  match reverses the statistics the original result produced.
+- **Approving a score submission does NOT write the result onto the match.** It
+  only stamps the submission row with a status, a reviewer, and a time. The match
+  stays incomplete and standings do not move
+  (`src/services/matches/MatchWriteService.ts:214`). This is a confirmed defect,
+  not a design choice — do not describe approval as if it results the match.
+- Reopening a completed match reverses the statistics the original result
+  produced.
+- **The tie-resolution flow is unreachable.** `usePendingMatches` — the hook
+  holding the tie queue, approve, and mark-as-tie — is imported by no component.
 
 **Power score:**
 
@@ -136,8 +143,9 @@ comment as agreed with the league admin):
   `/timeslots`. Every other route is open and handles its own signed-out state,
   inconsistently. Do not describe any other route as "protected".
 - `/matches/:matchId/live` is **public to watch**. Only editing is gated.
-- **No route resets scroll position** on navigation. `/teams` is the only route
-  with scroll restoration, and it restores rather than resets.
+- **No route resets scroll position** on navigation. **Four** routes restore
+  their own — `/teams`, `/stats`, `/history`, `/insights` — which is a different
+  behaviour and does not help a user arriving at any of the other sixteen.
 - Nothing but a record id is ever in the URL. Filters, tabs, and sort orders are
   lost on navigation.
 
@@ -147,9 +155,16 @@ comment as agreed with the league admin):
   matches are **0**.
 - Reads retry **once** on failure; writes do not retry.
 - Refetch triggers: returning to the tab, mounting a page, an explicit
-  invalidation after a write, a realtime message. **Nothing polls.**
-- **Realtime exists only on live scoring.** Everywhere else, a change made by
-  someone else does not reach the browser until a refetch.
+  invalidation after a write, a realtime message, and a handful of pollers.
+- **A few things poll**: timeslots for a date (60s), team join requests (30s),
+  ops health (30s and 60s), daily traffic (5min). All pause while the tab is
+  hidden or the device is offline. Nothing else re-fetches on a timer.
+- **Realtime is not only live scoring.** Ten hooks open a channel: live scoring,
+  match comments, match reactions, message board messages and reactions, the
+  bracket (two), notifications, contact requests, and ops health. But
+  **standings, team records, power scores, the schedule, memberships, divisions
+  and seasons have no subscription** — those change under the user only on a
+  refetch. That is the gap worth describing.
 - **There is no offline write queue.** Offline means writes fail and are lost.
 
 **Messages** (established by `foundations/messages-to-the-user.md`):

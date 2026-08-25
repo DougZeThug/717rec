@@ -83,9 +83,13 @@ Three things happen on every arrival, on every route:
 
 **Scroll position is not reset.** Moving from the bottom of a long schedule to a
 short page leaves the user scrolled down on the new page, looking at nothing.
-`/teams` is the single exception: it remembers and restores its own scroll
-position deliberately, so returning to it from a team's page puts the user back
-where they were.
+
+Four routes opt out of that by remembering and restoring their own scroll
+position: **`/teams`, `/stats`, `/history`, and `/insights`**. Returning to one of
+them from elsewhere puts the user back where they were. Every other route — the
+home page, the schedule, a team's page, the playoffs, the message board, live
+scoring — does nothing at all, and simply inherits whatever scroll position the
+previous page had.
 
 Nothing is prefilled or focused by arriving, beyond the main-content focus move
 above. Three lightweight pages — teams, schedule, and history — are fetched
@@ -176,8 +180,9 @@ the 404 route.
 
 **Optimistic updates and rollback.** Not applicable to navigation.
 
-**Realtime.** Only the live scoring route opens a subscription, and it closes when
-the user navigates away.
+**Realtime.** Several routes open a subscription and all of them close it when
+the user navigates away. See
+[`saving-and-freshness.md`](saving-and-freshness.md#realtime).
 
 **Offline.** Already-fetched pages still navigate. Not-yet-fetched pages hang on
 the loading spinner with no error.
@@ -204,7 +209,9 @@ development build the analytics call does nothing.
 
 - **Scroll position carries across pages.** Arriving at a short page from the
   bottom of a long one shows an apparently empty screen until the user scrolls
-  up. Only `/teams` is exempt.
+  up. Only the four routes with their own restoration are exempt, and they
+  restore rather than reset — which is a different thing and is not what a user
+  arriving from elsewhere needs.
 - **A chunk that never downloads leaves the spinner forever.** There is no
   timeout, no retry, and no error.
 - **"Home" on the error screen is a full page load**, unlike "Home" anywhere else
@@ -217,9 +224,11 @@ development build the analytics call does nothing.
 
 ## Open questions and verification
 
-- **No route resets scroll position.** This is almost certainly not intended for
-  every page in the app. **May be worth treating as a bug rather than
-  documenting**, and it is easy to check by hand.
+- **No route resets scroll position.** Four routes restore their own, which is a
+  different behaviour and does not help a user arriving at any of the other
+  sixteen. Confirmed by hand on 2026-08-25: scrolled 337px down `/schedule`,
+  clicked through to `/help`, still at 337px. **May be worth treating as a bug
+  rather than documenting.**
 - Not confirmed by hand: what `/my-team`, `/message-board`, and `/setup-profile`
   show to a visitor. They have no route guard.
 - Not confirmed by hand: whether the post-sign-in redirect returns the user to
