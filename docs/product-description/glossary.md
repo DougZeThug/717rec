@@ -237,6 +237,32 @@ hand; they appear on team pages. See [`stats/badges.md`](stats/badges.md).
 **Head to head.** One team's record against one other team, across matches they
 have both played.
 
+**Sweep.** A match won 2–0. **Sweep rate** is sweeps as a share of *all* matches
+played, not of matches won.
+
+**Clutch record.** A team's wins and losses in matches that went to a deciding
+third game.
+
+**Four bagger.** A round in which one player put every bag in the hole. Counted
+per player, from live-scored matches only.
+
+**PPR and DPR.** Points per round and differential per round, per player, from
+live-scored matches only. Shown as a dash rather than a zero when the player has
+thrown no rounds, so an absent player is never made to look bad by a 0.00.
+
+**Report card.** Six letter grades for a team — Overall, Consistency, Games,
+Offense, Clutch, Schedule — each from a percentile against the league, plus a
+weighted average. Available for a season and for a career, graded against
+different populations, so the two are not comparable.
+
+**Parity index.** A 0–100 number describing how even the league is: 100 minus
+four times the spread of power score, floored at 0. Labelled Very High down to
+Very Low.
+
+**Weekly snapshot.** A stored copy of every team's power score, captured once a
+week. Trend arrows and the weekly movers are differences between snapshots, so
+they are blank when the job has not run.
+
 **Rivalry label.** A word the app puts on a head-to-head record with three or
 more meetings: Rival, Nemesis, Tough Matchup, Favorite, or Dominated. It is
 derived from the win percentage each time it is shown, not stored.
@@ -317,7 +343,28 @@ fallback embed.
 
 **Blind draw signup.** One person's entry for a blind draw night: a first name, a
 last initial, and the date. Signups carry no account link, so the same person can
-appear twice and nothing connects a signup to a player.
+appear twice and nothing connects a signup to a player. **There is no way to
+withdraw one**, and nothing says so.
+
+**Bye (in a bracket).** A slot no team will ever occupy. The bracket engine
+rounds the team count up to the next power of two and fills the gap with byes,
+which go to the top seeds; a team facing one advances without playing. A bye
+reads "BYE" and never changes, unlike a *flow hint*, which names the match that
+will fill the slot. **The current engine uses byes rather than play-ins.**
+
+**Flow hint.** The text written into an empty bracket slot to say what will fill
+it — "Winner of WB 1.1", "Loser of WB Semi 1". It uses short match labels that do
+**not** match the round headings above the same columns, so the same match is
+named two ways on one screen.
+
+**Legacy bracket.** A bracket created before the current bracket engine. It is
+listed with a "Legacy" badge and **cannot be opened**: the loader returns nothing
+and the page shows no message.
+
+**Final standings.** The placement table shown above a completed bracket: every
+team in finishing order with match and game records, and a trophy, medal and
+award for the first three. Written on the server when the bracket completes. A
+bracket can be completed with no final standings, which only an admin can see.
 
 ## The message board
 
