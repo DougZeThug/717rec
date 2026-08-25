@@ -333,7 +333,7 @@ Status is one of `not started`, `drafted`, or `verified`.
 | message-board/read-the-board.md | not started |
 | message-board/post-and-reply.md | not started |
 | help/the-help-page.md | not started |
-| help/contact-the-league.md | not started |
+| help/contact-the-league.md | drafted |
 | admin/the-admin-dashboard.md | not started |
 | admin/manage-seasons.md | not started |
 | admin/manage-teams-and-divisions.md | not started |
