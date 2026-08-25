@@ -170,13 +170,22 @@ comment as agreed with the league admin):
 - The code's `v_team_details` and other `v_` views are never named in prose; say
   what the user sees.
 
-**Which document owns which live-scoring state:** `start-a-live-match.md` owns
-everything up to the first game existing. `set-up-a-game.md` owns a game that
-exists with no rounds. `enter-a-round.md` owns a game with at least one round and
-no winner. `correct-a-round.md` owns edits to rounds that already exist, in any
-game state. `finish-a-game.md` owns the moment a game's winner is determined and
-the confirmation that follows. `finish-the-match.md` owns everything from the
-second game win to the written result and the recap.
+**Which document owns which live-scoring state** (settled while writing them,
+and corrected from the initial guess to match how the screen actually branches):
+
+- `start-a-live-match.md` — arriving at the route, the permission rule, the
+  header and realtime indicator, and all five refusal screens.
+- `set-up-a-game.md` — the setup panel: picking up to two players a side, adding
+  a player to the roster, and starting a game. Owns the state where no game is
+  in progress.
+- `enter-a-round.md` — the score grids, the ambiguous-score question, the
+  thrower bar, and saving a round. Owns a game in progress that has not been won.
+- `correct-a-round.md` — undoing the last round, and reopening the most recently
+  completed game. Cuts across the other states.
+- `finish-a-game.md` — the game-won banner and the End Game confirmation. Owns
+  the gap between a game being won and being ended.
+- `finish-the-match.md` — the decided panel, the save-result dialog, the
+  read-only review, and the admin-only reopen. Owns the one real commit.
 
 ## Order of work
 

@@ -314,12 +314,12 @@ Status is one of `not started`, `drafted`, or `verified`.
 | scores/submit-a-score.md | not started |
 | scores/confirm-or-dispute-a-score.md | not started |
 | scores/pending-scores.md | not started |
-| live-scoring/start-a-live-match.md | not started |
-| live-scoring/set-up-a-game.md | not started |
-| live-scoring/enter-a-round.md | not started |
-| live-scoring/correct-a-round.md | not started |
-| live-scoring/finish-a-game.md | not started |
-| live-scoring/finish-the-match.md | not started |
+| live-scoring/start-a-live-match.md | drafted |
+| live-scoring/set-up-a-game.md | drafted |
+| live-scoring/enter-a-round.md | drafted |
+| live-scoring/correct-a-round.md | drafted |
+| live-scoring/finish-a-game.md | drafted |
+| live-scoring/finish-the-match.md | drafted |
 | playoffs/the-playoffs-page.md | not started |
 | playoffs/read-a-bracket.md | not started |
 | playoffs/blind-draw-signup.md | not started |
