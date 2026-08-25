@@ -241,7 +241,7 @@ live-scoring/
 playoffs/
   the-playoffs-page.md           the playoffs route, its states across the season
   read-a-bracket.md              how a bracket is drawn and what each cell means
-  blind-draw-signup.md           signing up for the blind draw and withdrawing
+  blind-draw-signup.md           signing up for the blind draw (no way to withdraw)
 
 stats/
   standings-and-rankings.md      the standings table and how it is ordered
@@ -290,7 +290,7 @@ Status is one of `not started`, `drafted`, or `verified`.
 | Document | Status |
 | --- | --- |
 | glossary.md | drafted |
-| bug-triage.md | not started |
+| bug-triage.md | drafted |
 | verification/ (9 checklists) | not started |
 | foundations/seasons.md | drafted |
 | foundations/accounts-and-roles.md | drafted |

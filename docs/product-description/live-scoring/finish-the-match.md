@@ -197,12 +197,18 @@ to anyone when a match is resulted.
 **Accessibility.** Both dialogs are announced. The screen becoming the review is
 not, so a screen reader user is moved to entirely new content silently.
 
-**Side effects the user can notice.** This is the write with the most: standings
-move, both teams' records change, per-player statistics are counted, badge
-processing runs, and power scores are recalculated on the server. Because the
-last two happen after the write returns, **a user who looks immediately sees the
-match completed but the numbers not yet moved.** See
-[`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
+**Side effects the user can notice.** Standings move, both teams' records
+change, per-player statistics are counted, and power scores are recalculated on
+the server. Because the recalculation happens after the write returns, **a user
+who looks immediately sees the match completed but the numbers not yet moved.**
+See [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
+
+**Badges are the exception, and they are not awarded here.** A match resulted
+through the ordinary score path runs a badge check; a match resulted through live
+scoring does not. Two teams playing the same fixture therefore earn different
+badges depending on how the score reached the league. See
+[`stats/badges.md`](../stats/badges.md) and
+[B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges).
 
 ## Edge cases
 
@@ -233,8 +239,10 @@ match completed but the numbers not yet moved.** See
 - **A match resulted by an admin tool can disagree with its own rounds.** The
   review shows the recorded winner and game wins in the header and the rounds'
   totals below, and nothing reconciles them. Worth checking by hand.
-- Not confirmed by hand: how long standings take to reflect a saved result, and
-  whether power scores and badges visibly lag.
+- Corrected on review: an earlier draft said badge processing runs on finalise.
+  It does not — the finalise routine contains no badge call, while the ordinary
+  score path does. Not confirmed by hand: how long standings take to reflect a
+  saved result, and whether power scores visibly lag.
 - Not confirmed by hand: what the recap actually names as key game, top
   performer, and most consistent, and whether those read sensibly for a short
   match.

@@ -243,6 +243,12 @@ by toast or by push, even when it changes a team's rank.
 from zero on every render. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
+**Accessibility.** The number is plain text everywhere and reads correctly. Its
+colour band carries meaning that nothing else conveys — an 88 and a 42 are
+announced identically — and the animated gauge counts up from zero on every
+render rather than settling once, which is motion nobody asked for. See
+[`cross-cutting/accessibility.md`](../cross-cutting/accessibility.md).
+
 **Side effects the user can notice.** Completing a match sets off a
 recalculation for the whole league, so numbers for teams that did not play change
 too. That is correct — the schedule-strength term depends on everyone — but it

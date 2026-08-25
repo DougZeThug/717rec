@@ -265,6 +265,9 @@ why finalising a match is not instant.
   the score-submission path. Every badge in the product is therefore blind to
   matches scored round by round. **May be worth treating as a bug rather than
   documenting.**
+  [`live-scoring/finish-the-match.md`](../live-scoring/finish-the-match.md) says
+  badge processing runs when a live match is finalised. It does not, and that
+  document needs correcting.
 - **Nothing retries a failed badge operation.** Failures are written to the
   scorer's own browser storage, where nothing reads them: the retry function
   exists and is called only by its own test. Badges are therefore permanently
