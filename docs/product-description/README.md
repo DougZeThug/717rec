@@ -292,12 +292,12 @@ Status is one of `not started`, `drafted`, or `verified`.
 | glossary.md | drafted |
 | bug-triage.md | not started |
 | verification/ (9 checklists) | not started |
-| foundations/seasons.md | not started |
-| foundations/accounts-and-roles.md | not started |
-| foundations/league-objects.md | not started |
-| foundations/navigation.md | not started |
-| foundations/saving-and-freshness.md | not started |
-| foundations/messages-to-the-user.md | not started |
+| foundations/seasons.md | drafted |
+| foundations/accounts-and-roles.md | drafted |
+| foundations/league-objects.md | drafted |
+| foundations/navigation.md | drafted |
+| foundations/saving-and-freshness.md | drafted |
+| foundations/messages-to-the-user.md | drafted |
 | getting-started/sign-in-and-sign-up.md | not started |
 | getting-started/set-up-your-profile.md | not started |
 | getting-started/join-a-team.md | not started |

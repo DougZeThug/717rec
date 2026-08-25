@@ -129,6 +129,39 @@ comment as agreed with the league admin):
 - Computed on the server. Season and career power scores are computed separately
   and can disagree.
 
+**Navigation and gating** (established by `foundations/navigation.md` and
+`foundations/accounts-and-roles.md`):
+
+- Only **three** routes are guarded: `/admin`, `/admin/notifications`, and
+  `/timeslots`. Every other route is open and handles its own signed-out state,
+  inconsistently. Do not describe any other route as "protected".
+- `/matches/:matchId/live` is **public to watch**. Only editing is gated.
+- **No route resets scroll position** on navigation. `/teams` is the only route
+  with scroll restoration, and it restores rather than resets.
+- Nothing but a record id is ever in the URL. Filters, tabs, and sort orders are
+  lost on navigation.
+
+**Freshness** (established by `foundations/saving-and-freshness.md`):
+
+- Default cache freshness is **5 minutes**. Seasons are **10 minutes**. Pending
+  matches are **0**.
+- Reads retry **once** on failure; writes do not retry.
+- Refetch triggers: returning to the tab, mounting a page, an explicit
+  invalidation after a write, a realtime message. **Nothing polls.**
+- **Realtime exists only on live scoring.** Everywhere else, a change made by
+  someone else does not reach the browser until a refetch.
+- **There is no offline write queue.** Offline means writes fail and are lost.
+
+**Messages** (established by `foundations/messages-to-the-user.md`):
+
+- **One toast at a time.** A second replaces the first. Bulk operations that
+  report per item lose all but the last message.
+- A toast survives navigation and can appear over an unrelated page.
+- Server failure reasons are almost always discarded in favour of a generic
+  per-feature sentence. Raise this once in triage, not once per document.
+- A failed write with **no** visible message is a defect, because services always
+  throw and an error is always available.
+
 **Naming decisions:**
 
 - The schema's `iscompleted` is written as "completed" in prose.
