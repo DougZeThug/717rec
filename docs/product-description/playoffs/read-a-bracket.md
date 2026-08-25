@@ -142,7 +142,7 @@ appears stuck.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | A visitor and a player get an identical, inert bracket. An admin gets clickable match cards and a toolbar above the bracket: Repair Bracket, Rearrange Teams, Update Seeding, Edit Bracket, Delete, and — on a completed bracket missing its standings — Recalculate Standings. | Admin granted or revoked elsewhere does not reach this card until it refetches. |
-| The record's state | A completed bracket shows the Final Standings card and disables Rearrange and Update Seeding for admins. A pending or in-progress bracket shows neither. | A bracket completing while it is open adds the standings card and announces "Tournament Complete! Final standings have been calculated." |
+| The record's state | A completed bracket shows the Final Standings card and greys out Rearrange and Update Seeding. Those two buttons stay pressable on an in-progress bracket, but the dialog behind Update Seeding refuses to save once a single result has been entered — see [`glossary.md`](../glossary.md) on *bracket state*. | A bracket completing while it is open adds the standings card and announces "Tournament Complete! Final standings have been calculated." |
 | The season's state | No effect. A bracket is drawn the same way whatever season it belongs to, including an archived one. | No effect. |
 | Viewport | The bracket scrolls sideways in its own container at every width; it is never scaled down to fit. On a phone the whole admin toolbar is hidden. | No effect beyond re-flowing on rotation. |
 | Keys the page honours | Nothing is focused and there are no shortcuts. The bracket is drawn as plain elements, so Tab does not step through matches. | No shortcuts. |

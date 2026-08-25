@@ -124,7 +124,7 @@ step. Its six documents start at
 | Network lost mid-request | Nothing to lose. Cached data stays on screen and looks current, which on a phone at a venue is the common case. | The request fails and is lost. **Nothing is queued.** This matters most during live scoring, which is the one thing done on a phone at a place with poor signal. |
 | The request fails or times out | A read retries once, then falls back to the page's own state. | One red toast across the top of the screen, covering the top bar while it is there. |
 | The session expires | Public pages keep working. | Writes fail. A phone left in a pocket for hours is the most likely place for a session to lapse, and nothing says so. |
-| The same record changed in another tab, or by another user | Only live scoring finds out. Two phones at the same match stay in step; nothing else does. | Same. Two phones scoring the same match is the design; two phones editing anything else overwrites. |
+| The same record changed in another tab, or by another user | The screens that hold a realtime channel find out; standings, records, and the schedule do not. Two phones at the same live match stay in step, which is the design. | Same. Two phones editing anything without a channel overwrite each other silently. |
 | Browser autofill or a password manager writes into the form | Mobile keyboards and password managers fill fields the same way as on a desktop, including the contact form's hidden bot trap. | Same. |
 | The window loses focus | Switching apps suspends the tab. Coming back refetches anything past its fresh window, so numbers change as the app is re-opened — far more visible on a phone than on a desktop, because backgrounding is constant. | The request continues while the app is in the background if the browser allows it, and its toast is waiting when the user returns. |
 
@@ -148,8 +148,9 @@ warning.
 
 **Optimistic updates and rollback.** No difference.
 
-**Realtime.** The live scoring channel drops and rebuilds far more often on a
-phone. Each reconnection refetches the match, so a short drop is invisible.
+**Realtime.** Channels drop and rebuild far more often on a phone, because
+backgrounding an app closes them. Each reconnection refetches, so a short drop is
+invisible; only live scoring shows the connection's state while it is down.
 
 **Offline.** No difference in behaviour, and much more likely to happen. See
 [`errors-and-offline.md`](errors-and-offline.md).
@@ -199,6 +200,11 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **The sign-in bar on the message board is very likely hidden behind the bottom
   tab bar on a phone.** Read from the positioning value and the absence of the
   variable it depends on; not seen on a device.
+- **Toasts appear at the top on a narrow screen, not the bottom.**
+  [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md)
+  says a toast could cover a submit button at the bottom of a small screen. It
+  cannot: below 640 pixels the toast is pinned to the top and covers the header
+  instead. The foundation is the document that needs the correction.
 - Not confirmed by hand: whether the layout swap at 768 pixels is smooth when a
   phone is rotated, or whether it flashes.
 - Not confirmed by hand: which stats and standings tables become cards and which

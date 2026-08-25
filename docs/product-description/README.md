@@ -327,7 +327,7 @@ Status is one of `not started`, `drafted`, or `verified`.
 | stats/power-score.md | drafted |
 | stats/team-and-player-stats.md | drafted |
 | stats/insights.md | drafted |
-| stats/badges.md | not started |
+| stats/badges.md | drafted |
 | history/past-seasons.md | drafted |
 | history/head-to-head.md | drafted |
 | message-board/read-the-board.md | drafted |

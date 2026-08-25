@@ -125,7 +125,7 @@ Not applicable to navigation itself.
 | The record's state | Only `/teams/:teamId` and `/matches/:matchId/live` read a record from the URL. A missing or invalid id gives that page's own empty state, not the 404 page. | No effect on routing. |
 | The season's state | No effect on which routes exist. | No effect. |
 | Viewport | The navigation bar collapses to a menu on a narrow screen. | Re-flows on rotation. |
-| Keys the app honours | No global keyboard shortcuts exist. Tab reaches a skip link to the main content first. | No global shortcuts. |
+| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to a page. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
 
 ## Cancel and interrupt
 
@@ -199,7 +199,8 @@ filters, no tabs, no sort order, no season, no pagination.
 **Accessibility.** A skip link reaches the main content. Route changes are
 announced and move focus to the main content, except on the first load. The
 absence of a scroll reset is felt most by a user who cannot see the page has
-changed.
+changed. The command palette is the only keyboard route to fast navigation and it
+is absent below 768 pixels.
 
 **Side effects the user can notice.** Every route change is recorded twice, once
 to Google Analytics and once to the league's own pageview counter. In a
@@ -221,6 +222,8 @@ development build the analytics call does nothing.
 - **`/playoffs/e2e-bracket-proof` exists** as a test route and is out of scope.
 - **Filters are lost on every navigation.** Filtering the schedule, opening a
   match, and pressing back gives an unfiltered schedule.
+- **The command palette is desktop-only.** Cmd/Ctrl+K does nothing below 768
+  pixels, where the app is most used.
 
 ## Open questions and verification
 

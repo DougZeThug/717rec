@@ -87,8 +87,9 @@ every feature document:
 - Data changing under the user is silent. The app shows stale numbers while it
   refetches, and the moment a number changes there is no announcement. See
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
-- A live score arriving over a realtime channel is silent. The number simply
-  moves.
+- Anything arriving over a realtime channel is silent: a live score, a new
+  message on the board, a new notification in the bell. The number or the list
+  simply changes.
 - A screen replacing itself is silent. The contact form becoming a success panel,
   a live match becoming read-only, a game-won banner appearing over the round
   input — a reader is moved to entirely new content with no signal.
@@ -242,6 +243,11 @@ or sent anywhere.
 - **The hamburger menu's keyboard and screen-reader behaviour** is read from the
   component, not tried with a reader. If it is as described, it is the most
   visible keyboard defect in the product.
+- **The command palette shortcut contradicts a foundation.**
+  [`foundations/navigation.md`](../foundations/navigation.md) says no global
+  keyboard shortcut exists. Cmd/Ctrl+K does, on any screen 768 pixels or wider,
+  and it suppresses the browser's own use of that key. The foundation is the
+  document that needs the correction.
 - Not confirmed by hand: whether toasts are actually announced, and whether a
   replaced toast is re-announced or silently swapped.
 - Not confirmed by hand: whether the route announcement is heard in practice, or

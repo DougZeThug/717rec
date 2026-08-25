@@ -107,16 +107,21 @@ nothing.
 A failed *data* request produces neither. It is the page's own business and
 becomes an empty state, a toast, or both.
 
-## Push notifications
+## Notifications
 
-Messages delivered outside the app, which an admin can send. What triggers them,
-who receives them, and what they say is in
-[`admin/send-notifications.md`](../admin/send-notifications.md) and
-[`cross-cutting/what-the-league-sees.md`](../cross-cutting/what-the-league-sees.md).
+**There is no delivery outside the browser.** No push, no SMS, and no email
+except the single message the contact form sends to the league. Nothing a user or
+an admin does in this app reaches anybody's phone or inbox.
 
-Nothing in the ordinary run of the app sends a push by itself. A score being
-submitted, a membership being approved, or a match being scheduled produces no
-notification to anyone.
+What the app calls a notification is an **admin notification**: a short
+announcement an admin writes, shown to everyone in the bell in the header until
+an admin deletes it. It belongs to no season and nobody is alerted to it — a user
+sees it when they next look at the bell. See
+[`admin/send-notifications.md`](../admin/send-notifications.md).
+
+Nothing in the ordinary run of the app produces one by itself. A score submitted,
+a membership approved, a match scheduled, a season changed over: none of these
+tells anybody anything.
 
 ## Modifiers
 
@@ -125,7 +130,7 @@ notification to anyone.
 | The user's role | The "Access Denied" toast is the only message that exists solely because of a role. | An admin flag revoked mid-session produces no message; writes simply begin failing. |
 | The record's state | No effect on how messages are shown. | No effect. |
 | The season's state | No effect. A season changing over produces no message at all. | No effect. |
-| Viewport | Toasts appear at the edge of the screen; on a narrow screen they span its width. | No effect. |
+| Viewport | Below 640 pixels a toast appears at the **top**, full width. At 640 and above it appears **bottom-right**, at most 420 pixels wide. | Resizing across 640 pixels moves an open toast from one end of the screen to the other. |
 | Keys the app honours | A toast can be dismissed from the keyboard. | No effect. |
 
 ## Cancel and interrupt
@@ -172,8 +177,11 @@ failing.
 
 **URL state.** No message state is in the URL.
 
-**On a phone.** Toasts span the screen width. A toast covering a submit button at
-the bottom of a small screen is possible.
+**On a phone.** Below 640 pixels a toast is pinned to the **top** of the screen
+and spans its width. At 640 pixels and above it sits bottom-right and is capped
+at 420 pixels wide. So the same message arrives from opposite ends of the screen
+depending on the device, and on a phone it can cover the page heading rather than
+the submit button.
 
 **Accessibility.** Toasts are announced by screen readers. Empty states and
 loading states are ordinary content and are not announced when they replace each
@@ -185,6 +193,8 @@ other, so a page moving from loading to empty is silent.
   last message. Anything that raises two toasts close together loses one.
 - **A toast follows the user across pages**, and can appear over content it has
   nothing to do with.
+- **A toast arrives from the top on a phone and the bottom on a desktop.** A user
+  who knows where to look on one does not on the other.
 - **A success toast and an in-page success panel can both appear** for the same
   action, as on the contact form, confirming the same thing twice.
 - **A message the app has and does not show.** Server refusals carry specific
@@ -212,7 +222,8 @@ other, so a page moving from loading to empty is silent.
   practice, and whether a replaced toast is re-announced.
 - Not confirmed by hand: whether any page shows an empty state while still
   loading. This needs checking per page and is a P1 item in every checklist.
-- Not confirmed by hand: what a push notification looks like when it arrives, or
-  whether players can opt out.
+- Corrected on review: an earlier draft of this document described push
+  notifications delivered outside the app. There are none. The only outbound
+  message the product sends is the contact form's email to the league.
 
 Verified against `717rec` commit `ea5c8f4`.

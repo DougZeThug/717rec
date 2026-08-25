@@ -197,8 +197,9 @@ the server.
 **Optimistic updates and rollback.** A rolled-back write leaves no record that it
 was attempted.
 
-**Realtime.** The notification bell holds an open channel on every page. Live
-scoring holds one on its own route.
+**Realtime.** The notification bell holds an open channel on **every** page of
+the app. Other screens hold their own; see
+[`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
 **Offline.** Nothing is queued. An offline session is invisible to the league.
 
@@ -239,11 +240,11 @@ See [`on-a-phone.md`](on-a-phone.md).
 
 ## Open questions and verification
 
-- **The bell subscribes to changes on every page in the app.** This contradicts
-  [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md),
-  which says live scoring is the only screen with a realtime connection. Nine
-  other hooks in the product open channels too. The foundation is the document
-  that needs correcting, not this one.
+- **The bell subscribes to changes on every page in the app**, which makes it the
+  only always-on realtime connection in the product; the rest are per screen. The
+  full list is in
+  [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
+  Not confirmed by hand: whether a notice really does appear without a reload.
 - **Session replay records 10% of sessions and every session with an error**,
   with no notice to the user. Worth a decision.
 - Not confirmed by hand: whether registering actually sends a confirmation email

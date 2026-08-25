@@ -89,10 +89,11 @@ and no record that the attempt happened.
 
 - **Ordinary reads retry once.** No backoff, no second chance.
 - **Writes never retry.** A failed write is a failed write.
-- **Two timeslot reads are different**: they retry twice with growing delays and
-  they **poll every sixty seconds**, pausing while the tab is hidden or the
-  browser reports itself offline. These are the only polling reads in the
-  product and the only reads that check `navigator.onLine`.
+- **The two timeslot reads are different**: they retry **twice** with growing
+  delays, and they are the only reads in the product that ask the browser
+  whether it is online before polling again. Four things in the app poll on a
+  timer; the list is in
+  [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 - **A realtime channel reconnects by itself**, waiting one second, then two,
   then four, up to thirty, with a little randomness so several phones at the same
   match do not all retry together. Every reconnection refetches rather than
@@ -174,8 +175,9 @@ moment a user discovers there is no draft.
 toast; the value changing back carries no other mark.
 
 **Realtime.** A dropped channel rebuilds itself with growing delays and refetches
-on every reconnection. The live scoring screen shows the connection's state; no
-other screen has one to show.
+on every reconnection, and several screens hold one. **Only live scoring shows
+the connection's state**; everywhere else a channel can be down for half a minute
+with nothing on screen to say so.
 
 **Offline.** Defined here. No queue, no detection, no warning.
 
@@ -219,7 +221,7 @@ failures are reported with a stack trace. See
 - **An offline user can fill in a long form** and lose all of it at submit.
 - **A brief realtime drop is invisible**, because reconnecting refetches. A long
   one shows the connection state changing on live scoring and nothing anywhere
-  else.
+  else, even on the several other screens that hold a channel.
 
 ## Open questions and verification
 
