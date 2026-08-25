@@ -203,12 +203,12 @@ the server. Because the recalculation happens after the write returns, **a user
 who looks immediately sees the match completed but the numbers not yet moved.**
 See [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
-**Badges are the exception, and they are not awarded here.** A match resulted
-through the ordinary score path runs a badge check; a match resulted through live
-scoring does not. Two teams playing the same fixture therefore earn different
-badges depending on how the score reached the league. See
-[`stats/badges.md`](../stats/badges.md) and
-[B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges).
+> **Technical note:** badges are the exception and they are **not** awarded here.
+> A match resulted through the ordinary score path runs a badge check; a match
+> resulted through live scoring does not. Two teams playing the same fixture
+> therefore earn different badges depending on how the score reached the league.
+> See [`stats/badges.md`](../stats/badges.md) and
+> [B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges).
 
 ## Edge cases
 

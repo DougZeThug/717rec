@@ -187,6 +187,11 @@ the submit button.
 loading states are ordinary content and are not announced when they replace each
 other, so a page moving from loading to empty is silent.
 
+**Side effects the user can notice.** Every failed read and every failed write is
+counted for the league's own monitoring whether or not the user is shown
+anything, so a failure the user never sees is still recorded. Nothing a message
+does reaches anyone outside the browser.
+
 ## Edge cases
 
 - **Only one toast at a time.** A bulk action reporting per item shows only the
