@@ -74,6 +74,11 @@ so a non-zero exit code means drift was detected.
   Regression cover for `prevent_member_competitive_field_updates()`, which
   referenced a `teams.is_hidden` column that never existed and therefore threw
   on every non-admin team update.
+- `opponent_match_history_winner_id.sql` — asserts
+  `get_opponent_match_history` returns `team1_id`, `team2_id` and a `winner_id`
+  that is NULL for a tie. Uses two teams deliberately given the same name:
+  `teams.name` has no unique constraint, so `winner_name` cannot tell a win
+  from a loss and the head-to-head dialog's badge read every result as a loss.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

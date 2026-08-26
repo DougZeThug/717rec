@@ -94,8 +94,15 @@ export const HeadToHeadService = {
           handleDatabaseError(error, 'Failed to fetch opponent match history');
         }
 
+        // Migration 20260826190000 added team1_id/team2_id/winner_id to
+        // get_opponent_match_history. src/integrations/supabase/types.ts is
+        // generated and has not been regenerated since, so its row type for
+        // this function is still the older, id-less one. Drop this cast the
+        // next time those types are regenerated.
+        const matches = (matchHistory ?? []) as OpponentHistory['matches'];
+
         return {
-          matches: matchHistory || [],
+          matches,
           summary,
         };
       },

@@ -884,15 +884,25 @@ finding read a superseded migration.
 - **Severity:** `medium`. It is a wrong result presented as fact, but the same
   dialog shows the correct W–L totals directly above it, so a reader has a way to
   notice.
-- **Decision needed:** `fix`. **Done.** The result is now read off the opponent
-  (`winner_name === opponentName` is a loss, `NULL` is a tie, anything else is a
-  win), which holds whichever side of the fixture the viewing team is on, and
-  needed no migration. `OpponentHistory.winner_name` is now typed
-  `string | null` to match what the function actually returns, and five tests
-  cover both slots and the tie.
-- **Status:** confirmed by test. The three failing cases — team named first and
-  winning, team named first and losing, and a tie — were shown red against the
-  old code before the fix landed.
+- **Decision needed:** `fix`. **Done.** The result is decided by **team id**:
+  `winner_id === teamId` is a win, `NULL` is a tie, anything else is a loss.
+  This holds whichever side of the fixture the viewing team is on.
+  `get_opponent_match_history` returned names only, so migration
+  `supabase/migrations/20260826190000_opponent_match_history_winner_id.sql`
+  adds `team1_id`, `team2_id` and `winner_id` (normalised to `NULL` for a tie,
+  exactly as `winner_name` always was). `winner_name` stays for display.
+- **Why not compare names:** `public.teams.name` has **no unique constraint**
+  and the create and update services both allow duplicates. With two teams
+  sharing a name, `winner_name` equals the opponent's name for *both* outcomes,
+  so a name comparison reads every non-tie as a loss — trading one wrong badge
+  for another. A rename landing between the two reads could flip a result the
+  same way. Raised on the pull request by the Codex reviewer.
+- **Status:** confirmed by test at both levels. Seven component tests cover
+  both fixture slots, both results, the tie, and two teams sharing a name; the
+  cases that expose the bug were shown red against the old code first.
+  `supabase/tests/opponent_match_history_winner_id.sql` asserts the same at the
+  database level using two teams deliberately given one name, and CI replays
+  every migration before running it.
 - **Raised by:** [`history/head-to-head.md`](history/head-to-head.md#edge-cases).
 
 ---

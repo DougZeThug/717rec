@@ -101,11 +101,11 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           ) : (
             <div className="space-y-3">
               {matches.map((match) => {
-                // The match rows carry team names, not ids, so the result is
-                // read off the opponent. This holds whichever side of the
-                // fixture the viewing team is on.
+                // Compare ids, never names: two teams may share a name, and a
+                // name comparison then reads every result as a loss. Correct
+                // whichever side of the fixture the viewing team is on.
                 const result =
-                  match.winner_name == null ? 'T' : match.winner_name === opponentName ? 'L' : 'W';
+                  match.winner_id == null ? 'T' : match.winner_id === teamId ? 'W' : 'L';
                 return (
                   <Card key={match.id}>
                     <CardContent className="p-4">
