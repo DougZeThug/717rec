@@ -102,4 +102,5 @@ Domains ([guide](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step
 | [`CLAUDE.md`](CLAUDE.md) | Working agreements for AI agents (and humans): architecture rules, service template, test-running notes |
 | [`docs/PRODUCTION_SETTINGS.md`](docs/PRODUCTION_SETTINGS.md) | Checked baseline of every out-of-repo dashboard setting (expected value + last-verified date): auth, backups, API/RLS, edge secrets, cron, hosting |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | League-night incident playbook, recovery + standings reconciliation, and the merge gate |
+| [`docs/product-description/`](docs/product-description/) | What the app does **for the user**, feature by feature: 58 prose documents on one skeleton, hand-verification checklists, and a triaged list of suspected defects. Start at its [README](docs/product-description/README.md) |
 | [`docs/`](docs/) | Deep dives: secrets handling, release runbook, Supabase CI, RLS notes, bracket schema, past audits |
