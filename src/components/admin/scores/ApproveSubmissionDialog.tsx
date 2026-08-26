@@ -1,9 +1,7 @@
-import { CheckCircle, MessageSquare } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
@@ -13,8 +11,13 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import type { ApproveSubmissionInput, ScoreSubmission } from '@/hooks/useScoreSubmissions';
-import { cn } from '@/lib/utils';
-import { formatWithPattern } from '@/utils/formatDateSafe';
+
+import {
+  GameWinsFields,
+  MatchSummary,
+  SubmissionMessage,
+  WinnerPicker,
+} from './ApproveSubmissionDialogParts';
 
 interface ApproveSubmissionDialogProps {
   submission: ScoreSubmission | null;
@@ -36,6 +39,9 @@ const parseGameWins = (value: string): number => {
  * A submission carries only the reporter's free-text message, so the admin
  * reads it here and enters the real numbers. Confirming records the result
  * on the match and approves the submission together.
+ *
+ * The form is drawn by the small components in `ApproveSubmissionDialogParts`.
+ * All state and all validation stay here.
  */
 const ApproveSubmissionDialog = ({
   submission,
@@ -54,7 +60,6 @@ const ApproveSubmissionDialog = ({
 
   const team1Name = submission.match?.team1?.name ?? 'Team 1';
   const team2Name = submission.match?.team2?.name ?? 'Team 2';
-  const matchDate = submission.match?.date;
 
   const team1Wins = parseGameWins(team1GameWins);
   const team2Wins = parseGameWins(team2GameWins);
@@ -87,84 +92,33 @@ const ApproveSubmissionDialog = ({
         </ResponsiveDialogHeader>
 
         <div className="space-y-4">
-          {/* Which match this report is about */}
-          <div className="border rounded-lg p-3 bg-muted/50">
-            <p className="font-medium text-sm text-center">
-              {team1Name} vs {team2Name}
-            </p>
-            {matchDate && (
-              <p className="text-xs text-muted-foreground text-center mt-1">
-                {formatWithPattern(matchDate, "MMM d, yyyy 'at' h:mm a")}
-                {submission.match?.location ? ` • ${submission.match.location}` : ''}
-              </p>
-            )}
-          </div>
+          <MatchSummary
+            team1Name={team1Name}
+            team2Name={team2Name}
+            date={submission.match?.date}
+            location={submission.match?.location}
+          />
 
-          {/* What the reporter said */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="size-4 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
-                Reported by {submission.submitter_name}:
-              </span>
-            </div>
-            <div className="bg-muted/50 p-3 rounded-md">
-              <p className="text-sm">{submission.message}</p>
-            </div>
-          </div>
+          <SubmissionMessage
+            submitterName={submission.submitter_name}
+            message={submission.message}
+          />
 
-          {/* Who won */}
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium mb-2">
-              Who won? <span className="text-destructive">*</span>
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                type="button"
-                variant={winner === 1 ? 'default' : 'outline'}
-                aria-pressed={winner === 1}
-                onClick={() => setWinner(1)}
-                className={cn('h-auto py-2 whitespace-normal')}
-              >
-                {team1Name}
-              </Button>
-              <Button
-                type="button"
-                variant={winner === 2 ? 'default' : 'outline'}
-                aria-pressed={winner === 2}
-                onClick={() => setWinner(2)}
-                className={cn('h-auto py-2 whitespace-normal')}
-              >
-                {team2Name}
-              </Button>
-            </div>
-          </fieldset>
+          <WinnerPicker
+            team1Name={team1Name}
+            team2Name={team2Name}
+            winner={winner}
+            onPick={setWinner}
+          />
 
-          {/* Games each team won */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="team1-game-wins">{team1Name} games won</Label>
-              <Input
-                id="team1-game-wins"
-                type="number"
-                min={0}
-                inputMode="numeric"
-                value={team1GameWins}
-                onChange={(event) => setTeam1GameWins(event.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="team2-game-wins">{team2Name} games won</Label>
-              <Input
-                id="team2-game-wins"
-                type="number"
-                min={0}
-                inputMode="numeric"
-                value={team2GameWins}
-                onChange={(event) => setTeam2GameWins(event.target.value)}
-              />
-            </div>
-          </div>
+          <GameWinsFields
+            team1Name={team1Name}
+            team2Name={team2Name}
+            team1GameWins={team1GameWins}
+            team2GameWins={team2GameWins}
+            onTeam1Change={setTeam1GameWins}
+            onTeam2Change={setTeam2GameWins}
+          />
 
           {negativeWins && (
             <p className="text-sm text-destructive">Games won cannot be a negative number.</p>

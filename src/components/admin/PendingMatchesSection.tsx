@@ -29,11 +29,11 @@ const PendingMatchesSection = () => {
   // usePendingMatches already reports failures in a toast, so swallow the
   // rejection here to avoid an unhandled promise.
   const approveWinner = (match: Match, winner: 1 | 2) => {
-    void handleApproveResult(match, winner).catch(() => undefined);
+    handleApproveResult(match, winner).catch(() => undefined);
   };
 
   const markTie = (matchId: string) => {
-    void handleMarkAsTie(matchId).catch(() => undefined);
+    handleMarkAsTie(matchId).catch(() => undefined);
   };
 
   return (

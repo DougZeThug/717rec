@@ -40,7 +40,7 @@ describe('UnresolvedMatchesList', () => {
   it('shows the teams and the games each one won', () => {
     renderList();
     expect(screen.getByText('Owls vs Hawks')).toBeInTheDocument();
-    expect(screen.getByText(/Games won: Owls 1 — Hawks 1/)).toBeInTheDocument();
+    expect(screen.getByText(/Games won: Owls 1 — Hawks 1/u)).toBeInTheDocument();
   });
 
   it('names team 1 as the winner', () => {
