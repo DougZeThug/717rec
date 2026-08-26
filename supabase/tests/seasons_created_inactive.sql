@@ -17,6 +17,16 @@ DECLARE
   v_active_count integer;
   v_new_is_active boolean;
 BEGIN
+  -- FIRST, before touching anything: the database as the migrations left it must
+  -- not already hold more than one active season. The normalisation below would
+  -- otherwise hide exactly the fault this migration repairs.
+  SELECT count(*) INTO v_active_count FROM public.seasons WHERE is_active;
+  IF v_active_count > 1 THEN
+    RAISE EXCEPTION
+      'the migrated database holds % active seasons; the repair in 20260826120000 did not run or did not cover this case',
+      v_active_count;
+  END IF;
+
   DELETE FROM public.seasons WHERE id = v_running_id;
   UPDATE public.seasons SET is_active = false WHERE is_active = true;
 

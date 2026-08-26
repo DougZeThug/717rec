@@ -26,6 +26,29 @@
 
 ALTER TABLE public.seasons ALTER COLUMN is_active SET DEFAULT false;
 
+-- Repair any database that is ALREADY in the broken state. Changing the default
+-- only protects future inserts; it does not undo the damage. Two earlier
+-- migrations insert a season with is_active = true
+-- (20250801183139 'Summer 2 2025', 20251001184630 'Fall 2025'), and because the
+-- trigger never fired on INSERT, a full replay leaves BOTH active — so a freshly
+-- rebuilt database throws on the first read of the active season.
+--
+-- Keep exactly one: prefer a season that is not archived, then the one that
+-- started most recently, with created_at and id as tie-breaks so the outcome is
+-- deterministic. This is a no-op wherever a single season is already active, so
+-- it does not disturb a healthy live database. If it ever does pick the wrong
+-- season, an admin can correct it with the Activate control.
+UPDATE public.seasons
+SET is_active = false
+WHERE is_active = true
+  AND id <> (
+    SELECT id
+    FROM public.seasons
+    WHERE is_active = true
+    ORDER BY is_archived, start_date DESC, created_at DESC, id
+    LIMIT 1
+  );
+
 COMMENT ON COLUMN public.seasons.is_active IS
   'Exactly one season should be active. Defaults to false: a new season is '
   'created inactive and started with activate_season(). The single-active '

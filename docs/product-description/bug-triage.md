@@ -778,11 +778,17 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   A season is started with the **Activate** control added in B-02, which routes
   through `activate_season()` and deactivates the previous season atomically.
   Guarded by `supabase/tests/seasons_created_inactive.sql`.
+  The same migration also **repairs** a database already in the broken state:
+  two earlier migrations (`20250801183139`, `20251001184630`) each insert a
+  season with `is_active = true`, so a full replay left a freshly rebuilt
+  database with two active seasons that would throw on the first read. It now
+  keeps exactly one — preferring an un-archived season, then the latest start
+  date — and is a no-op wherever a single season is already active, so a healthy
+  live database is untouched.
 - **Not covered:** the trigger is still `BEFORE UPDATE` only, so a hand-written
-  SQL `INSERT` that sets `is_active = true` can still produce two active seasons.
-  Nothing in the app does that; two old migrations did
-  (`20250801183139`, `20251001184630`), which is why a rebuilt CI database has
-  two active seasons and always has.
+  SQL `INSERT` that sets `is_active = true` can still produce two active seasons
+  from that point on. Nothing in the app does that, and the repair above clears
+  any such state the next time the migration is applied.
 - **Raised by:** found while fixing B-02.
 
 ### B-34: Four standings columns silently sort by power score instead

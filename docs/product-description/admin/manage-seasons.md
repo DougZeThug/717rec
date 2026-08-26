@@ -26,10 +26,10 @@ neither active nor archived also has an **Activate** button. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
-optional end date. Pressing Create Season saves it, a toast says "Season created
-successfully", and the new season appears at the top of the list as **Inactive**.
-Creating a season does not start it: the toast says so, and the season sits in the
-list until an admin presses **Activate** on its card. That lets next season be set
+optional end date. Pressing Create Season saves it, a toast reads "*name* created.
+Press Activate on its card to start it.", and the new season appears at the top of
+the list as **Inactive**. Creating a season does not start it: the toast says so,
+and the season sits in the list until an admin presses **Activate** on its card. That lets next season be set
 up in advance, and it is why the third card counts inactive seasons as "Ready to
 activate".
 
@@ -119,8 +119,9 @@ The button reads "Creating..." or "Updating..." and is disabled while the reques
 is in flight. Cancel and the X in the form's corner both close it and discard
 what was typed, with no confirmation.
 
-On success the form closes and a toast says "Season created successfully" or
-"Season updated successfully". The season list re-fetches.
+On success the form closes and a toast reads "*name* created. Press Activate on
+its card to start it." when creating, or "Season updated successfully" when
+editing. The season list re-fetches.
 
 On failure the form **stays open with everything typed still in it** and a red
 toast carries the server's own reason rather than a generic sentence. This is one
