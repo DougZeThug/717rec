@@ -10,7 +10,7 @@ and links here.
 | --- | --- | --- | --- |
 | **Pending Scores** (a card on the home page) | Matches with **no result yet**, more than sixteen hours after their start time | Everyone, including visitors | Anyone can send a report |
 | **Pending score submission** | One person's **report** of a result, waiting for review | Admins only | Admins only |
-| **Pending match** | A match marked completed with **no winner** — a tie | **Nobody.** No screen shows them | Nobody |
+| **Pending match** | A match marked completed with **no winner** — a tie | Admins only, in `/admin` → **Pending** → **Unresolved matches** | Admins only |
 
 The card and the submissions are named alike and are not the same thing: the card
 lists matches nobody has entered, and a submission is one attempt to say what
@@ -29,13 +29,21 @@ A player opens the home page on a Friday morning. Part-way down is a card headed
 matches are there, each with a Report button. When every match has a result the
 card disappears entirely — it is only drawn when the list is not empty.
 
-An admin opens `/admin` and picks the section labelled **Pending**. Under the line
-"Review score submissions reported by users" is one card per report: who sent it,
-which team they said they were on, what they wrote, when they sent it, and a
-Reject and an Approve button. When there is nothing to review the section says "No
-pending score submissions to review."
+An admin opens `/admin` and picks the section labelled **Pending**. It holds two
+lists.
 
-Nobody, ever, sees a list of ties.
+**Score submissions** comes first. Under the line "Review score reports sent in by
+users. Approving asks you for the result." is one card per report: which match it
+is about, who sent it, which team they said they were on, what they wrote, when
+they sent it, and a Reject and an Approve button. Approve opens a dialog that
+asks for the winner and the games each team won. When there is nothing to review
+the section says "No pending score submissions to review."
+
+**Unresolved matches** follows, and is drawn only when the list is not empty.
+Under the line "These matches are finished but have no winner. Name the winner or
+record a tie." is one card per match, with both team names, the date, the games
+already recorded, and three buttons: one per team to name it the winner, and "It
+was a tie".
 
 ## The interaction, event by event
 
@@ -45,11 +53,12 @@ stateDiagram-v2
     no_result --> waiting : sixteen hours pass; the match joins the Pending Scores card
     waiting --> waiting : somebody sends a report (the match does not move)
     waiting --> reviewing : an admin opens the Pending section
-    reviewing --> decided : Approve or Reject (the report is stamped)
+    reviewing --> decided : Reject (the report is stamped, the match is untouched)
     decided --> waiting : the match still has no result
+    reviewing --> resolved : Approve — the admin enters the result and it is written
     waiting --> resolved : a result is recorded by live scoring or bulk entry
     resolved --> tie : the result was recorded with no winner
-    tie --> tie : nothing in the app can reach it
+    tie --> resolved : an admin names a winner or records the tie
 ```
 
 ### Arrive
@@ -69,9 +78,10 @@ it.
 newest first, across every season and every match, and re-fetches every time the
 section is opened. There is no filter, no search, and no grouping by match.
 
-**The tie list** is fetched by nothing. The query exists, the two decisions an
-admin would make — award it to one side, or record it as a tie — exist as
-mutations, and no screen calls any of them.
+**The tie list** asks for every match marked completed that still has no winner,
+oldest first, across every season, and re-fetches with the rest of the tab. The
+two decisions an admin makes on one — award it to a side, or record it as a tie —
+each write through an atomic, idempotent database function.
 
 **Nothing is written by looking at any of the three.**
 
@@ -204,24 +214,23 @@ so numbers elsewhere move some time afterwards.
   internal name and the ordinary meaning of "pending match" both point at ties.
 - **The league-night tile counts reports, not unscored matches**, so it can read
   zero while four matches are waiting.
-- **A tie is invisible.** A match completed with no winner is in no list, on no
-  card, and reachable from no screen.
-- **Approving every report for a match leaves the match exactly as it was**, with no
-  result and still on the Pending Scores card.
+- **A tie is admin-only.** A match completed with no winner appears in
+  **Unresolved matches** in the admin Pending tab, and on no player-facing card.
+- **Approving a report records the result.** The admin enters the winner and the
+  games each team won, the match is marked complete, and it leaves the Pending
+  Scores card.
 - **The sixteen-hour delay means a match played this evening is not on the card
   until the following afternoon.**
 
 ## Open questions and verification
 
-- **There is no pending-match list.** The query that finds ties, and the two
-  decisions an admin would make about one, are written and wired to nothing. A tie
-  therefore cannot be resolved from inside the app, and the glossary's claim that a
-  tie "appears in the pending list until an admin decides" describes a screen that
-  does not exist. **May be worth treating as a bug rather than documenting.**
-- **Approving a report changes nothing about the match.** The queue is a review
-  queue with no effect on the league, which makes "approved" a statement about the
-  message rather than about the result. **May be worth treating as a bug rather
-  than documenting.**
+- **Fixed (was B-09): the pending-match list now exists.** Ties are listed under
+  **Unresolved matches** in the admin Pending tab, and an admin resolves one by
+  naming a winner or recording the tie.
+- **Fixed (was B-01): approving a report now records the result.** Approve opens a
+  dialog asking for the winner and the games each team won, writes that result to
+  the match, and only then stamps the submission. A failed write leaves the
+  submission pending.
 - **The Pending Scores card fails silently.** A failed fetch shows a toast that is
   raised from the home page's own copy of the query, but the card itself simply
   does not appear, so the reader has no idea a list is missing.
@@ -230,7 +239,7 @@ so numbers elsewhere move some time afterwards.
 - Not confirmed by hand: whether the league in practice enters results by live
   scoring, by bulk entry, or by reading reports and typing them in.
 - Not confirmed by hand: how many unresolved matches the live database actually
-  holds, which decides whether the ten-match cap matters.
+  holds, which decides how long the Unresolved matches list is on first use.
 - Not confirmed by hand: whether an admin can reach a decided submission through
   any other tool.
 - Assumption: the sixteen-hour delay exists so that a match is not asked about

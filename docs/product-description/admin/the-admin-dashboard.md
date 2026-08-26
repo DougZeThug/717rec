@@ -126,7 +126,7 @@ In menu order, with the document that owns each:
 | Contact Inbox | Messages from the contact form — [`handle-requests.md`](handle-requests.md) |
 | Teams | Teams, divisions per team, logos, member approvals — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md) |
 | Divisions | Division names, display grouping, weights — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md) |
-| Pending | Matches completed with no winner — [`../scores/pending-scores.md`](../scores/pending-scores.md) |
+| Pending | Score reports awaiting review, and matches completed with no winner — [`../scores/pending-scores.md`](../scores/pending-scores.md) |
 | Hero | Home page hero cards and the Challonge fallback — [`site-settings.md`](site-settings.md) |
 | Themes | Which themes players may choose — [`site-settings.md`](site-settings.md) |
 | Blind Draw | Blind draw signups — [`run-the-playoffs.md`](run-the-playoffs.md) |
