@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { batchInvalidateQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
-import { approveMatchResult, markMatchAsTie } from '@/services/matches/MatchWriteService';
+import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
 import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
@@ -115,23 +115,25 @@ export function usePendingMatches() {
     },
   });
 
-  // Mutation for marking as tie — atomic & idempotent via RPC
+  // Mutation for confirming a tie. These matches already have no winner, so
+  // there is no result to write — confirming stamps the match so it leaves
+  // this queue.
   const tieMutation = useMutation({
     mutationFn: async (matchId: string) => {
-      await markMatchAsTie(matchId);
+      await confirmMatchTie(matchId);
     },
     onSuccess: () => {
       toast({
-        title: 'Match Marked as Tie',
-        description: 'Match has been successfully marked as a tie.',
+        title: 'Tie Confirmed',
+        description: 'The match is recorded as a tie and has left the list.',
       });
       batchInvalidateQueries(queryClient, ['matches', 'teams']);
     },
     onError: (error) => {
-      errorLog('Error marking as tie:', error);
+      errorLog('Error confirming tie:', error);
       toast({
         title: 'Error',
-        description: 'Failed to mark match as tie. Please try again.',
+        description: 'Failed to confirm the tie. Please try again.',
         variant: 'destructive',
       });
     },

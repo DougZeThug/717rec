@@ -98,11 +98,11 @@ attached to the report being disputed.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | **The only modifier that matters.** A visitor and a player cannot see any submission. An admin sees every pending one at `/admin`, in the Pending section, with the submitter's name, their team, the message, and Approve and Reject buttons. Being on the team in the match grants nothing extra. | Admin granted or revoked elsewhere does not change what is on screen until the profile is re-fetched. |
-| The record's state | A submission is pending, approved, or rejected. **Only pending ones are ever listed**, so approving or rejecting one makes it vanish from the only screen that shows it and it cannot be found again from inside the app. | An admin acting on a submission in another tab does not remove it from this one until it is re-fetched, and pressing Approve on an already-decided submission simply stamps it again. |
+| The user's role (visitor, player, admin) | **The only modifier that matters.** A visitor and a player cannot see any submission. An admin sees every pending one at `/admin`, in the Pending section, with the match and its two team names, the submitter's name, their team, the message, and Approve and Reject buttons. Being on the team in the match grants nothing extra. | Admin granted or revoked elsewhere does not change what is on screen until the profile is re-fetched. |
+| The record's state | A submission is pending, approved, or rejected. **Only pending ones are ever listed**, so approving or rejecting one makes it vanish from the only screen that shows it and it cannot be found again from inside the app. | An admin acting on a submission in another tab does not remove it from this one until it is re-fetched. Approving an already-recorded match writes the same result again without double-counting it. |
 | The season's state (active, archived, playoffs on) | No effect. Submissions carry a match, not a season. | No effect. |
 | Viewport | The admin review list is one card per submission at any width; the two buttons sit at the bottom right. | No effect. |
-| Keys the form honours | Tab reaches Reject then Approve on each card. Nothing is focused on arrival. | Enter or Space activates the focused button. There are no shortcuts and no confirmation step before either. |
+| Keys the form honours | Tab reaches Reject then Approve on each card. Nothing is focused on arrival. | Enter or Space activates the focused button. There are no shortcuts. Approve opens a dialog; Reject acts on the first press. |
 
 ## Cancel and interrupt
 
@@ -111,7 +111,7 @@ only interaction that exists.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel and no confirmation dialog on either button. | No effect. Neither Approve nor Reject can be undone or called back once pressed. |
+| Escape, or a Cancel button | Approve opens a dialog with a Cancel button, which closes it and discards the numbers typed. Reject has no Cancel and no confirmation. | No effect. Neither a confirmed Approve nor a Reject can be undone or called back once sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | The write still lands. The card was already removed from the list optimistically, so leaving looks identical to succeeding. |
 | Browser back or forward | Returns to the previous page. | Same as navigating away. |
 | Reload, or the tab closed | The list is fetched again from scratch every time the section is opened. | A sent decision still lands. The list after the reload is the truth. |
@@ -147,9 +147,10 @@ once and puts it back in its old position if the write fails.
 
 **Offline.** The list cannot load and no decision can be sent. Nothing is queued.
 
-**Toasts and notifications.** One toast per decision — "Score submission approved
-successfully." or the rejected equivalent. **Nobody outside the admin screen is
-told anything**: not the reporter, not either team.
+**Toasts and notifications.** One toast per decision — "Result Recorded — The
+match result is saved and the submission is approved." or "Score submission
+rejected successfully." **Nobody outside the admin screen is told anything**: not
+the reporter, not either team.
 
 **URL state.** None. A submission has no address, so an admin cannot send a
 colleague a link to the one they are arguing about.
@@ -159,10 +160,13 @@ colleague a link to the one they are arguing about.
 **Accessibility.** Both buttons have visible text as well as icons. A card
 disappearing when a decision is made is not announced; the toast carries it.
 
-**Side effects the user can notice.** **Approving a submission does not change the
-match.** It stamps the submission as approved and records who did it and when, and
-nothing else. Standings, records, and power scores do not move. The result still
-has to be recorded separately; see [`pending-scores.md`](pending-scores.md).
+**Side effects the user can notice.** **Approving records the result on the
+match.** The dialog offers the four results a best-of-three match can end in —
+each team 2-0 or 2-1 — then writes the chosen result, marks the match complete,
+and stamps the submission as approved, in that order. An impossible score such
+as 0-0 or 3-2 cannot be entered. Standings, team records, power scores and badges all
+move. If the match write fails, the submission stays pending and nothing is
+stamped, so the queue never clears on a stale match.
 
 ## Edge cases
 
@@ -177,11 +181,15 @@ has to be recorded separately; see [`pending-scores.md`](pending-scores.md).
 - **A decided submission cannot be found again.** The list asks only for pending
   score submissions, so an approved or rejected report leaves no trace an admin
   can revisit.
-- **There is no confirmation before Approve or Reject**, and no undo.
+- **Approve asks for the result before it writes.** A submission carries only the
+  reporter's free-text message, so the admin reads it in the dialog and picks one
+  of four fixed results. **Reject still has no confirmation**, and
+  neither has an undo.
 - **Two admins can decide the same submission**, and the last write wins with no
   warning.
 - **A submission survives its match being completed by another route**, and still
-  waits in the review list for a decision that no longer means anything.
+  waits in the review list. Approving it then overwrites the recorded result with
+  what the admin enters, reversing the old counters first.
 - **A submission is deleted with its match.** Deleting a match removes its reports.
 - **The Score Dispute subject on the contact form carries no match reference**, so a
   dispute sent that way arrives as free text with no link to what it is about.

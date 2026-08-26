@@ -37,7 +37,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 
 | ID | Title | Severity | Area | Decision needed | Issue |
 | --- | --- | --- | --- | --- | --- |
-| B-01 | Approving a score submission never records the result on the match | high | scores, admin | fix | — |
+| B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
 | B-02 | No season can be activated from the admin screens | high | admin | fix | — |
 | B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | fix | — |
@@ -45,7 +45,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | fix | — |
 | B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | fix | — |
 | B-08 | A failed profile read silently demotes an admin | high | foundations | fix | — |
-| B-09 | There is no way to resolve a tie | high | scores, admin | fix | — |
+| B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
 | B-10 | Two contact channels, neither aware of the other | high | help, admin | product call | — |
 | B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
 | B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
@@ -99,8 +99,21 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   and `markMatchAsTie` — exist and are unreachable; see [B-09](#b-09-there-is-no-way-to-resolve-a-tie).
 - **Severity:** `high`. The league's standings silently diverge from its results,
   and the admin has no way to notice.
-- **Decision needed:** `fix`. Approval should call `approveMatchResult` with the
-  submission's winner and game wins, in the same step.
+- **Decision needed:** `fix`. **Done.** Note the original proposal — call
+  `approveMatchResult` with "the submission's winner and game wins" — was not
+  possible: `score_submissions` has no winner or game-wins columns, and the
+  reporter's form is a free-text box, so there was no number to pass.
+  `approveMatchResult` was also the wrong function, because its SQL only acts on
+  an already-completed match with `winner_id IS NULL`.
+  **What was done instead:** Approve opens a dialog showing the match, the teams
+  and the reporter's message, and offers the four results a best-of-three match
+  can end in — reusing `SCORE_OPTIONS`, the same set the admin Scores tab uses, so
+  an impossible score such as 0-0 or 3-2 cannot be entered. Confirming writes the result through the existing
+  `useMatchSubmission` → `resubmit_match_result` path (which also sets
+  `iscompleted`), and only then stamps the submission approved. A failed write
+  leaves the submission pending. The submissions query now joins the match and
+  both team names, because the queue previously showed no way to tell which match
+  a report was for.
 - **Raised by:** [`scores/confirm-or-dispute-a-score.md`](scores/confirm-or-dispute-a-score.md#open-questions-and-verification),
   [`scores/pending-scores.md`](scores/pending-scores.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification).
@@ -295,7 +308,17 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   `PendingMatchesSection` → `ScoreSubmissionsList`), despite its name.
 - **Severity:** `high`. It is the missing half of [B-01](#b-01-approving-a-score-submission-never-records-the-result-on-the-match):
   the code that results a match exists and nothing calls it.
-- **Decision needed:** `fix`. Restoring this surface fixes B-01 at the same time.
+- **Decision needed:** `fix`. **Done.** The admin **Pending** tab now renders a
+  second section, **Unresolved matches**, backed by the existing
+  `usePendingMatches` hook. Each card offers the two winners and "It was a tie",
+  wired to `approveMatchResult` and `confirmMatchTie`. Note `markMatchAsTie` —
+  the function this entry named — could **not** serve the tie button: it returns
+  early when `winner_id` is null, which is true of every match in this queue, so
+  it would have reported success while changing nothing. Confirming a tie stamps
+  the match's `metadata` instead, and the queue skips stamped matches. Note this
+  did **not** fix
+  B-01 on its own, as expected here: a score submission is about a match that is
+  not yet completed, so it never enters this list. B-01 was fixed separately.
 - **Raised by:** [`scores/pending-scores.md`](scores/pending-scores.md#open-questions-and-verification),
   [`admin/the-admin-dashboard.md`](admin/the-admin-dashboard.md#open-questions-and-verification),
   [`admin/enter-scores-in-bulk.md`](admin/enter-scores-in-bulk.md#open-questions-and-verification).

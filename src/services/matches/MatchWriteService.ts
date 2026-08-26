@@ -3,6 +3,8 @@ import type { Database } from '@/integrations/supabase/types';
 import { BusinessLogicError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
+import { asMetadataObject, TIE_CONFIRMED_AT, TIE_CONFIRMED_BY } from './tieMetadata';
+
 /**
  * Service layer for match write operations
  * Abstracts Supabase mutations from presentation components
@@ -268,16 +270,37 @@ export const approveMatchResult = async (
 };
 
 /**
- * Atomically mark a match as a tie, reversing any previously applied stats.
- * Idempotent: if already a tie, returns false without double-subtracting.
+ * Record that an admin confirmed a completed match really was a tie.
+ *
+ * Such a match already has no winner, so there is no result to write and
+ * `mark_match_as_tie` would no-op. This stamps the match's metadata instead,
+ * which is what removes it from the unresolved queue. Existing metadata keys
+ * are merged, not replaced.
+ * @throws {DatabaseError} When the read or the write fails
  */
-export const markMatchAsTie = async (matchId: string): Promise<boolean> => {
-  const { data, error } = await supabase.rpc('mark_match_as_tie', {
-    p_match_id: matchId,
-  });
+export const confirmMatchTie = async (matchId: string): Promise<void> => {
+  // Neither read needs the other, so they run at the same time.
+  const [
+    {
+      data: { user },
+    },
+    { data: current, error: readError },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('matches').select('metadata').eq('id', matchId).single(),
+  ]);
 
-  if (error) handleDatabaseError(error, 'Failed to mark match as tie');
-  return data ?? false;
+  if (readError) handleDatabaseError(readError, 'Failed to load match metadata');
+
+  // updateMatch selects the row back, so a write blocked by RLS raises rather
+  // than silently succeeding.
+  await updateMatch(matchId, {
+    metadata: {
+      ...asMetadataObject(current?.metadata),
+      [TIE_CONFIRMED_AT]: new Date().toISOString(),
+      [TIE_CONFIRMED_BY]: user?.id ?? null,
+    },
+  });
 };
 
 /**

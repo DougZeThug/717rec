@@ -192,6 +192,25 @@ describe('fetchPendingMatches', () => {
     mockFrom.mockReturnValue(selectEqIsOrderChain({ data: null, error: pgError() }));
     await expect(fetchPendingMatches()).rejects.toThrow(DatabaseError);
   });
+
+  it('drops ties an admin already confirmed, and strips metadata', async () => {
+    mockFrom.mockReturnValue(
+      selectEqIsOrderChain({
+        data: [
+          { ...makeMatch({ id: 'still-open' }), metadata: null },
+          {
+            ...makeMatch({ id: 'settled' }),
+            metadata: { tie_confirmed_at: '2026-01-01T00:00:00Z' },
+          },
+        ],
+        error: null,
+      })
+    );
+    const result = await fetchPendingMatches();
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('still-open');
+    expect(result[0]).not.toHaveProperty('metadata');
+  });
 });
 
 // ─── fetchUncompletedMatches ──────────────────────────────────────────────────
