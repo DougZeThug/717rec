@@ -15,7 +15,7 @@ vi.mock('@/services/matches/MatchReadService', () => ({
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
   approveMatchResult: vi.fn().mockResolvedValue(true),
-  markMatchAsTie: vi.fn().mockResolvedValue(true),
+  confirmMatchTie: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -24,7 +24,7 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
-import { approveMatchResult, markMatchAsTie } from '@/services/matches/MatchWriteService';
+import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
 
 // Create a wrapper for React Query
 const createWrapper = () => {
@@ -54,7 +54,7 @@ describe('usePendingMatches', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(approveMatchResult).mockResolvedValue(true);
-    vi.mocked(markMatchAsTie).mockResolvedValue(true);
+    vi.mocked(confirmMatchTie).mockResolvedValue(undefined);
   });
 
   it('should call approveMatchResult with correct parameters for team 1 winner', async () => {
@@ -117,7 +117,7 @@ describe('usePendingMatches', () => {
     expect(approveMatchResult).toHaveBeenCalled();
   });
 
-  it('should call markMatchAsTie with match id', async () => {
+  it('should call confirmMatchTie with match id', async () => {
     const { result } = renderHook(() => usePendingMatches(), {
       wrapper: createWrapper(),
     });
@@ -128,6 +128,6 @@ describe('usePendingMatches', () => {
       await result.current.handleMarkAsTie('match-1');
     });
 
-    expect(markMatchAsTie).toHaveBeenCalledWith('match-1');
+    expect(confirmMatchTie).toHaveBeenCalledWith('match-1');
   });
 });

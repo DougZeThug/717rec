@@ -12,12 +12,8 @@ import {
 } from '@/components/ui/responsive-dialog';
 import type { ApproveSubmissionInput, ScoreSubmission } from '@/hooks/useScoreSubmissions';
 
-import {
-  GameWinsFields,
-  MatchSummary,
-  SubmissionMessage,
-  WinnerPicker,
-} from './ApproveSubmissionDialogParts';
+import type { ScoreOption } from '../mass-score-entry/components/types';
+import { MatchSummary, ResultPicker, SubmissionMessage } from './ApproveSubmissionDialogParts';
 
 interface ApproveSubmissionDialogProps {
   submission: ScoreSubmission | null;
@@ -27,21 +23,15 @@ interface ApproveSubmissionDialogProps {
   isSubmitting?: boolean;
 }
 
-/** Read a game-wins input, treating blank or bad text as 0. */
-const parseGameWins = (value: string): number => {
-  const parsed = Number.parseInt(value, 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
-};
-
 /**
  * Ask the admin for the result a score report describes, then approve.
  *
  * A submission carries only the reporter's free-text message, so the admin
- * reads it here and enters the real numbers. Confirming records the result
- * on the match and approves the submission together.
+ * reads it here and picks the real result. Confirming records the result on
+ * the match and approves the submission together.
  *
- * The form is drawn by the small components in `ApproveSubmissionDialogParts`.
- * All state and all validation stay here.
+ * The result comes from the same four best-of-three options the admin Scores
+ * tab offers, so an impossible score cannot be submitted.
  */
 const ApproveSubmissionDialog = ({
   submission,
@@ -52,31 +42,22 @@ const ApproveSubmissionDialog = ({
 }: ApproveSubmissionDialogProps) => {
   // The parent remounts this dialog per submission (via `key`), so the form
   // always starts empty for a new report.
-  const [winner, setWinner] = useState<1 | 2 | null>(null);
-  const [team1GameWins, setTeam1GameWins] = useState('0');
-  const [team2GameWins, setTeam2GameWins] = useState('0');
+  const [result, setResult] = useState<ScoreOption | null>(null);
 
   if (!submission) return null;
 
   const team1Name = submission.match?.team1?.name ?? 'Team 1';
   const team2Name = submission.match?.team2?.name ?? 'Team 2';
-
-  const team1Wins = parseGameWins(team1GameWins);
-  const team2Wins = parseGameWins(team2GameWins);
-  const negativeWins = team1Wins < 0 || team2Wins < 0;
-  // The winner cannot have taken fewer games than the loser.
-  const contradictsWinner =
-    winner !== null && (winner === 1 ? team1Wins < team2Wins : team2Wins < team1Wins);
-  const canConfirm = winner !== null && !negativeWins && !contradictsWinner && !isSubmitting;
+  const canConfirm = result !== null && !isSubmitting;
 
   const handleConfirm = () => {
-    if (winner === null || !canConfirm) return;
+    if (result === null || isSubmitting) return;
     onConfirm({
       submissionId: submission.id,
       matchId: submission.match_id,
-      winner,
-      team1GameWins: team1Wins,
-      team2GameWins: team2Wins,
+      winner: result.team1Score === 1 ? 1 : 2,
+      team1GameWins: result.team1GameWins,
+      team2GameWins: result.team2GameWins,
     });
   };
 
@@ -104,30 +85,12 @@ const ApproveSubmissionDialog = ({
             message={submission.message}
           />
 
-          <WinnerPicker
+          <ResultPicker
             team1Name={team1Name}
             team2Name={team2Name}
-            winner={winner}
-            onPick={setWinner}
+            selectedLabel={result?.label ?? null}
+            onSelect={setResult}
           />
-
-          <GameWinsFields
-            team1Name={team1Name}
-            team2Name={team2Name}
-            team1GameWins={team1GameWins}
-            team2GameWins={team2GameWins}
-            onTeam1Change={setTeam1GameWins}
-            onTeam2Change={setTeam2GameWins}
-          />
-
-          {negativeWins && (
-            <p className="text-sm text-destructive">Games won cannot be a negative number.</p>
-          )}
-          {contradictsWinner && (
-            <p className="text-sm text-destructive">
-              The winner cannot have fewer games won than the other team.
-            </p>
-          )}
         </div>
 
         <ResponsiveDialogFooter>

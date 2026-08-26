@@ -6,11 +6,13 @@ import { DatabaseError, NotFoundError } from '@/types/errors';
 
 const mockFrom = vi.fn();
 const mockRpc = vi.fn();
+const mockGetUser = vi.fn(() => Promise.resolve({ data: { user: { id: 'admin-1' } } }));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
     rpc: (...args: unknown[]) => mockRpc(...args),
+    auth: { getUser: () => mockGetUser() },
   },
 }));
 
@@ -27,6 +29,7 @@ vi.mock('@/utils/logger', () => ({
 // Import after mocks
 import {
   batchCreateMatches,
+  confirmMatchTie,
   fetchActiveSeason,
   MatchCreateData,
   MatchNonResultUpdate,
@@ -281,5 +284,89 @@ describe('reopenMatchResult', () => {
     });
 
     await expect(reopenMatchResult(MATCH_ID)).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── confirmMatchTie ──────────────────────────────────────────────────────────
+
+describe('confirmMatchTie', () => {
+  const MATCH_ID = '55555555-5555-4555-8555-555555555555';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+  });
+
+  /** Mock the read of current metadata, then the update, capturing the payload. */
+  const mockReadThenUpdate = (existing: unknown, captured: { payload?: MatchNonResultUpdate }) => {
+    let call = 0;
+    mockFrom.mockImplementation(() => {
+      call += 1;
+      if (call === 1) {
+        return {
+          select: () => ({
+            eq: () => ({
+              single: () => Promise.resolve({ data: { metadata: existing }, error: null }),
+            }),
+          }),
+        };
+      }
+      return {
+        update: (payload: MatchNonResultUpdate) => {
+          captured.payload = payload;
+          return {
+            eq: () => ({
+              select: () => ({
+                single: () => Promise.resolve({ data: { id: MATCH_ID }, error: null }),
+              }),
+            }),
+          };
+        },
+      };
+    });
+  };
+
+  it('stamps the tie and records who confirmed it', async () => {
+    const captured: { payload?: MatchNonResultUpdate } = {};
+    mockReadThenUpdate(null, captured);
+
+    await confirmMatchTie(MATCH_ID);
+
+    const metadata = captured.payload?.metadata as Record<string, unknown>;
+    expect(metadata.tie_confirmed_at).toEqual(expect.any(String));
+    expect(metadata.tie_confirmed_by).toBe('admin-1');
+  });
+
+  it('keeps metadata another feature already wrote', async () => {
+    const captured: { payload?: MatchNonResultUpdate } = {};
+    mockReadThenUpdate({ autoScheduled: true }, captured);
+
+    await confirmMatchTie(MATCH_ID);
+
+    const metadata = captured.payload?.metadata as Record<string, unknown>;
+    expect(metadata.autoScheduled).toBe(true);
+    expect(metadata.tie_confirmed_at).toEqual(expect.any(String));
+  });
+
+  it('throws DatabaseError when the match cannot be read', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          single: () =>
+            Promise.resolve({
+              data: null,
+              error: {
+                message: 'not found',
+                code: 'PGRST116',
+                details: null,
+                hint: null,
+                name: 'PostgrestError',
+              },
+            }),
+        }),
+      }),
+    });
+
+    await expect(confirmMatchTie(MATCH_ID)).rejects.toThrow(DatabaseError);
   });
 });

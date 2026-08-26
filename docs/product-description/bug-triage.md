@@ -106,8 +106,9 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   `approveMatchResult` was also the wrong function, because its SQL only acts on
   an already-completed match with `winner_id IS NULL`.
   **What was done instead:** Approve opens a dialog showing the match, the teams
-  and the reporter's message, and asks the admin for the winner and the games each
-  team won. Confirming writes the result through the existing
+  and the reporter's message, and offers the four results a best-of-three match
+  can end in — reusing `SCORE_OPTIONS`, the same set the admin Scores tab uses, so
+  an impossible score such as 0-0 or 3-2 cannot be entered. Confirming writes the result through the existing
   `useMatchSubmission` → `resubmit_match_result` path (which also sets
   `iscompleted`), and only then stamps the submission approved. A failed write
   leaves the submission pending. The submissions query now joins the match and
@@ -310,7 +311,12 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 - **Decision needed:** `fix`. **Done.** The admin **Pending** tab now renders a
   second section, **Unresolved matches**, backed by the existing
   `usePendingMatches` hook. Each card offers the two winners and "It was a tie",
-  wired to `approveMatchResult` and `markMatchAsTie`. Note this did **not** fix
+  wired to `approveMatchResult` and `confirmMatchTie`. Note `markMatchAsTie` —
+  the function this entry named — could **not** serve the tie button: it returns
+  early when `winner_id` is null, which is true of every match in this queue, so
+  it would have reported success while changing nothing. Confirming a tie stamps
+  the match's `metadata` instead, and the queue skips stamped matches. Note this
+  did **not** fix
   B-01 on its own, as expected here: a score submission is about a match that is
   not yet completed, so it never enters this list. B-01 was fixed separately.
 - **Raised by:** [`scores/pending-scores.md`](scores/pending-scores.md#open-questions-and-verification),

@@ -35,8 +35,8 @@ lists.
 **Score submissions** comes first. Under the line "Review score reports sent in by
 users. Approving asks you for the result." is one card per report: which match it
 is about, who sent it, which team they said they were on, what they wrote, when
-they sent it, and a Reject and an Approve button. Approve opens a dialog that
-asks for the winner and the games each team won. When there is nothing to review
+they sent it, and a Reject and an Approve button. Approve opens a dialog offering
+the four results a best-of-three match can end in. When there is nothing to review
 the section says "No pending score submissions to review."
 
 **Unresolved matches** follows, and is drawn only when the list is not empty.
@@ -80,8 +80,10 @@ section is opened. There is no filter, no search, and no grouping by match.
 
 **The tie list** asks for every match marked completed that still has no winner,
 oldest first, across every season, and re-fetches with the rest of the tab. The
-two decisions an admin makes on one — award it to a side, or record it as a tie —
-each write through an atomic, idempotent database function.
+two decisions an admin makes on one differ in kind. Awarding it to a side writes
+the result through an atomic, idempotent database function. Confirming a tie
+writes no result at all — the match already has no winner, so it *is* the tie —
+and instead stamps the match as settled so it drops out of this list.
 
 **Nothing is written by looking at any of the three.**
 
@@ -216,9 +218,8 @@ so numbers elsewhere move some time afterwards.
   zero while four matches are waiting.
 - **A tie is admin-only.** A match completed with no winner appears in
   **Unresolved matches** in the admin Pending tab, and on no player-facing card.
-- **Approving a report records the result.** The admin enters the winner and the
-  games each team won, the match is marked complete, and it leaves the Pending
-  Scores card.
+- **Approving a report records the result.** The admin picks one of four fixed
+  results, the match is marked complete, and it leaves the Pending Scores card.
 - **The sixteen-hour delay means a match played this evening is not on the card
   until the following afternoon.**
 
@@ -228,9 +229,9 @@ so numbers elsewhere move some time afterwards.
   **Unresolved matches** in the admin Pending tab, and an admin resolves one by
   naming a winner or recording the tie.
 - **Fixed (was B-01): approving a report now records the result.** Approve opens a
-  dialog asking for the winner and the games each team won, writes that result to
-  the match, and only then stamps the submission. A failed write leaves the
-  submission pending.
+  dialog offering the four results a best-of-three match can end in, writes the
+  chosen one to the match, and only then stamps the submission. A failed write
+  leaves the submission pending.
 - **The Pending Scores card fails silently.** A failed fetch shows a toast that is
   raised from the home page's own copy of the query, but the card itself simply
   does not appear, so the reader has no idea a list is missing.

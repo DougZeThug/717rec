@@ -161,9 +161,10 @@ colleague a link to the one they are arguing about.
 disappearing when a decision is made is not announced; the toast carries it.
 
 **Side effects the user can notice.** **Approving records the result on the
-match.** The dialog asks the admin for the winner and the games each team won,
-then writes that result, marks the match complete, and stamps the submission as
-approved — in that order. Standings, team records, power scores and badges all
+match.** The dialog offers the four results a best-of-three match can end in —
+each team 2-0 or 2-1 — then writes the chosen result, marks the match complete,
+and stamps the submission as approved, in that order. An impossible score such
+as 0-0 or 3-2 cannot be entered. Standings, team records, power scores and badges all
 move. If the match write fails, the submission stays pending and nothing is
 stamped, so the queue never clears on a stale match.
 
@@ -181,8 +182,8 @@ stamped, so the queue never clears on a stale match.
   score submissions, so an approved or rejected report leaves no trace an admin
   can revisit.
 - **Approve asks for the result before it writes.** A submission carries only the
-  reporter's free-text message, so the admin reads it in the dialog and enters the
-  winner and the games each team won. **Reject still has no confirmation**, and
+  reporter's free-text message, so the admin reads it in the dialog and picks one
+  of four fixed results. **Reject still has no confirmation**, and
   neither has an undo.
 - **Two admins can decide the same submission**, and the last write wins with no
   warning.

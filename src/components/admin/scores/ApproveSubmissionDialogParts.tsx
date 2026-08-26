@@ -2,9 +2,9 @@ import { MessageSquare } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { formatWithPattern } from '@/utils/formatDateSafe';
+
+import { SCORE_OPTIONS, type ScoreOption } from '../mass-score-entry/components/types';
 
 /**
  * The presentational blocks of `ApproveSubmissionDialog`.
@@ -54,82 +54,52 @@ export const SubmissionMessage = ({ submitterName, message }: SubmissionMessageP
   </div>
 );
 
-interface WinnerPickerProps {
+interface ResultPickerProps {
   team1Name: string;
   team2Name: string;
-  winner: 1 | 2 | null;
-  onPick: (winner: 1 | 2) => void;
+  selectedLabel: string | null;
+  onSelect: (option: ScoreOption) => void;
 }
 
-/** Which side won the match. */
-export const WinnerPicker = ({ team1Name, team2Name, winner, onPick }: WinnerPickerProps) => (
-  <fieldset className="space-y-2">
-    <legend className="text-sm font-medium mb-2">
-      Who won? <span className="text-destructive">*</span>
-    </legend>
-    <div className="grid grid-cols-2 gap-2">
-      <Button
-        type="button"
-        variant={winner === 1 ? 'default' : 'outline'}
-        aria-pressed={winner === 1}
-        onClick={() => onPick(1)}
-        className="h-auto py-2 whitespace-normal"
-      >
-        {team1Name}
-      </Button>
-      <Button
-        type="button"
-        variant={winner === 2 ? 'default' : 'outline'}
-        aria-pressed={winner === 2}
-        onClick={() => onPick(2)}
-        className="h-auto py-2 whitespace-normal"
-      >
-        {team2Name}
-      </Button>
-    </div>
-  </fieldset>
-);
+/** Name the winner of a score option from the two team names. */
+const winnerNameFor = (option: ScoreOption, team1Name: string, team2Name: string) =>
+  option.team1Score === 1 ? team1Name : team2Name;
 
-interface GameWinsFieldsProps {
-  team1Name: string;
-  team2Name: string;
-  team1GameWins: string;
-  team2GameWins: string;
-  onTeam1Change: (value: string) => void;
-  onTeam2Change: (value: string) => void;
-}
-
-/** The games each team took in the series. */
-export const GameWinsFields = ({
+/**
+ * The four results a best-of-three match can end in.
+ *
+ * Reuses SCORE_OPTIONS, the same set the admin Scores tab offers, so an
+ * impossible result such as 0-0 or 3-2 cannot be entered at all. Each option
+ * is labelled from the winner's side, so "Owls 2-1" reads the way an admin
+ * says it.
+ */
+export const ResultPicker = ({
   team1Name,
   team2Name,
-  team1GameWins,
-  team2GameWins,
-  onTeam1Change,
-  onTeam2Change,
-}: GameWinsFieldsProps) => (
-  <div className="grid grid-cols-2 gap-3">
-    <div className="space-y-1">
-      <Label htmlFor="team1-game-wins">{team1Name} games won</Label>
-      <Input
-        id="team1-game-wins"
-        type="number"
-        min={0}
-        inputMode="numeric"
-        value={team1GameWins}
-        onChange={(event) => onTeam1Change(event.target.value)}
-      />
+  selectedLabel,
+  onSelect,
+}: ResultPickerProps) => (
+  <fieldset className="space-y-2">
+    <legend className="text-sm font-medium mb-2">
+      What was the result? <span className="text-destructive">*</span>
+    </legend>
+    <div className="grid grid-cols-2 gap-2">
+      {SCORE_OPTIONS.map((option) => {
+        const winnerGames = Math.max(option.team1GameWins, option.team2GameWins);
+        const loserGames = Math.min(option.team1GameWins, option.team2GameWins);
+        return (
+          <Button
+            key={option.label}
+            type="button"
+            variant={selectedLabel === option.label ? 'default' : 'outline'}
+            aria-pressed={selectedLabel === option.label}
+            onClick={() => onSelect(option)}
+            className="h-auto py-2 whitespace-normal"
+          >
+            {winnerNameFor(option, team1Name, team2Name)} {winnerGames}–{loserGames}
+          </Button>
+        );
+      })}
     </div>
-    <div className="space-y-1">
-      <Label htmlFor="team2-game-wins">{team2Name} games won</Label>
-      <Input
-        id="team2-game-wins"
-        type="number"
-        min={0}
-        inputMode="numeric"
-        value={team2GameWins}
-        onChange={(event) => onTeam2Change(event.target.value)}
-      />
-    </div>
-  </div>
+  </fieldset>
 );

@@ -66,13 +66,21 @@ describe('ApproveSubmissionDialog', () => {
     expect(screen.getByText('Owls beat Hawks 2-1')).toBeInTheDocument();
   });
 
-  it('keeps confirm disabled until a winner is picked', async () => {
+  it('keeps confirm disabled until a result is picked', async () => {
     const user = userEvent.setup();
     renderDialog({});
     expect(confirmButton()).toBeDisabled();
 
-    await user.click(screen.getByRole('button', { name: 'Owls' }));
+    await user.click(screen.getByRole('button', { name: 'Owls 2\u20130' }));
     expect(confirmButton()).toBeEnabled();
+  });
+
+  it('offers only the four possible best-of-three results', () => {
+    renderDialog({});
+    // An impossible result such as 0-0 or 3-2 cannot be entered at all.
+    ['Owls 2\u20130', 'Owls 2\u20131', 'Hawks 2\u20131', 'Hawks 2\u20130'].forEach((label) => {
+      expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+    });
   });
 
   it('sends the winner and the games each team won', async () => {
@@ -80,13 +88,7 @@ describe('ApproveSubmissionDialog', () => {
     const onConfirm = vi.fn();
     renderDialog({ onConfirm });
 
-    await user.click(screen.getByRole('button', { name: 'Owls' }));
-    const team1Input = screen.getByLabelText('Owls games won');
-    const team2Input = screen.getByLabelText('Hawks games won');
-    await user.clear(team1Input);
-    await user.type(team1Input, '2');
-    await user.clear(team2Input);
-    await user.type(team2Input, '1');
+    await user.click(screen.getByRole('button', { name: 'Owls 2\u20131' }));
     await user.click(confirmButton());
 
     expect(onConfirm).toHaveBeenCalledWith({
@@ -98,21 +100,17 @@ describe('ApproveSubmissionDialog', () => {
     });
   });
 
-  it('blocks a result where the winner took fewer games', async () => {
+  it('sends team 2 as the winner when team 2 took the match', async () => {
     const user = userEvent.setup();
     const onConfirm = vi.fn();
     renderDialog({ onConfirm });
 
-    await user.click(screen.getByRole('button', { name: 'Owls' }));
-    const team2Input = screen.getByLabelText('Hawks games won');
-    await user.clear(team2Input);
-    await user.type(team2Input, '3');
+    await user.click(screen.getByRole('button', { name: 'Hawks 2\u20131' }));
+    await user.click(confirmButton());
 
-    expect(
-      screen.getByText('The winner cannot have fewer games won than the other team.')
-    ).toBeInTheDocument();
-    expect(confirmButton()).toBeDisabled();
-    expect(onConfirm).not.toHaveBeenCalled();
+    expect(onConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({ winner: 2, team1GameWins: 1, team2GameWins: 2 })
+    );
   });
 
   it('falls back to generic team names when the match is missing', () => {

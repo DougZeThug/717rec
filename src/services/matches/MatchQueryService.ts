@@ -3,6 +3,8 @@ import type { Tables } from '@/integrations/supabase/types';
 import { fetchAllPages } from '@/services/shared/pagination';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
+import { isConfirmedTie } from './tieMetadata';
+
 /**
  * Service layer for core match query operations
  */
@@ -74,21 +76,27 @@ export const fetchMatchesWithTeams = (
 };
 
 /**
- * Fetch pending matches (completed but no winner = ties)
+ * Fetch pending matches (completed but no winner) awaiting an admin decision.
+ *
+ * Ties an admin has already confirmed are stamped in `metadata` and drop out
+ * here, so a resolved tie does not come back every time the queue reloads.
  * @throws {DatabaseError} When database operations fail
  */
 export const fetchPendingMatches = async (): Promise<MatchListRow[]> => {
   const { data, error } = await supabase
     .from('matches')
     .select(
-      'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at'
+      'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at, metadata'
     )
     .eq('iscompleted', true)
     .is('winner_id', null)
     .order('date');
 
   if (error) handleDatabaseError(error, 'Failed to fetch pending matches');
-  return data || [];
+
+  return (data ?? [])
+    .filter((row) => !isConfirmedTie(row.metadata))
+    .map(({ metadata: _metadata, ...match }) => match);
 };
 
 /**
@@ -163,7 +171,7 @@ export const fetchMatchTimeslots = async (formattedDate: string): Promise<MatchT
  * Match context joined onto a score submission so an admin can see which
  * match and which teams a report belongs to before approving it.
  */
-export interface ScoreSubmissionMatch {
+interface ScoreSubmissionMatch {
   id: string;
   date: string | null;
   location: string | null;
