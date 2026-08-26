@@ -279,15 +279,16 @@ export const approveMatchResult = async (
  * @throws {DatabaseError} When the read or the write fails
  */
 export const confirmMatchTie = async (matchId: string): Promise<void> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: current, error: readError } = await supabase
-    .from('matches')
-    .select('metadata')
-    .eq('id', matchId)
-    .single();
+  // Neither read needs the other, so they run at the same time.
+  const [
+    {
+      data: { user },
+    },
+    { data: current, error: readError },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from('matches').select('metadata').eq('id', matchId).single(),
+  ]);
 
   if (readError) handleDatabaseError(readError, 'Failed to load match metadata');
 

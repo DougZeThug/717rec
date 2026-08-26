@@ -94,9 +94,14 @@ export const fetchPendingMatches = async (): Promise<MatchListRow[]> => {
 
   if (error) handleDatabaseError(error, 'Failed to fetch pending matches');
 
-  return (data ?? [])
-    .filter((row) => !isConfirmedTie(row.metadata))
-    .map(({ metadata: _metadata, ...match }) => match);
+  // One pass: skip settled ties and drop the metadata column as we go.
+  const pending: MatchListRow[] = [];
+  for (const row of data ?? []) {
+    if (isConfirmedTie(row.metadata)) continue;
+    const { metadata: _metadata, ...match } = row;
+    pending.push(match);
+  }
+  return pending;
 };
 
 /**
