@@ -55,7 +55,7 @@ describe('getMatchHeadToHead', () => {
         losses: 1,
         game_wins: 5,
         game_losses: 3,
-        win_pct: 0.667,
+        win_pct: 66.7,
         last_played_at: null,
       },
     ]);
@@ -94,7 +94,7 @@ describe('getMatchHeadToHead', () => {
         losses: 1,
         game_wins: 7,
         game_losses: 3,
-        win_pct: 0.75,
+        win_pct: 75,
         last_played_at: null,
       },
     ]);
