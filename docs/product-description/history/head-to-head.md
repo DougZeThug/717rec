@@ -194,11 +194,12 @@ notification results from anything on this surface.
 
 ## Edge cases
 
-- **The W and L badges in the details dialog are wrong.** The dialog decides
-  whether a match was a win by comparing the team's identifier against a team
-  *name*, which never matches, so it always ends up marking the match a win when
-  the second-named team won. Half of every team's match list is therefore
-  mislabelled. **May be worth treating as a bug rather than documenting.**
+- **The details dialog badges each match W, L or T.** A match completed with no
+  winner reads **T**. The team page's last-match line still has no third state
+  and reads a tie as **L**; see [`../teams/team-details.md`](../teams/team-details.md#edge-cases).
+  This bullet previously reported the W and L badges as inverted whenever the
+  team was named first in a fixture. That was real, and is fixed — see B-38 in
+  [`../bug-triage.md`](../bug-triage.md).
 - **View Details looks unresponsive.** The dialog renders nothing until its data
   arrives, so the first press produces no visible change. The dialog's own
   "Loading matches..." state can only be reached after it is already open.

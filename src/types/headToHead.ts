@@ -34,7 +34,8 @@ export interface OpponentHistory {
     team2_score: number;
     team1_game_wins: number;
     team2_game_wins: number;
-    winner_name: string;
+    /** Null when the match completed with no winner (a tie). */
+    winner_name: string | null;
     location?: string;
   }>;
   summary: HeadToHeadRecord;

@@ -12,7 +12,7 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **37 entries**: 12 high, 19 medium, and 6 low.
+merging by root cause they come to **38 entries**: 12 high, 20 medium, and 6 low.
 
 Two clusters account for most of the high ones.
 
@@ -69,6 +69,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-34 | Four standings columns silently sort by power score instead | medium | stats | fix | — |
 | B-35 | A stale fourth career power-score formula decides one badge | medium | stats | fix | — |
 | B-36 | Two grades on the team report card are not real measurements | medium | stats | fix | — |
+| B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | product call | — |
 | B-27 | Several actions raise two success toasts, and the second destroys the first | low | admin, teams | fix | — |
 | B-28 | Message timestamps show a clock time with no date | low | message-board | fix | — |
@@ -856,6 +857,43 @@ finding read a superseded migration.
 - **Severity:** `medium`. It presents a placeholder as a result.
 - **Decision needed:** `fix`. Compute them, or show them as unavailable.
 - **Raised by:** [`stats/team-and-player-stats.md`](stats/team-and-player-stats.md#open-questions-and-verification).
+
+### B-38: The head-to-head dialog shows the wrong W/L badge on half of every team's matches
+
+- **Where the user meets it:** a team's page. Press an opponent row in the
+  head-to-head table to open the **Head-to-Head vs …** dialog, then read the W
+  and L badges down the *Recent Matches* list.
+- **What happens / what was expected:** the badge marks the match won whenever
+  the **second-named** team won, no matter whose page it is. So on every match
+  where the viewing team happens to be named first, a win reads **L** and a loss
+  reads **W**. A match completed with no winner also reads **L**. Expected: the
+  badge reflects the viewing team's own result, and a tie is not called a loss.
+- **Reproduce:** 1. Open a team page and expand Head-to-Head. 2. Press any
+  opponent row. 3. Count the **W** badges in *Recent Matches* and compare with
+  the **Wins** card at the top of the same dialog. They disagree whenever the
+  team appears first in a fixture.
+- **Why (from the code):** `OpponentHistoryModal.tsx` decided the result with
+  `match.winner_name === (teamId === match.team1_name ? match.team1_name :
+  match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
+  that comparison is never true and the ternary always yielded
+  `match.team2_name`. The rows returned by `get_opponent_match_history`
+  (`supabase/migrations/20250906000458_*.sql:2-14`) carry names only, no ids, and
+  its `winner_name` is `NULL` for a match with no winner. No test covered the
+  badge, and the one fixture in `OpponentHistoryModal.test.tsx` was a loss that
+  the old code rendered as a win, so nothing failed.
+- **Severity:** `medium`. It is a wrong result presented as fact, but the same
+  dialog shows the correct W–L totals directly above it, so a reader has a way to
+  notice.
+- **Decision needed:** `fix`. **Done.** The result is now read off the opponent
+  (`winner_name === opponentName` is a loss, `NULL` is a tie, anything else is a
+  win), which holds whichever side of the fixture the viewing team is on, and
+  needed no migration. `OpponentHistory.winner_name` is now typed
+  `string | null` to match what the function actually returns, and five tests
+  cover both slots and the tie.
+- **Status:** confirmed by test. The three failing cases — team named first and
+  winning, team named first and losing, and a tie — were shown red against the
+  old code before the fix landed.
+- **Raised by:** [`history/head-to-head.md`](history/head-to-head.md#edge-cases).
 
 ---
 

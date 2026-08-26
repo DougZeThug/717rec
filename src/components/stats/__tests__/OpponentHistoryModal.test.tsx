@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { OpponentHistory } from '@/types/headToHead';
+
 import { OpponentHistoryModal } from '../OpponentHistoryModal';
 
 const mockUseOpponentHistory = vi.fn();
@@ -19,7 +21,7 @@ const summary = {
   game_losses: 4,
 };
 
-const match = {
+const match: OpponentHistory['matches'][number] = {
   id: 'm1',
   team1_name: 'My Team',
   team2_name: 'Rivals',
@@ -94,5 +96,42 @@ describe('OpponentHistoryModal', () => {
     expect(screen.getByText('1 - 2')).toBeInTheDocument();
     expect(screen.getByText('Games: 1 - 2')).toBeInTheDocument();
     expect(screen.getByText('Court 3')).toBeInTheDocument();
+  });
+
+  describe('result badge', () => {
+    const renderWithMatch = (overrides: Partial<typeof match>) => {
+      mockUseOpponentHistory.mockReturnValue({
+        data: { summary, matches: [{ ...match, ...overrides }] },
+        isLoading: false,
+      });
+      renderModal();
+    };
+
+    // The viewing team is named first. Its own result must drive the badge,
+    // whichever side of the fixture it sits on.
+    it('shows L when the team is named first and the opponent won', () => {
+      renderWithMatch({ team1_name: 'My Team', team2_name: 'Rivals', winner_name: 'Rivals' });
+      expect(screen.getByText('L')).toBeInTheDocument();
+    });
+
+    it('shows W when the team is named first and the team won', () => {
+      renderWithMatch({ team1_name: 'My Team', team2_name: 'Rivals', winner_name: 'My Team' });
+      expect(screen.getByText('W')).toBeInTheDocument();
+    });
+
+    it('shows W when the team is named second and the team won', () => {
+      renderWithMatch({ team1_name: 'Rivals', team2_name: 'My Team', winner_name: 'My Team' });
+      expect(screen.getByText('W')).toBeInTheDocument();
+    });
+
+    it('shows L when the team is named second and the opponent won', () => {
+      renderWithMatch({ team1_name: 'Rivals', team2_name: 'My Team', winner_name: 'Rivals' });
+      expect(screen.getByText('L')).toBeInTheDocument();
+    });
+
+    it('shows T for a completed match with no winner', () => {
+      renderWithMatch({ winner_name: null });
+      expect(screen.getByText('T')).toBeInTheDocument();
+    });
   });
 });
