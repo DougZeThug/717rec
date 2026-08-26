@@ -18,6 +18,7 @@ export {
   fetchSeasonOpponentHistory,
   haveTeamsPlayedBefore,
 } from './MatchHistoryService';
+export type { ScoreSubmissionMatch, ScoreSubmissionWithMatch } from './MatchQueryService';
 export {
   fetchMatchesWithTeams,
   fetchMatchTeamIds,

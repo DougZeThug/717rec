@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 
+import ApproveSubmissionDialog from '@/components/admin/scores/ApproveSubmissionDialog';
 import ScoreSubmissionsList from '@/components/admin/scores/ScoreSubmissionsList';
 import { LoadingState } from '@/components/ui/loading-state';
-import { useScoreSubmissions } from '@/hooks/useScoreSubmissions';
+import { ScoreSubmission, useScoreSubmissions } from '@/hooks/useScoreSubmissions';
 
 const PendingMatchesSection = () => {
-  const { submissions, isLoading, handleApproveSubmission, handleRejectSubmission } =
+  const { submissions, isLoading, isApproving, handleApproveSubmission, handleRejectSubmission } =
     useScoreSubmissions();
+  // The submission the admin is entering a result for, if any.
+  const [submissionToApprove, setSubmissionToApprove] = useState<ScoreSubmission | null>(null);
 
   if (isLoading) {
     return <LoadingState variant="section" message="Loading submissions..." />;
@@ -20,8 +23,21 @@ const PendingMatchesSection = () => {
 
       <ScoreSubmissionsList
         submissions={submissions}
-        onApprove={handleApproveSubmission}
+        onApprove={setSubmissionToApprove}
         onReject={handleRejectSubmission}
+      />
+
+      <ApproveSubmissionDialog
+        // Remount per submission so the form never carries the last one's numbers.
+        key={submissionToApprove?.id ?? 'none'}
+        submission={submissionToApprove}
+        open={submissionToApprove !== null}
+        onClose={() => setSubmissionToApprove(null)}
+        onConfirm={(input) => {
+          handleApproveSubmission(input);
+          setSubmissionToApprove(null);
+        }}
+        isSubmitting={isApproving}
       />
     </div>
   );
