@@ -29,6 +29,14 @@ vi.mock('@/services/admin/DriftService', () => ({
   },
 }));
 
+// Same for <UnsavedLiveMatchesCard/>, which checks for decided-but-unsaved
+// live matches in the background.
+vi.mock('@/services/admin/UnsavedLiveMatchesService', () => ({
+  UnsavedLiveMatchesService: {
+    fetchUnsavedLiveMatches: vi.fn().mockResolvedValue([]),
+  },
+}));
+
 import LeagueNightStatusTab from '../LeagueNightStatusTab';
 import { OPS_LINKS } from '../opsLinks';
 
@@ -116,6 +124,13 @@ describe('LeagueNightStatusTab', () => {
     fireEvent.click(screen.getByRole('button', { name: /score reports.*open section/i }));
     expect(sessionStorage.getItem('adminActiveTab')).toBe('pending-matches');
     expect(window.location.reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the unrecorded-live-matches detector', async () => {
+    renderTab();
+    expect(
+      await screen.findByRole('heading', { name: /unrecorded live matches/i })
+    ).toBeInTheDocument();
   });
 
   it('quick actions open external links safely', () => {

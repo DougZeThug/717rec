@@ -27,7 +27,8 @@ for everyone.
 
 They open **League Night**. Two cards report the live connection and the last
 power score snapshot; three tiles count what is waiting; a chart shows thirty
-days of traffic; a card says whether every team's record matches its match
+days of traffic; one card lists matches that were played on live scoring and
+never saved; another says whether every team's record matches its match
 history.
 
 ## The interaction, event by event
@@ -56,9 +57,10 @@ Create your first card to get started."
 
 **Help** fetches nothing. It is a fixed page of text.
 
-**League Night** fetches four things and then **keeps fetching them**: the last
+**League Night** fetches five things and then **keeps fetching them**: the last
 power snapshot every minute, the three waiting counts every thirty seconds, the
-traffic chart every five minutes, and the counter drift once. It also opens a
+traffic chart every five minutes, and the unrecorded live matches and the counter
+drift once each. It also opens a
 realtime channel purely to report whether the connection is alive. It is the
 heaviest of the app's few polling screens; see
 [`../foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md#what-makes-the-app-go-back-for-more).
@@ -148,7 +150,16 @@ open that section rather than switching in place.
 beacon, with a seven-day breakdown by platform. Only an admin can read it; a
 failure says so rather than showing an error.
 
-**Standings counters.** The one live check. It lists every team whose stored
+**Unrecorded live matches.** Matches that live scoring decided — a side won two
+games — for which nobody ever pressed "Save official result". It lists up to ten,
+newest first, with both team names, the game score, and the date, plus a count of
+any beyond ten. Each row links to that match's live scoring screen so the games
+can be checked before the result is saved. When there are none it shows a green
+"All clear" line. **This card writes nothing**; saving the result is still done
+by hand on the match itself. See
+[`../live-scoring/finish-the-match.md`](../live-scoring/finish-the-match.md).
+
+**Standings counters.** The one live repair. It lists every team whose stored
 win-loss record disagrees with its completed matches, up to ten with a count of
 the rest, or a green "In sync" line. A **Repair now** button opens a confirmation
 explaining that it recomputes every team's wins, losses and game counts from
