@@ -12,14 +12,14 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **36 entries**: 12 high, 16 medium, and 8 low.
+merging by root cause they come to **36 entries**: 11 high, 19 medium, and 6 low.
 
 Three clusters account for most of the high ones.
 
 **Writes that do not do what their control says.** Approving a score submission
-never results the match. No season can be activated from the admin screens at
-all. Auto-scheduled matches save at midnight. In each case the app reports
-success and the league's data does not change the way the admin was told it had.
+never results the match. Auto-scheduled matches save at midnight. In each case
+the app reports success and the league's data does not change the way the admin
+was told it had.
 
 **Work that is silently lost.** A failed round save discards what the scorer
 tapped. A decided live match that is never saved counts for nothing and nothing
@@ -38,7 +38,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | ID | Title | Severity | Area | Decision needed | Issue |
 | --- | --- | --- | --- | --- | --- |
 | B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
-| B-02 | No season can be activated from the admin screens | high | admin | fix | — |
+| B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
 | B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | fix | — |
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | fix | — |
@@ -118,29 +118,48 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   [`scores/pending-scores.md`](scores/pending-scores.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification).
 
-### B-02: No season can be activated from the admin screens
+### B-02: No **existing** season can be activated from the admin screens
 
-- **Where the user meets it:** an admin finishes a season and wants to start the
-  next one.
-- **What happens / what was expected:** there is no reachable control. The
-  activation dialog exists and can never open, and the panel that would host it
-  is only rendered for the season that is **already** active.
+> **Scope corrected when this was fixed.** This was originally raised as "no
+> season can be activated from the admin screens", severity `high`, on the
+> assumption that the app could not perform a changeover at all. That was too
+> strong. The live database defaults `seasons.is_active` to **true**, so
+> **creating** a season has always activated it, and the ordinary changeover
+> (archive the old season, create the next one) worked throughout. The real
+> defect was narrower, and the severity is `medium`.
+
+- **Where the user meets it:** an admin wants to switch to a season that already
+  exists — going back to a previous season, starting one created earlier, or
+  recovering after archiving without creating a replacement.
+- **What happens / what was expected:** there was no reachable control. The
+  activation dialog existed and could never open, and the panel that would host
+  it was only rendered for the season that was **already** active. Creating a
+  season still activated it, so the everyday changeover was unaffected.
 - **Reproduce:** 1. Sign in as an admin. 2. Open the seasons section of
-  `/admin`. 3. Try to activate any season other than the current one.
+  `/admin`. 3. Try to activate a season other than the current one **without
+  creating a new one**.
 - **Why (from the code):** in `src/components/admin/seasons/SeasonActions.tsx`,
-  `showActivationDialog` is declared at line 16 and the only call to its setter
-  is `setShowActivationDialog(false)` at line 37. Nothing ever sets it true, so
-  `SeasonActivationDialog` never opens. `SeasonActions` is itself rendered only
+  `showActivationDialog` was declared at line 16 and the only call to its setter
+  was `setShowActivationDialog(false)` at line 37. Nothing ever set it true, so
+  `SeasonActivationDialog` never opened. `SeasonActions` was itself rendered only
   as `{activeSeason && <SeasonActions season={activeSeason} />}`
   (`src/components/admin/seasons/SeasonManagementTab.tsx:90`), so even a working
-  dialog would be attached to the wrong season. The underlying
+  dialog would have been attached to the wrong season. The underlying
   `activateSeason` / `activateSeasonWithPartialArchive` mutations
-  (`src/hooks/useSeasonMutations.ts:54,64`) are sound and have no other caller.
-- **Severity:** `high`. Seasons are the spine of the product;
-  [`foundations/seasons.md`](foundations/seasons.md) describes a changeover the
-  app cannot perform.
-- **Decision needed:** `fix`. Render the actions for every season, not only the
-  active one, and wire a trigger to open the dialog.
+  (`src/hooks/useSeasonMutations.ts:54,64`) were sound and had no other caller.
+- **Severity:** `medium`. The everyday changeover worked; switching and recovery
+  did not.
+- **Decision needed:** `fix`. **Done.** The trigger went on **each season card**
+  in `src/components/admin/seasons/SeasonsList.tsx` — shown when
+  `!season.is_active && !season.is_archived` — rather than on `SeasonActions` as
+  first proposed, because `SeasonActions` also holds the "Current Active Season"
+  badge and the Archive Season button, which are correct only for the active
+  season. The dead `showActivationDialog` state and the unreachable dialog render
+  were deleted from `SeasonActions.tsx`. Two related corrections shipped with it:
+  `SeasonActivationDialog`'s confirm button was missing `preventDefault`, so the
+  dialog closed instantly and a failure could not be retried; and
+  `supabase/migrations/00000000000000_baseline.sql` had the `is_active` default
+  reconstructed as `false`, which is what made this bug look larger than it was.
 - **Raised by:** [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification),
   [`foundations/seasons.md`](foundations/seasons.md#open-questions-and-verification).
 

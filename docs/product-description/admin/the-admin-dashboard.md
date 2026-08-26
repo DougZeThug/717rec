@@ -120,7 +120,7 @@ In menu order, with the document that owns each:
 | Matchups | Read-only opponent history between teams |
 | Scores | Mass score entry — [`enter-scores-in-bulk.md`](enter-scores-in-bulk.md) |
 | Live Corrections | Fix a match already scored — [`correct-a-live-match.md`](correct-a-live-match.md) |
-| Season | Create, edit, archive, finalise — [`manage-seasons.md`](manage-seasons.md) |
+| Season | Create, activate, edit, archive, finalise — [`manage-seasons.md`](manage-seasons.md) |
 | Participation | Who has said they are playing — [`manage-seasons.md`](manage-seasons.md) |
 | Requests | Team requests, with the count badge — [`handle-requests.md`](handle-requests.md) |
 | Contact Inbox | Messages from the contact form — [`handle-requests.md`](handle-requests.md) |

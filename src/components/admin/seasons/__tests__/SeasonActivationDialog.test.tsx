@@ -43,11 +43,11 @@ const makeSeason = (overrides: Partial<Season> = {}): Season => ({
   ...overrides,
 });
 
-const renderDialog = (season: Season) => {
+const renderDialog = (season: Season, onClose: () => void = vi.fn()) => {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
-      <SeasonActivationDialog isOpen onClose={vi.fn()} season={season} />
+      <SeasonActivationDialog isOpen onClose={onClose} season={season} />
     </QueryClientProvider>
   );
 };
@@ -138,7 +138,8 @@ describe('SeasonActivationDialog', () => {
   it('shows an error toast when the mutation rejects', async () => {
     seasonsFromHook = [makeSeason({ id: 's-target' })];
     activateMock.mockRejectedValue(new Error('db down'));
-    renderDialog(makeSeason({ id: 's-target' }));
+    const onClose = vi.fn();
+    renderDialog(makeSeason({ id: 's-target' }), onClose);
 
     await userEvent.click(screen.getByRole('button', { name: /activate season/i }));
 
@@ -147,5 +148,7 @@ describe('SeasonActivationDialog', () => {
         expect.objectContaining({ variant: 'destructive', description: 'db down' })
       )
     );
+    // Dialog must stay open on failure so the user can retry.
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

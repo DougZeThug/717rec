@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import { Archive, Calendar, Edit, Trophy } from 'lucide-react';
+import { Archive, Calendar, Edit, Play, Trophy } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Season } from '@/types/season';
 import { toLocalDateString } from '@/utils/formatDateSafe';
 
+import SeasonActivationDialog from './SeasonActivationDialog';
 import SeasonFinalizePlayoffsDialog from './SeasonFinalizePlayoffsDialog';
 
 interface SeasonsListProps {
@@ -48,6 +49,7 @@ const getStatusIcon = (season: Season) => {
 };
 
 const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSeason }) => {
+  const [activatingSeason, setActivatingSeason] = useState<Season | null>(null);
   const [finalizingSeason, setFinalizingSeason] = useState<Season | null>(null);
   if (isLoading) {
     return (
@@ -99,6 +101,19 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
               </div>
               <div className="flex items-center gap-2">
                 {getStatusBadge(season)}
+                {!season.is_active && !season.is_archived && (
+                  <m.div whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActivatingSeason(season)}
+                      className="flex items-center gap-1"
+                    >
+                      <Play className="size-3" />
+                      Activate
+                    </Button>
+                  </m.div>
+                )}
                 {season.playoffs_active && (
                   <m.div whileTap={{ scale: 0.95 }}>
                     <Button
@@ -141,6 +156,13 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
           </CardContent>
         </Card>
       ))}
+      {activatingSeason && (
+        <SeasonActivationDialog
+          isOpen={Boolean(activatingSeason)}
+          onClose={() => setActivatingSeason(null)}
+          season={activatingSeason}
+        />
+      )}
       {finalizingSeason && (
         <SeasonFinalizePlayoffsDialog
           isOpen={Boolean(finalizingSeason)}

@@ -65,7 +65,10 @@ CREATE TABLE IF NOT EXISTS public.seasons (
   name text NOT NULL,
   start_date date NOT NULL DEFAULT CURRENT_DATE,
   end_date date,
-  is_active boolean NOT NULL DEFAULT false,
+  -- DEFAULT true matches the live project: creating a season makes it the
+  -- active one. types.ts records only that a default exists, not its value, so
+  -- this line was originally reconstructed as `false` and was wrong.
+  is_active boolean NOT NULL DEFAULT true,
   champion_team_id uuid,
   runner_up_team_id uuid,
   third_place_team_id uuid,
@@ -700,16 +703,16 @@ DO $seeds$ BEGIN
     RETURN;
   END IF;
   -- required by 20250801150640_6877a872-79bc-4e9c-9a4e-eb864a492e99.sql
-  INSERT INTO public.seasons (id, name, start_date)
-    VALUES ('e537c594-3ba9-4d79-ba63-f6ed90c89e30', 'historical-seasons', '2025-06-01')
+  INSERT INTO public.seasons (id, name, start_date, is_active)
+    VALUES ('e537c594-3ba9-4d79-ba63-f6ed90c89e30', 'historical-seasons', '2025-06-01', false)
     ON CONFLICT (id) DO NOTHING;
   -- required by 20250801150640_6877a872-79bc-4e9c-9a4e-eb864a492e99.sql
   INSERT INTO public.teams (id, name)
     VALUES ('8aef742f-f7d7-4996-a2bb-96a430b5e005', 'historical-teams')
     ON CONFLICT (id) DO NOTHING;
   -- required by 20250801150640_6877a872-79bc-4e9c-9a4e-eb864a492e99.sql
-  INSERT INTO public.seasons (id, name, start_date)
-    VALUES ('e537c594-3ba9-4d79-ba63-f6ed90c89e30', 'historical-seasons', '2025-06-01')
+  INSERT INTO public.seasons (id, name, start_date, is_active)
+    VALUES ('e537c594-3ba9-4d79-ba63-f6ed90c89e30', 'historical-seasons', '2025-06-01', false)
     ON CONFLICT (id) DO NOTHING;
   -- required by 20250801150640_6877a872-79bc-4e9c-9a4e-eb864a492e99.sql
   INSERT INTO public.teams (id, name)
@@ -948,8 +951,8 @@ DO $seeds$ BEGIN
     VALUES ('e5ad0de8-c3bf-4a07-999d-49cb77cb99ba', 'historical-brackets-e5ad0de8')
     ON CONFLICT (id) DO NOTHING;
   -- required by 20251010160034_e057acd7-e8b5-439e-bef2-fd09dd015880.sql
-  INSERT INTO public.seasons (id, name)
-    VALUES ('d50bb12e-99be-4170-802a-695a402373ce', 'historical-seasons-d50bb12e')
+  INSERT INTO public.seasons (id, name, is_active)
+    VALUES ('d50bb12e-99be-4170-802a-695a402373ce', 'historical-seasons-d50bb12e', false)
     ON CONFLICT (id) DO NOTHING;
   -- required by 20251121150257_4837ef1a-6a33-4b07-b153-991db92a44bc.sql
   INSERT INTO public.brackets (id, title)
@@ -992,8 +995,8 @@ DO $seeds$ BEGIN
     VALUES ('c8936056-134a-4eb8-bb67-f09815e5e9c3', 'historical-brackets-c8936056')
     ON CONFLICT (id) DO NOTHING;
   -- required by 20251204122851_1252f757-8cd6-4d48-b746-96bc17f65d48.sql
-  INSERT INTO public.seasons (id, name)
-    VALUES ('34cd19e2-abf5-43b8-a16f-6d73a0e998ac', 'historical-seasons-34cd19e2')
+  INSERT INTO public.seasons (id, name, is_active)
+    VALUES ('34cd19e2-abf5-43b8-a16f-6d73a0e998ac', 'historical-seasons-34cd19e2', false)
     ON CONFLICT (id) DO NOTHING;
   -- required by 20260302142254_736f73fc-1c1c-42e0-9bd3-d81d0f2d8fa0.sql
   INSERT INTO public.brackets (id, title)

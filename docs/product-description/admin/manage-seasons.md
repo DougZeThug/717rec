@@ -12,10 +12,6 @@ to one are settled in
 [`../foundations/seasons.md`](../foundations/seasons.md). This document is only
 about the admin actions.
 
-One gap to state up front: **nothing on this screen activates a season.** The
-dialog that would do it exists but no button opens it. See
-[Open questions](#open-questions-and-verification).
-
 ## The simple case
 
 An admin opens the Season section. Three cards across the top say which season is
@@ -25,12 +21,17 @@ many are inactive.
 Below them, on the left, is **Create New Season**. On the right — but only when a
 season is active — a green badge reads "Current Active Season" beside an
 **Archive Season** button. Below that is every season, newest first, one card
-each, with a coloured status badge and an **Edit** button. A season whose
+each, with a coloured status badge and an **Edit** button. A season that is
+neither active nor archived also has an **Activate** button. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
 optional end date. Pressing Create Season saves it, a toast says "Season created
-successfully", and the new season appears at the top of the list as **Inactive**.
+successfully", and the new season appears at the top of the list as **Active** —
+the database defaults `is_active` to true, so creating a season is also how a
+season is started. The previous season keeps whatever flags it already had, so an
+admin archives it first. To make an *existing* season active instead, use
+**Activate** on its card.
 
 ## The interaction, event by event
 
@@ -40,6 +41,9 @@ stateDiagram-v2
     list --> form : Create New Season, or Edit on any season
     form --> list : Cancel (nothing written)
     form --> list : Create or Update (commit — name and dates only)
+    list --> activating : Activate (season that is neither active nor archived)
+    activating --> list : Cancel
+    activating --> list : Activate Season (commit — any previous active season is deactivated)
     list --> archiving : Archive Season (active season only)
     archiving --> list : Cancel
     archiving --> archived : Archive Season (commit — irreversible)
@@ -80,8 +84,9 @@ form filled with that season's name and dates. Either way it appears between the
 buttons and the list, and the list stays visible below it.
 
 Only three fields exist. **None of the four flags can be set here.** A season is
-created inactive, un-archived, with confirmation closed and playoffs off, and the
-form cannot change any of that afterwards.
+created **active**, un-archived, with confirmation closed and playoffs off, and
+the form cannot change any of that afterwards. Creating therefore has a side
+effect the form never mentions: the new season becomes the active one.
 
 No field is focused when the form opens. Nothing about the page shows that a form
 is dirty.
@@ -120,6 +125,36 @@ On success the form closes and a toast says "Season created successfully" or
 On failure the form **stays open with everything typed still in it** and a red
 toast carries the server's own reason rather than a generic sentence. This is one
 of the few places in the app that reports why a write failed.
+
+## Activating a season
+
+Every season card that is neither active nor archived carries an **Activate**
+button. That includes a season whose playoffs are still in progress, and it
+includes every un-archived season when no season is active at all — so a league
+that has just archived its last season can start over from this screen.
+Archived seasons never offer it: the `activate_season` function refuses them.
+
+Pressing it opens a dialog headed "Activate Season: *name*". When another season
+is currently active, the dialog warns that it will be deactivated and offers a
+tick box, **Keep *X*'s playoffs active**:
+
+- **Unticked.** The target season becomes active and the previous one is simply
+  deactivated. Its matches and bracket are left alone.
+- **Ticked.** The previous season's completed regular-season matches are archived
+  and team win/loss counters reset, but its playoff bracket stays editable and it
+  is marked "Playoffs In Progress". New regular matches schedule on the new
+  season. The playoffs are finalised later from this same screen.
+
+The tick box is absent when no season is active, because there is nothing to
+overlap with.
+
+The green button reads **Activate Season**, or **Activating...** while the
+request is in flight. On success a toast names the season and the list re-fetches.
+On failure the dialog stays open so the action can be retried, and a red toast
+carries the server's reason.
+
+**This is the one lifecycle action that is not irreversible.** Activating a
+different season afterwards undoes it.
 
 ## The three destructive actions
 
@@ -195,8 +230,8 @@ but **written by nothing**.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard at all; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves the buttons on screen. The server refuses the writes. |
-| The record's state | An archived season shows an Archived badge and an Edit button. A playoffs-in-progress season also shows Finalize Playoffs. Only the active season shows Archive Season. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
-| The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. | If the active season changes elsewhere, this screen does not notice until it re-fetches. |
+| The record's state | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows Archive Season. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
+| The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. Every un-archived season still offers Activate, and its dialog shows no deactivation warning and no tick box, so the league can be restarted from here. | If the active season changes elsewhere, this screen does not notice until it re-fetches. |
 | Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. | No effect beyond re-flowing. |
 | Keys the form honours | Tab moves through Name, Start Date, End Date, Cancel, and the submit button. | Enter in a text field submits the form. Escape closes an open dialog, which cancels the archive or the finalise. |
 
@@ -263,19 +298,35 @@ appear on team pages without anyone granting them.
   of its matches into different weeks in the history pages.
 - **A season with playoffs active and no bracket** can still be finalised. The
   detection finds nothing and the season records no champion.
-- **The "Inactive Seasons" count is labelled "Ready to activate"** on a screen
-  with no activate button.
+- **A season whose playoffs are in progress can be activated again.** It keeps
+  its bracket, so its card then shows **Active** and still offers **Finalize
+  Playoffs**.
+- **Creating a season silently activates it.** The form names only a season,
+  a start date and an end date, and never says the league is about to change
+  over.
+- **Creating a season without archiving the old one first leaves two active
+  seasons.** `seasons.is_active` defaults to true, but the
+  `trg_ensure_single_active_season` trigger that clears the other seasons fires
+  on *update* only, never on insert — so nothing deactivates the previous season.
+  The app then throws "Data integrity violation: 2 active seasons found"
+  (`src/services/seasons/SeasonQueryService.ts`) and every page scoped to the
+  active season fails. Archiving first avoids it, which is why the usual
+  changeover never hits this. Verified by replaying every migration on a fresh
+  Postgres; the live trigger was not read directly. **Use Activate instead of
+  Create to switch seasons, or archive first.**
 - **Nothing shows how many matches or teams a season holds** before it is
   archived, so an admin archives without seeing what is being frozen.
 
 ## Open questions and verification
 
-- **No season can be activated from the admin screens.** The activation dialog is
-  built, wired to the mutations, and rendered — but the state that opens it is
-  never set, and the component that renders it is shown only for the season that
-  is already active. The league appears to have no in-app way to start a new
-  season. **May be worth treating as a bug rather than documenting**, and it is
-  the first thing to confirm by hand.
+- **Fixed (was B-02): an existing season can now be activated from the season
+  list.** Every season that is neither active nor archived carries an **Activate**
+  button that opens the activation dialog for that season, including when no
+  season is active at all. B-02 was raised as "no season can be activated at
+  all", which was too strong — creating a season has always activated it, because
+  the database defaults `is_active` to true. The real gap was that no *existing*
+  season could be made active, so there was no way to switch back to an earlier
+  season or to recover after archiving without creating a replacement.
 - **The "confirmation open" flag can be read but not written.** No control
   anywhere in the app sets it, so the team confirmation feature it gates can
   never be turned on from the product. **May be worth treating as a bug rather

@@ -133,7 +133,13 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleActivate}
+            onClick={(e) => {
+              // AlertDialogAction closes the dialog by default. Block that so the
+              // "Activating..." state is visible and a failure leaves the dialog
+              // open to retry, matching SeasonFinalizePlayoffsDialog.
+              e.preventDefault();
+              handleActivate();
+            }}
             disabled={isActivating}
             className="bg-green-600 hover:bg-green-700"
           >
