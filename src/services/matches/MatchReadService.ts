@@ -16,7 +16,6 @@ export {
   fetchActiveSeasonIdStrict,
   fetchMatchPairsInSeason,
   fetchSeasonOpponentHistory,
-  haveTeamsPlayedBefore,
 } from './MatchHistoryService';
 export {
   fetchMatchesWithTeams,
