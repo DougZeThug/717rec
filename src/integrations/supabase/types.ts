@@ -7000,11 +7000,14 @@ export type Database = {
           id: string
           location: string
           team1_game_wins: number
+          team1_id: string
           team1_name: string
           team1_score: number
           team2_game_wins: number
+          team2_id: string
           team2_name: string
           team2_score: number
+          winner_id: string
           winner_name: string
         }[]
       }
