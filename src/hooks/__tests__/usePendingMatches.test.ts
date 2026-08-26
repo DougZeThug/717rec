@@ -15,7 +15,7 @@ vi.mock('@/services/matches/MatchReadService', () => ({
 
 vi.mock('@/services/matches/MatchWriteService', () => ({
   approveMatchResult: vi.fn().mockResolvedValue(true),
-  confirmMatchTie: vi.fn().mockResolvedValue(undefined),
+  confirmMatchTie: vi.fn(),
 }));
 
 vi.mock('@/hooks/useToast', () => ({
@@ -54,7 +54,6 @@ describe('usePendingMatches', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(approveMatchResult).mockResolvedValue(true);
-    vi.mocked(confirmMatchTie).mockResolvedValue(undefined);
   });
 
   it('should call approveMatchResult with correct parameters for team 1 winner', async () => {
