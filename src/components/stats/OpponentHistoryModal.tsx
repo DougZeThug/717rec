@@ -101,17 +101,17 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
           ) : (
             <div className="space-y-3">
               {matches.map((match) => {
-                const isWin =
-                  match.winner_name ===
-                  (teamId === match.team1_name ? match.team1_name : match.team2_name);
+                // Compare ids, never names: two teams may share a name, and a
+                // name comparison then reads every result as a loss. Correct
+                // whichever side of the fixture the viewing team is on.
+                const result =
+                  match.winner_id == null ? 'T' : match.winner_id === teamId ? 'W' : 'L';
                 return (
                   <Card key={match.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <Badge variant={isWin ? 'default' : 'secondary'}>
-                            {isWin ? 'W' : 'L'}
-                          </Badge>
+                          <Badge variant={result === 'W' ? 'default' : 'secondary'}>{result}</Badge>
                           <div>
                             <div className="font-medium">
                               {match.team1_name} vs {match.team2_name}

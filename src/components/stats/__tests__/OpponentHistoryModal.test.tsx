@@ -2,6 +2,8 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { OpponentHistory } from '@/types/headToHead';
+
 import { OpponentHistoryModal } from '../OpponentHistoryModal';
 
 const mockUseOpponentHistory = vi.fn();
@@ -19,10 +21,13 @@ const summary = {
   game_losses: 4,
 };
 
-const match = {
+const match: OpponentHistory['matches'][number] = {
   id: 'm1',
+  team1_id: 't1',
+  team2_id: 'opp-1',
   team1_name: 'My Team',
   team2_name: 'Rivals',
+  winner_id: 'opp-1',
   winner_name: 'Rivals',
   date: '2026-04-10T00:00:00.000Z',
   location: 'Court 3',
@@ -94,5 +99,68 @@ describe('OpponentHistoryModal', () => {
     expect(screen.getByText('1 - 2')).toBeInTheDocument();
     expect(screen.getByText('Games: 1 - 2')).toBeInTheDocument();
     expect(screen.getByText('Court 3')).toBeInTheDocument();
+  });
+
+  describe('result badge', () => {
+    const renderWithMatch = (overrides: Partial<typeof match>) => {
+      mockUseOpponentHistory.mockReturnValue({
+        data: { summary, matches: [{ ...match, ...overrides }] },
+        isLoading: false,
+      });
+      renderModal();
+    };
+
+    // The viewing team is 't1'. Its own result must drive the badge, whichever
+    // side of the fixture it sits on.
+    it('shows L when the team is named first and the opponent won', () => {
+      renderWithMatch({ team1_id: 't1', team2_id: 'opp-1', winner_id: 'opp-1' });
+      expect(screen.getByText('L')).toBeInTheDocument();
+    });
+
+    it('shows W when the team is named first and the team won', () => {
+      renderWithMatch({ team1_id: 't1', team2_id: 'opp-1', winner_id: 't1' });
+      expect(screen.getByText('W')).toBeInTheDocument();
+    });
+
+    it('shows W when the team is named second and the team won', () => {
+      renderWithMatch({ team1_id: 'opp-1', team2_id: 't1', winner_id: 't1' });
+      expect(screen.getByText('W')).toBeInTheDocument();
+    });
+
+    it('shows L when the team is named second and the opponent won', () => {
+      renderWithMatch({ team1_id: 'opp-1', team2_id: 't1', winner_id: 'opp-1' });
+      expect(screen.getByText('L')).toBeInTheDocument();
+    });
+
+    it('shows T for a completed match with no winner', () => {
+      renderWithMatch({ winner_id: null, winner_name: null });
+      expect(screen.getByText('T')).toBeInTheDocument();
+    });
+
+    // teams.name has no unique constraint. When both teams carry the same name
+    // every name-based comparison is true, which read every result as a loss.
+    it('still shows W when both teams share a name', () => {
+      renderWithMatch({
+        team1_id: 't1',
+        team2_id: 'opp-1',
+        team1_name: 'Rivals',
+        team2_name: 'Rivals',
+        winner_id: 't1',
+        winner_name: 'Rivals',
+      });
+      expect(screen.getByText('W')).toBeInTheDocument();
+    });
+
+    it('still shows L when both teams share a name and the opponent won', () => {
+      renderWithMatch({
+        team1_id: 't1',
+        team2_id: 'opp-1',
+        team1_name: 'Rivals',
+        team2_name: 'Rivals',
+        winner_id: 'opp-1',
+        winner_name: 'Rivals',
+      });
+      expect(screen.getByText('L')).toBeInTheDocument();
+    });
   });
 });
