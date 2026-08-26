@@ -10,6 +10,13 @@
 --
 -- The whole point is exercised with two teams deliberately given the SAME name:
 -- winner_name cannot tell the two results apart, winner_id must.
+--
+-- It also guards a second fault the same migration repaired: playoff_matches
+-- scores are numeric while the matches and matches_archive columns are integer,
+-- so UNION ALL resolved those output columns to numeric and every call raised
+-- "structure of query does not match function result type". That is a plan-time
+-- failure, so any call at all catches a regression, but the playoff row below
+-- also pins the branch's values and its winner_id.
 
 BEGIN;
 
@@ -22,10 +29,12 @@ DECLARE
   v_win_id uuid := '00000000-0000-0000-0000-0000000fd101';
   v_loss_id uuid := '00000000-0000-0000-0000-0000000fd102';
   v_tie_id uuid := '00000000-0000-0000-0000-0000000fd103';
+  v_playoff_id uuid := '00000000-0000-0000-0000-0000000fd104';
   v_shared_name text := 'Duplicate Name FC';
   v_row_count integer;
   r record;
 BEGIN
+  DELETE FROM public.playoff_matches WHERE id = v_playoff_id;
   DELETE FROM public.matches WHERE id IN (v_win_id, v_loss_id, v_tie_id);
   DELETE FROM public.teams WHERE id IN (v_team_a, v_team_b);
   DELETE FROM public.divisions WHERE id = v_division_id;
@@ -52,11 +61,18 @@ BEGIN
     -- Completed with no winner.
     (v_tie_id,  v_team_a, v_team_b, v_season_id, 3, true, '2026-03-03', 1, 1, NULL);
 
+  -- Playoff branch. Scores are numeric on this table; the function must hand
+  -- them back as integer.
+  INSERT INTO public.playoff_matches
+    (id, match_type, position, round, team1_id, team2_id, team1_score, team2_score, winner_id)
+  VALUES
+    (v_playoff_id, 'winners', 1, 1, v_team_a, v_team_b, 2, 1, v_team_a);
+
   SELECT count(*) INTO v_row_count
   FROM public.get_opponent_match_history(v_team_a, v_team_b)
-  WHERE id IN (v_win_id, v_loss_id, v_tie_id);
-  IF v_row_count <> 3 THEN
-    RAISE EXCEPTION 'expected 3 rows back for the pair, got %', v_row_count;
+  WHERE id IN (v_win_id, v_loss_id, v_tie_id, v_playoff_id);
+  IF v_row_count <> 4 THEN
+    RAISE EXCEPTION 'expected 4 rows back for the pair, got %', v_row_count;
   END IF;
 
   -- The win.
@@ -92,6 +108,17 @@ BEGIN
      (SELECT winner_name FROM public.get_opponent_match_history(v_team_a, v_team_b) WHERE id = v_loss_id)
   THEN
     RAISE EXCEPTION 'the two same-name teams produced different winner_name values; fixture no longer covers the ambiguity';
+  END IF;
+
+  -- The playoff row: winner by id, and scores handed back as integer.
+  SELECT * INTO r FROM public.get_opponent_match_history(v_team_a, v_team_b) WHERE id = v_playoff_id;
+  IF r.winner_id IS DISTINCT FROM v_team_a THEN
+    RAISE EXCEPTION 'winner_id for the playoff match was %, expected team A (%)', r.winner_id, v_team_a;
+  END IF;
+  IF (r.team1_score, r.team2_score, r.team1_game_wins, r.team2_game_wins)
+     IS DISTINCT FROM (2, 1, 2, 1) THEN
+    RAISE EXCEPTION 'playoff scores came back as %/% and game wins %/%, expected 2/1 and 2/1',
+      r.team1_score, r.team2_score, r.team1_game_wins, r.team2_game_wins;
   END IF;
 
   -- Reading from the opponent's side must mirror the result.

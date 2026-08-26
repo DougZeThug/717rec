@@ -17,6 +17,13 @@
 --
 -- RETURNS TABLE changes shape, so the function must be dropped first; CREATE OR
 -- REPLACE cannot change a return type.
+--
+-- This also repairs a fault the function has carried since it was created in
+-- 20250906000458: playoff_matches.team1_score/team2_score are numeric while the
+-- matches and matches_archive columns are integer, so UNION ALL resolved those
+-- output columns to numeric and every call raised "structure of query does not
+-- match function result type". The dialog that calls it therefore rendered
+-- nothing at all. The playoff branch now casts to integer.
 
 DROP FUNCTION IF EXISTS public.get_opponent_match_history(uuid, uuid);
 
@@ -119,11 +126,17 @@ BEGIN
       pm.team2_id,
       t1.name as team1_name,
       t2.name as team2_name,
-      pm.team1_score,
-      pm.team2_score,
+      -- playoff_matches.team1_score/team2_score are numeric while the same
+      -- columns on matches and matches_archive are integer. UNION ALL resolves
+      -- the branch types to numeric, which does not match the integer declared
+      -- below, so every call raised "structure of query does not match function
+      -- result type" before these casts. Scores are whole numbers everywhere
+      -- else in the schema.
+      pm.team1_score::integer,
+      pm.team2_score::integer,
       -- For playoff matches, calculate game wins from the scores
-      CASE WHEN pm.team1_score IS NOT NULL THEN pm.team1_score ELSE 0 END as team1_game_wins,
-      CASE WHEN pm.team2_score IS NOT NULL THEN pm.team2_score ELSE 0 END as team2_game_wins,
+      CASE WHEN pm.team1_score IS NOT NULL THEN pm.team1_score ELSE 0 END::integer as team1_game_wins,
+      CASE WHEN pm.team2_score IS NOT NULL THEN pm.team2_score ELSE 0 END::integer as team2_game_wins,
       CASE
         WHEN pm.winner_id = pm.team1_id THEN pm.team1_id
         WHEN pm.winner_id = pm.team2_id THEN pm.team2_id

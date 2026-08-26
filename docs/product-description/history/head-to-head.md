@@ -203,6 +203,9 @@ notification results from anything on this surface.
 - **View Details looks unresponsive.** The dialog renders nothing until its data
   arrives, so the first press produces no visible change. The dialog's own
   "Loading matches..." state can only be reached after it is already open.
+  Until recently the data never arrived at all: `get_opponent_match_history`
+  raised on every call, so the dialog never opened. See B-39 in
+  [`../bug-triage.md`](../bug-triage.md).
 - **"Last Played" for a playoff meeting is the wrong date.** Playoff matches
   contribute the moment their bracket row was created, not the day they were
   played, so a playoff meeting can date the whole matchup to whenever the bracket

@@ -79,6 +79,9 @@ so a non-zero exit code means drift was detected.
   that is NULL for a tie. Uses two teams deliberately given the same name:
   `teams.name` has no unique constraint, so `winner_name` cannot tell a win
   from a loss and the head-to-head dialog's badge read every result as a loss.
+  Also seeds a playoff match: `playoff_matches` scores are `numeric` while the
+  `matches` columns are `integer`, and the resulting `UNION ALL` type made the
+  function raise on every call (B-39).
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

@@ -12,7 +12,7 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **38 entries**: 12 high, 20 medium, and 6 low.
+merging by root cause they come to **39 entries**: 13 high, 20 medium, and 6 low.
 
 Two clusters account for most of the high ones.
 
@@ -51,6 +51,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
 | B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
+| B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
 | B-11 | Six destructive admin actions have no confirmation | medium | admin | fix | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | fix | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | fix | — |
@@ -801,6 +802,44 @@ finding read a superseded migration.
   from that point on. Nothing in the app does that, and the repair above clears
   any such state the next time the migration is applied.
 - **Raised by:** found while fixing B-02.
+
+### B-39: The head-to-head details dialog never opened: its database function raised on every call
+
+- **Where the user meets it:** a team's page. Press an opponent row in the
+  head-to-head table, expecting the **Head-to-Head vs …** dialog.
+- **What happens / what was expected:** nothing happens. No dialog, no error, no
+  spinner — the press produces no visible change at all. Expected: the dialog
+  opens with the summary cards and the *Recent Matches* list.
+- **Reproduce:** 1. Open any team page and expand Head-to-Head. 2. Press an
+  opponent row, or its **View Details** control.
+- **Why (from the code):** `get_opponent_match_history` unions three sources.
+  `public.matches.team1_score` and `matches_archive.team1_score` are `integer`,
+  but `public.playoff_matches.team1_score` and `team2_score` are `numeric`
+  (`supabase/migrations/00000000000000_baseline.sql:298,301` against `:135,136`).
+  `UNION ALL` resolves those output columns to `numeric`, which does not match
+  the `integer` the function declares, so **every call** raised
+  `structure of query does not match function result type`. This is decided when
+  the statement is planned, so it failed whether or not a playoff match existed.
+  `HeadToHeadService.getOpponentHistory` turns that into a thrown
+  `DatabaseError`, the query has no data, and
+  `OpponentHistoryModal` returns `null` on `!history?.summary` — hence the
+  silent nothing. Present since the function was created in
+  `20250906000458_*.sql`.
+- **Severity:** `high`. A control on a page teams care about did nothing at all,
+  for a year, with no error surfaced to the user.
+- **Decision needed:** `fix`. **Done.** The playoff branch now casts its scores
+  to `integer` in
+  `supabase/migrations/20260826190000_opponent_match_history_winner_id.sql`,
+  matching the other two sources and the declared return type.
+- **Status:** confirmed by reproduction. Found when the smoke test added for
+  B-38 failed in CI; reproduced locally by replaying every migration into a
+  fresh Postgres, where the **pre-existing** definition raises the same error on
+  a bare call. `supabase/tests/opponent_match_history_winner_id.sql` now seeds a
+  playoff match and asserts its scores come back as integers, and CI runs it
+  after replaying every migration.
+- **Raised by:** found while fixing B-38; not raised by any feature document.
+  `history/head-to-head.md` recorded the symptom as "View Details looks
+  unresponsive" without identifying the cause.
 
 ### B-34: Four standings columns silently sort by power score instead
 
