@@ -118,15 +118,17 @@ comment as agreed with the league admin):
 - A *pending score submission* is waiting for review. A *pending match* is a match
   completed with no winner — a tie — waiting for an admin. These are different
   things and the word "pending" must always be qualified.
-- **Approving a score submission does NOT write the result onto the match.** It
-  only stamps the submission row with a status, a reviewer, and a time. The match
-  stays incomplete and standings do not move
-  (`src/services/matches/MatchWriteService.ts:214`). This is a confirmed defect,
-  not a design choice — do not describe approval as if it results the match.
+- **Approving a score submission writes the result onto the match.** Approve
+  opens a dialog offering the four results a best-of-three match can end in,
+  writes the chosen one, marks the match complete, and only then stamps the
+  submission as approved. A failed write leaves the submission pending, so the
+  queue never clears on a stale match.
 - Reopening a completed match reverses the statistics the original result
   produced.
-- **The tie-resolution flow is unreachable.** `usePendingMatches` — the hook
-  holding the tie queue, approve, and mark-as-tie — is imported by no component.
+- **The tie-resolution flow lives in the admin Pending tab.** The **Unresolved
+  matches** section there is backed by `usePendingMatches`; an admin resolves a
+  tie by naming a winner (which writes the result atomically) or recording the
+  tie (which stamps the match so it leaves the queue).
 
 **Power score:**
 
