@@ -194,19 +194,6 @@ notification results from anything on this surface.
 
 ## Edge cases
 
-- **The win percentage is shown a hundred times too small.** The league stores
-  it as a fraction between 0 and 1; the table prints it with a percent sign
-  attached, so a team that has won three of four shows **"0.8%"** rather than
-  "75.0%". The same value goes into the CSV. **May be worth treating as a bug
-  rather than documenting.**
-- **Almost every opponent is labelled "Nemesis".** The rivalry labels compare that
-  same fraction against thresholds written for percentages — 18, 30, 70, 83 — so
-  every record with three or more meetings falls under the lowest threshold. The
-  result is that "Nemesis" is applied to opponents the team beats, and "Dominated"
-  and "Favorite" can never appear on a team page at all. The equivalent line on a
-  match card computes its own percentage and labels correctly, so the same matchup
-  can read "Dominated" on the schedule and "Nemesis" on the team page. **May be
-  worth treating as a bug rather than documenting.**
 - **The W and L badges in the details dialog are wrong.** The dialog decides
   whether a match was a win by comparing the team's identifier against a team
   *name*, which never matches, so it always ends up marking the match a win when
@@ -240,11 +227,13 @@ notification results from anything on this surface.
 
 ## Open questions and verification
 
-- The percentage scale, the rivalry thresholds, and the playoff game counts above
-  are read from the database view and the components that consume it. **Every test
-  that covers this area supplies its own fixture data on a 0-to-100 scale**, so no
-  test would fail if the stored value is a fraction. The three findings should be
-  confirmed against real data before they are filed.
+- **Confirmed against real data: the percentage scale is correct.** The view
+  `v_head_to_head` stores `win_pct` on a 0-to-100 scale, to one decimal, and
+  every consumer reads it that way. An earlier draft of this document claimed the
+  opposite, from a superseded migration; both findings were withdrawn. See B-06
+  in [`../bug-triage.md`](../bug-triage.md) for the evidence.
+- The playoff game counts above are still read from the code only, not confirmed
+  against real data.
 - Not confirmed by hand: whether the details dialog's match list is capped, and in
   what order it arrives.
 - Not confirmed by hand: what the schedule's match-card line shows while its own

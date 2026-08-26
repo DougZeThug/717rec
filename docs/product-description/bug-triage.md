@@ -14,7 +14,7 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause they come to **37 entries**: 12 high, 19 medium, and 6 low.
 
-Three clusters account for most of the high ones.
+Two clusters account for most of the high ones.
 
 **Writes that do not do what their control says.** Approving a score submission
 never results the match. Auto-scheduled matches save at midnight. In each case
@@ -26,9 +26,10 @@ tapped. A decided live match that is never saved counts for nothing and nothing
 anywhere surfaces it. A second membership row permanently breaks every ability a
 member has.
 
-**Numbers that are quietly wrong.** Head-to-head win percentages are a 0–1
-fraction printed as a percentage, and the rivalry labels derived from the same
-value are wrong in the same way, so nearly every opponent is labelled "Nemesis".
+One entry has since been **cleared**: B-06 claimed head-to-head win
+percentages were a 0–1 fraction printed as a percentage. Checked against the
+running app, they are not — see that entry for the evidence. It is kept in the
+list, and in the counts above, as a record of the investigation.
 
 Two structural themes run under the medium entries: **destructive admin actions
 with no confirmation** (six of them, in one entry) and **failure messages that
@@ -42,7 +43,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | fix | — |
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | fix | — |
-| B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | fix | — |
+| B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
 | B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | fix | — |
 | B-08 | A failed profile read silently demotes an admin | high | foundations | fix | — |
 | B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
@@ -241,30 +242,39 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 
 ### B-06: Head-to-head win percentages and rivalry labels are computed on the wrong scale
 
-- **Where the user meets it:** a team's page, in the head-to-head table against
-  every opponent they have played.
-- **What happens / what was expected:** a team that has won three of four
-  meetings is shown as **"0.8%"**. The rivalry label derived from the same value
-  compares a 0–1 fraction against percentage thresholds, so every opponent met
-  three or more times is labelled **"Nemesis"** and the labels "Dominated" and
-  "Favorite" can never appear. The win-percentage badge is stuck on one style for
-  the same reason. Expected: "75%", and a label that varies.
-- **Reproduce:** 1. Open a team page with a head-to-head record of three or more
-  meetings. 2. Read the Win% column and the label beside each opponent.
-- **Why (from the code):** `win_pct` is produced as a 0–1 fraction in
-  `supabase/migrations/20250905203634_*.sql:84`. It is printed with a `%` at
-  `src/components/stats/HeadToHeadRecords.tsx:324` and
-  `src/components/stats/H2HMobileCard.tsx:78`, and compared against thresholds of
-  60, 40 and so on at `src/utils/teamDetailsUtils/rivalryUtils.ts:40,44,57-61`.
-  The badge variant at `HeadToHeadRecords.tsx:323` uses the same comparison.
-  **Every existing test supplies its own 0-to-100 fixture**
-  (`HeadToHeadRecords.test.tsx:41`), so no test fails.
-- **Severity:** `high`. It is a wrong number presented as fact, on a page teams
-  care about, and the tests are shaped so it cannot be caught.
-- **Decision needed:** `fix`. Decide the scale once — the migration is the better
-  place — and correct every consumer and every fixture together.
-- **Raised by:** [`history/head-to-head.md`](history/head-to-head.md#open-questions-and-verification),
-  [`teams/team-details.md`](teams/team-details.md#open-questions-and-verification).
+**Not a bug. Investigated and cleared against the running app.** The original
+finding read a superseded migration.
+
+- **What was claimed:** that `win_pct` is a 0–1 fraction printed with a `%`, so a
+  team that has won three of four shows "0.8%", and that every opponent met three
+  or more times is labelled "Nemesis" while "Dominated" and "Favorite" can never
+  appear.
+- **Why it is wrong:** the claim cites
+  `supabase/migrations/20250905203634_*.sql:84`, which is **not** the definition
+  in force. Three later migrations redefine `v_head_to_head` the same day. The
+  last of them,
+  `supabase/migrations/20250905204611_b2581e49-8f33-4470-b91a-0bccdc2f03ef.sql:90-94`,
+  computes `ROUND(... / NULLIF(COUNT(*), 0) * 100, 1)` — a **0–100** value to one
+  decimal. Nothing after it touches the view.
+  `get_head_to_head_records`, `HeadToHeadService`, and `useHeadToHead` all pass
+  the value through without arithmetic, so the 0–100 scale reaches the UI intact
+  and matches the thresholds in `rivalryUtils.ts`.
+- **Confirmed against real data:** a team page screenshot shows 83.3%, 55.6%,
+  41.7%, 33.3% and 25.0% — each equal to that row's own W–L record — with
+  "Dominated" on eleven rows, "Rival" on four, and "Tough Matchup" on one. Both
+  labels the report said could never appear are either present or reachable;
+  "Favorite" needs a 70–83% record with a win/loss gap wider than one (3–1, for
+  example), which this team simply does not have.
+- **What was really behind it:** two stale fixtures on the dead 0–1 scale in
+  `src/utils/matchUtils/__tests__/getMatchHeadToHead.test.ts`. They are inert —
+  `getMatchHeadToHead.ts` never reads `win_pct` — and have since been put on the
+  0–100 scale so they cannot mislead again.
+- **Decision needed:** none. No code change was required.
+- **Raised by:** [`history/head-to-head.md`](history/head-to-head.md#open-questions-and-verification).
+  That document listed the finding as unverified and asked for it to be confirmed
+  against real data before filing; this is that confirmation. The
+  `teams/team-details.md` citation was an error — that document never made the
+  claim.
 
 ### B-07: A second membership row permanently breaks every member ability
 
