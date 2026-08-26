@@ -12,7 +12,7 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **36 entries**: 11 high, 19 medium, and 6 low.
+merging by root cause they come to **37 entries**: 12 high, 19 medium, and 6 low.
 
 Three clusters account for most of the high ones.
 
@@ -49,6 +49,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-10 | Two contact channels, neither aware of the other | high | help, admin | product call | — |
 | B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
 | B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
+| B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-11 | Six destructive admin actions have no confirmation | medium | admin | fix | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | fix | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | fix | — |
@@ -123,7 +124,8 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 > **Scope corrected when this was fixed.** This was originally raised as "no
 > season can be activated from the admin screens", severity `high`, on the
 > assumption that the app could not perform a changeover at all. That was too
-> strong. The live database defaults `seasons.is_active` to **true**, so
+> strong. The live database defaulted `seasons.is_active` to **true** at the
+> time (changed to false by migration `20260826120000` — see B-37), so
 > **creating** a season has always activated it, and the ordinary changeover
 > (archive the old season, create the next one) worked throughout. The real
 > defect was narrower, and the severity is `medium`.
@@ -744,6 +746,44 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   it.
 - **Raised by:** [`scores/submit-a-score.md`](scores/submit-a-score.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
+
+### B-37: Creating a season without archiving first left two active seasons
+
+- **Where the user meets it:** an admin creates next season while the current one
+  is still running, instead of archiving first. Then **every** visitor sees it,
+  not just the admin.
+- **What happens / what was expected:** the app throws "Data integrity violation:
+  2 active seasons found" and every page scoped to the active season fails.
+  Expected: one season active at a time, always.
+- **Reproduce:** 1. Sign in as an admin with a season active. 2. Create a new
+  season without archiving the old one. 3. Open Standings or Schedule.
+- **Why (from the code):** `public.seasons.is_active` defaulted to `true`, but
+  the trigger that enforces a single active season,
+  `trg_ensure_single_active_season`
+  (`supabase/migrations/20250614154922-f22b7af9-18e5-4f38-b29b-ab5932818118.sql:25-29`),
+  is declared `BEFORE UPDATE` — never `INSERT`. So nothing deactivated the
+  previous season, and `SeasonQueryService.fetchActiveSeason`
+  (`src/services/seasons/SeasonQueryService.ts:38-42`) throws a
+  `BusinessLogicError` when it finds more than one. Confirmed by replaying every
+  migration on a fresh Postgres and inserting a season while one was active.
+- **Severity:** `high`. It breaks the app for everyone, not only the admin who
+  did it. It stayed hidden because the usual changeover archives first, which
+  leaves nothing active at the moment of the insert.
+- **Decision needed:** `fix`. **Done.** Creating and starting a season are now
+  separate steps. `SeasonLifecycleService.createSeason` sends `is_active: false`
+  explicitly, and migration `20260826120000_seasons_created_inactive.sql` sets
+  the column default to `false` for paths app code cannot reach. The explicit
+  flag matters because migrations are applied by hand
+  (`docs/OPERATIONS.md` §6), so the app must be correct before the SQL is run.
+  A season is started with the **Activate** control added in B-02, which routes
+  through `activate_season()` and deactivates the previous season atomically.
+  Guarded by `supabase/tests/seasons_created_inactive.sql`.
+- **Not covered:** the trigger is still `BEFORE UPDATE` only, so a hand-written
+  SQL `INSERT` that sets `is_active = true` can still produce two active seasons.
+  Nothing in the app does that; two old migrations did
+  (`20250801183139`, `20251001184630`), which is why a rebuilt CI database has
+  two active seasons and always has.
+- **Raised by:** found while fixing B-02.
 
 ### B-34: Four standings columns silently sort by power score instead
 

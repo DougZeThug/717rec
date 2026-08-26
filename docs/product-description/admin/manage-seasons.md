@@ -27,11 +27,11 @@ playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
 optional end date. Pressing Create Season saves it, a toast says "Season created
-successfully", and the new season appears at the top of the list as **Active** —
-the database defaults `is_active` to true, so creating a season is also how a
-season is started. The previous season keeps whatever flags it already had, so an
-admin archives it first. To make an *existing* season active instead, use
-**Activate** on its card.
+successfully", and the new season appears at the top of the list as **Inactive**.
+Creating a season does not start it: the toast says so, and the season sits in the
+list until an admin presses **Activate** on its card. That lets next season be set
+up in advance, and it is why the third card counts inactive seasons as "Ready to
+activate".
 
 ## The interaction, event by event
 
@@ -84,9 +84,9 @@ form filled with that season's name and dates. Either way it appears between the
 buttons and the list, and the list stays visible below it.
 
 Only three fields exist. **None of the four flags can be set here.** A season is
-created **active**, un-archived, with confirmation closed and playoffs off, and
-the form cannot change any of that afterwards. Creating therefore has a side
-effect the form never mentions: the new season becomes the active one.
+created inactive, un-archived, with confirmation closed and playoffs off, and the
+form cannot change any of that afterwards. Creating has no effect on the season
+that is currently running — **Activate** is the only control that hands over.
 
 No field is focused when the form opens. Nothing about the page shows that a form
 is dirty.
@@ -127,6 +127,9 @@ toast carries the server's own reason rather than a generic sentence. This is on
 of the few places in the app that reports why a write failed.
 
 ## Activating a season
+
+**Activate is the only control that starts a season.** Creating one leaves it
+inactive, and archiving never promotes a successor.
 
 Every season card that is neither active nor archived carries an **Activate**
 button. That includes a season whose playoffs are still in progress, and it
@@ -301,19 +304,6 @@ appear on team pages without anyone granting them.
 - **A season whose playoffs are in progress can be activated again.** It keeps
   its bracket, so its card then shows **Active** and still offers **Finalize
   Playoffs**.
-- **Creating a season silently activates it.** The form names only a season,
-  a start date and an end date, and never says the league is about to change
-  over.
-- **Creating a season without archiving the old one first leaves two active
-  seasons.** `seasons.is_active` defaults to true, but the
-  `trg_ensure_single_active_season` trigger that clears the other seasons fires
-  on *update* only, never on insert — so nothing deactivates the previous season.
-  The app then throws "Data integrity violation: 2 active seasons found"
-  (`src/services/seasons/SeasonQueryService.ts`) and every page scoped to the
-  active season fails. Archiving first avoids it, which is why the usual
-  changeover never hits this. Verified by replaying every migration on a fresh
-  Postgres; the live trigger was not read directly. **Use Activate instead of
-  Create to switch seasons, or archive first.**
 - **Nothing shows how many matches or teams a season holds** before it is
   archived, so an admin archives without seeing what is being frozen.
 

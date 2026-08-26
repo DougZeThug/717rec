@@ -72,7 +72,9 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
         await createSeason.mutateAsync(createData);
         toast({
           title: 'Success',
-          description: 'Season created successfully',
+          // A new season is created inactive, so say what starts it. Without
+          // this the admin reasonably assumes the league has changed over.
+          description: `${data.name} created. Press Activate on its card to start it.`,
         });
       }
 

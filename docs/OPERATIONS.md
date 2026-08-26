@@ -242,6 +242,15 @@ find the 'opponent1_position' column of 'match'".
 > **Applying the power score weight sandbox** (`20260820120000`) also has its
 > own runbook: **§6b** below.
 
+> **Seasons are created inactive** (`20260826120000_seasons_created_inactive.sql`).
+> One statement, no runbook: it sets `public.seasons.is_active` to default
+> `false`. Existing rows are untouched, so whichever season is active stays
+> active. Until it is applied, a season inserted directly in the SQL Editor
+> without an explicit `is_active` comes out **active** and can sit alongside the
+> running season — which makes every season-scoped page throw "Data integrity
+> violation" (B-37). The app itself is already safe: `createSeason` sends
+> `is_active: false` explicitly.
+
 ## 6a. Power-score unification: review, revert, reapply
 
 The power-score unification (migrations `20260809*`) put every page on one

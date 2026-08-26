@@ -353,6 +353,31 @@ describe('SeasonService.createSeason', () => {
       SeasonService.createSeason({ name: 'Season 1', start_date: '2026-01-01' })
     ).rejects.toThrow(DatabaseError);
   });
+
+  // The column default is set by a migration that is applied by hand, so the
+  // insert must carry is_active itself. Leaving it to the default risks a second
+  // active season, which makes fetchActiveSeason throw.
+  it('creates the season inactive rather than relying on the column default', async () => {
+    const insertSpy = vi.fn(() => ({
+      select: () => ({ single: () => Promise.resolve({ data: makeSeason(), error: null }) }),
+    }));
+    mockFrom.mockReturnValue({ insert: insertSpy });
+
+    await SeasonService.createSeason({
+      name: 'Season 1',
+      start_date: '2026-01-01',
+      end_date: '2026-06-01',
+    });
+
+    expect(insertSpy).toHaveBeenCalledWith([
+      {
+        name: 'Season 1',
+        start_date: '2026-01-01',
+        end_date: '2026-06-01',
+        is_active: false,
+      },
+    ]);
+  });
 });
 
 // ─── updateSeason ─────────────────────────────────────────────────────────────
