@@ -109,11 +109,13 @@ result, so it can read zero on a night when four matches have no score at all.
 
 ### Submit
 
-A queue commits nothing. Approving or rejecting a submission stamps that
-submission's row with the outcome, the admin's id, and the time — and **does not
-touch the match**.
+Rejecting a submission stamps its row with the outcome, the admin's id, and the
+time, and does not touch the match. Approving does more: it opens a dialog asking
+for the winner and the games each team won, writes that result (which also marks
+the match complete), and only then stamps the submission. A failed write leaves
+the submission pending, so the queue never clears on a stale match.
 
-Recording the actual result is a separate job, done by one of:
+A match can also be resulted without going through the submissions queue, by:
 
 - **Live scoring**, finalised by a player or an admin —
   [`live-scoring/finish-the-match.md`](../live-scoring/finish-the-match.md).
@@ -122,7 +124,7 @@ Recording the actual result is a separate job, done by one of:
 - **A correction** to a match already scored —
   [`admin/correct-a-live-match.md`](../admin/correct-a-live-match.md).
 
-Only that write moves standings, records, badges, and power scores.
+Any of these writes moves standings, records, badges, and power scores.
 
 ## Modifiers
 
