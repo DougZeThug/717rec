@@ -12,14 +12,14 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **36 entries**: 12 high, 16 medium, and 8 low.
+merging by root cause they come to **37 entries**: 12 high, 19 medium, and 6 low.
 
 Three clusters account for most of the high ones.
 
 **Writes that do not do what their control says.** Approving a score submission
-never results the match. No season can be activated from the admin screens at
-all. Auto-scheduled matches save at midnight. In each case the app reports
-success and the league's data does not change the way the admin was told it had.
+never results the match. Auto-scheduled matches save at midnight. In each case
+the app reports success and the league's data does not change the way the admin
+was told it had.
 
 **Work that is silently lost.** A failed round save discards what the scorer
 tapped. A decided live match that is never saved counts for nothing and nothing
@@ -38,7 +38,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | ID | Title | Severity | Area | Decision needed | Issue |
 | --- | --- | --- | --- | --- | --- |
 | B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
-| B-02 | No season can be activated from the admin screens | high | admin | fix | — |
+| B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
 | B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | fix | — |
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | fix | — |
@@ -49,6 +49,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-10 | Two contact channels, neither aware of the other | high | help, admin | product call | — |
 | B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
 | B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
+| B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-11 | Six destructive admin actions have no confirmation | medium | admin | fix | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | fix | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | fix | — |
@@ -118,29 +119,49 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   [`scores/pending-scores.md`](scores/pending-scores.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification).
 
-### B-02: No season can be activated from the admin screens
+### B-02: No **existing** season can be activated from the admin screens
 
-- **Where the user meets it:** an admin finishes a season and wants to start the
-  next one.
-- **What happens / what was expected:** there is no reachable control. The
-  activation dialog exists and can never open, and the panel that would host it
-  is only rendered for the season that is **already** active.
+> **Scope corrected when this was fixed.** This was originally raised as "no
+> season can be activated from the admin screens", severity `high`, on the
+> assumption that the app could not perform a changeover at all. That was too
+> strong. The live database defaulted `seasons.is_active` to **true** at the
+> time (changed to false by migration `20260826120000` — see B-37), so
+> **creating** a season has always activated it, and the ordinary changeover
+> (archive the old season, create the next one) worked throughout. The real
+> defect was narrower, and the severity is `medium`.
+
+- **Where the user meets it:** an admin wants to switch to a season that already
+  exists — going back to a previous season, starting one created earlier, or
+  recovering after archiving without creating a replacement.
+- **What happens / what was expected:** there was no reachable control. The
+  activation dialog existed and could never open, and the panel that would host
+  it was only rendered for the season that was **already** active. Creating a
+  season still activated it, so the everyday changeover was unaffected.
 - **Reproduce:** 1. Sign in as an admin. 2. Open the seasons section of
-  `/admin`. 3. Try to activate any season other than the current one.
+  `/admin`. 3. Try to activate a season other than the current one **without
+  creating a new one**.
 - **Why (from the code):** in `src/components/admin/seasons/SeasonActions.tsx`,
-  `showActivationDialog` is declared at line 16 and the only call to its setter
-  is `setShowActivationDialog(false)` at line 37. Nothing ever sets it true, so
-  `SeasonActivationDialog` never opens. `SeasonActions` is itself rendered only
+  `showActivationDialog` was declared at line 16 and the only call to its setter
+  was `setShowActivationDialog(false)` at line 37. Nothing ever set it true, so
+  `SeasonActivationDialog` never opened. `SeasonActions` was itself rendered only
   as `{activeSeason && <SeasonActions season={activeSeason} />}`
   (`src/components/admin/seasons/SeasonManagementTab.tsx:90`), so even a working
-  dialog would be attached to the wrong season. The underlying
+  dialog would have been attached to the wrong season. The underlying
   `activateSeason` / `activateSeasonWithPartialArchive` mutations
-  (`src/hooks/useSeasonMutations.ts:54,64`) are sound and have no other caller.
-- **Severity:** `high`. Seasons are the spine of the product;
-  [`foundations/seasons.md`](foundations/seasons.md) describes a changeover the
-  app cannot perform.
-- **Decision needed:** `fix`. Render the actions for every season, not only the
-  active one, and wire a trigger to open the dialog.
+  (`src/hooks/useSeasonMutations.ts:54,64`) were sound and had no other caller.
+- **Severity:** `medium`. The everyday changeover worked; switching and recovery
+  did not.
+- **Decision needed:** `fix`. **Done.** The trigger went on **each season card**
+  in `src/components/admin/seasons/SeasonsList.tsx` — shown when
+  `!season.is_active && !season.is_archived` — rather than on `SeasonActions` as
+  first proposed, because `SeasonActions` also holds the "Current Active Season"
+  badge and the Archive Season button, which are correct only for the active
+  season. The dead `showActivationDialog` state and the unreachable dialog render
+  were deleted from `SeasonActions.tsx`. Two related corrections shipped with it:
+  `SeasonActivationDialog`'s confirm button was missing `preventDefault`, so the
+  dialog closed instantly and a failure could not be retried; and
+  `supabase/migrations/00000000000000_baseline.sql` had the `is_active` default
+  reconstructed as `false`, which is what made this bug look larger than it was.
 - **Raised by:** [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification),
   [`foundations/seasons.md`](foundations/seasons.md#open-questions-and-verification).
 
@@ -725,6 +746,50 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   it.
 - **Raised by:** [`scores/submit-a-score.md`](scores/submit-a-score.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
+
+### B-37: Creating a season without archiving first left two active seasons
+
+- **Where the user meets it:** an admin creates next season while the current one
+  is still running, instead of archiving first. Then **every** visitor sees it,
+  not just the admin.
+- **What happens / what was expected:** the app throws "Data integrity violation:
+  2 active seasons found" and every page scoped to the active season fails.
+  Expected: one season active at a time, always.
+- **Reproduce:** 1. Sign in as an admin with a season active. 2. Create a new
+  season without archiving the old one. 3. Open Standings or Schedule.
+- **Why (from the code):** `public.seasons.is_active` defaulted to `true`, but
+  the trigger that enforces a single active season,
+  `trg_ensure_single_active_season`
+  (`supabase/migrations/20250614154922-f22b7af9-18e5-4f38-b29b-ab5932818118.sql:25-29`),
+  is declared `BEFORE UPDATE` — never `INSERT`. So nothing deactivated the
+  previous season, and `SeasonQueryService.fetchActiveSeason`
+  (`src/services/seasons/SeasonQueryService.ts:38-42`) throws a
+  `BusinessLogicError` when it finds more than one. Confirmed by replaying every
+  migration on a fresh Postgres and inserting a season while one was active.
+- **Severity:** `high`. It breaks the app for everyone, not only the admin who
+  did it. It stayed hidden because the usual changeover archives first, which
+  leaves nothing active at the moment of the insert.
+- **Decision needed:** `fix`. **Done.** Creating and starting a season are now
+  separate steps. `SeasonLifecycleService.createSeason` sends `is_active: false`
+  explicitly, and migration `20260826120000_seasons_created_inactive.sql` sets
+  the column default to `false` for paths app code cannot reach. The explicit
+  flag matters because migrations are applied by hand
+  (`docs/OPERATIONS.md` §6), so the app must be correct before the SQL is run.
+  A season is started with the **Activate** control added in B-02, which routes
+  through `activate_season()` and deactivates the previous season atomically.
+  Guarded by `supabase/tests/seasons_created_inactive.sql`.
+  The same migration also **repairs** a database already in the broken state:
+  two earlier migrations (`20250801183139`, `20251001184630`) each insert a
+  season with `is_active = true`, so a full replay left a freshly rebuilt
+  database with two active seasons that would throw on the first read. It now
+  keeps exactly one — preferring an un-archived season, then the latest start
+  date — and is a no-op wherever a single season is already active, so a healthy
+  live database is untouched.
+- **Not covered:** the trigger is still `BEFORE UPDATE` only, so a hand-written
+  SQL `INSERT` that sets `is_active = true` can still produce two active seasons
+  from that point on. Nothing in the app does that, and the repair above clears
+  any such state the next time the migration is applied.
+- **Raised by:** found while fixing B-02.
 
 ### B-34: Four standings columns silently sort by power score instead
 

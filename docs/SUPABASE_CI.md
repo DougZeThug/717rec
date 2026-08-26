@@ -32,7 +32,13 @@ The baseline was reconstructed from `src/integrations/supabase/types.ts`
 (the auto-generated live-schema snapshot) plus evidence in later
 migrations and app code, then verified by replaying all migrations on a
 fresh Postgres. Column types are best-effort where the snapshot is
-ambiguous. If you ever run `supabase db dump --linked` against the live
+ambiguous, and **default values are guesses**: `types.ts` records only
+*that* a column has a default, never what it is. `seasons.is_active` was
+reconstructed as `DEFAULT false` and corrected to `DEFAULT true` once the
+live behaviour was confirmed (creating a season made it active). The baseline
+keeps `true` because that is the pre-migration state; migration
+`20260826120000` is what changes it to `false`. Treat any other reconstructed
+default as unverified. If you ever run `supabase db dump --linked` against the live
 project, its output can replace the reconstructed table definitions
 wholesale.
 

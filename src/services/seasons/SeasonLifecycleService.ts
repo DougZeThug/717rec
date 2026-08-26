@@ -14,7 +14,18 @@ export interface UpdateSeasonData extends CreateSeasonData {
 export const SeasonLifecycleService = {
   // From useSeasonMutations.ts
   createSeason: async (data: CreateSeasonData) => {
-    const { data: season, error } = await supabase.from('seasons').insert([data]).select().single();
+    const { data: season, error } = await supabase
+      .from('seasons')
+      // is_active is set explicitly rather than left to the column default. A
+      // new season must never take the league over on its own: the trigger that
+      // clears the other seasons fires on UPDATE only, so an active-by-default
+      // insert leaves two active seasons and fetchActiveSeason then throws.
+      // Migration 20260826120000 sets the column default to false too, but
+      // migrations are applied by hand (docs/OPERATIONS.md §6) — this line makes
+      // the behaviour correct either way. Use activateSeason to start a season.
+      .insert([{ ...data, is_active: false }])
+      .select()
+      .single();
 
     if (error) handleDatabaseError(error, 'Failed to create season');
     return season;
