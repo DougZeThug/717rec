@@ -63,8 +63,21 @@ A spectator sees the winner panel and the history, and no buttons.
 
 Nothing is recorded. **The match stays decided-but-unsaved indefinitely.** As far
 as the schedule, the standings, and every team's record are concerned, this match
-has not been played. Nothing chases anyone to save it and nothing warns that it
-is outstanding.
+has not been played. Nothing on the scorer's screen chases them to save it.
+
+An admin does see it. The **Unrecorded live matches** card on the admin League
+Night Status tab lists every match live scoring decided that has no recorded
+result, newest first, with both team names and the game score. Each row links
+to that match's live scoring screen so an admin can check the games and press
+"Save official result". The card is a read-only detector: it never writes a
+result itself.
+
+It lists the **active season only**. Archiving a season moves and deletes only
+completed matches and then resets every team's record to zero, so a
+decided-but-unsaved match from an old season stays behind for good — and saving
+it would add last season's result to this season's standings. Those matches are
+therefore left alone rather than offered, and with no active season the card
+says so instead of reporting all clear.
 
 ### Begin editing
 
@@ -178,7 +191,8 @@ needs admin. See
 a persistent alert — which is better than anywhere else in the app.
 
 **Unsaved changes.** A decided-but-unsaved match is the app's longest-lived
-unsaved state, and nothing anywhere flags it.
+unsaved state. The scorer is never warned, but the admin **Unrecorded live
+matches** card lists it until somebody saves the result.
 
 **Optimistic updates and rollback.** Neither saving nor reopening is optimistic.
 
@@ -212,9 +226,11 @@ See [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.
 
 ## Edge cases
 
-- **A decided match that is never saved counts for nothing.** The teams have
-  played, the app knows who won, and the standings do not. Nothing surfaces this
-  anywhere in the app.
+- **A decided match that is never saved counts for nothing** until an admin
+  saves it. The teams have played, the app knows who won, and the standings do
+  not. The admin **Unrecorded live matches** card is the only place that says so;
+  the scorers themselves are still not told, and `/schedule` still shows the
+  match as an upcoming 0-0 fixture.
 - **Saving twice is safe.** The second attempt reports that it was already done.
 - **"Already finalized" is not an error** and does not stop the screen moving on.
 - **Reopening reverses records but keeps the rounds**, so a match can be
@@ -232,10 +248,12 @@ See [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.
 
 ## Open questions and verification
 
-- **Nothing anywhere flags a decided-but-unsaved match.** A scorer who closes the
-  tab after the last game leaves the league's standings wrong, and no list, no
-  reminder, and no admin screen shows it. This is the most consequential gap in
-  live scoring. **May be worth treating as a bug rather than documenting.**
+- Resolved: a decided-but-unsaved match used to be invisible everywhere. It was
+  treated as a bug ([B-04](../bug-triage.md#b-04-a-decided-live-match-that-is-never-saved-counts-for-nothing-and-nothing-surfaces-it))
+  and an admin detector now lists it. Two parts of that gap are still open and
+  were deliberately left out of the fix: the **scorers** are still not warned
+  before they close the tab, and `/schedule` still shows the match as an
+  upcoming 0-0 fixture with a countdown.
 - **A match resulted by an admin tool can disagree with its own rounds.** The
   review shows the recorded winner and game wins in the header and the rounds'
   totals below, and nothing reconciles them. Worth checking by hand.

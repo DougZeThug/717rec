@@ -41,7 +41,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
 | B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
 | B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
-| B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | fix | — |
+| B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | **fixed** | — |
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | fix | — |
 | B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
 | B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | fix | — |
@@ -209,14 +209,54 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   `/schedule`, `/stats`, and every admin queue.
 - **Why (from the code):** the decided state is derived from the games each time
   the screen is drawn (`src/utils/liveScoring/bestOfThree.ts:13`,
-  `deriveMatchState`) and is never stored, so nothing can query for it. The
-  admin's league-night queues key on score submissions and on `iscompleted`, and
-  a decided-but-unsaved match is neither.
+  `deriveMatchState`) and is never stored. The admin's league-night queues key on
+  score submissions and on `iscompleted`, and a decided-but-unsaved match is
+  neither: `OpsHealthService.fetchPendingOpsCounts` counts only pending score
+  submissions, pending team requests and new contact requests, and `games` was
+  never joined against `matches` anywhere in the app.
+- **Correction to the original write-up (1):** it said the state "is never
+  stored, **so nothing can query for it**". The derived *flag* is not stored, but
+  the evidence is. `games` persists `status`, `winner_team_id` and `completed_at`
+  (`supabase/migrations/20260708120000_live_scoring.sql:64-69`), and
+  `finalize_live_match` already counts exactly that to decide whether a match may
+  be resulted (same file, lines 558-563). The state was always derivable, which
+  is why the fix needed no schema change and no new column.
+- **Correction to the original write-up (2):** it said no list anywhere shows the
+  match. Two places showed a trace, and **both were worse than silence**. Sixteen
+  hours after its scheduled time the match appears on the public home page
+  "Pending Scores" card through `v_pending_matches`
+  (`supabase/migrations/20250821121435_*.sql:19-23`), indistinguishable from a
+  match nobody played, and its button files a free-text score report that an
+  admin then approves down a *different* write path which can disagree with the
+  games actually played. Live Corrections lists the match too, distinguishable
+  only by the absence of the word "finalized"
+  (`src/components/admin/live-corrections/LiveCorrectionsSection.tsx:100-103`).
+  The accurate claim is that nothing told a match that was **played and lost**
+  apart from a match **nobody played**.
 - **Severity:** `high`. It loses a whole match's result with no signal, and the
   window in which it can happen is every match.
-- **Decision needed:** `fix`. An admin queue of "matches with completed games and
-  no recorded result" would cover it, and the same query drives a reminder to the
-  scorers.
+- **Decision needed:** `fix`. **Done.** `UnsavedLiveMatchesService` counts
+  completed `games` rows per team for matches with no recorded result and keeps
+  those where a side reached `GAMES_TO_WIN_MATCH`, reusing the live-scoring rule
+  constant so the threshold cannot drift from `deriveMatchState` or
+  `finalize_live_match`. `UnsavedLiveMatchesCard` shows the result on the admin
+  **League Night Status** tab, next to the counter-drift detector it is modelled
+  on, and links each row to that match's live scoring screen. It is scoped to the
+  **active season**: `archive_season` archives and deletes only completed matches
+  and then zeroes every team's counters
+  (`supabase/migrations/20260408173631_*.sql:436-449`), so a decided-but-unsaved
+  match from an archived season survives rollover, and finalizing it would add an
+  old result to the current season's records — `finalize_live_match` updates
+  `teams` with no season filter. Raised on review by Codex and fixed before
+  merge. The card is a
+  detector only — an admin still checks the games and presses "Save official
+  result", so no league record is written without a human looking at it.
+- **Deliberately left out of the fix:** the **scorers** are still not warned
+  before they close the tab, and `/schedule` still shows a played-but-unsaved
+  match as an upcoming **0-0** fixture with a countdown
+  (`src/components/schedule/MatchCard.tsx:188-192`). The Pending Scores card
+  still steers such a match into the manual score-report path. Each is a separate
+  change.
 - **Raised by:** [`live-scoring/finish-the-match.md`](live-scoring/finish-the-match.md#open-questions-and-verification).
 
 ### B-05: A failed round save throws away what the scorer tapped
