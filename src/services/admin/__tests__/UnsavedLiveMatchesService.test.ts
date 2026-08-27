@@ -26,15 +26,28 @@ const pgError = () => ({
   name: 'PostgrestError',
 });
 
+interface RecordedCall {
+  method: string;
+  args: unknown[];
+}
+
+/** Every filter call made across both queries, in order. */
+let calls: RecordedCall[] = [];
+
 /** Thenable stand-in for a Supabase query builder: every filter returns itself. */
 const chain = (result: { data: unknown; error: unknown }) => {
   const builder: Record<string, unknown> = {};
   for (const method of ['select', 'not', 'is', 'order', 'eq', 'in']) {
-    builder[method] = () => builder;
+    builder[method] = (...args: unknown[]) => {
+      calls.push({ method, args });
+      return builder;
+    };
   }
   builder.then = (resolve: (value: unknown) => unknown) => Promise.resolve(result).then(resolve);
   return builder;
 };
+
+const SEASON_ID = 's-1';
 
 const matchRow = (over: Record<string, unknown> = {}) => ({
   id: 'm-1',
@@ -55,12 +68,28 @@ const mockQueries = (matches: unknown[], games: unknown[]) => {
 };
 
 describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    calls = [];
+  });
+
+  // Regression guard. archive_season deletes only completed matches and then
+  // zeroes every team's counters, so a decided-but-unsaved match from an
+  // archived season lives on in `matches`. Listing one would invite an admin to
+  // save it, and finalize_live_match would add that old result to the current
+  // season's team records.
+  it('scopes the search to the given season', async () => {
+    mockFrom.mockReturnValueOnce(chain({ data: [], error: null }));
+
+    await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID);
+
+    expect(calls).toContainEqual({ method: 'eq', args: ['season_id', SEASON_ID] });
+  });
 
   it('returns [] and skips the games query when nothing is unrecorded', async () => {
     mockFrom.mockReturnValueOnce(chain({ data: [], error: null }));
 
-    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).toEqual([]);
+    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).toEqual([]);
     expect(mockFrom).toHaveBeenCalledTimes(1);
     expect(mockFrom).toHaveBeenCalledWith('matches');
   });
@@ -74,7 +103,7 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).toEqual([
+    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).toEqual([
       {
         id: 'm-1',
         date: '2026-08-20T23:00:00Z',
@@ -98,7 +127,7 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    const [row] = await UnsavedLiveMatchesService.fetchUnsavedLiveMatches();
+    const [row] = await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID);
     expect(row.team1GameWins).toBe(1);
     expect(row.team2GameWins).toBe(2);
   });
@@ -112,13 +141,13 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).toEqual([]);
+    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).toEqual([]);
   });
 
   it('ignores an unplayed match that has no live games', async () => {
     mockQueries([matchRow()], []);
 
-    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).toEqual([]);
+    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).toEqual([]);
   });
 
   it('ignores game wins credited to a team that is not in the match', async () => {
@@ -130,7 +159,7 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).toEqual([]);
+    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).toEqual([]);
   });
 
   it('attributes each match its own games when several are unsaved', async () => {
@@ -143,7 +172,7 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    const rows = await UnsavedLiveMatchesService.fetchUnsavedLiveMatches();
+    const rows = await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID);
     expect(rows).toHaveLength(1);
     expect(rows[0].id).toBe('m-1');
   });
@@ -157,7 +186,7 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    const [row] = await UnsavedLiveMatchesService.fetchUnsavedLiveMatches();
+    const [row] = await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID);
     expect(row.team1Name).toBe('Unknown team');
     expect(row.team2Name).toBe('Corn Stars');
   });
@@ -171,13 +200,13 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       ]
     );
 
-    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).toEqual([]);
+    expect(await UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).toEqual([]);
   });
 
   it('throws DatabaseError when the matches query fails', async () => {
     mockFrom.mockReturnValueOnce(chain({ data: null, error: pgError() }));
 
-    await expect(UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).rejects.toThrow(
+    await expect(UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).rejects.toThrow(
       DatabaseError
     );
   });
@@ -187,7 +216,7 @@ describe('UnsavedLiveMatchesService.fetchUnsavedLiveMatches', () => {
       .mockReturnValueOnce(chain({ data: [matchRow()], error: null }))
       .mockReturnValueOnce(chain({ data: null, error: pgError() }));
 
-    await expect(UnsavedLiveMatchesService.fetchUnsavedLiveMatches()).rejects.toThrow(
+    await expect(UnsavedLiveMatchesService.fetchUnsavedLiveMatches(SEASON_ID)).rejects.toThrow(
       DatabaseError
     );
   });

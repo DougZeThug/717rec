@@ -8,11 +8,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { UnsavedLiveMatch } from '@/services/admin/UnsavedLiveMatchesService';
 
 const fetchUnsavedLiveMatches = vi.fn();
+const useActiveSeason = vi.fn();
 
 vi.mock('@/services/admin/UnsavedLiveMatchesService', () => ({
   UnsavedLiveMatchesService: {
-    fetchUnsavedLiveMatches: () => fetchUnsavedLiveMatches(),
+    fetchUnsavedLiveMatches: (seasonId: string) => fetchUnsavedLiveMatches(seasonId),
   },
+}));
+
+vi.mock('@/hooks/useSeasons', () => ({
+  useActiveSeason: () => useActiveSeason(),
 }));
 
 import UnsavedLiveMatchesCard from '../UnsavedLiveMatchesCard';
@@ -40,7 +45,11 @@ const match = (over: Partial<UnsavedLiveMatch> = {}): UnsavedLiveMatch => ({
 });
 
 describe('UnsavedLiveMatchesCard', () => {
-  beforeEach(() => fetchUnsavedLiveMatches.mockReset());
+  beforeEach(() => {
+    fetchUnsavedLiveMatches.mockReset();
+    useActiveSeason.mockReset();
+    useActiveSeason.mockReturnValue({ data: { id: 's-1' }, isLoading: false });
+  });
 
   it('shows the all-clear state when nothing is outstanding', async () => {
     fetchUnsavedLiveMatches.mockResolvedValueOnce([]);
@@ -91,6 +100,23 @@ describe('UnsavedLiveMatchesCard', () => {
     renderCard();
 
     expect(await screen.findByText(/no date/i)).toBeInTheDocument();
+  });
+
+  it('scopes the query to the active season', async () => {
+    fetchUnsavedLiveMatches.mockResolvedValueOnce([]);
+    renderCard();
+
+    await screen.findByText(/all clear/i);
+    expect(fetchUnsavedLiveMatches).toHaveBeenCalledWith('s-1');
+  });
+
+  it('never claims all clear when there is no active season', async () => {
+    useActiveSeason.mockReturnValue({ data: null, isLoading: false });
+    renderCard();
+
+    expect(await screen.findByText(/no active season/i)).toBeInTheDocument();
+    expect(screen.queryByText(/all clear/i)).not.toBeInTheDocument();
+    expect(fetchUnsavedLiveMatches).not.toHaveBeenCalled();
   });
 
   it('offers a retry when the check fails', async () => {

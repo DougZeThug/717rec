@@ -25,25 +25,30 @@ export const UnsavedLiveMatchesService = {
    * This is the same condition `finalize_live_match` checks before it writes
    * the result — counted here from the stored `games` rows instead, so the
    * state is visible without anything being persisted for it. Empty array
-   * means every decided match has been recorded.
+   * means every decided match in the season has been recorded.
+   *
+   * `seasonId` is required, and must be the active season. `archive_season`
+   * only archives and deletes completed matches and then zeroes every team's
+   * counters, so a decided-but-unsaved match from an archived season stays in
+   * `matches` for good. Offering one of those for saving would add an old
+   * season's result to the current season's standings, because
+   * `finalize_live_match` increments the `teams` counters with no season
+   * filter.
    */
-  fetchUnsavedLiveMatches: async (seasonId?: string | null): Promise<UnsavedLiveMatch[]> => {
+  fetchUnsavedLiveMatches: async (seasonId: string): Promise<UnsavedLiveMatch[]> => {
     // Step 1: matches the league has no result for. `iscompleted` is nullable,
     // so exclude only `true` — matching finalize_live_match's COALESCE.
-    let matchQuery = supabase
+    const { data: matchRows, error: matchError } = await supabase
       .from('matches')
       .select(
         `id, date, season_id, team1_id, team2_id,
          team1:teams!matches_team1_id_fkey(id, name),
          team2:teams!matches_team2_id_fkey(id, name)`
       )
+      .eq('season_id', seasonId)
       .not('iscompleted', 'is', true)
       .is('winner_id', null)
       .order('date', { ascending: false });
-
-    if (seasonId) matchQuery = matchQuery.eq('season_id', seasonId);
-
-    const { data: matchRows, error: matchError } = await matchQuery;
     if (matchError) handleDatabaseError(matchError, 'Failed to fetch unrecorded matches');
 
     const unrecorded = matchRows ?? [];

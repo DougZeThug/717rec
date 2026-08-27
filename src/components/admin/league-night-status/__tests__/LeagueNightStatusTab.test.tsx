@@ -30,11 +30,16 @@ vi.mock('@/services/admin/DriftService', () => ({
 }));
 
 // Same for <UnsavedLiveMatchesCard/>, which checks for decided-but-unsaved
-// live matches in the background.
+// live matches in the active season. Both the season lookup and the detector
+// are stubbed so the tab test makes no network calls.
 vi.mock('@/services/admin/UnsavedLiveMatchesService', () => ({
   UnsavedLiveMatchesService: {
     fetchUnsavedLiveMatches: vi.fn().mockResolvedValue([]),
   },
+}));
+
+vi.mock('@/hooks/useSeasons', () => ({
+  useActiveSeason: () => ({ data: { id: 'season-1' }, isLoading: false }),
 }));
 
 import LeagueNightStatusTab from '../LeagueNightStatusTab';

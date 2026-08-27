@@ -150,10 +150,13 @@ open that section rather than switching in place.
 beacon, with a seven-day breakdown by platform. Only an admin can read it; a
 failure says so rather than showing an error.
 
-**Unrecorded live matches.** Matches that live scoring decided — a side won two
-games — for which nobody ever pressed "Save official result". It lists up to ten,
-newest first, with both team names, the game score, and the date, plus a count of
-any beyond ten. Each row links to that match's live scoring screen so the games
+**Unrecorded live matches.** Matches **in the active season** that live scoring
+decided — a side won two games — for which nobody ever pressed "Save official
+result". It lists up to ten, newest first, with both team names, the game score,
+and the date, plus a count of any beyond ten. Matches from archived seasons are
+deliberately excluded, because saving one would add its result to the current
+season's standings; with no active season the card says so rather than reporting
+all clear. Each row links to that match's live scoring screen so the games
 can be checked before the result is saved. When there are none it shows a green
 "All clear" line. **This card writes nothing**; saving the result is still done
 by hand on the match itself. See

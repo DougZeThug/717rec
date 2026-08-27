@@ -72,6 +72,13 @@ to that match's live scoring screen so an admin can check the games and press
 "Save official result". The card is a read-only detector: it never writes a
 result itself.
 
+It lists the **active season only**. Archiving a season moves and deletes only
+completed matches and then resets every team's record to zero, so a
+decided-but-unsaved match from an old season stays behind for good — and saving
+it would add last season's result to this season's standings. Those matches are
+therefore left alone rather than offered, and with no active season the card
+says so instead of reporting all clear.
+
 ### Begin editing
 
 There is nothing to edit. The two moves are saving the result and reopening the

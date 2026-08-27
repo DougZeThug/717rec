@@ -241,7 +241,14 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   constant so the threshold cannot drift from `deriveMatchState` or
   `finalize_live_match`. `UnsavedLiveMatchesCard` shows the result on the admin
   **League Night Status** tab, next to the counter-drift detector it is modelled
-  on, and links each row to that match's live scoring screen. The card is a
+  on, and links each row to that match's live scoring screen. It is scoped to the
+  **active season**: `archive_season` archives and deletes only completed matches
+  and then zeroes every team's counters
+  (`supabase/migrations/20260408173631_*.sql:436-449`), so a decided-but-unsaved
+  match from an archived season survives rollover, and finalizing it would add an
+  old result to the current season's records — `finalize_live_match` updates
+  `teams` with no season filter. Raised on review by Codex and fixed before
+  merge. The card is a
   detector only — an admin still checks the games and presses "Save official
   result", so no league record is written without a human looking at it.
 - **Deliberately left out of the fix:** the **scorers** are still not warned

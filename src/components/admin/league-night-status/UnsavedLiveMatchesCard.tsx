@@ -19,10 +19,12 @@ const formatMatchDate = (iso: string | null): string => {
 };
 
 const UnsavedLiveMatchesCard: React.FC = () => {
-  const unsavedQuery = useUnsavedLiveMatches();
+  const { matches: rows, isLoading, isError, refetch, hasActiveSeason } = useUnsavedLiveMatches();
 
-  const rows = unsavedQuery.data ?? [];
   const count = rows.length;
+  // Never claim "all clear" without having checked: with no active season
+  // there is nothing to scope the search to, so say that instead.
+  const showResult = !isLoading && !isError && hasActiveSeason;
 
   return (
     <Card>
@@ -33,22 +35,29 @@ const UnsavedLiveMatchesCard: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {unsavedQuery.isLoading && (
+        {isLoading && (
           <p className="text-sm text-muted-foreground" aria-busy="true">
             Checking…
           </p>
         )}
 
-        {unsavedQuery.isError && !unsavedQuery.isLoading && (
+        {isError && !isLoading && (
           <div className="space-y-2">
             <p className="text-sm text-red-500">Couldn't check for unrecorded matches.</p>
-            <Button size="sm" variant="outline" onClick={() => unsavedQuery.refetch()}>
+            <Button size="sm" variant="outline" onClick={() => refetch()}>
               Retry
             </Button>
           </div>
         )}
 
-        {!unsavedQuery.isLoading && !unsavedQuery.isError && (
+        {!isLoading && !isError && !hasActiveSeason && (
+          <p className="text-sm text-muted-foreground">
+            No active season — nothing to check. This card only looks at the active season, because
+            saving an archived season's match would add its result to the current standings.
+          </p>
+        )}
+
+        {showResult && (
           <>
             {count === 0 ? (
               <div className="flex items-center gap-2 text-sm text-emerald-500">
