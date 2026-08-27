@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { AutoScheduleMatch, Team } from '@/types';
+import { BACK_TO_BACK_PAIRS } from '@/utils/autoSchedule/constants';
 
 interface EditableMatchCardProps {
   match: AutoScheduleMatch;
@@ -26,16 +27,13 @@ interface EditableMatchCardProps {
   warningMessage?: string;
 }
 
+/**
+ * Every real block time, derived from the block constants so this list cannot drift
+ * away from them. The pairs are already in chronological order and overlap end to
+ * start, so de-duplicating in insertion order yields 5:00 PM through 9:30 PM.
+ */
 const timeSlotOptions = [
-  '6:00 PM',
-  '6:30 PM',
-  '7:00 PM',
-  '7:30 PM',
-  '8:00 PM',
-  '8:30 PM',
-  '9:00 PM',
-  '9:30 PM',
-  '10:00 PM',
+  ...new Set(Object.values(BACK_TO_BACK_PAIRS).flatMap((pair) => [pair.primary, pair.secondary])),
 ];
 
 /** Card for editing one auto-scheduled match: team pickers, timeslot, swap, and remove. */
