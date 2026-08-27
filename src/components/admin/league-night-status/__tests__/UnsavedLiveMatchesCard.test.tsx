@@ -123,7 +123,7 @@ describe('UnsavedLiveMatchesCard', () => {
     fetchUnsavedLiveMatches.mockRejectedValueOnce(new Error('boom'));
     renderCard();
 
-    expect(await screen.findByText(/couldn't check for unrecorded matches/i)).toBeInTheDocument();
+    expect(await screen.findByText(/couldn.t check for unrecorded matches/i)).toBeInTheDocument();
 
     fetchUnsavedLiveMatches.mockResolvedValueOnce([]);
     await userEvent.setup().click(screen.getByRole('button', { name: /retry/i }));
