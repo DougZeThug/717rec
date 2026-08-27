@@ -233,12 +233,15 @@ appear on the team's matches; see
   are already on.
 - **Being rejected looks the same as never having asked.** No message, no history.
 - **There is no way to change teams directly.** Leave first, then ask again.
-- **Only one approved membership is possible.** The database refuses a second, so
-  an admin approving a request from someone who already belongs to another team is
-  refused and told to remove the other membership first.
-- **Two tabs can each send a request.** Nothing deduplicates them, and a user with
-  two membership rows breaks their own panel: the app expects at most one and the
-  read fails from then on, which is drawn as "no membership".
+- **Only one membership is possible.** The database refuses a second row, pending
+  or approved, so an admin approving a request from someone who already belongs to
+  another team is refused and told to remove the other membership first.
+- **Two tabs cannot each send a request.** The second one is refused and the user
+  is told "You already have a team request. Refresh the page to see it." Until
+  `20260827120000_one_membership_per_user.sql`, both requests were stored, and two
+  membership rows broke the user's own panel: the read failed from then on and was
+  drawn as "no membership". See B-07 in
+  [`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).
 - **Retired teams are offered.** The dropdown is unfiltered, so teams that no
   longer play appear alongside current ones with nothing to tell them apart.
 - **The date on the card is the request date, not the approval date**, until the
@@ -266,8 +269,10 @@ appear on the team's matches; see
   waiting user's browser, and whether returning to the tab is enough.
 - Not confirmed by hand: whether teams in the Hidden division really do appear in
   the dropdown against the live database.
-- Not confirmed by hand: what a user sees after they manage to create two
-  membership rows, and whether it can be recovered from without an admin.
+- **Two membership rows no longer break the panel.** They cannot be created any
+  more, and the membership read now takes one row — approved first, then oldest —
+  instead of failing. Fixed under B-07; the question this section used to ask,
+  whether it could be recovered from without an admin, was answered "no".
 - Not confirmed by hand: what happens to an approved membership when the team is
   hidden or the season rolls over.
 

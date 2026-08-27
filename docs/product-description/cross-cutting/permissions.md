@@ -243,12 +243,14 @@ no record the user can see, and produces no notification to the league.
 
 ## Edge cases
 
-- **A player with approved memberships of two teams** breaks the membership
-  read: the app asks for exactly one membership row for the user and errors when
-  it finds two. The user sees "Failed to load team membership" and loses every
-  member ability at once, including scoring. The database rule, by contrast,
-  accepts any approved membership. **May be worth treating as a bug rather than
-  documenting.**
+- **A player with two membership rows** used to break the membership read: the
+  app asked for exactly one row for the user and errored when it found two, so
+  the user lost every member ability at once, including scoring, while the
+  database rule went on accepting the approved membership. Two *approved* rows
+  were never possible — the pair was an approved row beside a pending one, or two
+  pending ones. The read now takes one row, approved first, and the database
+  refuses a second row of any kind. Fixed under B-07 in
+  [`../bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).
 - **An admin cannot delete another person's message.** The delete control is
   drawn only for the author, and the delete itself is filtered by author, so an
   admin who reached it would delete nothing and be told it worked. The board has
@@ -282,8 +284,10 @@ no record the user can see, and produces no notification to the league.
 - **The message board is invisible to visitors and says so wrongly.** The empty
   state claims there are no messages. This needs confirming against the running
   app; if it is right, it is the highest-value fix in this document.
-- **Two approved memberships break the member abilities entirely.** Read from
-  the membership query's use of a single-row read; not reproduced by hand.
+- **Two membership rows used to break the member abilities entirely.** Read from
+  the membership query's use of a single-row read, and confirmed against
+  `@supabase/postgrest-js` 2.112.4, which returns `PGRST116` for a multi-row
+  `maybeSingle()`. Now fixed, see B-07.
 - Not confirmed by hand: whether the "Access Denied" toast is ever seen at all,
   or whether the redirect completes first and replaces it.
 - Not confirmed by hand: whether a signed-out visitor's score report is actually

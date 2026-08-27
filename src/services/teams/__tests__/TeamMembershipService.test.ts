@@ -35,9 +35,9 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const pgError = (msg = 'query failed') => ({
+const pgError = (msg = 'query failed', code = '42P01') => ({
   message: msg,
-  code: '42P01',
+  code,
   details: null,
   hint: null,
   name: 'PostgrestError',
@@ -155,6 +155,18 @@ describe('joinTeamMembership', () => {
       update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
     });
     await expect(joinTeamMembership('user-1', 'team-1', true)).rejects.toThrow(DatabaseError);
+  });
+
+  // The join form is drawn whenever the membership read returns nothing, which
+  // includes a read that failed. idx_one_membership_per_user now refuses the
+  // second row that used to be created there.
+  it('explains the duplicate when the unique index refuses a second row', async () => {
+    mockFrom.mockReturnValue({
+      insert: () => Promise.resolve({ error: pgError('duplicate key value', '23505') }),
+    });
+    await expect(joinTeamMembership('user-1', 'team-1', false)).rejects.toThrow(
+      /already have a team request/i
+    );
   });
 });
 

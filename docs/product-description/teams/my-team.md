@@ -241,9 +241,12 @@ changes its name everywhere in the app, including its address — see
 - **A failed membership read looks the same as being signed out.** Both end in
   the same empty state with no error and no toast. **May be worth treating as a
   bug rather than documenting.**
-- Not confirmed by hand: what the page does for a user with more than one
-  membership row. The read expects at most one and appears to fail rather than
-  choose, which would leave the page in the "No Teams Available" state.
+- **A user can no longer have more than one membership row.** The old read did
+  fail rather than choose, and the page did fall through to "No Teams Available",
+  which is why the only control it offered inserted yet another row. The read now
+  takes one row — approved first, then oldest — and the database refuses a second.
+  Fixed under B-07 in
+  [`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).
 - Not confirmed by hand: whether the database allows an ordinary approved member
   to rename any team or only their own. The browser only ever offers their own.
 - Not confirmed by hand: whether renaming a team while a match is in progress
