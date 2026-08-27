@@ -12,14 +12,13 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **39 entries**: 13 high, 20 medium, and 6 low.
+merging by root cause they come to **39 entries**: 12 high, 21 medium, and 6 low.
 
 Two clusters account for most of the high ones.
 
 **Writes that do not do what their control says.** Approving a score submission
-never results the match. Auto-scheduled matches save at midnight. In each case
-the app reports success and the league's data does not change the way the admin
-was told it had.
+never results the match. The app reports success and the league's data does not
+change the way the admin was told it had.
 
 **Work that is silently lost.** A decided live match that is never saved counts
 for nothing and nothing anywhere surfaces it. A second membership row
@@ -31,6 +30,13 @@ percentages were a 0–1 fraction printed as a percentage. Checked against the
 running app, they are not — see that entry for the evidence. It is kept in the
 list, and in the counts above, as a record of the investigation.
 
+One entry has been **corrected and then fixed**: B-03 said every auto-scheduled
+match saved at midnight. None ever did. It needed Dual Match Mode switched off,
+that mode is on by default, and even then the save was refused by the duplicate-
+team check before any time was written — so nothing was ever corrupted. The real
+defect on that path was that the save always failed. It moved from `high` to
+`medium` and is now fixed.
+
 Two structural themes run under the medium entries: **destructive admin actions
 with no confirmation** (six of them, in one entry) and **failure messages that
 throw away the reason the server gave** (app-wide, in one entry). Both are
@@ -40,7 +46,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | --- | --- | --- | --- | --- | --- |
 | B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
 | B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
-| B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
+| B-03 | With Dual Match Mode off, the auto-scheduler's save is always refused (reported as "saved at midnight") | medium | admin | **fixed** | — |
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | **fixed** | — |
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | **fixed** | — |
 | B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
@@ -168,31 +174,66 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 - **Raised by:** [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification),
   [`foundations/seasons.md`](foundations/seasons.md#open-questions-and-verification).
 
-### B-03: Auto-scheduled matches are saved at midnight
+### B-03: With Dual Match Mode off, the auto-scheduler's save is always refused
 
-- **Where the user meets it:** an admin generates a night's schedule with the
-  auto-scheduler and saves it. Every match then shows the wrong time on
-  `/schedule` for every player.
-- **What happens / what was expected:** the generated matches carry the
+- **Status:** **fixed**. The original entry was **wrong about the outcome**, and
+  is corrected below. It said every auto-scheduled save landed at midnight. No
+  save ever did, and no match in the live season was ever stored at midnight.
+  The midnight code path was real but **unreachable**, and the defect an admin
+  actually met with Dual Match Mode off was different: **the save was refused
+  every time**.
+- **Where the user meets it:** an admin turns Dual Match Mode off, generates a
+  night's schedule with the standalone auto-scheduler, and presses Save. The save
+  fails with "Schedule validation failed: Team is scheduled for multiple matches
+  at Early", and no match is written.
+- **What happens / what was expected:** the generated matches carried the
   scheduler's internal block name — `Early`, `MidEarly`, `SuperLate` — where a
-  time should be. That name is then parsed as a time, fails to parse, and
-  becomes 00:00. Expected: the match saves at the time the block represents.
-- **Reproduce:** 1. As an admin, run the auto-scheduler for a date. 2. Save the
-  proposed schedule. 3. Open `/schedule` for that date and read the times.
-- **Why (from the code):** `usePairingOperations.ts:276` sets
-  `timeslot: timeBlock` on every proposed match. `parseTimeString`
-  (`src/utils/timezone/parsers.ts:7-30`) initialises `hours = 0, minutes = 0` and
-  returns those defaults whenever its regex finds no digits, which a block name
-  never has. The in-form scheduler converts correctly
-  (`src/hooks/scheduling/utils/matchConversionUtils.ts`), so the two paths
-  disagree. The timeslot picker offered on a generated match
-  (`src/components/admin/auto-schedule/EditableMatchCard.tsx:29`) lists 6:00 PM
-  to 10:00 PM, none of which matches a block name, so it shows empty and cannot
-  be used to correct the value either.
-- **Severity:** `high`. It corrupts the schedule for the whole league, silently,
-  through the tool built to save the admin work.
-- **Decision needed:** `fix`. Map the block to its real start time before
-  building the match, in the same way the in-form scheduler does.
+  time should be, and **every match in a block carried the same one**. The
+  blossom pass runs two rounds per block, so each team plays twice; with both
+  rounds at one identical timeslot value, `findTeamConflicts` reported every team
+  as double-booked and `validateMatchSchedule` refused the save. Expected: the
+  block's two rounds land at the block's two consecutive times, and the schedule
+  saves.
+- **Why midnight never happened:** the save was refused before
+  `parseTimeString` was ever reached. Had a block name reached the insert it
+  would have become 00:00, so the hazard was real — but blossom either gives
+  every team two matches or throws (verified: four teams yield four pairings,
+  two teams raise "2 teams don't have 2 matches"), so a viable standard-mode
+  block always tripped the duplicate check first.
+- **Reproduce:** 1. As an admin, **switch Dual Match Mode off**. 2. Run the
+  auto-scheduler for a date with at least four teams in a block. 3. Press Save
+  and read the error toast.
+- **Why (from the code):** the two generators disagreed on what keys the pairing
+  map. `src/hooks/scheduling/usePairingGenerator.ts:102` branches on
+  `dualMatchMode`. Dual mode keys by the real clock time it assigned
+  (`utils/dualBlockScheduler.ts:191-192`), so it was always correct. Standard
+  mode passed the block key straight through (`utils/standardPairing.ts:61`), and
+  those keys come from `getAllBackToBackTeams`, which is keyed by pair *name*
+  (`src/utils/autoSchedule/teamLoaderUtils.ts:194`). `usePairingOperations.ts`
+  then set `timeslot: timeBlock` with no lookup, and `parseTimeString`
+  (`src/utils/timezone/parsers.ts:7-38`) returns its `hours = 0, minutes = 0`
+  defaults whenever its regex finds no digits, which a block name never has.
+- **Had it ever saved, it would have hidden itself:** a midnight row does **not**
+  display as `12:00 AM`. `src/utils/timezone/formatters.ts:190-194` buckets it to
+  a plausible **`6:00 PM`**. That is why the guard below matters even though
+  nothing reached the database.
+- **Severity:** `medium`, reduced from `high`. It never touched the default path,
+  and it corrupted nothing; with Dual Match Mode off it made the tool unusable.
+- **Fix:** three changes. `usePairingOperations.ts` now resolves the block name
+  through the existing `getPairConfig` helper
+  (`src/utils/autoSchedule/constants.ts:115`) **and spreads the block's two rounds
+  over the block's two consecutive slots**, so each team plays once at each time
+  and the schedule validates. A clock time has no pair config and passes through
+  untouched, so Dual Match Mode is unaffected.
+  `src/utils/autoSchedule/validation.ts` now rejects any timeslot without a
+  readable `H:MM` before the insert, closing the whole class of silent-midnight
+  bug rather than this one case. `EditableMatchCard.tsx` builds its picker from
+  `BACK_TO_BACK_PAIRS` instead of a hardcoded list, which adds the missing
+  5:00 PM and 5:30 PM and drops 10:00 PM, a time no block uses.
+- **Why it survived a green suite:** `useAutoScheduleSave.test.ts` used an
+  already-valid `'6:00 PM'` fixture and never asserted the resulting timestamp,
+  and `usePairingOperations.test.ts` asserted `timeslot: 'Early'` — the buggy
+  value — as expected. Both now assert the corrected behaviour.
 - **Raised by:** [`admin/build-the-schedule.md`](admin/build-the-schedule.md#open-questions-and-verification).
 
 ### B-04: A decided live match that is never saved counts for nothing, and nothing surfaces it

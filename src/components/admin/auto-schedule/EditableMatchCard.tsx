@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { AutoScheduleMatch, Team } from '@/types';
+import { ALL_BLOCK_TIMES } from '@/utils/autoSchedule/constants';
 
 interface EditableMatchCardProps {
   match: AutoScheduleMatch;
@@ -25,18 +26,6 @@ interface EditableMatchCardProps {
   hasWarning?: boolean;
   warningMessage?: string;
 }
-
-const timeSlotOptions = [
-  '6:00 PM',
-  '6:30 PM',
-  '7:00 PM',
-  '7:30 PM',
-  '8:00 PM',
-  '8:30 PM',
-  '9:00 PM',
-  '9:30 PM',
-  '10:00 PM',
-];
 
 /** Card for editing one auto-scheduled match: team pickers, timeslot, swap, and remove. */
 const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
@@ -214,7 +203,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
               <SelectContent>
-                {timeSlotOptions.map((time) => (
+                {ALL_BLOCK_TIMES.map((time) => (
                   <SelectItem key={time} value={time}>
                     {time}
                   </SelectItem>

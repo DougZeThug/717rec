@@ -29,6 +29,13 @@ export interface TeamConflict {
 }
 
 /**
+ * A timeslot must contain a readable H:MM. `parseTimeString` silently falls back to
+ * 00:00 for anything it cannot read, which would save the match at midnight.
+ * Mirrors that parser's own pattern so anything it can read passes here.
+ */
+const READABLE_TIME_PATTERN = /\d+:\d+/;
+
+/**
  * Validate match schedule for conflicts and errors
  */
 export async function validateMatchSchedule(
@@ -78,6 +85,13 @@ export async function validateMatchSchedule(
         matchId: match.id,
         type: 'invalid-timeslot',
         message: 'Match has invalid or missing timeslot',
+        severity: 'error',
+      });
+    } else if (!READABLE_TIME_PATTERN.test(match.timeslot)) {
+      errors.push({
+        matchId: match.id,
+        type: 'invalid-timeslot',
+        message: `Match timeslot "${match.timeslot}" is not a readable time, so it would save at midnight`,
         severity: 'error',
       });
     }

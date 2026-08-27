@@ -137,23 +137,24 @@ it does.
 **Neither tool checks whether these matches already exist.** Pressing Save twice
 creates every match twice.
 
-## The two auto-schedulers disagree
+## The two auto-schedulers agree on the time
 
 Match Creation's inline auto-schedule and the standalone Auto Schedule section
-share the pairing algorithm but not the step that turns a pairing into a match.
+share the pairing algorithm, and both turn a time block into a real clock time
+before the pairing becomes a match.
 
-- The **inline** one converts each time block into a real clock time — the block's
-  main time for the first match, its second time for the next, alternating — and
-  drops the pairing into the form as an ordinary editable row.
-- The **standalone** one uses **the block's name** as the match's time. The
-  proposed matches carry values like `MidEarly` and `SuperLate` rather than
-  `7:00 PM` and `9:00 PM`.
+- The **inline** one alternates within the block — the block's main time for the
+  first match, its second time for the next — and drops the pairing into the form
+  as an ordinary editable row.
+- The **standalone** one resolves the block to its two times and spreads the
+  block's two rounds across them, so a `MidEarly` block fills 7:00 PM and then
+  7:30 PM. Each team plays once at each.
 
-The consequence is visible and then invisible. Visible: in edit mode the timeslot
-picker offers clock times only, so a generated match shows an empty picker.
-Invisible: a match saved with a block name as its time is stored **at midnight**,
-because nothing can read a clock time out of `MidEarly`. See
-[Open questions](#open-questions-and-verification).
+With Dual Match Mode on, the standalone tool never sees a block name at all: its
+scheduler already keys each pairing by the clock time it assigned.
+
+A time the app cannot read is now refused before the insert, with a red toast
+naming the match. It can no longer reach the database.
 
 ## Modifiers
 
@@ -244,17 +245,16 @@ notification is sent to any team.
 
 ## Open questions and verification
 
-- **Auto Schedule appears to save every match at midnight.** The proposal carries
-  the time *block's name* where a clock time belongs, and the code that turns a
-  time into a timestamp returns midnight for anything it cannot parse. The
-  in-form auto-scheduler converts block names to clock times; the standalone one
-  does not. **May be worth treating as a bug rather than documenting**, and it is
-  the first thing to check by hand: generate, save, and look at the times on
-  `/schedule`.
-- **The edit-mode timeslot picker cannot show a generated value.** It offers
-  6:00 PM to 10:00 PM; the generated matches hold block names; so every generated
-  match looks like it has no time until an admin sets one. **May be worth
-  treating as a bug rather than documenting.**
+- **Auto Schedule saving matches at midnight is fixed, and never happened.**
+  With Dual Match Mode **off**, every match in a block carried the block's *name*
+  as its time — the same value for all of them. Because each team plays twice in
+  a block, the duplicate-team check refused the save every time, so no time was
+  ever written and no live match was ever stored at midnight. With Dual Match
+  Mode on, the default, times were always correct. Both paths now save. See B-03.
+- **The edit-mode timeslot picker now lists every real block time.** It is built
+  from the block constants, so it covers 5:00 PM to 9:30 PM and cannot drift away
+  from them again. It previously offered 6:00 PM to 10:00 PM, which both omitted
+  two real block times and offered one that was not a block time at all.
 - **Nothing prevents saving the same schedule twice.** A slow save that the admin
   retries doubles the night's matches, and undoing that is a matter of deleting
   matches one at a time. Worth raising as a product question.
@@ -271,4 +271,6 @@ notification is sent to any team.
   consecutive blocks, as its help text says. The pairing behaviour was read from
   the code, not observed.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
+which was changed after that commit — see B-03 in
+[`bug-triage.md`](../bug-triage.md#b-03-auto-scheduled-matches-are-saved-at-midnight-only-with-dual-match-mode-off).

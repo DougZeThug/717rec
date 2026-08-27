@@ -11,6 +11,7 @@ import {
   TeamPairingMap,
   TimeBlockTeamsMap,
 } from '@/types';
+import { getPairConfig } from '@/utils/autoSchedule/constants';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import {
   calculateComprehensiveQualityMetrics,
@@ -268,12 +269,30 @@ export const usePairingOperations = (
         let pairingCount = 0;
 
         Object.entries(generatedPairings).forEach(([timeBlock, pairings]) => {
+          // Dual mode already keys by real clock time, so a block name means standard
+          // mode, where the blossom pass returns both of the block's rounds in one
+          // array. Spread them over the block's two consecutive slots: left at a single
+          // time they double-book every team, and validation refuses the save.
+          const pairConfig = getPairConfig(timeBlock);
+          const slots = pairConfig ? [pairConfig.primary, pairConfig.secondary] : [timeBlock];
+          const teamsBySlot = slots.map(() => new Set<string>());
+
           pairings.forEach((pairing, index) => {
+            const freeSlot = teamsBySlot.findIndex(
+              (teamsInSlot) =>
+                !teamsInSlot.has(pairing.team1.id) && !teamsInSlot.has(pairing.team2.id)
+            );
+            // No free slot means the pairings themselves book a team more than the block
+            // holds. Keep it in the first slot so validation reports it, not us.
+            const slotIndex = freeSlot === -1 ? 0 : freeSlot;
+            teamsBySlot[slotIndex].add(pairing.team1.id);
+            teamsBySlot[slotIndex].add(pairing.team2.id);
+
             matches.push({
               id: `${timeBlock}-${index}`,
               team1Id: pairing.team1.id,
               team2Id: pairing.team2.id,
-              timeslot: timeBlock,
+              timeslot: slots[slotIndex],
               date: selectedDate,
               blockType: dualMatchMode ? 'primary' : undefined,
             });

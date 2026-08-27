@@ -178,6 +178,27 @@ describe('useAutoScheduleSave', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
   });
 
+  it('saves the match at the time its timeslot names, not midnight', async () => {
+    const { result } = renderSaveHook();
+
+    await act(async () => {
+      // Local, not UTC, so the assertion cannot roll over to another day.
+      await result.current.saveMatches(
+        [makeMatch({ timeslot: '6:30 PM' })],
+        new Date('2026-07-01T12:00:00'),
+        false,
+        'season-1'
+      );
+    });
+
+    const [inserted] = vi.mocked(saveAutoScheduleMatches).mock.calls[0][0];
+    const savedAt = new Date(inserted.date as string);
+
+    expect(savedAt.getHours()).toBe(18);
+    expect(savedAt.getMinutes()).toBe(30);
+    expect(inserted.metadata).toEqual(expect.objectContaining({ timeslot: '6:30 PM' }));
+  });
+
   it('returns false with destructive toast when save rejects', async () => {
     vi.mocked(saveAutoScheduleMatches).mockRejectedValue(new Error('db down'));
 

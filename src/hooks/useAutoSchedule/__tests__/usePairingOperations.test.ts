@@ -2,6 +2,10 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MatchQualityMetrics, Team, TeamPairingMap, TimeBlockTeamsMap } from '@/types';
+import {
+  logCrossBlockViolations,
+  validateNoCrossBlockMatches,
+} from '@/utils/autoSchedule/validationUtils';
 
 import { usePairingOperations } from '../usePairingOperations';
 
@@ -445,7 +449,7 @@ describe('usePairingOperations', () => {
         id: 'Early-0',
         team1Id: '1',
         team2Id: '2',
-        timeslot: 'Early',
+        timeslot: '6:30 PM',
         date: selectedDate,
         blockType: 'primary',
       },
@@ -453,7 +457,7 @@ describe('usePairingOperations', () => {
         id: 'Early-1',
         team1Id: '3',
         team2Id: '4',
-        timeslot: 'Early',
+        timeslot: '6:30 PM',
         date: selectedDate,
         blockType: 'primary',
       },
@@ -475,6 +479,169 @@ describe('usePairingOperations', () => {
       setMatchQualityMetrics
     );
     expect(withoutEditable).not.toBeNull();
+  });
+
+  it('aborts the apply and warns when the pairings cross block boundaries', () => {
+    // This branch only runs when the hook is given a block map and a team list.
+    const teams = [buildTeam('1'), buildTeam('2'), buildTeam('3'), buildTeam('4')];
+    const { result } = renderHook(() =>
+      usePairingOperations(vi.fn(), { '1': ['Early'], '2': ['Late'] }, teams)
+    );
+
+    vi.mocked(validateNoCrossBlockMatches).mockReturnValueOnce({
+      isValid: false,
+      violations: [
+        {
+          matchId: 'Early-0',
+          team1: { id: '1', name: 'Team 1', block: 'Early' },
+          team2: { id: '2', name: 'Team 2', block: 'Late' },
+          timeslot: '6:30 PM',
+        },
+      ],
+    });
+
+    const applied = result.current.handleApplySchedule(
+      buildPairings(),
+      new Date('2026-04-22T00:00:00.000Z'),
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied).toBeNull();
+    expect(logCrossBlockViolations).toHaveBeenCalled();
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: expect.stringContaining('1 cross-block matches'),
+        variant: 'destructive',
+      })
+    );
+  });
+
+  it('reports an error and applies nothing when the conversion throws', () => {
+    const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+    mockCalculateComprehensiveQualityMetrics.mockImplementationOnce(() => {
+      throw new Error('metrics exploded');
+    });
+
+    const applied = result.current.handleApplySchedule(
+      buildPairings(),
+      new Date('2026-04-22T00:00:00.000Z'),
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied).toBeNull();
+    expect(mockErrorLog).toHaveBeenCalledWith('Error applying schedule:', expect.any(Error));
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Error',
+        description: 'Failed to apply the generated schedule. Please try again.',
+        variant: 'destructive',
+      })
+    );
+  });
+
+  it('resolves block names to their real start time and passes clock times through', () => {
+    const { result } = renderHook(() => usePairingOperations(vi.fn()));
+    const selectedDate = new Date('2026-04-22T00:00:00.000Z');
+
+    // Standard mode keys pairings by block name; dual mode keys them by clock time.
+    // Both must reach the match as something `parseTimeString` can read.
+    const pairings: TeamPairingMap = {
+      SuperLate: [
+        {
+          team1: buildTeam('1'),
+          team2: buildTeam('2'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+      ],
+      '7:00 PM': [
+        {
+          team1: buildTeam('3'),
+          team2: buildTeam('4'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+      ],
+    };
+
+    const applied = result.current.handleApplySchedule(
+      pairings,
+      selectedDate,
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied?.map((match) => match.timeslot)).toEqual(['9:00 PM', '7:00 PM']);
+  });
+
+  it('spreads a block\u2019s two rounds over its two slots so no team is double-booked', () => {
+    const { result } = renderHook(() => usePairingOperations(vi.fn()));
+    const selectedDate = new Date('2026-04-22T00:00:00.000Z');
+
+    // Standard mode runs blossom twice per block and returns both rounds in one array,
+    // so every team appears twice. Early is the 6:30/7:00 PM pair.
+    const pairings: TeamPairingMap = {
+      Early: [
+        // Round 1
+        {
+          team1: buildTeam('1'),
+          team2: buildTeam('2'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+        {
+          team1: buildTeam('3'),
+          team2: buildTeam('4'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+        // Round 2
+        {
+          team1: buildTeam('1'),
+          team2: buildTeam('3'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+        {
+          team1: buildTeam('2'),
+          team2: buildTeam('4'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+      ],
+    };
+
+    const applied = result.current.handleApplySchedule(
+      pairings,
+      selectedDate,
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied?.map((match) => match.timeslot)).toEqual([
+      '6:30 PM',
+      '6:30 PM',
+      '7:00 PM',
+      '7:00 PM',
+    ]);
+
+    // The whole point: this is what validateMatchSchedule would otherwise refuse.
+    const slotsByTeam = new Map<string, string[]>();
+    applied?.forEach((match) => {
+      [match.team1Id, match.team2Id].forEach((teamId) => {
+        slotsByTeam.set(teamId, [...(slotsByTeam.get(teamId) ?? []), match.timeslot]);
+      });
+    });
+    slotsByTeam.forEach((slots) => {
+      expect(new Set(slots).size).toBe(slots.length);
+    });
   });
 
   describe('stale pairing date comparison', () => {

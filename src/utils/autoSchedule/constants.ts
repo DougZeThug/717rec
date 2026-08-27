@@ -92,6 +92,16 @@ export const TIME_BLOCKS = {
   },
 } as const;
 
+/**
+ * Every real block time, in order: the de-duplicated union of each pair's primary and
+ * secondary. The pairs are already chronological and overlap end to start, so insertion
+ * order runs 5:00 PM to 9:30 PM. Anything offering the admin a timeslot uses this, so
+ * the choices cannot drift away from the blocks.
+ */
+export const ALL_BLOCK_TIMES: string[] = [
+  ...new Set(Object.values(BACK_TO_BACK_PAIRS).flatMap((pair) => [pair.primary, pair.secondary])),
+];
+
 // Lookup maps for efficient time slot operations
 const BACK_TO_BACK_MAP = new Map<string, string>(
   Object.values(BACK_TO_BACK_PAIRS).map((pair) => [pair.primary, pair.secondary])

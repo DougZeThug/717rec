@@ -301,7 +301,8 @@ of the next.
 
 **Time block.** The auto-scheduler's own name for a back-to-back pair — `Early`,
 `MidEarly`, `SuperLate`, and so on. Teams are loaded into blocks and paired only
-within a block.
+within a block. A block name never reaches a saved match: the tools resolve it to
+the pair's start time first.
 
 **Double header.** A team booked into two separate back-to-back pairs on the same
 night — four timeslot rows. The team appears only in the earlier slot, with a

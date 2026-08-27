@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TIME_BLOCKS } from '../constants';
+import { ALL_BLOCK_TIMES, getPairConfig, TIME_BLOCKS } from '../constants';
 
 describe('TIME_BLOCKS constants', () => {
   it('should have the expected time block structure', () => {
@@ -29,5 +29,31 @@ describe('TIME_BLOCKS constants', () => {
 
     expect(TIME_BLOCKS['Early'].main).toBe('6:30 PM');
     expect(TIME_BLOCKS['Early'].secondary).toBe('7:00 PM');
+  });
+});
+
+describe('BACK_TO_BACK_PAIRS as the source of block times', () => {
+  it('lists every real block time in order, and nothing else', () => {
+    // This is what the admin's timeslot picker offers. It previously omitted
+    // 5:00/5:30 PM and offered a 10:00 PM that no block uses.
+    expect(ALL_BLOCK_TIMES).toEqual([
+      '5:00 PM',
+      '5:30 PM',
+      '6:00 PM',
+      '6:30 PM',
+      '7:00 PM',
+      '7:30 PM',
+      '8:00 PM',
+      '8:30 PM',
+      '9:00 PM',
+      '9:30 PM',
+    ]);
+  });
+
+  it('resolves a block name to its start time and leaves a clock time unresolved', () => {
+    // This is what keeps a block name out of a saved match.
+    expect(getPairConfig('SuperLate')?.primary).toBe('9:00 PM');
+    expect(getPairConfig('MidEarly')?.primary).toBe('7:00 PM');
+    expect(getPairConfig('6:30 PM')).toBeUndefined();
   });
 });
