@@ -29,7 +29,7 @@ Two edge functions + shared rateLimit module + one migration + Deno tests. No fr
 
 ## 5. Implementation steps
 
-1. Migration: create `support_tickets` (id, name, email, subject, message, status default 'new', created_at) with RLS enabled; admin-gated SELECT/UPDATE policies mirroring `score_submissions`; add it to the admin Contact Inbox query if desired (optional follow-up).
+1. Migration: create `support_tickets` (id, name, email, subject, message, status default 'new', created_at) with RLS enabled; admin-gated SELECT/UPDATE policies mirroring `score_submissions`; add it to the admin Contact Inbox query if desired (optional follow-up). **The follow-up was done later, as B-10:** the Contact Inbox now lists support tickets alongside contact requests behind a source filter.
 2. In `send-support-email`: make the insert **load-bearing** — check its error; if the store fails AND the email send fails, return 502 with a "please try again" message. Only return success when at least one durable outcome happened; include which one in the response body for the client toast.
 3. In `submit-contact-request`: align Zod with the schema (`submitter_contact: z.string().min(1)` or make the column nullable — pick one; the review recommends requiring it since the league needs a way to reply).
 4. `rateLimit.ts`: key on a **platform-trusted client IP, determined empirically — not on any client-controllable header position.** Neither end of `X-Forwarded-For` is trustworthy by assumption (clients can prepend fake entries, and the last entry is only meaningful if the platform's own proxy appended it), and `x-real-ip` is only safe if the platform guarantees it overwrites inbound values. First deploy a temporary debug echo (or log `Object.fromEntries(req.headers)`) on the E2E project and hit it from two networks to observe which header Supabase's edge runtime sets authoritatively; then parse using the trusted-proxy-count approach (take the value N-hops from the right, where N = the platform's proxy count) and document the choice in a code comment with the observed evidence. On RPC error **fail closed** for unauthenticated form endpoints (return 429 with retry-after) — a rare false-positive beats an open spam channel. Salt the IP hash with an env secret (`IP_HASH_SALT`).
@@ -69,5 +69,5 @@ npm run typecheck && npm run lint   # unaffected but keep the standard gate
 
 ## 12. Non-goals / rollback
 
-- Non-goals: CAPTCHA, admin inbox UI for tickets (candidate follow-up), replacing Resend.
+- Non-goals: CAPTCHA, admin inbox UI for tickets (candidate follow-up — **since delivered in B-10**), replacing Resend.
 - Rollback: functions are individually revertable; the new table is additive and can stay.

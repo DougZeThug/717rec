@@ -71,6 +71,18 @@ const Footer = () => {
               >
                 admin@717rec.com
               </a>
+              <span aria-hidden="true">·</span>
+              <a
+                href="/contact"
+                className={cn(
+                  'transition-colors font-inter font-medium',
+                  isWinterTheme
+                    ? 'hover:text-[hsl(var(--foreground))]'
+                    : 'hover:text-gray-900 dark:hover:text-white'
+                )}
+              >
+                Contact us
+              </a>
             </p>
           </div>
         </div>

@@ -18,7 +18,7 @@ disagree.
 **Sections dropped.** This document drops **Modifiers**. The user's role is the
 axis of the entire document and the feature table below is that table in a more
 useful shape; a second one would say the same thing twice. Everything else is
-kept, including the full interrupt list, because being refused _is_ an
+kept, including the full interrupt list, because being refused *is* an
 interaction: it has an arrival, a failure, and interrupts of its own.
 
 ## The simple case
@@ -32,7 +32,7 @@ They open `/admin` out of curiosity. A spinner says "Checking access..." for a
 moment, a red toast says "Access Denied — You do not have admin privileges", and
 they are put back on the home page. Nothing else in the app changes.
 
-That toast is the _only_ place in 717rec where a refusal is stated in words.
+That toast is the *only* place in 717rec where a refusal is stated in words.
 Everywhere else, a thing they may not do is simply not on the screen.
 
 ## What each role can do
@@ -40,40 +40,40 @@ Everywhere else, a thing they may not do is simply not on the screen.
 "Member" means a player with an **approved** membership of the team in question.
 An unapproved membership grants nothing and is not a column.
 
-| Feature                                                                            | Visitor            | Player   | Member                       | Admin               |
-| ---------------------------------------------------------------------------------- | ------------------ | -------- | ---------------------------- | ------------------- |
-| Read teams, schedule, standings, stats, insights, compare, playoffs, history, help | yes                | yes      | yes                          | yes                 |
-| See hidden and opted-out teams in listings                                         | no                 | no       | no                           | yes                 |
-| Watch a match being scored live                                                    | yes                | yes      | yes                          | yes                 |
-| Read the message board                                                             | **no — see below** | yes      | yes                          | yes                 |
-| Post to the message board                                                          | no                 | yes      | yes                          | yes                 |
-| Edit or delete a message                                                           | no                 | own only | own only                     | **own only**        |
-| Post an Announcement-category message                                              | no                 | no       | no                           | yes                 |
-| React to a message or a match                                                      | no                 | yes      | yes                          | yes                 |
-| Report a score from the home page card                                             | **yes**            | yes      | yes                          | yes                 |
-| Approve or reject a score report                                                   | no                 | no       | no                           | yes                 |
-| Score a live match round by round                                                  | no                 | no       | yes, own team's open matches | yes, any open match |
-| Undo a round, reopen a game                                                        | no                 | no       | yes                          | yes                 |
-| Add a player to a roster during setup                                              | no                 | no       | yes                          | yes                 |
-| Finalise a live match                                                              | no                 | no       | yes                          | yes                 |
-| Reopen a completed match                                                           | no                 | no       | **no**                       | yes                 |
-| Request to join a team, or leave a team                                            | no                 | yes      | yes                          | yes                 |
-| Approve a membership request                                                       | no                 | no       | no                           | yes                 |
-| Edit the team's name and image                                                     | no                 | no       | yes                          | yes                 |
-| Create, edit, or delete a match                                                    | no                 | no       | no                           | yes                 |
-| Build the schedule, define timeslots                                               | no                 | no       | no                           | yes                 |
-| Set a team's timeslot preferences                                                  | no                 | no       | **no**                       | yes                 |
-| Create, activate, or archive a season                                              | no                 | no       | no                           | yes                 |
-| Change divisions, weights, or seeds                                                | no                 | no       | no                           | yes                 |
-| Sign up for the blind draw                                                         | **yes**            | yes      | yes                          | yes                 |
-| See the blind draw signup list                                                     | no                 | no       | no                           | yes                 |
-| Create or edit a playoff bracket                                                   | no                 | no       | no                           | yes                 |
-| Send the contact form                                                              | yes                | yes      | yes                          | yes                 |
-| Read the contact inbox                                                             | no                 | no       | no                           | yes                 |
-| Open the notification bell and read notifications                                  | yes                | yes      | yes                          | yes                 |
-| Post a notification                                                                | no                 | no       | no                           | yes                 |
-| Change themes, hero cards, and help content                                        | no                 | no       | no                           | yes                 |
-| Reach `/admin`, `/admin/notifications`, `/timeslots`                               | no                 | no       | no                           | yes                 |
+| Feature | Visitor | Player | Member | Admin |
+| --- | --- | --- | --- | --- |
+| Read teams, schedule, standings, stats, insights, compare, playoffs, history, help | yes | yes | yes | yes |
+| See hidden and opted-out teams in listings | no | no | no | yes |
+| Watch a match being scored live | yes | yes | yes | yes |
+| Read the message board | **no — see below** | yes | yes | yes |
+| Post to the message board | no | yes | yes | yes |
+| Edit or delete a message | no | own only | own only | **own only** |
+| Post an Announcement-category message | no | no | no | yes |
+| React to a message or a match | no | yes | yes | yes |
+| Report a score from the home page card | **yes** | yes | yes | yes |
+| Approve or reject a score report | no | no | no | yes |
+| Score a live match round by round | no | no | yes, own team's open matches | yes, any open match |
+| Undo a round, reopen a game | no | no | yes | yes |
+| Add a player to a roster during setup | no | no | yes | yes |
+| Finalise a live match | no | no | yes | yes |
+| Reopen a completed match | no | no | **no** | yes |
+| Request to join a team, or leave a team | no | yes | yes | yes |
+| Approve a membership request | no | no | no | yes |
+| Edit the team's name and image | no | no | yes | yes |
+| Create, edit, or delete a match | no | no | no | yes |
+| Build the schedule, define timeslots | no | no | no | yes |
+| Set a team's timeslot preferences | no | no | **no** | yes |
+| Create, activate, or archive a season | no | no | no | yes |
+| Change divisions, weights, or seeds | no | no | no | yes |
+| Sign up for the blind draw | **yes** | yes | yes | yes |
+| See the blind draw signup list | no | no | no | yes |
+| Create or edit a playoff bracket | no | no | no | yes |
+| Send the contact form | yes | yes | yes | yes |
+| Read the contact inbox | no | no | no | yes |
+| Open the notification bell and read notifications | yes | yes | yes | yes |
+| Post a notification | no | no | no | yes |
+| Change themes, hero cards, and help content | no | no | no | yes |
+| Reach `/admin`, `/admin/notifications`, `/timeslots` | no | no | no | yes |
 
 Three rows in that table are worth more than a cell.
 
@@ -190,18 +190,18 @@ refusal by design.
 
 ## Cancel and interrupt
 
-| Event                                                       | Before the first edit                                                                                                                                                                                                                                                                             | While editing or submitting                                                                                                                                  |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Escape, or a Cancel button                                  | No effect. The guard has no dialog and its redirect cannot be cancelled.                                                                                                                                                                                                                          | Escape closes a confirmation dialog in front of a privileged action and abandons it. It does not abort a refused write already sent.                         |
-| In-app navigation away, or switching tab within the page    | Leaving a guarded route while it still says "Checking access..." simply unmounts it. No redirect happens and no toast appears.                                                                                                                                                                    | The write completes or is refused regardless. The refusal toast appears on whatever page the user is now on.                                                 |
-| Browser back or forward                                     | The redirect replaces the guarded route in history, so pressing Back after being bounced from `/admin` goes to whatever was before it, not back to `/admin`.                                                                                                                                      | As navigating away. Coming back gives a freshly mounted page that runs the whole check again.                                                                |
-| Reload, or the tab closed                                   | The check restarts from nothing: session, then profile, then decide. The "Checking access..." spinner is much longer than on an in-app navigation.                                                                                                                                                | A sent write still lands or is still refused. The user never learns which.                                                                                   |
-| Network lost mid-request                                    | The profile fetch is retried once. If it still fails, the guarded route says "We could not load your profile. This is usually a connection problem, not a permissions problem." and offers **Try again**. The user is **not** redirected and is **not** told they lack privileges. Fixed in B-08. | Every write fails. The message is the feature's network-flavoured or generic error, never a statement about permission.                                      |
-| The request fails or times out                              | Same as above: retried once, then the retry card. A failed read is never treated as a definite "not an admin".                                                                                                                                                                                    | The write fails with that feature's generic message. Nothing distinguishes "you may not" from "it did not work".                                             |
-| The session expires                                         | Reads of public data still work, so the app keeps looking normal. The three guarded routes redirect to `/auth` on the next visit.                                                                                                                                                                 | Writes fail. There is no message about the session, so an expired session and a permission refusal are indistinguishable to the user.                        |
-| The same record changed in another tab, or by another user  | An admin flag or a membership changed elsewhere does not reach this browser. Controls stay as they were.                                                                                                                                                                                          | Same. A scorer whose membership is revoked mid-match keeps the score grids and finds out at the next save.                                                   |
-| Browser autofill or a password manager writes into the form | No effect. Nothing about permission is held in a form field.                                                                                                                                                                                                                                      | No effect.                                                                                                                                                   |
-| The window loses focus                                      | No effect.                                                                                                                                                                                                                                                                                        | Returning to the tab refetches data past its fresh window, which is the usual way a stale role finally corrects itself — with no message and no explanation. |
+| Event | Before the first edit | While editing or submitting |
+| --- | --- | --- |
+| Escape, or a Cancel button | No effect. The guard has no dialog and its redirect cannot be cancelled. | Escape closes a confirmation dialog in front of a privileged action and abandons it. It does not abort a refused write already sent. |
+| In-app navigation away, or switching tab within the page | Leaving a guarded route while it still says "Checking access..." simply unmounts it. No redirect happens and no toast appears. | The write completes or is refused regardless. The refusal toast appears on whatever page the user is now on. |
+| Browser back or forward | The redirect replaces the guarded route in history, so pressing Back after being bounced from `/admin` goes to whatever was before it, not back to `/admin`. | As navigating away. Coming back gives a freshly mounted page that runs the whole check again. |
+| Reload, or the tab closed | The check restarts from nothing: session, then profile, then decide. The "Checking access..." spinner is much longer than on an in-app navigation. | A sent write still lands or is still refused. The user never learns which. |
+| Network lost mid-request | The profile fetch is retried once. If it still fails, the guarded route says "We could not load your profile. This is usually a connection problem, not a permissions problem." and offers **Try again**. The user is **not** redirected and is **not** told they lack privileges. Fixed in B-08. | Every write fails. The message is the feature's network-flavoured or generic error, never a statement about permission. |
+| The request fails or times out | Same as above: retried once, then the retry card. A failed read is never treated as a definite "not an admin". | The write fails with that feature's generic message. Nothing distinguishes "you may not" from "it did not work". |
+| The session expires | Reads of public data still work, so the app keeps looking normal. The three guarded routes redirect to `/auth` on the next visit. | Writes fail. There is no message about the session, so an expired session and a permission refusal are indistinguishable to the user. |
+| The same record changed in another tab, or by another user | An admin flag or a membership changed elsewhere does not reach this browser. Controls stay as they were. | Same. A scorer whose membership is revoked mid-match keeps the score grids and finds out at the next save. |
+| Browser autofill or a password manager writes into the form | No effect. Nothing about permission is held in a form field. | No effect. |
+| The window loses focus | No effect. | Returning to the tab refetches data past its fresh window, which is the usual way a stale role finally corrects itself — with no message and no explanation. |
 
 After any interrupt, what the database accepted is what happened. The app never
 re-checks a write it did not see the answer to.
@@ -255,7 +255,7 @@ no record the user can see, and produces no notification to the league.
 - **A player with two membership rows** used to break the membership read: the
   app asked for exactly one row for the user and errored when it found two, so
   the user lost every member ability at once, including scoring, while the
-  database rule went on accepting the approved membership. Two _approved_ rows
+  database rule went on accepting the approved membership. Two *approved* rows
   were never possible — the pair was an approved row beside a pending one, or two
   pending ones. The read now takes one row, approved first, and the database
   refuses a second row of any kind. Fixed under B-07 in

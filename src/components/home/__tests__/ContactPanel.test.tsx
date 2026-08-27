@@ -94,4 +94,12 @@ describe('ContactPanel', () => {
     const nameVerifiedBadge = within(nameLabel as HTMLElement).queryByText('Verified');
     expect(nameVerifiedBadge).not.toBeInTheDocument();
   });
+  it('says where the message goes and points at the Contact page', () => {
+    render(<ContactPanel />);
+    expect(screen.getByText(/emailed to the league admins/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /use the contact page/i })).toHaveAttribute(
+      'href',
+      '/contact'
+    );
+  });
 });

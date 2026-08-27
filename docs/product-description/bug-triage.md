@@ -42,47 +42,47 @@ with no confirmation** (six of them, in one entry) and **failure messages that
 throw away the reason the server gave** (app-wide, in one entry). Both are
 patterns rather than single mistakes, and both would be cheap to fix in one pass.
 
-| ID   | Title                                                                                                   | Severity | Area                   | Decision needed | Issue |
-| ---- | ------------------------------------------------------------------------------------------------------- | -------- | ---------------------- | --------------- | ----- |
-| B-01 | Approving a score submission never records the result on the match                                      | high     | scores, admin          | **fixed**       | —     |
-| B-02 | No **existing** season can be activated from the admin screens                                          | medium   | admin                  | **fixed**       | —     |
-| B-03 | With Dual Match Mode off, the auto-scheduler's save is always refused (reported as "saved at midnight") | medium   | admin                  | **fixed**       | —     |
-| B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it                    | high     | live-scoring           | **fixed**       | —     |
-| B-05 | A failed round save throws away what the scorer tapped                                                  | high     | live-scoring           | **fixed**       | —     |
-| B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale                         | high     | history, stats         | **not a bug**   | —     |
-| B-07 | A second membership row permanently breaks every member ability                                         | high     | foundations, teams     | **fixed**       | —     |
-| B-08 | A failed profile read silently demotes an admin                                                         | high     | foundations            | **fixed**       | —     |
-| B-09 | There is no way to resolve a tie                                                                        | high     | scores, admin          | **fixed**       | —     |
-| B-10 | Two contact channels, neither aware of the other                                                        | high     | help, admin            | product call    | —     |
-| B-32 | Live-scored matches award no badges                                                                     | high     | live-scoring, stats    | fix             | —     |
-| B-33 | Nine of the twenty badge types can never be awarded                                                     | high     | stats                  | fix             | —     |
-| B-37 | Creating a season without archiving first left two active seasons                                       | high     | admin                  | **fixed**       | —     |
-| B-39 | The head-to-head details dialog never opened: its database function raised on every call                | high     | history, stats         | **fixed**       | —     |
-| B-11 | Six destructive admin actions have no confirmation                                                      | medium   | admin                  | fix             | —     |
-| B-12 | Failure messages discard the reason the server gave                                                     | medium   | all                    | fix             | —     |
-| B-13 | Only one toast is shown at a time, so paired messages are lost                                          | medium   | all                    | fix             | —     |
-| B-14 | Scroll position carries across every in-app navigation                                                  | medium   | foundations            | fix             | —     |
-| B-15 | The support and score-report functions refuse the app's own dev origin                                  | medium   | help, scores           | fix             | —     |
-| B-16 | A visitor sees an empty message board and is told to be the first to post                               | medium   | message-board          | fix             | —     |
-| B-17 | Reopening a live game needs no confirmation and tells nobody                                            | medium   | live-scoring           | product call    | —     |
-| B-18 | Rejecting a membership deletes the row, so the person is never told                                     | medium   | admin, getting-started | fix             | —     |
-| B-19 | Live corrections can leave a match disagreeing with itself                                              | medium   | admin                  | fix             | —     |
-| B-20 | Archived seasons are editable through live corrections                                                  | medium   | admin                  | fix             | —     |
-| B-21 | Eight controls do nothing when pressed                                                                  | medium   | admin, teams           | fix             | —     |
-| B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else                                | medium   | cross-cutting          | fix             | —     |
-| B-23 | The mobile menu is not a dialog                                                                         | medium   | cross-cutting          | fix             | —     |
-| B-24 | Bracket administration is unreachable on a phone                                                        | medium   | playoffs, admin        | fix             | —     |
-| B-25 | Anyone signed out can report a score for any match                                                      | medium   | scores                 | product call    | —     |
-| B-34 | Four standings columns silently sort by power score instead                                             | medium   | stats                  | fix             | —     |
-| B-35 | A stale fourth career power-score formula decides one badge                                             | medium   | stats                  | fix             | —     |
-| B-36 | Two grades on the team report card are not real measurements                                            | medium   | stats                  | fix             | —     |
-| B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches                       | medium   | history, stats         | **fixed**       | —     |
-| B-26 | Session replay records one visit in ten with no notice                                                  | low      | cross-cutting          | product call    | —     |
-| B-27 | Several actions raise two success toasts, and the second destroys the first                             | low      | admin, teams           | fix             | —     |
-| B-28 | Message timestamps show a clock time with no date                                                       | low      | message-board          | fix             | —     |
-| B-29 | Results are distinguished by colour alone in two places                                                 | low      | schedule, teams        | fix             | —     |
-| B-30 | Small copy and labelling slips                                                                          | low      | several                | fix             | —     |
-| B-31 | Two dead features are visible in the interface                                                          | low      | admin                  | fix             | —     |
+| ID | Title | Severity | Area | Decision needed | Issue |
+| --- | --- | --- | --- | --- | --- |
+| B-01 | Approving a score submission never records the result on the match | high | scores, admin | **fixed** | — |
+| B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
+| B-03 | With Dual Match Mode off, the auto-scheduler's save is always refused (reported as "saved at midnight") | medium | admin | **fixed** | — |
+| B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | **fixed** | — |
+| B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | **fixed** | — |
+| B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
+| B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | **fixed** | — |
+| B-08 | A failed profile read silently demotes an admin | high | foundations | **fixed** | — |
+| B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
+| B-10 | Two contact channels, neither aware of the other | high | help, admin | **fixed** | — |
+| B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
+| B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
+| B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
+| B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
+| B-11 | Six destructive admin actions have no confirmation | medium | admin | fix | — |
+| B-12 | Failure messages discard the reason the server gave | medium | all | fix | — |
+| B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | fix | — |
+| B-14 | Scroll position carries across every in-app navigation | medium | foundations | fix | — |
+| B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | fix | — |
+| B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | fix | — |
+| B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | product call | — |
+| B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | fix | — |
+| B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | fix | — |
+| B-20 | Archived seasons are editable through live corrections | medium | admin | fix | — |
+| B-21 | Eight controls do nothing when pressed | medium | admin, teams | fix | — |
+| B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else | medium | cross-cutting | fix | — |
+| B-23 | The mobile menu is not a dialog | medium | cross-cutting | fix | — |
+| B-24 | Bracket administration is unreachable on a phone | medium | playoffs, admin | fix | — |
+| B-25 | Anyone signed out can report a score for any match | medium | scores | product call | — |
+| B-34 | Four standings columns silently sort by power score instead | medium | stats | fix | — |
+| B-35 | A stale fourth career power-score formula decides one badge | medium | stats | fix | — |
+| B-36 | Two grades on the team report card are not real measurements | medium | stats | fix | — |
+| B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
+| B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | product call | — |
+| B-27 | Several actions raise two success toasts, and the second destroys the first | low | admin, teams | fix | — |
+| B-28 | Message timestamps show a clock time with no date | low | message-board | fix | — |
+| B-29 | Results are distinguished by colour alone in two places | low | schedule, teams | fix | — |
+| B-30 | Small copy and labelling slips | low | several | fix | — |
+| B-31 | Two dead features are visible in the interface | low | admin | fix | — |
 
 ---
 
@@ -105,7 +105,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   (`src/services/matches/MatchWriteService.ts:214-232`) writes only `status`,
   `reviewed_by` and `reviewed_at` on the `score_submissions` row. It never
   touches `matches`. `useScoreSubmissions` (`src/hooks/useScoreSubmissions.ts:37-44`)
-  calls nothing else. The functions that _would_ do it — `approveMatchResult`
+  calls nothing else. The functions that *would* do it — `approveMatchResult`
   and `markMatchAsTie` — exist and are unreachable; see [B-09](#b-09-there-is-no-way-to-resolve-a-tie).
 - **Severity:** `high`. The league's standings silently diverge from its results,
   and the admin has no way to notice.
@@ -208,7 +208,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   `dualMatchMode`. Dual mode keys by the real clock time it assigned
   (`utils/dualBlockScheduler.ts:191-192`), so it was always correct. Standard
   mode passed the block key straight through (`utils/standardPairing.ts:61`), and
-  those keys come from `getAllBackToBackTeams`, which is keyed by pair _name_
+  those keys come from `getAllBackToBackTeams`, which is keyed by pair *name*
   (`src/utils/autoSchedule/teamLoaderUtils.ts:194`). `usePairingOperations.ts`
   then set `timeslot: timeBlock` with no lookup, and `parseTimeString`
   (`src/utils/timezone/parsers.ts:7-38`) returns its `hours = 0, minutes = 0`
@@ -245,7 +245,8 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   match was played. No list, no reminder, no admin screen shows a match sitting
   in this state. Expected: something, somewhere, says "this match was played and
   its result was never recorded".
-- **Reproduce:** 1. Score a match to two game wins on `/matches/:matchId/live`. 2. Close the tab without pressing "Save official result". 3. Look at
+- **Reproduce:** 1. Score a match to two game wins on `/matches/:matchId/live`.
+  2. Close the tab without pressing "Save official result". 3. Look at
   `/schedule`, `/stats`, and every admin queue.
 - **Why (from the code):** the decided state is derived from the games each time
   the screen is drawn (`src/utils/liveScoring/bestOfThree.ts:13`,
@@ -255,7 +256,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   submissions, pending team requests and new contact requests, and `games` was
   never joined against `matches` anywhere in the app.
 - **Correction to the original write-up (1):** it said the state "is never
-  stored, **so nothing can query for it**". The derived _flag_ is not stored, but
+  stored, **so nothing can query for it**". The derived *flag* is not stored, but
   the evidence is. `games` persists `status`, `winner_team_id` and `completed_at`
   (`supabase/migrations/20260708120000_live_scoring.sql:64-69`), and
   `finalize_live_match` already counts exactly that to decide whether a match may
@@ -267,7 +268,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   "Pending Scores" card through `v_pending_matches`
   (`supabase/migrations/20250821121435_*.sql:19-23`), indistinguishable from a
   match nobody played, and its button files a free-text score report that an
-  admin then approves down a _different_ write path which can disagree with the
+  admin then approves down a *different* write path which can disagree with the
   games actually played. Live Corrections lists the match too, distinguishable
   only by the absence of the word "finalized"
   (`src/components/admin/live-corrections/LiveCorrectionsSection.tsx:100-103`).
@@ -325,7 +326,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   `src/components/live-scoring/LiveMatchView.tsx`). A failed save leaves the
   tapped scores on screen and the scorer presses Save Round again. Three
   details were needed beyond the one-line change this entry proposed.
-  **One:** a `DuplicateRoundError` still clears the grids — that round _is_
+  **One:** a `DuplicateRoundError` still clears the grids — that round *is*
   recorded, so the tapped scores are stale and keeping them would leave wrong
   numbers in the next round's grid. **Two:** when the optimistic round won the
   game, the whole panel unmounted behind the game-won banner and the rollback
@@ -388,7 +389,7 @@ finding read a superseded migration.
   ended in `.maybeSingle()`, which returns `PGRST116` when more than one row
   comes back (`@supabase/postgrest-js` 2.112.4). The unique index that would
   prevent the second row was **partial**, on `is_approved = true`
-  (`supabase/migrations/20260820105942_*.sql:1`), so two _pending_ rows were
+  (`supabase/migrations/20260820105942_*.sql:1`), so two *pending* rows were
   allowed.
 - **Severity:** `high`. It is unrecoverable from inside the app and it removes
   every ability the account has.
@@ -405,10 +406,10 @@ finding read a superseded migration.
   team request. Refresh the page to see it." instead of raising a raw database
   error. `supabase/tests/one_membership_per_user.sql` covers both halves.
 
-  **Two claims in the original entry were wrong.** _"a player who has asked to
-  join a team twice, or who has been on two teams"_ — neither creates a duplicate
+  **Two claims in the original entry were wrong.** *"a player who has asked to
+  join a team twice, or who has been on two teams"* — neither creates a duplicate
   on its own. A second request goes through the **update** branch of
-  `joinTeamMembership`, which edits the same row. _"`/my-team` collapses"_ — it
+  `joinTeamMembership`, which edits the same row. *"`/my-team` collapses"* — it
   does not crash. It renders the "you have no team" join form, because
   `TeamMembershipSection` reads only `membership` and never the `error` that
   `useTeamMembership` exposes. That was worse than a crash: the one control it
@@ -419,7 +420,6 @@ finding read a superseded migration.
   a row existed — a dropped request (the query retries once, `src/App.tsx`), or a
   second tab holding a cached "no membership" through its five-minute stale
   window. One press of Request to Join then inserted the second row.
-
 - **Raised by:** [`getting-started/join-a-team.md`](getting-started/join-a-team.md#open-questions-and-verification),
   [`teams/my-team.md`](teams/my-team.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
@@ -450,11 +450,9 @@ finding read a superseded migration.
   could not load your profile. This is usually a connection problem, not a
   permissions problem." with **Try again** (wired to `refreshProfile`) and "Go
   home". The "Access Denied" toast and the redirect are both suppressed while
-  that flag is set. Covered by `src/hooks/auth/__tests__/useAuthProfile.test.ts`,
-  the new cases in `useAdminAccess.test.ts` and `ProtectedAdminRoute.test.tsx`,
-  and an end-to-end case in `src/__tests__/admin-gating.test.tsx`.
+  that flag is set.
 - **Note on the original report:** it said "on a reload no toast is raised at
-  all". The _profile-error_ toast was indeed missing (it only fired on
+  all". The *profile-error* toast was indeed missing (it only fired on
   `SIGNED_IN`), but the "Access Denied" toast did fire. So the message was wrong
   rather than absent.
 - **Raised by:** [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification),
@@ -510,8 +508,17 @@ finding read a superseded migration.
   reads the other's.
 - **Severity:** `high`. Messages to the league are lost, and the sender is told
   they were received.
-- **Decision needed:** `product call`. Either merge them, or show both in the
-  admin inbox and say on each form where it goes.
+- **Decision needed:** ~~`product call`~~ **fixed**, by the second option: keep
+  both forms and make one place show everything. The two forms ask for different
+  things — `/contact` is support (bugs, account problems, disputes), the home
+  panel is league business (timeslots, scores, joining) — so merging the forms
+  would have made both worse. `SupportTicketService` and `useSupportTickets`
+  give `support_tickets` its first reader; `ContactInboxSection` merges both row
+  shapes into one list behind an *All / League requests / Support* filter, with
+  Delete on league rows only (the table has no DELETE policy);
+  `submit-contact-request` now emails `admin@717rec.com` too, through a shared
+  `_shared/email.ts`, best-effort so a failed send never turns a saved request
+  into a 500; and both forms now say where the message goes.
 - **Raised by:** [`help/contact-the-league.md`](help/contact-the-league.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification),
   [`home/the-home-page.md`](home/the-home-page.md#open-questions-and-verification).
@@ -587,7 +594,7 @@ finding read a superseded migration.
   - Deleting a saved Challonge fallback —
     `src/components/admin/challonge-fallback/ChallongeFallbackSection.tsx:118`.
   - Changing a team's division — `src/components/admin/teams/TeamTableDesktop.tsx:55`.
-    Because hiding a team _is_ setting its division to Hidden, one mis-click
+    Because hiding a team *is* setting its division to Hidden, one mis-click
     removes a team from the public site.
   - Duplicating a hero card — `src/components/admin/hero-cards/HeroCardsList.tsx:87`.
     Pressed twice it makes two cards with the same slug.
@@ -657,7 +664,7 @@ finding read a superseded migration.
   `/help`. 3. The new page is still scrolled down.
 - **Why (from the code):** nothing in `src/App.tsx` resets scroll on a route
   change, and React Router does not do it by itself. Four routes call
-  `useScrollRestoration` to restore _their own_ position — `/teams`, `/stats`,
+  `useScrollRestoration` to restore *their own* position — `/teams`, `/stats`,
   `/history`, `/insights` — which is a different behaviour and does not help
   anyone arriving at the other sixteen.
 - **Severity:** `medium`. It affects every navigation in the app and is most
@@ -692,7 +699,7 @@ finding read a superseded migration.
   [`scores/submit-a-score.md`](scores/submit-a-score.md#open-questions-and-verification).
 - **Status:** **confirmed** on 2026-08-25. A preflight sent with
   `Origin: https://717rec.app` returns `access-control-allow-origin:
-https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
+  https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
   returns no such header, and a browser fetch from the dev server fails with
   "TypeError: Failed to fetch". Checklist item `CONTACT-05`.
 
@@ -707,7 +714,7 @@ https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
   them.
 - **Reproduce:** 1. Open `/message-board` in a private window.
 - **Why (from the code):** the only SELECT policy on `messages` is granted `TO
-authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
+  authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
   route guard and its empty state does not distinguish "none" from "not allowed"
   (`src/components/message-board/MessageFeed.tsx:66-78`).
 - **Severity:** `medium`. It tells the user something false about the league.
@@ -727,7 +734,8 @@ authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
   screen changes with no explanation. Undoing a single round, which is far less
   surprising, does ask for confirmation. Expected: the more surprising action
   asks at least as much as the less surprising one.
-- **Reproduce:** 1. Two scorers on one match, one from each team. 2. End a game. 3. The losing team's scorer presses "Reopen Game N". 4. Watch the other screen.
+- **Reproduce:** 1. Two scorers on one match, one from each team. 2. End a game.
+  3. The losing team's scorer presses "Reopen Game N". 4. Watch the other screen.
 - **Why (from the code):** `src/components/live-scoring/LiveMatchView.tsx:246`
   calls `reopenGame.mutate` directly from `onClick` with no dialog;
   `useGameFlow.reopenGame` (`src/hooks/live-scoring/useGameFlow.ts:65`) raises no
@@ -735,7 +743,7 @@ authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
 - **Severity:** `medium`. Recoverable, but it is an opposing-team action with no
   friction and no trace.
 - **Decision needed:** `product call`. Either add a confirmation and a message to
-  both screens, or restrict it to an admin as reopening the _match_ already is.
+  both screens, or restrict it to an admin as reopening the *match* already is.
 - **Raised by:** [`live-scoring/correct-a-round.md`](live-scoring/correct-a-round.md#open-questions-and-verification).
 
 ### B-18: Rejecting a membership deletes the row, so the person is never told
@@ -806,7 +814,7 @@ authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
   - "9:30 PM" in the timeslot picker — it is not the primary of any pair, so the
     write always throws (`src/utils/autoSchedule/constants.ts:96-113`,
     `src/services/timeslots/TimeslotBatchService.ts:76-82`).
-  - "Edit Bracket" — opens the _Create New Playoff Bracket_ dialog and edits
+  - "Edit Bracket" — opens the *Create New Playoff Bracket* dialog and edits
     nothing (`src/components/playoffs/views/AdminView.tsx:76,91`).
   - The Create Team tab's Cancel button, wired to a no-op
     (`src/components/admin/teams/TeamManagementTab.tsx:23,109`).
@@ -944,7 +952,7 @@ authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
   head-to-head table, expecting the **Head-to-Head vs …** dialog.
 - **What happens / what was expected:** nothing happens. No dialog, no error, no
   spinner — the press produces no visible change at all. Expected: the dialog
-  opens with the summary cards and the _Recent Matches_ list.
+  opens with the summary cards and the *Recent Matches* list.
 - **Reproduce:** 1. Open any team page and expand Head-to-Head. 2. Press an
   opponent row, or its **View Details** control.
 - **Why (from the code):** `get_opponent_match_history` unions three sources.
@@ -1036,19 +1044,19 @@ authenticated` (`supabase/migrations/20251010171351_*.sql:4-7`). The page has no
 
 - **Where the user meets it:** a team's page. Press an opponent row in the
   head-to-head table to open the **Head-to-Head vs …** dialog, then read the W
-  and L badges down the _Recent Matches_ list.
+  and L badges down the *Recent Matches* list.
 - **What happens / what was expected:** the badge marks the match won whenever
   the **second-named** team won, no matter whose page it is. So on every match
   where the viewing team happens to be named first, a win reads **L** and a loss
   reads **W**. A match completed with no winner also reads **L**. Expected: the
   badge reflects the viewing team's own result, and a tie is not called a loss.
 - **Reproduce:** 1. Open a team page and expand Head-to-Head. 2. Press any
-  opponent row. 3. Count the **W** badges in _Recent Matches_ and compare with
+  opponent row. 3. Count the **W** badges in *Recent Matches* and compare with
   the **Wins** card at the top of the same dialog. They disagree whenever the
   team appears first in a fixture.
 - **Why (from the code):** `OpponentHistoryModal.tsx` decided the result with
   `match.winner_name === (teamId === match.team1_name ? match.team1_name :
-match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
+  match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
   that comparison is never true and the ternary always yielded
   `match.team2_name`. The rows returned by `get_opponent_match_history`
   (`supabase/migrations/20250906000458_*.sql:2-14`) carry names only, no ids, and
@@ -1067,7 +1075,7 @@ match.team2_name)`. `teamId` is a **uuid** and `team1_name` is a **name**, so
   exactly as `winner_name` always was). `winner_name` stays for display.
 - **Why not compare names:** `public.teams.name` has **no unique constraint**
   and the create and update services both allow duplicates. With two teams
-  sharing a name, `winner_name` equals the opponent's name for _both_ outcomes,
+  sharing a name, `winner_name` equals the opponent's name for *both* outcomes,
   so a name comparison reads every non-tie as a loss — trading one wrong badge
   for another. A rename landing between the two reads could flip a result the
   same way. Raised on the pull request by the Codex reviewer.

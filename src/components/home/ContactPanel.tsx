@@ -114,6 +114,7 @@ const ContactPanel: React.FC = () => {
 
   return (
     <section
+      id="contact-panel"
       className={cn(
         'relative mt-6 overflow-hidden rounded-xl border border-border bg-card/60 px-4 py-6 md:px-8 md:py-8',
         'shadow-sm'
@@ -124,6 +125,14 @@ const ContactPanel: React.FC = () => {
           <h2 className="text-xl font-semibold text-foreground md:text-2xl">Send us a message</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Request a timeslot change, report a score, join the league, or just say hi.
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Your message is emailed to the league admins and appears in their admin inbox. Got a
+            bug, an account problem, or a score dispute?{' '}
+            <a href="/contact" className="text-primary hover:underline">
+              Use the Contact page
+            </a>{' '}
+            instead.
           </p>
         </header>
 

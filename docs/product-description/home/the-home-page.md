@@ -48,18 +48,18 @@ skeleton or nothing at all.
 
 The blocks, in the fixed order they appear:
 
-| Block              | Shown when                                         | Reads                                            |
-| ------------------ | -------------------------------------------------- | ------------------------------------------------ |
-| Banner             | Always                                             | Nothing                                          |
-| League cards       | The league has published at least one              | The published cards, in the order the league set |
-| League History bar | Always, **desktop only**                           | Nothing; a link to `/history`                    |
-| Your next match    | Signed in, approved membership, at least one match | See [your-next-match.md](your-next-match.md)     |
-| Confirm your team  | The league has a season open for confirmation      | That season                                      |
-| Team of the Week   | A team's power score rose this week                | Weekly power score trends                        |
-| Weekly Recap       | There was an upset, a streak, or a mover           | The week's results                               |
-| Pending Scores     | At least one match is waiting for a score          | Up to ten waiting matches                        |
-| Top 10 Teams       | Always                                             | Every team, sorted by power score                |
-| Send us a message  | Always                                             | The signed-in profile, to prefill                |
+| Block | Shown when | Reads |
+| --- | --- | --- |
+| Banner | Always | Nothing |
+| League cards | The league has published at least one | The published cards, in the order the league set |
+| League History bar | Always, **desktop only** | Nothing; a link to `/history` |
+| Your next match | Signed in, approved membership, at least one match | See [your-next-match.md](your-next-match.md) |
+| Confirm your team | The league has a season open for confirmation | That season |
+| Team of the Week | A team's power score rose this week | Weekly power score trends |
+| Weekly Recap | There was an upset, a streak, or a mover | The week's results |
+| Pending Scores | At least one match is waiting for a score | Up to ten waiting matches |
+| Top 10 Teams | Always | Every team, sorted by power score |
+| Send us a message | Always | The signed-in profile, to prefill |
 
 **A quiet week collapses the page to four blocks**: the banner, the history bar,
 the top ten, and the message form. Nothing explains the difference, and nothing
@@ -126,13 +126,13 @@ shows a red toast and sends nothing.
 
 ## Modifiers
 
-| Modifier             | Set at arrival                                                                                                                                                                                      | Changed while editing                                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| The user's role      | Decides one block only. A signed-in player with an approved membership gets the next-match card; nobody else does. An admin sees exactly what a player sees — there is no admin block on this page. | Signing in elsewhere makes the next-match card appear on the next refetch. Signing out removes it. Nothing else moves.        |
-| The record's state   | Every block is driven by whether its data exists. A block with no data is absent, not empty.                                                                                                        | A block can appear or disappear under the user when its data refetches, changing the page's height with no warning.           |
-| The season's state   | With no active season, the next-match card, the recap, and the team of the week all go quiet, because each reads season data. The top ten and the league cards do not.                              | A season activated elsewhere reaches this page within ten minutes; see [`foundations/seasons.md`](../foundations/seasons.md). |
-| Viewport             | The banner becomes a compact card plus a 2×2 grid of buttons — Standings, Full Schedule, History, My Teams. The League History bar is removed. The top ten becomes a swipe carousel.                | Re-flows on rotation. The persistent choice below is unaffected.                                                              |
-| Keys the app honours | No shortcuts. Tab reaches the skip link, then the navigation, then each block in order.                                                                                                             | Enter inside the message form's single-line fields submits it.                                                                |
+| Modifier | Set at arrival | Changed while editing |
+| --- | --- | --- |
+| The user's role | Decides one block only. A signed-in player with an approved membership gets the next-match card; nobody else does. An admin sees exactly what a player sees — there is no admin block on this page. | Signing in elsewhere makes the next-match card appear on the next refetch. Signing out removes it. Nothing else moves. |
+| The record's state | Every block is driven by whether its data exists. A block with no data is absent, not empty. | A block can appear or disappear under the user when its data refetches, changing the page's height with no warning. |
+| The season's state | With no active season, the next-match card, the recap, and the team of the week all go quiet, because each reads season data. The top ten and the league cards do not. | A season activated elsewhere reaches this page within ten minutes; see [`foundations/seasons.md`](../foundations/seasons.md). |
+| Viewport | The banner becomes a compact card plus a 2×2 grid of buttons — Standings, Full Schedule, History, My Teams. The League History bar is removed. The top ten becomes a swipe carousel. | Re-flows on rotation. The persistent choice below is unaffected. |
+| Keys the app honours | No shortcuts. Tab reaches the skip link, then the navigation, then each block in order. | Enter inside the message form's single-line fields submits it. |
 
 The mobile button labelled **My Teams** goes to `/teams`, the list of every team
 in the league, not to the user's own team. See
@@ -140,18 +140,18 @@ in the league, not to the user's own team. See
 
 ## Cancel and interrupt
 
-| Event                                                       | Before the first edit                                                                                                                                                                                | While editing or submitting                                                                                                                                                       |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Escape, or a Cancel button                                  | No effect. There is no Cancel anywhere on this page.                                                                                                                                                 | Closes the request-type dropdown if it is open. It does not clear the message form and does not abort a submission in flight.                                                     |
-| In-app navigation away, or switching tab within the page    | Nothing is lost. Every block rebuilds from the cache on return, so returning within five minutes is instant.                                                                                         | **Anything typed into the message form is lost, with no warning.** A submission already sent still reaches the league, unseen.                                                    |
-| Browser back or forward                                     | Returns to the previous page. Scroll position is not reset, so arriving back at a long home page from a short one can land the user in the middle of it.                                             | Same as navigating away, and the app cannot prevent it.                                                                                                                           |
-| Reload, or the tab closed                                   | The whole page refetches from scratch and every skeleton is shown again.                                                                                                                             | Anything typed is lost. A submission already sent still lands.                                                                                                                    |
-| Network lost mid-request                                    | Blocks that have not answered stay as skeletons or stay absent. The top ten shows "We couldn't load the top teams. Please try again." with a Try Again button; the other blocks show nothing at all. | The request fails and a red toast carries the reason. Nothing is queued.                                                                                                          |
-| The request fails or times out                              | A failed read is retried once, then that block gives up quietly. Only the top ten says so.                                                                                                           | The message form keeps every field and a red toast explains.                                                                                                                      |
-| The session expires                                         | Reads still work, so the page looks normal. The next-match card disappears at the next refetch.                                                                                                      | The message request fails and reports it.                                                                                                                                         |
-| The same record changed in another tab, or by another user  | No realtime anywhere on this page. A card the league publishes or a score an admin enters does not reach an open home page until a refetch.                                                          | Same. Two tabs can hold two different drafts of the message form.                                                                                                                 |
-| Browser autofill or a password manager writes into the form | Only the message form can be autofilled — name and contact. It has a hidden bot-trap field of its own.                                                                                               | Same.                                                                                                                                                                             |
-| The window loses focus                                      | Nothing.                                                                                                                                                                                             | **Returning refetches every block past five minutes.** Blocks can appear, disappear, and change height while the user is reading, and a half-written message moves down the page. |
+| Event | Before the first edit | While editing or submitting |
+| --- | --- | --- |
+| Escape, or a Cancel button | No effect. There is no Cancel anywhere on this page. | Closes the request-type dropdown if it is open. It does not clear the message form and does not abort a submission in flight. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. Every block rebuilds from the cache on return, so returning within five minutes is instant. | **Anything typed into the message form is lost, with no warning.** A submission already sent still reaches the league, unseen. |
+| Browser back or forward | Returns to the previous page. Scroll position is not reset, so arriving back at a long home page from a short one can land the user in the middle of it. | Same as navigating away, and the app cannot prevent it. |
+| Reload, or the tab closed | The whole page refetches from scratch and every skeleton is shown again. | Anything typed is lost. A submission already sent still lands. |
+| Network lost mid-request | Blocks that have not answered stay as skeletons or stay absent. The top ten shows "We couldn't load the top teams. Please try again." with a Try Again button; the other blocks show nothing at all. | The request fails and a red toast carries the reason. Nothing is queued. |
+| The request fails or times out | A failed read is retried once, then that block gives up quietly. Only the top ten says so. | The message form keeps every field and a red toast explains. |
+| The session expires | Reads still work, so the page looks normal. The next-match card disappears at the next refetch. | The message request fails and reports it. |
+| The same record changed in another tab, or by another user | No realtime anywhere on this page. A card the league publishes or a score an admin enters does not reach an open home page until a refetch. | Same. Two tabs can hold two different drafts of the message form. |
+| Browser autofill or a password manager writes into the form | Only the message form can be autofilled — name and contact. It has a hidden bot-trap field of its own. | Same. |
+| The window loses focus | Nothing. | **Returning refetches every block past five minutes.** Blocks can appear, disappear, and change height while the user is reading, and a half-written message moves down the page. |
 
 After any interrupt the user is left on whatever page the interrupt took them
 to. The home page holds nothing back and warns about nothing.

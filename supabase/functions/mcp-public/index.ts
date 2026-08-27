@@ -3,14 +3,14 @@
 // supabase function: mcp-public
 // Bundled from src/lib/mcp/public/index.ts by @lovable.dev/mcp-js.
 // src/lib/mcp/public/index.ts
-import { defineMcp } from 'npm:@lovable.dev/mcp-js@0.26.2';
+import { defineMcp } from "npm:@lovable.dev/mcp-js@0.26.2";
 
 // src/lib/mcp/public/tools/get-bracket.ts
-import { defineTool } from 'npm:@lovable.dev/mcp-js@0.26.2';
-import { z } from 'npm:zod@^4.4.3';
+import { defineTool } from "npm:@lovable.dev/mcp-js@0.26.2";
+import { z } from "npm:zod@^4.4.3";
 
 // src/lib/mcp/public/tools/_supabase.ts
-import { createClient } from 'npm:@supabase/supabase-js@^2.112.3';
+import { createClient } from "npm:@supabase/supabase-js@^2.112.3";
 function runtimeEnv(name) {
   const runtime = globalThis;
   return runtime.Deno?.env?.get?.(name) ?? runtime.process?.env?.[name];
@@ -23,62 +23,57 @@ function configuredEnv(names) {
   return void 0;
 }
 function projectUrl() {
-  const url = configuredEnv(['SUPABASE_URL', 'VITE_SUPABASE_URL']);
-  if (!url) throw new Error('SUPABASE_URL (or VITE_SUPABASE_URL) is required');
+  const url = configuredEnv(["SUPABASE_URL", "VITE_SUPABASE_URL"]);
+  if (!url) throw new Error("SUPABASE_URL (or VITE_SUPABASE_URL) is required");
   return url;
 }
 function publishableKey() {
-  const direct = configuredEnv(['SUPABASE_PUBLISHABLE_KEY', 'VITE_SUPABASE_PUBLISHABLE_KEY']);
+  const direct = configuredEnv(["SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PUBLISHABLE_KEY"]);
   if (direct) return direct;
-  const keyset = runtimeEnv('SUPABASE_PUBLISHABLE_KEYS');
+  const keyset = runtimeEnv("SUPABASE_PUBLISHABLE_KEYS");
   if (keyset) {
     try {
       const parsed = JSON.parse(keyset);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
         const keys = parsed;
-        const key = [keys.default, ...Object.values(keys)]
-          .find((v) => typeof v === 'string' && v.trim().startsWith('sb_publishable_'))
-          ?.trim();
+        const key = [keys.default, ...Object.values(keys)].find((v) => typeof v === "string" && v.trim().startsWith("sb_publishable_"))?.trim();
         if (key) return key;
       }
-    } catch {}
+    } catch {
+    }
   }
-  const legacy = configuredEnv(['SUPABASE_ANON_KEY', 'VITE_SUPABASE_ANON_KEY']);
+  const legacy = configuredEnv(["SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
   if (legacy) return legacy;
   throw new Error(
-    'SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required'
+    "SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required"
   );
 }
 function anonClient() {
   return createClient(projectUrl(), publishableKey(), {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: { persistSession: false, autoRefreshToken: false }
   });
 }
 function textResult(payload) {
   return {
-    content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }],
-    structuredContent: { data: payload },
+    content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+    structuredContent: { data: payload }
   };
 }
 function errorResult(message) {
   return {
-    content: [{ type: 'text', text: message }],
-    isError: true,
+    content: [{ type: "text", text: message }],
+    isError: true
   };
 }
 async function getActiveSeasonId(supabase) {
-  const { data, error } = await supabase
-    .from('seasons')
-    .select('id')
-    .eq('is_active', true)
-    .maybeSingle();
+  const { data, error } = await supabase.from("seasons").select("id").eq("is_active", true).maybeSingle();
   if (error) {
     return { data: null, error: error.message };
   }
   return { data: data?.id ?? null, error: null };
 }
 function isHiddenDivision(divisionName) {
-  return (divisionName ?? '').toLowerCase().startsWith('hidden');
+  return (divisionName ?? "").toLowerCase().startsWith("hidden");
 }
 function firstOrSelf(value) {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -94,21 +89,20 @@ function isHiddenTeamRow(divisionName, team) {
 
 // src/lib/mcp/public/tools/get-bracket.ts
 var STATUS_LABELS = {
-  0: 'locked',
-  1: 'waiting',
-  2: 'ready',
-  3: 'running',
-  4: 'completed',
-  5: 'archived',
+  0: "locked",
+  1: "waiting",
+  2: "ready",
+  3: "running",
+  4: "completed",
+  5: "archived"
 };
 var get_bracket_default = defineTool({
-  name: 'get_bracket',
-  title: 'Get playoff bracket',
-  description:
-    'Get the live playoff bracket(s) for the active 717rec season: stages, rounds, matches, participants, scores and match status. Public data, no login required.',
+  name: "get_bracket",
+  title: "Get playoff bracket",
+  description: "Get the live playoff bracket(s) for the active 717rec season: stages, rounds, matches, participants, scores and match status. Public data, no login required.",
   inputSchema: {
-    bracketId: z.string().optional().describe('Optional specific bracket (tournament) id.'),
-    division: z.string().optional().describe('Optional bracket title filter (case-insensitive).'),
+    bracketId: z.string().optional().describe("Optional specific bracket (tournament) id."),
+    division: z.string().optional().describe("Optional bracket title filter (case-insensitive).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ bracketId, division }) => {
@@ -116,49 +110,36 @@ var get_bracket_default = defineTool({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    let bracketQuery = supabase
-      .from('brackets')
-      .select('id, title, format, state, season_id, created_at')
-      .eq('season_id', seasonId);
-    if (bracketId) bracketQuery = bracketQuery.eq('id', bracketId);
-    if (division) bracketQuery = bracketQuery.ilike('title', `%${division}%`);
+    let bracketQuery = supabase.from("brackets").select("id, title, format, state, season_id, created_at").eq("season_id", seasonId);
+    if (bracketId) bracketQuery = bracketQuery.eq("id", bracketId);
+    if (division) bracketQuery = bracketQuery.ilike("title", `%${division}%`);
     const { data: brackets, error: bracketErr } = await bracketQuery;
     if (bracketErr) return errorResult(bracketErr.message);
     if (!brackets?.length) return textResult([]);
     const ids = brackets.map((b) => b.id);
     const [stages, participants] = await Promise.all([
-      supabase
-        .from('stage')
-        .select('id, name, number, type, tournament_id')
-        .in('tournament_id', ids),
-      supabase
-        .from('participant')
-        .select('id, name, team_id, position, tournament_id')
-        .in('tournament_id', ids),
+      supabase.from("stage").select("id, name, number, type, tournament_id").in("tournament_id", ids),
+      supabase.from("participant").select("id, name, team_id, position, tournament_id").in("tournament_id", ids)
     ]);
     if (stages.error) return errorResult(stages.error.message);
     if (participants.error) return errorResult(participants.error.message);
     const stageIds = (stages.data ?? []).map((s) => s.id);
     const emptyResult = () => ({ data: [], error: null });
     const [roundRows, matchRows] = await Promise.all([
-      stageIds.length > 0
-        ? supabase
-            .from('round')
-            .select('id, name, number, stage_id, group_id')
-            .in('stage_id', stageIds)
-        : Promise.resolve(emptyResult()),
-      stageIds.length > 0
-        ? supabase
-            .from('match')
-            .select(
-              'id, number, stage_id, group_id, round_id, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
-            )
-            .in('stage_id', stageIds)
-        : Promise.resolve(emptyResult()),
+      stageIds.length > 0 ? supabase.from("round").select("id, name, number, stage_id, group_id").in("stage_id", stageIds) : Promise.resolve(
+        emptyResult()
+      ),
+      stageIds.length > 0 ? supabase.from("match").select(
+        "id, number, stage_id, group_id, round_id, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result"
+      ).in("stage_id", stageIds) : Promise.resolve(
+        emptyResult()
+      )
     ]);
     if (roundRows.error) return errorResult(roundRows.error.message);
     if (matchRows.error) return errorResult(matchRows.error.message);
-    const participantName = new Map((participants.data ?? []).map((p) => [p.id, p.name ?? null]));
+    const participantName = new Map(
+      (participants.data ?? []).map((p) => [p.id, p.name ?? null])
+    );
     const payload = brackets.map((bracket) => {
       const bracketStages = (stages.data ?? []).filter((s) => s.tournament_id === bracket.id);
       const bracketStageIds = new Set(bracketStages.map((s) => s.id));
@@ -167,61 +148,50 @@ var get_bracket_default = defineTool({
         title: bracket.title,
         format: bracket.format,
         state: bracket.state,
-        participants: (participants.data ?? [])
-          .filter((p) => p.tournament_id === bracket.id)
-          .map((p) => ({ id: p.id, name: p.name, team_id: p.team_id, seed: p.position })),
+        participants: (participants.data ?? []).filter((p) => p.tournament_id === bracket.id).map((p) => ({ id: p.id, name: p.name, team_id: p.team_id, seed: p.position })),
         stages: bracketStages.map((stage) => ({
           id: stage.id,
           name: stage.name,
           type: stage.type,
           number: stage.number,
-          rounds: (roundRows.data ?? [])
-            .filter((r) => r.stage_id === stage.id)
-            .sort((a, b) => a.number - b.number)
-            .map((round) => ({
-              id: round.id,
-              name: round.name,
-              number: round.number,
-              matches: (matchRows.data ?? [])
-                .filter((m) => m.round_id === round.id && bracketStageIds.has(m.stage_id))
-                .sort((a, b) => a.number - b.number)
-                .map((m) => ({
-                  id: m.id,
-                  number: m.number,
-                  status: STATUS_LABELS[m.status] ?? m.status,
-                  opponent1: {
-                    name:
-                      m.opponent1_id != null ? (participantName.get(m.opponent1_id) ?? null) : null,
-                    score: m.opponent1_score,
-                    result: m.opponent1_result,
-                  },
-                  opponent2: {
-                    name:
-                      m.opponent2_id != null ? (participantName.get(m.opponent2_id) ?? null) : null,
-                    score: m.opponent2_score,
-                    result: m.opponent2_result,
-                  },
-                })),
-            })),
-        })),
+          rounds: (roundRows.data ?? []).filter((r) => r.stage_id === stage.id).sort((a, b) => a.number - b.number).map((round) => ({
+            id: round.id,
+            name: round.name,
+            number: round.number,
+            matches: (matchRows.data ?? []).filter((m) => m.round_id === round.id && bracketStageIds.has(m.stage_id)).sort((a, b) => a.number - b.number).map((m) => ({
+              id: m.id,
+              number: m.number,
+              status: STATUS_LABELS[m.status] ?? m.status,
+              opponent1: {
+                name: m.opponent1_id != null ? participantName.get(m.opponent1_id) ?? null : null,
+                score: m.opponent1_score,
+                result: m.opponent1_result
+              },
+              opponent2: {
+                name: m.opponent2_id != null ? participantName.get(m.opponent2_id) ?? null : null,
+                score: m.opponent2_score,
+                result: m.opponent2_result
+              }
+            }))
+          }))
+        }))
       };
     });
     return textResult(payload);
-  },
+  }
 });
 
 // src/lib/mcp/public/tools/get-schedule.ts
-import { defineTool as defineTool2 } from 'npm:@lovable.dev/mcp-js@0.26.2';
-import { z as z2 } from 'npm:zod@^4.4.3';
+import { defineTool as defineTool2 } from "npm:@lovable.dev/mcp-js@0.26.2";
+import { z as z2 } from "npm:zod@^4.4.3";
 var get_schedule_default = defineTool2({
-  name: 'get_schedule',
-  title: 'Get schedule',
-  description:
-    'Get scheduled or recent matches for the active season. Filter by team id and by upcoming vs recent. Public data, no login required.',
+  name: "get_schedule",
+  title: "Get schedule",
+  description: "Get scheduled or recent matches for the active season. Filter by team id and by upcoming vs recent. Public data, no login required.",
   inputSchema: {
-    scope: z2.enum(['upcoming', 'recent', 'all']).default('upcoming'),
+    scope: z2.enum(["upcoming", "recent", "all"]).default("upcoming"),
     teamId: z2.string().uuid().optional(),
-    limit: z2.number().int().min(1).max(200).default(50),
+    limit: z2.number().int().min(1).max(200).default(50)
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ scope, teamId, limit }) => {
@@ -229,37 +199,32 @@ var get_schedule_default = defineTool2({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    let query = supabase
-      .from('matches')
-      .select(
-        `id, date, team1_id, team2_id, team1_score, team2_score, iscompleted,
+    let query = supabase.from("matches").select(
+      `id, date, team1_id, team2_id, team1_score, team2_score, iscompleted,
          team1:teams!matches_team1_id_fkey(id, name, division:divisions(name)),
          team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
-      )
-      .eq('season_id', seasonId)
-      .limit(limit);
+    ).eq("season_id", seasonId).limit(limit);
     if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
-    if (scope === 'upcoming')
-      query = query.eq('iscompleted', false).order('date', { ascending: true });
-    else if (scope === 'recent')
-      query = query.eq('iscompleted', true).order('date', { ascending: false });
-    else query = query.order('date', { ascending: false });
+    if (scope === "upcoming")
+      query = query.eq("iscompleted", false).order("date", { ascending: true });
+    else if (scope === "recent")
+      query = query.eq("iscompleted", true).order("date", { ascending: false });
+    else query = query.order("date", { ascending: false });
     const { data, error } = await query;
     if (error) return errorResult(error.message);
     return textResult(data ?? []);
-  },
+  }
 });
 
 // src/lib/mcp/public/tools/get-standings.ts
-import { defineTool as defineTool3 } from 'npm:@lovable.dev/mcp-js@0.26.2';
-import { z as z3 } from 'npm:zod@^4.4.3';
+import { defineTool as defineTool3 } from "npm:@lovable.dev/mcp-js@0.26.2";
+import { z as z3 } from "npm:zod@^4.4.3";
 var get_standings_default = defineTool3({
-  name: 'get_standings',
-  title: 'Get standings',
-  description:
-    'Get current active-season standings sorted by power score. Optional division filter. Public data, no login required.',
+  name: "get_standings",
+  title: "Get standings",
+  description: "Get current active-season standings sorted by power score. Optional division filter. Public data, no login required.",
   inputSchema: {
-    division: z3.string().optional().describe('Optional division filter.'),
+    division: z3.string().optional().describe("Optional division filter.")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ division }) => {
@@ -267,38 +232,32 @@ var get_standings_default = defineTool3({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    let query = supabase
-      .from('team_season_stats')
-      .select(
-        'team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name, divisions(name, display_division))'
-      )
-      .eq('season_id', seasonId);
-    if (division) query = query.ilike('division_name', division);
-    const { data, error } = await query.order('power_score', {
+    let query = supabase.from("team_season_stats").select(
+      "team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name, divisions(name, display_division))"
+    ).eq("season_id", seasonId);
+    if (division) query = query.ilike("division_name", division);
+    const { data, error } = await query.order("power_score", {
       ascending: false,
-      nullsFirst: false,
+      nullsFirst: false
     });
     if (error) return errorResult(error.message);
-    const rows = (data ?? [])
-      .filter((row) => !isHiddenTeamRow(row.division_name, row.teams))
-      .map((row, index) => {
-        const { teams, ...rest } = row;
-        return { rank: index + 1, team_name: teams?.name ?? null, ...rest };
-      });
+    const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).map((row, index) => {
+      const { teams, ...rest } = row;
+      return { rank: index + 1, team_name: teams?.name ?? null, ...rest };
+    });
     return textResult(rows);
-  },
+  }
 });
 
 // src/lib/mcp/public/tools/list-teams.ts
-import { defineTool as defineTool4 } from 'npm:@lovable.dev/mcp-js@0.26.2';
-import { z as z4 } from 'npm:zod@^4.4.3';
+import { defineTool as defineTool4 } from "npm:@lovable.dev/mcp-js@0.26.2";
+import { z as z4 } from "npm:zod@^4.4.3";
 var list_teams_default = defineTool4({
-  name: 'list_teams',
-  title: 'List teams',
-  description:
-    'List teams in the active 717rec season. Optionally filter by division (Competitive, Intermediate, Recreational). Public data, no login required.',
+  name: "list_teams",
+  title: "List teams",
+  description: "List teams in the active 717rec season. Optionally filter by division (Competitive, Intermediate, Recreational). Public data, no login required.",
   inputSchema: {
-    division: z4.string().optional().describe('Optional division name filter (case-insensitive).'),
+    division: z4.string().optional().describe("Optional division name filter (case-insensitive).")
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ division }) => {
@@ -306,38 +265,32 @@ var list_teams_default = defineTool4({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    let query = supabase
-      .from('team_season_stats')
-      .select(
-        'team_id, division_name, match_wins, match_losses, power_score, teams(name, divisions(name, display_division))'
-      )
-      .eq('season_id', seasonId);
-    if (division) query = query.ilike('division_name', division);
-    const { data, error } = await query.order('power_score', {
+    let query = supabase.from("team_season_stats").select(
+      "team_id, division_name, match_wins, match_losses, power_score, teams(name, divisions(name, display_division))"
+    ).eq("season_id", seasonId);
+    if (division) query = query.ilike("division_name", division);
+    const { data, error } = await query.order("power_score", {
       ascending: false,
-      nullsFirst: false,
+      nullsFirst: false
     });
     if (error) return errorResult(error.message);
-    const rows = (data ?? [])
-      .filter((row) => !isHiddenTeamRow(row.division_name, row.teams))
-      .map((row) => {
-        const { teams, ...rest } = row;
-        return { team_name: teams?.name ?? null, ...rest };
-      });
+    const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).map((row) => {
+      const { teams, ...rest } = row;
+      return { team_name: teams?.name ?? null, ...rest };
+    });
     return textResult(rows);
-  },
+  }
 });
 
 // src/lib/mcp/public/index.ts
 var public_default = defineMcp({
-  name: '717rec-public',
-  title: '717rec League (public)',
-  version: '0.1.0',
-  instructions:
-    'Read-only public data for the 717rec cornhole league: teams, standings, schedule, and live playoff brackets. No authentication required. Personal and admin tools live on the authenticated 717rec MCP server.',
-  tools: [list_teams_default, get_standings_default, get_schedule_default, get_bracket_default],
+  name: "717rec-public",
+  title: "717rec League (public)",
+  version: "0.1.0",
+  instructions: "Read-only public data for the 717rec cornhole league: teams, standings, schedule, and live playoff brackets. No authentication required. Personal and admin tools live on the authenticated 717rec MCP server.",
+  tools: [list_teams_default, get_standings_default, get_schedule_default, get_bracket_default]
 });
 
 // lovable-mcp-supabase-entry.ts
-import { createSupabaseHandler } from 'npm:@lovable.dev/mcp-js@0.26.2/stacks/supabase';
-Deno.serve(createSupabaseHandler(public_default, { functionName: 'mcp-public' }));
+import { createSupabaseHandler } from "npm:@lovable.dev/mcp-js@0.26.2/stacks/supabase";
+Deno.serve(createSupabaseHandler(public_default, { functionName: "mcp-public" }));
