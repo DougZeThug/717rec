@@ -21,9 +21,9 @@ never results the match. The app reports success and the league's data does not
 change the way the admin was told it had.
 
 **Work that is silently lost.** A decided live match that is never saved counts
-for nothing and nothing anywhere surfaces it. A second membership row
-permanently breaks every ability a member has. A failed round save used to
-discard what the scorer tapped; that one is now **fixed**, see B-05.
+for nothing and nothing anywhere surfaces it. Two are now **fixed**: a second
+membership row used to take away every ability a member has, see B-07, and a
+failed round save used to discard what the scorer tapped, see B-05.
 
 One entry has since been **cleared**: B-06 claimed head-to-head win
 percentages were a 0–1 fraction printed as a percentage. Checked against the
@@ -50,7 +50,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | **fixed** | — |
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | **fixed** | — |
 | B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
-| B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | fix | — |
+| B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | **fixed** | — |
 | B-08 | A failed profile read silently demotes an admin | high | foundations | fix | — |
 | B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
 | B-10 | Two contact channels, neither aware of the other | high | help, admin | product call | — |
@@ -376,24 +376,50 @@ finding read a superseded migration.
 
 ### B-07: A second membership row permanently breaks every member ability
 
-- **Where the user meets it:** a player who has asked to join a team twice, or
-  who has been on two teams.
+- **Where the user meets it:** a player whose account has ended up with two rows
+  in `team_memberships`.
 - **What happens / what was expected:** their membership read throws instead of
-  returning a row. `/my-team` collapses, the next-match card disappears, and they
-  cannot score their team's matches. Nothing tells them why and nothing they can
-  do fixes it. Expected: one membership is chosen, or the second is prevented.
+  returning a row. The next-match card disappears and they cannot score their
+  team's matches. Nothing tells them why and nothing they can do fixes it.
+  Expected: one membership is chosen, or the second is prevented.
 - **Reproduce:** needs a deliberately constructed account with two rows in
   `team_memberships` for one user.
 - **Why (from the code):** `fetchTeamMembership`
-  (`src/services/teams/TeamMembershipService.ts:28-29`) uses `.maybeSingle()`,
-  which throws when more than one row matches. The unique index that would
-  prevent it is **partial**, on `is_approved = true`
-  (`supabase/migrations/20260820105942_*.sql:1`), so two *pending* rows are
-  allowed and a second request creates one.
+  (`src/services/teams/TeamMembershipService.ts`) filtered on `user_id` alone and
+  ended in `.maybeSingle()`, which returns `PGRST116` when more than one row
+  comes back (`@supabase/postgrest-js` 2.112.4). The unique index that would
+  prevent the second row was **partial**, on `is_approved = true`
+  (`supabase/migrations/20260820105942_*.sql:1`), so two *pending* rows were
+  allowed.
 - **Severity:** `high`. It is unrecoverable from inside the app and it removes
   every ability the account has.
-- **Decision needed:** `fix`. Either make the index total, or read with a
-  deterministic order and take the first row.
+- **Decision needed:** `fix`. **Done.** Two changes.
+  **One,** the read is now deterministic: `fetchTeamMembership` orders by
+  approved-first then oldest and takes one row, so a stray duplicate resolves to
+  the same row the database's own one-approved-membership rule would pick. The
+  identical query in `MatchCommentsService.fetchCommentAuthorInfo` got the same
+  guard. This makes an affected account work again with no database change.
+  **Two,** `20260827120000_one_membership_per_user.sql` removes existing
+  duplicates — keeping the approved row, then the oldest, so nobody's team
+  changes — and replaces the partial index with a total unique index on
+  `user_id`. `joinTeamMembership` now reads `23505` and says "You already have a
+  team request. Refresh the page to see it." instead of raising a raw database
+  error. `supabase/tests/one_membership_per_user.sql` covers both halves.
+
+  **Two claims in the original entry were wrong.** *"a player who has asked to
+  join a team twice, or who has been on two teams"* — neither creates a duplicate
+  on its own. A second request goes through the **update** branch of
+  `joinTeamMembership`, which edits the same row. *"`/my-team` collapses"* — it
+  does not crash. It renders the "you have no team" join form, because
+  `TeamMembershipSection` reads only `membership` and never the `error` that
+  `useTeamMembership` exposes. That was worse than a crash: the one control it
+  offered inserted another row.
+
+  **How a duplicate was actually created:** the insert branch runs only when the
+  read returns nothing, which includes a read that **failed or was stale** while
+  a row existed — a dropped request (the query retries once, `src/App.tsx`), or a
+  second tab holding a cached "no membership" through its five-minute stale
+  window. One press of Request to Join then inserted the second row.
 - **Raised by:** [`getting-started/join-a-team.md`](getting-started/join-a-team.md#open-questions-and-verification),
   [`teams/my-team.md`](teams/my-team.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).

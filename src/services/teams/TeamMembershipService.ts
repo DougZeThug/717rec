@@ -26,6 +26,13 @@ export const fetchTeamMembership = async (userId: string): Promise<TeamMembershi
     `
     )
     .eq('user_id', userId)
+    // One row per user is the rule, but a stale or failed read used to let the
+    // join form insert a second one. Order and limit so a stray duplicate picks
+    // a row instead of making maybeSingle() throw, which locked the account out
+    // of every member ability with no way back. Approved row wins, then oldest.
+    .order('is_approved', { ascending: false })
+    .order('joined_at', { ascending: true, nullsFirst: false })
+    .limit(1)
     .maybeSingle();
 
   if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch team membership');
@@ -80,6 +87,13 @@ export const joinTeamMembership = async (
       is_approved: false,
     });
 
+    // idx_one_membership_per_user: one row per user. This fires when the join
+    // form was drawn against a stale or failed membership read, so the row it
+    // thought was missing already exists. That insert used to succeed and take
+    // away every member ability, so say what happened instead of retrying.
+    if (error?.code === '23505') {
+      throw new DatabaseError('You already have a team request. Refresh the page to see it.');
+    }
     if (error) handleDatabaseError(error, 'Failed to insert team membership');
   }
 };
@@ -202,10 +216,10 @@ export const updateMembershipApproval = async (
     .select('id');
 
   if (error) {
-    // idx_one_approved_membership_per_user: one approved membership per user.
+    // idx_one_membership_per_user: one membership row per user, approved or not.
     if (error.code === '23505') {
       throw new DatabaseError(
-        'This user already has an approved membership on another team. Remove that membership first.'
+        'This user already has a membership on another team. Remove that membership first.'
       );
     }
     handleDatabaseError(error, 'Failed to update membership approval');

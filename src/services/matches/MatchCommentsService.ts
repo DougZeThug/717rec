@@ -64,6 +64,11 @@ export const MatchCommentsService = {
         .from('team_memberships')
         .select('team:teams(name)')
         .eq('user_id', userId)
+        // Same guard as fetchTeamMembership: order and limit so a stray second
+        // membership row picks a team instead of making maybeSingle() throw.
+        .order('is_approved', { ascending: false })
+        .order('joined_at', { ascending: true, nullsFirst: false })
+        .limit(1)
         .maybeSingle(),
     ]);
 
