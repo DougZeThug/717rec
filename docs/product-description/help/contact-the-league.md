@@ -5,7 +5,7 @@
 The contact form is the one way anybody can send a message to whoever runs the
 league from inside the app. It takes a name, an email address, a subject chosen
 from a fixed list, and a message, and it sends them to the league as an email
-and as a stored ticket. It is the only write in the whole app that a *visitor*
+and as a stored ticket. It is the only write in the whole app that a _visitor_
 can perform without an account.
 
 It lives at `/contact`, on its own page, reached from the footer and from the
@@ -99,12 +99,12 @@ arrival to submission.
 Pressing "Send Message" at any point runs every rule at once and, if any fails,
 shows a message under each failing field and sends nothing:
 
-| Field | Rule | Message shown |
-| --- | --- | --- |
-| Name | at least 2 characters | "Name must be at least 2 characters" |
-| Email | must look like an email address | "Please enter a valid email address" |
-| Subject | must be chosen | "Please select a subject" |
-| Message | at least 10 characters | "Message must be at least 10 characters" |
+| Field   | Rule                            | Message shown                            |
+| ------- | ------------------------------- | ---------------------------------------- |
+| Name    | at least 2 characters           | "Name must be at least 2 characters"     |
+| Email   | must look like an email address | "Please enter a valid email address"     |
+| Subject | must be chosen                  | "Please select a subject"                |
+| Message | at least 10 characters          | "Message must be at least 10 characters" |
 
 Once a field has failed once, it is re-checked as the user types, so its message
 clears as soon as the field becomes valid. Before the first failed submission it
@@ -129,11 +129,13 @@ replaced by the success panel, and a toast says "Message sent successfully!". Th
 user cannot get back to what they typed — the reset is unconditional and there is
 no copy of the message anywhere the user can reach.
 
-> **Technical note:** the league stores the message as a ticket *and* emails it,
+> **Technical note:** the league stores the message as a ticket _and_ emails it,
 > and treats either one succeeding as success. If the ticket stores but the email
 > fails, the user is told the message was sent, and it was — it is waiting in the
-> league's ticket list rather than in an inbox. Only when *both* fail does the
-> user see a failure.
+> admin **Contact Inbox** under the _Support_ filter rather than in an inbox of
+> mail. Only when _both_ fail does the user see a failure. Before B-10 the stored
+> ticket reached no admin screen at all, so a failed email really did lose the
+> message; see [`admin/handle-requests.md`](../admin/handle-requests.md).
 
 On failure, nothing is cleared. Every field keeps its text, the button comes
 back, and one red toast appears reading "Failed to send message. Please try
@@ -146,13 +148,13 @@ questions](#open-questions-and-verification).
 
 ## Modifiers
 
-| Modifier | Set at arrival | Changed while editing |
-| --- | --- | --- |
-| The user's role (visitor, player, admin) | No effect. The form looks and behaves identically for all three, and nothing is prefilled from a signed-in profile. | No effect. Signing in or out in another tab does not reach this page. |
-| The record's state | No effect. The form creates a new message every time; there is no record to be in a state. | No effect. |
-| The season's state (active, archived, playoffs on) | No effect. This is the only page in the app that is not scoped to a season. | No effect. |
-| Viewport | The two top fields sit side by side on a wide screen and stack on a narrow one. The message box is the same height either way. | No effect beyond re-flowing on rotation. |
-| Keys the form honours | Tab moves through Name, Email, Subject, Message, Send Message — the hidden field is skipped. Enter inside the message box adds a newline. | Enter in any single-line field submits the form. Escape closes the subject dropdown and does nothing else. |
+| Modifier                                           | Set at arrival                                                                                                                            | Changed while editing                                                                                      |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| The user's role (visitor, player, admin)           | No effect. The form looks and behaves identically for all three, and nothing is prefilled from a signed-in profile.                       | No effect. Signing in or out in another tab does not reach this page.                                      |
+| The record's state                                 | No effect. The form creates a new message every time; there is no record to be in a state.                                                | No effect.                                                                                                 |
+| The season's state (active, archived, playoffs on) | No effect. This is the only page in the app that is not scoped to a season.                                                               | No effect.                                                                                                 |
+| Viewport                                           | The two top fields sit side by side on a wide screen and stack on a narrow one. The message box is the same height either way.            | No effect beyond re-flowing on rotation.                                                                   |
+| Keys the form honours                              | Tab moves through Name, Email, Subject, Message, Send Message — the hidden field is skipped. Enter inside the message box adds a newline. | Enter in any single-line field submits the form. Escape closes the subject dropdown and does nothing else. |
 
 Changing a variant mid-edit changes nothing here, because none of them is read at
 submit time. The form sends exactly what is typed, and who is typing it is never
@@ -161,18 +163,18 @@ fields, even from a signed-in user whose real account details differ.
 
 ## Cancel and interrupt
 
-| Event | Before the first edit | While editing or submitting |
-| --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel button anywhere on this page. | Closes the subject dropdown if it is open. Otherwise no effect. It does not clear the form and it does not abort a submission in flight. |
-| In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was typed. | **Everything typed is lost, with no warning.** There is no unsaved-changes guard. A submission already in flight still completes and still reaches the league, but the user never sees the outcome — no success panel, no toast. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away, and the app cannot prevent it. Coming forward again gives an empty form; the text is not restored. |
-| Reload, or the tab closed | Gives a fresh empty form. | **Everything typed is lost.** A submission already sent still lands with the league; a submission not yet sent is gone. After a reload the user has no way to tell which happened. |
-| Network lost mid-request | Cannot happen; no request is in flight. | The request fails. The fields are kept, the button returns, and the generic red toast appears. The message is not queued and no retry is attempted — there is no offline queue anywhere in this app. |
-| The request fails or times out | Cannot happen. | The fields are kept and the generic red toast appears. The user decides whether to retry. Nothing distinguishes "the league never got it" from "the league got it and the reply failed"; a retry may therefore send the same message twice. |
-| The session expires | No effect. | No effect. The form needs no session and works signed out, so an expired session changes nothing about whether the message sends. |
-| The same record changed in another tab, or by another user | No effect. There is no shared record. | No effect. Two tabs can each hold a different draft and each send it; neither knows about the other. |
-| Browser autofill or a password manager writes into the form | Name and email may be filled from the browser's saved contact details; both fields ask for it by name. Subject and message are never autofilled. The form does not become dirty in any way the user can see, and validation still does not run. | Same. **If an autofill tool also fills the hidden field, the message is silently discarded and the user is still shown the success panel.** See [Edge cases](#edge-cases). |
-| The window loses focus | No effect. | No effect. Nothing refetches, nothing revalidates, and a submission in flight continues. This page is the one place in the app where losing focus is genuinely inert. |
+| Event                                                       | Before the first edit                                                                                                                                                                                                                           | While editing or submitting                                                                                                                                                                                                                 |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Escape, or a Cancel button                                  | No effect. There is no Cancel button anywhere on this page.                                                                                                                                                                                     | Closes the subject dropdown if it is open. Otherwise no effect. It does not clear the form and it does not abort a submission in flight.                                                                                                    |
+| In-app navigation away, or switching tab within the page    | Nothing is lost, because nothing was typed.                                                                                                                                                                                                     | **Everything typed is lost, with no warning.** There is no unsaved-changes guard. A submission already in flight still completes and still reaches the league, but the user never sees the outcome — no success panel, no toast.            |
+| Browser back or forward                                     | Returns to the previous page. Nothing is recorded.                                                                                                                                                                                              | Same as navigating away, and the app cannot prevent it. Coming forward again gives an empty form; the text is not restored.                                                                                                                 |
+| Reload, or the tab closed                                   | Gives a fresh empty form.                                                                                                                                                                                                                       | **Everything typed is lost.** A submission already sent still lands with the league; a submission not yet sent is gone. After a reload the user has no way to tell which happened.                                                          |
+| Network lost mid-request                                    | Cannot happen; no request is in flight.                                                                                                                                                                                                         | The request fails. The fields are kept, the button returns, and the generic red toast appears. The message is not queued and no retry is attempted — there is no offline queue anywhere in this app.                                        |
+| The request fails or times out                              | Cannot happen.                                                                                                                                                                                                                                  | The fields are kept and the generic red toast appears. The user decides whether to retry. Nothing distinguishes "the league never got it" from "the league got it and the reply failed"; a retry may therefore send the same message twice. |
+| The session expires                                         | No effect.                                                                                                                                                                                                                                      | No effect. The form needs no session and works signed out, so an expired session changes nothing about whether the message sends.                                                                                                           |
+| The same record changed in another tab, or by another user  | No effect. There is no shared record.                                                                                                                                                                                                           | No effect. Two tabs can each hold a different draft and each send it; neither knows about the other.                                                                                                                                        |
+| Browser autofill or a password manager writes into the form | Name and email may be filled from the browser's saved contact details; both fields ask for it by name. Subject and message are never autofilled. The form does not become dirty in any way the user can see, and validation still does not run. | Same. **If an autofill tool also fills the hidden field, the message is silently discarded and the user is still shown the success panel.** See [Edge cases](#edge-cases).                                                                  |
+| The window loses focus                                      | No effect.                                                                                                                                                                                                                                      | No effect. Nothing refetches, nothing revalidates, and a submission in flight continues. This page is the one place in the app where losing focus is genuinely inert.                                                                       |
 
 After any interrupt the user is left wherever the interrupt took them; the form
 does not try to hold them, warn them, or restore them. The only state that
