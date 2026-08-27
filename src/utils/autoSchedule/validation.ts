@@ -172,4 +172,3 @@ export function findTeamConflicts(matches: AutoScheduleMatch[]): TeamConflict[] 
 
   return conflicts;
 }
-

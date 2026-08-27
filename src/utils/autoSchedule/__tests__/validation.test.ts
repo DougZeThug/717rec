@@ -6,11 +6,7 @@ vi.mock('../matchHistoryService', () => ({
 
 import { AutoScheduleMatch } from '@/types/autoSchedule';
 
-import {
-  findTeamConflicts,
-  validateMatchSchedule,
-  ValidationResult,
-} from '../validation';
+import { findTeamConflicts, validateMatchSchedule, ValidationResult } from '../validation';
 
 function makeMatch(overrides: Partial<AutoScheduleMatch> = {}): AutoScheduleMatch {
   return {
