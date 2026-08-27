@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BACK_TO_BACK_PAIRS, getPairConfig, TIME_BLOCKS } from '../constants';
+import { ALL_BLOCK_TIMES, getPairConfig, TIME_BLOCKS } from '../constants';
 
 describe('TIME_BLOCKS constants', () => {
   it('should have the expected time block structure', () => {
@@ -33,15 +33,10 @@ describe('TIME_BLOCKS constants', () => {
 });
 
 describe('BACK_TO_BACK_PAIRS as the source of block times', () => {
-  it('yields every real block time in order when de-duplicated, and no others', () => {
-    // EditableMatchCard builds its timeslot picker from exactly this expression.
-    const options = [
-      ...new Set(
-        Object.values(BACK_TO_BACK_PAIRS).flatMap((pair) => [pair.primary, pair.secondary])
-      ),
-    ];
-
-    expect(options).toEqual([
+  it('lists every real block time in order, and nothing else', () => {
+    // This is what the admin's timeslot picker offers. It previously omitted
+    // 5:00/5:30 PM and offered a 10:00 PM that no block uses.
+    expect(ALL_BLOCK_TIMES).toEqual([
       '5:00 PM',
       '5:30 PM',
       '6:00 PM',

@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { AutoScheduleMatch, Team } from '@/types';
-import { BACK_TO_BACK_PAIRS } from '@/utils/autoSchedule/constants';
+import { ALL_BLOCK_TIMES } from '@/utils/autoSchedule/constants';
 
 interface EditableMatchCardProps {
   match: AutoScheduleMatch;
@@ -26,15 +26,6 @@ interface EditableMatchCardProps {
   hasWarning?: boolean;
   warningMessage?: string;
 }
-
-/**
- * Every real block time, derived from the block constants so this list cannot drift
- * away from them. The pairs are already in chronological order and overlap end to
- * start, so de-duplicating in insertion order yields 5:00 PM through 9:30 PM.
- */
-const timeSlotOptions = [
-  ...new Set(Object.values(BACK_TO_BACK_PAIRS).flatMap((pair) => [pair.primary, pair.secondary])),
-];
 
 /** Card for editing one auto-scheduled match: team pickers, timeslot, swap, and remove. */
 const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
@@ -212,7 +203,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
                 <SelectValue placeholder="Select time" />
               </SelectTrigger>
               <SelectContent>
-                {timeSlotOptions.map((time) => (
+                {ALL_BLOCK_TIMES.map((time) => (
                   <SelectItem key={time} value={time}>
                     {time}
                   </SelectItem>
