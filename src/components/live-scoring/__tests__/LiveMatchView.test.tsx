@@ -164,24 +164,29 @@ const gridButton = (grid: HTMLElement, label: string): HTMLButtonElement => {
   return button;
 };
 
-const renderView = (
+const viewElement = (
   bundle: LiveMatchBundle,
   { canScore = true, isAdmin = false }: { canScore?: boolean; isAdmin?: boolean } = {}
-) =>
-  render(
-    <LiveMatchView
-      matchId="match-1"
-      bundle={bundle}
-      derived={deriveLiveMatch(bundle)}
-      canScore={canScore}
-      isAdmin={isAdmin}
-      realtimeStatus="SUBSCRIBED"
-    />
-  );
+) => (
+  <LiveMatchView
+    matchId="match-1"
+    bundle={bundle}
+    derived={deriveLiveMatch(bundle)}
+    canScore={canScore}
+    isAdmin={isAdmin}
+    realtimeStatus="SUBSCRIBED"
+  />
+);
+
+const renderView = (
+  bundle: LiveMatchBundle,
+  options: { canScore?: boolean; isAdmin?: boolean } = {}
+) => render(viewElement(bundle, options));
 
 beforeEach(() => {
   vi.clearAllMocks();
   mockSubmitRound.mutateAsync.mockResolvedValue(undefined);
+  mockSubmitRound.isPending = false;
   mockFinalize.isError = false;
   mockFinalize.error = null;
 });
@@ -276,6 +281,46 @@ describe('in-game state', () => {
     expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'true');
     expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+  });
+
+  it('keeps the tapped scores when a game-winning round fails to save', async () => {
+    // The save is still in flight while the optimistic round is on screen.
+    mockSubmitRound.mutateAsync.mockReturnValue(new Promise(() => {}));
+    const atEighteen = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 18, team2_score: 0, net_points: 18, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    const { rerender } = renderView(atEighteen);
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '5'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    // useRoundMutations adds the optimistic round, taking the game to 23–0.
+    // That is enough to win, so the game-won banner takes over the panel.
+    const optimistic = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 18, team2_score: 0, net_points: 18, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 5, team2_score: 0, net_points: 5, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    mockSubmitRound.isPending = true;
+    rerender(viewElement(optimistic));
+    expect(screen.getByRole('button', { name: /end game 1/i })).toBeInTheDocument();
+
+    // The save fails, so useRoundMutations rolls the optimistic round back.
+    mockSubmitRound.isPending = false;
+    rerender(viewElement(atEighteen));
+
+    const after = screen.getAllByRole('group');
+    expect(gridButton(after[0], '5')).toHaveAttribute('aria-pressed', 'true');
+    expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('clears the tapped scores when another scorer recorded the round first', async () => {

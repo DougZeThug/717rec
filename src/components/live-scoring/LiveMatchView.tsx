@@ -167,7 +167,12 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           />
         )}
 
-        {canScore && !gameWon && (
+        {/*
+          The optimistic round can win the game while the save is still in
+          flight. Stay mounted until it settles, so a failure that rolls the
+          round back does not take the scorer's tapped scores with it.
+        */}
+        {canScore && (!gameWon || submitRound.isPending) && (
           <>
             <ThrowerBar
               team1Label={team1Name}
