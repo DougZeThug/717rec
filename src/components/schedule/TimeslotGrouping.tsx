@@ -15,8 +15,9 @@ import { LoadingState } from '@/components/ui/loading-state';
 import { TeamLogo } from '@/components/ui/team';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { animations, getDivisionStyles } from '@/styles/design-system';
+import { animations } from '@/styles/design-system';
 import { TeamTimeslot } from '@/types';
+import { getDivisionBadgeColor } from '@/utils/colors/divisionColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 interface TimeslotGroupingProps {
@@ -85,9 +86,7 @@ const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDe
       <Badge
         className={cn(
           'ml-2 text-xs font-medium px-2.5 py-0.5 shrink-0',
-          getDivisionStyles(teamTimeslot.teams.divisionName, 'bg', { soft: true }),
-          getDivisionStyles(teamTimeslot.teams.divisionName, 'text', { soft: true }),
-          getDivisionStyles(teamTimeslot.teams.divisionName, 'border', { soft: true })
+          getDivisionBadgeColor(teamTimeslot.teams.divisionName)
         )}
       >
         {teamTimeslot.teams.divisionName}

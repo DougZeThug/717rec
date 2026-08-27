@@ -4,8 +4,9 @@ import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/ui/team';
 import { cn } from '@/lib/utils';
-import { animations, getDivisionStyles } from '@/styles/design-system';
+import { animations } from '@/styles/design-system';
 import { TeamTimeslot } from '@/types';
+import { getDivisionBadgeColor } from '@/utils/colors/divisionColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 export const TimeslotGroupHeader = ({
@@ -99,9 +100,7 @@ export const TimeslotMatchRowMobile = ({
         <Badge
           className={cn(
             'text-[10px] font-medium px-2 py-0',
-            getDivisionStyles(teamTimeslot.teams.divisionName, 'bg', { soft: true }),
-            getDivisionStyles(teamTimeslot.teams.divisionName, 'text', { soft: true }),
-            getDivisionStyles(teamTimeslot.teams.divisionName, 'border', { soft: true })
+            getDivisionBadgeColor(teamTimeslot.teams.divisionName)
           )}
         >
           {teamTimeslot.teams.divisionName}
@@ -124,14 +123,7 @@ export const TimeslotMatchRowMobile = ({
 };
 
 const DivisionBadge = ({ divisionName }: { divisionName: string }) => (
-  <Badge
-    className={cn(
-      'text-xs font-medium px-2.5 py-0.5',
-      getDivisionStyles(divisionName, 'bg', { soft: true }),
-      getDivisionStyles(divisionName, 'text', { soft: true }),
-      getDivisionStyles(divisionName, 'border', { soft: true })
-    )}
-  >
+  <Badge className={cn('text-xs font-medium px-2.5 py-0.5', getDivisionBadgeColor(divisionName))}>
     {divisionName}
   </Badge>
 );
