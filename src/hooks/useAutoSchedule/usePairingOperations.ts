@@ -11,6 +11,7 @@ import {
   TeamPairingMap,
   TimeBlockTeamsMap,
 } from '@/types';
+import { getPairConfig } from '@/utils/autoSchedule/constants';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import {
   calculateComprehensiveQualityMetrics,
@@ -273,7 +274,9 @@ export const usePairingOperations = (
               id: `${timeBlock}-${index}`,
               team1Id: pairing.team1.id,
               team2Id: pairing.team2.id,
-              timeslot: timeBlock,
+              // Dual mode already keys by real clock time; standard mode keys by
+              // block name, which must be resolved or it parses to midnight on save.
+              timeslot: getPairConfig(timeBlock)?.primary ?? timeBlock,
               date: selectedDate,
               blockType: dualMatchMode ? 'primary' : undefined,
             });

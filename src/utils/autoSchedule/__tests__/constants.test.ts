@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { TIME_BLOCKS } from '../constants';
+import { BACK_TO_BACK_PAIRS, getPairConfig, TIME_BLOCKS } from '../constants';
 
 describe('TIME_BLOCKS constants', () => {
   it('should have the expected time block structure', () => {
@@ -29,5 +29,36 @@ describe('TIME_BLOCKS constants', () => {
 
     expect(TIME_BLOCKS['Early'].main).toBe('6:30 PM');
     expect(TIME_BLOCKS['Early'].secondary).toBe('7:00 PM');
+  });
+});
+
+describe('BACK_TO_BACK_PAIRS as the source of block times', () => {
+  it('yields every real block time in order when de-duplicated, and no others', () => {
+    // EditableMatchCard builds its timeslot picker from exactly this expression.
+    const options = [
+      ...new Set(
+        Object.values(BACK_TO_BACK_PAIRS).flatMap((pair) => [pair.primary, pair.secondary])
+      ),
+    ];
+
+    expect(options).toEqual([
+      '5:00 PM',
+      '5:30 PM',
+      '6:00 PM',
+      '6:30 PM',
+      '7:00 PM',
+      '7:30 PM',
+      '8:00 PM',
+      '8:30 PM',
+      '9:00 PM',
+      '9:30 PM',
+    ]);
+  });
+
+  it('resolves a block name to its start time and leaves a clock time unresolved', () => {
+    // This is what keeps a block name out of a saved match.
+    expect(getPairConfig('SuperLate')?.primary).toBe('9:00 PM');
+    expect(getPairConfig('MidEarly')?.primary).toBe('7:00 PM');
+    expect(getPairConfig('6:30 PM')).toBeUndefined();
   });
 });

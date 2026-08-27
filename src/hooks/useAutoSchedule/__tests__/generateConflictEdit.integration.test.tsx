@@ -36,6 +36,10 @@ const TEAM_D: Team = { id: 'team-d', name: 'Team D' } as unknown as Team;
 // Two matches, both in the SINGLE block "Early" so the block map is consistent and the
 // cross-block defensive validation inside handleApplySchedule passes trivially.
 const BLOCK = 'Early';
+// Applying a schedule resolves the block name to the block's real start time, so every
+// timeslot the rest of this test sees is a clock time, never a block name.
+const BLOCK_TIME = '6:30 PM';
+const OTHER_BLOCK_TIME = '8:30 PM';
 
 const LOADED_TEAMS: TimeBlockTeamsMap = {
   [BLOCK]: [TEAM_A, TEAM_B, TEAM_C, TEAM_D],
@@ -182,7 +186,7 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
 
     // The applied schedule matches the deterministic pairings exactly.
     const timeslots = result.current.editableMatches.map((m) => m.timeslot);
-    expect(timeslots).toEqual([BLOCK, BLOCK]);
+    expect(timeslots).toEqual([BLOCK_TIME, BLOCK_TIME]);
     expect(result.current.editableMatches.map((m) => m.team1Id)).toEqual(['team-a', 'team-c']);
 
     // REAL async validation effect settles to a clean, valid result.
@@ -227,13 +231,13 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
     // findTeamConflicts pushes one error per matchId involved in the conflict (2 here).
     expect(duplicateErrors.length).toBeGreaterThanOrEqual(2);
     expect(duplicateErrors.map((e) => e.matchId).sort()).toEqual(['Early-0', 'Early-1']);
-    expect(duplicateErrors[0].message).toContain('Early');
+    expect(duplicateErrors[0].message).toContain(BLOCK_TIME);
     expect(duplicateErrors[0].severity).toBe('error');
 
-    // ---- CORRECTIVE EDIT: move the double-booked match to a different timeslot ("Late").
-    // team-a is now in "Early" (Early-0) and "Late" (Early-1) -> no same-timeslot conflict.
+    // ---- CORRECTIVE EDIT: move the double-booked match to a different timeslot.
+    // team-a is now at 6:30 PM (Early-0) and 8:30 PM (Early-1) -> no same-timeslot conflict.
     act(() => {
-      result.current.updateMatchTimeslot(matchToEdit.id, 'Late');
+      result.current.updateMatchTimeslot(matchToEdit.id, OTHER_BLOCK_TIME);
     });
 
     // REAL validation recomputes and returns to valid.

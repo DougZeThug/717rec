@@ -445,7 +445,7 @@ describe('usePairingOperations', () => {
         id: 'Early-0',
         team1Id: '1',
         team2Id: '2',
-        timeslot: 'Early',
+        timeslot: '6:30 PM',
         date: selectedDate,
         blockType: 'primary',
       },
@@ -453,7 +453,7 @@ describe('usePairingOperations', () => {
         id: 'Early-1',
         team1Id: '3',
         team2Id: '4',
-        timeslot: 'Early',
+        timeslot: '6:30 PM',
         date: selectedDate,
         blockType: 'primary',
       },
@@ -475,6 +475,42 @@ describe('usePairingOperations', () => {
       setMatchQualityMetrics
     );
     expect(withoutEditable).not.toBeNull();
+  });
+
+  it('resolves block names to their real start time and passes clock times through', () => {
+    const { result } = renderHook(() => usePairingOperations(vi.fn()));
+    const selectedDate = new Date('2026-04-22T00:00:00.000Z');
+
+    // Standard mode keys pairings by block name; dual mode keys them by clock time.
+    // Both must reach the match as something `parseTimeString` can read.
+    const pairings: TeamPairingMap = {
+      SuperLate: [
+        {
+          team1: buildTeam('1'),
+          team2: buildTeam('2'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+      ],
+      '7:00 PM': [
+        {
+          team1: buildTeam('3'),
+          team2: buildTeam('4'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+      ],
+    };
+
+    const applied = result.current.handleApplySchedule(
+      pairings,
+      selectedDate,
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied?.map((match) => match.timeslot)).toEqual(['9:00 PM', '7:00 PM']);
   });
 
   describe('stale pairing date comparison', () => {
