@@ -168,7 +168,8 @@ describe('RoundScoreInput', () => {
   });
 
   it('ignores the round number moving while the save is still in flight', async () => {
-    onSubmit.mockReturnValue(new Promise(() => {}));
+    // Never settles, so the component stays mid-save for the whole test.
+    onSubmit.mockReturnValue(new Promise(() => undefined));
     const { rerender } = renderInput();
 
     await tapScore('Baggers', 8);

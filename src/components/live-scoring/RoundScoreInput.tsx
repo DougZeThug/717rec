@@ -20,9 +20,11 @@ interface RoundScoreInputProps {
   team2Name: string;
   /**
    * Saves the round. Resolve to clear the grids; reject to keep the tapped
-   * scores on screen so the scorer can retry without re-entering them.
+   * scores on screen so the scorer can retry without re-entering them. It must
+   * return a promise: a synchronous callback cannot report a failed save, and
+   * would silently go back to clearing the grids on every press.
    */
-  onSubmit: (submission: RoundSubmission) => void | Promise<unknown>;
+  onSubmit: (submission: RoundSubmission) => Promise<unknown>;
   /**
    * Identifies the round the selections belong to. When it changes, the round
    * moved on and any kept selections are stale, so they are dropped.

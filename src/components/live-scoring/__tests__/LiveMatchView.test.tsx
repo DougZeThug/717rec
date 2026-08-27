@@ -191,7 +191,7 @@ const renderView = (
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockSubmitRound.mutateAsync.mockResolvedValue(undefined);
+  mockSubmitRound.mutateAsync.mockImplementation(() => Promise.resolve());
   mockSubmitRound.isPending = false;
   mockFinalize.isError = false;
   mockFinalize.error = null;
@@ -327,7 +327,7 @@ describe('in-game state', () => {
 
   it('keeps the tapped scores when a game-winning round fails to save', async () => {
     // The save is still in flight while the optimistic round is on screen.
-    mockSubmitRound.mutateAsync.mockReturnValue(new Promise(() => {}));
+    mockSubmitRound.mutateAsync.mockReturnValue(new Promise(() => undefined));
     const atEighteen = makeBundle({
       games: [game()],
       rounds: [
