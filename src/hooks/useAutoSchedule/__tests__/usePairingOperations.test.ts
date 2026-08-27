@@ -2,6 +2,10 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { MatchQualityMetrics, Team, TeamPairingMap, TimeBlockTeamsMap } from '@/types';
+import {
+  logCrossBlockViolations,
+  validateNoCrossBlockMatches,
+} from '@/utils/autoSchedule/validationUtils';
 
 import { usePairingOperations } from '../usePairingOperations';
 
@@ -475,6 +479,69 @@ describe('usePairingOperations', () => {
       setMatchQualityMetrics
     );
     expect(withoutEditable).not.toBeNull();
+  });
+
+  it('aborts the apply and warns when the pairings cross block boundaries', () => {
+    // This branch only runs when the hook is given a block map and a team list.
+    const teams = [buildTeam('1'), buildTeam('2'), buildTeam('3'), buildTeam('4')];
+    const { result } = renderHook(() =>
+      usePairingOperations(vi.fn(), { '1': ['Early'], '2': ['Late'] }, teams)
+    );
+
+    vi.mocked(validateNoCrossBlockMatches).mockReturnValueOnce({
+      isValid: false,
+      violations: [
+        {
+          matchId: 'Early-0',
+          team1: { id: '1', name: 'Team 1', block: 'Early' },
+          team2: { id: '2', name: 'Team 2', block: 'Late' },
+          timeslot: '6:30 PM',
+        },
+      ],
+    });
+
+    const applied = result.current.handleApplySchedule(
+      buildPairings(),
+      new Date('2026-04-22T00:00:00.000Z'),
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied).toBeNull();
+    expect(logCrossBlockViolations).toHaveBeenCalled();
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: expect.stringContaining('1 cross-block matches'),
+        variant: 'destructive',
+      })
+    );
+  });
+
+  it('reports an error and applies nothing when the conversion throws', () => {
+    const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+    mockCalculateComprehensiveQualityMetrics.mockImplementationOnce(() => {
+      throw new Error('metrics exploded');
+    });
+
+    const applied = result.current.handleApplySchedule(
+      buildPairings(),
+      new Date('2026-04-22T00:00:00.000Z'),
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied).toBeNull();
+    expect(mockErrorLog).toHaveBeenCalledWith('Error applying schedule:', expect.any(Error));
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Error',
+        description: 'Failed to apply the generated schedule. Please try again.',
+        variant: 'destructive',
+      })
+    );
   });
 
   it('resolves block names to their real start time and passes clock times through', () => {
