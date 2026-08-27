@@ -140,7 +140,7 @@ whitespace.
 | Browser back or forward | Returns to the schedule. | Same as navigating away. Coming back re-fetches everything, so the screen is correct, but any part-entered round is gone. |
 | Reload, or the tab closed | Re-fetches everything. | **Every saved round survives; nothing else does.** This is the screen's central safety property: the whole match is rebuilt from the saved rounds, so a phone that dies mid-match loses at most the round being typed. |
 | Network lost mid-request | The match does not load; the "could not load" screen appears. | The save fails, the optimistic round is rolled back, and a red toast explains. The realtime indicator changes. Nothing is queued. |
-| The request fails or times out | As above. | As above. The scorer must re-enter the round. |
+| The request fails or times out | As above. | As above. The tapped scores stay selected, so the scorer retries rather than re-entering the round. |
 | The session expires | A signed-out visitor can still watch. | Writes begin failing. The controls stay on screen because the browser still thinks the user is signed in. |
 | The same record changed in another tab, or by another user | Not applicable before arriving. | **This is the normal case, not an edge case.** A round saved by the other scorer arrives over the subscription and the screen updates. Two scorers saving the same round number produce one winner and one friendly message; see [`enter-a-round.md`](enter-a-round.md). |
 | Browser autofill or a password manager writes into the form | No effect. There are no text fields on this screen except when adding a player by name. | No effect. |
