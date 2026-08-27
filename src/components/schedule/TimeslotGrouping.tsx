@@ -86,9 +86,7 @@ const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDe
       <Badge
         className={cn(
           'ml-2 text-xs font-medium px-2.5 py-0.5 shrink-0',
-          getDivisionStyles(teamTimeslot.teams.divisionName, 'bg', { soft: true }),
-          getDivisionStyles(teamTimeslot.teams.divisionName, 'text', { soft: true }),
-          getDivisionStyles(teamTimeslot.teams.divisionName, 'border', { soft: true })
+          getDivisionBadgeColor(teamTimeslot.teams.divisionName)
         )}
       >
         {teamTimeslot.teams.divisionName}
