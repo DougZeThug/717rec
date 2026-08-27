@@ -25,6 +25,8 @@ const makeAuth = (overrides: Record<string, unknown> = {}) => ({
   profile: { is_admin: false },
   authInitialized: true,
   isProfileLoading: false,
+  profileLoadFailed: false,
+  refreshProfile: vi.fn(),
   ...overrides,
 });
 
@@ -48,6 +50,39 @@ describe('useAdminAccess', () => {
     );
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isAdminAccessGranted).toBe(false);
+  });
+
+  it('reports accessCheckFailed when the profile read failed, not a plain denial', () => {
+    // A failed read leaves profile null, which must NOT read as "not an admin".
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeAuth({ profile: null, profileLoadFailed: true })
+    );
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.accessCheckFailed).toBe(true);
+    expect(result.current.isAdminAccessGranted).toBe(false);
+  });
+
+  it('does not report accessCheckFailed when the profile simply says not admin', () => {
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeAuth({ profile: { is_admin: false }, profileLoadFailed: false })
+    );
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.accessCheckFailed).toBe(false);
+  });
+
+  it('does not report accessCheckFailed when there is no signed-in user', () => {
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeAuth({ user: null, profile: null, profileLoadFailed: true })
+    );
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.accessCheckFailed).toBe(false);
+  });
+
+  it('exposes refreshProfile as the retry action', () => {
+    const refreshProfile = vi.fn();
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth({ refreshProfile }));
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.retryAccessCheck).toBe(refreshProfile);
   });
 
   it('denies access when profile is null', () => {

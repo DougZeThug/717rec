@@ -12,6 +12,7 @@ const authValue: AuthContextType = {
   profile: null,
   isLoading: false,
   isProfileLoading: false,
+  profileLoadFailed: false,
   authInitialized: true,
   signUp: () => Promise.resolve({ user: null, session: null }),
   signIn: () => Promise.resolve({ user: null, session: null }),

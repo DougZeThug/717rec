@@ -9,8 +9,8 @@ This document owns the role model, what a profile is, how a membership works, an
 how the app gates pages. Every other document's "Permissions and roles" paragraph
 links here rather than restating it.
 [`cross-cutting/permissions.md`](../cross-cutting/permissions.md) is the
-companion: this document says what the roles *are*, that one says what each can
-*do* feature by feature.
+companion: this document says what the roles _are_, that one says what each can
+_do_ feature by feature.
 
 ## The simple case
 
@@ -58,6 +58,11 @@ to grant part of it.
 > the database's idea are two independent mechanisms. They can disagree. Hiding a
 > button and refusing the write are different things, and a document that says
 > "an admin can do X" is describing the button, not the rule.
+>
+> A profile that **failed to load** is tracked separately from a profile that
+> says "not an admin". A read that throws is retried once; if it still fails the
+> app reports "we could not check" rather than "you are not an admin". This is
+> what stops a dropped connection from locking a real admin out (B-08).
 
 ## Profile
 
@@ -103,16 +108,22 @@ check:
    and the words "Checking access...".
 2. If nobody is signed in, the user is redirected to `/auth`, and the page they
    wanted is remembered so they can be returned to it.
-3. If someone is signed in but is not an admin, a red toast says "Access Denied —
-   You do not have admin privileges" and they are redirected to the home page.
-   The toast is shown **once** per visit, not on every render.
-4. Otherwise the page renders.
+3. If the profile could not be read at all, the page says "We could not load
+   your profile. This is usually a connection problem, not a permissions
+   problem." and offers **Try again** and "Go home". The read has already been
+   retried once by this point. Nobody is redirected and nobody is told they lack
+   privileges, because at this point the app genuinely does not know.
+4. If someone is signed in, their profile loaded, and it is not an admin
+   profile, a red toast says "Access Denied — You do not have admin privileges"
+   and they are redirected to the home page. The toast is shown **once** per
+   visit, not on every render.
+5. Otherwise the page renders.
 
 **Every other route is open.** `/my-team`, `/message-board`, `/setup-profile`,
 and `/matches/:matchId/live` have no route guard at all. Each is responsible for
 its own signed-out state, and they do not all handle it the same way. A live
 match is deliberately public — anyone with the link can watch the score — and the
-right to *edit* is decided inside the page by the rule above.
+right to _edit_ is decided inside the page by the rule above.
 
 The consequence for a reader of these documents: "protected" is not a property of
 a route in this app. Each document says what its own page does when nobody is
