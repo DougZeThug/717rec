@@ -123,12 +123,7 @@ export const TimeslotMatchRowMobile = ({
 };
 
 const DivisionBadge = ({ divisionName }: { divisionName: string }) => (
-  <Badge
-    className={cn(
-      'text-xs font-medium px-2.5 py-0.5',
-      getDivisionBadgeColor(divisionName)
-    )}
-  >
+  <Badge className={cn('text-xs font-medium px-2.5 py-0.5', getDivisionBadgeColor(divisionName))}>
     {divisionName}
   </Badge>
 );
