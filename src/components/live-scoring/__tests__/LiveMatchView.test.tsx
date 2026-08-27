@@ -5,6 +5,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Hook mocks (children render for real) ────────────────────────────────────
 
+const mockToast = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/useToast', () => ({
+  toast: mockToast,
+  useToast: () => ({ toast: mockToast }),
+}));
+
 const mockSubmitRound = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false };
 const mockUndoLastRound = { mutate: vi.fn(), isPending: false };
 const mockStartGame = { mutate: vi.fn(), isPending: false };
@@ -281,6 +287,42 @@ describe('in-game state', () => {
     expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'true');
     expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+  });
+
+  it('clears the retained scores when the round advances under the scorer', async () => {
+    mockSubmitRound.mutateAsync.mockRejectedValue(new Error('Failed to fetch'));
+    const { rerender } = renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    // The save failed, so the scores are still on screen for a retry.
+    await waitFor(() => expect(mockSubmitRound.mutateAsync).toHaveBeenCalled());
+    expect(gridButton(screen.getAllByRole('group')[0], '9')).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+
+    // The other scorer's round 2 arrives over realtime, so this screen is now
+    // on round 3. The retained scores belong to round 2 and must not be reused.
+    const advanced = makeBundle({
+      games: [game()],
+      rounds: [
+        round(),
+        round({ round_number: 2, team1_score: 4, team2_score: 1, net_points: 3, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    rerender(viewElement(advanced));
+
+    const after = screen.getAllByRole('group');
+    expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'false');
+    expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'false');
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: expect.stringMatching(/round number moved/i) })
+    );
   });
 
   it('keeps the tapped scores when a game-winning round fails to save', async () => {

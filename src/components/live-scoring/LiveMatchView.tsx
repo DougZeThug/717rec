@@ -7,6 +7,7 @@ import { useGameFlow } from '@/hooks/live-scoring/useGameFlow';
 import type { LiveGameDerived, LiveMatchDerived } from '@/hooks/live-scoring/useLiveMatch';
 import { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
 import { useTeamPlayers } from '@/hooks/live-scoring/useTeamPlayers';
+import { toast } from '@/hooks/useToast';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { DuplicateRoundError } from '@/types/errors';
 import { DEFAULT_GAME_RULES } from '@/utils/liveScoring/rules';
@@ -105,6 +106,16 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         name: playerNames[gp.player_id] ?? 'Player',
       }));
 
+    /**
+     * Tells the scorer their kept scores were dropped because the round moved
+     * on under them — otherwise the taps would vanish with nothing said.
+     */
+    const announceDiscardedSelection = () =>
+      toast({
+        title: 'The round number moved',
+        description: `Round ${game.nextRoundNumber} is now next, so your tapped scores were cleared.`,
+      });
+
     const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
     const gameWon = game.pendingWinnerSide !== null;
     const pendingWinnerName = game.pendingWinnerSide === 1 ? team1Name : team2Name;
@@ -202,6 +213,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               team1Name={team1Name}
               team2Name={team2Name}
               onSubmit={handleSubmit}
+              roundKey={overrideKey}
+              onSelectionDiscarded={announceDiscardedSelection}
               isSubmitting={submitRound.isPending}
               disabled={undoLastRound.isPending}
             />

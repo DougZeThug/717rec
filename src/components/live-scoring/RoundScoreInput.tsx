@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { getBagBreakdown, isAmbiguousScore } from '@/utils/liveScoring/bagBreakdown';
@@ -23,6 +23,13 @@ interface RoundScoreInputProps {
    * scores on screen so the scorer can retry without re-entering them.
    */
   onSubmit: (submission: RoundSubmission) => void | Promise<unknown>;
+  /**
+   * Identifies the round the selections belong to. When it changes, the round
+   * moved on and any kept selections are stale, so they are dropped.
+   */
+  roundKey: string;
+  /** Called only when a round change actually threw away tapped scores. */
+  onSelectionDiscarded?: () => void;
   isSubmitting: boolean;
   disabled?: boolean;
 }
@@ -42,11 +49,31 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
   team1Name,
   team2Name,
   onSubmit,
+  roundKey,
+  onSelectionDiscarded,
   isSubmitting,
   disabled = false,
 }) => {
   const [team1, setTeam1] = useState<SideSelection>(EMPTY);
   const [team2, setTeam2] = useState<SideSelection>(EMPTY);
+
+  // A failed save keeps the tapped scores for a retry, but they belong to one
+  // round. If that round is recorded elsewhere the heading moves on, and saving
+  // them now would file them under the wrong round number.
+  const settledKey = useRef(roundKey);
+  useEffect(() => {
+    // The optimistic round bumps the round number the moment Save is pressed.
+    // Ignore that; wait until the save settles and the number is real again.
+    if (isSubmitting) return;
+    if (settledKey.current === roundKey) return;
+    settledKey.current = roundKey;
+    // Our own successful save has already emptied the grids, so there is
+    // nothing to discard and nothing to announce.
+    const hadSelection = team1.score !== null || team2.score !== null;
+    setTeam1(EMPTY);
+    setTeam2(EMPTY);
+    if (hadSelection) onSelectionDiscarded?.();
+  }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded]);
 
   const ready = isResolved(team1) && isResolved(team2);
   const net =
