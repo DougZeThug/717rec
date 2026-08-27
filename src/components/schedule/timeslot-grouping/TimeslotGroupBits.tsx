@@ -4,8 +4,9 @@ import { Link } from 'react-router';
 import { Badge } from '@/components/ui/badge';
 import { TeamLogo } from '@/components/ui/team';
 import { cn } from '@/lib/utils';
-import { animations, getDivisionStyles } from '@/styles/design-system';
+import { animations } from '@/styles/design-system';
 import { TeamTimeslot } from '@/types';
+import { getDivisionBadgeColor } from '@/utils/colors/divisionColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 export const TimeslotGroupHeader = ({

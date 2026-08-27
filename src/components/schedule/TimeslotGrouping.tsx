@@ -15,8 +15,9 @@ import { LoadingState } from '@/components/ui/loading-state';
 import { TeamLogo } from '@/components/ui/team';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { animations, getDivisionStyles } from '@/styles/design-system';
+import { animations } from '@/styles/design-system';
 import { TeamTimeslot } from '@/types';
+import { getDivisionBadgeColor } from '@/utils/colors/divisionColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 interface TimeslotGroupingProps {
