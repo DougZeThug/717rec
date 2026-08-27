@@ -513,6 +513,70 @@ describe('usePairingOperations', () => {
     expect(applied?.map((match) => match.timeslot)).toEqual(['9:00 PM', '7:00 PM']);
   });
 
+  it('spreads a block\u2019s two rounds over its two slots so no team is double-booked', () => {
+    const { result } = renderHook(() => usePairingOperations(vi.fn()));
+    const selectedDate = new Date('2026-04-22T00:00:00.000Z');
+
+    // Standard mode runs blossom twice per block and returns both rounds in one array,
+    // so every team appears twice. Early is the 6:30/7:00 PM pair.
+    const pairings: TeamPairingMap = {
+      Early: [
+        // Round 1
+        {
+          team1: buildTeam('1'),
+          team2: buildTeam('2'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+        {
+          team1: buildTeam('3'),
+          team2: buildTeam('4'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+        // Round 2
+        {
+          team1: buildTeam('1'),
+          team2: buildTeam('3'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+        {
+          team1: buildTeam('2'),
+          team2: buildTeam('4'),
+          compatibilityScore: 8,
+          hasPlayedBefore: false,
+        },
+      ],
+    };
+
+    const applied = result.current.handleApplySchedule(
+      pairings,
+      selectedDate,
+      false,
+      vi.fn(),
+      vi.fn()
+    );
+
+    expect(applied?.map((match) => match.timeslot)).toEqual([
+      '6:30 PM',
+      '6:30 PM',
+      '7:00 PM',
+      '7:00 PM',
+    ]);
+
+    // The whole point: this is what validateMatchSchedule would otherwise refuse.
+    const slotsByTeam = new Map<string, string[]>();
+    applied?.forEach((match) => {
+      [match.team1Id, match.team2Id].forEach((teamId) => {
+        slotsByTeam.set(teamId, [...(slotsByTeam.get(teamId) ?? []), match.timeslot]);
+      });
+    });
+    slotsByTeam.forEach((slots) => {
+      expect(new Set(slots).size).toBe(slots.length);
+    });
+  });
+
   describe('stale pairing date comparison', () => {
     const setupWithGenerationDate = async (generationDate: Date) => {
       const pairings = buildPairings();

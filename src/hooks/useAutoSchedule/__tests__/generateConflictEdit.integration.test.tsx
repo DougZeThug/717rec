@@ -40,6 +40,8 @@ const BLOCK = 'Early';
 // timeslot the rest of this test sees is a clock time, never a block name.
 const BLOCK_TIME = '6:30 PM';
 const OTHER_BLOCK_TIME = '8:30 PM';
+// The second half of the Early pair, where the block's second round belongs.
+const BLOCK_SECOND_TIME = '7:00 PM';
 
 const LOADED_TEAMS: TimeBlockTeamsMap = {
   [BLOCK]: [TEAM_A, TEAM_B, TEAM_C, TEAM_D],
@@ -247,5 +249,54 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
     expect(
       (result.current.validation?.errors ?? []).filter((e) => e.type === 'duplicate-team')
     ).toHaveLength(0);
+  });
+  it("a block's two rounds spread over its two slots and validate clean", async () => {
+    vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
+    // What blossom really returns for one block: two rounds, so every team plays twice.
+    mockGenerateMatchPairings.mockResolvedValue({
+      pairings: {
+        [BLOCK]: [
+          { team1: TEAM_A, team2: TEAM_B, compatibilityScore: 8, hasPlayedBefore: false },
+          { team1: TEAM_C, team2: TEAM_D, compatibilityScore: 8, hasPlayedBefore: false },
+          { team1: TEAM_A, team2: TEAM_C, compatibilityScore: 8, hasPlayedBefore: false },
+          { team1: TEAM_B, team2: TEAM_D, compatibilityScore: 8, hasPlayedBefore: false },
+        ],
+      } as TeamPairingMap,
+      unmatchedTeamIds: [],
+    } satisfies PairingResult);
+
+    const { result } = renderHook(() => useAutoSchedule(), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.handleLoadTeams();
+    });
+    await act(async () => {
+      await result.current.handleGenerateClick();
+    });
+    await waitFor(() => {
+      expect(mockGenerateMatchPairings).toHaveBeenCalled();
+    });
+    act(() => {
+      result.current.handleApplySchedule();
+    });
+    await waitFor(() => {
+      expect(result.current.editableMatches).toHaveLength(4);
+    });
+    act(() => {
+      result.current.setIsEditMode(true);
+    });
+
+    expect(result.current.editableMatches.map((m) => m.timeslot)).toEqual([
+      BLOCK_TIME,
+      BLOCK_TIME,
+      BLOCK_SECOND_TIME,
+      BLOCK_SECOND_TIME,
+    ]);
+
+    // REAL validation: no team is booked twice at one time, so the save is not refused.
+    await waitFor(() => {
+      expect(result.current.validation).not.toBeNull();
+      expect(result.current.validation?.isValid).toBe(true);
+    });
   });
 });

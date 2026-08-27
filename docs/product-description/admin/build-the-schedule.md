@@ -146,8 +146,9 @@ before the pairing becomes a match.
 - The **inline** one alternates within the block — the block's main time for the
   first match, its second time for the next — and drops the pairing into the form
   as an ordinary editable row.
-- The **standalone** one uses the block's start time for every match in that
-  block, so `MidEarly` becomes `7:00 PM` and `SuperLate` becomes `9:00 PM`.
+- The **standalone** one resolves the block to its two times and spreads the
+  block's two rounds across them, so a `MidEarly` block fills 7:00 PM and then
+  7:30 PM. Each team plays once at each.
 
 With Dual Match Mode on, the standalone tool never sees a block name at all: its
 scheduler already keys each pairing by the clock time it assigned.
@@ -244,11 +245,12 @@ notification is sent to any team.
 
 ## Open questions and verification
 
-- **Auto Schedule saving matches at midnight is fixed.** It was real, but it
-  needed Dual Match Mode switched **off** — only that path carried the time
-  block's *name* where a clock time belongs, and the parser returns midnight for
-  anything it cannot read. With Dual Match Mode on, the default, times were
-  always correct. No live match was ever stored at midnight. See B-03.
+- **Auto Schedule saving matches at midnight is fixed, and never happened.**
+  With Dual Match Mode **off**, every match in a block carried the block's *name*
+  as its time — the same value for all of them. Because each team plays twice in
+  a block, the duplicate-team check refused the save every time, so no time was
+  ever written and no live match was ever stored at midnight. With Dual Match
+  Mode on, the default, times were always correct. Both paths now save. See B-03.
 - **The edit-mode timeslot picker now lists every real block time.** It is built
   from the block constants, so it covers 5:00 PM to 9:30 PM and cannot drift away
   from them again. It previously offered 6:00 PM to 10:00 PM, which both omitted
@@ -269,4 +271,6 @@ notification is sent to any team.
   consecutive blocks, as its help text says. The pairing behaviour was read from
   the code, not observed.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
+which was changed after that commit — see B-03 in
+[`bug-triage.md`](../bug-triage.md#b-03-auto-scheduled-matches-are-saved-at-midnight-only-with-dual-match-mode-off).
