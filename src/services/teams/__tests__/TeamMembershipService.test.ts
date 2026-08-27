@@ -66,37 +66,60 @@ const makeMembershipRow = () => ({
 
 // ─── fetchTeamMembership ──────────────────────────────────────────────────────
 
+/**
+ * fetchTeamMembership orders and limits before maybeSingle(), so the mock has to
+ * mirror that chain. Records the order()/limit() arguments so a test can assert
+ * the query stays deterministic when a user has a duplicate membership row.
+ */
+const membershipReadChain = (result: { data: unknown; error: unknown }) => {
+  const orderCalls: Array<[string, unknown]> = [];
+  const limitCalls: number[] = [];
+  const tail = {
+    order: (column: string, options: unknown) => {
+      orderCalls.push([column, options]);
+      return tail;
+    },
+    limit: (count: number) => {
+      limitCalls.push(count);
+      return tail;
+    },
+    maybeSingle: () => Promise.resolve(result),
+  };
+  return { chain: { select: () => ({ eq: () => tail }) }, orderCalls, limitCalls };
+};
+
 describe('fetchTeamMembership', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns membership when found', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: makeMembershipRow(), error: null }),
-        }),
-      }),
-    });
+    mockFrom.mockReturnValue(membershipReadChain({ data: makeMembershipRow(), error: null }).chain);
     const result = await fetchTeamMembership('user-1');
     expect(result).toMatchObject({ team_id: 'team-1' });
   });
 
   it('returns null when no membership', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
-      }),
-    });
+    mockFrom.mockReturnValue(membershipReadChain({ data: null, error: null }).chain);
     expect(await fetchTeamMembership('user-1')).toBeNull();
   });
 
   it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
-      }),
-    });
+    mockFrom.mockReturnValue(membershipReadChain({ data: null, error: pgError() }).chain);
     await expect(fetchTeamMembership('user-1')).rejects.toThrow(DatabaseError);
+  });
+
+  // A duplicate membership row used to make maybeSingle() throw, which took away
+  // every member ability with no way to recover from inside the app.
+  it('asks for the approved row first, oldest next, and only one row', async () => {
+    const read = membershipReadChain({ data: makeMembershipRow(), error: null });
+    mockFrom.mockReturnValue(read.chain);
+
+    await fetchTeamMembership('user-1');
+
+    expect(read.orderCalls).toEqual([
+      ['is_approved', { ascending: false }],
+      ['joined_at', { ascending: true, nullsFirst: false }],
+    ]);
+    expect(read.limitCalls).toEqual([1]);
   });
 });
 

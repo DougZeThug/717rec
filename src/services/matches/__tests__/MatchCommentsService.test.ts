@@ -134,29 +134,37 @@ describe('MatchCommentsService.deleteComment', () => {
 
 // ─── fetchCommentAuthorInfo ───────────────────────────────────────────────────
 
+/**
+ * The membership read orders and limits before maybeSingle() so a duplicate
+ * membership row cannot make it throw. The profile read does not, so this chain
+ * answers maybeSingle() at any depth and serves both tables from one mock.
+ */
+const authorReadChain = (result: { data: unknown; error: unknown }) => {
+  const orderCalls: Array<[string, unknown]> = [];
+  const limitCalls: number[] = [];
+  const tail = {
+    order: (column: string, options: unknown) => {
+      orderCalls.push([column, options]);
+      return tail;
+    },
+    limit: (count: number) => {
+      limitCalls.push(count);
+      return tail;
+    },
+    maybeSingle: () => Promise.resolve(result),
+  };
+  return { chain: { select: () => ({ eq: () => tail }) }, orderCalls, limitCalls };
+};
+
 describe('MatchCommentsService.fetchCommentAuthorInfo', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns username and teamName on success', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'profiles') {
-        return {
-          select: () => ({
-            eq: () => ({
-              maybeSingle: () => Promise.resolve({ data: { username: 'alice' }, error: null }),
-            }),
-          }),
-        };
-      }
-      // team_memberships
-      return {
-        select: () => ({
-          eq: () => ({
-            maybeSingle: () => Promise.resolve({ data: { team: { name: 'Eagles' } }, error: null }),
-          }),
-        }),
-      };
-    });
+    mockFrom.mockImplementation((table: string) =>
+      table === 'profiles'
+        ? authorReadChain({ data: { username: 'alice' }, error: null }).chain
+        : authorReadChain({ data: { team: { name: 'Eagles' } }, error: null }).chain
+    );
 
     const result = await MatchCommentsService.fetchCommentAuthorInfo('user-1');
     expect(result.username).toBe('alice');
@@ -164,33 +172,37 @@ describe('MatchCommentsService.fetchCommentAuthorInfo', () => {
   });
 
   it('returns nulls when profile and membership are not found', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
-      }),
-    });
+    mockFrom.mockReturnValue(authorReadChain({ data: null, error: null }).chain);
     const result = await MatchCommentsService.fetchCommentAuthorInfo('user-1');
     expect(result.username).toBeNull();
     expect(result.teamName).toBeNull();
   });
 
   it('throws DatabaseError when profile query fails', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'profiles') {
-        return {
-          select: () => ({
-            eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
-          }),
-        };
-      }
-      return {
-        select: () => ({
-          eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
-        }),
-      };
-    });
+    mockFrom.mockImplementation((table: string) =>
+      table === 'profiles'
+        ? authorReadChain({ data: null, error: pgError() }).chain
+        : authorReadChain({ data: null, error: null }).chain
+    );
     await expect(MatchCommentsService.fetchCommentAuthorInfo('user-1')).rejects.toThrow(
       DatabaseError
     );
+  });
+
+  it('asks the membership read for the approved row first and only one row', async () => {
+    const membershipRead = authorReadChain({ data: { team: { name: 'Eagles' } }, error: null });
+    mockFrom.mockImplementation((table: string) =>
+      table === 'profiles'
+        ? authorReadChain({ data: { username: 'alice' }, error: null }).chain
+        : membershipRead.chain
+    );
+
+    await MatchCommentsService.fetchCommentAuthorInfo('user-1');
+
+    expect(membershipRead.orderCalls).toEqual([
+      ['is_approved', { ascending: false }],
+      ['joined_at', { ascending: true, nullsFirst: false }],
+    ]);
+    expect(membershipRead.limitCalls).toEqual([1]);
   });
 });

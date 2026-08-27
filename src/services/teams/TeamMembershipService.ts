@@ -26,6 +26,13 @@ export const fetchTeamMembership = async (userId: string): Promise<TeamMembershi
     `
     )
     .eq('user_id', userId)
+    // One row per user is the rule, but a stale or failed read used to let the
+    // join form insert a second one. Order and limit so a stray duplicate picks
+    // a row instead of making maybeSingle() throw, which locked the account out
+    // of every member ability with no way back. Approved row wins, then oldest.
+    .order('is_approved', { ascending: false })
+    .order('joined_at', { ascending: true, nullsFirst: false })
+    .limit(1)
     .maybeSingle();
 
   if (fetchError) handleDatabaseError(fetchError, 'Failed to fetch team membership');
