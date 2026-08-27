@@ -10,9 +10,12 @@ write every document in the README's structure until the coverage table has no
 
 ## Source of truth
 
-The source is this same repo, at the application code as of commit `ea5c8f4`.
-Later commits on this branch add description documents only and do not change the
-app, so `ea5c8f4` stays the cited commit for every footer.
+The source is this same repo, at the application code as of commit `ea5c8f4`,
+and `ea5c8f4` stays the cited commit for every footer. Most later commits add
+description documents only. Where one fixes a triaged bug, the app has moved on
+from that commit: describe the behaviour as it is now, and name the entry in
+`bug-triage.md` in the footer — see the footer of `admin/build-the-schedule.md`
+for the wording.
 
 Describe the experience of the 717rec web app (`src/App.tsx` holds every route),
 signed in as an ordinary player in the active season, in the default

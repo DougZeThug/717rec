@@ -32,26 +32,38 @@
 --   Rows with a NULL user_id are left alone. They are orphans, not duplicates,
 --   and Postgres treats NULLs as distinct in a unique index.
 
--- 1) Keep one row per user, so the total index can be created.
-DELETE FROM public.team_memberships tm
-USING (
-  SELECT
-    id,
-    row_number() OVER (
-      PARTITION BY user_id
-      ORDER BY is_approved DESC, joined_at ASC NULLS LAST, id ASC
-    ) AS rn
-  FROM public.team_memberships
-  WHERE user_id IS NOT NULL
-) ranked
-WHERE tm.id = ranked.id
-  AND ranked.rn > 1;
+-- De-duplicate and index in one block. The lock is taken first and held to the
+-- end of it: without the lock a member could send a join request in the gap
+-- between the DELETE and the index build, and the build would then fail on a
+-- duplicate the DELETE never saw, so the migration would not deploy.
+-- SHARE ROW EXCLUSIVE stops writers and lets readers through, so the app carries
+-- on serving while this runs. A DO block is one statement, so the three steps
+-- share one transaction whether or not the runner opens one of its own.
+DO $$
+BEGIN
+  LOCK TABLE public.team_memberships IN SHARE ROW EXCLUSIVE MODE;
 
--- 2) Replace the approved-only index with one that covers every row.
-DROP INDEX IF EXISTS public.idx_one_approved_membership_per_user;
+  -- 1) Keep one row per user, so the total index can be created.
+  DELETE FROM public.team_memberships tm
+  USING (
+    SELECT
+      id,
+      row_number() OVER (
+        PARTITION BY user_id
+        ORDER BY is_approved DESC, joined_at ASC NULLS LAST, id ASC
+      ) AS rn
+    FROM public.team_memberships
+    WHERE user_id IS NOT NULL
+  ) ranked
+  WHERE tm.id = ranked.id
+    AND ranked.rn > 1;
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_one_membership_per_user
-  ON public.team_memberships (user_id);
+  -- 2) Replace the approved-only index with one that covers every row.
+  DROP INDEX IF EXISTS public.idx_one_approved_membership_per_user;
+
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_one_membership_per_user
+    ON public.team_memberships (user_id);
+END $$;
 
 COMMENT ON INDEX public.idx_one_membership_per_user IS
   'One team membership row per user, approved or pending. A second row made '

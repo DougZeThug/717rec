@@ -276,4 +276,6 @@ appear on the team's matches; see
 - Not confirmed by hand: what happens to an approved membership when the team is
   hidden or the season rolls over.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the duplicate-membership
+behaviour above, which was changed after that commit — see B-07 in
+[`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).

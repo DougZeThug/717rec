@@ -300,4 +300,6 @@ no record the user can see, and produces no notification to the league.
 - Assumption: `is_admin` is the only column that grants admin anywhere. No second
   mechanism was found, but 388 migrations were not all read.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the duplicate-membership
+behaviour above, which was changed after that commit — see B-07 in
+[`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).

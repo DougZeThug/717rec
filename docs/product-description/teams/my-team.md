@@ -256,4 +256,6 @@ changes its name everywhere in the app, including its address — see
 - Assumption: "Admin approval is required" applies to every join, including the
   first player on a brand-new team. Nothing in the code makes an exception.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the duplicate-membership
+behaviour above, which was changed after that commit — see B-07 in
+[`bug-triage.md`](../bug-triage.md#b-07-a-second-membership-row-permanently-breaks-every-member-ability).
