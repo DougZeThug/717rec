@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,18 +6,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RoundScoreInput } from '../RoundScoreInput';
 
 const onSubmit = vi.fn();
+const onSelectionDiscarded = vi.fn();
+
+const inputElement = (props: Partial<React.ComponentProps<typeof RoundScoreInput>> = {}) => (
+  <RoundScoreInput
+    roundNumber={3}
+    team1Name="Baggers"
+    team2Name="Tossers"
+    onSubmit={onSubmit}
+    roundKey="game-1:3"
+    onSelectionDiscarded={onSelectionDiscarded}
+    isSubmitting={false}
+    {...props}
+  />
+);
 
 const renderInput = (props: Partial<React.ComponentProps<typeof RoundScoreInput>> = {}) =>
-  render(
-    <RoundScoreInput
-      roundNumber={3}
-      team1Name="Baggers"
-      team2Name="Tossers"
-      onSubmit={onSubmit}
-      isSubmitting={false}
-      {...props}
-    />
-  );
+  render(inputElement(props));
 
 const grid = (teamName: string) => screen.getByRole('group', { name: `${teamName} round score` });
 
@@ -30,6 +35,8 @@ const tapScore = async (teamName: string, score: number) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // clearAllMocks keeps implementations, so drop any rejection a test installed.
+  onSubmit.mockReset();
 });
 
 describe('RoundScoreInput', () => {
@@ -110,8 +117,79 @@ describe('RoundScoreInput', () => {
     await tapScore('Tossers', 5);
     await userEvent.click(screen.getByRole('button', { name: /save round/i }));
 
-    expect(screen.getByRole('button', { name: /save round/i })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole('button', { name: /save round/i })).toBeDisabled());
     expect(screen.queryByTestId('net-preview')).not.toBeInTheDocument();
+  });
+
+  it('keeps the selection when the save fails, so the scorer can retry', async () => {
+    onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+    renderInput();
+
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(screen.getByTestId('net-preview')).toHaveTextContent('Baggers +3');
+    expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+  });
+
+  it('keeps an ambiguous score and its bag answer when the save fails', async () => {
+    onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+    renderInput();
+
+    await tapScore('Baggers', 6);
+    await tapScore('Tossers', 0);
+    await userEvent.click(screen.getByRole('button', { name: '2 in the hole' }));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    // Save is only enabled while an ambiguous score still carries its bag
+    // answer, so an enabled button proves both survived the failure.
+    expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+    expect(screen.getByTestId('net-preview')).toHaveTextContent('Baggers +6');
+    expect(screen.queryByText(/how many bags in the hole/i)).not.toBeInTheDocument();
+  });
+
+  it('drops kept scores and reports it when the round moves on', async () => {
+    onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+    const { rerender } = renderInput();
+
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(screen.getByTestId('net-preview')).toBeInTheDocument();
+
+    rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+    expect(screen.queryByTestId('net-preview')).not.toBeInTheDocument();
+    expect(onSelectionDiscarded).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the round number moving while the save is still in flight', async () => {
+    // Never settles, so the component stays mid-save for the whole test.
+    onSubmit.mockReturnValue(new Promise(() => undefined));
+    const { rerender } = renderInput();
+
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    // This is the optimistic round bumping the heading, not another scorer.
+    rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4', isSubmitting: true }));
+
+    expect(screen.getByTestId('net-preview')).toHaveTextContent('Baggers +3');
+    expect(onSelectionDiscarded).not.toHaveBeenCalled();
+  });
+
+  it('says nothing when the round moves on with no scores tapped', () => {
+    const { rerender } = renderInput();
+
+    rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+    expect(screen.queryByTestId('net-preview')).not.toBeInTheDocument();
+    expect(onSelectionDiscarded).not.toHaveBeenCalled();
   });
 
   it('disables everything while a round is being saved', () => {

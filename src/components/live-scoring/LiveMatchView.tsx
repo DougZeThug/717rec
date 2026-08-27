@@ -7,7 +7,9 @@ import { useGameFlow } from '@/hooks/live-scoring/useGameFlow';
 import type { LiveGameDerived, LiveMatchDerived } from '@/hooks/live-scoring/useLiveMatch';
 import { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
 import { useTeamPlayers } from '@/hooks/live-scoring/useTeamPlayers';
+import { toast } from '@/hooks/useToast';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
+import { DuplicateRoundError } from '@/types/errors';
 import { DEFAULT_GAME_RULES } from '@/utils/liveScoring/rules';
 
 import { CompletedMatchReview } from './CompletedMatchReview';
@@ -104,23 +106,42 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         name: playerNames[gp.player_id] ?? 'Player',
       }));
 
+    /**
+     * Tells the scorer their kept scores were dropped because the round moved
+     * on under them — otherwise the taps would vanish with nothing said.
+     */
+    const announceDiscardedSelection = () =>
+      toast({
+        title: 'The round number moved',
+        description: `Round ${game.nextRoundNumber} is now next, so your tapped scores were cleared.`,
+      });
+
     const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
     const gameWon = game.pendingWinnerSide !== null;
     const pendingWinnerName = game.pendingWinnerSide === 1 ? team1Name : team2Name;
 
-    /** Saves the next round using the currently selected throwers. */
-    const handleSubmit = (submission: RoundSubmission) => {
-      submitRound.mutate({
-        gameId: game.game.id,
-        roundNumber: game.nextRoundNumber,
-        team1Score: submission.team1Score,
-        team2Score: submission.team2Score,
-        team1ThrowerId,
-        team2ThrowerId,
-        team1Bags: submission.team1Bags,
-        team2Bags: submission.team2Bags,
-      });
-    };
+    /**
+     * Saves the next round using the currently selected throwers. Rejecting
+     * tells RoundScoreInput to keep the tapped scores for a retry.
+     */
+    const handleSubmit = (submission: RoundSubmission) =>
+      submitRound
+        .mutateAsync({
+          gameId: game.game.id,
+          roundNumber: game.nextRoundNumber,
+          team1Score: submission.team1Score,
+          team2Score: submission.team2Score,
+          team1ThrowerId,
+          team2ThrowerId,
+          team1Bags: submission.team1Bags,
+          team2Bags: submission.team2Bags,
+        })
+        .catch((error: unknown) => {
+          // Another scorer already recorded this round, so the tapped scores
+          // are stale — resolve and let the grids clear for the next round.
+          if (error instanceof DuplicateRoundError) return;
+          throw error;
+        });
 
     return (
       <div className="space-y-3">
@@ -157,7 +178,12 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           />
         )}
 
-        {canScore && !gameWon && (
+        {/*
+          The optimistic round can win the game while the save is still in
+          flight. Stay mounted until it settles, so a failure that rolls the
+          round back does not take the scorer's tapped scores with it.
+        */}
+        {canScore && (!gameWon || submitRound.isPending) && (
           <>
             <ThrowerBar
               team1Label={team1Name}
@@ -187,6 +213,8 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
               team1Name={team1Name}
               team2Name={team2Name}
               onSubmit={handleSubmit}
+              roundKey={overrideKey}
+              onSelectionDiscarded={announceDiscardedSelection}
               isSubmitting={submitRound.isPending}
               disabled={undoLastRound.isPending}
             />

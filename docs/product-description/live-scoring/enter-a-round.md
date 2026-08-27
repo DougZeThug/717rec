@@ -42,7 +42,8 @@ stateDiagram-v2
     ambiguous --> partial : answer how many bags went in
     partial --> saving : press Save Round (both sides resolved)
     saving --> empty : saved (commit) — grids clear, throwers advance
-    saving --> partial : failed (rolled back) — the tapped scores are lost
+    saving --> partial : failed (rolled back) — the tapped scores stay, ready to retry
+    partial --> empty : the round was recorded elsewhere — scores dropped, scorer told
 ```
 
 ### Arrive
@@ -113,20 +114,23 @@ Pressing "Save Round" writes the round with both scores, both throwers, and both
 bag breakdowns. The button reads "Saving…".
 
 **The round is optimistic.** It appears in the totals and the round history at
-once, before the league has answered, and the grids clear immediately so the
-scorer can start the next round without waiting.
+once, before the league has answered. The grids do **not** clear yet: they are
+disabled while the save is in flight and cleared only once it succeeds.
 
-On success the round is confirmed, the whole match is re-fetched, and the other
-scorer's screen receives the round over the realtime connection.
+On success the round is confirmed, the grids clear, the whole match is
+re-fetched, and the other scorer's screen receives the round over the realtime
+connection.
 
 On failure the optimistic round is removed, the totals go back, and a toast
-explains. **The scorer's tapped numbers are not restored** — the grids were
-cleared on pressing Save, so the round has to be entered again from memory.
+explains. **The scorer's tapped numbers stay on screen**, still selected, so the
+round is saved by pressing Save Round again rather than re-entered from memory.
+Nothing is queued: the retry is the scorer's to make.
 
 One failure is treated specially. If the other scorer saved the same round number
 first, the message is not an error but a plain toast: **"Round already recorded —
 Another scorer saved this round first — refreshing the scoreboard."** The round
-the other scorer saved stands, and this screen catches up.
+the other scorer saved stands, this screen catches up, and the grids **do**
+clear — that round is recorded, so the tapped numbers are stale.
 
 Three rules are checked before the write is accepted, each with its own message:
 
@@ -160,10 +164,10 @@ applies to the coming round only.
 | In-app navigation away, or switching tab within the page | Nothing lost. | **The tapped scores are lost.** A save already sent still lands, and the round appears when the scorer returns. |
 | Browser back or forward | Nothing lost. | As above. |
 | Reload, or the tab closed | The round input returns, empty, at the right round number. | The tapped scores are lost. A sent save may have landed; the round history after reloading says which. |
-| Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. The tapped numbers are gone. Nothing is queued. |
-| The request fails or times out | Not applicable. | As above. The scorer re-enters the round from memory. |
+| Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** Nothing is queued, so the scorer presses Save Round again once the signal returns. |
+| The request fails or times out | Not applicable. | As above. The scorer retries rather than re-entering the round. |
 | The session expires | Watching still works. | The save fails with the league's refusal as the message. |
-| The same record changed in another tab, or by another user | The round number and thrower advance as the other scorer's rounds arrive. | **The expected case.** The other scorer's round arrives, the totals move, and the round number under the scorer's fingers advances — so pressing Save now writes the *next* round, not the one they thought. If both save the same number, one wins and the other is told plainly. |
+| The same record changed in another tab, or by another user | The round number and thrower advance as the other scorer's rounds arrive. | **The expected case.** The other scorer's round arrives and the totals move. The round number under the scorer's fingers advances, so any scores already tapped are dropped and a toast says so — **"The round number moved — Round 6 is now next, so your tapped scores were cleared."** This stops a kept score being filed under the wrong round. If both save the same number, one wins and the other is told plainly. |
 | Browser autofill or a password manager writes into the form | No effect; there are no text fields. | No effect. |
 | The window loses focus | No effect. | No effect on a part-entered round. |
 
@@ -202,7 +206,8 @@ scorer who fails twice quickly sees only the second message; see
 
 **Accessibility.** Every number is a real button. The net preview is text and is
 readable, but it is not announced when it changes, so a screen reader user must
-seek it out. The grids clearing on save is not announced either.
+seek it out. The grids clearing on a successful save is not announced either —
+though the grids being cleared *because the round moved on* does raise a toast.
 
 **Side effects the user can notice.** None until the match is finalised. Rounds
 feed per-player statistics only once the result is saved.
@@ -215,10 +220,15 @@ feed per-player statistics only once the result is saved.
   nothing explains why except this document.
 - **The bags question can be skipped by changing the score.** Tapping 6, then 5,
   clears the question — the answer was tied to the 6.
-- **The grids clear before the save is confirmed**, so a failed save loses the
-  numbers. The scorer must remember what they tapped.
+- **The grids clear on a confirmed save, not on the press.** A failed save
+  leaves the numbers selected so the scorer can retry.
 - **The round number can advance under the scorer** if the other scorer saves
-  first, and there is no visible moment where this is announced.
+  first. Any scores already tapped are dropped, because they belong to the round
+  that was just recorded, and a toast names the round now being entered.
+- **A round that wins the game keeps the panel on screen until the save
+  settles.** The win banner and the disabled grids overlap for the length of the
+  request, so a failure that rolls the round back does not take the tapped
+  scores with it.
 - **An override of the thrower survives only until the round is saved.**
 - **A round saved with nobody named** does not break the rotation; the app looks
   further back.
@@ -228,14 +238,21 @@ feed per-player statistics only once the result is saved.
 
 ## Open questions and verification
 
-- **A failed save loses the scorer's input.** The grids clear on pressing Save
-  rather than on success, so a failure at a venue with poor signal costs the
-  round. This is the most likely real-world annoyance in the whole feature.
-  **May be worth treating as a bug rather than documenting.**
-- **Nothing marks that the round number changed under the scorer.** When the
-  other scorer saves first, the heading quietly becomes a different number. A
-  scorer mid-entry could save a round believing it is the previous one. Worth
-  checking by hand with two devices.
+- ~~**A failed save loses the scorer's input.**~~ **Fixed** — see
+  [B-05](../bug-triage.md#b-05-a-failed-round-save-throws-away-what-the-scorer-tapped).
+  The grids now clear on success rather than on the press, so a failure at a
+  venue with poor signal costs a second press rather than the round.
+- ~~**Nothing marks that the round number changed under the scorer.**~~
+  **Fixed** with B-05, because keeping the scores made it able to lose real
+  work: a kept score could have been filed under the new round number. The
+  selections are dropped when the round moves and a toast names the new round.
+  Still worth checking by hand with two devices that the toast fires when the
+  round arrives over the subscription rather than from a save.
+- **A round the *other* scorer wins on still hides the panel mid-entry.** If
+  their round takes a side past 21, this screen's grids are replaced by the win
+  banner and anything tapped is lost with nothing said. That game genuinely is
+  won, so the round could not have been saved — but the silence is untested.
+  See ROUND-27 in [`verification/live-scoring.md`](../verification/live-scoring.md).
 - Not confirmed by hand: how fast the loop actually is on a phone, and whether
   the disable-while-saving is noticeable between rounds.
 - Not confirmed by hand: whether the net preview is easy to see, given it sits in

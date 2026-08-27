@@ -21,10 +21,10 @@ never results the match. Auto-scheduled matches save at midnight. In each case
 the app reports success and the league's data does not change the way the admin
 was told it had.
 
-**Work that is silently lost.** A failed round save discards what the scorer
-tapped. A decided live match that is never saved counts for nothing and nothing
-anywhere surfaces it. A second membership row permanently breaks every ability a
-member has.
+**Work that is silently lost.** A decided live match that is never saved counts
+for nothing and nothing anywhere surfaces it. A second membership row
+permanently breaks every ability a member has. A failed round save used to
+discard what the scorer tapped; that one is now **fixed**, see B-05.
 
 One entry has since been **cleared**: B-06 claimed head-to-head win
 percentages were a 0–1 fraction printed as a percentage. Checked against the
@@ -42,7 +42,7 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-02 | No **existing** season can be activated from the admin screens | medium | admin | **fixed** | — |
 | B-03 | Auto-scheduled matches are saved at midnight | high | admin | fix | — |
 | B-04 | A decided live match that is never saved counts for nothing, and nothing surfaces it | high | live-scoring | **fixed** | — |
-| B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | fix | — |
+| B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | **fixed** | — |
 | B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
 | B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | fix | — |
 | B-08 | A failed profile read silently demotes an admin | high | foundations | fix | — |
@@ -265,21 +265,36 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
   The scorer taps both scores, answers the bags question, presses Save Round, and
   the request fails.
 - **What happens / what was expected:** the score grids were cleared the instant
-  Save was pressed, so the tapped numbers are gone and the scorer must re-enter
-  the round from memory. Expected: a failed save leaves the input as it was, the
-  way every other form in the app does.
+  Save was pressed, so the tapped numbers were gone and the scorer had to
+  re-enter the round from memory. Expected: a failed save leaves the input as it
+  was, the way every other form in the app does.
 - **Reproduce:** 1. Open a live match as a scorer. 2. Go offline. 3. Tap a score
   for each side and press Save Round.
-- **Why (from the code):** `RoundScoreInput.handleSubmit`
-  (`src/components/live-scoring/RoundScoreInput.tsx:60-68`) calls `onSubmit` and
-  then immediately `setTeam1(EMPTY); setTeam2(EMPTY)`, unconditionally. The
-  rollback in `useRoundMutations` (`src/hooks/live-scoring/useRoundMutations.ts:88`)
-  restores the round list but has no way to restore the input, which is local to
-  the component.
+- **Why (from the code):** `RoundScoreInput.handleSubmit` called `onSubmit` and
+  then immediately `setTeam1(EMPTY); setTeam2(EMPTY)`, unconditionally.
+  `submitRound.mutate()` returns at once and never throws, so the clear always
+  ran before the save had a result. The rollback in `useRoundMutations` restores
+  the round list but has no way to restore the input, which is local state
+  inside the component.
 - **Severity:** `high`. It loses the user's work, in the one feature designed to
   be used where the connection is worst.
-- **Decision needed:** `fix`. Clear the grids in the mutation's success path
-  rather than on press.
+- **Decision needed:** `fix`. **Done.** `RoundScoreInput.handleSubmit` now
+  awaits `onSubmit` and clears the grids only once it resolves;
+  `LiveMatchView` supplies that promise with `submitRound.mutateAsync`
+  (`src/components/live-scoring/RoundScoreInput.tsx`,
+  `src/components/live-scoring/LiveMatchView.tsx`). A failed save leaves the
+  tapped scores on screen and the scorer presses Save Round again. Three
+  details were needed beyond the one-line change this entry proposed.
+  **One:** a `DuplicateRoundError` still clears the grids — that round *is*
+  recorded, so the tapped scores are stale and keeping them would leave wrong
+  numbers in the next round's grid. **Two:** when the optimistic round won the
+  game, the whole panel unmounted behind the game-won banner and the rollback
+  remounted it empty, so a game-winning round still lost its input; the panel
+  now stays mounted until the save settles. **Three:** keeping the scores opened
+  a new hazard — if another scorer records that round, the heading advances and
+  a retry would file the old scores under the new round number. The selections
+  are now dropped when the round identity changes, and the scorer is told, which
+  also closes the second open question this document's source raised.
 - **Raised by:** [`live-scoring/enter-a-round.md`](live-scoring/enter-a-round.md#open-questions-and-verification).
 
 ### B-06: Head-to-head win percentages and rivalry labels are computed on the wrong scale

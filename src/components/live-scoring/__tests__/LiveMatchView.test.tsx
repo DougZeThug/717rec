@@ -1,11 +1,17 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Hook mocks (children render for real) ────────────────────────────────────
 
-const mockSubmitRound = { mutate: vi.fn(), isPending: false };
+const mockToast = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/useToast', () => ({
+  toast: mockToast,
+  useToast: () => ({ toast: mockToast }),
+}));
+
+const mockSubmitRound = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false };
 const mockUndoLastRound = { mutate: vi.fn(), isPending: false };
 const mockStartGame = { mutate: vi.fn(), isPending: false };
 const mockConfirmGameComplete = { mutate: vi.fn(), isPending: false };
@@ -81,6 +87,7 @@ vi.mock('@/hooks/live-scoring/useTeamPlayers', () => ({
 import { deriveLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { expectNoAxeViolations } from '@/test/a11y';
+import { DuplicateRoundError } from '@/types/errors';
 
 import { LiveMatchView } from '../LiveMatchView';
 
@@ -163,23 +170,29 @@ const gridButton = (grid: HTMLElement, label: string): HTMLButtonElement => {
   return button;
 };
 
-const renderView = (
+const viewElement = (
   bundle: LiveMatchBundle,
   { canScore = true, isAdmin = false }: { canScore?: boolean; isAdmin?: boolean } = {}
-) =>
-  render(
-    <LiveMatchView
-      matchId="match-1"
-      bundle={bundle}
-      derived={deriveLiveMatch(bundle)}
-      canScore={canScore}
-      isAdmin={isAdmin}
-      realtimeStatus="SUBSCRIBED"
-    />
-  );
+) => (
+  <LiveMatchView
+    matchId="match-1"
+    bundle={bundle}
+    derived={deriveLiveMatch(bundle)}
+    canScore={canScore}
+    isAdmin={isAdmin}
+    realtimeStatus="SUBSCRIBED"
+  />
+);
+
+const renderView = (
+  bundle: LiveMatchBundle,
+  options: { canScore?: boolean; isAdmin?: boolean } = {}
+) => render(viewElement(bundle, options));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockSubmitRound.mutateAsync.mockImplementation(() => Promise.resolve());
+  mockSubmitRound.isPending = false;
   mockFinalize.isError = false;
   mockFinalize.error = null;
 });
@@ -248,7 +261,7 @@ describe('in-game state', () => {
     await userEvent.click(gridButton(grids[1], '0'));
     await userEvent.click(screen.getByRole('button', { name: /save round/i }));
 
-    expect(mockSubmitRound.mutate).toHaveBeenCalledWith(
+    expect(mockSubmitRound.mutateAsync).toHaveBeenCalledWith(
       expect.objectContaining({
         gameId: 'game-1',
         roundNumber: 2,
@@ -258,6 +271,112 @@ describe('in-game state', () => {
         team2ThrowerId: 'p4',
       })
     );
+  });
+
+  it('keeps the tapped scores when the save fails so the scorer can retry', async () => {
+    mockSubmitRound.mutateAsync.mockRejectedValue(new Error('Failed to fetch'));
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(mockSubmitRound.mutateAsync).toHaveBeenCalled());
+    const after = screen.getAllByRole('group');
+    expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'true');
+    expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+  });
+
+  it('clears the retained scores when the round advances under the scorer', async () => {
+    mockSubmitRound.mutateAsync.mockRejectedValue(new Error('Failed to fetch'));
+    const { rerender } = renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    // The save failed, so the scores are still on screen for a retry.
+    await waitFor(() => expect(mockSubmitRound.mutateAsync).toHaveBeenCalled());
+    expect(gridButton(screen.getAllByRole('group')[0], '9')).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+
+    // The other scorer's round 2 arrives over realtime, so this screen is now
+    // on round 3. The retained scores belong to round 2 and must not be reused.
+    const advanced = makeBundle({
+      games: [game()],
+      rounds: [
+        round(),
+        round({ round_number: 2, team1_score: 4, team2_score: 1, net_points: 3, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    rerender(viewElement(advanced));
+
+    const after = screen.getAllByRole('group');
+    expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'false');
+    expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'false');
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: expect.stringMatching(/round number moved/i) })
+    );
+  });
+
+  it('keeps the tapped scores when a game-winning round fails to save', async () => {
+    // The save is still in flight while the optimistic round is on screen.
+    mockSubmitRound.mutateAsync.mockReturnValue(new Promise(() => undefined));
+    const atEighteen = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 18, team2_score: 0, net_points: 18, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    const { rerender } = renderView(atEighteen);
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '5'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    // useRoundMutations adds the optimistic round, taking the game to 23–0.
+    // That is enough to win, so the game-won banner takes over the panel.
+    const optimistic = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 18, team2_score: 0, net_points: 18, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 5, team2_score: 0, net_points: 5, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    mockSubmitRound.isPending = true;
+    rerender(viewElement(optimistic));
+    expect(screen.getByRole('button', { name: /end game 1/i })).toBeInTheDocument();
+
+    // The save fails, so useRoundMutations rolls the optimistic round back.
+    mockSubmitRound.isPending = false;
+    rerender(viewElement(atEighteen));
+
+    const after = screen.getAllByRole('group');
+    expect(gridButton(after[0], '5')).toHaveAttribute('aria-pressed', 'true');
+    expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('clears the tapped scores when another scorer recorded the round first', async () => {
+    mockSubmitRound.mutateAsync.mockRejectedValue(new DuplicateRoundError('game-1', 2));
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /save round/i })).toBeDisabled());
+    const after = screen.getAllByRole('group');
+    expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('confirms undo only for the latest round and sends the last round number', async () => {
