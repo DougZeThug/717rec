@@ -8,6 +8,7 @@ import type { LiveGameDerived, LiveMatchDerived } from '@/hooks/live-scoring/use
 import { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
 import { useTeamPlayers } from '@/hooks/live-scoring/useTeamPlayers';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
+import { DuplicateRoundError } from '@/types/errors';
 import { DEFAULT_GAME_RULES } from '@/utils/liveScoring/rules';
 
 import { CompletedMatchReview } from './CompletedMatchReview';
@@ -108,19 +109,28 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     const gameWon = game.pendingWinnerSide !== null;
     const pendingWinnerName = game.pendingWinnerSide === 1 ? team1Name : team2Name;
 
-    /** Saves the next round using the currently selected throwers. */
-    const handleSubmit = (submission: RoundSubmission) => {
-      submitRound.mutate({
-        gameId: game.game.id,
-        roundNumber: game.nextRoundNumber,
-        team1Score: submission.team1Score,
-        team2Score: submission.team2Score,
-        team1ThrowerId,
-        team2ThrowerId,
-        team1Bags: submission.team1Bags,
-        team2Bags: submission.team2Bags,
-      });
-    };
+    /**
+     * Saves the next round using the currently selected throwers. Rejecting
+     * tells RoundScoreInput to keep the tapped scores for a retry.
+     */
+    const handleSubmit = (submission: RoundSubmission) =>
+      submitRound
+        .mutateAsync({
+          gameId: game.game.id,
+          roundNumber: game.nextRoundNumber,
+          team1Score: submission.team1Score,
+          team2Score: submission.team2Score,
+          team1ThrowerId,
+          team2ThrowerId,
+          team1Bags: submission.team1Bags,
+          team2Bags: submission.team2Bags,
+        })
+        .catch((error: unknown) => {
+          // Another scorer already recorded this round, so the tapped scores
+          // are stale — resolve and let the grids clear for the next round.
+          if (error instanceof DuplicateRoundError) return;
+          throw error;
+        });
 
     return (
       <div className="space-y-3">

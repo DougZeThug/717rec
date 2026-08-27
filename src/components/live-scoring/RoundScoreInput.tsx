@@ -18,7 +18,11 @@ interface RoundScoreInputProps {
   roundNumber: number;
   team1Name: string;
   team2Name: string;
-  onSubmit: (submission: RoundSubmission) => void;
+  /**
+   * Saves the round. Resolve to clear the grids; reject to keep the tapped
+   * scores on screen so the scorer can retry without re-entering them.
+   */
+  onSubmit: (submission: RoundSubmission) => void | Promise<unknown>;
   isSubmitting: boolean;
   disabled?: boolean;
 }
@@ -57,16 +61,22 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
         ? 'Wash — no points'
         : `${net.winner === 1 ? team1Name : team2Name} +${net.net}`;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!ready || team1.score === null || team2.score === null) return;
-    onSubmit({
-      team1Score: team1.score,
-      team2Score: team2.score,
-      team1Bags: getBagBreakdown(team1.score, team1.bagsIn),
-      team2Bags: getBagBreakdown(team2.score, team2.bagsIn),
-    });
-    setTeam1(EMPTY);
-    setTeam2(EMPTY);
+    try {
+      await onSubmit({
+        team1Score: team1.score,
+        team2Score: team2.score,
+        team1Bags: getBagBreakdown(team1.score, team1.bagsIn),
+        team2Bags: getBagBreakdown(team2.score, team2.bagsIn),
+      });
+      setTeam1(EMPTY);
+      setTeam2(EMPTY);
+    } catch {
+      // Keep the tapped scores so the scorer can press Save Round again
+      // instead of re-entering the round from memory. The failure toast is
+      // already raised by useRoundMutations.
+    }
   };
 
   return (

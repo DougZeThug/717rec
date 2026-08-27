@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,6 +30,8 @@ const tapScore = async (teamName: string, score: number) => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // clearAllMocks keeps implementations, so drop any rejection a test installed.
+  onSubmit.mockReset();
 });
 
 describe('RoundScoreInput', () => {
@@ -110,8 +112,38 @@ describe('RoundScoreInput', () => {
     await tapScore('Tossers', 5);
     await userEvent.click(screen.getByRole('button', { name: /save round/i }));
 
-    expect(screen.getByRole('button', { name: /save round/i })).toBeDisabled();
+    await waitFor(() => expect(screen.getByRole('button', { name: /save round/i })).toBeDisabled());
     expect(screen.queryByTestId('net-preview')).not.toBeInTheDocument();
+  });
+
+  it('keeps the selection when the save fails, so the scorer can retry', async () => {
+    onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+    renderInput();
+
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(screen.getByTestId('net-preview')).toHaveTextContent('Baggers +3');
+    expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+  });
+
+  it('keeps an ambiguous score and its bag answer when the save fails', async () => {
+    onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+    renderInput();
+
+    await tapScore('Baggers', 6);
+    await tapScore('Tossers', 0);
+    await userEvent.click(screen.getByRole('button', { name: '2 in the hole' }));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    // Save is only enabled while an ambiguous score still carries its bag
+    // answer, so an enabled button proves both survived the failure.
+    expect(screen.getByRole('button', { name: /save round/i })).toBeEnabled();
+    expect(screen.getByTestId('net-preview')).toHaveTextContent('Baggers +6');
+    expect(screen.queryByText(/how many bags in the hole/i)).not.toBeInTheDocument();
   });
 
   it('disables everything while a round is being saved', () => {
