@@ -7,6 +7,7 @@ Deno.env.set(
   'SUPABASE_SERVICE_ROLE_KEY',
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? 'test-service-key'
 );
+Deno.env.delete('RESEND_API_KEY'); // skip Resend branch unless a test opts in
 
 import {
   assertEquals,
@@ -50,12 +51,27 @@ function reset() {
   setRateLimiter(null);
 }
 
-// Stub the Supabase REST insert so no real network call happens.
+// Stub the Supabase REST insert and the Resend send so no real network call
+// happens. The two are independently toggleable: the insert is the durable
+// record, the email is a best-effort alert on top of it.
 const originalFetch = globalThis.fetch;
-function stubFetch(opts: { insertOk?: boolean } = {}) {
+let lastResendBody: Record<string, unknown> | null = null;
+function stubFetch(opts: { insertOk?: boolean; resendOk?: boolean } = {}) {
   const insertOk = opts.insertOk ?? true;
-  globalThis.fetch = ((input: RequestInfo | URL, _init?: RequestInit) => {
+  const resendOk = opts.resendOk ?? true;
+  lastResendBody = null;
+  globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('api.resend.com')) {
+      if (typeof init?.body === 'string') {
+        lastResendBody = JSON.parse(init.body) as Record<string, unknown>;
+      }
+      return Promise.resolve(
+        resendOk
+          ? new Response(JSON.stringify({ id: 'email-1' }), { status: 200 })
+          : new Response('resend unavailable', { status: 500 })
+      );
+    }
     if (url.includes('/rest/v1/contact_requests')) {
       return Promise.resolve(
         insertOk
@@ -198,6 +214,126 @@ Deno.test({
       assertEquals(res.headers.get('X-Content-Type-Options'), 'nosniff');
       assertEquals(res.headers.get('X-Frame-Options'), 'DENY');
     } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'emails the league when the request saves and Resend accepts it',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ insertOk: true, resendOk: true });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.success, true);
+      assertEquals(body.emailed, true);
+
+      const sent = lastResendBody;
+      assertExists(sent);
+      assertEquals(sent.to, ['admin@717rec.com']);
+      assertStringIncludes(sent.subject as string, 'General message');
+      assertStringIncludes(sent.subject as string, 'Bob');
+      assertStringIncludes(sent.html as string, 'can you help with a timeslot');
+    } finally {
+      Deno.env.delete('RESEND_API_KEY');
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'still succeeds when the request saves but the email fails',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    // The row is already stored. A 500 here would make the client retry and
+    // duplicate a request the league actually kept.
+    stubFetch({ insertOk: true, resendOk: false });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.success, true);
+      assertEquals(body.emailed, false);
+    } finally {
+      Deno.env.delete('RESEND_API_KEY');
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'still succeeds with no Resend key configured, reporting emailed:false',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    allowAll();
+    stubFetch({ insertOk: true });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.success, true);
+      assertEquals(body.emailed, false);
+      assertEquals(lastResendBody, null);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'does not email when the insert fails',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ insertOk: false, resendOk: true });
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 500);
+      assertEquals(lastResendBody, null);
+    } finally {
+      Deno.env.delete('RESEND_API_KEY');
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'strips control characters from the name before it reaches the subject',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ insertOk: true, resendOk: true });
+    try {
+      const res = await handleRequest(
+        makeReq({ ...validPayload, submitter_name: 'Bob\nBcc: evil@example.com' })
+      );
+      assertEquals(res.status, 200);
+      const sent = lastResendBody;
+      assertExists(sent);
+      const subject = sent.subject as string;
+      assertEquals(subject.includes('\n'), false);
+      assertEquals(subject.includes('\r'), false);
+    } finally {
+      Deno.env.delete('RESEND_API_KEY');
       restoreFetch();
       reset();
     }

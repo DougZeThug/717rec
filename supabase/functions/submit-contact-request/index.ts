@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
+import { escapeHtml, sendAdminEmail, stripControlChars } from '../_shared/email.ts';
 import {
   checkRateLimit as defaultCheckRateLimit,
   getTrustedClientIp,
@@ -40,6 +41,15 @@ function buildCorsHeaders(req: Request): Record<string, string> {
 }
 
 const REQUEST_TYPES = ['timeslot', 'score', 'join_league', 'general', 'other'] as const;
+
+/** Request type as an admin reads it, for the notification subject line. */
+const REQUEST_TYPE_LABELS: Record<string, string> = {
+  timeslot: 'Timeslot Request',
+  score: 'Score update / correction',
+  join_league: 'Join the league',
+  general: 'General message',
+  other: 'Other',
+};
 
 const PayloadSchema = z
   .object({
@@ -185,7 +195,61 @@ async function handleRequest(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Failed to save request' }, 500, corsHeaders);
   }
 
-  return jsonResponse({ success: true }, 200, corsHeaders);
+  // The row is the durable record and it is already saved. The email is a
+  // best-effort alert on top, so a failed send must NOT become a 500 — that
+  // would make the client retry and duplicate a request we actually kept.
+  const emailed = await notifyAdmins(insertRow);
+
+  return jsonResponse({ success: true, emailed }, 200, corsHeaders);
+}
+
+/** Alert the league that a new request landed in the admin Contact Inbox. */
+async function notifyAdmins(row: {
+  request_type: string;
+  submitter_name: string;
+  submitter_team: string | null;
+  submitter_contact: string;
+  players: string | null;
+  message: string;
+  is_verified: boolean;
+}): Promise<boolean> {
+  const typeLabel = REQUEST_TYPE_LABELS[row.request_type] ?? row.request_type;
+  // Strip control chars before the name reaches the Subject header.
+  const cleanName = stripControlChars(row.submitter_name);
+  const safeName = escapeHtml(cleanName);
+  const safeTeam = row.submitter_team ? escapeHtml(row.submitter_team) : null;
+  const safeContact = escapeHtml(row.submitter_contact);
+  const safeMessage = escapeHtml(row.message);
+  const safePlayers = row.players ? escapeHtml(row.players) : null;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">New League Request</h2>
+      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <p><strong>From:</strong> ${safeName}${row.is_verified ? ' (verified)' : ''}</p>
+        ${safeTeam ? `<p><strong>Team:</strong> ${safeTeam}</p>` : ''}
+        <p><strong>Contact:</strong> ${safeContact}</p>
+        <p><strong>Type:</strong> ${escapeHtml(typeLabel)}</p>
+      </div>
+      <div style="padding: 20px; border-left: 4px solid #0066cc;">
+        <h3 style="margin-top: 0;">Message:</h3>
+        <p style="white-space: pre-wrap;">${safeMessage}</p>
+        ${safePlayers ? `<p><strong>Players:</strong> ${safePlayers}</p>` : ''}
+      </div>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+      <p style="color: #666; font-size: 12px;">
+        Sent from the message form on the 717REC home page. It is also waiting in
+        the admin Contact Inbox.
+      </p>
+    </div>
+  `;
+
+  return await sendAdminEmail({
+    from: '717REC League <noreply@717rec.com>',
+    subject: `[717REC] ${typeLabel} from ${cleanName}`,
+    html,
+    logLabel: '[ContactRequest]',
+  });
 }
 
 export { handleRequest };

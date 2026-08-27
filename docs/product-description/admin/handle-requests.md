@@ -198,7 +198,10 @@ subscribe.
 **Toasts and notifications.** Membership and team requests toast on success and
 on failure. Contact requests toast **only** on failure. Nothing at all is sent
 to the person who made any of these requests — no email, no notification, no
-change they can see until they happen to look.
+change they can see until they happen to look. **Admins** are emailed, though:
+both a league request and a support ticket send an alert to `admin@717rec.com`
+as well as landing in the Contact Inbox. Membership and team requests send no
+alert at all.
 
 **URL state.** None. Not the queue, not the filter, not the selected request.
 `/admin/notifications` is a real route but it is the notifications page that
