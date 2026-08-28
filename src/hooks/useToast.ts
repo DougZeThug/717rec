@@ -187,7 +187,9 @@ function useToast() {
         listeners.splice(index, 1);
       }
     };
-  }, [state]);
+    // setState is stable, so subscribe once on mount. Depending on `state` here
+    // re-ran this effect on every toast, churning the shared listeners array.
+  }, []);
 
   return {
     ...state,
