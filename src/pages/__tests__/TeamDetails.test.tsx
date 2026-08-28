@@ -88,7 +88,9 @@ vi.mock('@/components/badges/TeamBadgeCollection', () => ({ default: () => <p>Te
 const createTestQueryClient = () =>
   new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
 
-const renderPage = (initialEntry = '/teams/falcons') => {
+const renderPage = (
+  initialEntry: string | { pathname: string; state?: unknown } = '/teams/falcons'
+) => {
   const queryClient = createTestQueryClient();
   return render(
     <HelmetProvider>
@@ -164,5 +166,16 @@ describe('TeamDetails page', () => {
     renderPage();
     fireEvent.click(screen.getAllByRole('button', { name: /back/i })[0]);
     expect(mockNavigate).toHaveBeenCalledWith(-1);
+  });
+
+  it('pops history rather than pushing the origin route again', () => {
+    // Arriving from /stats used to push '/stats' back on, which mounted that
+    // page at the top and then smooth-scrolled down. Popping lets the origin
+    // page restore its own position.
+    renderPage({ pathname: '/teams/falcons', state: { from: '/stats' } });
+    fireEvent.click(screen.getAllByRole('button', { name: /back/i })[0]);
+
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
+    expect(mockNavigate).not.toHaveBeenCalledWith('/stats');
   });
 });

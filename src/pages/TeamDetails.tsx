@@ -1,6 +1,6 @@
 import { ArrowLeft, BarChart3, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
 import { lazy, Suspense, useMemo } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
@@ -209,8 +209,6 @@ const TeamDetails = () => {
   const { teamId: teamParam } = useParams<{ teamId: string }>();
   const { teamId, isResolving } = useResolveTeamSlug(teamParam);
   const navigate = useNavigate();
-  const location = useLocation();
-  const locationState = location.state as { from?: string; scrollPosition?: number } | undefined;
 
   const { team, isLoading } = useTeamDetails(teamId);
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
@@ -229,20 +227,18 @@ const TeamDetails = () => {
 
   logTeamRender(team);
 
+  /**
+   * Go back through history rather than pushing the previous route again.
+   *
+   * Pushing made this a forward navigation, so the origin page mounted at the
+   * top and a 100ms timer then smooth-scrolled back down. Popping lets
+   * useScrollRestoration on the origin page restore the position it has been
+   * tracking all along — more accurate than a snapshot taken at click time —
+   * and it keeps the route-change scroll reset out of the way, since that
+   * reset skips POP navigations.
+   */
   const handleBack = () => {
-    if (locationState?.from) {
-      navigate(locationState.from);
-      if (locationState.scrollPosition !== undefined) {
-        setTimeout(() => {
-          window.scrollTo({
-            top: locationState.scrollPosition,
-            behavior: 'smooth',
-          });
-        }, 100);
-      }
-    } else {
-      navigate(-1);
-    }
+    navigate(-1);
   };
 
   if (isLoading || isLoadingMatches || isResolving) {

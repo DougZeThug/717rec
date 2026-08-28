@@ -52,7 +52,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
               <Link
                 key={team.teamId}
                 to={`/teams/${toTeamSlug(team.teamName)}`}
-                state={{ from: '/stats', scrollPosition: window.scrollY }}
+                state={{ from: '/stats' }}
                 className="block flex-1 min-w-0"
               >
                 <div
