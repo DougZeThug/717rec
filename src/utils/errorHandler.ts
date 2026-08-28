@@ -5,13 +5,7 @@
 
 import { PostgrestError } from '@supabase/supabase-js';
 
-import {
-  AuthorizationError,
-  DatabaseError,
-  NotFoundError,
-  ServiceError,
-  ValidationError,
-} from '@/types/errors';
+import { DatabaseError, NotFoundError, ServiceError } from '@/types/errors';
 
 import { errorLog } from './logger';
 

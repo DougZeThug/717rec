@@ -419,4 +419,3 @@ describe('logError', () => {
     expect(() => logError(null, 'context')).not.toThrow();
   });
 });
-
