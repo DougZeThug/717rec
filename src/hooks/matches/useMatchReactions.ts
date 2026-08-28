@@ -7,6 +7,7 @@ import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import type { MatchReaction as ServiceMatchReaction } from '@/services/matches/MatchReactionsService';
 import { MatchReactionsService } from '@/services/matches/MatchReactionsService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { matchInteractionKeys } from './matchInteractionKeys';
@@ -242,7 +243,11 @@ export const useMatchReactions = (matchId: string) => {
           errorLog('Error invalidating match reactions after failed toggle:', invalidateError);
         });
       errorLog('Error toggling reaction:', err);
-      toast({ title: 'Error', description: 'Failed to update reaction', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getUIErrorMessage(err, 'Failed to update reaction'),
+        variant: 'destructive',
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey, refetchType: 'active' }).catch((err: unknown) => {

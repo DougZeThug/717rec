@@ -10,6 +10,7 @@ import {
   updateTeamRequestStatus,
 } from '@/services/teams/TeamFetchService';
 import type { TeamRequest, TeamRequestStatus, TeamRequestType } from '@/types/teamRequest';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 // Fetch pending requests count for admin badge
@@ -71,7 +72,7 @@ export const useSubmitRequest = () => {
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to submit request. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to submit request'),
         variant: 'destructive',
       });
       errorLog('Submit request error:', error);
@@ -112,7 +113,7 @@ export const useUpdateRequestStatus = () => {
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to update request. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to update request'),
         variant: 'destructive',
       });
       errorLog('Update request error:', error);

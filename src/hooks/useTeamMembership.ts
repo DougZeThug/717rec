@@ -10,6 +10,7 @@ import {
   leaveTeamMembership,
 } from '@/services/teams/TeamFetchService';
 import { Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 export function useTeamMembership() {
@@ -67,11 +68,10 @@ export function useTeamMembership() {
       // Invalidate to refetch membership data
       await queryClient.invalidateQueries({ queryKey: ['team-membership', user.id] });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Please try again later';
       errorLog('Error joining team:', error);
       toast({
         title: 'Failed to submit request',
-        description: message,
+        description: getUIErrorMessage(error),
         variant: 'destructive',
       });
     } finally {
@@ -93,11 +93,10 @@ export function useTeamMembership() {
         description: "You've successfully left the team",
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Please try again later';
       errorLog('Error leaving team:', error);
       toast({
         title: 'Failed to leave team',
-        description: message,
+        description: getUIErrorMessage(error),
         variant: 'destructive',
       });
     } finally {

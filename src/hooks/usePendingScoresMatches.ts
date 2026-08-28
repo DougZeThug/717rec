@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
 import { fetchPendingScoresMatches } from '@/services/matches/MatchReadService';
 import { createScoreSubmission } from '@/services/matches/MatchWriteService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 export interface PendingMatch {
@@ -41,7 +42,7 @@ export function usePendingScoresMatches() {
         errorLog('Error fetching pending matches:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load pending matches. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to load pending matches'),
           variant: 'destructive',
         });
         throw error;
@@ -90,7 +91,7 @@ export function usePendingScoresMatches() {
       errorLog('Error submitting score:', error);
       toast({
         title: 'Error',
-        description: 'Failed to submit score. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to submit score'),
         variant: 'destructive',
       });
     },

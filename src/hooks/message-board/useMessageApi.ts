@@ -5,6 +5,7 @@ import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { MessageService } from '@/services/messages/MessageService';
 import { MessageCategory } from '@/types/reactions';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { MessageQueryOptions } from './types';
@@ -48,7 +49,7 @@ export const useMessageApi = () => {
       errorLog('Failed to create message:', e);
       toast({
         title: 'Error posting message',
-        description: 'Your message could not be posted. Please try again.',
+        description: getUIErrorMessage(e, 'Your message could not be posted'),
         variant: 'destructive',
       });
       throw new Error('Failed to create message', { cause: e });
@@ -81,7 +82,7 @@ export const useMessageApi = () => {
       errorLog('Failed to update message:', e);
       toast({
         title: 'Error updating message',
-        description: 'Your message could not be updated. Please try again.',
+        description: getUIErrorMessage(e, 'Your message could not be updated'),
         variant: 'destructive',
       });
       throw new Error('Failed to update message', { cause: e });
@@ -111,7 +112,7 @@ export const useMessageApi = () => {
       errorLog('Failed to delete message:', e);
       toast({
         title: 'Error deleting message',
-        description: 'Your message could not be deleted. Please try again.',
+        description: getUIErrorMessage(e, 'Your message could not be deleted'),
         variant: 'destructive',
       });
       throw new Error('Failed to delete message', { cause: e });

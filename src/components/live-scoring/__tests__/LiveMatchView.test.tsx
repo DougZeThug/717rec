@@ -87,7 +87,7 @@ vi.mock('@/hooks/live-scoring/useTeamPlayers', () => ({
 import { deriveLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { expectNoAxeViolations } from '@/test/a11y';
-import { DuplicateRoundError } from '@/types/errors';
+import { BusinessLogicError, DuplicateRoundError } from '@/types/errors';
 
 import { LiveMatchView } from '../LiveMatchView';
 
@@ -556,13 +556,13 @@ describe('match decided (not yet official)', () => {
 
   it('surfaces a finalize error outside the closed match-complete dialog', async () => {
     mockFinalize.isError = true;
-    mockFinalize.error = new Error('The official result was already recorded.');
+    mockFinalize.error = new BusinessLogicError('This match already has an official result.');
 
     renderView(decidedBundle());
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'The official result was already recorded.'
+      'This match already has an official result.'
     );
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });

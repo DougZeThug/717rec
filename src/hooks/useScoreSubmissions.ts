@@ -8,6 +8,7 @@ import {
   type ScoreSubmissionWithMatch,
 } from '@/services/matches/MatchReadService';
 import { updateScoreSubmissionStatus } from '@/services/matches/MatchWriteService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { scoreSubmissionKeys } from './scoreSubmissionKeys';
@@ -126,7 +127,7 @@ export function useScoreSubmissions() {
       errorLog('Error approving submission:', error);
       toast({
         title: 'Error',
-        description: 'Failed to record the result. The submission is still pending.',
+        description: `${getUIErrorMessage(error, 'Failed to record the result')} The submission is still pending.`,
         variant: 'destructive',
       });
     },
@@ -145,7 +146,7 @@ export function useScoreSubmissions() {
       errorLog('Error rejecting submission:', error);
       toast({
         title: 'Error',
-        description: 'Failed to reject submission. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to reject submission'),
         variant: 'destructive',
       });
     },

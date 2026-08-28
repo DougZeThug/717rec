@@ -384,7 +384,10 @@ describe('useMatchReactions', () => {
     });
 
     expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Error', description: 'Failed to update reaction' })
+      expect.objectContaining({
+        title: 'Error',
+        description: 'Failed to update reaction. Please try again.',
+      })
     );
   });
 });

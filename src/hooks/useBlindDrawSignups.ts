@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
 import { BlindDrawService } from '@/services/BlindDrawService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 // Fetch signup count for public display (no auth required)
@@ -41,7 +42,7 @@ export const useAddBlindDrawSignup = () => {
       errorLog('Signup error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to sign up. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to sign up'),
         variant: 'destructive',
       });
     },
@@ -66,7 +67,7 @@ export const useDeleteBlindDrawSignup = () => {
       errorLog('Delete error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to remove signup',
+        description: getUIErrorMessage(error, 'Failed to remove signup'),
         variant: 'destructive',
       });
     },
@@ -91,7 +92,7 @@ export const useClearBlindDrawSignups = () => {
       errorLog('Clear error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to clear signups',
+        description: getUIErrorMessage(error, 'Failed to clear signups'),
         variant: 'destructive',
       });
     },

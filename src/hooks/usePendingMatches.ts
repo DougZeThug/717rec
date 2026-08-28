@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/useToast';
 import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
 import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
@@ -30,7 +31,7 @@ export function usePendingMatches() {
         errorLog('Error fetching pending matches:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load pending matches. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to load pending matches'),
           variant: 'destructive',
         });
         throw error;
@@ -52,7 +53,7 @@ export function usePendingMatches() {
         errorLog('Error fetching teams:', error);
         toast({
           title: 'Error',
-          description: 'Failed to load teams. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to load teams'),
           variant: 'destructive',
         });
         throw error;
@@ -109,7 +110,7 @@ export function usePendingMatches() {
       errorLog('Error approving result:', error);
       toast({
         title: 'Error',
-        description: 'Failed to approve result. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to approve result'),
         variant: 'destructive',
       });
     },
@@ -133,7 +134,7 @@ export function usePendingMatches() {
       errorLog('Error confirming tie:', error);
       toast({
         title: 'Error',
-        description: 'Failed to confirm the tie. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to confirm the tie'),
         variant: 'destructive',
       });
     },

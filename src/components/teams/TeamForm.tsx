@@ -25,6 +25,7 @@ import {
 import { useDivisions } from '@/hooks/useDivisions';
 import { useToast } from '@/hooks/useToast';
 import { Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { uploadTeamImage } from '@/utils/imageUpload';
 import { errorLog } from '@/utils/logger';
 
@@ -103,7 +104,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
       errorLog('Upload error:', error);
       toast({
         title: 'Image Upload Failed',
-        description: 'Could not upload the image. Please try again with a different image.',
+        description: getUIErrorMessage(error, 'Could not upload the image'),
         variant: 'destructive',
       });
     } finally {
