@@ -6880,6 +6880,10 @@ export type Database = {
         Args: { p_loser_id: string; p_winner_id: string }
         Returns: Json
       }
+      award_season_placement_badges: {
+        Args: { p_season_id: string }
+        Returns: number
+      }
       award_streak_badges: { Args: { p_team_id: string }; Returns: Json }
       batch_update_team_seeds: { Args: { p_updates: Json }; Returns: Json }
       calculate_career_power_score: {
@@ -7179,6 +7183,7 @@ export type Database = {
         }
         Returns: Json
       }
+      rotate_season_badges: { Args: { p_season_id: string }; Returns: number }
       seasons_rls_drift: {
         Args: never
         Returns: {
