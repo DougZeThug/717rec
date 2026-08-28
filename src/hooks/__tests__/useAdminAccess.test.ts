@@ -62,6 +62,18 @@ describe('useAdminAccess', () => {
     expect(result.current.isAdminAccessGranted).toBe(false);
   });
 
+  it('does not report accessCheckFailed when a usable profile did load', () => {
+    // On a reload the bootstrap and the INITIAL_SESSION listener both fetch.
+    // One can succeed and the other fail, leaving the flag set next to a good
+    // profile — that must not hide the dashboard behind the retry card.
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeAuth({ profile: { is_admin: true }, profileLoadFailed: true })
+    );
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.accessCheckFailed).toBe(false);
+    expect(result.current.isAdminAccessGranted).toBe(true);
+  });
+
   it('does not report accessCheckFailed when the profile simply says not admin', () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
       makeAuth({ profile: { is_admin: false }, profileLoadFailed: false })

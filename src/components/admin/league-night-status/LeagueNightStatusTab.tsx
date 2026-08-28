@@ -237,7 +237,7 @@ const LeagueNightStatusTab: React.FC = () => {
           />
           <QueueTile
             label="Contact inbox"
-            count={countsQuery.data?.newContactRequests ?? 0}
+            count={countsQuery.data?.newInboxMessages ?? 0}
             icon={Mail}
             loading={countsQuery.isLoading}
             onClick={goToTab('contact-inbox')}

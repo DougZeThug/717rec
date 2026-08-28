@@ -98,16 +98,37 @@ describe('OpsHealthService.fetchPendingOpsCounts', () => {
     }),
   });
 
-  it('aggregates counts from all three tables', async () => {
+  it('aggregates counts from all four tables and sums the inbox', async () => {
     mockFrom
       .mockReturnValueOnce(chain(2))
       .mockReturnValueOnce(chain(5))
-      .mockReturnValueOnce(chain(1));
+      .mockReturnValueOnce(chain(1))
+      .mockReturnValueOnce(chain(3));
 
     expect(await OpsHealthService.fetchPendingOpsCounts()).toEqual({
       pendingScoreSubmissions: 2,
       pendingTeamRequests: 5,
       newContactRequests: 1,
+      newSupportTickets: 3,
+      // The Contact Inbox lists both sources, so its tile counts both.
+      newInboxMessages: 4,
+    });
+  });
+
+  it('counts the inbox as contact requests alone when support tickets are unavailable', async () => {
+    // countNew() yields 0 when the support_tickets migration is not applied.
+    mockFrom
+      .mockReturnValueOnce(chain(2))
+      .mockReturnValueOnce(chain(5))
+      .mockReturnValueOnce(chain(1))
+      .mockReturnValueOnce(chain(null, { ...pgError(), code: '42P01' }));
+
+    expect(await OpsHealthService.fetchPendingOpsCounts()).toEqual({
+      pendingScoreSubmissions: 2,
+      pendingTeamRequests: 5,
+      newContactRequests: 1,
+      newSupportTickets: 0,
+      newInboxMessages: 1,
     });
   });
 
@@ -115,17 +136,21 @@ describe('OpsHealthService.fetchPendingOpsCounts', () => {
     mockFrom
       .mockReturnValueOnce(chain(null))
       .mockReturnValueOnce(chain(null))
+      .mockReturnValueOnce(chain(null))
       .mockReturnValueOnce(chain(null));
     expect(await OpsHealthService.fetchPendingOpsCounts()).toEqual({
       pendingScoreSubmissions: 0,
       pendingTeamRequests: 0,
       newContactRequests: 0,
+      newSupportTickets: 0,
+      newInboxMessages: 0,
     });
   });
 
   it('throws DatabaseError if any query errors', async () => {
     mockFrom
       .mockReturnValueOnce(chain(null, pgError()))
+      .mockReturnValueOnce(chain(0))
       .mockReturnValueOnce(chain(0))
       .mockReturnValueOnce(chain(0));
     await expect(OpsHealthService.fetchPendingOpsCounts()).rejects.toThrow(DatabaseError);

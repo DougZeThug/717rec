@@ -105,6 +105,46 @@ describe('SupportTicketService', () => {
     });
   });
 
+  describe('countNew', () => {
+    const countChain = (result: { count: number | null; error: unknown }) => {
+      const eq = vi.fn().mockResolvedValue(result);
+      const select = vi.fn().mockReturnValue({ eq });
+      return { select, eq };
+    };
+
+    it('counts unresolved tickets with a head-only query', async () => {
+      const chain = countChain({ count: 3, error: null });
+      mockFrom.mockReturnValue({ select: chain.select });
+
+      await expect(SupportTicketService.countNew()).resolves.toBe(3);
+      expect(mockFrom).toHaveBeenCalledWith('support_tickets');
+      expect(chain.select).toHaveBeenCalledWith('id', { count: 'exact', head: true });
+      expect(chain.eq).toHaveBeenCalledWith('status', 'new');
+    });
+
+    it('coerces a null count to 0', async () => {
+      mockFrom.mockReturnValue({ select: countChain({ count: null, error: null }).select });
+      await expect(SupportTicketService.countNew()).resolves.toBe(0);
+    });
+
+    it.each(['PGRST205', '42P01'])(
+      'returns 0 when the migration is not applied (%s)',
+      async (code) => {
+        mockFrom.mockReturnValue({
+          select: countChain({ count: null, error: pgError('missing table', code) }).select,
+        });
+        await expect(SupportTicketService.countNew()).resolves.toBe(0);
+      }
+    );
+
+    it('throws a DatabaseError for any other failure', async () => {
+      mockFrom.mockReturnValue({
+        select: countChain({ count: null, error: pgError('denied', '42501') }).select,
+      });
+      await expect(SupportTicketService.countNew()).rejects.toBeInstanceOf(DatabaseError);
+    });
+  });
+
   describe('markResolved', () => {
     it('sets status to resolved for the given id', async () => {
       const chain = updateChain({ error: null });

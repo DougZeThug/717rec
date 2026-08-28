@@ -27,12 +27,23 @@ export interface SupportTicketRow {
 // Remove it (and use supabase.from directly with Tables<'support_tickets'>)
 // once types.ts includes support_tickets.
 type UntypedFrom = (table: string) => {
-  select: (columns: string) => {
-    order: (
-      column: string,
-      opts: { ascending: boolean }
-    ) => {
-      limit: (n: number) => PromiseLike<{ data: unknown; error: PostgrestError | null }>;
+  select: {
+    (columns: string): {
+      order: (
+        column: string,
+        opts: { ascending: boolean }
+      ) => {
+        limit: (n: number) => PromiseLike<{ data: unknown; error: PostgrestError | null }>;
+      };
+    };
+    (
+      columns: string,
+      opts: { count: 'exact'; head: true }
+    ): {
+      eq: (
+        column: string,
+        value: string
+      ) => PromiseLike<{ count: number | null; error: PostgrestError | null }>;
     };
   };
   update: (values: Record<string, unknown>) => {
@@ -65,6 +76,23 @@ export const SupportTicketService = {
       handleDatabaseError(error, 'Failed to fetch support tickets');
     }
     return (data ?? []) as SupportTicketRow[];
+  },
+
+  /**
+   * How many tickets are still unresolved. Used by the ops-health tile that
+   * links to the Contact Inbox, which lists tickets alongside contact
+   * requests. Returns 0, not an error, when the migration is not applied.
+   */
+  countNew: async (): Promise<number> => {
+    const { count, error } = await untypedFrom('support_tickets')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'new');
+
+    if (error) {
+      if (NOT_APPLIED_CODES.includes(error.code)) return 0;
+      handleDatabaseError(error, 'Failed to count new support tickets');
+    }
+    return count ?? 0;
   },
 
   markResolved: async (id: string): Promise<void> => {

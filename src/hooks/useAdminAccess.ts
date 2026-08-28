@@ -22,7 +22,12 @@ export const useAdminAccess = () => {
   // A failed profile read leaves `profile` null, which is NOT the same as a
   // profile that says is_admin: false. Callers must be able to tell them apart
   // so a dropped request never reads as "you are not an admin".
-  const accessCheckFailed = authInitialized && !!user && profileLoadFailed;
+  //
+  // `!profile` matters: on a reload the bootstrap and the INITIAL_SESSION
+  // listener both fetch, so one can succeed while the other fails and leaves
+  // the flag set. If a usable profile did load, we can answer the admin
+  // question and there is nothing to report as failed.
+  const accessCheckFailed = authInitialized && !!user && profileLoadFailed && !profile;
 
   // Log state changes for debugging (dev-only via logger)
   useEffect(() => {

@@ -81,6 +81,8 @@ describe('usePendingOpsCounts', () => {
       pendingScoreSubmissions: 1,
       pendingTeamRequests: 2,
       newContactRequests: 3,
+      newSupportTickets: 4,
+      newInboxMessages: 7,
     });
     const { result } = renderHook(() => usePendingOpsCounts(), { wrapper });
     await waitFor(() => expect(result.current.data?.pendingTeamRequests).toBe(2));

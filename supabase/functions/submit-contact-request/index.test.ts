@@ -339,3 +339,43 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: 'does not hang the response when the email send stalls',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  async fn() {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    const originalStub = globalThis.fetch;
+    stubFetch({ insertOk: true });
+    const afterInsert = globalThis.fetch;
+    // Resend accepts the connection and then never answers. Without a bounded
+    // wait this holds the response open until the client gives up and retries,
+    // duplicating a request already stored.
+    globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString();
+      if (url.includes('api.resend.com')) {
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener('abort', () =>
+            reject(new DOMException('timed out', 'TimeoutError'))
+          );
+        });
+      }
+      return afterInsert(input, init);
+    }) as typeof fetch;
+
+    try {
+      const res = await handleRequest(makeReq(validPayload));
+      assertEquals(res.status, 200);
+      const body = await res.json();
+      assertEquals(body.success, true);
+      assertEquals(body.emailed, false);
+    } finally {
+      globalThis.fetch = originalStub;
+      Deno.env.delete('RESEND_API_KEY');
+      restoreFetch();
+      reset();
+    }
+  },
+});

@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { SupportTicketService } from '@/services/support/SupportTicketService';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 export interface LastPowerSnapshot {
@@ -12,7 +13,15 @@ export interface LastPowerSnapshot {
 export interface PendingOpsCounts {
   pendingScoreSubmissions: number;
   pendingTeamRequests: number;
+  /** Unresolved league requests from the home page panel. */
   newContactRequests: number;
+  /** Unresolved support tickets from /contact. */
+  newSupportTickets: number;
+  /**
+   * Everything unresolved in the admin Contact Inbox. The inbox lists both
+   * sources, so the tile that links to it must count both.
+   */
+  newInboxMessages: number;
 }
 
 export const OpsHealthService = {
@@ -46,7 +55,7 @@ export const OpsHealthService = {
   },
 
   fetchPendingOpsCounts: async (): Promise<PendingOpsCounts> => {
-    const [ss, tr, cr] = await Promise.all([
+    const [ss, tr, cr, st] = await Promise.all([
       supabase
         .from('score_submissions')
         .select('id', { count: 'exact', head: true })
@@ -59,16 +68,23 @@ export const OpsHealthService = {
         .from('contact_requests')
         .select('id', { count: 'exact', head: true })
         .eq('status', 'new'),
+      // Owns the untyped binding for a table missing from the generated types,
+      // and yields 0 rather than throwing when the migration is not applied.
+      SupportTicketService.countNew(),
     ]);
 
     if (ss.error) handleDatabaseError(ss.error, 'Failed to count pending score submissions');
     if (tr.error) handleDatabaseError(tr.error, 'Failed to count pending team requests');
     if (cr.error) handleDatabaseError(cr.error, 'Failed to count new contact requests');
 
+    const newContactRequests = cr.count ?? 0;
+
     return {
       pendingScoreSubmissions: ss.count ?? 0,
       pendingTeamRequests: tr.count ?? 0,
-      newContactRequests: cr.count ?? 0,
+      newContactRequests,
+      newSupportTickets: st,
+      newInboxMessages: newContactRequests + st,
     };
   },
 };

@@ -16,6 +16,14 @@ export const FROM_ADDRESS = 'noreply@717rec.com';
 /** Default display name on the From header. Callers may pass their own. */
 const DEFAULT_FROM = `717REC <${FROM_ADDRESS}>`;
 
+/**
+ * Hard ceiling on the send. Callers await this on the response path after the
+ * message is already stored, so a Resend connection that *stalls* rather than
+ * rejecting would otherwise hold the response open until the client times out
+ * — and a client retry duplicates a request we already kept.
+ */
+const SEND_TIMEOUT_MS = 5_000;
+
 export function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -49,6 +57,8 @@ export interface AdminEmailInput {
   replyTo?: string;
   /** Full From header. Defaults to `717REC <noreply@717rec.com>`. */
   from?: string;
+  /** Abort the send after this long. Defaults to 5s. */
+  timeoutMs?: number;
   /** Log prefix, e.g. "[Support]" or "[ContactRequest]". */
   logLabel: string;
 }
@@ -63,6 +73,7 @@ export async function sendAdminEmail({
   html,
   replyTo,
   from = DEFAULT_FROM,
+  timeoutMs = SEND_TIMEOUT_MS,
   logLabel,
 }: AdminEmailInput): Promise<boolean> {
   const apiKey = Deno.env.get('RESEND_API_KEY');
@@ -85,6 +96,9 @@ export async function sendAdminEmail({
         subject,
         html,
       }),
+      // Rejects with a TimeoutError on a stall, caught below like any other
+      // network failure.
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
     if (response.ok) {
@@ -100,7 +114,11 @@ export async function sendAdminEmail({
     // A network-level failure (fetch rejects, body parse throws) must NOT bubble
     // up: the caller has usually already stored the message durably, and a 500
     // here would make the client retry and duplicate it.
-    console.error(`${logLabel} Resend request failed:`, err instanceof Error ? err.message : err);
+    const isTimeout = err instanceof DOMException && err.name === 'TimeoutError';
+    console.error(
+      `${logLabel} Resend request ${isTimeout ? `timed out after ${timeoutMs}ms` : 'failed'}:`,
+      err instanceof Error ? err.message : err
+    );
     return false;
   }
 }
