@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth-context';
@@ -69,6 +70,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<NotificationRow | null>(null);
 
   const editing = useMemo(
     () => (editingId ? (notifications.find((n) => n.id === editingId) ?? null) : null),
@@ -88,6 +90,11 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
       });
     }
   }, [editingId, editing]);
+
+  const handleConfirmDelete = () => {
+    if (!pendingDelete) return;
+    del.mutate(pendingDelete.id, { onSettled: () => setPendingDelete(null) });
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -223,7 +230,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
                     variant="ghost"
                     size="icon"
                     className="size-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => del.mutate(n.id)}
+                    onClick={() => setPendingDelete(n)}
                     disabled={del.isPending}
                     aria-label="Delete notification"
                   >
@@ -235,6 +242,20 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={() => setPendingDelete(null)}
+        title="Delete this notification?"
+        description={
+          <>
+            <strong>{pendingDelete?.title}</strong> will be removed from the notification bell for
+            everyone in the league. This cannot be undone.
+          </>
+        }
+        onConfirm={handleConfirmDelete}
+        isPending={del.isPending}
+      />
     </div>
   );
 };

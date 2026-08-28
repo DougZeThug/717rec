@@ -83,6 +83,37 @@ describe('NotificationsAdmin', () => {
     mockUseContactRequests.mockReturnValue({ data: [], isLoading: false });
   });
 
+  it('asks before deleting a notification, and does nothing until confirmed', async () => {
+    const user = userEvent.setup();
+    mockUseNotificationsQuery.mockReturnValue({
+      data: [makeNotification('n-1', 'Rain delay', 'Week 3 is postponed')],
+      isLoading: false,
+    });
+    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+
+    await user.click(await screen.findByRole('button', { name: /delete notification/i }));
+
+    expect(mockDeleteMutate).not.toHaveBeenCalled();
+    expect(screen.getByText('Delete this notification?')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^delete$/i }));
+    expect(mockDeleteMutate).toHaveBeenCalledWith('n-1', expect.anything());
+  });
+
+  it('deletes nothing when the prompt is cancelled', async () => {
+    const user = userEvent.setup();
+    mockUseNotificationsQuery.mockReturnValue({
+      data: [makeNotification('n-1', 'Rain delay', 'Week 3 is postponed')],
+      isLoading: false,
+    });
+    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+
+    await user.click(await screen.findByRole('button', { name: /delete notification/i }));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(mockDeleteMutate).not.toHaveBeenCalled();
+  });
+
   it('exits edit mode and clears fields when the edited notification is deleted', async () => {
     const user = userEvent.setup();
     const notification = makeNotification('n-1', 'Old title', 'Old body');
