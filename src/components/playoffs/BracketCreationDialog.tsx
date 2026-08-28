@@ -181,11 +181,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
         bracketLog('Data refresh completed');
 
-        toast({
-          title: 'Data Refreshed',
-          description: 'Bracket data has been updated. Your new bracket should now be visible.',
-        });
-
+        // No toast here: it would land on top of "Bracket Created Successfully"
+        // a moment after it appears, and the dialog navigates away 1s later.
         setTimeout(() => {
           navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
         }, 1000);

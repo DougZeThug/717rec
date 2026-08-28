@@ -3,8 +3,12 @@ import * as React from 'react';
 import type { ToastActionElement, ToastProps } from '@/components/ui/toast';
 import { assertNever } from '@/utils/assertNever';
 
-const TOAST_LIMIT = 1;
-const TOAST_REMOVE_DELAY = 1000000;
+// Radix closes a toast on its own after ~5s (Toaster sets no `duration`), which
+// only flips `open: false` — TOAST_REMOVE_DELAY is how long the closed toast
+// then lingers in state before it is spliced out. Keep it just long enough for
+// the exit animation: a long delay leaves invisible toasts occupying the limit.
+const TOAST_LIMIT = 3;
+const TOAST_REMOVE_DELAY = 1000;
 
 type ToasterToast = ToastProps & {
   id: string;
