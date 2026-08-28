@@ -21,9 +21,12 @@ never results the match. The app reports success and the league's data does not
 change the way the admin was told it had.
 
 **Work that is silently lost.** A decided live match that is never saved counts
-for nothing and nothing anywhere surfaces it. Two are now **fixed**: a second
-membership row used to take away every ability a member has, see B-07, and a
-failed round save used to discard what the scorer tapped, see B-05.
+for nothing and nothing anywhere surfaces it. Four are now **fixed**: a second
+membership row used to take away every ability a member has, see B-07; a
+failed round save used to discard what the scorer tapped, see B-05; a match
+scored live earned no badges at all, see B-32; and closing a season switched off
+every badge in the league while never awarding six of the twenty types, see
+B-33.
 
 One entry has since been **cleared**: B-06 claimed head-to-head win
 percentages were a 0–1 fraction printed as a percentage. Checked against the
@@ -54,8 +57,8 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-08 | A failed profile read silently demotes an admin | high | foundations | **fixed** | — |
 | B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
 | B-10 | Two contact channels, neither aware of the other | high | help, admin | **fixed** | — |
-| B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
-| B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
+| B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | **fixed** |
+| B-33 | Six of the twenty badge types can never be awarded | high | stats | fix | **fixed** |
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
 | B-11 | Six destructive admin actions have no confirmation | medium | admin | fix | — |
@@ -525,49 +528,97 @@ finding read a superseded migration.
 
 ### B-32: Live-scored matches award no badges
 
+- **Status:** **fixed**. Badge processing now runs in the database, in the same
+  transaction as the result, on every path that results a match.
 - **Where the user meets it:** a team plays a match, it is scored live, the
   result is saved, and no badge is earned from it. The same match reported
   through the ordinary score path would have earned one.
-- **What happens / what was expected:** badge processing runs on one of the two
-  paths that result a match and not the other. Two teams playing the same fixture
-  therefore end the season with different badges depending on how their score
+- **What happens / what was expected:** badge processing ran on one of the paths
+  that result a match and not the others. Two teams playing the same fixture
+  therefore ended the season with different badges depending on how their score
   reached the league — which is invisible to them and unrelated to how they
-  played. Expected: both paths award the same badges.
+  played. Expected: every path awards the same badges.
 - **Reproduce:** 1. Score a match live to a result that should earn a streak
   badge. 2. Save the official result. 3. Open the team's page and look at its
   badges. 4. Compare with a team that earned the same pattern through a reported
   score.
-- **Why (from the code):** the ordinary path calls `BadgeProcessingService`
-  explicitly (`src/hooks/matches/utils/matchDatabaseUtils.ts:1,78`). The live
-  path goes through the `finalize_live_match` routine
-  (`supabase/migrations/20260709120308_*.sql`), which contains no badge call at
-  all. As live scoring becomes the normal way to score, badges quietly stop being
-  awarded.
-- **Severity:** `high`. It is silently wrong, it worsens as the league adopts
-  live scoring, and nothing surfaces it.
-- **Decision needed:** `fix`. Call the same badge processing from the finalise
-  routine.
+- **Why (from the code):** badge processing lived entirely in the browser.
+  `matchDatabaseUtils.ts` fired fourteen sequential RPCs after a score was
+  reported; `finalize_live_match` never went near that code, and neither did
+  `approve_match_result`. Nothing on the server made up the difference: no
+  trigger on `matches` awarded badges, and `resubmit_match_result` had no badge
+  logic of its own.
+- **Worse than first written.** Most badges are recomputed from a team's whole
+  season history, so they silently self-correct the next time that team is
+  scored the ordinary way — which made the bug intermittent rather than
+  permanent, and harder to spot. **King Slayer is the exception**: it judges one
+  specific pairing and is never re-derived, so a giant-killing scored live was
+  lost for good.
+- **Three paths, not two.** The entry named the live path and the ordinary path.
+  `approve_match_result` — approving a submitted score report — was a third with
+  the same gap.
+- **Severity:** `high`. It was silently wrong, it worsened as the league adopted
+  live scoring, and nothing surfaced it.
+- **Decision needed:** `fix`. **Done** — `process_all_match_badges(match_id)` is
+  one shared rulebook called by `finalize_live_match`, `resubmit_match_result`
+  and `approve_match_result`. It calls the existing `award_*` functions, so no
+  badge rule was reimplemented, and each check is trapped on its own so a failing
+  badge check can never roll back a saved result. The fourteen browser calls are
+  gone, which also fixes badges being lost when a scorer closed the tab
+  mid-loop. A separate migration replays the King Slayer badges that were lost.
+- **Follow-up, also done.** King Slayer was the one check that judged a single
+  pairing rather than recomputing from history, which made it the only badge a
+  voided result could strand — nothing could tell it was stale, because the badge
+  records no match. It is now a history recompute like every other check, so
+  every check in the rulebook is team-scoped, and **reopening a match or marking
+  one a tie re-runs them**. That also fixes a second fault: a later narrow win
+  used to revoke a badge an earlier giant-killing had earned, because whichever
+  match ran last decided the outcome.
 - **Raised by:** [`stats/badges.md`](stats/badges.md#open-questions-and-verification),
   [`live-scoring/finish-the-match.md`](live-scoring/finish-the-match.md#open-questions-and-verification).
 
-### B-33: Nine of the twenty badge types can never be awarded
+### B-33: Six of the twenty badge types can never be awarded
 
+- **Status:** **fixed**. The original entry's **title was wrong**: it said nine,
+  and its own body said six. Six is right — nine is the number of *placement*
+  types, and three of those, the champions, were always written.
 - **Where the user meets it:** a team that finishes second or third in its
   division never receives a badge for it.
-- **What happens / what was expected:** the badge types exist — runner-up and
-  third place, in each of the three divisions — and nothing writes six of them.
-  Third place has never had a writer at all. Archiving a season writes champions
+- **What happens / what was expected:** the badge types exist — Runner-Up and
+  Third Place, in each of the three divisions — and nothing wrote those six.
+  Third place had never had a writer at all. Closing a season wrote champions
   only. Expected: the badges the product defines are the badges it can award.
 - **Why (from the code):** `badge_type` in
-  `src/integrations/supabase/types.ts:7218` defines twenty. `archive_season`
-  (`supabase/migrations/20260617142402_*.sql:256`) writes champion badges and no
-  others. The same routine also **deactivates every active badge league-wide,
-  with no season filter**, which is a second defect in one line.
-- **Severity:** `high`. Teams are denied recognition the product says it gives,
-  and the unfiltered deactivation can strip badges from seasons that were not
-  being archived.
-- **Decision needed:** `fix`. Write the placing badges from the final standings,
-  and scope the deactivation to the season being archived.
+  `src/integrations/supabase/types.ts:7221` defines twenty. The badge block in
+  `archive_season` (`supabase/migrations/20260617142402_*.sql:256`) wrote champion
+  badges and no others. The same routine also **deactivated every active badge
+  league-wide, with no season filter and no team filter**, which is a second
+  defect in one statement.
+- **Two routines, not one.** The entry named only `archive_season`.
+  `finalize_playoffs` (`supabase/migrations/20260427150212_*.sql:300`) — the
+  modern playoff-close path, and so the more important of the two — carried a
+  byte-identical copy of both defects.
+- **The deactivation was worse than described.** Every read path
+  (`get_team_badges`, `get_all_team_badges`, `get_season_badges`) filters
+  `is_active = true`, so closing one season hid **every previous season's
+  championship badge** from every screen.
+- **The fix was nearly free.** Both routines already work out second and third
+  place a few lines earlier and store them in `team_season_stats`, together with
+  the bracket's own division name. The badge block simply ignored them.
+- **Severity:** `high`. Teams were denied recognition the product says it gives,
+  and the unfiltered deactivation stripped badges from seasons that were not
+  being closed.
+- **Decision needed:** `fix`. **Done** — `award_season_placement_badges(season_id)`
+  writes all three placings from the stored placements, and carries the
+  `ON CONFLICT` clause the old champion INSERT lacked, so re-running a close no
+  longer raises a unique violation. `rotate_season_badges(season_id)` scopes the
+  deactivation to the season being closed and to the ten revocable types, so the
+  nine permanent placement badges are never deactivated. Both routines call the
+  two helpers, which also removes the duplicated block.
+- **Third place in a single-elimination bracket.** `playoff_rank = 3` is the
+  loser of the last losers-bracket match, and a single-elimination bracket has
+  none — two teams lose in the semi-finals and it does not separate them. No
+  third-place badge is awarded there, by decision rather than omission.
 - **Raised by:** [`stats/badges.md`](stats/badges.md#open-questions-and-verification),
   [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification).
 

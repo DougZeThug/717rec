@@ -203,8 +203,14 @@ undone."
 
 It lists five steps: refresh team season stats with final playoff results;
 auto-detect champion, runner-up and playoff ranks from the bracket; snapshot team
-details for the archive; rotate season badges and award champion badges; mark the
+details for the archive; rotate season badges and award placing badges; mark the
 season fully archived.
+
+The badge step switches off **this season's** revocable badges and writes its
+champion, runner-up and third-place badges from the bracket's final placements.
+Other seasons are untouched, and placing badges are never switched off. Third
+place is only awarded where the bracket decides one — a single-elimination
+bracket ranks nobody third.
 
 **The champion is detected, never chosen.** The dialog has no team pickers; the
 request sends no champion, no runner-up and no third place, and leaves all three
@@ -291,8 +297,9 @@ colour and text, so colour alone is never the signal.
 
 **Side effects the user can notice.** Archiving recalculates stored statistics
 across the league and those finish some time after the write, so numbers keep
-moving for a while afterwards. Finalising also rotates badges, so champion badges
-appear on team pages without anyone granting them.
+moving for a while afterwards. Finalising also rotates badges, so champion,
+runner-up and third-place badges appear on team pages without anyone granting
+them.
 
 ## Edge cases
 

@@ -11,10 +11,10 @@ nine for patterns of results, and two for streaks. Every one except a single
 hand-granted badge is computed rather than awarded by a person. Most are also
 **revoked** automatically when the pattern that earned them stops being true.
 
-Badges are season-scoped and they are wiped when a season is archived, with two
-exceptions described below. Nothing anywhere in the app lists the badges a team
-could earn, or how; the only explanation is the sentence on each badge's
-tooltip.
+The ten revocable badges are season-scoped and are switched off when their
+season is closed. The nine placing badges are permanent and survive it. Nothing
+anywhere in the app lists the badges a team could earn, or how; the only
+explanation is the sentence on each badge's tooltip.
 
 ## The simple case
 
@@ -38,8 +38,8 @@ stateDiagram-v2
     none --> earned : a match completes and the criteria are met
     earned --> none : a later match breaks the criteria (revoked)
     earned --> earned : the criteria still hold, metadata refreshed
-    earned --> wiped : the season is archived
-    wiped --> earned : a championship badge is written for the season just archived
+    earned --> wiped : the season is closed (revocable badges only)
+    earned --> earned : placing badges are permanent and survive the close
 ```
 
 ### Arrive
@@ -69,21 +69,22 @@ it into the database by hand.
 
 ### While editing
 
-Badges are computed the moment a match result is written **through score
-submission**, by the browser of whoever entered it. Fourteen separate checks run
-one after another, for both teams, immediately after the score is saved. Each
-writes or revokes one badge family.
+Badges are computed the moment a match result is written, **whichever way it was
+entered** — scored live, reported as a score, or approved from a submitted
+report. All three paths call one shared routine in the database, which runs
+eighteen checks: the same nine for each of the two teams. Every one of them
+recomputes from that team's whole season history, so none depends on which match
+triggered it.
 
-A user therefore earns a badge because somebody else's browser stayed open long
-enough. If one check fails, the failure is written to that person's own browser
-storage and the other thirteen carry on.
+The same routine runs when a result is **taken away** — a match reopened, or
+marked a tie — so a badge that a voided win earned is removed.
 
-**A match finalised through live scoring runs none of them.** That path refreshes
-the season statistics — so power score moves — and then stops. See
-[Open questions](#open-questions-and-verification).
+They run **inside the same transaction as the result**, on the server. Nothing
+depends on a browser staying open, and a check that fails cannot undo the result
+or stop the other checks.
 
-Championship badges are different: they are written when the **season is
-archived**, one per bracket, from that bracket's winner.
+Placing badges are different: they are written when the **season is closed**,
+from the final placements of each bracket.
 
 ### Submit
 
@@ -99,11 +100,17 @@ Not applicable. No user action commits a badge.
 | Recreational / Intermediate / Competitive **Runner-Up** | Second place in that division. |
 | Recreational / Intermediate / Competitive **Third Place** | Third place in that division. |
 
-Only the three **Champion** badges are written by the product today. Archiving a
-season looks at each bracket, works out its division from the bracket's name, and
-writes a champion badge for the bracket's winner. **Nothing writes a Runner-Up or
-a Third Place badge.** Those nine types exist, are drawn correctly if a row is
-created, and were populated once by hand.
+All nine are written when a season is closed. The close works out each bracket's
+final placements, and writes a badge for first, second and third from them.
+
+**Third place depends on the bracket's shape.** It is the loser of the last
+losers-bracket match, so only a double-elimination bracket produces one. A
+single-elimination bracket ranks nobody third — two teams lose in the
+semi-finals and it does not separate them — and no third-place badge is awarded
+there.
+
+The nine placing badges are **permanent**: closing a later season does not
+switch them off.
 
 An Intermediate champion or runner-up whose stored division name mentions "high"
 or "low" is renamed and recoloured — "Intermediate High Champion" in cyan,
@@ -113,7 +120,7 @@ or "low" is renamed and recoloured — "Intermediate High Champion" in cyan,
 
 | Badge | Awarded for | Revoked when |
 | --- | --- | --- |
-| **King Slayer** | Beating a team from a tougher division whose career power score is 25 or more above yours. | The same win no longer qualifies, or the opponent turns out not to be from a tougher division. |
+| **King Slayer** | Beating a team from a tougher division whose career power score is 25 or more above yours. | No win this season qualifies any more — including when the win that earned it is voided. |
 | **Clutch Performer** | Winning five or more matches 2–1 this season. | The count drops below five. |
 | **Consistent Performer** | Beating five or more different teams in your own division this season. | The count drops below five. |
 | **Ice Cold** | Your last three completed matches this season are all 2–1 wins. | The next match is anything else. |
@@ -162,8 +169,8 @@ year in the season's name.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | No effect. A visitor, a player, and an admin see identical badges. No role can grant, revoke, or hide one from inside the app. | No effect. |
-| The record's state | Only completed matches count. A pending score submission earns nothing until it is approved. Reopening a match does not re-run the badge checks. | A result completed elsewhere changes badges on the next refetch, up to five minutes later. |
-| The season's state | Every revocable badge is scoped to the active season and counts only that season's matches. Archiving a season **deactivates every badge in the league** except Cool Fun Team, then writes that season's champion badges. | A season activated elsewhere leaves a team's badges apparently intact until the archive of the old one runs, which is a separate admin action. |
+| The record's state | Only completed matches count. A pending score submission earns nothing until it is approved — approving it now runs the checks. Reopening a match, or marking one a tie, does not re-run them. | A result completed elsewhere changes badges on the next refetch, up to five minutes later. |
+| The season's state | Every revocable badge is scoped to the active season and counts only that season's matches. Closing a season switches off **that season's** revocable badges and writes its placing badges. Other seasons are untouched, and placing badges are never switched off. | A season activated elsewhere leaves a team's badges apparently intact until the close of the old one runs, which is a separate admin action. |
 | Viewport | Badges are 24px on a desktop and 32px on a phone at the smallest size, and up to 48px on a phone in the largest. A desktop gets a hover tooltip; a phone gets a tap dialog. | No effect. |
 | Keys the app honours | **None.** A badge is a `<div>`, not a button or a link. It is not in the tab order and cannot be opened from a keyboard. | None. |
 
@@ -172,21 +179,22 @@ year in the season's name.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Badges have no controls. | Escape closes a badge dialog on a phone. There is nothing else to cancel. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **If the scorer navigates away while the fourteen badge checks are running, the remaining checks never run.** The match result is already saved; the badges for it are simply not computed. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Nothing is lost. The badge checks run on the server inside the result's own transaction, so navigating away cannot interrupt them. |
 | Browser back or forward | No effect. | Same as navigating away. |
-| Reload, or the tab closed | Refetches badges. | Same: an in-flight badge check is abandoned, and the badge it would have written is never written by anything else. |
-| Network lost mid-request | Badges do not load. The team page shows its grey circles; the standings show no badges at all, which is indistinguishable from a team having none. | Each failed check is written into the scorer's own browser storage as a failed operation. **Nothing ever retries it.** |
-| The request fails or times out | As above. | As above. The scorer sees no message; badge failures are logged as warnings and never surfaced. |
-| The session expires | No effect. Badges are public to read. | The badge checks fail one by one, silently, in the same way. |
+| Reload, or the tab closed | Refetches badges. | Same: the badges are already written, or the result was not saved either. |
+| Network lost mid-request | Badges do not load. The team page shows its grey circles; the standings show no badges at all, which is indistinguishable from a team having none. | The result and its badges are written together or not at all. |
+| The request fails or times out | As above. | As above. A single badge check that fails is recorded in the routine's return value and does not disturb the result or the other checks; the scorer sees no message. |
+| The session expires | No effect. Badges are public to read. | The write is refused, so no result and no badges. |
 | The same record changed in another tab, or by another user | Not applicable before arriving. | No realtime. A badge earned by somebody else's result appears on the next refetch with no announcement. |
 | Browser autofill or a password manager writes into the form | No effect. | No effect. |
-| The window loses focus | No effect. | The badge checks keep running in a backgrounded desktop tab. A phone that suspends the tab may stop them part-way through. |
+| The window loses focus | No effect. | No effect. The checks are not running in the browser. |
 
 ## Interactions with other systems
 
 **Permissions and roles.** Reading is public. Writing is done by server functions
-that run with elevated rights, triggered by whoever completed the match — so a
-player's own browser writes badges for both teams. See
+that run with elevated rights, as part of saving the result — so completing a
+match writes badges for both teams. No client can call the badge routine
+directly. See
 [`cross-cutting/permissions.md`](../cross-cutting/permissions.md).
 
 **Season scoping.** Every revocable badge counts only the active season's
@@ -195,7 +203,7 @@ season. Placing badges are stamped with the season they were won in. See
 [`foundations/seasons.md`](../foundations/seasons.md).
 
 **Validation and error display.** Nothing to validate. A badge check that fails
-produces a console warning and a queued item, never a message to the user.
+is reported in the routine's return value and never shown to the user.
 
 **Unsaved changes.** Not applicable.
 
@@ -223,14 +231,13 @@ plain elements with no role, no label, no tab stop, and no keyboard activation,
 so their meaning is available only by hovering a mouse or tapping a touchscreen.
 A screen reader user gets an icon and nothing else.
 
-**Side effects the user can notice.** Completing a match makes fourteen extra
-requests from the scorer's browser before the save is finished, which is part of
-why finalising a match is not instant.
+**Side effects the user can notice.** Completing a match runs the badge checks
+inside the same database transaction as the result, which is part of why
+finalising a match is not instant. It is one request rather than the fifteen it
+used to be.
 
 ## Edge cases
 
-- **Nine of the twenty badge types can never be earned.** Runner-Up and Third
-  Place, in all three divisions, have no code path that writes them.
 - **A championship badge's tooltip can show the wrong year.** It uses the year
   the badge was written, which is the day the season was archived. A season
   called "Fall 2025" archived in January reads "2026".
@@ -247,12 +254,9 @@ why finalising a match is not instant.
   weights rather than the divisions at the time.
 - **Losing a match can earn a badge.** Every check runs for both teams, so a
   loser can pick up Cold Streak or Chaos Agent from the same result.
-- **How a result was entered decides whether it counts for badges.** The same
-  2–1 win earns Clutch Performer when reported as a score and earns nothing when
-  scored live.
-- **Archiving a season deactivates every active badge in the league at once**,
-  including badges belonging to teams in no bracket, and including badges earned
-  in a season that is not the one being archived.
+- **No third place in a single-elimination bracket.** Third place is the loser of
+  the last losers-bracket match, so a single-elimination bracket produces none.
+  Both semi-final losers finish level and neither gets the badge.
 - **The "+N" chip cannot be opened.** On a phone in compact view, a team with
   five badges shows one and "+4".
 - **A team page shows a friendly empty state; a standings row shows nothing.**
@@ -260,40 +264,36 @@ why finalising a match is not instant.
 
 ## Open questions and verification
 
-- **Live-scored matches never trigger any badge check.** Finalising a live match
-  refreshes season statistics and stops; the fourteen badge checks run only on
-  the score-submission path. Every badge in the product is therefore blind to
-  matches scored round by round. **May be worth treating as a bug rather than
-  documenting.**
-  [`live-scoring/finish-the-match.md`](../live-scoring/finish-the-match.md) says
-  badge processing runs when a live match is finalised. It does not, and that
-  document needs correcting.
-- **Nothing retries a failed badge operation.** Failures are written to the
-  scorer's own browser storage, where nothing reads them: the retry function
-  exists and is called only by its own test. Badges are therefore permanently
-  lost whenever a check fails. **May be worth treating as a bug rather than
-  documenting.**
-- **Badge processing depends on a browser staying open.** Fourteen sequential
-  requests run in the scorer's browser after the result is saved; navigating away
-  or closing the tab abandons the rest, and nothing on the server makes up the
-  difference. **May be worth treating as a bug rather than documenting.**
-- **Runner-Up and Third Place badges have no writer**, though nine types, nine
-  icons, and nine descriptions exist for them. **May be worth treating as a bug
-  rather than documenting.**
+- **Fixed:** live-scored matches awarded no badges. All three result paths now
+  call one shared routine in the database. See
+  [B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges).
+- **Fixed:** badge processing no longer depends on a browser staying open, and
+  there is no failed-operation queue to retry — the checks run in the same
+  transaction as the result.
+- **Fixed:** Runner-Up and Third Place now have a writer. See
+  [B-33](../bug-triage.md#b-33-six-of-the-twenty-badge-types-can-never-be-awarded).
+- **Fixed:** closing a season no longer deactivates other seasons' badges, and
+  never deactivates a placing badge.
+- **Not recovered:** a King Slayer lost on a live-scored match in a season that
+  has already been closed stays lost. The replay only covers the active season,
+  because the check stamps the badge with whichever season is active now.
+- **Fixed:** reopening a match or marking one a tie now re-runs the badge checks,
+  so a badge earned by a result that was later taken away is removed. This needed
+  King Slayer to become a history recompute like every other check — until then
+  nothing could tell that a King Slayer was stale, because the badge records no
+  match.
 - **Badges are unreachable by keyboard and unreadable by a screen reader.**
   **May be worth treating as a bug rather than documenting.**
-- **Reopening a completed match reverses its statistics but does not re-run the
-  badge checks**, so a badge earned by a result that was later corrected can
-  survive until the team plays again.
 - Not confirmed by hand: whether Cool Fun Team is still on the team it was
   granted to, and whether the league considers it a live feature.
 - Not confirmed by hand: what the placing badges actually look like on a team
   that has several seasons of them, and whether twelve is enough.
-- Not confirmed by hand: how long the fourteen badge requests take in practice
-  after a match is finalised.
+- Not confirmed by hand: how much the badge checks add to finalising a match now
+  that they run inside the result's own transaction.
 - Assumption: the badge descriptions in the app are accurate statements of the
   criteria. Two are not — Gatekeeper says "Keeps beating teams ranked above them"
   without a number, and Bully says "lower divisions" without saying how much
   lower.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`; B-32 and B-33 re-verified against the
+fixes on `claude/badge-processing-bugs-e03j2p`.

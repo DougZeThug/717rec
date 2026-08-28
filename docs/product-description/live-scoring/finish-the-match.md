@@ -217,12 +217,9 @@ the server. Because the recalculation happens after the write returns, **a user
 who looks immediately sees the match completed but the numbers not yet moved.**
 See [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
-> **Technical note:** badges are the exception and they are **not** awarded here.
-> A match resulted through the ordinary score path runs a badge check; a match
-> resulted through live scoring does not. Two teams playing the same fixture
-> therefore earn different badges depending on how the score reached the league.
-> See [`stats/badges.md`](../stats/badges.md) and
-> [B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges).
+**Badges are awarded here**, in the same transaction as the result, by the same
+routine the ordinary score path uses. Both teams' badges are recomputed. See
+[`stats/badges.md`](../stats/badges.md).
 
 ## Edge cases
 
@@ -257,10 +254,12 @@ See [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.
 - **A match resulted by an admin tool can disagree with its own rounds.** The
   review shows the recorded winner and game wins in the header and the rounds'
   totals below, and nothing reconciles them. Worth checking by hand.
-- Corrected on review: an earlier draft said badge processing runs on finalise.
-  It does not — the finalise routine contains no badge call, while the ordinary
-  score path does. Not confirmed by hand: how long standings take to reflect a
-  saved result, and whether power scores visibly lag.
+- Corrected twice on review: an earlier draft said badge processing runs on
+  finalise; at the time it did not, and that was raised as
+  [B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges). It has since
+  been fixed, so the original draft now describes the product again. Not
+  confirmed by hand: how long standings take to reflect a saved result, and
+  whether power scores visibly lag.
 - Not confirmed by hand: what the recap actually names as key game, top
   performer, and most consistent, and whether those read sensibly for a short
   match.

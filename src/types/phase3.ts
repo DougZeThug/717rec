@@ -2,7 +2,6 @@ import type {
   BracketManagerMatchWithStage,
   LegacyPlayoffMatchWithGames,
 } from '@/services/brackets/read/types';
-import type { TeamStreakRpcResult } from '@/types/badges';
 import type {
   BulkTeamSeedUpdateResult,
   BulkTeamSeedUpdateRpcResponse,
@@ -25,5 +24,3 @@ export type Phase3TeamSeedUpdateInput = TeamSeedUpdateInput;
 export type Phase3TeamSeedUpdateResult = TeamSeedUpdateResult;
 export type Phase3BulkTeamSeedUpdateResult = BulkTeamSeedUpdateResult;
 export type Phase3BulkTeamSeedUpdateRpcResponse = BulkTeamSeedUpdateRpcResponse;
-
-export type Phase3TeamStreakRpcResult = TeamStreakRpcResult;

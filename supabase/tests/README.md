@@ -82,6 +82,31 @@ so a non-zero exit code means drift was detected.
   Also seeds a playoff match: `playoff_matches` scores are `numeric` while the
   `matches` columns are `integer`, and the resulting `UNION ALL` type made the
   function raise on every call (B-39).
+- `match_badge_processing.sql` — covers `process_all_match_badges`, the shared
+  badge rulebook every result path now calls. Asserts a match finalised through
+  live scoring awards the same streak badges the ordinary score path does (B-32:
+  before the fix it awarded none), that all fifteen checks dispatch on a decided
+  match — which is what catches a mistyped function name, since the team-scoped
+  checks resolve through `EXECUTE format(...)` and a failure there would
+  otherwise be trapped into a silent no-op — and that a tie, an unfinished match
+  and an unknown match id are each reported rather than raised. It also breaks
+  one check on purpose and asserts the match result survives, the other checks
+  still run, and the failure is reported: the badge checks run inside the
+  result's own transaction, so a badge failure must never roll the result back.
+  A second block covers King Slayer, the one check that used to judge a single
+  pairing: a recreational team beats a competitive one 85 career power score
+  above it and earns the badge; a later narrow win must not revoke it (the old
+  pairing-scoped check let whichever match ran last decide); and voiding the
+  upset must take it away, which nothing could do before, because the badge
+  records no match.
+- `season_placement_badges.sql` — covers both halves of B-33. Asserts a real
+  double-elimination bracket closed with `finalize_playoffs` writes champion,
+  runner-up **and** third-place badges (only champions were written before);
+  that closing a season leaves an earlier season's championship badge active
+  while still rotating its own revocable badges (the rotation had no season
+  filter); that re-running the placement writer is idempotent (the old INSERT had
+  no `ON CONFLICT` and raised `23505`); and that nobody is awarded third place
+  when the bracket ranks nobody third, as a single-elimination bracket does not.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

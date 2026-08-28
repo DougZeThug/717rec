@@ -1,9 +1,6 @@
-import { BadgeProcessingService } from '@/services/BadgeProcessingService';
-import { FailedBadgeOperationsService } from '@/services/FailedBadgeOperationsService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
 import { resubmitMatchResult } from '@/services/matches/MatchWriteService';
-import { BadgeOperationKind as BadgeOperationType, BadgeOperationParams } from '@/types/badges';
-import { badgeLog, matchLog, warnLog } from '@/utils/logger';
+import { matchLog } from '@/utils/logger';
 
 export interface UpdateMatchScoreParams {
   matchId: string;
@@ -19,14 +16,6 @@ export interface UpdateMatchScoreResult {
   team2_id: string;
   team1Win: boolean;
 }
-
-type BadgeOperation = {
-  [K in BadgeOperationType]: {
-    type: K;
-    params: BadgeOperationParams[K];
-    execute: () => Promise<unknown>;
-  };
-}[BadgeOperationType];
 
 export const updateMatchScore = async ({
   matchId,
@@ -73,100 +62,11 @@ export const updateMatchScore = async ({
 
   matchLog('Match result submitted atomically:', data);
 
-  // Process all badges for both teams after match completion
-  // Each badge type is processed independently to avoid cascading failures
-  const badgeOperations: BadgeOperation[] = [
-    {
-      type: 'match_badges' as const,
-      params: { team1Id: team1_id, team2Id: team2_id },
-      execute: () => BadgeProcessingService.processMatchBadges(team1_id, team2_id),
-    },
-    {
-      type: 'kingslayer' as const,
-      params: { winnerId, loserId },
-      execute: () => BadgeProcessingService.processKingslayerBadge(winnerId, loserId),
-    },
-    {
-      type: 'clutch_performer' as const,
-      params: { winnerId, team1GameWins, team2GameWins },
-      execute: () =>
-        BadgeProcessingService.processClutchPerformerBadge(winnerId, team1GameWins, team2GameWins),
-    },
-    {
-      type: 'consistent_performer' as const,
-      params: { winnerId },
-      execute: () => BadgeProcessingService.processConsistentPerformerBadge(winnerId),
-    },
-    // Fun badges - processed for both teams
-    {
-      type: 'ice_cold_winner' as const,
-      params: { teamId: winnerId },
-      execute: () => BadgeProcessingService.processIceColdBadge(winnerId),
-    },
-    {
-      type: 'ice_cold_loser' as const,
-      params: { teamId: loserId },
-      execute: () => BadgeProcessingService.processIceColdBadge(loserId),
-    },
-    {
-      type: 'broom_crew_winner' as const,
-      params: { teamId: winnerId },
-      execute: () => BadgeProcessingService.processBroomCrewBadge(winnerId),
-    },
-    {
-      type: 'broom_crew_loser' as const,
-      params: { teamId: loserId },
-      execute: () => BadgeProcessingService.processBroomCrewBadge(loserId),
-    },
-    {
-      type: 'gatekeeper_winner' as const,
-      params: { teamId: winnerId },
-      execute: () => BadgeProcessingService.processGatekeeperBadge(winnerId),
-    },
-    {
-      type: 'gatekeeper_loser' as const,
-      params: { teamId: loserId },
-      execute: () => BadgeProcessingService.processGatekeeperBadge(loserId),
-    },
-    {
-      type: 'chaos_agent_winner' as const,
-      params: { teamId: winnerId },
-      execute: () => BadgeProcessingService.processChaosAgentBadge(winnerId),
-    },
-    {
-      type: 'chaos_agent_loser' as const,
-      params: { teamId: loserId },
-      execute: () => BadgeProcessingService.processChaosAgentBadge(loserId),
-    },
-    {
-      type: 'bully_winner' as const,
-      params: { teamId: winnerId },
-      execute: () => BadgeProcessingService.processBullyBadge(winnerId),
-    },
-    {
-      type: 'bully_loser' as const,
-      params: { teamId: loserId },
-      execute: () => BadgeProcessingService.processBullyBadge(loserId),
-    },
-  ];
-
-  // Process each badge operation independently
-  for (const operation of badgeOperations) {
-    try {
-      const result = await operation.execute();
-      badgeLog(`${operation.type} badge processing completed:`, result);
-    } catch (badgeError) {
-      warnLog(`${operation.type} badge processing failed:`, badgeError);
-
-      // Queue the failed operation for retry and admin notification
-      FailedBadgeOperationsService.queueFailedOperation(
-        operation.type,
-        operation.params,
-        badgeError instanceof Error ? badgeError : new Error(String(badgeError)),
-        matchId
-      );
-    }
-  }
+  // Badges are awarded by the database, inside the same transaction as the
+  // result, by process_all_match_badges(). They used to be fourteen sequential
+  // calls from here, which meant a match finalised through live scoring earned
+  // none at all and closing this tab mid-loop silently lost the rest. See
+  // migration 20260828120000_shared_match_badge_rulebook.sql.
 
   return {
     data,
