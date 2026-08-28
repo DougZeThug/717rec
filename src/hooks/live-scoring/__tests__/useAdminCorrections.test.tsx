@@ -91,7 +91,9 @@ describe('useAdminCorrections', () => {
     expect(mockSetGameWinner).toHaveBeenCalledWith('game-1', 'team-b', { team1: 18, team2: 21 });
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Could not change game winner',
-      description: 'winner rejected',
+      // The title already says what failed, so this call site passes no
+      // context. A bare Error carries nothing we can vouch for showing.
+      description: 'Something went wrong. Please try again.',
       variant: 'destructive',
     });
   });

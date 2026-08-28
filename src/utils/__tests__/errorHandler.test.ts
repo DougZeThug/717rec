@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AuthorizationError,
+  BusinessLogicError,
   DatabaseError,
+  DuplicateRoundError,
+  LiveScoringNotEnabledError,
   NotFoundError,
   ServiceError,
   ValidationError,
@@ -263,14 +266,140 @@ describe('convertErrorToString', () => {
 });
 
 describe('getUIErrorMessage', () => {
-  it('returns just the message when no context provided', () => {
-    expect(getUIErrorMessage(new Error('bad thing'))).toBe('bad thing');
+  /**
+   * Build the error the way production does. Hand-constructing a DatabaseError
+   * would put the Postgres code somewhere describeError never reads, so the
+   * test would pass while the app stayed broken.
+   */
+  const databaseErrorFrom = (partial: Partial<PostgrestError>, context: string) => {
+    try {
+      handleDatabaseError(
+        {
+          message: 'some raw postgres text',
+          details: '',
+          hint: '',
+          code: '',
+          name: 'PostgrestError',
+          ...partial,
+        } as PostgrestError,
+        context
+      );
+    } catch (error) {
+      return error;
+    }
+    throw new Error('handleDatabaseError did not throw');
+  };
+
+  describe('database errors', () => {
+    it('translates a unique violation instead of showing the raw text', () => {
+      const error = databaseErrorFrom(
+        {
+          code: '23505',
+          message: 'duplicate key value violates unique constraint "teams_slug_key"',
+        },
+        'Failed to create team'
+      );
+      expect(getUIErrorMessage(error, 'Failed to create team')).toBe(
+        'Failed to create team: That already exists. Give it a different name and try again.'
+      );
+    });
+
+    it.each([
+      ['23502', 'A required field is missing.'],
+      ['23503', "This is still linked to other records, so it can't be changed yet."],
+      ['23514', "Some of those values aren't allowed. Check the form and try again."],
+      ['42501', 'You do not have permission to do this.'],
+      ['PGRST301', 'You do not have permission to do this.'],
+      ['PGRST116', 'That record no longer exists. Refresh and try again.'],
+    ])('translates postgres code %s', (code, expected) => {
+      const error = databaseErrorFrom({ code }, 'Failed to save');
+      expect(getUIErrorMessage(error, 'Failed to save')).toBe(`Failed to save: ${expected}`);
+    });
+
+    it('falls back to a generic reason for an unmapped code', () => {
+      const error = databaseErrorFrom(
+        { code: '42P01', message: 'relation "match_rounds" does not exist' },
+        'Failed to save round'
+      );
+      expect(getUIErrorMessage(error, 'Failed to save round')).toBe(
+        'Failed to save round. Please try again.'
+      );
+    });
+
+    it('never leaks table, constraint or policy names', () => {
+      const error = databaseErrorFrom(
+        {
+          code: '',
+          message: 'new row violates row-level security policy for table "match_rounds"',
+        },
+        'Failed to save round'
+      );
+      const message = getUIErrorMessage(error, 'Failed to save round');
+      expect(message).toBe('Failed to save round: You do not have permission to do this.');
+      expect(message).not.toContain('match_rounds');
+      expect(message).not.toContain('row-level security');
+    });
+
+    it('does not mistake a "Failed to fetch" context for a network problem', () => {
+      // Most of the 300+ handleDatabaseError contexts read "Failed to fetch X".
+      // Pattern-matching the message for "fetch" would tell a user with a
+      // permission error to check their internet connection.
+      const error = databaseErrorFrom({ code: '42501', message: 'permission denied' }, 'x');
+      expect(getUIErrorMessage(error, 'Failed to fetch teams')).toBe(
+        'Failed to fetch teams: You do not have permission to do this.'
+      );
+    });
+
+    it('translates a raw PostgrestError that was never wrapped', () => {
+      const raw = {
+        message: 'duplicate key value',
+        details: '',
+        hint: '',
+        code: '23505',
+      } as PostgrestError;
+      expect(getUIErrorMessage(raw, 'Failed to create team')).toBe(
+        'Failed to create team: That already exists. Give it a different name and try again.'
+      );
+    });
   });
 
-  it('prepends context when provided', () => {
-    expect(getUIErrorMessage(new Error('bad thing'), 'Loading data')).toBe(
-      'Loading data: bad thing'
+  describe('authored errors pass through', () => {
+    it.each([
+      [new ValidationError('Name must be at least 2 characters')],
+      [new NotFoundError('Team', 'abc')],
+      [new BusinessLogicError('This match already has a result')],
+      [new DuplicateRoundError('game-1', 3)],
+      [new LiveScoringNotEnabledError()],
+    ])('keeps the message of %s', (error) => {
+      expect(getUIErrorMessage(error, 'Could not continue')).toBe(
+        `Could not continue: ${error.message}`
+      );
+    });
+
+    it('generalises an authorization error', () => {
+      expect(
+        getUIErrorMessage(new AuthorizationError('missing role admin'), 'Failed to save')
+      ).toBe('Failed to save: You do not have permission to do this.');
+    });
+  });
+
+  describe('untyped throwables stay generic', () => {
+    it.each([[new Error('boom')], ['a thrown string'], [null], [undefined], [{ nope: true }]])(
+      'does not show %s to the user',
+      (error) => {
+        expect(getUIErrorMessage(error, 'Failed to save')).toBe(
+          'Failed to save. Please try again.'
+        );
+      }
     );
+
+    it('returns a generic sentence when there is no context', () => {
+      expect(getUIErrorMessage(new Error('boom'))).toBe('Something went wrong. Please try again.');
+    });
+  });
+
+  it('returns the reason alone when no context is provided', () => {
+    expect(getUIErrorMessage(new ValidationError('Pick a date first'))).toBe('Pick a date first');
   });
 });
 

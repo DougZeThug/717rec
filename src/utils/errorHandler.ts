@@ -118,12 +118,116 @@ export function convertErrorToString(error: unknown): string | null {
   return getErrorMessage(error);
 }
 
+/** Shown whenever we have nothing safe and specific to tell the user. */
+const GENERIC_REASON = 'Something went wrong. Please try again.';
+const PERMISSION_REASON = 'You do not have permission to do this.';
+
 /**
- * Get a user-facing error message, optionally prefixed with context
+ * Postgres/PostgREST codes we can translate into something a league admin can
+ * act on. Anything not listed here stays generic: raw database text names
+ * tables, constraints and RLS policies, which must never reach a user.
+ */
+const POSTGRES_REASONS: Record<string, string> = {
+  '23505': 'That already exists. Give it a different name and try again.',
+  '23502': 'A required field is missing.',
+  '23503': "This is still linked to other records, so it can't be changed yet.",
+  '23514': "Some of those values aren't allowed. Check the form and try again.",
+  '42501': PERMISSION_REASON,
+  PGRST301: PERMISSION_REASON,
+  PGRST116: 'That record no longer exists. Refresh and try again.',
+};
+
+interface ErrorDescription {
+  /** Safe to show a user. */
+  message: string;
+  /** True when `message` says something more useful than "it failed". */
+  isSpecific: boolean;
+}
+
+/** Duck-type a raw PostgrestError, which is a plain object rather than an Error. */
+function isPostgrestErrorShape(error: unknown): error is { code?: string; message: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string' &&
+    'details' in error &&
+    'code' in error
+  );
+}
+
+/**
+ * Translate a database failure using its Postgres code.
+ *
+ * `rawMessage` is scanned only for the RLS phrase, and only here — this is the
+ * one place raw database text is in hand. Never pattern-match a DatabaseError
+ * message for words like "fetch" or "network": most contexts read
+ * "Failed to fetch ...", so that would mislabel permission errors.
+ */
+function describeDatabaseError(code: string | undefined, rawMessage: string): ErrorDescription {
+  const mapped = code ? POSTGRES_REASONS[code] : undefined;
+  if (mapped) return { message: mapped, isSpecific: true };
+
+  // Postgres writes this both hyphenated ("row-level security policy") and not,
+  // depending on the message, so match either.
+  if (/row[- ]level security/i.test(rawMessage)) {
+    return { message: PERMISSION_REASON, isSpecific: true };
+  }
+
+  return { message: GENERIC_REASON, isSpecific: false };
+}
+
+/**
+ * Reduce any thrown value to something safe to show.
+ *
+ * Class first, then the Postgres code. Note that `DatabaseError.code` is the
+ * literal 'DATABASE_ERROR' — the Postgres code lives in `details.code`, put
+ * there by handleDatabaseError. Reading `.code` here would silently classify
+ * every wrapped database error as generic.
+ *
+ * A bare Error stays generic on purpose: it may be a parse failure or a
+ * third-party throw. A service that wants its message shown should throw one
+ * of the typed errors in `@/types/errors`.
+ */
+function describeError(error: unknown): ErrorDescription {
+  if (error instanceof ServiceError) {
+    switch (error.code) {
+      case 'DATABASE_ERROR': {
+        const details = error.details as { code?: string } | undefined;
+        return describeDatabaseError(details?.code, error.message);
+      }
+      case 'UNKNOWN_ERROR':
+        // withErrorHandling wrapping an arbitrary throwable.
+        return { message: GENERIC_REASON, isSpecific: false };
+      case 'AUTHORIZATION_ERROR':
+        return { message: PERMISSION_REASON, isSpecific: true };
+      default:
+        // Every other ServiceError subclass carries an authored message
+        // written for a user: ValidationError, NotFoundError,
+        // BusinessLogicError, DuplicateRoundError and the migration guards.
+        return { message: error.message, isSpecific: true };
+    }
+  }
+
+  if (isPostgrestErrorShape(error)) {
+    return describeDatabaseError(error.code, error.message);
+  }
+
+  return { message: GENERIC_REASON, isSpecific: false };
+}
+
+/**
+ * Get a user-facing error message, optionally prefixed with context.
+ *
+ * `context` is a lead-in phrase with no terminal punctuation, e.g.
+ * 'Failed to save round'. When the reason is specific the two are joined with
+ * a colon; when it is not, the caller's phrase is used on its own so the user
+ * is not shown raw database internals.
  */
 export function getUIErrorMessage(error: unknown, context?: string): string {
-  const message = getErrorMessage(error);
-  return context ? `${context}: ${message}` : message;
+  const { message, isSpecific } = describeError(error);
+  if (!context) return message;
+  return isSpecific ? `${context}: ${message}` : `${context}. Please try again.`;
 }
 
 /**

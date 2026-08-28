@@ -1,7 +1,10 @@
+import type { PostgrestError } from '@supabase/supabase-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { usePlayoffActions } from '../usePlayoffActions';
 
@@ -84,10 +87,45 @@ describe('usePlayoffActions', () => {
 
       expect(result.current.isDeleting).toBe(false);
       expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
-      // Pins what the user actually reads, so a change to getUIErrorMessage
-      // shows up here rather than passing silently.
+      // Pins what the user actually reads. A bare Error carries nothing we can
+      // vouch for, so the caller's phrase stands on its own.
       expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ description: 'Failed to delete bracket: Delete failed' })
+        expect.objectContaining({ description: 'Failed to delete bracket. Please try again.' })
+      );
+    });
+
+    it('explains a permission failure instead of naming the table', async () => {
+      const denied = (() => {
+        try {
+          handleDatabaseError(
+            {
+              message: 'permission denied for table brackets',
+              details: '',
+              hint: '',
+              code: '42501',
+              name: 'PostgrestError',
+            } as PostgrestError,
+            'Failed to delete bracket'
+          );
+        } catch (error) {
+          return error;
+        }
+      })();
+      (deleteBracket as ReturnType<typeof vi.fn>).mockRejectedValue(denied);
+      const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });
+
+      await act(async () => {
+        try {
+          await result.current.deleteBracket('bracket-1', 'Spring Playoffs');
+        } catch {
+          // expected re-throw
+        }
+      });
+
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'Failed to delete bracket: You do not have permission to do this.',
+        })
       );
     });
 

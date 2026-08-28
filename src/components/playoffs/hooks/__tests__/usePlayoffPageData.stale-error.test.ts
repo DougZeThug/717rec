@@ -75,6 +75,8 @@ vi.mock('@/services/brackets/BracketWriteService', () => ({
   deleteBracket: vi.fn(),
 }));
 
+import { ValidationError } from '@/types/errors';
+
 import { usePlayoffPageData } from '../usePlayoffPageData';
 
 describe('usePlayoffPageData stale error state', () => {
@@ -94,7 +96,7 @@ describe('usePlayoffPageData stale error state', () => {
       await expect(result.current.refetchBrackets()).rejects.toThrow('Connection refused');
     });
 
-    expect(result.current.error).toBe('Failed to refresh data: Connection refused');
+    expect(result.current.error).toBe('Failed to refresh data. Please try again.');
 
     await act(async () => {
       await result.current.refetchBrackets();
@@ -104,23 +106,26 @@ describe('usePlayoffPageData stale error state', () => {
   });
 
   it('still reports the failure when the retry fails too', async () => {
+    // The second failure is typed so its message differs from the first: with
+    // two identical strings this test could not tell a stale error from a
+    // freshly recorded one.
     playoffDataRef.current.refetchBrackets
       .mockRejectedValueOnce(new Error('first attempt'))
-      .mockRejectedValueOnce(new Error('second attempt'));
+      .mockRejectedValueOnce(new ValidationError('Pick a division first'));
 
     const { result } = renderHook(() => usePlayoffPageData());
 
     await act(async () => {
       await expect(result.current.refetchBrackets()).rejects.toThrow('first attempt');
     });
-    expect(result.current.error).toBe('Failed to refresh data: first attempt');
+    expect(result.current.error).toBe('Failed to refresh data. Please try again.');
 
     await act(async () => {
-      await expect(result.current.refetchBrackets()).rejects.toThrow('second attempt');
+      await expect(result.current.refetchBrackets()).rejects.toThrow('Pick a division first');
     });
 
     // Clearing up front must not swallow a genuine repeat failure.
-    expect(result.current.error).toBe('Failed to refresh data: second attempt');
+    expect(result.current.error).toBe('Failed to refresh data: Pick a division first');
   });
 
   it('clears a bracket-creation failure once the retry succeeds', async () => {
@@ -137,7 +142,7 @@ describe('usePlayoffPageData stale error state', () => {
       await (result.current.handleBracketCreated() as unknown as Promise<void>);
     });
 
-    expect(result.current.error).toBe('Failed to create bracket: bracket already exists');
+    expect(result.current.error).toBe('Failed to create bracket. Please try again.');
 
     await act(async () => {
       await (result.current.handleBracketCreated() as unknown as Promise<void>);
