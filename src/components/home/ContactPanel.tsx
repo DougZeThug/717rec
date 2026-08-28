@@ -37,6 +37,32 @@ const REQUEST_TYPES: RequestTypeOption[] = [
   { value: 'other', label: 'Other', helper: '' },
 ];
 
+interface RequestTypeFieldProps {
+  value: ContactRequestType;
+  onChange: (value: ContactRequestType) => void;
+  helper?: string;
+}
+
+/** The request-type picker, with the helper line for the chosen type. */
+const RequestTypeField: React.FC<RequestTypeFieldProps> = ({ value, onChange, helper }) => (
+  <div className="md:col-span-2">
+    <Label htmlFor="request-type">Request type</Label>
+    <Select value={value} onValueChange={(v) => onChange(v as ContactRequestType)}>
+      <SelectTrigger id="request-type" className="mt-1">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {REQUEST_TYPES.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    {helper && <p className="mt-1 text-xs text-muted-foreground">{helper}</p>}
+  </div>
+);
+
 interface LockableFieldProps {
   id: string;
   label: string;
@@ -195,25 +221,7 @@ const ContactPanel: React.FC = () => {
           />
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <Label htmlFor="request-type">Request type</Label>
-              <Select
-                value={requestType}
-                onValueChange={(v) => setRequestType(v as ContactRequestType)}
-              >
-                <SelectTrigger id="request-type" className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {REQUEST_TYPES.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {activeHelper && <p className="mt-1 text-xs text-muted-foreground">{activeHelper}</p>}
-            </div>
+            <RequestTypeField value={requestType} onChange={setRequestType} helper={activeHelper} />
 
             <LockableField
               id="contact-name"

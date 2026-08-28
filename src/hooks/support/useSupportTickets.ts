@@ -16,7 +16,9 @@ export function useSupportTickets(enabled = true) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!enabled) return;
+    // `undefined`, not a bare return: the other path returns a cleanup, and
+    // mixing the two trips consistent-return.
+    if (!enabled) return undefined;
     const { dispose } = subscribeWithRetry({
       label: 'useSupportTickets',
       build: () =>
