@@ -61,11 +61,3 @@ export type TeamStreakRpcResult = {
   streak_type: string;
   streak_count: number;
 };
-
-import type {
-  BadgeOperationParams,
-  BadgeOperationType,
-} from '@/services/FailedBadgeOperationsService';
-
-export type BadgeOperationKind = BadgeOperationType;
-export type { BadgeOperationParams };
