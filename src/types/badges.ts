@@ -56,8 +56,3 @@ export interface ChampionshipBadgeMetadata {
   playoff_wins?: number;
   playoff_losses?: number;
 }
-
-export type TeamStreakRpcResult = {
-  streak_type: string;
-  streak_count: number;
-};
