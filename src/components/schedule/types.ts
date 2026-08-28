@@ -44,11 +44,3 @@ export interface ScoreSectionProps {
   setTeam2Score: (value: number | undefined) => void;
   teams: Team[];
 }
-
-export interface DateTimeSelectionProps {
-  selectedDate: Date;
-  setSelectedDate: (date: Date) => void;
-  selectedTimeSlot: string | null;
-  setSelectedTimeSlot: (timeSlot: string) => void;
-  timeSlots: string[];
-}
