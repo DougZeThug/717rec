@@ -7143,6 +7143,7 @@ export type Database = {
         Args: { p_game: number; p_sos: number; p_win: number }
         Returns: undefined
       }
+      process_all_match_badges: { Args: { p_match_id: string }; Returns: Json }
       process_match_badges: {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
