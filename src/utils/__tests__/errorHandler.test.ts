@@ -17,7 +17,6 @@ import {
   getErrorMessage,
   getUIErrorMessage,
   handleDatabaseError,
-  handleHookError,
   isDatabaseError,
   isNotFoundError,
   isServiceError,
@@ -421,64 +420,3 @@ describe('logError', () => {
   });
 });
 
-// ─── handleHookError ─────────────────────────────────────────────────────────
-
-describe('handleHookError', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('categorizes DatabaseError correctly', () => {
-    const result = handleHookError(new DatabaseError('db fail'), 'ctx');
-    expect(result.category).toBe('database');
-    expect(result.userMessage).toContain('Database operation failed');
-  });
-
-  it('categorizes ValidationError and uses the error message as userMessage', () => {
-    const result = handleHookError(new ValidationError('Username too short'), 'ctx');
-    expect(result.category).toBe('validation');
-    expect(result.userMessage).toBe('Username too short');
-  });
-
-  it('categorizes AuthorizationError correctly', () => {
-    const result = handleHookError(new AuthorizationError(), 'ctx');
-    expect(result.category).toBe('authorization');
-    expect(result.userMessage).toContain('permission');
-  });
-
-  it('categorizes NotFoundError and uses the error message as userMessage', () => {
-    const err = new NotFoundError('Team', 'abc');
-    const result = handleHookError(err, 'ctx');
-    expect(result.category).toBe('not_found');
-    expect(result.userMessage).toContain('Team');
-  });
-
-  it('categorizes network errors by message keyword', () => {
-    const result = handleHookError(new Error('network timeout'), 'ctx');
-    expect(result.category).toBe('network');
-    expect(result.userMessage).toContain('Network error');
-  });
-
-  it('categorizes fetch errors by message keyword', () => {
-    const result = handleHookError(new Error('Failed to fetch'), 'ctx');
-    expect(result.category).toBe('network');
-  });
-
-  it('categorizes unknown errors as unknown', () => {
-    const result = handleHookError(new Error('random crash'), 'ctx');
-    expect(result.category).toBe('unknown');
-    expect(result.userMessage).toContain('unexpected error');
-  });
-
-  it('always returns a message string', () => {
-    const result = handleHookError(new Error('some error'), 'ctx');
-    expect(typeof result.message).toBe('string');
-    expect(result.message.length).toBeGreaterThan(0);
-  });
-
-  it('handles non-Error throws gracefully', () => {
-    const result = handleHookError('plain string throw', 'ctx');
-    expect(result.category).toBe('unknown');
-    expect(result.message).toBe('plain string throw');
-  });
-});

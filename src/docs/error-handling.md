@@ -54,21 +54,25 @@ if (error) {
 
 Hooks are the bridge between services and components. They should:
 - Catch service errors in try/catch blocks
-- Use `useErrorHandler()` for consistent error handling
+- Use `getUIErrorMessage(error, context)` for the message shown to the user
 - Return an `error` state for components to display
 - Use `withRetry()` for retryable operations
+
+Never put `error.message` in a toast directly. A service error's message is
+built from the raw Postgres error and can name tables, constraints and RLS
+policies. `getUIErrorMessage` translates the codes we can act on and falls
+back to your `context` phrase otherwise.
 
 ```typescript
 // ✅ CORRECT
 import { useState, useCallback } from 'react';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { MyService } from '@/services/MyService';
 
 export function useMyData(id: string) {
   const [data, setData] = useState(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { handleError } = useErrorHandler();
 
   const fetchData = useCallback(async () => {
     try {
@@ -130,19 +134,23 @@ function MyComponent() {
 
 ## Utility Functions
 
-### `useErrorHandler()`
+### `getUIErrorMessage()`
 
-Reusable hook for consistent error handling:
+Turn any thrown value into a message that is safe to show:
 
 ```typescript
-const { handleError, handleErrorSilent } = useErrorHandler();
+// Reason plus your lead-in phrase (no terminal punctuation on the phrase)
+toast({ description: getUIErrorMessage(error, 'Failed to create team') });
+//  -> "Failed to create team: That already exists. Give it a different name
+//      and try again."   (a unique-constraint violation)
+//  -> "Failed to create team. Please try again."   (nothing safe to add)
 
-// With toast notification
-const errorInfo = handleError(error, 'Creating team');
-
-// Silent (logging only)
-const errorInfo = handleErrorSilent(error, 'Background sync');
+// Reason alone, when the toast title already says what failed
+toast({ title: 'Save failed', description: getUIErrorMessage(error) });
 ```
+
+A typed error from `@/types/errors` keeps its message. A bare `Error` does
+not — if a service wants its wording shown, it must throw a typed error.
 
 ### `createServiceError()`
 
