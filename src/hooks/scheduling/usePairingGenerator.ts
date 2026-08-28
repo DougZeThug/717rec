@@ -10,6 +10,7 @@ import {
 } from '@/types/autoSchedule';
 import { fetchSeasonHistoryForTeams } from '@/utils/autoSchedule/matchHistoryService';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
 import { scheduleDualBlockPairings } from './utils/dualBlockScheduler';
@@ -141,7 +142,7 @@ export const usePairingGenerator = () => {
         errorLog('Error generating match pairings:', error);
         toast({
           title: 'Error',
-          description: 'Failed to generate match pairings. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to generate match pairings'),
           variant: 'destructive',
         });
         return null;

@@ -137,7 +137,7 @@ describe('useMatchDelete', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Error',
-        description: 'Failed to delete match: rpc exploded',
+        description: 'Failed to delete match. Please try again.',
       })
     );
     expect(setIsDeleting).toHaveBeenLastCalledWith(false);
@@ -152,7 +152,7 @@ describe('useMatchDelete', () => {
     });
 
     expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ description: 'Failed to delete match: Unknown error' })
+      expect.objectContaining({ description: 'Failed to delete match. Please try again.' })
     );
   });
 });

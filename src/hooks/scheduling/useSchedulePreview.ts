@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/useToast';
 import { DualBlockConfig, PreviewResult } from '@/types/autoSchedule';
 import { createTimeBlockPairs } from '@/utils/autoSchedule/dualBlockUtils';
 import { normalizeDate } from '@/utils/dateNormalization';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog } from '@/utils/logger';
 import { withTiming } from '@/utils/performance';
 
@@ -100,7 +101,7 @@ export const useSchedulePreview = () => {
       errorLog('Error previewing schedule:', error);
       toast({
         title: 'Error',
-        description: 'Failed to preview schedule. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to preview schedule'),
         variant: 'destructive',
       });
       return null;

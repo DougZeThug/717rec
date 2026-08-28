@@ -148,7 +148,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'add failed',
+      description: 'Failed to assign timeslot. Please try again.',
       variant: 'destructive',
     });
   });
@@ -186,7 +186,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'delete failed',
+      description: 'Failed to remove timeslot. Please try again.',
       variant: 'destructive',
     });
   });
@@ -246,7 +246,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'batch failed',
+      description: 'Failed to batch assign timeslots. Please try again.',
       variant: 'destructive',
     });
   });
@@ -342,7 +342,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'double header failed',
+      description: 'Failed to batch assign double header timeslots. Please try again.',
       variant: 'destructive',
     });
   });
@@ -378,7 +378,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'bye failed',
+      description: 'Failed to assign bye week. Please try again.',
       variant: 'destructive',
     });
   });
@@ -414,7 +414,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'batch bye failed',
+      description: 'Failed to batch assign bye weeks. Please try again.',
       variant: 'destructive',
     });
   });
@@ -446,7 +446,7 @@ describe('useTimeslotMutation', () => {
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(toast).toHaveBeenCalledWith({
       title: 'Error',
-      description: 'remove bye failed',
+      description: 'Failed to remove bye week. Please try again.',
       variant: 'destructive',
     });
   });

@@ -8,6 +8,7 @@ import {
   updateMatch,
 } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
@@ -202,11 +203,10 @@ export const useMatchUpdate = ({
         setMatches(previousMatches);
       }
       invalidateAllDataQueries(queryClient);
-      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error updating match:', error);
       toast({
         title: 'Error',
-        description: `Failed to update match: ${message}`,
+        description: getUIErrorMessage(error, 'Failed to update match'),
         variant: 'destructive',
       });
       return false;

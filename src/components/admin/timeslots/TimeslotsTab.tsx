@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 const TimeslotsTab = () => {
@@ -52,7 +53,7 @@ const TimeslotsTab = () => {
       errorLog('Error assigning timeslot:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign timeslot. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign timeslot'),
         variant: 'destructive',
       });
     }
@@ -79,7 +80,7 @@ const TimeslotsTab = () => {
       errorLog('Error during batch assignment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign timeslots. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign timeslots'),
         variant: 'destructive',
       });
     }
@@ -96,7 +97,7 @@ const TimeslotsTab = () => {
       errorLog('Error during double header assignment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign double header timeslots. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign double header timeslots'),
         variant: 'destructive',
       });
     }
@@ -126,7 +127,7 @@ const TimeslotsTab = () => {
       errorLog('Error removing timeslot:', error);
       toast({
         title: 'Error',
-        description: 'Failed to remove timeslot. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to remove timeslot'),
         variant: 'destructive',
       });
     }

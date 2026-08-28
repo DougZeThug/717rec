@@ -12,6 +12,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
 import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 export default function Timeslots() {
@@ -71,7 +72,7 @@ export default function Timeslots() {
       errorLog('Error assigning timeslot:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign timeslot. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign timeslot'),
         variant: 'destructive',
       });
     }
@@ -97,7 +98,7 @@ export default function Timeslots() {
       errorLog('Error during batch assignment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign timeslots. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign timeslots'),
         variant: 'destructive',
       });
     }
@@ -126,7 +127,7 @@ export default function Timeslots() {
       errorLog('Error removing timeslot:', error);
       toast({
         title: 'Error',
-        description: 'Failed to remove timeslot. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to remove timeslot'),
         variant: 'destructive',
       });
     }

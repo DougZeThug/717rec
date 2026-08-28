@@ -21,6 +21,7 @@ import {
   logCrossBlockViolations,
   validateNoCrossBlockMatches,
 } from '@/utils/autoSchedule/validationUtils';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
 import { loadAutoScheduleState, saveAutoScheduleState } from './storage';
@@ -372,7 +373,7 @@ export const usePairingOperations = (
         errorLog('Error applying schedule:', error);
         toast({
           title: 'Error',
-          description: 'Failed to apply the generated schedule. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to apply the generated schedule'),
           variant: 'destructive',
         });
         return null;
