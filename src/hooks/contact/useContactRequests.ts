@@ -9,6 +9,7 @@ import {
   ContactRequestService,
   type SubmitContactRequestInput,
 } from '@/services/contact/ContactRequestService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const CONTACT_REQUESTS_QUERY_KEY = ['contact-requests'] as const;
 
@@ -72,12 +73,21 @@ export function useReopenContactRequest() {
   });
 }
 
-/** Mutation to permanently delete a contact request; shows an error toast on failure. */
+/** Mutation to permanently delete a contact request; toasts on success and failure. */
 export function useDeleteContactRequest() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => ContactRequestService.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY }),
-    onError: () => toast({ title: 'Failed to delete contact request', variant: 'destructive' }),
+    onSuccess: () => {
+      // Without this the row simply vanishes with no acknowledgement.
+      toast({ title: 'Message deleted' });
+      return qc.invalidateQueries({ queryKey: CONTACT_REQUESTS_QUERY_KEY });
+    },
+    onError: (error) =>
+      toast({
+        title: 'Failed to delete contact request',
+        description: getUIErrorMessage(error),
+        variant: 'destructive',
+      }),
   });
 }

@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { useAuth } from '@/contexts/auth-context';
 import {
@@ -101,6 +102,7 @@ const ContactInboxSection: React.FC = () => {
   const reopenTicket = useReopenSupportTicket();
 
   const [filter, setFilter] = useState<InboxFilter>('all');
+  const [pendingDelete, setPendingDelete] = useState<InboxItem | null>(null);
 
   const isLoading = requestsLoading || ticketsLoading;
 
@@ -157,6 +159,11 @@ const ContactInboxSection: React.FC = () => {
   const handleReopen = (item: InboxItem) => {
     if (item.source === 'support') reopenTicket.mutate(item.id);
     else reopen.mutate(item.id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!pendingDelete) return;
+    remove.mutate(pendingDelete.id, { onSettled: () => setPendingDelete(null) });
   };
 
   const resolvePending = markResolved.isPending || markTicketResolved.isPending;
@@ -300,7 +307,7 @@ const ContactInboxSection: React.FC = () => {
                         size="sm"
                         variant="ghost"
                         className="text-muted-foreground hover:text-destructive"
-                        onClick={() => remove.mutate(item.id)}
+                        onClick={() => setPendingDelete(item)}
                         disabled={remove.isPending}
                       >
                         <Trash2 className="mr-1 size-3.5" /> Delete
@@ -313,6 +320,21 @@ const ContactInboxSection: React.FC = () => {
           </ul>
         )}
       </CardContent>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={() => setPendingDelete(null)}
+        title="Delete this message?"
+        description={
+          <>
+            This permanently deletes the message from{' '}
+            <strong>{pendingDelete?.name ?? 'this sender'}</strong>. It cannot be undone, and there
+            is no copy anywhere else.
+          </>
+        }
+        onConfirm={handleConfirmDelete}
+        isPending={remove.isPending}
+      />
     </Card>
   );
 };
