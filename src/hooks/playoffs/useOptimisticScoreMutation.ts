@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { useToast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scoreLog } from '@/utils/logger';
 
 interface CachedMatchSnapshot {
@@ -268,7 +269,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       rollback(matchId);
       toast({
         title: 'Update Failed',
-        description: 'Score update failed. Please try again.',
+        description: getUIErrorMessage(error, 'Score update failed'),
         variant: 'destructive',
       });
     },
