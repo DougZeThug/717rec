@@ -112,8 +112,8 @@ so every signed-in control is still drawn; and every request fails. The user
 finds out by pressing something.
 
 There is **no offline write queue anywhere in the product**. A round entered at a
-venue with no signal is lost, not queued. A long message typed offline is lost on
-submit. See
+venue with no signal is not queued — the tapped scores stay on screen for a
+manual retry. A long message typed offline is lost on submit. See
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
 The app is installable as a home-screen app through a third-party service, which
