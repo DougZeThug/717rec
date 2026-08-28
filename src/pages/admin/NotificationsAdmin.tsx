@@ -16,6 +16,7 @@ import { useNotificationsQuery } from '@/hooks/notifications/useNotificationsQue
 import { useNotificationsRealtime } from '@/hooks/notifications/useNotificationsRealtime';
 import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
 const getCurrentTimeMs = () => Date.now();
@@ -107,7 +108,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
     } catch (err) {
       toast({
         title: 'Save failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getUIErrorMessage(err),
         variant: 'destructive',
       });
     }

@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 /**
@@ -44,7 +45,7 @@ export function useRepairBracket(bracketId: string | undefined) {
       errorLog('Bracket repair failed:', error);
       toast({
         title: 'Bracket repair failed',
-        description: error instanceof Error ? error.message : 'An unexpected error occurred.',
+        description: getUIErrorMessage(error),
         variant: 'destructive',
       });
     } finally {

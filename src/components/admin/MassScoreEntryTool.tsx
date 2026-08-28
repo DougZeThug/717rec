@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { invalidateAllDataQueries } from '@/hooks/matches/updates/utils/queryInvalidation';
 import { useToast } from '@/hooks/useToast';
 import { deleteMatchWithStatsReversal } from '@/services/matches/MatchWriteService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import AdminSectionWrapper from './AdminSectionWrapper';
@@ -68,7 +69,7 @@ const MassScoreEntryTool: React.FC = () => {
       errorLog('Failed to delete match:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete match. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to delete match'),
         variant: 'destructive',
       });
     } finally {

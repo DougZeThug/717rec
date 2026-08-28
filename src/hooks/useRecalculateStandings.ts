@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 /**
@@ -42,7 +43,10 @@ export function useRecalculateStandings(bracketId: string | undefined) {
       errorLog('Manual standings recalculation failed:', error);
       toast({
         title: 'Could not calculate standings yet',
-        description: 'An unexpected error occurred. Check logs for details.',
+        description: getUIErrorMessage(
+          error,
+          'An unexpected error occurred. Check logs for details'
+        ),
         variant: 'destructive',
       });
     } finally {

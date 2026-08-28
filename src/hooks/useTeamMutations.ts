@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
 import { createTeamApi, deleteTeamApi, updateTeamApi } from '@/services/TeamService';
 import { Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 type TeamInput = Omit<Team, 'id' | 'created_at'>;
@@ -31,7 +32,7 @@ export function useTeamMutations() {
       errorLog('Error creating team:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create team. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to create team'),
         variant: 'destructive',
       });
     },

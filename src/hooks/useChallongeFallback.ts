@@ -5,6 +5,7 @@ import {
   ChallongeFallbackBracketInput,
   ChallongeFallbackService,
 } from '@/services/ChallongeFallbackService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const CONFIG_KEY = ['challonge-fallback', 'config'];
 const BRACKETS_KEY = ['challonge-fallback', 'brackets'];
@@ -34,7 +35,7 @@ export const useChallongeFallbackMutations = () => {
   const onError = (action: string) => (error: Error) =>
     toast({
       title: 'Error',
-      description: `Failed to ${action}: ${error.message}`,
+      description: getUIErrorMessage(error, `Failed to ${action}`),
       variant: 'destructive',
     });
 

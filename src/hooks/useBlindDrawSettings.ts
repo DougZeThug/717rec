@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
 import { BlindDrawService } from '@/services/BlindDrawService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 /** Fetches blind-draw signup settings, cached for 5 minutes. */
@@ -28,7 +29,7 @@ export const useUpdateBlindDrawSettings = () => {
       errorLog('Settings update error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update settings',
+        description: getUIErrorMessage(error, 'Failed to update settings'),
         variant: 'destructive',
       });
     },
