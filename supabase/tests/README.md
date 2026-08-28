@@ -93,6 +93,12 @@ so a non-zero exit code means drift was detected.
   one check on purpose and asserts the match result survives, the other checks
   still run, and the failure is reported: the badge checks run inside the
   result's own transaction, so a badge failure must never roll the result back.
+  A second block covers King Slayer, the one check that used to judge a single
+  pairing: a recreational team beats a competitive one 85 career power score
+  above it and earns the badge; a later narrow win must not revoke it (the old
+  pairing-scoped check let whichever match ran last decide); and voiding the
+  upset must take it away, which nothing could do before, because the badge
+  records no match.
 - `season_placement_badges.sql` — covers both halves of B-33. Asserts a real
   double-elimination bracket closed with `finalize_playoffs` writes champion,
   runner-up **and** third-place badges (only champions were written before);

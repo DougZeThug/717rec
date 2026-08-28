@@ -566,6 +566,14 @@ finding read a superseded migration.
   badge check can never roll back a saved result. The fourteen browser calls are
   gone, which also fixes badges being lost when a scorer closed the tab
   mid-loop. A separate migration replays the King Slayer badges that were lost.
+- **Follow-up, also done.** King Slayer was the one check that judged a single
+  pairing rather than recomputing from history, which made it the only badge a
+  voided result could strand — nothing could tell it was stale, because the badge
+  records no match. It is now a history recompute like every other check, so
+  every check in the rulebook is team-scoped, and **reopening a match or marking
+  one a tie re-runs them**. That also fixes a second fault: a later narrow win
+  used to revoke a badge an earlier giant-killing had earned, because whichever
+  match ran last decided the outcome.
 - **Raised by:** [`stats/badges.md`](stats/badges.md#open-questions-and-verification),
   [`live-scoring/finish-the-match.md`](live-scoring/finish-the-match.md#open-questions-and-verification).
 

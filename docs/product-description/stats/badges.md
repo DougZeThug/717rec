@@ -72,8 +72,12 @@ it into the database by hand.
 Badges are computed the moment a match result is written, **whichever way it was
 entered** — scored live, reported as a score, or approved from a submitted
 report. All three paths call one shared routine in the database, which runs
-fifteen checks for a decided match: six for each team, two more for the winner,
-and King Slayer for the pairing.
+eighteen checks: the same nine for each of the two teams. Every one of them
+recomputes from that team's whole season history, so none depends on which match
+triggered it.
+
+The same routine runs when a result is **taken away** — a match reopened, or
+marked a tie — so a badge that a voided win earned is removed.
 
 They run **inside the same transaction as the result**, on the server. Nothing
 depends on a browser staying open, and a check that fails cannot undo the result
@@ -116,7 +120,7 @@ or "low" is renamed and recoloured — "Intermediate High Champion" in cyan,
 
 | Badge | Awarded for | Revoked when |
 | --- | --- | --- |
-| **King Slayer** | Beating a team from a tougher division whose career power score is 25 or more above yours. | The same win no longer qualifies, or the opponent turns out not to be from a tougher division. |
+| **King Slayer** | Beating a team from a tougher division whose career power score is 25 or more above yours. | No win this season qualifies any more — including when the win that earned it is voided. |
 | **Clutch Performer** | Winning five or more matches 2–1 this season. | The count drops below five. |
 | **Consistent Performer** | Beating five or more different teams in your own division this season. | The count drops below five. |
 | **Ice Cold** | Your last three completed matches this season are all 2–1 wins. | The next match is anything else. |
@@ -253,10 +257,6 @@ used to be.
 - **No third place in a single-elimination bracket.** Third place is the loser of
   the last losers-bracket match, so a single-elimination bracket produces none.
   Both semi-final losers finish level and neither gets the badge.
-- **A King Slayer can still be taken away later in the same season.** The badge
-  is one per team per season, and every later win is re-judged against the same
-  threshold — so a subsequent narrow win can revoke a badge an earlier
-  giant-killing earned.
 - **The "+N" chip cannot be opened.** On a phone in compact view, a team with
   five badges shows one and "+4".
 - **A team page shows a friendly empty state; a standings row shows nothing.**
@@ -277,10 +277,11 @@ used to be.
 - **Not recovered:** a King Slayer lost on a live-scored match in a season that
   has already been closed stays lost. The replay only covers the active season,
   because the check stamps the badge with whichever season is active now.
-- **Reopening a completed match, or marking one a tie, still does not re-run the
-  badge checks**, so a badge earned by a result that was later corrected can
-  survive until the team plays again. **May be worth treating as a bug rather
-  than documenting.**
+- **Fixed:** reopening a match or marking one a tie now re-runs the badge checks,
+  so a badge earned by a result that was later taken away is removed. This needed
+  King Slayer to become a history recompute like every other check — until then
+  nothing could tell that a King Slayer was stale, because the badge records no
+  match.
 - **Badges are unreachable by keyboard and unreadable by a screen reader.**
   **May be worth treating as a bug rather than documenting.**
 - Not confirmed by hand: whether Cool Fun Team is still on the team it was
