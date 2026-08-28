@@ -185,13 +185,28 @@ describe('ChallongeFallbackSection', () => {
     });
   });
 
-  it('deletes an existing bracket via deleteBracket', async () => {
+  it('deletes an existing bracket via deleteBracket, after confirming', async () => {
     const user = userEvent.setup();
     render(<ChallongeFallbackSection />);
 
     await user.click(screen.getByRole('button', { name: /remove bracket/i }));
 
+    // The press only opens the prompt.
+    expect(hookMocks.mutations.deleteBracket).not.toHaveBeenCalled();
+    expect(screen.getByText('Remove this saved bracket?')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^remove$/i }));
     expect(hookMocks.mutations.deleteBracket).toHaveBeenCalledWith('b-1');
+  });
+
+  it('keeps the bracket when the prompt is cancelled', async () => {
+    const user = userEvent.setup();
+    render(<ChallongeFallbackSection />);
+
+    await user.click(screen.getByRole('button', { name: /remove bracket/i }));
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(hookMocks.mutations.deleteBracket).not.toHaveBeenCalled();
   });
 
   it('removes a new (unsaved) row locally without a network call', async () => {
