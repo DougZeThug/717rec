@@ -27,10 +27,6 @@ vi.mock('@/hooks/useToast', () => ({
   toast: (...args: unknown[]) => mockToast(...args),
 }));
 
-vi.mock('@/utils/errorHandler', () => ({
-  getUIErrorMessage: (error: unknown) => (error instanceof Error ? error.message : 'Unknown error'),
-}));
-
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },

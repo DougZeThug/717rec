@@ -21,11 +21,6 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-vi.mock('@/utils/errorHandler', () => ({
-  getUIErrorMessage: vi.fn((_err: unknown, fallback: string) => fallback),
-  logError: vi.fn(),
-}));
-
 vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
@@ -89,6 +84,11 @@ describe('usePlayoffActions', () => {
 
       expect(result.current.isDeleting).toBe(false);
       expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+      // Pins what the user actually reads, so a change to getUIErrorMessage
+      // shows up here rather than passing silently.
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ description: 'Failed to delete bracket: Delete failed' })
+      );
     });
 
     it('does nothing when isDeleting is already true', async () => {
