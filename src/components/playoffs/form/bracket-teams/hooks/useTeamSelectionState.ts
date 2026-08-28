@@ -19,7 +19,6 @@ export const useTeamSelectionState = (
   // the form allows (this used to fall back to 16 against a max of 32).
   const validMaxTeams = typeof maxTeams === 'number' && maxTeams > 0 ? maxTeams : MAX_BRACKET_TEAMS;
   const validMinTeams = typeof minTeams === 'number' && minTeams > 0 ? minTeams : MIN_BRACKET_TEAMS;
-  const validAvailableCount = typeof availableTeamsCount === 'number' ? availableTeamsCount : 0;
 
   // Simple team selection state
   const [selected, setSelected] = React.useState<Set<string>>(initialSelected);
@@ -80,14 +79,7 @@ export const useTeamSelectionState = (
     statusMessage: `${count} teams selected`,
     progress: {
       percentage: Math.min(100, (count / validMinTeams) * 100),
-      selected: count,
-      required: validMinTeams,
-      maximum: validMaxTeams,
-      available: validAvailableCount,
     },
-
-    // No cleanup needed
-    cleanup: () => {},
   };
 
   return result;
