@@ -33,12 +33,10 @@ export interface PlayoffPageData {
   divisions: Division[];
   divisionsLoading: boolean;
   availableDivisions: string[];
-  allBrackets: PlayoffBracket[];
   bracketsLoading: boolean;
   teamsByDivision: TeamsByDivision;
   bracketsByDivision: Record<string, PlayoffBracket[]>;
   typesafeBracketsByDivision: Record<string, PlayoffBracket[]>;
-  allBracketsData: PlayoffBracket[];
   handleBracketCreated: () => void;
   handleTeamDivisionChange: (teamId: string, divisionName: string) => Promise<void>;
   refetchBrackets: () => Promise<void>;
@@ -129,7 +127,6 @@ export function usePlayoffPageData(): PlayoffPageData {
   const { divisions, isLoading: divisionsLoading, error: divisionsError } = useDivisions();
 
   const {
-    brackets: allBrackets,
     bracketsLoading,
     teamsByDivision,
     bracketsByDivision,
@@ -185,24 +182,6 @@ export function usePlayoffPageData(): PlayoffPageData {
   const combinedError = error ?? processingError?.message ?? null;
 
   const isLoading = bracketsLoading || divisionsLoading || adminLoading;
-
-  const allBracketsData = useMemo<PlayoffBracket[]>(() => {
-    try {
-      if (!Array.isArray(allBrackets)) {
-        return [];
-      }
-      return allBrackets.map((b) => ({
-        ...b,
-        matches: Array.isArray(b.matches) ? b.matches : [],
-        id: b.id || crypto.randomUUID(),
-        state: (b.state || BRACKET_STATES.PENDING) as BracketState,
-        format: (b.format || BRACKET_FORMATS.DOUBLE) as BracketFormat,
-      }));
-    } catch (err) {
-      logError(err, 'allBracketsData processing');
-      return [];
-    }
-  }, [allBrackets]);
 
   const availableDivisions = useMemo<string[]>(() => {
     try {
@@ -339,12 +318,10 @@ export function usePlayoffPageData(): PlayoffPageData {
     divisions: Array.isArray(divisions) ? divisions : [],
     divisionsLoading,
     availableDivisions,
-    allBrackets: Array.isArray(allBrackets) ? allBrackets : [],
     bracketsLoading,
     teamsByDivision: (teamsByDivision || {}) as TeamsByDivision,
     bracketsByDivision: bracketsByDivision || {},
     typesafeBracketsByDivision,
-    allBracketsData,
     handleBracketCreated,
     handleTeamDivisionChange,
     refetchBrackets,
