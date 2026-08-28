@@ -11,27 +11,6 @@ vi.mock('@/services/matches/MatchWriteService', () => ({
   resubmitMatchResult: vi.fn(),
 }));
 
-// Mock BadgeProcessingService
-vi.mock('@/services/BadgeProcessingService', () => ({
-  BadgeProcessingService: {
-    processMatchBadges: vi.fn().mockResolvedValue({ success: true }),
-    processKingslayerBadge: vi.fn().mockResolvedValue({ success: true }),
-    processClutchPerformerBadge: vi.fn().mockResolvedValue({ success: true }),
-    processConsistentPerformerBadge: vi.fn().mockResolvedValue({ success: true }),
-    processIceColdBadge: vi.fn().mockResolvedValue({ success: true }),
-    processBroomCrewBadge: vi.fn().mockResolvedValue({ success: true }),
-    processGatekeeperBadge: vi.fn().mockResolvedValue({ success: true }),
-    processChaosAgentBadge: vi.fn().mockResolvedValue({ success: true }),
-    processBullyBadge: vi.fn().mockResolvedValue({ success: true }),
-  },
-}));
-
-vi.mock('@/services/FailedBadgeOperationsService', () => ({
-  FailedBadgeOperationsService: {
-    queueFailedOperation: vi.fn(),
-  },
-}));
-
 vi.mock('@/utils/logger', () => ({
   matchLog: vi.fn(),
   badgeLog: vi.fn(),
@@ -39,7 +18,6 @@ vi.mock('@/utils/logger', () => ({
   warnLog: vi.fn(),
 }));
 
-import { BadgeProcessingService } from '@/services/BadgeProcessingService';
 import { fetchMatchTeamIds } from '@/services/matches/MatchReadService';
 import { resubmitMatchResult } from '@/services/matches/MatchWriteService';
 
@@ -126,7 +104,7 @@ describe('updateMatchScore', () => {
     await expect(updateMatchScore(params)).rejects.toBeDefined();
   });
 
-  it('processes badges after successful update', async () => {
+  it('leaves badge processing to the database and makes no badge calls of its own', async () => {
     vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
     vi.mocked(resubmitMatchResult).mockResolvedValue(makeUpdatedMatch());
 
@@ -140,30 +118,10 @@ describe('updateMatchScore', () => {
 
     await updateMatchScore(params);
 
-    expect(BadgeProcessingService.processMatchBadges).toHaveBeenCalledWith('team-1', 'team-2');
-    expect(BadgeProcessingService.processKingslayerBadge).toHaveBeenCalled();
-    expect(BadgeProcessingService.processClutchPerformerBadge).toHaveBeenCalled();
-    expect(BadgeProcessingService.processConsistentPerformerBadge).toHaveBeenCalled();
-  });
-
-  it('does not fail when badge processing fails', async () => {
-    vi.mocked(BadgeProcessingService.processMatchBadges).mockRejectedValueOnce(
-      new Error('Badge error')
-    );
-
-    vi.mocked(fetchMatchTeamIds).mockResolvedValue({ team1_id: 'team-1', team2_id: 'team-2' });
-    vi.mocked(resubmitMatchResult).mockResolvedValue(makeUpdatedMatch());
-
-    const params: UpdateMatchScoreParams = {
-      matchId: 'match-1',
-      team1Score: 2,
-      team2Score: 1,
-      team1GameWins: 3,
-      team2GameWins: 1,
-    };
-
-    // Should not throw
-    const result = await updateMatchScore(params);
-    expect(result.data).toBeDefined();
+    // resubmit_match_result runs process_all_match_badges() in the same
+    // transaction, so submitting a score is now exactly one write call rather
+    // than one write plus fourteen badge round-trips.
+    expect(resubmitMatchResult).toHaveBeenCalledTimes(1);
+    expect(resubmitMatchResult).toHaveBeenCalledWith('match-1', 'team-1', 'team-2', 3, 1);
   });
 });
