@@ -36,6 +36,7 @@ import {
   submitContactRequest,
 } from '@/services/support/ContactService';
 import { trackContactForm } from '@/utils/analytics';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const SUBJECT_OPTIONS = [
   { value: 'bug_report', label: 'Bug Report' },
@@ -74,10 +75,10 @@ export default function Contact() {
         title: 'Success',
         description: 'Message sent successfully!',
       });
-    } catch {
+    } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to send message. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to send message'),
         variant: 'destructive',
       });
     } finally {

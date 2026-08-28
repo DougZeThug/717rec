@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import { throwEdgeFunctionError } from '@/utils/edgeFunctionError';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 export type ContactRequestRow = Tables<'contact_requests'>;
@@ -24,7 +25,7 @@ export const ContactRequestService = {
     const { error } = await supabase.functions.invoke('submit-contact-request', {
       body: input,
     });
-    if (error) throw new Error(error.message || 'Failed to submit request');
+    if (error) await throwEdgeFunctionError(error, 'Failed to submit request');
   },
 
   fetchAll: async (limit = 100): Promise<ContactRequestRow[]> => {

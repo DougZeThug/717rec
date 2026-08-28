@@ -64,7 +64,34 @@ describe('ContactRequestService.submit', () => {
         submitter_name: 'Jane',
         message: 'hi',
       })
-    ).rejects.toThrow('rate limited');
+    ).rejects.toThrow('Failed to submit request: rate limited');
+  });
+
+  it('surfaces the reason the edge function actually gave', async () => {
+    // supabase-js reports a non-2xx as a fixed "non-2xx status code" message
+    // and puts the real response on `context`, so the reason has to be read out.
+    mockInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        name: 'FunctionsHttpError',
+        message: 'Edge Function returned a non-2xx status code',
+        context: {
+          status: 429,
+          clone: () => ({
+            json: async () => ({ error: 'Too many requests. Please try again later.' }),
+            text: async () => '',
+          }),
+        },
+      },
+    });
+
+    await expect(
+      ContactRequestService.submit({
+        request_type: 'general',
+        submitter_name: 'Jane',
+        message: 'hi',
+      })
+    ).rejects.toThrow('Too many requests. Please try again later.');
   });
 });
 

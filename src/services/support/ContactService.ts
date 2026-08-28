@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
 import { supabase } from '@/integrations/supabase/client';
-import { DatabaseError } from '@/types/errors';
-import { getErrorMessage } from '@/utils/errorHandler';
+import { throwEdgeFunctionError } from '@/utils/edgeFunctionError';
 
 export const contactSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -27,6 +26,6 @@ export const submitContactRequest = async (data: ContactFormData): Promise<void>
   });
 
   if (error) {
-    throw new DatabaseError(`Failed to send message: ${getErrorMessage(error)}`);
+    await throwEdgeFunctionError(error, 'Failed to send message');
   }
 };

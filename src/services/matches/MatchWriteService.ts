@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { BusinessLogicError } from '@/types/errors';
+import { throwEdgeFunctionError } from '@/utils/edgeFunctionError';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 import { asMetadataObject, TIE_CONFIRMED_AT, TIE_CONFIRMED_BY } from './tieMetadata';
@@ -201,9 +202,12 @@ export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => 
       message: data.message,
     },
   });
-  if (error) handleDatabaseError(error, 'Failed to create score submission');
+  if (error) await throwEdgeFunctionError(error, 'Failed to create score submission');
   if (result && typeof result === 'object' && 'error' in result) {
-    throw new Error((result as { error: string }).error || 'Failed to create score submission');
+    // A 2xx carrying an error field: the function's own wording, so keep it.
+    throw new BusinessLogicError(
+      (result as { error: string }).error || 'Failed to create score submission'
+    );
   }
   return true;
 };
