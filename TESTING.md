@@ -420,7 +420,7 @@ per-area numbers matter for a decision, recompute them from a fresh
 Suites exist for `ProfileService`, `HeadToHeadService`, team fetch/create/
 update, match read/write, the ranking services (career, persistence, current,
 trends), `SeasonService`, `DivisionService`, `BlindDrawService`,
-`BadgeProcessingService`, `RankingsCalculationService`, plus the brackets
+`RankingsCalculationService`, plus the brackets
 subtree — `brackets/manager` (SQL storage, admin/rearrange services, utils),
 `brackets/read`, `brackets/validation`, and `brackets/viewer` (86% lines:
 adapter, match/participant transformers, label and source-node calculators).
