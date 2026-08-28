@@ -144,6 +144,32 @@ BEGIN
     RAISE EXCEPTION 'unknown match id not reported correctly: %', v_result;
   END IF;
 
+  -- A failing badge check must not take the match result down with it. Break one
+  -- check and prove the result survives, the other checks still run, and the
+  -- failure is reported rather than raised. The surrounding transaction is rolled
+  -- back, so the broken definition never escapes this file.
+  CREATE OR REPLACE FUNCTION public.award_bully_badge(p_team_id uuid)
+  RETURNS jsonb LANGUAGE plpgsql AS $broken$
+  BEGIN RAISE EXCEPTION 'simulated badge failure'; END;
+  $broken$;
+
+  UPDATE public.matches
+  SET winner_id = v_team1_id, loser_id = v_team2_id, iscompleted = true
+  WHERE id = v_live_match;
+
+  v_result := public.process_all_match_badges(v_live_match);
+  -- One broken check, run once per team: 15 - 2 = 13.
+  IF (v_result->>'checks_run')::integer <> 13 THEN
+    RAISE EXCEPTION 'expected 13 checks with one broken, got %', v_result->>'checks_run';
+  END IF;
+  IF jsonb_array_length(v_result->'errors') <> 2 THEN
+    RAISE EXCEPTION 'expected 2 reported failures, got %', v_result->'errors';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.matches
+                 WHERE id = v_live_match AND winner_id = v_team1_id) THEN
+    RAISE EXCEPTION 'a failing badge check rolled back the match result';
+  END IF;
+
   RAISE NOTICE 'match badge processing smoke test passed';
 END;
 $$;

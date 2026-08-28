@@ -89,7 +89,10 @@ so a non-zero exit code means drift was detected.
   match — which is what catches a mistyped function name, since the team-scoped
   checks resolve through `EXECUTE format(...)` and a failure there would
   otherwise be trapped into a silent no-op — and that a tie, an unfinished match
-  and an unknown match id are each reported rather than raised.
+  and an unknown match id are each reported rather than raised. It also breaks
+  one check on purpose and asserts the match result survives, the other checks
+  still run, and the failure is reported: the badge checks run inside the
+  result's own transaction, so a badge failure must never roll the result back.
 - `season_placement_badges.sql` — covers both halves of B-33. Asserts a real
   double-elimination bracket closed with `finalize_playoffs` writes champion,
   runner-up **and** third-place badges (only champions were written before);
