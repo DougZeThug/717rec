@@ -85,7 +85,7 @@ describe('support ticket hooks', () => {
     [useMarkSupportTicketResolved, mocks.resolve],
     [useReopenSupportTicket, mocks.reopen],
   ] as const)('calls the mutation service and invalidates', async (hook, service) => {
-    service.mockResolvedValue(undefined);
+    service.mockImplementation(() => Promise.resolve());
     const { client, wrapper } = setup();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const { result } = renderHook(() => hook(), { wrapper });

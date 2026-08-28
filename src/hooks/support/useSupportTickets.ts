@@ -29,7 +29,9 @@ export function useSupportTickets(enabled = true) {
         if (!isFirst) qc.invalidateQueries({ queryKey: SUPPORT_TICKETS_QUERY_KEY });
       },
     });
-    return () => dispose();
+    return () => {
+      dispose();
+    };
   }, [qc, enabled]);
 
   return useQuery<SupportTicketRow[]>({

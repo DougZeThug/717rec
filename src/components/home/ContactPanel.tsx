@@ -37,6 +37,51 @@ const REQUEST_TYPES: RequestTypeOption[] = [
   { value: 'other', label: 'Other', helper: '' },
 ];
 
+interface LockableFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  /** Verified from the signed-in profile: shown with a badge and read-only. */
+  locked: boolean;
+  maxLength: number;
+  placeholder: string;
+}
+
+/**
+ * A labelled text field that turns read-only, with a "Verified" badge, when the
+ * value comes from the signed-in profile rather than being typed.
+ */
+const LockableField: React.FC<LockableFieldProps> = ({
+  id,
+  label,
+  value,
+  onChange,
+  locked,
+  maxLength,
+  placeholder,
+}) => (
+  <div>
+    <Label htmlFor={id} className="flex items-center gap-1.5">
+      {label}
+      {locked && (
+        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="size-3" /> Verified
+        </span>
+      )}
+    </Label>
+    <Input
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      readOnly={locked}
+      maxLength={maxLength}
+      placeholder={placeholder}
+      className={cn('mt-1', locked && 'bg-muted/50')}
+    />
+  </div>
+);
+
 const ContactPanel: React.FC = () => {
   const { user } = useAuth();
   const { membership } = useTeamMembership();
@@ -170,45 +215,25 @@ const ContactPanel: React.FC = () => {
               {activeHelper && <p className="mt-1 text-xs text-muted-foreground">{activeHelper}</p>}
             </div>
 
-            <div>
-              <Label htmlFor="contact-name" className="flex items-center gap-1.5">
-                Your name
-                {nameLocked && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="size-3" /> Verified
-                  </span>
-                )}
-              </Label>
-              <Input
-                id="contact-name"
-                value={name}
-                onChange={(e) => setNameDraft(e.target.value)}
-                readOnly={nameLocked}
-                maxLength={120}
-                placeholder="Jane Doe"
-                className={cn('mt-1', nameLocked && 'bg-muted/50')}
-              />
-            </div>
+            <LockableField
+              id="contact-name"
+              label="Your name"
+              value={name}
+              onChange={setNameDraft}
+              locked={nameLocked}
+              maxLength={120}
+              placeholder="Jane Doe"
+            />
 
-            <div>
-              <Label htmlFor="contact-team" className="flex items-center gap-1.5">
-                {isJoin ? 'Proposed team name' : 'Team name'}
-                {teamLocked && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
-                    <CheckCircle2 className="size-3" /> Verified
-                  </span>
-                )}
-              </Label>
-              <Input
-                id="contact-team"
-                value={team}
-                onChange={(e) => setTeamDraft(e.target.value)}
-                readOnly={teamLocked}
-                maxLength={120}
-                placeholder={isJoin ? 'Bag Boys' : 'Your team (optional)'}
-                className={cn('mt-1', teamLocked && 'bg-muted/50')}
-              />
-            </div>
+            <LockableField
+              id="contact-team"
+              label={isJoin ? 'Proposed team name' : 'Team name'}
+              value={team}
+              onChange={setTeamDraft}
+              locked={teamLocked}
+              maxLength={120}
+              placeholder={isJoin ? 'Bag Boys' : 'Your team (optional)'}
+            />
 
             <div className="md:col-span-2">
               <Label htmlFor="contact-contact">Contact (email or phone)</Label>
