@@ -6880,6 +6880,10 @@ export type Database = {
         Args: { p_loser_id: string; p_winner_id: string }
         Returns: Json
       }
+      award_season_placement_badges: {
+        Args: { p_season_id: string }
+        Returns: number
+      }
       award_streak_badges: { Args: { p_team_id: string }; Returns: Json }
       batch_update_team_seeds: { Args: { p_updates: Json }; Returns: Json }
       calculate_career_power_score: {
@@ -7143,11 +7147,13 @@ export type Database = {
         Args: { p_game: number; p_sos: number; p_win: number }
         Returns: undefined
       }
+      process_all_match_badges: { Args: { p_match_id: string }; Returns: Json }
       process_match_badges: {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
       }
       prune_team_season_stats_not_in_agg: { Args: never; Returns: number }
+      recompute_kingslayer_badge: { Args: { p_team_id: string }; Returns: Json }
       reconcile_team_counters: { Args: never; Returns: number }
       recreate_power_view_dependents: { Args: never; Returns: undefined }
       reopen_live_match: { Args: { p_match_id: string }; Returns: boolean }
@@ -7178,6 +7184,7 @@ export type Database = {
         }
         Returns: Json
       }
+      rotate_season_badges: { Args: { p_season_id: string }; Returns: number }
       seasons_rls_drift: {
         Args: never
         Returns: {
