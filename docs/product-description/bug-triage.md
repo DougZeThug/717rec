@@ -51,9 +51,9 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-05 | A failed round save throws away what the scorer tapped | high | live-scoring | **fixed** | — |
 | B-06 | Head-to-head win percentages and rivalry labels are computed on the wrong scale | high | history, stats | **not a bug** | — |
 | B-07 | A second membership row permanently breaks every member ability | high | foundations, teams | **fixed** | — |
-| B-08 | A failed profile read silently demotes an admin | high | foundations | fix | — |
+| B-08 | A failed profile read silently demotes an admin | high | foundations | **fixed** | — |
 | B-09 | There is no way to resolve a tie | high | scores, admin | **fixed** | — |
-| B-10 | Two contact channels, neither aware of the other | high | help, admin | product call | — |
+| B-10 | Two contact channels, neither aware of the other | high | help, admin | **fixed** | — |
 | B-32 | Live-scored matches award no badges | high | live-scoring, stats | fix | — |
 | B-33 | Nine of the twenty badge types can never be awarded | high | stats | fix | — |
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
@@ -441,8 +441,20 @@ finding read a superseded migration.
   indistinguishable from a non-admin profile.
 - **Severity:** `high`. It locks a legitimate admin out of the tool with a
   message that says they do not have the rights, which is false.
-- **Decision needed:** `fix`. Track the profile's load state separately from its
-  contents and treat "not loaded" as neither admin nor not-admin.
+- **Decision needed:** ~~`fix`~~ **fixed.** The load state is now tracked
+  separately from the contents: `useAuthProfile` holds a `profileLoadFailed`
+  flag, set only when the read throws (a missing profile row still returns
+  `null` and is not a failure). The read is retried once, ~800ms apart, before
+  the flag is set. `useAdminAccess` exposes `accessCheckFailed`, and
+  `ProtectedAdminRoute` uses it for a fourth branch: a retry card reading "We
+  could not load your profile. This is usually a connection problem, not a
+  permissions problem." with **Try again** (wired to `refreshProfile`) and "Go
+  home". The "Access Denied" toast and the redirect are both suppressed while
+  that flag is set.
+- **Note on the original report:** it said "on a reload no toast is raised at
+  all". The *profile-error* toast was indeed missing (it only fired on
+  `SIGNED_IN`), but the "Access Denied" toast did fire. So the message was wrong
+  rather than absent.
 - **Raised by:** [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
 
@@ -496,8 +508,17 @@ finding read a superseded migration.
   reads the other's.
 - **Severity:** `high`. Messages to the league are lost, and the sender is told
   they were received.
-- **Decision needed:** `product call`. Either merge them, or show both in the
-  admin inbox and say on each form where it goes.
+- **Decision needed:** ~~`product call`~~ **fixed**, by the second option: keep
+  both forms and make one place show everything. The two forms ask for different
+  things — `/contact` is support (bugs, account problems, disputes), the home
+  panel is league business (timeslots, scores, joining) — so merging the forms
+  would have made both worse. `SupportTicketService` and `useSupportTickets`
+  give `support_tickets` its first reader; `ContactInboxSection` merges both row
+  shapes into one list behind an *All / League requests / Support* filter, with
+  Delete on league rows only (the table has no DELETE policy);
+  `submit-contact-request` now emails `admin@717rec.com` too, through a shared
+  `_shared/email.ts`, best-effort so a failed send never turns a saved request
+  into a 500; and both forms now say where the message goes.
 - **Raised by:** [`help/contact-the-league.md`](help/contact-the-league.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification),
   [`home/the-home-page.md`](home/the-home-page.md#open-questions-and-verification).

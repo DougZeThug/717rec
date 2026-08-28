@@ -143,8 +143,16 @@ export default function Contact() {
                 Send us a message
               </CardTitle>
               <CardDescription>
-                Fill out the form below and we&apos;ll get back to you as soon as possible.
+                Fill out the form below and we&apos;ll get back to you as soon as possible. Your
+                message is emailed to the league admins and appears in their admin inbox.
               </CardDescription>
+              <p className="pt-2 text-sm text-muted-foreground">
+                Need a timeslot change, a score fixed, or to join the league? Use the{' '}
+                <a href="/#contact-panel" className="text-primary hover:underline">
+                  message form at the bottom of the home page
+                </a>{' '}
+                instead — it asks for the details the league needs for those.
+              </p>
             </CardHeader>
             <CardContent>
               <Form {...form}>

@@ -102,13 +102,18 @@ above a half-written message and move it down the screen.
 ### Submit
 
 **The message form at the bottom of the home page is not the contact form.** It
-looks similar and it is a different feature going to a different place. It asks
-for a request type — Timeslot Request, Score update / correction, Join the
-league, General message, Other — a name, a team, a contact, and a message, and
-it files a request for the league to work through in
+looks similar and it is a different form for a different job. It asks for a
+request type — Timeslot Request, Score update / correction, Join the league,
+General message, Other — a name, a team, a contact, and a message, and it files
+a request for the league to work through in
 [`admin/handle-requests.md`](../admin/handle-requests.md). The contact form at
-`/contact` emails the league instead; see
+`/contact` is for support: bugs, account problems, score disputes; see
 [`help/contact-the-league.md`](../help/contact-the-league.md).
+
+**Both now end up in the same place.** Since B-10 each form both stores its
+message and emails `admin@717rec.com`, and the admin Contact Inbox lists both
+behind one filter. The form says as much, so a sender who picked the wrong one
+can see where their message went and which form they wanted.
 
 On success the message and player fields clear, the request type returns to
 General message, and a toast says "Message sent". The name, team, and contact

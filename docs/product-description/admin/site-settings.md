@@ -143,8 +143,11 @@ the timestamp in Eastern time. At **eight days or older** it gains a red "Stale"
 badge and a line naming what to check. When none has ever run it says so in red.
 
 **Pending queues.** Three tiles counting waiting score reports, waiting team
-requests, and new contact messages. **Pressing a tile reloads the whole page** to
-open that section rather than switching in place.
+requests, and new contact messages. The contact tile counts **everything
+unresolved in the Contact Inbox** — league requests from the home page panel
+*and* support tickets from `/contact` — because the inbox lists both.
+**Pressing a tile reloads the whole page** to open that section rather than
+switching in place.
 
 **Traffic.** A thirty-day line chart of visitors and pageviews from the app's own
 beacon, with a seven-day breakdown by platform. Only an admin can read it; a

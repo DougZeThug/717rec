@@ -8,18 +8,18 @@ different places. This document owns all three.
 | Queue | Where | What arrives | Outcomes |
 | --- | --- | --- | --- |
 | **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **deletes the request** |
-| **Contact requests** | `/admin` → **Contact Inbox**, and again at the top of `/admin/notifications` | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
+| **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*), and again at the top of `/admin/notifications` | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
+| **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message sent from the `/contact` page, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
 | **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Deny, each with optional notes |
 
-The three share nothing: no common list, no common state words, no common badge.
-Only team requests are counted on the admin menu. Only contact requests update by
-themselves. Only membership requests change what someone can do.
+Contact requests and support tickets share one screen and one set of outcome
+words, but the rest share nothing: no common list, no common state words, no
+common badge. Only team requests are counted on the admin menu. Only the Contact
+Inbox updates by itself. Only membership requests change what someone can do.
 
-Two things that look like they belong here and do not. **Score submissions** are
+One thing that looks like it belongs here and does not: **score submissions** are
 a fourth queue, under **Pending**; see
-[`scores/pending-scores.md`](../scores/pending-scores.md). And **the contact form
-at `/contact` does not arrive in the Contact Inbox at all** — it is emailed
-instead. See [Edge cases](#edge-cases).
+[`scores/pending-scores.md`](../scores/pending-scores.md).
 
 ## The simple case
 
@@ -198,7 +198,10 @@ subscribe.
 **Toasts and notifications.** Membership and team requests toast on success and
 on failure. Contact requests toast **only** on failure. Nothing at all is sent
 to the person who made any of these requests — no email, no notification, no
-change they can see until they happen to look.
+change they can see until they happen to look. **Admins** are emailed, though:
+both a league request and a support ticket send an alert to `admin@717rec.com`
+as well as landing in the Contact Inbox. Membership and team requests send no
+alert at all.
 
 **URL state.** None. Not the queue, not the filter, not the selected request.
 `/admin/notifications` is a real route but it is the notifications page that
@@ -220,12 +223,19 @@ and nobody is told.
 
 ## Edge cases
 
-- **The contact form at `/contact` never reaches the Contact Inbox.** That form
-  emails the league and is described in
-  [`help/contact-the-league.md`](../help/contact-the-league.md). The inbox holds
-  messages from the panel at the foot of the home page, which is a different
-  form with a different list of subjects. An admin watching only the inbox will
-  miss every message sent from `/contact`.
+- **The Contact Inbox holds two kinds of message and says which is which.** The
+  segmented filter reads *All*, *League requests*, and *Support*, each with a
+  count. League requests come from the panel at the foot of the home page;
+  support messages come from `/contact` and carry a **Support** badge. The two
+  forms ask for different things and keep their own subject lists, so a support
+  row shows an email address where a league row shows a team and a phone number.
+  Fixed in B-10; before it, `/contact` messages reached no admin screen at all.
+- **A support ticket cannot be deleted.** Its table grants admins read and update
+  only, so the row offers Mark resolved and Reopen but no Delete. Deleting is
+  offered on league requests only.
+- **If the support-tickets migration is not applied to the project, the Support
+  filter reads `(0)`** and the inbox still lists league requests normally,
+  rather than failing.
 - **Deleting a contact request asks nothing and cannot be undone.** It is the
   only irreversible admin action in the product with no confirmation.
 - **Rejecting a membership deletes the request** rather than marking it refused,
@@ -251,10 +261,9 @@ and nobody is told.
 - **Delete on a contact request is destructive, irreversible, and unconfirmed.**
   One press, one press only, and the message is gone with no toast to say so.
   **May be worth treating as a bug rather than documenting.**
-- **Two contact channels, one inbox.** Messages from `/contact` are emailed and
-  never listed; messages from the home page panel are listed and never emailed.
-  Nothing in either surface says so. **May be worth treating as a bug rather
-  than documenting.**
+- ~~**Two contact channels, one inbox.**~~ Fixed in B-10. Both channels now land
+  in the Contact Inbox behind one filter, both are emailed to the league, and
+  each form says where its message goes.
 - **Rejecting a membership leaves no trace**, so the league cannot tell a
   refused request from one that was never made. **May be worth treating as a bug
   rather than documenting.**

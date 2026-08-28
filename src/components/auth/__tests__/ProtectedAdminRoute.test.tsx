@@ -1,6 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { toast } from '@/hooks/useToast';
 
 import ProtectedAdminRoute from '../ProtectedAdminRoute';
 
@@ -52,6 +54,8 @@ describe('ProtectedAdminRoute', () => {
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: false,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
       isLoading: true,
     });
 
@@ -74,6 +78,8 @@ describe('ProtectedAdminRoute', () => {
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: false,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
       isLoading: false,
     });
 
@@ -99,6 +105,8 @@ describe('ProtectedAdminRoute', () => {
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: false,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
       isLoading: false,
     });
 
@@ -127,6 +135,8 @@ describe('ProtectedAdminRoute', () => {
     });
     mockUseAdminAccess.mockReturnValue({
       isAdminAccessGranted: true,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
       isLoading: false,
     });
 
@@ -142,5 +152,37 @@ describe('ProtectedAdminRoute', () => {
       expect(screen.getByTestId('admin-content')).toBeInTheDocument();
       expect(screen.getByText('Admin Content')).toBeInTheDocument();
     });
+  });
+
+  it('shows a retry card instead of redirecting when the profile failed to load', async () => {
+    const retryAccessCheck = vi.fn();
+    mockUseAuth.mockReturnValue({
+      user: { id: 'admin-1', email: 'admin@test.com' },
+      authInitialized: true,
+      profile: null,
+    });
+    mockUseAdminAccess.mockReturnValue({
+      isAdminAccessGranted: false,
+      accessCheckFailed: true,
+      retryAccessCheck,
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter>
+        <ProtectedAdminRoute>
+          <div data-testid="admin-content">Admin Content</div>
+        </ProtectedAdminRoute>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/could not load your profile/i)).toBeInTheDocument();
+    // The admin stays put: no redirect, and no false "Access Denied" toast.
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(vi.mocked(toast)).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('admin-content')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(retryAccessCheck).toHaveBeenCalledTimes(1);
   });
 });

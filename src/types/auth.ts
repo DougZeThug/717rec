@@ -15,6 +15,11 @@ export interface AuthContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   isProfileLoading: boolean;
+  /**
+   * True when the profile read failed outright, as opposed to returning no row.
+   * Lets callers tell a connection problem apart from a definite "not an admin".
+   */
+  profileLoadFailed: boolean;
   authInitialized: boolean;
   signIn: (email: string, password: string) => Promise<AuthResponse>;
   signUp: (email: string, password: string) => Promise<AuthResponse>;

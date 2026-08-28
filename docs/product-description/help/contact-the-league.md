@@ -2,15 +2,23 @@
 
 ## Summary
 
-The contact form is the one way anybody can send a message to whoever runs the
-league from inside the app. It takes a name, an email address, a subject chosen
-from a fixed list, and a message, and it sends them to the league as an email
-and as a stored ticket. It is the only write in the whole app that a *visitor*
-can perform without an account.
+The contact form is one of two ways to send a message to whoever runs the league
+from inside the app. It is the **support** one: bugs, account problems, score
+disputes, and general questions. It takes a name, an email address, a subject
+chosen from a fixed list, and a message, and it sends them to the league as an
+email and as a stored ticket. Both land in front of an admin: the email at
+`admin@717rec.com`, the ticket in the admin Contact Inbox under its *Support*
+filter. It is the only write in the whole app that a *visitor* can perform
+without an account.
 
-It lives at `/contact`, on its own page, reached from the footer and from the
-help page. Nothing signals that it is "active"; it is a page, and arriving on it
-is the whole of entering it. It is available in every state the app has: signed
+The other way is the message form at the foot of the home page, for league
+business — timeslot changes, score corrections, joining the league. See
+[`home/the-home-page.md`](../home/the-home-page.md). Each form now says which is
+which and links to the other, so a sender who picked the wrong one can tell.
+
+It lives at `/contact`, on its own page, reached from the **navbar**, from the
+footer, and from the help page. Nothing signals that it is "active"; it is a
+page, and arriving on it is the whole of entering it. It is available in every state the app has: signed
 out, signed in, no profile, admin, active season or none. Nothing about the
 league's state changes it.
 
@@ -132,8 +140,10 @@ no copy of the message anywhere the user can reach.
 > **Technical note:** the league stores the message as a ticket *and* emails it,
 > and treats either one succeeding as success. If the ticket stores but the email
 > fails, the user is told the message was sent, and it was — it is waiting in the
-> league's ticket list rather than in an inbox. Only when *both* fail does the
-> user see a failure.
+> admin **Contact Inbox** under the *Support* filter rather than in an inbox of
+> mail. Only when *both* fail does the user see a failure. Before B-10 the stored
+> ticket reached no admin screen at all, so a failed email really did lose the
+> message; see [`admin/handle-requests.md`](../admin/handle-requests.md).
 
 On failure, nothing is cleared. Every field keeps its text, the button comes
 back, and one red toast appears reading "Failed to send message. Please try

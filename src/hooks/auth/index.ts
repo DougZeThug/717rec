@@ -44,6 +44,8 @@ export const useAuth = () => {
     setProfile,
     isProfileLoading,
     setIsProfileLoading,
+    profileLoadFailed,
+    setProfileLoadFailed,
     fetchProfile,
     checkProfileSetup,
     refreshProfile,
@@ -121,6 +123,7 @@ export const useAuth = () => {
               is_admin: profileData?.is_admin,
             });
             setProfile(profileData);
+            setProfileLoadFailed(false);
 
             if (event === 'SIGNED_IN') {
               checkProfileSetup(profileData);
@@ -128,6 +131,9 @@ export const useAuth = () => {
           } catch (error) {
             // Only show error if this fetch is still relevant
             if (!isCancelled && currentUserId === fetchUserId) {
+              // Record the failure so a dropped request is not mistaken for
+              // "not an admin" (see useAdminAccess / ProtectedAdminRoute).
+              setProfileLoadFailed(true);
               errorLog(`Error fetching user profile for ${event}:`, error);
               if (event === 'SIGNED_IN') {
                 toast({
@@ -194,6 +200,7 @@ export const useAuth = () => {
             if (!isCancelled && currentUserId === fetchUserId) {
               authLog('initializeAuth: setting profile for user:', fetchUserId);
               setProfile(profileData);
+              setProfileLoadFailed(false);
               checkProfileSetup(profileData);
             } else {
               authLog('initializeAuth: discarding stale profile data for user:', fetchUserId);
@@ -201,6 +208,9 @@ export const useAuth = () => {
           } catch (profileError) {
             // Only log error if this fetch is still relevant
             if (!isCancelled && currentUserId === fetchUserId) {
+              // Record the failure so a dropped request is not mistaken for
+              // "not an admin" (see useAdminAccess / ProtectedAdminRoute).
+              setProfileLoadFailed(true);
               errorLog('Error fetching initial profile:', profileError);
             }
           } finally {
@@ -256,6 +266,7 @@ export const useAuth = () => {
     profile,
     isLoading,
     isProfileLoading,
+    profileLoadFailed,
     authInitialized,
     authError,
     // Actions

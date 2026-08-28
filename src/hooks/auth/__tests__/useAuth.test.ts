@@ -33,6 +33,10 @@ const setProfileSpy = vi.fn((value: UserProfile | null) => {
 const setIsProfileLoadingSpy = vi.fn((value: boolean) => {
   isProfileLoadingState = value;
 });
+let profileLoadFailedState = false;
+const setProfileLoadFailedSpy = vi.fn((value: boolean) => {
+  profileLoadFailedState = value;
+});
 const fetchProfileSpy = vi.fn();
 const checkProfileSetupSpy = vi.fn();
 const refreshProfileSpy = vi.fn();
@@ -71,6 +75,8 @@ const setupUseAuthProfileMock = () => {
     setProfile: setProfileSpy,
     isProfileLoading: isProfileLoadingState,
     setIsProfileLoading: setIsProfileLoadingSpy,
+    profileLoadFailed: profileLoadFailedState,
+    setProfileLoadFailed: setProfileLoadFailedSpy,
     fetchProfile: fetchProfileSpy,
     checkProfileSetup: checkProfileSetupSpy,
     refreshProfile: refreshProfileSpy,
@@ -83,6 +89,7 @@ describe('useAuth', () => {
 
     profileState = null;
     isProfileLoadingState = false;
+    profileLoadFailedState = false;
     authStateCallback = null;
     unsubscribeSpy = vi.fn();
 

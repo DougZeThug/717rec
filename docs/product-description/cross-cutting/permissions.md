@@ -135,6 +135,8 @@ stateDiagram-v2
     [*] --> checking : land on a guarded route
     checking --> checking : profile still loading ("Checking access...")
     checking --> sent_to_auth : nobody signed in
+    checking --> check_failed : the profile did not load
+    check_failed --> checking : "Try again"
     checking --> refused : signed in, not an admin
     checking --> allowed : signed in and an admin
     allowed --> write_refused : a write the database does not accept
@@ -148,10 +150,17 @@ have both settled. Until then the screen is a spinner and the words "Checking
 access...". On an in-app navigation this is usually instant, because the profile
 is already loaded. On a cold load or a reload it is a real wait.
 
+If the profile does not load at all, the route does not guess. It shows "We
+could not load your profile. This is usually a connection problem, not a
+permissions problem." with a **Try again** button and a "Go home" link, and the
+user stays where they are.
+
 On every other route nothing is checked at all. The page renders, and the
 controls inside it decide for themselves what to draw. Admin controls appear the
 instant the profile does and never flicker, because admin is read from the loaded
-profile rather than asked for separately.
+profile rather than asked for separately. On a failed read those controls stay
+hidden, which is quiet but safe — only the three guarded routes explain what
+happened.
 
 ### Leave without changing anything
 
@@ -187,8 +196,8 @@ refusal by design.
 | In-app navigation away, or switching tab within the page | Leaving a guarded route while it still says "Checking access..." simply unmounts it. No redirect happens and no toast appears. | The write completes or is refused regardless. The refusal toast appears on whatever page the user is now on. |
 | Browser back or forward | The redirect replaces the guarded route in history, so pressing Back after being bounced from `/admin` goes to whatever was before it, not back to `/admin`. | As navigating away. Coming back gives a freshly mounted page that runs the whole check again. |
 | Reload, or the tab closed | The check restarts from nothing: session, then profile, then decide. The "Checking access..." spinner is much longer than on an in-app navigation. | A sent write still lands or is still refused. The user never learns which. |
-| Network lost mid-request | The profile fetch fails. The user is treated as **not** an admin and is turned away with "Access Denied", even if they are one. On a reload this happens with no other message at all. **May be worth treating as a bug rather than documenting.** | Every write fails. The message is the feature's network-flavoured or generic error, never a statement about permission. |
-| The request fails or times out | Same as above: a failed profile read demotes the user for as long as the failure lasts. | The write fails with that feature's generic message. Nothing distinguishes "you may not" from "it did not work". |
+| Network lost mid-request | The profile fetch is retried once. If it still fails, the guarded route says "We could not load your profile. This is usually a connection problem, not a permissions problem." and offers **Try again**. The user is **not** redirected and is **not** told they lack privileges. Fixed in B-08. | Every write fails. The message is the feature's network-flavoured or generic error, never a statement about permission. |
+| The request fails or times out | Same as above: retried once, then the retry card. A failed read is never treated as a definite "not an admin". | The write fails with that feature's generic message. Nothing distinguishes "you may not" from "it did not work". |
 | The session expires | Reads of public data still work, so the app keeps looking normal. The three guarded routes redirect to `/auth` on the next visit. | Writes fail. There is no message about the session, so an expired session and a permission refusal are indistinguishable to the user. |
 | The same record changed in another tab, or by another user | An admin flag or a membership changed elsewhere does not reach this browser. Controls stay as they were. | Same. A scorer whose membership is revoked mid-match keeps the score grids and finds out at the next save. |
 | Browser autofill or a password manager writes into the form | No effect. Nothing about permission is held in a form field. | No effect. |
@@ -277,10 +286,10 @@ no record the user can see, and produces no notification to the league.
 
 ## Open questions and verification
 
-- **A failed profile read demotes an admin silently.** On a reload the failure
-  raises no toast at all, so a real admin is told "You do not have admin
-  privileges" for what is really a network problem. **May be worth treating as a
-  bug rather than documenting.**
+- ~~**A failed profile read demotes an admin silently.**~~ Fixed in B-08. The
+  app now tracks "the read failed" separately from "not an admin": the read is
+  retried once, and a lasting failure shows a retry card instead of the false
+  "You do not have admin privileges".
 - **The message board is invisible to visitors and says so wrongly.** The empty
   state claims there are no messages. This needs confirming against the running
   app; if it is right, it is the highest-value fix in this document.

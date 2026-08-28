@@ -1,9 +1,10 @@
 import { CheckCircle2, Inbox, RefreshCcw, Trash2 } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ToggleButtonGroup } from '@/components/ui/ToggleButtonGroup';
 import { useAuth } from '@/contexts/auth-context';
 import {
   useContactRequests,
@@ -11,6 +12,11 @@ import {
   useMarkContactRequestResolved,
   useReopenContactRequest,
 } from '@/hooks/contact/useContactRequests';
+import {
+  useMarkSupportTicketResolved,
+  useReopenSupportTicket,
+  useSupportTickets,
+} from '@/hooks/support/useSupportTickets';
 import { cn } from '@/lib/utils';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
@@ -37,6 +43,18 @@ const TYPE_LABELS: Record<string, { label: string; cls: string }> = {
   },
 };
 
+/** Subjects offered by the /contact form, mapped to the label an admin reads. */
+const SUPPORT_SUBJECT_LABELS: Record<string, string> = {
+  bug_report: 'Bug Report',
+  feature_request: 'Feature Request',
+  account_issue: 'Account Issue',
+  score_dispute: 'Score Dispute',
+  general_question: 'General Question',
+  other: 'Other',
+};
+
+const SUPPORT_CLS = 'bg-violet-500/10 text-violet-600 dark:text-violet-300 border-violet-500/30';
+
 function contactHref(contact: string): string | undefined {
   const trimmed = contact.trim();
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return `mailto:${trimmed}`;
@@ -45,14 +63,104 @@ function contactHref(contact: string): string | undefined {
   return undefined;
 }
 
+type InboxSource = 'league' | 'support';
+type InboxFilter = 'all' | InboxSource;
+
+/**
+ * One row shape for both message channels: league requests from the home page
+ * panel (`contact_requests`) and support tickets from /contact
+ * (`support_tickets`). Before this, /contact messages reached no admin screen
+ * at all — see B-10.
+ */
+interface InboxItem {
+  id: string;
+  source: InboxSource;
+  kindLabel: string;
+  kindCls: string;
+  name: string;
+  team: string | null;
+  contact: string;
+  message: string;
+  players: string | null;
+  verified: boolean;
+  /** support_tickets has no DELETE policy, so only league rows can be removed. */
+  canDelete: boolean;
+  isResolved: boolean;
+  createdAt: string;
+}
+
 const ContactInboxSection: React.FC = () => {
   const { user } = useAuth();
-  const { data: requests = [], isLoading } = useContactRequests();
+  const { data: requests = [], isLoading: requestsLoading } = useContactRequests();
+  const { data: tickets = [], isLoading: ticketsLoading } = useSupportTickets();
+
   const markResolved = useMarkContactRequestResolved();
   const reopen = useReopenContactRequest();
   const remove = useDeleteContactRequest();
+  const markTicketResolved = useMarkSupportTicketResolved();
+  const reopenTicket = useReopenSupportTicket();
 
-  const newCount = useMemo(() => requests.filter((r) => r.status === 'new').length, [requests]);
+  const [filter, setFilter] = useState<InboxFilter>('all');
+
+  const isLoading = requestsLoading || ticketsLoading;
+
+  const items = useMemo<InboxItem[]>(() => {
+    const leagueItems: InboxItem[] = requests.map((r) => {
+      const type = TYPE_LABELS[r.request_type] ?? TYPE_LABELS.other;
+      return {
+        id: r.id,
+        source: 'league',
+        kindLabel: type.label,
+        kindCls: type.cls,
+        name: r.submitter_name,
+        team: r.submitter_team,
+        contact: r.submitter_contact,
+        message: r.message,
+        players: r.players,
+        verified: r.is_verified,
+        canDelete: true,
+        isResolved: r.status === 'resolved',
+        createdAt: r.created_at,
+      };
+    });
+
+    const supportItems: InboxItem[] = tickets.map((t) => ({
+      id: t.id,
+      source: 'support',
+      kindLabel: SUPPORT_SUBJECT_LABELS[t.subject] ?? t.subject,
+      kindCls: SUPPORT_CLS,
+      name: t.name,
+      team: null,
+      contact: t.email,
+      message: t.message,
+      players: null,
+      verified: false,
+      canDelete: false,
+      isResolved: t.status === 'resolved',
+      createdAt: t.created_at,
+    }));
+
+    return [...leagueItems, ...supportItems].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [requests, tickets]);
+
+  const leagueCount = items.filter((i) => i.source === 'league').length;
+  const supportCount = items.length - leagueCount;
+  const newCount = useMemo(() => items.filter((i) => !i.isResolved).length, [items]);
+
+  const visibleItems = filter === 'all' ? items : items.filter((i) => i.source === filter);
+
+  const handleResolve = (item: InboxItem) => {
+    if (item.source === 'support') markTicketResolved.mutate(item.id);
+    else markResolved.mutate({ id: item.id, userId: user?.id ?? null });
+  };
+
+  const handleReopen = (item: InboxItem) => {
+    if (item.source === 'support') reopenTicket.mutate(item.id);
+    else reopen.mutate(item.id);
+  };
+
+  const resolvePending = markResolved.isPending || markTicketResolved.isPending;
+  const reopenPending = reopen.isPending || reopenTicket.isPending;
 
   return (
     <Card className="mb-8">
@@ -68,30 +176,52 @@ const ContactInboxSection: React.FC = () => {
         )}
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <ToggleButtonGroup<InboxFilter>
+            variant="segmented"
+            value={filter}
+            onChange={setFilter}
+            options={[
+              { value: 'all', label: `All (${items.length})` },
+              { value: 'league', label: `League requests (${leagueCount})` },
+              { value: 'support', label: `Support (${supportCount})` },
+            ]}
+          />
+          <p className="mt-2 text-xs text-muted-foreground">
+            League requests come from the message form at the foot of the home page. Support
+            messages come from the Contact page and are also emailed to the league.
+          </p>
+        </div>
+
         {isLoading ? (
           <p className="text-sm text-muted-foreground">Loading…</p>
-        ) : requests.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No contact requests yet.</p>
+        ) : visibleItems.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {items.length === 0 ? 'No messages yet.' : 'No messages of this kind.'}
+          </p>
         ) : (
           <ul className="flex flex-col gap-3">
-            {requests.map((r) => {
-              const stamp = formatNotificationDate(r.created_at);
-              const type = TYPE_LABELS[r.request_type] ?? TYPE_LABELS.other;
-              const href = contactHref(r.submitter_contact);
-              const isResolved = r.status === 'resolved';
+            {visibleItems.map((item) => {
+              const stamp = formatNotificationDate(item.createdAt);
+              const href = contactHref(item.contact);
               return (
                 <li
-                  key={r.id}
+                  key={`${item.source}-${item.id}`}
                   className={cn(
                     'rounded-md border border-border bg-card p-3',
-                    isResolved && 'opacity-60'
+                    item.isResolved && 'opacity-60'
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline" className={cn('font-medium', type.cls)}>
-                      {type.label}
+                    <Badge variant="outline" className={cn('font-medium', item.kindCls)}>
+                      {item.kindLabel}
                     </Badge>
-                    {r.is_verified && (
+                    {item.source === 'support' && (
+                      <Badge variant="outline" className="border-border text-muted-foreground">
+                        Support
+                      </Badge>
+                    )}
+                    {item.verified && (
                       <Badge
                         variant="outline"
                         className="border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
@@ -99,7 +229,7 @@ const ContactInboxSection: React.FC = () => {
                         <CheckCircle2 className="mr-1 size-3" /> Verified
                       </Badge>
                     )}
-                    {isResolved && (
+                    {item.isResolved && (
                       <Badge variant="outline" className="border-border text-muted-foreground">
                         Resolved
                       </Badge>
@@ -114,19 +244,17 @@ const ContactInboxSection: React.FC = () => {
                   </div>
 
                   <div className="mt-2 text-sm text-foreground">
-                    <span className="font-semibold">{r.submitter_name}</span>
-                    {r.submitter_team && (
-                      <span className="text-muted-foreground"> · {r.submitter_team}</span>
-                    )}
+                    <span className="font-semibold">{item.name}</span>
+                    {item.team && <span className="text-muted-foreground"> · {item.team}</span>}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {r.submitter_contact ? (
+                    {item.contact ? (
                       href ? (
                         <a className="hover:underline" href={href}>
-                          {r.submitter_contact}
+                          {item.contact}
                         </a>
                       ) : (
-                        r.submitter_contact
+                        item.contact
                       )
                     ) : (
                       <span className="italic">No contact provided</span>
@@ -134,24 +262,24 @@ const ContactInboxSection: React.FC = () => {
                   </div>
 
                   <p className="mt-2 whitespace-pre-wrap break-words text-sm text-foreground/90">
-                    {r.message}
+                    {item.message}
                   </p>
 
-                  {r.players && (
+                  {item.players && (
                     <div className="mt-2 rounded bg-muted/50 p-2 text-xs">
                       <span className="font-medium text-foreground">Players: </span>
-                      <span className="text-muted-foreground">{r.players}</span>
+                      <span className="text-muted-foreground">{item.players}</span>
                     </div>
                   )}
 
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {isResolved ? (
+                    {item.isResolved ? (
                       <Button
                         type="button"
                         size="sm"
                         variant="ghost"
-                        onClick={() => reopen.mutate(r.id)}
-                        disabled={reopen.isPending}
+                        onClick={() => handleReopen(item)}
+                        disabled={reopenPending}
                       >
                         <RefreshCcw className="mr-1 size-3.5" /> Reopen
                       </Button>
@@ -160,22 +288,24 @@ const ContactInboxSection: React.FC = () => {
                         type="button"
                         size="sm"
                         variant="secondary"
-                        onClick={() => markResolved.mutate({ id: r.id, userId: user?.id ?? null })}
-                        disabled={markResolved.isPending}
+                        onClick={() => handleResolve(item)}
+                        disabled={resolvePending}
                       >
                         <CheckCircle2 className="mr-1 size-3.5" /> Mark resolved
                       </Button>
                     )}
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => remove.mutate(r.id)}
-                      disabled={remove.isPending}
-                    >
-                      <Trash2 className="mr-1 size-3.5" /> Delete
-                    </Button>
+                    {item.canDelete && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="text-muted-foreground hover:text-destructive"
+                        onClick={() => remove.mutate(item.id)}
+                        disabled={remove.isPending}
+                      >
+                        <Trash2 className="mr-1 size-3.5" /> Delete
+                      </Button>
+                    )}
                   </div>
                 </li>
               );

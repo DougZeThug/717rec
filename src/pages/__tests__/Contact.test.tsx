@@ -133,4 +133,12 @@ describe('Contact page', () => {
       );
     });
   });
+  it('says where the message goes and points at the other form', () => {
+    renderPage();
+    expect(screen.getByText(/emailed to the league admins/i)).toBeInTheDocument();
+    const other = screen.getByRole('link', {
+      name: /message form at the bottom of the home page/i,
+    });
+    expect(other).toHaveAttribute('href', '/#contact-panel');
+  });
 });

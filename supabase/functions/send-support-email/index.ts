@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'https://esm.sh/zod@3.23.8';
 
+import { escapeHtml, sendAdminEmail, stripControlChars } from '../_shared/email.ts';
 import {
   checkRateLimit as defaultCheckRateLimit,
   getTrustedClientIp,
@@ -77,31 +78,8 @@ const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
 const RATE_LIMIT_MAX = 5;
 const ENDPOINT_KEY = 'send-support-email';
 
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/**
- * Remove ASCII control characters (including CR/LF and NUL) from a string.
- * Defense-in-depth against header/subject injection: the name flows into the
- * email Subject line, where a raw newline could otherwise split headers.
- */
-export function stripControlChars(str: string): string {
-  // Drop ASCII control chars (0x00–0x1F and 0x7F). Built with a char-code
-  // filter rather than a control-char regex literal so both deno lint and
-  // eslint (no-control-regex) stay happy without inline disables.
-  let out = '';
-  for (const ch of str) {
-    const code = ch.charCodeAt(0);
-    if (code > 0x1f && code !== 0x7f) out += ch;
-  }
-  return out;
-}
+// Re-exported so existing callers and tests keep importing it from here.
+export { stripControlChars };
 
 function countUrls(text: string): number {
   const matches = text.match(/https?:\/\/|www\./gi);
@@ -131,7 +109,7 @@ async function handleRequest(req: Request): Promise<Response> {
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-  const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+  const hasResendKey = Boolean(Deno.env.get('RESEND_API_KEY'));
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   // Durable, cross-isolate rate limit (per endpoint + hashed IP).
@@ -199,7 +177,7 @@ async function handleRequest(req: Request): Promise<Response> {
     console.error('[Support] Failed to store ticket:', storeError.message ?? storeError);
   }
 
-  if (!RESEND_API_KEY) {
+  if (!hasResendKey) {
     if (!stored) {
       // Neither durable outcome happened: don't pretend we received it.
       return jsonResponse(
@@ -247,37 +225,13 @@ async function handleRequest(req: Request): Promise<Response> {
     </div>
   `;
 
-  let emailSent = false;
-  try {
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-      },
-      body: JSON.stringify({
-        from: '717REC Support <noreply@717rec.com>',
-        to: ['admin@717rec.com'],
-        reply_to: payload.email,
-        subject: `[717REC Support] ${subjectLabel} from ${cleanName}`,
-        html: emailHtml,
-      }),
-    });
-
-    if (resendResponse.ok) {
-      const resendData = (await resendResponse.json()) as { id?: string };
-      console.log('[Support] Email sent successfully:', resendData.id);
-      emailSent = true;
-    } else {
-      const errorText = await resendResponse.text();
-      console.error('[Support] Resend API error:', errorText);
-    }
-  } catch (err) {
-    // A network-level failure (fetch rejects, body parse throws) must NOT bubble
-    // up to the outer 500 handler when the ticket is already stored — otherwise
-    // the client retries and duplicates a ticket we actually kept.
-    console.error('[Support] Resend request failed:', err instanceof Error ? err.message : err);
-  }
+  const emailSent = await sendAdminEmail({
+    from: '717REC Support <noreply@717rec.com>',
+    replyTo: payload.email,
+    subject: `[717REC Support] ${subjectLabel} from ${cleanName}`,
+    html: emailHtml,
+    logLabel: '[Support]',
+  });
 
   if (emailSent) {
     return jsonResponse(
