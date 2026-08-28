@@ -7153,6 +7153,7 @@ export type Database = {
         Returns: Json
       }
       prune_team_season_stats_not_in_agg: { Args: never; Returns: number }
+      recompute_kingslayer_badge: { Args: { p_team_id: string }; Returns: Json }
       reconcile_team_counters: { Args: never; Returns: number }
       recreate_power_view_dependents: { Args: never; Returns: undefined }
       reopen_live_match: { Args: { p_match_id: string }; Returns: boolean }
