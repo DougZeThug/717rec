@@ -103,6 +103,7 @@ describe('TeamManagementTab', () => {
 
     await user.click(getComboboxByText('East'));
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
+    await user.click(await screen.findByRole('button', { name: /change division/i }));
 
     await waitFor(() => {
       expect(mockUpdateTeam).toHaveBeenCalledWith(
@@ -113,6 +114,7 @@ describe('TeamManagementTab', () => {
 
     await user.click(getComboboxByText('West'));
     await user.click(screen.getAllByRole('option', { name: 'Unassigned' })[0]);
+    await user.click(await screen.findByRole('button', { name: /change division/i }));
 
     await waitFor(() => {
       expect(mockUpdateTeam).toHaveBeenCalledWith(
@@ -120,6 +122,24 @@ describe('TeamManagementTab', () => {
         expect.objectContaining({ division_id: null })
       );
     });
+  });
+
+  it('asks before changing a division, and leaves the team where it was on cancel', async () => {
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    await user.click(getComboboxByText('East'));
+    await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
+
+    // The pick only opens the prompt.
+    expect(mockUpdateTeam).not.toHaveBeenCalled();
+    expect(screen.getByText("Change this team's division?")).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(mockUpdateTeam).not.toHaveBeenCalled();
+    // The Select is controlled from server data, so the trigger still reads East.
+    expect(getComboboxByText('East')).toBeInTheDocument();
   });
 
   it('opens and closes edit dialog', async () => {
