@@ -18,6 +18,7 @@ import { metrics } from '@/utils/sentry';
 
 import { RouteAnnouncer } from './components/a11y/RouteAnnouncer';
 import { RouteFocusManager } from './components/a11y/RouteFocusManager';
+import { ScrollToTop } from './components/a11y/ScrollToTop';
 import ProtectedAdminRoute from './components/auth/ProtectedAdminRoute';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import Footer from './components/layout/Footer';
@@ -106,6 +107,7 @@ const AppContent = () => {
   return (
     <NavigationProvider>
       <RouteAnnouncer />
+      <ScrollToTop />
       <div className="flex flex-col min-h-screen overflow-x-hidden">
         <Navbar />
         <PageTransition>
