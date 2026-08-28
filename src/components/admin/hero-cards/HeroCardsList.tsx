@@ -69,7 +69,8 @@ const getColorPresetName = (bgColor: string) => {
 };
 
 const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit }) => {
-  const { toggleVisibility, deleteCard, createCard, isDeleting } = useHeroCardMutations();
+  const { toggleVisibility, deleteCard, createCard, isCreating, isDeleting } =
+    useHeroCardMutations();
   const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   const cardToDelete = deletingCardId ? cards.find((c) => c.id === deletingCardId) : null;
@@ -84,14 +85,28 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
     setDeletingCardId(null);
   };
 
+  /**
+   * hero_cards.slug is UNIQUE, so a fixed "-copy" suffix means duplicating the
+   * same card a second time is refused by the database. Walk to the first free
+   * suffix instead. `cards` is the full admin list, so no extra query is needed.
+   */
+  const nextFreeCopy = (slug: string, title: string) => {
+    const taken = new Set(cards.map((c) => c.slug));
+    if (!taken.has(`${slug}-copy`)) return { slug: `${slug}-copy`, title: `${title} (Copy)` };
+    let n = 2;
+    while (taken.has(`${slug}-copy-${n}`)) n += 1;
+    return { slug: `${slug}-copy-${n}`, title: `${title} (Copy ${n})` };
+  };
+
   const handleDuplicate = async (card: HeroCard) => {
     const { id: _id, created_at: _createdAt, updated_at: _updatedAt, ...rest } = card;
-    await createCard({
-      ...rest,
-      slug: `${card.slug}-copy`,
-      title: `${card.title} (Copy)`,
-      is_visible: false,
-    });
+    const copy = nextFreeCopy(card.slug, card.title);
+    try {
+      await createCard({ ...rest, ...copy, is_visible: false });
+    } catch {
+      // createCard is mutateAsync, so it rejects. The hook already toasts;
+      // without this the rejection is unhandled on top of that toast.
+    }
   };
 
   if (isLoading) {
@@ -214,6 +229,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDuplicate(card)}
+                            disabled={isCreating}
                             aria-label="Duplicate card"
                           >
                             <Copy className="size-4" />
