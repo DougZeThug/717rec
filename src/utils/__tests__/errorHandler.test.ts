@@ -375,10 +375,16 @@ describe('getUIErrorMessage', () => {
       );
     });
 
-    it('generalises an authorization error', () => {
+    it('keeps the message of an authorization error', () => {
+      // AuthorizationError is only ever built by our own code, so its wording
+      // is authored and safe. Raw permission failures arrive as Postgres 42501
+      // and are generalised on the database branch instead.
       expect(
-        getUIErrorMessage(new AuthorizationError('missing role admin'), 'Failed to save')
-      ).toBe('Failed to save: You do not have permission to do this.');
+        getUIErrorMessage(
+          new AuthorizationError('You must be signed in to submit season participation.'),
+          'Failed to save'
+        )
+      ).toBe('Failed to save: You must be signed in to submit season participation.');
     });
   });
 

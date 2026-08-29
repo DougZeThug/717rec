@@ -69,10 +69,8 @@ describe('throwEdgeFunctionError', () => {
   it.each([401, 403])('treats %s as an authorization failure', async (status) => {
     const thrown = await captureThrow(invokeError(status, { error: 'Not allowed' }), 'Failed');
     expect(thrown).toBeInstanceOf(AuthorizationError);
-    // The reason is kept on the error for logging, but the UI generalises it.
-    expect(getUIErrorMessage(thrown, 'Failed')).toBe(
-      'Failed: You do not have permission to do this.'
-    );
+    // The function wrote this wording itself, so it reaches the user.
+    expect(getUIErrorMessage(thrown, 'Failed')).toBe('Failed: Not allowed');
   });
 
   it('reads a message field when the function does not use error', async () => {

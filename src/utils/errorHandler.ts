@@ -21,6 +21,9 @@ export function handleDatabaseError(error: PostgrestError, context: string): nev
     code: error.code,
     details: error.details,
     hint: error.hint,
+    // Kept apart from the context-prefixed message so a guard marked
+    // user-visible can be shown as the reason on its own.
+    rawMessage: error.message,
   });
 }
 
@@ -121,6 +124,17 @@ const PERMISSION_REASON = 'You do not have permission to do this.';
  * act on. Anything not listed here stays generic: raw database text names
  * tables, constraints and RLS policies, which must never reach a user.
  */
+/**
+ * A database guard opts its message in by raising with
+ * `USING HINT = 'user-visible'`. PostgREST returns the hint, and
+ * handleDatabaseError copies it into details.
+ *
+ * The marker is on `hint` rather than a custom SQLSTATE deliberately:
+ * PostgREST derives the HTTP status from SQLSTATE, and an unrecognised code
+ * turns a 400 into a 500.
+ */
+export const USER_VISIBLE_HINT = 'user-visible';
+
 const POSTGRES_REASONS: Record<string, string> = {
   '23505': 'That already exists. Give it a different name and try again.',
   '23502': 'A required field is missing.',
@@ -139,7 +153,9 @@ interface ErrorDescription {
 }
 
 /** Duck-type a raw PostgrestError, which is a plain object rather than an Error. */
-function isPostgrestErrorShape(error: unknown): error is { code?: string; message: string } {
+function isPostgrestErrorShape(
+  error: unknown
+): error is { code?: string; message: string; hint?: string } {
   return (
     typeof error === 'object' &&
     error !== null &&
@@ -158,7 +174,19 @@ function isPostgrestErrorShape(error: unknown): error is { code?: string; messag
  * message for words like "fetch" or "network": most contexts read
  * "Failed to fetch ...", so that would mislabel permission errors.
  */
-function describeDatabaseError(code: string | undefined, rawMessage: string): ErrorDescription {
+function describeDatabaseError(
+  code: string | undefined,
+  rawMessage: string,
+  hint?: string
+): ErrorDescription {
+  // An opted-in guard wrote this for a league member to read. Only messages
+  // that carry the marker are shown; everything else stays generic, so
+  // internal text like "Expected to delete 1 match but deleted 3 rows" and
+  // constraint or policy names can never reach a user.
+  if (hint === USER_VISIBLE_HINT && rawMessage.trim()) {
+    return { message: rawMessage, isSpecific: true };
+  }
+
   const mapped = code ? POSTGRES_REASONS[code] : undefined;
   if (mapped) return { message: mapped, isSpecific: true };
 
@@ -187,14 +215,23 @@ function describeError(error: unknown): ErrorDescription {
   if (error instanceof ServiceError) {
     switch (error.code) {
       case 'DATABASE_ERROR': {
-        const details = error.details as { code?: string } | undefined;
-        return describeDatabaseError(details?.code, error.message);
+        const details = error.details as
+          { code?: string; hint?: string; rawMessage?: string } | undefined;
+        return describeDatabaseError(
+          details?.code,
+          details?.rawMessage ?? error.message,
+          details?.hint
+        );
       }
       case 'UNKNOWN_ERROR':
         // withErrorHandling wrapping an arbitrary throwable.
         return { message: GENERIC_REASON, isSpecific: false };
       case 'AUTHORIZATION_ERROR':
-        return { message: PERMISSION_REASON, isSpecific: true };
+        // Always constructed by our own code with an authored message, so it
+        // is safe to show. Raw permission failures from the database arrive as
+        // Postgres 42501 / PGRST301 and are handled on the branch above, which
+        // is what keeps role and policy structure hidden.
+        return { message: error.message || PERMISSION_REASON, isSpecific: true };
       default:
         // Every other ServiceError subclass carries an authored message
         // written for a user: ValidationError, NotFoundError,
@@ -204,7 +241,7 @@ function describeError(error: unknown): ErrorDescription {
   }
 
   if (isPostgrestErrorShape(error)) {
-    return describeDatabaseError(error.code, error.message);
+    return describeDatabaseError(error.code, error.message, error.hint);
   }
 
   return { message: GENERIC_REASON, isSpecific: false };
