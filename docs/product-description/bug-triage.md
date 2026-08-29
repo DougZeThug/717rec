@@ -699,6 +699,28 @@ finding read a superseded migration.
   back to the caller's phrase. Edge-function responses are unwrapped at the
   service layer so their wording survives. Roughly fifty hardcoded handlers were
   migrated; pre-flight validation guards were left alone.
+- **Followed up after review — the first cut was too blunt.** Making
+  `DatabaseError` mean "may contain raw Postgres text" was right for the ~330
+  errors `handleDatabaseError` builds, but it also swallowed messages written
+  for a person, so a user was told to retry where a retry could not work:
+  - Six TypeScript throws used a type the sanitiser treats as unsafe. "You
+    already have a team request. Refresh the page to see it.", "This user
+    already has a membership on another team. Remove that membership first."
+    and "You must be signed in to submit season participation." all became
+    "Something went wrong." They now throw `BusinessLogicError`,
+    `AuthorizationError` or `ValidationError`, which carry their wording.
+  - The database raises **222** hand-written messages and only **7** set an
+    explicit `ERRCODE`, so the rest defaulted to `P0001` and went generic too —
+    including the live-scoring guards a scorer used to read mid-match ("Match is
+    not decided yet", "Not authorized to finalize this match", "Thrower does not
+    play for team 1 of this match"). Those reached users *before* this entry was
+    fixed, so this was a regression, not a missed improvement. Six guards now
+    mark themselves `USING HINT = 'user-visible'`; everything unmarked stays
+    generic, so "Match not found: &lt;uuid&gt;" and the row-count diagnostics
+    remain hidden.
+  - `AuthorizationError` also stopped replacing its own message with a canned
+    line. It is only ever built by our own code, and raw permission failures
+    arrive as Postgres `42501` on a separate branch.
 - **Corrected on review.** The original proposal — "adopt live scoring's pattern
   app-wide" — would have made the app **less** safe, and would not have fixed
   the reproduce case above.
