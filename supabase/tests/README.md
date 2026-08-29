@@ -16,6 +16,9 @@ so a non-zero exit code means drift was detected.
 
 ## Current tests
 
+- `user_visible_error_hints.sql` — pins which guards carry
+  `USING HINT = 'user-visible'`, the opt-in that lets a database message
+  reach a user, and that internal messages do not.
 - `seasons_rls.sql` — confirms the four canonical RLS policies on
   `public.seasons` are present and attached to the expected roles.
   Backed by the `public.seasons_rls_drift()` helper function.
