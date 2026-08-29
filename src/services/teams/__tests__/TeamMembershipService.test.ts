@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -164,8 +165,13 @@ describe('joinTeamMembership', () => {
     mockFrom.mockReturnValue({
       insert: () => Promise.resolve({ error: pgError('duplicate key value', '23505') }),
     });
-    await expect(joinTeamMembership('user-1', 'team-1', false)).rejects.toThrow(
-      /already have a team request/i
+    await expect(joinTeamMembership('user-1', 'team-1', false)).rejects.toThrow(BusinessLogicError);
+
+    // The type is what carries it to the user: a DatabaseError with no
+    // details.code is sanitised down to a generic sentence.
+    const thrown = await joinTeamMembership('user-1', 'team-1', false).catch((e) => e);
+    expect(getUIErrorMessage(thrown, 'Failed to submit request')).toBe(
+      'Failed to submit request: You already have a team request. Refresh the page to see it.'
     );
   });
 });
@@ -298,7 +304,13 @@ describe('updateMembershipApproval', () => {
         eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }),
       }),
     });
-    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(DatabaseError);
+    // BusinessLogicError, not DatabaseError: the wording here is authored for
+    // an admin to read, and getUIErrorMessage only shows a typed error's
+    // message. As a DatabaseError it was replaced with "Something went wrong".
+    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(BusinessLogicError);
+    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(
+      /no row was changed. You may not have permission/i
+    );
   });
 
   it('throws DatabaseError on update error', async () => {

@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, LiveScoringNotEnabledError, NotFoundError } from '@/types/errors';
+import {
+  DatabaseError,
+  LiveScoringNotEnabledError,
+  NotFoundError,
+  ValidationError,
+} from '@/types/errors';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 // ─── Supabase mock (liveDb wraps the same client module) ─────────────────────
 
@@ -247,6 +253,17 @@ describe('setGamePlayers', () => {
       LiveMatchService.setGamePlayers('game-1', 'team-1', ['a', 'b', 'c'])
     ).rejects.toThrow(/at most 2/);
     expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('tells the scorer the limit rather than a generic failure', async () => {
+    // A bare Error would be sanitised away; ValidationError is what carries the
+    // wording to the toast in useGameFlow.
+    const thrown = await LiveMatchService.setGamePlayers('game-1', 'team-1', ['a', 'b', 'c']).catch(
+      (error) => error
+    );
+
+    expect(thrown).toBeInstanceOf(ValidationError);
+    expect(getUIErrorMessage(thrown)).toBe('A team can select at most 2 players per game');
   });
 
   it('replaces the side selection with slotted rows', async () => {

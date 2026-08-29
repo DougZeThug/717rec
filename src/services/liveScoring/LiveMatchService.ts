@@ -2,7 +2,7 @@ import type { PostgrestError } from '@supabase/supabase-js';
 
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { LiveScoringNotEnabledError } from '@/types/errors';
+import { LiveScoringNotEnabledError, ValidationError } from '@/types/errors';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { MAX_PLAYERS_PER_SIDE } from '@/utils/liveScoring/rules';
 type GamePlayerRow = Tables<'game_players'>;
@@ -177,7 +177,9 @@ export const LiveMatchService = {
   /** Replace one side's player selection for a game (max 2 slots). */
   setGamePlayers: async (gameId: string, teamId: string, playerIds: string[]): Promise<void> => {
     if (playerIds.length > MAX_PLAYERS_PER_SIDE) {
-      throw new Error(`A team can select at most ${MAX_PLAYERS_PER_SIDE} players per game`);
+      throw new ValidationError(
+        `A team can select at most ${MAX_PLAYERS_PER_SIDE} players per game`
+      );
     }
 
     const { error: deleteError } = await supabase
