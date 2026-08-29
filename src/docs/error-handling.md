@@ -149,8 +149,43 @@ toast({ description: getUIErrorMessage(error, 'Failed to create team') });
 toast({ title: 'Save failed', description: getUIErrorMessage(error) });
 ```
 
-A typed error from `@/types/errors` keeps its message. A bare `Error` does
-not — if a service wants its wording shown, it must throw a typed error.
+### Which failures can speak for themselves
+
+`getUIErrorMessage` shows a reason only when something has vouched for it.
+Two rules, and both are opt-in:
+
+**In TypeScript, the error's type decides.** `ValidationError`,
+`NotFoundError`, `BusinessLogicError` and `AuthorizationError` keep their
+message, because they are only ever built by our own code with wording written
+for a person. A bare `Error` does not, and neither does `DatabaseError` —
+`handleDatabaseError` builds its message from the raw Postgres error, so it may
+name a table, a constraint or an RLS policy.
+
+```typescript
+// ❌ WRONG — the wording is for a user, but the type says "unsafe to show",
+//    so they get "Something went wrong. Please try again." instead.
+throw new DatabaseError('You already have a team request. Refresh to see it.');
+
+// ✅ CORRECT
+throw new BusinessLogicError('You already have a team request. Refresh to see it.');
+```
+
+**In the database, the guard marks itself.** A `RAISE EXCEPTION` whose message
+is meant to be read adds `USING HINT = 'user-visible'`; anything unmarked stays
+generic, so diagnostics never leak.
+
+```sql
+-- Shown to the scorer
+RAISE EXCEPTION 'Match is not decided yet (game wins: % - %)', v_t1, v_t2
+  USING HINT = 'user-visible';
+
+-- Not shown: implementation detail
+RAISE EXCEPTION 'Expected to delete 1 match but deleted % rows', v_rows;
+```
+
+The marker is the hint, not a custom SQLSTATE: PostgREST derives the HTTP
+status from SQLSTATE, and an unrecognised code turns a 400 into a 500.
+`supabase/tests/user_visible_error_hints.sql` pins which guards are marked.
 
 ### `createServiceError()`
 
