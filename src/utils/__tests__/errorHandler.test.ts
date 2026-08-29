@@ -21,6 +21,7 @@ import {
   isNotFoundError,
   isServiceError,
   logError,
+  USER_VISIBLE_HINT,
   withErrorHandling,
 } from '@/utils/errorHandler';
 
@@ -347,6 +348,41 @@ describe('getUIErrorMessage', () => {
       expect(getUIErrorMessage(error, 'Failed to fetch teams')).toBe(
         'Failed to fetch teams: You do not have permission to do this.'
       );
+    });
+
+    it('shows a guard that marked itself user-visible', () => {
+      // finalize_live_match raises this for a scorer who taps Save too early.
+      const error = databaseErrorFrom(
+        {
+          code: 'P0001',
+          message: 'Match is not decided yet (game wins: 1 - 1)',
+          hint: USER_VISIBLE_HINT,
+        },
+        'Could not finalize match'
+      );
+      expect(getUIErrorMessage(error, 'Could not finalize match')).toBe(
+        'Could not finalize match: Match is not decided yet (game wins: 1 - 1)'
+      );
+    });
+
+    it('hides the same shape of message when the guard did not mark it', () => {
+      // The pair is the point: opting in is what makes a message showable, so
+      // internal text can never reach a user by default.
+      const error = databaseErrorFrom(
+        { code: 'P0001', message: 'Expected to delete 1 match but deleted 3 rows' },
+        'Failed to delete match'
+      );
+      const message = getUIErrorMessage(error, 'Failed to delete match');
+      expect(message).toBe('Failed to delete match. Please try again.');
+      expect(message).not.toContain('3 rows');
+    });
+
+    it('shows a marked reason on its own when there is no context', () => {
+      const error = databaseErrorFrom(
+        { code: 'P0001', message: 'Cannot approve own membership', hint: USER_VISIBLE_HINT },
+        'Failed to update membership status'
+      );
+      expect(getUIErrorMessage(error)).toBe('Cannot approve own membership');
     });
 
     it('translates a raw PostgrestError that was never wrapped', () => {
