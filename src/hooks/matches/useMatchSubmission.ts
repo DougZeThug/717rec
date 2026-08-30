@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { useToast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, matchLog } from '@/utils/logger';
 
 import { SubmitScoreParams } from './types/matchSubmissionTypes';
@@ -72,7 +73,7 @@ export const useMatchSubmission = () => {
       if (!options.suppressToast) {
         toast({
           title: 'Error',
-          description: 'Failed to update scores. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to update scores'),
           variant: 'destructive',
         });
       }

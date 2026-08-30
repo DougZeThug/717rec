@@ -10,6 +10,7 @@ import type {
   Phase3BracketManagerMatchWithStage as BracketManagerMatchWithStage,
   Phase3LegacyPlayoffMatchWithGames as LegacyPlayoffMatchWithGames,
 } from '@/types/phase3';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, playoffLog } from '@/utils/logger';
 import type { PlayoffBracket, PlayoffMatch } from '@/utils/playoffs/playoffTypes';
 
@@ -134,7 +135,7 @@ export const usePlayoffEditMatch = () => {
             errorLog('Error fetching playoff match:', fetchError);
             toast({
               title: 'Error',
-              description: 'Failed to load match data. Please try again.',
+              description: getUIErrorMessage(fetchError, 'Failed to load match data'),
               variant: 'destructive',
             });
             return;
@@ -202,7 +203,7 @@ export const usePlayoffEditMatch = () => {
         errorLog('Unexpected error in handleEditMatch:', error);
         toast({
           title: 'Error',
-          description: 'An unexpected error occurred. Please try again.',
+          description: getUIErrorMessage(error, 'Failed to open the match editor'),
           variant: 'destructive',
         });
       }

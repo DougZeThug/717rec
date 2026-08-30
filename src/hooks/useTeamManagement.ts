@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { useTeams } from '@/hooks/useTeams';
 import { useToast } from '@/hooks/useToast';
 import { Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 export function useTeamManagement() {
@@ -47,7 +48,7 @@ export function useTeamManagement() {
       errorLog('Error deleting team:', error);
       toast({
         title: 'Deletion Failed',
-        description: 'There was a problem deleting the team. Please try again.',
+        description: getUIErrorMessage(error, 'There was a problem deleting the team'),
         variant: 'destructive',
       });
     } finally {

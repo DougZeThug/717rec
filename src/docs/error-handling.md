@@ -54,21 +54,25 @@ if (error) {
 
 Hooks are the bridge between services and components. They should:
 - Catch service errors in try/catch blocks
-- Use `useErrorHandler()` for consistent error handling
+- Use `getUIErrorMessage(error, context)` for the message shown to the user
 - Return an `error` state for components to display
 - Use `withRetry()` for retryable operations
+
+Never put `error.message` in a toast directly. A service error's message is
+built from the raw Postgres error and can name tables, constraints and RLS
+policies. `getUIErrorMessage` translates the codes we can act on and falls
+back to your `context` phrase otherwise.
 
 ```typescript
 // ✅ CORRECT
 import { useState, useCallback } from 'react';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { MyService } from '@/services/MyService';
 
 export function useMyData(id: string) {
   const [data, setData] = useState(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { handleError } = useErrorHandler();
 
   const fetchData = useCallback(async () => {
     try {
@@ -130,19 +134,58 @@ function MyComponent() {
 
 ## Utility Functions
 
-### `useErrorHandler()`
+### `getUIErrorMessage()`
 
-Reusable hook for consistent error handling:
+Turn any thrown value into a message that is safe to show:
 
 ```typescript
-const { handleError, handleErrorSilent } = useErrorHandler();
+// Reason plus your lead-in phrase (no terminal punctuation on the phrase)
+toast({ description: getUIErrorMessage(error, 'Failed to create team') });
+//  -> "Failed to create team: That already exists. Give it a different name
+//      and try again."   (a unique-constraint violation)
+//  -> "Failed to create team. Please try again."   (nothing safe to add)
 
-// With toast notification
-const errorInfo = handleError(error, 'Creating team');
-
-// Silent (logging only)
-const errorInfo = handleErrorSilent(error, 'Background sync');
+// Reason alone, when the toast title already says what failed
+toast({ title: 'Save failed', description: getUIErrorMessage(error) });
 ```
+
+### Which failures can speak for themselves
+
+`getUIErrorMessage` shows a reason only when something has vouched for it.
+Two rules, and both are opt-in:
+
+**In TypeScript, the error's type decides.** `ValidationError`,
+`NotFoundError`, `BusinessLogicError` and `AuthorizationError` keep their
+message, because they are only ever built by our own code with wording written
+for a person. A bare `Error` does not, and neither does `DatabaseError` —
+`handleDatabaseError` builds its message from the raw Postgres error, so it may
+name a table, a constraint or an RLS policy.
+
+```typescript
+// ❌ WRONG — the wording is for a user, but the type says "unsafe to show",
+//    so they get "Something went wrong. Please try again." instead.
+throw new DatabaseError('You already have a team request. Refresh to see it.');
+
+// ✅ CORRECT
+throw new BusinessLogicError('You already have a team request. Refresh to see it.');
+```
+
+**In the database, the guard marks itself.** A `RAISE EXCEPTION` whose message
+is meant to be read adds `USING HINT = 'user-visible'`; anything unmarked stays
+generic, so diagnostics never leak.
+
+```sql
+-- Shown to the scorer
+RAISE EXCEPTION 'Match is not decided yet (game wins: % - %)', v_t1, v_t2
+  USING HINT = 'user-visible';
+
+-- Not shown: implementation detail
+RAISE EXCEPTION 'Expected to delete 1 match but deleted % rows', v_rows;
+```
+
+The marker is the hint, not a custom SQLSTATE: PostgREST derives the HTTP
+status from SQLSTATE, and an unrecognised code turns a 400 into a 500.
+`supabase/tests/user_visible_error_hints.sql` pins which guards are marked.
 
 ### `createServiceError()`
 

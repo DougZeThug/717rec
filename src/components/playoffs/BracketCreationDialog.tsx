@@ -1,5 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
@@ -181,11 +180,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
         bracketLog('Data refresh completed');
 
-        toast({
-          title: 'Data Refreshed',
-          description: 'Bracket data has been updated. Your new bracket should now be visible.',
-        });
-
+        // No toast here: it would land on top of "Bracket Created Successfully"
+        // a moment after it appears, and the dialog navigates away 1s later.
         setTimeout(() => {
           navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
         }, 1000);
@@ -256,7 +252,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
         {isRefreshing && (
           <div className="mb-4 p-4 border border-blue-500 rounded-lg bg-blue-50 dark:bg-blue-900/20">
             <div className="flex items-center gap-2">
-              <div className="size-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="size-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
                 Refreshing bracket data...
               </p>

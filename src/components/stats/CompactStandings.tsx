@@ -149,7 +149,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const handleTeamClick = useCallback(
     (teamName: string) => {
       navigate(`/teams/${toTeamSlug(teamName)}`, {
-        state: { from: '/stats', scrollPosition: window.scrollY },
+        state: { from: '/stats' },
       });
     },
     [navigate]

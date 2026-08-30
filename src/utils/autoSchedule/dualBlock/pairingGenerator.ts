@@ -1,6 +1,7 @@
 import { Team } from '@/types';
 import { DualBlockConfig, PairingResult, TeamPairingMap } from '@/types/autoSchedule';
 import { NotificationCallback } from '@/types/dualBlock';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog, warnLog } from '@/utils/logger';
 
 import { generatePairingsWithBlossom } from '../blossomPairingAlgorithm';
@@ -178,7 +179,7 @@ export const generateDualBlockPairings = async (
     if (notifyCallback) {
       notifyCallback({
         title: 'Error',
-        description: 'Failed to generate dual block pairings.',
+        description: getUIErrorMessage(error, 'Failed to generate dual block pairings'),
         variant: 'destructive',
       });
     }

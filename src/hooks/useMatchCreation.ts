@@ -5,6 +5,7 @@ import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
 import { createMatch } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]) => void) => {
@@ -68,11 +69,10 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
 
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error creating match:', error);
       toast({
         title: 'Error',
-        description: `Failed to create match: ${message}`,
+        description: getUIErrorMessage(error, 'Failed to create match'),
         variant: 'destructive',
       });
       return false;

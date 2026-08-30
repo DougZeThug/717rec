@@ -7,6 +7,7 @@ import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { MessageReactionsService } from '@/services/messages/MessageReactionsService';
 import { MessageReaction, ReactionCount } from '@/types/reactions';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { messageBoardKeys } from './messageBoardKeys';
@@ -220,7 +221,11 @@ export const useMessageReactions = (messageId: string) => {
           errorLog('Error invalidating message reactions after failed removal:', invalidateError);
         });
       errorLog('Error removing reaction:', err);
-      toast({ title: 'Error', description: 'Failed to remove reaction', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getUIErrorMessage(err, 'Failed to remove reaction'),
+        variant: 'destructive',
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey, refetchType: 'none' }).catch((err: unknown) => {
@@ -271,7 +276,11 @@ export const useMessageReactions = (messageId: string) => {
     onError: (err, _emoji, context) => {
       if (context) queryClient.setQueryData(queryKey, context.previous ?? []);
       errorLog('Error adding reaction:', err);
-      toast({ title: 'Error', description: 'Failed to add reaction', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getUIErrorMessage(err, 'Failed to add reaction'),
+        variant: 'destructive',
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey, refetchType: 'active' }).catch((err: unknown) => {

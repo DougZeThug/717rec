@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth-context';
@@ -16,6 +17,7 @@ import { useNotificationsQuery } from '@/hooks/notifications/useNotificationsQue
 import { useNotificationsRealtime } from '@/hooks/notifications/useNotificationsRealtime';
 import { toast } from '@/hooks/useToast';
 import type { NotificationRow } from '@/services/notifications/NotificationService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
 const getCurrentTimeMs = () => Date.now();
@@ -68,6 +70,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<NotificationRow | null>(null);
 
   const editing = useMemo(
     () => (editingId ? (notifications.find((n) => n.id === editingId) ?? null) : null),
@@ -88,6 +91,11 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
     }
   }, [editingId, editing]);
 
+  const handleConfirmDelete = () => {
+    if (!pendingDelete) return;
+    del.mutate(pendingDelete.id, { onSettled: () => setPendingDelete(null) });
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const t = title.trim();
@@ -107,7 +115,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
     } catch (err) {
       toast({
         title: 'Save failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getUIErrorMessage(err),
         variant: 'destructive',
       });
     }
@@ -222,7 +230,7 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
                     variant="ghost"
                     size="icon"
                     className="size-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => del.mutate(n.id)}
+                    onClick={() => setPendingDelete(n)}
                     disabled={del.isPending}
                     aria-label="Delete notification"
                   >
@@ -234,6 +242,20 @@ const NotificationsAdmin: React.FC<{ currentTimeMs?: number }> = ({
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={() => setPendingDelete(null)}
+        title="Delete this notification?"
+        description={
+          <>
+            <strong>{pendingDelete?.title}</strong> will be removed from the notification bell for
+            everyone in the league. This cannot be undone.
+          </>
+        }
+        onConfirm={handleConfirmDelete}
+        isPending={del.isPending}
+      />
     </div>
   );
 };

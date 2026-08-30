@@ -215,7 +215,8 @@ describe('useAutoScheduleSave', () => {
       expect.objectContaining({
         title: 'Error Saving Matches',
         variant: 'destructive',
-        description: 'db down',
+        // A bare Error from the service carries nothing safe to show.
+        description: 'Failed to save matches to the database. Please try again.',
       })
     );
   });

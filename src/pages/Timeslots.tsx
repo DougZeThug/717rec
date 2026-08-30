@@ -12,6 +12,7 @@ import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
 import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 export default function Timeslots() {
@@ -33,7 +34,7 @@ export default function Timeslots() {
     return (
       <div className="container mx-auto py-8 px-4 flex items-center justify-center h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full size-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full size-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Checking access...</p>
         </div>
       </div>
@@ -71,7 +72,7 @@ export default function Timeslots() {
       errorLog('Error assigning timeslot:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign timeslot. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign timeslot'),
         variant: 'destructive',
       });
     }
@@ -97,7 +98,7 @@ export default function Timeslots() {
       errorLog('Error during batch assignment:', error);
       toast({
         title: 'Error',
-        description: 'Failed to assign timeslots. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to assign timeslots'),
         variant: 'destructive',
       });
     }
@@ -126,7 +127,7 @@ export default function Timeslots() {
       errorLog('Error removing timeslot:', error);
       toast({
         title: 'Error',
-        description: 'Failed to remove timeslot. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to remove timeslot'),
         variant: 'destructive',
       });
     }

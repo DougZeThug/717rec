@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
 import { HeroCardService } from '@/services/HeroCardService';
 import { HeroCard } from '@/types/heroCard';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 // Hook for fetching visible hero cards (homepage)
 export const useHeroCards = () => {
@@ -40,7 +41,7 @@ export const useHeroCardMutations = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: `Failed to create hero card: ${error.message}`,
+        description: getUIErrorMessage(error, 'Failed to create hero card'),
         variant: 'destructive',
       });
     },
@@ -58,7 +59,7 @@ export const useHeroCardMutations = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: `Failed to update hero card: ${error.message}`,
+        description: getUIErrorMessage(error, 'Failed to update hero card'),
         variant: 'destructive',
       });
     },
@@ -76,7 +77,7 @@ export const useHeroCardMutations = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: `Failed to delete hero card: ${error.message}`,
+        description: getUIErrorMessage(error, 'Failed to delete hero card'),
         variant: 'destructive',
       });
     },
@@ -95,7 +96,7 @@ export const useHeroCardMutations = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: `Failed to update visibility: ${error.message}`,
+        description: getUIErrorMessage(error, 'Failed to update visibility'),
         variant: 'destructive',
       });
     },

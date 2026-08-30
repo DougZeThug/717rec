@@ -106,7 +106,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         <div className="flex items-center justify-between gap-2">
           <Link
             to={`/teams/${toTeamSlug(ranking.teamName)}`}
-            state={{ from: '/stats', scrollPosition: window.scrollY }}
+            state={{ from: '/stats' }}
             aria-label={`View ${ranking.teamName} team details`}
             className={cn(
               'flex items-center gap-3 transition-colors group flex-1 min-w-0',

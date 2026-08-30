@@ -1,5 +1,6 @@
 import { useToast } from '@/hooks/useToast';
 import { fetchMatchesForAdmin } from '@/services/matches/MatchReadService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { FilterState, MatchWithTeams } from '../../types';
@@ -23,11 +24,10 @@ export const useMatchesFetching = () => {
     try {
       return await fetchMatchesOrThrow(filters);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errorLog('Error fetching matches:', message);
+      errorLog('Error fetching matches:', error);
       toast({
         title: 'Error',
-        description: `Failed to fetch matches: ${message}`,
+        description: getUIErrorMessage(error, 'Failed to fetch matches'),
         variant: 'destructive',
       });
       return [];

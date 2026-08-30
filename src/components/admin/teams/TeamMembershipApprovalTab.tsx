@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { usePendingMemberships } from '@/hooks/usePendingMemberships';
 import { useToast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { toLocalDateString } from '@/utils/formatDateSafe';
 import { errorLog } from '@/utils/logger';
 
@@ -40,7 +41,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
       errorLog('Error updating membership:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update membership status',
+        description: getUIErrorMessage(error, 'Failed to update membership status'),
         variant: 'destructive',
       });
     }

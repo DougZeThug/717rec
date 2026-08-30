@@ -27,10 +27,6 @@ vi.mock('@/hooks/useToast', () => ({
   toast: (...args: unknown[]) => mockToast(...args),
 }));
 
-vi.mock('@/utils/errorHandler', () => ({
-  getUIErrorMessage: (error: unknown) => (error instanceof Error ? error.message : 'Unknown error'),
-}));
-
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -65,7 +61,7 @@ describe('useAdminCorrections', () => {
   });
 
   it('deletes a round and invalidates standings-related caches for finalized matches', async () => {
-    mockDeleteRound.mockResolvedValue(undefined);
+    mockDeleteRound.mockImplementation(() => Promise.resolve());
     const { wrapper, queryClient } = createWrapper();
     const { result } = renderHook(
       () => useAdminCorrections({ matchId: 'match-2', affectsStandings: true }),
@@ -95,7 +91,9 @@ describe('useAdminCorrections', () => {
     expect(mockSetGameWinner).toHaveBeenCalledWith('game-1', 'team-b', { team1: 18, team2: 21 });
     expect(mockToast).toHaveBeenCalledWith({
       title: 'Could not change game winner',
-      description: 'winner rejected',
+      // The title already says what failed, so this call site passes no
+      // context. A bare Error carries nothing we can vouch for showing.
+      description: 'Something went wrong. Please try again.',
       variant: 'destructive',
     });
   });

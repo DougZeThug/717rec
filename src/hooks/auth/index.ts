@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { toast } from '@/hooks/useToast';
 import { getAuthSession, onAuthStateChange } from '@/services/auth/AuthService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { authLog, errorLog } from '@/utils/logger';
 
 import { useAuthMethods } from './useAuthMethods';
@@ -138,7 +139,7 @@ export const useAuth = () => {
               if (event === 'SIGNED_IN') {
                 toast({
                   title: 'Profile error',
-                  description: 'Failed to load your profile data',
+                  description: getUIErrorMessage(error, 'Failed to load your profile data'),
                   variant: 'destructive',
                 });
               }

@@ -40,10 +40,15 @@ team check before any time was written — so nothing was ever corrupted. The re
 defect on that path was that the save always failed. It moved from `high` to
 `medium` and is now fixed.
 
-Two structural themes run under the medium entries: **destructive admin actions
-with no confirmation** (six of them, in one entry) and **failure messages that
-throw away the reason the server gave** (app-wide, in one entry). Both are
-patterns rather than single mistakes, and both would be cheap to fix in one pass.
+Two structural themes ran under the medium entries: **destructive admin actions
+with no confirmation** (B-11) and **failure messages that throw away the reason
+the server gave** (B-12). Both are now fixed, and both entries were wrong in
+part. B-11 listed six actions; two of them turned out not to be defects as
+described, and one of those was re-filed as a different, smaller bug. B-12's
+proposed fix — propagate the reason the way live scoring does — would have made
+the app less safe, because the function it named does not sanitise and the
+service layer had already lost the reason it was meant to surface. See each
+entry's *Corrected on review* note.
 
 | ID | Title | Severity | Area | Decision needed | Issue |
 | --- | --- | --- | --- | --- | --- |
@@ -61,10 +66,10 @@ patterns rather than single mistakes, and both would be cheap to fix in one pass
 | B-33 | Six of the twenty badge types can never be awarded | high | stats | fix | **fixed** |
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
-| B-11 | Six destructive admin actions have no confirmation | medium | admin | fix | — |
-| B-12 | Failure messages discard the reason the server gave | medium | all | fix | — |
-| B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | fix | — |
-| B-14 | Scroll position carries across every in-app navigation | medium | foundations | fix | — |
+| B-11 | Four destructive admin actions have no confirmation | medium | admin | **fixed** | — |
+| B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
+| B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
+| B-14 | Scroll position carries across every in-app navigation | medium | foundations | **fixed** | — |
 | B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | fix | — |
 | B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | fix | — |
 | B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | product call | — |
@@ -626,33 +631,47 @@ finding read a superseded migration.
 
 ## Medium
 
-### B-11: Six destructive admin actions have no confirmation
+### B-11: Four destructive admin actions have no confirmation
 
-- **Where the user meets it:** across the admin dashboard, six actions destroy or
-  overwrite data on the first press.
+- **Where the user meets it:** across the admin dashboard, four actions destroy
+  or overwrite data on the first press.
 - **What happens / what was expected:** no dialog, no undo, and in two cases no
   success message either. Expected: the same confirmation the other destructive
   actions on the same screens already use.
-- **The six:**
-  - Deleting a contact request — `src/components/admin/contact/ContactInboxSection.tsx:174`.
-    Permanent, no dialog, no toast.
-  - Deleting an admin notification — `src/pages/admin/NotificationsAdmin.tsx:225`.
-    The notification is in the bell on every page.
-  - Re-scoring a completed match in the mass tool —
-    `src/components/admin/mass-score-entry/hooks/useScoreEntryData.ts:126`. One
-    press reverses the recorded result, moves both teams' records and
-    recalculates power scores.
-  - Deleting a saved Challonge fallback —
-    `src/components/admin/challonge-fallback/ChallongeFallbackSection.tsx:118`.
-  - Changing a team's division — `src/components/admin/teams/TeamTableDesktop.tsx:55`.
+- **The four:**
+  - Deleting a contact request — `ContactInboxSection.tsx`. Permanent, no
+    dialog, no toast.
+  - Deleting an admin notification — `NotificationsAdmin.tsx`. The notification
+    is in the bell on every page.
+  - Deleting a saved Challonge fallback — `ChallongeFallbackSection.tsx`.
+  - Changing a team's division — `TeamTableDesktop.tsx` and `TeamListMobile.tsx`.
     Because hiding a team *is* setting its division to Hidden, one mis-click
     removes a team from the public site.
-  - Duplicating a hero card — `src/components/admin/hero-cards/HeroCardsList.tsx:87`.
-    Pressed twice it makes two cards with the same slug.
-- **Severity:** `medium`. Each is recoverable by hand, but the re-score and the
-  division change move league-wide numbers.
+- **Severity:** `medium`. Each is recoverable by hand, but the division change
+  moves a team out of the standings, the schedule and its public page.
 - **Decision needed:** `fix`. One shared confirmation, matching the ones already
   in use.
+- **Status:** **fixed.** A shared `ConfirmDialog` (`src/components/ui/`) now
+  guards all four. The division prompt lives in `ManageTeamsPane` so the desktop
+  table and the mobile list share it; it needs no mirror state and cancelling
+  needs no revert, because both Selects are controlled from server data. The
+  two missing success toasts were added.
+- **Corrected on review.** This entry originally listed **six** actions. Two of
+  them do not hold up:
+  - *Re-scoring a completed match in the mass tool* — **dropped, not a defect.**
+    Every match the tool submits is completed by design; that is its entry
+    condition (`submissionEligibility.ts` requires `isEdited && isValid &&
+    iscompleted`). The admin must edit a score first and then press Submit, and
+    gets a summary toast naming saved and failed counts. The tool's *delete*
+    action already has a dialog.
+  - *Duplicating a hero card* — **the claim was wrong.** It said two presses
+    make two cards with the same slug. They cannot: `hero_cards.slug` is
+    `TEXT UNIQUE NOT NULL`, so the database refuses the second insert. Re-filed
+    as what it actually is, and fixed: the suffix was always `-copy`, so
+    duplicating the same card a second time *ever* collided; the button had no
+    `disabled` guard though the hook already exposed `isCreating`; and the
+    unawaited rejection surfaced as an unhandled promise rejection on top of the
+    error toast. The copy is created hidden, so it never reached the public site.
 - **Raised by:** [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification),
   [`admin/send-notifications.md`](admin/send-notifications.md#open-questions-and-verification),
   [`admin/enter-scores-in-bulk.md`](admin/enter-scores-in-bulk.md#open-questions-and-verification),
@@ -662,23 +681,70 @@ finding read a superseded migration.
 
 ### B-12: Failure messages discard the reason the server gave
 
-- **Where the user meets it:** any failed write, anywhere in the app except live
-  scoring.
+- **Where the user meets it:** any failed write, anywhere in the app.
 - **What happens / what was expected:** the server sends a specific reason — too
-  many messages in ten minutes, too many links, a value too long, a permission
-  refused — and the app replaces it with a fixed per-feature sentence, usually
-  ending "Please try again." For a rate limit and for an over-length value, **a
-  retry can never succeed**, and the user is told to retry. Expected: the reason
-  reaches the user, as it already does in live scoring.
+  many messages in ten minutes, too many links, a permission refused — and the
+  app replaces it with a fixed per-feature sentence, usually ending "Please try
+  again." For a rate limit **a retry can never succeed**, and the user is told to
+  retry. Expected: the reason reaches the user.
 - **Reproduce:** 1. Submit six contact-form messages within ten minutes. 2. Read
   the sixth toast: "Failed to send message. Please try again."
-- **Why (from the code):** `src/pages/Contact.tsx:76` catches and discards; the
-  same shape recurs across `src/hooks/`. Live scoring is the exception and shows
-  how it should look — `getUIErrorMessage(error)` is passed straight through
-  (`src/hooks/live-scoring/useRoundMutations.ts:101`).
 - **Severity:** `medium`. Recoverable, but it costs the user time and it makes
   every failure look the same.
-- **Decision needed:** `fix`. Adopt live scoring's pattern app-wide.
+- **Decision needed:** `fix`.
+- **Status:** **fixed**, but not the way this entry proposed — see below.
+  `getUIErrorMessage` now sanitises before it prefixes: it translates the
+  Postgres codes a user can act on (a duplicate name, a missing permission),
+  passes through the message of an authored typed error, and otherwise falls
+  back to the caller's phrase. Edge-function responses are unwrapped at the
+  service layer so their wording survives. Roughly fifty hardcoded handlers were
+  migrated; pre-flight validation guards were left alone.
+- **Followed up after review — the first cut was too blunt.** Making
+  `DatabaseError` mean "may contain raw Postgres text" was right for the ~330
+  errors `handleDatabaseError` builds, but it also swallowed messages written
+  for a person, so a user was told to retry where a retry could not work:
+  - Six TypeScript throws used a type the sanitiser treats as unsafe. "You
+    already have a team request. Refresh the page to see it.", "This user
+    already has a membership on another team. Remove that membership first."
+    and "You must be signed in to submit season participation." all became
+    "Something went wrong." They now throw `BusinessLogicError`,
+    `AuthorizationError` or `ValidationError`, which carry their wording.
+  - The database raises **222** hand-written messages and only **7** set an
+    explicit `ERRCODE`, so the rest defaulted to `P0001` and went generic too —
+    including the live-scoring guards a scorer used to read mid-match ("Match is
+    not decided yet", "Not authorized to finalize this match", "Thrower does not
+    play for team 1 of this match"). Those reached users *before* this entry was
+    fixed, so this was a regression, not a missed improvement. Six guards now
+    mark themselves `USING HINT = 'user-visible'`; everything unmarked stays
+    generic, so "Match not found: &lt;uuid&gt;" and the row-count diagnostics
+    remain hidden.
+  - `AuthorizationError` also stopped replacing its own message with a canned
+    line. It is only ever built by our own code, and raw permission failures
+    arrive as Postgres `42501` on a separate branch.
+- **Corrected on review.** The original proposal — "adopt live scoring's pattern
+  app-wide" — would have made the app **less** safe, and would not have fixed
+  the reproduce case above.
+  - `getUIErrorMessage` did not sanitise anything. It was `error.message` plus a
+    prefix, while `handleDatabaseError` builds its message from the **raw
+    PostgrestError**. Live scoring's twenty call sites were therefore already
+    showing users text like *"new row violates row-level security policy for
+    table match_rounds"*. Propagating that pattern would have added ~50 more
+    such sites. A sanitiser had to come first.
+  - For the contact form the reason was lost **before** the toast.
+    `supabase.functions.invoke` reports a non-2xx as a `FunctionsHttpError`
+    whose message is the fixed string *"Edge Function returned a non-2xx status
+    code"*; the real body is only on `error.context`, and no call site in the
+    app read it. Fixing only the toast would have shown that placeholder —
+    worse than the generic sentence it replaced.
+  - Eighteen further leak sites were found that this entry never listed, in
+    `useHeroCards`, `useChallongeFallback`, `useSeasonParticipation`,
+    `useTimeslotMutation` (all seven of its catch blocks), `useMatchCreation`,
+    `useMatchUpdate`, `useMatchDelete`, `useTeamMembership` and others, all
+    interpolating the raw error message straight into a toast.
+  - Three test suites mocked `getUIErrorMessage` with a stub that treated its
+    second argument as a *fallback* when the real function treats it as a
+    *prefix*, so any leak on those paths was invisible to the suite. The stubs
+    were deleted before anything else changed.
 - **Raised by:** [`help/contact-the-league.md`](help/contact-the-league.md#open-questions-and-verification),
   [`foundations/messages-to-the-user.md`](foundations/messages-to-the-user.md#open-questions-and-verification),
   and eleven other documents.
@@ -689,17 +755,29 @@ finding read a superseded migration.
 - **What happens / what was expected:** the second replaces the first
   immediately. Creating a bracket shows "Bracket Created Successfully" and then
   "Data Refreshed" within a second, so the success message is never read
-  (`src/components/playoffs/BracketCreationDialog.tsx:164,185`). A bulk score
-  batch raises its summary toast and the refresh that follows raises its own,
-  stealing it (`useScoreEntryData.ts:221` then `:235`). Expected: messages queue,
-  or a second message does not fire.
-- **Why (from the code):** `TOAST_LIMIT = 1` in `src/hooks/useToast.ts:6`, with
-  the reducer slicing to that limit at line 81.
+  (`src/components/playoffs/BracketCreationDialog.tsx`). Expected: messages
+  queue, or a second message does not fire.
+- **Why (from the code):** `TOAST_LIMIT = 1` in `src/hooks/useToast.ts`, with the
+  reducer prepending and then slicing to that limit — a hard replacement, with no
+  exit animation.
 - **Severity:** `medium`. It hides confirmations rather than causing wrong data.
-  Worth noting the bulk score tool survives it by design: it reports one summary
-  plus a persistent banner and per-row errors, which is the right pattern.
-- **Decision needed:** `fix`. Raise the limit to two or three, or stop raising
-  the second message.
+- **Decision needed:** `fix`. Raise the limit, or stop raising the second message.
+- **Status:** **fixed.** The limit is now 3, the viewport got a gap, and the
+  low-value "Data Refreshed" toast was removed — the dialog navigates away a
+  second later, so making that message *visible* was not the same as making it
+  worth reading. `TOAST_REMOVE_DELAY` had to move with the limit: Radix
+  auto-closes a toast after ~5s, which only sets `open: false`, and the old
+  1000000ms delay then kept the closed toast in state for 16.7 minutes, where it
+  would have occupied one of the new slots. It is now 1000ms. This also gave
+  `useToast` its first test coverage.
+- **Corrected on review.** The second example in this entry does not exist. The
+  claim was that a bulk score batch's summary toast is stolen by the refresh
+  that follows (`useScoreEntryData.ts:221` then `:235`). Line 235 is
+  `await fetchMatches(filters)`, not a toast, and the whole `finally` block
+  raises none: exactly one toast fires on a successful batch. A refresh error
+  toast can fire from `useMatchesFetching`, but only on a failure path. The
+  entry's own severity note — that the bulk score tool survives this by design —
+  was the accurate half.
 - **Raised by:** [`foundations/messages-to-the-user.md`](foundations/messages-to-the-user.md#open-questions-and-verification),
   [`admin/enter-scores-in-bulk.md`](admin/enter-scores-in-bulk.md#open-questions-and-verification),
   [`admin/run-the-playoffs.md`](admin/run-the-playoffs.md#open-questions-and-verification).
@@ -722,12 +800,22 @@ finding read a superseded migration.
   confusing for a user who cannot see the page has changed.
 - **Decision needed:** `fix`. Reset scroll on navigation, except where a route
   has deliberately restored its own.
+- **Status:** **fixed.** Confirmed on 2026-08-25 against commit `ea5c8f4` by
+  driving Chromium against the dev server — scrolled to 337px on `/schedule`,
+  clicked an in-app link to `/help`, still at 337px. Checklist item `NAV-01`.
+  A `ScrollToTop` component now sits beside `RouteAnnouncer`, modelled on
+  `RouteFocusManager`: it skips POP so `useScrollRestoration` still wins on a
+  back navigation, and watches `pathname` only, because several pages call
+  `setSearchParams` with `replace` from an effect. `<ScrollRestoration>` was not
+  an option — it needs a data router and the app uses `<BrowserRouter>`.
+  One prerequisite was not in this entry: returning from a team page to `/stats`
+  was a *forward* navigation (`navigate(state.from)` plus a 100ms smooth scroll),
+  so a POP guard alone would not have covered it and the page would have jumped
+  to the top and then glided back. That handler now pops history instead, which
+  also deleted the timer and five dead `scrollPosition` link payloads.
 - **Raised by:** [`foundations/navigation.md`](foundations/navigation.md#open-questions-and-verification),
   [`teams/browse-teams.md`](teams/browse-teams.md#open-questions-and-verification),
   [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).
-- **Status:** **confirmed** on 2026-08-25 against commit `ea5c8f4`, by driving
-  Chromium against the dev server. Scrolled to 337px on `/schedule`, clicked an
-  in-app link to `/help`, still at 337px. Checklist item `NAV-01`.
 
 ### B-15: The support and score-report functions refuse the app's own dev origin
 
@@ -1222,9 +1310,48 @@ finding read a superseded migration.
   anywhere in `src/`, so the feature it gates can never be switched on.
 - Also here: `/admin/notifications` has no link anywhere in the app and must be
   typed (`src/App.tsx:213`), and `useErrorHandler`'s "Network error. Please check
-  your connection and try again." has no importer, so that sentence has never
-  been shown to anyone (`src/hooks/useErrorHandler.ts:21`).
+  your connection and try again." had no importer, so that sentence was never
+  shown to anyone. That hook and the `handleHookError` behind it have since been
+  **deleted** as part of [B-12](#b-12-failure-messages-discard-the-reason-the-server-gave),
+  whose sanitiser supersedes them.
 - **Severity:** `low`. **Decision needed:** `fix`. Remove them, or finish them.
 - **Raised by:** [`admin/send-notifications.md`](admin/send-notifications.md#open-questions-and-verification),
   [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification),
   [`cross-cutting/errors-and-offline.md`](cross-cutting/errors-and-offline.md#open-questions-and-verification).
+
+---
+
+## Note: what the DeepSource coverage check actually measures
+
+Not a defect in the app — recorded so the next person does not spend a round
+rediscovering it.
+
+The coverage check reports **Failure** on pull requests while every metric is
+*rising*. That is not a threshold breach:
+
+- **Coverage thresholds are set in DeepSource's web UI**, per repository, not in
+  `.deepsource.toml`. None are set for this repo, which is why every Threshold
+  column reads `N/A`. A run fails on a threshold only when one is set *and*
+  enforced.
+- The status is driven by the count of **uncovered-line annotations**, and the
+  analyzer annotates every file a pull request *touches*, not the lines it
+  changes. A one-line edit to `useMessageBoard.ts` pulls all of that file's
+  long-standing uncovered lines into the report.
+
+So the check cannot be made green by covering the code a branch actually adds.
+On the branch that fixed B-11 to B-14, of the ~180 uncovered lines reported,
+**seven** were added by the branch; all seven are now tested, and the check
+still reads Failure.
+
+**The gate that does bind this repo is `vitest.config.ts`**, which enforces
+per-area coverage floors — `src/components/**` and `src/pages/**` have their own
+— and CI runs it. `coverage-baseline.txt` is a manual snapshot, promoted with
+`npm run test:coverage:update-baseline`, not an enforced gate.
+
+Two options if the check should mean something: set thresholds in the DeepSource
+UI so it reflects a real bar, or accept that its status tracks the repo's
+overall coverage debt rather than the change under review.
+
+One related trap, since it cost a round here: **`.deepsource.toml` is read from
+the default branch.** Config changes on a branch do not affect that branch's own
+analysis — they take effect once merged.

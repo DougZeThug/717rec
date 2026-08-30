@@ -3,6 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
 import { deleteMatchWithStatsReversal } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
+import { NotFoundError } from '@/types/errors';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
@@ -33,7 +35,7 @@ export const useMatchDelete = ({
       const matchToDelete = matches.find((match) => match.id === deleteMatchId);
 
       if (!matchToDelete) {
-        throw new Error('Match not found');
+        throw new NotFoundError('Match');
       }
 
       // Atomic delete + stats reversal + season stat refresh in a single transaction.
@@ -56,11 +58,10 @@ export const useMatchDelete = ({
 
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
       errorLog('Error deleting match:', error);
       toast({
         title: 'Error',
-        description: `Failed to delete match: ${message}`,
+        description: getUIErrorMessage(error, 'Failed to delete match'),
         variant: 'destructive',
       });
       return false;

@@ -8,7 +8,9 @@ import {
   saveAutoScheduleMatches,
 } from '@/services/matches/MatchWriteService';
 import { AutoScheduleMatch } from '@/types/autoSchedule';
+import { ValidationError } from '@/types/errors';
 import { validateMatchSchedule } from '@/utils/autoSchedule/validation';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, scheduleLog } from '@/utils/logger';
 
 import { clearAutoScheduleState } from './storage';
@@ -48,7 +50,9 @@ export function useAutoScheduleSave() {
       const validation = await validateMatchSchedule(matches);
       if (!validation.isValid) {
         const errorMessages = validation.errors.map((e) => e.message).join('; ');
-        throw new Error(`Schedule validation failed: ${errorMessages}`);
+        // Typed so the reason reaches the user: getUIErrorMessage keeps the
+        // message of an authored error and generalises a bare one.
+        throw new ValidationError(`Schedule validation failed: ${errorMessages}`);
       }
 
       // Show rematch warnings (non-blocking)
@@ -114,11 +118,10 @@ export function useAutoScheduleSave() {
 
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to save matches to database';
       errorLog('Error saving matches:', error);
       toast({
         title: 'Error Saving Matches',
-        description: message,
+        description: getUIErrorMessage(error, 'Failed to save matches to the database'),
         variant: 'destructive',
       });
       return false;

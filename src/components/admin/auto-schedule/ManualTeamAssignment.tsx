@@ -15,6 +15,7 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useToast } from '@/hooks/useToast';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { TIME_BLOCKS } from '@/utils/autoSchedule/constants';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 interface ManualTeamAssignmentProps {
@@ -98,7 +99,7 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
       errorLog('Error assigning teams manually:', error);
       toast({
         title: 'Assignment Error',
-        description: 'There was an error assigning teams. Please try again.',
+        description: getUIErrorMessage(error, 'There was an error assigning teams'),
         variant: 'destructive',
       });
     } finally {

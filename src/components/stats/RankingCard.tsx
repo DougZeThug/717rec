@@ -102,7 +102,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
           {/* Team logo + name + record */}
           <Link
             to={`/teams/${toTeamSlug(ranking.teamName)}`}
-            state={{ from: '/stats', scrollPosition: window.scrollY }}
+            state={{ from: '/stats' }}
             aria-label={`View ${ranking.teamName} team details`}
             className="flex items-center gap-2 flex-1 min-w-0 group"
             onClick={(e) => e.stopPropagation()}
@@ -210,7 +210,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
       <div className="flex items-center justify-between mb-2">
         <Link
           to={`/teams/${toTeamSlug(ranking.teamName)}`}
-          state={{ from: '/stats', scrollPosition: window.scrollY }}
+          state={{ from: '/stats' }}
           aria-label={`View ${ranking.teamName} team details`}
           className="flex items-center gap-2 min-w-0 group"
         >

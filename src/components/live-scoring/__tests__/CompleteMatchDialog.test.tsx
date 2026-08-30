@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import { expectNoAxeViolations } from '@/test/a11y';
+import { BusinessLogicError } from '@/types/errors';
 
 import { CompleteMatchDialog } from '../CompleteMatchDialog';
 
@@ -113,14 +114,14 @@ describe('CompleteMatchDialog', () => {
           { gameNumber: 3, team1Total: 22, team2Total: 20, winnerName: 'Baggers' },
         ]}
         isFinalizing={false}
-        finalizeError={new Error('The official result was already recorded.')}
+        finalizeError={new BusinessLogicError('This match already has an official result.')}
         onConfirm={onConfirm}
       />
     );
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not save result');
     expect(screen.getByRole('alert')).toHaveTextContent(
-      'The official result was already recorded.'
+      'This match already has an official result.'
     );
   });
 });

@@ -5,13 +5,7 @@
 
 import { PostgrestError } from '@supabase/supabase-js';
 
-import {
-  AuthorizationError,
-  DatabaseError,
-  NotFoundError,
-  ServiceError,
-  ValidationError,
-} from '@/types/errors';
+import { DatabaseError, NotFoundError, ServiceError } from '@/types/errors';
 
 import { errorLog } from './logger';
 
@@ -27,6 +21,9 @@ export function handleDatabaseError(error: PostgrestError, context: string): nev
     code: error.code,
     details: error.details,
     hint: error.hint,
+    // Kept apart from the context-prefixed message so a guard marked
+    // user-visible can be shown as the reason on its own.
+    rawMessage: error.message,
   });
 }
 
@@ -118,12 +115,150 @@ export function convertErrorToString(error: unknown): string | null {
   return getErrorMessage(error);
 }
 
+/** Shown whenever we have nothing safe and specific to tell the user. */
+const GENERIC_REASON = 'Something went wrong. Please try again.';
+const PERMISSION_REASON = 'You do not have permission to do this.';
+
 /**
- * Get a user-facing error message, optionally prefixed with context
+ * Postgres/PostgREST codes we can translate into something a league admin can
+ * act on. Anything not listed here stays generic: raw database text names
+ * tables, constraints and RLS policies, which must never reach a user.
+ */
+/**
+ * A database guard opts its message in by raising with
+ * `USING HINT = 'user-visible'`. PostgREST returns the hint, and
+ * handleDatabaseError copies it into details.
+ *
+ * The marker is on `hint` rather than a custom SQLSTATE deliberately:
+ * PostgREST derives the HTTP status from SQLSTATE, and an unrecognised code
+ * turns a 400 into a 500.
+ */
+export const USER_VISIBLE_HINT = 'user-visible';
+
+const POSTGRES_REASONS: Record<string, string> = {
+  '23505': 'That already exists. Give it a different name and try again.',
+  '23502': 'A required field is missing.',
+  '23503': "This is still linked to other records, so it can't be changed yet.",
+  '23514': "Some of those values aren't allowed. Check the form and try again.",
+  '42501': PERMISSION_REASON,
+  PGRST301: PERMISSION_REASON,
+  PGRST116: 'That record no longer exists. Refresh and try again.',
+};
+
+interface ErrorDescription {
+  /** Safe to show a user. */
+  message: string;
+  /** True when `message` says something more useful than "it failed". */
+  isSpecific: boolean;
+}
+
+/** Duck-type a raw PostgrestError, which is a plain object rather than an Error. */
+function isPostgrestErrorShape(
+  error: unknown
+): error is { code?: string; message: string; hint?: string } {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message: unknown }).message === 'string' &&
+    'details' in error &&
+    'code' in error
+  );
+}
+
+/**
+ * Translate a database failure using its Postgres code.
+ *
+ * `rawMessage` is scanned only for the RLS phrase, and only here — this is the
+ * one place raw database text is in hand. Never pattern-match a DatabaseError
+ * message for words like "fetch" or "network": most contexts read
+ * "Failed to fetch ...", so that would mislabel permission errors.
+ */
+function describeDatabaseError(
+  code: string | undefined,
+  rawMessage: string,
+  hint?: string
+): ErrorDescription {
+  // An opted-in guard wrote this for a league member to read. Only messages
+  // that carry the marker are shown; everything else stays generic, so
+  // internal text like "Expected to delete 1 match but deleted 3 rows" and
+  // constraint or policy names can never reach a user.
+  if (hint === USER_VISIBLE_HINT && rawMessage.trim()) {
+    return { message: rawMessage, isSpecific: true };
+  }
+
+  const mapped = code ? POSTGRES_REASONS[code] : undefined;
+  if (mapped) return { message: mapped, isSpecific: true };
+
+  // Postgres writes this both hyphenated ("row-level security policy") and not,
+  // depending on the message, so match either.
+  if (/row[- ]level security/i.test(rawMessage)) {
+    return { message: PERMISSION_REASON, isSpecific: true };
+  }
+
+  return { message: GENERIC_REASON, isSpecific: false };
+}
+
+/**
+ * Reduce any thrown value to something safe to show.
+ *
+ * Class first, then the Postgres code. Note that `DatabaseError.code` is the
+ * literal 'DATABASE_ERROR' — the Postgres code lives in `details.code`, put
+ * there by handleDatabaseError. Reading `.code` here would silently classify
+ * every wrapped database error as generic.
+ *
+ * A bare Error stays generic on purpose: it may be a parse failure or a
+ * third-party throw. A service that wants its message shown should throw one
+ * of the typed errors in `@/types/errors`.
+ */
+function describeError(error: unknown): ErrorDescription {
+  if (error instanceof ServiceError) {
+    switch (error.code) {
+      case 'DATABASE_ERROR': {
+        const details = error.details as
+          { code?: string; hint?: string; rawMessage?: string } | undefined;
+        return describeDatabaseError(
+          details?.code,
+          details?.rawMessage ?? error.message,
+          details?.hint
+        );
+      }
+      case 'UNKNOWN_ERROR':
+        // withErrorHandling wrapping an arbitrary throwable.
+        return { message: GENERIC_REASON, isSpecific: false };
+      case 'AUTHORIZATION_ERROR':
+        // Always constructed by our own code with an authored message, so it
+        // is safe to show. Raw permission failures from the database arrive as
+        // Postgres 42501 / PGRST301 and are handled on the branch above, which
+        // is what keeps role and policy structure hidden.
+        return { message: error.message || PERMISSION_REASON, isSpecific: true };
+      default:
+        // Every other ServiceError subclass carries an authored message
+        // written for a user: ValidationError, NotFoundError,
+        // BusinessLogicError, DuplicateRoundError and the migration guards.
+        return { message: error.message, isSpecific: true };
+    }
+  }
+
+  if (isPostgrestErrorShape(error)) {
+    return describeDatabaseError(error.code, error.message, error.hint);
+  }
+
+  return { message: GENERIC_REASON, isSpecific: false };
+}
+
+/**
+ * Get a user-facing error message, optionally prefixed with context.
+ *
+ * `context` is a lead-in phrase with no terminal punctuation, e.g.
+ * 'Failed to save round'. When the reason is specific the two are joined with
+ * a colon; when it is not, the caller's phrase is used on its own so the user
+ * is not shown raw database internals.
  */
 export function getUIErrorMessage(error: unknown, context?: string): string {
-  const message = getErrorMessage(error);
-  return context ? `${context}: ${message}` : message;
+  const { message, isSpecific } = describeError(error);
+  if (!context) return message;
+  return isSpecific ? `${context}: ${message}` : `${context}. Please try again.`;
 }
 
 /**
@@ -135,44 +270,4 @@ export function logError(error: unknown, context: string, additionalData?: unkno
   } else {
     errorLog(`${context}:`, getErrorMessage(error), additionalData);
   }
-}
-
-// ─── Hook-level error handling ───────────────────────────────────────────────
-
-export interface HookErrorResult {
-  message: string;
-  userMessage: string;
-  category: string;
-}
-
-/**
- * Categorize and log an error for use inside React hooks.
- * Returns structured information suitable for toast messages and state.
- */
-export function handleHookError(error: unknown, context: string): HookErrorResult {
-  const message = getErrorMessage(error);
-
-  let category = 'unknown';
-  let userMessage = 'An unexpected error occurred. Please try again.';
-
-  if (error instanceof DatabaseError) {
-    category = 'database';
-    userMessage = 'Database operation failed. Please try again or contact support.';
-  } else if (error instanceof ValidationError) {
-    category = 'validation';
-    userMessage = message;
-  } else if (error instanceof AuthorizationError) {
-    category = 'authorization';
-    userMessage = 'You do not have permission to perform this action.';
-  } else if (error instanceof NotFoundError) {
-    category = 'not_found';
-    userMessage = message;
-  } else if (message.toLowerCase().includes('network') || message.toLowerCase().includes('fetch')) {
-    category = 'network';
-    userMessage = 'Network error. Please check your connection and try again.';
-  }
-
-  errorLog(`${context}:`, error);
-
-  return { message, userMessage, category };
 }

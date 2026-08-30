@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
 import type { Message, MessageCategory } from '@/types/reactions';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { messageBoardKeys } from './messageBoardKeys';
@@ -185,7 +186,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       errorLog('Error loading more messages:', err);
       toast({
         title: 'Error loading messages',
-        description: 'Could not load additional messages. Please try again.',
+        description: getUIErrorMessage(err, 'Could not load additional messages'),
         variant: 'destructive',
       });
     }

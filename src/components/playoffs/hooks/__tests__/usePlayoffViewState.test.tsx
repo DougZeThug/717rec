@@ -11,10 +11,6 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-vi.mock('@/utils/errorHandler', () => ({
-  getUIErrorMessage: vi.fn((_err: unknown, fallback: string) => fallback),
-}));
-
 vi.mock('@/utils/logger', () => ({
   bracketLog: vi.fn(),
   errorLog: vi.fn(),

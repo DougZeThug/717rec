@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
 import { useUpdateTeam } from '@/hooks/useUpdateTeam';
 import { Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { uploadTeamImage } from '@/utils/imageUpload';
 import { errorLog } from '@/utils/logger';
 import {
@@ -51,7 +52,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
       errorLog('Error uploading logo:', error);
       toast({
         title: 'Upload Failed',
-        description: 'Failed to upload logo. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to upload logo'),
         variant: 'destructive',
       });
     } finally {

@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 import { TeamMembershipForAdmin, TeamMembershipRecord } from './teamFetch.types';
@@ -92,7 +92,7 @@ export const joinTeamMembership = async (
     // thought was missing already exists. That insert used to succeed and take
     // away every member ability, so say what happened instead of retrying.
     if (error?.code === '23505') {
-      throw new DatabaseError('You already have a team request. Refresh the page to see it.');
+      throw new BusinessLogicError('You already have a team request. Refresh the page to see it.');
     }
     if (error) handleDatabaseError(error, 'Failed to insert team membership');
   }
@@ -195,7 +195,7 @@ export const updateMembershipApproval = async (
 
     if (error) handleDatabaseError(error, 'Failed to reject membership');
     if (!data || data.length === 0) {
-      throw new DatabaseError(
+      throw new BusinessLogicError(
         'Failed to reject membership: no row was changed. You may not have permission.'
       );
     }
@@ -218,14 +218,14 @@ export const updateMembershipApproval = async (
   if (error) {
     // idx_one_membership_per_user: one membership row per user, approved or not.
     if (error.code === '23505') {
-      throw new DatabaseError(
+      throw new BusinessLogicError(
         'This user already has a membership on another team. Remove that membership first.'
       );
     }
     handleDatabaseError(error, 'Failed to update membership approval');
   }
   if (!data || data.length === 0) {
-    throw new DatabaseError(
+    throw new BusinessLogicError(
       'Failed to update membership approval: no row was changed. You may not have permission.'
     );
   }

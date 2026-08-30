@@ -59,13 +59,14 @@ describe('useMatchesFetching', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Error',
-        description: expect.stringContaining('network down'),
+        // The raw reason is logged, not shown: it can name tables and policies.
+        description: 'Failed to fetch matches. Please try again.',
         variant: 'destructive',
       })
     );
   });
 
-  it('reports "Unknown error" for non-Error rejections', async () => {
+  it('still explains the failure for non-Error rejections', async () => {
     mockFetchMatchesForAdmin.mockRejectedValue('boom');
 
     const { result } = renderHook(() => useMatchesFetching());
@@ -73,7 +74,7 @@ describe('useMatchesFetching', () => {
 
     expect(matches).toEqual([]);
     expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ description: expect.stringContaining('Unknown error') })
+      expect.objectContaining({ description: 'Failed to fetch matches. Please try again.' })
     );
   });
 });

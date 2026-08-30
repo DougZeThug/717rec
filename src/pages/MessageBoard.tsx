@@ -14,6 +14,7 @@ import { useMessageBoard } from '@/hooks/useMessageBoard';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const MessageBoard: React.FC = () => {
   const {
@@ -41,10 +42,10 @@ const MessageBoard: React.FC = () => {
         title: 'Messages refreshed',
         description: 'Latest messages have been loaded',
       });
-    } catch (_err) {
+    } catch (err) {
       toast({
         title: 'Refresh failed',
-        description: 'Could not refresh messages. Please try again.',
+        description: getUIErrorMessage(err, 'Could not refresh messages'),
         variant: 'destructive',
       });
     } finally {

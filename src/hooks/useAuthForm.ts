@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { authLog, errorLog } from '@/utils/logger';
 
 export const emailSchema = z.string().email('Please enter a valid email address');
@@ -130,7 +131,7 @@ export const useAuthForm = () => {
       errorLog('Exception during native Google login:', error);
       toast({
         title: 'Login Error',
-        description: 'An unexpected error occurred during login',
+        description: getUIErrorMessage(error, 'An unexpected error occurred during login'),
         variant: 'destructive',
       });
     } finally {

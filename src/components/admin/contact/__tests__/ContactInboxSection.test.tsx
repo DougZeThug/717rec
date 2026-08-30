@@ -117,6 +117,30 @@ describe('ContactInboxSection', () => {
     expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
   });
 
+  it('asks before deleting a message, and does nothing until confirmed', () => {
+    render(<ContactInboxSection />);
+
+    fireEvent.click(screen.getByRole('button', { name: /league requests \(1\)/i }));
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+
+    // The press opens the prompt; it must not delete on its own.
+    expect(removeRequest).not.toHaveBeenCalled();
+    expect(screen.getByText('Delete this message?')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /^delete$/i }));
+    expect(removeRequest).toHaveBeenCalledWith('req-1', expect.anything());
+  });
+
+  it('deletes nothing when the prompt is cancelled', () => {
+    render(<ContactInboxSection />);
+
+    fireEvent.click(screen.getByRole('button', { name: /league requests \(1\)/i }));
+    fireEvent.click(screen.getByRole('button', { name: /delete/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expect(removeRequest).not.toHaveBeenCalled();
+  });
+
   it('routes Mark resolved to the right service for each source', () => {
     render(<ContactInboxSection />);
 

@@ -6,6 +6,7 @@ import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
 import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import { MatchComment, MatchCommentsService } from '@/services/matches/MatchCommentsService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import { matchInteractionKeys } from './matchInteractionKeys';
@@ -153,7 +154,7 @@ export const useMatchComments = (matchId: string) => {
           errorLog('Error removing comment after realtime delete confirmation:', err);
           toast({
             title: 'Error',
-            description: 'Failed to delete comment',
+            description: getUIErrorMessage(err, 'Failed to delete comment'),
             variant: 'destructive',
           });
           return;
@@ -208,7 +209,11 @@ export const useMatchComments = (matchId: string) => {
       return data;
     } catch (err) {
       errorLog('Error adding comment:', err);
-      toast({ title: 'Error', description: 'Failed to post comment', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getUIErrorMessage(err, 'Failed to post comment'),
+        variant: 'destructive',
+      });
       return null;
     }
   };

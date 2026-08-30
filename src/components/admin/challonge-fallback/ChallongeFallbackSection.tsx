@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -45,6 +46,7 @@ const ChallongeFallbackSection: React.FC = () => {
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [drafts, setDrafts] = useState<DraftRow[]>([]);
+  const [pendingDelete, setPendingDelete] = useState<DraftRow | null>(null);
 
   useEffect(() => {
     if (config) {
@@ -115,12 +117,22 @@ const ChallongeFallbackSection: React.FC = () => {
     }
   };
 
-  const handleDeleteRow = async (row: DraftRow) => {
+  const handleDeleteRow = (row: DraftRow) => {
     if (row.isNew) {
+      // An unsaved draft has nothing to lose, so remove it without asking.
       setDrafts((prev) => prev.filter((r) => r.id !== row.id));
       return;
     }
-    await deleteBracket(row.id);
+    setPendingDelete(row);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+    try {
+      await deleteBracket(pendingDelete.id);
+    } finally {
+      setPendingDelete(null);
+    }
   };
 
   if (configLoading || bracketsLoading) {
@@ -276,6 +288,22 @@ const ChallongeFallbackSection: React.FC = () => {
           </p>
         </div>
       </CardContent>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        onOpenChange={() => setPendingDelete(null)}
+        title="Remove this saved bracket?"
+        description={
+          <>
+            <strong>{pendingDelete?.title || 'This bracket'}</strong> will no longer be offered as a
+            Challonge fallback. You can add it again by retyping its title and slug.
+          </>
+        }
+        onConfirm={handleConfirmDelete}
+        isPending={isMutating}
+        confirmLabel="Remove"
+        pendingLabel="Removing..."
+      />
     </Card>
   );
 };

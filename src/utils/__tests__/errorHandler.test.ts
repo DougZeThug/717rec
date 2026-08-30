@@ -3,7 +3,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   AuthorizationError,
+  BusinessLogicError,
   DatabaseError,
+  DuplicateRoundError,
+  LiveScoringNotEnabledError,
   NotFoundError,
   ServiceError,
   ValidationError,
@@ -14,11 +17,11 @@ import {
   getErrorMessage,
   getUIErrorMessage,
   handleDatabaseError,
-  handleHookError,
   isDatabaseError,
   isNotFoundError,
   isServiceError,
   logError,
+  USER_VISIBLE_HINT,
   withErrorHandling,
 } from '@/utils/errorHandler';
 
@@ -263,14 +266,192 @@ describe('convertErrorToString', () => {
 });
 
 describe('getUIErrorMessage', () => {
-  it('returns just the message when no context provided', () => {
-    expect(getUIErrorMessage(new Error('bad thing'))).toBe('bad thing');
+  /**
+   * Build the error the way production does. Hand-constructing a DatabaseError
+   * would put the Postgres code somewhere describeError never reads, so the
+   * test would pass while the app stayed broken.
+   */
+  const databaseErrorFrom = (partial: Partial<PostgrestError>, context: string) => {
+    try {
+      handleDatabaseError(
+        {
+          message: 'some raw postgres text',
+          details: '',
+          hint: '',
+          code: '',
+          name: 'PostgrestError',
+          ...partial,
+        } as PostgrestError,
+        context
+      );
+    } catch (error) {
+      return error;
+    }
+    throw new Error('handleDatabaseError did not throw');
+  };
+
+  describe('database errors', () => {
+    it('translates a unique violation instead of showing the raw text', () => {
+      const error = databaseErrorFrom(
+        {
+          code: '23505',
+          message: 'duplicate key value violates unique constraint "teams_slug_key"',
+        },
+        'Failed to create team'
+      );
+      expect(getUIErrorMessage(error, 'Failed to create team')).toBe(
+        'Failed to create team: That already exists. Give it a different name and try again.'
+      );
+    });
+
+    it.each([
+      ['23502', 'A required field is missing.'],
+      ['23503', "This is still linked to other records, so it can't be changed yet."],
+      ['23514', "Some of those values aren't allowed. Check the form and try again."],
+      ['42501', 'You do not have permission to do this.'],
+      ['PGRST301', 'You do not have permission to do this.'],
+      ['PGRST116', 'That record no longer exists. Refresh and try again.'],
+    ])('translates postgres code %s', (code, expected) => {
+      const error = databaseErrorFrom({ code }, 'Failed to save');
+      expect(getUIErrorMessage(error, 'Failed to save')).toBe(`Failed to save: ${expected}`);
+    });
+
+    it('falls back to a generic reason for an unmapped code', () => {
+      const error = databaseErrorFrom(
+        { code: '42P01', message: 'relation "match_rounds" does not exist' },
+        'Failed to save round'
+      );
+      expect(getUIErrorMessage(error, 'Failed to save round')).toBe(
+        'Failed to save round. Please try again.'
+      );
+    });
+
+    it('never leaks table, constraint or policy names', () => {
+      const error = databaseErrorFrom(
+        {
+          code: '',
+          message: 'new row violates row-level security policy for table "match_rounds"',
+        },
+        'Failed to save round'
+      );
+      const message = getUIErrorMessage(error, 'Failed to save round');
+      expect(message).toBe('Failed to save round: You do not have permission to do this.');
+      expect(message).not.toContain('match_rounds');
+      expect(message).not.toContain('row-level security');
+    });
+
+    it('does not mistake a "Failed to fetch" context for a network problem', () => {
+      // Most of the 300+ handleDatabaseError contexts read "Failed to fetch X".
+      // Pattern-matching the message for "fetch" would tell a user with a
+      // permission error to check their internet connection.
+      const error = databaseErrorFrom({ code: '42501', message: 'permission denied' }, 'x');
+      expect(getUIErrorMessage(error, 'Failed to fetch teams')).toBe(
+        'Failed to fetch teams: You do not have permission to do this.'
+      );
+    });
+
+    it('shows a guard that marked itself user-visible', () => {
+      // finalize_live_match raises this for a scorer who taps Save too early.
+      const error = databaseErrorFrom(
+        {
+          code: 'P0001',
+          message: 'Match is not decided yet (game wins: 1 - 1)',
+          hint: USER_VISIBLE_HINT,
+        },
+        'Could not finalize match'
+      );
+      expect(getUIErrorMessage(error, 'Could not finalize match')).toBe(
+        'Could not finalize match: Match is not decided yet (game wins: 1 - 1)'
+      );
+    });
+
+    it('hides the same shape of message when the guard did not mark it', () => {
+      // The pair is the point: opting in is what makes a message showable, so
+      // internal text can never reach a user by default.
+      const error = databaseErrorFrom(
+        { code: 'P0001', message: 'Expected to delete 1 match but deleted 3 rows' },
+        'Failed to delete match'
+      );
+      const message = getUIErrorMessage(error, 'Failed to delete match');
+      expect(message).toBe('Failed to delete match. Please try again.');
+      expect(message).not.toContain('3 rows');
+    });
+
+    it('shows a marked reason on its own when there is no context', () => {
+      const error = databaseErrorFrom(
+        { code: 'P0001', message: 'Cannot approve own membership', hint: USER_VISIBLE_HINT },
+        'Failed to update membership status'
+      );
+      expect(getUIErrorMessage(error)).toBe('Cannot approve own membership');
+    });
+
+    it('translates a raw PostgrestError that was never wrapped', () => {
+      const raw = {
+        message: 'duplicate key value',
+        details: '',
+        hint: '',
+        code: '23505',
+      } as PostgrestError;
+      expect(getUIErrorMessage(raw, 'Failed to create team')).toBe(
+        'Failed to create team: That already exists. Give it a different name and try again.'
+      );
+    });
   });
 
-  it('prepends context when provided', () => {
-    expect(getUIErrorMessage(new Error('bad thing'), 'Loading data')).toBe(
-      'Loading data: bad thing'
+  describe('authored errors pass through', () => {
+    it.each([
+      [new ValidationError('Name must be at least 2 characters')],
+      [new NotFoundError('Team', 'abc')],
+      [new BusinessLogicError('This match already has a result')],
+      [new DuplicateRoundError('game-1', 3)],
+      [new LiveScoringNotEnabledError()],
+    ])('keeps the message of %s', (error) => {
+      expect(getUIErrorMessage(error, 'Could not continue')).toBe(
+        `Could not continue: ${error.message}`
+      );
+    });
+
+    it('keeps the message of an authorization error', () => {
+      // AuthorizationError is only ever built by our own code, so its wording
+      // is authored and safe. Raw permission failures arrive as Postgres 42501
+      // and are generalised on the database branch instead.
+      expect(
+        getUIErrorMessage(
+          new AuthorizationError('You must be signed in to submit season participation.'),
+          'Failed to save'
+        )
+      ).toBe('Failed to save: You must be signed in to submit season participation.');
+    });
+  });
+
+  describe('untyped throwables stay generic', () => {
+    it.each([[new Error('boom')], ['a thrown string'], [null], [undefined], [{ nope: true }]])(
+      'does not show %s to the user',
+      (error) => {
+        expect(getUIErrorMessage(error, 'Failed to save')).toBe(
+          'Failed to save. Please try again.'
+        );
+      }
     );
+
+    it('stays generic for a ServiceError that wrapped an unknown throwable', async () => {
+      // withErrorHandling produces this when it catches something that is not
+      // already a ServiceError, so its message is whatever was thrown.
+      const thrown = await withErrorHandling(() => {
+        throw new Error('some library blew up');
+      }, 'Loading data').catch((error) => error);
+
+      expect((thrown as ServiceError).code).toBe('UNKNOWN_ERROR');
+      expect(getUIErrorMessage(thrown, 'Failed to load')).toBe('Failed to load. Please try again.');
+    });
+
+    it('returns a generic sentence when there is no context', () => {
+      expect(getUIErrorMessage(new Error('boom'))).toBe('Something went wrong. Please try again.');
+    });
+  });
+
+  it('returns the reason alone when no context is provided', () => {
+    expect(getUIErrorMessage(new ValidationError('Pick a date first'))).toBe('Pick a date first');
   });
 });
 
@@ -289,67 +470,5 @@ describe('logError', () => {
 
   it('does not throw when called with null', () => {
     expect(() => logError(null, 'context')).not.toThrow();
-  });
-});
-
-// ─── handleHookError ─────────────────────────────────────────────────────────
-
-describe('handleHookError', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it('categorizes DatabaseError correctly', () => {
-    const result = handleHookError(new DatabaseError('db fail'), 'ctx');
-    expect(result.category).toBe('database');
-    expect(result.userMessage).toContain('Database operation failed');
-  });
-
-  it('categorizes ValidationError and uses the error message as userMessage', () => {
-    const result = handleHookError(new ValidationError('Username too short'), 'ctx');
-    expect(result.category).toBe('validation');
-    expect(result.userMessage).toBe('Username too short');
-  });
-
-  it('categorizes AuthorizationError correctly', () => {
-    const result = handleHookError(new AuthorizationError(), 'ctx');
-    expect(result.category).toBe('authorization');
-    expect(result.userMessage).toContain('permission');
-  });
-
-  it('categorizes NotFoundError and uses the error message as userMessage', () => {
-    const err = new NotFoundError('Team', 'abc');
-    const result = handleHookError(err, 'ctx');
-    expect(result.category).toBe('not_found');
-    expect(result.userMessage).toContain('Team');
-  });
-
-  it('categorizes network errors by message keyword', () => {
-    const result = handleHookError(new Error('network timeout'), 'ctx');
-    expect(result.category).toBe('network');
-    expect(result.userMessage).toContain('Network error');
-  });
-
-  it('categorizes fetch errors by message keyword', () => {
-    const result = handleHookError(new Error('Failed to fetch'), 'ctx');
-    expect(result.category).toBe('network');
-  });
-
-  it('categorizes unknown errors as unknown', () => {
-    const result = handleHookError(new Error('random crash'), 'ctx');
-    expect(result.category).toBe('unknown');
-    expect(result.userMessage).toContain('unexpected error');
-  });
-
-  it('always returns a message string', () => {
-    const result = handleHookError(new Error('some error'), 'ctx');
-    expect(typeof result.message).toBe('string');
-    expect(result.message.length).toBeGreaterThan(0);
-  });
-
-  it('handles non-Error throws gracefully', () => {
-    const result = handleHookError('plain string throw', 'ctx');
-    expect(result.category).toBe('unknown');
-    expect(result.message).toBe('plain string throw');
   });
 });

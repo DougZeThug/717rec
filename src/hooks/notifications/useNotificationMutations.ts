@@ -6,6 +6,7 @@ import {
   type CreateNotificationInput,
   NotificationService,
 } from '@/services/notifications/NotificationService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 import { NOTIFICATIONS_QUERY_KEY } from './useNotificationsQuery';
 
@@ -30,7 +31,15 @@ export function useDeleteNotification() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => NotificationService.deleteNotification(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY }),
-    onError: () => toast({ title: 'Failed to delete notification', variant: 'destructive' }),
+    onSuccess: () => {
+      toast({ title: 'Notification removed' });
+      return qc.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEY });
+    },
+    onError: (error) =>
+      toast({
+        title: 'Failed to delete notification',
+        description: getUIErrorMessage(error),
+        variant: 'destructive',
+      }),
   });
 }

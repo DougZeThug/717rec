@@ -175,7 +175,7 @@ describe('useAuthForm', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Login Error',
-        description: 'An unexpected error occurred during login',
+        description: 'An unexpected error occurred during login. Please try again.',
         variant: 'destructive',
       })
     );

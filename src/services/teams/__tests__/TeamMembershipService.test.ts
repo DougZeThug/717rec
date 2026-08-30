@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError } from '@/types/errors';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -164,8 +165,13 @@ describe('joinTeamMembership', () => {
     mockFrom.mockReturnValue({
       insert: () => Promise.resolve({ error: pgError('duplicate key value', '23505') }),
     });
-    await expect(joinTeamMembership('user-1', 'team-1', false)).rejects.toThrow(
-      /already have a team request/i
+    await expect(joinTeamMembership('user-1', 'team-1', false)).rejects.toThrow(BusinessLogicError);
+
+    // The type is what carries it to the user: a DatabaseError with no
+    // details.code is sanitised down to a generic sentence.
+    const thrown = await joinTeamMembership('user-1', 'team-1', false).catch((e) => e);
+    expect(getUIErrorMessage(thrown, 'Failed to submit request')).toBe(
+      'Failed to submit request: You already have a team request. Refresh the page to see it.'
     );
   });
 });
@@ -298,7 +304,13 @@ describe('updateMembershipApproval', () => {
         eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }),
       }),
     });
-    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(DatabaseError);
+    // BusinessLogicError, not DatabaseError: the wording here is authored for
+    // an admin to read, and getUIErrorMessage only shows a typed error's
+    // message. As a DatabaseError it was replaced with "Something went wrong".
+    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(BusinessLogicError);
+    await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(
+      /no row was changed. You may not have permission/i
+    );
   });
 
   it('throws DatabaseError on update error', async () => {
@@ -309,5 +321,36 @@ describe('updateMembershipApproval', () => {
       }),
     });
     await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(DatabaseError);
+  });
+
+  it('explains the one-membership rule when approval hits the unique index', async () => {
+    // idx_one_membership_per_user refuses a second row, approved or not. The
+    // admin needs to know which action clears it, so the wording must survive.
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    mockFrom.mockReturnValue({
+      update: () => ({
+        eq: () => ({
+          select: () => Promise.resolve({ data: null, error: pgError('duplicate key', '23505') }),
+        }),
+      }),
+    });
+
+    const thrown = await updateMembershipApproval('mem-1', true).catch((e) => e);
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown, 'Failed to update membership status')).toBe(
+      'Failed to update membership status: This user already has a membership on another team. Remove that membership first.'
+    );
+  });
+
+  it('explains a rejection that changed no rows', async () => {
+    mockFrom.mockReturnValue({
+      delete: () => ({ eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) }),
+    });
+
+    const thrown = await updateMembershipApproval('mem-1', false).catch((e) => e);
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown, 'Failed to update membership status')).toBe(
+      'Failed to update membership status: Failed to reject membership: no row was changed. You may not have permission.'
+    );
   });
 });

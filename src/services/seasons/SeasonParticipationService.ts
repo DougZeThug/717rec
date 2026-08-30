@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { AuthorizationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
 export type ParticipationStatus = 'PLAYING' | 'NOT_PLAYING';
@@ -66,7 +67,7 @@ export const SeasonParticipationService = {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      throw new Error('You must be signed in to submit season participation.');
+      throw new AuthorizationError('You must be signed in to submit season participation.');
     }
 
     const { data, error } = await supabase

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
 import { ParticipationStatus, SeasonService } from '@/services/SeasonService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 export type { ParticipationStatus };
 
@@ -57,7 +58,7 @@ export const useSubmitParticipation = () => {
     onError: (error: Error) => {
       toast({
         title: 'Error',
-        description: `Failed to save: ${error.message}`,
+        description: getUIErrorMessage(error, 'Failed to save'),
         variant: 'destructive',
       });
     },

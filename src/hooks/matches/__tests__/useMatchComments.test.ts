@@ -56,6 +56,7 @@ vi.mock('@/services/matches/MatchCommentsService', () => ({
 vi.mock('@/utils/logger', () => ({ errorLog: vi.fn() }));
 
 import { supabase } from '@/integrations/supabase/client';
+import { ValidationError } from '@/types/errors';
 
 const comment = {
   id: 'comment-1',
@@ -169,6 +170,24 @@ describe('useMatchComments', () => {
       username: 'fallback',
       team_name: 'Aces',
       content: 'Nice shot',
+    });
+  });
+
+  it('says why posting a comment failed rather than only that it failed', async () => {
+    mockUser.current = { id: 'user-1', email: 'fallback@example.com', user_metadata: {} };
+    mockFetchAuthor.mockResolvedValue({ username: null, teamName: 'Aces' });
+    mockAddComment.mockRejectedValue(new ValidationError('That comment is too long.'));
+
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await expect(result.current.addComment('Nice shot')).resolves.toBeNull();
+
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Error',
+      // The authored reason, not a fixed sentence.
+      description: 'Failed to post comment: That comment is too long.',
+      variant: 'destructive',
     });
   });
 

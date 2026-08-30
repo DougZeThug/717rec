@@ -91,6 +91,7 @@ describe('notification hooks', () => {
     await waitFor(() =>
       expect(mocks.toast).toHaveBeenCalledWith({
         title: 'Failed to delete notification',
+        description: 'Something went wrong. Please try again.',
         variant: 'destructive',
       })
     );

@@ -7,6 +7,7 @@ import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TimeslotValidator } from '@/services/timeslots/TimeslotValidator';
 import { TeamTimeslot } from '@/types/timeslots';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 export const useTimeslotMutation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,7 +44,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to assign timeslot',
+        description: getUIErrorMessage(err, 'Failed to assign timeslot'),
         variant: 'destructive',
       });
       throw err;
@@ -66,7 +67,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to remove timeslot',
+        description: getUIErrorMessage(err, 'Failed to remove timeslot'),
         variant: 'destructive',
       });
       throw err;
@@ -105,7 +106,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to batch assign timeslots',
+        description: getUIErrorMessage(err, 'Failed to batch assign timeslots'),
         variant: 'destructive',
       });
       throw err;
@@ -165,8 +166,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description:
-          err instanceof Error ? err.message : 'Failed to batch assign double header timeslots',
+        description: getUIErrorMessage(err, 'Failed to batch assign double header timeslots'),
         variant: 'destructive',
       });
       throw err;
@@ -186,7 +186,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to assign bye week',
+        description: getUIErrorMessage(err, 'Failed to assign bye week'),
         variant: 'destructive',
       });
       throw err;
@@ -209,7 +209,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to batch assign bye weeks',
+        description: getUIErrorMessage(err, 'Failed to batch assign bye weeks'),
         variant: 'destructive',
       });
       throw err;
@@ -228,7 +228,7 @@ export const useTimeslotMutation = () => {
     } catch (err) {
       toast({
         title: 'Error',
-        description: err instanceof Error ? err.message : 'Failed to remove bye week',
+        description: getUIErrorMessage(err, 'Failed to remove bye week'),
         variant: 'destructive',
       });
       throw err;

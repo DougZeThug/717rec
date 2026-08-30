@@ -12,6 +12,7 @@ import { useTeams } from '@/hooks/useTeams';
 import { useToast } from '@/hooks/useToast';
 import { useUpdateTeam } from '@/hooks/useUpdateTeam';
 import { Team } from '@/types';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 import BulkLogoUpdateTab from './BulkLogoUpdateTab';
@@ -191,7 +192,7 @@ const TeamManagementTab = () => {
       errorLog('Error updating team:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update team. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to update team'),
         variant: 'destructive',
       });
     }
@@ -212,7 +213,7 @@ const TeamManagementTab = () => {
       errorLog('Error updating team division:', error);
       toast({
         title: 'Update Failed',
-        description: 'Failed to update team division. Please try again.',
+        description: getUIErrorMessage(error, 'Failed to update team division'),
         variant: 'destructive',
       });
     } finally {
@@ -239,7 +240,7 @@ const TeamManagementTab = () => {
   if (isLoadingTeams || isLoadingDivisions) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full size-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
       </div>
     );
   }
