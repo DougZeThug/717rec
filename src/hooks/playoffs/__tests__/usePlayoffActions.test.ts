@@ -110,6 +110,7 @@ describe('usePlayoffActions', () => {
         } catch (error) {
           return error;
         }
+        throw new Error('handleDatabaseError was expected to throw');
       })();
       (deleteBracket as ReturnType<typeof vi.fn>).mockRejectedValue(denied);
       const { result } = renderHook(() => usePlayoffActions(), { wrapper: createWrapper() });

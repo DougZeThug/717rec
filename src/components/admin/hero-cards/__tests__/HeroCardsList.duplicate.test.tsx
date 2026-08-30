@@ -62,7 +62,7 @@ describe('HeroCardsList duplicate', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mutationState.isCreating = false;
-    createCard.mockResolvedValue(undefined);
+    createCard.mockImplementation(() => Promise.resolve());
   });
 
   it('creates a -copy when the slug is free', async () => {

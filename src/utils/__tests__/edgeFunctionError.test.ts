@@ -23,11 +23,11 @@ const invokeError = (status: number, body: unknown, { json = true } = {}) => ({
   context: {
     status,
     clone: () => ({
-      json: async () => {
-        if (!json) throw new SyntaxError('Unexpected token');
-        return body;
-      },
-      text: async () => String(body),
+      // Promise-returning rather than `async`: a real Response.json() rejects
+      // on unparseable JSON, it does not throw synchronously.
+      json: () =>
+        json ? Promise.resolve(body) : Promise.reject(new SyntaxError('Unexpected token')),
+      text: () => Promise.resolve(String(body)),
     }),
   },
 });

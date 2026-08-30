@@ -78,8 +78,8 @@ describe('ContactRequestService.submit', () => {
         context: {
           status: 429,
           clone: () => ({
-            json: async () => ({ error: 'Too many requests. Please try again later.' }),
-            text: async () => '',
+            json: () => Promise.resolve({ error: 'Too many requests. Please try again later.' }),
+            text: () => Promise.resolve(''),
           }),
         },
       },
