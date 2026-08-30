@@ -61,7 +61,7 @@ describe('useAdminCorrections', () => {
   });
 
   it('deletes a round and invalidates standings-related caches for finalized matches', async () => {
-    mockDeleteRound.mockResolvedValue(undefined);
+    mockDeleteRound.mockImplementation(() => Promise.resolve());
     const { wrapper, queryClient } = createWrapper();
     const { result } = renderHook(
       () => useAdminCorrections({ matchId: 'match-2', affectsStandings: true }),

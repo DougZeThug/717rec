@@ -81,8 +81,10 @@ import { usePlayoffPageData } from '../usePlayoffPageData';
 
 describe('usePlayoffPageData stale error state', () => {
   beforeEach(() => {
-    playoffDataRef.current.handleBracketCreated = vi.fn().mockResolvedValue(undefined);
-    playoffDataRef.current.refetchBrackets = vi.fn().mockResolvedValue(undefined);
+    playoffDataRef.current.handleBracketCreated = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve());
+    playoffDataRef.current.refetchBrackets = vi.fn().mockImplementation(() => Promise.resolve());
   });
 
   it('clears a refresh failure once the retry succeeds', async () => {
