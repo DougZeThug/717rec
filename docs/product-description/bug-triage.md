@@ -714,7 +714,7 @@ finding read a superseded migration.
     including the live-scoring guards a scorer used to read mid-match ("Match is
     not decided yet", "Not authorized to finalize this match", "Thrower does not
     play for team 1 of this match"). Those reached users *before* this entry was
-    fixed, so this was a regression, not a missed improvement. Six guards now
+    fixed, so this was a regression, not a missed improvement. Seven guards now
     mark themselves `USING HINT = 'user-visible'`; everything unmarked stays
     generic, so "Match not found: &lt;uuid&gt;" and the row-count diagnostics
     remain hidden.
