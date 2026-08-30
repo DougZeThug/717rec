@@ -66,5 +66,3 @@ export const ReopenGameButton: React.FC<ReopenGameButtonProps> = ({
     </AlertDialogContent>
   </AlertDialog>
 );
-
-export default ReopenGameButton;
