@@ -1,6 +1,7 @@
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, LogIn, MessageSquare } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { useNavigate } from 'react-router';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -21,6 +22,12 @@ interface MessageFeedProps {
   hasMore: boolean;
   onLoadMore: () => void;
   loadingMore: boolean;
+  /**
+   * True when nobody is signed in. The board's only SELECT policy is granted TO
+   * authenticated, so a signed-out reader gets zero rows and no error — which is
+   * indistinguishable from an empty board unless the caller says which it is.
+   */
+  isSignedOut?: boolean;
 }
 
 const MessageFeed: React.FC<MessageFeedProps> = React.memo(
@@ -33,7 +40,10 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
     hasMore,
     onLoadMore,
     loadingMore,
+    isSignedOut = false,
   }) => {
+    const navigate = useNavigate();
+
     // Set up intersection observer for infinite scrolling
     const { ref: loadMoreRef, inView } = useInView({
       threshold: 0.1,
@@ -64,15 +74,34 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
     }
 
     if (messages.length === 0) {
+      // A signed-out reader always lands here, because the database returns no
+      // rows to them rather than refusing the read. Saying "be the first to
+      // start a conversation" would be a claim about the league we cannot make.
       return (
         <Card className={cn('mb-4 bg-card/50', animations.fadeIn)}>
           <CardContent className="py-0">
-            <EmptyState
-              icon={MessageSquare}
-              title="No Messages Yet"
-              description="Be the first to start a conversation! Share updates, tips, or just say hello."
-              className="py-8"
-            />
+            {isSignedOut ? (
+              <EmptyState
+                icon={LogIn}
+                title="Sign in to read the board"
+                description="The message board is for league members. Sign in to see what people are saying."
+                actions={[
+                  {
+                    label: 'Sign In',
+                    icon: LogIn,
+                    onClick: () => navigate('/auth', { state: { returnTo: '/message-board' } }),
+                  },
+                ]}
+                className="py-8"
+              />
+            ) : (
+              <EmptyState
+                icon={MessageSquare}
+                title="No Messages Yet"
+                description="Be the first to start a conversation! Share updates, tips, or just say hello."
+                className="py-8"
+              />
+            )}
           </CardContent>
         </Card>
       );

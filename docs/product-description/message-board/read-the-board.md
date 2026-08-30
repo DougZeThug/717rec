@@ -44,7 +44,8 @@ stateDiagram-v2
     [*] --> loading
     loading --> reading : messages arrive
     loading --> failed : the first page is refused
-    loading --> empty : there are none, or the reader is signed out
+    loading --> empty : there are none
+    loading --> signedOut : the reader is signed out
     reading --> reading : scroll for more, or a message arrives live
     reading --> filtered : search, category, or team chosen
     filtered --> reading : filters cleared
@@ -60,13 +61,22 @@ stateDiagram-v2
 The page loads on its own, then asks for the ten most recent messages. While that
 is in flight the card shows five grey message-shaped placeholders.
 
-**A signed-out visitor sees an empty board.** The route has no guard, so the page
+**A signed-out visitor is asked to sign in.** The route has no guard, so the page
 renders in full, but the league only lets signed-in accounts read messages. The
-request succeeds and comes back with nothing, so the visitor gets the empty state
-— crossed message icon, "No Messages Yet", and "Be the first to start a
-conversation!" — which is an invitation they cannot act on. Under it is a fixed
-bar reading "Sign in to post messages" with a **Sign In** button that goes to the
-sign-in page and returns here afterwards.
+request succeeds and comes back with nothing. Rather than report that as an empty
+board, the page shows a sign-in state — "Sign in to read the board", "The message
+board is for league members. Sign in to see what people are saying.", and a
+**Sign In** button that goes to the sign-in page and returns here afterwards.
+Under it is a fixed bar reading "Sign in to post messages" with a second Sign In
+button.
+
+> *Technical note:* the app cannot tell an empty board from a hidden one by
+> looking at the answer — both are an empty list with no error. It distinguishes
+> them by whether anybody is signed in, and waits for the session to be restored
+> before deciding, so a reload does not flash the prompt at a member.
+
+A signed-in reader with a genuinely empty board still gets the old invitation:
+"No Messages Yet" and "Be the first to start a conversation!".
 
 If the request itself is refused, the card turns into a red panel reading "Failed
 to load messages" and "Please try refreshing the page". There is no retry button.
@@ -112,9 +122,10 @@ Filters combine: a category, a team, and a search term all apply at once. Each o
 that is set appears as a chip inside the filter panel with an X to remove it, and
 a **Clear filters** button removes all three and closes the panel.
 
-The **refresh** button re-fetches the first page and always reports "Messages
-refreshed — Latest messages have been loaded", including for a signed-out visitor
-for whom nothing was loaded at all.
+The **refresh** button re-fetches the first page. For a signed-in reader it
+reports "Messages refreshed — Latest messages have been loaded". For a signed-out
+visitor, for whom nothing was loaded at all, it says "Sign in to read messages —
+The message board is for league members." instead.
 
 The URL never changes. `/message-board` is `/message-board` with every filter set,
 so a filtered board cannot be linked to or bookmarked.
@@ -139,7 +150,7 @@ under the reader with no action from them.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | A visitor gets an empty board and a sign-in bar. A player sees every message and the composer. An admin additionally sees a category picker on the composer; on the reading side an admin sees exactly what a player sees. | Signing in in another tab does not reach this page. The board stays empty until it is reloaded. |
+| The user's role (visitor, player, admin) | A visitor gets a sign-in prompt in place of the board, and a sign-in bar under it. A player sees every message and the composer. An admin additionally sees a category picker on the composer; on the reading side an admin sees exactly what a player sees. | Signing in in another tab does not reach this page. The board stays empty until it is reloaded. |
 | The record's state | A message marked as an announcement gets a blue border and an "Announcement" badge. An edited message carries "(edited)" with the time in a tooltip. A message with no reactions shows no reaction row at all. | An edit or a delete made by the author elsewhere arrives live and rewrites or removes the message under the reader. |
 | The season's state (active, archived, playoffs on) | No effect. The board belongs to no season and is never cleared between them, so the top of the list can be from a season that ended. | No effect. |
 | Viewport | On a phone the message list fills the screen and the sign-in or composer bar is pinned to the bottom above the navigation bar. Reaction chips are taller so they can be tapped. | No effect beyond re-flowing. |
@@ -155,7 +166,7 @@ under the reader with no action from them.
 | Reload, or the tab closed | The first ten messages are fetched again. Filters are restored from the browser. | A reaction already sent may have landed. After reloading, the chip itself is the only evidence. |
 | Network lost mid-request | The first page fails and the red "Failed to load messages" panel replaces the card. | A reaction is rolled back and its red toast appears. A "load more" failure keeps the messages already on screen and shows "Error loading messages — Could not load additional messages. Please try again." Nothing is queued. |
 | The request fails or times out | Retried once, then the red panel. | As above. A failed refresh shows "Refresh failed — Could not refresh messages. Please try again." |
-| The session expires | Reads stop working, so the board silently becomes empty — the same as being signed out, with nothing to say why. | A reaction is refused and rolled back with the generic red toast. The composer stays on screen. |
+| The session expires | Reads stop working. Once the app notices the session is gone the board shows the same sign-in prompt a visitor gets; until then it holds whatever it last read. | A reaction is refused and rolled back with the generic red toast. The composer stays on screen. |
 | The same record changed in another tab, or by another user | **This board is live.** A new message appears at the top, an edit rewrites in place, and a delete removes the message, all without the reader acting. A message that does not match the current filters is not added. | The same, including in the middle of choosing a reaction. A message being deleted under an open reaction panel leaves the panel with nothing to act on. |
 | Browser autofill or a password manager writes into the form | The search box is a plain search field and is not offered anything to fill. | Same. Filling it would not run a search, because the search only runs on Enter. |
 | The window loses focus | No effect on its own. Nothing polls. | No effect. If the live connection dropped while away, it is rebuilt and the first page is fetched again on reconnecting. |
@@ -216,14 +227,16 @@ against the message and is visible to everyone; nobody is notified of it.
 
 ## Edge cases
 
-- **A signed-out visitor is told to be the first to start a conversation.** They
-  cannot read the board and cannot post to it, but the empty state is the same one
-  a signed-in reader would see on a genuinely empty board. Nothing says the board
-  is hidden rather than empty. **May be worth treating as a bug rather than
-  documenting.**
-- **The refresh button reports success when it loaded nothing.** It reports on the
-  request completing, not on anything arriving, so a signed-out visitor pressing it
-  is told "Latest messages have been loaded".
+- **Fixed: a signed-out visitor used to be told to be the first to start a
+  conversation.** They can neither read the board nor post to it, but the empty
+  state was the same one a signed-in reader gets on a genuinely empty board, so
+  nothing said the board was hidden rather than empty. The two states are now
+  told apart by whether anybody is signed in. See
+  [`bug-triage.md`](../bug-triage.md) B-16.
+- **Fixed: the refresh button used to report success when it loaded nothing.** It
+  reports on the request completing, not on anything arriving, so a signed-out
+  visitor pressing it was told "Latest messages have been loaded". It now says
+  "Sign in to read messages" to a visitor.
 - **Three of the five category filters can never match anything.** The filter
   offers General, Question, Announcement, Event, and Other, but the composer can
   only produce General, and Announcement for an admin. Choosing Question, Event, or
@@ -260,22 +273,22 @@ against the message and is visible to everyone; nobody is notified of it.
   subscribes to anything and that there is no realtime anywhere else.** The
   message board subscribes to messages and to every visible message's reactions.
   One of the two is wrong and the consistency pass should settle it.
-- **The glossary says a visitor can read the message board.** The database only
-  allows signed-in accounts to read messages, so a visitor gets an empty board.
-  The app's own help page agrees with the database — it lists the message board
-  under what a *player* gets and not under what a visitor gets — so the glossary
-  is the entry most likely to be wrong.
-- Not confirmed by hand: whether a signed-out visitor really gets an empty list
-  rather than an error. It is read from the row-level rules, which filter rather
-  than refuse, but the outcome depends on the live database and should be checked.
+- **Settled: a visitor cannot read the message board.** The database allows only
+  signed-in accounts to read messages. The app's own help page always agreed with
+  the database — it lists the message board under what a *player* gets, not a
+  visitor — so the glossary and `foundations/accounts-and-roles.md` were the
+  entries that were wrong. Both are now corrected, and the page itself says so.
+- Confirmed: a signed-out visitor gets an empty list rather than an error. The
+  row-level rules filter rather than refuse. There are two SELECT policies on
+  `messages`, added a year apart, and both are granted `TO authenticated`.
 - Not confirmed by hand: whether the fixed-height list inside the page behaves
   sensibly on a phone, and whether infinite scrolling reliably triggers there.
 - Not confirmed by hand: how many open channels the board really holds with a full
   list on screen, and whether that is a problem in practice.
 - Not confirmed by hand: whether a reaction added by someone else visibly arrives
   on an open page, or only on the next load.
-- Assumption: the board is intended to be readable only by signed-in accounts.
-  Nothing in the interface says so, and the page is built as though visitors were
-  expected.
+- Settled: the board is readable only by signed-in accounts, and the page now
+  says so. The route still has no guard, so a visitor can open the page and see
+  what it is — only the messages are withheld.
 
 Verified against `717rec` commit `ea5c8f4`.

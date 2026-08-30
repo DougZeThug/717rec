@@ -71,7 +71,7 @@ entry's *Corrected on review* note.
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
 | B-14 | Scroll position carries across every in-app navigation | medium | foundations | **fixed** | — |
 | B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | **fixed** | — |
-| B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | fix | — |
+| B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | **fixed** | — |
 | B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | product call | — |
 | B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | fix | — |
 | B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | fix | — |
@@ -883,6 +883,36 @@ finding read a superseded migration.
 - **Raised by:** [`message-board/read-the-board.md`](message-board/read-the-board.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification),
   [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification).
+- **Status:** **fixed.** `MessageFeed` now takes an `isSignedOut` flag and shows
+  "Sign in to read the board" with a Sign In button in place of the empty state;
+  the page supplies it, because the page already knew — it has swapped the
+  composer for a sign-in bar on the same condition all along
+  (`src/pages/MessageBoard.tsx`). So a visitor was being told both "be the first
+  to start a conversation" and "sign in to post messages" on one screen.
+
+  The refresh toast was the second half of the same lie and is fixed with it: the
+  read succeeds and returns nothing, so it never threw, and the visitor was told
+  "Latest messages have been loaded". A visitor now gets "Sign in to read
+  messages" instead.
+
+  The flag is gated on `authInitialized`, not on `user` alone. Without that, a
+  reload flashes the sign-in prompt at a signed-in member before the session is
+  restored.
+
+  No route guard was added — the page still opens for a visitor, and only the
+  messages are withheld.
+
+  *Corrected on review.* There are **two** SELECT policies on `messages`, not
+  one: `20250614141604_*.sql:5-9` and the `20251010171351_*.sql:4-11` this entry
+  cites, added a year apart by a migration titled "Fix: Add SELECT policy" that
+  was seemingly unaware of the first. Both are `TO authenticated`, so the
+  conclusion stands, but anyone changing the read rule must find both.
+
+  The page-level test stub reproduced the buggy copy and asserted it, so it had
+  to change with the component; the signed-out case is now covered against the
+  real component too. The board tests also imported `MemoryRouter` from
+  `react-router-dom` while the app uses `react-router` — a mismatch that only
+  surfaced once the feed needed a router hook.
 
 ### B-17: Reopening a live game needs no confirmation and tells nobody
 

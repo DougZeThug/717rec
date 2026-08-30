@@ -15,8 +15,9 @@ _do_ feature by feature.
 ## The simple case
 
 A visitor opens the app and can read nearly all of it: teams, the schedule,
-standings, playoffs, history, the message board, and even a match being scored
-live. They can send one thing — a contact request.
+standings, playoffs, history, and even a match being scored live. The one thing
+they cannot read is the message board, which asks them to sign in. They can send
+one thing — a contact request.
 
 They sign in with an email address and password, or with Google. If their profile
 has no username yet, the app takes them straight to profile setup and they finish
@@ -34,11 +35,13 @@ An admin is a player with one flag set. There are no partial admin roles.
 ### Visitor
 
 Not signed in. Can read: home, teams, team details, schedule, standings, stats,
-insights, compare, playoffs, history, the message board, help, and a live match
-in progress. Can write: a contact request, and nothing else.
+insights, compare, playoffs, history, help, and a live match in progress. Can
+write: a contact request, and nothing else. The message board page opens, but
+its messages need an account, and the page says so.
 
-A visitor is never told they are missing anything on a read-only page. Controls
-they cannot use are generally absent rather than disabled.
+A visitor is never told they are missing anything on a read-only page, with one
+exception: the message board says an account is needed to read it. Controls they
+cannot use are generally absent rather than disabled.
 
 ### Player
 

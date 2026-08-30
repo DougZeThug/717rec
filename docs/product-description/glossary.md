@@ -95,8 +95,8 @@ schedule, standings, playoffs, history, insights, help, and a match being scored
 live. A visitor cannot write anything except a contact request.
 
 The **message board is the exception**: the page renders for a visitor, but the
-database returns no messages to anyone signed out, so a visitor sees an empty
-board rather than a refusal. See
+database returns no messages to anyone signed out, so the board shows a sign-in
+prompt in place of the messages. See
 [`message-board/read-the-board.md`](message-board/read-the-board.md).
 
 **Player.** A signed-in account with a profile. The baseline point of view for

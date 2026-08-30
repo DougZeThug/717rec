@@ -31,17 +31,23 @@ const MessageBoard: React.FC = () => {
     filterOptions,
     setFilter,
   } = useMessageBoard();
-  const { user } = useAuth();
+  const { user, authInitialized } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await refreshMessages();
-      toast({
-        title: 'Messages refreshed',
-        description: 'Latest messages have been loaded',
-      });
+      // The read succeeds for a signed-out visitor and returns nothing, so
+      // "latest messages have been loaded" would be false. Say what is true.
+      toast(
+        user
+          ? { title: 'Messages refreshed', description: 'Latest messages have been loaded' }
+          : {
+              title: 'Sign in to read messages',
+              description: 'The message board is for league members.',
+            }
+      );
     } catch (err) {
       toast({
         title: 'Refresh failed',
@@ -51,7 +57,7 @@ const MessageBoard: React.FC = () => {
     } finally {
       setIsRefreshing(false);
     }
-  }, [refreshMessages]);
+  }, [refreshMessages, user]);
   return (
     <PageLayout>
       <SeoHead
@@ -100,6 +106,9 @@ const MessageBoard: React.FC = () => {
               hasMore={hasMore}
               onLoadMore={loadMoreMessages}
               loadingMore={loadingMore}
+              // Wait for auth to settle, or a reload flashes the sign-in
+              // prompt at a signed-in reader before the session is restored.
+              isSignedOut={authInitialized && !user}
             />
           </div>
 

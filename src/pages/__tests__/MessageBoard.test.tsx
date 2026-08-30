@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -49,14 +49,17 @@ vi.mock('@/components/message-board/MessageFeed', () => ({
     messages,
     isLoading,
     error,
+    isSignedOut,
   }: {
     messages: Array<{ id: string; content: string }>;
     isLoading: boolean;
     error: string | null;
+    isSignedOut?: boolean;
   }) => {
     if (isLoading) return <p>Loading messages...</p>;
     if (error) return <p>{error}</p>;
-    if (messages.length === 0) return <p>No Messages Yet</p>;
+    if (messages.length === 0)
+      return <p>{isSignedOut ? 'Sign in to read the board' : 'No Messages Yet'}</p>;
     return (
       <ul>
         {messages.map((message) => (
@@ -102,7 +105,7 @@ const baseMessageBoardState = {
 describe('MessageBoard page', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, authInitialized: true });
     mockUseMessageBoard.mockReturnValue(baseMessageBoardState);
   });
 
@@ -115,6 +118,22 @@ describe('MessageBoard page', () => {
   it('shows empty state when there are no messages', () => {
     renderPage();
     expect(screen.getByText('No Messages Yet')).toBeInTheDocument();
+  });
+
+  // B-16: the database returns no rows to a signed-out reader rather than
+  // refusing the read, so the empty board must not be reported as an empty
+  // league.
+  it('tells a signed-out visitor to sign in instead of claiming the board is empty', () => {
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: true });
+    renderPage();
+    expect(screen.getByText('Sign in to read the board')).toBeInTheDocument();
+    expect(screen.queryByText('No Messages Yet')).not.toBeInTheDocument();
+  });
+
+  it('waits for auth to settle before claiming nobody is signed in', () => {
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: false });
+    renderPage();
+    expect(screen.queryByText('Sign in to read the board')).not.toBeInTheDocument();
   });
 
   it('shows success state with messages', () => {
@@ -143,11 +162,32 @@ describe('MessageBoard page', () => {
     expect(setFilter).toHaveBeenCalledWith('announcements');
   });
 
+  // B-16: the refresh read succeeds and returns nothing for a signed-out
+  // visitor, so a plain success toast told them messages had been loaded.
+  it('does not claim messages were loaded when nobody is signed in', async () => {
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: true });
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh Messages' }));
+    await waitFor(() => expect(mockToast).toHaveBeenCalled());
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Sign in to read messages' })
+    );
+  });
+
+  it('confirms the refresh for a signed-in reader', async () => {
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh Messages' }));
+    await waitFor(() => expect(mockToast).toHaveBeenCalled());
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Messages refreshed' })
+    );
+  });
+
   it('shows MessageInput only for authenticated users and LoginPrompt otherwise', () => {
     const { unmount } = renderPage();
     expect(screen.getByRole('button', { name: 'Send Message' })).toBeInTheDocument();
     unmount();
-    mockUseAuth.mockReturnValue({ user: null });
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: true });
     renderPage();
     expect(screen.getByText('Please log in')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Send Message' })).not.toBeInTheDocument();
