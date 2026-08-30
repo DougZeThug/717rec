@@ -21,7 +21,7 @@ interface UserMenuProps {
 
 const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className }) => {
   const { user, profile, signOut } = useAuth();
-  const { membership } = useTeamMembership();
+  const { activeMembership: membership } = useTeamMembership();
   const { isAdminAccessGranted } = useAdminAccess();
   const navigate = useNavigate();
   const location = useLocation();

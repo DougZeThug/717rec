@@ -12,7 +12,7 @@ import { MessageQueryOptions } from './types';
 
 export const useMessageApi = () => {
   const { user, profile } = useAuth();
-  const { membership } = useTeamMembership();
+  const { activeMembership: membership } = useTeamMembership();
 
   // Cancellation is owned by TanStack Query: the caller (useMessageBoard's
   // queryFn) passes the signal the library hands it, and the library discards

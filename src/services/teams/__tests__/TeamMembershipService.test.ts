@@ -144,6 +144,28 @@ describe('joinTeamMembership', () => {
     await expect(joinTeamMembership('user-1', 'team-1', true)).resolves.toBeUndefined();
   });
 
+  // B-18: a refused row keeps the person's only slot under
+  // idx_one_membership_per_user, so asking again has to reuse it. Reusing it
+  // without clearing rejected_at would leave the new request looking refused
+  // and keep it out of the admin queue.
+  it('clears a previous refusal when the same row is reused to ask again', async () => {
+    const updateFn = vi.fn((_patch: Record<string, unknown>) => ({
+      eq: () => Promise.resolve({ error: null }),
+    }));
+    mockFrom.mockReturnValue({ update: updateFn });
+
+    await joinTeamMembership('user-1', 'team-2', true);
+
+    const patch = updateFn.mock.calls[0][0];
+    expect(patch.rejected_at).toBeNull();
+    expect(patch.rejected_by).toBeNull();
+    expect(patch.is_approved).toBe(false);
+    expect(patch.team_id).toBe('team-2');
+    // Restamped so the admin queue shows when they asked, not when they first
+    // asked before being refused.
+    expect(patch.joined_at).toEqual(expect.any(String));
+  });
+
   it('throws DatabaseError on insert error', async () => {
     mockFrom.mockReturnValue({
       insert: () => Promise.resolve({ error: pgError() }),
@@ -203,21 +225,23 @@ describe('fetchPendingMembershipCount', () => {
 
   it('returns the count', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => Promise.resolve({ count: 5, error: null }) }),
+      select: () => ({ eq: () => ({ is: () => Promise.resolve({ count: 5, error: null }) }) }),
     });
     expect(await fetchPendingMembershipCount()).toBe(5);
   });
 
   it('returns 0 when count is null', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => Promise.resolve({ count: null, error: null }) }),
+      select: () => ({ eq: () => ({ is: () => Promise.resolve({ count: null, error: null }) }) }),
     });
     expect(await fetchPendingMembershipCount()).toBe(0);
   });
 
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => Promise.resolve({ count: null, error: pgError() }) }),
+      select: () => ({
+        eq: () => ({ is: () => Promise.resolve({ count: null, error: pgError() }) }),
+      }),
     });
     await expect(fetchPendingMembershipCount()).rejects.toThrow(DatabaseError);
   });
@@ -242,7 +266,11 @@ describe('fetchPendingMembershipsForAdmin', () => {
         if (callCount === 1) {
           return {
             select: () => ({
-              eq: () => ({ order: () => Promise.resolve({ data: memberships, error: null }) }),
+              eq: () => ({
+                is: () => ({
+                  order: () => Promise.resolve({ data: memberships, error: null }),
+                }),
+              }),
             }),
           };
         }
@@ -264,7 +292,9 @@ describe('fetchPendingMembershipsForAdmin', () => {
 
   it('returns empty array when no pending memberships', async () => {
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }),
+      select: () => ({
+        eq: () => ({ is: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }),
+      }),
     });
     expect(await fetchPendingMembershipsForAdmin()).toEqual([]);
   });
@@ -285,16 +315,26 @@ describe('updateMembershipApproval', () => {
     await expect(updateMembershipApproval('mem-1', true)).resolves.toBeUndefined();
   });
 
-  it('deletes the row on rejection (approved=false, no auth needed)', async () => {
-    const deleteFn = vi.fn(() => ({
+  // B-18: rejection used to DELETE the row, so the person was never told —
+  // their screen went back to looking as though they had never asked. It now
+  // stamps rejected_at, and nothing is deleted.
+  it('marks the row refused on rejection rather than deleting it', async () => {
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    const updateFn = vi.fn((_patch: Record<string, unknown>) => ({
       eq: () => ({ select: () => Promise.resolve({ data: [{ id: 'mem-1' }], error: null }) }),
     }));
-    mockFrom.mockReturnValue({
-      delete: deleteFn,
-    });
+    const deleteFn = vi.fn();
+    mockFrom.mockReturnValue({ update: updateFn, delete: deleteFn });
+
     await expect(updateMembershipApproval('mem-1', false)).resolves.toBeUndefined();
-    expect(deleteFn).toHaveBeenCalled();
-    expect(mockAuth.getUser).not.toHaveBeenCalled();
+
+    expect(deleteFn).not.toHaveBeenCalled();
+    const patch = updateFn.mock.calls[0][0];
+    expect(patch.rejected_at).toEqual(expect.any(String));
+    expect(patch.rejected_by).toBe('admin-1');
+    // is_approved is left alone: false already means pending, and rejected_at
+    // is what tells the two apart.
+    expect(patch).not.toHaveProperty('is_approved');
   });
 
   it('throws when the approval update affects no rows (RLS blocked)', async () => {
@@ -343,8 +383,9 @@ describe('updateMembershipApproval', () => {
   });
 
   it('explains a rejection that changed no rows', async () => {
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
     mockFrom.mockReturnValue({
-      delete: () => ({ eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) }),
+      update: () => ({ eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) }),
     });
 
     const thrown = await updateMembershipApproval('mem-1', false).catch((e) => e);

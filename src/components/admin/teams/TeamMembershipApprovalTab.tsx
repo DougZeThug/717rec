@@ -35,7 +35,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
         title: approved ? 'Membership Approved' : 'Membership Rejected',
         description: approved
           ? 'The user can now edit team details'
-          : 'The membership request has been rejected',
+          : 'The person is shown that their request was declined',
       });
     } catch (error) {
       errorLog('Error updating membership:', error);
@@ -177,8 +177,8 @@ const TeamMembershipApprovalTab: React.FC = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Reject membership request?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to reject this membership request? The user will be
-                          removed from the team.
+                          Are you sure you want to reject this request to join? The person is shown
+                          that it was declined, and can ask again.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

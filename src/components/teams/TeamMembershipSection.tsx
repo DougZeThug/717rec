@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Edit, Loader2, LogOut, Users } from 'lucide-react';
+import { CheckCircle, Clock, Edit, Loader2, LogOut, Users, XCircle } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { TeamLogo } from '@/components/shared/TeamLogo';
@@ -32,6 +32,10 @@ const TeamMembershipSection: React.FC = () => {
     useTeamMembership();
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
 
+  // A refused request is a row like any other: is_approved false, rejected_at
+  // set. Only rejected_at tells it apart from one still waiting.
+  const isRefused = Boolean(membership?.rejected_at);
+
   const handleJoinTeam = async () => {
     if (!selectedTeamId) return;
     await joinTeam(selectedTeamId);
@@ -55,7 +59,34 @@ const TeamMembershipSection: React.FC = () => {
         </p>
       </div>
 
-      {membership ? (
+      {/*
+        A refused request keeps its row, so `membership` is truthy after a
+        rejection. It must not be drawn as a membership: say it was declined,
+        and put the join form back underneath so they can ask again. Asking
+        again reuses this same row — one membership row per user is a database
+        rule — and clears the refusal.
+      */}
+      {isRefused && (
+        <Card className="mb-4 bg-red-50 dark:bg-red-950/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-red-600">
+                <XCircle className="size-3 mr-1" />
+                Request declined
+              </Badge>
+              <p className="font-medium">{membership?.team?.name}</p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2" suppressHydrationWarning>
+              {membership?.rejected_at
+                ? `An admin declined this request on ${toLocalDateString(membership.rejected_at)}.`
+                : 'An admin declined this request.'}{' '}
+              You can ask to join a team again below.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {membership && !isRefused ? (
         <Card
           className={
             membership.is_approved

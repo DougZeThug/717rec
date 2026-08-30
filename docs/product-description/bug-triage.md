@@ -73,7 +73,7 @@ entry's *Corrected on review* note.
 | B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | **fixed** | — |
 | B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | **fixed** | — |
 | B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | **fixed** | — |
-| B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | fix | — |
+| B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | **fixed** | — |
 | B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | fix | — |
 | B-20 | Archived seasons are editable through live corrections | medium | admin | fix | — |
 | B-21 | Eight controls do nothing when pressed | medium | admin, teams | fix | — |
@@ -977,6 +977,57 @@ finding read a superseded migration.
 - **Decision needed:** `fix`. Mark the row refused and show it to the requester.
 - **Raised by:** [`getting-started/join-a-team.md`](getting-started/join-a-team.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification).
+- **Status:** **fixed.** Rejecting now stamps `rejected_at` and `rejected_by`
+  instead of deleting. The requester's panel shows a red "Request declined" card
+  in place of the yellow pending one, and the join form underneath so they can
+  ask again. The dialog's wording is corrected: it describes a request to join,
+  not a membership being ended.
+
+  Two constraints shaped this, and neither was in the entry.
+
+  **There was no status column.** `team_memberships` had one state column,
+  `is_approved`, a non-null boolean. `false` already meant "pending", so
+  rejecting genuinely could not be expressed by flipping it — the row had to go,
+  or it would sit in the queue forever. The service's own comment said so. A
+  migration adds `rejected_at` as the third state; the two queue reads now
+  exclude it, which is what keeps the queue clear.
+
+  **One membership row per user, ever.** `idx_one_membership_per_user`
+  (`20260827120000`) is a *total* unique index on `user_id`, so a kept refused
+  row occupies the person's only slot. Asking again therefore has to update that
+  row rather than insert beside it. It already took the update path when a row
+  existed; it now also clears the refusal and restamps `joined_at`.
+
+  No RLS change was needed. The UPDATE policy (`20260818195805`) already lets a
+  person update their own row while `is_approved = false`, which is exactly the
+  path that clears a refusal. Its `WITH CHECK` still pins `is_approved = false`,
+  `approved_by IS NULL` and `approved_at IS NULL`, so nobody can approve
+  themselves.
+
+  One thing had to be fixed to avoid a regression: four places read
+  `membership?.team` without checking `is_approved` — the user menu's team link,
+  the contact form's prefilled team, match-comment attribution, and the team
+  stamped on a posted message. A refused row is truthy, so all four would have
+  shown a team the person had just been refused from. They now read a derived
+  `activeMembership`, which is null for a refusal. (They were already treating a
+  *pending* row the same way; that is a separate, pre-existing question and was
+  left alone.)
+
+  `types.ts` is generated from the live database and could not be regenerated
+  here. The two columns were added to it by hand, in the same commit as the
+  migration that defines them, at the league's direction. **Re-running the
+  generator after the migration is applied should produce no change; if it does,
+  the generator wins.**
+
+  *Corrected on review.* The entry cites `TeamMembershipService.ts:175-178`; the
+  delete was at `:189-203`.
+
+  Not fixed, and deliberately: **the league still gets no history.** Asking again
+  clears the mark, so a second request looks new to the admin. That follows from
+  the decision to let a refused person ask again. There is also still no
+  notification — `team_memberships` is not in the realtime publication and
+  `admin_notifications` has no recipient column — so the declined card appears on
+  the next refetch, up to five minutes, or at once on a reload.
 
 ### B-19: Live corrections can leave a match disagreeing with itself
 

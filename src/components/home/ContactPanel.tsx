@@ -130,7 +130,7 @@ const PanelHeader: React.FC = () => (
  *  nests deeply enough to be hard to read. */
 const ContactPanelForm: React.FC = () => {
   const { user } = useAuth();
-  const { membership } = useTeamMembership();
+  const { activeMembership: membership } = useTeamMembership();
   const submit = useSubmitContactRequest();
 
   const verifiedName = useMemo(() => {
