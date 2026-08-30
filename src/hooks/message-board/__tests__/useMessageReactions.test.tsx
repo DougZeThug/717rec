@@ -27,6 +27,8 @@ vi.mock('@/hooks/realtime/subscribeWithRetry', () => ({ subscribeWithRetry: mock
 vi.mock('@/integrations/supabase/client', () => ({ supabase: { channel: mocks.channel } }));
 vi.mock('@/hooks/useToast', () => ({ toast: mocks.toast }));
 vi.mock('@/utils/logger', () => ({ errorLog: mocks.error }));
+import { BusinessLogicError } from '@/types/errors';
+
 import { messageBoardKeys } from '../messageBoardKeys';
 import { useMessageReactions } from '../useMessageReactions';
 
@@ -117,5 +119,35 @@ describe('useMessageReactions', () => {
       await result.current.removeReaction('r1');
     });
     expect(mocks.remove).toHaveBeenCalledWith('r1', 'u1');
+  });
+  it('says why adding a reaction failed rather than only that it failed', async () => {
+    mocks.add.mockRejectedValue(new BusinessLogicError('You have already reacted with that.'));
+    mocks.fetch.mockResolvedValue([]);
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMessageReactions('m1'), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await act(async () => {
+      await result.current.addReaction('🔥');
+    });
+    expect(mocks.toast).toHaveBeenCalledWith({
+      title: 'Error',
+      description: 'Failed to add reaction: You have already reacted with that.',
+      variant: 'destructive',
+    });
+  });
+  it('says why removing a reaction failed rather than only that it failed', async () => {
+    mocks.remove.mockRejectedValue(new BusinessLogicError('That reaction is already gone.'));
+    mocks.fetch.mockResolvedValue([reaction('r1', 'u1')]);
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMessageReactions('m1'), { wrapper });
+    await waitFor(() => expect(result.current.reactionCounts).toHaveLength(1));
+    await act(async () => {
+      await result.current.removeReaction('r1');
+    });
+    expect(mocks.toast).toHaveBeenCalledWith({
+      title: 'Error',
+      description: 'Failed to remove reaction: That reaction is already gone.',
+      variant: 'destructive',
+    });
   });
 });

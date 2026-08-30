@@ -1,7 +1,10 @@
+import type { PostgrestError } from '@supabase/supabase-js';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { handleDatabaseError } from '@/utils/errorHandler';
 
 const mocks = vi.hoisted(() => ({
   fetch: vi.fn(),
@@ -103,6 +106,47 @@ describe('contact request hooks', () => {
     await waitFor(() =>
       expect(mocks.toast).toHaveBeenCalledWith({
         title: 'Failed to reopen contact request',
+        variant: 'destructive',
+      })
+    );
+  });
+  it('acknowledges a successful delete', async () => {
+    mocks.remove.mockResolvedValue({});
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useDeleteContactRequest(), { wrapper });
+    await act(async () => {
+      await result.current.mutateAsync('c1');
+    });
+    // Without this the row just vanishes with nothing said.
+    expect(mocks.toast).toHaveBeenCalledWith({ title: 'Message deleted' });
+  });
+  it('says why a delete failed rather than only that it failed', async () => {
+    const denied = (() => {
+      try {
+        handleDatabaseError(
+          {
+            message: 'permission denied for table contact_requests',
+            details: '',
+            hint: '',
+            code: '42501',
+            name: 'PostgrestError',
+          } as PostgrestError,
+          'Failed to delete contact request'
+        );
+      } catch (error) {
+        return error;
+      }
+      throw new Error('handleDatabaseError was expected to throw');
+    })();
+    mocks.remove.mockRejectedValue(denied);
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useDeleteContactRequest(), { wrapper });
+    await expect(result.current.mutateAsync('c1')).rejects.toThrow();
+    await waitFor(() =>
+      expect(mocks.toast).toHaveBeenCalledWith({
+        title: 'Failed to delete contact request',
+        // The reason, not a fixed sentence -- and never the table name.
+        description: 'You do not have permission to do this.',
         variant: 'destructive',
       })
     );
