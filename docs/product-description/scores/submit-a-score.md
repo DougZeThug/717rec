@@ -237,12 +237,13 @@ the match is not marked in any way.
   reporter has no record of what they sent, and the other team is never told. This
   is the largest gap in the feature. **May be worth treating as a bug rather than
   documenting.**
-- **The league's allowed-origins list does not include the app's own dev server.**
-  The function accepts `717rec.app`, the Lovable preview addresses,
-  `localhost:3000`, and `localhost:5173`; the dev server runs on `localhost:8080`.
-  Submitting a score therefore appears to fail for anyone running the app locally,
-  exactly as [the contact form](../help/contact-the-league.md) does. **May be worth
-  treating as a bug rather than documenting.**
+- **Fixed: the allowed-origins list did not include the app's own dev server.**
+  The function accepted `717rec.app`, the Lovable preview addresses,
+  `localhost:3000`, and `localhost:5173`, but the dev server runs on
+  `localhost:8080`. Submitting a score therefore failed for anyone running the
+  app locally, exactly as [the contact form](../help/contact-the-league.md) did.
+  `localhost:8080` is now on the list. See [`bug-triage.md`](../bug-triage.md)
+  B-15.
 - **The two de-duplication rules disagree.** The function looks for an identical
   pending report from the **same name**; the database's unique index ignores the
   name. A second reporter with identical wording passes the first check, is refused

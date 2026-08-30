@@ -379,3 +379,36 @@ Deno.test({
     }
   },
 });
+
+// ─── CORS allowlist ───────────────────────────────────────────────────────────
+// An origin that is not on the list gets no Access-Control-Allow-Origin header
+// at all (not a 403), so the browser blocks the call and the app only ever sees
+// "Failed to fetch". The dev server runs on 8080 (vite.config.ts), and its
+// absence from this list broke the feature for everyone running from source.
+// These cases exist so the list cannot silently drift from the dev port again.
+function makePreflight(origin: string): Request {
+  return new Request('http://localhost/submit-contact-request', {
+    method: 'OPTIONS',
+    headers: { origin },
+  });
+}
+
+Deno.test({
+  name: 'preflight from the dev server origin is allowed',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    const res = await handleRequest(makePreflight('http://localhost:8080'));
+    assertEquals(res.headers.get('access-control-allow-origin'), 'http://localhost:8080');
+  },
+});
+
+Deno.test({
+  name: 'preflight from an unlisted origin gets no allow-origin header',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    const res = await handleRequest(makePreflight('https://not-the-league.example'));
+    assertEquals(res.headers.get('access-control-allow-origin'), null);
+  },
+});

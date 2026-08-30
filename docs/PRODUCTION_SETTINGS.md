@@ -154,9 +154,17 @@ auto-provided by the platform — you don't set them, but they must be present.
 | `RATE_LIMIT_DEBUG_HEADERS` | `_shared/rateLimit.ts` | optional (debug only) | Edge Functions → Secrets | Set to `1` to emit rate-limit debug headers while tuning `TRUSTED_PROXY_COUNT`. Leave unset in normal operation. | _needs DW_ |
 
 > **`ALLOWED_ORIGINS` is not a secret.** Each function hardcodes its own set in
-> code (`submit-score-report`, `submit-contact-request`, `send-support-email`).
-> To add a production domain, change the code and redeploy — don't go looking for
-> a dashboard secret to edit.
+> code (`submit-score-report`, `submit-contact-request`, `send-support-email`,
+> `pageview`). To add a production domain, change the code and redeploy — don't
+> go looking for a dashboard secret to edit.
+>
+> **Keep the four lists identical.** They are copied, not shared, so they drift.
+> `http://localhost:8080` — the Vite dev port from `vite.config.ts` — was missing
+> from three of them, which made the contact form and the score report fail for
+> everyone running the app from source. An unlisted origin gets no
+> `Access-Control-Allow-Origin` header at all rather than a 403, so the browser
+> blocks the call and the app only ever sees "Failed to fetch". Each function's
+> `index.test.ts` now asserts both the allowed and the rejected case.
 
 ---
 

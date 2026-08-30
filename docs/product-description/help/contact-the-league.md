@@ -270,13 +270,17 @@ analytics event carrying the chosen subject — never the name, address, or mess
 
 ## Open questions and verification
 
-- **The dev server's address is not in the league's allowed list.** The server
-  function accepts requests from `717rec.app`, the Lovable preview addresses,
-  `localhost:3000`, and `localhost:5173`. The app's own dev server runs on
-  `localhost:8080` (`vite.config.ts`, and the README's own instructions). The
-  contact form therefore appears to fail for anyone running the app locally,
-  while working in production. **May be worth treating as a bug rather than
-  documenting.**
+- **Fixed: the dev server's address was not in the league's allowed list.** The
+  server function accepted requests from `717rec.app`, the Lovable preview
+  addresses, `localhost:3000`, and `localhost:5173`, but not `localhost:8080`,
+  which is where the app's own dev server runs (`vite.config.ts`, and the
+  README's own instructions). The contact form therefore failed for anyone
+  running the app locally, while working in production. `localhost:8080` is now
+  on the list. See [`bug-triage.md`](../bug-triage.md) B-15.
+
+  The form submits through `submit-contact-request`, not `send-support-email`.
+  Both had the gap, and so did `submit-score-report`; all three were fixed
+  together.
 - **The generic failure toast advises a retry in cases where a retry cannot
   work.** Rate-limited and over-length submissions are permanent refusals for
   the moment, and the user is told to try again. The server sends a specific

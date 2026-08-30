@@ -70,7 +70,7 @@ entry's *Corrected on review* note.
 | B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
 | B-14 | Scroll position carries across every in-app navigation | medium | foundations | **fixed** | — |
-| B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | fix | — |
+| B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | **fixed** | — |
 | B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | fix | — |
 | B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | product call | — |
 | B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | fix | — |
@@ -836,11 +836,31 @@ finding read a superseded migration.
 - **Decision needed:** `fix`. Add `http://localhost:8080` to both lists.
 - **Raised by:** [`help/contact-the-league.md`](help/contact-the-league.md#open-questions-and-verification),
   [`scores/submit-a-score.md`](scores/submit-a-score.md#open-questions-and-verification).
-- **Status:** **confirmed** on 2026-08-25. A preflight sent with
+- **Status:** **fixed.** Confirmed on 2026-08-25. A preflight sent with
   `Origin: https://717rec.app` returns `access-control-allow-origin:
   https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
   returns no such header, and a browser fetch from the dev server fails with
-  "TypeError: Failed to fetch". Checklist item `CONTACT-05`.
+  "TypeError: Failed to fetch". Checklist item `CONTACT-27` — this entry
+  previously cited `CONTACT-05`, which is a different item, about field focus.
+
+  *Corrected on review.* The entry named two functions; there are **three**.
+  `submit-contact-request/index.ts:21-27` had the same gap, and it is the one
+  the reproduction steps above actually reach: `/contact` submits through
+  `ContactRequestService.ts:25`, which invokes `submit-contact-request`, not
+  `send-support-email`. All three now carry `http://localhost:8080`.
+
+  A fourth function, `pageview/index.ts:8-15`, already had it. That was the
+  evidence for the intended value: the list is copied into each function rather
+  than shared, so one copy was updated and three were not. A shared
+  `_shared/cors.ts` was considered and not built — the league chose the smaller
+  change. The drift risk is now written down in
+  [`docs/PRODUCTION_SETTINGS.md`](../PRODUCTION_SETTINGS.md) instead.
+
+  No test anywhere asserted `Access-Control-Allow-Origin`, which is why this
+  survived: every test helper sent an origin that was already on the list. Each
+  of the three functions now has two cases — a preflight from
+  `http://localhost:8080` gets the header, and a preflight from an unlisted
+  origin gets none. Both were checked against the unfixed code first.
 
 ### B-16: A visitor sees an empty message board and is told to be the first to post
 
