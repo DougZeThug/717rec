@@ -1318,3 +1318,40 @@ finding read a superseded migration.
 - **Raised by:** [`admin/send-notifications.md`](admin/send-notifications.md#open-questions-and-verification),
   [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification),
   [`cross-cutting/errors-and-offline.md`](cross-cutting/errors-and-offline.md#open-questions-and-verification).
+
+---
+
+## Note: what the DeepSource coverage check actually measures
+
+Not a defect in the app — recorded so the next person does not spend a round
+rediscovering it.
+
+The coverage check reports **Failure** on pull requests while every metric is
+*rising*. That is not a threshold breach:
+
+- **Coverage thresholds are set in DeepSource's web UI**, per repository, not in
+  `.deepsource.toml`. None are set for this repo, which is why every Threshold
+  column reads `N/A`. A run fails on a threshold only when one is set *and*
+  enforced.
+- The status is driven by the count of **uncovered-line annotations**, and the
+  analyzer annotates every file a pull request *touches*, not the lines it
+  changes. A one-line edit to `useMessageBoard.ts` pulls all of that file's
+  long-standing uncovered lines into the report.
+
+So the check cannot be made green by covering the code a branch actually adds.
+On the branch that fixed B-11 to B-14, of the ~180 uncovered lines reported,
+**seven** were added by the branch; all seven are now tested, and the check
+still reads Failure.
+
+**The gate that does bind this repo is `vitest.config.ts`**, which enforces
+per-area coverage floors — `src/components/**` and `src/pages/**` have their own
+— and CI runs it. `coverage-baseline.txt` is a manual snapshot, promoted with
+`npm run test:coverage:update-baseline`, not an enforced gate.
+
+Two options if the check should mean something: set thresholds in the DeepSource
+UI so it reflects a real bar, or accept that its status tracks the repo's
+overall coverage debt rather than the change under review.
+
+One related trap, since it cost a round here: **`.deepsource.toml` is read from
+the default branch.** Config changes on a branch do not affect that branch's own
+analysis — they take effect once merged.
