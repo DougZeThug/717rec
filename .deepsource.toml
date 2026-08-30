@@ -4,6 +4,12 @@ version = 1
 name = "javascript"
 enabled = true
 
+  # Without this the analyzer cannot tell tests from production code, so it
+  # applies the same rules to both. That flags things that are correct in a
+  # test -- a fake Response.json() has to return a promise, a mock's resolved
+  # value is often deliberately undefined -- while telling us nothing.
+  test_patterns = ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx", "e2e/**", "tests/**"]
+
   [analyzers.meta]
   plugins = ["react"]
   environment = ["browser", "nodejs"]
