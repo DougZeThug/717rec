@@ -72,7 +72,7 @@ entry's *Corrected on review* note.
 | B-14 | Scroll position carries across every in-app navigation | medium | foundations | **fixed** | — |
 | B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | **fixed** | — |
 | B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | **fixed** | — |
-| B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | product call | — |
+| B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | **fixed** | — |
 | B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | fix | — |
 | B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | fix | — |
 | B-20 | Archived seasons are editable through live corrections | medium | admin | fix | — |
@@ -934,6 +934,32 @@ finding read a superseded migration.
 - **Decision needed:** `product call`. Either add a confirmation and a message to
   both screens, or restrict it to an admin as reopening the *match* already is.
 - **Raised by:** [`live-scoring/correct-a-round.md`](live-scoring/correct-a-round.md#open-questions-and-verification).
+- **Status:** **fixed.** The league took the first option. Reopening stays open to
+  any scorer on either team — a scorer at the field correcting a score should not
+  have to find an admin — and gains the friction and the trace it was missing.
+
+  The prompt is modelled on the undo-round dialog and names the game: "Reopen
+  Game 2?", "This puts Game 2 back in progress so a score can be corrected. Its
+  rounds are kept. The other team's scorer is told, and their screen changes
+  too.", with "Keep game closed" and "Reopen game".
+
+  The notice is raised by the live connection (`useLiveMatchRealtime`) when a
+  game goes from completed back to in progress, not by the mutation. That is
+  deliberate: every subscriber is told, including whoever pressed the button, so
+  the person acting sees it once. A success toast on the mutation *as well* would
+  have given them two and destroyed the first — which is B-27 in this same list.
+  The previous status is read from the query cache rather than `payload.old`,
+  because `postgres_changes` only carries the old row with `REPLICA IDENTITY
+  FULL`, which `games` does not have.
+
+  *Corrected on review.* The entry cites `LiveMatchView.tsx:246`; that line is
+  the close of `renderScoring`. There are **two** reopen buttons, not one, at
+  `:307-319` (between games) and `:347-359` (after the match is decided but not
+  finalised), with duplicated JSX. Both now render one shared
+  `ReopenGameButton`, so the prompt cannot drift between the two paths.
+
+  Not fixed, and still open: there is no record of *who* reopened a game. The
+  notice says a scorer did it, not which one.
 
 ### B-18: Rejecting a membership deletes the row, so the person is never told
 

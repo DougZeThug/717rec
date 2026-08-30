@@ -1,7 +1,5 @@
-import { RotateCcw } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { useFinalizeMatch } from '@/hooks/live-scoring/useFinalizeMatch';
 import { useGameFlow } from '@/hooks/live-scoring/useGameFlow';
 import type { LiveGameDerived, LiveMatchDerived } from '@/hooks/live-scoring/useLiveMatch';
@@ -20,6 +18,7 @@ import { GameSetupPanel } from './GameSetupPanel';
 import { GameWonBanner } from './GameWonBanner';
 import { LiveScoringControls } from './LiveScoringControls';
 import { MatchScoringHeader } from './MatchScoringHeader';
+import { ReopenGameButton } from './ReopenGameButton';
 import { RoundLog } from './RoundLog';
 import type { RoundSubmission } from './RoundScoreInput';
 import { RoundScoreInput } from './RoundScoreInput';
@@ -305,17 +304,11 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
           isAddingTeam2Player={team2Players.addPlayer.isPending}
         />
         {canScore && previous && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="w-full gap-1.5 text-muted-foreground"
-            disabled={reopenGame.isPending}
-            onClick={() => reopenGame.mutate(previous.game.id)}
-          >
-            <RotateCcw className="size-3.5" aria-hidden />
-            Reopen Game {previous.game.game_number} to fix a score
-          </Button>
+          <ReopenGameButton
+            gameNumber={previous.game.game_number}
+            isPending={reopenGame.isPending}
+            onReopen={() => reopenGame.mutate(previous.game.id)}
+          />
         )}
       </div>
     );
@@ -345,17 +338,11 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
         />
       )}
       {canScore && lastCompletedGame && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="w-full gap-1.5 text-muted-foreground"
-          disabled={reopenGame.isPending}
-          onClick={() => reopenGame.mutate(lastCompletedGame.game.id)}
-        >
-          <RotateCcw className="size-3.5" aria-hidden />
-          Reopen Game {lastCompletedGame.game.game_number} to fix a score
-        </Button>
+        <ReopenGameButton
+          gameNumber={lastCompletedGame.game.game_number}
+          isPending={reopenGame.isPending}
+          onReopen={() => reopenGame.mutate(lastCompletedGame.game.id)}
+        />
       )}
       <RoundLog
         rounds={bundle.rounds}

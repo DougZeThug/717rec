@@ -506,6 +506,36 @@ describe('between games', () => {
     expect(screen.getByRole('button', { name: /reopen game 1/i })).toBeInTheDocument();
   });
 
+  // B-17: reopening acts on a game the other team may have just won, and is
+  // open to either team's scorer, so it must ask first — undoing a single
+  // round, a far smaller change, always did.
+  it('asks before reopening a game', async () => {
+    const bundle = makeBundle({
+      games: [game({ status: 'completed', winner_team_id: 'team-1' })],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    await userEvent.click(screen.getByRole('button', { name: /reopen game 1/i }));
+    expect(mockReopenGame.mutate).not.toHaveBeenCalled();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reopen game' }));
+    expect(mockReopenGame.mutate).toHaveBeenCalledWith('game-1');
+  });
+
+  it('reopens nothing when the confirmation is dismissed', async () => {
+    const bundle = makeBundle({
+      games: [game({ status: 'completed', winner_team_id: 'team-1' })],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    await userEvent.click(screen.getByRole('button', { name: /reopen game 1/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Keep game closed' }));
+
+    expect(mockReopenGame.mutate).not.toHaveBeenCalled();
+  });
+
   it('starts the next game with the chosen players', async () => {
     const bundle = makeBundle({
       games: [game({ status: 'completed', winner_team_id: 'team-1' })],
