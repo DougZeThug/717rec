@@ -103,6 +103,38 @@ describe('throwEdgeFunctionError', () => {
     );
   });
 
+  it('keeps the reason when the status is not a 4xx', async () => {
+    // A 5xx that still explains itself, e.g. a downstream mail provider.
+    const thrown = await captureThrow(
+      invokeError(503, { error: 'Mail delivery is temporarily unavailable.' }),
+      'Failed to send message'
+    );
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown, 'Failed to send message')).toBe(
+      'Failed to send message: Mail delivery is temporarily unavailable.'
+    );
+  });
+
+  it('logs a plain object failure by its own message', async () => {
+    // invoke can hand back a bare object rather than an Error; getErrorMessage
+    // alone would reduce that to "An unknown error occurred".
+    const thrown = await captureThrow({ message: 'socket hang up' }, 'Failed to send message');
+
+    expect(thrown).toBeInstanceOf(DatabaseError);
+    expect((thrown as Error).message).toBe('Failed to send message: socket hang up');
+    // Still generic for the user, because a DatabaseError is sanitised.
+    expect(getUIErrorMessage(thrown, 'Failed to send message')).toBe(
+      'Failed to send message. Please try again.'
+    );
+  });
+
+  it('falls back to getErrorMessage for a value with no message at all', async () => {
+    const thrown = await captureThrow('just a string', 'Failed to send message');
+
+    expect((thrown as Error).message).toBe('Failed to send message: just a string');
+  });
+
   it('never shows the placeholder supabase-js puts on the error', async () => {
     const thrown = await captureThrow(new TypeError('Failed to fetch'), 'Failed to send message');
     expect(getUIErrorMessage(thrown, 'Failed to send message')).not.toContain('non-2xx');

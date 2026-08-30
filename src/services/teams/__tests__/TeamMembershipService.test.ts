@@ -322,4 +322,35 @@ describe('updateMembershipApproval', () => {
     });
     await expect(updateMembershipApproval('mem-1', true)).rejects.toThrow(DatabaseError);
   });
+
+  it('explains the one-membership rule when approval hits the unique index', async () => {
+    // idx_one_membership_per_user refuses a second row, approved or not. The
+    // admin needs to know which action clears it, so the wording must survive.
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    mockFrom.mockReturnValue({
+      update: () => ({
+        eq: () => ({
+          select: () => Promise.resolve({ data: null, error: pgError('duplicate key', '23505') }),
+        }),
+      }),
+    });
+
+    const thrown = await updateMembershipApproval('mem-1', true).catch((e) => e);
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown, 'Failed to update membership status')).toBe(
+      'Failed to update membership status: This user already has a membership on another team. Remove that membership first.'
+    );
+  });
+
+  it('explains a rejection that changed no rows', async () => {
+    mockFrom.mockReturnValue({
+      delete: () => ({ eq: () => ({ select: () => Promise.resolve({ data: [], error: null }) }) }),
+    });
+
+    const thrown = await updateMembershipApproval('mem-1', false).catch((e) => e);
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown, 'Failed to update membership status')).toBe(
+      'Failed to update membership status: Failed to reject membership: no row was changed. You may not have permission.'
+    );
+  });
 });

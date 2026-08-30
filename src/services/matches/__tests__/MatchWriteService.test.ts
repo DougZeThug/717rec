@@ -1,18 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DatabaseError, NotFoundError } from '@/types/errors';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
 const mockRpc = vi.fn();
 const mockGetUser = vi.fn(() => Promise.resolve({ data: { user: { id: 'admin-1' } } }));
+const mockInvoke = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
     rpc: (...args: unknown[]) => mockRpc(...args),
     auth: { getUser: () => mockGetUser() },
+    functions: { invoke: (...args: unknown[]) => mockInvoke(...args) },
   },
 }));
 
@@ -27,9 +30,12 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
+import { BusinessLogicError } from '@/types/errors';
+
 import {
   batchCreateMatches,
   confirmMatchTie,
+  createScoreSubmission,
   fetchActiveSeason,
   MatchCreateData,
   MatchNonResultUpdate,
@@ -368,5 +374,62 @@ describe('confirmMatchTie', () => {
     });
 
     await expect(confirmMatchTie(MATCH_ID)).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── createScoreSubmission ────────────────────────────────────────────────────
+
+describe('createScoreSubmission', () => {
+  const SUBMISSION_MATCH_ID = '55555555-5555-4555-8555-555555555555';
+  const payload = {
+    match_id: SUBMISSION_MATCH_ID,
+    submitter_name: 'Jane',
+    submitter_team: 'Bag Boys',
+    message: '21-18',
+  };
+
+  beforeEach(() => vi.clearAllMocks());
+
+  it('returns true when the function accepts the report', async () => {
+    mockInvoke.mockResolvedValue({ data: { ok: true }, error: null });
+    await expect(createScoreSubmission(payload)).resolves.toBe(true);
+  });
+
+  it('surfaces the reason the edge function gave', async () => {
+    // supabase-js reports a non-2xx with a fixed message and puts the real body
+    // on context, so the reason only survives if it is read out.
+    mockInvoke.mockResolvedValue({
+      data: null,
+      error: {
+        name: 'FunctionsHttpError',
+        message: 'Edge Function returned a non-2xx status code',
+        context: {
+          status: 429,
+          clone: () => ({
+            json: () => Promise.resolve({ error: 'Too many reports. Try again later.' }),
+            text: () => Promise.resolve(''),
+          }),
+        },
+      },
+    });
+
+    const thrown = await createScoreSubmission(payload).catch((e) => e);
+    expect(getUIErrorMessage(thrown, 'Failed to report the score')).toBe(
+      'Failed to report the score: Too many reports. Try again later.'
+    );
+  });
+
+  it('surfaces an error the function returned with a 2xx', async () => {
+    // Some paths answer 200 with an error field rather than a status code.
+    mockInvoke.mockResolvedValue({
+      data: { error: 'That match already has a report.' },
+      error: null,
+    });
+
+    const thrown = await createScoreSubmission(payload).catch((e) => e);
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect(getUIErrorMessage(thrown, 'Failed to report the score')).toBe(
+      'Failed to report the score: That match already has a report.'
+    );
   });
 });

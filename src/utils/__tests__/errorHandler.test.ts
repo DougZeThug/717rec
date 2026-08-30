@@ -434,6 +434,17 @@ describe('getUIErrorMessage', () => {
       }
     );
 
+    it('stays generic for a ServiceError that wrapped an unknown throwable', async () => {
+      // withErrorHandling produces this when it catches something that is not
+      // already a ServiceError, so its message is whatever was thrown.
+      const thrown = await withErrorHandling(() => {
+        throw new Error('some library blew up');
+      }, 'Loading data').catch((error) => error);
+
+      expect((thrown as ServiceError).code).toBe('UNKNOWN_ERROR');
+      expect(getUIErrorMessage(thrown, 'Failed to load')).toBe('Failed to load. Please try again.');
+    });
+
     it('returns a generic sentence when there is no context', () => {
       expect(getUIErrorMessage(new Error('boom'))).toBe('Something went wrong. Please try again.');
     });
