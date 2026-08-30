@@ -40,6 +40,20 @@ team check before any time was written — so nothing was ever corrupted. The re
 defect on that path was that the save always failed. It moved from `high` to
 `medium` and is now fixed.
 
+A third theme ran under them and is now fixed across four entries:
+**the app telling the user something that is not true.** B-15 failed the contact
+form and the score report for every contributor running from source, and reported
+it as an ordinary failure. B-16 told a signed-out visitor the message board was
+empty when they simply could not read it, and its refresh button reported that
+messages had been loaded. B-17 changed a game under the other team's scorer with
+no explanation. B-18 deleted a refused join request, so the person could not tell
+refusal from a request never received. Two of the four reports were also
+inaccurate in ways that mattered — B-15 named two functions of three, and missed
+the one its own reproduction steps reach; B-17 described one button where there
+are two — and B-18 turned out to be constrained by a schema with no third state
+and a unique index allowing one row per person. See each entry's *Corrected on
+review* note.
+
 Two structural themes ran under the medium entries: **destructive admin actions
 with no confirmation** (B-11) and **failure messages that throw away the reason
 the server gave** (B-12). Both are now fixed, and both entries were wrong in
