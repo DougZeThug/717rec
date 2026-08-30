@@ -26,6 +26,7 @@ import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { teamLog } from '@/utils/logger';
 import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
+import { buildTeamSeo, toPercent } from '@/utils/teamDetailsUtils/teamSeoUtils';
 
 // Recharts-backed components — lazy-loaded so the recharts vendor chunk
 // only downloads when the user opens these collapsible sections.
@@ -262,49 +263,21 @@ const TeamDetails = () => {
     );
   }
 
-  const winPct = team.win_percentage ? team.win_percentage * 100 : 0;
-  const gamePct = team.game_win_percentage ? team.game_win_percentage * 100 : 0;
+  const winPct = toPercent(team.win_percentage);
+  const gamePct = toPercent(team.game_win_percentage);
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
   const teamPath = `/teams/${teamParam ?? teamId ?? ''}`;
-  const teamUrl = `https://717rec.app${teamPath}`;
-  const logo =
-    team.logoUrl && /^https?:\/\//.test(team.logoUrl)
-      ? team.logoUrl
-      : team.imageUrl && /^https?:\/\//.test(team.imageUrl)
-        ? team.imageUrl
-        : undefined;
-  const teamJsonLd: Record<string, unknown> = {
-    '@context': 'https://schema.org',
-    '@type': 'SportsTeam',
-    name: team.name,
-    sport: 'Cornhole',
-    url: teamUrl,
-    memberOf: {
-      '@type': 'SportsOrganization',
-      name: '717REC',
-      url: 'https://717rec.app/',
-    },
-    ...(logo ? { logo } : {}),
-    ...(team.divisionName ? { subOrganization: team.divisionName } : {}),
-    ...(team.players && team.players.length > 0
-      ? { athlete: team.players.map((name) => ({ '@type': 'Person', name })) }
-      : {}),
-  };
-  const descParts = [
-    `${team.name} — 717REC cornhole team`,
-    team.divisionName ? `${team.divisionName} division` : null,
-    `${team.wins ?? 0}-${team.losses ?? 0} record`,
-  ].filter(Boolean);
+  const seo = buildTeamSeo(team, teamPath);
 
   return (
     <>
       <SeoHead
         title={`${team.name} | 717REC Cornhole League`}
-        description={`${descParts.join(', ')}. Roster, stats, and match history.`}
+        description={seo.description}
         path={teamPath}
-        jsonLd={teamJsonLd}
+        jsonLd={seo.jsonLd}
       />
       <TeamDetailsStickyNav />
       <div className="container mx-auto px-4 py-2 md:py-8 space-y-2 md:space-y-4">
