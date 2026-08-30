@@ -34,7 +34,7 @@ export default function Timeslots() {
     return (
       <div className="container mx-auto py-8 px-4 flex items-center justify-center h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full size-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full size-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Checking access...</p>
         </div>
       </div>

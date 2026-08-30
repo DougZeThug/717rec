@@ -186,7 +186,7 @@ const MassScoreEntryTool: React.FC = () => {
       </Card>
 
       <DeleteMatchDialog
-        isOpen={!!deleteMatchId}
+        isOpen={Boolean(deleteMatchId)}
         onClose={() => setDeleteMatchId(null)}
         onConfirm={handleDeleteConfirm}
         isDeleting={isDeleting}

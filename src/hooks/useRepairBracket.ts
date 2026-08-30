@@ -39,7 +39,7 @@ export function useRepairBracket(bracketId: string | undefined) {
             ? 'Bracket repaired'
             : 'Nothing needed repair',
         description:
-          details.length > 0 ? details.join(', ') + '.' : 'The bracket was already consistent.',
+          details.length > 0 ? `${details.join(', ')}.` : 'The bracket was already consistent.',
       });
     } catch (error) {
       errorLog('Bracket repair failed:', error);
