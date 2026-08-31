@@ -1,30 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Lock, Pencil, RotateCcw, Trash2, Trophy } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
-import { useFinalizeMatch } from '@/hooks/live-scoring/useFinalizeMatch';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import { useSeasons } from '@/hooks/useSeasons';
 import type { Tables } from '@/integrations/supabase/types';
 import { TeamPlayersService } from '@/services/liveScoring/TeamPlayersService';
 
+import { ArchivedSeasonBanner } from './ArchivedSeasonBanner';
 import { ChangeGameWinnerDialog } from './ChangeGameWinnerDialog';
 import { DeleteRoundDialog } from './DeleteRoundDialog';
 import { EditRoundDialog } from './EditRoundDialog';
+import { GameCorrectionCard } from './GameCorrectionCard';
+import { ReopenAndResaveNotice } from './ReopenAndResaveNotice';
 
 type MatchRoundRow = Tables<'match_rounds'>;
 
@@ -46,8 +35,6 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
   const seasonArchived = matchSeason?.is_archived === true;
 
   const corrections = useAdminCorrections({ matchId, affectsStandings: finalized });
-  const { reopenAndRefinalize } = useFinalizeMatch(matchId);
-  const [confirmResaveOpen, setConfirmResaveOpen] = useState(false);
 
   // Store only IDs and derive the current row from the realtime-updated
   // bundle.rounds so open dialogs always reflect the latest data (and close
@@ -105,148 +92,27 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
 
   return (
     <div className="space-y-4">
-      {seasonArchived && (
-        <div
-          className="flex gap-2 items-start rounded-md border border-border bg-muted/40 p-3 text-sm"
-          role="status"
-        >
-          <Lock className="size-4 mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
-          <div>
-            <strong>{matchSeason?.name ?? 'This season'}</strong> is archived, so this match is
-            read-only. An archived season is frozen: its rounds, its games and the numbers derived
-            from them stay exactly as the league left them. You can read everything below; nothing
-            here can be changed.
-          </div>
-        </div>
-      )}
+      {seasonArchived && <ArchivedSeasonBanner seasonName={matchSeason?.name ?? null} />}
 
-      {finalized && !seasonArchived && (
-        <div className="flex gap-2 items-start rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-          <AlertTriangle className="size-4 mt-0.5 text-amber-600 shrink-0" aria-hidden />
-          <div className="space-y-2">
-            <div>
-              This match is <strong>finalized</strong>. Edits here change the rounds and games
-              immediately, but the official result and the standings stay as they are until the
-              result is saved again. Until then the match disagrees with itself, and the admin
-              dashboard lists it.
-            </div>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1.5"
-              disabled={reopenAndRefinalize.isPending}
-              onClick={() => setConfirmResaveOpen(true)}
-            >
-              <RotateCcw className="size-4" aria-hidden />
-              {reopenAndRefinalize.isPending ? 'Re-saving…' : 'Reopen & re-save result'}
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Nothing can be edited into disagreeing on an archived season, so the
+          finalized warning and its one-press fix belong only to a live one. */}
+      {finalized && !seasonArchived && <ReopenAndResaveNotice matchId={matchId} />}
 
-      <AlertDialog open={confirmResaveOpen} onOpenChange={setConfirmResaveOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Reopen and re-save this result?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This reverses the recorded result and both teams&apos; records, then works the result
-              out again from the games above and saves it. Standings move twice and end up matching
-              the games. Do this once the rounds are right. If the games no longer decide a winner,
-              the old result is still reversed and the match is left open for you to fix.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={reopenAndRefinalize.isPending}>
-              Leave it alone
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={reopenAndRefinalize.isPending}
-              onClick={() => {
-                setConfirmResaveOpen(false);
-                reopenAndRefinalize.mutate();
-              }}
-            >
-              Reopen &amp; re-save
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {derived.games.map((g) => {
-        const gameRounds = bundle.rounds.filter((r) => r.game_id === g.game.id);
-        const isCompleted = g.game.status === 'completed';
-        const winnerName =
-          g.game.winner_team_id === bundle.match.team1_id
-            ? team1Name
-            : g.game.winner_team_id === bundle.match.team2_id
-              ? team2Name
-              : null;
-
-        return (
-          <Card key={g.game.id}>
-            <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
-              <CardTitle className="text-base">
-                Game {g.game.game_number} · {team1Name} {g.totals.team1} – {g.totals.team2}{' '}
-                {team2Name}
-                {winnerName && (
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    Winner: {winnerName}
-                  </span>
-                )}
-              </CardTitle>
-              {isCompleted && team1Id && team2Id && !seasonArchived && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setWinnerGameId(g.game.id)}
-                  className="gap-1.5"
-                >
-                  <Trophy className="size-4" aria-hidden />
-                  Change winner
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent>
-              {gameRounds.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No rounds recorded.</p>
-              ) : (
-                <ul className="divide-y divide-border">
-                  {gameRounds.map((r) => (
-                    <li key={r.id} className="flex items-center justify-between py-2 text-sm gap-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium">Round {r.round_number}</div>
-                        <div className="text-muted-foreground text-xs">
-                          {team1Name} {r.team1_score} – {r.team2_score} {team2Name}
-                        </div>
-                      </div>
-                      {!seasonArchived && (
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setEditingRoundId(r.id)}
-                            aria-label={`Edit round ${r.round_number}`}
-                          >
-                            <Pencil className="size-4" aria-hidden />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setDeletingRoundId(r.id)}
-                            aria-label={`Delete round ${r.round_number}`}
-                          >
-                            <Trash2 className="size-4 text-destructive" aria-hidden />
-                          </Button>
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+      {derived.games.map((g) => (
+        <GameCorrectionCard
+          key={g.game.id}
+          game={g}
+          rounds={bundle.rounds.filter((r) => r.game_id === g.game.id)}
+          team1Id={team1Id}
+          team2Id={team2Id}
+          team1Name={team1Name}
+          team2Name={team2Name}
+          readOnly={seasonArchived}
+          onEditRound={setEditingRoundId}
+          onDeleteRound={setDeletingRoundId}
+          onChangeWinner={setWinnerGameId}
+        />
+      ))}
 
       {editingRound && editingGame && (
         <EditRoundDialog
