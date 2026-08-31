@@ -24,6 +24,7 @@ import {
 import { cn } from '@/lib/utils';
 
 import CounterDriftCard from './CounterDriftCard';
+import MatchResultDriftCard from './MatchResultDriftCard';
 import { OPS_LINKS } from './opsLinks';
 import TrafficMiniChart from './TrafficMiniChart';
 import UnsavedLiveMatchesCard from './UnsavedLiveMatchesCard';
@@ -250,6 +251,9 @@ const LeagueNightStatusTab: React.FC = () => {
 
       {/* Data integrity: matches live scoring decided but nobody saved */}
       <UnsavedLiveMatchesCard />
+
+      {/* Data integrity: a corrected match whose result was never re-decided */}
+      <MatchResultDriftCard />
 
       {/* Data integrity: standings counter drift detector + one-click repair */}
       <CounterDriftCard />
