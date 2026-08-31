@@ -1,10 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
-import { Edit, ListOrdered, Loader2, RefreshCw, Shuffle, Trash, Wrench } from 'lucide-react';
+import {
+  Edit,
+  ListOrdered,
+  Loader2,
+  MoreHorizontal,
+  RefreshCw,
+  Shuffle,
+  Trash,
+  Wrench,
+} from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useRecalculateStandings } from '@/hooks/useRecalculateStandings';
 import { useRepairBracket } from '@/hooks/useRepairBracket';
+import { cn } from '@/lib/utils';
 import { fetchFinalStandings } from '@/services/brackets/BracketReadService';
 import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
@@ -17,6 +33,28 @@ interface BracketAdminToolbarProps {
   onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
 
+/** One admin control, described once and rendered twice. */
+interface BracketAction {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  onSelect: () => void;
+  /** Whether the control applies to this bracket at all. */
+  show: boolean;
+  disabled?: boolean;
+  /** A long-running action is in flight: spinner instead of the icon. */
+  pending?: boolean;
+  destructive?: boolean;
+}
+
+/** The icon slot, so the button and the menu item agree on the pending state. */
+const ActionIcon: React.FC<{ action: BracketAction }> = ({ action }) =>
+  action.pending ? (
+    <Loader2 className="size-4 mr-2 animate-spin" />
+  ) : (
+    <action.icon className="size-4 mr-2" />
+  );
+
 /**
  * The admin controls above a bracket.
  *
@@ -25,6 +63,10 @@ interface BracketAdminToolbarProps {
  * state of the two long-running actions — is derived here rather than passed
  * in. That keeps the conditions next to the buttons they govern, and means the
  * standings query only runs for the admins who can act on it.
+ *
+ * Each action is described once and rendered twice: as a button row on a wide
+ * screen, and behind a single overflow menu on a phone. Deriving them once is
+ * the point — the menu cannot drift out of step with the buttons.
  */
 const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
   bracket,
@@ -54,82 +96,102 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
     bracket.uses_brackets_manager === true &&
     (bracket.format ?? '').toLowerCase().includes('double');
 
+  const allActions: BracketAction[] = [
+    {
+      key: 'recalculate',
+      label: 'Recalculate Standings',
+      icon: RefreshCw,
+      onSelect: () => {
+        recalculate();
+      },
+      show: standingsMissing,
+      pending: isRecalculating,
+      disabled: isRecalculating,
+    },
+    {
+      key: 'repair',
+      label: 'Repair Bracket',
+      icon: Wrench,
+      onSelect: () => {
+        repair();
+      },
+      show: !isCompleted,
+      pending: isRepairing,
+      disabled: isRepairing,
+    },
+    {
+      key: 'rearrange',
+      label: 'Rearrange Teams',
+      icon: Shuffle,
+      onSelect: onRearrange,
+      show: canRearrange,
+      disabled: isCompleted,
+    },
+    {
+      key: 'seeding',
+      label: 'Update Seeding',
+      icon: ListOrdered,
+      onSelect: onUpdateSeeding,
+      show: true,
+      disabled: isCompleted,
+    },
+    { key: 'edit', label: 'Edit Bracket', icon: Edit, onSelect: onEdit, show: true },
+    {
+      key: 'delete',
+      label: 'Delete',
+      icon: Trash,
+      onSelect: () => onDeleteBracket?.(bracketId, bracket.name || ''),
+      show: Boolean(onDeleteBracket),
+      destructive: true,
+    },
+  ];
+
+  const actions = allActions.filter((action) => action.show);
+
   return (
-    <div className="flex gap-2">
-      {standingsMissing && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden md:flex"
-          onClick={() => {
-            recalculate();
-          }}
-          disabled={isRecalculating}
-        >
-          {isRecalculating ? (
-            <Loader2 className="size-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="size-4 mr-2" />
-          )}
-          Recalculate Standings
-        </Button>
-      )}
+    <div className="flex items-center gap-2">
+      {/* Wide screens: one button per action. */}
+      <div className="hidden md:flex gap-2">
+        {actions.map((action) => (
+          <Button
+            key={action.key}
+            variant={action.destructive ? 'destructive' : 'outline'}
+            size="sm"
+            onClick={action.onSelect}
+            disabled={action.disabled}
+          >
+            <ActionIcon action={action} />
+            {action.label}
+          </Button>
+        ))}
+      </div>
 
-      {!isCompleted && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden md:flex"
-          onClick={() => {
-            repair();
-          }}
-          disabled={isRepairing}
-        >
-          {isRepairing ? (
-            <Loader2 className="size-4 mr-2 animate-spin" />
-          ) : (
-            <Wrench className="size-4 mr-2" />
-          )}
-          Repair Bracket
-        </Button>
-      )}
-
-      {canRearrange && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="hidden md:flex"
-          onClick={onRearrange}
-          disabled={bracket.state === 'completed'}
-        >
-          <Shuffle className="size-4 mr-2" /> Rearrange Teams
-        </Button>
-      )}
-
-      <Button
-        variant="outline"
-        size="sm"
-        className="hidden md:flex"
-        onClick={onUpdateSeeding}
-        disabled={bracket.state === 'completed'}
-      >
-        <ListOrdered className="size-4 mr-2" /> Update Seeding
-      </Button>
-
-      <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEdit}>
-        <Edit className="size-4 mr-2" /> Edit Bracket
-      </Button>
-
-      {onDeleteBracket && (
-        <Button
-          variant="destructive"
-          size="sm"
-          className="hidden md:flex"
-          onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
-        >
-          <Trash className="size-4 mr-2" /> Delete
-        </Button>
-      )}
+      {/* Phone: the same actions behind one button. Playoff night is when an
+          admin needs these, and a phone is the likely device. */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" className="md:hidden">
+            <MoreHorizontal className="size-4" />
+            <span className="sr-only">Bracket actions</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[220px]">
+          {actions.map((action) => (
+            <DropdownMenuItem
+              key={action.key}
+              onClick={action.onSelect}
+              disabled={action.disabled}
+              className={cn(
+                'cursor-pointer',
+                action.destructive && 'text-destructive focus:text-destructive'
+              )}
+            >
+              <ActionIcon action={action} />
+              {action.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

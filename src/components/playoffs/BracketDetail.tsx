@@ -74,8 +74,11 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
       id={`bracket-${bracketId}`}
     >
       <CardHeader className="bg-gradient-to-r from-transparent via-blue-50/30 to-amber-50/20 dark:from-transparent dark:via-gray-800/30 dark:to-gray-900/80">
-        <div className="flex justify-between items-center">
-          <div>
+        <div className="flex justify-between items-center gap-2">
+          {/* min-w-0 lets the title block shrink; without it the no-wrap
+              description row pushes the admin menu past the card's clipped
+              right edge on a phone. */}
+          <div className="min-w-0">
             <CardTitle
               className={cn(
                 blueAmber.text.heading,
