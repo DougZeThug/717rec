@@ -1036,6 +1036,24 @@ finding read a superseded migration.
   *Corrected on review.* The entry cites `TeamMembershipService.ts:175-178`; the
   delete was at `:189-203`.
 
+  *Second correction, on review of the pull request.* Keeping the row made a
+  path reachable that never had been: `joinTeamMembership` updates the existing
+  row, and `trg_prevent_team_membership_reassignment` (`20260713190745`) refuses
+  every non-admin change to `team_id` with `42501`. Asking the **same** team
+  again worked, so only "declined by team A, now ask team B" failed — the likely
+  case, and a raw permission error rather than a message. Before the row was
+  kept, a refused person had no row at all, so asking again inserted rather than
+  updated and never met the trigger.
+
+  `20260831010000` exempts a declined request from that lock: `team_id` may move
+  when the old row is refused and not approved. Nothing else the trigger holds is
+  loosened, and it grants nothing new — the person could already delete their own
+  row and insert one for any team, so this is the atomic equivalent. `is_approved`
+  is now pinned false on refusal so "declined" and "approved" can never coexist,
+  which is what the exception keys on. `supabase/tests/declined_request_team_change.sql`
+  pins both halves, and was checked against the unfixed schema first: it
+  reproduces `team_id cannot be changed on an existing membership`.
+
   Not fixed, and deliberately: **the league still gets no history.** Asking again
   clears the mark, so a second request looks new to the admin. That follows from
   the decision to let a refused person ask again. There is also still no

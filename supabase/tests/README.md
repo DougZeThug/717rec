@@ -72,6 +72,10 @@ so a non-zero exit code means drift was detected.
   archived seasons being frozen against routine recomputes while
   `admin_recompute_season_power()` can still move them, and a coverage floor of
   zero `unresolved` matches.
+- `declined_request_team_change.sql` — asserts a refused join request may be
+  aimed at a different team, and that every other lock on `team_memberships`
+  still holds (pending rows immovable, no self-approval, no handing the row on,
+  approved memberships immovable).
 - `member_team_update_guard.sql` — asserts an approved non-admin can rename
   their own team but cannot change `division_id` or the win/loss counters.
   Regression cover for `prevent_member_competitive_field_updates()`, which

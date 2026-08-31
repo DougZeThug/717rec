@@ -242,6 +242,10 @@ appear on the team's matches; see
   request updates it rather than adding a second. The refusal is cleared and the
   date restamped, which means **the admin sees a fresh request with no sign that
   an earlier one was refused.**
+- **A refused person may ask a different team, not only the same one.** The
+  database otherwise treats moving a membership between teams as something only
+  an admin may do; a refused request is exempt, because it never was a
+  membership.
 - **There is no way to change teams directly.** Leave first, then ask again.
 - **Only one membership is possible.** The database refuses a second row, pending
   or approved, so an admin approving a request from someone who already belongs to

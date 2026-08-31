@@ -208,6 +208,11 @@ export const updateMembershipApproval = async (
     const { data, error } = await supabase
       .from('team_memberships')
       .update({
+        // Every row the queue offers is already pending, so this is a no-op
+        // there. It is set anyway so "declined" can never coexist with
+        // "approved": the reassignment trigger keys the declined exception on
+        // is_approved = false, and activeMembership keys off rejected_at.
+        is_approved: false,
         rejected_at: new Date().toISOString(),
         rejected_by: (await supabase.auth.getUser()).data.user?.id ?? null,
       })

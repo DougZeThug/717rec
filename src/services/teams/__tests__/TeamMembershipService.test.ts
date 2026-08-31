@@ -332,9 +332,10 @@ describe('updateMembershipApproval', () => {
     const patch = updateFn.mock.calls[0][0];
     expect(patch.rejected_at).toEqual(expect.any(String));
     expect(patch.rejected_by).toBe('admin-1');
-    // is_approved is left alone: false already means pending, and rejected_at
-    // is what tells the two apart.
-    expect(patch).not.toHaveProperty('is_approved');
+    // rejected_at is what tells a refusal from a pending request, but
+    // is_approved is pinned false so the two states can never coexist: the
+    // reassignment trigger's declined exception depends on it.
+    expect(patch.is_approved).toBe(false);
   });
 
   it('throws when the approval update affects no rows (RLS blocked)', async () => {
