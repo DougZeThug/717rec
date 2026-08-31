@@ -61,7 +61,12 @@ describe('MatchResultDriftCard', () => {
   });
 
   it('says it is checking while the query runs', () => {
-    fetchMatchResultDrift.mockReturnValue(new Promise(() => {}));
+    // Held pending on purpose: the card stays on its loading state.
+    fetchMatchResultDrift.mockReturnValue(
+      new Promise(() => {
+        /* never settles */
+      })
+    );
     renderCard();
 
     expect(screen.getByText('Checking…')).toBeInTheDocument();

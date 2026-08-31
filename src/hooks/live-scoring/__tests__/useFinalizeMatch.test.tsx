@@ -174,13 +174,13 @@ describe('reopenAndRefinalize', () => {
 
   it('reopens before it saves, so finalize_live_match is not a no-op', async () => {
     const order: string[] = [];
-    mockReopenLiveMatch.mockImplementation(async () => {
+    mockReopenLiveMatch.mockImplementation(() => {
       order.push('reopen');
-      return true;
+      return Promise.resolve(true);
     });
-    mockFinalizeLiveMatch.mockImplementation(async () => {
+    mockFinalizeLiveMatch.mockImplementation(() => {
       order.push('finalize');
-      return { applied: true, team1GameWins: 2, team2GameWins: 0 };
+      return Promise.resolve({ applied: true, team1GameWins: 2, team2GameWins: 0 });
     });
 
     const { result } = renderHook(() => useFinalizeMatch('match-1'), {

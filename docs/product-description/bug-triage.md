@@ -1674,3 +1674,15 @@ overall coverage debt rather than the change under review.
 One related trap, since it cost a round here: **`.deepsource.toml` is read from
 the default branch.** Config changes on a branch do not affect that branch's own
 analysis — they take effect once merged.
+
+**The same shape applies to `JS-0117`, the "use the `u` flag" rule.** It is
+raised against whichever test files a pull request happens to touch. The repo has
+**231 regex queries in tests and 223 of them carry no `/u`**, so the finding is a
+repo-wide style question, not a defect in the change under review. None of the
+patterns involved use unicode escapes or astral characters — em-dashes and
+middots are single code units — so the flag changes no behaviour. Adding it to
+one branch's files makes those files the odd ones out and fixes nothing.
+
+Two options, the same two as for coverage: sweep all 231 in one change so the
+rule means something, or accept that it tracks the repo's existing style rather
+than the branch.
