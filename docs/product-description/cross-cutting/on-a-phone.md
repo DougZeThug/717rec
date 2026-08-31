@@ -80,7 +80,7 @@ stateDiagram-v2
     narrow --> wide : rotate to landscape, or resize
     wide --> narrow : rotate to portrait, or resize
     narrow --> menu_open : tap the hamburger
-    menu_open --> narrow : tap it again, or navigate
+    menu_open --> narrow : tap it again, navigate, or press Escape
     menu_open --> wide : rotate while the menu is open (the menu is now hidden, not closed)
 ```
 
@@ -117,7 +117,7 @@ step. Its six documents start at
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | A phone keyboard has no Escape. Nothing on a phone can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away and no Escape** — it closes on a route change or by pressing the button again. | Same. A dialog's Cancel button works; there is no key that reaches it. |
+| Escape, or a Cancel button | A phone keyboard has no Escape, so on a phone nothing can be cancelled by key; only by tapping a Cancel or Close control. **The hamburger menu has no close-by-tapping-away** — it closes on a route change or by pressing the button again. It does close on Escape, which reaches it from an attached keyboard but not from a touch keyboard. | Same. A dialog's Cancel button works; there is no key that reaches it. |
 | In-app navigation away, or switching tab within the page | The new page loads. **Scroll position is not reset**, which on a phone means arriving at the bottom of a short page looking at blank screen. Only `/teams` restores rather than resets. | Everything typed is lost with no warning, exactly as on a desktop. |
 | Browser back or forward | The gesture-based back swipe is the browser's, and the app cannot intercept it. It behaves as an in-app navigation. | Same. On a phone this is the most likely way work is lost, because the swipe is easy to trigger by accident. |
 | Reload, or the tab closed | Everything in memory is lost and every page refetches. A mobile browser closing a background tab to save memory looks identical to a reload when the user comes back. | A sent write still lands. An unsent one is gone. |
@@ -192,7 +192,8 @@ much of its traffic is phones. Nothing more precise is stored. See
 - **A backgrounded tab that the browser discards** returns as a cold load: the
   cache is gone, every page refetches, and any unsaved work is gone with it.
 - **Winter theme adds two hundred animated snowflakes** to the home page, which
-  is a battery and motion cost paid on a phone as well as a desktop. See
+  is a battery and motion cost paid on a phone as well as a desktop — unless the
+  phone asks for reduced motion, which now switches them off. See
   [`accessibility.md`](accessibility.md).
 
 ## Open questions and verification
@@ -219,4 +220,7 @@ much of its traffic is phones. Nothing more precise is stored. See
 - Assumption: nothing in the product reads device orientation directly. Only the
   width is watched.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the reduced-motion and
+hamburger-menu behaviour above, both changed after that commit — see
+[B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else)
+and [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog).

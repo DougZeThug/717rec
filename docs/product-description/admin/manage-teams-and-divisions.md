@@ -84,8 +84,8 @@ name, the division, the image, and a list of player names. It is dirty from the
 first keystroke and shows nothing to say so.
 
 **Create Team** is the same form, empty, shown inline as a card rather than a
-dialog. Its Cancel button does nothing at all — it is wired to an empty
-function.
+dialog. Its Cancel button returns to **Manage Teams**, which also discards
+whatever was typed.
 
 **Edit on a division row** replaces the row's three cells with inputs, filled
 from the row. Cancel restores all three and closes the editor.
@@ -101,9 +101,10 @@ raising "Processing Image", then "Image Uploaded" or "Image Upload Failed", and
 disables the submit button while it runs. The upload happens **before** the form
 is saved, so an image uploaded and then cancelled has still been uploaded.
 
-The division editor refuses silently. Save does nothing at all — no message, no
-error — when the name is blank or the weight is not a number greater than zero.
-The button simply appears not to work.
+The division editor says why it refuses. Pressing Save with a blank name raises
+**"Name Required"**; with a weight that is not a number greater than zero it
+raises **"Invalid Weight"**. The row stays open in both cases, so the mistake can
+be corrected in place.
 
 A division whose display grouping is "Hidden" has both Edit and delete disabled,
 with a tooltip explaining why.
@@ -179,7 +180,7 @@ waiting. It is described in [`handle-requests.md`](handle-requests.md).
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. | Escape closes the team dialog and discards it with no confirmation. The division editor's Cancel restores all three fields. **The Create Team tab's Cancel button does nothing.** Nothing aborts a request already sent. |
+| Escape, or a Cancel button | No effect. | Escape closes the team dialog and discards it with no confirmation. The division editor's Cancel restores all three fields. The Create Team tab's Cancel returns to Manage Teams. Nothing aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. The search and filter reset when the section is reopened. | **Everything typed is lost, with no warning** — including switching between the four tabs inside the Teams section. A division change already sent still lands. |
 | Browser back or forward | Leaves the dashboard. | Same as navigating away, and the app cannot prevent it. |
 | Reload, or the tab closed | Returns to the same section, with an empty search and the Manage Teams tab. | Everything in a form is lost. A sent write still lands. An uploaded image stays uploaded whether or not the form was saved. |
@@ -244,8 +245,6 @@ live season's power scores; archived seasons do not move.
   Unassigned count and in every public list.
 - **An image uploaded in a form that is then cancelled is still stored.**
 - **A blank player row is dropped silently** rather than reported.
-- **The Create Team tab's Cancel button is inert.** The only way out is to switch
-  tab.
 - **A division's weight accepts any positive number**, including values far
   outside the 0.7–1.0 range the help text suggests.
 - **Deleting a division that no team uses succeeds instantly** and cannot be
@@ -259,11 +258,14 @@ live season's power scores; archived seasons do not move.
   live data, the Hidden division can be renamed or deleted, which would un-hide
   every hidden team at once. **May be worth treating as a bug rather than
   documenting**, and it is the first thing to check by hand.
-- **The division editor fails silently.** A blank name or a zero weight makes
-  Save do nothing, with no message. **May be worth treating as a bug rather than
-  documenting.**
-- **The Create Team tab's Cancel button is wired to an empty function.** **May be
-  worth treating as a bug rather than documenting.**
+- Resolved: **the division editor failed silently.** It was treated as a bug
+  ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). A
+  blank name and a non-positive weight each now raise a message saying what is
+  wrong, and the row stays open for correction.
+- Resolved: **the Create Team tab's Cancel button was wired to an empty
+  function.** It was treated as a bug
+  ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). It now
+  returns to *Manage Teams*, which also discards what was typed.
 - **Team creation raises two toasts**, so the first is destroyed by the second.
   Minor, but it means the screen reports the same success twice.
 - **A table `team_season_opt_out` exists in the schema and nothing in the app
@@ -278,4 +280,6 @@ live season's power scores; archived seasons do not move.
 - Assumption: playoff seeds are never set from these screens. Only the bracket
   editor writes them.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the division-editor and
+Cancel behaviour above, which was changed after that commit — see
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).

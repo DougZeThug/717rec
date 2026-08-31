@@ -207,11 +207,11 @@ changes its name everywhere in the app, including its address — see
   longer playing.
 - **The join dropdown is not filtered by season either.** Every team the league
   has ever had is offered.
-- **There is no way to switch teams.** The dropdown is only drawn when there is
-  no membership, so a player who wants to move must press Leave Team first,
-  losing the membership outright, and then ask to join the new one. The app has a
-  "change teams" path that says "Your request to change teams has been submitted"
-  and nothing can reach it.
+- **There is no way to switch teams.** The dropdown is drawn only when there is
+  no membership, or when one was refused, so a player who wants to move must
+  press Leave Team first, losing the membership outright, and then ask to join
+  the new one. The app used to carry a "change teams" message that nothing could
+  reach; it has been removed.
 - **Leaving is instant and unconditional.** It deletes the membership; it does
   not ask an admin. Rejoining means asking again and waiting again.
 - **Renaming the team is instant and unconditional too.** The card says as much:
@@ -229,11 +229,13 @@ changes its name everywhere in the app, including its address — see
 
 ## Open questions and verification
 
-- **`/my-team` is unreachable from the app once a player is on a team.** The only
-  link to it is drawn for users with no membership, and every other entry point
-  goes to the team's public page, which has no edit control. Leaving a team and
-  renaming a team are therefore both hidden from the people who have the right to
-  do them. **May be worth treating as a bug rather than documenting.**
+- Resolved: **`/my-team` was unreachable once a player was on a team.** The user
+  menu sent a member to their team's public page, which has no Leave Team and no
+  edit control, so both were hidden from exactly the people entitled to them. It
+  was treated as a bug
+  ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). The
+  menu item now always points at `/my-team`; only its label changes, between
+  "My Team" and "Join a Team".
 - **A signed-out visitor is shown a wrong statement rather than a sign-in
   prompt.** The route has no guard and the page has no signed-out state of its
   own, so it falls through to "No Teams Available". **May be worth treating as a

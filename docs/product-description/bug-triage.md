@@ -66,6 +66,14 @@ reshaped B-20: archiving deletes a season's finished matches, so what stays
 editable in an archived season is its unfinished ones, which is a narrower and
 sharper problem than that entry described.
 
+A fifth theme was **controls that look live and are not.** B-21 gathered eight of
+them across the admin screens and `/my-team`; all eight are now wired up rather
+than removed, and two of them were not as the entry described — one failed
+loudly rather than silently, and one was dead for a different reason than the one
+given. Fixing the honest version of *Edit Bracket* also closed a hole the entry
+did not anticipate: the mislabelled button was the only route to a second bracket
+in a division, so a real Create control had to take its place.
+
 Two structural themes ran under the medium entries: **destructive admin actions
 with no confirmation** (B-11) and **failure messages that throw away the reason
 the server gave** (B-12). Both are now fixed, and both entries were wrong in
@@ -103,9 +111,9 @@ entry's *Corrected on review* note.
 | B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | **fixed** | — |
 | B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | **fixed** | — |
 | B-20 | Archived seasons are editable through live corrections | medium | admin | **fixed** | — |
-| B-21 | Eight controls do nothing when pressed | medium | admin, teams | fix | — |
-| B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else | medium | cross-cutting | fix | — |
-| B-23 | The mobile menu is not a dialog | medium | cross-cutting | fix | — |
+| B-21 | Eight controls do nothing when pressed | medium | admin, teams | **fixed** | — |
+| B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else | medium | cross-cutting | **fixed** | — |
+| B-23 | The mobile menu is not a dialog | medium | cross-cutting | **fixed** | — |
 | B-24 | Bracket administration is unreachable on a phone | medium | playoffs, admin | fix | — |
 | B-25 | Anyone signed out can report a score for any match | medium | scores | product call | — |
 | B-34 | Four standings columns silently sort by power score instead | medium | stats | fix | — |
@@ -1241,6 +1249,84 @@ finding read a superseded migration.
   [`admin/manage-teams-and-divisions.md`](admin/manage-teams-and-divisions.md#open-questions-and-verification),
   [`admin/build-the-schedule.md`](admin/build-the-schedule.md#open-questions-and-verification),
   [`teams/my-team.md`](teams/my-team.md#open-questions-and-verification).
+- **Status:** **fixed**, all eight, each wired up rather than removed. Two of
+  them turned out to be different from the entry's description; see *Corrected
+  on review* below.
+
+  **The Double Header switch** now writes. The page renders the assignment form
+  **twice** — once for a narrow screen, once for a wide one — and *neither*
+  passed the handler; the entry cites only the first. Both pass it now, reusing
+  the mutation the admin Timeslots tab already used.
+
+  **9:30 PM** is now offered only where it works. It is a real block time and a
+  valid single assignment; it simply has no back-to-back partner, because
+  nothing follows it. Double-header mode therefore lists only the times that
+  start a pair, derived from `BACK_TO_BACK_PAIRS` so the list cannot drift from
+  the pairs again. The component's own hardcoded copy of the times is gone,
+  replaced by `ALL_BLOCK_TIMES` — that duplicate is *how* the picker and the
+  pair table drifted apart, and B-03 fixed the same duplication in the other
+  picker.
+
+  **"Edit Bracket"** now edits. There was no update path in the service layer at
+  all, so a typo in a bracket's name was permanent unless the whole bracket —
+  and every match played in it — was deleted. **The scope is deliberately
+  narrow: the title and the division, nothing else.** A bracket's format, size
+  and team list define its generated stage, rounds and matches, so changing them
+  means deleting and rebuilding, which cascades away played matches with no
+  undo. *Update Seeding* and *Rearrange Teams* already handle the structural
+  cases, including refusing when results would be affected. The division is
+  editable only while the bracket is pending: once a match has been played,
+  moving the bracket would leave its teams behind in the old division, and the
+  dialog says so. No migration was needed — the admin `UPDATE` policy on
+  `brackets` already existed, and the table's only `AFTER UPDATE` trigger fires
+  on a `state → completed` transition, which a rename does not touch.
+
+  **The Create Team Cancel button** returns to *Manage Teams*. The tab set is
+  now controlled; the inactive tab unmounts, so the half-filled form is
+  discarded with it.
+
+  **The two navigation buttons** change tab in place. The fragments they set
+  were exactly the admin tab ids, so tab navigation was plainly the intent. The
+  active tab is private to the sidebar, so a new `utils/adminTabs` helper
+  carries the request as a window event. **The League Night Status queue tiles
+  moved onto it too** — they were the one place this half-worked, and they did
+  it by reloading the whole page. That reload is gone.
+
+  **The division editor** now says what is wrong. A blank name and a
+  non-positive weight each raise a destructive toast.
+
+  **`/my-team` is reachable again.** This is wider than the entry asked, and the
+  entry's own fix would have left a hole. The user menu sent a member to their
+  team's *public* page, which has neither *Leave Team* nor the edit control, so
+  both were hidden from exactly the people entitled to them. The menu item now
+  always points at `/my-team`; only its label changes.
+
+  *Corrected on review.* Two of the eight were not as described.
+
+  **"9:30 PM" is not silent.** The entry files it under controls that do
+  nothing. It raises a toast from the mutation hook and a second one from the
+  screen over the top of it. It failed *loudly*, and always. That makes it a
+  smaller defect than the entry implies — and a different one: the picker
+  offered a choice the service could never accept, rather than a control that
+  went nowhere.
+
+  **The join-team entry gives the wrong cause.** It says the control renders
+  only when there is no membership. It also renders when a membership was
+  **refused** — and that case is caught by an earlier branch. The genuinely
+  unreachable branch is the "change teams" one, unreachable because a member
+  sees the team card with *Leave Team* and never a team picker. The conclusion
+  (dead code, now removed) was right; the reason was not.
+
+  *Also found, and not in the entry.* `DivisionBracketsCard` declared an
+  `onEditBracket` prop it never used, so the bracket list forwarded a handler
+  into nothing — a **ninth** dead wire behind the eight controls. It is gone.
+
+  **Deliberately not done: a bracket editor that can change teams.** The entry
+  says "wire them up or remove them", and for *Edit Bracket* the honest wiring
+  stops at the title and the division. Anything more would either be refused by
+  the bracket library the moment a result exists, or would mean a delete and
+  rebuild that destroys played matches. Admins who need that have two working
+  controls already.
 
 ### B-22: Reduced-motion is honoured in one stylesheet and ignored everywhere else
 
@@ -1258,6 +1344,47 @@ finding read a superseded migration.
 - **Decision needed:** `fix`.
 - **Raised by:** [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification),
   [`cross-cutting/on-a-phone.md`](cross-cutting/on-a-phone.md#open-questions-and-verification).
+- **Status:** **fixed**. The setting is now honoured throughout. Three changes,
+  in order of reach, because no single one could cover it:
+
+  **A global block at the end of `src/index.css`** collapses every animation and
+  transition to nothing and turns off smooth scrolling. There are no `@layer`
+  directives anywhere in `src/`, so source order settles it without specificity
+  games. This reaches the page transitions, the seventeen keyframes in the
+  Tailwind config, and the ten more hand-rolled in `styles/animations.css`.
+
+  **`MotionConfig reducedMotion="user"`**, added inside the `LazyMotion` wrapper
+  that already existed, makes every framer-motion animation honour the setting
+  at once. That is the 49 files a stylesheet cannot reach, because they animate
+  through inline styles rather than classes.
+
+  **A `usePrefersReducedMotion` hook** covers what neither reaches: the snowfall
+  is drawn on a **canvas**, so no CSS rule can stop it, and the three scroll
+  calls that pass `behavior: 'smooth'` decide in JavaScript.
+
+  **Spinners and skeletons keep moving, on purpose.** A spinner is how a user
+  knows the app is still working, and a skeleton pulses its opacity rather than
+  moving. Freezing either would take away information, not motion.
+
+  *Corrected on review.* Two of the entry's specifics were wrong, in opposite
+  directions.
+
+  **The snowfall is narrower than described.** "The home page's 200-flake
+  snowfall" drops a qualifier: it needs the winter theme *and* the home page,
+  and the default theme is dark. The raising document
+  ([`accessibility.md`](cross-cutting/accessibility.md)) says "when the winter
+  theme is on"; the summary here lost it.
+
+  **"68 animated components" understates the problem.** That figure is not
+  reproducible by any natural count. The closest is ~72 files using `animate-*`
+  outside the component library; the defensible figure is ~155 files, or ~89 if
+  spinner- and skeleton-only files are excused.
+
+  *Also found, and not in the entry.* The one honoured rule was **weaker than it
+  looked**: its stylesheet is lazily imported, so it was not even in the main
+  bundle and loaded only once a bracket rendered. And `styles/base.css` set
+  `scroll-behavior: smooth` on `html` globally — a documented reduced-motion
+  offender the entry did not mention. Both are covered now.
 
 ### B-23: The mobile menu is not a dialog
 
@@ -1273,6 +1400,37 @@ finding read a superseded migration.
 - **Decision needed:** `fix`. Use the same dialog primitive as the rest of the
   app.
 - **Raised by:** [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).
+- **Status:** **fixed**, but **not** the way this entry proposes. The menu is
+  now a proper *disclosure*, not a dialog.
+
+  **Why not a dialog.** The menu is not an overlay. It is a panel that expands
+  in place under the top bar and pushes the page down; it covers nothing. For
+  that, `aria-expanded` with `aria-controls` is the correct pattern, and a
+  dialog role would describe something the component is not. Taking the entry's
+  advice literally would have meant adding a slide-in `Sheet` the project does
+  not have, changing how the menu looks, and working through its collisions with
+  the bottom tab bar, the phone safe areas and the sticky header's stacking —
+  a redesign, to fix an accessibility bug. So the *facts* of this entry were
+  taken and its proposed *fix* was not.
+
+  **What changed:** the button carries `aria-expanded` and `aria-controls`, and
+  the panel has a matching id. Escape closes the menu and gives the button its
+  focus back. Focus moves to the first link when the panel opens. Closing on a
+  route change already worked and is untouched.
+
+  **Deliberately not done: a focus trap and a scroll lock.** Both belong to
+  modals. Tab order already flows through this panel and out into the page
+  behind it, which is what a disclosure should do.
+
+  *Corrected on review.* **"The button does not say whether it is open" is
+  wrong.** Its `aria-label` already toggled between "Open menu" and "Close
+  menu", so the accessible name did change. That is a weaker signal than
+  `aria-expanded` — a name change is not reliably re-announced, and it says
+  nothing about a controlled region — but the claim as written is false, and the
+  raising document
+  ([`accessibility.md`](cross-cutting/accessibility.md)) states it correctly.
+  The label is kept alongside the new attributes. The cited line range was also
+  off: the panel is at `MobileMenu.tsx:52-64`, not `:32-66`.
 
 ### B-24: Bracket administration is unreachable on a phone
 
