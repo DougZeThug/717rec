@@ -4,6 +4,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { LastPowerSnapshot } from '@/services/opsHealth/OpsHealthService';
+import { subscribeToAdminTabRequests } from '@/utils/adminTabs';
 
 const mockUseLastPowerSnapshot = vi.fn();
 const mockUsePendingOpsCounts = vi.fn();
@@ -119,16 +120,23 @@ describe('LeagueNightStatusTab', () => {
     expect(screen.getByText(/no snapshot has ever been captured/i)).toBeInTheDocument();
   });
 
-  it('clicking a queue tile switches admin tab via sessionStorage + reload', () => {
+  it('clicking a queue tile asks the dashboard to open that section', () => {
     mockUsePendingOpsCounts.mockReturnValue({
       data: { pendingScoreSubmissions: 3, pendingTeamRequests: 0, newContactRequests: 0 },
       isLoading: false,
     });
+    const onRequest = vi.fn();
+    const unsubscribe = subscribeToAdminTabRequests(onRequest);
     renderTab();
 
     fireEvent.click(screen.getByRole('button', { name: /score reports.*open section/i }));
+
+    expect(onRequest).toHaveBeenCalledWith('pending-matches');
     expect(sessionStorage.getItem('adminActiveTab')).toBe('pending-matches');
-    expect(window.location.reload).toHaveBeenCalledTimes(1);
+    // The tab now changes in place; the page no longer reloads.
+    expect(window.location.reload).not.toHaveBeenCalled();
+
+    unsubscribe();
   });
 
   it('renders the unrecorded-live-matches detector', async () => {
