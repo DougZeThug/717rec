@@ -46,6 +46,16 @@ const hasPlayStarted = (bracket: PlayoffBracket): boolean =>
       (match.team2GameWins ?? 0) > 0
   );
 
+const EditBracketHeader = ({ canEditDivision }: { canEditDivision: boolean }) => (
+  <DialogHeader>
+    <DialogTitle>Edit Bracket</DialogTitle>
+    <DialogDescription>
+      Change the bracket&apos;s name{canEditDivision ? ' and division' : ''}. To change which teams
+      are in it, use <strong>Update Seeding</strong> or <strong>Rearrange Teams</strong>.
+    </DialogDescription>
+  </DialogHeader>
+);
+
 const NameField = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
   <div className="space-y-2">
     <Label htmlFor="bracket-title">Bracket name</Label>
@@ -133,13 +143,7 @@ const EditBracketDialog: React.FC<EditBracketDialogProps> = ({ open, onOpenChang
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Bracket</DialogTitle>
-          <DialogDescription>
-            Change the bracket&apos;s name{hasStarted ? '' : ' and division'}. To change which teams
-            are in it, use <strong>Update Seeding</strong> or <strong>Rearrange Teams</strong>.
-          </DialogDescription>
-        </DialogHeader>
+        <EditBracketHeader canEditDivision={!hasStarted} />
 
         <div className="space-y-4 py-2">
           <NameField value={title} onChange={setTitle} />

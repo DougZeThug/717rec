@@ -68,7 +68,7 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
   const { data: existingStandings } = useQuery({
     queryKey: ['final-standings', bracketId],
     queryFn: () => fetchFinalStandings(bracketId),
-    enabled: !!bracketId && isCompleted,
+    enabled: Boolean(bracketId) && isCompleted,
   });
   const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
 
@@ -88,7 +88,9 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
           variant="outline"
           size="sm"
           className="hidden md:flex"
-          onClick={() => void recalculate()}
+          onClick={() => {
+            recalculate();
+          }}
           disabled={isRecalculating}
         >
           {isRecalculating ? (
@@ -105,7 +107,9 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
           variant="outline"
           size="sm"
           className="hidden md:flex"
-          onClick={() => void repair()}
+          onClick={() => {
+            repair();
+          }}
           disabled={isRepairing}
         >
           {isRepairing ? (
