@@ -211,6 +211,49 @@ describe('MatchResultDriftService.fetchMatchResultDrift', () => {
     await expect(MatchResultDriftService.fetchMatchResultDrift(SEASON_ID)).resolves.toEqual([]);
   });
 
+  // ─── Teams can share a name, so every comparison must go by id ─────────────
+  //
+  // src/types/headToHead.ts: "team names are not unique". There is no unique
+  // constraint on teams.name. Comparing display names made two same-named teams
+  // read as the same winner, and the disagreement went unreported.
+
+  const SAME_NAME = 'Corn Stars';
+  const sameNamedTeams = {
+    team1: { id: 't-1', name: SAME_NAME },
+    team2: { id: 't-2', name: SAME_NAME },
+  };
+
+  it('reports a game winner that contradicts its rounds even when both teams share a name', async () => {
+    // The rounds give game 1 to team 2; the game still records team 1.
+    const flipped = cleanRounds('g-1').map((r) => ({ ...r, team1_score: 0, team2_score: 3 }));
+    mockQueries(
+      [matchRow({ ...sameNamedTeams, winner_id: null, iscompleted: false })],
+      [gameRow({ team1_score: 0, team2_score: 21 })],
+      flipped
+    );
+
+    const [row] = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    expect(row?.kind).toBe('game-winner');
+  });
+
+  it('reports a match winner that contradicts its games even when both teams share a name', async () => {
+    // Both games go to team 1; the match records team 2 as the winner.
+    const { games, rounds } = healthy();
+    mockQueries([matchRow({ ...sameNamedTeams, winner_id: 't-2' })], games, rounds);
+
+    const [row] = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    expect(row?.kind).toBe('match-winner');
+  });
+
+  it('does not invent a disagreement when a shared name is on the right team', async () => {
+    const { games, rounds } = healthy();
+    mockQueries([matchRow({ ...sameNamedTeams })], games, rounds);
+
+    await expect(MatchResultDriftService.fetchMatchResultDrift(SEASON_ID)).resolves.toEqual([]);
+  });
+
   it('throws a DatabaseError when the match read fails', async () => {
     mockFrom.mockReturnValueOnce(chain({ data: null, error: pgError() }));
 

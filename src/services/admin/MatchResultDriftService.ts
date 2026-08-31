@@ -9,7 +9,7 @@ import { checkGameWinner } from '@/utils/liveScoring/winnerDetection';
  * The ways a live-scored match can end up disagreeing with itself, worst first.
  * The card reports one kind per match: the worst one it finds.
  */
-export type MatchDriftKind =
+type MatchDriftKind =
   'match-winner' | 'match-game-wins' | 'game-winner' | 'game-score' | 'game-no-rounds';
 
 const KIND_ORDER: MatchDriftKind[] = [
@@ -86,15 +86,19 @@ const sideName = (
   return fallback;
 };
 
-const teamName = (
-  teamId: string | null,
-  match: MatchRow,
-  team1Name: string,
-  team2Name: string
-): string => {
-  if (teamId && teamId === match.team1_id) return team1Name;
-  if (teamId && teamId === match.team2_id) return team2Name;
-  return 'nobody';
+/**
+ * Which side of this match a team id is, or null when it is neither.
+ *
+ * Every comparison here goes through this rather than through display names.
+ * `src/types/headToHead.ts` says why: team names are not unique, and there is no
+ * unique constraint on `teams.name`. Two teams sharing a name would otherwise
+ * read as the same winner, and a game contradicting its rounds would go
+ * unreported. Names are for the message text only.
+ */
+const sideOf = (teamId: string | null, match: MatchRow): TeamSide | null => {
+  if (teamId && teamId === match.team1_id) return 1;
+  if (teamId && teamId === match.team2_id) return 2;
+  return null;
 };
 
 /**
@@ -133,15 +137,14 @@ const findingsFor = (match: MatchRow, games: GameRow[], rounds: RoundRow[]): Fin
     }
 
     const totals = foldGameTotals(gameRounds);
-    const storedWinner = teamName(game.winner_team_id, match, team1Name, team2Name);
-    const derivedWinnerSide = checkGameWinner(totals.team1, totals.team2);
-    const derivedWinner = sideName(derivedWinnerSide, team1Name, team2Name, 'nobody yet');
+    const storedSide = sideOf(game.winner_team_id, match);
+    const derivedSide = checkGameWinner(totals.team1, totals.team2);
 
-    if (derivedWinnerSide !== null && storedWinner !== derivedWinner) {
+    if (derivedSide !== null && storedSide !== derivedSide) {
       findings.push({
         kind: 'game-winner',
-        recorded: `game ${game.game_number} won by ${storedWinner}`,
-        derived: `its rounds give it to ${derivedWinner}`,
+        recorded: `game ${game.game_number} won by ${sideName(storedSide, team1Name, team2Name, 'nobody')}`,
+        derived: `its rounds give it to ${sideName(derivedSide, team1Name, team2Name, 'nobody')}`,
       });
     }
 
@@ -161,22 +164,16 @@ const findingsFor = (match: MatchRow, games: GameRow[], rounds: RoundRow[]): Fin
   const summaries: GameSummary[] = games.map((g) => ({
     gameNumber: g.game_number,
     status: g.status as GameSummary['status'],
-    winnerSide:
-      g.winner_team_id && g.winner_team_id === match.team1_id
-        ? 1
-        : g.winner_team_id && g.winner_team_id === match.team2_id
-          ? 2
-          : null,
+    winnerSide: sideOf(g.winner_team_id, match),
   }));
   const state = deriveMatchState(summaries);
 
-  const storedWinner = teamName(match.winner_id, match, team1Name, team2Name);
-  const derivedWinner = sideName(state.matchWinner, team1Name, team2Name, 'nobody');
-  if (storedWinner !== derivedWinner) {
+  const storedMatchSide = sideOf(match.winner_id, match);
+  if (storedMatchSide !== state.matchWinner) {
     findings.push({
       kind: 'match-winner',
-      recorded: `recorded as won by ${storedWinner}`,
-      derived: `its games give it to ${derivedWinner}`,
+      recorded: `recorded as won by ${sideName(storedMatchSide, team1Name, team2Name, 'nobody')}`,
+      derived: `its games give it to ${sideName(state.matchWinner, team1Name, team2Name, 'nobody')}`,
     });
   }
 
