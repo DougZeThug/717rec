@@ -1,8 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mockNavigate = vi.hoisted(() => vi.fn());
+// Partial mock: MemoryRouter below is the real one, only useNavigate is
+// replaced so the sign-in button's destination can be asserted.
+vi.mock('react-router', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('react-router')>()),
+  useNavigate: () => mockNavigate,
+}));
 
 import MessageControls from '@/components/message-board/message-item/MessageControls';
 import MessageEditForm from '@/components/message-board/message-item/MessageEditForm';
@@ -126,7 +135,13 @@ describe('message board main flow components', () => {
 
     expect(await screen.findByText('Sign in to read the board')).toBeInTheDocument();
     expect(screen.queryByText('No Messages Yet')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+
+    // The button has to come back here afterwards, or signing in drops the
+    // visitor somewhere else and the board stays unread.
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/auth', {
+      state: { returnTo: '/message-board' },
+    });
   });
 
   it('keeps the be-the-first invitation for a signed-in reader', async () => {

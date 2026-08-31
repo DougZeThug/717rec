@@ -93,6 +93,65 @@ describe('useTeamMembership', () => {
     await waitFor(() => expect(result.current.error).toBe('Failed to load team membership'));
   });
 
+  // B-18: a refused request keeps its row, so `membership` is truthy for
+  // somebody with no team. The hook has to tell that apart from an approved or
+  // pending membership, both for the wording it shows and for activeMembership,
+  // which is what every "what is this person's team" caller reads.
+  describe('a refused request', () => {
+    const refused = { id: 'm1', team_id: 'team-1', rejected_at: '2026-08-05T12:00:00.000Z' };
+
+    const renderWithMembership = async (membership: unknown) => {
+      (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: { id: 'user-1' } });
+      (fetchTeamMembership as ReturnType<typeof vi.fn>).mockResolvedValue(membership);
+      (fetchAvailableTeams as ReturnType<typeof vi.fn>).mockResolvedValue(mockTeams);
+      const { result } = renderHook(() => useTeamMembership(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isFetching).toBe(false));
+      return result;
+    };
+
+    it('drops it from activeMembership while keeping the raw row', async () => {
+      const result = await renderWithMembership(refused);
+
+      expect(result.current.membership).toEqual(refused);
+      expect(result.current.activeMembership).toBeNull();
+    });
+
+    it('keeps a pending membership in activeMembership', async () => {
+      const result = await renderWithMembership(mockMembership);
+
+      expect(result.current.activeMembership).toEqual(mockMembership);
+    });
+
+    it('calls asking again a new request, not a team change', async () => {
+      const result = await renderWithMembership(refused);
+
+      await act(async () => {
+        await result.current.joinTeam('team-2');
+      });
+
+      expect(joinTeamMembership).toHaveBeenCalledWith('user-1', 'team-2', true);
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'Your new request to join the team has been submitted for admin approval',
+        })
+      );
+    });
+
+    it('still calls a real team change a team change', async () => {
+      const result = await renderWithMembership(mockMembership);
+
+      await act(async () => {
+        await result.current.joinTeam('team-2');
+      });
+
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: 'Your request to change teams has been submitted for admin approval',
+        })
+      );
+    });
+  });
+
   it('guards joinTeam when there is no user', async () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: null });
 

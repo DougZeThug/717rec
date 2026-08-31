@@ -603,6 +603,25 @@ describe('match decided (not yet official)', () => {
     expect(screen.getByText(/tossers wins the match/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /save official result/i })).not.toBeInTheDocument();
   });
+
+  // B-17: reopen is rendered from two separate paths — between games, and here
+  // once the match is decided. They were duplicated JSX before the prompt was
+  // extracted, so this path needs its own proof that it asks and then acts.
+  it('asks before reopening the last game of a decided match', async () => {
+    renderView(decidedBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: /reopen game 2/i }));
+    expect(mockReopenGame.mutate).not.toHaveBeenCalled();
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reopen game' }));
+    expect(mockReopenGame.mutate).toHaveBeenCalledWith('g2');
+  });
+
+  it('spectators cannot reopen a decided match', () => {
+    renderView(decidedBundle(), { canScore: false });
+
+    expect(screen.queryByRole('button', { name: /reopen game/i })).not.toBeInTheDocument();
+  });
 });
 
 describe('completed match', () => {
