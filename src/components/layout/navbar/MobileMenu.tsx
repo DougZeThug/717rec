@@ -44,7 +44,7 @@ const MobileMenu: React.FC = React.memo(() => {
 
   // Escape closes the menu and gives the button its focus back.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
@@ -53,7 +53,9 @@ const MobileMenu: React.FC = React.memo(() => {
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen]);
 
   // Move focus into the panel on open, and back to the button on an Escape close.

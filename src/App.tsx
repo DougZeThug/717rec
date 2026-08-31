@@ -314,27 +314,36 @@ const AppContent = () => {
   );
 };
 
+/**
+ * framer-motion setup.
+ *
+ * `LazyMotion` keeps the bundle small by loading only DOM animation features.
+ * `reducedMotion="user"` makes every framer-motion animation honour the
+ * operating system's reduce-motion setting; CSS animation is handled by the
+ * block at the end of `src/index.css`.
+ */
+const MotionProviders = ({ children }: { children: React.ReactNode }) => (
+  <LazyMotion features={domAnimation}>
+    <MotionConfig reducedMotion="user">{children}</MotionConfig>
+  </LazyMotion>
+);
+
 /** Provides top-level app providers and the browser router. */
 const App = () => {
   return (
     <ErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
-          {/* `reducedMotion="user"` makes every framer-motion animation in the
-              app honour the operating system's reduce-motion setting. CSS
-              animation is handled by the block at the end of `src/index.css`. */}
-          <LazyMotion features={domAnimation}>
-            <MotionConfig reducedMotion="user">
-              <TooltipProvider>
-                <Toaster />
-                <BrowserRouter>
-                  <AuthProvider>
-                    <AppContent />
-                  </AuthProvider>
-                </BrowserRouter>
-              </TooltipProvider>
-            </MotionConfig>
-          </LazyMotion>
+          <MotionProviders>
+            <TooltipProvider>
+              <Toaster />
+              <BrowserRouter>
+                <AuthProvider>
+                  <AppContent />
+                </AuthProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </MotionProviders>
         </QueryClientProvider>
       </HelmetProvider>
     </ErrorBoundary>

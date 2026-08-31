@@ -46,6 +46,53 @@ const hasPlayStarted = (bracket: PlayoffBracket): boolean =>
       (match.team2GameWins ?? 0) > 0
   );
 
+const NameField = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+  <div className="space-y-2">
+    <Label htmlFor="bracket-title">Bracket name</Label>
+    <Input
+      id="bracket-title"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="Bracket name"
+    />
+    {!value.trim() && <p className="text-sm text-destructive">Enter a name for the bracket.</p>}
+  </div>
+);
+
+const DivisionField = ({
+  value,
+  onChange,
+  divisions,
+  locked,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  divisions: { id: string; name: string }[];
+  locked: boolean;
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor="bracket-division">Division</Label>
+    <Select value={value} onValueChange={onChange} disabled={locked}>
+      <SelectTrigger id="bracket-division">
+        <SelectValue placeholder="Select a division" />
+      </SelectTrigger>
+      <SelectContent>
+        {divisions.map((division) => (
+          <SelectItem key={division.id} value={division.id}>
+            {division.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    {locked && (
+      <p className="text-sm text-muted-foreground">
+        A match has already been played, so this bracket cannot be moved to another division. Its
+        teams would be left behind.
+      </p>
+    )}
+  </div>
+);
+
 /**
  * Edit a bracket that already exists.
  *
@@ -95,40 +142,13 @@ const EditBracketDialog: React.FC<EditBracketDialogProps> = ({ open, onOpenChang
         </DialogHeader>
 
         <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="bracket-title">Bracket name</Label>
-            <Input
-              id="bracket-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Bracket name"
-            />
-            {!trimmedTitle && (
-              <p className="text-sm text-destructive">Enter a name for the bracket.</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="bracket-division">Division</Label>
-            <Select value={divisionId} onValueChange={setDivisionId} disabled={hasStarted}>
-              <SelectTrigger id="bracket-division">
-                <SelectValue placeholder="Select a division" />
-              </SelectTrigger>
-              <SelectContent>
-                {(divisions ?? []).map((division) => (
-                  <SelectItem key={division.id} value={division.id}>
-                    {division.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {hasStarted && (
-              <p className="text-sm text-muted-foreground">
-                This bracket has started, so it cannot be moved to another division. Its teams would
-                be left behind.
-              </p>
-            )}
-          </div>
+          <NameField value={title} onChange={setTitle} />
+          <DivisionField
+            value={divisionId}
+            onChange={setDivisionId}
+            divisions={divisions ?? []}
+            locked={hasStarted}
+          />
         </div>
 
         <DialogFooter>

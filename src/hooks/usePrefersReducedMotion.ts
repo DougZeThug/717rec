@@ -24,7 +24,7 @@ export function usePrefersReducedMotion(): boolean {
 
   useEffect(() => {
     // Check if we're in a browser environment
-    if (typeof window === 'undefined' || !window.matchMedia) return;
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
 
     const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
 

@@ -35,6 +35,115 @@ interface BracketDetailProps {
 // Softer, league-standard tier accent for the bracket card top border
 const getDivisionColorClass = (division: string) => getDivisionSoftClasses(division).borderTop;
 
+interface BracketAdminToolbarProps {
+  bracket: PlayoffBracket;
+  bracketId: string;
+  standingsMissing: boolean;
+  isRecalculating: boolean;
+  onRecalculate: () => void | Promise<unknown>;
+  isCompleted: boolean;
+  isRepairing: boolean;
+  onRepair: () => void | Promise<unknown>;
+  canRearrange: boolean;
+  onRearrange: () => void;
+  onUpdateSeeding: () => void;
+  onEdit: () => void;
+  onDeleteBracket?: (bracketId: string, bracketName: string) => void;
+}
+
+/**
+ * The admin controls above a bracket. Extracted from BracketDetail so that
+ * component is not carrying every one of these conditions itself.
+ */
+const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
+  bracket,
+  bracketId,
+  standingsMissing,
+  isRecalculating,
+  onRecalculate,
+  isCompleted,
+  isRepairing,
+  onRepair,
+  canRearrange,
+  onRearrange,
+  onUpdateSeeding,
+  onEdit,
+  onDeleteBracket,
+}) => (
+  <div className="flex gap-2">
+    {standingsMissing && (
+      <Button
+        variant="outline"
+        size="sm"
+        className="hidden md:flex"
+        onClick={() => void onRecalculate()}
+        disabled={isRecalculating}
+      >
+        {isRecalculating ? (
+          <Loader2 className="size-4 mr-2 animate-spin" />
+        ) : (
+          <RefreshCw className="size-4 mr-2" />
+        )}
+        Recalculate Standings
+      </Button>
+    )}
+
+    {!isCompleted && (
+      <Button
+        variant="outline"
+        size="sm"
+        className="hidden md:flex"
+        onClick={() => void onRepair()}
+        disabled={isRepairing}
+      >
+        {isRepairing ? (
+          <Loader2 className="size-4 mr-2 animate-spin" />
+        ) : (
+          <Wrench className="size-4 mr-2" />
+        )}
+        Repair Bracket
+      </Button>
+    )}
+
+    {canRearrange && (
+      <Button
+        variant="outline"
+        size="sm"
+        className="hidden md:flex"
+        onClick={onRearrange}
+        disabled={bracket.state === 'completed'}
+      >
+        <Shuffle className="size-4 mr-2" /> Rearrange Teams
+      </Button>
+    )}
+
+    <Button
+      variant="outline"
+      size="sm"
+      className="hidden md:flex"
+      onClick={onUpdateSeeding}
+      disabled={bracket.state === 'completed'}
+    >
+      <ListOrdered className="size-4 mr-2" /> Update Seeding
+    </Button>
+
+    <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEdit}>
+      <Edit className="size-4 mr-2" /> Edit Bracket
+    </Button>
+
+    {onDeleteBracket && (
+      <Button
+        variant="destructive"
+        size="sm"
+        className="hidden md:flex"
+        onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
+      >
+        <Trash className="size-4 mr-2" /> Delete
+      </Button>
+    )}
+  </div>
+);
+
 const BracketDetail: React.FC<BracketDetailProps> = ({
   bracketId,
   bracket,
@@ -132,83 +241,21 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             </CardDescription>
           </div>
           {isAdminAccessGranted && (
-            <div className="flex gap-2">
-              {standingsMissing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => void recalculate()}
-                  disabled={isRecalculating}
-                >
-                  {isRecalculating ? (
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="size-4 mr-2" />
-                  )}
-                  Recalculate Standings
-                </Button>
-              )}
-
-              {!isCompleted && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => void repair()}
-                  disabled={isRepairing}
-                >
-                  {isRepairing ? (
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                  ) : (
-                    <Wrench className="size-4 mr-2" />
-                  )}
-                  Repair Bracket
-                </Button>
-              )}
-
-              {canRearrange && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => setRearrangeDialogOpen(true)}
-                  disabled={bracket.state === 'completed'}
-                >
-                  <Shuffle className="size-4 mr-2" /> Rearrange Teams
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden md:flex"
-                onClick={() => setSeedingDialogOpen(true)}
-                disabled={bracket.state === 'completed'}
-              >
-                <ListOrdered className="size-4 mr-2" /> Update Seeding
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden md:flex"
-                onClick={() => setEditDialogOpen(true)}
-              >
-                <Edit className="size-4 mr-2" /> Edit Bracket
-              </Button>
-
-              {onDeleteBracket && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
-                >
-                  <Trash className="size-4 mr-2" /> Delete
-                </Button>
-              )}
-            </div>
+            <BracketAdminToolbar
+              bracket={bracket}
+              bracketId={bracketId}
+              standingsMissing={standingsMissing}
+              isRecalculating={isRecalculating}
+              onRecalculate={recalculate}
+              isCompleted={isCompleted}
+              isRepairing={isRepairing}
+              onRepair={repair}
+              canRearrange={canRearrange}
+              onRearrange={() => setRearrangeDialogOpen(true)}
+              onUpdateSeeding={() => setSeedingDialogOpen(true)}
+              onEdit={() => setEditDialogOpen(true)}
+              onDeleteBracket={onDeleteBracket}
+            />
           )}
         </div>
       </CardHeader>

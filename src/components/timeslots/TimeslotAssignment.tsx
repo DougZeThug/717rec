@@ -15,8 +15,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Team } from '@/types';
-import { TeamTimeslot } from '@/types';
+import { Team, TeamTimeslot } from '@/types';
 import { ALL_BLOCK_TIMES, DOUBLE_HEADER_START_TIMES } from '@/utils/autoSchedule/constants';
 
 // Built from the block constants so the choices cannot drift away from them.
