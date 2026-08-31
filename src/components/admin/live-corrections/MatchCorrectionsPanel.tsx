@@ -1,11 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Lock, Pencil, Trash2, Trophy } from 'lucide-react';
+import { AlertTriangle, Lock, Pencil, RotateCcw, Trash2, Trophy } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
+import { useFinalizeMatch } from '@/hooks/live-scoring/useFinalizeMatch';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import { useSeasons } from '@/hooks/useSeasons';
 import type { Tables } from '@/integrations/supabase/types';
@@ -35,6 +46,8 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
   const seasonArchived = matchSeason?.is_archived === true;
 
   const corrections = useAdminCorrections({ matchId, affectsStandings: finalized });
+  const { reopenAndRefinalize } = useFinalizeMatch(matchId);
+  const [confirmResaveOpen, setConfirmResaveOpen] = useState(false);
 
   // Store only IDs and derive the current row from the realtime-updated
   // bundle.rounds so open dialogs always reflect the latest data (and close
@@ -110,13 +123,54 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
       {finalized && !seasonArchived && (
         <div className="flex gap-2 items-start rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           <AlertTriangle className="size-4 mt-0.5 text-amber-600 shrink-0" aria-hidden />
-          <div>
-            This match is <strong>finalized</strong>. Edits here will change round/game data
-            immediately, but the official result & standings won&apos;t update until you reopen the
-            match from the live view and re-finalize it.
+          <div className="space-y-2">
+            <div>
+              This match is <strong>finalized</strong>. Edits here change the rounds and games
+              immediately, but the official result and the standings stay as they are until the
+              result is saved again. Until then the match disagrees with itself, and the admin
+              dashboard lists it.
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5"
+              disabled={reopenAndRefinalize.isPending}
+              onClick={() => setConfirmResaveOpen(true)}
+            >
+              <RotateCcw className="size-4" aria-hidden />
+              {reopenAndRefinalize.isPending ? 'Re-saving…' : 'Reopen & re-save result'}
+            </Button>
           </div>
         </div>
       )}
+
+      <AlertDialog open={confirmResaveOpen} onOpenChange={setConfirmResaveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reopen and re-save this result?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This reverses the recorded result and both teams&apos; records, then works the result
+              out again from the games above and saves it. Standings move twice and end up matching
+              the games. Do this once the rounds are right. If the games no longer decide a winner,
+              the old result is still reversed and the match is left open for you to fix.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={reopenAndRefinalize.isPending}>
+              Leave it alone
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={reopenAndRefinalize.isPending}
+              onClick={() => {
+                setConfirmResaveOpen(false);
+                reopenAndRefinalize.mutate();
+              }}
+            >
+              Reopen &amp; re-save
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {derived.games.map((g) => {
         const gameRounds = bundle.rounds.filter((r) => r.game_id === g.game.id);

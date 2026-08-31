@@ -131,3 +131,115 @@ describe('reopen', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Nothing to reopen' }));
   });
 });
+
+describe('reopenAndRefinalize', () => {
+  it('reverses the old result and saves the new one, with a single toast', async () => {
+    mockReopenLiveMatch.mockResolvedValue(true);
+    mockFinalizeLiveMatch.mockResolvedValue({
+      applied: true,
+      winnerId: 'team-1',
+      team1GameWins: 2,
+      team2GameWins: 1,
+    });
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopenAndRefinalize.mutateAsync();
+    });
+
+    expect(mockReopenLiveMatch).toHaveBeenCalledWith('match-1');
+    expect(mockFinalizeLiveMatch).toHaveBeenCalledWith('match-1');
+    expect(mockToast).toHaveBeenCalledTimes(1);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Result re-saved',
+        description: expect.stringContaining('2–1'),
+      })
+    );
+    expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
+  });
+
+  it('reopens before it saves, so finalize_live_match is not a no-op', async () => {
+    const order: string[] = [];
+    mockReopenLiveMatch.mockImplementation(async () => {
+      order.push('reopen');
+      return true;
+    });
+    mockFinalizeLiveMatch.mockImplementation(async () => {
+      order.push('finalize');
+      return { applied: true, team1GameWins: 2, team2GameWins: 0 };
+    });
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopenAndRefinalize.mutateAsync();
+    });
+
+    expect(order).toEqual(['reopen', 'finalize']);
+  });
+
+  it('says the result was reversed and not restored when the save is refused', async () => {
+    mockReopenLiveMatch.mockResolvedValue(true);
+    mockFinalizeLiveMatch.mockRejectedValue(
+      new Error('Match is not decided yet (game wins: 1 - 1)')
+    );
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopenAndRefinalize.mutateAsync().catch(() => undefined);
+    });
+
+    const [[toastArg]] = mockToast.mock.calls;
+    expect(toastArg).toMatchObject({
+      title: 'Could not re-save the result',
+      variant: 'destructive',
+    });
+    expect(toastArg.description).toContain('The old result was reversed');
+    expect(toastArg.description).toContain('The match is open now');
+    // The records have moved, so the screens must be refreshed even on failure.
+    expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
+  });
+
+  it('does not claim success when the save applied nothing', async () => {
+    mockReopenLiveMatch.mockResolvedValue(true);
+    mockFinalizeLiveMatch.mockResolvedValue({ applied: false, reason: 'already_completed' });
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopenAndRefinalize.mutateAsync();
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Nothing was re-saved', variant: 'destructive' })
+    );
+  });
+
+  it('leaves the result alone when reopening itself fails', async () => {
+    mockReopenLiveMatch.mockRejectedValue(new Error('Admin access required'));
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopenAndRefinalize.mutateAsync().catch(() => undefined);
+    });
+
+    expect(mockFinalizeLiveMatch).not.toHaveBeenCalled();
+    const [[toastArg]] = mockToast.mock.calls;
+    expect(toastArg.title).toBe('Could not re-save the result');
+    expect(toastArg.description).not.toContain('The old result was reversed');
+  });
+});

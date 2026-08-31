@@ -17,6 +17,7 @@ const mockChangeGameWinner = { mutateAsync: vi.fn(), isPending: false };
 const useLiveMatchMock = vi.fn();
 const useAdminCorrectionsMock = vi.fn();
 const useSeasonsMock = vi.fn();
+const mockReopenAndRefinalize = { mutate: vi.fn(), isPending: false };
 
 vi.mock('@/hooks/live-scoring/useLiveMatch', () => ({
   useLiveMatch: (matchId?: string) => useLiveMatchMock(matchId),
@@ -28,6 +29,10 @@ vi.mock('@/hooks/live-scoring/useAdminCorrections', () => ({
 
 vi.mock('@/hooks/useSeasons', () => ({
   useSeasons: () => useSeasonsMock(),
+}));
+
+vi.mock('@/hooks/live-scoring/useFinalizeMatch', () => ({
+  useFinalizeMatch: () => ({ reopenAndRefinalize: mockReopenAndRefinalize }),
 }));
 
 vi.mock('@/services/liveScoring/TeamPlayersService', () => ({
@@ -165,6 +170,8 @@ describe('MatchCorrectionsPanel', () => {
     mockUpdateRound.mutateAsync.mockImplementation(() => Promise.resolve());
     mockDeleteRound.mutateAsync.mockImplementation(() => Promise.resolve());
     mockChangeGameWinner.mutateAsync.mockImplementation(() => Promise.resolve());
+    mockReopenAndRefinalize.mutate.mockReset();
+    mockReopenAndRefinalize.isPending = false;
     setSeasons();
   });
 
@@ -239,7 +246,7 @@ describe('MatchCorrectionsPanel', () => {
   it('drops the finalized warning on an archived season, which cannot be edited anyway', () => {
     renderArchivedPanel();
 
-    expect(screen.queryByText(/won't update until you reopen the match/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/until the result is saved again/)).not.toBeInTheDocument();
   });
 
   it('keeps every control when the match belongs to a live season', () => {
@@ -256,11 +263,86 @@ describe('MatchCorrectionsPanel', () => {
     expect(screen.queryByText(/is archived, so this match is/)).not.toBeInTheDocument();
   });
 
-  it('warns that a finalized match needs re-finalizing after edits', () => {
+  it('warns that a finalized match needs re-saving after edits', () => {
     setLiveMatch({ bundle: makeBundle({ iscompleted: true }), derived: makeDerived() });
     renderPanel();
 
-    expect(screen.getByText(/won't update until you reopen the match/)).toBeInTheDocument();
+    expect(screen.getByText(/until the result is saved again/)).toBeInTheDocument();
+  });
+
+  // ─── B-19: reopen and re-save in one press ──────────────────────────────────
+
+  function renderFinalized() {
+    setLiveMatch({ bundle: makeBundle({ iscompleted: true }), derived: makeDerived() });
+    return renderPanel();
+  }
+
+  it('offers Reopen & re-save only on a finalized match', () => {
+    setLiveMatch({ bundle: makeBundle({ iscompleted: false }), derived: makeDerived() });
+    const { unmount } = renderPanel();
+    expect(
+      screen.queryByRole('button', { name: /Reopen & re-save result/ })
+    ).not.toBeInTheDocument();
+    unmount();
+
+    renderFinalized();
+    expect(screen.getByRole('button', { name: /Reopen & re-save result/ })).toBeInTheDocument();
+  });
+
+  it('asks before reopening, because both teams\u2019 records are reversed', async () => {
+    const user = userEvent.setup();
+    renderFinalized();
+
+    await user.click(screen.getByRole('button', { name: /Reopen & re-save result/ }));
+
+    expect(await screen.findByText('Reopen and re-save this result?')).toBeInTheDocument();
+    expect(mockReopenAndRefinalize.mutate).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing when the confirmation is dismissed', async () => {
+    const user = userEvent.setup();
+    renderFinalized();
+
+    await user.click(screen.getByRole('button', { name: /Reopen & re-save result/ }));
+    await user.click(await screen.findByRole('button', { name: 'Leave it alone' }));
+
+    await waitFor(() =>
+      expect(screen.queryByText('Reopen and re-save this result?')).not.toBeInTheDocument()
+    );
+    expect(mockReopenAndRefinalize.mutate).not.toHaveBeenCalled();
+  });
+
+  it('reopens and re-saves once confirmed', async () => {
+    const user = userEvent.setup();
+    renderFinalized();
+
+    await user.click(screen.getByRole('button', { name: /Reopen & re-save result/ }));
+    await user.click(await screen.findByRole('button', { name: 'Reopen & re-save' }));
+
+    expect(mockReopenAndRefinalize.mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the write in progress and blocks a second press', () => {
+    mockReopenAndRefinalize.isPending = true;
+    renderFinalized();
+
+    expect(screen.getByRole('button', { name: /Re-saving…/ })).toBeDisabled();
+  });
+
+  it('offers no Reopen & re-save on an archived season', () => {
+    setSeasons([
+      { id: 'season-live', name: 'Summer 1', is_archived: false },
+      { id: 'season-old', name: 'Winter 0', is_archived: true },
+    ]);
+    setLiveMatch({
+      bundle: makeBundle({ iscompleted: true, seasonId: 'season-old' }),
+      derived: makeDerived(),
+    });
+    renderPanel();
+
+    expect(
+      screen.queryByRole('button', { name: /Reopen & re-save result/ })
+    ).not.toBeInTheDocument();
   });
 
   it('hides the change-winner action for a game still in progress', () => {

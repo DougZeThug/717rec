@@ -33,9 +33,10 @@ export const DeleteRoundDialog: React.FC<DeleteRoundDialogProps> = ({
       <AlertDialogHeader>
         <AlertDialogTitle>Delete round {roundNumber}?</AlertDialogTitle>
         <AlertDialogDescription>
-          This removes round {roundNumber} from game {gameNumber}. Game totals will recompute
-          automatically. If deleting this round changes the game winner, use &quot;Change
-          winner&quot; above to fix it.
+          This removes round {roundNumber} from game {gameNumber}. The game totals shown here
+          recompute at once, but the game&apos;s stored winner does not: if deleting this round
+          changes who won, use &quot;Change winner&quot; above to fix it. On a finalized match,
+          finish with &quot;Reopen &amp; re-save result&quot; so the official result follows.
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
