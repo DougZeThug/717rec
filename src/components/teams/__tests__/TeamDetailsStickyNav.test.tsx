@@ -17,27 +17,39 @@ const scrollTo = vi.fn();
 let observedIds: string[] = [];
 let triggerIntersect: ((id: string) => void) | null = null;
 
-/** Captures the sections the nav observes and lets a test say one is in view. */
+/**
+ * Captures the sections the nav observes and lets a test say one is in view.
+ *
+ * A function expression rather than a class or an arrow: it has to be callable
+ * with `new`, and returning an object from a constructor makes `new` yield that
+ * object. None of these methods needs `this`.
+ */
 const installIntersectionObserver = () => {
   observedIds = [];
-  class FakeObserver {
-    constructor(private cb: IntersectionObserverCallback) {
+  vi.stubGlobal(
+    'IntersectionObserver',
+    function IntersectionObserverStub(onIntersect: IntersectionObserverCallback) {
+      const observer = {
+        observe: vi.fn((el: Element) => {
+          observedIds.push(el.id);
+        }),
+        disconnect: vi.fn(),
+        unobserve: vi.fn(),
+        takeRecords: vi.fn(() => [] as IntersectionObserverEntry[]),
+        root: null,
+        rootMargin: '',
+        thresholds: [],
+      } as unknown as IntersectionObserver;
+
       triggerIntersect = (id: string) =>
-        this.cb(
+        onIntersect(
           [{ isIntersecting: true, target: { id } } as unknown as IntersectionObserverEntry],
-          this as unknown as IntersectionObserver
+          observer
         );
+
+      return observer;
     }
-    observe(el: Element) {
-      observedIds.push(el.id);
-    }
-    disconnect() {}
-    unobserve() {}
-    takeRecords() {
-      return [];
-    }
-  }
-  vi.stubGlobal('IntersectionObserver', FakeObserver);
+  );
 };
 
 const scrollPageTo = (y: number) => {
@@ -52,8 +64,10 @@ describe('TeamDetailsStickyNav', () => {
     vi.clearAllMocks();
     installIntersectionObserver();
     window.scrollTo = scrollTo as unknown as typeof window.scrollTo;
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-      cb(0);
+    // Named frameCallback, not cb: a parameter called `cb` reads as a
+    // Node-style callback, making `cb(0)` look like passing 0 as an error.
+    vi.stubGlobal('requestAnimationFrame', (frameCallback: FrameRequestCallback) => {
+      frameCallback(0);
       return 0;
     });
     // The page sections the nav scrolls between.

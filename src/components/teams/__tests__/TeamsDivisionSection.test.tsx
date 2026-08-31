@@ -50,8 +50,10 @@ describe('TeamsDivisionSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     window.scrollTo = scrollTo as unknown as typeof window.scrollTo;
-    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
-      cb(0);
+    // Named frameCallback, not cb: a parameter called `cb` reads as a
+    // Node-style callback, making `cb(0)` look like passing 0 as an error.
+    vi.stubGlobal('requestAnimationFrame', (frameCallback: FrameRequestCallback) => {
+      frameCallback(0);
       return 0;
     });
   });

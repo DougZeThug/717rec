@@ -30,7 +30,9 @@ const renderUpdateBracket = (bracketId: string | null = 'b-1') => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
   });
-  const invalidate = vi.spyOn(queryClient, 'invalidateQueries').mockResolvedValue(undefined);
+  const invalidate = vi
+    .spyOn(queryClient, 'invalidateQueries')
+    .mockImplementation(() => Promise.resolve());
   const { result } = renderHook(() => useUpdateBracket(bracketId), {
     wrapper: createWrapper(queryClient),
   });
@@ -45,7 +47,7 @@ describe('useUpdateBracket', () => {
   });
 
   it('sends the patch for the bracket it was given', async () => {
-    asMock(updateBracket).mockResolvedValue(undefined);
+    asMock(updateBracket).mockImplementation(() => Promise.resolve());
     const { result } = renderUpdateBracket('b-7');
 
     result.current.mutate({ title: 'Renamed' });
@@ -55,7 +57,7 @@ describe('useUpdateBracket', () => {
   });
 
   it('confirms the save to the admin', async () => {
-    asMock(updateBracket).mockResolvedValue(undefined);
+    asMock(updateBracket).mockImplementation(() => Promise.resolve());
     const { result } = renderUpdateBracket();
 
     result.current.mutate({ title: 'Renamed' });
@@ -65,7 +67,7 @@ describe('useUpdateBracket', () => {
   });
 
   it('refreshes the lists a renamed bracket appears in', async () => {
-    asMock(updateBracket).mockResolvedValue(undefined);
+    asMock(updateBracket).mockImplementation(() => Promise.resolve());
     const { result, invalidate } = renderUpdateBracket('b-7');
 
     result.current.mutate({ title: 'Renamed' });
