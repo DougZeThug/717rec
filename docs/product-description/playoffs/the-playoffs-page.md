@@ -135,7 +135,7 @@ admin writes.
 | The user's role | A visitor and a player see the same page. An admin sees the Brackets/Teams tabs, the create/delete controls, and the bracket's admin toolbar. The page shows the loading spinner until the admin check resolves, so the controls never flash in and out. | Admin granted or revoked elsewhere does not reach this page until it refetches. The controls stay as they were and the database quietly starts or stops accepting the writes behind them. |
 | The record's state | A bracket's state decides its button and its badge: pending and in-progress read "View Live Bracket", completed reads "View Final Results" and carries a grey "Completed" badge. A bracket not built with the current engine carries a "Legacy" badge. | A bracket completing while the page is open changes the drawn bracket over realtime, but the list behind it keeps the old button until the page refetches. |
 | The season's state | The page prefers the season with playoffs active and falls back to the active season. When those are two different seasons, a banner says so by name. An archived season is selectable and shows its brackets frozen. | Changing the season in the dropdown reloads the list. Any bracket already open stays open, because the selection lives in the URL rather than in the season. |
-| Viewport | On a wide screen the season picker sits under the heading and the admin toolbar buttons are visible. On a phone the season picker is a fixed bar across the bottom of the screen, and every admin toolbar button is hidden. | No effect beyond re-flowing on rotation. |
+| Viewport | On a wide screen the season picker sits under the heading and the admin toolbar buttons are a row. On a phone the season picker is a fixed bar across the bottom of the screen, and the admin toolbar buttons collapse into one **⋯** menu. | No effect beyond re-flowing on rotation. |
 | Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the season dropdown, then each bracket button in turn. | Escape closes the season dropdown. Arrow keys move within it. Nothing else. |
 
 The season picker is **absent, not disabled**, when the league has one season or
@@ -196,9 +196,9 @@ position are all lost on navigation. A link shared during one season therefore
 opens on a different season's brackets in the next, unless it names a bracket.
 
 **On a phone.** The season picker moves to a fixed bar across the bottom of the
-screen and the page reserves room for it. Every admin toolbar button inside a
-bracket is hidden on a small screen, so an admin on a phone can view a bracket
-but cannot repair, reseed, rearrange, or delete it. See
+screen and the page reserves room for it. The admin toolbar inside a bracket
+collapses into a single **⋯** menu, so an admin on a phone can repair, reseed,
+rearrange, edit, and delete a bracket as well as view it. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
 **Accessibility.** The season dropdown has a real label. The drawn bracket is a

@@ -61,7 +61,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
         <div
           {...attributes}
           {...listeners}
-          className="touch-none p-1 -m-1 rounded hover:bg-muted-foreground/10 transition-colors"
+          className="touch-none flex min-h-11 min-w-11 items-center justify-center rounded hover:bg-muted-foreground/10 transition-colors"
         >
           <GripVertical className="size-4 text-muted-foreground" />
         </div>

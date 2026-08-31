@@ -130,6 +130,50 @@ describe('BracketAdminToolbar', () => {
     expect(recalculate).toHaveBeenCalledTimes(1);
   });
 
+  // The phone rendering. Every action lives behind one button below the md
+  // breakpoint, because the six buttons above are hidden there. See B-24.
+  //
+  // Note jsdom applies no CSS, so these cannot prove the menu is the *visible*
+  // rendering at a given width — they prove it exists, works, and obeys the
+  // same conditions as the buttons. The width behaviour is checked by hand.
+  const openPhoneMenu = async () => {
+    await userEvent.click(screen.getByRole('button', { name: /bracket actions/i }));
+  };
+
+  it('offers every action behind one button on a phone', async () => {
+    renderToolbar({}, { onDeleteBracket: vi.fn() });
+    await openPhoneMenu();
+
+    expect(await screen.findByRole('menuitem', { name: /repair bracket/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /rearrange teams/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /update seeding/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /edit bracket/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+  });
+
+  it('runs the same handler from the phone menu', async () => {
+    const { onUpdateSeeding } = renderToolbar();
+    await openPhoneMenu();
+
+    await userEvent.click(await screen.findByRole('menuitem', { name: /update seeding/i }));
+
+    expect(onUpdateSeeding).toHaveBeenCalledTimes(1);
+  });
+
+  // The conditions are derived once, so the menu cannot drift from the buttons.
+  it('applies the same conditions to the phone menu', async () => {
+    renderToolbar({ state: 'completed', format: 'Single Elimination' } as Partial<PlayoffBracket>);
+    await openPhoneMenu();
+
+    expect(screen.queryByRole('menuitem', { name: /repair bracket/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /rearrange teams/i })).not.toBeInTheDocument();
+    // A Radix menu item is a div, so the native `disabled` matcher does not apply.
+    expect(await screen.findByRole('menuitem', { name: /update seeding/i })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+  });
+
   it('does not offer Recalculate Standings once standings exist', async () => {
     fetchFinalStandings.mockResolvedValue([{ id: 's-1' }]);
     renderToolbar({ state: 'completed' } as Partial<PlayoffBracket>);

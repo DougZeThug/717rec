@@ -30,6 +30,12 @@ scored live earned no badges at all, see B-32; and closing a season switched off
 every badge in the league while never awarding six of the twenty types, see
 B-33.
 
+**Controls that cannot be reached where they are needed.** B-24 is now
+**fixed**: every bracket admin control used to be hidden below 768 pixels, so
+an admin running the playoffs from the venue — on a phone, the likeliest device
+— could reach none of them. They now sit behind one overflow menu on a phone,
+unchanged on a wide screen.
+
 One entry has since been **cleared**: B-06 claimed head-to-head win
 percentages were a 0–1 fraction printed as a percentage. Checked against the
 running app, they are not — see that entry for the evidence. It is kept in the
@@ -114,7 +120,7 @@ entry's *Corrected on review* note.
 | B-21 | Eight controls do nothing when pressed | medium | admin, teams | **fixed** | — |
 | B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else | medium | cross-cutting | **fixed** | — |
 | B-23 | The mobile menu is not a dialog | medium | cross-cutting | **fixed** | — |
-| B-24 | Bracket administration is unreachable on a phone | medium | playoffs, admin | fix | — |
+| B-24 | Bracket administration is unreachable on a phone | medium | playoffs, admin | **fixed** | — |
 | B-25 | Anyone signed out can report a score for any match | medium | scores | product call | — |
 | B-34 | Four standings columns silently sort by power score instead | medium | stats | fix | — |
 | B-35 | A stale fourth career power-score formula decides one badge | medium | stats | fix | — |
@@ -1455,6 +1461,42 @@ finding read a superseded migration.
 - **Raised by:** [`admin/run-the-playoffs.md`](admin/run-the-playoffs.md#open-questions-and-verification),
   [`playoffs/read-a-bracket.md`](playoffs/read-a-bracket.md#open-questions-and-verification),
   [`cross-cutting/on-a-phone.md`](cross-cutting/on-a-phone.md#open-questions-and-verification).
+- **Status:** **fixed.** Confirmed at 390×844 in Chromium by measuring the
+  rendered header: the control sits fully inside the card at 44×44 pixels.
+
+  **What changed:** each of the six actions is now described once in
+  `src/components/playoffs/admin/BracketAdminToolbar.tsx` and rendered twice —
+  the same button row above the medium breakpoint, and one overflow menu below
+  it. Describing them once is the point: the menu cannot drift out of step with
+  the buttons, and a test pins that. Above the breakpoint nothing changes; the
+  `hidden md:flex` moved from the six buttons to their wrapper.
+
+  **The header needed changing too, and not cosmetically.** The title block in
+  `BracketDetail.tsx` had no `min-w-0`, so it refused to shrink and pushed the
+  new menu button ten pixels past the card's right edge, where the card's
+  `overflow-hidden` clipped it — measured before the fix. The control would
+  have been unreachable again, for a new reason. `min-w-0` and `gap-2` on the
+  header row fix it; both are no-ops at the medium breakpoint and above.
+
+  **Also fixed: the seeding drag handle.** Update Seeding opens a
+  drag-and-drop list whose handle was a sixteen-pixel icon in four pixels of
+  padding — a twenty-four-pixel target, against this repo's own forty-four-pixel
+  standard in `src/components/ui/button-variants.ts`. That did not matter while
+  the control was desktop-only. It does now. The dragging itself already worked
+  by touch: both drag surfaces set `touch-action: none` through Tailwind's
+  `touch-none` class.
+
+  **Deliberately not done: a mobile-width end-to-end test.** It is the only
+  check that could prove the breakpoint behaviour, because jsdom applies no CSS
+  — which is why this bug sat behind a green suite. `e2e/playoff-bracket.spec.ts`
+  answers every REST call with `[]`, so no bracket renders and real fixtures
+  would be needed first. The added unit tests cover the menu's behaviour and its
+  conditions; the width behaviour was checked by measurement instead.
+
+  *Corrected on review.* **The cited file is wrong.** The controls left
+  `BracketDetail.tsx` in commit `3b0249d`; all six `hidden md:flex` classes were
+  in `src/components/playoffs/admin/BracketAdminToolbar.tsx`. Everything else in
+  the entry is exactly right.
 
 ### B-25: Anyone signed out can report a score for any match
 
