@@ -99,7 +99,7 @@ export function usePendingMatches() {
 
       await approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: 'Result Approved',
         description: 'Match result has been successfully approved.',
@@ -123,7 +123,7 @@ export function usePendingMatches() {
     mutationFn: async (matchId: string) => {
       await confirmMatchTie(matchId);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: 'Tie Confirmed',
         description: 'The match is recorded as a tie and has left the list.',
