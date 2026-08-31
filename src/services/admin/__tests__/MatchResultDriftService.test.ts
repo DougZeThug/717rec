@@ -267,6 +267,65 @@ describe('MatchResultDriftService.fetchMatchResultDrift', () => {
     await expect(MatchResultDriftService.fetchMatchResultDrift(SEASON_ID)).resolves.toEqual([]);
   });
 
+  // ─── Rows the detector has to step over ────────────────────────────────────
+
+  it('ignores a match in the season that was never live-scored', async () => {
+    // The realistic season: one match scored live and drifting, one resulted in
+    // bulk with no games at all. Only the first can be compared to its rounds.
+    const { games, rounds } = healthy();
+    mockQueries(
+      [matchRow({ winner_id: 't-2' }), matchRow({ id: 'm-2', winner_id: 't-1' })],
+      games,
+      rounds
+    );
+
+    const rows = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].id).toBe('m-1');
+  });
+
+  it('steps over games and rounds that carry no owning id', async () => {
+    // games.match_id and match_rounds.match_id/game_id are all nullable. An
+    // orphan must be skipped, not counted against some other match.
+    const { games, rounds } = healthy();
+    mockQueries(
+      [matchRow({ winner_id: 't-2' })],
+      [...games, gameRow({ id: 'g-orphan', match_id: null, game_number: 9 })],
+      [
+        ...rounds,
+        { match_id: null, game_id: 'g-1', round_number: 99, team1_score: 12, team2_score: 0 },
+        { match_id: 'm-1', game_id: null, round_number: 99, team1_score: 12, team2_score: 0 },
+      ]
+    );
+
+    const rows = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    // The orphans changed nothing: the match still reports only its real fault.
+    expect(rows).toHaveLength(1);
+    expect(rows[0].kind).toBe('match-winner');
+  });
+
+  it('names an unknown team rather than a blank when the team join is missing', async () => {
+    const { games, rounds } = healthy();
+    mockQueries([matchRow({ winner_id: 't-2', team1: null })], games, rounds);
+
+    const [row] = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    expect(row.team1Name).toBe('Unknown team');
+    expect(row.team2Name).toBe('Corn Stars');
+  });
+
+  it('throws a DatabaseError when the game read fails', async () => {
+    mockFrom
+      .mockReturnValueOnce(chain({ data: [matchRow()], error: null }))
+      .mockReturnValueOnce(chain({ data: null, error: pgError() }));
+
+    await expect(MatchResultDriftService.fetchMatchResultDrift(SEASON_ID)).rejects.toBeInstanceOf(
+      DatabaseError
+    );
+  });
+
   it('throws a DatabaseError when the match read fails', async () => {
     mockFrom.mockReturnValueOnce(chain({ data: null, error: pgError() }));
 
