@@ -110,6 +110,24 @@ describe('TimeslotAssignment', () => {
     expect(onBatchAssignDoubleHeaders).toHaveBeenCalledWith(['t1'], '7:00 PM', '8:00 PM');
   });
 
+  it('offers 9:30 PM for a single assignment', () => {
+    renderForm();
+
+    // 9:30 PM is a real block time and a valid single assignment.
+    expect(screen.getByRole('radio', { name: '9:30 PM' })).toBeInTheDocument();
+  });
+
+  it('does not offer 9:30 PM as a double-header start time', () => {
+    renderForm();
+
+    fireEvent.click(screen.getByRole('switch'));
+
+    // A double header books a time and the 30 minutes after it. Nothing follows
+    // 9:30 PM, so it cannot start one.
+    expect(screen.queryByRole('button', { name: '9:30 PM' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '9:00 PM' })).toBeInTheDocument();
+  });
+
   it('filters out teams that already have a timeslot assigned', () => {
     renderForm({ existingTimeslots: [makeTimeslot({ id: 'ts-1', team_id: 't1' })] });
 
