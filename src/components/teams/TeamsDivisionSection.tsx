@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 
 import { TeamList } from '@/components/teams/TeamList';
 import { Button } from '@/components/ui/button';
+import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
 import { Team } from '@/types';
 
@@ -29,6 +30,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   viewMode,
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const scrollBehavior = useScrollBehavior();
 
   // Use double requestAnimationFrame to prevent forced reflow
   useEffect(() => {
@@ -38,11 +40,11 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
         requestAnimationFrame(() => {
           const yOffset = -80;
           const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: 'smooth' });
+          window.scrollTo({ top: y, behavior: scrollBehavior });
         });
       });
     }
-  }, [isExpanded]);
+  }, [isExpanded, scrollBehavior]);
 
   if (teams.length === 0) return null;
 

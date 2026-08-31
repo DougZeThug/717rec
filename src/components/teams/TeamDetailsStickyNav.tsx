@@ -2,6 +2,7 @@ import { m } from 'framer-motion';
 import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
 
 interface Section {
@@ -45,6 +46,7 @@ interface TeamDetailsStickyNavProps {
 
 /** Sticky section navigator on the team details page that tracks and scrolls to page sections. */
 const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }) => {
+  const scrollBehavior = useScrollBehavior();
   const [activeSection, setActiveSection] = useState<string>('stats');
   const [isVisible, setIsVisible] = useState(false);
   const navRef = useRef<HTMLDivElement>(null);
@@ -89,25 +91,28 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
   }, []);
 
   // Use double requestAnimationFrame to prevent forced reflow
-  const scrollToSection = useCallback((sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      requestAnimationFrame(() => {
+  const scrollToSection = useCallback(
+    (sectionId: string) => {
+      const element = document.getElementById(sectionId);
+      if (element) {
         requestAnimationFrame(() => {
-          // Calculate offset dynamically based on actual nav height
-          const navHeight = navRef.current?.offsetHeight || 70;
-          const offset = navHeight + 10; // Add small buffer
-          const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.scrollY - offset;
+          requestAnimationFrame(() => {
+            // Calculate offset dynamically based on actual nav height
+            const navHeight = navRef.current?.offsetHeight || 70;
+            const offset = navHeight + 10; // Add small buffer
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.scrollY - offset;
 
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth',
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: scrollBehavior,
+            });
           });
         });
-      });
-    }
-  }, []);
+      }
+    },
+    [scrollBehavior]
+  );
 
   if (!isVisible) return null;
 

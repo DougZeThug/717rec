@@ -1,5 +1,5 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { domAnimation, LazyMotion } from 'framer-motion';
+import { domAnimation, LazyMotion, MotionConfig } from 'framer-motion';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
@@ -320,15 +320,20 @@ const App = () => {
     <ErrorBoundary>
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
+          {/* `reducedMotion="user"` makes every framer-motion animation in the
+              app honour the operating system's reduce-motion setting. CSS
+              animation is handled by the block at the end of `src/index.css`. */}
           <LazyMotion features={domAnimation}>
-            <TooltipProvider>
-              <Toaster />
-              <BrowserRouter>
-                <AuthProvider>
-                  <AppContent />
-                </AuthProvider>
-              </BrowserRouter>
-            </TooltipProvider>
+            <MotionConfig reducedMotion="user">
+              <TooltipProvider>
+                <Toaster />
+                <BrowserRouter>
+                  <AuthProvider>
+                    <AppContent />
+                  </AuthProvider>
+                </BrowserRouter>
+              </TooltipProvider>
+            </MotionConfig>
           </LazyMotion>
         </QueryClientProvider>
       </HelmetProvider>

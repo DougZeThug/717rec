@@ -2,6 +2,7 @@ import { addDays, format, isSameDay, isToday } from 'date-fns';
 import React, { useEffect, useRef } from 'react';
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
 
 interface DateStripProps {
@@ -11,6 +12,7 @@ interface DateStripProps {
 }
 
 const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, matchDates }) => {
+  const scrollBehavior = useScrollBehavior();
   const selectedRef = useRef<HTMLButtonElement>(null);
 
   // Generate 14 days: past 3 days + today + next 10 days
@@ -29,14 +31,14 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           element.scrollIntoView({
-            behavior: 'smooth',
+            behavior: scrollBehavior,
             block: 'nearest',
             inline: 'center',
           });
         });
       });
     }
-  }, []);
+  }, [scrollBehavior]);
 
   const hasMatchesOnDate = (date: Date): boolean => {
     const dateStr = format(date, 'yyyy-MM-dd');
