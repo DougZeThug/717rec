@@ -25,7 +25,10 @@ export interface SimpleBracketData {
   title: string;
   format: string;
   state: string;
+  /** Display name of the division, for showing to the user. */
   division: string;
+  /** The division's database id, needed to edit or re-file the bracket. */
+  divisionId: string | null;
   challonge_tournament_id?: number | null;
   uses_brackets_manager?: boolean;
   matches: Array<{

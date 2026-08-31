@@ -1,6 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import type { Page } from '@playwright/test';
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 // Blocking accessibility scan against key public and weekly admin routes.
 // Runs as a required gate (.github/workflows/a11y.yml).
@@ -119,3 +118,77 @@ for (const section of adminSections) {
     await assertNoA11yViolations(page);
   });
 }
+
+// A user who has asked their operating system to reduce motion. See B-22.
+test.describe('reduced motion', () => {
+  test('stills animation and smooth scrolling', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    expect(
+      await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)
+    ).toBe('auto');
+
+    // Probe elements rather than whatever the live page happens to be rendering,
+    // so the assertion does not depend on load state.
+    // getComputedStyle reports the 0.01ms override as '1e-05s'.
+    const durations = await page.evaluate(() =>
+      ['animate-fade-in', 'animate-fade-in-slide-up', 'animate-scale-in'].map((className) => {
+        const el = document.createElement('div');
+        el.className = className;
+        document.body.appendChild(el);
+        const duration = getComputedStyle(el).animationDuration;
+        el.remove();
+        return duration;
+      })
+    );
+    for (const duration of durations) expect(duration).toBe('1e-05s');
+  });
+
+  test('keeps spinners turning, because they carry information', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+
+    const spin = await page.evaluate(() => {
+      const el = document.createElement('div');
+      el.className = 'animate-spin';
+      document.body.appendChild(el);
+      const style = getComputedStyle(el);
+      return { duration: style.animationDuration, iterations: style.animationIterationCount };
+    });
+
+    expect(spin).toEqual({ duration: '1s', iterations: 'infinite' });
+  });
+
+  test('leaves motion alone when no preference is set', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/');
+
+    expect(
+      await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)
+    ).toBe('smooth');
+  });
+});
+
+// The navigation menu on a narrow screen is a disclosure, not a dialog. See B-23.
+test.describe('mobile navigation menu', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('reports its state, and Escape closes it and restores focus', async ({ page }) => {
+    await page.goto('/');
+
+    const trigger = page.getByRole('button', { name: 'Open menu' });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(trigger).toHaveAttribute('aria-controls', 'mobile-navigation-panel');
+
+    await trigger.click();
+    const openTrigger = page.getByRole('button', { name: 'Close menu' });
+    await expect(openTrigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#mobile-navigation-panel')).toBeVisible();
+
+    await assertNoA11yViolations(page);
+
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Open menu' })).toBeFocused();
+  });
+});

@@ -15,23 +15,11 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Team } from '@/types';
-import { TeamTimeslot } from '@/types';
+import { Team, TeamTimeslot } from '@/types';
+import { ALL_BLOCK_TIMES, DOUBLE_HEADER_START_TIMES } from '@/utils/autoSchedule/constants';
 
-// Static list of available timeslots — defined outside component to avoid re-creation on every render
-const TIME_SLOTS = [
-  'BYE',
-  '5:00 PM',
-  '5:30 PM',
-  '6:00 PM',
-  '6:30 PM',
-  '7:00 PM',
-  '7:30 PM',
-  '8:00 PM',
-  '8:30 PM',
-  '9:00 PM',
-  '9:30 PM',
-];
+// Built from the block constants so the choices cannot drift away from them.
+const TIME_SLOTS = ['BYE', ...ALL_BLOCK_TIMES];
 
 interface TimeslotAssignmentProps {
   selectedDate: Date;
@@ -264,7 +252,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         {isDoubleHeader ? (
           // Double header mode - multiple selection
           <div className="flex flex-wrap justify-start gap-1.5">
-            {TIME_SLOTS.filter((time) => time !== 'BYE').map((time) => {
+            {DOUBLE_HEADER_START_TIMES.map((time) => {
               const isSelected = selectedTimeslots.includes(time);
               return (
                 <Button

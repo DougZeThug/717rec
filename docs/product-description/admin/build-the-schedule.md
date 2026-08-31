@@ -234,8 +234,8 @@ notification is sent to any team.
   how many courts the venue has.
 - **A block with an odd number of teams leaves one team unmatched**, counted in
   the panel and in the generation toast, and then silently dropped.
-- **"Go to Batch Matches" and "Open Full Auto Schedule" do nothing.** Both set a
-  URL fragment that no part of the app listens to.
+- **"Go to Batch Matches" and "Open Full Auto Schedule" change tab in place.**
+  Neither reloads the page.
 - **Auto Schedule's draft is per browser tab.** A second tab starts empty and can
   save a conflicting schedule.
 - **Saving twice creates every match twice.** There is no duplicate check on
@@ -255,6 +255,11 @@ notification is sent to any team.
   from the block constants, so it covers 5:00 PM to 9:30 PM and cannot drift away
   from them again. It previously offered 6:00 PM to 10:00 PM, which both omitted
   two real block times and offered one that was not a block time at all.
+- Resolved: **"Go to Batch Matches" and "Open Full Auto Schedule" did nothing.**
+  Both set a URL fragment nothing listened for. They were treated as a bug
+  ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). The
+  fragments were the admin tab ids, so tab navigation was the intent; both
+  buttons now change tab in place.
 - **Nothing prevents saving the same schedule twice.** A slow save that the admin
   retries doubles the night's matches, and undoing that is a matter of deleting
   matches one at a time. Worth raising as a product question.
@@ -273,4 +278,6 @@ notification is sent to any team.
 
 Verified against `717rec` commit `ea5c8f4`, except the timeslot behaviour above,
 which was changed after that commit — see B-03 in
-[`bug-triage.md`](../bug-triage.md#b-03-auto-scheduled-matches-are-saved-at-midnight-only-with-dual-match-mode-off).
+[`bug-triage.md`](../bug-triage.md#b-03-with-dual-match-mode-off-the-auto-schedulers-save-is-always-refused) —
+and the two navigation buttons, changed after it too; see
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).

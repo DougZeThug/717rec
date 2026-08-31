@@ -83,7 +83,10 @@ badge counts them "0/2 selected".
 
 The times offered are **BYE, 5:00 PM, 5:30 PM, 6:00 PM, 6:30 PM, 7:00 PM,
 7:30 PM, 8:00 PM, 8:30 PM, 9:00 PM, 9:30 PM**. BYE is styled orange and labelled
-"BYE WEEK". In double header mode BYE is not offered.
+"BYE WEEK". In double header mode BYE is not offered, and neither is **9:30 PM**:
+a double header books a time and the 30 minutes after it, and nothing follows
+9:30 PM. The list runs from the block constants, so it cannot drift away from
+them.
 
 Nothing marks the form dirty, and there is no draft.
 
@@ -152,7 +155,7 @@ red toast says the removal failed and the row stays.
 | Heading | "Weekly Timeslot Assignments" | "Assign Timeslots" |
 | Date control | A calendar always on screen | A button that opens a calendar |
 | Layout | Calendar, assignment, list — three cards | Two columns inside one card |
-| Double headers | **Not supported** | Supported |
+| Double headers | Supported | Supported |
 | Reached from | Nothing in the app links to it | The dashboard menu |
 
 `/timeslots` is one of the three route-guarded routes; the gate is described in
@@ -160,9 +163,9 @@ red toast says the removal failed and the row stays.
 It then runs the same check a second time inside the page, with its own
 "Checking access..." and its own redirect.
 
-**`/timeslots` shows the Double Header switch but cannot act on it.** With the
-switch on and two times chosen, the button reads "Confirm Double Header" and is
-enabled — and pressing it does nothing at all. No write, no toast, no error. See
+Both screens can now create a double header. `/timeslots` renders the assignment
+form twice — once for a narrow screen, once for a wide one — and neither copy
+used to pass a handler, so the button did nothing at all. See
 [Open questions](#open-questions-and-verification).
 
 ## Reading team preferences
@@ -250,8 +253,9 @@ sent.
 
 ## Edge cases
 
-- **9:30 PM cannot be assigned.** It is offered in the list but is not the first
-  half of any pair, so choosing it fails every time. See
+- **9:30 PM cannot start a double header.** It is a real block time and a valid
+  single assignment, but it is not the first half of any pair, so double header
+  mode does not offer it. See
   [Open questions](#open-questions-and-verification).
 - **The pairs overlap each other.** 5:30 PM is the second half of the 5:00 pair
   and the first half of the 5:30 pair, so a team booked at 5:00 and another
@@ -271,14 +275,17 @@ sent.
 
 ## Open questions and verification
 
-- **`/timeslots` cannot create a double header.** The switch is shown and the
-  button is enabled, but the page does not pass a handler for it, so the press is
-  silently ignored. A destructive-looking action that does nothing at all is
-  worse than one that fails loudly. **May be worth treating as a bug rather than
-  documenting.**
-- **9:30 PM is offered and cannot be used.** It is in the list of times but has
-  no back-to-back pair, so every attempt fails with the generic error toast.
-  **May be worth treating as a bug rather than documenting.**
+- Resolved: **`/timeslots` could not create a double header.** It was treated as
+  a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)).
+  The page renders the assignment form twice — once narrow, once wide — and
+  neither copy passed a handler. Both do now, and the write goes through the
+  same mutation the admin Timeslots tab uses.
+- Resolved: **9:30 PM was offered where it could not work.** It was treated as a
+  bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)).
+  It is a real block time and still offered for a single assignment; it simply
+  has no back-to-back partner, because nothing follows it. Double-header mode
+  now lists only the times that start a pair, built from the pair constants so
+  it cannot drift from them again.
 - **The specific failure reason is always destroyed.** The service raises a toast
   naming the real cause, and the screen immediately raises a generic one over it.
   **May be worth treating as a bug rather than documenting.**
@@ -295,4 +302,6 @@ sent.
 - Assumption: nothing anywhere cleans up timeslot rows for past dates. None was
   found.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the double-header and 9:30 PM
+behaviour above, which was changed after that commit — see
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).

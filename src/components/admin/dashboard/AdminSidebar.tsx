@@ -24,7 +24,7 @@ import {
   Users2,
   Wrench,
 } from 'lucide-react';
-import React, { lazy, Suspense, useCallback, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,6 +34,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
+import { ADMIN_TAB_STORAGE_KEY, subscribeToAdminTabRequests } from '@/utils/adminTabs';
 
 import AdminMobileNav from './AdminMobileNav';
 
@@ -137,8 +138,6 @@ const adminMenuItems: AdminMenuItem[] = [
   },
 ];
 
-const STORAGE_KEY = 'adminActiveTab';
-
 // Memoized animation props to prevent recreating objects on every render
 const sidebarAnimateProps = { expanded: { width: 240 }, collapsed: { width: 60 } };
 const sidebarTransition = { type: 'spring' as const, stiffness: 300, damping: 30 };
@@ -158,13 +157,16 @@ const AdminSidebar: React.FC = () => {
   const isMobile = useIsMobile();
   const { data: pendingRequestsCount } = usePendingRequestsCount();
   const [activeTab, setActiveTab] = useState(() => {
-    return sessionStorage.getItem(STORAGE_KEY) || 'timeslots';
+    return sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY) || 'timeslots';
   });
 
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId);
-    sessionStorage.setItem(STORAGE_KEY, tabId);
+    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, tabId);
   }, []);
+
+  // A control inside one section can ask for another section; see utils/adminTabs.
+  useEffect(() => subscribeToAdminTabRequests(handleTabChange), [handleTabChange]);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');

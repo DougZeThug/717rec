@@ -12,7 +12,6 @@ interface BracketListProps {
   bracketsByDivision: Record<string, PlayoffBracket[]>;
   onCreateBracket?: () => void;
   onViewBracket: (id: string) => void;
-  onEditBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
   isLoading: boolean;
 }
@@ -22,7 +21,6 @@ const BracketList: React.FC<BracketListProps> = ({
   bracketsByDivision,
   onCreateBracket,
   onViewBracket,
-  onEditBracket,
   onDeleteBracket,
   isLoading,
 }) => {
@@ -71,7 +69,6 @@ const BracketList: React.FC<BracketListProps> = ({
           brackets={bracketsByDivision[division] || []}
           onViewBracket={onViewBracket}
           onCreateBracket={onCreateBracket}
-          onEditBracket={onEditBracket}
           onDeleteBracket={onDeleteBracket}
         />
       ))}

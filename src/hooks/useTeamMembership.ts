@@ -55,15 +55,12 @@ export function useTeamMembership() {
 
       // A refused row is still a row, so `membership` is truthy after a
       // rejection. Asking again is a fresh request, not a team change.
+      // That is the only case: a member with a live membership sees the team
+      // card, not the join form, so there is no team-switch path here.
       if (membership?.rejected_at) {
         toast({
           title: 'Team Request Submitted',
           description: 'Your new request to join the team has been submitted for admin approval',
-        });
-      } else if (membership) {
-        toast({
-          title: 'Team Request Submitted',
-          description: 'Your request to change teams has been submitted for admin approval',
         });
       } else {
         toast({

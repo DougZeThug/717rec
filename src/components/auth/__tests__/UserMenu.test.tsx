@@ -39,15 +39,17 @@ describe('UserMenu', () => {
     mockUseTeamMembership.mockReturnValue({ activeMembership: null });
   });
 
-  it('links to the team for an approved member', async () => {
+  it('sends an approved member to /my-team, where Leave Team lives', async () => {
     mockUseTeamMembership.mockReturnValue({
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },
     });
     renderMenu();
     await openMenu();
 
+    // The team's public page has no Leave Team and no edit control, so a member
+    // who is sent there cannot reach either.
     const link = await screen.findByRole('menuitem', { name: /my team/i });
-    expect(link).toHaveAttribute('href', '/teams/rail-riders');
+    expect(link).toHaveAttribute('href', '/my-team');
   });
 
   it('offers Join a Team when there is no membership', async () => {

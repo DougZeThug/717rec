@@ -16,6 +16,33 @@ import { dbLog } from '@/utils/logger';
  * Abstracts Supabase mutations from presentation components
  */
 
+/** The fields of a bracket an admin can change after it exists. */
+export interface BracketUpdateInput {
+  title?: string;
+  division_id?: string | null;
+  season_id?: string | null;
+}
+
+/**
+ * Update a bracket's title, division, or season.
+ *
+ * Only these fields are safe to change. A bracket's format, size, and team list
+ * define the generated stage, rounds, and matches, so changing any of those
+ * means deleting the bracket and building it again. Use Update Seeding or
+ * Rearrange Teams for structural changes to a bracket that already exists.
+ */
+export const updateBracket = async (
+  bracketId: string,
+  patch: BracketUpdateInput
+): Promise<void> => {
+  const { error } = await supabase.from('brackets').update(patch).eq('id', bracketId);
+
+  if (error) {
+    dbLog('Error updating bracket:', error);
+    handleDatabaseError(error, 'Failed to update bracket');
+  }
+};
+
 /**
  * Delete a bracket by ID
  */

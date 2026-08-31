@@ -1,24 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { Edit, ListOrdered, Loader2, RefreshCw, Shuffle, Trash, Wrench } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React, { useState } from 'react';
 
 import BracketView from '@/components/playoffs/BracketView';
 import ChampionDisplay from '@/components/playoffs/ChampionDisplay';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
-import { useRecalculateStandings } from '@/hooks/useRecalculateStandings';
-import { useRepairBracket } from '@/hooks/useRepairBracket';
 import { cn } from '@/lib/utils';
-import {
-  fetchBracketParticipants,
-  fetchFinalStandings,
-} from '@/services/brackets/BracketReadService';
+import { fetchBracketParticipants } from '@/services/brackets/BracketReadService';
 import { blueAmber } from '@/styles/design-system';
 import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
+import BracketAdminToolbar from './admin/BracketAdminToolbar';
+import EditBracketDialog from './admin/EditBracketDialog';
 import RearrangeBracketDialog from './admin/RearrangeBracketDialog';
 import { SeedingUpdateDialog } from './SeedingUpdateDialog';
 
@@ -27,7 +23,6 @@ interface BracketDetailProps {
   bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  onEditBracket?: () => void;
   onEditMatch?: (matchId: string) => void;
   onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
@@ -40,7 +35,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   bracket,
   teams,
   bracketLoading,
-  onEditBracket,
   onEditMatch,
   onDeleteBracket,
 }) => {
@@ -49,6 +43,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const isLight = resolvedTheme === 'light';
   const [seedingDialogOpen, setSeedingDialogOpen] = useState(false);
   const [rearrangeDialogOpen, setRearrangeDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Fetch current participants for seeding updates
   const { data: participants } = useQuery({
@@ -56,24 +51,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     queryFn: () => fetchBracketParticipants(bracketId),
     enabled: !!bracketId,
   });
-
-  // Check whether final standings already exist; if not and the bracket is
-  // completed, admins can trigger a manual recalculation.
-  const isCompleted = bracket?.state === 'completed';
-  const { data: existingStandings } = useQuery({
-    queryKey: ['final-standings', bracketId],
-    queryFn: () => fetchFinalStandings(bracketId),
-    enabled: !!bracketId && isCompleted,
-  });
-  const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
-  const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
-  const { repair, isRepairing } = useRepairBracket(bracketId);
-
-  // Rearranging needs a losers bracket managed by brackets-manager; the
-  // format field is a display string ("Double Elimination"), so match loosely.
-  const canRearrange =
-    bracket?.uses_brackets_manager === true &&
-    (bracket?.format ?? '').toLowerCase().includes('double');
 
   // Early return if bracket is not loaded
   if (!bracket) {
@@ -132,83 +109,14 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             </CardDescription>
           </div>
           {isAdminAccessGranted && (
-            <div className="flex gap-2">
-              {standingsMissing && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => void recalculate()}
-                  disabled={isRecalculating}
-                >
-                  {isRecalculating ? (
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                  ) : (
-                    <RefreshCw className="size-4 mr-2" />
-                  )}
-                  Recalculate Standings
-                </Button>
-              )}
-
-              {!isCompleted && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => void repair()}
-                  disabled={isRepairing}
-                >
-                  {isRepairing ? (
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                  ) : (
-                    <Wrench className="size-4 mr-2" />
-                  )}
-                  Repair Bracket
-                </Button>
-              )}
-
-              {canRearrange && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => setRearrangeDialogOpen(true)}
-                  disabled={bracket.state === 'completed'}
-                >
-                  <Shuffle className="size-4 mr-2" /> Rearrange Teams
-                </Button>
-              )}
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden md:flex"
-                onClick={() => setSeedingDialogOpen(true)}
-                disabled={bracket.state === 'completed'}
-              >
-                <ListOrdered className="size-4 mr-2" /> Update Seeding
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden md:flex"
-                onClick={onEditBracket}
-              >
-                <Edit className="size-4 mr-2" /> Edit Bracket
-              </Button>
-
-              {onDeleteBracket && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="hidden md:flex"
-                  onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
-                >
-                  <Trash className="size-4 mr-2" /> Delete
-                </Button>
-              )}
-            </div>
+            <BracketAdminToolbar
+              bracket={bracket}
+              bracketId={bracketId}
+              onRearrange={() => setRearrangeDialogOpen(true)}
+              onUpdateSeeding={() => setSeedingDialogOpen(true)}
+              onEdit={() => setEditDialogOpen(true)}
+              onDeleteBracket={onDeleteBracket}
+            />
           )}
         </div>
       </CardHeader>
@@ -245,6 +153,12 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
         onOpenChange={setRearrangeDialogOpen}
         bracketId={bracketId}
       />
+
+      {/* Mounted only while open, so the form always starts from the bracket's
+          current values. */}
+      {editDialogOpen && (
+        <EditBracketDialog open onOpenChange={setEditDialogOpen} bracket={bracket} />
+      )}
     </Card>
   );
 };

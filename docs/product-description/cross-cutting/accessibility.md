@@ -9,9 +9,10 @@ behaviour behind them.
 
 The picture is uneven and it is worth stating plainly at the top. **Structure is
 good**: real labels, real buttons, a skip link, route announcements, focus moved
-on navigation, and an accessibility scan that blocks merges. **Change is bad**:
-almost nothing that changes on its own is announced, and the whole app ignores a
-reduced-motion setting except inside the playoff bracket.
+on navigation, and an accessibility scan that blocks merges. **Change is weaker**:
+almost nothing that changes on its own is announced. A reduced-motion setting is
+now honoured throughout, and the navigation menu now behaves properly for a
+keyboard and a screen reader; both used to be gaps.
 
 **Sections dropped.** This document drops the five named phases (**arrive**,
 **leave without changing anything**, **begin editing**, **while editing**,
@@ -49,17 +50,17 @@ pages or to a team by name. It exists only on a screen 768 pixels or wider,
 because the component that listens for the key is not rendered below that; see
 [`on-a-phone.md`](on-a-phone.md). There are no other keyboard shortcuts anywhere.
 
-**Where it breaks.** The hamburger menu on a narrow screen is not a dialog. It is
-a panel that expands under the top bar, and it:
+**The hamburger menu is a disclosure, not a dialog.** It is a panel that expands
+under the top bar and covers nothing, so it behaves the way a disclosure should:
 
-- does not move focus into itself when it opens,
-- does not trap focus, so Tab walks straight past it into the page behind,
-- does not close on Escape,
-- and does not tell assistive technology whether it is open. The button's label
-  changes between "Open menu" and "Close menu", but the state is not expressed
-  the way a screen reader expects it.
+- the button carries `aria-expanded` and names the panel it controls,
+- focus moves to the first link when the panel opens,
+- Escape closes it and returns focus to the button,
+- and it closes on a route change.
 
-**May be worth treating as a bug rather than documenting.**
+Focus is deliberately **not** trapped. Tab walks through the panel and on into
+the page, which is correct for a panel that does not cover the page. A focus trap
+belongs to a modal.
 
 ## Screen readers
 
@@ -107,13 +108,20 @@ every skeleton placeholder, a spinning loader, a sliding toast, an expanding
 menu, and — when the winter theme is on — two hundred continuously falling
 snowflakes on the home page.
 
-**A reduced-motion setting reaches exactly one of those.** The playoff bracket
-viewer's stylesheet turns off two transitions when the browser asks for reduced
-motion. Nothing else in the product checks the setting. A user who has asked
-their operating system to reduce motion gets the full animation everywhere except
-inside the bracket.
+**A reduced-motion setting reaches all of them.** A user who has asked their
+operating system to reduce motion gets a still app: no route fade, no entrance
+animations, no sliding toast, no snowfall, and scrolling that jumps to its
+destination rather than gliding.
 
-**May be worth treating as a bug rather than documenting.**
+**Spinners and skeletons keep moving, on purpose.** A spinner is how the user
+knows the app is still working, and a skeleton pulses its opacity rather than
+moving. Stopping either would take away information rather than motion.
+
+> *Technical note:* three mechanisms are needed, because no one of them reaches
+> everything. A stylesheet covers the CSS animations and transitions; a
+> framer-motion setting covers the components that animate through inline
+> styles; and a React hook covers what neither can — the snowfall, which is
+> drawn on a canvas, and the scroll calls that choose their behaviour in code.
 
 ## Contrast and themes
 
@@ -155,7 +163,7 @@ focused, and the part of the page on screen can all disagree.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | Escape closes any dialog, menu, popover, or select and returns focus to whatever opened it. **It does not close the hamburger menu**, which is the one panel in the app that is not built from those components. | Escape closes the dialog and abandons what was in it. It does not abort a request already sent. |
+| Escape, or a Cancel button | Escape closes any dialog, menu, popover, or select and returns focus to whatever opened it. It closes the hamburger menu too, and returns focus to the hamburger button. | Escape closes the dialog and abandons what was in it. It does not abort a request already sent. |
 | In-app navigation away, or switching tab within the page | The new page is announced and focus moves to its main content. Scroll position is not reset, so a sighted user and a reader are looking at different things. | Work is discarded with no warning and nothing is announced about the loss. |
 | Browser back or forward | The new page is announced but **focus is not moved**, so the next Tab continues from wherever focus happened to be. | Same, and the discarded work is silent. |
 | Reload, or the tab closed | The first load after a reload announces nothing and moves no focus, by design. The reader starts at the top of the document. | Nothing is announced about a write that may or may not have landed. |
@@ -222,14 +230,16 @@ or sent anywhere.
 
 ## Edge cases
 
-- **Reduced motion is honoured in one stylesheet and nowhere else.** The winter
-  theme's two hundred animated snowflakes are the clearest case.
+- **Reduced motion stops spinners and skeletons short of stopping.** Everything
+  else stills, but a spinner keeps turning and a skeleton keeps pulsing, because
+  freezing them would remove the only sign that the app is working.
 - **The app opens in dark mode on a device set to light**, because system
   preference is switched off.
 - **Back and forward announce a page without moving focus to it.**
 - **Skeleton placeholders are silent** while spinners are announced, so whether a
   reader is told the page is loading depends on which placeholder that page uses.
-- **The hamburger menu is not a dialog** and behaves like none.
+- **The hamburger menu does not trap focus.** That is deliberate: it is a
+  disclosure that covers nothing, not a modal.
 - **Nothing announces that a page finished loading and found nothing.**
 - **The whole of live scoring is outside the accessibility scan.**
 - **The scan's own comment points at a workflow file that does not exist.** The
@@ -237,12 +247,19 @@ or sent anywhere.
 
 ## Open questions and verification
 
-- **Reduced motion is effectively unimplemented.** Read from a search of every
-  stylesheet and component; only the bracket viewer responds. **May be worth
-  treating as a bug rather than documenting.**
-- **The hamburger menu's keyboard and screen-reader behaviour** is read from the
-  component, not tried with a reader. If it is as described, it is the most
-  visible keyboard defect in the product.
+- Resolved: **reduced motion was effectively unimplemented.** Only the bracket
+  viewer responded, and its stylesheet is lazily imported, so even that rule was
+  not in the main bundle. It was treated as a bug
+  ([B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else)).
+  Three mechanisms now cover it: a global stylesheet block, a framer-motion
+  setting, and a hook for the canvas snowfall and the scroll calls.
+- Resolved: **the hamburger menu's keyboard and screen-reader behaviour.** It was
+  treated as a bug
+  ([B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)). It is fixed as
+  a *disclosure* rather than the dialog that entry proposed: the panel expands in
+  place and covers nothing, so `aria-expanded` with `aria-controls` is the right
+  pattern and a focus trap is not. Still read from the component rather than
+  tried with a reader.
 - **The command palette shortcut contradicts a foundation.**
   [`foundations/navigation.md`](../foundations/navigation.md) says no global
   keyboard shortcut exists. Cmd/Ctrl+K does, on any screen 768 pixels or wider,
@@ -257,10 +274,14 @@ or sent anywhere.
   not audited.
 - Not confirmed by hand: contrast ratios in any of the three themes. The
   Lighthouse floor of 0.9 leaves room for contrast failures on unscanned pages.
-- Not confirmed by hand: whether the app is usable at all with a reduced-motion
-  setting and the winter theme on.
+- Not confirmed by hand: whether the reduced-motion behaviour is right in every
+  case by eye. The snowfall and the page transitions were checked; the ~155 files
+  that animate were not each looked at.
 - Assumption: the component library's dialogs, menus, and selects behave
   accessibly out of the box. They are used unmodified, but none was tested with a
   reader.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the reduced-motion and
+hamburger-menu behaviour above, both changed after that commit — see
+[B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else)
+and [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog).

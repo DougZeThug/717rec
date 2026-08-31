@@ -1,14 +1,19 @@
 import Snowfall from 'react-snowfall';
 
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 
 /**
- * Snow effect component that only renders when winter theme is active on homepage
+ * Snow effect component that only renders when winter theme is active on homepage.
+ *
+ * The snow is drawn on a canvas, so no stylesheet can stop it. It is therefore
+ * switched off here when the user has asked for reduced motion.
  */
 export const WinterSnowfall = () => {
   const { shouldApplyWinter } = useSeasonalTheme();
+  const prefersReducedMotion = usePrefersReducedMotion();
 
-  if (!shouldApplyWinter) return null;
+  if (!shouldApplyWinter || prefersReducedMotion) return null;
 
   return (
     <Snowfall

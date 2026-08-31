@@ -22,14 +22,13 @@ import {
   useRealtimeHealth,
 } from '@/hooks/useOpsHealth';
 import { cn } from '@/lib/utils';
+import { switchAdminTab } from '@/utils/adminTabs';
 
 import CounterDriftCard from './CounterDriftCard';
 import MatchResultDriftCard from './MatchResultDriftCard';
 import { OPS_LINKS } from './opsLinks';
 import TrafficMiniChart from './TrafficMiniChart';
 import UnsavedLiveMatchesCard from './UnsavedLiveMatchesCard';
-
-const STORAGE_KEY = 'adminActiveTab';
 
 const SNAPSHOT_STALE_DAYS = 8;
 
@@ -84,15 +83,6 @@ const formatEst = (iso: string): string =>
     dateStyle: 'medium',
     timeStyle: 'short',
   });
-
-const switchAdminTab = (tabId: string): void => {
-  try {
-    sessionStorage.setItem(STORAGE_KEY, tabId);
-  } catch {
-    // ignore storage errors (private mode, etc.)
-  }
-  window.location.reload();
-};
 
 interface QueueTileProps {
   label: string;

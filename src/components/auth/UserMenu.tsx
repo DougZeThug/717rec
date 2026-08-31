@@ -13,7 +13,6 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
-import { toTeamSlug } from '@/utils/teamSlug';
 
 interface UserMenuProps {
   className?: string;
@@ -91,24 +90,14 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
           </>
         )}
 
-        {membership?.team ? (
-          <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-            <Link
-              to={`/teams/${toTeamSlug(membership.team.name)}`}
-              className="cursor-pointer flex items-center"
-            >
-              <User className="size-4 mr-2" />
-              My Team
-            </Link>
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-            <Link to="/my-team" className="cursor-pointer flex items-center">
-              <User className="size-4 mr-2" />
-              Join a Team
-            </Link>
-          </DropdownMenuItem>
-        )}
+        {/* Always /my-team: it is the only page with Leave Team and the team
+            edit control, so a member must be able to reach it. */}
+        <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
+          <Link to="/my-team" className="cursor-pointer flex items-center">
+            <User className="size-4 mr-2" />
+            {membership?.team ? 'My Team' : 'Join a Team'}
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
           <Link to="/message-board" className="cursor-pointer flex items-center">

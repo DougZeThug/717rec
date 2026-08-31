@@ -14,7 +14,6 @@ interface DivisionBracketsCardProps {
   brackets: Array<Partial<PlayoffBracket>>;
   onViewBracket?: (bracketId: string) => void;
   onCreateBracket?: () => void;
-  onEditBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
 }
 
@@ -146,6 +145,21 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
                 onDeleteBracket={onDeleteBracket}
               />
             ))}
+            {/* A division can hold more than one bracket, so the control stays
+                available once the first one exists. */}
+            {onCreateBracket && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1.5 text-xs w-full"
+                onClick={() => {
+                  bracketLog('Create bracket button clicked for division:', division);
+                  onCreateBracket();
+                }}
+              >
+                <Plus className="size-3.5" /> Create Bracket
+              </Button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-5 text-center">

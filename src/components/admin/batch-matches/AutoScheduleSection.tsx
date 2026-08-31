@@ -3,6 +3,7 @@ import { Wand2 } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { switchAdminTab } from '@/utils/adminTabs';
 
 import { AlgorithmSettings } from './auto-schedule/components/AlgorithmSettings';
 import { InfoFooter } from './auto-schedule/components/InfoFooter';
@@ -105,7 +106,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => (window.location.href = '#auto-schedule')}
+          onClick={() => switchAdminTab('auto-schedule')}
           className="flex items-center gap-1"
         >
           <Wand2 className="size-3.5" />

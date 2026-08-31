@@ -102,6 +102,18 @@ export const ALL_BLOCK_TIMES: string[] = [
   ...new Set(Object.values(BACK_TO_BACK_PAIRS).flatMap((pair) => [pair.primary, pair.secondary])),
 ];
 
+/**
+ * The times a double header can start at: every pair's primary slot.
+ *
+ * A double header books a time and the 30 minutes after it, so it can only
+ * start at a time that has a partner. 9:30 PM is a real block time but nothing
+ * follows it, so it is a valid single assignment and never a double-header
+ * start. Derived from the pairs so the two cannot drift apart.
+ */
+export const DOUBLE_HEADER_START_TIMES: string[] = Object.values(BACK_TO_BACK_PAIRS).map(
+  (pair) => pair.primary
+);
+
 // Lookup maps for efficient time slot operations
 const BACK_TO_BACK_MAP = new Map<string, string>(
   Object.values(BACK_TO_BACK_PAIRS).map((pair) => [pair.primary, pair.secondary])

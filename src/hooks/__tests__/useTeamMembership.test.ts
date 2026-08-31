@@ -137,16 +137,22 @@ describe('useTeamMembership', () => {
       );
     });
 
-    it('still calls a real team change a team change', async () => {
+    it('tells the service a live membership is a change, and reports a join', async () => {
       const result = await renderWithMembership(mockMembership);
 
       await act(async () => {
         await result.current.joinTeam('team-2');
       });
 
+      // The service still learns this is a change, so the row is reused.
+      expect(joinTeamMembership).toHaveBeenCalledWith('user-1', 'team-2', true);
+
+      // There is no team-switch control in the product: a member sees the team
+      // card with Leave Team, never a team picker. So the message is the plain
+      // join one, and the separate "change teams" wording has been removed.
       expect(toast).toHaveBeenCalledWith(
         expect.objectContaining({
-          description: 'Your request to change teams has been submitted for admin approval',
+          description: 'Your request to join the team has been submitted for admin approval',
         })
       );
     });

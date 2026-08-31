@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MatchQualityMetrics } from '@/types/autoSchedule';
 import type { ScheduledMatch } from '@/types/schedule';
+import { switchAdminTab } from '@/utils/adminTabs';
 
 interface ExportTabProps {
   selectedDate: Date | null;
@@ -109,7 +110,7 @@ const ExportTab: React.FC<ExportTabProps> = ({
 
             <Button
               variant="outline"
-              onClick={() => (window.location.href = '#batch-matches')}
+              onClick={() => switchAdminTab('batch-matches')}
               className="w-full"
             >
               Go to Batch Matches

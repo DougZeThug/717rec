@@ -82,6 +82,21 @@ Opening a bracket shows it in full, with a row of admin controls in the header:
 All six are hidden below the medium breakpoint, so **none of them is reachable
 on a phone**. Nothing is written by arriving.
 
+**Edit Bracket** opens a small dialog holding the bracket's **name** and its
+**division**. Saving closes the dialog. The name is always editable. The division
+is disabled **as soon as any match has been played**, with a line saying why: its
+teams would be left behind in the old division. The division is written only when
+the admin actually changes it. Nothing else about a bracket can be changed here —
+the teams, the format and the size decided the matches it generated, so changing
+them would mean deleting the bracket and every match played in it. *Update
+Seeding* and *Rearrange Teams* are the controls for those.
+
+> *Technical note:* "has been played" is read from the matches, not from the
+> bracket's stored state. Nothing in the app ever records a bracket as
+> in-progress — it goes straight from pending to completed when the whole thing
+> ends — so a state check would leave the division editable for an entire
+> tournament.
+
 ### Leave without changing anything
 
 Nothing is recorded. The selected season and bracket are held in the page and
@@ -261,10 +276,11 @@ sees a count.
 
 ## Edge cases
 
-- **"Edit Bracket" opens the create dialog.** It does not load the bracket, and
-  pressing through it makes a second one.
-- **A division with a bracket has no Create button.** The only route to a second
-  bracket in the same division is the mislabelled "Edit Bracket".
+- **"Edit Bracket" changes the name and the division, and nothing else.** The
+  teams, the format and the size are fixed once the bracket exists, because they
+  define the matches it generated. The division can only be changed until the
+  first match is played.
+- **A division card offers Create Bracket whether or not it already has one.**
 - **The success toast for creation is never seen**, because the refresh toast
   replaces it within a second.
 - **Creation navigates the page on a timer**, one second after the refresh,
@@ -282,10 +298,18 @@ sees a count.
 
 ## Open questions and verification
 
-- **"Edit Bracket" cannot edit and creates instead.** With no other way to add a
-  second bracket to a division, an admin who wants one is pushed through a
-  button that lies about what it does. **May be worth treating as a bug rather
-  than documenting.**
+- Resolved: **"Edit Bracket" could not edit and created instead.** It was
+  treated as a bug
+  ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). It now
+  opens an edit dialog for the bracket in front of the admin. Its scope is the
+  title and the division only: everything else defines the generated match tree,
+  so changing it would mean deleting the bracket and every match played in it.
+  *Update Seeding* and *Rearrange Teams* cover the structural cases. The
+  division is locked as soon as any match has been played, because moving it
+  would leave its teams behind, and the dialog says so.
+- Resolved: **a division with a bracket had no Create button**, which is why the
+  mislabelled Edit Bracket was the only route to a second one. The division card
+  now offers Create Bracket in both states.
 - **Blind draw Clear All ignores the night.** The control reads as "clear
   tonight's list" and removes every signup ever taken. **May be worth treating
   as a bug rather than documenting.**
@@ -307,4 +331,6 @@ sees a count.
 - Assumption: deleting a bracket also removes the playoff matches and games the
   library created for it. The confirmation says so; it was not observed.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the bracket-editing behaviour
+above, which was changed after that commit — see
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
