@@ -33,6 +33,7 @@ const matches = [
     team1: { name: 'Team A' },
     team2: { name: 'Team B' },
     date: '2026-08-01',
+    season_id: 'season-1',
     gameCount: 2,
     roundCount: 9,
     iscompleted: true,
@@ -42,6 +43,7 @@ const matches = [
     team1: { name: 'Team C' },
     team2: { name: 'Team D' },
     date: null,
+    season_id: 'season-1',
     gameCount: 1,
     roundCount: 1,
     iscompleted: false,
@@ -68,8 +70,8 @@ describe('LiveCorrectionsSection', () => {
   beforeEach(() => {
     useSeasonsMock.mockReturnValue({
       data: [
-        { id: 'season-1', name: 'Summer 1' },
-        { id: 'season-2', name: 'Winter 1' },
+        { id: 'season-1', name: 'Summer 1', is_archived: false },
+        { id: 'season-2', name: 'Winter 1', is_archived: true },
       ],
     });
   });
@@ -149,8 +151,48 @@ describe('LiveCorrectionsSection', () => {
     render(<LiveCorrectionsSection />);
 
     await user.click(screen.getByRole('combobox'));
-    await user.click(await screen.findByRole('option', { name: 'Winter 1' }));
+    await user.click(await screen.findByRole('option', { name: /Winter 1/ }));
 
     expect(useAdminLiveScoredMatchesMock).toHaveBeenLastCalledWith('season-2');
+  });
+
+  // ─── B-20: archived seasons are listed, and said to be read-only ────────────
+
+  it('marks an archived season in the picker without hiding it', async () => {
+    const user = userEvent.setup();
+    setMatches({ data: matches });
+    render(<LiveCorrectionsSection />);
+
+    await user.click(screen.getByRole('combobox'));
+
+    expect(
+      await screen.findByRole('option', { name: 'Winter 1 (archived — read-only)' })
+    ).toBeInTheDocument();
+    expect(await screen.findByRole('option', { name: 'Summer 1' })).toBeInTheDocument();
+  });
+
+  it('marks a match from an archived season on its card, under "All seasons"', () => {
+    setMatches({
+      data: [
+        ...matches,
+        {
+          id: 'match-3',
+          team1: { name: 'Team E' },
+          team2: { name: 'Team F' },
+          date: '2026-01-04',
+          season_id: 'season-2',
+          gameCount: 3,
+          roundCount: 20,
+          iscompleted: true,
+        },
+      ],
+    });
+    render(<LiveCorrectionsSection />);
+
+    expect(
+      screen.getByText('3 games · 20 rounds · finalized · archived, read-only')
+    ).toBeInTheDocument();
+    // A live season's card says nothing about archiving.
+    expect(screen.getByText('2 games · 9 rounds · finalized')).toBeInTheDocument();
   });
 });

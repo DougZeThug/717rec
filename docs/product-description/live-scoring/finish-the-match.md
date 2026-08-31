@@ -231,7 +231,10 @@ routine the ordinary score path uses. Both teams' badges are recomputed. See
 - **Saving twice is safe.** The second attempt reports that it was already done.
 - **"Already finalized" is not an error** and does not stop the screen moving on.
 - **Reopening reverses records but keeps the rounds**, so a match can be
-  corrected and re-saved.
+  corrected and re-saved. An admin correcting a finalised match no longer has to
+  come here to do it: **Reopen & re-save result** in Live Corrections does both
+  halves in one press. See
+  [`admin/correct-a-live-match.md`](../admin/correct-a-live-match.md).
 - **Reopening a match needs admin; reopening a game does not.** The two controls
   look similar and have very different reach.
 - **Points per round is a dash, not zero**, for a player who threw nothing.
@@ -241,7 +244,9 @@ routine the ordinary score path uses. Both teams' badges are recomputed. See
   will change if the rounds are ever corrected.
 - **A match resulted by an admin elsewhere** — through the bulk score tools —
   puts this screen straight into the review with rounds that may not match the
-  recorded score.
+  recorded score. That disagreement is no longer invisible: the **Matches that
+  disagree with their rounds** card on the admin dashboard lists every match in
+  the active season whose result and rounds do not agree.
 
 ## Open questions and verification
 
@@ -251,9 +256,13 @@ routine the ordinary score path uses. Both teams' badges are recomputed. See
   were deliberately left out of the fix: the **scorers** are still not warned
   before they close the tab, and `/schedule` still shows the match as an
   upcoming 0-0 fixture with a countdown.
-- **A match resulted by an admin tool can disagree with its own rounds.** The
-  review shows the recorded winner and game wins in the header and the rounds'
-  totals below, and nothing reconciles them. Worth checking by hand.
+- Resolved: **a match could disagree with its own rounds with nothing saying
+  so.** The review still shows the recorded winner and game wins in the header
+  and the rounds' totals below, and still does not reconcile them — but the state
+  is now listed. It was treated as a bug
+  ([B-19](../bug-triage.md#b-19-live-corrections-can-leave-a-match-disagreeing-with-itself)).
+  What the review screen itself shows in that state is still not confirmed by
+  hand.
 - Corrected twice on review: an earlier draft said badge processing runs on
   finalise; at the time it did not, and that was raised as
   [B-32](../bug-triage.md#b-32-live-scored-matches-award-no-badges). It has since

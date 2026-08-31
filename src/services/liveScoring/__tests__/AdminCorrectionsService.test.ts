@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ValidationError } from '@/types/errors';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 
 const mockFrom = vi.fn();
 
@@ -16,6 +16,67 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 import { AdminCorrectionsService } from '../AdminCorrectionsService';
+
+// ─── Supabase wiring ──────────────────────────────────────────────────────────
+//
+// Every write now reads twice first: the round or game, to find its match's
+// season, and that season, to see whether it is archived (B-20). The helpers
+// below give each table a chain for both shapes, so one mockFrom serves the
+// guard's reads and the write itself.
+
+const readChain = (result: { data: unknown; error: unknown }) => {
+  const maybeSingle = vi.fn().mockResolvedValue(result);
+  const eq = vi.fn(() => ({ maybeSingle }));
+  const select = vi.fn(() => ({ eq }));
+  return { select, eq, maybeSingle };
+};
+
+const writeChain = (result: { data: unknown; error: unknown }) => {
+  const single = vi.fn().mockResolvedValue(result);
+  const selectBack = vi.fn(() => ({ single }));
+  const eq = vi.fn(() => ({ select: selectBack }));
+  const update = vi.fn(() => ({ eq }));
+  return { update, eq, single };
+};
+
+const deleteChain = () => {
+  const eq = vi.fn().mockResolvedValue({ error: null });
+  const del = vi.fn(() => ({ eq }));
+  return { del, eq };
+};
+
+const SEASON_ID = 'season-1';
+
+interface Wiring {
+  /** `seasons` row the guard reads. Omit for a live season. */
+  season?: { id: string; name: string; is_archived: boolean } | null;
+  /** What the round/game read returns. Omit for a row in SEASON_ID. */
+  parent?: { match: { season_id: string | null } | null } | null;
+  /** Row the write returns. */
+  written?: unknown;
+}
+
+const wire = ({ season, parent, written }: Wiring = {}) => {
+  const seasonRead = readChain({
+    data: season === undefined ? { id: SEASON_ID, name: 'Summer 1', is_archived: false } : season,
+    error: null,
+  });
+  const parentRead = readChain({
+    data: parent === undefined ? { id: 'x', match: { season_id: SEASON_ID } } : parent,
+    error: null,
+  });
+  const write = writeChain({ data: written ?? null, error: null });
+  const remove = deleteChain();
+
+  mockFrom.mockImplementation((table: string) => {
+    if (table === 'seasons') return { select: seasonRead.select };
+    return { select: parentRead.select, update: write.update, delete: remove.del };
+  });
+
+  return { seasonRead, parentRead, write, remove };
+};
+
+const ARCHIVED = { id: SEASON_ID, name: 'Summer 1', is_archived: true };
 
 beforeEach(() => {
   mockFrom.mockReset();
@@ -44,14 +105,7 @@ describe('AdminCorrectionsService.updateRound', () => {
   });
 
   it('updates the round when the patch is valid', async () => {
-    const single = vi.fn().mockResolvedValue({
-      data: { id: 'r1', team1_score: 8, team2_score: 5 },
-      error: null,
-    });
-    const select = vi.fn(() => ({ single }));
-    const eq = vi.fn(() => ({ select }));
-    const update = vi.fn(() => ({ eq }));
-    mockFrom.mockReturnValue({ update });
+    const { write } = wire({ written: { id: 'r1', team1_score: 8, team2_score: 5 } });
 
     const result = await AdminCorrectionsService.updateRound('r1', {
       team1Score: 8,
@@ -62,7 +116,7 @@ describe('AdminCorrectionsService.updateRound', () => {
     });
 
     expect(mockFrom).toHaveBeenCalledWith('match_rounds');
-    expect(update).toHaveBeenCalledWith(
+    expect(write.update).toHaveBeenCalledWith(
       expect.objectContaining({
         team1_score: 8,
         team2_score: 5,
@@ -73,35 +127,68 @@ describe('AdminCorrectionsService.updateRound', () => {
         team1_bags_off: 0,
       })
     );
-    expect(eq).toHaveBeenCalledWith('id', 'r1');
+    expect(write.eq).toHaveBeenCalledWith('id', 'r1');
     expect(result.id).toBe('r1');
+  });
+
+  it('refuses to edit a round in an archived season and writes nothing', async () => {
+    const { write } = wire({ season: ARCHIVED });
+
+    await expect(
+      AdminCorrectionsService.updateRound('r1', { team1Score: 8 })
+    ).rejects.toBeInstanceOf(BusinessLogicError);
+    expect(write.update).not.toHaveBeenCalled();
+  });
+
+  it('names the archived season in the refusal so the admin can see which', async () => {
+    wire({ season: ARCHIVED });
+
+    await expect(AdminCorrectionsService.updateRound('r1', { team1Score: 8 })).rejects.toThrow(
+      /Summer 1 is archived/
+    );
   });
 });
 
 describe('AdminCorrectionsService.deleteRound', () => {
   it('deletes the round by id', async () => {
-    const eq = vi.fn().mockResolvedValue({ error: null });
-    const del = vi.fn(() => ({ eq }));
-    mockFrom.mockReturnValue({ delete: del });
+    const { remove } = wire();
 
     await AdminCorrectionsService.deleteRound('r1');
 
     expect(mockFrom).toHaveBeenCalledWith('match_rounds');
-    expect(del).toHaveBeenCalled();
-    expect(eq).toHaveBeenCalledWith('id', 'r1');
+    expect(remove.del).toHaveBeenCalled();
+    expect(remove.eq).toHaveBeenCalledWith('id', 'r1');
+  });
+
+  it('refuses to delete a round in an archived season', async () => {
+    const { remove } = wire({ season: ARCHIVED });
+
+    await expect(AdminCorrectionsService.deleteRound('r1')).rejects.toBeInstanceOf(
+      BusinessLogicError
+    );
+    expect(remove.del).not.toHaveBeenCalled();
+  });
+
+  it('allows the write when the round belongs to no season', async () => {
+    const { remove } = wire({ parent: { match: { season_id: null } } });
+
+    await AdminCorrectionsService.deleteRound('r1');
+
+    expect(remove.del).toHaveBeenCalled();
+  });
+
+  it('allows the write when the round is already gone, so the delete no-ops', async () => {
+    const { remove } = wire({ parent: null });
+
+    await AdminCorrectionsService.deleteRound('r1');
+
+    expect(remove.del).toHaveBeenCalled();
   });
 });
 
 describe('AdminCorrectionsService.setGameWinner', () => {
   it('updates games with winner and totals', async () => {
-    const single = vi.fn().mockResolvedValue({
-      data: { id: 'g1', winner_team_id: 'team-2' },
-      error: null,
-    });
-    const select = vi.fn(() => ({ single }));
-    const eq = vi.fn(() => ({ select }));
-    const update = vi.fn(() => ({ eq }));
-    mockFrom.mockReturnValue({ update });
+    const { write } = wire({ written: { id: 'g1', winner_team_id: 'team-2' } });
 
     const result = await AdminCorrectionsService.setGameWinner('g1', 'team-2', {
       team1: 15,
@@ -109,7 +196,7 @@ describe('AdminCorrectionsService.setGameWinner', () => {
     });
 
     expect(mockFrom).toHaveBeenCalledWith('games');
-    expect(update).toHaveBeenCalledWith(
+    expect(write.update).toHaveBeenCalledWith(
       expect.objectContaining({
         winner_team_id: 'team-2',
         team1_score: 15,
@@ -117,7 +204,16 @@ describe('AdminCorrectionsService.setGameWinner', () => {
         status: 'completed',
       })
     );
-    expect(eq).toHaveBeenCalledWith('id', 'g1');
+    expect(write.eq).toHaveBeenCalledWith('id', 'g1');
     expect(result.id).toBe('g1');
+  });
+
+  it('refuses to change a game winner in an archived season', async () => {
+    const { write } = wire({ season: ARCHIVED });
+
+    await expect(
+      AdminCorrectionsService.setGameWinner('g1', 'team-2', { team1: 15, team2: 21 })
+    ).rejects.toBeInstanceOf(BusinessLogicError);
+    expect(write.update).not.toHaveBeenCalled();
   });
 });

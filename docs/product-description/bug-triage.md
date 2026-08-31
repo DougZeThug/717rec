@@ -12,7 +12,9 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **39 entries**: 12 high, 21 medium, and 6 low.
+merging by root cause they come to **40 entries**: 13 high, 21 medium, and 6 low.
+One of the 40 — B-40 — was **not raised by any document**. It was found while
+checking B-20, and it is a `high`.
 
 Two clusters account for most of the high ones.
 
@@ -54,6 +56,16 @@ are two — and B-18 turned out to be constrained by a schema with no third stat
 and a unique index allowing one row per person. See each entry's *Corrected on
 review* note.
 
+A fourth theme appeared only once the code was read rather than the screens:
+**an operation that has never worked at all.** B-40 was found while checking
+B-20. `games.match_id` carried no delete rule, so the bin in the Scores tool and
+the whole season-archive operation both failed on any match that had been scored
+live. Nothing raised it, because nothing in the product says it should work —
+the documents describe the bin as deleting the match, and it does not. It also
+reshaped B-20: archiving deletes a season's finished matches, so what stays
+editable in an archived season is its unfinished ones, which is a narrower and
+sharper problem than that entry described.
+
 Two structural themes ran under the medium entries: **destructive admin actions
 with no confirmation** (B-11) and **failure messages that throw away the reason
 the server gave** (B-12). Both are now fixed, and both entries were wrong in
@@ -80,6 +92,7 @@ entry's *Corrected on review* note.
 | B-33 | Six of the twenty badge types can never be awarded | high | stats | fix | **fixed** |
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
+| B-40 | Deleting or archiving a live-scored match fails on a foreign key | high | admin | **fixed** | — |
 | B-11 | Four destructive admin actions have no confirmation | medium | admin | **fixed** | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
@@ -88,8 +101,8 @@ entry's *Corrected on review* note.
 | B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | **fixed** | — |
 | B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | **fixed** | — |
 | B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | **fixed** | — |
-| B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | fix | — |
-| B-20 | Archived seasons are editable through live corrections | medium | admin | fix | — |
+| B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | **fixed** | — |
+| B-20 | Archived seasons are editable through live corrections | medium | admin | **fixed** | — |
 | B-21 | Eight controls do nothing when pressed | medium | admin, teams | fix | — |
 | B-22 | Reduced-motion is honoured in one stylesheet and ignored everywhere else | medium | cross-cutting | fix | — |
 | B-23 | The mobile menu is not a dialog | medium | cross-cutting | fix | — |
@@ -1082,6 +1095,60 @@ finding read a superseded migration.
   would make the state visible; re-deciding automatically would remove it.
 - **Raised by:** [`admin/correct-a-live-match.md`](admin/correct-a-live-match.md#open-questions-and-verification),
   [`live-scoring/finish-the-match.md`](live-scoring/finish-the-match.md#open-questions-and-verification).
+- **Status:** **fixed**, taking the entry's first option. The state is now
+  tracked and it is now fixable in one press. The result is deliberately **not**
+  re-decided automatically.
+
+  **A third data-integrity card** sits on League Night Status beside the two that
+  were already there: *Matches that disagree with their rounds*. It counts the
+  disagreement rather than storing it, the way `UnsavedLiveMatchesService`
+  counts a decided-but-unsaved match, and reports five kinds, worst first — the
+  recorded winner the games do not support, stored game wins that do not match,
+  a completed game whose winner its rounds contradict, a completed game whose
+  stored score its rounds contradict, and a completed game with no rounds left.
+  Each row names what is stored against what the rounds say.
+
+  **Written in TypeScript, not as a view.** `v_counter_drift` was the other
+  precedent, but `rules.ts` says *"Change game rules only here"*, and a view
+  would hard-code first-to-21-win-by-2 a second time and drift silently. The
+  service reuses `foldGameTotals`, `checkGameWinner` and `deriveMatchState`.
+
+  **Match-level checks only fire once a result is recorded**; game-level checks
+  fire on any completed game, because `completeGame` writes the fold's totals and
+  winner atomically, so a difference there is always a correction that was never
+  carried through. Games still in progress are skipped: `reopenGame` leaves the
+  old totals in place on purpose, so checking them would report noise. That
+  distinction was not in the entry and is what keeps the card quiet.
+
+  **`Reopen & re-save result`** now sits in the corrections panel itself, on a
+  finalised match. It asks first, because reopening reverses both teams' records.
+  It is one `reopenAndRefinalize` mutation rather than the two existing ones
+  fired in turn, so the admin gets one toast and one cache refresh. The amber
+  warning and both dialog descriptions point at it instead of the live view.
+
+  The half-done case is reported honestly, which the entry did not anticipate:
+  if reopening succeeds and the save is then refused — the games no longer decide
+  a winner — the old result is already reversed and the match is left open. The
+  toast says exactly that and what to do next, and the screens are refreshed
+  anyway because the records have moved.
+
+  **Deliberately not done: automatic re-deciding.** Making `deleteRound`
+  re-decide the game and the match would reverse and re-apply both teams' records
+  in the middle of a correction, moving the standings under an admin who is
+  halfway through a multi-step fix. The entry offered it as the alternative; it
+  was the wrong one.
+
+  **Also deliberately limited: the card is scoped to the active season.** The fix
+  for a row is a re-save, and `finalize_live_match` increments the `teams`
+  counters with no season filter, so listing an archived season's match would
+  invite an admin to add an old result to the current standings — the same reason
+  the unsaved-matches card gives. A disagreement in any other season is therefore
+  not listed. There is still **no audit trail**: the card shows the state, not the
+  history, so once a match is re-saved nothing records that it was ever corrected.
+
+  *Answered on review.* The raising document asked whether deleting the last round
+  of a completed game leaves it completed with a winner and no rounds. **It does**,
+  and that is now one of the five kinds the card reports.
 
 ### B-20: Archived seasons are editable through live corrections
 
@@ -1100,6 +1167,48 @@ finding read a superseded migration.
   in the UI what "frozen" covers.
 - **Raised by:** [`admin/correct-a-live-match.md`](admin/correct-a-live-match.md#open-questions-and-verification),
   [`foundations/seasons.md`](foundations/seasons.md#open-questions-and-verification).
+- **Status:** **fixed**, taking the entry's first option. An archived season is
+  read-only in Live Corrections. Its matches are still listed and still readable;
+  what goes is the ability to change them.
+
+  **The panel decides from the match, not the filter.** Archived-ness is read
+  from `bundle.match.season_id`, not from the season picker, because a selected
+  match stays open when the filter changes — the entry's own sibling edge case.
+  `useSeasons` is already cached by the section, so this costs no extra request.
+  On an archived season the pencil, the bin, **Change winner** and **Reopen &
+  re-save result** are all absent, and a grey banner names the season and says
+  what the freeze covers. The finalized warning is dropped there, since nothing
+  can be edited to disagree with.
+
+  **The service refuses as well**, so this is not only a UI trick: all three
+  writes look up the match's season first and throw a `BusinessLogicError` naming
+  it. That is one extra read on an operation an admin performs by hand a few
+  times a season. `BusinessLogicError` is authored text, so `getUIErrorMessage`
+  passes it to the toast unchanged.
+
+  **The list says so before anything is selected.** The picker marks archived
+  seasons — "*name* (archived — read-only)" — and every card belonging to one ends
+  its counts line "archived, read-only", because the default "All seasons" filter
+  applies no season filter at all and mixes them in without anyone choosing.
+
+  *The entry understated the risk, and misjudged the exposure.* `archive_season`
+  deletes a season's finished matches, so what survives for an archived season is
+  its **unfinished** ones — not, as "a frozen season's rounds are editable here"
+  implies, its whole history. Those survivors are exactly the set
+  `useUnsavedLiveMatches` deliberately refuses to surface, because
+  `finalize_live_match` bumps the `teams` counters with no season filter and
+  saving one would add an old result to the current standings. Live Corrections
+  was offering the admin the very matches its sibling card hides. So this was
+  never only a tidiness question about the word "frozen".
+
+  *Also worth recording:* the computed-number half of the freeze was already
+  enforced in SQL. `upsert_team_season_stats` refuses to recompute an archived
+  season's `power_score`, `sos` or `division_name` unless a deliberate repair
+  passes `p_include_archived`. The gap was only ever the raw rows underneath.
+
+  **Not covered, deliberately:** a season's name and dates are still editable
+  like any other's, and the bulk Scores tool is still not season-scoped
+  (see BULK-25). Both are separate surfaces and neither was in this entry.
 
 ### B-21: Eight controls do nothing when pressed
 
@@ -1243,6 +1352,57 @@ finding read a superseded migration.
   from that point on. Nothing in the app does that, and the repair above clears
   any such state the next time the migration is applied.
 - **Raised by:** found while fixing B-02.
+
+### B-40: Deleting or archiving a live-scored match fails on a foreign key
+
+- **Where the user meets it:** an admin pressing the bin on a row in the Scores
+  tool, or archiving a season that used live scoring.
+- **What happens / what was expected:** the delete fails. `games.match_id` was
+  created as a plain foreign key with **no delete rule**, so it defaults to NO
+  ACTION, and nothing in the app or in any database function ever deletes a
+  `games` row. Both paths that delete a match therefore raise `23503` on any
+  match that was ever scored live. Expected: the bin deletes the match, and a
+  season can be archived.
+- **Why (from the code):** `supabase/migrations/00000000000000_baseline.sql:449-451`
+  creates the constraint with no `ON DELETE`. `delete_match_with_stats_reversal`
+  (`20260608142313_...sql:31`) runs a bare
+  `DELETE FROM public.matches WHERE id = p_match_id`. `archive_season`
+  (`20260408173631_...sql`, STEP 5) and `partial_archive_season` copy a season's
+  finished matches into `matches_archive` and then delete them from `matches`;
+  one live-scored finished match is enough to roll the whole RPC back, so the
+  season cannot be archived at all. `match_rounds` already cascades on both
+  `match_id` and `game_id`, and `game_players` cascades on `game_id`, so `games`
+  was the only link in the chain blocking the delete.
+- **Severity:** `high`. Two admin operations fail outright, one of them the
+  season rollover.
+- **Decision needed:** `fix`.
+- **Raised by:** nobody. **This was never filed.** It was found while checking
+  [B-20](#b-20-archived-seasons-are-editable-through-live-corrections) — it is
+  the reason an archived season holds only unfinished matches, which is what
+  narrowed that entry.
+- **Status:** **fixed.** A migration re-creates `games_match_id_fkey` with
+  `ON DELETE CASCADE`, matching `match_rounds`. No data is changed and no other
+  constraint is touched. Neither archive RPC nor the delete RPC needed a change.
+
+  **What this deletes, now that it works.** Deleting a match takes its games,
+  its rounds and its game-players with it. That is already what "delete this
+  match" means to the admin pressing the bin, and what archiving already does to
+  the match row itself — only a match-level summary is kept, in `matches_archive`.
+  No per-round history the app can still show is lost: `v_player_match_stats` and
+  `v_player_season_stats` are built by joining `public.matches`, which archiving
+  empties for that season, so an archived season's round-level player statistics
+  are already unreachable. There is no `games_archive` and no
+  `match_rounds_archive`; preserving raw rounds past an archive would be a
+  separate piece of work with no reader for it today.
+
+  **Read from the migrations, not observed against the live database.** The
+  Supabase project could not be queried from where this was checked. The
+  migration is idempotent and a no-op if the cascade is already present, so it is
+  safe either way — but it is worth confirming that the constraint really had no
+  delete rule, and worth knowing whether any season rollover has failed for this
+  reason. `supabase/tests/games_cascade_on_match_delete.sql` pins all three
+  halves: the constraint's delete rule, the Scores bin on a live-scored match,
+  and archiving a season that holds one.
 
 ### B-39: The head-to-head details dialog never opened: its database function raised on every call
 
@@ -1480,37 +1640,82 @@ finding read a superseded migration.
 
 ---
 
-## Note: what the DeepSource coverage check actually measures
+## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round
 rediscovering it.
 
-The coverage check reports **Failure** on pull requests while every metric is
-*rising*. That is not a threshold breach:
+**First, where the verdicts actually appear.** Neither is a check run. The
+`checks` API on a pull request returns eleven entries and **neither DeepSource
+result is among them** — the one called "DeepSource coverage" is this repo's own
+job that uploads the report, and it reports success even when DeepSource's
+verdict is failure. The verdicts arrive as **legacy commit statuses**:
 
-- **Coverage thresholds are set in DeepSource's web UI**, per repository, not in
-  `.deepsource.toml`. None are set for this repo, which is why every Threshold
-  column reads `N/A`. A run fails on a threshold only when one is set *and*
-  enforced.
-- The status is driven by the count of **uncovered-line annotations**, and the
-  analyzer annotates every file a pull request *touches*, not the lines it
-  changes. A one-line edit to `useMessageBoard.ts` pulls all of that file's
-  long-standing uncovered lines into the report.
+```
+DeepSource: JavaScript      Analysis failed:  Blocking issues or failing metrics found
+DeepSource: Test coverage   Analysis passed:  No blocking issues or failing metrics found
+```
 
-So the check cannot be made green by covering the code a branch actually adds.
-On the branch that fixed B-11 to B-14, of the ~180 uncovered lines reported,
-**seven** were added by the branch; all seven are now tested, and the check
-still reads Failure.
+They are on the pull request page and they set `mergeable_state` to `unstable`,
+but they are not required checks. That is easy to miss when reading CI through
+the API, and it cost a round here.
+
+**`DeepSource: JavaScript` is normally red on this repo, and the league merges
+through it.** Treat it as feedback, not as your branch's failure:
+
+| PR | DeepSource: JavaScript | DeepSource: Test coverage | merged |
+| --- | --- | --- | --- |
+| #1311 | failure | failure | yes |
+| #1312 | failure | failure | yes |
+| #1315 | failure | **success** | — |
+
+**Coverage, on the other hand, tracks the branch's own new lines, and can be
+made green.** Measured on #1315, where nothing changed between the first two
+rows except four tests covering that branch's own uncovered lines:
+
+| Head | Line coverage (new code) | DeepSource: Test coverage |
+| --- | --- | --- |
+| `71df0ce` | 99.3% | failure |
+| `06e8527` | 100% | **success** |
+| `37e562f` | 100% | **success** |
+
+So the status keys on **new-code line coverage**, and it appears to want all of
+it: 99.3% failed while every Threshold column still read `N/A`. Thresholds are
+set in DeepSource's web UI rather than in `.deepsource.toml` and none are set
+here, so `N/A` in that column does **not** mean nothing is being enforced.
+
+*Superseded, kept as the only other measurement anyone took.* An earlier reading
+of this note said the status counted uncovered-line annotations across every file
+a pull request *touches*, and therefore "cannot be made green by covering the
+code a branch actually adds" — on the B-11 to B-14 branch, seven of ~180
+reported lines were the branch's, all seven were tested, and it still read
+Failure. #1315 contradicts the conclusion. That branch cannot be re-run, so
+whether DeepSource changed, or something else there was uncovered, is unknown.
+**Trust the table above; it is the more recent measurement.**
 
 **The gate that does bind this repo is `vitest.config.ts`**, which enforces
 per-area coverage floors — `src/components/**` and `src/pages/**` have their own
 — and CI runs it. `coverage-baseline.txt` is a manual snapshot, promoted with
 `npm run test:coverage:update-baseline`, not an enforced gate.
 
-Two options if the check should mean something: set thresholds in the DeepSource
-UI so it reflects a real bar, or accept that its status tracks the repo's
-overall coverage debt rather than the change under review.
+If the coverage status goes red on a branch, the first thing to check is whether
+that branch left any of its **own** new lines uncovered — on the evidence above
+that is what it is telling you, and it is usually a real gap worth closing.
 
 One related trap, since it cost a round here: **`.deepsource.toml` is read from
 the default branch.** Config changes on a branch do not affect that branch's own
 analysis — they take effect once merged.
+
+**`JS-0117`, the "use the `u` flag" rule, is one of the findings keeping
+`DeepSource: JavaScript` red.** It is raised against whichever test files a pull
+request happens to touch. The repo has
+**231 regex queries in tests and 223 of them carry no `/u`**, so the finding is a
+repo-wide style question, not a defect in the change under review. None of the
+patterns involved use unicode escapes or astral characters — em-dashes and
+middots are single code units — so the flag changes no behaviour. Adding it to
+one branch's files makes those files the odd ones out and fixes nothing.
+
+Two options: sweep all 231 in one change so the rule means something, or accept
+that it tracks the repo's existing style rather than the branch under review.
+Until one of those happens it is part of why that status is red, which the table
+above shows is this repo's normal state.

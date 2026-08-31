@@ -41,7 +41,8 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 
 1. **Refresh the scorer's browser once.** Realtime channels re-subscribe on mount; a stale WebSocket is the most common cause.
 2. **Check Supabase Realtime status** — Dashboard → Project status. If red, wait; nothing on our side to do.
-3. **Open Admin → Live Corrections for that match.** You can edit or delete any round, or use "Reopen match" (`reopen_live_match` RPC) if the match was accidentally finalized. State rolls back atomically.
+3. **Open Admin → Live Corrections for that match.** You can edit or delete any round. If the match is already finalized, fix the rounds first and then press **Reopen & re-save result** on the same panel — it runs `reopen_live_match` and `finalize_live_match` in that order, which is mandatory because finalize refuses to run on a match that still has a result. It asks first; both teams' records are reversed and re-applied. If the games no longer decide a winner, the old result is reversed and the save is refused: the toast says so and the match is left open for you to fix.
+   **An archived season is read-only here** — the controls are absent and the write is refused.
 4. **Last resort: Mass Score Entry.** Enter the final game scores manually. This bypasses live scoring entirely and reverses/re-applies stats.
 
 ### 2c. Wrong score was approved
@@ -53,6 +54,12 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 ### 2d. Standings look wrong (a team's W-L doesn't match its games)
 
 Stored win/loss counters can drift from the real match history after manual DB edits, a restore, or a bulk import. There's a built-in checker — no SQL required:
+
+**First, rule out a wrong result.** Check **Admin → League Night Status →
+"Matches that disagree with their rounds"**. If a match was corrected and never
+re-saved, its recorded result and its rounds say different things. The card names
+it; **Reopen & re-save result** in Live Corrections fixes it. Clear that before
+reconciling counters, or you will reconcile to a result that is itself wrong.
 
 1. **Admin → League Night Status → "Standings counters" card.** It reads the `v_counter_drift` view and tells you, in plain language, whether every team is in sync or lists the ones that aren't.
 2. If any are out of sync, click **Repair now** — it recomputes every team's wins/losses/game counts from completed matches (`reconcile_team_counters()`) and refreshes the stats cache. Safe to run any time; it does nothing when counters already match.

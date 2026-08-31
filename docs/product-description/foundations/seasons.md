@@ -55,6 +55,16 @@ numbers are calculated. When the league changes a division's weight, or changes
 the power score formula, active-season numbers move and archived-season numbers
 do not.
 
+The freeze covers the **raw scoring rows** as well, not only the numbers computed
+from them. An archived season's rounds and games are shown in the admin's Live
+Corrections panel and cannot be changed there: the controls are absent and the
+write is refused. This was not always true — see
+[B-20](../bug-triage.md#b-20-archived-seasons-are-editable-through-live-corrections).
+
+Two things the freeze still does **not** cover, deliberately: a season's name and
+dates can be edited like any other's, and the bulk Scores tool is not
+season-scoped.
+
 This is a real product decision with a visible consequence: **two seasons' power
 scores are not always directly comparable**, because they may have been produced
 by different formulas. Nothing in the app warns the user about this. See

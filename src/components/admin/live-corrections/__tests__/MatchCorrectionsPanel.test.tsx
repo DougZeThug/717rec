@@ -16,6 +16,8 @@ const mockChangeGameWinner = { mutateAsync: vi.fn(), isPending: false };
 
 const useLiveMatchMock = vi.fn();
 const useAdminCorrectionsMock = vi.fn();
+const useSeasonsMock = vi.fn();
+const mockReopenAndRefinalize = { mutate: vi.fn(), isPending: false };
 
 vi.mock('@/hooks/live-scoring/useLiveMatch', () => ({
   useLiveMatch: (matchId?: string) => useLiveMatchMock(matchId),
@@ -23,6 +25,14 @@ vi.mock('@/hooks/live-scoring/useLiveMatch', () => ({
 
 vi.mock('@/hooks/live-scoring/useAdminCorrections', () => ({
   useAdminCorrections: (opts: unknown) => useAdminCorrectionsMock(opts),
+}));
+
+vi.mock('@/hooks/useSeasons', () => ({
+  useSeasons: () => useSeasonsMock(),
+}));
+
+vi.mock('@/hooks/live-scoring/useFinalizeMatch', () => ({
+  useFinalizeMatch: () => ({ reopenAndRefinalize: mockReopenAndRefinalize }),
 }));
 
 vi.mock('@/services/liveScoring/TeamPlayersService', () => ({
@@ -83,10 +93,11 @@ const game2 = {
 const gamePlayers = (ids: string[]) =>
   ids.map((id) => ({ player_id: id })) as Tables<'game_players'>[];
 
-function makeBundle(overrides: { iscompleted?: boolean } = {}) {
+function makeBundle(overrides: { iscompleted?: boolean; seasonId?: string | null } = {}) {
   return {
     match: {
       id: 'match-1',
+      season_id: overrides.seasonId === undefined ? 'season-live' : overrides.seasonId,
       iscompleted: overrides.iscompleted ?? false,
       team1_id: 'team-1',
       team2_id: 'team-2',
@@ -115,6 +126,10 @@ function makeDerived() {
       },
     ],
   };
+}
+
+function setSeasons(seasons = [{ id: 'season-live', name: 'Summer 1', is_archived: false }]) {
+  useSeasonsMock.mockReturnValue({ data: seasons });
 }
 
 function setLiveMatch(value: Record<string, unknown>) {
@@ -155,6 +170,9 @@ describe('MatchCorrectionsPanel', () => {
     mockUpdateRound.mutateAsync.mockImplementation(() => Promise.resolve());
     mockDeleteRound.mutateAsync.mockImplementation(() => Promise.resolve());
     mockChangeGameWinner.mutateAsync.mockImplementation(() => Promise.resolve());
+    mockReopenAndRefinalize.mutate.mockReset();
+    mockReopenAndRefinalize.isPending = false;
+    setSeasons();
   });
 
   afterEach(() => {
@@ -186,11 +204,145 @@ describe('MatchCorrectionsPanel', () => {
     expect(screen.getByText('No rounds recorded.')).toBeInTheDocument();
   });
 
-  it('warns that a finalized match needs re-finalizing after edits', () => {
+  // ─── B-20: an archived season is read-only ──────────────────────────────────
+
+  const ARCHIVED_SEASONS = [
+    { id: 'season-live', name: 'Summer 1', is_archived: false },
+    { id: 'season-old', name: 'Winter 0', is_archived: true },
+  ];
+
+  function renderArchivedPanel() {
+    setSeasons(ARCHIVED_SEASONS);
+    setLiveMatch({
+      bundle: makeBundle({ iscompleted: true, seasonId: 'season-old' }),
+      derived: makeDerived(),
+    });
+    return renderPanel();
+  }
+
+  it('says an archived season is read-only, and names it', () => {
+    renderArchivedPanel();
+
+    expect(screen.getByText(/is archived, so this match is/)).toBeInTheDocument();
+    expect(screen.getByText('Winter 0')).toBeInTheDocument();
+  });
+
+  it('offers no edit, delete or winner control on an archived season', () => {
+    renderArchivedPanel();
+
+    expect(screen.queryByRole('button', { name: /Edit round/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Delete round/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Change winner/ })).not.toBeInTheDocument();
+  });
+
+  it('still shows the rounds and totals of an archived season', () => {
+    renderArchivedPanel();
+
+    expect(screen.getByText('Round 1')).toBeInTheDocument();
+    // The game header and the round row both carry the score.
+    expect(screen.getAllByText(/Team A 2 – 1 Team B/).length).toBeGreaterThan(0);
+  });
+
+  it('drops the finalized warning on an archived season, which cannot be edited anyway', () => {
+    renderArchivedPanel();
+
+    expect(screen.queryByText(/until the result is saved again/)).not.toBeInTheDocument();
+  });
+
+  it('keeps every control when the match belongs to a live season', () => {
+    setSeasons(ARCHIVED_SEASONS);
+    setLiveMatch({
+      bundle: makeBundle({ iscompleted: true, seasonId: 'season-live' }),
+      derived: makeDerived(),
+    });
+    renderPanel();
+
+    expect(screen.getByRole('button', { name: 'Edit round 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete round 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Change winner/ })).toBeInTheDocument();
+    expect(screen.queryByText(/is archived, so this match is/)).not.toBeInTheDocument();
+  });
+
+  it('warns that a finalized match needs re-saving after edits', () => {
     setLiveMatch({ bundle: makeBundle({ iscompleted: true }), derived: makeDerived() });
     renderPanel();
 
-    expect(screen.getByText(/won't update until you reopen the match/)).toBeInTheDocument();
+    expect(screen.getByText(/until the result is saved again/)).toBeInTheDocument();
+  });
+
+  // ─── B-19: reopen and re-save in one press ──────────────────────────────────
+
+  function renderFinalized() {
+    setLiveMatch({ bundle: makeBundle({ iscompleted: true }), derived: makeDerived() });
+    return renderPanel();
+  }
+
+  it('offers Reopen & re-save only on a finalized match', () => {
+    setLiveMatch({ bundle: makeBundle({ iscompleted: false }), derived: makeDerived() });
+    const { unmount } = renderPanel();
+    expect(
+      screen.queryByRole('button', { name: /Reopen & re-save result/ })
+    ).not.toBeInTheDocument();
+    unmount();
+
+    renderFinalized();
+    expect(screen.getByRole('button', { name: /Reopen & re-save result/ })).toBeInTheDocument();
+  });
+
+  it('asks before reopening, because both teams\u2019 records are reversed', async () => {
+    const user = userEvent.setup();
+    renderFinalized();
+
+    await user.click(screen.getByRole('button', { name: /Reopen & re-save result/ }));
+
+    expect(await screen.findByText('Reopen and re-save this result?')).toBeInTheDocument();
+    expect(mockReopenAndRefinalize.mutate).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing when the confirmation is dismissed', async () => {
+    const user = userEvent.setup();
+    renderFinalized();
+
+    await user.click(screen.getByRole('button', { name: /Reopen & re-save result/ }));
+    await user.click(await screen.findByRole('button', { name: 'Leave it alone' }));
+
+    await waitFor(() =>
+      expect(screen.queryByText('Reopen and re-save this result?')).not.toBeInTheDocument()
+    );
+    expect(mockReopenAndRefinalize.mutate).not.toHaveBeenCalled();
+  });
+
+  it('reopens and re-saves once confirmed', async () => {
+    const user = userEvent.setup();
+    renderFinalized();
+
+    await user.click(screen.getByRole('button', { name: /Reopen & re-save result/ }));
+    await user.click(await screen.findByRole('button', { name: 'Reopen & re-save' }));
+
+    expect(mockReopenAndRefinalize.mutate).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the write in progress and blocks a second press', () => {
+    mockReopenAndRefinalize.isPending = true;
+    renderFinalized();
+
+    expect(screen.getByRole('button', { name: /Re-saving…/ })).toBeDisabled();
+  });
+
+  it('offers no Reopen & re-save on an archived season', () => {
+    setSeasons([
+      { id: 'season-live', name: 'Summer 1', is_archived: false },
+      { id: 'season-old', name: 'Winter 0', is_archived: true },
+    ]);
+    setLiveMatch({
+      bundle: makeBundle({ iscompleted: true, seasonId: 'season-old' }),
+      derived: makeDerived(),
+    });
+    renderPanel();
+
+    expect(
+      screen.queryByRole('button', { name: /Reopen & re-save result/ })
+    ).not.toBeInTheDocument();
   });
 
   it('hides the change-winner action for a game still in progress', () => {

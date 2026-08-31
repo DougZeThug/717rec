@@ -114,6 +114,12 @@ so a non-zero exit code means drift was detected.
   filter); that re-running the placement writer is idempotent (the old INSERT had
   no `ON CONFLICT` and raised `23505`); and that nobody is awarded third place
   when the bracket ranks nobody third, as a single-elimination bracket does not.
+- `games_cascade_on_match_delete.sql` — asserts `games.match_id` carries
+  `ON DELETE CASCADE`, that `delete_match_with_stats_reversal` removes a
+  live-scored match along with its games, rounds and game-players, and that
+  `archive_season` completes on a season holding a live-scored finished match.
+  Without the cascade both paths raised `23503`, so the admin Scores bin and
+  season archiving both failed on any match that had been scored live.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.
