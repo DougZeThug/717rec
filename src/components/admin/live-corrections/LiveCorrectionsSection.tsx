@@ -33,7 +33,10 @@ const LiveCorrectionsSection: React.FC = () => {
   // B-20: archived seasons are frozen. They stay listed and readable — the panel
   // refuses the edits — but say so before the admin picks one, and on every card,
   // because "All seasons" mixes them in without anyone choosing them.
-  const archivedSeasonIds = new Set((seasons ?? []).filter((s) => s.is_archived).map((s) => s.id));
+  const archivedSeasonIds = new Set<string>();
+  for (const season of seasons ?? []) {
+    if (season.is_archived) archivedSeasonIds.add(season.id);
+  }
 
   return (
     <div className="space-y-4">
