@@ -165,6 +165,24 @@ can be checked before the result is saved. When there are none it shows a green
 by hand on the match itself. See
 [`../live-scoring/finish-the-match.md`](../live-scoring/finish-the-match.md).
 
+**Matches that disagree with their rounds.** Matches **in the active season**
+whose recorded result, or whose stored game rows, no longer match the rounds
+underneath them. A correction changes the rounds; nothing above them is
+re-decided; the two then say different things and nothing used to notice. It
+lists up to ten with both team names, the date, and one line naming what is
+stored against what the rounds say — "recorded as won by Corn Stars, but its
+games give it to Sweat Bandits" — plus a count of any beyond ten. Five kinds are
+found, and each match shows the worst one it has: a recorded winner the games do
+not support, stored game wins that do not match, a completed game whose winner
+its rounds contradict, a completed game whose stored score its rounds contradict,
+and a completed game left with no rounds at all. Games still in progress are
+skipped, because reopening one leaves its old totals in place on purpose.
+Archived seasons are excluded for the same reason as the card above, and with no
+active season it says so rather than reporting all clear. Each row links to the
+match's live screen. **This card writes nothing**; the fix is **Reopen &
+re-save result** in Live Corrections. See
+[`correct-a-live-match.md`](correct-a-live-match.md).
+
 **Standings counters.** The one live repair. It lists every team whose stored
 win-loss record disagrees with its completed matches, up to ten with a count of
 the rest, or a green "In sync" line. A **Repair now** button opens a confirmation
