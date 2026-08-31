@@ -60,6 +60,8 @@ describe('adminTabs', () => {
     const onRequest = vi.fn();
     const unsubscribe = subscribeToAdminTabRequests(onRequest);
 
+    // The literal is deliberate: it pins the event name, which is private to
+    // the module and would otherwise be free to drift.
     window.dispatchEvent(new CustomEvent('admin:switch-tab', { detail: '' }));
 
     expect(onRequest).not.toHaveBeenCalled();

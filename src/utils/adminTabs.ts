@@ -10,8 +10,12 @@
 /** Session storage key the sidebar uses to remember the open tab. */
 export const ADMIN_TAB_STORAGE_KEY = 'adminActiveTab';
 
-/** Window event carrying a requested tab id. */
-export const ADMIN_TAB_EVENT = 'admin:switch-tab';
+/**
+ * Window event carrying a requested tab id. Deliberately not exported: the two
+ * functions below are the whole interface, and nothing outside should be
+ * dispatching or listening for this by hand.
+ */
+const ADMIN_TAB_EVENT = 'admin:switch-tab';
 
 /** Ask the admin dashboard to open a different section. */
 export const switchAdminTab = (tabId: string): void => {
