@@ -73,7 +73,6 @@ const AdminView: React.FC<AdminViewProps> = ({
             bracketsByDivision={data.typesafeBracketsByDivision}
             onCreateBracket={handleCreateBracketClick}
             onViewBracket={data.setSelectedBracketId}
-            onEditBracket={handleCreateBracketClick}
             onDeleteBracket={onDeleteBracket}
             isLoading={data.isLoading}
           />
@@ -88,7 +87,6 @@ const AdminView: React.FC<AdminViewProps> = ({
               bracket={data.bracket as unknown as PlayoffBracket}
               teams={data.teams}
               bracketLoading={data.isLoading}
-              onEditBracket={handleCreateBracketClick}
               onEditMatch={onEditMatch}
               onDeleteBracket={async (bracketId: string, bracketName: string) => {
                 await onDeleteBracket(bracketId, bracketName);

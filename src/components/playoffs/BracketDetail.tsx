@@ -19,6 +19,7 @@ import { blueAmber } from '@/styles/design-system';
 import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
 import { PlayoffBracket, Team } from '@/utils/playoffs/playoffTypes';
 
+import EditBracketDialog from './admin/EditBracketDialog';
 import RearrangeBracketDialog from './admin/RearrangeBracketDialog';
 import { SeedingUpdateDialog } from './SeedingUpdateDialog';
 
@@ -27,7 +28,6 @@ interface BracketDetailProps {
   bracket: PlayoffBracket | null;
   teams: Team[];
   bracketLoading: boolean;
-  onEditBracket?: () => void;
   onEditMatch?: (matchId: string) => void;
   onDeleteBracket?: (bracketId: string, bracketName: string) => void;
 }
@@ -40,7 +40,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   bracket,
   teams,
   bracketLoading,
-  onEditBracket,
   onEditMatch,
   onDeleteBracket,
 }) => {
@@ -49,6 +48,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const isLight = resolvedTheme === 'light';
   const [seedingDialogOpen, setSeedingDialogOpen] = useState(false);
   const [rearrangeDialogOpen, setRearrangeDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   // Fetch current participants for seeding updates
   const { data: participants } = useQuery({
@@ -193,7 +193,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
                 variant="outline"
                 size="sm"
                 className="hidden md:flex"
-                onClick={onEditBracket}
+                onClick={() => setEditDialogOpen(true)}
               >
                 <Edit className="size-4 mr-2" /> Edit Bracket
               </Button>
@@ -245,6 +245,12 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
         onOpenChange={setRearrangeDialogOpen}
         bracketId={bracketId}
       />
+
+      {/* Mounted only while open, so the form always starts from the bracket's
+          current values. */}
+      {editDialogOpen && (
+        <EditBracketDialog open onOpenChange={setEditDialogOpen} bracket={bracket} />
+      )}
     </Card>
   );
 };

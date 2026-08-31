@@ -28,6 +28,7 @@ import {
   deleteBracket,
   deletePlayoffGames,
   insertPlayoffGames,
+  updateBracket,
   updatePlayoffMatchResult,
   updatePlayoffMatchScores,
   updateTeamSeed,
@@ -60,6 +61,38 @@ describe('deleteBracket', () => {
       delete: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
     });
     await expect(deleteBracket('b-1')).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── updateBracket ────────────────────────────────────────────────────────────
+
+describe('updateBracket', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('sends the patch to the brackets table', async () => {
+    const update = vi.fn(() => ({ eq: () => Promise.resolve({ error: null }) }));
+    mockFrom.mockReturnValue({ update });
+
+    await expect(updateBracket('b-1', { title: 'Renamed' })).resolves.toBeUndefined();
+
+    expect(mockFrom).toHaveBeenCalledWith('brackets');
+    expect(update).toHaveBeenCalledWith({ title: 'Renamed' });
+  });
+
+  it('can move a bracket to another division', async () => {
+    const update = vi.fn(() => ({ eq: () => Promise.resolve({ error: null }) }));
+    mockFrom.mockReturnValue({ update });
+
+    await updateBracket('b-1', { title: 'Renamed', division_id: 'd-2' });
+
+    expect(update).toHaveBeenCalledWith({ title: 'Renamed', division_id: 'd-2' });
+  });
+
+  it('throws DatabaseError on error', async () => {
+    mockFrom.mockReturnValue({
+      update: () => ({ eq: () => Promise.resolve({ error: pgError() }) }),
+    });
+    await expect(updateBracket('b-1', { title: 'Renamed' })).rejects.toThrow(DatabaseError);
   });
 });
 
