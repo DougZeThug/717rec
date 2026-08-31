@@ -288,9 +288,12 @@ failure does not fail the score. Deleting a match reverses all of it.
 - Not confirmed by hand: how long a batch of twenty takes end to end, given the
   writes are serial and each rewrites season statistics, and whether badge and
   power-score recalculation has caught up by the time the table is redrawn.
-- Assumption: deleting a match also removes any live-scoring games and rounds
-  attached to it. The delete is a single database routine and this was not
-  observed.
+- Resolved: deleting a match does remove any live-scoring games and rounds
+  attached to it, now pinned by
+  `supabase/tests/games_cascade_on_match_delete.sql`. Before that migration,
+  `games.match_id` carried no delete rule, so the delete and `archive_season`
+  both raised `23503` on a live-scored match and nothing was removed. See
+  [B-40](../bug-triage.md#b-40-deleting-or-archiving-a-live-scored-match-fails-on-a-foreign-key).
 - The tool's own tests cover the hooks and one browser path — enter 2–0, submit,
   assert the write — so the four-button vocabulary and the partial-failure
   banner are read from the components rather than from a passing test.
