@@ -211,6 +211,19 @@ describe('MatchResultDriftService.fetchMatchResultDrift', () => {
     await expect(MatchResultDriftService.fetchMatchResultDrift(SEASON_ID)).resolves.toEqual([]);
   });
 
+  it('reports a match completed with no winner at all against the games that decided it', async () => {
+    // iscompleted with winner_id null is a state the league can be left in - a
+    // tie, or a half-written result. The games say team 1 took it 2-0.
+    const { games, rounds } = healthy();
+    mockQueries([matchRow({ winner_id: null, iscompleted: true })], games, rounds);
+
+    const [row] = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    expect(row.kind).toBe('match-winner');
+    expect(row.recorded).toContain('nobody');
+    expect(row.derived).toContain('Sweat Bandits');
+  });
+
   // ─── Teams can share a name, so every comparison must go by id ─────────────
   //
   // src/types/headToHead.ts: "team names are not unique". There is no unique
