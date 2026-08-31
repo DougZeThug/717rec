@@ -21,8 +21,6 @@ import ManageTeamsPane from './ManageTeamsPane';
 import TeamManagementStatsCards from './TeamManagementStatsCards';
 import TeamMembershipApprovalTab from './TeamMembershipApprovalTab';
 
-const noop = () => undefined;
-
 type TabsProps = {
   pendingMembershipCount: number;
   searchTerm: string;
@@ -97,7 +95,10 @@ const ManageTeamsContent = ({
   </TabsContent>
 );
 
-const CreateTeamContent = ({ handleTeamSubmit }: Pick<TabsProps, 'handleTeamSubmit'>) => (
+const CreateTeamContent = ({
+  handleTeamSubmit,
+  onCancel,
+}: Pick<TabsProps, 'handleTeamSubmit'> & { onCancel: () => void }) => (
   <TabsContent value="create">
     <Card>
       <CardHeader>
@@ -107,7 +108,7 @@ const CreateTeamContent = ({ handleTeamSubmit }: Pick<TabsProps, 'handleTeamSubm
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <TeamForm onSubmit={handleTeamSubmit} onCancel={noop} />
+        <TeamForm onSubmit={handleTeamSubmit} onCancel={onCancel} />
       </CardContent>
     </Card>
   </TabsContent>
@@ -125,29 +126,36 @@ const TeamManagementTabs = ({
   setEditingTeam,
   handleDivisionChange,
   handleTeamSubmit,
-}: TabsProps) => (
-  <Tabs defaultValue="manage" className="space-y-4">
-    <TeamManagementTabList pendingMembershipCount={pendingMembershipCount} />
-    <ManageTeamsContent
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-      selectedDivision={selectedDivision}
-      setSelectedDivision={setSelectedDivision}
-      divisions={divisions}
-      filteredTeams={filteredTeams}
-      isUpdating={isUpdating}
-      setEditingTeam={setEditingTeam}
-      handleDivisionChange={handleDivisionChange}
-    />
-    <CreateTeamContent handleTeamSubmit={handleTeamSubmit} />
-    <TabsContent value="logos">
-      <BulkLogoUpdateTab />
-    </TabsContent>
-    <TabsContent value="approvals">
-      <TeamMembershipApprovalTab />
-    </TabsContent>
-  </Tabs>
-);
+}: TabsProps) => {
+  const [activeTab, setActiveTab] = useState('manage');
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <TeamManagementTabList pendingMembershipCount={pendingMembershipCount} />
+      <ManageTeamsContent
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedDivision={selectedDivision}
+        setSelectedDivision={setSelectedDivision}
+        divisions={divisions}
+        filteredTeams={filteredTeams}
+        isUpdating={isUpdating}
+        setEditingTeam={setEditingTeam}
+        handleDivisionChange={handleDivisionChange}
+      />
+      <CreateTeamContent
+        handleTeamSubmit={handleTeamSubmit}
+        onCancel={() => setActiveTab('manage')}
+      />
+      <TabsContent value="logos">
+        <BulkLogoUpdateTab />
+      </TabsContent>
+      <TabsContent value="approvals">
+        <TeamMembershipApprovalTab />
+      </TabsContent>
+    </Tabs>
+  );
+};
 
 const TeamManagementTab = () => {
   const { toast } = useToast();
