@@ -11,9 +11,9 @@ score on the screen is worked out from the round history each time it is drawn,
 so removing a round removes its effect completely and instantly — including from
 the thrower rotation.
 
-Undoing is available to any scorer. Reopening a game is too. Reopening the whole
-match after the result is saved is admin-only and is owned by
-[`finish-the-match.md`](finish-the-match.md).
+Undoing is available to any scorer. Reopening a game is too, and both ask before
+they act. Reopening the whole match after the result is saved is admin-only and
+is owned by [`finish-the-match.md`](finish-the-match.md).
 
 ## The simple case
 
@@ -75,10 +75,15 @@ Pressing "Undo last round" opens a confirmation rather than acting. The dialog
 names the round and its score, and promises that re-entering is possible. Its two
 choices are "Keep round" and "Undo round".
 
-**Reopening a game does not ask.** It acts on the first press. This is the one
-destructive-looking action in live scoring with no confirmation, though what it
-does is recoverable — the rounds are not deleted, the game is simply made current
-again.
+**Reopening a game asks first.** The prompt is headed "Reopen Game 2?" and says
+"This puts Game 2 back in progress so a score can be corrected. Its rounds are
+kept. The other team's scorer is told, and their screen changes too." The choices
+are "Keep game closed" and "Reopen game". Nothing is written until the second
+press.
+
+> Until B-17 was fixed it acted on the first press — the one destructive-looking
+> action in live scoring with no confirmation, while undoing a single round, a
+> far smaller change, always asked. See [`bug-triage.md`](../bug-triage.md).
 
 ### While editing
 
@@ -102,14 +107,20 @@ not undo round" with the reason.
 
 **Reopening a game is not optimistic.** The screen waits. On success the ended
 game becomes the current game, its rounds return to the round input's view, and
-the setup panel or winner panel disappears. On failure a red toast says "Could
-not reopen game" with the reason and nothing changes.
+the setup panel or winner panel disappears. A toast says "Game 2 reopened — A
+scorer reopened it to correct a score. It is in progress again." On failure a red
+toast says "Could not reopen game" with the reason and nothing changes.
+
+**Everybody watching the match is told, not just the person who pressed it.** The
+notice is raised by the live connection rather than by the button, so it reaches
+both scorers and any admin on the same match. That is why the person acting sees
+it once and not twice.
 
 ## Modifiers
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role | Both controls need the right to score. Notably **reopening a game is not admin-only** — any approved member of either team can do it. Spectators see neither. | Losing the right to score leaves the buttons on screen until the screen refetches; the write then fails. |
+| The user's role | Both controls need the right to score. Notably **reopening a game is not admin-only** — any approved member of either team can do it, which is deliberate. Spectators see neither. | Losing the right to score leaves the buttons on screen until the screen refetches; the write then fails. |
 | The record's state | Undo needs at least one round in the current game. Reopen needs at least one completed game. Neither appears on an officially completed match. | If the other scorer undoes first, this screen's undo target changes underneath. |
 | The season's state | No effect. | No effect. |
 | Viewport | Both are comfortable tap targets: undo is 44 pixels high, the dialogs are full-width on a phone. | No effect. |
@@ -154,21 +165,24 @@ be removed or does not. Failures carry the league's own message.
 **Optimistic updates and rollback.** Undo is optimistic and rolls back on
 failure. Reopening a game is not.
 
-**Realtime.** An undo by one scorer removes the round from the other's screen.
+**Realtime.** An undo by one scorer removes the round from the other's screen. A
+reopen by one scorer changes the other's screen **and tells them why**.
 
 **Offline.** Neither works.
 
-**Toasts and notifications.** Failures only. A successful undo says nothing — the
-round simply disappears, which is the clearest possible confirmation. A
-successful reopen says nothing either, which is less obvious.
+**Toasts and notifications.** A successful undo says nothing — the round simply
+disappears, which is the clearest possible confirmation. A successful reopen says
+"Game 2 reopened", on every screen watching the match rather than only the one
+that pressed it, because a game changing under a scorer who did not act needs an
+explanation. Everything else is failures only.
 
 **URL state.** Nothing.
 
 **On a phone.** Both are built for it.
 
-**Accessibility.** The confirmation is a proper dialog with a title and a
-description, so a screen reader hears what is about to be removed. Reopening a
-game has no dialog, so nothing is announced and the change is silent.
+**Accessibility.** Both confirmations are proper dialogs with a title and a
+description, so a screen reader hears what is about to happen before it
+happens.
 
 **Side effects the user can notice.** None until the result is saved. Correcting
 rounds after the result is saved needs the match reopened first, which does have
@@ -180,11 +194,14 @@ side effects; see [`finish-the-match.md`](finish-the-match.md).
   means twenty confirmations.
 - **Undo is available after the game is won**, and the banner tells the scorer to
   use it rather than ending the game.
-- **Reopening a game has no confirmation** while undoing one round has one, which
-  is the wrong way round in terms of how surprising each is.
+- **Fixed: reopening a game had no confirmation** while undoing one round had
+  one, which was the wrong way round in terms of how surprising each is. Both
+  ask now.
 - **Only the most recent completed game can be reopened.** Fixing Game 1 after
   Game 2 has been ended means reopening Game 2 first.
-- **A successful reopen is silent.** The screen changes; nothing says why.
+- **Fixed: a successful reopen was silent.** The screen changed and nothing said
+  why — including on the other team's screen, which the person acting could not
+  see. Both screens are now told.
 - **Undoing every round of a game** leaves a game in progress with no rounds,
   which is the same state as one just started.
 - **The undo dialog names the round it captured when it opened**, which may no
@@ -194,13 +211,16 @@ side effects; see [`finish-the-match.md`](finish-the-match.md).
 
 ## Open questions and verification
 
-- **Reopening a game is available to any scorer and asks nothing.** An opposing
-  team's scorer can reopen a game the other side has just won, with one tap and
-  no confirmation, no message, and no record. Whether that is intended is a
-  product question worth answering. **May be worth treating as a bug rather than
-  documenting.**
-- **A silent successful reopen** leaves the other scorer's screen changing with
-  no explanation. Worth checking with two devices.
+- **Settled: reopening a game stays available to any scorer, and now asks.** An
+  opposing team's scorer can still reopen a game the other side has just won —
+  the league kept it that way deliberately, because a scorer at the field
+  correcting a score should not have to find an admin. What changed is the
+  friction and the trace: it asks first, and both screens are told. Restricting
+  it to an admin, as reopening the *match* is, was the alternative and was not
+  taken. See [`bug-triage.md`](../bug-triage.md) B-17.
+- Still worth checking with two devices: that the notice really does reach the
+  other scorer's screen, and that the person who pressed the button sees it
+  exactly once.
 - Not confirmed by hand: whether undoing a round that has already been undone by
   the other scorer produces a message, or passes silently.
 - Not confirmed by hand: how the round history looks mid-undo, given the removal

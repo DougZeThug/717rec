@@ -7,7 +7,7 @@ import { useMatchReactions } from './useMatchReactions';
 export const useMatchInteractions = (matchId: string) => {
   const comments = useMatchComments(matchId);
   const reactions = useMatchReactions(matchId);
-  const { membership } = useTeamMembership();
+  const { activeMembership: membership } = useTeamMembership();
 
   return {
     comments,

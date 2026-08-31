@@ -45,7 +45,8 @@ stateDiagram-v2
     [*] --> loading : panel appears
     loading --> choose : no membership, teams to choose from
     loading --> empty : no membership, nothing to choose from
-    loading --> waiting : an unapproved membership exists
+    loading --> waiting : a pending membership exists
+    loading --> declined : a refused request exists
     loading --> member : an approved membership exists
     choose --> choose : pick a team (button becomes usable)
     choose --> submitting : press Request to Join Team
@@ -54,6 +55,8 @@ stateDiagram-v2
     waiting --> choose : press Leave Team and confirm
     member --> choose : press Leave Team and confirm
     waiting --> member : an admin approves, and the browser refetches
+    waiting --> declined : an admin refuses, and the browser refetches
+    declined --> submitting : pick a team and ask again
 ```
 
 ### Arrive
@@ -129,9 +132,12 @@ nothing during it.
   Approval" until the app refetches: after five minutes have passed *and* the user
   returns to the tab, or reopens the page, or reloads. See
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
-- **A refusal is invisible.** Rejecting a request deletes it. The user's panel
-  simply goes back to the dropdown, with no message and no record that they ever
-  asked. They cannot tell a refusal from a request that was never received.
+- **A refusal is shown.** Rejecting a request keeps the row and marks it
+  refused, so the panel replaces the yellow "Pending Approval" card with a red
+  **"Request declined"** one naming the team and the date, and puts the join form
+  back underneath. There is still no subscription, so it appears on the same
+  schedule as an approval: after five minutes *and* a return to the tab, a
+  reopen, or a reload.
 
 Approving is described in
 [`admin/handle-requests.md`](../admin/handle-requests.md).
@@ -231,7 +237,15 @@ appear on the team's matches; see
 - **A failed read looks like "no membership".** The panel has no error state at
   all. A user whose connection drops is shown the join dropdown for a team they
   are already on.
-- **Being rejected looks the same as never having asked.** No message, no history.
+- **Asking again after a refusal reuses the same row.** One membership row per
+  user is a database rule, and a refused row occupies that slot, so the new
+  request updates it rather than adding a second. The refusal is cleared and the
+  date restamped, which means **the admin sees a fresh request with no sign that
+  an earlier one was refused.**
+- **A refused person may ask a different team, not only the same one.** The
+  database otherwise treats moving a membership between teams as something only
+  an admin may do; a refused request is exempt, because it never was a
+  membership.
 - **There is no way to change teams directly.** Leave first, then ask again.
 - **Only one membership is possible.** The database refuses a second row, pending
   or approved, so an admin approving a request from someone who already belongs to
@@ -261,8 +275,13 @@ appear on the team's matches; see
 - **A failed membership read is drawn as an empty state.** The panel computes an
   error message and never shows it anywhere. **May be worth treating as a bug
   rather than documenting.**
-- **A rejected request disappears without a word.** **May be worth treating as a
-  bug rather than documenting.**
+- **Fixed: a rejected request used to disappear without a word.** Rejecting
+  deleted the row, so the panel went back to the dropdown with nothing to say it
+  had ever been asked, and a refusal could not be told from a request that was
+  never received. See [`bug-triage.md`](../bug-triage.md) B-18.
+- **A refusal still leaves no history for the admin.** Asking again clears the
+  mark, so a second request looks new. That follows from letting people ask again
+  and was accepted deliberately.
 - **Failure toasts carry raw database text.** The user can be shown a constraint
   name. **May be worth treating as a bug rather than documenting.**
 - Not confirmed by hand: how long an approval actually takes to appear in the

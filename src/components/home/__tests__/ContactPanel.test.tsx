@@ -6,14 +6,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const mockMutateAsync = vi.fn();
 let mockUser: { email?: string; user_metadata?: { full_name?: string; name?: string } } | null =
   null;
-let mockMembership: { team?: { name: string } } | null = null;
+let mockMembership: { team?: { name: string }; rejected_at?: string } | null = null;
 
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => ({ user: mockUser }),
 }));
 
 vi.mock('@/hooks/useTeamMembership', () => ({
-  useTeamMembership: () => ({ membership: mockMembership }),
+  // Mirrors the real hook: a refused request is a row, but not a team the
+  // person belongs to, so activeMembership drops it.
+  useTeamMembership: () => ({
+    membership: mockMembership,
+    activeMembership: mockMembership?.rejected_at ? null : mockMembership,
+  }),
 }));
 
 vi.mock('@/hooks/contact/useContactRequests', () => ({

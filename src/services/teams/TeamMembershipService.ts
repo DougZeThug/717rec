@@ -22,6 +22,8 @@ export const fetchTeamMembership = async (userId: string): Promise<TeamMembershi
       is_approved,
       approved_by,
       approved_at,
+      rejected_at,
+      rejected_by,
       team:teams(id, name, logo_url, image_url, division_id, wins, losses, game_wins, game_losses)
     `
     )
@@ -69,6 +71,11 @@ export const joinTeamMembership = async (
   hasMembership: boolean
 ): Promise<void> => {
   if (hasMembership) {
+    // idx_one_membership_per_user is total, so a refused row occupies this
+    // person's only slot: asking again has to reuse it, not insert beside it.
+    // Clearing rejected_at is what turns it back into a pending request, and
+    // joined_at is restamped so the admin sees when they asked, not when they
+    // first asked months ago.
     const { error } = await supabase
       .from('team_memberships')
       .update({
@@ -76,6 +83,9 @@ export const joinTeamMembership = async (
         is_approved: false,
         approved_by: null,
         approved_at: null,
+        rejected_at: null,
+        rejected_by: null,
+        joined_at: new Date().toISOString(),
       })
       .eq('user_id', userId);
 
@@ -112,7 +122,10 @@ export const fetchPendingMembershipCount = async (): Promise<number> => {
   const { count, error } = await supabase
     .from('team_memberships')
     .select('id', { count: 'exact', head: true })
-    .eq('is_approved', false);
+    .eq('is_approved', false)
+    // A refused row is also is_approved = false. Without this it would sit in
+    // the badge count for good.
+    .is('rejected_at', null);
 
   if (error) handleDatabaseError(error, 'Failed to fetch pending membership count');
   return count ?? 0;
@@ -130,6 +143,9 @@ export const fetchPendingMembershipsForAdmin = async (): Promise<TeamMembershipF
     .from('team_memberships')
     .select('id, user_id, team_id, joined_at, is_approved')
     .eq('is_approved', false)
+    // As above: refused rows keep is_approved = false, so exclude them or the
+    // queue never empties.
+    .is('rejected_at', null)
     .order('joined_at', { ascending: false });
 
   if (membershipsError)
@@ -184,12 +200,22 @@ export const updateMembershipApproval = async (
   membershipId: string,
   approved: boolean
 ): Promise<void> => {
-  // Rejecting a pending request removes the row: flipping is_approved to false
-  // on an already-pending row is a no-op and leaves it in the queue forever.
+  // Refusing a request stamps rejected_at rather than deleting the row, so the
+  // person can be shown that they were refused. is_approved alone could not say
+  // it: false already means "pending", so the row had to go to leave the queue.
+  // The queue reads now exclude rejected_at, which is what keeps it clear.
   if (!approved) {
     const { data, error } = await supabase
       .from('team_memberships')
-      .delete()
+      .update({
+        // Every row the queue offers is already pending, so this is a no-op
+        // there. It is set anyway so "declined" can never coexist with
+        // "approved": the reassignment trigger keys the declined exception on
+        // is_approved = false, and activeMembership keys off rejected_at.
+        is_approved: false,
+        rejected_at: new Date().toISOString(),
+        rejected_by: (await supabase.auth.getUser()).data.user?.id ?? null,
+      })
       .eq('id', membershipId)
       .select('id');
 

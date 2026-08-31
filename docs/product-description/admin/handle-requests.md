@@ -7,7 +7,7 @@ different places. This document owns all three.
 
 | Queue | Where | What arrives | Outcomes |
 | --- | --- | --- | --- |
-| **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **deletes the request** |
+| **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **marks the request refused** |
 | **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*), and again at the top of `/admin/notifications` | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
 | **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message sent from the `/contact` page, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
 | **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Deny, each with optional notes |
@@ -35,9 +35,11 @@ The user can now edit team details". The card disappears and the badge count
 drops.
 
 Reject asks first: "Reject membership request? Are you sure you want to reject
-this membership request? The user will be removed from the team." Confirming
-**deletes the request row outright**. There is no rejected state to look back at
-and nothing tells the person; they simply see nothing happen, indefinitely.
+this request to join? The person is shown that it was declined, and can ask
+again." Confirming **marks the row refused** and leaves the queue. A toast says
+"Membership Rejected — The person is shown that their request was declined". The
+person's own screen then shows a red "Request declined" card in place of the
+yellow pending one, on the next refetch.
 
 ## The interaction, event by event
 
@@ -115,9 +117,11 @@ membership on another team, the message reads "This user already has an approved
 membership on another team. Remove that membership first." Only one approved
 membership per person is allowed.
 
-**Rejecting a membership** deletes the row. Nothing is kept: no record that the
-request existed, no record of who refused it. The person can ask again the next
-minute and the queue will show it as new.
+**Rejecting a membership** keeps the row and stamps who refused it and when.
+The person can still ask again the next minute, and the queue will show it as
+new — asking again clears the mark, because one membership row per person is a
+database rule and that row is the only one they get. So the refusal is visible to
+the person it happened to, and is not kept as history for the league.
 
 **Contact requests** have three writes, none of them confirmed:
 
@@ -217,9 +221,10 @@ are plain numbers with no label, so a screen reader reads "3" beside the tab
 name with nothing to say what it counts.
 
 **Side effects the user can notice.** Approving a membership immediately lets
-that person edit their team and score its matches. Rejecting one removes the
-row. Deleting a contact request removes it. Nothing else in the product changes,
-and nobody is told.
+that person edit their team and score its matches. Rejecting one marks the row
+refused, which the person sees on their own screen but is told about no other
+way. Deleting a contact request removes it. Nothing else in the product
+changes.
 
 ## Edge cases
 
@@ -238,11 +243,13 @@ and nobody is told.
   rather than failing.
 - **Deleting a contact request asks nothing and cannot be undone.** It is the
   only irreversible admin action in the product with no confirmation.
-- **Rejecting a membership deletes the request** rather than marking it refused,
-  so a rejected person can re-request immediately and looks new again.
-- **The reject dialog's wording is wrong for a pending request.** "The user will
-  be removed from the team" describes an approved membership; a pending one
-  never put them on the team.
+- **Fixed: rejecting a membership used to delete the request** rather than mark
+  it refused, so the person was never told. It now marks it. A rejected person
+  can still re-request immediately and looks new again — that follows from
+  letting them ask again.
+- **Fixed: the reject dialog's wording was wrong for a pending request.** "The
+  user will be removed from the team" describes an approved membership; a pending
+  one never put them on the team.
 - **The Contact Inbox holds only the hundred most recent requests.** There is no
   paging and nothing says older ones exist.
 - **Contact requests have an admin-notes field that no screen can write.**
@@ -264,9 +271,9 @@ and nobody is told.
 - ~~**Two contact channels, one inbox.**~~ Fixed in B-10. Both channels now land
   in the Contact Inbox behind one filter, both are emailed to the league, and
   each form says where its message goes.
-- **Rejecting a membership leaves no trace**, so the league cannot tell a
-  refused request from one that was never made. **May be worth treating as a bug
-  rather than documenting.**
+- **A refusal is now shown to the person, but is still not kept as history for
+  the league.** Asking again clears the mark, so the league still cannot tell a
+  second request from a first. See [`bug-triage.md`](../bug-triage.md) B-18.
 - **The team-request count polls.** It re-reads itself every thirty seconds,
   which makes it the one query in the product that refreshes on a timer, against
   the rule in

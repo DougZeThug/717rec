@@ -27,6 +27,7 @@ const ALLOWED_ORIGINS = new Set<string>([
   'https://id-preview--71485458-eece-4db2-a818-0dbc3e38e42e.lovable.app',
   'http://localhost:3000',
   'http://localhost:5173',
+  'http://localhost:8080',
 ]);
 
 function buildCorsHeaders(req: Request): Record<string, string> {

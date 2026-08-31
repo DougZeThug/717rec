@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { subscribeWithRetry } from '@/hooks/realtime/subscribeWithRetry';
+import { toast } from '@/hooks/useToast';
 import { supabase } from '@/integrations/supabase/client';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 
@@ -19,6 +20,12 @@ interface DeletedRowPayload {
   game_id?: string;
 }
 
+interface GameRowPayload {
+  id?: string;
+  game_number?: number;
+  status?: string;
+}
+
 /**
  * Keeps the live-match bundle in sync across devices: any change to this
  * match's rounds, games, player selections, or the match row invalidates the
@@ -28,6 +35,12 @@ interface DeletedRowPayload {
  * DELETE events cannot be server-filtered by postgres_changes, so those are
  * subscribed unfiltered and matched client-side (REPLICA IDENTITY FULL on
  * match_rounds makes the old row's match_id available).
+ *
+ * One change is announced rather than absorbed silently: a game going back from
+ * completed to in progress. Either team's scorer can do that, so the other one's
+ * screen would otherwise change with no explanation. Every subscriber is told,
+ * including whoever pressed the button — which is why the reopen mutation
+ * raises no success toast of its own, or that person would get two.
  */
 export function useLiveMatchRealtime(matchId?: string) {
   const queryClient = useQueryClient();
@@ -49,6 +62,24 @@ export function useLiveMatchRealtime(matchId?: string) {
           r.team2_score === row.team2_score
       );
       if (!isEcho) invalidate();
+    };
+
+    // A game that was completed and is now in progress has been reopened. The
+    // previous status comes from the cache rather than payload.old, which
+    // postgres_changes only carries with REPLICA IDENTITY FULL.
+    const onGameChange = (row: GameRowPayload) => {
+      if (row.status === 'in_progress' && row.id) {
+        const bundle = queryClient.getQueryData<LiveMatchBundle>(queryKey);
+        const cached = bundle?.games.find((g) => g.id === row.id);
+        if (cached?.status === 'completed') {
+          const gameNumber = row.game_number ?? cached.game_number;
+          toast({
+            title: `Game ${gameNumber} reopened`,
+            description: 'A scorer reopened it to correct a score. It is in progress again.',
+          });
+        }
+      }
+      invalidate();
     };
 
     // Unfiltered DELETE: only refetch when the old row belonged to this
@@ -102,7 +133,7 @@ export function useLiveMatchRealtime(matchId?: string) {
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'games', filter: `match_id=eq.${matchId}` },
-            invalidate
+            (payload) => onGameChange((payload.new ?? {}) as GameRowPayload)
           )
           .on(
             'postgres_changes',

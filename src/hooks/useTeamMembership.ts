@@ -53,7 +53,14 @@ export function useTeamMembership() {
 
       await joinTeamMembership(user.id, teamId, !!membership);
 
-      if (membership) {
+      // A refused row is still a row, so `membership` is truthy after a
+      // rejection. Asking again is a fresh request, not a team change.
+      if (membership?.rejected_at) {
+        toast({
+          title: 'Team Request Submitted',
+          description: 'Your new request to join the team has been submitted for admin approval',
+        });
+      } else if (membership) {
         toast({
           title: 'Team Request Submitted',
           description: 'Your request to change teams has been submitted for admin approval',
@@ -110,8 +117,17 @@ export function useTeamMembership() {
     }
   };
 
+  /**
+   * The membership as a place the person actually belongs, which a refused
+   * request is not. `membership` is the raw row — the join screen needs it to
+   * say the request was declined — but anywhere that answers "what is this
+   * person's team", a refusal has to read as no team at all.
+   */
+  const activeMembership = membership?.rejected_at ? null : membership;
+
   return {
     membership,
+    activeMembership,
     availableTeams,
     isLoading,
     isFetching,

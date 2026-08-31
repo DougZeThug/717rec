@@ -28,6 +28,9 @@ vi.mock('@/hooks/realtime/subscribeWithRetry', () => ({
   },
 }));
 
+const mockToast = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/useToast', () => ({ toast: (...args: unknown[]) => mockToast(...args) }));
+
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     channel: (name: string) => {
@@ -56,6 +59,21 @@ const findRoundInsertHandler = (): CapturedOn => {
   );
   if (!insert) throw new Error('No match_rounds INSERT subscription captured');
   return insert;
+};
+
+const findGameHandler = (): CapturedOn => {
+  const games = capturedOns.find((o) => o.config.table === 'games');
+  if (!games) throw new Error('No games subscription captured');
+  return games;
+};
+
+const seedBundle = (gameStatus: string) => {
+  queryClient.setQueryData<LiveMatchBundle>(liveScoringKeys.liveMatch('match-1'), {
+    match: {} as LiveMatchBundle['match'],
+    games: [{ id: 'game-1', game_number: 2, status: gameStatus }] as LiveMatchBundle['games'],
+    rounds: [],
+    gamePlayers: [],
+  });
 };
 
 const createWrapper = () => {
@@ -108,6 +126,48 @@ describe('useLiveMatchRealtime', () => {
 
     roundDelete.handler({ new: {}, old: { match_id: 'match-1' } });
     expect(spy).toHaveBeenCalledWith({ queryKey: liveScoringKeys.liveMatch('match-1') });
+  });
+
+  // B-17: either team's scorer can reopen an ended game, so the other one's
+  // screen would otherwise change with no explanation. The notice goes to every
+  // subscriber, including whoever pressed the button — which is why the reopen
+  // mutation raises no success toast of its own.
+  it('announces a game going from completed back to in progress', () => {
+    renderHook(() => useLiveMatchRealtime('match-1'), { wrapper: createWrapper() });
+    seedBundle('completed');
+
+    findGameHandler().handler({
+      new: { id: 'game-1', game_number: 2, status: 'in_progress' },
+      old: {},
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Game 2 reopened' }));
+  });
+
+  it('says nothing when a game merely starts, and still invalidates', () => {
+    renderHook(() => useLiveMatchRealtime('match-1'), { wrapper: createWrapper() });
+    seedBundle('pending');
+    const spy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    findGameHandler().handler({
+      new: { id: 'game-1', game_number: 2, status: 'in_progress' },
+      old: {},
+    });
+
+    expect(mockToast).not.toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledWith({ queryKey: liveScoringKeys.liveMatch('match-1') });
+  });
+
+  it('says nothing when a game is completed', () => {
+    renderHook(() => useLiveMatchRealtime('match-1'), { wrapper: createWrapper() });
+    seedBundle('in_progress');
+
+    findGameHandler().handler({
+      new: { id: 'game-1', game_number: 2, status: 'completed' },
+      old: {},
+    });
+
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
   it('does not subscribe without a match id', () => {

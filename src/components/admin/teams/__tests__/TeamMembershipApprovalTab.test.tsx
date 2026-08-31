@@ -185,6 +185,24 @@ describe('TeamMembershipApprovalTab', () => {
     expect(mockApproveMembership).toHaveBeenCalledWith('mem-7', false);
   });
 
+  // B-18: the prompt used to read "The user will be removed from the team",
+  // which describes an approved membership. Every row in this queue is a
+  // request that was never approved, so nobody is being removed from anything.
+  it('describes a pending request, not a membership being ended', async () => {
+    mockUsePendingMemberships.mockReturnValue({
+      ...defaultHookState,
+      pendingMemberships: [makeMembership()],
+    });
+
+    render(<TeamMembershipApprovalTab />);
+    await userEvent.click(screen.getByRole('button', { name: /reject/i }));
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).not.toHaveTextContent(/removed from the team/i);
+    expect(dialog).toHaveTextContent(/request to join/i);
+    expect(dialog).toHaveTextContent(/can ask again/i);
+  });
+
   it('shows rejection toast after confirming reject', async () => {
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,

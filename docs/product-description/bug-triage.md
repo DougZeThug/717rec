@@ -40,6 +40,20 @@ team check before any time was written — so nothing was ever corrupted. The re
 defect on that path was that the save always failed. It moved from `high` to
 `medium` and is now fixed.
 
+A third theme ran under them and is now fixed across four entries:
+**the app telling the user something that is not true.** B-15 failed the contact
+form and the score report for every contributor running from source, and reported
+it as an ordinary failure. B-16 told a signed-out visitor the message board was
+empty when they simply could not read it, and its refresh button reported that
+messages had been loaded. B-17 changed a game under the other team's scorer with
+no explanation. B-18 deleted a refused join request, so the person could not tell
+refusal from a request never received. Two of the four reports were also
+inaccurate in ways that mattered — B-15 named two functions of three, and missed
+the one its own reproduction steps reach; B-17 described one button where there
+are two — and B-18 turned out to be constrained by a schema with no third state
+and a unique index allowing one row per person. See each entry's *Corrected on
+review* note.
+
 Two structural themes ran under the medium entries: **destructive admin actions
 with no confirmation** (B-11) and **failure messages that throw away the reason
 the server gave** (B-12). Both are now fixed, and both entries were wrong in
@@ -70,10 +84,10 @@ entry's *Corrected on review* note.
 | B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
 | B-14 | Scroll position carries across every in-app navigation | medium | foundations | **fixed** | — |
-| B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | fix | — |
-| B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | fix | — |
-| B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | product call | — |
-| B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | fix | — |
+| B-15 | The support and score-report functions refuse the app's own dev origin | medium | help, scores | **fixed** | — |
+| B-16 | A visitor sees an empty message board and is told to be the first to post | medium | message-board | **fixed** | — |
+| B-17 | Reopening a live game needs no confirmation and tells nobody | medium | live-scoring | **fixed** | — |
+| B-18 | Rejecting a membership deletes the row, so the person is never told | medium | admin, getting-started | **fixed** | — |
 | B-19 | Live corrections can leave a match disagreeing with itself | medium | admin | fix | — |
 | B-20 | Archived seasons are editable through live corrections | medium | admin | fix | — |
 | B-21 | Eight controls do nothing when pressed | medium | admin, teams | fix | — |
@@ -836,11 +850,31 @@ finding read a superseded migration.
 - **Decision needed:** `fix`. Add `http://localhost:8080` to both lists.
 - **Raised by:** [`help/contact-the-league.md`](help/contact-the-league.md#open-questions-and-verification),
   [`scores/submit-a-score.md`](scores/submit-a-score.md#open-questions-and-verification).
-- **Status:** **confirmed** on 2026-08-25. A preflight sent with
+- **Status:** **fixed.** Confirmed on 2026-08-25. A preflight sent with
   `Origin: https://717rec.app` returns `access-control-allow-origin:
   https://717rec.app`; the same preflight with `Origin: http://localhost:8080`
   returns no such header, and a browser fetch from the dev server fails with
-  "TypeError: Failed to fetch". Checklist item `CONTACT-05`.
+  "TypeError: Failed to fetch". Checklist item `CONTACT-27` — this entry
+  previously cited `CONTACT-05`, which is a different item, about field focus.
+
+  *Corrected on review.* The entry named two functions; there are **three**.
+  `submit-contact-request/index.ts:21-27` had the same gap, and it is the one
+  the reproduction steps above actually reach: `/contact` submits through
+  `ContactRequestService.ts:25`, which invokes `submit-contact-request`, not
+  `send-support-email`. All three now carry `http://localhost:8080`.
+
+  A fourth function, `pageview/index.ts:8-15`, already had it. That was the
+  evidence for the intended value: the list is copied into each function rather
+  than shared, so one copy was updated and three were not. A shared
+  `_shared/cors.ts` was considered and not built — the league chose the smaller
+  change. The drift risk is now written down in
+  [`docs/PRODUCTION_SETTINGS.md`](../PRODUCTION_SETTINGS.md) instead.
+
+  No test anywhere asserted `Access-Control-Allow-Origin`, which is why this
+  survived: every test helper sent an origin that was already on the list. Each
+  of the three functions now has two cases — a preflight from
+  `http://localhost:8080` gets the header, and a preflight from an unlisted
+  origin gets none. Both were checked against the unfixed code first.
 
 ### B-16: A visitor sees an empty message board and is told to be the first to post
 
@@ -863,6 +897,36 @@ finding read a superseded migration.
 - **Raised by:** [`message-board/read-the-board.md`](message-board/read-the-board.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification),
   [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification).
+- **Status:** **fixed.** `MessageFeed` now takes an `isSignedOut` flag and shows
+  "Sign in to read the board" with a Sign In button in place of the empty state;
+  the page supplies it, because the page already knew — it has swapped the
+  composer for a sign-in bar on the same condition all along
+  (`src/pages/MessageBoard.tsx`). So a visitor was being told both "be the first
+  to start a conversation" and "sign in to post messages" on one screen.
+
+  The refresh toast was the second half of the same lie and is fixed with it: the
+  read succeeds and returns nothing, so it never threw, and the visitor was told
+  "Latest messages have been loaded". A visitor now gets "Sign in to read
+  messages" instead.
+
+  The flag is gated on `authInitialized`, not on `user` alone. Without that, a
+  reload flashes the sign-in prompt at a signed-in member before the session is
+  restored.
+
+  No route guard was added — the page still opens for a visitor, and only the
+  messages are withheld.
+
+  *Corrected on review.* There are **two** SELECT policies on `messages`, not
+  one: `20250614141604_*.sql:5-9` and the `20251010171351_*.sql:4-11` this entry
+  cites, added a year apart by a migration titled "Fix: Add SELECT policy" that
+  was seemingly unaware of the first. Both are `TO authenticated`, so the
+  conclusion stands, but anyone changing the read rule must find both.
+
+  The page-level test stub reproduced the buggy copy and asserted it, so it had
+  to change with the component; the signed-out case is now covered against the
+  real component too. The board tests also imported `MemoryRouter` from
+  `react-router-dom` while the app uses `react-router` — a mismatch that only
+  surfaced once the feed needed a router hook.
 
 ### B-17: Reopening a live game needs no confirmation and tells nobody
 
@@ -884,6 +948,32 @@ finding read a superseded migration.
 - **Decision needed:** `product call`. Either add a confirmation and a message to
   both screens, or restrict it to an admin as reopening the *match* already is.
 - **Raised by:** [`live-scoring/correct-a-round.md`](live-scoring/correct-a-round.md#open-questions-and-verification).
+- **Status:** **fixed.** The league took the first option. Reopening stays open to
+  any scorer on either team — a scorer at the field correcting a score should not
+  have to find an admin — and gains the friction and the trace it was missing.
+
+  The prompt is modelled on the undo-round dialog and names the game: "Reopen
+  Game 2?", "This puts Game 2 back in progress so a score can be corrected. Its
+  rounds are kept. The other team's scorer is told, and their screen changes
+  too.", with "Keep game closed" and "Reopen game".
+
+  The notice is raised by the live connection (`useLiveMatchRealtime`) when a
+  game goes from completed back to in progress, not by the mutation. That is
+  deliberate: every subscriber is told, including whoever pressed the button, so
+  the person acting sees it once. A success toast on the mutation *as well* would
+  have given them two and destroyed the first — which is B-27 in this same list.
+  The previous status is read from the query cache rather than `payload.old`,
+  because `postgres_changes` only carries the old row with `REPLICA IDENTITY
+  FULL`, which `games` does not have.
+
+  *Corrected on review.* The entry cites `LiveMatchView.tsx:246`; that line is
+  the close of `renderScoring`. There are **two** reopen buttons, not one, at
+  `:307-319` (between games) and `:347-359` (after the match is decided but not
+  finalised), with duplicated JSX. Both now render one shared
+  `ReopenGameButton`, so the prompt cannot drift between the two paths.
+
+  Not fixed, and still open: there is no record of *who* reopened a game. The
+  notice says a scorer did it, not which one.
 
 ### B-18: Rejecting a membership deletes the row, so the person is never told
 
@@ -901,6 +991,75 @@ finding read a superseded migration.
 - **Decision needed:** `fix`. Mark the row refused and show it to the requester.
 - **Raised by:** [`getting-started/join-a-team.md`](getting-started/join-a-team.md#open-questions-and-verification),
   [`admin/handle-requests.md`](admin/handle-requests.md#open-questions-and-verification).
+- **Status:** **fixed.** Rejecting now stamps `rejected_at` and `rejected_by`
+  instead of deleting. The requester's panel shows a red "Request declined" card
+  in place of the yellow pending one, and the join form underneath so they can
+  ask again. The dialog's wording is corrected: it describes a request to join,
+  not a membership being ended.
+
+  Two constraints shaped this, and neither was in the entry.
+
+  **There was no status column.** `team_memberships` had one state column,
+  `is_approved`, a non-null boolean. `false` already meant "pending", so
+  rejecting genuinely could not be expressed by flipping it — the row had to go,
+  or it would sit in the queue forever. The service's own comment said so. A
+  migration adds `rejected_at` as the third state; the two queue reads now
+  exclude it, which is what keeps the queue clear.
+
+  **One membership row per user, ever.** `idx_one_membership_per_user`
+  (`20260827120000`) is a *total* unique index on `user_id`, so a kept refused
+  row occupies the person's only slot. Asking again therefore has to update that
+  row rather than insert beside it. It already took the update path when a row
+  existed; it now also clears the refusal and restamps `joined_at`.
+
+  No RLS change was needed. The UPDATE policy (`20260818195805`) already lets a
+  person update their own row while `is_approved = false`, which is exactly the
+  path that clears a refusal. Its `WITH CHECK` still pins `is_approved = false`,
+  `approved_by IS NULL` and `approved_at IS NULL`, so nobody can approve
+  themselves.
+
+  One thing had to be fixed to avoid a regression: four places read
+  `membership?.team` without checking `is_approved` — the user menu's team link,
+  the contact form's prefilled team, match-comment attribution, and the team
+  stamped on a posted message. A refused row is truthy, so all four would have
+  shown a team the person had just been refused from. They now read a derived
+  `activeMembership`, which is null for a refusal. (They were already treating a
+  *pending* row the same way; that is a separate, pre-existing question and was
+  left alone.)
+
+  `types.ts` is generated from the live database and could not be regenerated
+  here. The two columns were added to it by hand, in the same commit as the
+  migration that defines them, at the league's direction. **Re-running the
+  generator after the migration is applied should produce no change; if it does,
+  the generator wins.**
+
+  *Corrected on review.* The entry cites `TeamMembershipService.ts:175-178`; the
+  delete was at `:189-203`.
+
+  *Second correction, on review of the pull request.* Keeping the row made a
+  path reachable that never had been: `joinTeamMembership` updates the existing
+  row, and `trg_prevent_team_membership_reassignment` (`20260713190745`) refuses
+  every non-admin change to `team_id` with `42501`. Asking the **same** team
+  again worked, so only "declined by team A, now ask team B" failed — the likely
+  case, and a raw permission error rather than a message. Before the row was
+  kept, a refused person had no row at all, so asking again inserted rather than
+  updated and never met the trigger.
+
+  `20260831010000` exempts a declined request from that lock: `team_id` may move
+  when the old row is refused and not approved. Nothing else the trigger holds is
+  loosened, and it grants nothing new — the person could already delete their own
+  row and insert one for any team, so this is the atomic equivalent. `is_approved`
+  is now pinned false on refusal so "declined" and "approved" can never coexist,
+  which is what the exception keys on. `supabase/tests/declined_request_team_change.sql`
+  pins both halves, and was checked against the unfixed schema first: it
+  reproduces `team_id cannot be changed on an existing membership`.
+
+  Not fixed, and deliberately: **the league still gets no history.** Asking again
+  clears the mark, so a second request looks new to the admin. That follows from
+  the decision to let a refused person ask again. There is also still no
+  notification — `team_memberships` is not in the realtime publication and
+  `admin_notifications` has no recipient column — so the declined card appears on
+  the next refetch, up to five minutes, or at once on a reload.
 
 ### B-19: Live corrections can leave a match disagreeing with itself
 

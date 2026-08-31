@@ -79,10 +79,13 @@ Three rows in that table are worth more than a cell.
 
 **Reading the message board.** The board's own page renders for a visitor, but
 the messages themselves do not arrive: reading them requires a session. The board
-therefore shows "No Messages Yet — Be the first to start a conversation!" to
-anybody signed out, which is not true and does not mention signing in. A separate
-bar at the bottom of the screen does say "Sign in to post messages". **May be
-worth treating as a bug rather than documenting.**
+therefore shows "Sign in to read the board" with a Sign In button, and a separate
+bar at the bottom of the screen says "Sign in to post messages". This is the one
+place where a refused read is named as such rather than drawn as an empty state.
+
+> Until B-16 was fixed it showed "No Messages Yet — Be the first to start a
+> conversation!" to anybody signed out, which was not true and did not mention
+> signing in. See [`bug-triage.md`](../bug-triage.md).
 
 **Reporting a score.** The home page shows a Pending Scores card whenever any
 match is missing a result, and it shows it to everyone, signed in or not. Anyone
@@ -121,9 +124,12 @@ discarded. See
 [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
 **4. The rows are simply missing.** Where a read is refused, no error is raised:
-the query returns nothing and the page shows its ordinary empty state. The
-message board signed out is the clearest case. This shape is the most misleading
-of the four, because an empty state is a positive claim about the world.
+the query returns nothing and the page shows its ordinary empty state. This shape
+is the most misleading of the four, because an empty state is a positive claim
+about the world. The message board was the clearest case and is now the
+exception: it checks whether anybody is signed in before deciding which of the
+two it is looking at. Every other refused read in the app still draws as an
+ordinary empty state.
 
 ## The interaction, event by event
 
@@ -290,9 +296,10 @@ no record the user can see, and produces no notification to the league.
   app now tracks "the read failed" separately from "not an admin": the read is
   retried once, and a lasting failure shows a retry card instead of the false
   "You do not have admin privileges".
-- **The message board is invisible to visitors and says so wrongly.** The empty
-  state claims there are no messages. This needs confirming against the running
-  app; if it is right, it is the highest-value fix in this document.
+- **Fixed: the message board is invisible to visitors, and used to say so
+  wrongly.** The empty state claimed there were no messages. It now asks the
+  visitor to sign in, and the refresh button no longer reports that messages were
+  loaded. See [`bug-triage.md`](../bug-triage.md) B-16.
 - **Two membership rows used to break the member abilities entirely.** Read from
   the membership query's use of a single-row read, and confirmed against
   `@supabase/postgrest-js` 2.112.4, which returns `PGRST116` for a multi-row

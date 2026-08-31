@@ -41,6 +41,9 @@ export interface TeamMembershipRecord {
   is_approved: boolean;
   approved_by?: string;
   approved_at?: string;
+  /** Set when an admin refused this request. Null while pending or approved. */
+  rejected_at?: string | null;
+  rejected_by?: string | null;
   team?: Team;
 }
 

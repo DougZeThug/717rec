@@ -4566,6 +4566,8 @@ export type Database = {
           id: string
           is_approved: boolean
           joined_at: string | null
+          rejected_at: string | null
+          rejected_by: string | null
           team_id: string | null
           user_id: string | null
         }
@@ -4575,6 +4577,8 @@ export type Database = {
           id?: string
           is_approved?: boolean
           joined_at?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
           team_id?: string | null
           user_id?: string | null
         }
@@ -4584,6 +4588,8 @@ export type Database = {
           id?: string
           is_approved?: boolean
           joined_at?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
           team_id?: string | null
           user_id?: string | null
         }
@@ -4591,6 +4597,13 @@ export type Database = {
           {
             foreignKeyName: "team_memberships_approved_by_fkey"
             columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_memberships_rejected_by_fkey"
+            columns: ["rejected_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
