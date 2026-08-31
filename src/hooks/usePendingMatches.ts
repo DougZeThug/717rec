@@ -104,7 +104,7 @@ export function usePendingMatches() {
         title: 'Result Approved',
         description: 'Match result has been successfully approved.',
       });
-      batchInvalidateQueries(queryClient, ['matches', 'teams']);
+      await invalidateMatchRelatedQueries(queryClient);
     },
     onError: (error) => {
       errorLog('Error approving result:', error);
@@ -128,7 +128,7 @@ export function usePendingMatches() {
         title: 'Tie Confirmed',
         description: 'The match is recorded as a tie and has left the list.',
       });
-      batchInvalidateQueries(queryClient, ['matches', 'teams']);
+      await invalidateMatchRelatedQueries(queryClient);
     },
     onError: (error) => {
       errorLog('Error confirming tie:', error);
