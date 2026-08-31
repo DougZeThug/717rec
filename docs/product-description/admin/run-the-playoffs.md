@@ -79,8 +79,11 @@ Opening a bracket shows it in full, with a row of admin controls in the header:
 | **Edit Bracket** | Always |
 | **Delete** | Always |
 
-All six are hidden below the medium breakpoint, so **none of them is reachable
-on a phone**. Nothing is written by arriving.
+Above the medium breakpoint the six sit in a row. Below it, they collapse into
+a single **⋯** button at the right of the header, which opens a menu holding the
+same six under the same rules — a control absent from the row is absent from the
+menu, and one disabled in the row is greyed in the menu. Nothing is written by
+arriving.
 
 **Edit Bracket** opens a small dialog holding the bracket's **name** and its
 **division**. Saving closes the dialog. The name is always editable. The division
@@ -208,7 +211,7 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 | The user's role | A visitor or player sees `/playoffs` with no controls at all. An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard. | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail. |
 | The record's state | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete. | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
 | The season's state | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which. | Changing the season reloads the list and clears the selected bracket. |
-| Viewport | **Every bracket admin control is hidden below the medium breakpoint.** The season picker moves to a fixed bar at the foot of the screen. | No effect. |
+| Viewport | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker moves to a fixed bar at the foot of the screen. | No effect. |
 | Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard. | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved. |
 
 ## Cancel and interrupt
@@ -262,8 +265,9 @@ seeded, or deleted.
 automatic navigation, so a bracket can be linked to. The season, the tab, the
 blind draw, and the Challonge settings are not in the address.
 
-**On a phone.** Bracket admin is effectively desktop-only. Blind draw and the
-Challonge settings work at every width.
+**On a phone.** Every bracket admin control is reachable, behind the **⋯**
+menu in the bracket header. Blind draw and the Challonge settings work at every
+width.
 
 **Accessibility.** The seeding list is keyboard-reorderable. The delete
 confirmations are proper alert dialogs. The create dialog's team picker is a
@@ -294,7 +298,8 @@ sees a count.
 - **Blind draw Clear All is league-wide**, whatever night the signups were for.
 - **Deleting a Challonge embed row asks nothing**, and the fallback disappears
   the moment any bracket is opened, which makes it look intermittent.
-- **Every bracket admin control is hidden on a phone.**
+- **On a phone the six bracket admin controls are behind a ⋯ menu**, not on
+  screen as buttons.
 
 ## Open questions and verification
 
@@ -321,8 +326,10 @@ sees a count.
   [`the-admin-dashboard.md`](the-admin-dashboard.md) lists that tab under
   [`site-settings.md`](site-settings.md), so one of the two cross-references
   needs settling in the consistency pass.
-- **Bracket admin is unusable on a phone**, which is the device an admin is most
-  likely to have on a playoff night.
+- Resolved: **bracket admin now works on a phone.** Every control used to be
+  hidden below 768 pixels, on the device an admin is most likely to have on a
+  playoff night. The six are now behind a **⋯** menu in the bracket header. See
+  [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
 - Not confirmed by hand: what the page does if the automatic navigation fires
   while a second dialog is open, and what Repair Bracket actually changes.
 - Not confirmed by hand: whether a bracket created for an archived season is
@@ -331,6 +338,8 @@ sees a count.
 - Assumption: deleting a bracket also removes the playoff matches and games the
   library created for it. The confirmation says so; it was not observed.
 
-Verified against `717rec` commit `ea5c8f4`, except the bracket-editing behaviour
-above, which was changed after that commit — see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
+Verified against `717rec` commit `ea5c8f4`, except the bracket-editing
+behaviour and the phone behaviour of the admin controls above, both changed
+after that commit — see
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) and
+[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).

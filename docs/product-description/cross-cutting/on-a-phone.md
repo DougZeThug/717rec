@@ -216,11 +216,14 @@ much of its traffic is phones. Nothing more precise is stored. See
 - Not confirmed by hand: how the app behaves when installed to a home screen and
   opened with no connection.
 - Not confirmed by hand: whether touch targets outside live scoring meet the
-  44-pixel guideline. Only live scoring and the hamburger set it explicitly.
+  44-pixel guideline. Only live scoring, the hamburger, and the bracket admin
+  menu and its seeding drag handle set it explicitly.
 - Assumption: nothing in the product reads device orientation directly. Only the
   width is watched.
 
-Verified against `717rec` commit `ea5c8f4`, except the reduced-motion and
-hamburger-menu behaviour above, both changed after that commit — see
-[B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else)
-and [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog).
+Verified against `717rec` commit `ea5c8f4`, except the reduced-motion,
+hamburger-menu, and bracket admin behaviour above, all changed after that
+commit — see
+[B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else),
+[B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog)
+and [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
