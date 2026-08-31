@@ -147,8 +147,8 @@ describe('usePendingMatches', () => {
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls
-      .filter((call) => call[0]?.queryKey)
-      .map((call) => call[0].queryKey);
+      .map((call) => call[0]?.queryKey as readonly unknown[] | undefined)
+      .filter((key): key is readonly unknown[] => Array.isArray(key));
 
     // head-to-head and opponent-history should be invalidated
     expect(invalidatedKeys.some((k) => k[0] === 'head-to-head')).toBe(true);
@@ -172,8 +172,8 @@ describe('usePendingMatches', () => {
     });
 
     const invalidatedKeys = invalidateSpy.mock.calls
-      .filter((call) => call[0]?.queryKey)
-      .map((call) => call[0].queryKey);
+      .map((call) => call[0]?.queryKey as readonly unknown[] | undefined)
+      .filter((key): key is readonly unknown[] => Array.isArray(key));
 
     expect(invalidatedKeys.some((k) => k[0] === 'head-to-head')).toBe(true);
     expect(invalidatedKeys.some((k) => k[0] === 'opponent-history')).toBe(true);
