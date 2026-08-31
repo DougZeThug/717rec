@@ -129,4 +129,53 @@ describe('usePendingMatches', () => {
 
     expect(confirmMatchTie).toHaveBeenCalledWith('match-1');
   });
+
+  it('should invalidate head-to-head and opponent-history queries after approval', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
+
+    const { result } = renderHook(() => usePendingMatches(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.handleApproveResult(mockMatch, 1);
+    });
+
+    const invalidatedKeys = invalidateSpy.mock.calls
+      .map((call) => call[0]?.queryKey as readonly unknown[] | undefined)
+      .filter((key): key is readonly unknown[] => Array.isArray(key));
+
+    // head-to-head and opponent-history should be invalidated
+    expect(invalidatedKeys.some((k) => k[0] === 'head-to-head')).toBe(true);
+    expect(invalidatedKeys.some((k) => k[0] === 'opponent-history')).toBe(true);
+  });
+
+  it('should invalidate head-to-head and opponent-history queries after confirming a tie', async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: queryClient }, children);
+
+    const { result } = renderHook(() => usePendingMatches(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.handleMarkAsTie('match-1');
+    });
+
+    const invalidatedKeys = invalidateSpy.mock.calls
+      .map((call) => call[0]?.queryKey as readonly unknown[] | undefined)
+      .filter((key): key is readonly unknown[] => Array.isArray(key));
+
+    expect(invalidatedKeys.some((k) => k[0] === 'head-to-head')).toBe(true);
+    expect(invalidatedKeys.some((k) => k[0] === 'opponent-history')).toBe(true);
+  });
 });

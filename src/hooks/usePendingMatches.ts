@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import { batchInvalidateQueries } from '@/hooks/matches/utils/queryCacheUtils';
+import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
 import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
@@ -99,12 +99,12 @@ export function usePendingMatches() {
 
       await approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: 'Result Approved',
         description: 'Match result has been successfully approved.',
       });
-      batchInvalidateQueries(queryClient, ['matches', 'teams']);
+      await invalidateMatchRelatedQueries(queryClient);
     },
     onError: (error) => {
       errorLog('Error approving result:', error);
@@ -123,12 +123,12 @@ export function usePendingMatches() {
     mutationFn: async (matchId: string) => {
       await confirmMatchTie(matchId);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: 'Tie Confirmed',
         description: 'The match is recorded as a tie and has left the list.',
       });
-      batchInvalidateQueries(queryClient, ['matches', 'teams']);
+      await invalidateMatchRelatedQueries(queryClient);
     },
     onError: (error) => {
       errorLog('Error confirming tie:', error);
