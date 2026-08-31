@@ -22,71 +22,6 @@ export interface GameCorrectionCardProps {
   onChangeWinner: (gameId: string) => void;
 }
 
-/** One game of a live-scored match: its totals, its winner, and its round log. */
-export const GameCorrectionCard: React.FC<GameCorrectionCardProps> = ({
-  game,
-  rounds,
-  team1Id,
-  team2Id,
-  team1Name,
-  team2Name,
-  readOnly,
-  onEditRound,
-  onDeleteRound,
-  onChangeWinner,
-}) => {
-  const { game: row, totals } = game;
-  const isCompleted = row.status === 'completed';
-  const winnerName =
-    row.winner_team_id === team1Id ? team1Name : row.winner_team_id === team2Id ? team2Name : null;
-  const canChangeWinner = isCompleted && !!team1Id && !!team2Id && !readOnly;
-
-  return (
-    <Card>
-      <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
-        <CardTitle className="text-base">
-          Game {row.game_number} · {team1Name} {totals.team1} – {totals.team2} {team2Name}
-          {winnerName && (
-            <span className="ml-2 text-xs font-normal text-muted-foreground">
-              Winner: {winnerName}
-            </span>
-          )}
-        </CardTitle>
-        {canChangeWinner && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onChangeWinner(row.id)}
-            className="gap-1.5"
-          >
-            <Trophy className="size-4" aria-hidden />
-            Change winner
-          </Button>
-        )}
-      </CardHeader>
-      <CardContent>
-        {rounds.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No rounds recorded.</p>
-        ) : (
-          <ul className="divide-y divide-border">
-            {rounds.map((r) => (
-              <RoundRow
-                key={r.id}
-                round={r}
-                team1Name={team1Name}
-                team2Name={team2Name}
-                readOnly={readOnly}
-                onEdit={onEditRound}
-                onDelete={onDeleteRound}
-              />
-            ))}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
 interface RoundRowProps {
   round: MatchRoundRow;
   team1Name: string;
@@ -133,3 +68,68 @@ const RoundRow: React.FC<RoundRowProps> = ({
     )}
   </li>
 );
+
+/** One game of a live-scored match: its totals, its winner, and its round log. */
+export const GameCorrectionCard: React.FC<GameCorrectionCardProps> = ({
+  game,
+  rounds,
+  team1Id,
+  team2Id,
+  team1Name,
+  team2Name,
+  readOnly,
+  onEditRound,
+  onDeleteRound,
+  onChangeWinner,
+}) => {
+  const { game: row, totals } = game;
+  const isCompleted = row.status === 'completed';
+  const winnerName =
+    row.winner_team_id === team1Id ? team1Name : row.winner_team_id === team2Id ? team2Name : null;
+  const canChangeWinner = isCompleted && Boolean(team1Id) && Boolean(team2Id) && !readOnly;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
+        <CardTitle className="text-base">
+          Game {row.game_number} · {team1Name} {totals.team1} – {totals.team2} {team2Name}
+          {winnerName && (
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              Winner: {winnerName}
+            </span>
+          )}
+        </CardTitle>
+        {canChangeWinner && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onChangeWinner(row.id)}
+            className="gap-1.5"
+          >
+            <Trophy className="size-4" aria-hidden />
+            Change winner
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {rounds.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No rounds recorded.</p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {rounds.map((r) => (
+              <RoundRow
+                key={r.id}
+                round={r}
+                team1Name={team1Name}
+                team2Name={team2Name}
+                readOnly={readOnly}
+                onEdit={onEditRound}
+                onDelete={onDeleteRound}
+              />
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
