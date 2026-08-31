@@ -1640,49 +1640,82 @@ finding read a superseded migration.
 
 ---
 
-## Note: what the DeepSource coverage check actually measures
+## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round
 rediscovering it.
 
-The coverage check reports **Failure** on pull requests while every metric is
-*rising*. That is not a threshold breach:
+**First, where the verdicts actually appear.** Neither is a check run. The
+`checks` API on a pull request returns eleven entries and **neither DeepSource
+result is among them** — the one called "DeepSource coverage" is this repo's own
+job that uploads the report, and it reports success even when DeepSource's
+verdict is failure. The verdicts arrive as **legacy commit statuses**:
 
-- **Coverage thresholds are set in DeepSource's web UI**, per repository, not in
-  `.deepsource.toml`. None are set for this repo, which is why every Threshold
-  column reads `N/A`. A run fails on a threshold only when one is set *and*
-  enforced.
-- The status is driven by the count of **uncovered-line annotations**, and the
-  analyzer annotates every file a pull request *touches*, not the lines it
-  changes. A one-line edit to `useMessageBoard.ts` pulls all of that file's
-  long-standing uncovered lines into the report.
+```
+DeepSource: JavaScript      Analysis failed:  Blocking issues or failing metrics found
+DeepSource: Test coverage   Analysis passed:  No blocking issues or failing metrics found
+```
 
-So the check cannot be made green by covering the code a branch actually adds.
-On the branch that fixed B-11 to B-14, of the ~180 uncovered lines reported,
-**seven** were added by the branch; all seven are now tested, and the check
-still reads Failure.
+They are on the pull request page and they set `mergeable_state` to `unstable`,
+but they are not required checks. That is easy to miss when reading CI through
+the API, and it cost a round here.
+
+**`DeepSource: JavaScript` is normally red on this repo, and the league merges
+through it.** Treat it as feedback, not as your branch's failure:
+
+| PR | DeepSource: JavaScript | DeepSource: Test coverage | merged |
+| --- | --- | --- | --- |
+| #1311 | failure | failure | yes |
+| #1312 | failure | failure | yes |
+| #1315 | failure | **success** | — |
+
+**Coverage, on the other hand, tracks the branch's own new lines, and can be
+made green.** Measured on #1315, where nothing changed between the first two
+rows except four tests covering that branch's own uncovered lines:
+
+| Head | Line coverage (new code) | DeepSource: Test coverage |
+| --- | --- | --- |
+| `71df0ce` | 99.3% | failure |
+| `06e8527` | 100% | **success** |
+| `37e562f` | 100% | **success** |
+
+So the status keys on **new-code line coverage**, and it appears to want all of
+it: 99.3% failed while every Threshold column still read `N/A`. Thresholds are
+set in DeepSource's web UI rather than in `.deepsource.toml` and none are set
+here, so `N/A` in that column does **not** mean nothing is being enforced.
+
+*Superseded, kept as the only other measurement anyone took.* An earlier reading
+of this note said the status counted uncovered-line annotations across every file
+a pull request *touches*, and therefore "cannot be made green by covering the
+code a branch actually adds" — on the B-11 to B-14 branch, seven of ~180
+reported lines were the branch's, all seven were tested, and it still read
+Failure. #1315 contradicts the conclusion. That branch cannot be re-run, so
+whether DeepSource changed, or something else there was uncovered, is unknown.
+**Trust the table above; it is the more recent measurement.**
 
 **The gate that does bind this repo is `vitest.config.ts`**, which enforces
 per-area coverage floors — `src/components/**` and `src/pages/**` have their own
 — and CI runs it. `coverage-baseline.txt` is a manual snapshot, promoted with
 `npm run test:coverage:update-baseline`, not an enforced gate.
 
-Two options if the check should mean something: set thresholds in the DeepSource
-UI so it reflects a real bar, or accept that its status tracks the repo's
-overall coverage debt rather than the change under review.
+If the coverage status goes red on a branch, the first thing to check is whether
+that branch left any of its **own** new lines uncovered — on the evidence above
+that is what it is telling you, and it is usually a real gap worth closing.
 
 One related trap, since it cost a round here: **`.deepsource.toml` is read from
 the default branch.** Config changes on a branch do not affect that branch's own
 analysis — they take effect once merged.
 
-**The same shape applies to `JS-0117`, the "use the `u` flag" rule.** It is
-raised against whichever test files a pull request happens to touch. The repo has
+**`JS-0117`, the "use the `u` flag" rule, is one of the findings keeping
+`DeepSource: JavaScript` red.** It is raised against whichever test files a pull
+request happens to touch. The repo has
 **231 regex queries in tests and 223 of them carry no `/u`**, so the finding is a
 repo-wide style question, not a defect in the change under review. None of the
 patterns involved use unicode escapes or astral characters — em-dashes and
 middots are single code units — so the flag changes no behaviour. Adding it to
 one branch's files makes those files the odd ones out and fixes nothing.
 
-Two options, the same two as for coverage: sweep all 231 in one change so the
-rule means something, or accept that it tracks the repo's existing style rather
-than the branch.
+Two options: sweep all 231 in one change so the rule means something, or accept
+that it tracks the repo's existing style rather than the branch under review.
+Until one of those happens it is part of why that status is red, which the table
+above shows is this repo's normal state.
