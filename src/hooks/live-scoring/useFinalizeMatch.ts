@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { MATCH_RESULT_DRIFT_KEY } from '@/hooks/admin/useMatchResultDrift';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { toast } from '@/hooks/useToast';
 import { FinalizeService } from '@/services/liveScoring/FinalizeService';
@@ -18,6 +19,10 @@ export function useFinalizeMatch(matchId: string) {
   const refreshEverything = async () => {
     await invalidateMatchRelatedQueries(queryClient);
     await queryClient.invalidateQueries({ queryKey: liveScoringKeys.liveMatch(matchId) });
+    // Saving or reversing a result is exactly what clears a match off the
+    // dashboard's drift card, and invalidateMatchRelatedQueries touches nothing
+    // under ['admin'], so name that key here.
+    await queryClient.invalidateQueries({ queryKey: MATCH_RESULT_DRIFT_KEY });
   };
 
   const finalize = useMutation({

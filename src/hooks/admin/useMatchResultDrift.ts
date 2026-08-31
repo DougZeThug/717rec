@@ -3,6 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useActiveSeason } from '@/hooks/useSeasons';
 import { MatchResultDriftService } from '@/services/admin/MatchResultDriftService';
 
+/** Invalidate this after anything that can change whether a match agrees with itself. */
+export const MATCH_RESULT_DRIFT_KEY = ['admin', 'match-result-drift'] as const;
+
 /**
  * Matches in the **active season** whose recorded result, or whose stored game
  * rows, no longer agree with the rounds underneath them (B-19).
@@ -14,11 +17,11 @@ import { MatchResultDriftService } from '@/services/admin/MatchResultDriftServic
  * invite an admin to add an old result to the current standings.
  */
 export const useMatchResultDrift = () => {
-  const { data: activeSeason, isLoading: isSeasonLoading } = useActiveSeason();
-  const seasonId = activeSeason?.id;
+  const seasonQuery = useActiveSeason();
+  const seasonId = seasonQuery.data?.id;
 
   const query = useQuery({
-    queryKey: ['admin', 'match-result-drift', seasonId ?? ''],
+    queryKey: [...MATCH_RESULT_DRIFT_KEY, seasonId ?? ''],
     queryFn: () => {
       if (!seasonId) throw new Error('An active season is required');
       return MatchResultDriftService.fetchMatchResultDrift(seasonId);
@@ -29,9 +32,19 @@ export const useMatchResultDrift = () => {
 
   return {
     matches: query.data ?? [],
-    isLoading: isSeasonLoading || query.isLoading,
-    isError: query.isError,
-    refetch: query.refetch,
+    isLoading: seasonQuery.isLoading || query.isLoading,
+    // A failed season read must not read as "no active season". Without this the
+    // drift query stays disabled, so its own isError is false, and the card
+    // would tell the admin the league has no active season when in truth the
+    // season could not be read at all. fetchActiveSeason also throws when two
+    // seasons are active, which is worth surfacing rather than swallowing.
+    isError: seasonQuery.isError || query.isError,
+    // The season first: when it is what failed, the drift query is disabled and
+    // refetching it alone does nothing, which would leave Retry dead.
+    refetch: async () => {
+      const season = await seasonQuery.refetch();
+      if (season.data?.id) await query.refetch();
+    },
     hasActiveSeason: Boolean(seasonId),
   };
 };

@@ -57,12 +57,15 @@ describe('useAdminCorrections', () => {
     expect(mockToast).toHaveBeenCalledWith({ title: 'Round updated' });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['live-match', 'match-1'] });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'live-scored-matches'] });
+    // Unconditional: an unfinalized match can still be left with a completed
+    // game that disagrees with its rounds.
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'match-result-drift'] });
     expect(mockInvalidateMatchRelatedQueries).not.toHaveBeenCalled();
   });
 
   it('deletes a round and invalidates standings-related caches for finalized matches', async () => {
     mockDeleteRound.mockImplementation(() => Promise.resolve());
-    const { wrapper, queryClient } = createWrapper();
+    const { wrapper, queryClient, invalidateSpy } = createWrapper();
     const { result } = renderHook(
       () => useAdminCorrections({ matchId: 'match-2', affectsStandings: true }),
       { wrapper }
@@ -73,6 +76,21 @@ describe('useAdminCorrections', () => {
     expect(mockDeleteRound).toHaveBeenCalledWith('round-2');
     expect(mockToast).toHaveBeenCalledWith({ title: 'Round deleted' });
     expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'match-result-drift'] });
+  });
+
+  it('refreshes the drift card after a game winner is changed', async () => {
+    mockSetGameWinner.mockResolvedValue({ id: 'game-1' });
+    const { wrapper, invalidateSpy } = createWrapper();
+    const { result } = renderHook(() => useAdminCorrections({ matchId: 'match-4' }), { wrapper });
+
+    await result.current.changeGameWinner.mutateAsync({
+      gameId: 'game-1',
+      winnerTeamId: 'team-b',
+      finalTotals: { team1: 18, team2: 21 },
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'match-result-drift'] });
   });
 
   it('changes a winner and shows a destructive toast when the service fails', async () => {

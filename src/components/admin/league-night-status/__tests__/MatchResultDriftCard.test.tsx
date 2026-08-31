@@ -9,6 +9,7 @@ import type { MatchResultDrift } from '@/services/admin/MatchResultDriftService'
 
 const fetchMatchResultDrift = vi.fn();
 const useActiveSeason = vi.fn();
+const refetchSeason = vi.fn();
 
 vi.mock('@/services/admin/MatchResultDriftService', () => ({
   MatchResultDriftService: {
@@ -49,7 +50,14 @@ describe('MatchResultDriftCard', () => {
   beforeEach(() => {
     fetchMatchResultDrift.mockReset();
     useActiveSeason.mockReset();
-    useActiveSeason.mockReturnValue({ data: { id: 's-1' }, isLoading: false });
+    refetchSeason.mockReset();
+    refetchSeason.mockResolvedValue({ data: { id: 's-1' } });
+    useActiveSeason.mockReturnValue({
+      data: { id: 's-1' },
+      isLoading: false,
+      isError: false,
+      refetch: refetchSeason,
+    });
   });
 
   it('says it is checking while the query runs', () => {
@@ -72,11 +80,48 @@ describe('MatchResultDriftCard', () => {
   });
 
   it('says why it cannot check with no active season, rather than claiming all clear', () => {
-    useActiveSeason.mockReturnValue({ data: null, isLoading: false });
+    useActiveSeason.mockReturnValue({
+      data: null,
+      isLoading: false,
+      isError: false,
+      refetch: refetchSeason,
+    });
     renderCard();
 
     expect(screen.getByText(/No active season — nothing to check/)).toBeInTheDocument();
     expect(screen.queryByText(/All clear/)).not.toBeInTheDocument();
+    expect(fetchMatchResultDrift).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed season read as an error, not as "no active season"', async () => {
+    useActiveSeason.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      refetch: refetchSeason,
+    });
+    renderCard();
+
+    expect(await screen.findByText('Couldn’t check for disagreeing matches.')).toBeInTheDocument();
+    expect(screen.queryByText(/No active season/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/All clear/)).not.toBeInTheDocument();
+  });
+
+  it('retries the season read when that is what failed, so Retry is not dead', async () => {
+    useActiveSeason.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      refetch: refetchSeason,
+    });
+    refetchSeason.mockResolvedValue({ data: undefined });
+    renderCard();
+
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'Retry' }));
+
+    await waitFor(() => expect(refetchSeason).toHaveBeenCalledTimes(1));
+    // No season came back, so the disabled drift query is not asked either.
     expect(fetchMatchResultDrift).not.toHaveBeenCalled();
   });
 

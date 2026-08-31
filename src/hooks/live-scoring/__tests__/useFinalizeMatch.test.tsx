@@ -28,12 +28,19 @@ import { useFinalizeMatch } from '../useFinalizeMatch';
 
 let queryClient: QueryClient;
 
+let invalidateSpy: ReturnType<typeof vi.spyOn>;
+
 const createWrapper = () => {
   queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 };
+
+/** The dashboard's drift card, which invalidateMatchRelatedQueries does not reach. */
+const expectDriftRefreshed = () =>
+  expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'match-result-drift'] });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -62,6 +69,7 @@ describe('finalize', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Match result saved' })
     );
+    expectDriftRefreshed();
   });
 
   it('reports an already-finalized match as informational, not an error', async () => {
@@ -115,6 +123,7 @@ describe('reopen', () => {
     expect(mockReopenLiveMatch).toHaveBeenCalledWith('match-1');
     expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match reopened' }));
+    expectDriftRefreshed();
   });
 
   it('handles the idempotent nothing-to-reopen outcome', async () => {
@@ -160,6 +169,7 @@ describe('reopenAndRefinalize', () => {
       })
     );
     expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
+    expectDriftRefreshed();
   });
 
   it('reopens before it saves, so finalize_live_match is not a no-op', async () => {

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { MATCH_RESULT_DRIFT_KEY } from '@/hooks/admin/useMatchResultDrift';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { toast } from '@/hooks/useToast';
 import type { UpdateRoundPatch } from '@/services/liveScoring/AdminCorrectionsService';
@@ -38,6 +39,13 @@ export function useAdminCorrections({
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: liveScoringKeys.liveMatch(matchId) });
     await queryClient.invalidateQueries({ queryKey: ['admin', 'live-scored-matches'] });
+    // Every correction can change whether the match agrees with its own rounds,
+    // so the dashboard's drift card is refreshed unconditionally - not only when
+    // the match is finalized. Editing a round on an unfinalized match still
+    // leaves a completed game disagreeing with the rounds beneath it.
+    // invalidateMatchRelatedQueries touches nothing under ['admin'], so this key
+    // has to be named here.
+    await queryClient.invalidateQueries({ queryKey: MATCH_RESULT_DRIFT_KEY });
     if (affectsStandings) {
       await invalidateMatchRelatedQueries(queryClient);
     }
