@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useToast } from '@/hooks/useToast';
-import type { BracketUpdateInput } from '@/services/brackets/BracketWriteService';
-import { updateBracket } from '@/services/brackets/BracketWriteService';
+import { type BracketUpdateInput, updateBracket } from '@/services/brackets/BracketWriteService';
 import { errorLog } from '@/utils/logger';
 
 /**

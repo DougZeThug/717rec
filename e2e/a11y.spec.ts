@@ -1,6 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import type { Page } from '@playwright/test';
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 // Blocking accessibility scan against key public and weekly admin routes.
 // Runs as a required gate (.github/workflows/a11y.yml).
