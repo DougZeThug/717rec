@@ -38,13 +38,6 @@ const getDivisionColorClass = (division: string) => getDivisionSoftClasses(divis
 interface BracketAdminToolbarProps {
   bracket: PlayoffBracket;
   bracketId: string;
-  standingsMissing: boolean;
-  isRecalculating: boolean;
-  onRecalculate: () => void | Promise<unknown>;
-  isCompleted: boolean;
-  isRepairing: boolean;
-  onRepair: () => void | Promise<unknown>;
-  canRearrange: boolean;
   onRearrange: () => void;
   onUpdateSeeding: () => void;
   onEdit: () => void;
@@ -52,97 +45,117 @@ interface BracketAdminToolbarProps {
 }
 
 /**
- * The admin controls above a bracket. Extracted from BracketDetail so that
- * component is not carrying every one of these conditions itself.
+ * The admin controls above a bracket.
+ *
+ * Everything these buttons need — whether the bracket is completed, whether it
+ * still lacks final standings, whether it can be rearranged, and the pending
+ * state of the two long-running actions — is derived here rather than passed
+ * in. That keeps the conditions next to the buttons they govern, and means the
+ * standings query only runs for the admins who can act on it.
  */
 const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
   bracket,
   bracketId,
-  standingsMissing,
-  isRecalculating,
-  onRecalculate,
-  isCompleted,
-  isRepairing,
-  onRepair,
-  canRearrange,
   onRearrange,
   onUpdateSeeding,
   onEdit,
   onDeleteBracket,
-}) => (
-  <div className="flex gap-2">
-    {standingsMissing && (
-      <Button
-        variant="outline"
-        size="sm"
-        className="hidden md:flex"
-        onClick={() => void onRecalculate()}
-        disabled={isRecalculating}
-      >
-        {isRecalculating ? (
-          <Loader2 className="size-4 mr-2 animate-spin" />
-        ) : (
-          <RefreshCw className="size-4 mr-2" />
-        )}
-        Recalculate Standings
-      </Button>
-    )}
+}) => {
+  const isCompleted = bracket.state === 'completed';
 
-    {!isCompleted && (
-      <Button
-        variant="outline"
-        size="sm"
-        className="hidden md:flex"
-        onClick={() => void onRepair()}
-        disabled={isRepairing}
-      >
-        {isRepairing ? (
-          <Loader2 className="size-4 mr-2 animate-spin" />
-        ) : (
-          <Wrench className="size-4 mr-2" />
-        )}
-        Repair Bracket
-      </Button>
-    )}
+  // Final standings are only worth checking once the bracket is finished; if
+  // they are missing, an admin can trigger a manual recalculation.
+  const { data: existingStandings } = useQuery({
+    queryKey: ['final-standings', bracketId],
+    queryFn: () => fetchFinalStandings(bracketId),
+    enabled: !!bracketId && isCompleted,
+  });
+  const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
 
-    {canRearrange && (
+  const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
+  const { repair, isRepairing } = useRepairBracket(bracketId);
+
+  // Rearranging needs a losers bracket managed by brackets-manager; the
+  // format field is a display string ("Double Elimination"), so match loosely.
+  const canRearrange =
+    bracket.uses_brackets_manager === true &&
+    (bracket.format ?? '').toLowerCase().includes('double');
+
+  return (
+    <div className="flex gap-2">
+      {standingsMissing && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden md:flex"
+          onClick={() => void recalculate()}
+          disabled={isRecalculating}
+        >
+          {isRecalculating ? (
+            <Loader2 className="size-4 mr-2 animate-spin" />
+          ) : (
+            <RefreshCw className="size-4 mr-2" />
+          )}
+          Recalculate Standings
+        </Button>
+      )}
+
+      {!isCompleted && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden md:flex"
+          onClick={() => void repair()}
+          disabled={isRepairing}
+        >
+          {isRepairing ? (
+            <Loader2 className="size-4 mr-2 animate-spin" />
+          ) : (
+            <Wrench className="size-4 mr-2" />
+          )}
+          Repair Bracket
+        </Button>
+      )}
+
+      {canRearrange && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="hidden md:flex"
+          onClick={onRearrange}
+          disabled={bracket.state === 'completed'}
+        >
+          <Shuffle className="size-4 mr-2" /> Rearrange Teams
+        </Button>
+      )}
+
       <Button
         variant="outline"
         size="sm"
         className="hidden md:flex"
-        onClick={onRearrange}
+        onClick={onUpdateSeeding}
         disabled={bracket.state === 'completed'}
       >
-        <Shuffle className="size-4 mr-2" /> Rearrange Teams
+        <ListOrdered className="size-4 mr-2" /> Update Seeding
       </Button>
-    )}
 
-    <Button
-      variant="outline"
-      size="sm"
-      className="hidden md:flex"
-      onClick={onUpdateSeeding}
-      disabled={bracket.state === 'completed'}
-    >
-      <ListOrdered className="size-4 mr-2" /> Update Seeding
-    </Button>
-
-    <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEdit}>
-      <Edit className="size-4 mr-2" /> Edit Bracket
-    </Button>
-
-    {onDeleteBracket && (
-      <Button
-        variant="destructive"
-        size="sm"
-        className="hidden md:flex"
-        onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
-      >
-        <Trash className="size-4 mr-2" /> Delete
+      <Button variant="outline" size="sm" className="hidden md:flex" onClick={onEdit}>
+        <Edit className="size-4 mr-2" /> Edit Bracket
       </Button>
-    )}
-  </div>
-);
+
+      {onDeleteBracket && (
+        <Button
+          variant="destructive"
+          size="sm"
+          className="hidden md:flex"
+          onClick={() => onDeleteBracket(bracketId, bracket.name || '')}
+        >
+          <Trash className="size-4 mr-2" /> Delete
+        </Button>
+      )}
+    </div>
+  );
+};
 
 const BracketDetail: React.FC<BracketDetailProps> = ({
   bracketId,
@@ -165,24 +178,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     queryFn: () => fetchBracketParticipants(bracketId),
     enabled: !!bracketId,
   });
-
-  // Check whether final standings already exist; if not and the bracket is
-  // completed, admins can trigger a manual recalculation.
-  const isCompleted = bracket?.state === 'completed';
-  const { data: existingStandings } = useQuery({
-    queryKey: ['final-standings', bracketId],
-    queryFn: () => fetchFinalStandings(bracketId),
-    enabled: !!bracketId && isCompleted,
-  });
-  const standingsMissing = isCompleted && (!existingStandings || existingStandings.length === 0);
-  const { recalculate, isRecalculating } = useRecalculateStandings(bracketId);
-  const { repair, isRepairing } = useRepairBracket(bracketId);
-
-  // Rearranging needs a losers bracket managed by brackets-manager; the
-  // format field is a display string ("Double Elimination"), so match loosely.
-  const canRearrange =
-    bracket?.uses_brackets_manager === true &&
-    (bracket?.format ?? '').toLowerCase().includes('double');
 
   // Early return if bracket is not loaded
   if (!bracket) {
@@ -244,13 +239,6 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
             <BracketAdminToolbar
               bracket={bracket}
               bracketId={bracketId}
-              standingsMissing={standingsMissing}
-              isRecalculating={isRecalculating}
-              onRecalculate={recalculate}
-              isCompleted={isCompleted}
-              isRepairing={isRepairing}
-              onRepair={repair}
-              canRearrange={canRearrange}
               onRearrange={() => setRearrangeDialogOpen(true)}
               onUpdateSeeding={() => setSeedingDialogOpen(true)}
               onEdit={() => setEditDialogOpen(true)}
