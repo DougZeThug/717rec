@@ -30,6 +30,11 @@ const LiveCorrectionsSection: React.FC = () => {
     error,
   } = useAdminLiveScoredMatches(seasonId === ALL_SEASONS ? null : seasonId);
 
+  // B-20: archived seasons are frozen. They stay listed and readable — the panel
+  // refuses the edits — but say so before the admin picks one, and on every card,
+  // because "All seasons" mixes them in without anyone choosing them.
+  const archivedSeasonIds = new Set((seasons ?? []).filter((s) => s.is_archived).map((s) => s.id));
+
   return (
     <div className="space-y-4">
       <div>
@@ -52,7 +57,7 @@ const LiveCorrectionsSection: React.FC = () => {
             <SelectItem value={ALL_SEASONS}>All seasons</SelectItem>
             {(seasons ?? []).map((s) => (
               <SelectItem key={s.id} value={s.id}>
-                {s.name}
+                {s.is_archived ? `${s.name} (archived — read-only)` : s.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -100,6 +105,9 @@ const LiveCorrectionsSection: React.FC = () => {
                       {m.gameCount} game{m.gameCount === 1 ? '' : 's'} · {m.roundCount} round
                       {m.roundCount === 1 ? '' : 's'}
                       {m.iscompleted ? ' · finalized' : ''}
+                      {m.season_id && archivedSeasonIds.has(m.season_id)
+                        ? ' · archived, read-only'
+                        : ''}
                     </div>
                   </CardContent>
                 </button>

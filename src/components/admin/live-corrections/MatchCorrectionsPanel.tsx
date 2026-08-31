@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, Pencil, Trash2, Trophy } from 'lucide-react';
+import { AlertTriangle, Lock, Pencil, Trash2, Trophy } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
+import { useSeasons } from '@/hooks/useSeasons';
 import type { Tables } from '@/integrations/supabase/types';
 import { TeamPlayersService } from '@/services/liveScoring/TeamPlayersService';
 
@@ -24,6 +25,14 @@ export interface MatchCorrectionsPanelProps {
 export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
   const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
   const finalized = bundle?.match.iscompleted === true;
+
+  // B-20: an archived season is frozen. Read it from this match's own season
+  // rather than from the section's season filter, because a selected match stays
+  // open when the filter changes. useSeasons is already cached by the section, so
+  // this costs no extra request.
+  const { data: seasons } = useSeasons();
+  const matchSeason = (seasons ?? []).find((s) => s.id === bundle?.match.season_id) ?? null;
+  const seasonArchived = matchSeason?.is_archived === true;
 
   const corrections = useAdminCorrections({ matchId, affectsStandings: finalized });
 
@@ -83,7 +92,22 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
 
   return (
     <div className="space-y-4">
-      {finalized && (
+      {seasonArchived && (
+        <div
+          className="flex gap-2 items-start rounded-md border border-border bg-muted/40 p-3 text-sm"
+          role="status"
+        >
+          <Lock className="size-4 mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
+          <div>
+            <strong>{matchSeason?.name ?? 'This season'}</strong> is archived, so this match is
+            read-only. An archived season is frozen: its rounds, its games and the numbers derived
+            from them stay exactly as the league left them. You can read everything below; nothing
+            here can be changed.
+          </div>
+        </div>
+      )}
+
+      {finalized && !seasonArchived && (
         <div className="flex gap-2 items-start rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
           <AlertTriangle className="size-4 mt-0.5 text-amber-600 shrink-0" aria-hidden />
           <div>
@@ -116,7 +140,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
                   </span>
                 )}
               </CardTitle>
-              {isCompleted && team1Id && team2Id && (
+              {isCompleted && team1Id && team2Id && !seasonArchived && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -141,24 +165,26 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
                           {team1Name} {r.team1_score} – {r.team2_score} {team2Name}
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setEditingRoundId(r.id)}
-                          aria-label={`Edit round ${r.round_number}`}
-                        >
-                          <Pencil className="size-4" aria-hidden />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setDeletingRoundId(r.id)}
-                          aria-label={`Delete round ${r.round_number}`}
-                        >
-                          <Trash2 className="size-4 text-destructive" aria-hidden />
-                        </Button>
-                      </div>
+                      {!seasonArchived && (
+                        <div className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setEditingRoundId(r.id)}
+                            aria-label={`Edit round ${r.round_number}`}
+                          >
+                            <Pencil className="size-4" aria-hidden />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeletingRoundId(r.id)}
+                            aria-label={`Delete round ${r.round_number}`}
+                          >
+                            <Trash2 className="size-4 text-destructive" aria-hidden />
+                          </Button>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

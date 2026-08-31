@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import { ValidationError } from '@/types/errors';
+import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { validateBreakdown } from '@/utils/liveScoring/bagBreakdown';
 import { isValidRoundScore } from '@/utils/liveScoring/scoring';
@@ -32,6 +32,67 @@ export interface AdminLiveScoredMatch {
   gameCount: number;
   roundCount: number;
 }
+
+// Single literals (not concatenated) so PostgREST result typing can parse them.
+// match_rounds and games each have more than one relationship reaching matches,
+// so the foreign key is named explicitly.
+const ROUND_MATCH_COLUMNS = 'id, match:matches!match_rounds_match_id_fkey(season_id)';
+const GAME_MATCH_COLUMNS = 'id, match:matches!games_match_id_fkey(season_id)';
+
+type EmbeddedMatch = { season_id: string | null } | null;
+
+/**
+ * B-20: an archived season is frozen. The power score machinery already refuses
+ * to recompute one (`upsert_team_season_stats`), but nothing stopped these three
+ * writes from editing the rounds those numbers are derived from.
+ *
+ * The refusal lives here rather than only in the panel so it holds for any
+ * caller. It costs one extra read per write, which is nothing on an operation an
+ * admin performs by hand a few times a season.
+ *
+ * A null season id means the match belongs to no season, which no freeze covers,
+ * so the write is allowed.
+ */
+const assertSeasonEditable = async (seasonId: string | null | undefined): Promise<void> => {
+  if (!seasonId) return;
+
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('id, name, is_archived')
+    .eq('id', seasonId)
+    .maybeSingle();
+
+  if (error) handleDatabaseError(error, 'Failed to check whether the season is archived');
+  if (data?.is_archived) {
+    throw new BusinessLogicError(
+      `${data.name} is archived. An archived season's rounds are frozen and cannot be corrected.`
+    );
+  }
+};
+
+/** Season of the match a round belongs to. Null when the round is already gone. */
+const seasonIdForRound = async (roundId: string): Promise<string | null | undefined> => {
+  const { data, error } = await supabase
+    .from('match_rounds')
+    .select(ROUND_MATCH_COLUMNS)
+    .eq('id', roundId)
+    .maybeSingle();
+
+  if (error) handleDatabaseError(error, 'Failed to read the round');
+  return (data?.match as EmbeddedMatch)?.season_id;
+};
+
+/** Season of the match a game belongs to. Null when the game is already gone. */
+const seasonIdForGame = async (gameId: string): Promise<string | null | undefined> => {
+  const { data, error } = await supabase
+    .from('games')
+    .select(GAME_MATCH_COLUMNS)
+    .eq('id', gameId)
+    .maybeSingle();
+
+  if (error) handleDatabaseError(error, 'Failed to read the game');
+  return (data?.match as EmbeddedMatch)?.season_id;
+};
 
 /**
  * Admin-only correction operations for live-scored matches. RLS already
@@ -80,6 +141,8 @@ export const AdminCorrectionsService = {
       throw new ValidationError('No changes to save');
     }
 
+    await assertSeasonEditable(await seasonIdForRound(roundId));
+
     const { data, error } = await supabase
       .from('match_rounds')
       .update(update)
@@ -93,6 +156,8 @@ export const AdminCorrectionsService = {
   },
 
   deleteRound: async (roundId: string): Promise<void> => {
+    await assertSeasonEditable(await seasonIdForRound(roundId));
+
     const { error } = await supabase.from('match_rounds').delete().eq('id', roundId);
     if (error) handleLiveScoringError(error, 'Failed to delete round');
   },
@@ -102,6 +167,8 @@ export const AdminCorrectionsService = {
     winnerTeamId: string,
     finalTotals: { team1: number; team2: number }
   ): Promise<LiveGameRow> => {
+    await assertSeasonEditable(await seasonIdForGame(gameId));
+
     const { data, error } = await supabase
       .from('games')
       .update({

@@ -16,6 +16,7 @@ const mockChangeGameWinner = { mutateAsync: vi.fn(), isPending: false };
 
 const useLiveMatchMock = vi.fn();
 const useAdminCorrectionsMock = vi.fn();
+const useSeasonsMock = vi.fn();
 
 vi.mock('@/hooks/live-scoring/useLiveMatch', () => ({
   useLiveMatch: (matchId?: string) => useLiveMatchMock(matchId),
@@ -23,6 +24,10 @@ vi.mock('@/hooks/live-scoring/useLiveMatch', () => ({
 
 vi.mock('@/hooks/live-scoring/useAdminCorrections', () => ({
   useAdminCorrections: (opts: unknown) => useAdminCorrectionsMock(opts),
+}));
+
+vi.mock('@/hooks/useSeasons', () => ({
+  useSeasons: () => useSeasonsMock(),
 }));
 
 vi.mock('@/services/liveScoring/TeamPlayersService', () => ({
@@ -83,10 +88,11 @@ const game2 = {
 const gamePlayers = (ids: string[]) =>
   ids.map((id) => ({ player_id: id })) as Tables<'game_players'>[];
 
-function makeBundle(overrides: { iscompleted?: boolean } = {}) {
+function makeBundle(overrides: { iscompleted?: boolean; seasonId?: string | null } = {}) {
   return {
     match: {
       id: 'match-1',
+      season_id: overrides.seasonId === undefined ? 'season-live' : overrides.seasonId,
       iscompleted: overrides.iscompleted ?? false,
       team1_id: 'team-1',
       team2_id: 'team-2',
@@ -115,6 +121,10 @@ function makeDerived() {
       },
     ],
   };
+}
+
+function setSeasons(seasons = [{ id: 'season-live', name: 'Summer 1', is_archived: false }]) {
+  useSeasonsMock.mockReturnValue({ data: seasons });
 }
 
 function setLiveMatch(value: Record<string, unknown>) {
@@ -155,6 +165,7 @@ describe('MatchCorrectionsPanel', () => {
     mockUpdateRound.mutateAsync.mockImplementation(() => Promise.resolve());
     mockDeleteRound.mutateAsync.mockImplementation(() => Promise.resolve());
     mockChangeGameWinner.mutateAsync.mockImplementation(() => Promise.resolve());
+    setSeasons();
   });
 
   afterEach(() => {
@@ -184,6 +195,65 @@ describe('MatchCorrectionsPanel', () => {
     expect(screen.getByText('Round 1')).toBeInTheDocument();
     // Game 2 has no rounds recorded yet.
     expect(screen.getByText('No rounds recorded.')).toBeInTheDocument();
+  });
+
+  // ─── B-20: an archived season is read-only ──────────────────────────────────
+
+  const ARCHIVED_SEASONS = [
+    { id: 'season-live', name: 'Summer 1', is_archived: false },
+    { id: 'season-old', name: 'Winter 0', is_archived: true },
+  ];
+
+  function renderArchivedPanel() {
+    setSeasons(ARCHIVED_SEASONS);
+    setLiveMatch({
+      bundle: makeBundle({ iscompleted: true, seasonId: 'season-old' }),
+      derived: makeDerived(),
+    });
+    return renderPanel();
+  }
+
+  it('says an archived season is read-only, and names it', () => {
+    renderArchivedPanel();
+
+    expect(screen.getByText(/is archived, so this match is/)).toBeInTheDocument();
+    expect(screen.getByText('Winter 0')).toBeInTheDocument();
+  });
+
+  it('offers no edit, delete or winner control on an archived season', () => {
+    renderArchivedPanel();
+
+    expect(screen.queryByRole('button', { name: /Edit round/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Delete round/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Change winner/ })).not.toBeInTheDocument();
+  });
+
+  it('still shows the rounds and totals of an archived season', () => {
+    renderArchivedPanel();
+
+    expect(screen.getByText('Round 1')).toBeInTheDocument();
+    // The game header and the round row both carry the score.
+    expect(screen.getAllByText(/Team A 2 – 1 Team B/).length).toBeGreaterThan(0);
+  });
+
+  it('drops the finalized warning on an archived season, which cannot be edited anyway', () => {
+    renderArchivedPanel();
+
+    expect(screen.queryByText(/won't update until you reopen the match/)).not.toBeInTheDocument();
+  });
+
+  it('keeps every control when the match belongs to a live season', () => {
+    setSeasons(ARCHIVED_SEASONS);
+    setLiveMatch({
+      bundle: makeBundle({ iscompleted: true, seasonId: 'season-live' }),
+      derived: makeDerived(),
+    });
+    renderPanel();
+
+    expect(screen.getByRole('button', { name: 'Edit round 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete round 1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Change winner/ })).toBeInTheDocument();
+    expect(screen.queryByText(/is archived, so this match is/)).not.toBeInTheDocument();
   });
 
   it('warns that a finalized match needs re-finalizing after edits', () => {
