@@ -28,8 +28,8 @@ for everyone.
 They open **League Night**. Two cards report the live connection and the last
 power score snapshot; three tiles count what is waiting; a chart shows thirty
 days of traffic; one card lists matches that were played on live scoring and
-never saved; another says whether every team's record matches its match
-history.
+never saved; another lists matches that disagree with their rounds; another
+says whether every team's record matches its match history.
 
 ## The interaction, event by event
 
@@ -57,10 +57,10 @@ Create your first card to get started."
 
 **Help** fetches nothing. It is a fixed page of text.
 
-**League Night** fetches five things and then **keeps fetching them**: the last
+**League Night** fetches six things and then **keeps fetching them**: the last
 power snapshot every minute, the three waiting counts every thirty seconds, the
-traffic chart every five minutes, and the unrecorded live matches and the counter
-drift once each. It also opens a
+traffic chart every five minutes, and the unrecorded live matches, the matches
+that disagree with their rounds, and the counter drift once each. It also opens a
 realtime channel purely to report whether the connection is alive. It is the
 heaviest of the app's few polling screens; see
 [`../foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md#what-makes-the-app-go-back-for-more).
