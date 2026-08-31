@@ -29,6 +29,24 @@ interface EditBracketDialogProps {
 }
 
 /**
+ * True once any match in the bracket has been played.
+ *
+ * Read from the matches rather than `bracket.state`, because nothing in the app
+ * ever writes an in-progress state: a bracket goes straight from `pending` to
+ * `completed` when the whole thing ends. Trusting `state` would leave the
+ * division editable through an entire tournament.
+ */
+const hasPlayStarted = (bracket: PlayoffBracket): boolean =>
+  (bracket.matches ?? []).some(
+    (match) =>
+      match.winnerId !== null ||
+      (match.team1Score ?? 0) > 0 ||
+      (match.team2Score ?? 0) > 0 ||
+      (match.team1GameWins ?? 0) > 0 ||
+      (match.team2GameWins ?? 0) > 0
+  );
+
+/**
  * Edit a bracket that already exists.
  *
  * The title can always be changed. The division can only be changed before the
@@ -46,18 +64,21 @@ const EditBracketDialog: React.FC<EditBracketDialogProps> = ({ open, onOpenChang
   const [title, setTitle] = useState(bracket.name ?? '');
   const [divisionId, setDivisionId] = useState(bracket.divisionId ?? '');
 
-  const hasStarted = bracket.state !== 'pending';
+  const hasStarted = bracket.state !== 'pending' || hasPlayStarted(bracket);
   const trimmedTitle = title.trim();
-  const isUnchanged =
-    trimmedTitle === (bracket.name ?? '') && divisionId === (bracket.divisionId ?? '');
+  const divisionChanged = divisionId !== (bracket.divisionId ?? '');
+  const isUnchanged = trimmedTitle === (bracket.name ?? '') && !divisionChanged;
 
   const handleSave = () => {
     if (!trimmedTitle) return;
 
+    // Send the division only when the admin actually changed it. Sending it
+    // unasked would clear the bracket's division if this dialog were ever
+    // opened on data that did not carry one.
+    const canRefile = !hasStarted && divisionChanged && divisionId;
+
     updateBracket.mutate(
-      hasStarted
-        ? { title: trimmedTitle }
-        : { title: trimmedTitle, division_id: divisionId || null },
+      canRefile ? { title: trimmedTitle, division_id: divisionId } : { title: trimmedTitle },
       { onSuccess: () => onOpenChange(false) }
     );
   };

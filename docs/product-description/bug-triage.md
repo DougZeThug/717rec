@@ -1275,9 +1275,19 @@ finding read a superseded migration.
   means deleting and rebuilding, which cascades away played matches with no
   undo. *Update Seeding* and *Rearrange Teams* already handle the structural
   cases, including refusing when results would be affected. The division is
-  editable only while the bracket is pending: once a match has been played,
-  moving the bracket would leave its teams behind in the old division, and the
-  dialog says so. No migration was needed — the admin `UPDATE` policy on
+  editable only until the first match is played: after that, moving the bracket
+  would leave its teams behind in the old division, and the dialog says so.
+
+  *Corrected after review.* The first version of this fix got two things wrong,
+  both caught by a review bot and both verified before fixing. The dialog read
+  "has the bracket started?" from `brackets.state` — but **nothing in the app
+  ever writes an in-progress state**; a bracket goes straight from `pending` to
+  `completed`, so the division would have stayed editable for a whole
+  tournament. It is now read from the matches. And the bracket data reaching the
+  dialog carried the division's *display name* but not its **id**, so a plain
+  rename would have written a null division and dropped the bracket out of the
+  grouped list. The id is now carried through, and the division is written only
+  when the admin actually changes it. No migration was needed — the admin `UPDATE` policy on
   `brackets` already existed, and the table's only `AFTER UPDATE` trigger fires
   on a `state → completed` transition, which a rename does not touch.
 

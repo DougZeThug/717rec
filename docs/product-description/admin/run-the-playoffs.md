@@ -83,12 +83,19 @@ All six are hidden below the medium breakpoint, so **none of them is reachable
 on a phone**. Nothing is written by arriving.
 
 **Edit Bracket** opens a small dialog holding the bracket's **name** and its
-**division**. Saving writes both and closes. The division is disabled once the
-bracket has started, with a line saying why: its teams would be left behind in
-the old division. Nothing else about a bracket can be changed here — the teams,
-the format and the size decided the matches it generated, so changing them would
-mean deleting the bracket and every match played in it. *Update Seeding* and
-*Rearrange Teams* are the controls for those.
+**division**. Saving closes the dialog. The name is always editable. The division
+is disabled **as soon as any match has been played**, with a line saying why: its
+teams would be left behind in the old division. The division is written only when
+the admin actually changes it. Nothing else about a bracket can be changed here —
+the teams, the format and the size decided the matches it generated, so changing
+them would mean deleting the bracket and every match played in it. *Update
+Seeding* and *Rearrange Teams* are the controls for those.
+
+> *Technical note:* "has been played" is read from the matches, not from the
+> bracket's stored state. Nothing in the app ever records a bracket as
+> in-progress — it goes straight from pending to completed when the whole thing
+> ends — so a state check would leave the division editable for an entire
+> tournament.
 
 ### Leave without changing anything
 
@@ -271,8 +278,8 @@ sees a count.
 
 - **"Edit Bracket" changes the name and the division, and nothing else.** The
   teams, the format and the size are fixed once the bracket exists, because they
-  define the matches it generated. The division can only be changed before the
-  bracket starts.
+  define the matches it generated. The division can only be changed until the
+  first match is played.
 - **A division card offers Create Bracket whether or not it already has one.**
 - **The success toast for creation is never seen**, because the refresh toast
   replaces it within a second.
@@ -298,8 +305,8 @@ sees a count.
   title and the division only: everything else defines the generated match tree,
   so changing it would mean deleting the bracket and every match played in it.
   *Update Seeding* and *Rearrange Teams* cover the structural cases. The
-  division is locked once the bracket starts, because moving it would leave its
-  teams behind, and the dialog says so.
+  division is locked as soon as any match has been played, because moving it
+  would leave its teams behind, and the dialog says so.
 - Resolved: **a division with a bracket had no Create button**, which is why the
   mislabelled Edit Bracket was the only route to a second one. The division card
   now offers Create Bracket in both states.

@@ -64,6 +64,7 @@ interface TransformBracketsManagerDataInput {
     title: string;
     format: string | null;
     state: string | null;
+    division_id?: string | null;
     divisions: { display_division: string; name: string } | null;
   };
   stageId: number;
@@ -167,6 +168,7 @@ export const transformBracketsManagerData = ({
     format: bracket.format || 'Single Elimination',
     state: bracket.state || 'pending',
     division: bracket.divisions?.display_division || bracket.divisions?.name || 'Unknown',
+    divisionId: bracket.division_id ?? null,
     uses_brackets_manager: true,
     matches: transformedMatches,
     teams: Array.from(teamLookup.values()),

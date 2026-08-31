@@ -64,10 +64,8 @@ describe('EditBracketDialog', () => {
     await user.type(input, 'Summer Championship');
     await user.click(screen.getByRole('button', { name: /save changes/i }));
 
-    expect(mutate).toHaveBeenCalledWith(
-      { title: 'Summer Championship', division_id: 'd-1' },
-      expect.anything()
-    );
+    // Only the title: the division was not touched, so it is not written.
+    expect(mutate).toHaveBeenCalledWith({ title: 'Summer Championship' }, expect.anything());
   });
 
   it('will not save a blank name', async () => {
@@ -100,5 +98,63 @@ describe('EditBracketDialog', () => {
 
     // Only the title is sent — the division is left alone.
     expect(mutate).toHaveBeenCalledWith({ title: 'Renamed Mid-Season' }, expect.anything());
+  });
+
+  it('does not clear the division when only the name changes', async () => {
+    const user = userEvent.setup();
+    // A bracket whose division id never reached the component.
+    renderDialog({ divisionId: undefined } as Partial<PlayoffBracket>);
+
+    const input = screen.getByLabelText('Bracket name');
+    await user.clear(input);
+    await user.type(input, 'Renamed');
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    // Only the title is sent. Sending division_id: null here would wipe the
+    // bracket's division and drop it out of the grouped list.
+    expect(mutate).toHaveBeenCalledWith({ title: 'Renamed' }, expect.anything());
+  });
+
+  it('locks the division once a match has been played, even while state is pending', async () => {
+    const user = userEvent.setup();
+    // Nothing in the app ever writes an in-progress state, so a bracket part
+    // way through a tournament still reads as 'pending'.
+    renderDialog({
+      state: 'pending',
+      matches: [{ id: 'm1', winnerId: 'team-1' }],
+    } as unknown as Partial<PlayoffBracket>);
+
+    expect(screen.getByLabelText('Division')).toBeDisabled();
+    expect(screen.getByText(/cannot be moved to another division/i)).toBeInTheDocument();
+
+    const input = screen.getByLabelText('Bracket name');
+    await user.clear(input);
+    await user.type(input, 'Renamed Mid-Tournament');
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(mutate).toHaveBeenCalledWith({ title: 'Renamed Mid-Tournament' }, expect.anything());
+  });
+
+  it('leaves the division editable while no match has been played', () => {
+    renderDialog({
+      state: 'pending',
+      matches: [{ id: 'm1', winnerId: null }],
+    } as unknown as Partial<PlayoffBracket>);
+
+    expect(screen.getByLabelText('Division')).not.toBeDisabled();
+  });
+
+  it('sends the new division when the admin changes it', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByLabelText('Division'));
+    await user.click(await screen.findByRole('option', { name: 'Recreational' }));
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      { title: 'Summer Finals', division_id: 'd-2' },
+      expect.anything()
+    );
   });
 });
