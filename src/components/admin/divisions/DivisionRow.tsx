@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useDivisionMutations } from '@/hooks/useDivisionMutations';
+import { useToast } from '@/hooks/useToast';
 import type { DisplayDivision } from '@/services/DivisionService';
 import { getDivisionStyles } from '@/styles/design-system/divisions';
 
@@ -47,6 +48,7 @@ interface Props {
 
 const DivisionRow: React.FC<Props> = ({ division, layout }) => {
   const { updateDivision, deleteDivision } = useDivisionMutations();
+  const { toast } = useToast();
   const isHidden = division.display_division === 'Hidden';
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -66,7 +68,25 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
   const save = () => {
     const trimmed = name.trim();
     const numericWeight = Number(weight);
-    if (!trimmed || !Number.isFinite(numericWeight) || numericWeight <= 0) return;
+
+    if (!trimmed) {
+      toast({
+        title: 'Name Required',
+        description: 'Enter a name for the division before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
+      toast({
+        title: 'Invalid Weight',
+        description: 'The division weight must be a number greater than zero.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     updateDivision.mutate(
       {
         id: division.id,

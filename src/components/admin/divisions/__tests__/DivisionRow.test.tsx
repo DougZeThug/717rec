@@ -8,6 +8,11 @@ import DivisionRow from '../DivisionRow';
 type MutateOptions = { onSuccess?: () => void };
 const updateMutate = vi.fn();
 const deleteMutate = vi.fn();
+const toastMock = vi.fn();
+vi.mock('@/hooks/useToast', () => ({
+  useToast: () => ({ toast: toastMock }),
+}));
+
 vi.mock('@/hooks/useDivisionMutations', () => ({
   useDivisionMutations: () => ({
     updateDivision: { mutate: updateMutate, isPending: false },
@@ -110,5 +115,35 @@ describe('DivisionRow', () => {
     renderRow({ display_division: 'Hidden' });
     expect(screen.getByRole('button', { name: /edit/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Delete division Competitive A' })).toBeDisabled();
+  });
+
+  it('explains why a blank name cannot be saved, and does not write', async () => {
+    const user = userEvent.setup();
+    renderRow();
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    await user.clear(screen.getByLabelText('Division name'));
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    expect(updateMutate).not.toHaveBeenCalled();
+    expect(toastMock).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Name Required', variant: 'destructive' })
+    );
+  });
+
+  it('explains why a zero weight cannot be saved, and does not write', async () => {
+    const user = userEvent.setup();
+    renderRow();
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    const weightInput = screen.getByRole('spinbutton');
+    await user.clear(weightInput);
+    await user.type(weightInput, '0');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    expect(updateMutate).not.toHaveBeenCalled();
+    expect(toastMock).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Invalid Weight', variant: 'destructive' })
+    );
   });
 });
