@@ -217,6 +217,26 @@ describe('NotificationsAdmin', () => {
     );
   });
 
+  it('posts once when the form is submitted twice in the same tick', async () => {
+    mockUseNotificationsQuery.mockReturnValue({ data: [], isLoading: false });
+    // Never settles, so the guard is the only thing that can stop the second call.
+    mockCreateMutateAsync.mockImplementation(() => new Promise(() => {}));
+
+    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+
+    fireEvent.change(screen.getByPlaceholderText(/title/i), { target: { value: 'Rain' } });
+    fireEvent.change(screen.getByPlaceholderText(/message/i), { target: { value: 'Off' } });
+
+    // Enter in the title submits, and the button's disable only lands on the
+    // next render — so two submits can reach the handler before it does.
+    const form = screen.getByRole('button', { name: 'Post notification' }).closest('form');
+    expect(form).not.toBeNull();
+    fireEvent.submit(form as HTMLFormElement);
+    fireEvent.submit(form as HTMLFormElement);
+
+    await waitFor(() => expect(mockCreateMutateAsync).toHaveBeenCalledTimes(1));
+  });
+
   it('loads an existing expiry into the form when editing, and clears it on cancel', async () => {
     const user = userEvent.setup();
     const notification = {

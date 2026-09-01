@@ -1,5 +1,5 @@
 import { Trash2 } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,6 +74,7 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
   const [expiresAt, setExpiresAt] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<NotificationRow | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const editing = useMemo(
     () => (editingId ? (notifications.find((n) => n.id === editingId) ?? null) : null),
@@ -102,10 +103,16 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Enter in the title submits the form. The button is disabled while the
+    // mutation runs, but that disable only lands on the next render, so a fast
+    // double Enter could post the same notification twice. A ref closes the
+    // window because it is set in the same tick as the press.
+    if (isSubmittingRef.current) return;
     const t = title.trim();
     const b = body.trim();
     if (!t || !b) return;
     const expires = localInputToIso(expiresAt);
+    isSubmittingRef.current = true;
     try {
       if (editing) {
         await update.mutateAsync({
@@ -132,6 +139,8 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
         description: getUIErrorMessage(err),
         variant: 'destructive',
       });
+    } finally {
+      isSubmittingRef.current = false;
     }
   };
 
