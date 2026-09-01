@@ -1821,13 +1821,27 @@ finding read a superseded migration.
   being counted as a fail or a neutral C. This is the rule
   `src/utils/liveScoring/pprCalc.ts` already follows for points per round
   ("never fake a 0.0 PPR"), which is the precedent the entry asked for.
+- **Found by reviewing the fix:** two more things were wrong on the same screen,
+  and one of them the fix made worse. A team with **no rating** — Power reads
+  "—" — was graded as a zero, which both handed it six grades it had not earned
+  and, because the grades are percentiles, padded the population every other
+  team is ranked against, so everyone else's grade read better than it was. It
+  now gets no card and is left out of every comparison. And a **failed** fetch
+  of the league match list was treated as an empty one, so every team read as
+  0% sweeps with no clutch record and the card showed Offense F and Clutch "–"
+  for the whole league as though it had loaded; that path did not exist before
+  the fix, because the card used to read one team's matches and the leaderboard
+  read none. Both screens now show a failure message with a Try Again button.
 - **Status:** confirmed by test. `useTeamReportCard.test.ts` was rewritten to
   use real match fixtures and real percentile maths rather than asserting mock
   call order — the old file pinned both defects as intended behaviour
   (`expect(offenseCall[1]).toEqual([55, 52])` and two `clutch.percentile === 50`
   cases). `useAllTeamReportCards.test.ts` is new; that hook had no test at all,
   which is why the hardcoded grade was never caught. Three of its cases were
-  shown red against the old behaviour first.
+  shown red against the old behaviour first, and sixteen more for the two
+  follow-up faults above. One test written with the original fix had itself
+  pinned the defect — "counts a missing power score as 0 for the ranking maths"
+  — the same fault this entry criticises in the tests that preceded it.
 - **Raised by:** [`stats/team-and-player-stats.md`](stats/team-and-player-stats.md#open-questions-and-verification).
 
 ### B-38: The head-to-head dialog shows the wrong W/L badge on half of every team's matches

@@ -142,6 +142,14 @@ All six are ranked against the rest of the league, in both modes. A team's sweep
 rate and game-3 record are counted from the league's match list, so a team is
 compared with what its opponents actually did.
 
+**Only teams that have a rating are in that comparison.** A team whose Power
+column reads "—" has played nothing to measure — its win rate and game rate are
+0 out of 0, and its strength of schedule is a filler value rather than a
+schedule it faced. It is left out of all six comparisons, and it gets no report
+card of its own: the card says "Not enough data to generate a report card yet.
+Play some matches first!" So a new team neither collects six F grades it has not
+earned nor makes every other team's grade look better than it is.
+
 A team that has never played a deciding third game has no game-3 record to rank.
 Its Clutch card shows a dash rather than a letter, and the GPA is worked out from
 the other five — the missing grade neither helps nor hurts. This is the same rule
@@ -239,7 +247,12 @@ page in a session fills in immediately.
 - **Sweep rate is a share of all matches, not of wins.** A team that wins half
   its matches and sweeps every one of them shows 50%, not 100%.
 - **A grade with nothing to measure shows a dash.** Only Clutch can reach that
-  state, and only for a team that has never played a game 3.
+  state, and only for a team that has never played a game 3. A team with no
+  rating at all gets no card rather than a card of dashes.
+- **A failed load says so.** If the league's match list cannot be fetched, the
+  report card and the GPA leaderboard both show a failure message with a Try
+  Again button, not "not enough data" — which would blame the team for a
+  problem with the request.
 - **A player on two teams accumulates statistics under both.** Nothing in the
   product prevents it and nothing merges them.
 - **A player who has never been recorded as throwing does not appear at all** in
@@ -271,5 +284,6 @@ page in a session fills in immediately.
   code defines it, and nothing on screen explains it.
 
 Verified against `717rec` commit `ea5c8f4`, except the report card grades, which
-were changed after that commit — see
+were changed after that commit, together with the handling of unrated teams and
+of a failed load — see
 [B-36](../bug-triage.md#b-36-two-grades-on-the-team-report-card-are-not-real-measurements).

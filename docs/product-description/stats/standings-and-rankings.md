@@ -119,11 +119,13 @@ Two rules matter more than they look:
 - **The comparison uses the number as displayed**, rounded to one decimal. Two
   teams shown as 62.4 are a tie and go to the tiebreakers, even when the stored
   numbers differ in the third decimal.
-- **A value the team does not have sorts last**, whichever direction the sort is
-  set to. A team that has not played has no rating rather than a rating of zero,
-  and its Power column reads "—"; the same team has no streak, and its Streak
-  column reads "N/A". Ascending order therefore does not put those teams first,
-  which surprises people.
+- **A missing Power or Streak sorts last**, whichever direction the sort is set
+  to. A team that has not played has no rating rather than a rating of zero, so
+  its Power column reads "—", and it has no streak, so its Streak column reads
+  "N/A". Sorting either column ascending therefore does not put those teams
+  first, which surprises people. The rule covers those two columns only: on
+  W-L, Win %, Games, Game % and SOS the same team sorts as a zero, because zero
+  wins and zero games are true of it.
 - **Streaks sort by run length, wins above losses.** `W10` is above `W2`, which
   is above `L1`, which is above `L9`.
 
