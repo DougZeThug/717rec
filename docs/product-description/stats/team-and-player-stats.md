@@ -265,8 +265,8 @@ page in a session fills in immediately.
   losing streak having won its division.
 - **Career numbers include hidden teams**, so a career table can name teams the
   standings do not show.
-- **A team with no matches at all is given a career power score of 50**, which
-  places it mid-table rather than last.
+- **A team with no matches at all has a career power score of 0**, which places
+  it last in the career table, below every team with a record.
 
 ## Open questions and verification
 

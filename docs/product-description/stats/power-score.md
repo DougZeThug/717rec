@@ -160,7 +160,9 @@ Because they are built differently, **a team can be higher in the standings than
 in the career table, or the other way round, with nothing wrong**. Nothing in the
 app warns about this.
 
-A team with no matches at all is given a career score of 50 rather than nothing.
+A team with no matches at all has a career score of 0, so it sits at the foot
+of the career table. Unlike the standings, where an unplayed team shows "—"
+and no rating, the career table gives it a real number.
 
 ## Where a power score appears
 
@@ -274,8 +276,10 @@ looks like a bug to anyone watching one team.
   so.
 - **The career table can rank a team above a team that beats it in the
   standings**, because the two numbers are different calculations.
-- **A team with no matches has a career score of 50**, which places it in the
-  middle of the career table rather than at the bottom.
+- **A team with no matches has a career score of 0**, which places it at the
+  bottom of the career table, below every team with a record. The two tables
+  differ here on purpose: the standings show "—" and no rating for the same
+  team.
 
 ## Open questions and verification
 

@@ -27,13 +27,14 @@ DECLARE
   v_team_a uuid     := '00000000-0000-0000-0000-0000000cb401';
   v_team_b uuid     := '00000000-0000-0000-0000-0000000cb402';
   v_team_c uuid     := '00000000-0000-0000-0000-0000000cb403';
+  v_team_d uuid     := '00000000-0000-0000-0000-0000000cb404';
   v_score numeric;
   v_weight numeric;
 BEGIN
   PERFORM set_config('session_replication_role', 'replica', true);
 
-  DELETE FROM public.team_season_stats WHERE team_id IN (v_team_a, v_team_b, v_team_c);
-  DELETE FROM public.teams WHERE id IN (v_team_a, v_team_b, v_team_c);
+  DELETE FROM public.team_season_stats WHERE team_id IN (v_team_a, v_team_b, v_team_c, v_team_d);
+  DELETE FROM public.teams WHERE id IN (v_team_a, v_team_b, v_team_c, v_team_d);
   DELETE FROM public.seasons WHERE id IN (v_season_1, v_season_2, v_season_3);
 
   -- Pin the live weights of the seeded divisions for the length of the
@@ -61,7 +62,9 @@ BEGIN
   INSERT INTO public.teams (id, name, division_id) VALUES
     (v_team_a, 'Parity A', v_div_comp),
     (v_team_b, 'Parity B', v_div_comp),
-    (v_team_c, 'Parity C', v_div_comp);
+    (v_team_c, 'Parity C', v_div_comp),
+    -- Never played: no team_season_stats row is inserted for it below.
+    (v_team_d, 'Parity D', v_div_comp);
 
   -- ────────────────────────────────────────────────────────────────────────
   -- Fixture 1 — the floored season score, and a squared title bonus.
@@ -136,6 +139,19 @@ BEGIN
   v_score := public.calculate_career_power_score(v_team_c);
   IF round(v_score, 4) <> 56.3175 THEN
     RAISE EXCEPTION 'Fixture 3: expected 56.3175, got %', v_score;
+  END IF;
+
+  -- ────────────────────────────────────────────────────────────────────────
+  -- Fixture 4 — a team that has played nothing scores 0.
+  --
+  -- No team_season_stats row at all, no playoff matches, so there is no base to
+  -- average and no bonus to add. It sits at the foot of the career table. The
+  -- base used to be 50, which placed such a team mid-table above teams with a
+  -- real losing record.
+  -- ────────────────────────────────────────────────────────────────────────
+  v_score := public.calculate_career_power_score(v_team_d);
+  IF round(v_score, 4) <> 0.0000 THEN
+    RAISE EXCEPTION 'Fixture 4: expected 0, got %', v_score;
   END IF;
 
   -- ────────────────────────────────────────────────────────────────────────

@@ -121,8 +121,13 @@ export const calculateCareerPowerScore = async ({
     }
   }
 
-  // Base career score is the weighted average (no division penalties applied)
-  const baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 50;
+  // Base career score is the weighted average (no division penalties applied).
+  //
+  // A team that has played nothing scores 0 and sits at the foot of the career
+  // table. It used to be given 50, which placed it mid-table above teams with a
+  // real losing record — a team that had never thrown a bag outranked teams that
+  // had turned up and lost.
+  const baseCareerScore = totalMatches > 0 ? totalWeightedScore / totalMatches : 0;
 
   // Live division weights, keyed by name. Never hardcode these values.
   const weightsByName = await fetchDivisionWeightsByName();

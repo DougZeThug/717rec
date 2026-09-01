@@ -207,7 +207,9 @@ BEGIN
   IF v_total_matches > 0 THEN
     v_base_career_score := v_total_weighted_score / v_total_matches;
   ELSE
-    v_base_career_score := 50;
+    -- A team that has played nothing scores 0, not a mid-table 50. Must match
+    -- calculateCareerPowerScore.ts; the parity test asserts both sides.
+    v_base_career_score := 0;
   END IF;
 
   -- Championship bonus, scaled by the SQUARED live weight of the division the

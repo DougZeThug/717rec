@@ -246,7 +246,7 @@ describe('calculateCareerPowerScore', () => {
     expect(result).toBe(80);
   });
 
-  it('returns 50 when no match data is available', async () => {
+  it('returns 0 when the team has played nothing', async () => {
     const result = await calculateCareerPowerScore({
       teamId: 'team-1',
       championshipDivisions: [],
@@ -259,7 +259,10 @@ describe('calculateCareerPowerScore', () => {
       prefetchedCurrentTeamData: null,
     });
 
-    expect(result).toBe(50);
+    // A team that has never played sits at the foot of the career table. It
+    // used to be given 50, which put it mid-table above teams with a real
+    // losing record.
+    expect(result).toBe(0);
   });
 
   // ────────────────────────────────────────────────────────────────────────
@@ -350,6 +353,18 @@ describe('calculateCareerPowerScore', () => {
       });
 
       expect(result).toBeCloseTo(57.35, 4);
+    });
+
+    // Fixture 4: no matches at all.
+    // base 0, no bonuses to add — the foot of the career table.
+    it('fixture 4: scores a team that has played nothing as 0', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: [],
+        prefetchedSeasonStats: [],
+      });
+
+      expect(result).toBe(0);
     });
 
     // Fixture 3: the weight comes from the divisions table.
