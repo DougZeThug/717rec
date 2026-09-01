@@ -146,7 +146,7 @@ entry with a dot that is filled while it is unread.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | The page is admin-only. The bell is visible to every role; the quick-post form and the bins inside it appear only for an admin. | Losing admin mid-session leaves the form and the bins on screen until the profile is re-read; the writes then fail with "Save failed". |
-| The record's state | A notification past its expiry is tagged EXPIRED and still listed and editable for an admin, and still shown in the bell. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
+| The record's state | A notification past its expiry is tagged EXPIRED and still shown in the bell. It stays listed and editable for an admin **only once migration `20260901190000` has been applied by hand** (`docs/OPERATIONS.md` §6); until then the one SELECT policy hides expired rows from everyone and it drops off the admin list. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
 | The season's state | No effect. Notifications belong to no season and survive a changeover. | No effect. |
 | Viewport | The page is a single narrow column at every width. The bell popover is a fixed 360 pixels wide. | No effect. |
 | Keys the form honours | Tab moves title, message, expiry, Post, Cancel. **Enter in the title posts the form**, because it is a real form and the button is its submit. Enter in the message adds a newline. | Escape closes the bell popover. It does nothing on the page. |

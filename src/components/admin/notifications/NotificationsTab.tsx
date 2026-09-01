@@ -46,14 +46,23 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
       const now = getCurrentTimeMs();
       setLiveTimeMs(now);
 
-      const futureExpiryTimes = notifications
-        .map((n) => (n.expires_at ? Date.parse(n.expires_at) : Number.NaN))
-        .filter((expiresAt) => Number.isFinite(expiresAt) && expiresAt > now);
+      // One pass, and only the soonest is needed. `>= now` rather than `> now`:
+      // a row counts as expired once the clock is strictly past it, so an expiry
+      // landing on this exact millisecond is still ahead of us and must be
+      // scheduled — dropping it would leave the badge waiting for the fallback.
+      let nextExpiry = Number.POSITIVE_INFINITY;
+      for (const n of notifications) {
+        if (!n.expires_at) continue;
+        const expiresAt = Date.parse(n.expires_at);
+        if (Number.isFinite(expiresAt) && expiresAt >= now && expiresAt < nextExpiry) {
+          nextExpiry = expiresAt;
+        }
+      }
 
       const untilNextExpiry =
-        futureExpiryTimes.length === 0
+        nextExpiry === Number.POSITIVE_INFINITY
           ? Number.POSITIVE_INFINITY
-          : Math.min(...futureExpiryTimes) - now + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS;
+          : nextExpiry - now + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS;
 
       // Capped at the fallback interval. setTimeout overflows past ~24.9 days
       // and fires at once, and an expiry far in the future needs no precision.
