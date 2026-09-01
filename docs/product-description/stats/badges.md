@@ -120,7 +120,7 @@ or "low" is renamed and recoloured — "Intermediate High Champion" in cyan,
 
 | Badge | Awarded for | Revoked when |
 | --- | --- | --- |
-| **King Slayer** | Beating a team from a tougher division whose career power score is 25 or more above yours. | No win this season qualifies any more — including when the win that earned it is voided. |
+| **King Slayer** | Beating a team from a tougher division whose career power score — the one the career table shows — is 25 or more above yours. | No win this season qualifies any more — including when the win that earned it is voided. |
 | **Clutch Performer** | Winning five or more matches 2–1 this season. | The count drops below five. |
 | **Consistent Performer** | Beating five or more different teams in your own division this season. | The count drops below five. |
 | **Ice Cold** | Your last three completed matches this season are all 2–1 wins. | The next match is anything else. |
@@ -247,8 +247,9 @@ used to be.
 - **Gatekeeper compares against opponents' power scores as they are today**, not
   as they were on the day of the match, and it is only re-checked when that team
   plays again. A badge can therefore be stale in both directions.
-- **King Slayer is decided by a career power score computed in the database**,
-  which is not the career power score shown on screen. See
+- **King Slayer is decided by a career power score computed in the database.**
+  It is the same number the career table shows: the two calculations are held to
+  each other by a shared set of test fixtures. See
   [`power-score.md`](power-score.md).
 - **Bully compares division weights**, so it depends on the league's current
   weights rather than the divisions at the time.
@@ -296,4 +297,6 @@ used to be.
   lower.
 
 Verified against `717rec` commit `ea5c8f4`; B-32 and B-33 re-verified against the
-fixes on `claude/badge-processing-bugs-e03j2p`.
+fixes on `claude/badge-processing-bugs-e03j2p`. The career power score King
+Slayer is decided by was changed after that commit — see
+[B-35](../bug-triage.md#b-35-a-stale-fourth-career-power-score-formula-decides-one-badge).

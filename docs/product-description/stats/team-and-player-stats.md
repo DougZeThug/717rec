@@ -138,14 +138,14 @@ Grades run A+ down to F, banded by percentile: A+ at 95, A at 90, down to D at
 25 and F below it. A weighted GPA combines them, with Overall counting three
 times and Consistency twice.
 
-In **Season** mode the Clutch grade is not real: every team is given a neutral
-grade, because the page has per-match data for one team rather than for the whole
-league. In **Career** mode it is a real number. The card does not distinguish
-them.
+All six are ranked against the rest of the league, in both modes. A team's sweep
+rate and game-3 record are counted from the league's match list, so a team is
+compared with what its opponents actually did.
 
-Sweep rate in Season mode is also estimated for every team except the one being
-looked at, from its game win rate. Only the team on screen gets a counted sweep
-rate.
+A team that has never played a deciding third game has no game-3 record to rank.
+Its Clutch card shows a dash rather than a letter, and the GPA is worked out from
+the other five — the missing grade neither helps nor hurts. This is the same rule
+points per round follows in the player section.
 
 ## Player numbers
 
@@ -238,11 +238,8 @@ page in a session fills in immediately.
 
 - **Sweep rate is a share of all matches, not of wins.** A team that wins half
   its matches and sweeps every one of them shows 50%, not 100%.
-- **The Clutch grade in Season mode is the same for every team.** It is a
-  placeholder, and the card does not say so.
-- **Sweep rate in Season mode is estimated for every team except the one on
-  screen**, so the same team's Offense grade can differ depending on whose page
-  it is graded on.
+- **A grade with nothing to measure shows a dash.** Only Clutch can reach that
+  state, and only for a team that has never played a game 3.
 - **A player on two teams accumulates statistics under both.** Nothing in the
   product prevents it and nothing merges them.
 - **A player who has never been recorded as throwing does not appear at all** in
@@ -260,12 +257,6 @@ page in a session fills in immediately.
 
 ## Open questions and verification
 
-- **The Clutch grade is fabricated in Season mode.** Every team is given a
-  neutral 50th-percentile grade, which is presented identically to the five real
-  grades beside it. **May be worth treating as a bug rather than documenting.**
-- **Sweep rate in Season mode is estimated from game win rate for every team
-  except the one being viewed**, so the Offense grade is not comparable between
-  pages. **May be worth treating as a bug rather than documenting.**
 - **Missing values are rendered three different ways** — "—", "N/A", and "–" —
   depending on which component draws them.
 - Not confirmed by hand: whether any team in the live database has live-scoring
@@ -279,4 +270,6 @@ page in a session fills in immediately.
   still won at least one game** — that is, lost 1–2. Nothing in the application
   code defines it, and nothing on screen explains it.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the report card grades, which
+were changed after that commit — see
+[B-36](../bug-triage.md#b-36-two-grades-on-the-team-report-card-are-not-real-measurements).

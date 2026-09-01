@@ -9,8 +9,8 @@ team sits.
 
 The page is read-only and public. Nothing on it can be changed by anybody,
 including an admin. What a user *can* change is how it is arranged: by division
-or as one list, sorted by any of four numbers, and — on a phone — compact or
-detailed. None of those choices is in the address, so none of them survives
+or as one list, sorted by any column that has values of its own — eight on a
+wide screen, four on a phone — and, on a phone, compact or detailed. None of those choices is in the address, so none of them survives
 leaving the page.
 
 The standings are ordered by **power score**, which is a rating rather than a
@@ -81,7 +81,8 @@ anything:
   team. On a wide screen this is in the card header and disappears when the card
   is collapsed; on a phone it sits above the cards.
 - **A column heading.** Sorts by that column, and pressing the same heading again
-  reverses it.
+  reverses it. Every heading except **#**, **Division** and **Trend** sorts. Each
+  one is a button, so Tab reaches it and Enter or Space sorts.
 - **A row.** Pressing a row highlights it. On a phone in compact view it also
   opens two extra numbers and a "Compare Team" button.
 - **The chevron.** Collapses the whole standings card.
@@ -118,10 +119,13 @@ Two rules matter more than they look:
 - **The comparison uses the number as displayed**, rounded to one decimal. Two
   teams shown as 62.4 are a tie and go to the tiebreakers, even when the stored
   numbers differ in the third decimal.
-- **A team with no power score sorts last**, whichever direction the sort is set
-  to. A team that has not played has no rating rather than a rating of zero, and
-  its Power column reads "—". Ascending order therefore does not put those teams
-  first, which surprises people.
+- **A value the team does not have sorts last**, whichever direction the sort is
+  set to. A team that has not played has no rating rather than a rating of zero,
+  and its Power column reads "—"; the same team has no streak, and its Streak
+  column reads "N/A". Ascending order therefore does not put those teams first,
+  which surprises people.
+- **Streaks sort by run length, wins above losses.** `W10` is above `W2`, which
+  is above `L1`, which is above `L9`.
 
 Division rank is worked out inside each division using the same sort. Overall
 rank is the row's position in the full sorted list.
@@ -130,7 +134,7 @@ rank is the row's position in the full sorted list.
 
 | Column | What it is | Shown |
 | --- | --- | --- |
-| # | Division rank, with overall rank in brackets. In All view, overall rank alone. | always |
+| # | Division rank, with overall rank in brackets. In All view, overall rank alone. **Not sortable** — the number is the row's position under the current sort, so it has no values of its own. | always |
 | Team | Name, logo, and up to four badges. Links to the team's page. A compare icon appears on hover. | always |
 | Division | The team's division. | All view only |
 | Power | Power score, one decimal, coloured in eight bands from gold down to red. "—" when the team has not played. | always |
@@ -154,7 +158,7 @@ first playoff match shows `L1` even after a winning regular season.
 | The record's state | A team with no completed match shows "—" for Power, "N/A" for Streak, and sorts to the bottom. A hidden team is absent. | A result approved elsewhere changes a team's numbers on the next refetch, with no announcement. |
 | The season's state | The table always shows the active season and never says which one, except through the season badge above it. There is no season picker here — past seasons are at [`history/past-seasons.md`](../history/past-seasons.md). | A season activated elsewhere changes the whole table under the user once the ten-minute season cache expires. |
 | Viewport | On a wide screen the table is a real table, with Games appearing at medium width and Game % at large. On a phone it is a list of cards with a top-three leaderboard above it, a compact/detailed toggle, and four sort pills instead of column headings. | Rotating a phone into landscape does not switch to the desktop table; the breakpoint is width alone. |
-| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the Insights button, the toggles, then each team link and compare link in turn. | Column headings are not reachable by Tab and cannot be activated by keyboard, though they carry sort state for screen readers. |
+| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the Insights button, the toggles, each sortable column heading, then each team link and compare link in turn. | A focused heading sorts on Enter or Space. Each heading also carries its sort state for screen readers. |
 
 ## Cancel and interrupt
 
@@ -207,9 +211,9 @@ power; detailed adds a power gauge and a four-box grid of Games, Win %, SOS and
 Game %. The choice is remembered between visits. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
-**Accessibility.** Column headings carry a sort state that a screen reader
-announces, but they are `<th>` elements with click handlers rather than buttons,
-so they cannot be operated from a keyboard. Each rank cell has a spoken label
+**Accessibility.** Each sortable column heading is a button inside the header
+cell, so it is a Tab stop and sorts on Enter or Space; the cell carries a sort
+state that a screen reader announces. Each rank cell has a spoken label
 that includes the movement — "Division rank 3, overall rank 7, moved up 2
 positions". Rows are deliberately not focusable, because they contain links.
 Trend arrows animate on every render.
@@ -219,19 +223,16 @@ nothing, records nothing, and writes no snapshot.
 
 ## Edge cases
 
-- **Four of the nine column headings do not sort by what they say.** Games, Game
-  %, Streak and the rank column all fall through to power score. The arrow moves
-  to the heading pressed, the order changes, and the order is wrong. See
-  [Open questions](#open-questions-and-verification).
-- **The chosen sort is saved and never restored.** Every visit starts at power
-  score, descending.
+- **The sort is not remembered.** Every visit starts at power score, descending.
+- **The rank column does not sort.** The number in it is the row's position
+  under whatever sort is set, so there is nothing of its own to sort by.
 - **A team's own row is never highlighted.** The page works out which team the
   signed-in player belongs to and then does not use it.
 - **Expanding a row on a desktop shows nothing.** It tints the row and that is
   all; the extra numbers exist only on a phone in compact view.
 - **Division and overall rank can look contradictory** when sorting by a column
   the tiebreakers do not cover, because the bracketed overall rank comes from a
-  differently-tied list.
+  differently-tied list. Teams tied on the sorted column keep power-score order.
 - **A division named anything unexpected still gets a table**, headed
   "Unassigned" when a team has no division at all.
 - **The leaderboard strip counts every team**, including teams with no matches,
@@ -241,17 +242,9 @@ nothing, records nothing, and writes no snapshot.
 
 ## Open questions and verification
 
-- **Sorting by Games, Game %, Streak or rank silently sorts by power score
-  instead.** The sorter handles four fields; the table offers nine. **May be
-  worth treating as a bug rather than documenting.**
 - **The signed-in user's own team is computed, passed through three components,
   and never used.** Either the highlight was lost or it was never finished.
   **May be worth treating as a bug rather than documenting.**
-- **The sort order is written to browser storage on every change and never read
-  back.** **May be worth treating as a bug rather than documenting.**
-- **Column headings cannot be operated from a keyboard**, so a keyboard-only user
-  cannot sort the table at all. **May be worth treating as a bug rather than
-  documenting.**
 - **The matches used for streaks are fetched without a season filter.** The page
   relies on old seasons' matches having been moved to the archive table. If any
   remain, a streak can run across a season boundary.
@@ -263,4 +256,6 @@ nothing, records nothing, and writes no snapshot.
   (SOS), and game-level performance" is meant as an explanation of power score
   rather than of the sort order.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the sorting and keyboard
+behaviour above, which was changed after that commit — see
+[B-34](../bug-triage.md#b-34-four-standings-columns-silently-sort-by-power-score-instead).
