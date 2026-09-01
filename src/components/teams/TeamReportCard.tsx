@@ -184,9 +184,7 @@ const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
       <ErrorDisplay
         variant="inline"
         error="We couldn't load the report card. Please try again."
-        onRetry={() => {
-          void retry();
-        }}
+        onRetry={retry}
       />
     );
   }

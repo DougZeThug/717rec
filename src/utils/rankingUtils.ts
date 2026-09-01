@@ -48,55 +48,37 @@ const getStreakValue = (streak: string | undefined): number | null => {
 // The first and third are true weighted averages on a 0-1 scale; opponent
 // strength is carried by the SOS term. See src/utils/powerScore/README.md.
 
+/**
+ * How each column's value is read off a row.
+ *
+ * A `Record` over `RankingSortField` rather than a `switch`: leaving a column
+ * out is a **compile** error, where a missing `case` silently fell through to a
+ * power-score sort. That fall-through was B-34.
+ */
+const SORT_VALUE: Record<RankingSortField, (r: Ranking) => number | string | null> = {
+  powerScore: (r) => getDisplayedPowerScore(r.powerScore),
+  winPercentage: (r) => r.winPercentage || 0,
+  sos: (r) => r.sos || 0,
+  wins: (r) => r.wins || 0,
+  gamesWon: (r) => r.gamesWon || 0,
+  gameWinPercentage: (r) => r.gameWinPercentage || 0,
+  streak: (r) => getStreakValue(r.streak),
+  teamName: (r) => r.teamName,
+};
+
 export const sortRankings = (
   rankings: Ranking[],
   sortField: RankingSortField | string,
   direction: 'asc' | 'desc'
 ): Ranking[] => {
-  return [...rankings].sort((a, b) => {
-    let valueA: number | string | null;
-    let valueB: number | string | null;
+  // An unrecognised field falls back to the default ordering rather than
+  // leaving the table unsorted. Every heading the UI offers is in the record
+  // above, so this is only reachable from a stored or hand-passed value.
+  const selectValue = SORT_VALUE[sortField as RankingSortField] ?? SORT_VALUE.powerScore;
 
-    switch (sortField) {
-      case 'powerScore':
-        valueA = getDisplayedPowerScore(a.powerScore);
-        valueB = getDisplayedPowerScore(b.powerScore);
-        break;
-      case 'winPercentage':
-        valueA = a.winPercentage || 0;
-        valueB = b.winPercentage || 0;
-        break;
-      case 'sos':
-        valueA = a.sos || 0;
-        valueB = b.sos || 0;
-        break;
-      case 'wins':
-        valueA = a.wins || 0;
-        valueB = b.wins || 0;
-        break;
-      case 'gamesWon':
-        valueA = a.gamesWon || 0;
-        valueB = b.gamesWon || 0;
-        break;
-      case 'gameWinPercentage':
-        valueA = a.gameWinPercentage || 0;
-        valueB = b.gameWinPercentage || 0;
-        break;
-      case 'streak':
-        valueA = getStreakValue(a.streak);
-        valueB = getStreakValue(b.streak);
-        break;
-      case 'teamName':
-        valueA = a.teamName;
-        valueB = b.teamName;
-        break;
-      default:
-        // An unrecognised field falls back to the default ordering rather than
-        // leaving the table unsorted. Every heading the UI offers has a case
-        // above, so this is only reachable from a stored or hand-passed value.
-        valueA = getDisplayedPowerScore(a.powerScore);
-        valueB = getDisplayedPowerScore(b.powerScore);
-    }
+  return [...rankings].sort((a, b) => {
+    const valueA = selectValue(a);
+    const valueB = selectValue(b);
 
     // A missing value is "no value", not a low one: it goes to the end whichever
     // direction is set. This covers a team with no power score and a team with

@@ -114,9 +114,7 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
             <ErrorDisplay
               variant="inline"
               error="We couldn't load the GPA leaderboard. Please try again."
-              onRetry={() => {
-                void retry();
-              }}
+              onRetry={retry}
             />
           ) : leaderboard.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No data available yet.</p>

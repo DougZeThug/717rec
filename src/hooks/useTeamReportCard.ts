@@ -189,6 +189,10 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
     grades,
     isLoading: mode === 'season' ? isLoadingRankings || matchesLoading : isLoadingCareer,
     error: seasonError,
-    retry: refetchMatches,
+    // Void-returning on purpose: the caller is an onClick, and it should not
+    // have to discard a promise it has no use for.
+    retry: () => {
+      void refetchMatches();
+    },
   };
 }

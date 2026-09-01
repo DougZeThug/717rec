@@ -19,7 +19,7 @@ export interface LeagueTeamMatchStats {
  * of the league. Walking the whole match list once per team would be O(teams ×
  * matches); this walks it once.
  */
-const groupMatchesByTeam = (matches: Match[] | undefined): Map<string, Match[]> => {
+const groupMatchesByTeam = (matches?: Match[]): Map<string, Match[]> => {
   const byTeam = new Map<string, Match[]>();
   if (!matches) return byTeam;
 
@@ -47,9 +47,7 @@ const groupMatchesByTeam = (matches: Match[] | undefined): Map<string, Match[]> 
  * computable from the match list the rankings query already fetches — see B-36
  * in `docs/product-description/bug-triage.md`.
  */
-export const calculateLeagueMatchStats = (
-  matches: Match[] | undefined
-): Map<string, LeagueTeamMatchStats> => {
+export const calculateLeagueMatchStats = (matches?: Match[]): Map<string, LeagueTeamMatchStats> => {
   const stats = new Map<string, LeagueTeamMatchStats>();
 
   for (const [teamId, teamMatches] of groupMatchesByTeam(matches)) {

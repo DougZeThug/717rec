@@ -8,7 +8,7 @@
 -- they drifted apart for months without anything noticing — see B-35 in
 -- docs/product-description/bug-triage.md.
 --
--- The three fixtures below are asserted with the SAME inputs and the SAME
+-- The four fixtures below are asserted with the SAME inputs and the SAME
 -- expected totals in
 -- src/utils/career/__tests__/calculateCareerPowerScore.test.ts
 -- ("shares fixtures with supabase/tests/career_power_score_parity.sql").

@@ -100,48 +100,49 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
     const matchStats = calculateLeagueMatchStats(latestMatches);
     const populations = collectSeasonPopulations(rankings, matchStats);
 
-    return (
-      rankings
-        // A team with no rating has no GPA to list. It used to appear with a grade
-        // built from a power score of zero it never earned.
-        .filter(isGradeable)
-        .map((team) => {
-          const teamStats = matchStats.get(team.teamId) ?? EMPTY_LEAGUE_MATCH_STATS;
-          const overallGrade = gradeAgainst(team.powerScore, populations.powerScores);
-          const consistencyGrade = gradeAgainst(team.winPercentage, populations.winPcts);
-          const gamesGrade = gradeAgainst(team.gameWinPercentage, populations.gameWinPcts);
-          const offenseGrade = gradeAgainst(teamStats.sweepRate, populations.sweepRates);
-          const clutchGrade = gradeAgainst(
-            teamStats.game3Matches > 0 ? teamStats.clutchWinPct : null,
-            populations.clutchRates
-          );
-          const scheduleGrade = gradeAgainst(team.sos, populations.sos);
+    const entries: LeaderboardEntry[] = [];
 
-          const gpa = calculateGPA([
-            { grade: overallGrade, weight: 3 },
-            { grade: consistencyGrade, weight: 2 },
-            { grade: gamesGrade, weight: 1.5 },
-            { grade: offenseGrade, weight: 1 },
-            { grade: clutchGrade, weight: 1 },
-            { grade: scheduleGrade, weight: 1 },
-          ]);
+    for (const team of rankings) {
+      // A team with no rating has no GPA to list. It used to appear with a grade
+      // built from a power score of zero it never earned.
+      if (!isGradeable(team)) continue;
 
-          return {
-            teamId: team.teamId,
-            teamName: team.teamName,
-            logoUrl: team.logoUrl ?? null,
-            gpa,
-            overallGrade,
-          };
-        })
-        .sort((a, b) => b.gpa - a.gpa)
-    );
+      const teamStats = matchStats.get(team.teamId) ?? EMPTY_LEAGUE_MATCH_STATS;
+      const overallGrade = gradeAgainst(team.powerScore, populations.powerScores);
+      const clutchGrade = gradeAgainst(
+        teamStats.game3Matches > 0 ? teamStats.clutchWinPct : null,
+        populations.clutchRates
+      );
+
+      const gpa = calculateGPA([
+        { grade: overallGrade, weight: 3 },
+        { grade: gradeAgainst(team.winPercentage, populations.winPcts), weight: 2 },
+        { grade: gradeAgainst(team.gameWinPercentage, populations.gameWinPcts), weight: 1.5 },
+        { grade: gradeAgainst(teamStats.sweepRate, populations.sweepRates), weight: 1 },
+        { grade: clutchGrade, weight: 1 },
+        { grade: gradeAgainst(team.sos, populations.sos), weight: 1 },
+      ]);
+
+      entries.push({
+        teamId: team.teamId,
+        teamName: team.teamName,
+        logoUrl: team.logoUrl ?? null,
+        gpa,
+        overallGrade,
+      });
+    }
+
+    return entries.sort((a, b) => b.gpa - a.gpa);
   }, [rankings, latestMatches, careerRankingsData, mode, seasonError]);
 
   return {
     leaderboard,
     isLoading: mode === 'season' ? isLoadingRankings || matchesLoading : isLoadingCareer,
     error: seasonError,
-    retry: refetchMatches,
+    // Void-returning on purpose: the caller is an onClick, and it should not
+    // have to discard a promise it has no use for.
+    retry: () => {
+      void refetchMatches();
+    },
   };
 }
