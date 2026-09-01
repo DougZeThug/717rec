@@ -32,11 +32,17 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
             )
       )}
     >
-      {/* Rank badge */}
+      {/* Rank badge.
+
+          White on 12px bold needs 4.5:1 for WCAG AA. Measured against white:
+          blue-600 5.17, blue-500 3.68, cyan-700 5.36, cyan-600 3.68, cyan-500 2.43.
+          So there is no dark-mode override — blue-500 failed — and winter uses
+          cyan-700 rather than cyan-500. Do not brighten either back without
+          re-checking the ratio; e2e/a11y.spec.ts catches it, intermittently. */}
       <div
         className={cn(
           'absolute -top-2 -left-1 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm',
-          isWinter ? 'bg-cyan-500' : 'bg-blue-600 dark:bg-blue-500'
+          isWinter ? 'bg-cyan-700' : 'bg-blue-600'
         )}
       >
         #{rank}
