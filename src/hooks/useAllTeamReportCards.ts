@@ -4,6 +4,7 @@ import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { calculatePercentile } from '@/utils/percentileUtils';
+import { collectCareerPopulations, collectSeasonPopulations } from '@/utils/reportCardPopulations';
 import { calculateGPA, calculateGrade, LetterGrade } from '@/utils/reportCardUtils';
 import {
   calculateLeagueMatchStats,
@@ -45,27 +46,19 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
       const careerRankings = careerRankingsData || [];
       if (careerRankings.length === 0) return [];
 
-      const allPowerScores = careerRankings.map((r) => r.careerPowerScore);
-      const allWinPcts = careerRankings.map((r) => r.careerWinPercentage);
-      const allSos = careerRankings.map((r) => r.careerSos);
-      const allSweepRates = careerRankings.map((r) => r.careerSweepRate);
-      const allGameWinPcts = careerRankings.map((r) => r.careerGameWinPercentage);
-      // Only teams that have played a deciding third game have a clutch rate to rank.
-      const allClutchRates = careerRankings
-        .filter((r) => r.careerClutchGame3s > 0)
-        .map((r) => r.careerClutchWinPct);
+      const populations = collectCareerPopulations(careerRankings);
 
       return careerRankings
         .map((team) => {
-          const overallGrade = gradeAgainst(team.careerPowerScore, allPowerScores);
-          const consistencyGrade = gradeAgainst(team.careerWinPercentage, allWinPcts);
-          const gamesGrade = gradeAgainst(team.careerGameWinPercentage, allGameWinPcts);
-          const offenseGrade = gradeAgainst(team.careerSweepRate, allSweepRates);
+          const overallGrade = gradeAgainst(team.careerPowerScore, populations.powerScores);
+          const consistencyGrade = gradeAgainst(team.careerWinPercentage, populations.winPcts);
+          const gamesGrade = gradeAgainst(team.careerGameWinPercentage, populations.gameWinPcts);
+          const offenseGrade = gradeAgainst(team.careerSweepRate, populations.sweepRates);
           const clutchGrade = gradeAgainst(
             team.careerClutchGame3s > 0 ? team.careerClutchWinPct : null,
-            allClutchRates
+            populations.clutchRates
           );
-          const scheduleGrade = gradeAgainst(team.careerSos, allSos);
+          const scheduleGrade = gradeAgainst(team.careerSos, populations.sos);
 
           const gpa = calculateGPA([
             { grade: overallGrade, weight: 3 },
@@ -90,36 +83,26 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
     // Season mode
     if (!rankings || rankings.length === 0) return [];
 
-    // Teams without a power score contribute 0 to percentile math only (display layers show "N/A" separately).
-    const allPowerScores = rankings.map((r) => r.powerScore ?? 0);
-    const allWinPcts = rankings.map((r) => r.winPercentage);
-    const allSos = rankings.map((r) => r.sos);
-    const allGameWinPcts = rankings.map((r) => r.gameWinPercentage);
     // Real sweep rates and clutch records, from the league match list. Sweep
     // rates used to be guessed from game win percentage — a monotone transform
     // of it, so the Offense grade was really just a restatement of the Games
     // grade — and every team was handed the same neutral clutch grade, which
     // still moved the GPA and so the order of this leaderboard.
     const matchStats = calculateLeagueMatchStats(latestMatches);
-    const statsFor = (teamId: string) => matchStats.get(teamId) ?? EMPTY_LEAGUE_MATCH_STATS;
-    const allSweepRates = rankings.map((r) => statsFor(r.teamId).sweepRate);
-    const allClutchRates = rankings
-      .map((r) => statsFor(r.teamId))
-      .filter((s) => s.game3Matches > 0)
-      .map((s) => s.clutchWinPct);
+    const populations = collectSeasonPopulations(rankings, matchStats);
 
     return rankings
       .map((team) => {
-        const teamStats = statsFor(team.teamId);
-        const overallGrade = gradeAgainst(team.powerScore ?? 0, allPowerScores);
-        const consistencyGrade = gradeAgainst(team.winPercentage, allWinPcts);
-        const gamesGrade = gradeAgainst(team.gameWinPercentage, allGameWinPcts);
-        const offenseGrade = gradeAgainst(teamStats.sweepRate, allSweepRates);
+        const teamStats = matchStats.get(team.teamId) ?? EMPTY_LEAGUE_MATCH_STATS;
+        const overallGrade = gradeAgainst(team.powerScore ?? 0, populations.powerScores);
+        const consistencyGrade = gradeAgainst(team.winPercentage, populations.winPcts);
+        const gamesGrade = gradeAgainst(team.gameWinPercentage, populations.gameWinPcts);
+        const offenseGrade = gradeAgainst(teamStats.sweepRate, populations.sweepRates);
         const clutchGrade = gradeAgainst(
           teamStats.game3Matches > 0 ? teamStats.clutchWinPct : null,
-          allClutchRates
+          populations.clutchRates
         );
-        const scheduleGrade = gradeAgainst(team.sos, allSos);
+        const scheduleGrade = gradeAgainst(team.sos, populations.sos);
 
         const gpa = calculateGPA([
           { grade: overallGrade, weight: 3 },

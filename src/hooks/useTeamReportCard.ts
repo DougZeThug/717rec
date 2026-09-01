@@ -4,6 +4,7 @@ import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { calculatePercentile } from '@/utils/percentileUtils';
+import { collectCareerPopulations, collectSeasonPopulations } from '@/utils/reportCardPopulations';
 import { calculateGPA, calculateGrade, GradeCategory, TeamGrades } from '@/utils/reportCardUtils';
 import {
   calculateLeagueMatchStats,
@@ -74,48 +75,44 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       const teamCareer = careerRankings.find((r) => r.teamId === teamId);
       if (!teamCareer) return null;
 
-      // Only teams that have actually played a deciding third game belong in the
-      // clutch population. A team with none has no rate to rank.
-      const allClutchRates = careerRankings
-        .filter((r) => r.careerClutchGame3s > 0)
-        .map((r) => r.careerClutchWinPct);
+      const populations = collectCareerPopulations(careerRankings);
 
       return buildGrades({
         overall: gradeAgainst(
           'Overall',
           'Career power score ranking',
           teamCareer.careerPowerScore,
-          careerRankings.map((r) => r.careerPowerScore)
+          populations.powerScores
         ),
         offense: gradeAgainst(
           'Offense',
           'Career sweep rate',
           teamCareer.careerSweepRate,
-          careerRankings.map((r) => r.careerSweepRate)
+          populations.sweepRates
         ),
         clutch: gradeAgainst(
           'Clutch',
           'Career game 3 win rate',
           teamCareer.careerClutchGame3s > 0 ? teamCareer.careerClutchWinPct : null,
-          allClutchRates
+          populations.clutchRates
         ),
         schedule: gradeAgainst(
           'Schedule',
           'Career strength of schedule',
           teamCareer.careerSos,
-          careerRankings.map((r) => r.careerSos)
+          populations.sos
         ),
         consistency: gradeAgainst(
           'Consistency',
           'Career win rate',
           teamCareer.careerWinPercentage,
-          careerRankings.map((r) => r.careerWinPercentage)
+          populations.winPcts
         ),
         games: gradeAgainst(
           'Games',
           'Career game win rate',
           teamCareer.careerGameWinPercentage,
-          careerRankings.map((r) => r.careerGameWinPercentage)
+          populations.gameWinPcts
         ),
       });
     }
@@ -132,50 +129,44 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
     const matchStats = calculateLeagueMatchStats(latestMatches);
     const teamStats = matchStats.get(teamId) ?? EMPTY_LEAGUE_MATCH_STATS;
 
-    const allSweepRates = rankings.map(
-      (r) => (matchStats.get(r.teamId) ?? EMPTY_LEAGUE_MATCH_STATS).sweepRate
-    );
-    const allClutchRates = rankings
-      .map((r) => matchStats.get(r.teamId) ?? EMPTY_LEAGUE_MATCH_STATS)
-      .filter((s) => s.game3Matches > 0)
-      .map((s) => s.clutchWinPct);
+    const populations = collectSeasonPopulations(rankings, matchStats);
 
     return buildGrades({
       overall: gradeAgainst(
         'Overall',
         'Combined power score ranking',
         teamRanking.powerScore ?? 0,
-        rankings.map((r) => r.powerScore ?? 0)
+        populations.powerScores
       ),
       offense: gradeAgainst(
         'Offense',
         'Dominance in matches (sweep rate)',
         teamStats.sweepRate,
-        allSweepRates
+        populations.sweepRates
       ),
       clutch: gradeAgainst(
         'Clutch',
         'Performance in close matches (game 3)',
         teamStats.game3Matches > 0 ? teamStats.clutchWinPct : null,
-        allClutchRates
+        populations.clutchRates
       ),
       schedule: gradeAgainst(
         'Schedule',
         'Strength of opponents faced',
         teamRanking.sos,
-        rankings.map((r) => r.sos)
+        populations.sos
       ),
       consistency: gradeAgainst(
         'Consistency',
         'Win rate reliability',
         teamRanking.winPercentage,
-        rankings.map((r) => r.winPercentage)
+        populations.winPcts
       ),
       games: gradeAgainst(
         'Games',
         'Individual game win rate',
         teamRanking.gameWinPercentage,
-        rankings.map((r) => r.gameWinPercentage)
+        populations.gameWinPcts
       ),
     });
   }, [teamId, rankings, latestMatches, careerRankingsData, mode]);
