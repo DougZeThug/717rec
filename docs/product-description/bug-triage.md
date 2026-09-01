@@ -2130,7 +2130,13 @@ finding read a superseded migration.
   the row could no longer be edited or deleted. Migration
   `20260901190000_admin_can_read_expired_notifications.sql` adds an admin-only
   SELECT. It is **applied by hand** (`docs/OPERATIONS.md` §6); until it is run,
-  the list behaves as it did before. Separately, the expiry timer scheduled one
+  the list behaves as it did before.
+
+  The feature document was wrong about this before the change and stayed wrong
+  after the first correction: it said an expired notification is "still shown in
+  the bell", unqualified. The bell reads the same query as the list, so an
+  expired row leaves it too — for everyone before the migration, and for
+  everyone but an admin after it. Both places now say so. Separately, the expiry timer scheduled one
   timeout and never re-armed, so only the first expiry was ever noticed; it now
   reschedules after every tick and caps the delay.
 

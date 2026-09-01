@@ -68,8 +68,11 @@ entry past its expiry also carries a grey **EXPIRED** tag and a line reading
 **An expiry is optional.** The New notification form carries an **Expires
 (optional)** date-and-time control under the message. Leave it empty and the
 notification stays until it is deleted; set it and the entry carries the EXPIRED
-tag once that time passes. Until 2026-09-01 there was no such field, so the tag
-and the line described a state no admin could create — see
+tag once that time passes — **for an admin, and only once migration
+`20260901190000` has been applied by hand** (`docs/OPERATIONS.md` §6). Without
+it the table's one SELECT policy hides the row from everyone the moment it
+expires. Until 2026-09-01 there was no expiry field at all, so the tag and the
+line described a state no admin could create — see
 [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
 
 The page opens a live connection to the notification list, so anything another
@@ -146,7 +149,7 @@ entry with a dot that is filled while it is unread.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | The page is admin-only. The bell is visible to every role; the quick-post form and the bins inside it appear only for an admin. | Losing admin mid-session leaves the form and the bins on screen until the profile is re-read; the writes then fail with "Save failed". |
-| The record's state | A notification past its expiry is tagged EXPIRED and still shown in the bell. It stays listed and editable for an admin **only once migration `20260901190000` has been applied by hand** (`docs/OPERATIONS.md` §6); until then the one SELECT policy hides expired rows from everyone and it drops off the admin list. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
+| The record's state | An expired notification is **hidden from everyone** by the table's one SELECT policy — the list and the bell read the same query, so it disappears from both. Migration `20260901190000` adds an admin-only read on top, so **once it is applied by hand** (`docs/OPERATIONS.md` §6) an admin keeps seeing the row, tagged EXPIRED, in the list and in the bell, and can still edit or delete it. A non-admin never sees it either way. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
 | The season's state | No effect. Notifications belong to no season and survive a changeover. | No effect. |
 | Viewport | The page is a single narrow column at every width. The bell popover is a fixed 360 pixels wide. | No effect. |
 | Keys the form honours | Tab moves title, message, expiry, Post, Cancel. **Enter in the title posts the form**, because it is a real form and the button is its submit. Enter in the message adds a newline. | Escape closes the bell popover. It does nothing on the page. |
@@ -231,7 +234,11 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
   could write. Fixed — see
   [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
   The form has an optional expiry field, and editing loads the stored value.
-- **An expired notification is still shown**, in the list and in the bell.
+- **An expired notification disappears for everyone**, from the list and from the
+  bell, because the one SELECT policy on the table filters on `expires_at`.
+  Migration `20260901190000` keeps it visible to an **admin** once applied by
+  hand; a non-admin never sees it. The EXPIRED tag is therefore an admin-only
+  sight. See [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
 - **Editing leaves no trace.** The list shows only when a notification was
   posted, so a message edited an hour later reads as though it always said that.
 - **Starting an edit silently discards a half-written new notification**, because
@@ -261,9 +268,10 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 - Resolved: **the page was unreachable without typing the URL**, and **expiry
   was half-built** — displayed, timed, and unsettable. Both fixed, see
   [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
-- Not confirmed by hand: whether an expired notification really leaves the bell.
-  The admin list keeps it — an admin-only read was added for exactly that, since
-  the one SELECT policy hid expired rows from everyone, admins included.
+- Not confirmed by hand: the expiry behaviour end to end against a live database
+  with migration `20260901190000` applied — that an expired row stays for an
+  admin, in the list and the bell, and leaves for everyone else. It is read from
+  the policies rather than tried.
 - **Notifications are live and the foundations say nothing is.**
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md)
   states that realtime exists only on live scoring. Notifications subscribe, and
