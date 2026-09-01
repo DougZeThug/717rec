@@ -55,6 +55,28 @@ describe('reportCardUtils', () => {
       expect(calculateGPA([{ grade: 'A', weight: 0 }])).toBe(0);
     });
 
+    // B-36: a grade that cannot be measured must neither help nor hurt. Counting
+    // it as an F, or as a neutral C, both invent a result the team did not earn.
+    it('leaves a null grade out of the average entirely', () => {
+      const withNull = calculateGPA([
+        { grade: 'A', weight: 1 },
+        { grade: null, weight: 1 },
+      ]);
+      const withoutIt = calculateGPA([{ grade: 'A', weight: 1 }]);
+
+      expect(withNull).toBe(withoutIt);
+      expect(withNull).toBeCloseTo(4.0, 2);
+    });
+
+    it('returns 0 when no grade can be measured', () => {
+      expect(
+        calculateGPA([
+          { grade: null, weight: 3 },
+          { grade: null, weight: 1 },
+        ])
+      ).toBe(0);
+    });
+
     it('computes weighted average and rounds to 2 decimals', () => {
       const gpa = calculateGPA([
         { grade: 'A', weight: 1 }, // 4.0

@@ -57,10 +57,10 @@ const LeaderboardRow: React.FC<{
       <span
         className={cn(
           'text-sm font-bold font-mono w-7 text-right shrink-0',
-          getGradeColor(entry.overallGrade)
+          entry.overallGrade === null ? 'text-muted-foreground' : getGradeColor(entry.overallGrade)
         )}
       >
-        {entry.overallGrade}
+        {entry.overallGrade ?? '–'}
       </span>
     </div>
   );
