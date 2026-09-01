@@ -128,6 +128,48 @@ describe('useCareerRankings', () => {
     expect(result.current.isLoading).toBe(true);
   });
 
+  // Raised in review: the custom refetch used to hand back the stale rankings
+  // result, which reported no error, so an awaiting caller read a failed retry
+  // as a success. It resolves with nothing now — the failure is read from
+  // `error`, which is the one channel that reports both this query's failure
+  // and its prerequisite's.
+  it('resolves its retry with nothing rather than a result that hides the failure', async () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('teams down'),
+      refetch: vi.fn().mockResolvedValue({ error: new Error('teams still down') }),
+    });
+
+    const { result } = renderHook(() => useCareerRankings());
+
+    await expect(result.current.refetch()).resolves.toBeUndefined();
+    // The failure is still visible, on the field the UI reads.
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect(result.current.isError).toBe(true);
+  });
+
+  it('exposes only the fields its consumers use', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: [{ id: 't1' }],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCareerRankings());
+
+    // A narrow shape on purpose: patching fields onto a borrowed query object
+    // is what let `isError` and the retry contradict `error`.
+    expect(Object.keys(result.current).sort()).toEqual([
+      'data',
+      'error',
+      'isError',
+      'isLoading',
+      'refetch',
+    ]);
+  });
+
   it('passes its own error through when the team list is fine', () => {
     const queryError = new Error('rankings down');
     mockUseTeamsQuery.mockReturnValue({
