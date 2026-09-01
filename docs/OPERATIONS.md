@@ -249,6 +249,10 @@ find the 'opponent1_position' column of 'match'".
 > **Applying the power score weight sandbox** (`20260820120000`) also has its
 > own runbook: **§6b** below.
 
+> **Applying the career power score fix** (`20260901120000`) has its own
+> runbook too: **§6c** below. It changes who holds the King Slayer badge, so
+> read what players will notice before you run it.
+
 > **Seasons are created inactive** (`20260826120000_seasons_created_inactive.sql`).
 > One statement, no runbook: it sets `public.seasons.is_active` to default
 > `false`. Existing rows are untouched, so whichever season is active stays
@@ -403,3 +407,38 @@ Caveats:
   sandbox: §6a's **Re-apply** has drifted from the newer
   `career_power_score` column and would currently fail; it needs its own
   fix before anyone uses the §6a controls again.)
+
+## 6c. Career power score: making the badge agree with the screen
+
+The King Slayer badge is decided in the database, and its career power score
+had drifted from the one shown on the Career standings — far enough to award
+and refuse the badge on numbers nobody could see. Migration
+`supabase/migrations/20260901120000_career_power_score_match_app.sql` makes
+the database compute the same number the app does.
+
+**Apply it the same way as §6b:** Supabase dashboard → SQL Editor → paste the
+**full** contents of that file → Run. It is safe to re-run.
+
+What it does, in order:
+
+1. Adds `resolve_division_bonus_weight(name)`, which reads division weights
+   from the `divisions` table instead of the copy that used to be written into
+   the function.
+2. Replaces `calculate_career_power_score(team_id)` with the app's formula.
+3. Re-checks the **King Slayer** badge for every team in the active season, so
+   badges do not stay as the old formula left them until each team next plays.
+
+**What players will notice.** Some teams gain King Slayer and some lose it, on
+the next page load. Nothing else moves: this function is used by that badge and
+nothing else, and it writes to no table other than `team_badge_events`. Power
+scores, standings and the Career table are untouched.
+
+**How to check it worked.** Open a team holding King Slayer and the team it
+beat, and compare their two career power scores on the Career standings. The
+gap should be 25 or more. Before this migration it did not have to be.
+
+**If it needs undoing.** Re-run
+`supabase/migrations/20260310140000_fix_career_power_score_double_count.sql`,
+which restores the previous function body, then re-run the badge recheck block
+at the foot of the newer migration. Note that this puts the badge back on a
+number that disagrees with the screen.

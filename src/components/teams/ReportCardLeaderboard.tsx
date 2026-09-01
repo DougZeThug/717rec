@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -57,10 +58,10 @@ const LeaderboardRow: React.FC<{
       <span
         className={cn(
           'text-sm font-bold font-mono w-7 text-right shrink-0',
-          getGradeColor(entry.overallGrade)
+          entry.overallGrade === null ? 'text-muted-foreground' : getGradeColor(entry.overallGrade)
         )}
       >
-        {entry.overallGrade}
+        {entry.overallGrade ?? '–'}
       </span>
     </div>
   );
@@ -68,7 +69,7 @@ const LeaderboardRow: React.FC<{
 
 const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, initialMode }) => {
   const [mode, setMode] = useState<ReportCardMode>(initialMode);
-  const { leaderboard, isLoading } = useAllTeamReportCards(mode);
+  const { leaderboard, isLoading, error, retry } = useAllTeamReportCards(mode);
 
   return (
     <Dialog>
@@ -108,6 +109,13 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
                 <Skeleton key={i} className="h-10 rounded-lg" />
               ))}
             </div>
+          ) : error ? (
+            // "No data available yet" would be untrue when the request failed.
+            <ErrorDisplay
+              variant="inline"
+              error="We couldn't load the GPA leaderboard. Please try again."
+              onRetry={retry}
+            />
           ) : leaderboard.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No data available yet.</p>
           ) : (

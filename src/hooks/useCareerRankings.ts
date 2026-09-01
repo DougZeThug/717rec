@@ -16,9 +16,10 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
     data: teams,
     isLoading: isLoadingTeams,
     error: teamsError,
+    refetch: refetchTeams,
   } = useTeamsQuery({ includeHidden });
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['careerRankings', teams?.map((t) => t.id), includeHidden],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
@@ -91,4 +92,47 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
     enabled: !!teams && !isLoadingTeams && !teamsError,
     staleTime: 1000 * 60 * 10, // 10 minutes - career data is extremely static
   });
+
+  // The rankings query is disabled until the team list arrives, so it can never
+  // report the team fetch's own failure: `error` stayed null and `data` stayed
+  // undefined, which every consumer read as an empty league. Fold the
+  // prerequisite's error, loading flag and refetch in here once, rather than
+  // leaving each consumer to remember it. Raised in review of the B-36 fix.
+  const mergedError = query.error ?? teamsError ?? null;
+
+  /**
+   * A narrow shape, deliberately, rather than the query object with fields
+   * patched on top of it.
+   *
+   * This hook has a prerequisite: the rankings query stays disabled until the
+   * team list arrives, so it can never report a team fetch's failure itself.
+   * Merging that error in is necessary — without it a failed request read as an
+   * empty league — but patching one field of a UseQueryResult left the rest
+   * disagreeing with it: `isError` stayed false while `error` was set, and a
+   * custom `refetch` handed back a stale result that reported no failure.
+   *
+   * Returning only what callers use ends that. All four consumers take `data`,
+   * `isLoading`, `error` and `refetch`; anything else is now a type error
+   * rather than a field that quietly contradicts the others.
+   */
+  return {
+    data: query.data,
+    isLoading: isLoadingTeams || query.isLoading,
+    error: mergedError,
+    isError: mergedError !== null,
+    /**
+     * A retry action, not a fetch: it resolves with nothing. The outcome is
+     * read from `error` on the next render, which is the one channel that
+     * reports both this query's failure and its prerequisite's. Rejecting
+     * instead would be worse — callers fire this from an onClick and do not
+     * await it, so a rejection would surface as an unhandled promise.
+     */
+    refetch: async (): Promise<void> => {
+      const teamsResult = await refetchTeams();
+      // Still no team list: the rankings query remains disabled, so refetching
+      // it would do nothing. It re-enables and runs itself once teams are back.
+      if (teamsResult.error) return;
+      await query.refetch();
+    },
+  };
 }

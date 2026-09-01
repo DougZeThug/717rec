@@ -48,8 +48,21 @@ team check before any time was written — so nothing was ever corrupted. The re
 defect on that path was that the save always failed. It moved from `high` to
 `medium` and is now fixed.
 
-A third theme ran under them and is now fixed across four entries:
-**the app telling the user something that is not true.** B-15 failed the contact
+A third theme ran under them and is now fixed across seven entries:
+**the app telling the user something that is not true.** Three of them are in
+the stats pages, and all three were controls or figures that looked like
+measurements and were not. B-34: four standings columns re-sorted the table on
+every press and sorted by power score whichever was pressed. B-36: two of the
+six letter grades on a team's report card were a placeholder and an estimate,
+and the Clutch grade was a raw win rate printed as a percentile — a team 3–2 in
+deciding games was labelled "60th". B-35: the King Slayer badge was decided by a
+career power score that differed from the one on screen by 41 points on a
+threshold of 25. Two of the three reports were themselves wrong in part — B-35
+named a migration that had been dead since March and proposed reading a stored
+value that does not exist, and B-36 named the wrong screen while missing a
+larger fault underneath. See each entry's *Corrected on review* note.
+
+The original four: B-15 failed the contact
 form and the score report for every contributor running from source, and reported
 it as an ordinary failure. B-16 told a signed-out visitor the message board was
 empty when they simply could not read it, and its refresh button reported that
@@ -122,9 +135,9 @@ entry's *Corrected on review* note.
 | B-23 | The mobile menu is not a dialog | medium | cross-cutting | **fixed** | — |
 | B-24 | Bracket administration is unreachable on a phone | medium | playoffs, admin | **fixed** | — |
 | B-25 | Anyone signed out can report a score for any match | medium | scores | product call | — |
-| B-34 | Four standings columns silently sort by power score instead | medium | stats | fix | — |
-| B-35 | A stale fourth career power-score formula decides one badge | medium | stats | fix | — |
-| B-36 | Two grades on the team report card are not real measurements | medium | stats | fix | — |
+| B-34 | Four standings columns silently sort by power score instead | medium | stats | **fixed** | — |
+| B-35 | A stale fourth career power-score formula decides one badge | medium | stats | **fixed** | — |
+| B-36 | Two grades on the team report card are not real measurements | medium | stats | **fixed** | — |
 | B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | product call | — |
 | B-27 | Several actions raise two success toasts, and the second destroys the first | low | admin, teams | fix | — |
@@ -1669,7 +1682,36 @@ finding read a superseded migration.
   `<th>` elements with click handlers, so **the table cannot be sorted by
   keyboard at all** (`DivisionRankingsSection.tsx:148`).
 - **Severity:** `medium`. Wrong but visible on inspection, and recoverable.
-- **Decision needed:** `fix`.
+- **Decision needed:** `fix`. **Done.** `sortRankings` now carries a case for
+  `gamesWon`, `gameWinPercentage` and `streak`. A streak parses to a signed run
+  length, so `W10` > `W2` > `L1` > `L9`, and a team with no completed match
+  sorts last in both directions instead of landing between `W1` and `L1`. The
+  sort field is typed as `RankingSortField` rather than a bare `string`, which
+  is what stops this recurring: a heading can no longer be wired to a column the
+  sorter has no case for. The dead write to browser storage is removed.
+- **Worse than the entry said:** the fallback skipped more than the column. Both
+  the nulls-last rule and the tiebreaker chain were gated on
+  `sortField === 'powerScore'`, so on the four broken columns a team with **no**
+  power score sorted as zero rather than last. Nulls-last now applies to every
+  column.
+- **Corrected on review:** the entry counts four broken columns; three of them
+  were. `#` has no field to sort by at all — the number in it is the row's
+  position under the current sort — so it was not a missing case but a heading
+  that should never have been wired up. It is no longer a control, which is what
+  the career rankings table has always done. Because the default sort is already
+  power score descending, pressing `#` also *looked* like it worked: the first
+  press reproduced the default order and the second reversed it. Games, Game %
+  and Streak were the three that visibly did nothing.
+- **Keyboard:** both rankings tables put the click handler on a bare `<th>`, so
+  neither could be sorted from a keyboard. Each heading is now a real button
+  inside the cell, following `SortButton` in `HeadToHeadRecords.tsx`, which
+  already did it that way. The cell keeps `scope` and `aria-sort`; the career
+  table gains `aria-sort`, which it never had. The career table was not part of
+  this entry — it is the same fault, fixed alongside.
+- **Status:** confirmed by test. Seven sorting cases in
+  `src/utils/rankingUtils/__tests__/index.test.ts` and four keyboard cases in
+  `DivisionRankingsSection.test.tsx`; the sorting cases were shown red against
+  the old fallback first.
 - **Raised by:** [`stats/standings-and-rankings.md`](stats/standings-and-rankings.md#open-questions-and-verification).
 
 ### B-35: A stale fourth career power-score formula decides one badge
@@ -1686,7 +1728,49 @@ finding read a superseded migration.
   calculation. Three other definitions exist elsewhere.
 - **Severity:** `medium`. It affects one badge, but a number with four
   definitions will drift again.
-- **Decision needed:** `fix`. Have the badge read the stored career power score.
+- **Decision needed:** `fix`. **Done.** The database function now mirrors
+  `calculateCareerPowerScore.ts`: squared title bonuses, a cap scaled by
+  division strength, live weights from the `divisions` table, the 0.85 default,
+  the playoff rate weighted by the divisions the runs happened in, a competitive
+  threshold of 0.89, and `career_power_score` falling back to `power_score`.
+  Migration `supabase/migrations/20260901120000_career_power_score_match_app.sql`.
+- **Corrected on review — the entry names a dead file.**
+  `20260225200000_fix-badge-logic.sql` was replaced twice by `CREATE OR REPLACE`
+  on the same signature and has not been the live definition since 2026-03-10.
+  Its `award_kingslayer_badge()` is not called at all any more: the live path is
+  `process_all_match_badges()` → `recompute_kingslayer_badge()`
+  (`20260828153652_c60c4889-…sql:3`). The live body was
+  `20260310140000_fix_career_power_score_double_count.sql`. The drift the entry
+  describes is real; it just lived in a different file, and it was a **two-way**
+  split between the app and the database at runtime, not four-way.
+- **Corrected on review — the proposed fix had no target.** "Have the badge read
+  the stored career power score" is not actionable: **nothing stores a career
+  power score.** The `career_power_score` column on `team_season_stats` and
+  `v_team_details` holds a *per-season* floored score, which is an input to the
+  career total, not the total. There is no materialised view and no career
+  totals table; both sides compute it on demand. Badges must run in SQL inside
+  the result transaction, and the app computes the whole league in one batch
+  rather than one RPC per team, so both implementations have to stay.
+- **What was actually wrong, and by how much:** nine differences, of which the
+  two newest mattered most. The plain/floored split landed in `20260818194322`,
+  five months after the SQL was last touched, so the badge read the *standings*
+  score where the app reads the *career* score. On the parity fixture the two
+  formulas differ by **41 points**. The badge threshold is 25.
+- **Stopping the next drift:** the season formula already has this — fixture
+  values asserted on both sides (`weights.test.ts` ↔
+  `power_score_weight_sandbox.sql`). The career formula now does too:
+  `supabase/tests/career_power_score_parity.sql` and
+  `calculateCareerPowerScore.test.ts` assert the same three fixtures with the
+  same expected totals, and each names the other.
+- **Existing badges:** the migration re-checks King Slayer for every team in the
+  active season, so badges do not stay as the old formula left them until each
+  team next plays. Same shape as `20260828160000_backfill_kingslayer_badges.sql`.
+- **Status:** confirmed by test at both levels, against a full replay of every
+  migration into Postgres. The parity test was shown red against the old formula
+  (94.90 where the app gives 53.43). `supabase/tests/match_badge_processing.sql`
+  now seeds `career_power_score` and `power_score` far apart, so reading the
+  wrong column fails the King Slayer case; that too was shown red first. All 27
+  SQL smoke tests pass on a fresh database.
 - **Raised by:** [`stats/power-score.md`](stats/power-score.md#open-questions-and-verification),
   [`stats/badges.md`](stats/badges.md#open-questions-and-verification).
 
@@ -1706,6 +1790,58 @@ finding read a superseded migration.
   sweep rate for the comparison population.
 - **Severity:** `medium`. It presents a placeholder as a result.
 - **Decision needed:** `fix`. Compute them, or show them as unavailable.
+  **Done — computed.** Both figures were already available and simply not used:
+  the rankings query fetches every match in the league, under the same React
+  Query key, so grouping that list by team once yields a real sweep rate and a
+  real game-3 record for every team at no extra request, through the existing
+  `calculateSweepRate` and `calculateClutchRecord` helpers. Both estimate
+  formulas are deleted.
+- **Corrected on review — the entry points at the wrong screen.** The hardcoded
+  50 is in `useAllTeamReportCards.ts`, which feeds the **GPA leaderboard**, not
+  the six grade cards. The cards computed the viewed team's real clutch record
+  and fell back to 50 only when it had no game 3. So the constant never appeared
+  as a grade — but it carried 1 of 9.5 GPA weight for every team, which moved
+  the leaderboard's **order**. On that leaderboard no team got a real sweep rate
+  either, and because the estimate was a monotone transform of game win
+  percentage, its Offense grade was a restatement of its Games grade.
+- **Worse than the entry said — Clutch was never a percentile, in either mode.**
+  The raw game-3 win rate was written into a field named `percentile` and
+  rendered as "60th". A team 3–2 in game 3s was labelled 60th and graded C+
+  whatever the rest of the league did. The real split was four percentile
+  grades, one contaminated percentile, and one absolute stat wearing a
+  percentile's label. Clutch is now ranked against the league like the other
+  five, so the "Nth" label is true.
+- **A consequence neither the entry nor the document noticed:** the GPA on a
+  team's card and the GPA on its own row in *View All GPAs* — shown one button
+  apart — came from different maths and disagreed for the same team. They now
+  agree, and a test asserts it.
+- **Unavailable rather than neutral:** a team that has never played a deciding
+  third game has no clutch rate. Its Clutch card shows a dash in muted text and
+  the grade is left out of the GPA — neither helping nor hurting — instead of
+  being counted as a fail or a neutral C. This is the rule
+  `src/utils/liveScoring/pprCalc.ts` already follows for points per round
+  ("never fake a 0.0 PPR"), which is the precedent the entry asked for.
+- **Found by reviewing the fix:** two more things were wrong on the same screen,
+  and one of them the fix made worse. A team with **no rating** — Power reads
+  "—" — was graded as a zero, which both handed it six grades it had not earned
+  and, because the grades are percentiles, padded the population every other
+  team is ranked against, so everyone else's grade read better than it was. It
+  now gets no card and is left out of every comparison. And a **failed** fetch
+  of the league match list was treated as an empty one, so every team read as
+  0% sweeps with no clutch record and the card showed Offense F and Clutch "–"
+  for the whole league as though it had loaded; that path did not exist before
+  the fix, because the card used to read one team's matches and the leaderboard
+  read none. Both screens now show a failure message with a Try Again button.
+- **Status:** confirmed by test. `useTeamReportCard.test.ts` was rewritten to
+  use real match fixtures and real percentile maths rather than asserting mock
+  call order — the old file pinned both defects as intended behaviour
+  (`expect(offenseCall[1]).toEqual([55, 52])` and two `clutch.percentile === 50`
+  cases). `useAllTeamReportCards.test.ts` is new; that hook had no test at all,
+  which is why the hardcoded grade was never caught. Three of its cases were
+  shown red against the old behaviour first, and sixteen more for the two
+  follow-up faults above. One test written with the original fix had itself
+  pinned the defect — "counts a missing power score as 0 for the ranking maths"
+  — the same fault this entry criticises in the tests that preceded it.
 - **Raised by:** [`stats/team-and-player-stats.md`](stats/team-and-player-stats.md#open-questions-and-verification).
 
 ### B-38: The head-to-head dialog shows the wrong W/L badge on half of every team's matches

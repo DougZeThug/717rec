@@ -1,4 +1,3 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import React, { useMemo } from 'react';
 
 import { Table, TableBody, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,8 +6,10 @@ import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
 import { debugLog } from '@/utils/logger';
+import type { RankingSortField } from '@/utils/rankingUtils';
 
 import RankingTableRow from '../RankingTableRow';
+import { SortableColumnHeader } from '../SortableColumnHeader';
 import { SortOptions } from '../types';
 
 interface DivisionRankingsSectionProps {
@@ -18,7 +19,7 @@ interface DivisionRankingsSectionProps {
   expandedTeam: string | null;
   toggleExpand: (teamId: string) => void;
   sortOptions: SortOptions;
-  onSortChange: (field: string) => void;
+  onSortChange: (field: RankingSortField) => void;
   showUnified?: boolean;
   isLight: boolean;
 }
@@ -48,21 +49,6 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     }
     return map;
   }, [allBadges]);
-
-  const getSortIndicator = (field: string) => {
-    if (sortOptions.field !== field) return null;
-    return sortOptions.direction === 'asc' ? (
-      <ChevronUp className="inline size-4" />
-    ) : (
-      <ChevronDown className="inline size-4" />
-    );
-  };
-
-  // Get aria-sort value for table headers
-  const getAriaSort = (field: string): 'ascending' | 'descending' | 'none' => {
-    if (sortOptions.field !== field) return 'none';
-    return sortOptions.direction === 'asc' ? 'ascending' : 'descending';
-  };
 
   // Use the rankings as-is since divisionRank is already calculated correctly in RankingsTable.tsx
   const rankedDivisionTeams = rankings;
@@ -145,22 +131,22 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
             )}
           >
             <TableRow>
-              <TableHead
-                className={cn('w-12 transition-colors cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('rank')}
-                aria-sort={getAriaSort('rank')}
-                scope="col"
-              >
-                # {getSortIndicator('rank')}
+              {/* Not sortable: the number in this column IS the current sort
+                  position, so there is nothing of its own to sort by. The career
+                  rankings table has always treated "#" the same way. */}
+              <TableHead className={cn('w-12 font-medium', headerTextColor)} scope="col">
+                #
               </TableHead>
-              <TableHead
-                className={cn('transition-colors cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('teamName')}
-                aria-sort={getAriaSort('teamName')}
-                scope="col"
+              <SortableColumnHeader
+                field="teamName"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                align="left"
+                className={cn('transition-colors', headerTextColor)}
               >
-                Team {getSortIndicator('teamName')}
-              </TableHead>
+                Team
+              </SortableColumnHeader>
               {showUnified && (
                 <TableHead
                   className={cn(
@@ -172,68 +158,69 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   Division
                 </TableHead>
               )}
-              <TableHead
-                className={cn('text-center cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('powerScore')}
-                aria-sort={getAriaSort('powerScore')}
-                scope="col"
+              <SortableColumnHeader
+                field="powerScore"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center', headerTextColor)}
               >
-                Power {getSortIndicator('powerScore')}
-              </TableHead>
-              <TableHead
-                className={cn('text-center cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('wins')}
-                aria-sort={getAriaSort('wins')}
-                scope="col"
+                Power
+              </SortableColumnHeader>
+              <SortableColumnHeader
+                field="wins"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center', headerTextColor)}
               >
-                W-L {getSortIndicator('wins')}
-              </TableHead>
-              <TableHead
-                className={cn('text-center cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('winPercentage')}
-                aria-sort={getAriaSort('winPercentage')}
-                scope="col"
+                W-L
+              </SortableColumnHeader>
+              <SortableColumnHeader
+                field="winPercentage"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center', headerTextColor)}
               >
-                Win % {getSortIndicator('winPercentage')}
-              </TableHead>
-              <TableHead
-                className={cn(
-                  'text-center hidden md:table-cell cursor-pointer font-medium',
-                  headerTextColor
-                )}
-                onClick={() => onSortChange('gamesWon')}
-                aria-sort={getAriaSort('gamesWon')}
-                scope="col"
+                Win %
+              </SortableColumnHeader>
+              <SortableColumnHeader
+                field="gamesWon"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center hidden md:table-cell', headerTextColor)}
               >
-                Games {getSortIndicator('gamesWon')}
-              </TableHead>
-              <TableHead
-                className={cn(
-                  'text-center hidden lg:table-cell cursor-pointer font-medium',
-                  headerTextColor
-                )}
-                onClick={() => onSortChange('gameWinPercentage')}
-                aria-sort={getAriaSort('gameWinPercentage')}
-                scope="col"
+                Games
+              </SortableColumnHeader>
+              <SortableColumnHeader
+                field="gameWinPercentage"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center hidden lg:table-cell', headerTextColor)}
               >
-                Game % {getSortIndicator('gameWinPercentage')}
-              </TableHead>
-              <TableHead
-                className={cn('text-center cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('sos')}
-                aria-sort={getAriaSort('sos')}
-                scope="col"
+                Game %
+              </SortableColumnHeader>
+              <SortableColumnHeader
+                field="sos"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center', headerTextColor)}
               >
-                SOS {getSortIndicator('sos')}
-              </TableHead>
-              <TableHead
-                className={cn('text-center cursor-pointer font-medium', headerTextColor)}
-                onClick={() => onSortChange('streak')}
-                aria-sort={getAriaSort('streak')}
-                scope="col"
+                SOS
+              </SortableColumnHeader>
+              <SortableColumnHeader
+                field="streak"
+                activeField={sortOptions.field}
+                direction={sortOptions.direction}
+                onSort={onSortChange}
+                className={cn('text-center', headerTextColor)}
               >
-                Streak {getSortIndicator('streak')}
-              </TableHead>
+                Streak
+              </SortableColumnHeader>
               <TableHead
                 className={cn(
                   'text-center font-medium',

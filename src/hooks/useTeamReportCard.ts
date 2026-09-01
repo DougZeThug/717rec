@@ -1,24 +1,95 @@
 import { useMemo } from 'react';
 
+import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
-import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { calculatePercentile } from '@/utils/percentileUtils';
+import {
+  collectCareerPopulations,
+  collectSeasonPopulations,
+  isGradeable,
+} from '@/utils/reportCardPopulations';
 import { calculateGPA, calculateGrade, GradeCategory, TeamGrades } from '@/utils/reportCardUtils';
-import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
-import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
+import {
+  calculateLeagueMatchStats,
+  EMPTY_LEAGUE_MATCH_STATS,
+} from '@/utils/teamDetailsUtils/leagueMatchStats';
 
 export type ReportCardMode = 'season' | 'career';
 
+/**
+ * Build one graded category from a value ranked against the league.
+ *
+ * `null` means the category cannot be measured for this team; the card shows a
+ * dash rather than a letter. See B-36 in
+ * `docs/product-description/bug-triage.md`.
+ */
+const gradeAgainst = (
+  label: string,
+  description: string,
+  value: number | null,
+  population: number[]
+): GradeCategory => {
+  if (value === null || population.length === 0) {
+    return { label, grade: null, percentile: null, description };
+  }
+  const { percentile } = calculatePercentile(value, population, true);
+  return { label, grade: calculateGrade(percentile), percentile, description };
+};
+
+/** The six categories and the weight each carries in the GPA. */
+const GRADE_WEIGHTS = {
+  overall: 3,
+  consistency: 2,
+  games: 1.5,
+  offense: 1,
+  clutch: 1,
+  schedule: 1,
+} as const;
+
+const buildGrades = (categories: Omit<TeamGrades, 'gpa'>): TeamGrades => ({
+  ...categories,
+  gpa: calculateGPA([
+    { grade: categories.overall.grade, weight: GRADE_WEIGHTS.overall },
+    { grade: categories.consistency.grade, weight: GRADE_WEIGHTS.consistency },
+    { grade: categories.games.grade, weight: GRADE_WEIGHTS.games },
+    { grade: categories.offense.grade, weight: GRADE_WEIGHTS.offense },
+    { grade: categories.clutch.grade, weight: GRADE_WEIGHTS.clutch },
+    { grade: categories.schedule.grade, weight: GRADE_WEIGHTS.schedule },
+  ]),
+});
+
 export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMode = 'season') {
-  const { rankings, isLoading: isLoadingRankings } = useTeamRankings();
-  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
-  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({
-    includeHidden: true,
-  });
+  const {
+    rankings,
+    isLoading: isLoadingRankings,
+    error: rankingsError,
+    refetch: refetchRankings,
+  } = useTeamRankings();
+  // The league-wide match list. Same React Query key as the one useTeamRankings
+  // already runs, so this is deduped — no extra request. It is what makes a real
+  // sweep rate and clutch record available for every team, not just this one.
+  const { latestMatches, matchesLoading, matchesError } = useRankingsData();
+  const {
+    data: careerRankingsData,
+    isLoading: isLoadingCareer,
+    error: careerError,
+    refetch: refetchCareer,
+  } = useCareerRankings({ includeHidden: true });
+
+  // A failed fetch is not "no data". Without this the match list arrives as
+  // undefined, every team's sweep rate reads 0 and no team has a clutch rate, so
+  // the card shows Offense F and Clutch "–" for everyone as though it had
+  // loaded. Career mode needs the same treatment: its own fetch can fail too.
+  // Raised in review of the B-36 fix.
+  const error =
+    mode === 'season'
+      ? (matchesError ?? rankingsError ?? null)
+      : ((careerError as Error | null) ?? null);
 
   const grades = useMemo((): TeamGrades | null => {
     if (!teamId) return null;
+    if (error) return null;
 
     if (mode === 'career') {
       const careerRankings = careerRankingsData || [];
@@ -27,95 +98,46 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       const teamCareer = careerRankings.find((r) => r.teamId === teamId);
       if (!teamCareer) return null;
 
-      const allPowerScores = careerRankings.map((r) => r.careerPowerScore);
-      const allWinPcts = careerRankings.map((r) => r.careerWinPercentage);
-      const allSos = careerRankings.map((r) => r.careerSos);
-      const allSweepRates = careerRankings.map((r) => r.careerSweepRate);
-      const allGameWinPcts = careerRankings.map((r) => r.careerGameWinPercentage);
+      const populations = collectCareerPopulations(careerRankings);
 
-      const overallPercentile = calculatePercentile(
-        teamCareer.careerPowerScore,
-        allPowerScores,
-        true
-      );
-      const overall: GradeCategory = {
-        label: 'Overall',
-        grade: calculateGrade(overallPercentile.percentile),
-        percentile: overallPercentile.percentile,
-        description: 'Career power score ranking',
-      };
-
-      const offensePercentile = calculatePercentile(
-        teamCareer.careerSweepRate,
-        allSweepRates,
-        true
-      );
-      const offense: GradeCategory = {
-        label: 'Offense',
-        grade: calculateGrade(offensePercentile.percentile),
-        percentile: offensePercentile.percentile,
-        description: 'Career sweep rate',
-      };
-
-      const clutchPercentile =
-        teamCareer.careerClutchGame3s > 0 ? Math.round(teamCareer.careerClutchWinPct) : 50;
-      const clutch: GradeCategory = {
-        label: 'Clutch',
-        grade: calculateGrade(clutchPercentile),
-        percentile: clutchPercentile,
-        description: 'Career game 3 win rate',
-      };
-
-      const schedulePercentile = calculatePercentile(teamCareer.careerSos, allSos, true);
-      const schedule: GradeCategory = {
-        label: 'Schedule',
-        grade: calculateGrade(schedulePercentile.percentile),
-        percentile: schedulePercentile.percentile,
-        description: 'Career strength of schedule',
-      };
-
-      const consistencyPercentile = calculatePercentile(
-        teamCareer.careerWinPercentage,
-        allWinPcts,
-        true
-      );
-      const consistency: GradeCategory = {
-        label: 'Consistency',
-        grade: calculateGrade(consistencyPercentile.percentile),
-        percentile: consistencyPercentile.percentile,
-        description: 'Career win rate',
-      };
-
-      const gamesPercentile = calculatePercentile(
-        teamCareer.careerGameWinPercentage,
-        allGameWinPcts,
-        true
-      );
-      const games: GradeCategory = {
-        label: 'Games',
-        grade: calculateGrade(gamesPercentile.percentile),
-        percentile: gamesPercentile.percentile,
-        description: 'Career game win rate',
-      };
-
-      const weightedGrades = [
-        { grade: overall.grade, weight: 3 },
-        { grade: consistency.grade, weight: 2 },
-        { grade: games.grade, weight: 1.5 },
-        { grade: offense.grade, weight: 1 },
-        { grade: clutch.grade, weight: 1 },
-        { grade: schedule.grade, weight: 1 },
-      ];
-
-      return {
-        overall,
-        offense,
-        clutch,
-        schedule,
-        consistency,
-        games,
-        gpa: calculateGPA(weightedGrades),
-      };
+      return buildGrades({
+        overall: gradeAgainst(
+          'Overall',
+          'Career power score ranking',
+          teamCareer.careerPowerScore,
+          populations.powerScores
+        ),
+        offense: gradeAgainst(
+          'Offense',
+          'Career sweep rate',
+          teamCareer.careerSweepRate,
+          populations.sweepRates
+        ),
+        clutch: gradeAgainst(
+          'Clutch',
+          'Career game 3 win rate',
+          teamCareer.careerClutchGame3s > 0 ? teamCareer.careerClutchWinPct : null,
+          populations.clutchRates
+        ),
+        schedule: gradeAgainst(
+          'Schedule',
+          'Career strength of schedule',
+          teamCareer.careerSos,
+          populations.sos
+        ),
+        consistency: gradeAgainst(
+          'Consistency',
+          'Career win rate',
+          teamCareer.careerWinPercentage,
+          populations.winPcts
+        ),
+        games: gradeAgainst(
+          'Games',
+          'Career game win rate',
+          teamCareer.careerGameWinPercentage,
+          populations.gameWinPcts
+        ),
+      });
     }
 
     // Season mode
@@ -123,104 +145,78 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
 
     const teamRanking = rankings.find((r) => r.teamId === teamId);
     if (!teamRanking) return null;
+    // No rating, nothing to grade. The card shows its "play some matches first"
+    // panel rather than six grades built from zeroes the team never earned.
+    if (!isGradeable(teamRanking)) return null;
 
-    const allPowerScores = rankings.map((r) => r.powerScore ?? 0);
-    const allWinPcts = rankings.map((r) => r.winPercentage);
-    const allSos = rankings.map((r) => r.sos);
-    const allGameWinPcts = rankings.map((r) => r.gameWinPercentage);
+    // Real sweep rates and clutch records for the whole league, from the match
+    // list above. The sweep rate of every team but this one used to be guessed
+    // from its game win percentage, so a team was graded against estimates.
+    const matchStats = calculateLeagueMatchStats(latestMatches);
+    const teamStats = matchStats.get(teamId) ?? EMPTY_LEAGUE_MATCH_STATS;
 
-    const allSweepRates = rankings.map((r) => {
-      if (r.teamId === teamId) {
-        return calculateSweepRate(teamId, pastMatches).sweepRate;
-      }
-      const totalMatches = r.wins + r.losses;
-      if (totalMatches === 0) return 0;
-      // Estimated sweep rate must be on the same 0-100 scale as calculateSweepRate's output.
-      return r.gameWinPercentage > 0.6 ? r.gameWinPercentage * 80 : r.gameWinPercentage * 50;
+    const populations = collectSeasonPopulations(rankings, matchStats);
+
+    return buildGrades({
+      overall: gradeAgainst(
+        'Overall',
+        'Combined power score ranking',
+        teamRanking.powerScore as number,
+        populations.powerScores
+      ),
+      offense: gradeAgainst(
+        'Offense',
+        'Dominance in matches (sweep rate)',
+        teamStats.sweepRate,
+        populations.sweepRates
+      ),
+      clutch: gradeAgainst(
+        'Clutch',
+        'Performance in close matches (game 3)',
+        teamStats.game3Matches > 0 ? teamStats.clutchWinPct : null,
+        populations.clutchRates
+      ),
+      schedule: gradeAgainst(
+        'Schedule',
+        'Strength of opponents faced',
+        teamRanking.sos,
+        populations.sos
+      ),
+      consistency: gradeAgainst(
+        'Consistency',
+        'Win rate reliability',
+        teamRanking.winPercentage,
+        populations.winPcts
+      ),
+      games: gradeAgainst(
+        'Games',
+        'Individual game win rate',
+        teamRanking.gameWinPercentage,
+        populations.gameWinPcts
+      ),
     });
-
-    const teamClutchRecord = calculateClutchRecord(teamId, pastMatches);
-    const teamSweepStats = calculateSweepRate(teamId, pastMatches);
-
-    const overallPercentile = calculatePercentile(
-      teamRanking.powerScore ?? 0,
-      allPowerScores,
-      true
-    );
-    const overall: GradeCategory = {
-      label: 'Overall',
-      grade: calculateGrade(overallPercentile.percentile),
-      percentile: overallPercentile.percentile,
-      description: 'Combined power score ranking',
-    };
-
-    const offensePercentile = calculatePercentile(teamSweepStats.sweepRate, allSweepRates, true);
-    const offense: GradeCategory = {
-      label: 'Offense',
-      grade: calculateGrade(offensePercentile.percentile),
-      percentile: offensePercentile.percentile,
-      description: 'Dominance in matches (sweep rate)',
-    };
-
-    const clutchPct = teamClutchRecord.clutchWinPct;
-    const clutchPercentile = teamClutchRecord.game3Matches > 0 ? Math.round(clutchPct) : 50;
-    const clutch: GradeCategory = {
-      label: 'Clutch',
-      grade: calculateGrade(clutchPercentile),
-      percentile: clutchPercentile,
-      description: 'Performance in close matches (game 3)',
-    };
-
-    const schedulePercentile = calculatePercentile(teamRanking.sos, allSos, true);
-    const schedule: GradeCategory = {
-      label: 'Schedule',
-      grade: calculateGrade(schedulePercentile.percentile),
-      percentile: schedulePercentile.percentile,
-      description: 'Strength of opponents faced',
-    };
-
-    const consistencyPercentile = calculatePercentile(teamRanking.winPercentage, allWinPcts, true);
-    const consistency: GradeCategory = {
-      label: 'Consistency',
-      grade: calculateGrade(consistencyPercentile.percentile),
-      percentile: consistencyPercentile.percentile,
-      description: 'Win rate reliability',
-    };
-
-    const gamesPercentile = calculatePercentile(
-      teamRanking.gameWinPercentage,
-      allGameWinPcts,
-      true
-    );
-    const games: GradeCategory = {
-      label: 'Games',
-      grade: calculateGrade(gamesPercentile.percentile),
-      percentile: gamesPercentile.percentile,
-      description: 'Individual game win rate',
-    };
-
-    const weightedGrades = [
-      { grade: overall.grade, weight: 3 },
-      { grade: consistency.grade, weight: 2 },
-      { grade: games.grade, weight: 1.5 },
-      { grade: offense.grade, weight: 1 },
-      { grade: clutch.grade, weight: 1 },
-      { grade: schedule.grade, weight: 1 },
-    ];
-
-    return {
-      overall,
-      offense,
-      clutch,
-      schedule,
-      consistency,
-      games,
-      gpa: calculateGPA(weightedGrades),
-    };
-  }, [teamId, rankings, pastMatches, careerRankingsData, mode]);
+  }, [teamId, rankings, latestMatches, careerRankingsData, mode, error]);
 
   return {
     grades,
-    isLoading: mode === 'season' ? isLoadingRankings || isLoadingMatches : isLoadingCareer,
+    isLoading: mode === 'season' ? isLoadingRankings || matchesLoading : isLoadingCareer,
+    error,
+    // Void-returning on purpose: the caller is an onClick, and it should not
+    // have to discard a promise it has no use for.
+    //
+    // Retry has to clear whichever fetch failed. Refetching only the match list
+    // left a rankings failure stuck in the error state until a page reload.
+    retry: () => {
+      if (mode === 'career') {
+        // No `void`: the hook's refetch is a retry action that resolves with
+        // nothing, so there is no promise here worth discarding.
+        refetchCareer();
+        return;
+      }
+      // Covers the team list and, through the same query key, the match list —
+      // useTeamRankings' own refetch does both, so calling refetchMatches here
+      // as well would only start a second fetch of the same query.
+      refetchRankings();
+    },
   };
 }

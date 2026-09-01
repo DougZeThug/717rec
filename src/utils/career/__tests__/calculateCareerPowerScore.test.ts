@@ -1,22 +1,24 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { calculateCareerPowerScore } from '../calculateCareerPowerScore';
 
 // Live division weights come from the divisions table — mock the cache, not values in code.
+const weightState = vi.hoisted(() => ({
+  byName: new Map<string, number>([
+    ['competitive', 1.0],
+    ['competitive low', 0.95],
+    ['cuspers', 0.9],
+    ['intermediate high', 0.8],
+    ['intermediate', 0.7],
+    ['intermediate low', 0.6],
+    ['recreational high', 0.6],
+    ['recreational', 0.35],
+  ]),
+}));
+const DEFAULT_WEIGHTS = new Map(weightState.byName);
+
 vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
-  fetchDivisionWeightsByName: vi.fn(
-    async () =>
-      new Map<string, number>([
-        ['competitive', 1.0],
-        ['competitive low', 0.95],
-        ['cuspers', 0.9],
-        ['intermediate high', 0.8],
-        ['intermediate', 0.7],
-        ['intermediate low', 0.6],
-        ['recreational high', 0.6],
-        ['recreational', 0.35],
-      ])
-  ),
+  fetchDivisionWeightsByName: vi.fn(() => Promise.resolve(weightState.byName)),
   getDefaultDivisionWeight: () => 0.85,
 }));
 
@@ -244,7 +246,7 @@ describe('calculateCareerPowerScore', () => {
     expect(result).toBe(80);
   });
 
-  it('returns 50 when no match data is available', async () => {
+  it('returns 0 when the team has played nothing', async () => {
     const result = await calculateCareerPowerScore({
       teamId: 'team-1',
       championshipDivisions: [],
@@ -257,6 +259,133 @@ describe('calculateCareerPowerScore', () => {
       prefetchedCurrentTeamData: null,
     });
 
-    expect(result).toBe(50);
+    // A team that has never played sits at the foot of the career table. It
+    // used to be given 50, which put it mid-table above teams with a real
+    // losing record.
+    expect(result).toBe(0);
+  });
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Parity with the database.
+  //
+  // calculate_career_power_score() in SQL decides the King Slayer badge; this
+  // function produces the number on screen. They drifted apart for months
+  // without anything noticing (B-35), so these three fixtures — the inputs and
+  // the expected totals — are asserted identically in
+  // supabase/tests/career_power_score_parity.sql. Change one side and the
+  // other fails.
+  // ────────────────────────────────────────────────────────────────────────
+  describe('parity with supabase/tests/career_power_score_parity.sql', () => {
+    beforeEach(() => {
+      // The same live weights that test pins on the divisions table.
+      weightState.byName = new Map<string, number>([
+        ['competitive', 1.0],
+        ['intermediate high', 0.7],
+        ['cuspers', 0.95],
+      ]);
+    });
+
+    afterEach(() => {
+      weightState.byName = new Map(DEFAULT_WEIGHTS);
+    });
+
+    const parityInput = {
+      teamId: 'parity-team',
+      runnerUpDivisions: [] as string[],
+      careerPlayoffWins: 0,
+      careerPlayoffLosses: 0,
+      competitivePlayoffWins: 0,
+      teamDivisionWeight: 1.0,
+      playoffDivisions: [] as string[],
+      prefetchedCurrentTeamData: null,
+    };
+
+    // Fixture 1: the floored season score, and a squared title bonus.
+    // base 50 (career_power_score 0.50, not power_score 0.90)
+    // + 7 x 0.70^2 = 3.43, under a cap of 15 x 0.70^2 = 7.35.
+    it('fixture 1: prefers the floored season score and squares the title bonus', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Intermediate 1'],
+        prefetchedSeasonStats: [
+          {
+            power_score: 0.9,
+            career_power_score: 0.5,
+            match_wins: 6,
+            match_losses: 4,
+            season_id: 'parity-1',
+          },
+        ],
+      });
+
+      expect(result).toBeCloseTo(53.43, 4);
+    });
+
+    // Fixture 2: three soft-division titles run into the scaled cap.
+    // 3 x 7 x 0.70^2 = 10.29, capped at 15 x 0.70^2 = 7.35.
+    it('fixture 2: caps three soft-division titles by division strength', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Intermediate High', 'Intermediate High', 'Intermediate High'],
+        prefetchedSeasonStats: [
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p1',
+          },
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p2',
+          },
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p3',
+          },
+        ],
+      });
+
+      expect(result).toBeCloseTo(57.35, 4);
+    });
+
+    // Fixture 4: no matches at all.
+    // base 0, no bonuses to add — the foot of the career table.
+    it('fixture 4: scores a team that has played nothing as 0', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: [],
+        prefetchedSeasonStats: [],
+      });
+
+      expect(result).toBe(0);
+    });
+
+    // Fixture 3: the weight comes from the divisions table.
+    // "Cuspers" is 0.95 here; the old SQL had it hardcoded at 0.70 and could
+    // never see an admin re-weight it. 7 x 0.95^2 = 6.3175.
+    it('fixture 3: reads the live weight of a re-weighted division', async () => {
+      const result = await calculateCareerPowerScore({
+        ...parityInput,
+        championshipDivisions: ['Cuspers'],
+        prefetchedSeasonStats: [
+          {
+            career_power_score: 0.5,
+            power_score: 0.5,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'p1',
+          },
+        ],
+      });
+
+      expect(result).toBeCloseTo(56.3175, 4);
+    });
   });
 });

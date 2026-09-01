@@ -160,7 +160,9 @@ Because they are built differently, **a team can be higher in the standings than
 in the career table, or the other way round, with nothing wrong**. Nothing in the
 app warns about this.
 
-A team with no matches at all is given a career score of 50 rather than nothing.
+A team with no matches at all has a career score of 0, so it sits at the foot
+of the career table. Unlike the standings, where an unplayed team shows "—"
+and no rating, the career table gives it a real number.
 
 ## Where a power score appears
 
@@ -177,7 +179,8 @@ A team with no matches at all is given a career score of 50 rather than nothing.
 - **Power Score Trends** — week-over-week and season-over-season movement, built
   from snapshots captured every Thursday at 11pm Eastern.
 - **Badges** — the King Slayer and Gatekeeper badges are decided by power score.
-  See [`badges.md`](badges.md).
+  King Slayer uses the same career score the career table shows. See
+  [`badges.md`](badges.md).
 
 The colour is meaningful everywhere it is shown: eight bands from gold at 85 and
 above, through green, blue, orange, amber, pink and purple, to red below 20. A
@@ -273,18 +276,13 @@ looks like a bug to anyone watching one team.
   so.
 - **The career table can rank a team above a team that beats it in the
   standings**, because the two numbers are different calculations.
-- **A team with no matches has a career score of 50**, which places it in the
-  middle of the career table rather than at the bottom.
+- **A team with no matches has a career score of 0**, which places it at the
+  bottom of the career table, below every team with a record. The two tables
+  differ here on purpose: the standings show "—" and no rating for the same
+  team.
 
 ## Open questions and verification
 
-- **A fourth definition of career power score exists in the database and is out
-  of date.** The King Slayer badge is decided by a server-side career score that
-  still uses linear bonuses, a flat cap of 15, and division weights written into
-  the code, while the career score shown on screen squares its bonuses, scales
-  its cap, and reads live weights. The badge can therefore be awarded or refused
-  on a number nobody can see. **May be worth treating as a bug rather than
-  documenting.**
 - **Nothing in the app explains that beating a weak team can lower the score.**
   This is the league's most predictable support question and the product answers
   it nowhere. A product decision rather than a defect.
@@ -301,4 +299,6 @@ looks like a bug to anyone watching one team.
   ceiling of the number. They are edited through the admin screen and no
   migration holds the current values.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the career score the King
+Slayer badge is decided by, which was changed after that commit — see
+[B-35](../bug-triage.md#b-35-a-stale-fourth-career-power-score-formula-decides-one-badge).

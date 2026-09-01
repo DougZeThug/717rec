@@ -222,12 +222,19 @@ BEGIN
     (v_underdog, 'Underdog', v_div_weak),
     (v_titan,    'Titan',    v_div_strong);
 
-  -- Career power score comes from closed seasons, on a 0-1 scale. This puts the
-  -- two teams 85 apart, well past the 25 the badge needs.
+  -- Career power score comes from closed seasons, on a 0-1 scale.
+  --
+  -- career_power_score is the floored (earned-schedule) figure the career
+  -- rankings show; power_score is the plain standings one. The badge check must
+  -- read the floored value, as the app does — it read power_score for five
+  -- months after the two were split (B-35). The values below are deliberately
+  -- far apart on the two columns: on career_power_score the teams are 85 apart
+  -- and the badge is earned; on power_score they are 5 apart and it is not.
   INSERT INTO public.team_season_stats (season_id, team_id, match_wins, match_losses,
-                                        game_wins, game_losses, division_name, power_score, recorded_at) VALUES
-    (v_prior, v_underdog, 1, 5,  3, 11, 'Slayer Recreational', 0.10, now()),
-    (v_prior, v_titan,    9, 0, 18,  2, 'Slayer Competitive',  0.95, now());
+                                        game_wins, game_losses, division_name,
+                                        power_score, career_power_score, recorded_at) VALUES
+    (v_prior, v_underdog, 1, 5,  3, 11, 'Slayer Recreational', 0.90, 0.10, now()),
+    (v_prior, v_titan,    9, 0, 18,  2, 'Slayer Competitive',  0.95, 0.95, now());
 
   PERFORM auth.set_test_claims(v_admin_id);
 

@@ -7,8 +7,14 @@ export type LetterGrade = 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | '
 
 export interface GradeCategory {
   label: string;
-  grade: LetterGrade;
-  percentile: number;
+  /**
+   * `null` when the grade cannot be measured — a team with no deciding third
+   * game has no clutch rate. A placeholder letter would read as a result, so
+   * the card shows a dash instead, the way points per round already does. See
+   * `src/utils/liveScoring/pprCalc.ts` for the same rule.
+   */
+  grade: LetterGrade | null;
+  percentile: number | null;
   description: string;
 }
 
@@ -94,12 +100,19 @@ export function getGradeChartColor(grade: LetterGrade): string {
 }
 
 /**
- * Calculate weighted GPA from an array of grades with weights
+ * Calculate weighted GPA from an array of grades with weights.
+ *
+ * A grade of `null` is not measurable, so it is left out of both the total and
+ * the divisor — it neither helps nor hurts. Counting it as an F, or as a
+ * neutral C, would both be inventing a result.
  */
-export function calculateGPA(grades: { grade: LetterGrade; weight: number }[]): number {
-  if (grades.length === 0) return 0;
-  const totalWeight = grades.reduce((sum, g) => sum + g.weight, 0);
+export function calculateGPA(grades: { grade: LetterGrade | null; weight: number }[]): number {
+  const measured = grades.filter(
+    (g): g is { grade: LetterGrade; weight: number } => g.grade !== null
+  );
+  if (measured.length === 0) return 0;
+  const totalWeight = measured.reduce((sum, g) => sum + g.weight, 0);
   if (totalWeight === 0) return 0;
-  const weightedTotal = grades.reduce((sum, g) => sum + GRADE_GPA[g.grade] * g.weight, 0);
+  const weightedTotal = measured.reduce((sum, g) => sum + GRADE_GPA[g.grade] * g.weight, 0);
   return Math.round((weightedTotal / totalWeight) * 100) / 100;
 }

@@ -170,22 +170,15 @@ describe('RankingsTable', () => {
       expect(view.dataset.sortDirection).toBe('desc');
     });
 
-    it('persists sort options to localStorage', async () => {
+    // The chosen sort used to be written to localStorage and never read back,
+    // so the write did nothing at all. It is gone; every visit starts at power
+    // score, highest first. See B-34 in docs/product-description/bug-triage.md.
+    it('does not write the chosen sort to browser storage', async () => {
       render(<RankingsTable rankings={[]} />);
 
       await userEvent.click(screen.getByTestId('sort-wins'));
 
-      const stored = JSON.parse(localStorage.getItem('rankingsSortOptions') ?? '{}');
-      expect(stored).toEqual({ field: 'wins', direction: 'desc' });
-    });
-
-    it('persists toggled direction to localStorage', async () => {
-      render(<RankingsTable rankings={[]} />);
-
-      await userEvent.click(screen.getByTestId('sort-powerScore'));
-
-      const stored = JSON.parse(localStorage.getItem('rankingsSortOptions') ?? '{}');
-      expect(stored).toEqual({ field: 'powerScore', direction: 'asc' });
+      expect(localStorage.getItem('rankingsSortOptions')).toBeNull();
     });
   });
 

@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ReportCardMode, useTeamReportCard } from '@/hooks/useTeamReportCard';
@@ -30,6 +31,25 @@ interface TeamReportCardProps {
 }
 
 const GradeCard: React.FC<{ category: GradeCategory }> = ({ category }) => {
+  // A category with nothing to measure shows a dash, not a letter. A neutral
+  // grade beside five real ones reads as a result the team earned.
+  if (category.grade === null) {
+    return (
+      <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-muted-foreground">{category.label}</p>
+          <p className="text-xs text-muted-foreground truncate">Not enough data yet</p>
+        </div>
+        <div className="flex items-center gap-2 ml-3">
+          <span aria-hidden="true" className="text-2xl font-bold font-mono text-muted-foreground">
+            –
+          </span>
+          <span className="sr-only">Not available</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -80,8 +100,10 @@ const ReportCardRadar: React.FC<{
   };
 }> = ({ grades }) => {
   const colors = useChartColors();
-  const overallColor = getGradeChartColor(grades.overall.grade);
+  const overallColor = getGradeChartColor(grades.overall.grade ?? 'C');
 
+  // A category with no measurement is left off the chart rather than plotted at
+  // zero, which would read as the worst possible score.
   const data = [
     { category: 'Overall', value: grades.overall.percentile },
     { category: 'Offense', value: grades.offense.percentile },
@@ -89,7 +111,7 @@ const ReportCardRadar: React.FC<{
     { category: 'Schedule', value: grades.schedule.percentile },
     { category: 'Consistency', value: grades.consistency.percentile },
     { category: 'Games', value: grades.games.percentile },
-  ];
+  ].filter((point) => point.value !== null);
 
   return (
     <ResponsiveContainer width="100%" height={260}>
@@ -138,7 +160,7 @@ const ModeToggle: React.FC<{
 
 const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
   const [mode, setMode] = useState<ReportCardMode>('season');
-  const { grades, isLoading } = useTeamReportCard(teamId, mode);
+  const { grades, isLoading, error, retry } = useTeamReportCard(teamId, mode);
 
   if (isLoading) {
     return (
@@ -151,6 +173,19 @@ const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
           ))}
         </div>
       </div>
+    );
+  }
+
+  // A failed fetch is not the same as a team with nothing to show. Saying
+  // "play some matches first" when the request failed tells the user something
+  // untrue about their own team.
+  if (error) {
+    return (
+      <ErrorDisplay
+        variant="inline"
+        error="We couldn't load the report card. Please try again."
+        onRetry={retry}
+      />
     );
   }
 

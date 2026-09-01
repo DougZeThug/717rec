@@ -137,8 +137,19 @@ afterwards — a division, a weight, a team — can move a finished season. Use
 
 ## Career Power Score
 
-Career score is a **different** number, computed client-side in
-`src/utils/career/calculateCareerPowerScore.ts`. It is not the season formula.
+Career score is a **different** number from the season score, and it is computed
+**twice**: client-side in `src/utils/career/calculateCareerPowerScore.ts` for
+everything on screen, and in SQL by `calculate_career_power_score()` for the
+badge checks, which run inside the result's own transaction. It is not the
+season formula.
+
+> **The two must stay identical.** They drifted for five months and decided the
+> King Slayer badge on a number 41 points from the one on screen — see B-35 in
+> `docs/product-description/bug-triage.md`. They are now held together the same
+> way the season weights are: `supabase/tests/career_power_score_parity.sql` and
+> `src/utils/career/__tests__/calculateCareerPowerScore.test.ts` assert the same
+> three fixtures with the same expected totals, and each names the other. Change
+> one side without the other and CI fails.
 
 ```
 Career = weighted average of season Power Scores   (weighted by matches played)
@@ -179,6 +190,27 @@ division titles from saturating the same ceiling as a strong-division record.
 
 If no title, runner-up, or playoff division is provided, the cap falls back to
 `15 × (current division weight)²`, so the limit is always tied to a real division.
+
+### The SQL twin
+
+`calculate_career_power_score(team_id)` mirrors all of the above
+(`supabase/migrations/20260901120000_career_power_score_match_app.sql`). Two
+details are worth knowing:
+
+- It reads `COALESCE(career_power_score, power_score)` per season, exactly as the
+  client does — the floored career value, falling back to the plain standings one
+  for rows written before the two were split.
+- `resolve_division_bonus_weight(name)` is the SQL twin of
+  `src/utils/career/divisionBonusWeight.ts`: exact name, then the synthetic
+  season labels, then the base tier word, then the `0.85` default. Like the
+  client, it **never** holds a weight value — the old SQL did, in a hardcoded
+  `CASE`, and could not see an admin re-weight a division. `divisions.name` has
+  no unique constraint, so it resolves duplicates the way the client's map does
+  (greatest name wins).
+
+Only `recompute_kingslayer_badge()` calls it. Nothing else in the database
+computes a career score, and no table or view stores one — both sides compute it
+on demand, every time.
 
 ## Data Flow
 
@@ -258,4 +290,6 @@ so SQL and TS cannot drift silently. Runbook for applying the migration:
   — the standings/career formula split (earned-schedule floor on career only)
 - `supabase/migrations/20260820120000_power_score_weight_sandbox.sql` — the
   admin-adjustable weights (see "The weight sandbox" above)
+- `supabase/migrations/20260901120000_career_power_score_match_app.sql` — the
+  SQL career formula and `resolve_division_bonus_weight()` (see "The SQL twin")
 - `src/integrations/supabase/types.ts` — auto-generated, never edit by hand

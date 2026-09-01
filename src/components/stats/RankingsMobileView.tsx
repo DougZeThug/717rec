@@ -12,6 +12,7 @@ import { Ranking } from '@/types';
 import { TeamBadgeEvent } from '@/types/badges';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 import { debugLog } from '@/utils/logger';
+import type { RankingSortField } from '@/utils/rankingUtils';
 
 import LeagueLeaderboardCarousel from './LeagueLeaderboardCarousel';
 import RankingCard from './RankingCard';
@@ -23,14 +24,14 @@ interface RankingsMobileViewProps {
   expandedTeam: string | null;
   toggleExpand: (teamId: string) => void;
   sortOptions: SortOptions;
-  onSortChange: (field: string) => void;
+  onSortChange: (field: RankingSortField) => void;
   showUnified?: boolean;
   myTeamId?: string | null;
   view?: 'division' | 'all';
   onViewChange?: (view: 'division' | 'all') => void;
 }
 
-const sortableFields = [
+const sortableFields: { id: RankingSortField; label: React.ReactNode }[] = [
   {
     id: 'powerScore',
     label: (
