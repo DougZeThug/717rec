@@ -37,20 +37,32 @@ export interface LeaderboardEntry {
 }
 
 export function useAllTeamReportCards(mode: ReportCardMode) {
-  const { rankings, isLoading: isLoadingRankings, error: rankingsError } = useTeamRankings();
+  const {
+    rankings,
+    isLoading: isLoadingRankings,
+    error: rankingsError,
+    refetch: refetchRankings,
+  } = useTeamRankings();
   // Deduped against the query useTeamRankings already runs — same key, no extra
   // request. It carries the real sweep and clutch figures for every team.
   const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
-  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({
-    includeHidden: true,
-  });
+  const {
+    data: careerRankingsData,
+    isLoading: isLoadingCareer,
+    error: careerError,
+    refetch: refetchCareer,
+  } = useCareerRankings({ includeHidden: true });
 
   // A failed fetch is not an empty league — without this the leaderboard would
-  // rank every team on sweep rates of 0. Raised in review of the B-36 fix.
-  const seasonError = mode === 'season' ? (matchesError ?? rankingsError ?? null) : null;
+  // rank every team on sweep rates of 0, and a failed career fetch would fall
+  // through to "No data available yet." Raised in review of the B-36 fix.
+  const error =
+    mode === 'season'
+      ? (matchesError ?? rankingsError ?? null)
+      : ((careerError as Error | null) ?? null);
 
   const leaderboard = useMemo((): LeaderboardEntry[] => {
-    if (seasonError) return [];
+    if (error) return [];
     if (mode === 'career') {
       const careerRankings = careerRankingsData || [];
       if (careerRankings.length === 0) return [];
@@ -133,15 +145,22 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
     }
 
     return entries.sort((a, b) => b.gpa - a.gpa);
-  }, [rankings, latestMatches, careerRankingsData, mode, seasonError]);
+  }, [rankings, latestMatches, careerRankingsData, mode, error]);
 
   return {
     leaderboard,
     isLoading: mode === 'season' ? isLoadingRankings || matchesLoading : isLoadingCareer,
-    error: seasonError,
+    error,
     // Void-returning on purpose: the caller is an onClick, and it should not
     // have to discard a promise it has no use for.
+    //
+    // Retry has to clear whichever fetch failed, so it follows the mode.
     retry: () => {
+      if (mode === 'career') {
+        void refetchCareer();
+        return;
+      }
+      refetchRankings();
       void refetchMatches();
     },
   };

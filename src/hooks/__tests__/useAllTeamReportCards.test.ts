@@ -171,6 +171,48 @@ describe('useAllTeamReportCards', () => {
     expect(result.current.error).toBeInstanceOf(Error);
   });
 
+  // Raised in review: in career mode the error branch could never render, so a
+  // failed career fetch still showed "No data available yet."
+  it('surfaces a failed career fetch and retries the career query', () => {
+    const refetchCareer = vi.fn();
+    mockUseCareerRankings.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: new Error('career down'),
+      refetch: refetchCareer,
+    });
+
+    const { result } = renderHook(() => useAllTeamReportCards('career'));
+
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect(result.current.leaderboard).toEqual([]);
+
+    result.current.retry();
+    expect(refetchCareer).toHaveBeenCalled();
+  });
+
+  it('retry refetches the rankings as well as the matches in season mode', () => {
+    const refetchRankings = vi.fn();
+    const refetchMatches = vi.fn();
+    mockUseTeamRankings.mockReturnValue({
+      rankings: [ranking({ teamId: 'a' })],
+      isLoading: false,
+      error: new Error('teams down'),
+      refetch: refetchRankings,
+    });
+    mockUseRankingsData.mockReturnValue({
+      latestMatches: [],
+      matchesLoading: false,
+      refetchMatches,
+    });
+
+    const { result } = renderHook(() => useAllTeamReportCards('season'));
+    result.current.retry();
+
+    expect(refetchRankings).toHaveBeenCalled();
+    expect(refetchMatches).toHaveBeenCalled();
+  });
+
   it('waits for the league match list before grading', () => {
     mockUseRankingsData.mockReturnValue({ latestMatches: undefined, matchesLoading: true });
     const { result } = renderHook(() => useAllTeamReportCards('season'));

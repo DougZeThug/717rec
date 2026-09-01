@@ -271,6 +271,49 @@ describe('useTeamReportCard', () => {
       expect(result.current.error).toBeInstanceOf(Error);
     });
 
+    // Raised in review: Retry only refetched the match list, so a rankings-only
+    // failure stayed in the error state until a page reload.
+    it('retry refetches the rankings as well as the matches', () => {
+      const refetchRankings = vi.fn();
+      const refetchMatches = vi.fn();
+      mockUseTeamRankings.mockReturnValue({
+        rankings: [ranking({ teamId: 'team-1' })],
+        isLoading: false,
+        error: new Error('teams down'),
+        refetch: refetchRankings,
+      });
+      mockUseRankingsData.mockReturnValue({
+        latestMatches: [],
+        matchesLoading: false,
+        refetchMatches,
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'season'));
+      result.current.retry();
+
+      expect(refetchRankings).toHaveBeenCalled();
+      expect(refetchMatches).toHaveBeenCalled();
+    });
+
+    // Raised in review: career mode never surfaced its own fetch failure.
+    it('surfaces a failed career fetch, and retries the career query', () => {
+      const refetchCareer = vi.fn();
+      mockUseCareerRankings.mockReturnValue({
+        data: [],
+        isLoading: false,
+        error: new Error('career down'),
+        refetch: refetchCareer,
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'career'));
+
+      expect(result.current.error).toBeInstanceOf(Error);
+      expect(result.current.grades).toBeNull();
+
+      result.current.retry();
+      expect(refetchCareer).toHaveBeenCalled();
+    });
+
     it('does not report a season error in career mode', () => {
       mockUseRankingsData.mockReturnValue({
         latestMatches: undefined,

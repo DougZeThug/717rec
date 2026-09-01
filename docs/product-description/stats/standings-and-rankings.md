@@ -123,9 +123,11 @@ Two rules matter more than they look:
   to. A team that has not played has no rating rather than a rating of zero, so
   its Power column reads "—", and it has no streak, so its Streak column reads
   "N/A". Sorting either column ascending therefore does not put those teams
-  first, which surprises people. The rule covers those two columns only: on
-  W-L, Win %, Games, Game % and SOS the same team sorts as a zero, because zero
-  wins and zero games are true of it.
+  first, which surprises people. The rule covers those two columns only. On
+  W-L, Win %, Games and Game % the same team sorts as a zero, because zero wins
+  and zero games are true of it. **SOS is different again**: a team that has
+  faced nobody is given the middling 0.5 default rather than a zero, so it
+  sorts mid-table there.
 - **Streaks sort by run length, wins above losses.** `W10` is above `W2`, which
   is above `L1`, which is above `L9`.
 

@@ -60,24 +60,36 @@ const buildGrades = (categories: Omit<TeamGrades, 'gpa'>): TeamGrades => ({
 });
 
 export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMode = 'season') {
-  const { rankings, isLoading: isLoadingRankings, error: rankingsError } = useTeamRankings();
+  const {
+    rankings,
+    isLoading: isLoadingRankings,
+    error: rankingsError,
+    refetch: refetchRankings,
+  } = useTeamRankings();
   // The league-wide match list. Same React Query key as the one useTeamRankings
   // already runs, so this is deduped — no extra request. It is what makes a real
   // sweep rate and clutch record available for every team, not just this one.
   const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
-  const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({
-    includeHidden: true,
-  });
+  const {
+    data: careerRankingsData,
+    isLoading: isLoadingCareer,
+    error: careerError,
+    refetch: refetchCareer,
+  } = useCareerRankings({ includeHidden: true });
 
   // A failed fetch is not "no data". Without this the match list arrives as
   // undefined, every team's sweep rate reads 0 and no team has a clutch rate, so
   // the card shows Offense F and Clutch "–" for everyone as though it had
-  // loaded. Raised in review of the B-36 fix.
-  const seasonError = mode === 'season' ? (matchesError ?? rankingsError ?? null) : null;
+  // loaded. Career mode needs the same treatment: its own fetch can fail too.
+  // Raised in review of the B-36 fix.
+  const error =
+    mode === 'season'
+      ? (matchesError ?? rankingsError ?? null)
+      : ((careerError as Error | null) ?? null);
 
   const grades = useMemo((): TeamGrades | null => {
     if (!teamId) return null;
-    if (seasonError) return null;
+    if (error) return null;
 
     if (mode === 'career') {
       const careerRankings = careerRankingsData || [];
@@ -183,15 +195,23 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         populations.gameWinPcts
       ),
     });
-  }, [teamId, rankings, latestMatches, careerRankingsData, mode, seasonError]);
+  }, [teamId, rankings, latestMatches, careerRankingsData, mode, error]);
 
   return {
     grades,
     isLoading: mode === 'season' ? isLoadingRankings || matchesLoading : isLoadingCareer,
-    error: seasonError,
+    error,
     // Void-returning on purpose: the caller is an onClick, and it should not
     // have to discard a promise it has no use for.
+    //
+    // Retry has to clear whichever fetch failed. Refetching only the match list
+    // left a rankings failure stuck in the error state until a page reload.
     retry: () => {
+      if (mode === 'career') {
+        void refetchCareer();
+        return;
+      }
+      refetchRankings();
       void refetchMatches();
     },
   };
