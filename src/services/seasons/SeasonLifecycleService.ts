@@ -43,6 +43,21 @@ export const SeasonLifecycleService = {
     return season;
   },
 
+  // The confirmation_open flag gates the "Confirm your team" card on the home
+  // page. It was read but written by nothing, so the card could never appear.
+  // Kept separate from updateSeason so the season form's shape is unchanged.
+  setSeasonConfirmationOpen: async (seasonId: string, open: boolean) => {
+    const { data: season, error } = await supabase
+      .from('seasons')
+      .update({ confirmation_open: open })
+      .eq('id', seasonId)
+      .select('id, name, is_active, confirmation_open')
+      .single();
+
+    if (error) handleDatabaseError(error, 'Failed to update season confirmation');
+    return season;
+  },
+
   activateSeason: async (seasonId: string) => {
     // Use atomic RPC function to prevent leaving zero active seasons on failure
     const { data: season, error } = await supabase.rpc('activate_season', {
