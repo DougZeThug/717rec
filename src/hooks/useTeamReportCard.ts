@@ -4,7 +4,11 @@ import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { calculatePercentile } from '@/utils/percentileUtils';
-import { collectCareerPopulations, collectSeasonPopulations } from '@/utils/reportCardPopulations';
+import {
+  collectCareerPopulations,
+  collectSeasonPopulations,
+  isGradeable,
+} from '@/utils/reportCardPopulations';
 import { calculateGPA, calculateGrade, GradeCategory, TeamGrades } from '@/utils/reportCardUtils';
 import {
   calculateLeagueMatchStats,
@@ -56,17 +60,24 @@ const buildGrades = (categories: Omit<TeamGrades, 'gpa'>): TeamGrades => ({
 });
 
 export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMode = 'season') {
-  const { rankings, isLoading: isLoadingRankings } = useTeamRankings();
+  const { rankings, isLoading: isLoadingRankings, error: rankingsError } = useTeamRankings();
   // The league-wide match list. Same React Query key as the one useTeamRankings
   // already runs, so this is deduped — no extra request. It is what makes a real
   // sweep rate and clutch record available for every team, not just this one.
-  const { latestMatches, matchesLoading } = useRankingsData();
+  const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
   const { data: careerRankingsData, isLoading: isLoadingCareer } = useCareerRankings({
     includeHidden: true,
   });
 
+  // A failed fetch is not "no data". Without this the match list arrives as
+  // undefined, every team's sweep rate reads 0 and no team has a clutch rate, so
+  // the card shows Offense F and Clutch "–" for everyone as though it had
+  // loaded. Raised in review of the B-36 fix.
+  const seasonError = mode === 'season' ? (matchesError ?? rankingsError ?? null) : null;
+
   const grades = useMemo((): TeamGrades | null => {
     if (!teamId) return null;
+    if (seasonError) return null;
 
     if (mode === 'career') {
       const careerRankings = careerRankingsData || [];
@@ -122,6 +133,9 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
 
     const teamRanking = rankings.find((r) => r.teamId === teamId);
     if (!teamRanking) return null;
+    // No rating, nothing to grade. The card shows its "play some matches first"
+    // panel rather than six grades built from zeroes the team never earned.
+    if (!isGradeable(teamRanking)) return null;
 
     // Real sweep rates and clutch records for the whole league, from the match
     // list above. The sweep rate of every team but this one used to be guessed
@@ -135,7 +149,7 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
       overall: gradeAgainst(
         'Overall',
         'Combined power score ranking',
-        teamRanking.powerScore ?? 0,
+        teamRanking.powerScore as number,
         populations.powerScores
       ),
       offense: gradeAgainst(
@@ -169,10 +183,12 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         populations.gameWinPcts
       ),
     });
-  }, [teamId, rankings, latestMatches, careerRankingsData, mode]);
+  }, [teamId, rankings, latestMatches, careerRankingsData, mode, seasonError]);
 
   return {
     grades,
     isLoading: mode === 'season' ? isLoadingRankings || matchesLoading : isLoadingCareer,
+    error: seasonError,
+    retry: refetchMatches,
   };
 }

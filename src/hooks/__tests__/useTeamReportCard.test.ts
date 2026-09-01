@@ -164,38 +164,128 @@ describe('useTeamReportCard', () => {
       expect(middle.offense.percentile).toBeLessThan(required(best.offense.percentile));
     });
 
-    it('gives a team the same Offense grade whichever page it is graded on', () => {
-      // The estimate made this false: a team's own sweep rate was real on its own
-      // page and guessed on every other, so its grade moved between pages.
+    it('grades all three teams against one shared ranking of real sweep rates', () => {
+      // The old estimate kept a team's own sweep rate real and guessed every
+      // other team's, so three cards rendered separately did not line up into a
+      // single ranking. The hook only ever returns the *viewed* team's grades,
+      // so that is the observable form of the invariant: grade each team on its
+      // own page and the three percentiles must be one coherent order.
       const matches = [
-        match('m1', 'team-1', 'team-2', 2, 0),
-        match('m2', 'team-2', 'team-3', 2, 1),
-        match('m3', 'team-3', 'team-1', 2, 0),
+        match('m1', 'sweeper', 'middle', 2, 0), // sweeper sweeps
+        match('m2', 'sweeper', 'never', 2, 0), // sweeper sweeps
+        match('m3', 'middle', 'never', 2, 0), // middle sweeps one of its two
+        match('m4', 'middle', 'never', 1, 2), // never wins, not a sweep
       ];
       const rankings = [
-        ranking({ teamId: 'team-1' }),
-        ranking({ teamId: 'team-2' }),
-        ranking({ teamId: 'team-3' }),
+        ranking({ teamId: 'sweeper' }),
+        ranking({ teamId: 'middle' }),
+        ranking({ teamId: 'never' }),
       ];
       mockUseTeamRankings.mockReturnValue({ rankings, isLoading: false });
       mockUseRankingsData.mockReturnValue({ latestMatches: matches, matchesLoading: false });
 
-      const onOwnPage = required(
-        renderHook(() => useTeamReportCard('team-2', 'season')).result.current.grades
-      );
+      const gradeOf = (teamId: string) =>
+        required(renderHook(() => useTeamReportCard(teamId, 'season')).result.current.grades)
+          .offense.percentile;
 
-      // Grade team-2 again while team-1 is on screen: the population it is ranked
-      // against must be identical.
-      const whileViewingTeam1 = required(
-        renderHook(() => useTeamReportCard('team-1', 'season')).result.current.grades
-      );
+      // Real sweep rates: sweeper 2 of 2 = 100%, middle 1 of 3 = 33%,
+      // never 0 of 3 = 0%. Graded separately, they must still rank 100/50/0.
+      expect(gradeOf('sweeper')).toBe(100);
+      expect(gradeOf('middle')).toBe(50);
+      expect(gradeOf('never')).toBe(0);
+    });
 
-      expect(onOwnPage.offense.percentile).not.toBeNull();
-      expect(whileViewingTeam1.offense.percentile).not.toBeNull();
-      // team-1 swept 1 of 2; team-2 swept 0 of 2. team-1 must outrank team-2.
-      expect(required(whileViewingTeam1.offense.percentile)).toBeGreaterThan(
-        required(onOwnPage.offense.percentile)
-      );
+    // Raised in review of the B-36 fix.
+    it('gives no report card to a team with no rating', () => {
+      // No power score means no rating at all — the standings show "—" for it.
+      // It used to be graded against a power score of 0 it never earned.
+      mockUseTeamRankings.mockReturnValue({
+        rankings: [
+          ranking({ teamId: 'unrated', powerScore: null }),
+          ranking({ teamId: 'rated', powerScore: 60 }),
+        ],
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('unrated', 'season'));
+
+      expect(result.current.grades).toBeNull();
+    });
+
+    it('does not let an unrated team flatter the teams that have played', () => {
+      const rated = [
+        ranking({ teamId: 'strong', powerScore: 80 }),
+        ranking({ teamId: 'weak', powerScore: 40 }),
+      ];
+      mockUseRankingsData.mockReturnValue({ latestMatches: [], matchesLoading: false });
+
+      mockUseTeamRankings.mockReturnValue({ rankings: rated, isLoading: false });
+      const withoutUnrated = required(
+        renderHook(() => useTeamReportCard('weak', 'season')).result.current.grades
+      ).overall.percentile;
+
+      mockUseTeamRankings.mockReturnValue({
+        rankings: [...rated, ranking({ teamId: 'unrated', powerScore: null })],
+        isLoading: false,
+      });
+      const withUnrated = required(
+        renderHook(() => useTeamReportCard('weak', 'season')).result.current.grades
+      ).overall.percentile;
+
+      // The unrated team used to sit below 'weak' as a 0, lifting its percentile.
+      expect(withUnrated).toBe(withoutUnrated);
+    });
+  });
+
+  // Raised in review of the B-36 fix: a failed match fetch left the hook with an
+  // empty match list, so every team read as 0% sweeps and no clutch record — a
+  // full card of wrong grades, presented as loaded.
+  describe('a failed fetch is not empty data', () => {
+    it('returns no grades and surfaces the error when the match query fails', () => {
+      mockUseTeamRankings.mockReturnValue({
+        rankings: [ranking({ teamId: 'team-1' }), ranking({ teamId: 'team-2' })],
+        isLoading: false,
+      });
+      mockUseRankingsData.mockReturnValue({
+        latestMatches: undefined,
+        matchesLoading: false,
+        matchesError: new Error('network'),
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'season'));
+
+      expect(result.current.grades).toBeNull();
+      expect(result.current.error).toBeInstanceOf(Error);
+    });
+
+    it('returns no grades when the rankings query fails', () => {
+      mockUseTeamRankings.mockReturnValue({
+        rankings: [ranking({ teamId: 'team-1' })],
+        isLoading: false,
+        error: new Error('network'),
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'season'));
+
+      expect(result.current.grades).toBeNull();
+      expect(result.current.error).toBeInstanceOf(Error);
+    });
+
+    it('does not report a season error in career mode', () => {
+      mockUseRankingsData.mockReturnValue({
+        latestMatches: undefined,
+        matchesLoading: false,
+        matchesError: new Error('network'),
+      });
+      mockUseCareerRankings.mockReturnValue({
+        data: [careerTeam({ teamId: 'team-1' }), careerTeam({ teamId: 'team-2' })],
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'career'));
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.grades).not.toBeNull();
     });
   });
 

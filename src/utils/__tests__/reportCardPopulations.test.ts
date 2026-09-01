@@ -101,22 +101,48 @@ describe('collectSeasonPopulations', () => {
     expect(populations.sweepRates).toHaveLength(3);
   });
 
-  it('falls back to zeroed statistics for a team with no matches recorded', () => {
+  it('falls back to zeroed statistics for a rated team with no matches in the list', () => {
+    // Rated, so it is graded — but nothing in the match list mentions it, which
+    // is what happens for a team whose matches are all still in progress.
     const populations = collectSeasonPopulations([ranking({ teamId: 'ghost' })], new Map());
 
     expect(populations.sweepRates).toEqual([0]);
     expect(populations.clutchRates).toEqual([]);
   });
 
-  it('counts a missing power score as 0 for the ranking maths', () => {
-    // The team still shows "N/A" on screen; this only affects the percentile
-    // population it is one of.
+  // Raised in review of the B-36 fix: a team with no power score used to be
+  // pushed in as a 0, which both graded a team that had played nothing and
+  // padded the population every other team is ranked against.
+  it('leaves a team with no power score out of every list', () => {
     const populations = collectSeasonPopulations(
       [ranking({ teamId: 'unrated', powerScore: null })],
       new Map()
     );
 
-    expect(populations.powerScores).toEqual([0]);
+    expect(populations).toEqual({
+      powerScores: [],
+      winPcts: [],
+      sos: [],
+      gameWinPcts: [],
+      sweepRates: [],
+      clutchRates: [],
+    });
+  });
+
+  it('stops an unrated team flattering the teams that have played', () => {
+    // Two rated teams, one unrated. The unrated team used to contribute a 0 to
+    // powerScores, so the weaker rated team looked better than it was.
+    const rated = [
+      ranking({ teamId: 'strong', powerScore: 80 }),
+      ranking({ teamId: 'weak', powerScore: 40 }),
+    ];
+    const withUnrated = [...rated, ranking({ teamId: 'unrated', powerScore: null })];
+
+    expect(collectSeasonPopulations(withUnrated, new Map()).powerScores).toEqual(
+      collectSeasonPopulations(rated, new Map()).powerScores
+    );
+    // The old behaviour produced [80, 40, 0] — a third value below 'weak'.
+    expect(collectSeasonPopulations(withUnrated, new Map()).powerScores).toEqual([80, 40]);
   });
 
   it('returns empty lists for no teams', () => {

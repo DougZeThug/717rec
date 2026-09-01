@@ -137,6 +137,40 @@ describe('useAllTeamReportCards', () => {
     expect(entries.sweeper).toBeGreaterThan(entries.grinder);
   });
 
+  // Raised in review of the B-36 fix.
+  it('omits a team with no rating from the leaderboard', () => {
+    mockUseTeamRankings.mockReturnValue({
+      rankings: [
+        ranking({ teamId: 'rated', powerScore: 60 }),
+        ranking({ teamId: 'unrated', powerScore: null }),
+      ],
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useAllTeamReportCards('season'));
+
+    // It used to be listed with a GPA built from a power score of 0.
+    expect(result.current.leaderboard.map((e) => e.teamId)).toEqual(['rated']);
+  });
+
+  it('returns nothing and surfaces the error when the match query fails', () => {
+    mockUseTeamRankings.mockReturnValue({
+      rankings: [ranking({ teamId: 'a' }), ranking({ teamId: 'b' })],
+      isLoading: false,
+    });
+    mockUseRankingsData.mockReturnValue({
+      latestMatches: undefined,
+      matchesLoading: false,
+      matchesError: new Error('network'),
+    });
+
+    const { result } = renderHook(() => useAllTeamReportCards('season'));
+
+    // "No data available yet" would be untrue: the request failed.
+    expect(result.current.leaderboard).toEqual([]);
+    expect(result.current.error).toBeInstanceOf(Error);
+  });
+
   it('waits for the league match list before grading', () => {
     mockUseRankingsData.mockReturnValue({ latestMatches: undefined, matchesLoading: true });
     const { result } = renderHook(() => useAllTeamReportCards('season'));

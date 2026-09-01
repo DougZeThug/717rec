@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ReportCardMode, useTeamReportCard } from '@/hooks/useTeamReportCard';
@@ -159,7 +160,7 @@ const ModeToggle: React.FC<{
 
 const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
   const [mode, setMode] = useState<ReportCardMode>('season');
-  const { grades, isLoading } = useTeamReportCard(teamId, mode);
+  const { grades, isLoading, error, retry } = useTeamReportCard(teamId, mode);
 
   if (isLoading) {
     return (
@@ -172,6 +173,21 @@ const TeamReportCardContent: React.FC<{ teamId: string }> = ({ teamId }) => {
           ))}
         </div>
       </div>
+    );
+  }
+
+  // A failed fetch is not the same as a team with nothing to show. Saying
+  // "play some matches first" when the request failed tells the user something
+  // untrue about their own team.
+  if (error) {
+    return (
+      <ErrorDisplay
+        variant="inline"
+        error="We couldn't load the report card. Please try again."
+        onRetry={() => {
+          void retry();
+        }}
+      />
     );
   }
 
