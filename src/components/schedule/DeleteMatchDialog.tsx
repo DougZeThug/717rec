@@ -32,6 +32,7 @@ const DeleteMatchDialog: React.FC<DeleteMatchDialogProps> = ({
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the match from the schedule.
+            The standings, team records and statistics it counted towards are reversed with it.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

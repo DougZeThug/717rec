@@ -76,7 +76,7 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
           <EmptyState
             icon={Search}
             title="No Matches Found"
-            description="No matches match your current filters. Try adjusting your date range or team selection."
+            description="No matches match your current filters. Try adjusting the date or the bracket."
             className="py-8"
           />
         </CardContent>

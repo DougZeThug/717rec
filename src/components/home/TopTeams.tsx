@@ -89,7 +89,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams, error, onRetry }) => {
   return (
     <section id="top-teams-section" className={sectionClasses} style={sectionStyle}>
       <SectionHeader
-        title="Top 10 Teams"
+        title="Top Teams"
         icon={Trophy}
         iconColor={shouldApplyWinter ? 'text-cyan-400' : 'text-amber-500'}
         description="Based on highest power score ranking"

@@ -25,6 +25,7 @@ const EXACT_ROUTE_NAMES: Record<string, string> = {
   '/contact': 'Contact',
   '/compare': 'Compare',
   '/insights': 'Insights',
+  '/oauth/consent': 'Authorize App',
 };
 
 // Prefix matches for dynamic routes, checked after exact matches.

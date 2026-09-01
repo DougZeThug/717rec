@@ -106,7 +106,7 @@ const HeroSection = () => {
         <NavButton
           to="/teams"
           icon={<Users size={18} />}
-          label="My Teams"
+          label="Teams"
           className="bg-cornhole-navy/80 hover:bg-cornhole-navy"
         />
       </div>
