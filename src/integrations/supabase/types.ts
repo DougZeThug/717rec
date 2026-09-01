@@ -7178,6 +7178,10 @@ export type Database = {
         Args: { p_division_id: string }
         Returns: undefined
       }
+      resolve_division_bonus_weight: {
+        Args: { p_division_name: string }
+        Returns: number
+      }
       resubmit_match_result: {
         Args: {
           p_loser_game_wins: number
