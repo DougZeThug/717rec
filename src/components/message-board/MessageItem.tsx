@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import { formatTime } from '@/components/home/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
 import { useLongPress } from '@/hooks/useLongPress';
@@ -9,6 +8,7 @@ import { useTeamPowerScores } from '@/hooks/useTeamPowerScores';
 import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';
 import { Message } from '@/types/reactions';
+import { formatNotificationDate } from '@/utils/formatNotificationDate';
 
 import { MessageContent, MessageControls, MessageHeader } from './message-item';
 import MessageEditForm from './message-item/MessageEditForm';
@@ -33,8 +33,10 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   // Get power score for the team
   const powerScore = getTeamPowerScore(message.team_id);
 
-  // Format the time in a more compact way using our formatTime utility
-  const timeString = formatTime(message.created_at);
+  // A clock time alone made a message from weeks ago look like it was posted
+  // this afternoon. Show how long ago it was, with the full date on hover and
+  // for assistive tech.
+  const { absolute, relative, iso } = formatNotificationDate(message.created_at);
 
   // Check if the current user is the author of the message
   const isAuthor = user?.id === message.user_id;
@@ -127,7 +129,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
         <MessageHeader
           username={message.username}
           teamName={message.team_name}
-          timeString={timeString}
+          timeString={relative}
+          timeTitle={absolute}
+          timeDateTime={iso}
           powerScore={powerScore}
           isAnnouncement={isAnnouncement}
         />

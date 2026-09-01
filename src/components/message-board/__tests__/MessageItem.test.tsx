@@ -55,6 +55,22 @@ describe('MessageItem', () => {
     });
   });
 
+  it('dates an old message instead of showing a bare clock time', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-05-21T10:00:00.000Z'));
+
+    render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
+
+    // "3:42 PM" on its own made a three-week-old message look current.
+    const stamp = document.querySelector('time');
+    expect(stamp).not.toBeNull();
+    expect(stamp).toHaveTextContent(/21 days ago|3 weeks ago|about 3 weeks ago/i);
+    expect(stamp).toHaveAttribute('datetime', baseMessage.created_at);
+    expect(stamp?.getAttribute('title')).toMatch(/Apr 30, 2026/);
+
+    vi.useRealTimers();
+  });
+
   it('renders the message content and username, and exposes the card as a button for the author', () => {
     render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
 
