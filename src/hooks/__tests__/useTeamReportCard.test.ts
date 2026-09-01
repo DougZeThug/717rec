@@ -273,26 +273,21 @@ describe('useTeamReportCard', () => {
 
     // Raised in review: Retry only refetched the match list, so a rankings-only
     // failure stayed in the error state until a page reload.
-    it('retry refetches the rankings as well as the matches', () => {
+    it('retry refetches the rankings, which covers the teams and the matches', () => {
       const refetchRankings = vi.fn();
-      const refetchMatches = vi.fn();
       mockUseTeamRankings.mockReturnValue({
         rankings: [ranking({ teamId: 'team-1' })],
         isLoading: false,
         error: new Error('teams down'),
         refetch: refetchRankings,
       });
-      mockUseRankingsData.mockReturnValue({
-        latestMatches: [],
-        matchesLoading: false,
-        refetchMatches,
-      });
 
       const { result } = renderHook(() => useTeamReportCard('team-1', 'season'));
       result.current.retry();
 
+      // useTeamRankings' refetch fetches the team list and the match list, so a
+      // failure in either is recoverable from this one call.
       expect(refetchRankings).toHaveBeenCalled();
-      expect(refetchMatches).toHaveBeenCalled();
     });
 
     // Raised in review: career mode never surfaced its own fetch failure.

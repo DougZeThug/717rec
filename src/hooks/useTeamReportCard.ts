@@ -69,7 +69,7 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
   // The league-wide match list. Same React Query key as the one useTeamRankings
   // already runs, so this is deduped — no extra request. It is what makes a real
   // sweep rate and clutch record available for every team, not just this one.
-  const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
+  const { latestMatches, matchesLoading, matchesError } = useRankingsData();
   const {
     data: careerRankingsData,
     isLoading: isLoadingCareer,
@@ -211,8 +211,10 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
         void refetchCareer();
         return;
       }
+      // Covers the team list and, through the same query key, the match list —
+      // useTeamRankings' own refetch does both, so calling refetchMatches here
+      // as well would only start a second fetch of the same query.
       refetchRankings();
-      void refetchMatches();
     },
   };
 }

@@ -191,26 +191,21 @@ describe('useAllTeamReportCards', () => {
     expect(refetchCareer).toHaveBeenCalled();
   });
 
-  it('retry refetches the rankings as well as the matches in season mode', () => {
+  it('retry refetches the rankings, which covers the teams and the matches', () => {
     const refetchRankings = vi.fn();
-    const refetchMatches = vi.fn();
     mockUseTeamRankings.mockReturnValue({
       rankings: [ranking({ teamId: 'a' })],
       isLoading: false,
       error: new Error('teams down'),
       refetch: refetchRankings,
     });
-    mockUseRankingsData.mockReturnValue({
-      latestMatches: [],
-      matchesLoading: false,
-      refetchMatches,
-    });
 
     const { result } = renderHook(() => useAllTeamReportCards('season'));
     result.current.retry();
 
+    // useTeamRankings' refetch fetches the team list and the match list, so a
+    // failure in either is recoverable from this one call.
     expect(refetchRankings).toHaveBeenCalled();
-    expect(refetchMatches).toHaveBeenCalled();
   });
 
   it('waits for the league match list before grading', () => {

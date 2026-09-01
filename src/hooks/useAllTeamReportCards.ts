@@ -45,7 +45,7 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
   } = useTeamRankings();
   // Deduped against the query useTeamRankings already runs — same key, no extra
   // request. It carries the real sweep and clutch figures for every team.
-  const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
+  const { latestMatches, matchesLoading, matchesError } = useRankingsData();
   const {
     data: careerRankingsData,
     isLoading: isLoadingCareer,
@@ -160,8 +160,10 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
         void refetchCareer();
         return;
       }
+      // Covers the team list and, through the same query key, the match list —
+      // useTeamRankings' own refetch does both, so calling refetchMatches here
+      // as well would only start a second fetch of the same query.
       refetchRankings();
-      void refetchMatches();
     },
   };
 }

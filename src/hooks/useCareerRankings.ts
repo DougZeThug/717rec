@@ -16,9 +16,10 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
     data: teams,
     isLoading: isLoadingTeams,
     error: teamsError,
+    refetch: refetchTeams,
   } = useTeamsQuery({ includeHidden });
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['careerRankings', teams?.map((t) => t.id), includeHidden],
     queryFn: async (): Promise<CareerRanking[]> => {
       if (!teams) return [];
@@ -91,4 +92,21 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
     enabled: !!teams && !isLoadingTeams && !teamsError,
     staleTime: 1000 * 60 * 10, // 10 minutes - career data is extremely static
   });
+
+  // The rankings query is disabled until the team list arrives, so it can never
+  // report the team fetch's own failure: `error` stayed null and `data` stayed
+  // undefined, which every consumer read as an empty league. Fold the
+  // prerequisite's error, loading flag and refetch in here once, rather than
+  // leaving each consumer to remember it. Raised in review of the B-36 fix.
+  return {
+    ...query,
+    error: query.error ?? teamsError ?? null,
+    isLoading: isLoadingTeams || query.isLoading,
+    refetch: async () => {
+      await refetchTeams();
+      // Once the team list is back the rankings query re-enables and runs
+      // itself; this call covers a failure in the rankings query alone.
+      return query.refetch();
+    },
+  };
 }
