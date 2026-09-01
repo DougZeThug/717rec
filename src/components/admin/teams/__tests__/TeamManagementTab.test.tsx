@@ -5,6 +5,8 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseTeamsQuery = vi.hoisted(() => vi.fn());
 const mockUpdateTeam = vi.fn();
+const mockCreateTeam = vi.fn();
+const mockToast = vi.fn();
 
 vi.mock('@/hooks/teams', () => ({
   useTeamsQuery: () => mockUseTeamsQuery(),
@@ -25,7 +27,7 @@ vi.mock('@/hooks/usePendingMembershipCount', () => ({
 }));
 
 vi.mock('@/hooks/useTeams', () => ({
-  useTeams: () => ({ createTeam: vi.fn() }),
+  useTeams: () => ({ createTeam: mockCreateTeam }),
 }));
 
 vi.mock('@/hooks/useUpdateTeam', () => ({
@@ -33,7 +35,7 @@ vi.mock('@/hooks/useUpdateTeam', () => ({
 }));
 
 vi.mock('@/hooks/useToast', () => ({
-  useToast: () => ({ toast: vi.fn() }),
+  useToast: () => ({ toast: mockToast }),
 }));
 
 vi.mock('@/hooks/useSeasonalTheme', () => ({
@@ -43,10 +45,21 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
 }));
 
 vi.mock('@/components/teams/TeamForm', () => ({
-  default: ({ team, onCancel }: { team?: { name: string }; onCancel: () => void }) => (
+  default: ({
+    team,
+    onCancel,
+    onSubmit,
+  }: {
+    team?: { name: string };
+    onCancel: () => void;
+    onSubmit: (data: { name: string; division_id: string | null }) => void;
+  }) => (
     <div>
       <div>{team ? `Editing ${team.name}` : 'Create Team Form'}</div>
       <button onClick={onCancel}>Cancel Edit</button>
+      <button onClick={() => onSubmit({ name: 'Delta', division_id: 'div-east' })}>
+        Submit Team Form
+      </button>
     </div>
   ),
 }));
@@ -77,11 +90,26 @@ describe('TeamManagementTab', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUpdateTeam.mockImplementation(() => Promise.resolve());
+    mockCreateTeam.mockImplementation(() => Promise.resolve({ id: '4', name: 'Delta' }));
     mockUseTeamsQuery.mockReturnValue({
       data: teams,
       isLoading: false,
       refetch: vi.fn(),
     });
+  });
+
+  it('raises one toast when a team is created, not two', async () => {
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    await user.click(screen.getByRole('tab', { name: /create team/i }));
+    await user.click(await screen.findByRole('button', { name: /submit team form/i }));
+
+    await waitFor(() => expect(mockCreateTeam).toHaveBeenCalledTimes(1));
+
+    // useTeamMutations raises the only "Team Created" toast. This tab used to
+    // raise a second copy of the same message on top of it.
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
   it('applies search and division filters together', async () => {

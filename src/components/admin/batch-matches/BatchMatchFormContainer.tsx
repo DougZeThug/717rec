@@ -43,17 +43,6 @@ const BatchMatchFormContainer = () => {
     }, 500);
   };
 
-  const handleFormSubmit = async () => {
-    const result = await handleSubmit();
-
-    if (result !== false) {
-      toast({
-        title: 'Matches Created',
-        description: `Successfully created ${matchPairs.length} matches.`,
-      });
-    }
-  };
-
   if (isLoading) {
     return <LoadingState message="Loading teams data..." size="md" />;
   }
@@ -82,7 +71,7 @@ const BatchMatchFormContainer = () => {
       <BatchMatchFormActions
         onAutoAssign={handleAutoAssign}
         onAddMatch={addMatchPair}
-        onSubmit={handleFormSubmit}
+        onSubmit={handleSubmit}
         isSubmitting={isSubmitting}
         isAutoAssigning={isAutoAssigning}
       />

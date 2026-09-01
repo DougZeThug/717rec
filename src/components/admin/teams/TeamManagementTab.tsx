@@ -175,11 +175,9 @@ const TeamManagementTab = () => {
 
   const handleTeamSubmit = async (teamData: Omit<Team, 'id' | 'created_at'>) => {
     try {
-      const newTeam = await createTeam(teamData);
-      toast({
-        title: 'Team Created',
-        description: `${newTeam.name} has been successfully created.`,
-      });
+      // createTeam raises the "Team Created" toast itself (useTeamMutations).
+      // Raising a second one here showed the same message twice.
+      await createTeam(teamData);
       refetchTeams();
     } catch (error) {
       errorLog('Error creating team:', error);
