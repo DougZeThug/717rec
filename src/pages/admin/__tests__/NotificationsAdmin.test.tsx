@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -186,9 +186,54 @@ describe('NotificationsAdmin', () => {
     await waitFor(() =>
       expect(mockUpdateMutateAsync).toHaveBeenCalledWith({
         id: 'n-1',
-        patch: { title: 'New title', body: 'New body' },
+        patch: { title: 'New title', body: 'New body', expires_at: null },
       })
     );
     expect(mockToast).toHaveBeenCalledWith({ title: 'Notification updated' });
+  });
+
+  it('posts an expiry the admin typed, as a UTC timestamp', async () => {
+    const user = userEvent.setup();
+    mockUseNotificationsQuery.mockReturnValue({ data: [], isLoading: false });
+    mockCreateMutateAsync.mockResolvedValueOnce(makeNotification('n-2', 'Rain', 'Off'));
+
+    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+
+    await user.type(screen.getByPlaceholderText(/title/i), 'Rain');
+    await user.type(screen.getByPlaceholderText(/message/i), 'Off');
+    fireEvent.change(screen.getByLabelText(/expires \(optional\)/i), {
+      target: { value: '2026-09-15T18:30' },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Post notification' }));
+
+    await waitFor(() =>
+      expect(mockCreateMutateAsync).toHaveBeenCalledWith({
+        title: 'Rain',
+        body: 'Off',
+        createdBy: 'admin-1',
+        expiresAt: new Date('2026-09-15T18:30').toISOString(),
+      })
+    );
+  });
+
+  it('loads an existing expiry into the form when editing, and clears it on cancel', async () => {
+    const user = userEvent.setup();
+    const notification = {
+      ...makeNotification('n-1', 'Old title', 'Old body'),
+      expires_at: new Date('2026-09-15T18:30').toISOString(),
+    };
+
+    mockUseNotificationsQuery.mockReturnValue({ data: [notification], isLoading: false });
+
+    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+
+    const expiryField = screen.getByLabelText(/expires \(optional\)/i);
+    expect(expiryField).toHaveValue('2026-09-15T18:30');
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByLabelText(/expires \(optional\)/i)).toHaveValue('');
   });
 });
