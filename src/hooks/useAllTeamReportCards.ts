@@ -157,7 +157,9 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
     // Retry has to clear whichever fetch failed, so it follows the mode.
     retry: () => {
       if (mode === 'career') {
-        void refetchCareer();
+        // No `void`: the hook's refetch is a retry action that resolves with
+        // nothing, so there is no promise here worth discarding.
+        refetchCareer();
         return;
       }
       // Covers the team list and, through the same query key, the match list —

@@ -208,7 +208,9 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
     // left a rankings failure stuck in the error state until a page reload.
     retry: () => {
       if (mode === 'career') {
-        void refetchCareer();
+        // No `void`: the hook's refetch is a retry action that resolves with
+        // nothing, so there is no promise here worth discarding.
+        refetchCareer();
         return;
       }
       // Covers the team list and, through the same query key, the match list —
