@@ -98,12 +98,24 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
   // undefined, which every consumer read as an empty league. Fold the
   // prerequisite's error, loading flag and refetch in here once, rather than
   // leaving each consumer to remember it. Raised in review of the B-36 fix.
+  const mergedError = query.error ?? teamsError ?? null;
+
   return {
     ...query,
-    error: query.error ?? teamsError ?? null,
+    error: mergedError,
+    // isError has to follow the merged error. Spreading the query alone left
+    // `error` set while `isError` stayed false, so a consumer reading the
+    // standard flag rather than the error object would miss the failure.
+    isError: mergedError !== null,
     isLoading: isLoadingTeams || query.isLoading,
     refetch: async () => {
-      await refetchTeams();
+      const teamsResult = await refetchTeams();
+      if (teamsResult.error) {
+        // The rankings query is still disabled while the team list is missing,
+        // so refetching it here would resolve with the stale empty state and
+        // read as a success. The failure is reported through `error` above.
+        return query;
+      }
       // Once the team list is back the rankings query re-enables and runs
       // itself; this call covers a failure in the rankings query alone.
       return query.refetch();

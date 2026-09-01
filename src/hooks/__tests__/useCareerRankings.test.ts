@@ -50,6 +50,45 @@ describe('useCareerRankings', () => {
     expect(mockUseQuery.mock.calls[0][0].enabled).toBe(false);
   });
 
+  it('flags isError, not just error, when the prerequisite fails', () => {
+    // Spreading the query alone left `error` set while `isError` stayed false,
+    // so a consumer reading the standard flag would miss the failure.
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('teams down'),
+      refetch: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useCareerRankings());
+
+    expect(result.current.isError).toBe(true);
+  });
+
+  it('does not refetch its disabled query when the team refetch fails again', async () => {
+    const refetchQuery = vi.fn().mockResolvedValue({});
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('teams down'),
+      // Still failing on retry.
+      refetch: vi.fn().mockResolvedValue({ error: new Error('teams still down') }),
+    });
+    mockUseQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+      refetch: refetchQuery,
+    });
+
+    const { result } = renderHook(() => useCareerRankings());
+    await result.current.refetch();
+
+    // That query is disabled while the team list is missing, so refetching it
+    // would resolve with the stale empty state and read as a success.
+    expect(refetchQuery).not.toHaveBeenCalled();
+  });
+
   it('retries the team query, not only its own', async () => {
     const refetchTeams = vi.fn().mockResolvedValue({});
     const refetchQuery = vi.fn().mockResolvedValue({});
