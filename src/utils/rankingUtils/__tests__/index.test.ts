@@ -102,6 +102,110 @@ describe('sortRankings (field/direction branches)', () => {
     expect(result.map((r) => r.teamId)).toEqual(['b', 'c', 'a']);
   });
 
+  // The four columns of B-34. Games, Game % and Streak had no case of their own
+  // and fell through to a power-score sort; the arrow moved, so the control
+  // looked like it had worked. See docs/product-description/bug-triage.md.
+  describe('columns that used to fall through to power score (B-34)', () => {
+    // Power score order is b (80) > a (55) > c (30), so every expectation below
+    // that differs from ['b', 'a', 'c'] fails against the old fallback.
+    const byGames = [
+      ranking({
+        teamId: 'a',
+        teamName: 'Alpha',
+        powerScore: 55,
+        gamesWon: 4,
+        gameWinPercentage: 0.2,
+      }),
+      ranking({
+        teamId: 'b',
+        teamName: 'Bravo',
+        powerScore: 80,
+        gamesWon: 1,
+        gameWinPercentage: 0.9,
+      }),
+      ranking({
+        teamId: 'c',
+        teamName: 'Charlie',
+        powerScore: 30,
+        gamesWon: 9,
+        gameWinPercentage: 0.5,
+      }),
+    ];
+
+    it('sorts by gamesWon descending', () => {
+      const result = sortRankings(byGames, 'gamesWon', 'desc');
+      expect(result.map((r) => r.teamId)).toEqual(['c', 'a', 'b']);
+    });
+
+    it('sorts by gamesWon ascending', () => {
+      const result = sortRankings(byGames, 'gamesWon', 'asc');
+      expect(result.map((r) => r.teamId)).toEqual(['b', 'a', 'c']);
+    });
+
+    it('sorts by gameWinPercentage descending', () => {
+      const result = sortRankings(byGames, 'gameWinPercentage', 'desc');
+      expect(result.map((r) => r.teamId)).toEqual(['b', 'c', 'a']);
+    });
+
+    it('sorts by gameWinPercentage ascending', () => {
+      const result = sortRankings(byGames, 'gameWinPercentage', 'asc');
+      expect(result.map((r) => r.teamId)).toEqual(['a', 'c', 'b']);
+    });
+
+    it('sorts streaks by run length, wins above losses', () => {
+      const streaks = [
+        ranking({ teamId: 'l9', powerScore: 90, streak: 'L9' }),
+        ranking({ teamId: 'w2', powerScore: 20, streak: 'W2' }),
+        ranking({ teamId: 'w10', powerScore: 10, streak: 'W10' }),
+        ranking({ teamId: 'l1', powerScore: 80, streak: 'L1' }),
+      ];
+
+      // W10 > W2 > L1 > L9 — not the string order, and not the power order.
+      expect(sortRankings(streaks, 'streak', 'desc').map((r) => r.teamId)).toEqual([
+        'w10',
+        'w2',
+        'l1',
+        'l9',
+      ]);
+      expect(sortRankings(streaks, 'streak', 'asc').map((r) => r.teamId)).toEqual([
+        'l9',
+        'l1',
+        'w2',
+        'w10',
+      ]);
+    });
+
+    it('sorts a team with no streak last in both directions', () => {
+      // No completed match — the table shows "N/A". That is "no value", not a
+      // run of zero, so it must not land between W1 and L1.
+      const streaks = [
+        ranking({ teamId: 'none', powerScore: 99, streak: undefined }),
+        ranking({ teamId: 'win', powerScore: 10, streak: 'W1' }),
+        ranking({ teamId: 'loss', powerScore: 20, streak: 'L1' }),
+      ];
+
+      expect(sortRankings(streaks, 'streak', 'desc').map((r) => r.teamId)).toEqual([
+        'win',
+        'loss',
+        'none',
+      ]);
+      expect(sortRankings(streaks, 'streak', 'asc').map((r) => r.teamId)).toEqual([
+        'loss',
+        'win',
+        'none',
+      ]);
+    });
+
+    it('keeps power-score order for teams tied on another column', () => {
+      const tied = [
+        ranking({ teamId: 'low', powerScore: 20, gamesWon: 5 }),
+        ranking({ teamId: 'high', powerScore: 90, gamesWon: 5 }),
+      ];
+      // The array arrives in power-score order and the sort is stable.
+      expect(sortRankings(tied, 'gamesWon', 'desc').map((r) => r.teamId)).toEqual(['low', 'high']);
+    });
+  });
+
   it('does not mutate the input array', () => {
     const input = [...teams];
     sortRankings(input, 'wins', 'asc');

@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Ranking } from '@/types';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
+import type { RankingSortField } from '@/utils/rankingUtils';
 
 import DivisionRankingsSection from './desktop/DivisionRankingsSection';
 import { SortOptions } from './types';
@@ -13,7 +14,7 @@ interface RankingsDesktopViewProps {
   expandedTeam: string | null;
   toggleExpand: (teamId: string) => void;
   sortOptions: SortOptions;
-  onSortChange: (field: string) => void;
+  onSortChange: (field: RankingSortField) => void;
   showUnified?: boolean;
 }
 

@@ -54,7 +54,7 @@ const makeRanking = (teamId: string, divisionName?: string): Ranking => ({
 const defaultProps = {
   expandedTeam: null,
   toggleExpand: vi.fn(),
-  sortOptions: { field: 'powerScore', direction: 'desc' as const },
+  sortOptions: { field: 'powerScore' as const, direction: 'desc' as const },
   onSortChange: vi.fn(),
 };
 

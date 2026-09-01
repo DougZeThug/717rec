@@ -96,7 +96,7 @@ const defaultProps = {
   rankings,
   expandedTeam: null,
   toggleExpand: vi.fn(),
-  sortOptions: { field: 'powerScore', direction: 'desc' as const },
+  sortOptions: { field: 'powerScore' as const, direction: 'desc' as const },
   onSortChange: vi.fn(),
 };
 

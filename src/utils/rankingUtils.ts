@@ -2,9 +2,41 @@ import { Ranking } from '@/types';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { errorLog, warnLog } from '@/utils/logger';
 
+/**
+ * Every column the rankings table can be sorted by.
+ *
+ * `sortRankings` must carry a `case` for each member. Keeping this a union
+ * rather than a bare string is what stops a heading being wired to a key the
+ * sorter does not handle — that used to compile, and four columns silently
+ * sorted by power score instead. See B-34 in
+ * `docs/product-description/bug-triage.md`.
+ */
+export type RankingSortField =
+  | 'powerScore'
+  | 'winPercentage'
+  | 'sos'
+  | 'wins'
+  | 'gamesWon'
+  | 'gameWinPercentage'
+  | 'streak'
+  | 'teamName';
+
 const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
   if (powerScore === null || powerScore === undefined) return null;
   return Math.round(powerScore * 10) / 10;
+};
+
+/**
+ * A streak reads `W3` or `L2` (see `calculateStreak`). Sorting needs a signed
+ * magnitude so that W10 > W2 > L1 > L9. `undefined` means the team has no
+ * completed match — that is "no value", not zero, so it sorts last like a
+ * missing power score rather than landing between W1 and L1.
+ */
+const getStreakValue = (streak: string | undefined): number | null => {
+  const match = streak ? /^([WL])(\d+)$/.exec(streak) : null;
+  if (!match) return null;
+  const count = Number(match[2]);
+  return match[1] === 'W' ? count : -count;
 };
 
 // Ranking utilities - now handles NULL power scores for teams with no matches
@@ -18,7 +50,7 @@ const getDisplayedPowerScore = (powerScore: number | null | undefined): number |
 
 export const sortRankings = (
   rankings: Ranking[],
-  sortField: string,
+  sortField: RankingSortField | string,
   direction: 'asc' | 'desc'
 ): Ranking[] => {
   return [...rankings].sort((a, b) => {
@@ -42,24 +74,39 @@ export const sortRankings = (
         valueA = a.wins || 0;
         valueB = b.wins || 0;
         break;
+      case 'gamesWon':
+        valueA = a.gamesWon || 0;
+        valueB = b.gamesWon || 0;
+        break;
+      case 'gameWinPercentage':
+        valueA = a.gameWinPercentage || 0;
+        valueB = b.gameWinPercentage || 0;
+        break;
+      case 'streak':
+        valueA = getStreakValue(a.streak);
+        valueB = getStreakValue(b.streak);
+        break;
       case 'teamName':
         valueA = a.teamName;
         valueB = b.teamName;
         break;
       default:
-        valueA = a.powerScore;
-        valueB = b.powerScore;
+        // An unrecognised field falls back to the default ordering rather than
+        // leaving the table unsorted. Every heading the UI offers has a case
+        // above, so this is only reachable from a stored or hand-passed value.
+        valueA = getDisplayedPowerScore(a.powerScore);
+        valueB = getDisplayedPowerScore(b.powerScore);
     }
 
-    // Handle NULL values for power score - put them at the end regardless of direction
-    if (sortField === 'powerScore') {
-      if (valueA === null && valueB === null) {
-        // Fall through to tiebreakers below — do not return 0
-      } else if (valueA === null) {
-        return 1; // NULL values go to the end
-      } else if (valueB === null) {
-        return -1; // NULL values go to the end
-      }
+    // A missing value is "no value", not a low one: it goes to the end whichever
+    // direction is set. This covers a team with no power score and a team with
+    // no completed match, whose streak reads "N/A".
+    if (valueA === null && valueB === null) {
+      // Fall through to the tiebreakers below — do not return 0
+    } else if (valueA === null) {
+      return 1;
+    } else if (valueB === null) {
+      return -1;
     }
 
     if (typeof valueA === 'string' && typeof valueB === 'string') {
@@ -86,6 +133,9 @@ export const sortRankings = (
 
       return (a.teamName || '').localeCompare(b.teamName || '');
     }
+    // Other columns keep the incoming order for a tie. The array arrives sorted
+    // by power score and Array.prototype.sort is stable, so equal values stay in
+    // power-score order rather than shuffling.
     return 0;
   });
 };

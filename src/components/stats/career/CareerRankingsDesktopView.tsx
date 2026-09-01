@@ -1,4 +1,3 @@
-import { ArrowDown, ArrowUp } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -17,6 +16,7 @@ import { getChampionshipColor, getRunnerUpColor } from '@/utils/colors/champions
 import { getWinPercentageColor } from '@/utils/colors/winPercentageColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
+import { SortableColumnHeader } from '../SortableColumnHeader';
 import { CareerSortOptions } from './types';
 
 interface CareerRankingsDesktopViewProps {
@@ -34,76 +34,109 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   sortOptions,
   onSortChange,
 }) => {
-  const getSortIcon = (field: string) => {
-    if (sortOptions.field !== field) return null;
-    return sortOptions.direction === 'desc' ? (
-      <ArrowDown className="inline size-4 ml-1" />
-    ) : (
-      <ArrowUp className="inline size-4 ml-1" />
-    );
-  };
-
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12 text-center">#</TableHead>
-            <TableHead className="min-w-[200px]">Team</TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerMatchWins')}
-            >
-              Career Record {getSortIcon('careerMatchWins')}
+            {/* Not sortable: the number in this column is the row's position
+                under the current sort, not a value of its own. */}
+            <TableHead className="w-12 text-center" scope="col">
+              #
             </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerWinPercentage')}
-            >
-              Win % {getSortIcon('careerWinPercentage')}
+            <TableHead className="min-w-[200px]" scope="col">
+              Team
             </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerGameWins')}
+            <SortableColumnHeader
+              field="careerMatchWins"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Game Record {getSortIcon('careerGameWins')}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerGameWinPercentage')}
+              Career Record
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="careerWinPercentage"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Game Win % {getSortIcon('careerGameWinPercentage')}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerPlayoffWins')}
+              Win %
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="careerGameWins"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Playoff Record {getSortIcon('careerPlayoffWins')}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('championships')}
+              Game Record
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="careerGameWinPercentage"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Championships {getSortIcon('championships')}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('runnerUps')}
+              Game Win %
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="careerPlayoffWins"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Runner-ups {getSortIcon('runnerUps')}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerPowerScore')}
+              Playoff Record
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="championships"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Career Power Score {getSortIcon('careerPowerScore')}
-            </TableHead>
-            <TableHead
-              className="cursor-pointer hover:bg-muted/50 text-center"
-              onClick={() => onSortChange('careerSos')}
+              Championships
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="runnerUps"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
             >
-              Career SOS {getSortIcon('careerSos')}
-            </TableHead>
+              Runner-ups
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="careerPowerScore"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
+            >
+              Career Power Score
+            </SortableColumnHeader>
+            <SortableColumnHeader
+              field="careerSos"
+              activeField={sortOptions.field}
+              direction={sortOptions.direction}
+              onSort={onSortChange}
+              icon="arrow"
+              className="text-center"
+            >
+              Career SOS
+            </SortableColumnHeader>
           </TableRow>
         </TableHeader>
         <TableBody>

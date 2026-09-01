@@ -80,7 +80,7 @@ const defaultProps = {
   allRankings,
   expandedTeam: null,
   toggleExpand: vi.fn(),
-  sortOptions: { field: 'powerScore', direction: 'desc' as const },
+  sortOptions: { field: 'powerScore' as const, direction: 'desc' as const },
   onSortChange: vi.fn(),
   isLight: true,
 };
@@ -141,6 +141,49 @@ describe('DivisionRankingsSection', () => {
     render(<DivisionRankingsSection {...defaultProps} />);
     await userEvent.click(screen.getByText(/^Win %/));
     expect(defaultProps.onSortChange).toHaveBeenCalledWith('winPercentage');
+  });
+
+  // B-34: the headings were bare <th> elements with a click handler, so the
+  // table could not be sorted from a keyboard at all.
+  describe('keyboard operation (B-34)', () => {
+    it('exposes every sortable heading as a button', () => {
+      render(<DivisionRankingsSection {...defaultProps} />);
+      for (const name of ['Team', 'Power', 'W-L', 'Win %', 'Games', 'Game %', 'SOS', 'Streak']) {
+        expect(screen.getByRole('button', { name })).toBeInTheDocument();
+      }
+    });
+
+    it('sorts on Enter and on Space', async () => {
+      render(<DivisionRankingsSection {...defaultProps} />);
+      const streak = screen.getByRole('button', { name: 'Streak' });
+
+      streak.focus();
+      expect(streak).toHaveFocus();
+
+      await userEvent.keyboard('{Enter}');
+      expect(defaultProps.onSortChange).toHaveBeenCalledWith('streak');
+
+      defaultProps.onSortChange.mockClear();
+      await userEvent.keyboard(' ');
+      expect(defaultProps.onSortChange).toHaveBeenCalledWith('streak');
+    });
+
+    it('does not offer the # column as a sort control', () => {
+      render(<DivisionRankingsSection {...defaultProps} />);
+      // Rank is the row's position under the current sort, not a value of its
+      // own, so there is nothing to sort by. It used to be wired up and fell
+      // through to a power-score sort.
+      expect(screen.queryByRole('button', { name: '#' })).not.toBeInTheDocument();
+    });
+
+    it('offers the two width-gated columns as sort controls', async () => {
+      render(<DivisionRankingsSection {...defaultProps} />);
+      await userEvent.click(screen.getByRole('button', { name: 'Games' }));
+      expect(defaultProps.onSortChange).toHaveBeenCalledWith('gamesWon');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Game %' }));
+      expect(defaultProps.onSortChange).toHaveBeenCalledWith('gameWinPercentage');
+    });
   });
 
   it('flags the expanded team row', () => {

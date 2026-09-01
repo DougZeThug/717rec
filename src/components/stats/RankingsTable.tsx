@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 
 import { useIsMobile } from '@/hooks/useMobile';
 import { Ranking } from '@/types';
-import { sortRankings } from '@/utils/rankingUtils';
+import { type RankingSortField, sortRankings } from '@/utils/rankingUtils';
 
 import RankingsDesktopView from './RankingsDesktopView';
 import RankingsMobileView from './RankingsMobileView';
@@ -71,17 +71,11 @@ const RankingsTable: React.FC<RankingsTableProps> = ({
     }));
   }, [sortedRankings, sortOptions.field, sortOptions.direction]);
 
-  const handleSortChange = (field: string) => {
+  const handleSortChange = (field: RankingSortField) => {
     const newDirection: SortDirection =
       sortOptions.field === field && sortOptions.direction === 'desc' ? 'asc' : 'desc';
-    const newSortOptions: SortOptions = {
-      field,
-      direction: newDirection,
-    };
 
-    setSortOptions(newSortOptions);
-
-    localStorage.setItem('rankingsSortOptions', JSON.stringify(newSortOptions));
+    setSortOptions({ field, direction: newDirection });
   };
 
   if (isMobile) {
