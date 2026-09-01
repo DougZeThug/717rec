@@ -9,7 +9,6 @@ export * from './sortAndUpdateRankings';
 export * from '@/utils/teamDetailsUtils/gameStatsUtils';
 
 // Export functions from the main rankingUtils file to avoid circular dependencies
-export type { RankingSortField } from '../rankingUtils';
 export {
   loadRankingsFromStorage,
   saveRankingsToStorage,

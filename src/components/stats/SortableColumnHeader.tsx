@@ -78,5 +78,3 @@ export function SortableColumnHeader<F extends string>({
     </TableHead>
   );
 }
-
-export default SortableColumnHeader;
