@@ -27,6 +27,14 @@ import ProfileForm from '../ProfileForm';
 const renderForm = () =>
   render(<ProfileForm initialUsername="" initialFullName="" onProfileUpdated={vi.fn()} />);
 
+// The name check is debounced by 500ms and then awaits a request. The default
+// 1000ms find timeout leaves little headroom on a loaded CI worker, so every
+// wait here is given room rather than relying on the default.
+const SETTLE_TIMEOUT_MS = 5000;
+
+const typeName = (name: string) =>
+  userEvent.setup().type(screen.getByPlaceholderText('Enter your first name'), name);
+
 describe('ProfileForm name availability', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,33 +42,41 @@ describe('ProfileForm name availability', () => {
 
   it('says in words that a name is available, not by a tick alone', async () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: true });
-    const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await typeName('Dougie');
 
-    expect(await screen.findByText('Name is available')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS })
+    ).toBeInTheDocument();
   });
 
-  it('says in words that a name is taken', async () => {
+  it('leaves the taken case to the field error, so it is announced once', async () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: false });
-    const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await typeName('Dougie');
 
-    expect(await screen.findByText('Name is already taken')).toBeInTheDocument();
+    // The form's own error is the single message; a second live region saying
+    // the same thing made a screen reader announce it twice.
+    expect(
+      await screen.findByText('This name is already taken', undefined, {
+        timeout: SETTLE_TIMEOUT_MS,
+      })
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Name is already taken')).not.toBeInTheDocument();
+    expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
   });
 
   it('says nothing before the name is long enough to check', async () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: true });
-    const user = userEvent.setup();
     renderForm();
 
-    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Do');
+    await typeName('Do');
 
-    await waitFor(() => expect(mockCheckUsernameAvailability).not.toHaveBeenCalled());
+    await waitFor(() => expect(mockCheckUsernameAvailability).not.toHaveBeenCalled(), {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
     expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
-    expect(screen.queryByText('Name is already taken')).not.toBeInTheDocument();
   });
 });

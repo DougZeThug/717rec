@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from '@/hooks/useToast';
-import { cn } from '@/lib/utils';
 import {
   checkUsernameAvailability,
   type ProfileFormData,
@@ -157,17 +156,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                   </div>
                 )}
               </div>
-              {/* The tick and the warning used to be the only signal, so anyone
-                  who could not see the colour got no answer at all. */}
-              {field.value.length >= 3 && !isCheckingUsername && usernameAvailable !== null && (
-                <p
-                  role="status"
-                  className={cn(
-                    'text-sm font-medium',
-                    usernameAvailable ? 'text-green-600 dark:text-green-400' : 'text-destructive'
-                  )}
-                >
-                  {usernameAvailable ? 'Name is available' : 'Name is already taken'}
+              {/* The tick was the only signal that a name is free, so anyone who
+                  could not see the colour got no answer at all. The taken case
+                  is left to FormMessage below — it already says "This name is
+                  already taken", and two live regions would announce it twice. */}
+              {field.value.length >= 3 && !isCheckingUsername && usernameAvailable === true && (
+                <p role="status" className="text-sm font-medium text-green-600 dark:text-green-400">
+                  Name is available
                 </p>
               )}
               <FormMessage />

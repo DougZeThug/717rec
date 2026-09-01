@@ -282,8 +282,9 @@ sees a count.
   define the matches it generated. The division can only be changed until the
   first match is played.
 - **A division card offers Create Bracket whether or not it already has one.**
-- **The success toast for creation is never seen**, because the refresh toast
-  replaces it within a second.
+- Resolved: **the success toast for creation was never seen**, because a "Data
+  Refreshed" toast replaced it within a second. That second toast was removed —
+  see [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
 - **Creation navigates the page on a timer**, one second after the refresh,
   wherever the admin has got to.
 - **Seeding is final once a result is entered.** The only fix is to delete the

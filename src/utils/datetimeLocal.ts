@@ -7,7 +7,15 @@
  * admin typing a time means by it.
  */
 
-/** Convert a datetime-local value to a UTC ISO string. Empty input gives null. */
+/**
+ * Convert a datetime-local value to a UTC ISO string. Empty input gives null.
+ *
+ * Known limitation: a time inside the daylight-saving spring-forward gap does
+ * not exist locally, and the browser shifts it forward by an hour rather than
+ * refusing it. For a notification expiry that means the notification survives
+ * an hour longer than typed, on one day a year. Rejecting it would need error
+ * handling this form does not have, so it is documented rather than guarded.
+ */
 export const localInputToIso = (value: string): string | null => {
   if (!value) return null;
   const date = new Date(value);

@@ -17,12 +17,13 @@ Two of the 41 were **not raised as defects by any document**. B-40, a `high`, wa
 found while checking B-20. B-41, a `medium`, was recorded in
 `home/the-home-page.md` as an open question and could not be reached until
 [B-31](#b-31-two-dead-features-are-visible-in-the-interface) added the control
-that switches its feature on.
+that switches its feature on; it was fixed in that same change.
 
 **All six `low` entries are now closed.** Five were fixed; B-26 was put to the
 league as a product call and left as it is, documented rather than changed. Two
 of the five — B-27 and B-30 — carried claims that had gone stale between the
-reading and the fix, and both are corrected in place.
+reading and the fix, and both are corrected in place. B-41 was fixed in the same
+change that made it reachable.
 
 Two clusters account for most of the high ones.
 
@@ -147,7 +148,7 @@ entry's *Corrected on review* note.
 | B-35 | A stale fourth career power-score formula decides one badge | medium | stats | **fixed** | — |
 | B-36 | Two grades on the team report card are not real measurements | medium | stats | **fixed** | — |
 | B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
-| B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | fix | — |
+| B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
 | B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
 | B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
@@ -2114,13 +2115,24 @@ finding read a superseded migration.
   `confirmation_open` as an **optional** field, because `fetchHistoricalSeasons`
   and others select a narrower set of columns.
 
-  **A new bug was opened by finishing this one, and that was a deliberate
-  choice.** The card `confirmation_open` reveals has no sign-in check and lists
-  hidden teams — already recorded in `home/the-home-page.md`, and until now
-  unreachable because the feature could never be switched on. The league was told
-  this and chose to add the toggle now and fix the hole separately. It is
-  [B-41](#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams),
-  and it must be fixed before confirmation is opened on a live season.
+  **Finishing this one made an existing bug reachable, and it was fixed too.**
+  The card `confirmation_open` reveals had no sign-in check and listed hidden
+  teams — already recorded in `home/the-home-page.md`, and until now unreachable
+  because the feature could never be switched on. The first plan was to add the
+  toggle and fix that separately; two PR reviewers raised it independently, one
+  as a P1, and it was fixed before merge instead. See
+  [B-41](#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams).
+
+  **Review also found the expiry only half worked.** The one SELECT policy on
+  `admin_notifications` allows a row while `expires_at IS NULL OR expires_at >
+  now()`, and it applies to admins as well — so an expired notification vanished
+  from the admin list, the EXPIRED tag could never be seen after a refresh, and
+  the row could no longer be edited or deleted. Migration
+  `20260901190000_admin_can_read_expired_notifications.sql` adds an admin-only
+  SELECT. It is **applied by hand** (`docs/OPERATIONS.md` §6); until it is run,
+  the list behaves as it did before. Separately, the expiry timer scheduled one
+  timeout and never re-armed, so only the first expiry was ever noticed; it now
+  reschedules after every tick and caps the delay.
 
   *Corrected on review.* Both dead features were exactly as described. Two small
   references had drifted: the route is at `src/App.tsx:215`, not `:213`, and the
@@ -2147,10 +2159,30 @@ finding read a superseded migration.
   belongs to, and confirm what the database does with a refused write.
 - **Found while:** finishing [B-31](#b-31-two-dead-features-are-visible-in-the-interface).
   It is not new, but it was unreachable until that change added a control that
-  can switch confirmation on. **Do not open confirmation on a live season until
-  this is fixed.**
+  can switch confirmation on.
 - **Raised by:** [`home/the-home-page.md`](home/the-home-page.md#open-questions-and-verification),
-  which recorded it as an open question before it could be reached.
+  which recorded it as an open question before it could be reached. Two PR
+  reviewers raised it independently against the B-31 change, one as a P1.
+- **Status:** **fixed, in the same change that made it reachable.** The plan had
+  been to add the switch now and fix this separately; the review made clear that
+  shipping a reachable hole to fix later was the wrong order, and it was fixed
+  before merge instead.
+
+  `ParticipationHeroCard` now reads the caller's own approved membership rather
+  than every team in the league. That closes both halves at once: a signed-out
+  visitor has no membership, so the card is not drawn for them, and a member can
+  only answer for the team they belong to — hidden teams included, since a hidden
+  team is not theirs.
+
+  **The team picker is gone rather than filtered.** A person has at most one
+  membership, so a combobox over a one-item list was a control with nothing to
+  choose. The card names the team instead, which is also what "Confirm **your**
+  team" says. The search box, the popover and the whole team query went with it.
+
+  **Not addressed here: whether the database refuses the write.** The card no
+  longer offers a team that is not the caller's, but hiding a control is not the
+  same as refusing a write, and the row-level policy on `season_participation`
+  was not read. That is worth checking before the first season is opened.
 
 ---
 

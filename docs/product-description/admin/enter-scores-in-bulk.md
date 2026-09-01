@@ -269,8 +269,9 @@ failure does not fail the score. Deleting a match reverses all of it.
   [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
 - **Retry failed re-sends only the failures**, and is safe to press repeatedly.
 - **Dismissing the error banner keeps the edits.**
-- **Deleting is the only irreversible action in the tool** and its confirmation
-  says nothing about statistics being reversed.
+- **Deleting is the only irreversible action in the tool.** Its confirmation now
+  says the statistics are reversed with the match — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 - **Two admins editing the same night** do not see each other at all.
 
 ## Open questions and verification
@@ -283,11 +284,13 @@ failure does not fail the score. Deleting a match reverses all of it.
 - **Matches with no date are silently dropped from the table.** They cannot be
   resulted or deleted here and nothing says they exist. **May be worth treating
   as a bug rather than documenting.**
-- **The refresh-failure toast can replace the batch summary**, which is the only
-  place the saved and failed counts are stated together outside the banner.
-  **May be worth treating as a bug rather than documenting.**
-- The empty state's "team selection" wording describes a filter the tool does
-  not have.
+- Resolved: **the refresh-failure toast could replace the batch summary**, the
+  only place the saved and failed counts are stated together outside the banner.
+  Both are visible now — the toast limit is three, see
+  [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
+- Resolved: **the empty state's "team selection" wording described a filter the
+  tool does not have.** Fixed — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 - Not confirmed by hand: whether the auto-set date filter picks the night the
   admin actually wants, or a future scheduled date, when the schedule runs ahead.
 - Not confirmed by hand: how long a batch of twenty takes end to end, given the

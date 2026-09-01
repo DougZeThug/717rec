@@ -23,9 +23,9 @@ the notification form. That is not a notification feature and is owned by
 
 ## The simple case
 
-The admin types `/admin/notifications` into the address bar — **there is no link
-to it anywhere in the app**. The page is one of only three guarded routes; a
-non-admin is bounced with an "Access Denied" toast. See
+The admin opens the **Notifications** entry in the admin dashboard's sidebar, or
+types `/admin/notifications` into the address bar. The page is one of only three
+guarded routes; a non-admin is bounced with an "Access Denied" toast. See
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
 
 Under the contact inbox is a card headed **New notification** with two fields:
@@ -146,7 +146,7 @@ entry with a dot that is filled while it is unread.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | The page is admin-only. The bell is visible to every role; the quick-post form and the bins inside it appear only for an admin. | Losing admin mid-session leaves the form and the bins on screen until the profile is re-read; the writes then fail with "Save failed". |
-| The record's state | A notification past its expiry is tagged EXPIRED and still listed, still editable, and still shown in the bell. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
+| The record's state | A notification past its expiry is tagged EXPIRED and still listed and editable for an admin, and still shown in the bell. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
 | The season's state | No effect. Notifications belong to no season and survive a changeover. | No effect. |
 | Viewport | The page is a single narrow column at every width. The bell popover is a fixed 360 pixels wide. | No effect. |
 | Keys the form honours | Tab moves title, message, expiry, Post, Cancel. **Enter in the title posts the form**, because it is a real form and the button is its submit. Enter in the message adds a newline. | Escape closes the bell popover. It does nothing on the page. |
@@ -198,8 +198,9 @@ deleting toasts only on failure. The word "notification" means two different
 things on this page — the toast the admin sees and the announcement they are
 writing — and neither has anything to do with the other.
 
-**URL state.** `/admin/notifications` carries nothing. There is no link to it
-from the admin dashboard, the header, or anywhere else.
+**URL state.** `/admin/notifications` carries nothing. The address itself is
+linked from nowhere — the admin dashboard's **Notifications** sidebar entry
+renders the same management inside `/admin` rather than navigating here.
 
 **On a phone.** The page is already one narrow column and needs no change. The
 bell popover is fixed at 360 pixels, which is wider than the narrowest phones.
@@ -257,9 +258,12 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
   an admin can send. No such delivery exists at this commit: the only thing an
   admin can send is an in-app banner. **May be worth treating as a bug rather
   than documenting**, and the glossary entry needs correcting either way.
-- **The page is unreachable without typing the URL.** **May be worth treating as
-  a bug rather than documenting.**
-- **Expiry is half-built**: displayed, timed, and unsettable.
+- Resolved: **the page was unreachable without typing the URL**, and **expiry
+  was half-built** — displayed, timed, and unsettable. Both fixed, see
+  [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
+- Not confirmed by hand: whether an expired notification really leaves the bell.
+  The admin list keeps it — an admin-only read was added for exactly that, since
+  the one SELECT policy hid expired rows from everyone, admins included.
 - **Notifications are live and the foundations say nothing is.**
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md)
   states that realtime exists only on live scoring. Notifications subscribe, and

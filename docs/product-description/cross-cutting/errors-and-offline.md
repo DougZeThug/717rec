@@ -78,9 +78,10 @@ way still lands.
 invalid, duplicated — reaches the browser and is then replaced by the feature's
 own sentence. The error object keeps the code and the hint; nothing shows them.
 
-**What is reported.** One toast. Only one toast exists at a time, so an operation
-that fails several times in a row shows only the last failure. A bulk action that
-reports per item shows one line about one item.
+**What is reported.** One toast per failure. Up to three are on screen at once,
+so an operation that fails three times in a row shows all three; a fourth pushes
+the oldest out. A bulk action that reports per item still shows one line about
+one item.
 
 **What is remembered.** Nothing. There is no queue, no retry button on the toast,
 and no record that the attempt happened.
@@ -217,7 +218,8 @@ failures are reported with a stack trace. See
 - **The standings page prints the raw error message** under its "There was an
   error loading the statistics data" alert, which means database wording reaches
   the user on that one page and nowhere else.
-- **Two writes failing together show one toast.** The first is replaced.
+- **Two writes failing together show both toasts**, stacked. Four in quick
+  succession still lose the oldest.
 - **The route error screen's Home button is a full page load**, so it discards
   everything including a toast the user had not finished reading.
 - **An offline user can fill in a long form** and lose all of it at submit.
@@ -227,9 +229,12 @@ failures are reported with a stack trace. See
 
 ## Open questions and verification
 
-- **The network-error message exists and is never used.** The one place the app
-  could say "check your connection" is dead code. **May be worth treating as a
-  bug rather than documenting.**
+- Resolved: **the network-error message existed and was never used** — the one
+  place the app could say "check your connection" was dead code. The helper and
+  the hook behind it were **deleted** as part of
+  [B-12](../bug-triage.md#b-12-failure-messages-discard-the-reason-the-server-gave),
+  whose sanitiser supersedes them. See also
+  [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
 - **Nothing detects offline except two timeslot reads.** Whether a visible
   offline indicator is wanted is a product question, but the current state — an
   app that looks fully working with no connection — is worth deciding

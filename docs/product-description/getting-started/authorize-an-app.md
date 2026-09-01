@@ -179,12 +179,12 @@ record ids described in
 **On a phone.** Plain text at a readable width with the two buttons in a row. The
 bottom tab bar sits below. Nothing else changes.
 
-**Accessibility.** The buttons are real buttons and reachable by keyboard. Three
-things are wrong. The page draws its own main region inside the app's, so there are
-**two main landmarks** on the page. And the error screen replaces the whole page
-with no announcement. The route is now in the app's list of page names, so a
-screen reader arriving here is told it is the **"Authorize App" page** — until
-2026-09-01 it was announced as "Page Not Found", see
+**Accessibility.** The buttons are real buttons and reachable by keyboard. Two
+things are wrong. The page draws its own main region inside the app's, so there
+are **two main landmarks** on the page. And the error screen replaces the whole
+page with no announcement. A third — the route being announced as the "Page Not
+Found" page — is fixed: it is in the app's list of page names now, so a screen
+reader arriving here is told it is the **"Authorize App" page**, see
 [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 
 **Side effects the user can notice.** Approving grants another application the

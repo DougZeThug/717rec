@@ -152,8 +152,8 @@ Not checkable by hand:
 Not checkable by hand:
 
 - How the availability line is read out. The tick and the warning triangle are
-  now `aria-hidden`, and a `role="status"` line beside the field carries the
-  answer in words ([B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places));
+  now `aria-hidden`, and a `role="status"` line under the field carries the
+  answer when a name is free ([B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places));
   confirming it is really announced needs a real screen reader. See
   [`cross-cutting/accessibility.md`](../cross-cutting/accessibility.md).
 - Whether the navigation away after saving is announced.

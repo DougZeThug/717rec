@@ -36,30 +36,41 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
   useEffect(() => {
     if (suppliedTimeMs !== undefined) return undefined;
 
-    // Refresh clock immediately so newly-arrived (already-expired) notifications
-    // get a correct expiry evaluation on this render cycle.
-    const now = getCurrentTimeMs();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-    setLiveTimeMs(now);
+    let timeout: number | undefined;
 
-    const futureExpiryTimes = notifications
-      .map((n) => (n.expires_at ? Date.parse(n.expires_at) : Number.NaN))
-      .filter((expiresAt) => Number.isFinite(expiresAt) && expiresAt >= now);
+    // Re-arms itself after every tick. The earlier version scheduled one timeout
+    // from the notification list and never rescheduled — `liveTimeMs` is not a
+    // dependency, so the effect did not re-run when the timeout fired. Only the
+    // first expiry was ever noticed; a second one never re-rendered the list.
+    const tick = () => {
+      const now = getCurrentTimeMs();
+      setLiveTimeMs(now);
 
-    const delay =
-      futureExpiryTimes.length === 0
-        ? NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS
-        : Math.max(
-            Math.min(...futureExpiryTimes) - now + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS,
-            NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS
-          );
+      const futureExpiryTimes = notifications
+        .map((n) => (n.expires_at ? Date.parse(n.expires_at) : Number.NaN))
+        .filter((expiresAt) => Number.isFinite(expiresAt) && expiresAt > now);
 
-    const timeout = window.setTimeout(() => {
-      setLiveTimeMs(getCurrentTimeMs());
-    }, delay);
+      const untilNextExpiry =
+        futureExpiryTimes.length === 0
+          ? Number.POSITIVE_INFINITY
+          : Math.min(...futureExpiryTimes) - now + NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS;
+
+      // Capped at the fallback interval. setTimeout overflows past ~24.9 days
+      // and fires at once, and an expiry far in the future needs no precision.
+      const delay = Math.min(
+        Math.max(untilNextExpiry, NOTIFICATION_EXPIRY_REFRESH_BUFFER_MS),
+        NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS
+      );
+
+      timeout = window.setTimeout(tick, delay);
+    };
+
+    // Runs immediately so a newly-arrived, already-expired notification is
+    // evaluated against a fresh clock on this render cycle.
+    tick();
 
     return () => {
-      window.clearTimeout(timeout);
+      if (timeout !== undefined) window.clearTimeout(timeout);
     };
   }, [notifications, suppliedTimeMs]);
 

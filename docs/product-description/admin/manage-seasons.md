@@ -332,9 +332,9 @@ them.
 - Resolved: **the "confirmation open" flag could be read but not written**, so the
   team confirmation feature it gates could never be turned on from the product.
   Fixed — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
-  The active season's card now carries an **Open for confirmation** switch.
-  **Before switching it on for a live season**, note that the card it reveals on
-  the home page has no sign-in check and lists hidden teams —
+  The active season's card now carries an **Open for confirmation** switch. The
+  card it reveals on the home page had no sign-in check and listed hidden teams;
+  that was fixed in the same change, see
   [B-41](../bug-triage.md#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams).
 - **Archiving is irreversible with a single confirmation.** One dialog, one
   press, and every team's record resets. There is no typed confirmation, no

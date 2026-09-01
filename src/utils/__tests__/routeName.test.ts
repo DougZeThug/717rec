@@ -26,6 +26,10 @@ describe('getRouteName', () => {
     expect(getRouteName('/oauth/consent')).toBe('Authorize App');
   });
 
+  it('names the live scoring route, which has a dynamic match id', () => {
+    expect(getRouteName('/matches/123/live')).toBe('Live Scoring');
+  });
+
   it('names every route declared in App.tsx', () => {
     const appSource = readFileSync(resolve(process.cwd(), 'src/App.tsx'), 'utf8');
 
@@ -35,11 +39,13 @@ describe('getRouteName', () => {
 
     const declared = [...appSource.matchAll(/path="([^"*]+)"/g)]
       .map((match) => match[1])
-      // Dynamic segments are matched by prefix and covered above.
-      .filter((path) => !path.includes(':'))
       .filter((path) => !devOnly.includes(path));
 
-    const unnamed = declared.filter((path) => getRouteName(path) === 'Page Not Found');
+    // A dynamic route is checked as a real address a user could be on. Skipping
+    // them hid /matches/:matchId/live, which had no name at all.
+    const sample = (path: string) => path.replace(/:[^/]+/g, 'sample-id');
+
+    const unnamed = declared.filter((path) => getRouteName(sample(path)) === 'Page Not Found');
     expect(unnamed).toEqual([]);
   });
 
