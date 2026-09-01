@@ -75,6 +75,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
     match.team2_game_wins !== undefined &&
     (match.team2_game_wins || 0) > (match.team1_game_wins || 0);
 
+  // The winner used to be marked by emerald text alone, which says nothing in
+  // greyscale or to a screen reader. Add the word as well, and keep the colour.
+  const winnerTag = (
+    <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-full">
+      Won
+    </span>
+  );
+
   const isPostponed = match.status === 'postponed';
   const isCanceled = match.status === 'canceled';
   const hasSpecialStatus = isPostponed || isCanceled;
@@ -173,6 +181,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 >
                   <span className={getTeamNameStyle(team1IsWinner)}>{team1Name}</span>
                 </TransitionLink>
+                {team1IsWinner && winnerTag}
               </div>
 
               {/* Score pill */}
@@ -213,6 +222,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 >
                   <span className={getTeamNameStyle(team2IsWinner)}>{team2Name}</span>
                 </TransitionLink>
+                {team2IsWinner && winnerTag}
               </div>
             </div>
 
