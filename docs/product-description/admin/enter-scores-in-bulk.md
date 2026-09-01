@@ -164,12 +164,15 @@ details** link that lists one line per failed match — "Couldn't save *Team A* 
 edits, turn red-edged, and say "Submission failed - please retry".
 
 **Deleting a match** asks first. The dialog reads "Are you sure? This action
-cannot be undone. This will permanently delete the match from the schedule." and
-offers Cancel and Delete. Confirming removes the match **and reverses the
+cannot be undone. This will permanently delete the match from the schedule. The
+standings, team records and statistics it counted towards are reversed with it."
+and offers Cancel and Delete. Confirming removes the match **and reverses the
 statistics it produced**, in one transaction, so a failure to reverse rolls back
-the delete. The dialog does not mention the statistics. A toast says "Match
-deleted — The match has been removed successfully." and the row disappears
-without disturbing edits on other rows.
+the delete. The second sentence was added as part of
+[B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips); until then the
+dialog did not mention the statistics. A toast says "Match deleted — The match
+has been removed successfully." and the row disappears without disturbing edits
+on other rows.
 
 ## Modifiers
 
@@ -256,12 +259,14 @@ failure does not fail the score. Deleting a match reverses all of it.
   applies the new one on the same press as any other row.
 - **A match with no date is invisible**, so it can never be resulted or deleted
   from this tool.
-- **The empty state mentions a filter that does not exist**: "No matches match
-  your current filters. Try adjusting your date range or team selection." There
-  is no team filter.
-- **The post-batch refresh can steal the summary toast.** After a batch the tool
-  re-reads the list, and if that read fails it raises its own red toast, which
-  replaces the summary the admin had one moment to read.
+- Resolved: **the empty state mentioned a team filter that does not exist.**
+  Fixed — see [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). It now
+  reads "No matches match your current filters. Try adjusting the date or the
+  bracket.", which is what the screen actually filters by.
+- **The post-batch refresh can raise a red toast over the summary.** After a batch
+  the tool re-reads the list, and if that read fails it raises its own red toast.
+  It no longer replaces the summary — up to three toasts are shown at once, see
+  [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
 - **Retry failed re-sends only the failures**, and is safe to press repeatedly.
 - **Dismissing the error banner keeps the edits.**
 - **Deleting is the only irreversible action in the tool** and its confirmation

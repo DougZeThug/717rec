@@ -65,8 +65,12 @@ as both an exact time and a relative one, an **Edit** button, and a **bin**. An
 entry past its expiry also carries a grey **EXPIRED** tag and a line reading
 "Expires *date*".
 
-**Nothing in the app can set an expiry.** The form has no expiry field, so the
-tag and the line describe a state no admin can create.
+**An expiry is optional.** The New notification form carries an **Expires
+(optional)** date-and-time control under the message. Leave it empty and the
+notification stays until it is deleted; set it and the entry carries the EXPIRED
+tag once that time passes. Until 2026-09-01 there was no such field, so the tag
+and the line described a state no admin could create — see
+[B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
 
 The page opens a live connection to the notification list, so anything another
 admin posts, edits, or deletes appears here without a reload.
@@ -145,7 +149,7 @@ entry with a dot that is filled while it is unread.
 | The record's state | A notification past its expiry is tagged EXPIRED and still listed, still editable, and still shown in the bell. | A notification deleted elsewhere while it is being edited clears the form and raises a red toast: "Notification deleted — The notification you were editing has been removed." |
 | The season's state | No effect. Notifications belong to no season and survive a changeover. | No effect. |
 | Viewport | The page is a single narrow column at every width. The bell popover is a fixed 360 pixels wide. | No effect. |
-| Keys the form honours | Tab moves title, message, Post, Cancel. **Enter in the title posts the form**, because it is a real form and the button is its submit. Enter in the message adds a newline. | Escape closes the bell popover. It does nothing on the page. |
+| Keys the form honours | Tab moves title, message, expiry, Post, Cancel. **Enter in the title posts the form**, because it is a real form and the button is its submit. Enter in the message adds a newline. | Escape closes the bell popover. It does nothing on the page. |
 
 ## Cancel and interrupt
 
@@ -212,14 +216,20 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 
 ## Edge cases
 
-- **The page has no link.** `/admin/notifications` must be typed. Nothing on the
-  admin dashboard mentions it.
+- Resolved: **the page had no link**, so `/admin/notifications` had to be typed.
+  Fixed — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
+  The notification management now also appears as a **Notifications** item in the
+  admin dashboard's sidebar. The page itself is unchanged and still shows the
+  contact inbox above it.
 - **Delete has no confirmation**, on the page and in the bell popover, and
   cannot be undone.
 - **A successful delete says nothing at all**, so a mis-click looks like the row
   vanishing on its own.
-- **Expiry can be displayed but never set.** The EXPIRED tag, the "Expires" line,
-  and the timer that re-checks them all exist for a value nothing can write.
+- Resolved: **expiry could be displayed but never set.** The EXPIRED tag, the
+  "Expires" line and the timer that re-checks them all existed for a value nothing
+  could write. Fixed — see
+  [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
+  The form has an optional expiry field, and editing loads the stored value.
 - **An expired notification is still shown**, in the list and in the bell.
 - **Editing leaves no trace.** The list shows only when a notification was
   posted, so a message edited an hour later reads as though it always said that.

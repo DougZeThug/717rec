@@ -74,7 +74,9 @@ Errors go to a monitoring service in the published build only.
 **Session recording.** About twelve to fifteen seconds after the app loads, a
 session replay recorder is added. It records roughly one session in ten, and
 **every session in which an error occurs**. A user has no way to know this is
-happening, no way to opt out, and nothing in the app mentions it.
+happening, no way to opt out, and nothing in the app mentions it. This is a
+recorded decision of the league rather than an oversight — see
+[B-26](../bug-triage.md#b-26-session-replay-records-one-visit-in-ten-with-no-notice).
 
 ## What a user writes, and where it goes
 
@@ -246,7 +248,9 @@ See [`on-a-phone.md`](on-a-phone.md).
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
   Not confirmed by hand: whether a notice really does appear without a reload.
 - **Session replay records 10% of sessions and every session with an error**,
-  with no notice to the user. Worth a decision.
+  with no notice to the user. **Decided, 2026-09-01:** the league chose to keep
+  the recording as configured and to add no privacy note. See
+  [B-26](../bug-triage.md#b-26-session-replay-records-one-visit-in-ten-with-no-notice).
 - Not confirmed by hand: whether registering actually sends a confirmation email
   in the published app. The local configuration switches confirmations off and
   the published setting was not read.

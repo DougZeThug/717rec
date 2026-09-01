@@ -189,13 +189,11 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
 
 ## Edge cases
 
-- **The empty state describes filters that do not exist.** With no teams the page
-  reads "No Teams Found — No teams match your current filters. Try adjusting your
-  search or add a new team to get started." There is no search and no filter on
-  this page.
-- **The empty state's "View All Teams" button reloads the whole page.** It is a
-  full browser load of the same address, not an in-app navigation, and it throws
-  away everything cached.
+- Resolved: **the empty state described filters that do not exist**, and its
+  "View All Teams" button did a full browser load of the same address. Both fixed
+  — see [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). With no
+  teams the page now reads "No Teams Found — There are no teams to show yet. An
+  admin adds teams from the admin dashboard.", and there is no button.
 - **In By Division mode an empty league reads differently**: "No teams available
   in any division."
 - **A division that exists but has no teams is not drawn at all**, so the set of

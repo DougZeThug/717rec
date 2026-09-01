@@ -120,9 +120,11 @@ Google button. Nothing can be submitted twice.
 **Signing in** sends the address and password. On success a toast says "Welcome
 back!" and the page's arrival rule takes over and sends the user on.
 
-**Registering** sends the same two values. On success a toast says "Account
-created — Please check your email to confirm your account", and the league creates
-the account.
+**Registering** sends the same two values. On success a single toast says
+"Account created", and the league creates the account. What follows depends on
+whether the league requires email confirmation: with confirmation required the
+toast reads "Please check your email to confirm your account"; with it switched
+off the account is signed in at once and the toast reads "You are signed in."
 
 > **Technical note:** the league creates a profile for a new account by itself and
 > fills the username in from the part of the address before the `@`. A new account
@@ -211,9 +213,7 @@ it, which is usually a network message rather than anything about 717rec. Nothin
 is queued.
 
 **Toasts and notifications.** One toast per attempt, plus the in-card panel on
-failure. **Registering can raise two toasts in a row** — see
-[Edge cases](#edge-cases) — and because only one toast is on screen at a time, the
-user sees the second.
+failure.
 
 **URL state.** `next` is the only thing the URL carries, and it is the only part of
 the page's state that survives a reload. It is one of the few exceptions to the
@@ -237,12 +237,10 @@ username taken from the address. Nothing else is written.
 
 ## Edge cases
 
-- **Registering can produce two toasts, and the second is wrong.** If the league
-  is configured not to require email confirmation, the account is created *and*
-  signed in, and two "Account created" toasts fire one after the other. The second
-  replaces the first and tells a user who is already signed in to go and check
-  their email. The two do not even agree on wording: one says "confirm your
-  account", the other "verify your account", for the same event.
+- **Registering used to produce two toasts, and the second was wrong.** Fixed —
+  see [B-27](../bug-triage.md#b-27-several-actions-raise-two-success-toasts).
+  One toast is raised now, and it reads the result: a user who is signed in
+  already is told so rather than being sent to check an email that never arrives.
 - **Signing up with an address whose name is already taken can fail outright.**
   The league fills the username in from the part of the address before the `@`,
   and usernames must be unique. Registering `sam@example.com` when a `sam` already
@@ -272,12 +270,9 @@ username taken from the address. Nothing else is written.
 - **The redirect after signing in pushes rather than replaces**, which traps the
   Back button on the sign-in page. **May be worth treating as a bug rather than
   documenting.**
-- **The duplicate sign-up toast** is raised in two places for the same event and
-  one of them is only correct when email confirmation is switched off. **May be
-  worth treating as a bug rather than documenting.**
 - Not confirmed by hand: whether the league requires email confirmation, which
-  decides whether registering signs the user in immediately and therefore whether
-  the second toast appears at all.
+  decides whether registering signs the user in immediately and therefore which
+  of the two sentences the single toast carries.
 - Not confirmed by hand: how long the sign-in card is visible to an
   already-signed-in user before the redirect, and what the raw sign-in-service
   message looks like when the network is down.

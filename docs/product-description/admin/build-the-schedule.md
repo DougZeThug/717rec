@@ -123,7 +123,7 @@ Three refusals are worth knowing:
 the active season, builds one match per pairing at the chosen date and time, and
 labels each one **Court 1, Court 2, …** by its position in the list. On success
 the form resets to one empty pairing and the next Thursday, and the schedule
-re-fetches. Two success toasts fire in a row and only the second is seen.
+re-fetches. One success toast fires, naming the count and the date.
 
 **Auto Schedule.** "Save Matches" (or "Save Schedule to Database" on the Export
 tab) validates, warns about rematches, then inserts every match at once with
@@ -204,9 +204,9 @@ it covers only a browser-level leave. Match Creation has none.
 Auto Schedule's draft survives, so the work is not lost; Match Creation's is.
 
 **Toasts and notifications.** Frequent. Loading teams, generating, applying,
-auto-assigning times, and saving each raise one. Because only one toast is shown
-at a time, a rematch warning raised immediately before a success message is
-destroyed by it.
+auto-assigning times, and saving each raise exactly one. Up to three are shown at
+once ([B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost)),
+so a rematch warning raised immediately before a success message survives.
 
 **URL state.** Nothing. Neither the date, the settings, nor the proposed schedule
 is in the address bar, so a proposed schedule cannot be shared for review.
@@ -224,8 +224,10 @@ notification is sent to any team.
 
 ## Edge cases
 
-- **The Match Creation date picker allows Thursdays only**, while the text under
-  it says "or another date for special events". The two disagree.
+- **The Match Creation date picker allows Thursdays only.** Its caption used to
+  promise "or another date for special events" and disagree with the control.
+  Fixed — see [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). The
+  caption now says Thursdays only, and matches what the picker does.
 - **Auto Assign Timeslots cycles a fixed list by position**, so the fourth
   pairing always gets 6:30 PM whether or not those teams are free then. It also
   waits half a second before its toast for no reason the user can see.
@@ -263,8 +265,10 @@ notification is sent to any team.
 - **Nothing prevents saving the same schedule twice.** A slow save that the admin
   retries doubles the night's matches, and undoing that is a matter of deleting
   matches one at a time. Worth raising as a product question.
-- **The Thursday-only date picker contradicts its own caption.** Minor, but it
-  means "special events" cannot be scheduled from Match Creation at all.
+- **"Special events" still cannot be scheduled from Match Creation at all.** The
+  caption no longer promises them ([B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips)),
+  but a non-Thursday match must still be created another way. Worth raising as a
+  product question.
 - Not confirmed by hand: whether the browser's leave-page warning actually
   appears, and what it says in each browser.
 - Not confirmed by hand: how the pairing algorithm ranks quality, and what makes

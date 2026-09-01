@@ -118,9 +118,9 @@ division is not recorded anywhere the admin can reach.
 
 **Team form.** The button reads "Update Team" or "Create Team" and is disabled
 while an image is uploading. On success the dialog closes and the list
-re-fetches. A creation raises **two** success toasts in a row — one from the
-save, one from the screen — and because only one toast shows at a time, the
-first is replaced before it can be read.
+re-fetches. A creation raises **one** success toast. It used to raise two — one
+from the save, one from the screen — see
+[B-27](../bug-triage.md#b-27-several-actions-raise-two-success-toasts).
 
 **Division row.** Save writes name, display grouping and weight together, then
 raises "Division updated" and clears the cached weights so power score
@@ -266,8 +266,10 @@ live season's power scores; archived seasons do not move.
   function.** It was treated as a bug
   ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). It now
   returns to *Manage Teams*, which also discards what was typed.
-- **Team creation raises two toasts**, so the first is destroyed by the second.
-  Minor, but it means the screen reports the same success twice.
+- Resolved: **team creation raised two toasts**, so the screen reported the same
+  success twice. Fixed — see
+  [B-27](../bug-triage.md#b-27-several-actions-raise-two-success-toasts).
+  One "Team Created" toast is raised now.
 - **A table `team_season_opt_out` exists in the schema and nothing in the app
   reads or writes it.** The Hidden division appears to have replaced it. Worth
   confirming before anyone relies on it.

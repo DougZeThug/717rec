@@ -19,8 +19,8 @@ active, how many seasons there are in total and how many are archived, and how
 many are inactive.
 
 Below them, on the left, is **Create New Season**. On the right — but only when a
-season is active — a green badge reads "Current Active Season" beside an
-**Archive Season** button. Below that is every season, newest first, one card
+season is active — a green badge reads "Current Active Season" beside an **Open
+for confirmation** switch and an **Archive Season** button. Below that is every season, newest first, one card
 each, with a coloured status badge and an **Edit** button. A season that is
 neither active nor archived also has an **Activate** button. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
@@ -83,9 +83,10 @@ closed form.
 form filled with that season's name and dates. Either way it appears between the
 buttons and the list, and the list stays visible below it.
 
-Only three fields exist. **None of the four flags can be set here.** A season is
-created inactive, un-archived, with confirmation closed and playoffs off, and the
-form cannot change any of that afterwards. Creating has no effect on the season
+Only three fields exist. **None of the four flags can be set from this form.** A
+season is created inactive, un-archived, with confirmation closed and playoffs
+off, and the form cannot change any of that afterwards. Confirmation is switched
+on and off by the switch beside the active season's badge, not here. Creating has no effect on the season
 that is currently running — **Activate** is the only control that hands over.
 
 No field is focused when the form opens. Nothing about the page shows that a form
@@ -231,9 +232,12 @@ they are playing. It is a table of every team with **Playing**, **Not Playing**,
 or **No Response**, four count cards, a season picker, a status filter, and an
 **Export CSV** button that downloads the filtered list straight from the browser.
 
-It is entirely read-only. An admin cannot set a team's answer, and cannot open or
-close the confirmation window — the "confirmation open" flag is read by the app
-but **written by nothing**.
+It is read-only: an admin cannot set a team's answer from this table. The
+confirmation window itself is opened and closed by the **Open for confirmation**
+switch beside the active season's badge on the Season screen. Until 2026-09-01 the
+"confirmation open" flag was read by the app but written by nothing, so the
+window could never be opened — see
+[B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
 
 ## Modifiers
 
@@ -325,10 +329,13 @@ them.
   the database defaults `is_active` to true. The real gap was that no *existing*
   season could be made active, so there was no way to switch back to an earlier
   season or to recover after archiving without creating a replacement.
-- **The "confirmation open" flag can be read but not written.** No control
-  anywhere in the app sets it, so the team confirmation feature it gates can
-  never be turned on from the product. **May be worth treating as a bug rather
-  than documenting.**
+- Resolved: **the "confirmation open" flag could be read but not written**, so the
+  team confirmation feature it gates could never be turned on from the product.
+  Fixed — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
+  The active season's card now carries an **Open for confirmation** switch.
+  **Before switching it on for a live season**, note that the card it reveals on
+  the home page has no sign-in check and lists hidden teams —
+  [B-41](../bug-triage.md#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams).
 - **Archiving is irreversible with a single confirmation.** One dialog, one
   press, and every team's record resets. There is no typed confirmation, no
   season name to re-enter, and no undo. Worth raising as a product question.

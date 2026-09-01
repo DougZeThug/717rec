@@ -34,8 +34,7 @@ says "Ready to create bracket with 12 teams (BYEs will be added)" and the button
 reads **"Create Bracket (12 teams)"**.
 
 Pressing it builds the tournament. A toast says "Bracket Created Successfully",
-a second replaces it saying "Data Refreshed", and a second later the page
-navigates itself to the new bracket.
+and a second later the page navigates itself to the new bracket.
 
 ## The interaction, event by event
 
@@ -146,10 +145,9 @@ started." and the button is dead. There is no way back to `pending`.
 **Creating** shows "Creating Bracket..." and writes the bracket row, then asks
 the library to build every match. On success it raises "Bracket Created
 Successfully", closes the dialog behind a blue "Refreshing bracket data..."
-panel, raises "Data Refreshed" — which **replaces the first toast**, because the
-app shows one at a time, see
-[`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md) —
-and one second later navigates the page to the new bracket.
+panel, and one second later navigates the page to the new bracket. A second
+"Data Refreshed" toast used to fire here and steal the first; it was removed —
+see [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
 
 On failure a red panel inside the dialog names the reason, a red toast repeats
 it, and the half-made bracket row is deleted again. If that cleanup also fails
@@ -257,9 +255,8 @@ any of these three screens does.
 
 **Offline.** Nothing loads and nothing saves.
 
-**Toasts and notifications.** Creation raises two toasts a moment apart and only
-the second is seen. Nothing is sent to any team when a bracket is created,
-seeded, or deleted.
+**Toasts and notifications.** Creation raises one toast. Nothing is sent to any
+team when a bracket is created, seeded, or deleted.
 
 **URL state.** The address carries a division and a bracket id after the
 automatic navigation, so a bracket can be linked to. The season, the tab, the

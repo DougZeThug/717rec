@@ -7,9 +7,11 @@ loading states, the two error screens, and push notifications. Every other
 document's "Toasts and notifications" and "Validation and error display"
 paragraphs link here.
 
-The one fact that matters most: **the app shows one toast at a time.** A second
-message replaces the first rather than stacking beneath it, so two things
-happening close together produce one message and the user never sees the other.
+The one fact that matters most: **the app shows up to three toasts at a time.**
+A fourth pushes the oldest out. Until the limit was raised from one, a second
+message replaced the first rather than stacking beneath it, so two things
+happening close together produced one message and the user never saw the other —
+see [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
 
 ## The simple case
 
@@ -32,10 +34,10 @@ styled as an error and reports failure. Each has a bold title and a sentence
 under it: "Success — Message sent successfully!", "Error — Failed to send
 message. Please try again."
 
-**Only one toast is on screen at once.** Raising a second replaces the first
-immediately, even if the first has been there only a moment. Two rapid actions —
-a bulk operation reporting per-item, a page that both fails a read and fails a
-write — produce one visible message, and it is the later one.
+**Up to three toasts are on screen at once**, newest first, with a gap between
+them. A fourth pushes the oldest out. Two rapid actions — a bulk operation
+reporting per item, a page that both fails a read and fails a write — now show
+both messages.
 
 A toast dismisses itself after about five seconds, or when the user dismisses it.
 Toasts are drawn once for the whole app rather than per page, so **a toast raised
@@ -194,8 +196,8 @@ does reaches anyone outside the browser.
 
 ## Edge cases
 
-- **Only one toast at a time.** A bulk action reporting per item shows only the
-  last message. Anything that raises two toasts close together loses one.
+- **Three toasts at a time.** A bulk action reporting per item still loses the
+  older messages once four are raised close together.
 - **A toast follows the user across pages**, and can appear over content it has
   nothing to do with.
 - **A toast arrives from the top on a phone and the bottom on a desktop.** A user

@@ -120,11 +120,13 @@ The app is installable as a home-screen app through a third-party service, which
 caches the shell. That makes an offline visit *open* rather than fail, which is
 arguably worse: the app looks alive and nothing works.
 
-> **Technical note:** the app carries a helper that turns a failure whose message
-> mentions the network into "Network error. Please check your connection and try
-> again." **No feature uses it.** The sentence exists in the code and has never
-> been shown to a user. **May be worth treating as a bug rather than
-> documenting.**
+> **Technical note:** the app used to carry a helper that turned a failure whose
+> message mentioned the network into "Network error. Please check your connection
+> and try again." No feature imported it, so that sentence was never shown to
+> anyone. The helper and the hook behind it have since been **deleted** as part of
+> [B-12](../bug-triage.md#b-12-failure-messages-discard-the-reason-the-server-gave),
+> whose sanitiser supersedes them. See also
+> [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
 
 ## Modifiers
 
@@ -181,8 +183,8 @@ with nothing on screen to say so.
 
 **Offline.** Defined here. No queue, no detection, no warning.
 
-**Toasts and notifications.** One at a time, about five seconds, surviving
-navigation. See
+**Toasts and notifications.** Up to three at a time, about five seconds each,
+surviving navigation. See
 [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
 **URL state.** No error state is in the URL, so a failure cannot be linked to,

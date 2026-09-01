@@ -200,9 +200,10 @@ saving, and it can skip the page entirely for a finished profile.
 warning sit inside the right edge of the first-name field.
 
 **Accessibility.** Both fields have real labels and descriptions tied to them, and
-error messages are tied to the field. **The tick and the warning triangle are
-unlabelled icons**, so a screen reader user gets no availability feedback at all.
-The navigation away after saving is not announced.
+error messages are tied to the field. The tick and the warning triangle are hidden
+from screen readers, and a line of text under the field — "Name is available" or
+"Name is already taken" — carries the same answer in words, announced as it
+changes. The navigation away after saving is not announced.
 
 **Side effects the user can notice.** The name written here is what appears in the
 user menu and on every message board post the user makes afterwards. Older posts
@@ -248,8 +249,11 @@ keep the name they were written under.
   address sees on their first visit here.
 - Not confirmed by hand: how long the "Checking authentication..." card is on
   screen for a signed-in user, and whether it flashes.
-- Not confirmed by hand: whether the tick and warning icons are announced by a
-  screen reader in any form.
+- Resolved: **the tick and the warning were unlabelled icons**, so a screen reader
+  user got no availability feedback at all. Fixed — see
+  [B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places).
+  Not confirmed by hand: how the new line of text is read out by a real screen
+  reader.
 - Not confirmed by hand: what happens if two tabs save different names at once.
 - The page's tests cover the loading branch, the redirect after three tries, and a
   successful save, but they replace the name check with one that always answers
