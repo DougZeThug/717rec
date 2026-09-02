@@ -1,4 +1,3 @@
-import { Trash2 } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -15,10 +14,11 @@ import {
 import { useNotificationsQuery } from '@/hooks/notifications/useNotificationsQuery';
 import { useNotificationsRealtime } from '@/hooks/notifications/useNotificationsRealtime';
 import { toast } from '@/hooks/useToast';
-import type { NotificationRow } from '@/services/notifications/NotificationService';
+import type { NotificationRow as NotificationRecord } from '@/services/notifications/NotificationService';
 import { isoToLocalInput, localInputToIso } from '@/utils/datetimeLocal';
 import { getUIErrorMessage } from '@/utils/errorHandler';
-import { formatNotificationDate } from '@/utils/formatNotificationDate';
+
+import NotificationRow from './NotificationRow';
 
 const getCurrentTimeMs = () => Date.now();
 const NOTIFICATION_CLOCK_FALLBACK_INTERVAL_MS = 60_000;
@@ -93,7 +93,7 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
   // app could set an expiry, so neither could ever be produced.
   const [expiresAt, setExpiresAt] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [pendingDelete, setPendingDelete] = useState<NotificationRow | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<NotificationRecord | null>(null);
   const isSubmittingRef = useRef(false);
 
   const editing = useMemo(
@@ -128,23 +128,23 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
     // double Enter could post the same notification twice. A ref closes the
     // window because it is set in the same tick as the press.
     if (isSubmittingRef.current) return;
-    const t = title.trim();
-    const b = body.trim();
-    if (!t || !b) return;
+    const trimmedTitle = title.trim();
+    const trimmedBody = body.trim();
+    if (!trimmedTitle || !trimmedBody) return;
     const expires = localInputToIso(expiresAt);
     isSubmittingRef.current = true;
     try {
       if (editing) {
         await update.mutateAsync({
           id: editing.id,
-          patch: { title: t, body: b, expires_at: expires },
+          patch: { title: trimmedTitle, body: trimmedBody, expires_at: expires },
         });
         setEditingId(null);
         toast({ title: 'Notification updated' });
       } else {
         await create.mutateAsync({
-          title: t,
-          body: b,
+          title: trimmedTitle,
+          body: trimmedBody,
           createdBy: user?.id ?? null,
           expiresAt: expires,
         });
@@ -164,7 +164,7 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
     }
   };
 
-  const startEdit = (n: NotificationRow) => {
+  const startEdit = (n: NotificationRecord) => {
     setEditingId(n.id);
     setTitle(n.title);
     setBody(n.body);
@@ -241,64 +241,16 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
         <p className="text-sm text-muted-foreground">No notifications yet.</p>
       ) : (
         <div className="flex flex-col gap-2">
-          {notifications.map((n) => {
-            const isExpired = n.expires_at && Date.parse(n.expires_at) < currentTimeMs;
-            const posted = formatNotificationDate(n.created_at);
-            const expires = n.expires_at ? formatNotificationDate(n.expires_at) : null;
-            return (
-              <div
-                key={n.id}
-                className="flex items-start gap-3 rounded-md border border-border bg-card p-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-                    <h3 className="text-sm font-semibold text-foreground sm:truncate">
-                      {n.title}
-                      {isExpired && (
-                        <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
-                          Expired
-                        </span>
-                      )}
-                    </h3>
-                    <time
-                      dateTime={posted.iso}
-                      title={posted.iso}
-                      className="flex shrink-0 flex-col text-right text-[11px] leading-tight text-muted-foreground sm:items-end"
-                    >
-                      <span className="font-medium text-foreground/80 tabular-nums">
-                        {posted.absolute}
-                      </span>
-                      {posted.relative && <span>{posted.relative}</span>}
-                    </time>
-                  </div>
-                  <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
-                    {n.body}
-                  </p>
-                  {expires && (
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      Expires <span className="tabular-nums">{expires.absolute}</span>
-                    </p>
-                  )}
-                </div>
-                <div className="flex shrink-0 gap-1">
-                  <Button type="button" variant="ghost" size="sm" onClick={() => startEdit(n)}>
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => setPendingDelete(n)}
-                    disabled={del.isPending}
-                    aria-label="Delete notification"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+          {notifications.map((n) => (
+            <NotificationRow
+              key={n.id}
+              notification={n}
+              currentTimeMs={currentTimeMs}
+              onEdit={startEdit}
+              onDelete={setPendingDelete}
+              isDeleting={del.isPending}
+            />
+          ))}
         </div>
       )}
 

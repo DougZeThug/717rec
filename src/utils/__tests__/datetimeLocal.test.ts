@@ -18,7 +18,8 @@ describe('datetimeLocal', () => {
 
   it('gives an empty string for a missing or unreadable timestamp', () => {
     expect(isoToLocalInput(null)).toBe('');
-    expect(isoToLocalInput(undefined)).toBe('');
+    // The parameter is optional, so an omitted argument is the undefined case.
+    expect(isoToLocalInput()).toBe('');
     expect(isoToLocalInput('nonsense')).toBe('');
   });
 });

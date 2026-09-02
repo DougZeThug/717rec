@@ -1,7 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
+
+// Read as text through Vite rather than the filesystem: a static import needs no
+// working directory, so the test does not care where vitest was started from.
+import mobileSource from '@/components/admin/dashboard/AdminMobileNav.tsx?raw';
+import desktopSource from '@/components/admin/dashboard/AdminSidebar.tsx?raw';
 
 /**
  * The desktop sidebar and the mobile nav each keep their own hardcoded menu
@@ -13,8 +15,6 @@ import { describe, expect, it } from 'vitest';
  * than imported. Exporting them only for a test would widen the public surface
  * of two components for no runtime purpose.
  */
-const read = (relativePath: string) => readFileSync(resolve(process.cwd(), relativePath), 'utf8');
-
 const menuIds = (source: string) => {
   const list = source.slice(
     source.indexOf('const adminMenuItems'),
@@ -22,9 +22,6 @@ const menuIds = (source: string) => {
   );
   return [...list.matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
 };
-
-const mobileSource = read('src/components/admin/dashboard/AdminMobileNav.tsx');
-const desktopSource = read('src/components/admin/dashboard/AdminSidebar.tsx');
 
 describe('admin menu parity', () => {
   it('offers every desktop sidebar section in the mobile nav', () => {

@@ -100,6 +100,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
+    return undefined;
   }, [showOptions]);
 
   const handleCardKeyDown = (e: React.KeyboardEvent) => {

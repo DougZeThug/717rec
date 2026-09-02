@@ -220,7 +220,7 @@ describe('NotificationsAdmin', () => {
   it('posts once when the form is submitted twice in the same tick', async () => {
     mockUseNotificationsQuery.mockReturnValue({ data: [], isLoading: false });
     // Never settles, so the guard is the only thing that can stop the second call.
-    mockCreateMutateAsync.mockImplementation(() => new Promise(() => {}));
+    mockCreateMutateAsync.mockImplementation(() => new Promise(() => undefined));
 
     render(<NotificationsAdmin />, { wrapper: createWrapper() });
 

@@ -18,7 +18,7 @@ vi.mock('@/services/profile/ProfileService', async () => {
   return {
     ...actual,
     checkUsernameAvailability: (...args: unknown[]) => mockCheckUsernameAvailability(...args),
-    updateProfile: vi.fn().mockResolvedValue(undefined),
+    updateProfile: vi.fn().mockResolvedValue(true),
   };
 });
 

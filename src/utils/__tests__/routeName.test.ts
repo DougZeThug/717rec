@@ -1,7 +1,8 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-
 import { describe, expect, it } from 'vitest';
+
+// Read as text through Vite rather than the filesystem: a static import needs no
+// working directory, so the test does not care where vitest was started from.
+import appSource from '@/App.tsx?raw';
 
 import { getRouteName } from '../routeName';
 
@@ -31,8 +32,6 @@ describe('getRouteName', () => {
   });
 
   it('names every route declared in App.tsx', () => {
-    const appSource = readFileSync(resolve(process.cwd(), 'src/App.tsx'), 'utf8');
-
     // Rendered only when import.meta.env.DEV — an e2e harness, never a page a
     // league member can reach, so it needs no spoken name.
     const devOnly = ['/playoffs/e2e-bracket-proof'];
@@ -40,6 +39,11 @@ describe('getRouteName', () => {
     const declared = [...appSource.matchAll(/path="([^"*]+)"/g)]
       .map((match) => match[1])
       .filter((path) => !devOnly.includes(path));
+
+    // Without this the test passes vacuously if the source ever reads empty,
+    // which is the one way a coverage check like this quietly stops working.
+    expect(declared).toContain('/schedule');
+    expect(declared.length).toBeGreaterThan(10);
 
     // A dynamic route is checked as a real address a user could be on. Skipping
     // them hid /matches/:matchId/live, which had no name at all.

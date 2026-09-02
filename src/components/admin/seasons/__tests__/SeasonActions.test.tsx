@@ -78,7 +78,12 @@ describe('SeasonActions confirmation switch', () => {
   });
 
   it('treats a season with no flag selected as closed', () => {
-    const { confirmation_open: _omitted, ...withoutFlag } = season;
+    // Built by deletion rather than a destructure, which would bind a name
+    // nothing reads. ESLint tolerates an underscore prefix for that; DeepSource
+    // reads its own config and does not.
+    const withoutFlag: Season = { ...season };
+    delete withoutFlag.confirmation_open;
+
     render(<SeasonActions season={withoutFlag} />);
 
     expect(screen.getByRole('switch', { name: /open for confirmation/i })).not.toBeChecked();

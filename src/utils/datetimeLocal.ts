@@ -24,7 +24,7 @@ export const localInputToIso = (value: string): string | null => {
 };
 
 /** Convert a stored ISO timestamp back to a datetime-local value. */
-export const isoToLocalInput = (iso: string | null | undefined): string => {
+export const isoToLocalInput = (iso?: string | null): string => {
   if (!iso) return '';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '';
