@@ -199,8 +199,8 @@ describe('NotificationsAdmin', () => {
 
     render(<NotificationsAdmin />, { wrapper: createWrapper() });
 
-    await user.type(screen.getByPlaceholderText(/title/i), 'Rain');
-    await user.type(screen.getByPlaceholderText(/message/i), 'Off');
+    await user.type(screen.getByLabelText('Title'), 'Rain');
+    await user.type(screen.getByLabelText('Message'), 'Off');
     fireEvent.change(screen.getByLabelText(/expires \(optional\)/i), {
       target: { value: '2026-09-15T18:30' },
     });
@@ -224,8 +224,8 @@ describe('NotificationsAdmin', () => {
 
     render(<NotificationsAdmin />, { wrapper: createWrapper() });
 
-    fireEvent.change(screen.getByPlaceholderText(/title/i), { target: { value: 'Rain' } });
-    fireEvent.change(screen.getByPlaceholderText(/message/i), { target: { value: 'Off' } });
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Rain' } });
+    fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Off' } });
 
     // Enter in the title submits, and the button's disable only lands on the
     // next render — so two submits can reach the handler before it does.

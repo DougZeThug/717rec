@@ -5,6 +5,48 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
+/**
+ * Title and message. Both carried only a placeholder before, which disappears
+ * as soon as anything is typed and is not a dependable accessible name — so a
+ * screen reader had nothing to call either field.
+ */
+const TitleField: React.FC<{ value: string; onChange: (value: string) => void }> = ({
+  value,
+  onChange,
+}) => (
+  <div className="flex flex-col gap-1">
+    <label htmlFor="notification-title" className="text-sm font-medium text-foreground">
+      Title
+    </label>
+    <Input
+      id="notification-title"
+      placeholder="Title (max 120 chars)"
+      maxLength={120}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </div>
+);
+
+const BodyField: React.FC<{ value: string; onChange: (value: string) => void }> = ({
+  value,
+  onChange,
+}) => (
+  <div className="flex flex-col gap-1">
+    <label htmlFor="notification-body" className="text-sm font-medium text-foreground">
+      Message
+    </label>
+    <Textarea
+      id="notification-body"
+      placeholder="Message (max 1000 chars)"
+      maxLength={1000}
+      rows={4}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </div>
+);
+
 /** The expiry control and its explanation, split out to keep the form shallow. */
 const ExpiryField: React.FC<{ value: string; onChange: (value: string) => void }> = ({
   value,
@@ -85,19 +127,8 @@ const NotificationForm: React.FC<NotificationFormProps> = ({
     </CardHeader>
     <CardContent>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
-        <Input
-          placeholder="Title (max 120 chars)"
-          maxLength={120}
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-        />
-        <Textarea
-          placeholder="Message (max 1000 chars)"
-          maxLength={1000}
-          rows={4}
-          value={body}
-          onChange={(e) => onBodyChange(e.target.value)}
-        />
+        <TitleField value={title} onChange={onTitleChange} />
+        <BodyField value={body} onChange={onBodyChange} />
         <ExpiryField value={expiresAt} onChange={onExpiresAtChange} />
         <FormActions isEditing={isEditing} canSubmit={canSubmit} onCancel={onCancel} />
       </form>
