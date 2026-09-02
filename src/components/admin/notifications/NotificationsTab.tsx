@@ -1,10 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth-context';
 import {
   useCreateNotification,
@@ -18,6 +14,7 @@ import type { NotificationRow as NotificationRecord } from '@/services/notificat
 import { isoToLocalInput, localInputToIso } from '@/utils/datetimeLocal';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
+import NotificationForm from './NotificationForm';
 import NotificationRow from './NotificationRow';
 
 const getCurrentTimeMs = () => Date.now();
@@ -180,59 +177,18 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
 
   return (
     <div className="flex flex-col">
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>{editing ? 'Edit notification' : 'New notification'}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="flex flex-col gap-3">
-            <Input
-              placeholder="Title (max 120 chars)"
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <Textarea
-              placeholder="Message (max 1000 chars)"
-              maxLength={1000}
-              rows={4}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-            />
-            <div className="flex flex-col gap-1">
-              <label
-                htmlFor="notification-expires-at"
-                className="text-sm font-medium text-foreground"
-              >
-                Expires (optional)
-              </label>
-              <Input
-                id="notification-expires-at"
-                type="datetime-local"
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Leave this empty to keep the notification until it is deleted. After this time it is
-                tagged EXPIRED.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                type="submit"
-                disabled={create.isPending || update.isPending || !title.trim() || !body.trim()}
-              >
-                {editing ? 'Save changes' : 'Post notification'}
-              </Button>
-              {editing && (
-                <Button type="button" variant="ghost" onClick={cancelEdit}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <NotificationForm
+        title={title}
+        body={body}
+        expiresAt={expiresAt}
+        isEditing={editing !== null}
+        canSubmit={!create.isPending && !update.isPending && !!title.trim() && !!body.trim()}
+        onTitleChange={setTitle}
+        onBodyChange={setBody}
+        onExpiresAtChange={setExpiresAt}
+        onSubmit={submit}
+        onCancel={cancelEdit}
+      />
 
       <h2 className="mb-3 text-lg font-semibold text-foreground">Recent notifications</h2>
       {isLoading && notifications.length === 0 ? (
