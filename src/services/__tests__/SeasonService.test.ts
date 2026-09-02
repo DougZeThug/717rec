@@ -416,6 +416,53 @@ describe('SeasonService.updateSeason', () => {
   });
 });
 
+// ─── setSeasonConfirmationOpen ────────────────────────────────────────────────
+
+describe('SeasonService.setSeasonConfirmationOpen', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const chain = (result: { data: unknown; error: unknown }) => {
+    const update = vi.fn(() => ({
+      eq: () => ({ select: () => ({ single: () => Promise.resolve(result) }) }),
+    }));
+    return { chainMock: { update }, update };
+  };
+
+  it('writes the flag and returns the season', async () => {
+    const { chainMock, update } = chain({
+      data: makeSeason({ confirmation_open: true }),
+      error: null,
+    });
+    mockFrom.mockReturnValue(chainMock);
+
+    const result = await SeasonService.setSeasonConfirmationOpen('s-1', true);
+
+    expect(update).toHaveBeenCalledWith({ confirmation_open: true });
+    expect(result).toMatchObject({ confirmation_open: true });
+  });
+
+  it('can close confirmation again', async () => {
+    const { chainMock, update } = chain({
+      data: makeSeason({ confirmation_open: false }),
+      error: null,
+    });
+    mockFrom.mockReturnValue(chainMock);
+
+    await SeasonService.setSeasonConfirmationOpen('s-1', false);
+
+    expect(update).toHaveBeenCalledWith({ confirmation_open: false });
+  });
+
+  it('throws DatabaseError on error', async () => {
+    const { chainMock } = chain({ data: null, error: pgError() });
+    mockFrom.mockReturnValue(chainMock);
+
+    await expect(SeasonService.setSeasonConfirmationOpen('s-1', true)).rejects.toThrow(
+      DatabaseError
+    );
+  });
+});
+
 // ─── activateSeason ───────────────────────────────────────────────────────────
 
 describe('SeasonService.activateSeason', () => {

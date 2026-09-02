@@ -260,6 +260,13 @@ or sent anywhere.
   place and covers nothing, so `aria-expanded` with `aria-controls` is the right
   pattern and a focus trap is not. Still read from the component rather than
   tried with a reader.
+- Resolved: **two places carried meaning in colour alone.** The winner on a
+  completed match card was emerald text and nothing else, and the profile page's
+  name-availability tick and warning were unlabelled icons. Both were treated as
+  a bug ([B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places)).
+  The card now carries a "Won" tag beside the winning team's name, and the
+  profile field carries a line of text saying whether the name is available.
+  Still read from the components rather than tried with a reader.
 - **The command palette shortcut contradicts a foundation.**
   [`foundations/navigation.md`](../foundations/navigation.md) says no global
   keyboard shortcut exists. Cmd/Ctrl+K does, on any screen 768 pixels or wider,
@@ -281,7 +288,9 @@ or sent anywhere.
   accessibly out of the box. They are used unmodified, but none was tested with a
   reader.
 
-Verified against `717rec` commit `ea5c8f4`, except the reduced-motion and
-hamburger-menu behaviour above, both changed after that commit — see
-[B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else)
-and [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog).
+Verified against `717rec` commit `ea5c8f4`, except the reduced-motion, the
+hamburger-menu and the colour-alone behaviour above, all changed after that
+commit — see
+[B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else),
+[B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog) and
+[B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places).

@@ -84,14 +84,11 @@ export const useAuthForm = () => {
 
     try {
       setIsSubmitting(true);
-      const response = await signUp(email, password);
-
-      if (response.session) {
-        toast({
-          title: 'Account created',
-          description: 'Please check your email to verify your account.',
-        });
-      }
+      // signUp raises the only "Account created" toast, and its wording matches
+      // whether a session came back. A second toast here said "verify" where the
+      // first said "confirm", and it fired exactly when the user was already
+      // signed in and had no email to check.
+      await signUp(email, password);
       // Navigation will happen automatically on auth state change
     } catch (error) {
       errorLog('Sign up error:', error);

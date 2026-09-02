@@ -15,6 +15,10 @@ describe('DeleteMatchDialog', () => {
     expect(
       screen.getByText(/this will permanently delete the match from the schedule/i)
     ).toBeInTheDocument();
+    // Deleting runs deleteMatchWithStatsReversal, so the dialog must say so.
+    expect(
+      screen.getByText(/standings, team records and statistics it counted towards are reversed/i)
+    ).toBeInTheDocument();
   });
 
   it('does not render dialog content when closed', () => {

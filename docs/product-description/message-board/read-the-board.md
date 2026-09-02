@@ -21,8 +21,10 @@ A signed-in player opens `/message-board`. A sticky bar at the top holds the
 title, a search box, a refresh button, and a filter button. Below it, a card
 holds the messages.
 
-Each message shows who wrote it, their team as a small coloured badge, and the
-time. Under that is the text, exactly as it was typed, with its line breaks kept.
+Each message shows who wrote it, their team as a small coloured badge, and how
+long ago it was posted — "3 weeks ago", with the full date and time on hover and
+as the spoken label. Under that is the text, exactly as it was typed, with its
+line breaks kept.
 If anyone has reacted, a row of emoji chips sits at the bottom of the message with
 a count on each.
 
@@ -203,8 +205,8 @@ missed while away is lost.
 is queued.
 
 **Toasts and notifications.** Six: refresh succeeded, refresh failed, load-more
-failed, add-reaction failed, remove-reaction failed, and sign-in-required. One at
-a time, as everywhere. See
+failed, add-reaction failed, remove-reaction failed, and sign-in-required. Up to
+three at a time, as everywhere. See
 [`../foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md#toasts).
 
 **URL state.** Nothing at all. Not the filters, not the search, not a message.
@@ -250,10 +252,11 @@ against the message and is visible to everyone; nobody is notified of it.
 - **The live list is capped at a hundred messages.** Once a hundred are on screen,
   a new arrival pushes the oldest out of the list, and scrolling back down fetches
   it again.
-- **Every message shows a clock time and no date.** A message from three weeks ago
-  reads "3:42 PM", exactly like one from this afternoon. There is no day
-  separator anywhere in the list. **May be worth treating as a bug rather than
-  documenting.**
+- Resolved: **every message used to show a clock time and no date**, so one from
+  three weeks ago read "3:42 PM" exactly like one from this afternoon. Fixed —
+  see [B-28](../bug-triage.md#b-28-message-timestamps-show-a-clock-time-with-no-date).
+  A message now says how long ago it was posted. There is still **no day
+  separator** anywhere in the list.
 - **The first reaction on a message is hidden behind a press-and-hold.** Nothing
   on screen suggests it, and there is no keyboard equivalent, so most readers can
   only use emoji somebody else started.

@@ -97,7 +97,7 @@ describe('useAuthForm', () => {
     expect(result.current.isSubmitting).toBe(false);
   });
 
-  it('shows account-created toast when sign-up returns session', async () => {
+  it('raises no toast of its own on sign-up, so only signUp speaks', async () => {
     mockSignUp.mockResolvedValueOnce({ session: { id: 'session-1' } });
     const { result } = renderHook(() => useAuthForm());
 
@@ -105,12 +105,8 @@ describe('useAuthForm', () => {
       await result.current.handleSignUp('user@example.com', '123456');
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Account created',
-        description: 'Please check your email to verify your account.',
-      })
-    );
+    expect(mockSignUp).toHaveBeenCalledWith('user@example.com', '123456');
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
   it('calls signInWithGoogle and toggles isSubmitting', async () => {

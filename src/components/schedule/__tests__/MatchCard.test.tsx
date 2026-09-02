@@ -123,6 +123,30 @@ describe('MatchCard', () => {
     expect(screen.getByTestId('match-interactions')).toHaveTextContent('interactions:match-1');
   });
 
+  it('marks the winner with a word, not colour alone', () => {
+    const { rerender } = render(
+      <MatchCard
+        match={{
+          ...baseMatch,
+          iscompleted: true,
+          winnerId: 't1',
+          team1_game_wins: 3,
+          team2_game_wins: 1,
+        }}
+        isCompleted
+      />
+    );
+
+    // Exactly one "Won" marker, and it sits beside the winning team's name.
+    const wonTags = screen.getAllByText('Won');
+    expect(wonTags).toHaveLength(1);
+    expect(wonTags[0].parentElement).toHaveTextContent('Team Alpha');
+
+    // An unfinished match marks nobody.
+    rerender(<MatchCard match={{ ...baseMatch, iscompleted: false }} isCompleted={false} />);
+    expect(screen.queryByText('Won')).not.toBeInTheDocument();
+  });
+
   it('fires onEdit and onDelete for an upcoming match when admin access is granted', () => {
     const onEdit = vi.fn();
     const onDelete = vi.fn();

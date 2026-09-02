@@ -192,7 +192,7 @@ never rolled back.
 **Offline.** The page cannot load and a save cannot be sent. Nothing is queued.
 
 **Toasts and notifications.** Four: "Changes Saved", "No Changes", "Cannot Remove
-Division", and "Update Failed". One at a time, as everywhere. See
+Division", and "Update Failed". Up to three at a time, as everywhere. See
 [`../foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md#toasts).
 
 **URL state.** Nothing. Not the season, not the opened card, not edit mode. A
@@ -222,10 +222,11 @@ moves; power scores and records are untouched.
   archived seasons, so the current one appears at the top with a green badge. If
   it has no standings recorded yet, opening its recap reads "Season in progress –
   check back later".
-- **"Learn how seasons work" goes nowhere.** The link on the empty state points
-  at `/rules`, which is not a route in this app. It is a plain link rather than an
-  in-app one, so it reloads the browser onto the not-found page. **May be worth
-  treating as a bug rather than documenting.**
+- Resolved: **"Learn how seasons work" went nowhere.** The link on the empty state
+  pointed at `/rules`, which is not a route in this app, and it was a plain
+  anchor, so it reloaded the browser onto the not-found page. Fixed — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). It goes to `/help`
+  now, through the router rather than a full page load.
 - **Hidden teams are counted but not shown.** Teams in a division named "Hidden"
   are dropped from the division panels and from the team count, but they are still
   included in the match count and in the Highlights panel. A season's "Most Wins"

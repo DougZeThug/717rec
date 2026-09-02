@@ -196,8 +196,8 @@ write: shown at once, rolled back on failure, with the failure explained. See
 **Offline.** Nothing can be saved and nothing is queued.
 
 **Toasts and notifications.** A failure raises a red toast with the real reason. A
-duplicate raises a plain one. Because the app shows only one toast at a time, a
-scorer who fails twice quickly sees only the second message; see
+duplicate raises a plain one. The app shows up to three toasts at a time, so a
+scorer who fails twice quickly sees both messages; see
 [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
 **URL state.** Nothing about a round is in the URL.

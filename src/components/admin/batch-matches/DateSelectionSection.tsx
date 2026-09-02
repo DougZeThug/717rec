@@ -20,7 +20,7 @@ export const DateSelectionSection: React.FC<DateSelectionSectionProps> = ({
       </div>
       <ThursdayDatePicker selected={selectedDate} onSelect={setSelectedDate} />
       <p className="text-sm text-muted-foreground mt-1">
-        Select a Thursday for league play, or another date for special events
+        Select a Thursday. League play runs on Thursdays, so other days cannot be chosen here.
       </p>
     </div>
   );

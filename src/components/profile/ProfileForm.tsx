@@ -149,13 +149,22 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                 {field.value.length >= 3 && !isCheckingUsername && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     {usernameAvailable === true ? (
-                      <CheckCircle2 className="size-5 text-green-500" />
+                      <CheckCircle2 className="size-5 text-green-500" aria-hidden="true" />
                     ) : usernameAvailable === false ? (
-                      <AlertCircle className="size-5 text-destructive" />
+                      <AlertCircle className="size-5 text-destructive" aria-hidden="true" />
                     ) : null}
                   </div>
                 )}
               </div>
+              {/* The tick was the only signal that a name is free, so anyone who
+                  could not see the colour got no answer at all. The taken case
+                  is left to FormMessage below — it already says "This name is
+                  already taken", and two live regions would announce it twice. */}
+              {field.value.length >= 3 && !isCheckingUsername && usernameAvailable === true && (
+                <p role="status" className="text-sm font-medium text-green-600 dark:text-green-400">
+                  Name is available
+                </p>
+              )}
               <FormMessage />
               <FormDescription>This is how you will be identified in the league.</FormDescription>
             </FormItem>

@@ -36,6 +36,15 @@ interface MatchCardProps {
   liveScoredMatchIds?: ReadonlySet<string>;
 }
 
+// The winner used to be marked by emerald text alone, which says nothing in
+// greyscale or to a screen reader. Add the word as well, and keep the colour.
+// Static, so it is built once rather than on every render.
+const winnerTag = (
+  <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-full">
+    Won
+  </span>
+);
+
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
   isCompleted,
@@ -173,6 +182,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 >
                   <span className={getTeamNameStyle(team1IsWinner)}>{team1Name}</span>
                 </TransitionLink>
+                {team1IsWinner && winnerTag}
               </div>
 
               {/* Score pill */}
@@ -213,6 +223,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                 >
                   <span className={getTeamNameStyle(team2IsWinner)}>{team2Name}</span>
                 </TransitionLink>
+                {team2IsWinner && winnerTag}
               </div>
             </div>
 

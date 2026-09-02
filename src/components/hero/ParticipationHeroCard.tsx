@@ -1,44 +1,37 @@
 import { m } from 'framer-motion';
-import { Check, ChevronDown, Loader2, Users, X } from 'lucide-react';
+import { Check, Loader2, Users, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { useTeamsArray } from '@/hooks/teams';
 import {
   ParticipationStatus,
   useConfirmationSeason,
   useSubmitParticipation,
   useTeamParticipation,
 } from '@/hooks/useSeasonParticipation';
+import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { cn } from '@/lib/utils';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 import HeroCardBase from './HeroCardBase';
 
 const ParticipationHeroCard: React.FC = () => {
-  const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: true });
   const { data: season, isLoading: seasonLoading } = useConfirmationSeason();
-  const teamListboxId = React.useId();
 
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
+  // The card used to list every team, hidden ones included, to anyone at all —
+  // signed out included. A person can only answer for their own team, so it now
+  // reads the caller's approved membership and answers for that team only.
+  const { membership, isFetching: membershipLoading } = useTeamMembership();
+  const ownTeam = membership?.is_approved ? membership.team : undefined;
+
   const [selectedStatus, setSelectedStatus] = useState<ParticipationStatus | ''>('');
   const [isEditing, setIsEditing] = useState(true);
-  const [teamSearchOpen, setTeamSearchOpen] = useState(false);
 
   const { data: existingParticipation, isLoading: participationLoading } = useTeamParticipation(
     season?.id,
-    selectedTeamId || undefined
+    ownTeam?.id
   );
 
   const submitMutation = useSubmitParticipation();
@@ -55,25 +48,25 @@ const ParticipationHeroCard: React.FC = () => {
     }
   }, [existingParticipation]);
 
-  // Don't render if no season or not open for confirmation
-  if (seasonLoading) {
+  // Nothing to show while either read is in flight, when no season is open for
+  // confirmation, or when the caller has no approved team to answer for. A
+  // signed-out visitor has no membership, so this also hides the card from them.
+  if (seasonLoading || membershipLoading) {
     return null;
   }
 
-  if (!season) {
+  if (!season || !ownTeam) {
     return null;
   }
-
-  const selectedTeam = teams?.find((t) => t.id === selectedTeamId);
 
   const handleSubmit = async () => {
-    if (!selectedTeamId || !selectedStatus || !season?.id) return;
+    if (!selectedStatus) return;
 
     await submitMutation.mutateAsync({
       seasonId: season.id,
-      teamId: selectedTeamId,
+      teamId: ownTeam.id,
       status: selectedStatus,
-      submittedByName: selectedTeam?.name,
+      submittedByName: ownTeam.name,
     });
 
     setIsEditing(false);
@@ -95,65 +88,15 @@ const ParticipationHeroCard: React.FC = () => {
 
       {/* Form content */}
       <div className="space-y-4">
-        {/* Team selector */}
+        {/* The team is the caller's own; there is nothing to choose. */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium opacity-90">Select your team</Label>
-          <Popover open={teamSearchOpen} onOpenChange={setTeamSearchOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={teamSearchOpen}
-                aria-controls={teamListboxId}
-                className={cn(
-                  'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
-                  'text-inherit hover:text-inherit'
-                )}
-                disabled={teamsLoading}
-              >
-                {teamsLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : selectedTeam ? (
-                  selectedTeam.name
-                ) : (
-                  'Choose a team...'
-                )}
-                <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent id={teamListboxId} className="w-[300px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search teams..." />
-                <CommandList>
-                  <CommandEmpty>No team found.</CommandEmpty>
-                  <CommandGroup>
-                    {teams?.map((team) => (
-                      <CommandItem
-                        key={team.id}
-                        value={team.name}
-                        onSelect={() => {
-                          setSelectedTeamId(team.id);
-                          setTeamSearchOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 size-4',
-                            selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                        {team.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <Label className="text-sm font-medium opacity-90">Your team</Label>
+          <p className="rounded-md border border-white/20 bg-background/20 px-3 py-2 font-semibold">
+            {ownTeam.name}
+          </p>
         </div>
 
-        {/* Status selection - only show when team is selected */}
-        {selectedTeamId && isEditing && (
+        {isEditing && (
           <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -208,7 +151,7 @@ const ParticipationHeroCard: React.FC = () => {
         )}
 
         {/* Saved status display */}
-        {selectedTeamId && !isEditing && existingParticipation && (
+        {!isEditing && existingParticipation && (
           <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             <div
               className={cn(
@@ -243,7 +186,7 @@ const ParticipationHeroCard: React.FC = () => {
         )}
 
         {/* Loading state for participation */}
-        {selectedTeamId && participationLoading && (
+        {participationLoading && (
           <div className="flex items-center justify-center p-4">
             <Loader2 className="size-5 animate-spin" />
           </div>

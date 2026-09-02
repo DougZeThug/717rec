@@ -60,6 +60,38 @@ describe('useAuthMethods', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Welcome back!' }));
   });
 
+  it('tells a signed-in new account it is signed in, not to check its email', async () => {
+    mockSignUpWithEmail.mockResolvedValue({ user: { id: 'u1' }, session: { id: 's1' } });
+    const { result } = renderHook(
+      () => useAuthMethods(clearAuthError, ensureThemeConsistency, handleAuthError, navigate),
+      { wrapper: createWrapper() }
+    );
+
+    await result.current.signUp('test@example.com', 'pw');
+
+    expect(mockToast).toHaveBeenCalledTimes(1);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Account created',
+      description: 'You are signed in.',
+    });
+  });
+
+  it('asks for email confirmation when no session comes back', async () => {
+    mockSignUpWithEmail.mockResolvedValue({ user: { id: 'u1' }, session: null });
+    const { result } = renderHook(
+      () => useAuthMethods(clearAuthError, ensureThemeConsistency, handleAuthError, navigate),
+      { wrapper: createWrapper() }
+    );
+
+    await result.current.signUp('test@example.com', 'pw');
+
+    expect(mockToast).toHaveBeenCalledTimes(1);
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Account created',
+      description: 'Please check your email to confirm your account',
+    });
+  });
+
   it('maps sign-in failure message for invalid credentials', async () => {
     mockSignInWithEmail.mockRejectedValue(new Error('Invalid login credentials'));
     const { result } = renderHook(

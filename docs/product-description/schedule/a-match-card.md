@@ -192,8 +192,8 @@ of the screen height.
 control has a label — "Edit match", "Delete match", "Live score *A* vs *B*", "View
 match recap for *A* vs *B*", and each reaction as its emoji followed by "reaction"
 and its count. Icons are hidden from screen readers. The reaction row is a
-labelled group. Winner colour is the only difference between a winning and a
-losing score, so the result is carried by colour alone.
+labelled group. The winning team's name carries a **"Won"** tag as well as the
+emerald colour, so the result does not rest on colour alone.
 
 **Side effects the user can notice.** None from the card itself. Following the
 live-scoring button is what leads to a write, and deleting a completed match
@@ -223,9 +223,11 @@ reverses the statistics that match produced.
   shows the record with no tag.
 - **The head-to-head line vanishes entirely** when the fetch fails, rather than
   showing an error.
-- **An admin's Delete on a completed match is destructive and irreversible**, and
-  its confirmation says only "This will permanently delete the match from the
-  schedule" — it does not mention the statistics it reverses.
+- **An admin's Delete on a completed match is destructive and irreversible.** Its
+  confirmation now says so in full: "This will permanently delete the match from
+  the schedule. The standings, team records and statistics it counted towards are
+  reversed with it." The second sentence was added as part of
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 - **Comments and reactions exist only on completed matches**, so there is no way
   to talk about a match before it is played.
 
@@ -239,8 +241,10 @@ reverses the statistics that match produced.
   limit, no pooling, and no lazy start were found. Whether this is a problem
   depends on how many completed matches a season has. Worth measuring rather
   than assuming.
-- **The winner is shown by colour alone.** Nothing else on the card marks which
-  team won. **May be worth treating as a bug rather than documenting.**
+- Resolved: **the winner used to be shown by colour alone**, with nothing else on
+  the card marking which team won. Fixed — see
+  [B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places).
+  A small "Won" tag now sits beside the winning team's name.
 - Not confirmed by hand: whether the score-pill animation plays on every scroll
   into view or only once, since it is triggered by the score values being defined
   rather than by them changing.

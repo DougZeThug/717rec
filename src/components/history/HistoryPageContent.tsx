@@ -61,7 +61,7 @@ const HistoryPageContent: React.FC = () => {
             ]}
             secondaryLink={{
               label: 'Learn how seasons work',
-              href: '/rules',
+              href: '/help',
             }}
           />
         </CardContent>

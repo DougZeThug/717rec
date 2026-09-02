@@ -12,9 +12,18 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **40 entries**: 13 high, 21 medium, and 6 low.
-One of the 40 — B-40 — was **not raised by any document**. It was found while
-checking B-20, and it is a `high`.
+merging by root cause they come to **41 entries**: 13 high, 22 medium, and 6 low.
+Two of the 41 were **not raised as defects by any document**. B-40, a `high`, was
+found while checking B-20. B-41, a `medium`, was recorded in
+`home/the-home-page.md` as an open question and could not be reached until
+[B-31](#b-31-two-dead-features-are-visible-in-the-interface) added the control
+that switches its feature on; it was fixed in that same change.
+
+**All six `low` entries are now closed.** Five were fixed; B-26 was put to the
+league as a product call and left as it is, documented rather than changed. Two
+of the five — B-27 and B-30 — carried claims that had gone stale between the
+reading and the fix, and both are corrected in place. B-41 was fixed in the same
+change that made it reachable.
 
 Two clusters account for most of the high ones.
 
@@ -139,12 +148,13 @@ entry's *Corrected on review* note.
 | B-35 | A stale fourth career power-score formula decides one badge | medium | stats | **fixed** | — |
 | B-36 | Two grades on the team report card are not real measurements | medium | stats | **fixed** | — |
 | B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
-| B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | product call | — |
-| B-27 | Several actions raise two success toasts, and the second destroys the first | low | admin, teams | fix | — |
-| B-28 | Message timestamps show a clock time with no date | low | message-board | fix | — |
-| B-29 | Results are distinguished by colour alone in two places | low | schedule, teams | fix | — |
-| B-30 | Small copy and labelling slips | low | several | fix | — |
-| B-31 | Two dead features are visible in the interface | low | admin | fix | — |
+| B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
+| B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
+| B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
+| B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
+| B-29 | Results are distinguished by colour alone in two places | low | schedule, teams | **fixed** | — |
+| B-30 | Small copy and labelling slips | low | several | **fixed** | — |
+| B-31 | Two dead features are visible in the interface | low | admin | **fixed** | — |
 
 ---
 
@@ -1899,20 +1909,31 @@ finding read a superseded migration.
 
 - Roughly 10% of all visits, and 100% of visits in which an error occurs, are
   recorded as screen replays by the error-monitoring service
-  (`src/utils/sentry.ts:69-70,211`). Nothing in the product mentions it and there
-  is no opt-out.
+  (`src/utils/sentry.ts:59-60`, added lazily at `:211`). Nothing in the product
+  mentions it and there is no opt-out.
 - **Severity:** `low` as a defect; it works as configured.
 - **Decision needed:** `product call`. Decide whether it needs a privacy note.
 - **Raised by:** [`cross-cutting/what-the-league-sees.md`](cross-cutting/what-the-league-sees.md#open-questions-and-verification).
+- **Status:** **documented, 2026-09-01.** The league was offered four options —
+  add a privacy note, switch replay off, record only on error, or leave it — and
+  chose to leave it and document the decision. No code changed. The behaviour is
+  described in
+  [`cross-cutting/what-the-league-sees.md`](cross-cutting/what-the-league-sees.md),
+  which now records it as a decision rather than an open question.
 
-### B-27: Several actions raise two success toasts, and the second destroys the first
+  *Corrected on review.* The entry cited `sentry.ts:69-70`. The two sample rates
+  are at lines 59-60. The claim itself is exactly right, and the lazily added
+  recorder really is at line 211.
+
+### B-27: Several actions raise two success toasts
 
 - Team creation (`src/hooks/useTeamMutations.ts:26` and
-  `TeamManagementTab.tsx:169`), batch match creation
-  (`useBatchMatchForm.ts:151` and `BatchMatchFormContainer.tsx:48`), and sign-up
-  (`useAuthMethods.ts:77` and `useAuthForm.ts:90`) each raise two. The sign-up
-  pair also disagree with each other: one says "confirm", the other "verify", and
-  the survivor tells an already-signed-in user to check their email.
+  `src/components/admin/teams/TeamManagementTab.tsx`), batch match creation
+  (`useBatchMatchForm.ts` and `BatchMatchFormContainer.tsx`), and sign-up
+  (`useAuthMethods.ts` and `useAuthForm.ts`) each raise two. The sign-up pair
+  also disagree with each other: one says "confirm", the other "verify", and the
+  one that fires only when a session came back tells an already-signed-in user to
+  check their email.
 - **Severity:** `low`. A symptom of [B-13](#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost);
   listed separately because the fix is to remove the duplicate, not to raise the
   toast limit.
@@ -1920,6 +1941,31 @@ finding read a superseded migration.
 - **Raised by:** [`getting-started/sign-in-and-sign-up.md`](getting-started/sign-in-and-sign-up.md#open-questions-and-verification),
   [`admin/manage-teams-and-divisions.md`](admin/manage-teams-and-divisions.md#open-questions-and-verification),
   [`admin/build-the-schedule.md`](admin/build-the-schedule.md#open-questions-and-verification).
+- **Status:** **fixed.** In each pair the *inner* toast survives — the one closest
+  to the write, which is also the one that knows what was written. The team tab
+  and the batch container dropped their copies; `useAuthForm` dropped its copy of
+  the sign-up message. Three tests now pin one toast per action, and the batch
+  test asserts the surviving toast is the one that names the date.
+
+  **The sign-up wording was the real defect, and removing a toast did not fix
+  it.** The surviving toast said "Please check your email to confirm your
+  account" unconditionally. A session comes back from `signUpWithEmail` only when
+  the league does *not* require email confirmation — precisely when the user is
+  signed in already and has no email to check. It now reads the session: "You are
+  signed in." when there is one, the confirmation sentence when there is not.
+
+  *Corrected on review.* **The title was wrong by the time it was read.** "the
+  second destroys the first" was true when `TOAST_LIMIT` was 1. B-13 raised it to
+  3, so both toasts were showing, stacked — the same message twice rather than
+  one message lost. The entry is retitled. The duplicate was still a defect, and
+  the fix is unchanged: remove it.
+
+  Two other things in the entry are slightly off and neither changes the finding.
+  Three of the six file references had drifted (`TeamManagementTab.tsx` is under
+  `admin/teams/`, and two line numbers had moved). And the second sign-up toast
+  is not raised unconditionally: it was already inside `if (response.session)`,
+  which is why it only ever appeared to a user who was signed in — the worst
+  possible audience for "check your email".
 
 ### B-28: Message timestamps show a clock time with no date
 
@@ -1928,6 +1974,21 @@ finding read a superseded migration.
   never cleared, this makes an old conversation look current.
 - **Severity:** `low`. **Decision needed:** `fix`.
 - **Raised by:** [`message-board/read-the-board.md`](message-board/read-the-board.md#open-questions-and-verification).
+- **Status:** **fixed.** `MessageItem` now uses the existing
+  `formatNotificationDate` utility, which the notification list and the contact
+  inbox already use. The header shows how long ago the message was posted —
+  "3 weeks ago" — inside a `<time>` element carrying the machine-readable
+  timestamp, with the full date and time as both the hover title and the
+  accessible name.
+
+  **`formatTime` itself was deliberately left alone.** `PendingScoresCard` and
+  `ScoreSubmissionModal` also import it, and a bare clock time is correct in both
+  — each sits beside a date. Changing the shared helper would have fixed one
+  screen and broken two.
+
+  **Still not fixed:** there is no day separator anywhere in the list. That was
+  the second half of the report and is a larger piece of work; the feature
+  document still records it.
 
 ### B-29: Results are distinguished by colour alone in two places
 
@@ -1939,16 +2000,28 @@ finding read a superseded migration.
 - **Raised by:** [`schedule/a-match-card.md`](schedule/a-match-card.md#open-questions-and-verification),
   [`getting-started/set-up-your-profile.md`](getting-started/set-up-your-profile.md#open-questions-and-verification),
   [`cross-cutting/accessibility.md`](cross-cutting/accessibility.md#open-questions-and-verification).
+- **Status:** **fixed.** The winning team's name on a completed card carries a
+  small **"Won"** tag, styled like the existing "Final" badge beside it. The
+  colour is kept: the tag is added to it, not swapped for it. A test pins that
+  exactly one side of a completed card carries the tag, that it sits beside the
+  winning name, and that an unfinished match carries none.
+
+  On the profile page the tick and the warning are now `aria-hidden`, and a line
+  of text under the field carries the answer instead — "Name is available" or
+  "Name is already taken" — in a `role="status"` region, so it is announced as it
+  changes rather than being a silent icon. `ProfileForm` had no test file at all;
+  it has one now, covering both answers and the case where the name is too short
+  to check.
 
 ### B-30: Small copy and labelling slips
 
-- "Top 10 Teams" heading over a grid of four (`src/components/home/TopTeams.tsx:139`).
+- "Top 10 Teams" heading over a grid of four (`src/components/home/TopTeams.tsx`).
 - The mobile "My Teams" button links to the whole-league list
   (`src/components/home/HeroSection.tsx:104`).
 - An empty state offering to adjust "your date range or team selection" on a
   screen with no team filter (`MatchesTable.tsx:79`).
 - An empty state offering filters and a search that the page does not have
-  (`src/components/teams/TeamList.tsx:44`), whose button also calls
+  (`src/components/teams/TeamList.tsx`), whose button also calls
   `window.location.reload()`.
 - A history empty state linking to `/rules`, which is not a route, through a raw
   anchor that reloads the whole app into Page Not Found
@@ -1958,11 +2031,48 @@ finding read a superseded migration.
 - The delete-match confirmation not mentioning that statistics are reversed
   (`src/components/schedule/DeleteMatchDialog.tsx:34`).
 - A batch date picker allowing Thursdays only, beside text saying "or another
-  date for special events" (`ThursdayDatePicker.tsx:18`).
+  date for special events" (`ThursdayDatePicker.tsx:18`, caption in
+  `DateSelectionSection.tsx:23`).
 - `/oauth/consent` missing from the route-name map, so it is announced as "Page
-  Not Found page" (`src/utils/routeName.ts:20`).
+  Not Found page" (`src/utils/routeName.ts`).
 - **Severity:** `low`. **Decision needed:** `fix`.
 - **Raised by:** eleven documents.
+- **Status:** **fixed, all nine.** Each was a case of the screen saying something
+  it does not do.
+
+  | Was | Is |
+  | --- | --- |
+  | "Top 10 Teams" over four cards | "Top Teams" — four on a wide screen, ten in the phone carousel |
+  | "My Teams" going to `/teams` | "Teams", route unchanged |
+  | "your date range or team selection" | "the date or the bracket", the two filters that exist |
+  | "adjusting your search or add a new team" | "An admin adds teams from the admin dashboard", and no button |
+  | "Learn how seasons work" → `/rules` | → `/help`, through the router |
+  | "Stats Tab", "Matches Tab", … | "Stats", "Matches", … under "Open a section to read it" |
+  | delete says only "from the schedule" | adds "The standings, team records and statistics it counted towards are reversed with it." |
+  | "or another date for special events" | "Select a Thursday. League play runs on Thursdays, so other days cannot be chosen here." |
+  | `/oauth/consent` announced as Page Not Found | announced as "Authorize App" |
+
+  **Two of the nine needed more than a string change.** The team-list button did
+  not just say the wrong thing, it called `window.location.reload()` — a full
+  browser load of the same page, landing back on the same empty state with the
+  cache discarded. It is gone; nothing replaced it, because there is nothing for
+  it to do. And the history link was a raw `<a href>`, so even a correct address
+  would have reloaded the whole app. `EmptyState` now routes an in-app address
+  through the router and keeps the raw anchor only for an external one.
+
+  **The route-name slip is now pinned by a test rather than a string.** Fixing
+  `/oauth/consent` alone would leave the next route added just as silent, so a
+  test reads `App.tsx`, collects every declared path, and fails if any of them
+  falls through to "Page Not Found". It found one more immediately —
+  `/playoffs/e2e-bracket-proof` — which is excluded by name and a comment,
+  because it renders only under `import.meta.env.DEV` and no league member can
+  reach it.
+
+  *Corrected on review.* Four of the nine line references had drifted (the
+  "Top 10 Teams" heading is at `TopTeams.tsx:92`, not `:139`, which is the grid of
+  four; the team-list description is at `:78`; and the batch caption the report
+  quotes lives in `DateSelectionSection.tsx`, not in `ThursdayDatePicker.tsx`,
+  which only refuses non-Thursdays). Every claim held.
 
 ### B-31: Two dead features are visible in the interface
 
@@ -1974,7 +2084,7 @@ finding read a superseded migration.
   (`src/services/seasons/SeasonQueryService.ts:80`) and written by nothing
   anywhere in `src/`, so the feature it gates can never be switched on.
 - Also here: `/admin/notifications` has no link anywhere in the app and must be
-  typed (`src/App.tsx:213`), and `useErrorHandler`'s "Network error. Please check
+  typed (`src/App.tsx:215`), and `useErrorHandler`'s "Network error. Please check
   your connection and try again." had no importer, so that sentence was never
   shown to anyone. That hook and the `handleHookError` behind it have since been
   **deleted** as part of [B-12](#b-12-failure-messages-discard-the-reason-the-server-gave),
@@ -1983,6 +2093,102 @@ finding read a superseded migration.
 - **Raised by:** [`admin/send-notifications.md`](admin/send-notifications.md#open-questions-and-verification),
   [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification),
   [`cross-cutting/errors-and-offline.md`](cross-cutting/errors-and-offline.md#open-questions-and-verification).
+- **Status:** **fixed — both finished rather than removed.** The league was asked
+  which way each should go and chose to finish both.
+
+  **Notification expiry** needed only the field. `CreateNotificationInput` already
+  carried `expiresAt`, the service already wrote `expires_at`, and the list
+  already rendered the tag and re-armed a timer for it. The form now has an
+  optional **"Expires"** `datetime-local` control; editing loads the stored value,
+  Cancel clears it, and an empty field means no expiry. Two helpers in
+  `src/utils/datetimeLocal.ts` convert between the control's zone-less wall clock
+  and the UTC timestamp the column stores, and they are tested on their own.
+
+  **`/admin/notifications` was reachable only by typing it.** The management UI
+  moved into `NotificationsTab`, which the page and a new **Notifications** item
+  in the admin sidebar both render. The page keeps the contact inbox above it and
+  is otherwise unchanged.
+
+  **Team confirmation** needed a writer. `setSeasonConfirmationOpen` is
+  deliberately separate from `updateSeason`, so the season form's shape does not
+  change, and the switch sits beside the active season's badge. `Season` gained
+  `confirmation_open` as an **optional** field, because `fetchHistoricalSeasons`
+  and others select a narrower set of columns.
+
+  **Finishing this one made an existing bug reachable, and it was fixed too.**
+  The card `confirmation_open` reveals had no sign-in check and listed hidden
+  teams — already recorded in `home/the-home-page.md`, and until now unreachable
+  because the feature could never be switched on. The first plan was to add the
+  toggle and fix that separately; two PR reviewers raised it independently, one
+  as a P1, and it was fixed before merge instead. See
+  [B-41](#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams).
+
+  **Review also found the expiry only half worked.** The one SELECT policy on
+  `admin_notifications` allows a row while `expires_at IS NULL OR expires_at >
+  now()`, and it applies to admins as well — so an expired notification vanished
+  from the admin list, the EXPIRED tag could never be seen after a refresh, and
+  the row could no longer be edited or deleted. Migration
+  `20260901190000_admin_can_read_expired_notifications.sql` adds an admin-only
+  SELECT. It is **applied by hand** (`docs/OPERATIONS.md` §6); until it is run,
+  the list behaves as it did before.
+
+  The feature document was wrong about this before the change and stayed wrong
+  after the first correction: it said an expired notification is "still shown in
+  the bell", unqualified. The bell reads the same query as the list, so an
+  expired row leaves it too — for everyone before the migration, and for
+  everyone but an admin after it. Both places now say so. Separately, the expiry timer scheduled one
+  timeout and never re-armed, so only the first expiry was ever noticed; it now
+  reschedules after every tick and caps the delay.
+
+  *Corrected on review.* Both dead features were exactly as described. Two small
+  references had drifted: the route is at `src/App.tsx:215`, not `:213`, and the
+  `NotificationsAdmin.tsx` line numbers had moved. Note also that
+  `/admin/notifications` *was* already in the route-name map — the missing entry
+  in [B-30](#b-30-small-copy-and-labelling-slips) is `/oauth/consent` only.
+
+### B-41: The "Confirm your team" card has no sign-in check and lists hidden teams
+
+- **Where the user meets it:** anyone at all on the home page, while a season is
+  open for confirmation.
+- **What happens / what was expected:** the card is drawn for a signed-out
+  visitor as well as a signed-in player, its team list includes teams in the
+  Hidden division, and it will record a participation answer for any of them.
+  Expected: signed in, and only for a team the user belongs to.
+- **Why (from the code):** `src/components/hero/ParticipationHeroCard.tsx` returns
+  early only on a missing season, never on a missing user, and it builds its list
+  from every team rather than the user's own.
+- **Severity:** `medium`. It writes league data on behalf of a team the writer
+  may have nothing to do with. Whether the database refuses the write was not
+  checked — hiding a control and refusing a write are two different mechanisms,
+  and only the second is a defence.
+- **Decision needed:** `fix`. Require a signed-in user, list only teams the user
+  belongs to, and confirm what the database does with a refused write.
+- **Found while:** finishing [B-31](#b-31-two-dead-features-are-visible-in-the-interface).
+  It is not new, but it was unreachable until that change added a control that
+  can switch confirmation on.
+- **Raised by:** [`home/the-home-page.md`](home/the-home-page.md#open-questions-and-verification),
+  which recorded it as an open question before it could be reached. Two PR
+  reviewers raised it independently against the B-31 change, one as a P1.
+- **Status:** **fixed, in the same change that made it reachable.** The plan had
+  been to add the switch now and fix this separately; the review made clear that
+  shipping a reachable hole to fix later was the wrong order, and it was fixed
+  before merge instead.
+
+  `ParticipationHeroCard` now reads the caller's own approved membership rather
+  than every team in the league. That closes both halves at once: a signed-out
+  visitor has no membership, so the card is not drawn for them, and a member can
+  only answer for the team they belong to — hidden teams included, since a hidden
+  team is not theirs.
+
+  **The team picker is gone rather than filtered.** A person has at most one
+  membership, so a combobox over a one-item list was a control with nothing to
+  choose. The card names the team instead, which is also what "Confirm **your**
+  team" says. The search box, the popover and the whole team query went with it.
+
+  **Not addressed here: whether the database refuses the write.** The card no
+  longer offers a team that is not the caller's, but hiding a control is not the
+  same as refusing a write, and the row-level policy on `season_participation`
+  was not read. That is worth checking before the first season is opened.
 
 ---
 

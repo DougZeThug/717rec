@@ -197,10 +197,12 @@ inside them. A search result quoting the league's formula comes from here. See
   [`contact-the-league.md`](contact-the-league.md). The footer holds only an email
   address; the routes to `/contact` are the main navigation and this page's
   Accessibility section.
-- **The Team Pages section describes tabs the team page does not have.** It names
-  a Stats Tab, a Matches Tab, an H2H Tab, and an Achievements Tab; the team page is
-  built from collapsible sections with those names, not tabs. **May be worth
-  treating as a bug rather than documenting.**
+- Resolved: **the Team Pages section described tabs the team page does not have.**
+  It named a Stats Tab, a Matches Tab, an H2H Tab and an Achievements Tab, while
+  the team page is built from collapsible sections. Fixed — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). It now reads
+  "Each team has a dedicated page. Open a section to read it:" and names the four
+  sections without the word "Tab".
 - **The power score numbers can be out of date by up to five minutes**, and can be
   the standard defaults rather than the league's real weights if the request
   failed. Nothing on the page distinguishes the two.

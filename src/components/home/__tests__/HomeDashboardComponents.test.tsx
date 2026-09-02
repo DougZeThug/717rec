@@ -126,7 +126,9 @@ describe('leaderboard and highlight widgets', () => {
         <TopTeams teams={[{ ...baseTeam, id: 't2', name: 'Aces' }]} />
       </MemoryRouter>
     );
-    expect(screen.getByText('Top 10 Teams')).toBeInTheDocument();
+    // Four cards show on a wide screen and ten in the phone carousel, so the
+    // heading must not promise a number.
+    expect(screen.getByText('Top Teams')).toBeInTheDocument();
   });
 
   it('verifies TeamOfTheWeekCard formatting with partial data', () => {

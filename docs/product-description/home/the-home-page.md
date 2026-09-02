@@ -23,7 +23,7 @@ buttons: **View Standings** and **See Schedule**.
 Below it the blocks appear one after another as their data arrives, each fading
 in a beat behind the last. In a typical week that is: whatever cards the league
 has put up, a wide **League History** bar, the user's own next match, the **Team
-of the Week**, a **Weekly Recap**, the **Top 10 Teams**, and a **Send us a
+of the Week**, a **Weekly Recap**, the **Top Teams**, and a **Send us a
 message** form at the bottom.
 
 The user scrolls, taps a team, and reads it. Nothing on the home page is
@@ -54,11 +54,11 @@ The blocks, in the fixed order they appear:
 | League cards | The league has published at least one | The published cards, in the order the league set |
 | League History bar | Always, **desktop only** | Nothing; a link to `/history` |
 | Your next match | Signed in, approved membership, at least one match | See [your-next-match.md](your-next-match.md) |
-| Confirm your team | The league has a season open for confirmation | That season |
+| Confirm your team | A season is open for confirmation **and** the reader has an approved membership | That season, and the reader's own team |
 | Team of the Week | A team's power score rose this week | Weekly power score trends |
 | Weekly Recap | There was an upset, a streak, or a mover | The week's results |
 | Pending Scores | At least one match is waiting for a score | Up to ten waiting matches |
-| Top 10 Teams | Always | Every team, sorted by power score |
+| Top Teams | Always | Every team, sorted by power score |
 | Send us a message | Always | The signed-in profile, to prefill |
 
 **A quiet week collapses the page to four blocks**: the banner, the history bar,
@@ -87,7 +87,8 @@ its own.
 ### Begin editing
 
 The only editable thing on the page is the **Send us a message** form at the
-bottom, and the **Confirm your team** card when the league has one open.
+bottom, and the **Confirm your team** card when the league has a season open for
+confirmation and the reader has an approved membership.
 Everything else is read-only.
 
 The message form is dirty from the first keystroke. Nothing visible changes and
@@ -131,12 +132,13 @@ shows a red toast and sends nothing.
 | The user's role | Decides one block only. A signed-in player with an approved membership gets the next-match card; nobody else does. An admin sees exactly what a player sees — there is no admin block on this page. | Signing in elsewhere makes the next-match card appear on the next refetch. Signing out removes it. Nothing else moves. |
 | The record's state | Every block is driven by whether its data exists. A block with no data is absent, not empty. | A block can appear or disappear under the user when its data refetches, changing the page's height with no warning. |
 | The season's state | With no active season, the next-match card, the recap, and the team of the week all go quiet, because each reads season data. The top ten and the league cards do not. | A season activated elsewhere reaches this page within ten minutes; see [`foundations/seasons.md`](../foundations/seasons.md). |
-| Viewport | The banner becomes a compact card plus a 2×2 grid of buttons — Standings, Full Schedule, History, My Teams. The League History bar is removed. The top ten becomes a swipe carousel. | Re-flows on rotation. The persistent choice below is unaffected. |
+| Viewport | The banner becomes a compact card plus a 2×2 grid of buttons — Standings, Full Schedule, History, Teams. The League History bar is removed. The top ten becomes a swipe carousel. | Re-flows on rotation. The persistent choice below is unaffected. |
 | Keys the app honours | No shortcuts. Tab reaches the skip link, then the navigation, then each block in order. | Enter inside the message form's single-line fields submits it. |
 
-The mobile button labelled **My Teams** goes to `/teams`, the list of every team
-in the league, not to the user's own team. See
-[Open questions](#open-questions-and-verification).
+The fourth mobile button is labelled **Teams** and goes to `/teams`, the list of
+every team in the league. It used to be labelled "My Teams", which promised the
+user's own team — see
+[B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 
 ## Cancel and interrupt
 
@@ -204,10 +206,11 @@ message form is submitted, which creates a request an admin will see.
 
 ## Edge cases
 
-- **The desktop "Top 10 Teams" block shows four teams.** The heading says ten,
-  the mobile carousel holds ten, and the desktop grid is cut to the first four
-  with a "View All" button beside the heading. See
-  [Open questions](#open-questions-and-verification).
+- **The "Top Teams" block shows four teams on a wide screen and ten on a phone.**
+  The desktop grid is cut to the first four with a "View All" button beside the
+  heading; the mobile carousel holds ten. The heading used to say "Top 10 Teams"
+  over the grid of four — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 - **The top ten includes every division together.** It is a straight sort by
   power score, so a Recreational team can outrank a Competitive one.
 - **A team with no power score sorts as zero**, so unrated teams sit at the
@@ -218,10 +221,12 @@ message form is submitted, which creates a request an admin will see.
 - **The Pending Scores card is shown to visitors**, Report button included. What
   happens when a visitor presses it belongs to
   [`scores/submit-a-score.md`](../scores/submit-a-score.md).
-- **The "Confirm your team" card lets anyone pick any team.** It is drawn
-  whenever a season is open for confirmation, signed in or not, and its team list
-  includes hidden teams. See
-  [Open questions](#open-questions-and-verification).
+- **The "Confirm your team" card answers for the reader's own team only.** It is
+  drawn when a season is open for confirmation *and* the reader has an approved
+  membership, and it names that team rather than offering a choice. It used to be
+  drawn for anyone, signed in or not, over a list of every team including hidden
+  ones — see
+  [B-41](../bug-triage.md#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams).
 - **The empty top-ten state offers "View All Teams"**, which does a full page
   load of `/teams` rather than an in-app navigation, discarding the cache.
 - **League cards can point anywhere.** A card's button is an ordinary link; an
@@ -235,19 +240,24 @@ message form is submitted, which creates a request an admin will see.
 
 ## Open questions and verification
 
-- **The mobile button labelled "My Teams" goes to the whole-league team list.**
-  It sits in the same grid as Standings, Full Schedule, and History, and every
-  other button in that grid goes where it says. **May be worth treating as a bug
-  rather than documenting.**
-- **The desktop "Top 10 Teams" heading does not match what is drawn.** Four
-  teams are shown on a wide screen and ten on a narrow one. **May be worth
-  treating as a bug rather than documenting.**
-- **The "Confirm your team" card has no sign-in check in the browser.** Anyone
-  who opens the home page while confirmation is open can pick any team, including
-  a hidden one, and record a participation answer for it. Whether the database
-  refuses the write was not checked, and hiding a control and refusing a write
-  are two different mechanisms. **May be worth treating as a bug rather than
-  documenting.**
+- Resolved: **the mobile button labelled "My Teams" went to the whole-league team
+  list**, while every other button in that grid went where it said. Fixed — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). It is labelled
+  "Teams" now.
+- Resolved: **the desktop "Top 10 Teams" heading did not match what was drawn.**
+  Fixed — see [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). The
+  heading is "Top Teams" and promises no number.
+- Resolved: **the "Confirm your team" card had no sign-in check in the browser**,
+  so anyone opening the home page while confirmation was open could pick any
+  team, hidden ones included, and record a participation answer for it. It could
+  never actually be drawn until an admin switch was added as part of
+  [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface);
+  both were fixed in that change, see
+  [B-41](../bug-triage.md#b-41-the-confirm-your-team-card-has-no-sign-in-check-and-lists-hidden-teams).
+- Not confirmed by hand: **whether the database refuses a participation write for
+  a team the caller does not belong to.** The card no longer offers one, but
+  hiding a control and refusing a write are two different mechanisms, and the
+  row-level policy on `season_participation` was not read.
 - Not confirmed by hand: how noticeable the page's growth is in practice — how
   far the content jumps as each block resolves on a normal connection.
 - Not confirmed by hand: what the home page shows when there is no active season

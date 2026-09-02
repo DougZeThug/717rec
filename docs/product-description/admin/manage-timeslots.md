@@ -123,9 +123,9 @@ chosen time stays**, so the next batch can go to the same slot without re-pickin
 it.
 
 On failure one red toast appears. On the dashboard it reads "Error — Failed to
-assign timeslot. Please try again."; on `/timeslots` the same. The real reason —
-the server sends a specific one — is raised first and then replaced by the
-generic one, because only one toast shows at a time. See
+assign timeslot. Please try again."; on `/timeslots` the same. The catch block
+raises exactly one toast: the server's specific reason when the error carries a
+user-visible one, and the generic sentence otherwise — never both. See
 [`../foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
 A date in the past is refused before anything is sent, with "Validation Error —

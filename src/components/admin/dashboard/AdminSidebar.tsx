@@ -1,6 +1,7 @@
 import { AnimatePresence, m } from 'framer-motion';
 import {
   Activity,
+  Bell,
   Calendar,
   CalendarClock,
   ChevronLeft,
@@ -54,6 +55,7 @@ const OpponentHistoryTab = lazy(
   () => import('@/components/admin/opponent-history/OpponentHistoryTab')
 );
 const MassScoresTab = lazy(() => import('@/components/admin/scores/MassScoresTab'));
+const NotificationsTab = lazy(() => import('@/components/admin/notifications/NotificationsTab'));
 const SeasonManagementTab = lazy(() => import('@/components/admin/seasons/SeasonManagementTab'));
 const SeasonParticipationTab = lazy(
   () => import('@/components/admin/participation/SeasonParticipationTab')
@@ -111,6 +113,7 @@ const adminMenuItems: AdminMenuItem[] = [
   },
   { id: 'requests', label: 'Requests', icon: Inbox, Component: RequestsTab },
   { id: 'contact-inbox', label: 'Contact Inbox', icon: Mail, Component: ContactInboxSection },
+  { id: 'notifications', label: 'Notifications', icon: Bell, Component: NotificationsTab },
   { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
   { id: 'divisions', label: 'Divisions', icon: Trophy, Component: DivisionsTab },
   { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },

@@ -1,6 +1,7 @@
 import { m } from 'framer-motion';
 import { ExternalLink, LucideIcon } from 'lucide-react';
 import React from 'react';
+import { Link } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,9 @@ interface EmptyStateProps {
 }
 
 const EMPTY_ACTIONS: EmptyStateAction[] = [];
+
+const secondaryLinkClassName =
+  'text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1';
 
 /**
  * Reusable illustrated empty state component with animated entrance
@@ -117,20 +121,31 @@ const EmptyState: React.FC<EmptyStateProps> = ({
         </m.div>
       )}
 
-      {/* Secondary link */}
+      {/* Secondary link. An in-app address goes through the router; a raw
+          anchor used to reload the whole app and discard the cache. */}
       {secondaryLink && (
-        <m.a
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.5 }}
-          href={secondaryLink.href}
-          target={secondaryLink.external ? '_blank' : undefined}
-          rel={secondaryLink.external ? 'noopener noreferrer' : undefined}
-          className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+          className="mt-4"
         >
-          {secondaryLink.label}
-          {secondaryLink.external && <ExternalLink className="size-3" />}
-        </m.a>
+          {secondaryLink.external ? (
+            <a
+              href={secondaryLink.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={secondaryLinkClassName}
+            >
+              {secondaryLink.label}
+              <ExternalLink className="size-3" />
+            </a>
+          ) : (
+            <Link to={secondaryLink.href} className={secondaryLinkClassName}>
+              {secondaryLink.label}
+            </Link>
+          )}
+        </m.div>
       )}
     </m.div>
   );

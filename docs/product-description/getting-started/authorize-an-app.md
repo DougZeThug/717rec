@@ -179,11 +179,13 @@ record ids described in
 **On a phone.** Plain text at a readable width with the two buttons in a row. The
 bottom tab bar sits below. Nothing else changes.
 
-**Accessibility.** The buttons are real buttons and reachable by keyboard. Three
-things are wrong. The page draws its own main region inside the app's, so there are
-**two main landmarks** on the page. The route is not in the app's list of page
-names, so a screen reader arriving here is told it is the **"Page Not Found"
-page**. And the error screen replaces the whole page with no announcement.
+**Accessibility.** The buttons are real buttons and reachable by keyboard. Two
+things are wrong. The page draws its own main region inside the app's, so there
+are **two main landmarks** on the page. And the error screen replaces the whole
+page with no announcement. A third — the route being announced as the "Page Not
+Found" page — is fixed: it is in the app's list of page names now, so a screen
+reader arriving here is told it is the **"Authorize App" page**, see
+[B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips).
 
 **Side effects the user can notice.** Approving grants another application the
 right to act as the user inside 717rec for as long as the league allows.
@@ -220,9 +222,11 @@ there is no connected-apps page anywhere in the product.
   than documenting.**
 - **Every failure is a dead end with no way back.** **May be worth treating as a
   bug rather than documenting.**
-- **The route is announced as "Page Not Found"** because it is missing from the
-  app's list of page names. **May be worth treating as a bug rather than
-  documenting.**
+- Resolved: **the route was announced as "Page Not Found"** because it was missing
+  from the app's list of page names. Fixed — see
+  [B-30](../bug-triage.md#b-30-small-copy-and-labelling-slips). It is announced as
+  "Authorize App", and a test now pins that every route declared in `App.tsx` has
+  a name.
 - **The page adds a second main landmark** inside the app's own. **May be worth
   treating as a bug rather than documenting.**
 - Not confirmed by hand: what the other application's name looks like in practice,

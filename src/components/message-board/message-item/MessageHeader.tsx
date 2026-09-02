@@ -9,7 +9,12 @@ import TeamNameDisplay from '../TeamNameDisplay';
 interface MessageHeaderProps {
   username: string;
   teamName: string | null;
+  /** Short, human label for when the message was posted, e.g. "3 weeks ago". */
   timeString: string;
+  /** Full date and time, shown on hover and read out by assistive tech. */
+  timeTitle?: string;
+  /** Machine-readable timestamp for the <time> element. */
+  timeDateTime?: string;
   powerScore?: number;
   isAnnouncement: boolean;
 }
@@ -18,6 +23,8 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
   username,
   teamName,
   timeString,
+  timeTitle,
+  timeDateTime,
   powerScore,
   isAnnouncement,
 }) => {
@@ -45,10 +52,15 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
             </Tooltip>
           </TooltipProvider>
 
-          <span className="text-xs text-muted-foreground flex items-center whitespace-nowrap">
+          <time
+            className="text-xs text-muted-foreground flex items-center whitespace-nowrap"
+            dateTime={timeDateTime || undefined}
+            title={timeTitle || undefined}
+            aria-label={timeTitle || undefined}
+          >
             <Clock className="size-3 opacity-70 inline mr-0.5" />
             {timeString}
-          </span>
+          </time>
         </div>
       </div>
 

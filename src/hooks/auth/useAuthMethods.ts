@@ -73,9 +73,14 @@ export const useAuthMethods = (
 
         ensureThemeConsistency();
 
+        // A session comes back only when the league does not require email
+        // confirmation. The user is signed in already, so telling them to check
+        // their email would be wrong.
         toast({
           title: 'Account created',
-          description: 'Please check your email to confirm your account',
+          description: data.session
+            ? 'You are signed in.'
+            : 'Please check your email to confirm your account',
         });
 
         return {

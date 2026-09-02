@@ -51,6 +51,17 @@ export const useSeasonMutations = () => {
     },
   });
 
+  // Switches the "Confirm your team" card on the home page on and off. The
+  // confirmation query has its own key, so invalidate that as well.
+  const setSeasonConfirmationOpen = useMutation({
+    mutationFn: ({ id, open }: { id: string; open: boolean }) =>
+      SeasonService.setSeasonConfirmationOpen(id, open),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      queryClient.invalidateQueries({ queryKey: ['seasons', 'confirmation'] });
+    },
+  });
+
   const activateSeason = useMutation({
     mutationFn: SeasonService.activateSeason,
     onSuccess: () => {
@@ -93,6 +104,7 @@ export const useSeasonMutations = () => {
   return {
     createSeason,
     updateSeason,
+    setSeasonConfirmationOpen,
     activateSeason,
     activateSeasonWithPartialArchive,
     finalizePlayoffs,

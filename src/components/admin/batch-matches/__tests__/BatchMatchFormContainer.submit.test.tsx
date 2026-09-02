@@ -139,12 +139,17 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
 
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['matches'] });
 
-    // A success toast fired (hook fires "Success", container fires "Matches Created").
+    // Exactly one success toast, and it names the date. The container used to
+    // raise a second, dateless "Matches Created" on top of it.
     await waitFor(() =>
       expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: expect.stringMatching(/success|matches created/i) })
+        expect.objectContaining({
+          title: 'Success',
+          description: expect.stringMatching(/created 1 matches for/i),
+        })
       )
     );
+    expect(mockToast).toHaveBeenCalledTimes(1);
 
     // Form reset: the previously chosen team name is no longer shown as a trigger value.
     await waitFor(() => {

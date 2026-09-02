@@ -1,5 +1,6 @@
 import {
   Activity,
+  Bell,
   Calendar,
   CalendarClock,
   ChevronDown,
@@ -54,6 +55,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'participation', label: 'Participation', icon: ClipboardCheck },
   { id: 'requests', label: 'Requests', icon: Inbox },
   { id: 'contact-inbox', label: 'Contact Inbox', icon: Mail },
+  { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'teams', label: 'Teams', icon: Users },
   { id: 'divisions', label: 'Divisions', icon: Trophy },
   { id: 'pending-matches', label: 'Pending', icon: Clock },
@@ -95,7 +97,7 @@ const tabGroups: TabGroup[] = [
     id: 'settings',
     label: 'Settings & Content',
     icon: LayoutGrid,
-    tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'help'],
+    tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'notifications', 'help'],
   },
   {
     id: 'operations',
