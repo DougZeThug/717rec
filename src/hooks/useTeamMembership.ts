@@ -18,10 +18,7 @@ export function useTeamMembership() {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    data: membership = null,
-    isLoading: isFetching,
-  } = useQuery({
+  const { data: membership = null, isLoading: isFetching } = useQuery({
     queryKey: ['team-membership', user?.id],
     queryFn: () => (user ? fetchTeamMembership(user.id) : Promise.resolve(null)),
     enabled: !!user,

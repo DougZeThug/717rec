@@ -145,7 +145,6 @@ describe('useTeamMembership', () => {
     });
   });
 
-
   it('guards joinTeam when there is no user', async () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: null });
 
