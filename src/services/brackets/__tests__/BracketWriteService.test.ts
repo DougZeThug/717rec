@@ -213,4 +213,3 @@ describe('updatePlayoffMatchScores', () => {
     ).rejects.toThrow(DatabaseError);
   });
 });
-
