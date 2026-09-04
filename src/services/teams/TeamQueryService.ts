@@ -203,7 +203,6 @@ export const fetchAvailableTeams = async (): Promise<Team[]> => {
 /**
  * Fetch basic team data used for stats calculations.
  * Returns null if team not found or database error occurs.
- * Exact query preserved from src/utils/teamStatsUtils/fetchTeamData.ts.
  */
 export const fetchTeamForStats = async (teamId: string) => {
   const { data: team, error } = await supabase
