@@ -11,19 +11,10 @@ import {
   GreedySchedulerResult,
   MAX_TIER_GAP,
   RelaxationLevel,
-  ScheduledMatch,
 } from './types';
 
 export { pairKey } from './pairKey';
 export type { GreedySchedulerInput, GreedySchedulerResult, ScheduledMatch } from './types';
-
-/**
- * Main greedy scheduler function
- */
-export function generateScheduleGreedy(input: GreedySchedulerInput): ScheduledMatch[] {
-  const result = generateScheduleGreedyWithTracking(input);
-  return result.matches;
-}
 
 /**
  * Main greedy scheduler function with pair tracking

@@ -7,4 +7,4 @@
  * sibling modules for the focused implementation.
  */
 export type { GreedySchedulerInput } from './greedy';
-export { generateScheduleGreedy, generateScheduleGreedyWithTracking, pairKey } from './greedy';
+export { generateScheduleGreedyWithTracking, pairKey } from './greedy';
