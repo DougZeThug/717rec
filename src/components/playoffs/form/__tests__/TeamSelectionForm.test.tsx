@@ -54,12 +54,7 @@ const createMockFormState = (
   statusMessage: 'Select at least 1 more team',
   progress: {
     percentage: 50,
-    selected: 1,
-    required: 2,
-    maximum: 16,
-    available: 5,
   },
-  cleanup: vi.fn(),
   ...overrides,
 });
 
