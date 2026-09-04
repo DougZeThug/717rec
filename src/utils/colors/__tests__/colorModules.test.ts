@@ -23,7 +23,7 @@ import {
 import { getSweepRateColor } from '../sweepRateColors';
 import { getTeamColor } from '../teamColors';
 import { getTrendArrow, getTrendColor } from '../trendColors';
-import { getWinPercentageBackgroundColor, getWinPercentageColor } from '../winPercentageColors';
+import { getWinPercentageColor } from '../winPercentageColors';
 
 describe('color modules table-driven coverage', () => {
   it.each([
@@ -186,26 +186,21 @@ describe('color modules table-driven coverage', () => {
     {
       input: 0.8,
       winColor: 'text-green-600 dark:text-green-500',
-      winBg: 'bg-green-100 dark:bg-green-900/20',
     },
     {
       input: 0.6,
       winColor: 'text-blue-600 dark:text-blue-500',
-      winBg: 'bg-blue-100 dark:bg-blue-900/20',
     },
     {
       input: 0.45,
       winColor: 'text-orange-500 dark:text-orange-400',
-      winBg: 'bg-orange-100 dark:bg-orange-900/20',
     },
     {
       input: 0.2,
       winColor: 'text-red-600 dark:text-red-500',
-      winBg: 'bg-red-100 dark:bg-red-900/20',
     },
-  ])('win% buckets for $input', ({ input, winColor, winBg }) => {
+  ])('win% buckets for $input', ({ input, winColor }) => {
     expect(getWinPercentageColor(input)).toBe(winColor);
-    expect(getWinPercentageBackgroundColor(input)).toBe(winBg);
   });
 
   it.each([
