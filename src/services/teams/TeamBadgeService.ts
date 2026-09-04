@@ -57,18 +57,3 @@ export const fetchAllTeamBadges = async (): Promise<TeamBadgeEvent[]> => {
 
   return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
 };
-
-// ─── fetchSeasonBadges ────────────────────────────────────────────────────────
-
-export const fetchSeasonBadges = async (seasonId: string): Promise<TeamBadgeEvent[]> => {
-  const { data, error } = await supabase
-    .from('team_badge_events')
-    .select('id, team_id, badge_type, season_id, awarded_at, metadata, is_active, created_at')
-    .eq('season_id', seasonId)
-    .eq('is_active', true)
-    .order('awarded_at', { ascending: false });
-
-  if (error) handleDatabaseError(error, 'Failed to fetch season badges');
-
-  return (data || []).map((badge) => transformBadge(badge as RawBadgeData));
-};
