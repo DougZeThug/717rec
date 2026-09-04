@@ -14,19 +14,6 @@ export const getChampionshipColor = (count: number): string => {
 };
 
 /**
- * Get background color classes for championship count display
- */
-export const getChampionshipBackgroundColor = (count: number): string => {
-  if (count >= championshipThresholds.multiple) {
-    return 'bg-yellow-100 dark:bg-yellow-900/20';
-  }
-  if (count >= championshipThresholds.single) {
-    return 'bg-yellow-50 dark:bg-yellow-900/10';
-  }
-  return '';
-};
-
-/**
  * Get special styling for runner-up count
  */
 export const getRunnerUpColor = (count: number): string => {

@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  getChampionshipBackgroundColor,
-  getChampionshipColor,
-  getRunnerUpColor,
-} from '../championshipColors';
+import { getChampionshipColor, getRunnerUpColor } from '../championshipColors';
 import {
   getDivisionBadgeColor,
   getDivisionGradientClass,
@@ -161,24 +157,20 @@ describe('color modules table-driven coverage', () => {
     {
       count: 3,
       text: 'text-yellow-600 dark:text-yellow-500 font-semibold',
-      bg: 'bg-yellow-100 dark:bg-yellow-900/20',
       runnerUp: 'text-gray-600 dark:text-gray-400 font-medium',
     },
     {
       count: 1,
       text: 'text-yellow-700 dark:text-yellow-400 font-medium',
-      bg: 'bg-yellow-50 dark:bg-yellow-900/10',
       runnerUp: 'text-gray-600 dark:text-gray-400',
     },
     {
       count: 0,
       text: 'text-gray-600 dark:text-gray-400',
-      bg: '',
       runnerUp: 'text-gray-500 dark:text-gray-500',
     },
-  ])('championship/runners-up buckets for $count', ({ count, text, bg, runnerUp }) => {
+  ])('championship/runners-up buckets for $count', ({ count, text, runnerUp }) => {
     expect(getChampionshipColor(count)).toBe(text);
-    expect(getChampionshipBackgroundColor(count)).toBe(bg);
     expect(getRunnerUpColor(count)).toBe(runnerUp);
   });
 
