@@ -18,11 +18,7 @@ export function useTeamMembership() {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    data: membership = null,
-    isLoading: isFetching,
-    error: membershipError,
-  } = useQuery({
+  const { data: membership = null, isLoading: isFetching } = useQuery({
     queryKey: ['team-membership', user?.id],
     queryFn: () => (user ? fetchTeamMembership(user.id) : Promise.resolve(null)),
     enabled: !!user,
@@ -35,8 +31,6 @@ export function useTeamMembership() {
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
   });
-
-  const error = membershipError ? 'Failed to load team membership' : null;
 
   const joinTeam = async (teamId: string) => {
     if (!user) {
@@ -128,7 +122,6 @@ export function useTeamMembership() {
     availableTeams,
     isLoading,
     isFetching,
-    error,
     joinTeam,
     leaveTeam,
     refreshMembership,
