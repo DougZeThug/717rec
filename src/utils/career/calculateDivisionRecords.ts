@@ -32,15 +32,6 @@ export const categorizeDivision = (divisionName: string | null): DivisionTier | 
 };
 
 /**
- * Gets division tier from bracket division weight.
- */
-export const getTierFromWeight = (weight: number): DivisionTier => {
-  if (weight >= 0.89) return 'competitive';
-  if (weight >= 0.4) return 'intermediate';
-  return 'recreational';
-};
-
-/**
  * Iterates matches, resolves each to a tier via getTier, and records wins/losses.
  * Skips matches where getTier returns null.
  */
