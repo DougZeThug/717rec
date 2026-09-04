@@ -200,11 +200,10 @@ stamped, so the queue never clears on a stale match.
   "what the other team does with a submitted score", and the answer is "nothing,
   and they are not told". Either the feature is missing or the plan is wrong. This
   needs a decision from the league rather than a change to this document.
-- **Approving a submission does not write the result onto the match.** It only
-  stamps the submission row. Everything downstream — the match, the standings, the
-  power scores — is untouched, and an admin who presses Approve and walks away has
-  changed nothing about the league. **May be worth treating as a bug rather than
-  documenting.**
+- **Fixed (was B-01): approving a report now records the result.** Approve opens a
+  dialog asking for the winner and the games each team won, writes that result to
+  the match and only then stamps the submission. A failed write leaves the
+  submission pending.
 - **A decided submission is unreachable afterwards.** There is no history view and
   no audit screen, so "who approved what, and when" is stored and never shown.
 - **The reporter's own read permission has no screen behind it.** A migration was
