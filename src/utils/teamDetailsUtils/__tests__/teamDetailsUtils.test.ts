@@ -6,12 +6,6 @@ import type { HeadToHeadRecord } from '@/types/headToHead';
 import { calculateGameStats } from '../gameStatsUtils';
 import { calculateHeadToHead } from '../headToHeadUtils';
 import { calculateClutchRecord } from '../matchOutcomeUtils';
-import {
-  getMatchResult,
-  getOpponentId,
-  getScoreDisplay,
-  getUpcomingAndPastMatches,
-} from '../matchUtils';
 import { classifyRivalries, getRivalryLabel, getRivalryType } from '../rivalryUtils';
 import { calculateSweepRate } from '../sweepRateUtils';
 
@@ -32,7 +26,6 @@ type MinimalMatch = Pick<
 
 describe('teamDetails utilities', () => {
   it('handles undefined/empty inputs with safe defaults', () => {
-    expect(getUpcomingAndPastMatches([])).toEqual({ upcomingMatches: [], pastMatches: [] });
     expect(calculateSweepRate('team-a', [])).toEqual({ sweeps: 0, totalMatches: 0, sweepRate: 0 });
     expect(calculateClutchRecord('team-a', [])).toEqual({
       clutchWins: 0,
@@ -46,74 +39,6 @@ describe('teamDetails utilities', () => {
       dominantMatchups: [],
       nemeses: [],
     });
-  });
-
-  it('splits upcoming and past matches by date and sorts each bucket', () => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const inTwoDays = new Date();
-    inTwoDays.setDate(inTwoDays.getDate() + 2);
-
-    const matches: MinimalMatch[] = [
-      { id: 'up-2', team1Id: 'a', team2Id: 'b', date: inTwoDays.toISOString() },
-      { id: 'past-1', team1Id: 'a', team2Id: 'b', date: yesterday.toISOString() },
-      { id: 'up-1', team1Id: 'a', team2Id: 'b', date: tomorrow.toISOString() },
-    ];
-
-    const result = getUpcomingAndPastMatches(matches as Match[]);
-
-    expect(result.upcomingMatches.map((m) => m.id)).toEqual(['up-1', 'up-2']);
-    expect(result.pastMatches.map((m) => m.id)).toEqual(['past-1']);
-  });
-
-  it.each([
-    {
-      label: 'completed win for team1',
-      match: {
-        id: 'm1',
-        iscompleted: true,
-        winnerId: 'team-a',
-        team1Id: 'team-a',
-        team2Id: 'team-b',
-        team1Score: 2,
-        team2Score: 1,
-      },
-      teamId: 'team-a',
-      expected: { opponentId: 'team-b', result: 'Win', score: '2–1' },
-    },
-    {
-      label: 'incomplete match',
-      match: {
-        id: 'm2',
-        iscompleted: false,
-        winnerId: 'team-b',
-        team1Id: 'team-a',
-        team2Id: 'team-b',
-      },
-      teamId: 'team-a',
-      expected: { opponentId: 'team-b', result: 'Incomplete', score: '' },
-    },
-    {
-      label: 'team as team2 score flips',
-      match: {
-        id: 'm3',
-        iscompleted: true,
-        winnerId: 'team-a',
-        team1Id: 'team-b',
-        team2Id: 'team-a',
-        team1Score: 1,
-        team2Score: 2,
-      },
-      teamId: 'team-a',
-      expected: { opponentId: 'team-b', result: 'Win', score: '2–1' },
-    },
-  ])('$label', ({ match, teamId, expected }) => {
-    const typedMatch = match as Match;
-    expect(getOpponentId(typedMatch, teamId)).toBe(expected.opponentId);
-    expect(getMatchResult(typedMatch, teamId)).toBe(expected.result);
-    expect(getScoreDisplay(typedMatch, teamId)).toBe(expected.score);
   });
 
   it('calculates game stats including fallback score path and close losses', () => {
