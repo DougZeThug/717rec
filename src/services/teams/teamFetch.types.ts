@@ -1,27 +1,5 @@
 import { Team } from '@/types';
 
-// ─── TeamAnalysis ─────────────────────────────────────────────────────────────
-
-export interface TeamAnalysis {
-  id: string;
-  team_id: string;
-  overall: string | null;
-  strengths: string[];
-  weaknesses: string[];
-  trends: string | null;
-  rivalry_insights: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TeamAnalysisInput {
-  overall?: string;
-  strengths?: string[];
-  weaknesses?: string[];
-  trends?: string;
-  rivalry_insights?: string | null;
-}
-
 // ─── Teams query ──────────────────────────────────────────────────────────────
 
 export interface TeamsQueryOptions {
