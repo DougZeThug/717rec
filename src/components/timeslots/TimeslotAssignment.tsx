@@ -5,13 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -34,14 +27,11 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   selectedDate: _selectedDate,
   teams,
   existingTimeslots,
-  onAssign,
   onBatchAssign,
   onBatchAssignDoubleHeaders,
 }) => {
-  const [teamId, setTeamId] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
   const [selectedTimeslot, setSelectedTimeslot] = useState<string>('');
-  const [batchMode, _setBatchMode] = useState<boolean>(true); // Default to true for batch mode
   const [isDoubleHeader, setIsDoubleHeader] = useState<boolean>(false);
   const [selectedTimeslots, setSelectedTimeslots] = useState<string[]>([]);
 
@@ -103,11 +93,9 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       if (selectedTimeslots.length !== 2) {
         return;
       }
-      if (batchMode) {
-        if (selectedTeamIds.length > 0 && onBatchAssignDoubleHeaders) {
-          onBatchAssignDoubleHeaders(selectedTeamIds, selectedTimeslots[0], selectedTimeslots[1]);
-          setSelectedTeamIds([]);
-        }
+      if (selectedTeamIds.length > 0 && onBatchAssignDoubleHeaders) {
+        onBatchAssignDoubleHeaders(selectedTeamIds, selectedTimeslots[0], selectedTimeslots[1]);
+        setSelectedTeamIds([]);
       }
     } else {
       // Regular single timeslot mode
@@ -115,16 +103,9 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         return;
       }
 
-      if (batchMode) {
-        if (selectedTeamIds.length > 0 && onBatchAssign) {
-          onBatchAssign(selectedTeamIds, selectedTimeslot);
-          setSelectedTeamIds([]);
-        }
-      } else {
-        if (teamId) {
-          onAssign(teamId, selectedTimeslot);
-          setTeamId('');
-        }
+      if (selectedTeamIds.length > 0 && onBatchAssign) {
+        onBatchAssign(selectedTeamIds, selectedTimeslot);
+        setSelectedTeamIds([]);
       }
     }
 
@@ -133,93 +114,67 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      {!batchMode ? (
-        <div className="space-y-2">
-          <label htmlFor="teamSelect" className="block text-sm font-medium">
-            Select Team
-          </label>
-          <Select value={teamId} onValueChange={setTeamId}>
-            <SelectTrigger id="teamSelect" className="w-full">
-              <SelectValue placeholder="Select a team" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableTeams.length === 0 ? (
-                <SelectItem value="none" disabled>
-                  All teams have been assigned for this date
-                </SelectItem>
-              ) : (
-                availableTeams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+      <div className="space-y-1.5">
+        <div className="flex justify-between items-center">
+          <span className="block text-sm font-medium">Team Selection Grid</span>
+          <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
+            {selectedTeamIds.length === availableTeams.length ? 'Deselect All' : 'Select All'}
+          </Button>
         </div>
-      ) : (
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-center">
-            <span className="block text-sm font-medium">Team Selection Grid</span>
-            <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
-              {selectedTeamIds.length === availableTeams.length ? 'Deselect All' : 'Select All'}
-            </Button>
-          </div>
 
-          <ScrollArea className="h-[200px] border rounded-md p-2">
-            {availableTeams.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                All teams have been assigned for this date
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {availableTeams.map((team) => {
-                  const isSelected = selectedTeamIds.includes(team.id);
-                  return (
+        <ScrollArea className="h-[200px] border rounded-md p-2">
+          {availableTeams.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              All teams have been assigned for this date
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {availableTeams.map((team) => {
+                const isSelected = selectedTeamIds.includes(team.id);
+                return (
+                  <div
+                    key={team.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleToggleTeam(team.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleToggleTeam(team.id);
+                      }
+                    }}
+                    className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
+                      isSelected ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted'
+                    }`}
+                  >
+                    <TeamLogo
+                      imageUrl={team.imageUrl || team.logoUrl}
+                      teamName={team.name}
+                      size="sm"
+                    />
+                    <span className="text-xs font-medium truncate flex-1">{team.name}</span>
                     <div
-                      key={team.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleToggleTeam(team.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleToggleTeam(team.id);
-                        }
-                      }}
-                      className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
-                        isSelected ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted'
+                      className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
+                        isSelected
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-primary'
                       }`}
                     >
-                      <TeamLogo
-                        imageUrl={team.imageUrl || team.logoUrl}
-                        teamName={team.name}
-                        size="sm"
-                      />
-                      <span className="text-xs font-medium truncate flex-1">{team.name}</span>
-                      <div
-                        className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
-                          isSelected
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-primary'
-                        }`}
-                      >
-                        {isSelected && <Check className="size-3" />}
-                      </div>
+                      {isSelected && <Check className="size-3" />}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
-
-          {selectedTeamIds.length > 0 && (
-            <div className="text-sm text-primary dark:!text-blue-200">
-              {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
+                  </div>
+                );
+              })}
             </div>
           )}
-        </div>
-      )}
+        </ScrollArea>
+
+        {selectedTeamIds.length > 0 && (
+          <div className="text-sm text-primary dark:!text-blue-200">
+            {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
+          </div>
+        )}
+      </div>
 
       {/* Double Header Toggle */}
       <div className="flex items-center justify-between rounded-lg border p-2.5 shadow-sm">
@@ -310,21 +265,14 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         type="submit"
         className={`w-full disabled:!opacity-100 disabled:!bg-muted disabled:!text-muted-foreground ${isDoubleHeader ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400' : 'bg-cornhole-navy hover:bg-cornhole-navy/90'}`}
         disabled={
-          (isDoubleHeader &&
-            (selectedTimeslots.length !== 2 ||
-              (batchMode && selectedTeamIds.length === 0) ||
-              (!batchMode && !teamId))) ||
-          (!isDoubleHeader &&
-            ((batchMode && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
-              (!batchMode && (!teamId || !selectedTimeslot)))) ||
+          (isDoubleHeader && (selectedTimeslots.length !== 2 || selectedTeamIds.length === 0)) ||
+          (!isDoubleHeader && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
           availableTeams.length === 0
         }
       >
         {isDoubleHeader
           ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
-          : batchMode
-            ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
-            : 'Confirm Assignment'}
+          : `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`}
       </Button>
     </form>
   );
