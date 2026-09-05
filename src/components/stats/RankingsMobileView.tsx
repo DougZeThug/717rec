@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { useLazyRef } from '@/hooks/useLazyRef';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { useAllTeamBadges } from '@/hooks/useTeamBadges';
 import { cn } from '@/lib/utils';
@@ -81,8 +80,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
     const savedView = localStorage.getItem('rankingsDetailedView');
     return savedView ? savedView === 'true' : false;
   });
-  const [highlightedTeamId] = useState<string | null>(null);
-  const teamRefs = useLazyRef<Map<string, HTMLDivElement>>(() => new Map());
 
   useEffect(() => {
     debugLog(
@@ -234,9 +231,6 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                     return (
                       <m.div
                         key={ranking.teamId}
-                        ref={(el) => {
-                          if (el) teamRefs.current.set(ranking.teamId, el);
-                        }}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
@@ -248,11 +242,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                           damping: 30,
                         }}
                         layout
-                        className={cn(
-                          'transition-all duration-300',
-                          highlightedTeamId === ranking.teamId &&
-                            'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg animate-pulse'
-                        )}
+                        className="transition-all duration-300"
                       >
                         <RankingCard
                           ranking={ranking}
