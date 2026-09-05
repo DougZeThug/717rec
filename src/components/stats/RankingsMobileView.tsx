@@ -242,7 +242,7 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
                           damping: 30,
                         }}
                         layout
-                        className="transition-all duration-300"
+                        className="transition-[opacity,transform] duration-300"
                       >
                         <RankingCard
                           ranking={ranking}
