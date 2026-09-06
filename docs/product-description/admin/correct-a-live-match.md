@@ -37,9 +37,10 @@ icon buttons.
 
 Because the match is finalised, an amber warning sits at the top:
 
-> This match is **finalized**. Edits here will change round/game data
-> immediately, but the official result & standings won't update until you reopen
-> the match from the live view and re-finalize it.
+> This match is **finalized**. Edits here change the rounds and games
+> immediately, but the official result and the standings stay as they are until
+> the result is saved again. Until then the match disagrees with itself, and the
+> admin dashboard lists it.
 
 The admin presses the pencil on round 9. A dialog opens with both sides' score,
 bag breakdown, and thrower. They change one score from 6 to 3, fix the bag
