@@ -1,0 +1,84 @@
+{
+ "axe_core": "4.13.0",
+ "tags": [
+  "wcag2a",
+  "wcag2aa",
+  "wcag21a",
+  "wcag21aa",
+  "wcag22aa",
+  "best-practice"
+ ],
+ "scope": "Every row in coverage.csv: 125 anonymous public loads, 46 admin section loads, 18 member loads (189 rows). Totals are violation nodes, summed across viewports.",
+ "violation_nodes_by_rule": [
+  {
+   "rule": "image-redundant-alt",
+   "impact": "moderate",
+   "nodes": 264
+  },
+  {
+   "rule": "image-alt",
+   "impact": "critical",
+   "nodes": 240
+  },
+  {
+   "rule": "region",
+   "impact": "moderate",
+   "nodes": 225
+  },
+  {
+   "rule": "landmark-unique",
+   "impact": "moderate",
+   "nodes": 139
+  },
+  {
+   "rule": "color-contrast",
+   "impact": "serious",
+   "nodes": 127
+  },
+  {
+   "rule": "button-name",
+   "impact": "critical",
+   "nodes": 82
+  },
+  {
+   "rule": "heading-order",
+   "impact": "moderate",
+   "nodes": 66
+  },
+  {
+   "rule": "page-has-heading-one",
+   "impact": "moderate",
+   "nodes": 53
+  },
+  {
+   "rule": "landmark-main-is-top-level",
+   "impact": "moderate",
+   "nodes": 15
+  },
+  {
+   "rule": "landmark-no-duplicate-main",
+   "impact": "moderate",
+   "nodes": 15
+  },
+  {
+   "rule": "scrollable-region-focusable",
+   "impact": "serious",
+   "nodes": 7
+  },
+  {
+   "rule": "label",
+   "impact": "critical",
+   "nodes": 6
+  },
+  {
+   "rule": "link-in-text-block",
+   "impact": "serious",
+   "nodes": 5
+  },
+  {
+   "rule": "empty-table-header",
+   "impact": "moderate",
+   "nodes": 2
+  }
+ ]
+}
