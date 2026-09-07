@@ -128,16 +128,15 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 ### X-04 · No password recovery anywhere — **High**
 - **Where / who:** `/auth` (`src/components/auth/AuthForm.tsx`) · any member who forgot a password. **Observed:** the sign-in card has Login / Sign Up / Google and a "Sign up" link only (`anon/auth--m390--fold.jpg`); grep of `src/` finds no `resetPasswordForEmail` and no "forgot" copy.
 - **Why:** a locked-out player cannot join a team, post, or live-score; the only workaround is emailing the admin.
-- **Recommend:** add "Forgot password?" under the password field calling `supabase.auth.resetPasswordForEmail(email, { redirectTo })` and a `/reset-password` route that handles the recovery session.
+- **Recommend:** add "Forgot password?" under the password field, wired through a new `resetPassword(email, redirectTo)` in `src/services/auth/AuthService.ts` (the repo rule keeps Supabase calls in services; the component and `useAuthMethods` stay Supabase-free) and a `/reset-password` route that handles the recovery session and calls an `updatePassword` service function.
 - **Priority:** High (dead end for a core account task). **Effort:** M (new route + email template; moderate uncertainty around Supabase redirect config).
 - **Accept:** a user can request a reset from `/auth`, receive the email, set a new password and land signed in.
 
-### X-05 · Mobile drawers put Cancel above the primary action — **High**
-- **Where / who:** `src/components/ui/drawer.tsx:57-59` (`DrawerFooter` is `flex-col`, not `flex-col-reverse` like `DialogFooter`) via `ResponsiveDialogFooter`; affects `ScoreSubmissionModal`, `ApproveSubmissionDialog`, `PlayerSelector`, `EditRoundDialog` on phones. **Observed:** "Record the result" sheet shows Cancel above "Record and approve" (`admin/pending-approve-dialog--m390.jpg`); Edit round shows Save above Cancel (`admin/lc-edit-round-dialog--m390.jpg`) — the two sheets disagree with each other.
-- **Why:** thumb-reach convention puts the primary action lowest; inconsistent order invites mis-taps on the busiest admin flow.
-- **Recommend:** add `flex-col-reverse` to `DrawerFooter` so DOM order (Cancel, Confirm) renders Confirm at the bottom everywhere.
-- **Priority:** High. **Effort:** S (one class).
-- **Accept:** in every bottom sheet the primary action is the lowest button and matches `AlertDialog` order.
+### X-05 · Centered dialogs and bottom sheets disagree on button order on phones — **Medium**
+- **Where / who:** `src/components/ui/dialog.tsx:59-61` (`DialogFooter` is `flex-col-reverse`, so on a phone the *last* DOM button — the primary — renders on **top**) versus `src/components/ui/drawer.tsx:57-59` (`DrawerFooter` is `flex-col`, so the primary renders at the **bottom**). Sheets built on `ResponsiveDialog` (score report, "Record the result", player picker) put the primary lowest; centered dialogs used on phones by admin corrections (`EditRoundDialog.tsx:299-306`, `DeleteRoundDialog`, `ChangeGameWinnerDialog`) put it on top. **Observed:** "Record the result" shows Cancel above "Record and approve" (`admin/pending-approve-dialog--m390.jpg`), while "Edit round 1" shows "Save changes" above Cancel (`admin/lc-edit-round-dialog--m390.jpg`).
+- **Why it matters:** the two most common admin flows on league night use opposite orders, which invites mis-taps; neither order is wrong on its own, the inconsistency is.
+- **Recommend:** pick one convention for phones (primary lowest is the thumb-reach norm and is what the sheets already do) and render the round-correction dialogs through `ResponsiveDialog` so they become sheets with the same order. Do **not** reverse `DrawerFooter`: the sheets' DOM order is already Cancel → primary, so reversing it would move the primary above Cancel. (Correction to an earlier draft of this finding, thanks to PR review.)
+- **Priority:** Medium. **Effort:** S. **Accept:** on a 390 px viewport every dialog or sheet with a Cancel button renders the primary action as the lowest button.
 
 ### X-06 · Mobile admin navigation consumes the whole first screen — **High**
 - **Where / who:** `src/components/admin/dashboard/AdminMobileNav.tsx` renders search + Quick Access + six accordion groups **above** the section content. **Observed:** on 390 px every admin section starts ~660 px down; the user must scroll past the entire menu each time (`admin/tab-scores--m390--fold.jpg`, `admin/tab-timeslots--m390.jpg`).
@@ -267,7 +266,7 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
 
 ### 3.6 Compare `/compare`
 
-- **CP-01 · Deep links do not restore the selection (observed twice) — Medium/verify.** `/compare?team1=<id>&team2=<id>` rendered both selects empty at every width (`anon/compare-deeplink--m390--fold.jpg`); `Compare.tsx:16-26` matches `teams.find(t => t.id === team1Id)`. Journey J6 re-tests this after selecting via the UI and reloading the resulting URL (result in §6/§7). *Recommend:* if the ids come from a different list than `useTeams` returns (e.g. `v_team_details.team_id`), match on both; show a "Loading teams…" state instead of empty selects. *Effort:* S.
+- **CP-01 · Deep links and reloads lose the selected teams — High (observed, root cause confirmed in code).** `/compare?team1=<id>&team2=<id>` rendered both selects empty at every width and the URL was rewritten to `/compare` (`anon/compare-deeplink--m390--fold.jpg`); selecting via the UI writes a URL, and reloading *that* URL empties the selects again (J6). *Root cause:* `Compare.tsx` has two effects — one that initialises `team1`/`team2` from the params once `teams` have loaded (`:23-40`), and one that syncs the URL from state. On mount both selections are `null` and `teams` is still loading, so the sync effect writes empty params first, wiping the incoming ids before the init effect can match them. *Recommend:* keep an `initialized` ref that the init effect sets after applying the incoming params, and skip `setSearchParams` until it is set (or skip the sync while both selections are null and params are present); show "Loading teams…" in the selects meanwhile. *Effort:* S. *Accept:* opening `/compare?team1=a&team2=b` with teams loading after mount shows both teams and leaves the URL unchanged; reloading the URL produced by the UI restores the same comparison.
 - **CP-02 · Both selects and the swap button have no accessible name — Medium** (X-09, axe critical). *Effort:* S.
 - **CP-03 · Compare is unreachable from navigation — Medium** (X-02). Add "Compare" to team pages ("Compare with…") and Standings rows. *Effort:* S.
 
@@ -367,9 +366,9 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | # | Item | Findings | Priority |
 |---|---|---|---|
 | Q1 | Change the header breakpoint so the hamburger shows below 1024 px | X-01 | Critical |
-| Q2 | `flex-col-reverse` on `DrawerFooter` so confirm buttons sit lowest in every bottom sheet | X-05 | High |
-| Q3 | Fix Compare deep links: don't write empty params on mount; match on both id fields | CP-01 | High |
-| Q4 | Add "Forgot password?" + `/reset-password` route | X-04 | High |
+| Q2 | Render the admin round-correction dialogs through `ResponsiveDialog` so every phone dialog puts the primary action lowest (leave `DrawerFooter` unchanged) | X-05 | Medium |
+| Q3 | Fix Compare deep links: delay the URL-sync effect until the init-from-params effect has run (initialized ref), so empty params are never written over incoming ones | CP-01 | High |
+| Q4 | Add "Forgot password?" + `/reset-password` route, with `resetPassword`/`updatePassword` in `AuthService` and the auth hook | X-04 | High |
 | Q5 | `aria-label`/`title` on collapsed sidebar items; badge outside the collapse guard; `aria-current` | A-02 | High |
 | Q6 | Mass Score Entry: default to the latest date ≤ today, expand the first group, sticky Submit | A-03 | High |
 | Q7 | Delete the Auto Schedule "Go to Batch Matches" exit; fix its copy; show Save on tab 2 | A-06 | High |
@@ -430,14 +429,14 @@ Goal: one league night's worth of pain removed with small, verifiable commits. O
 | Step | Change | Depends on | Verify |
 |---|---|---|---|
 | 1 | **Q1** header breakpoint `md:` → `lg:` (`NavLinks.tsx`, `MobileMenu.tsx`, `Navbar.tsx`) | — | Playwright at 768 and 820 px: `getByRole('button', {name: 'Open menu'})` visible; Login reachable; axe `button-name` = 0 on `/`. |
-| 2 | **Q2** `DrawerFooter` `flex-col-reverse` | — | `ScoreSubmissionModal` and `ApproveSubmissionDialog` tests assert the last button in DOM order renders lowest on a 390 px viewport. |
-| 3 | **Q3** Compare param fix | — | Unit test: mount `/compare?team1=a&team2=b` with teams loading after mount → both selects populated; URL unchanged. |
+| 2 | **Q2** round-correction dialogs via `ResponsiveDialog` | — | Render `EditRoundDialog`, `DeleteRoundDialog` and `ChangeGameWinnerDialog` at 390 px in tests and assert the primary button's `getBoundingClientRect().top` is greater than Cancel's; `ScoreSubmissionModal` and `ApproveSubmissionDialog` keep passing the same assertion. |
+| 3 | **Q3** Compare URL-sync ordering fix | — | Unit test: mount `/compare?team1=a&team2=b` with teams resolving after mount → both selects populated and `setSearchParams` never called with empty values; second test: reload with the UI-produced URL restores the selection. |
 | 4 | **Q5** sidebar names + `aria-current` | — | Existing `e2e/a11y.spec.ts` admin scan with the sidebar collapsed; assert `[aria-current="page"]` exists. |
 | 5 | **Q6** Mass Score Entry defaults + sticky Submit | — | Unit test for the date default with a future date present; e2e: Submit button in viewport on load at 390 px. |
 | 6 | **Q7 + Q8** Auto Schedule exit copy; Requests approve toast + try/catch | — | Unit tests on `ExportTab` copy and `RequestsTab` failure path (dialog shows error, stays open). |
 | 7 | **Q9 + Q10** Teams mobile default expand; Schedule empty state | — | e2e at 360 px: ≥ 8 team cards visible on `/teams`; `/schedule` with no matches on the selected date shows the "See results from …" link. |
 | 8 | **Q11** Power Score popover | — | e2e: clicking the info icon on `/stats` shows the formula text; axe passes. |
-| 9 | **Q4** Forgot password | Supabase email template + redirect URL configured | Manual: request reset, follow link, set password, land signed in. |
+| 9 | **Q4** Forgot password (service + hook + route) | Supabase email template + redirect URL configured | Unit test on `AuthService.resetPassword`; manual: request reset, follow link, set password, land signed in. |
 | 10 | **Q12 + Q13 + Q14** landmark labels, single `h1`, control names, tap sizes | — | `e2e/a11y.spec.ts` extended to `/schedule`, `/compare`, `/insights`; harness tap scan 0 under 24 px on `/`. |
 | 11 | **W1** URL-addressable admin sections | after 4 (sidebar) | e2e: `/admin/pending-matches` opens Pending; browser Back returns to the previous section; `switchAdminTab` still works. |
 | 12 | **W3** unsaved-changes guard | after 11 (route change hook) | e2e: enter a score, switch section → confirm prompt; cancel keeps the edit. |

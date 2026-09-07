@@ -8,10 +8,11 @@
   "wcag22aa",
   "best-practice"
  ],
+ "scope": "Every row in coverage.csv: 125 anonymous public loads, 46 admin section loads, 18 member loads (189 rows). Totals are violation nodes, summed across viewports.",
  "violation_nodes_by_rule": [
   {
    "rule": "image-redundant-alt",
-   "impact": "minor",
+   "impact": "moderate",
    "nodes": 264
   },
   {
@@ -32,7 +33,7 @@
   {
    "rule": "color-contrast",
    "impact": "serious",
-   "nodes": 115
+   "nodes": 127
   },
   {
    "rule": "button-name",
@@ -76,7 +77,7 @@
   },
   {
    "rule": "empty-table-header",
-   "impact": "minor",
+   "impact": "moderate",
    "nodes": 2
   }
  ]
