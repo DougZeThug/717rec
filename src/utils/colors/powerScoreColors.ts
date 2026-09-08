@@ -10,6 +10,10 @@ export const formatPowerScore = (score: number | null | undefined): string => {
   return score.toFixed(1);
 };
 
+// The floors of the eight bands the helpers below share, highest first.
+// Exported so a legend can list the bands without restating the thresholds.
+export const POWER_SCORE_BAND_FLOORS = [85, 70, 60, 50, 40, 30, 20, 0] as const;
+
 export const getPowerScoreColor = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {
     return 'text-gray-400 dark:text-gray-500'; // Neutral color for no data

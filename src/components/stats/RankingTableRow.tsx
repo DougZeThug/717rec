@@ -8,7 +8,12 @@ import { Button } from '@/components/ui/button';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
-import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
+import {
+  formatPowerScore,
+  getPowerScoreColor,
+  getPowerScoreDescription,
+  getSosColor,
+} from '@/utils/colors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import RankTrendIndicator from './RankTrendIndicator';
@@ -171,9 +176,15 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         <td className={cn('py-3 px-3 text-center', textColor)}>{ranking.divisionName || 'N/A'}</td>
       )}
       <td className="py-3 px-3 text-center">
-        <span className={cn('font-medium tabular-nums', getPowerScoreColor(ranking.powerScore))}>
+        {/* The colour is the only cue for how good the number is, so the band
+            it falls in is spelled out for screen readers and on hover. */}
+        <span
+          className={cn('font-medium tabular-nums', getPowerScoreColor(ranking.powerScore))}
+          title={getPowerScoreDescription(ranking.powerScore)}
+        >
           {formatPowerScore(ranking.powerScore)}
         </span>
+        <span className="sr-only"> — {getPowerScoreDescription(ranking.powerScore)}</span>
       </td>
       <td className={cn('py-3 px-3 text-center font-medium tabular-nums', textColor)}>
         {ranking.wins}-{ranking.losses}

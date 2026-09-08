@@ -10,7 +10,12 @@ import { PowerScoreGauge } from '@/components/ui/power-score-gauge';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
-import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
+import {
+  formatPowerScore,
+  getPowerScoreColor,
+  getPowerScoreDescription,
+  getSosColor,
+} from '@/utils/colors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import RankTrendIndicator from './RankTrendIndicator';
@@ -139,14 +144,18 @@ const RankingCard: React.FC<RankingCardProps> = ({
           {/* Power score - always right-aligned */}
           <div className="flex flex-col items-end flex-shrink-0 w-16">
             <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
+            {/* The colour is the only cue for how good the number is, so the
+                band it falls in is spelled out for screen readers. */}
             <span
               className={cn(
                 'text-base font-bold tabular-nums leading-tight',
                 getPowerScoreColor(ranking.powerScore)
               )}
+              title={getPowerScoreDescription(ranking.powerScore)}
             >
               {formatPowerScore(ranking.powerScore)}
             </span>
+            <span className="sr-only">{getPowerScoreDescription(ranking.powerScore)}</span>
           </div>
         </div>
 

@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 let mockIsMobile = false;
+
+vi.mock('@/hooks/usePowerScoreWeights', () => ({
+  usePowerScoreWeights: () => ({ win: 40, sos: 45, game: 15 }),
+}));
 
 vi.mock('@/hooks/useMobile', () => ({
   useIsMobile: () => mockIsMobile,
@@ -82,6 +86,13 @@ const rankings = [
 ];
 
 describe('FullRankings', () => {
+  beforeAll(() => {
+    // jsdom has no pointer capture, which Radix's popover reaches for.
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+    HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsMobile = false;
@@ -121,5 +132,26 @@ describe('FullRankings', () => {
 
     expect(screen.queryByRole('radio', { name: 'View All Teams' })).not.toBeInTheDocument();
     expect(screen.getByTestId('rankings-table')).toHaveAttribute('data-view', 'division');
+  });
+
+  it('explains the power score on the page, with the live weights and a colour legend', async () => {
+    render(<FullRankings rankings={rankings} />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'What is Power Score?' }));
+
+    expect(screen.getByText(/40% match win rate/)).toBeInTheDocument();
+    expect(screen.getByText(/45% strength of schedule/)).toBeInTheDocument();
+    expect(screen.getByText('85 and above')).toBeInTheDocument();
+    expect(screen.getByText('Elite Performance')).toBeInTheDocument();
+    expect(screen.getByText('under 20')).toBeInTheDocument();
+  });
+
+  it('offers the explanation on a phone too, where the one-line description is hidden', () => {
+    mockIsMobile = true;
+
+    render(<FullRankings rankings={rankings} />);
+
+    expect(screen.queryByText(/Based on opponent-weighted win percentage/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'What is Power Score?' })).toBeInTheDocument();
   });
 });

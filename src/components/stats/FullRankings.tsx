@@ -11,6 +11,7 @@ import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
 import { sortRankings } from '@/utils/rankingUtils';
 
+import { PowerScoreInfoPopover } from './PowerScoreInfoPopover';
 import RankingsTable from './RankingsTable';
 import ViewToggle from './ViewToggle';
 
@@ -62,18 +63,23 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
         >
           <div className="flex items-center justify-between gap-2">
             <div>
-              <CardTitle
-                className={cn(
-                  'font-bebas uppercase tracking-wide',
-                  isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                  isWinterTheme
-                    ? 'text-[hsl(var(--foreground))]'
-                    : 'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400'
-                )}
-                style={{ letterSpacing: '0.5px' }}
-              >
-                Current Standings
-              </CardTitle>
+              <div className="flex items-center gap-1">
+                <CardTitle
+                  className={cn(
+                    'font-bebas uppercase tracking-wide',
+                    isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
+                    isWinterTheme
+                      ? 'text-[hsl(var(--foreground))]'
+                      : 'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400'
+                  )}
+                  style={{ letterSpacing: '0.5px' }}
+                >
+                  Current Standings
+                </CardTitle>
+                {/* Outside the !isMobile guard below: the one-line description
+                    is desktop-only, so a phone had no explanation at all. */}
+                <PowerScoreInfoPopover />
+              </div>
               {!isMobile && (
                 <CardDescription
                   className={cn(
