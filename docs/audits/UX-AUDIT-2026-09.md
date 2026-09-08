@@ -371,7 +371,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q1 ✅ | Change the header breakpoint so the hamburger shows below 1024 px | X-01 | Critical |
 | Q2 ✅ | Every phone dialog puts the primary action lowest — fixed at the source by dropping `flex-col-reverse` from `DialogFooter`/`AlertDialogFooter` (leave `DrawerFooter` unchanged) | X-05 | Medium |
 | Q3 ✅ | Fix Compare deep links: delay the URL-sync effect until the init-from-params effect has run (initialized ref), so empty params are never written over incoming ones | CP-01 | High |
-| Q4 | Add "Forgot password?" + `/reset-password` route, with `resetPassword`/`updatePassword` in `AuthService` and the auth hook | X-04 | High |
+| Q4 ✅ | Add "Forgot password?" + `/reset-password` route, with `resetPassword`/`updatePassword` in `AuthService` and the auth hook | X-04 | High |
 | Q5 ✅ | `aria-label`/`title` on collapsed sidebar items; badge outside the collapse guard; `aria-current` | A-02 | High |
 | Q6 ✅ | Mass Score Entry: default to the latest date ≤ today, expand the first group, sticky Submit | A-03 | High |
 | Q7 ✅ | Delete the Auto Schedule "Go to Batch Matches" exit; fix its copy; show Save on tab 2 | A-06 | High |

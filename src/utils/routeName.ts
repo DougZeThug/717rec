@@ -18,6 +18,8 @@ const EXACT_ROUTE_NAMES: Record<string, string> = {
   '/admin': 'Admin Dashboard',
   '/admin/notifications': 'Admin Notifications',
   '/auth': 'Sign In',
+  '/forgot-password': 'Forgot Password',
+  '/reset-password': 'Reset Password',
   '/setup-profile': 'Profile Setup',
   '/message-board': 'Message Board',
   '/my-team': 'My Team',

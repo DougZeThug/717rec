@@ -13,6 +13,8 @@ const { mockAuth } = vi.hoisted(() => ({
     getSession: vi.fn(),
     onAuthStateChange: vi.fn(),
     signInWithIdToken: vi.fn(),
+    resetPasswordForEmail: vi.fn(),
+    updateUser: vi.fn(),
   },
 }));
 
@@ -30,11 +32,13 @@ vi.mock('@/utils/logger', () => ({
 import {
   getAuthSession,
   onAuthStateChange,
+  resetPassword,
   signInWithEmail,
   signInWithIdToken,
   signInWithOAuth,
   signOutUser,
   signUpWithEmail,
+  updatePassword,
 } from '../AuthService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -156,5 +160,54 @@ describe('signInWithIdToken', () => {
   it('throws DatabaseError on error', async () => {
     mockAuth.signInWithIdToken.mockResolvedValue({ data: null, error: authError() });
     await expect(signInWithIdToken('google', 'bad-token')).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── resetPassword ────────────────────────────────────────────────────────────
+
+describe('resetPassword', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('asks Supabase to email a link back to the reset page', async () => {
+    mockAuth.resetPasswordForEmail.mockResolvedValue({ data: {}, error: null });
+
+    await expect(
+      resetPassword('player@example.com', 'https://717rec.app/reset-password')
+    ).resolves.toBeUndefined();
+
+    expect(mockAuth.resetPasswordForEmail).toHaveBeenCalledWith('player@example.com', {
+      redirectTo: 'https://717rec.app/reset-password',
+    });
+  });
+
+  it('throws a DatabaseError when the request fails', async () => {
+    mockAuth.resetPasswordForEmail.mockResolvedValue({
+      data: null,
+      error: authError('rate limit'),
+    });
+
+    await expect(
+      resetPassword('player@example.com', 'https://717rec.app/reset-password')
+    ).rejects.toBeInstanceOf(DatabaseError);
+  });
+});
+
+// ─── updatePassword ───────────────────────────────────────────────────────────
+
+describe('updatePassword', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('sets the new password', async () => {
+    mockAuth.updateUser.mockResolvedValue({ data: { user: { id: 'u-1' } }, error: null });
+
+    await expect(updatePassword('hunter22')).resolves.toBeUndefined();
+
+    expect(mockAuth.updateUser).toHaveBeenCalledWith({ password: 'hunter22' });
+  });
+
+  it('throws a DatabaseError when the update fails', async () => {
+    mockAuth.updateUser.mockResolvedValue({ data: null, error: authError('session missing') });
+
+    await expect(updatePassword('hunter22')).rejects.toBeInstanceOf(DatabaseError);
   });
 });

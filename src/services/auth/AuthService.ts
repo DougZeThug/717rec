@@ -59,3 +59,24 @@ export const signInWithIdToken = async (provider: 'google', token: string) => {
   if (error) handleDatabaseError(toPgError(error), 'Failed to sign in with ID token');
   return data;
 };
+
+/**
+ * Send a password reset email.
+ *
+ * Supabase deliberately succeeds for an address that has no account, so the
+ * caller must never report whether the address exists.
+ *
+ * `redirectTo` must be on the project's redirect allow-list in the Supabase
+ * dashboard, or Supabase silently substitutes the Site URL and the link opens
+ * the home page instead.
+ */
+export const resetPassword = async (email: string, redirectTo: string): Promise<void> => {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) handleDatabaseError(toPgError(error), 'Failed to send the password reset email');
+};
+
+/** Set a new password for the currently signed-in (or recovering) user. */
+export const updatePassword = async (newPassword: string): Promise<void> => {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) handleDatabaseError(toPgError(error), 'Failed to update your password');
+};

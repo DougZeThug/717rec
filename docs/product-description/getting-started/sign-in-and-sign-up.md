@@ -8,10 +8,20 @@ an email address and password, and Google. All three sit on one card, and the
 page's only other job is to remember where the user was going and send them there
 afterwards.
 
-**There is no way to reset a forgotten password anywhere in the product.** No
-link, no page, no form. A user who forgets their password has to use the
-[contact form](../help/contact-the-league.md). This is stated here because it is
-the first thing a reader looks for and the last thing they find.
+**A forgotten password can be reset from the product.** A "Forgot password?"
+link sits beside the Password label on the Login tab (and only there) and opens
+`/forgot-password`. That page takes an email address and asks Supabase to send a
+reset link. It never says whether the address has an account — the confirmation
+reads "If an account exists for {address}, a reset link is on its way. The link
+works once and lasts one hour."
+
+Following that link opens `/reset-password`. The link signs the user in as it is
+consumed, so the page shows a "Set a new password" form with a new password and
+a confirmation, both checked against the same six-character rule as sign-up.
+Saving raises "Password updated" and lands on the home page, signed in. A link
+that has already been used, or has run out of time, produces no session, and the
+page says "This link has expired" with a button to request another rather than
+redirecting silently.
 
 The page is reached from the Login button in the top bar, from the "Login / Sign
 Up" prompt on match comments and the message board, from the admin dashboard when
@@ -262,11 +272,14 @@ username taken from the address. Nothing else is written.
 
 ## Open questions and verification
 
-- **There is no password reset in the product.** No forgotten-password link, no
-  reset route, and no service call for one. The app does listen for a
-  password-recovery sign-in, so a reset started outside the app would be
-  recognised, but nothing in the app can start one. **May be worth treating as a
-  bug rather than documenting.**
+- **Password reset depends on Supabase dashboard settings this repository does
+  not hold.** The reset link's `redirectTo` must be on the project's redirect
+  allow-list, or Supabase substitutes the Site URL and the link opens the home
+  page instead. The recovery email template and the sending SMTP provider are
+  configured there too. Not verified against a live project.
+- **Supabase rate-limits recovery emails** (about two an hour per address by
+  default). The "Use a different address" button does not say so, and a user
+  testing repeatedly will see nothing arrive.
 - **The redirect after signing in pushes rather than replaces**, which traps the
   Back button on the sign-in page. **May be worth treating as a bug rather than
   documenting.**

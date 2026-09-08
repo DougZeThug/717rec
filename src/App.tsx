@@ -43,6 +43,8 @@ const Timeslots = lazy(() => import('./pages/Timeslots'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const NotificationsAdmin = lazy(() => import('./pages/admin/NotificationsAdmin'));
 const Auth = lazy(() => import('./pages/Auth'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ProfileSetup = lazy(() => import('./pages/ProfileSetup'));
 const MessageBoard = lazy(() => import('./pages/MessageBoard'));
 const MyTeam = lazy(() => import('./pages/MyTeam'));
@@ -226,6 +228,22 @@ const AppContent = () => {
                   element={
                     <RouteErrorBoundary routeName="Sign In">
                       <Auth />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <RouteErrorBoundary routeName="Forgot Password">
+                      <ForgotPassword />
+                    </RouteErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/reset-password"
+                  element={
+                    <RouteErrorBoundary routeName="Reset Password">
+                      <ResetPassword />
                     </RouteErrorBoundary>
                   }
                 />
