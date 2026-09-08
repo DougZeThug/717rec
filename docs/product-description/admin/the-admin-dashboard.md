@@ -139,7 +139,7 @@ In menu order, with the document that owns each:
 | Power Score Review | Revert or re-apply the power score change — [`../stats/power-score.md`](../stats/power-score.md) |
 | Power Score Sandbox | Try new power score weights before applying — [`../stats/power-score.md`](../stats/power-score.md) |
 
-`/admin/notifications` no longer has a page; it redirects here, to the console's own Notifications section.
+`/admin/notifications` no longer has a page; it redirects here and opens the console's own Notifications section. `/timeslots` does the same for Timeslots.
 See [`send-notifications.md`](send-notifications.md).
 
 ## Modifiers

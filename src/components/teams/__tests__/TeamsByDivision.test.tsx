@@ -9,15 +9,22 @@ import type { Team } from '@/types';
 type SectionProps = {
   divisionName: string;
   isExpanded: boolean;
+  scrollIntoViewOnExpand: boolean;
   onToggleExpand: () => void;
 };
 
 vi.mock('@/components/teams/TeamsDivisionSection', () => ({
-  TeamsDivisionSection: ({ divisionName, isExpanded, onToggleExpand }: SectionProps) => (
+  TeamsDivisionSection: ({
+    divisionName,
+    isExpanded,
+    scrollIntoViewOnExpand,
+    onToggleExpand,
+  }: SectionProps) => (
     <button
       type="button"
       data-testid={divisionName}
       data-expanded={isExpanded}
+      data-scroll={scrollIntoViewOnExpand}
       onClick={onToggleExpand}
     >
       {divisionName}
@@ -76,6 +83,20 @@ describe('TeamsByDivision', () => {
     rerender(renderByDivision(populated));
 
     expect(screen.getByTestId('Competitive')).toHaveAttribute('data-expanded', 'false');
+  });
+
+  it('does not ask the default division to scroll itself into view', async () => {
+    // Scrolling on arrival would move the page under a visitor who did nothing,
+    // and would override the scroll position the Teams page restores.
+    const { rerender } = render(renderByDivision({}));
+    rerender(renderByDivision(populated));
+
+    expect(screen.getByTestId('Competitive')).toHaveAttribute('data-expanded', 'true');
+    expect(screen.getByTestId('Competitive')).toHaveAttribute('data-scroll', 'false');
+
+    await userEvent.click(screen.getByTestId('Intermediate'));
+
+    expect(screen.getByTestId('Intermediate')).toHaveAttribute('data-scroll', 'true');
   });
 
   it('opens one division at a time', async () => {

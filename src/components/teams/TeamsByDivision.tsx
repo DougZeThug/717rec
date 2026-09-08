@@ -22,7 +22,12 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   viewMode,
   sortMode,
 }) => {
-  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(null);
+  // `byVisitor` travels with the selection so the section knows whether to
+  // scroll itself into view: opening one by default must leave the page alone.
+  const [expanded, setExpanded] = React.useState<{
+    division: string;
+    byVisitor: boolean;
+  } | null>(null);
   // Set once the default has been applied, and by any toggle, so a visitor who
   // closes the opening division is never overridden.
   const hasChosenDivision = React.useRef(false);
@@ -43,13 +48,13 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   React.useEffect(() => {
     if (hasChosenDivision.current || nonEmptyDivisions.length === 0) return;
     hasChosenDivision.current = true;
-    setExpandedDivision(nonEmptyDivisions[0]);
+    setExpanded({ division: nonEmptyDivisions[0], byVisitor: false });
   }, [nonEmptyDivisions]);
 
   const toggleDivision = (displayDivision: string) => {
     hasChosenDivision.current = true;
-    setExpandedDivision((prevExpanded) =>
-      prevExpanded === displayDivision ? null : displayDivision
+    setExpanded((prev) =>
+      prev?.division === displayDivision ? null : { division: displayDivision, byVisitor: true }
     );
   };
 
@@ -85,7 +90,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
       {nonEmptyDivisions.map((displayDivision) => {
         const divisionTeams = sortedTeamsByDivision[displayDivision];
         const divisionName = getDivisionName(displayDivision);
-        const isExpanded = expandedDivision === displayDivision;
+        const isExpanded = expanded?.division === displayDivision;
 
         return (
           <TeamsDivisionSection
@@ -93,6 +98,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
             divisionName={divisionName}
             teams={divisionTeams}
             isExpanded={isExpanded}
+            scrollIntoViewOnExpand={isExpanded && expanded.byVisitor}
             onToggleExpand={() => toggleDivision(displayDivision)}
             onEditTeam={onEditTeam}
             onDeleteTeam={onDeleteTeam}

@@ -46,14 +46,26 @@ export const PowerScoreInfoPopover: React.FC = () => (
       <PowerScoreExplainer />
       <div>
         <h4 className="font-semibold">What the Power colours mean</h4>
-        <ul className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1">
+        {/* The band's colour is a swatch, not the text: several of these
+            colours sit near 3:1 on a light card, which is fine for a graphic
+            but under the 4.5:1 text minimum. The words stay readable. */}
+        <ul className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1.5">
           {POWER_SCORE_BAND_FLOORS.map((floor, index) => (
-            <li key={floor} className="flex flex-col leading-tight">
-              <span className={cn('font-semibold tabular-nums', getPowerScoreColor(floor))}>
-                {bandRange(index)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {getPowerScoreDescription(floor)}
+            <li key={floor} className="flex items-start gap-1.5 leading-tight">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'mt-1 size-2.5 shrink-0 rounded-full bg-current',
+                  getPowerScoreColor(floor)
+                )}
+              />
+              <span className="flex flex-col">
+                <span className="font-semibold tabular-nums text-foreground">
+                  {bandRange(index)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {getPowerScoreDescription(floor)}
+                </span>
               </span>
             </li>
           ))}

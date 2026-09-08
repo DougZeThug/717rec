@@ -2,8 +2,9 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@ta
 import { domAnimation, LazyMotion, MotionConfig } from 'framer-motion';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 
+import { LegacyAdminRedirect } from '@/components/admin/LegacyAdminRedirect';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -198,7 +199,7 @@ const AppContent = () => {
                   path="/timeslots"
                   element={
                     <ProtectedAdminRoute>
-                      <Navigate to="/admin" replace />
+                      <LegacyAdminRedirect section="timeslots" />
                     </ProtectedAdminRoute>
                   }
                 />
@@ -216,7 +217,7 @@ const AppContent = () => {
                   path="/admin/notifications"
                   element={
                     <ProtectedAdminRoute>
-                      <Navigate to="/admin" replace />
+                      <LegacyAdminRedirect section="notifications" />
                     </ProtectedAdminRoute>
                   }
                 />

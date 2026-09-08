@@ -11,6 +11,8 @@ interface TeamsDivisionSectionProps {
   divisionName: string;
   teams: Team[];
   isExpanded: boolean;
+  /** True only when a visitor opened this section, never for the default one. */
+  scrollIntoViewOnExpand: boolean;
   onToggleExpand: () => void;
   onEditTeam: (team: Team) => void;
   onDeleteTeam: (teamId: string) => void;
@@ -22,6 +24,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   divisionName,
   teams,
   isExpanded,
+  scrollIntoViewOnExpand,
   onToggleExpand,
   onEditTeam,
   onDeleteTeam,
@@ -31,17 +34,13 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   const sectionRef = useRef<HTMLDivElement>(null);
   const scrollBehavior = useScrollBehavior();
   const contentId = React.useId();
-  // Remember the previous state so the scroll below only follows a toggle the
-  // visitor made. A division that is already open on first paint (the default
-  // one) must leave the page where it is.
-  const wasExpanded = useRef(isExpanded);
 
+  // Only a section the visitor opened scrolls itself under the header. The
+  // division that opens by default must leave the page where it is — including
+  // the position the Teams page restored on the way back from a team.
   // Use double requestAnimationFrame to prevent forced reflow
   useEffect(() => {
-    const openedByVisitor = isExpanded && !wasExpanded.current;
-    wasExpanded.current = isExpanded;
-
-    if (openedByVisitor && sectionRef.current) {
+    if (scrollIntoViewOnExpand && sectionRef.current) {
       const element = sectionRef.current;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -51,7 +50,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
         });
       });
     }
-  }, [isExpanded, scrollBehavior]);
+  }, [scrollIntoViewOnExpand, scrollBehavior]);
 
   if (teams.length === 0) return null;
 

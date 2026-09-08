@@ -17,9 +17,10 @@ is told anything until they next open the app and press the bell.
 signed out included. There is no audience, no targeting, and no way to send a
 message to one team or one person.
 
-The page also carries a second copy of the **contact inbox**, at the top, above
-the notification form. That is not a notification feature and is owned by
-[`handle-requests.md`](handle-requests.md).
+The contact inbox is **not** part of this: it is its own **Contact Inbox**
+entry in the dashboard menu, and is owned by
+[`handle-requests.md`](handle-requests.md). The deleted `/admin/notifications`
+page used to show a second copy of it above the notification form.
 
 ## The simple case
 
@@ -27,16 +28,18 @@ The admin opens the **Notifications** entry in the admin dashboard's sidebar.
 `/admin` is guarded; a non-admin is bounced with an "Access Denied" toast. See
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
 
-Under the contact inbox is a card headed **New notification** with two fields:
-"Title (max 120 chars)" and "Message (max 1000 chars)", and a **Post
-notification** button that is dead until both have something in them.
+The section is a card headed **New notification** with two fields: "Title (max
+120 chars)" and "Message (max 1000 chars)", and a **Post notification** button
+that is dead until both have something in them.
 
 They type "Week 6 moved" and "Monday's matches are pushed to Tuesday, same
 times." and press Post. A toast says "Notification posted", the fields clear,
 and the message appears at the top of **Recent notifications** below with its
 date and time.
 
-Every open copy of the app now shows a red badge on the bell.
+Every open copy of the app now shows the notification in the bell. **Signed-in**
+members also get a red badge on it; a signed-out visitor gets the notification
+without the badge.
 
 ## The interaction, event by event
 
@@ -207,7 +210,7 @@ writing — and neither has anything to do with the other.
 
 **URL state.** None. No section of the admin dashboard has a URL of its own, so
 a notification cannot be linked to. The old `/admin/notifications` address
-redirects to `/admin`.
+redirects to `/admin` and opens this section.
 
 **On a phone.** The page is already one narrow column and needs no change. The
 bell popover is fixed at 360 pixels, which is wider than the narrowest phones.

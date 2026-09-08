@@ -161,8 +161,9 @@ red toast says the removal failed and the row stays.
 
 `/admin` is route-guarded; the gate is described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
-`/timeslots` is guarded the same way and then redirects here, so an old
-bookmark still works and a signed-out visitor still lands on `/auth`.
+`/timeslots` is guarded the same way and then redirects here, opening this
+section rather than whichever one was last used, so an old bookmark still works
+and a signed-out visitor still lands on `/auth`.
 
 ## Reading team preferences
 

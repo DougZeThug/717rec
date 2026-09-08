@@ -32,6 +32,7 @@ const baseProps = {
   divisionName: 'Competitive',
   teams,
   isExpanded: false,
+  scrollIntoViewOnExpand: false,
   onToggleExpand: vi.fn(),
   onEditTeam: vi.fn(),
   onDeleteTeam: vi.fn(),
@@ -117,13 +118,18 @@ describe('TeamsDivisionSection', () => {
 
     expect(scrollTo).not.toHaveBeenCalled();
 
-    rerender(<TeamsDivisionSection {...baseProps} isExpanded />);
+    rerender(<TeamsDivisionSection {...baseProps} isExpanded scrollIntoViewOnExpand />);
 
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }));
   });
 
   it('does not scroll the page for a division that opens by default', () => {
-    renderSection({ isExpanded: true });
+    // The real sequence: closed on mount while the teams load, then opened by
+    // the parent once they arrive. Nobody pressed anything, so the page must
+    // not move — including off the position the Teams page just restored.
+    const { rerender } = renderSection();
+
+    rerender(<TeamsDivisionSection {...baseProps} isExpanded />);
 
     expect(scrollTo).not.toHaveBeenCalled();
   });
