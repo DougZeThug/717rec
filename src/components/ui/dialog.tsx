@@ -55,10 +55,14 @@ const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 );
 DialogHeader.displayName = 'DialogHeader';
 
-/** Dialog footer: stacks actions in reverse on mobile, right-aligns them in a row on desktop. */
+/**
+ * Dialog footer: stacks actions in DOM order on mobile, so the primary action
+ * (last in the markup, per MODAL_PATTERNS.md) sits lowest and nearest the thumb.
+ * Right-aligns them in a row from `sm` up.
+ */
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+    className={cn('flex flex-col sm:flex-row sm:justify-end sm:space-x-2', className)}
     {...props}
   />
 );

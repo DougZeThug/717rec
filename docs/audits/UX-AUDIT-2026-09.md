@@ -369,7 +369,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | # | Item | Findings | Priority |
 |---|---|---|---|
 | Q1 ✅ | Change the header breakpoint so the hamburger shows below 1024 px | X-01 | Critical |
-| Q2 | Render the admin round-correction dialogs through `ResponsiveDialog` so every phone dialog puts the primary action lowest (leave `DrawerFooter` unchanged) | X-05 | Medium |
+| Q2 ✅ | Every phone dialog puts the primary action lowest — fixed at the source by dropping `flex-col-reverse` from `DialogFooter`/`AlertDialogFooter` (leave `DrawerFooter` unchanged) | X-05 | Medium |
 | Q3 | Fix Compare deep links: delay the URL-sync effect until the init-from-params effect has run (initialized ref), so empty params are never written over incoming ones | CP-01 | High |
 | Q4 | Add "Forgot password?" + `/reset-password` route, with `resetPassword`/`updatePassword` in `AuthService` and the auth hook | X-04 | High |
 | Q5 | `aria-label`/`title` on collapsed sidebar items; badge outside the collapse guard; `aria-current` | A-02 | High |
