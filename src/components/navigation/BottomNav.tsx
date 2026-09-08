@@ -47,6 +47,7 @@ const BottomNav = React.memo(() => {
 
   return (
     <nav
+      aria-label="Main sections"
       className={cn(
         'fixed bottom-0 left-0 right-0 z-40',
         'pb-[calc(env(safe-area-inset-bottom,0px)+12px)]',

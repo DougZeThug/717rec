@@ -9,6 +9,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
     Skip to main content
   </a>
   <nav
+    aria-label="Primary"
     class="text-white shadow-lg top-0 z-50 safe-area-top relative bg-gradient-to-r from-[#0f2647] via-cornhole-navy to-[#1d4068] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800"
   >
     <div

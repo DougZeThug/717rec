@@ -94,7 +94,9 @@ const ProfileSetup = () => {
         <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-2xl">Set Up Your Profile</CardTitle>
+              <CardTitle as="h1" className="text-2xl">
+                Set Up Your Profile
+              </CardTitle>
               <CardDescription>Enter your name and details</CardDescription>
             </CardHeader>
             <CardContent>

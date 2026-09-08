@@ -96,23 +96,23 @@ const OAuthConsent = () => {
 
   if (error) {
     return (
-      <main className="mx-auto max-w-lg px-4 py-16">
+      <section className="mx-auto max-w-lg px-4 py-16">
         <h1 className="text-2xl font-semibold mb-3">Authorization error</h1>
         <p className="text-muted-foreground">{error}</p>
-      </main>
+      </section>
     );
   }
   if (!details) {
     return (
-      <main className="mx-auto max-w-lg px-4 py-16">
+      <section className="mx-auto max-w-lg px-4 py-16">
         <p>Loading…</p>
-      </main>
+      </section>
     );
   }
 
   const clientName = details.client?.name ?? 'an app';
   return (
-    <main className="mx-auto max-w-lg px-4 py-16">
+    <section className="mx-auto max-w-lg px-4 py-16">
       <h1 className="text-2xl font-semibold mb-3">Connect {clientName} to your 717rec account</h1>
       <p className="text-muted-foreground mb-6">
         This will let {clientName} use 717rec on your behalf: read standings, your team, your
@@ -126,7 +126,7 @@ const OAuthConsent = () => {
           Deny
         </Button>
       </div>
-    </main>
+    </section>
   );
 };
 

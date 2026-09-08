@@ -38,6 +38,31 @@ They open a dialog. Focus goes into it, Escape closes it, and focus returns.
 Every dialog, dropdown, popover, and select in the app behaves this way, because
 they all come from the same component library.
 
+## Landmarks and headings
+
+**One main, and it is the skip link's target.** `App.tsx` renders a single
+`<main id="main-content">` around every route. The live-scoring page and the
+authorisation-consent page each used to open their own `<main>` inside it,
+giving those two pages two main landmarks; both are plain sections now.
+
+**Both navigation landmarks are named.** The header bar announces as "Primary"
+and the phone's bottom tab bar as "Main sections", so a screen reader can tell
+them apart in a landmark list instead of hearing "navigation" twice. A team
+page's section bar is named "Team details section navigation".
+
+**Every page has exactly one first-level heading.** Some had none: the schedule
+and the live-scoring page had no heading at all, the standings had one only on a
+wide screen, and the sign-in card, the profile setup card, the insights header
+and the page-not-found screen all started at a lower level. Where a page shows
+its title, that title is now the heading; where it does not — the schedule,
+whose date strip is the point of the page, and live scoring — the heading is
+spoken but not drawn.
+
+An automated scan blocks a merge that reintroduces any of this: it checks for
+duplicate or nested main landmarks, unnamed duplicate landmarks, and a missing
+first-level heading, on twelve public routes. Skipped heading *levels* inside a
+page are a separate, unfinished piece of work and are not in that gate.
+
 ## Keyboard
 
 **What works.** A skip link, first in tab order, jumping to the main content. A
@@ -290,9 +315,12 @@ or sent anywhere.
   replaced toast is re-announced or silently swapped.
 - Not confirmed by hand: whether the route announcement is heard in practice, or
   arrives too early because the page is still loading.
-- Not confirmed by hand: whether every page has exactly one first-level heading.
-  The page shell was corrected once to avoid two main landmarks; headings were
-  not audited.
+- Resolved: **pages without a first-level heading, and two pages with a second
+  main landmark.** Both are covered by the scan described under
+  [Landmarks and headings](#landmarks-and-headings).
+- Not confirmed by hand: whether heading *levels* run in order within a page.
+  Several pages skip from h1 to h3; the scan deliberately leaves that rule out
+  until they are fixed.
 - Not confirmed by hand: contrast ratios beyond the muted text and the in-text
   links corrected above. The Lighthouse floor of 0.9 leaves room for contrast
   failures on unscanned pages.

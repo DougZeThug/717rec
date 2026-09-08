@@ -55,13 +55,21 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardHeader.displayName = 'CardHeader';
 
-const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => {
+interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  /**
+   * Heading level. Defaults to h3. Pass "h1" on a card that is the page's own
+   * title, so the page has an h1 instead of starting at h3.
+   */
+  as?: 'h1' | 'h2' | 'h3' | 'h4';
+}
+
+const CardTitle = React.forwardRef<HTMLParagraphElement, CardTitleProps>(
+  ({ className, as: Heading = 'h3', ...props }, ref) => {
     const { resolvedTheme } = useTheme();
     const isLight = resolvedTheme === 'light';
 
     return (
-      <h3
+      <Heading
         ref={ref}
         className={cn(
           'text-2xl font-semibold leading-none tracking-tight',

@@ -130,11 +130,12 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
         'shadow-sm',
         className
       )}
-      role="navigation"
-      aria-label="Team details section navigation"
     >
       <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <nav className="flex items-center gap-1 px-4 py-2 min-w-max">
+        <nav
+          aria-label="Team details section navigation"
+          className="flex items-center gap-1 px-4 py-2 min-w-max"
+        >
           {sections.map(({ id, label, icon: Icon, ariaLabel }) => {
             const isActive = activeSection === id;
             return (

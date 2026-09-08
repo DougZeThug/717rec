@@ -384,6 +384,11 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
 
   return (
     <div className="space-y-3">
+      {/* The page had no heading at all: the team names are paragraphs inside
+          the scoreboard, so a screen reader had nothing naming the match. */}
+      <h1 className="sr-only">
+        Live scoring: {team1Name} vs {team2Name}
+      </h1>
       <MatchScoringHeader
         team1Name={team1Name}
         team2Name={team2Name}

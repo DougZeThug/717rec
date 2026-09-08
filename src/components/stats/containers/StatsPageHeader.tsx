@@ -16,6 +16,9 @@ const StatsPageHeader = () => {
 
   return (
     <div className={cn('mt-1', animations.fadeInSlideDown)}>
+      {/* The visible title below is desktop-only, so a phone had no h1 at all
+          and a screen reader landed on the page with nothing naming it. */}
+      {isMobile && <h1 className="sr-only">Standings</h1>}
       <div className="flex items-center justify-between mb-3">
         <SeasonBadge />
         {isMobile && (

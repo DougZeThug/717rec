@@ -25,9 +25,20 @@ const Compare: React.FC = () => {
     isLoading: comparisonLoading,
   } = useTeamComparison(team1, team2);
 
+  // The heading is rendered by every branch below, not just the loaded one:
+  // while the teams were loading the page had no h1 at all, so a screen reader
+  // arriving on a slow connection was told nothing about where it had landed.
+  const header = (
+    <div className="flex items-center justify-center gap-3 mb-6">
+      <Scale className="size-7 text-primary" aria-hidden="true" />
+      <h1 className="text-2xl sm:text-3xl font-bold">Team Comparison</h1>
+    </div>
+  );
+
   if (teamsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="container mx-auto px-4 py-6 max-w-3xl">
+        {header}
         <LoadingState message="Loading teams..." />
       </div>
     );
@@ -35,12 +46,13 @@ const Compare: React.FC = () => {
 
   if (teamsError) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="container mx-auto px-4 py-6 max-w-3xl">
+        {header}
         <ErrorDisplay
           variant="card"
           error="We couldn't load the teams. Please try again."
           onRetry={refetch}
-          className="max-w-md w-full"
+          className="max-w-md w-full mx-auto"
         />
       </div>
     );
@@ -65,11 +77,7 @@ const Compare: React.FC = () => {
       </Helmet>
 
       <div className="container mx-auto px-4 py-6 max-w-3xl">
-        {/* Header */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <Scale className="size-7 text-primary" />
-          <h1 className="text-2xl sm:text-3xl font-bold">Team Comparison</h1>
-        </div>
+        {header}
 
         {/* Team Selectors */}
         <div className="mb-8">
