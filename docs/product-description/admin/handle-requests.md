@@ -138,12 +138,17 @@ explanation. Success says nothing at all; the list simply changes.
 **Team requests** are written with the status, the notes, and who processed
 them. On success the dialog closes, everything is cleared, and a toast says
 "Request Approved — The request has been approved." or "Request Denied". On
-failure the toast is "Error — Failed to update request. Please try again." and
-**the dialog stays open with the notes intact**.
+failure the toast is "Error — Failed to update request. Please try again.", and
+**the dialog stays open with the notes intact** so the admin can retry.
 
 Approving a team request writes a status and nothing else. **The schedule does
 not move.** Whatever was asked for — a different timeslot, a bye, a cancelled
-match — an admin still has to do by hand in the schedule tools.
+match — an admin still has to do by hand in the schedule tools. Approving a time
+change therefore raises a second toast that says so and names the work left:
+"Request approved — Now move {team} to {time} in Timeslots. Approving does not
+move it." It carries an **Open Timeslots** button that switches to that section.
+Bye and cancellation requests get no such toast, because there is no single
+place to send the admin.
 
 ## Modifiers
 

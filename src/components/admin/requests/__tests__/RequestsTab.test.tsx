@@ -11,10 +11,23 @@ const mockUseAllRequests = vi.fn();
 const mockUsePendingRequestsCount = vi.fn();
 const mutateAsync = vi.fn(() => Promise.resolve());
 
+const mockToast = vi.fn();
+
 vi.mock('@/hooks/useTeamRequests', () => ({
   useAllRequests: (...args: unknown[]) => mockUseAllRequests(...args),
   usePendingRequestsCount: () => mockUsePendingRequestsCount(),
   useUpdateRequestStatus: () => ({ mutateAsync, isPending: false }),
+}));
+
+vi.mock('@/hooks/useToast', () => ({
+  useToast: () => ({ toast: mockToast }),
+  toast: (...args: unknown[]) => mockToast(...args),
+}));
+
+const mockSwitchAdminTab = vi.fn();
+
+vi.mock('@/utils/adminTabs', () => ({
+  switchAdminTab: (...args: unknown[]) => mockSwitchAdminTab(...args),
 }));
 
 const baseRequest: TeamRequestWithTeam = {
@@ -47,6 +60,7 @@ describe('RequestsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mutateAsync.mockResolvedValue(undefined);
     mockUseAllRequests.mockReturnValue({ data: [baseRequest], isLoading: false });
     mockUsePendingRequestsCount.mockReturnValue({ data: 1 });
   });
@@ -124,5 +138,58 @@ describe('RequestsTab', () => {
     render(<RequestsTab />);
     expect(screen.getByText('No requests found')).toBeInTheDocument();
     expect(screen.getByText('Try changing the filter')).toBeInTheDocument();
+  });
+
+  // UX audit A-05: approving a TIME_CHANGE only writes a status word. Nothing
+  // in the schedule moves, and the dialog offered no route to where it does.
+  it('points the admin at Timeslots after approving a time change', async () => {
+    const user = userEvent.setup();
+    render(<RequestsTab />);
+
+    await user.click(screen.getByRole('button', { name: /approve/i }));
+    await user.click(screen.getByRole('button', { name: 'Approve' }));
+
+    await waitFor(() => expect(mockToast).toHaveBeenCalled());
+
+    const [{ title, description, action }] = mockToast.mock.calls[0];
+    expect(title).toBe('Request approved');
+    expect(description).toContain('The Baggers');
+    expect(description).toContain('8:00 PM');
+    expect(description).toContain('Timeslots');
+
+    // The toast action opens the section where the move is actually made.
+    render(<>{action}</>);
+    await user.click(screen.getByRole('button', { name: 'Open Timeslots' }));
+    expect(mockSwitchAdminTab).toHaveBeenCalledWith('timeslots');
+  });
+
+  it('does not point at Timeslots when denying', async () => {
+    const user = userEvent.setup();
+    render(<RequestsTab />);
+
+    await user.click(screen.getByRole('button', { name: /deny/i }));
+    await user.click(screen.getByRole('button', { name: 'Deny' }));
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+
+  // UX audit A-05: an unwrapped mutateAsync skipped every reset on failure,
+  // leaving the dialog open with a live button and an unhandled rejection.
+  it('keeps the dialog open when the update fails, instead of resetting', async () => {
+    const user = userEvent.setup();
+    mutateAsync.mockRejectedValue(new Error('network down'));
+    render(<RequestsTab />);
+
+    await user.click(screen.getByRole('button', { name: /approve/i }));
+    await user.type(screen.getByLabelText('Admin notes'), 'Slot freed up');
+    await user.click(screen.getByRole('button', { name: 'Approve' }));
+
+    await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+
+    // Still open, notes intact, and no success toast.
+    expect(screen.getByText('Approve Request')).toBeInTheDocument();
+    expect(screen.getByLabelText('Admin notes')).toHaveValue('Slot freed up');
+    expect(mockToast).not.toHaveBeenCalled();
   });
 });
