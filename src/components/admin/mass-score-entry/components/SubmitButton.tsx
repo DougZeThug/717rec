@@ -17,11 +17,11 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
   editedMatchCount = 0,
 }) => {
   return (
-    <div className="transition-transform active:scale-[0.97]">
+    <div className="transition-transform active:scale-[0.97] w-full sm:w-auto">
       <Button
         onClick={onClick} // Wired to onClick prop
         disabled={disabled}
-        className="flex items-center gap-2 transition-all duration-200 hover:bg-opacity-90 shadow-sm"
+        className="w-full sm:w-auto flex items-center justify-center gap-2 transition-all duration-200 hover:bg-opacity-90 shadow-sm"
       >
         {submitting ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {submitting

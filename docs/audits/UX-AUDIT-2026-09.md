@@ -373,7 +373,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q3 ✅ | Fix Compare deep links: delay the URL-sync effect until the init-from-params effect has run (initialized ref), so empty params are never written over incoming ones | CP-01 | High |
 | Q4 | Add "Forgot password?" + `/reset-password` route, with `resetPassword`/`updatePassword` in `AuthService` and the auth hook | X-04 | High |
 | Q5 ✅ | `aria-label`/`title` on collapsed sidebar items; badge outside the collapse guard; `aria-current` | A-02 | High |
-| Q6 | Mass Score Entry: default to the latest date ≤ today, expand the first group, sticky Submit | A-03 | High |
+| Q6 ✅ | Mass Score Entry: default to the latest date ≤ today, expand the first group, sticky Submit | A-03 | High |
 | Q7 | Delete the Auto Schedule "Go to Batch Matches" exit; fix its copy; show Save on tab 2 | A-06 | High |
 | Q8 | Requests approve → toast with "Move team in Timeslots" action; try/catch around approve | A-05 | High |
 | Q9 | Teams page: expand the first division on mobile; make chevrons real toggles with names | T-01, X-09 | High |

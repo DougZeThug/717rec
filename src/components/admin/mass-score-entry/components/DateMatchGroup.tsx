@@ -22,12 +22,15 @@ interface DateMatchGroupProps {
   errorMessages?: Record<string, string>;
   onClearError?: (matchId: string) => void;
   onDeleteMatch?: (matchId: string) => void;
+  /** True for the night the tool opened on, whose first timeslot starts open. */
+  isFirstDateGroup?: boolean;
 }
 
 const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   date,
   matches,
   defaultExpanded = false,
+  isFirstDateGroup = false,
   onScoreChange,
   onGameWinsChange,
   onMarkCompleted,
@@ -72,7 +75,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
           className="p-4 space-y-4"
         >
           {sortedTimeSlots.length > 0 ? (
-            sortedTimeSlots.map((timeSlot) => (
+            sortedTimeSlots.map((timeSlot, slotIndex) => (
               <TimeSlotMatchGroup
                 key={timeSlot}
                 timeSlot={timeSlot}
@@ -85,7 +88,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
                 errorMessages={errorMessages}
                 onClearError={onClearError}
                 onDeleteMatch={onDeleteMatch}
-                defaultOpen={matches.length <= 5}
+                defaultOpen={matches.length <= 5 || (isFirstDateGroup && slotIndex === 0)}
               />
             ))
           ) : (

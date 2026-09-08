@@ -14,6 +14,7 @@ import { errorLog } from '@/utils/logger';
 import AdminSectionWrapper from './AdminSectionWrapper';
 import ErrorAlert from './mass-score-entry/components/ErrorAlert';
 import ScoreEntryToolbar from './mass-score-entry/components/ScoreEntryToolbar';
+import StickySubmitBar from './mass-score-entry/components/StickySubmitBar';
 import SubmitButton from './mass-score-entry/components/SubmitButton';
 import { useScoreEntryData } from './mass-score-entry/hooks/useScoreEntryData';
 import MatchesTable from './mass-score-entry/MatchesTable';
@@ -138,7 +139,7 @@ const MassScoreEntryTool: React.FC = () => {
           )}
         </CardHeader>
 
-        <CardContent className="p-3 sm:p-4">
+        <CardContent className="p-3 sm:p-4 pb-24 md:pb-20">
           {bracketsError && (
             <ErrorAlert
               message="Couldn't load brackets — retry."
@@ -174,14 +175,14 @@ const MassScoreEntryTool: React.FC = () => {
             />
           </div>
 
-          <div className="p-4 flex justify-end">
+          <StickySubmitBar>
             <SubmitButton
               onClick={handleSubmitAll}
               submitting={submitting}
               disabled={disableSubmit}
               editedMatchCount={validEditedMatchesCount}
             />
-          </div>
+          </StickySubmitBar>
         </CardContent>
       </Card>
 

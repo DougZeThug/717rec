@@ -143,6 +143,9 @@ test.describe('admin mass score submission workflow', () => {
     await page.getByTestId('score-button-2–0').click();
     await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
 
+    // UX audit A-03: Submit must be reachable without scrolling a whole night.
+    await expect(page.getByTestId('mass-score-submit-bar')).toBeInViewport();
+
     await page.getByRole('button', { name: 'Submit (1) Changes' }).click();
 
     await expect(page.getByText('✅ Matches Submitted', { exact: true })).toBeVisible();

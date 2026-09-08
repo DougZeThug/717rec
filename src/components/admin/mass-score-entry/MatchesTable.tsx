@@ -89,12 +89,15 @@ const MatchesTable: React.FC<MatchesTableProps> = ({
 
   return (
     <div className="space-y-4">
-      {matchesByDate.map(({ date, matches: dateMatches }) => (
+      {matchesByDate.map(({ date, matches: dateMatches }, index) => (
         <DateMatchGroup
           key={format(date, 'yyyy-MM-dd')}
           date={date}
           matches={dateMatches}
-          defaultExpanded={defaultExpanded}
+          // The first night is always open, so there is something to enter
+          // without a tap. See UX audit A-03.
+          defaultExpanded={index === 0 || defaultExpanded}
+          isFirstDateGroup={index === 0}
           onScoreChange={onScoreChange}
           onGameWinsChange={onGameWinsChange}
           onMarkCompleted={onMarkCompleted}
