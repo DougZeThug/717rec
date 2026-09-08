@@ -363,9 +363,12 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
 Effort: S = under half a day, M = 1–3 days, L = a week or more. Items reference findings above.
 
 ### 5.1 Quick fixes (S, low risk, high confidence)
+
+✅ marks an item that has been implemented.
+
 | # | Item | Findings | Priority |
 |---|---|---|---|
-| Q1 | Change the header breakpoint so the hamburger shows below 1024 px | X-01 | Critical |
+| Q1 ✅ | Change the header breakpoint so the hamburger shows below 1024 px | X-01 | Critical |
 | Q2 | Render the admin round-correction dialogs through `ResponsiveDialog` so every phone dialog puts the primary action lowest (leave `DrawerFooter` unchanged) | X-05 | Medium |
 | Q3 | Fix Compare deep links: delay the URL-sync effect until the init-from-params effect has run (initialized ref), so empty params are never written over incoming ones | CP-01 | High |
 | Q4 | Add "Forgot password?" + `/reset-password` route, with `resetPassword`/`updatePassword` in `AuthService` and the auth hook | X-04 | High |
