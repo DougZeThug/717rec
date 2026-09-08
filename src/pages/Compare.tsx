@@ -1,5 +1,5 @@
 import { Scale } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router';
 
@@ -19,9 +19,21 @@ const Compare: React.FC = () => {
   const [team1, setTeam1] = useState<Team | null>(null);
   const [team2, setTeam2] = useState<Team | null>(null);
 
+  // The teams list arrives after mount, so the incoming ?team1=&team2= cannot be
+  // applied on the first render. Until they have been, the URL must be left
+  // exactly as it came in: writing the (still empty) selection back would erase
+  // the very ids we are waiting to read. See UX audit CP-01.
+  const hasAppliedUrlParams = useRef(false);
+
   // Initialize from URL params
   useEffect(() => {
+    if (hasAppliedUrlParams.current) return;
     if (!teams || teams.length === 0) return;
+
+    // Teams are loaded, so this is the one chance to honour the incoming link.
+    // Mark it applied even when an id matches nothing (a hidden or deleted
+    // team), otherwise the URL sync would stay blocked forever.
+    hasAppliedUrlParams.current = true;
 
     const team1Id = searchParams.get('team1');
     const team2Id = searchParams.get('team2');
@@ -40,6 +52,8 @@ const Compare: React.FC = () => {
 
   // Sync selection to URL
   useEffect(() => {
+    if (!hasAppliedUrlParams.current) return;
+
     const params = new URLSearchParams();
     if (team1) params.set('team1', team1.id);
     if (team2) params.set('team2', team2.id);
