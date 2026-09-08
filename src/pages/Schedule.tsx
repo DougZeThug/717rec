@@ -284,7 +284,7 @@ const Schedule = () => {
   );
 
   return (
-    <PageLayout withBackground={true} gradientVariant="blueOrange">
+    <PageLayout withBackground gradientVariant="blueOrange">
       <SeoHead
         title="Schedule | 717REC Cornhole League"
         description="Upcoming and recent 717REC cornhole matches, weekly timeslots, and matchups by date."
