@@ -74,6 +74,54 @@ const ExpandedPanel: React.FC<{ ranking: Ranking }> = ({ ranking }) => {
   );
 };
 
+/** The rank column: the number, and the arrow saying which way it moved. */
+const RankColumn: React.FC<{
+  rank: number;
+  rankChange: Ranking['rankChange'];
+  showRankChange: boolean;
+}> = ({ rank, rankChange, showRankChange }) => (
+  <div className="flex flex-col items-center w-7 flex-shrink-0">
+    <span className="text-sm font-bold tabular-nums text-foreground">{rank}</span>
+    {showRankChange && (
+      <div className="scale-90">
+        <RankTrendIndicator rankChange={rankChange} />
+      </div>
+    )}
+  </div>
+);
+
+/** Logo, team name, and the record with the division behind it. */
+const TeamColumn: React.FC<{ ranking: Ranking; showDivision: boolean }> = ({
+  ranking,
+  showDivision,
+}) => (
+  <Link
+    to={`/teams/${toTeamSlug(ranking.teamName)}`}
+    state={{ from: '/stats' }}
+    aria-label={`View ${ranking.teamName} team details`}
+    className="flex items-center gap-2 flex-1 min-w-0 group"
+    onClick={stopCardToggle}
+  >
+    <TeamLogo
+      imageUrl={ranking.imageUrl || ranking.logoUrl}
+      teamName={ranking.teamName}
+      size="sm"
+      className="flex-shrink-0"
+    />
+    <div className="min-w-0 flex-1">
+      <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
+        {ranking.teamName}
+      </h3>
+      <p className="text-xs text-muted-foreground tabular-nums">
+        {ranking.wins}-{ranking.losses}
+        {showDivision && ranking.divisionName && (
+          <span className="ml-1.5">· {ranking.divisionName}</span>
+        )}
+      </p>
+    </div>
+  </Link>
+);
+
 /** The one-line standings card a phone shows in Compact view. */
 export const RankingCardCompact: React.FC<RankingCardCompactProps> = ({
   ranking,
@@ -93,44 +141,13 @@ export const RankingCardCompact: React.FC<RankingCardCompactProps> = ({
       withGradient={false}
     >
       <div className="flex items-center gap-2">
-        {/* Rank column */}
-        <div className="flex flex-col items-center w-7 flex-shrink-0">
-          <span className="text-sm font-bold tabular-nums text-foreground">
-            {showDivision ? globalRank : (ranking.divisionRank ?? globalRank)}
-          </span>
-          {showRankChange && (
-            <div className="scale-90">
-              <RankTrendIndicator rankChange={ranking.rankChange} />
-            </div>
-          )}
-        </div>
+        <RankColumn
+          rank={showDivision ? globalRank : (ranking.divisionRank ?? globalRank)}
+          rankChange={ranking.rankChange}
+          showRankChange={showRankChange}
+        />
 
-        {/* Team logo + name + record */}
-        <Link
-          to={`/teams/${toTeamSlug(ranking.teamName)}`}
-          state={{ from: '/stats' }}
-          aria-label={`View ${ranking.teamName} team details`}
-          className="flex items-center gap-2 flex-1 min-w-0 group"
-          onClick={stopCardToggle}
-        >
-          <TeamLogo
-            imageUrl={ranking.imageUrl || ranking.logoUrl}
-            teamName={ranking.teamName}
-            size="sm"
-            className="flex-shrink-0"
-          />
-          <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
-              {ranking.teamName}
-            </h3>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              {ranking.wins}-{ranking.losses}
-              {showDivision && ranking.divisionName && (
-                <span className="ml-1.5">· {ranking.divisionName}</span>
-              )}
-            </p>
-          </div>
-        </Link>
+        <TeamColumn ranking={ranking} showDivision={showDivision} />
 
         {/* Badges */}
         <div className="flex-shrink-0">

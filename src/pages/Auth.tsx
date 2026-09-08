@@ -83,7 +83,7 @@ const Auth = () => {
   }, [user, navigate, returnTo, authInitialized]);
 
   return (
-    <PageLayout compact={true}>
+    <PageLayout compact>
       <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
         <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">

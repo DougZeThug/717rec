@@ -41,7 +41,7 @@ const routePrefetchMap: Record<string, () => Promise<unknown>> = {
  * keeps a dropped connection from raising an unhandled promise rejection.
  */
 const ignorePrefetchFailure = (loading: Promise<unknown>): void => {
-  void loading.catch(() => undefined);
+  loading.catch(() => undefined);
 };
 
 // Prefetch a route by path
