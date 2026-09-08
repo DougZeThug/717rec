@@ -69,10 +69,7 @@ const SeasonAccordionHeader: React.FC<SeasonAccordionHeaderProps> = ({
     </div>
     {!isLoading && (teamCount > 0 || matchCount > 0) && (
       <p
-        className={cn(
-          'text-[11px] mt-0.5',
-          isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-        )}
+        className={cn('text-xs mt-0.5', isWinterTheme ? 'text-white/50' : 'text-muted-foreground')}
       >
         {teamCount > 0 && `${teamCount} teams`}
         {teamCount > 0 && matchCount > 0 && ' · '}

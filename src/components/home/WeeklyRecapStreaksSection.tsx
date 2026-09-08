@@ -13,7 +13,10 @@ import { StreakRowProps } from './weeklyRecapTypes';
 
 function MobileStreakRow({ team, winter }: StreakRowProps) {
   return (
-    <Link to={`/teams/${toTeamSlug(team.teamName)}`} className="flex items-center gap-1.5 group">
+    <Link
+      to={`/teams/${toTeamSlug(team.teamName)}`}
+      className="flex min-h-6 items-center gap-1.5 group"
+    >
       <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" />
       <span
         className={cn(
@@ -25,7 +28,7 @@ function MobileStreakRow({ team, winter }: StreakRowProps) {
       >
         {team.teamName}
       </span>
-      <span className="shrink-0 text-[10px] font-bold tabular-nums bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">
+      <span className="shrink-0 text-xs font-bold tabular-nums bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded">
         {team.streak}
       </span>
     </Link>
@@ -34,7 +37,10 @@ function MobileStreakRow({ team, winter }: StreakRowProps) {
 
 function StreakRow({ team, winter }: StreakRowProps) {
   return (
-    <Link to={`/teams/${toTeamSlug(team.teamName)}`} className="flex items-center gap-2 group">
+    <Link
+      to={`/teams/${toTeamSlug(team.teamName)}`}
+      className="flex min-h-6 items-center gap-2 group"
+    >
       <TeamLogo imageUrl={team.logoUrl} teamName={team.teamName} size="xs" />
       <div className="flex-1 min-w-0">
         <span

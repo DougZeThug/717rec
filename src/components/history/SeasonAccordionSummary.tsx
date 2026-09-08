@@ -26,7 +26,7 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
   >
     <p
       className={cn(
-        'text-[10px] font-semibold uppercase tracking-wider mb-1.5',
+        'text-xs font-semibold uppercase tracking-wider mb-1.5',
         isWinterTheme ? 'text-amber-300/80' : 'text-amber-600 dark:text-amber-400'
       )}
     >
@@ -54,7 +54,7 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
               </p>
               <p
                 className={cn(
-                  'text-[10px] leading-tight',
+                  'text-xs leading-tight',
                   isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
                 )}
               >
@@ -94,7 +94,7 @@ const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
   >
     <p
       className={cn(
-        'text-[10px] font-semibold uppercase tracking-wider mb-1.5',
+        'text-xs font-semibold uppercase tracking-wider mb-1.5',
         isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
       )}
     >
@@ -106,7 +106,7 @@ const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
         <div>
           <p
             className={cn(
-              'text-[10px] leading-tight',
+              'text-xs leading-tight',
               isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
             )}
           >
@@ -124,7 +124,7 @@ const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
         <div>
           <p
             className={cn(
-              'text-[10px] leading-tight',
+              'text-xs leading-tight',
               isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
             )}
           >
@@ -146,7 +146,7 @@ const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
         <div>
           <p
             className={cn(
-              'text-[10px] leading-tight',
+              'text-xs leading-tight',
               isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
             )}
           >

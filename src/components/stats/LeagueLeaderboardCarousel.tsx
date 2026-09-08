@@ -41,9 +41,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
           <div className="flex flex-col flex-shrink-0 pt-1">
             <span className="text-sm font-semibold text-foreground leading-tight">League</span>
             <span className="text-sm font-semibold text-foreground leading-tight">Leaderboard</span>
-            <span className="text-[10px] text-muted-foreground mt-0.5">
-              {rankings.length} teams
-            </span>
+            <span className="text-xs text-muted-foreground mt-0.5">{rankings.length} teams</span>
           </div>
 
           {/* Right: Top 3 cards */}
@@ -64,7 +62,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
                   {/* Rank badge */}
                   <div
                     className={cn(
-                      'absolute -top-2 -left-1 size-5 rounded-full flex items-center justify-center text-[10px] font-bold',
+                      'absolute -top-2 -left-1 size-5 rounded-full flex items-center justify-center text-xs font-bold',
                       BADGE_STYLES[idx]
                     )}
                   >
@@ -76,7 +74,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
                     teamName={team.teamName}
                     size="sm"
                   />
-                  <p className="text-[10px] font-medium text-foreground text-center leading-tight line-clamp-1">
+                  <p className="text-xs font-medium text-foreground text-center leading-tight line-clamp-1">
                     {team.teamName}
                   </p>
                   <span

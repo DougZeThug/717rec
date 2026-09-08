@@ -18,7 +18,9 @@ const Footer = () => {
           ? 'winter-card-surface border-frost-border/30'
           : 'bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-gray-800'
       )}
-      style={{ minHeight: '142px', height: '142px', contain: 'layout style' }}
+      // minHeight still reserves the space against layout shift; the fixed
+      // height clipped the taller links on a narrow phone.
+      style={{ minHeight: '142px', contain: 'layout style' }}
     >
       <div className="max-w-7xl mx-auto px-4" style={{ minHeight: '110px' }}>
         <div
@@ -63,7 +65,7 @@ const Footer = () => {
               <a
                 href="mailto:admin@717rec.com"
                 className={cn(
-                  'transition-colors font-inter font-medium',
+                  'inline-flex min-h-6 items-center transition-colors font-inter font-medium',
                   isWinterTheme
                     ? 'hover:text-[hsl(var(--foreground))]'
                     : 'hover:text-gray-900 dark:hover:text-white'
@@ -75,7 +77,7 @@ const Footer = () => {
               <a
                 href="/contact"
                 className={cn(
-                  'transition-colors font-inter font-medium',
+                  'inline-flex min-h-6 items-center transition-colors font-inter font-medium',
                   isWinterTheme
                     ? 'hover:text-[hsl(var(--foreground))]'
                     : 'hover:text-gray-900 dark:hover:text-white'

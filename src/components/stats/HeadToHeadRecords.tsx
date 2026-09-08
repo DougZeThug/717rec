@@ -267,7 +267,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                               role="button"
                               tabIndex={0}
                               aria-label={`View team details for ${record.opponent_name}`}
-                              className="flex items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 -m-1 transition-colors"
+                              className="flex min-h-6 items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 transition-colors"
                               onClick={() =>
                                 handleTeamClick(record.opponent_id, record.opponent_name)
                               }
@@ -298,7 +298,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                                 {badge && (
                                   <span
                                     className={cn(
-                                      'text-[10px] font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
+                                      'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
                                       badge.className
                                     )}
                                   >

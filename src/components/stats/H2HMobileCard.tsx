@@ -57,7 +57,7 @@ const H2HCardDetails: React.FC<H2HCardDetailsProps> = ({ record, badge }) => (
       {badge && (
         <span
           className={cn(
-            'text-[10px] font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap flex-shrink-0',
+            'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap flex-shrink-0',
             badge.className
           )}
         >
@@ -76,13 +76,13 @@ const H2HCardDetails: React.FC<H2HCardDetailsProps> = ({ record, badge }) => (
       </div>
       <Badge
         variant={record.win_pct >= 50 ? 'default' : 'secondary'}
-        className="text-[10px] px-1.5 py-0"
+        className="text-xs px-1.5 py-0"
       >
         {Number(record.win_pct).toFixed(1)}%
       </Badge>
     </div>
     {/* Row 3: Game W-L and last played */}
-    <div className="text-[11px] text-muted-foreground mt-0.5">
+    <div className="text-xs text-muted-foreground mt-0.5">
       Games: {record.game_wins}-{record.game_losses}
       {record.last_played_at && (
         <>

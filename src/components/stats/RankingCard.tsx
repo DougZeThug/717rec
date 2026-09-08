@@ -143,7 +143,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
           {/* Power score - always right-aligned */}
           <div className="flex flex-col items-end flex-shrink-0 w-16">
-            <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
+            <span className="text-xs text-muted-foreground leading-tight">Power</span>
             {/* The colour is the only cue for how good the number is, so the
                 band it falls in is spelled out for screen readers. */}
             <span
@@ -251,13 +251,13 @@ const RankingCard: React.FC<RankingCardProps> = ({
         {/* 2x2 stat grid */}
         <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Games</p>
+            <p className="text-xs text-muted-foreground leading-tight">Games</p>
             <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
               {ranking.gamesWon}-{ranking.gamesLost}
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Win %</p>
+            <p className="text-xs text-muted-foreground leading-tight">Win %</p>
             <p
               className={cn(
                 'text-sm font-bold tabular-nums leading-tight',
@@ -268,7 +268,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">SOS</p>
+            <p className="text-xs text-muted-foreground leading-tight">SOS</p>
             <p
               className={cn(
                 'text-sm font-bold tabular-nums leading-tight',
@@ -279,7 +279,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Game %</p>
+            <p className="text-xs text-muted-foreground leading-tight">Game %</p>
             <p
               className={cn(
                 'text-sm font-bold tabular-nums leading-tight',

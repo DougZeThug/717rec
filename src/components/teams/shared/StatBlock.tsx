@@ -41,7 +41,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   );
 
   const labelClasses = cn(
-    'font-inter uppercase text-[10px] sm:text-xs tracking-widest',
+    'font-inter uppercase text-xs tracking-widest',
     isWinterTheme ? 'text-[hsl(210,20%,65%)]' : 'text-gray-600 dark:text-gray-400'
   );
 

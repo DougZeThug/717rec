@@ -17,7 +17,7 @@ function UpsetRow({ upset, winter }: UpsetRowProps) {
       <div className="flex items-center gap-1.5">
         <Link
           to={`/teams/${toTeamSlug(upset.winnerName)}`}
-          className="flex items-center gap-1.5 group min-w-0"
+          className="flex min-h-6 items-center gap-1.5 group min-w-0"
         >
           <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
           <span
@@ -35,7 +35,7 @@ function UpsetRow({ upset, winter }: UpsetRowProps) {
         <span className="text-muted-foreground/60 text-xs shrink-0">def.</span>
         <Link
           to={`/teams/${toTeamSlug(upset.loserName)}`}
-          className="flex items-center gap-1.5 group min-w-0"
+          className="flex min-h-6 items-center gap-1.5 group min-w-0"
         >
           <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
           <span
@@ -76,7 +76,7 @@ function UpsetMobileContent({ upset, winter }: UpsetRowProps) {
       <div className="flex flex-col gap-1 min-w-0">
         <Link
           to={`/teams/${toTeamSlug(upset.winnerName)}`}
-          className="flex items-center gap-1.5 group min-w-0"
+          className="flex min-h-6 items-center gap-1.5 group min-w-0"
         >
           <TeamLogo imageUrl={upset.winnerLogoUrl} teamName={upset.winnerName} size="xs" />
           <span
@@ -92,7 +92,7 @@ function UpsetMobileContent({ upset, winter }: UpsetRowProps) {
         </Link>
         <Link
           to={`/teams/${toTeamSlug(upset.loserName)}`}
-          className="flex items-center gap-1.5 group min-w-0"
+          className="flex min-h-6 items-center gap-1.5 group min-w-0"
         >
           <TeamLogo imageUrl={upset.loserLogoUrl} teamName={upset.loserName} size="xs" />
           <span
@@ -111,7 +111,7 @@ function UpsetMobileContent({ upset, winter }: UpsetRowProps) {
         {upset.matchResult && (
           <span className="text-xs font-bold tabular-nums">{upset.matchResult}</span>
         )}
-        <span className="text-[9px] font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
+        <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
           +{upset.powerScoreGap.toFixed(1)} Upset
         </span>
       </div>
