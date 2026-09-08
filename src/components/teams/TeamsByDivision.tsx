@@ -22,20 +22,36 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   viewMode,
   sortMode,
 }) => {
-  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(
-    () => Object.keys(teamsByDivision).find((d) => teamsByDivision[d].length > 0) || null
+  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(null);
+  // Set once the default has been applied, and by any toggle, so a visitor who
+  // closes the opening division is never overridden.
+  const hasChosenDivision = React.useRef(false);
+
+  // Filter out empty divisions
+  const nonEmptyDivisions = useMemo(
+    () =>
+      Object.keys(teamsByDivision).filter(
+        (displayDivision) => teamsByDivision[displayDivision].length > 0
+      ),
+    [teamsByDivision]
   );
 
+  // Open the first division once the teams arrive. This used to be a lazy
+  // useState initialiser, which ran on first mount while teamsByDivision was
+  // still {} — so it settled on null and no division ever opened, leaving a
+  // phone visitor looking at three collapsed headings and no teams.
+  React.useEffect(() => {
+    if (hasChosenDivision.current || nonEmptyDivisions.length === 0) return;
+    hasChosenDivision.current = true;
+    setExpandedDivision(nonEmptyDivisions[0]);
+  }, [nonEmptyDivisions]);
+
   const toggleDivision = (displayDivision: string) => {
+    hasChosenDivision.current = true;
     setExpandedDivision((prevExpanded) =>
       prevExpanded === displayDivision ? null : displayDivision
     );
   };
-
-  // Filter out empty divisions
-  const nonEmptyDivisions = Object.keys(teamsByDivision).filter(
-    (displayDivision) => teamsByDivision[displayDivision].length > 0
-  );
 
   // Re-sort teams in each division appropriately
   const sortedTeamsByDivision = useMemo(() => {

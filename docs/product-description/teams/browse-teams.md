@@ -92,12 +92,14 @@ sort at all and is left with whatever a phone last chose, or Rank. See
 
 **By Division** draws one collapsible section per division, each headed with the
 division's name and the number of teams in it, and **only one can be open at a
-time** — opening a second closes the first. Opening a section also scrolls it to
-just below the top of the window, smoothly, which moves the page under the user.
+time** — opening a second closes the first. Opening a section scrolls it to just
+below the top of the window, smoothly, which moves the page under the user; the
+division that starts open does not, so arriving on the page never moves it.
 
-One division starts open. Which one is not chosen: it is whichever non-empty
-division happens to come first, which follows from the alphabetical order the
-teams arrive in.
+One division starts open, as soon as the teams have loaded. Which one is not
+chosen: it is whichever non-empty division happens to come first, which follows
+from the alphabetical order the teams arrive in. A visitor who closes it is not
+overruled — the page does not re-open it.
 
 Sorting applies inside each division as well as across the whole list. Rank
 sorts by power score, highest first, treating a team with no power score as
@@ -179,10 +181,11 @@ before they can edit or delete. Grouping defaults to By Division on a first
 visit.
 
 **Accessibility.** Each card's picture, name, and menu are separate links, so
-every team is reached three times by Tab. The division headers are clickable
-`div`s rather than buttons, and carry no expanded state, so a screen reader is
-not told a section opened or closed. The smooth scroll on opening a division is
-not offered as a preference.
+every team is reached three times by Tab. Each division header is a single
+button carrying the division's name and team count, its expanded state, and the
+identity of the list it opens, so it can be reached by Tab and a screen reader
+is told when a section opens or closes. The smooth scroll on opening a division
+is not offered as a preference.
 
 **Side effects the user can notice.** Three preference values are written to the
 browser on arrival even if nothing is touched. Nothing is sent to the league.
@@ -199,7 +202,8 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
 - **A division that exists but has no teams is not drawn at all**, so the set of
   headings changes as teams move between divisions.
 - **Opening a division scrolls the page.** On a short list this can scroll past
-  the heading and the preference buttons.
+  the heading and the preference buttons. The division that is open on arrival
+  is exempt, so a first load leaves the page at the top.
 - **Ranking by power score mixes divisions in All Teams mode.** There is no
   division ordering; a Recreational team can appear above a Competitive one.
 - **A team with no power score reads "N/A" on a wide grid card** but sorts as
@@ -228,8 +232,8 @@ browser on arrival even if nothing is touched. Nothing is sent to the league.
 - Not confirmed by hand: whether the scroll restoration actually lands correctly
   on a long list. It waits for the page to grow tall enough, retrying with
   increasing gaps for roughly fifteen seconds before giving up.
-- Not confirmed by hand: which division opens first in practice, and whether it
-  looks arbitrary to a user.
+- Not confirmed by hand: whether the division that opens first looks arbitrary
+  to a user.
 - Not confirmed by hand: what a very long team name does to a phone grid card,
   where names are truncated.
 - The page's own test replaces the whole list with a stub, so everything above
