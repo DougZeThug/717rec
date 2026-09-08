@@ -34,11 +34,21 @@ const routePrefetchMap: Record<string, () => Promise<unknown>> = {
   '/auth': prefetchRoutes.auth,
 };
 
+/**
+ * A prefetch is a nicety, so nothing waits on it and nothing reports it: a
+ * chunk that fails to arrive is fetched again by the real navigation, and the
+ * route error boundary owns a genuine failure. Swallowing the rejection is what
+ * keeps a dropped connection from raising an unhandled promise rejection.
+ */
+const ignorePrefetchFailure = (loading: Promise<unknown>): void => {
+  void loading.catch(() => undefined);
+};
+
 // Prefetch a route by path
 export const prefetchRoute = (path: string): void => {
   const prefetch = routePrefetchMap[path];
   if (prefetch) {
-    prefetch();
+    ignorePrefetchFailure(prefetch());
   }
 };
 
@@ -49,9 +59,9 @@ export const preloadCoreRoutes = (): void => {
   /** Import the lightweight Teams, Schedule, and History page chunks ahead of navigation. */
   const preloadLight = () => {
     // Only preload pages with minimal dependencies
-    prefetchRoutes.teams();
-    prefetchRoutes.schedule();
-    prefetchRoutes.history();
+    ignorePrefetchFailure(prefetchRoutes.teams());
+    ignorePrefetchFailure(prefetchRoutes.schedule());
+    ignorePrefetchFailure(prefetchRoutes.history());
   };
 
   // Use requestIdleCallback to not block initial render
