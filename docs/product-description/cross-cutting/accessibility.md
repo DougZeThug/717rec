@@ -49,6 +49,8 @@ drawer all trap focus, close on Escape, and restore focus afterwards.
 pages or to a team by name. It exists only on a screen 768 pixels or wider,
 because the component that listens for the key is not rendered below that; see
 [`on-a-phone.md`](on-a-phone.md). There are no other keyboard shortcuts anywhere.
+The palette is a dialog and is named "Search" for a screen reader, though nothing
+about that name is drawn on screen.
 
 **The hamburger menu is a disclosure, not a dialog.** It is a panel that expands
 under the top bar and covers nothing, so it behaves the way a disclosure should:
