@@ -17,20 +17,22 @@ import TopPerformersSection from './TopPerformersSection';
 
 const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
 
+/**
+ * Every branch names the page. Until the numbers arrive the spinner was the
+ * whole page, with no heading for a screen reader to land on.
+ */
+const LOADING_HEADING = <h1 className="sr-only">League Insights</h1>;
+
 /** Loads league insights and lays out overview cards, charts, matchups, and top performers. */
 const LeagueInsightsContainer: React.FC = () => {
   const { overview, divisionStrength, parity, topPerformers, isLoading, error, refetch } =
     useLeagueInsights();
   const { isWinterTheme } = useSeasonalTheme();
 
-  // Every branch names the page. Until the numbers arrive the spinner was the
-  // whole page, with no heading for a screen reader to land on.
-  const loadingHeading = <h1 className="sr-only">League Insights</h1>;
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[40vh] py-8">
-        {loadingHeading}
+        {LOADING_HEADING}
         <LoadingState message="Crunching the numbers..." size="lg" />
       </div>
     );
@@ -39,7 +41,7 @@ const LeagueInsightsContainer: React.FC = () => {
   if (error) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-16">
-        {loadingHeading}
+        {LOADING_HEADING}
         <ErrorDisplay
           variant="card"
           error="We could not load league insights. Please try again."
@@ -52,7 +54,7 @@ const LeagueInsightsContainer: React.FC = () => {
   if (!overview) {
     return (
       <div className="text-center py-16">
-        {loadingHeading}
+        {LOADING_HEADING}
         <Lightbulb className="mx-auto size-12 text-muted-foreground/50 mb-4" />
         <h2 className="text-xl font-semibold text-foreground mb-2">No Data Yet</h2>
         <p className="text-muted-foreground">
