@@ -123,7 +123,15 @@ step. Its six documents start at
 
 - The hamburger button is 44 by 44 pixels. Every control on the live scoring
   screen is at least 44 pixels tall. Elsewhere, control size is whatever the
-  component library gives, which is smaller.
+  component library gives, which is smaller — but no row is now under **24
+  pixels**, the accessibility floor. The rows raised to it are the home page's
+  weekly-recap team links, the teams page's Sort/View/Style row, a team page's
+  last-match and head-to-head rows, and the footer's two links, all of which
+  were 16 to 20 pixels.
+- **No label is under 12 pixels** on the home page, the standings, the teams
+  list or history. Labels there were 9 to 11 pixels, which is unreadable in a
+  bar. The schedule's weekday strip and the playoff bracket's participant names
+  are still smaller; they are tracked separately.
 - The phone's safe areas are honoured in four places: the top bar, the bottom tab
   bar, the padding under every page, and the playoffs page's own bottom bar. A
   notch or a home indicator does not sit over them.
@@ -185,8 +193,9 @@ phone shares the page, not the filter or the tab that was open.
 
 **On a phone.** This document is the definition.
 
-**Accessibility.** Touch target sizes are set deliberately only on live scoring
-and the hamburger. See [`accessibility.md`](accessibility.md).
+**Accessibility.** Touch target sizes are set deliberately on live scoring and
+the hamburger, at 44 pixels, and to a 24-pixel floor on the rows listed under
+[Touch and reach](#touch-and-reach). See [`accessibility.md`](accessibility.md).
 
 **Side effects the user can notice.** Every pageview is recorded with a coarse
 device class — iOS, Android, other mobile, or desktop — so the league can see how
@@ -238,7 +247,8 @@ much of its traffic is phones. Nothing more precise is stored. See
   opened with no connection.
 - Not confirmed by hand: whether touch targets outside live scoring meet the
   44-pixel guideline. Only live scoring, the hamburger, and the bracket admin
-  menu and its seeding drag handle set it explicitly.
+  menu and its seeding drag handle set it explicitly; the rows listed above meet
+  the lower 24-pixel floor, not 44.
 - Assumption: nothing in the product reads device orientation directly. Only the
   width is watched.
 

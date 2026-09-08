@@ -158,9 +158,10 @@ the shared layout do; see [Open questions](#open-questions-and-verification).
 
 **Accessibility.** Both dropdowns are proper comboboxes and are reachable and
 operable from the keyboard. Neither has a visible label — the placeholder "Select
-Team 1" is the only text, and it is gone once a team is chosen. The swap button
-has an icon and no spoken name. Which side is ahead is shown by colour alone,
-with nothing else marking it.
+Team 1" is the only text, and it is gone once a team is chosen — so each carries
+a spoken name, "Team 1" and "Team 2", that survives a selection. The swap button
+is icon-only and is named "Swap teams". Which side is ahead is shown by colour
+alone, with nothing else marking it.
 
 **Side effects the user can notice.** Only pageviews. Nothing is written.
 
@@ -214,8 +215,8 @@ with nothing else marking it.
   It only appears on hover on a desktop row.
 - Not confirmed by hand: what the percentile badges show for a league with very
   few teams.
-- Not confirmed by hand: whether the swap button is announced usefully by a
-  screen reader; it carries an icon and no text.
+- Not confirmed by hand: whether "Swap teams" is announced usefully in context;
+  the button carries that name and an icon, with no visible text.
 - Assumption: comparing career rather than season numbers is deliberate. The
   first block is headed "Career Statistics" and nothing offers a season view.
 

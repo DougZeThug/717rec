@@ -36,9 +36,15 @@ describe('getRouteName', () => {
     // league member can reach, so it needs no spoken name.
     const devOnly = ['/playoffs/e2e-bracket-proof'];
 
+    // These render nothing of their own: they redirect straight to /admin, so
+    // the name the announcer speaks is that of the page actually landed on.
+    const redirectOnly = ['/timeslots', '/admin/notifications'];
+
+    const skipped = [...devOnly, ...redirectOnly];
+
     const declared = [...appSource.matchAll(/path="([^"*]+)"/g)]
       .map((match) => match[1])
-      .filter((path) => !devOnly.includes(path));
+      .filter((path) => !skipped.includes(path));
 
     // Without this the test passes vacuously if the source ever reads empty,
     // which is the one way a coverage check like this quietly stops working.

@@ -56,7 +56,9 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
       {/* Team 1 Selector */}
       <div className="flex-1 w-full">
         <Select value={team1?.id || ''} onValueChange={handleTeam1Change}>
-          <SelectTrigger className="w-full h-12">
+          {/* The placeholder is the only text here, and it disappears the
+              moment a team is picked, leaving the control with no name. */}
+          <SelectTrigger className="w-full h-12" aria-label="Team 1">
             <SelectValue placeholder="Select Team 1">
               {team1 && <TeamOption team={team1} />}
             </SelectValue>
@@ -80,14 +82,15 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
         onClick={onSwap}
         disabled={!team1 && !team2}
         className="shrink-0"
+        aria-label="Swap teams"
       >
-        <ArrowLeftRight className="size-4" />
+        <ArrowLeftRight className="size-4" aria-hidden="true" />
       </Button>
 
       {/* Team 2 Selector */}
       <div className="flex-1 w-full">
         <Select value={team2?.id || ''} onValueChange={handleTeam2Change}>
-          <SelectTrigger className="w-full h-12">
+          <SelectTrigger className="w-full h-12" aria-label="Team 2">
             <SelectValue placeholder="Select Team 2">
               {team2 && <TeamOption team={team2} />}
             </SelectValue>

@@ -24,6 +24,13 @@ const AllTeamsCareerPowerScoreChart = lazy(() =>
   }))
 );
 
+/**
+ * The page has to name itself before its data arrives. Until the rankings load,
+ * the skeleton was the whole page and a screen reader landing here was told
+ * nothing about where it was.
+ */
+const LOADING_HEADING = <h1 className="sr-only">Standings</h1>;
+
 interface StatsContainerProps {
   matches: Match[];
   isLoadingMatches: boolean;
@@ -44,12 +51,20 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 
   if (hasError) {
     return (
-      <StatsErrorState teamsError={teamsError} matchesError={matchesError} onRetry={refetch} />
+      <>
+        {LOADING_HEADING}
+        <StatsErrorState teamsError={teamsError} matchesError={matchesError} onRetry={refetch} />
+      </>
     );
   }
 
   if (isLoading) {
-    return <LoadingStateContainer />;
+    return (
+      <>
+        {LOADING_HEADING}
+        <LoadingStateContainer />
+      </>
+    );
   }
 
   return (

@@ -11,7 +11,7 @@ interface TeamsHeaderProps {
 const TeamsHeader: React.FC<TeamsHeaderProps> = ({ title, description, children }) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 sm:gap-3 pb-2 sm:pb-4 border-b border-border dark:border-gray-800/70">
-      <div className="flex items-center gap-3 w-full sm:w-auto">
+      <div className="flex flex-wrap items-center gap-x-3 w-full sm:w-auto">
         <h1
           className={cn(
             'font-bebas text-2xl sm:text-3xl md:text-4xl tracking-wide uppercase',

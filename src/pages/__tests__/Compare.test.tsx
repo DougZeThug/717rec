@@ -211,7 +211,7 @@ describe('Compare', () => {
 
     renderCompare('/compare');
 
-    const [team1Trigger] = screen.getAllByRole('combobox');
+    const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
     await user.click(team1Trigger);
 
     const option = await screen.findByRole('option', { name: /Alpha Aces/ });
@@ -268,7 +268,8 @@ describe('Compare', () => {
 
       renderCompare('/compare?team1=team-a&team2=team-b');
 
-      const [team1Trigger, team2Trigger] = screen.getAllByRole('combobox');
+      const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
+      const team2Trigger = screen.getByRole('combobox', { name: 'Team 2' });
       await waitFor(() => {
         expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
       });
@@ -284,7 +285,7 @@ describe('Compare', () => {
 
       renderCompare('/compare');
 
-      const [team1Trigger] = screen.getAllByRole('combobox');
+      const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
       await user.click(team1Trigger);
       await user.click(await screen.findByRole('option', { name: /Alpha Aces/ }));
 
@@ -309,14 +310,13 @@ describe('Compare', () => {
 
     renderCompare('/compare?team1=team-a&team2=team-b');
 
-    const [team1Trigger, team2Trigger] = screen.getAllByRole('combobox');
+    const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
+    const team2Trigger = screen.getByRole('combobox', { name: 'Team 2' });
     await waitFor(() => {
       expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
     });
 
-    // The swap control is an unnamed icon button (audit X-09/Q13, not in this
-    // change), so it is located as the page's only plain button.
-    const swapButton = screen.getByRole('button');
+    const swapButton = screen.getByRole('button', { name: 'Swap teams' });
     await user.click(swapButton);
 
     await waitFor(() => {

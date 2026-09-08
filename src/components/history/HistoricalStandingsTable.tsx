@@ -51,7 +51,7 @@ const StatCell: React.FC<{
   <div className="rounded-md bg-muted/50 px-2 py-1.5 flex flex-col items-center">
     <span
       className={cn(
-        'text-[10px] leading-tight uppercase tracking-wider',
+        'text-xs leading-tight uppercase tracking-wider',
         isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
       )}
     >

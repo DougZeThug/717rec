@@ -238,7 +238,7 @@ See [`on-a-phone.md`](on-a-phone.md).
 - **A development build reports nothing**, so a bug reproduced locally is
   invisible to monitoring.
 - **The unread badge on the bell is per device.** Reading a notice on a laptop
-  leaves it unread on a phone forever.
+  leaves it unread on a phone forever. It is shown only to a signed-in member.
 
 ## Open questions and verification
 

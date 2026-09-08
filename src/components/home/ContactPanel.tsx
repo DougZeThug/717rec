@@ -18,6 +18,7 @@ import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import type { ContactRequestType } from '@/services/contact/ContactRequestService';
+import { interactive } from '@/styles/design-system';
 
 interface RequestTypeOption {
   value: ContactRequestType;
@@ -91,7 +92,7 @@ const LockableField: React.FC<LockableFieldProps> = ({
     <Label htmlFor={id} className="flex items-center gap-1.5">
       {label}
       {locked && (
-        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
           <CheckCircle2 className="size-3" /> Verified
         </span>
       )}
@@ -118,7 +119,7 @@ const PanelHeader: React.FC = () => (
     <p className="mt-2 text-xs text-muted-foreground">
       Your message is emailed to the league admins and appears in their admin inbox. Got a bug, an
       account problem, or a score dispute?{' '}
-      <a href="/contact" className="text-primary hover:underline">
+      <a href="/contact" className={interactive.link.inline}>
         Use the Contact page
       </a>{' '}
       instead.

@@ -130,7 +130,7 @@ const TeamCardStats: React.FC<{ team: Team; isWinterTheme: boolean }> = ({
             : 'bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80'
         )}
       >
-        <div className="text-[10px] text-muted-foreground uppercase">Record</div>
+        <div className="text-xs text-muted-foreground uppercase">Record</div>
         <span className="font-mono text-sm">
           {team.wins}-{team.losses}
         </span>
@@ -143,7 +143,7 @@ const TeamCardStats: React.FC<{ team: Team; isWinterTheme: boolean }> = ({
             : 'bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80'
         )}
       >
-        <div className="text-[10px] text-muted-foreground uppercase">Power</div>
+        <div className="text-xs text-muted-foreground uppercase">Power</div>
         <span className="font-mono text-sm">
           {typeof team.power_score === 'number' ? team.power_score.toFixed(1) : 'N/A'}
         </span>

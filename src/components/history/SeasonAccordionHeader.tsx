@@ -14,6 +14,56 @@ interface SeasonAccordionHeaderProps {
   isWinterTheme: boolean;
 }
 
+/** "Active" while a season is running, a trophy once it has champions. */
+const SeasonStatusPill: React.FC<{
+  season: Season;
+  hasChampions: boolean;
+  isWinterTheme: boolean;
+}> = ({ season, hasChampions, isWinterTheme }) => {
+  if (season.is_active) {
+    return (
+      <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium shrink-0">
+        Active
+      </span>
+    );
+  }
+
+  if (!hasChampions) return null;
+
+  return (
+    <span
+      className={cn(
+        'px-2 py-0.5 rounded-full text-xs font-medium shrink-0',
+        isWinterTheme
+          ? 'bg-amber-500/20 text-amber-300'
+          : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+      )}
+    >
+      🏆 Completed
+    </span>
+  );
+};
+
+/** "26 teams · 104 matches", with whichever halves there are. */
+const SeasonCounts: React.FC<{
+  teamCount: number;
+  matchCount: number;
+  isWinterTheme: boolean;
+}> = ({ teamCount, matchCount, isWinterTheme }) => {
+  const parts = [
+    teamCount > 0 ? `${teamCount} teams` : null,
+    matchCount > 0 ? `${matchCount} matches` : null,
+  ].filter(Boolean);
+
+  if (parts.length === 0) return null;
+
+  return (
+    <p className={cn('text-xs mt-0.5', isWinterTheme ? 'text-white/50' : 'text-muted-foreground')}>
+      {parts.join(' · ')}
+    </p>
+  );
+};
+
 const SeasonAccordionHeader: React.FC<SeasonAccordionHeaderProps> = ({
   season,
   dateRange,
@@ -50,34 +100,10 @@ const SeasonAccordionHeader: React.FC<SeasonAccordionHeaderProps> = ({
           </span>
         )}
       </div>
-      {season.is_active ? (
-        <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-xs font-medium shrink-0">
-          Active
-        </span>
-      ) : hasChampions ? (
-        <span
-          className={cn(
-            'px-2 py-0.5 rounded-full text-xs font-medium shrink-0',
-            isWinterTheme
-              ? 'bg-amber-500/20 text-amber-300'
-              : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
-          )}
-        >
-          🏆 Completed
-        </span>
-      ) : null}
+      <SeasonStatusPill season={season} hasChampions={hasChampions} isWinterTheme={isWinterTheme} />
     </div>
-    {!isLoading && (teamCount > 0 || matchCount > 0) && (
-      <p
-        className={cn(
-          'text-[11px] mt-0.5',
-          isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-        )}
-      >
-        {teamCount > 0 && `${teamCount} teams`}
-        {teamCount > 0 && matchCount > 0 && ' · '}
-        {matchCount > 0 && `${matchCount} matches`}
-      </p>
+    {!isLoading && (
+      <SeasonCounts teamCount={teamCount} matchCount={matchCount} isWinterTheme={isWinterTheme} />
     )}
   </div>
 );

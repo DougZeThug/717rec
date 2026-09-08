@@ -23,6 +23,7 @@ const Navbar: React.FC = React.memo(() => {
         Skip to main content
       </a>
       <nav
+        aria-label="Primary"
         className={cn(
           'text-white shadow-lg sticky top-0 z-50 safe-area-top relative',
           // Default theme

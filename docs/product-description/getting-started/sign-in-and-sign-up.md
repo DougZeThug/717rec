@@ -27,8 +27,9 @@ redirecting silently.
 
 The page is reached from the Login button in the top bar, from the "Login / Sign
 Up" prompt on match comments and the message board, from the admin dashboard when
-a visitor asks for it, and by being redirected off `/admin`, `/admin/notifications`,
-`/timeslots`, `/setup-profile`, or `/oauth/consent`. See
+a visitor asks for it, and by being redirected off `/admin` (including the two
+paths that redirect into it, `/admin/notifications` and `/timeslots`),
+`/setup-profile`, or `/oauth/consent`. See
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md).
 
 ## The simple case

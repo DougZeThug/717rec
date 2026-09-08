@@ -27,6 +27,11 @@ interface EmptyStateProps {
   secondaryLink?: SecondaryLink;
   className?: string;
   iconClassName?: string;
+  /**
+   * Heading level for the title. Defaults to h3. Pass "h1" where the empty
+   * state is the whole page, as it is on the page-not-found screen.
+   */
+  titleAs?: 'h1' | 'h2' | 'h3';
 }
 
 const EMPTY_ACTIONS: EmptyStateAction[] = [];
@@ -46,7 +51,10 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   secondaryLink,
   className,
   iconClassName,
+  titleAs = 'h3',
 }) => {
+  const TitleHeading = m[titleAs];
+
   return (
     <m.div
       initial={{ opacity: 0, y: 20 }}
@@ -77,14 +85,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({
       </m.div>
 
       {/* Title */}
-      <m.h3
+      <TitleHeading
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
         className="text-xl font-bebas tracking-wide text-foreground mb-2"
       >
         {title}
-      </m.h3>
+      </TitleHeading>
 
       {/* Description */}
       <m.p

@@ -111,7 +111,7 @@ admin screen.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | No effect on this tab. A visitor, a player, and an admin see exactly the same read-only list, with no marker for the viewer's own team. An admin has separate screens to change assignments — `/timeslots` and the admin dashboard's Timeslots tab — and neither is linked from here. | No effect. |
+| The user's role (visitor, player, admin) | No effect on this tab. A visitor, a player, and an admin see exactly the same read-only list, with no marker for the viewer's own team. An admin changes assignments in the admin dashboard's Timeslots tab, which is not linked from here. | No effect. |
 | The record's state | An assignment is either a real timeslot or BYE. BYE rows are orange, sorted last, and carry the words "Not playing this week". A back-to-back second slot and a double header's later slot exist but are never drawn. | An assignment changed by an admin arrives within a minute, because this is the one polled query on the page. |
 | The season's state (active, archived, playoffs on) | No effect. Timeslot rows carry a date and a team and **no season**, so the tab shows whatever is stored for that date regardless of which season is active. | No effect. |
 | Viewport | On a wide screen each team is a full-width row with the logo, the name, and its badges. On a narrow screen the rows become a two-column grid of small tiles, each a tap target that opens the team page. | No effect beyond re-flowing. |
@@ -138,9 +138,9 @@ could be lost beyond which cards were open.
 ## Interactions with other systems
 
 **Permissions and roles.** Reading is open to everyone. Writing is admin-only and
-happens elsewhere; `/timeslots` is one of the three guarded routes in the app and
-sends a signed-out visitor to `/auth` and a signed-in non-admin to the home page
-with an "Access Denied" toast. See
+happens elsewhere, in the admin dashboard's Timeslots section. `/admin` is
+guarded: it sends a signed-out visitor to `/auth` and a signed-in non-admin to
+the home page with an "Access Denied" toast. See
 [`cross-cutting/permissions.md`](../cross-cutting/permissions.md).
 
 **Season scoping.** None. A timeslot row has a date and a team and nothing else, so

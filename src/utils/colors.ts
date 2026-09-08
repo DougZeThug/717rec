@@ -1,7 +1,11 @@
 // Utility functions for color-coding various stats
 
 // Re-export power score utilities from centralized location
-export { formatPowerScore, getPowerScoreColor } from '@/utils/colors/powerScoreColors';
+export {
+  formatPowerScore,
+  getPowerScoreColor,
+  getPowerScoreDescription,
+} from '@/utils/colors/powerScoreColors';
 
 // Re-export division badge color from centralized location
 export { getDivisionBadgeColor } from '@/utils/colors/divisionColors';

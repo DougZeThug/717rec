@@ -38,6 +38,31 @@ They open a dialog. Focus goes into it, Escape closes it, and focus returns.
 Every dialog, dropdown, popover, and select in the app behaves this way, because
 they all come from the same component library.
 
+## Landmarks and headings
+
+**One main, and it is the skip link's target.** `App.tsx` renders a single
+`<main id="main-content">` around every route. The live-scoring page and the
+authorisation-consent page each used to open their own `<main>` inside it,
+giving those two pages two main landmarks; both are plain sections now.
+
+**Both navigation landmarks are named.** The header bar announces as "Primary"
+and the phone's bottom tab bar as "Main sections", so a screen reader can tell
+them apart in a landmark list instead of hearing "navigation" twice. A team
+page's section bar is named "Team details section navigation".
+
+**Every page has exactly one first-level heading.** Some had none: the schedule
+and the live-scoring page had no heading at all, the standings had one only on a
+wide screen, and the sign-in card, the profile setup card, the insights header
+and the page-not-found screen all started at a lower level. Where a page shows
+its title, that title is now the heading; where it does not — the schedule,
+whose date strip is the point of the page, and live scoring — the heading is
+spoken but not drawn.
+
+An automated scan blocks a merge that reintroduces any of this: it checks for
+duplicate or nested main landmarks, unnamed duplicate landmarks, and a missing
+first-level heading, on twelve public routes. Skipped heading *levels* inside a
+page are a separate, unfinished piece of work and are not in that gate.
+
 ## Keyboard
 
 **What works.** A skip link, first in tab order, jumping to the main content. A
@@ -49,6 +74,8 @@ drawer all trap focus, close on Escape, and restore focus afterwards.
 pages or to a team by name. It exists only on a screen 768 pixels or wider,
 because the component that listens for the key is not rendered below that; see
 [`on-a-phone.md`](on-a-phone.md). There are no other keyboard shortcuts anywhere.
+The palette is a dialog and is named "Search" for a screen reader, though nothing
+about that name is drawn on screen.
 
 **The hamburger menu is a disclosure, not a dialog.** It is a panel that expands
 under the top bar and covers nothing, so it behaves the way a disclosure should:
@@ -136,6 +163,18 @@ remembered in the browser.
 **A theme the league turns off is swapped for dark under the user**, silently, on
 their next visit.
 
+**Secondary text is slate-600 in the light theme.** It was slate-500, which
+measured 4.34-4.48:1 against the card and page backgrounds — under the 4.5:1
+minimum — on the standings, the schedule and the teams list. The dark and winter
+themes are unaffected; both are light text on a dark ground.
+
+**A link inside a sentence is underlined, not merely coloured.** The three
+in-text links — the home page's "Use the Contact page", the contact page's two —
+and the sign-in card's Login and Sign up controls share one style. Underlining
+them at rest is what separates them from the muted text they sit in; in the dark
+theme they also lighten, because the app's primary blue is the same value in
+both themes and sits at 3.84:1 on a near-black card.
+
 Nothing in the product responds to a high-contrast or forced-colours setting.
 
 ## The interaction, event by event
@@ -188,9 +227,9 @@ score of 0.9.
 
 Everything else is unscanned. That includes `/schedule`, a team's own page,
 `/compare`, `/insights`, `/message-board`, `/my-team`, `/contact`, `/auth`,
-`/setup-profile`, `/oauth/consent`, `/admin/notifications`, `/timeslots`, the
-page-not-found screen, and **the whole of live scoring** — the one surface used
-under pressure, on a phone, by two people at once.
+`/setup-profile`, `/oauth/consent`, the page-not-found screen, and **the whole
+of live scoring** — the one surface used under pressure, on a phone, by two
+people at once.
 
 ## Interactions with other systems
 
@@ -276,11 +315,15 @@ or sent anywhere.
   replaced toast is re-announced or silently swapped.
 - Not confirmed by hand: whether the route announcement is heard in practice, or
   arrives too early because the page is still loading.
-- Not confirmed by hand: whether every page has exactly one first-level heading.
-  The page shell was corrected once to avoid two main landmarks; headings were
-  not audited.
-- Not confirmed by hand: contrast ratios in any of the three themes. The
-  Lighthouse floor of 0.9 leaves room for contrast failures on unscanned pages.
+- Resolved: **pages without a first-level heading, and two pages with a second
+  main landmark.** Both are covered by the scan described under
+  [Landmarks and headings](#landmarks-and-headings).
+- Not confirmed by hand: whether heading *levels* run in order within a page.
+  Several pages skip from h1 to h3; the scan deliberately leaves that rule out
+  until they are fixed.
+- Not confirmed by hand: contrast ratios beyond the muted text and the in-text
+  links corrected above. The Lighthouse floor of 0.9 leaves room for contrast
+  failures on unscanned pages.
 - Not confirmed by hand: whether the reduced-motion behaviour is right in every
   case by eye. The snowfall and the page transitions were checked; the ~155 files
   that animate were not each looked at.

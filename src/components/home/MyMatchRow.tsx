@@ -104,15 +104,12 @@ const ScoreColumn = ({
     )}
     {/* Win/Loss Badge */}
     {didWin && (
-      <Badge
-        variant="default"
-        className="text-[10px] px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600"
-      >
+      <Badge variant="default" className="text-xs px-1.5 py-0 h-5 bg-green-600 hover:bg-green-600">
         Win
       </Badge>
     )}
     {didLose && (
-      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5">
+      <Badge variant="destructive" className="text-xs px-1.5 py-0 h-5">
         Loss
       </Badge>
     )}

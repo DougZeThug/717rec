@@ -100,8 +100,7 @@ describe('TeamDetailsStickyNav', () => {
   });
 
   it('hides again when the page scrolls back to the top', () => {
-    // Queried by name: the component puts role="navigation" on the wrapper and
-    // also renders a <nav> inside it, so a bare role query matches both.
+    // Queried by name for readability; there is one navigation landmark here.
     const bar = { name: 'Team details section navigation' };
     render(<TeamDetailsStickyNav />);
     scrollPageTo(250);

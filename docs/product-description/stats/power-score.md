@@ -29,10 +29,18 @@ number has gone up. A week later they beat a Recreational team who have not won 
 game all season, and the number goes **down** — because the average of everything
 they have done now includes a very easy win.
 
-Nothing on the screen explains that. There is one sentence under the standings
-heading, "Based on opponent-weighted win percentage, strength of schedule (SOS),
-and game-level performance", and no further explanation anywhere in the app
-except the help page's summary of the live weights.
+The standings explain that where the number is shown. Beside the "Current
+Standings" heading is an **info button, "What is Power Score?"**, on every
+width. It opens a panel carrying the same three-part description the help page
+gives — the live weights for match win rate, strength of schedule and game win
+rate — followed by a legend naming the eight colour bands, so the colour of a
+number is not the only thing saying whether it is good. On a wide screen there
+is also one sentence under the heading, "Based on opponent-weighted win
+percentage, strength of schedule (SOS), and game-level performance".
+
+The panel and the help page render the **same component**, so the wording and
+the weights cannot drift apart. Each power score also carries its band as text —
+on hover, and for a screen reader — so "62.4" reads as "62.4 — Very Good".
 
 ## The interaction, event by event
 

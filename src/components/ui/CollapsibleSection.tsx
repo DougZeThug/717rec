@@ -82,6 +82,11 @@ interface SectionHeaderProps {
   description?: string;
   className?: string;
   action?: ReactNode;
+  /**
+   * Heading level. Defaults to h2. Pass "h1" where this header is the page's
+   * own title, so the page has an h1 rather than starting at h2.
+   */
+  headingLevel?: 'h1' | 'h2' | 'h3';
 }
 
 export const SectionHeader = ({
@@ -91,6 +96,7 @@ export const SectionHeader = ({
   description,
   className,
   action,
+  headingLevel: Heading = 'h2',
 }: SectionHeaderProps) => {
   const { shouldApplyWinterBase } = useSeasonalTheme();
 
@@ -99,9 +105,9 @@ export const SectionHeader = ({
       <div>
         <div className="flex items-center gap-2">
           {Icon && <Icon className={cn('size-4 md:size-5', iconColor)} />}
-          <h2 className="text-2xl md:text-3xl font-bebas uppercase tracking-wide bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter">
+          <Heading className="text-2xl md:text-3xl font-bebas uppercase tracking-wide bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter">
             {title}
-          </h2>
+          </Heading>
           {shouldApplyWinterBase && WINTER_ICONS_ENABLED && (
             <SnowflakeSparkle size={14} className="text-cyan-400/70 ml-1 animate-pulse" />
           )}

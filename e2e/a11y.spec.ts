@@ -2,7 +2,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, test } from '@playwright/test';
 
 // Blocking accessibility scan against key public and weekly admin routes.
-// Runs as a required gate (.github/workflows/a11y.yml).
+// Runs as a required gate: the "Run axe a11y scan" step in
+// .github/workflows/ci.yml.
 //
 // To silence a specific axe rule, add its id to DISABLED_RULES with a
 // comment explaining why. Prefer fixing the underlying issue over disabling.
@@ -96,6 +97,39 @@ for (const route of routes) {
   test(`a11y: ${route} has no detectable WCAG 2 A/AA violations`, async ({ page }) => {
     await page.goto(route, { waitUntil: 'networkidle' });
     await assertNoA11yViolations(page);
+  });
+}
+
+// Landmarks and headings are how a screen-reader user works out where they are.
+// axe files these rules under "best-practice" rather than WCAG 2 A/AA, so the
+// scan above never ran them; they are asked for by name instead of widening the
+// tag set, which would drag in every other best-practice rule at once.
+const STRUCTURE_RULES = [
+  'landmark-unique',
+  'landmark-no-duplicate-main',
+  'landmark-main-is-top-level',
+  'landmark-one-main',
+  'page-has-heading-one',
+  // Not 'heading-order': skipped levels inside a page are their own piece of
+  // work (audit HC-03), and mixing them in here would hide landmark and h1
+  // regressions behind an unrelated failure.
+];
+
+const structureRoutes = [
+  ...routes,
+  '/schedule',
+  '/compare',
+  '/insights',
+  '/auth',
+  '/setup-profile',
+  '/no-such-page',
+];
+
+for (const route of structureRoutes) {
+  test(`a11y: ${route} has one main, one h1, and named landmarks`, async ({ page }) => {
+    await page.goto(route, { waitUntil: 'networkidle' });
+    const results = await new AxeBuilder({ page }).withRules(STRUCTURE_RULES).analyze();
+    expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
   });
 }
 

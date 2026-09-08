@@ -103,9 +103,9 @@ one is in [`admin/handle-requests.md`](../admin/handle-requests.md).
 
 This is where the product is least consistent, and it is worth stating plainly.
 
-**Only three routes are guarded at the route level:** `/admin`,
-`/admin/notifications`, and `/timeslots`. Reaching any of them runs the same
-check:
+**Only three paths are guarded at the route level:** `/admin`, and the two
+that redirect into it, `/admin/notifications` and `/timeslots`. Reaching any of
+them runs the same check:
 
 1. While authentication or the profile is still loading, the page shows a spinner
    and the words "Checking access...".

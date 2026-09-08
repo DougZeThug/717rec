@@ -4,6 +4,7 @@ import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
 
+import { LegacyAdminRedirect } from '@/components/admin/LegacyAdminRedirect';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -39,9 +40,7 @@ const Schedule = lazy(() => import('./pages/Schedule'));
 const Stats = lazy(() => import('./pages/Stats'));
 const Playoffs = lazy(() => import('./pages/Playoffs'));
 const History = lazy(() => import('./pages/History'));
-const Timeslots = lazy(() => import('./pages/Timeslots'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const NotificationsAdmin = lazy(() => import('./pages/admin/NotificationsAdmin'));
 const Auth = lazy(() => import('./pages/Auth'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
@@ -193,13 +192,14 @@ const AppContent = () => {
                     </RouteErrorBoundary>
                   }
                 />
+                {/* Both of these were pages nothing linked to, duplicating
+                    sections that live inside the admin console. The guard stays
+                    so a signed-out visitor still lands on /auth, not /admin. */}
                 <Route
                   path="/timeslots"
                   element={
                     <ProtectedAdminRoute>
-                      <RouteErrorBoundary routeName="Timeslots">
-                        <Timeslots />
-                      </RouteErrorBoundary>
+                      <LegacyAdminRedirect section="timeslots" />
                     </ProtectedAdminRoute>
                   }
                 />
@@ -217,9 +217,7 @@ const AppContent = () => {
                   path="/admin/notifications"
                   element={
                     <ProtectedAdminRoute>
-                      <RouteErrorBoundary routeName="Admin Notifications">
-                        <NotificationsAdmin />
-                      </RouteErrorBoundary>
+                      <LegacyAdminRedirect section="notifications" />
                     </ProtectedAdminRoute>
                   }
                 />

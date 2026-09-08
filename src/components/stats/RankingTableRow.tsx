@@ -1,16 +1,12 @@
-import { Scale } from 'lucide-react';
 import React from 'react';
-import { Link } from 'react-router';
 
-import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
-import { TeamLogo } from '@/components/shared/TeamLogo';
-import { Button } from '@/components/ui/button';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { Ranking } from '@/types';
-import { formatPowerScore, getPowerScoreColor, getSosColor } from '@/utils/colors';
-import { toTeamSlug } from '@/utils/teamSlug';
+import { formatRankDisplay, getRankAriaLabel } from '@/utils/standings/rankLabels';
 
+import { RankingStatCells } from './RankingStatCells';
+import { RankingTeamCell } from './RankingTeamCell';
 import RankTrendIndicator from './RankTrendIndicator';
 
 interface RankingTableRowProps {
@@ -37,42 +33,8 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   const { isWinterTheme } = useSeasonalTheme();
   const globalRank = index + 1;
   const divisionRank = ranking.divisionRank;
-  const winPercentage = ranking.winPercentage * 100;
-  const gameWinPercentage = (ranking.gameWinPercentage || 0) * 100;
-
   // Text color based on theme
   const textColor = isWinterTheme ? 'text-card-foreground' : 'text-slate-900 dark:text-white';
-
-  // Format rank display based on view mode
-  const formatRankDisplay = () => {
-    if (showDivision) {
-      // Unified view: show only global rank
-      return `#${globalRank}`;
-    } else {
-      // Division view: show division rank with global rank in parentheses
-      if (divisionRank) {
-        return `#${divisionRank} (${globalRank})`;
-      }
-      return `#${globalRank}`;
-    }
-  };
-
-  // Generate accessible rank description for screen readers
-  const getRankAriaLabel = () => {
-    let label = showDivision
-      ? `Rank ${globalRank}`
-      : divisionRank
-        ? `Division rank ${divisionRank}, overall rank ${globalRank}`
-        : `Rank ${globalRank}`;
-
-    if (ranking.rankChange && ranking.rankChange !== 0) {
-      const direction = ranking.rankChange > 0 ? 'up' : 'down';
-      const amount = Math.abs(ranking.rankChange);
-      label += `, moved ${direction} ${amount} position${amount > 1 ? 's' : ''}`;
-    }
-
-    return label;
-  };
 
   // NOTE: the row is intentionally NOT a focusable `role="button"`. It contains
   // interactive links (team details, compare), and nesting focusable controls
@@ -95,142 +57,34 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         <div className="flex items-center gap-2">
           <span
             className={cn('font-medium min-w-[3rem] whitespace-nowrap', textColor)}
-            aria-label={getRankAriaLabel()}
+            aria-label={getRankAriaLabel(
+              globalRank,
+              divisionRank,
+              showDivision,
+              ranking.rankChange
+            )}
           >
-            {formatRankDisplay()}
+            {formatRankDisplay(globalRank, divisionRank, showDivision)}
           </span>
           {showRankChange && <RankTrendIndicator rankChange={ranking.rankChange} />}
         </div>
       </td>
       <td className="py-3 px-3">
-        <div className="flex items-center justify-between gap-2">
-          <Link
-            to={`/teams/${toTeamSlug(ranking.teamName)}`}
-            state={{ from: '/stats' }}
-            aria-label={`View ${ranking.teamName} team details`}
-            className={cn(
-              'flex items-center gap-3 transition-colors group flex-1 min-w-0',
-              isWinterTheme
-                ? 'hover:text-frost-primary'
-                : 'hover:text-blue-600 dark:hover:text-blue-400'
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <TeamLogo
-              imageUrl={ranking.imageUrl || ranking.logoUrl}
-              teamName={ranking.teamName}
-              size="sm"
-              className="flex-shrink-0"
-            />
-            <div className="flex flex-col min-w-0">
-              <span
-                className={cn(
-                  'font-medium truncate',
-                  textColor,
-                  isWinterTheme
-                    ? 'group-hover:text-frost-primary'
-                    : 'group-hover:text-blue-600 dark:group-hover:text-blue-400'
-                )}
-              >
-                {ranking.teamName}
-              </span>
-              <TeamBadgeCollection
-                teamId={ranking.teamId}
-                size="sm"
-                maxDisplay={4}
-                className="mt-1"
-                prefetchedBadges={prefetchedBadges}
-              />
-            </div>
-          </Link>
-          {/* Render the compare control as a single anchor styled like a ghost
-              icon button. `asChild` avoids an invalid <a><button> nesting and
-              ensures the accessible name (aria-label) lands on the rendered
-              element — an icon-only <button> would otherwise have no name and
-              fail axe `button-name` (WCAG 4.1.2). */}
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className={cn(
-              'size-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity',
-              isWinterTheme ? 'hover:bg-frost-primary/10' : ''
-            )}
-          >
-            <Link
-              to={`/compare?team1=${ranking.teamId}`}
-              aria-label={`Compare ${ranking.teamName} with another team`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Scale className="size-4" aria-hidden="true" />
-            </Link>
-          </Button>
-        </div>
+        <RankingTeamCell
+          teamId={ranking.teamId}
+          teamName={ranking.teamName}
+          imageUrl={ranking.imageUrl}
+          logoUrl={ranking.logoUrl}
+          textColor={textColor}
+          prefetchedBadges={prefetchedBadges}
+        />
       </td>
-      {showDivision && (
-        <td className={cn('py-3 px-3 text-center', textColor)}>{ranking.divisionName || 'N/A'}</td>
-      )}
-      <td className="py-3 px-3 text-center">
-        <span className={cn('font-medium tabular-nums', getPowerScoreColor(ranking.powerScore))}>
-          {formatPowerScore(ranking.powerScore)}
-        </span>
-      </td>
-      <td className={cn('py-3 px-3 text-center font-medium tabular-nums', textColor)}>
-        {ranking.wins}-{ranking.losses}
-      </td>
-      <td className="py-3 px-3 text-center">
-        <span
-          className={cn(
-            'font-medium tabular-nums',
-            winPercentage >= 75
-              ? 'text-green-600 dark:text-green-500'
-              : winPercentage >= 60
-                ? 'text-blue-600 dark:text-blue-500'
-                : winPercentage >= 40
-                  ? 'text-orange-500 dark:text-orange-400'
-                  : 'text-red-600 dark:text-red-500'
-          )}
-        >
-          {winPercentage.toFixed(1)}%
-        </span>
-      </td>
-      <td
-        className={cn(
-          'py-3 px-3 text-center font-medium tabular-nums hidden md:table-cell',
-          textColor
-        )}
-      >
-        {ranking.gamesWon || 0}-{ranking.gamesLost || 0}
-      </td>
-      <td className="py-3 px-3 text-center hidden lg:table-cell">
-        <span
-          className={cn(
-            'font-medium tabular-nums',
-            gameWinPercentage >= 75
-              ? 'text-green-600 dark:text-green-500'
-              : gameWinPercentage >= 60
-                ? 'text-blue-600 dark:text-blue-500'
-                : gameWinPercentage >= 40
-                  ? 'text-orange-500 dark:text-orange-400'
-                  : 'text-red-600 dark:text-red-500'
-          )}
-        >
-          {gameWinPercentage.toFixed(1)}%
-        </span>
-      </td>
-      <td className="py-3 px-3 text-center">
-        <span className={cn('font-medium tabular-nums', getSosColor(ranking.sos || 0))}>
-          {(ranking.sos || 0).toFixed(3)}
-        </span>
-      </td>
-      <td className={cn('py-3 px-3 text-center font-medium tabular-nums', textColor)}>
-        {ranking.streak || 'N/A'}
-      </td>
-      <td className="py-3 px-3 text-center">
-        {showRankChange && ranking.rankChange !== undefined && ranking.rankChange !== 0 && (
-          <RankTrendIndicator rankChange={ranking.rankChange} />
-        )}
-      </td>
+      <RankingStatCells
+        ranking={ranking}
+        textColor={textColor}
+        showDivision={showDivision}
+        showRankChange={showRankChange}
+      />
     </tr>
   );
 };

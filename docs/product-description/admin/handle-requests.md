@@ -8,7 +8,7 @@ different places. This document owns all three.
 | Queue | Where | What arrives | Outcomes |
 | --- | --- | --- | --- |
 | **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **marks the request refused** |
-| **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*), and again at the top of `/admin/notifications` | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
+| **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*) | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
 | **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message sent from the `/contact` page, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
 | **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Deny, each with optional notes |
 
@@ -155,7 +155,7 @@ admin.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role | Admin only, all three, by the guard on `/admin` and `/admin/notifications`. See [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin leaves every button on screen; the writes then fail with each queue's generic message. |
+| The user's role | Admin only, all three, by the guard on `/admin`. See [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin leaves every button on screen; the writes then fail with each queue's generic message. |
 | The record's state | A membership is either waiting or gone from the list. A contact request is new or resolved, and a resolved one is dimmed and offers Reopen instead of Mark resolved. A team request that is not Pending shows no buttons at all. | A contact request resolved in another tab updates here **by itself** — it is the only queue with a live connection. |
 | The season's state | Memberships and contact requests are not season-scoped and survive a season changeover. Team requests carry a season but the list does not filter by it, so old seasons' requests stay in the list forever. | No effect. |
 | Viewport | All three are card lists that stack on a narrow screen. The team-request approve and deny buttons move under the header on a phone. | No effect. |
@@ -214,8 +214,8 @@ as well as landing in the Contact Inbox. Membership and team requests send no
 alert at all.
 
 **URL state.** None. Not the queue, not the filter, not the selected request.
-`/admin/notifications` is a real route but it is the notifications page that
-happens to carry a second copy of the contact inbox; see
+`/admin/notifications` used to carry a second copy of the contact inbox; that
+page is gone and the address redirects to `/admin`. See
 [`send-notifications.md`](send-notifications.md).
 
 **On a phone.** All three stack. The team-request grid of dates and timeslots

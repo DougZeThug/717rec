@@ -65,7 +65,7 @@ const LiveScoring: React.FC = () => {
   }
 
   return (
-    <main className="container mx-auto max-w-lg px-4 pb-24 pt-4">
+    <section className="container mx-auto max-w-lg px-4 pb-24 pt-4">
       <Link
         to="/schedule"
         className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -74,7 +74,7 @@ const LiveScoring: React.FC = () => {
         Schedule
       </Link>
       {content}
-    </main>
+    </section>
   );
 };
 

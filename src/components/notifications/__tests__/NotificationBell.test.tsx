@@ -8,6 +8,7 @@ import type { NotificationRow } from '@/services/notifications/NotificationServi
 const mockUseUnreadNotifications = vi.hoisted(() => vi.fn());
 const mockUseAdminAccess = vi.hoisted(() => vi.fn());
 const mockUseNotificationsRealtime = vi.hoisted(() => vi.fn());
+const mockUseAuth = vi.hoisted(() => vi.fn());
 const mockMarkAllSeen = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/notifications/useNotificationsRealtime', () => ({
@@ -18,6 +19,9 @@ vi.mock('@/hooks/notifications/useUnreadNotifications', () => ({
 }));
 vi.mock('@/hooks/useAdminAccess', () => ({
   useAdminAccess: () => mockUseAdminAccess(),
+}));
+vi.mock('@/contexts/auth-context', () => ({
+  useAuth: () => mockUseAuth(),
 }));
 
 // Stub children so their own data hooks are never pulled into this render.
@@ -59,6 +63,7 @@ describe('NotificationBell', () => {
     vi.clearAllMocks();
     setUnread();
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false });
+    mockUseAuth.mockReturnValue({ user: { id: 'member-1' } });
   });
 
   it('subscribes to realtime updates on render', () => {
@@ -80,6 +85,19 @@ describe('NotificationBell', () => {
 
     expect(screen.getByRole('button', { name: 'Notifications (12 unread)' })).toBeInTheDocument();
     expect(screen.getByText('9+')).toBeInTheDocument();
+  });
+
+  it('shows no unread badge to a signed-out visitor', () => {
+    // Their last-seen time starts at the epoch, so every public announcement
+    // counts as unread and the bell used to show a red number to someone who
+    // could not have read anything.
+    mockUseAuth.mockReturnValue({ user: null });
+    setUnread({ unreadCount: 4 });
+
+    render(<NotificationBell />);
+
+    expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    expect(screen.queryByText('4')).not.toBeInTheDocument();
   });
 
   it('renders a plain aria-label and no badge when there are no unread items', () => {

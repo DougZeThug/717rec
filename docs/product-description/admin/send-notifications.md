@@ -3,9 +3,9 @@
 ## Summary
 
 An admin can post a short announcement that everyone who opens the app sees in
-the bell in the header. This document owns the page that writes them,
-`/admin/notifications`, and the quick form in the bell that does the same job in
-fewer clicks.
+the bell in the header. This document owns the screen that writes them, the
+**Notifications** section of the admin dashboard, and the quick form in the bell
+that does the same job in fewer clicks.
 
 Two things to be clear about before anything else.
 
@@ -17,27 +17,29 @@ is told anything until they next open the app and press the bell.
 signed out included. There is no audience, no targeting, and no way to send a
 message to one team or one person.
 
-The page also carries a second copy of the **contact inbox**, at the top, above
-the notification form. That is not a notification feature and is owned by
-[`handle-requests.md`](handle-requests.md).
+The contact inbox is **not** part of this: it is its own **Contact Inbox**
+entry in the dashboard menu, and is owned by
+[`handle-requests.md`](handle-requests.md). The deleted `/admin/notifications`
+page used to show a second copy of it above the notification form.
 
 ## The simple case
 
-The admin opens the **Notifications** entry in the admin dashboard's sidebar, or
-types `/admin/notifications` into the address bar. The page is one of only three
-guarded routes; a non-admin is bounced with an "Access Denied" toast. See
+The admin opens the **Notifications** entry in the admin dashboard's sidebar.
+`/admin` is guarded; a non-admin is bounced with an "Access Denied" toast. See
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
 
-Under the contact inbox is a card headed **New notification** with two fields:
-"Title (max 120 chars)" and "Message (max 1000 chars)", and a **Post
-notification** button that is dead until both have something in them.
+The section is a card headed **New notification** with two fields: "Title (max
+120 chars)" and "Message (max 1000 chars)", and a **Post notification** button
+that is dead until both have something in them.
 
 They type "Week 6 moved" and "Monday's matches are pushed to Tuesday, same
 times." and press Post. A toast says "Notification posted", the fields clear,
 and the message appears at the top of **Recent notifications** below with its
 date and time.
 
-Every open copy of the app now shows a red badge on the bell.
+Every open copy of the app now shows the notification in the bell. **Signed-in**
+members also get a red badge on it; a signed-out visitor gets the notification
+without the badge.
 
 ## The interaction, event by event
 
@@ -129,9 +131,13 @@ of any page in the app with one click.
 
 ### The bell
 
-The bell is in the header for everyone. It shows a red badge counting
-notifications posted since this browser last opened the popover, capped at
-**9+**. Its label reads "Notifications (3 unread)".
+The bell is in the header for everyone. **For a signed-in member** it shows a
+red badge counting notifications posted since this browser last opened the
+popover, capped at **9+**, and its label reads "Notifications (3 unread)". A
+signed-out visitor gets the bell and the notifications but no badge, and a plain
+"Notifications" label — their last-seen time starts at the beginning of time, so
+every announcement would otherwise count as unread and the bell would show a red
+number to someone who could not have read anything.
 
 Opening it marks everything seen and shows, for an admin only, a compact **Post
 notification** form — title, message, and a Post button — which writes exactly
@@ -142,7 +148,8 @@ entry with a dot that is filled while it is unread.
 > **Technical note:** "unread" is one timestamp stored in the browser, not on
 > the account. It is per browser and per device, it is shared between tabs of
 > the same browser as soon as one of them opens the popover, and it is lost when
-> site data is cleared. Signing in or out has no effect on it.
+> site data is cleared. Signing in or out does not change the timestamp; it only
+> decides whether the count built from it is shown.
 
 ## Modifiers
 
@@ -201,14 +208,15 @@ deleting toasts only on failure. The word "notification" means two different
 things on this page — the toast the admin sees and the announcement they are
 writing — and neither has anything to do with the other.
 
-**URL state.** `/admin/notifications` carries nothing. The address itself is
-linked from nowhere — the admin dashboard's **Notifications** sidebar entry
-renders the same management inside `/admin` rather than navigating here.
+**URL state.** None. No section of the admin dashboard has a URL of its own, so
+a notification cannot be linked to. The old `/admin/notifications` address
+redirects to `/admin` and opens this section.
 
 **On a phone.** The page is already one narrow column and needs no change. The
 bell popover is fixed at 360 pixels, which is wider than the narrowest phones.
 
-**Accessibility.** The bell's label states the unread count. The unread dot is
+**Accessibility.** The bell's label states the unread count for a signed-in
+member, and is plain "Notifications" for everyone else. The unread dot is
 marked decorative, so a screen reader hears no difference between a read and an
 unread notification. The delete buttons are labelled "Delete notification" with
 nothing to say which one. Nothing announces the list changing under the reader
@@ -221,10 +229,11 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 ## Edge cases
 
 - Resolved: **the page had no link**, so `/admin/notifications` had to be typed.
-  Fixed — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
-  The notification management now also appears as a **Notifications** item in the
-  admin dashboard's sidebar. The page itself is unchanged and still shows the
-  contact inbox above it.
+  First fixed by adding a **Notifications** item to the admin dashboard's
+  sidebar — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface)
+  — and finished by deleting the page, since the sidebar section did the same
+  job. The address now redirects to `/admin`. The contact inbox the page showed
+  above the form is its own **Contact Inbox** sidebar entry.
 - **Delete has no confirmation**, on the page and in the bell popover, and
   cannot be undone.
 - **A successful delete says nothing at all**, so a mis-click looks like the row
@@ -280,8 +289,8 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 - Not confirmed by hand: whether a notification posted while another admin has
   the bell open appears there without a reload.
 - Not confirmed by hand: how the 360-pixel popover behaves on a 320-pixel phone.
-- Not confirmed by hand: what a visitor with no account sees in the bell, and
-  whether the unread badge is meaningful for someone who never signs in.
+- Not confirmed by hand: what a visitor with no account sees inside the bell
+  popover; the badge itself is now shown only to a signed-in member.
 - Not confirmed by hand: whether the database refuses a non-admin's post, given
   the browser only hides the form.
 - Assumption: nothing anywhere else in the product creates a notification. Every

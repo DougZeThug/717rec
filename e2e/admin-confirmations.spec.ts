@@ -73,7 +73,7 @@ test.describe('destructive admin actions ask first', () => {
   });
 
   test('deleting a notification', async ({ page }) => {
-    await seedAdminAuth(page);
+    await seedAdminAuth(page, { tab: 'notifications' });
     await page.route(/\/rest\/v1\/admin_notifications/, (route) =>
       route.fulfill(
         jsonResponse([
@@ -90,7 +90,7 @@ test.describe('destructive admin actions ask first', () => {
     );
 
     const writes = recordWrites(page, /admin_notifications/);
-    await page.goto('/admin/notifications');
+    await page.goto('/admin');
 
     await page.getByRole('button', { name: 'Delete notification' }).click();
     const dialog = page.getByRole('alertdialog');

@@ -15,7 +15,10 @@ import { MoverRowProps } from './weeklyRecapTypes';
 function MoverRow({ trend, direction, winter }: MoverRowProps) {
   const isUp = direction === 'up';
   return (
-    <Link to={`/teams/${toTeamSlug(trend.teamName)}`} className="flex items-center gap-2 group">
+    <Link
+      to={`/teams/${toTeamSlug(trend.teamName)}`}
+      className="flex min-h-6 items-center gap-2 group"
+    >
       <TeamLogo imageUrl={trend.logoUrl} teamName={trend.teamName} size="xs" />
       <div className="flex-1 min-w-0">
         <span

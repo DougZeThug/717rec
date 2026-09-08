@@ -6,7 +6,7 @@
 pages: a menu down the left and one section in the middle. Choosing a menu entry
 swaps the middle, and the address bar never changes.
 
-The dashboard holds **twenty sections**. They range from a whole scheduling tool
+The dashboard holds **twenty-one sections**. They range from a whole scheduling tool
 to a single switch. Nothing groups them by importance on a wide screen, and there
 is no landing view — arriving takes the admin straight into whichever section
 they last used.
@@ -22,12 +22,12 @@ and "Checking access...", then the heading **Admin Dashboard** fades in over
 about a third of a second.
 
 On the left is a bordered panel headed "Admin Menu", with a search box and
-twenty entries. The centre holds one section — **Timeslots** the first time, and
+twenty-one entries. The centre holds one section — **Timeslots** the first time, and
 after that whichever section was open last.
 
 The admin types "sea" into the search box. The list shrinks to **Season**. They
 press it, the middle of the page shows Season Management, and the left column
-goes back to twenty entries as soon as the search box is cleared.
+goes back to twenty-one entries as soon as the search box is cleared.
 
 They navigate to `/schedule` to check something, come back to `/admin`, and
 Season Management is still the section on screen.
@@ -111,7 +111,7 @@ section — Auto Schedule — holds a generated schedule that is not yet saved. 
 
 The shell never submits anything. Every write on `/admin` belongs to a section.
 
-## The twenty sections
+## The twenty-one sections
 
 In menu order, with the document that owns each:
 
@@ -127,6 +127,7 @@ In menu order, with the document that owns each:
 | Participation | Who has said they are playing — [`manage-seasons.md`](manage-seasons.md) |
 | Requests | Team requests, with the count badge — [`handle-requests.md`](handle-requests.md) |
 | Contact Inbox | Messages from the contact form — [`handle-requests.md`](handle-requests.md) |
+| Notifications | Post and edit the announcements in the bell — [`send-notifications.md`](send-notifications.md) |
 | Teams | Teams, divisions per team, logos, member approvals — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md) |
 | Divisions | Division names, display grouping, weights — [`manage-teams-and-divisions.md`](manage-teams-and-divisions.md) |
 | Pending | Score reports awaiting review, and matches completed with no winner — [`../scores/pending-scores.md`](../scores/pending-scores.md) |
@@ -138,7 +139,7 @@ In menu order, with the document that owns each:
 | Power Score Review | Revert or re-apply the power score change — [`../stats/power-score.md`](../stats/power-score.md) |
 | Power Score Sandbox | Try new power score weights before applying — [`../stats/power-score.md`](../stats/power-score.md) |
 
-`/admin/notifications` is a guarded route of its own and is **not in this menu**.
+`/admin/notifications` no longer has a page; it redirects here and opens the console's own Notifications section. `/timeslots` does the same for Timeslots.
 See [`send-notifications.md`](send-notifications.md).
 
 ## Modifiers
@@ -170,7 +171,7 @@ See [`send-notifications.md`](send-notifications.md).
 
 **Permissions and roles.** The whole page is behind the admin gate described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
-There are no partial admins, so every admin sees all twenty sections.
+There are no partial admins, so every admin sees all twenty-one sections.
 
 **Season scoping.** The shell is not season-scoped. Most sections silently mean
 the active season; see [`../foundations/seasons.md`](../foundations/seasons.md).

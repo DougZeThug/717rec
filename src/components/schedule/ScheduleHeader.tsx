@@ -32,6 +32,9 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
 
   return (
     <header className="mt-1 mb-1 font-inter">
+      {/* The page carries no title of its own — the date strip is the point of
+          it — so the heading is spoken rather than drawn. */}
+      <h1 className="sr-only">Schedule</h1>
       <div className="flex flex-col gap-2">
         {/* Date Strip - swipeable horizontal date picker */}
         {onDateSelect && (

@@ -73,7 +73,7 @@ An unapproved membership grants nothing and is not a column.
 | Open the notification bell and read notifications | yes | yes | yes | yes |
 | Post a notification | no | no | no | yes |
 | Change themes, hero cards, and help content | no | no | no | yes |
-| Reach `/admin`, `/admin/notifications`, `/timeslots` | no | no | no | yes |
+| Reach `/admin`, and the two paths that redirect into it, `/admin/notifications` and `/timeslots` | no | no | no | yes |
 
 Three rows in that table are worth more than a cell.
 
@@ -110,8 +110,9 @@ simply not drawn. A user cannot tell "not allowed" from "does not exist". The
 season's confirmation controls behave the same way for a different reason; see
 [`foundations/seasons.md`](../foundations/seasons.md).
 
-**2. The route turns the user away.** Only `/admin`, `/admin/notifications`, and
-`/timeslots` do this, and only these produce words: a spinner, then either a
+**2. The route turns the user away.** Only `/admin`, and the two paths that
+redirect into it, `/admin/notifications` and `/timeslots`, do this, and only
+these produce words: a spinner, then either a
 redirect to `/auth` (signed out) or the "Access Denied" toast and a redirect home
 (signed in, not admin). See
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).

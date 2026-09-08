@@ -49,7 +49,7 @@ const ProfileSetup = () => {
         // After max retries, redirect to auth
         authLog('Max retries reached, redirecting to auth');
         const next = searchParams.get('next');
-        const returnTo = '/setup-profile' + (next ? `?next=${encodeURIComponent(next)}` : '');
+        const returnTo = `/setup-profile${next ? `?next=${encodeURIComponent(next)}` : ''}`;
         navigate('/auth', { state: { returnTo } });
       }
     }
@@ -73,7 +73,7 @@ const ProfileSetup = () => {
   // Show loading state while waiting for auth to initialize
   if (isLoading || (!authInitialized && retries < maxRetries)) {
     return (
-      <PageLayout compact={true}>
+      <PageLayout compact>
         <PageTransition>
           <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
             <ProfileLoadingState />
@@ -89,12 +89,14 @@ const ProfileSetup = () => {
   }
 
   return (
-    <PageLayout compact={true}>
+    <PageLayout compact>
       <PageTransition>
         <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle className="text-2xl">Set Up Your Profile</CardTitle>
+              <CardTitle as="h1" className="text-2xl">
+                Set Up Your Profile
+              </CardTitle>
               <CardDescription>Enter your name and details</CardDescription>
             </CardHeader>
             <CardContent>

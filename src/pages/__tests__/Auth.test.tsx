@@ -59,7 +59,13 @@ vi.mock('@/components/auth/AuthContainer', () => ({
 }));
 
 vi.mock('@/components/auth/SocialAuthButtons', () => ({
-  default: () => <div data-testid="social-auth-buttons" />,
+  default: ({ onGoogleSignIn }: { onGoogleSignIn: () => void }) => (
+    <div data-testid="social-auth-buttons">
+      <button type="button" onClick={onGoogleSignIn}>
+        Continue with Google
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock('@/components/auth/AuthForm', () => ({
@@ -250,5 +256,34 @@ describe('Auth page', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Login' }));
     expect(setActiveTab).toHaveBeenCalledWith('login');
+  });
+  // The Google button must carry the page the user came from, or a sign-in
+  // started from a deep link drops them back on the home page.
+  it('passes the sanitized return path to the Google sign-in handler', () => {
+    const handleGoogleSignIn = vi.fn();
+    mockUseAuthForm.mockReturnValue({ ...defaultAuthFormValues, handleGoogleSignIn });
+
+    render(
+      <MemoryRouter initialEntries={['/auth?next=/teams']}>
+        <Auth />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue with Google' }));
+    expect(handleGoogleSignIn).toHaveBeenCalledWith('/teams');
+  });
+
+  it('falls back to the home page when no return path is given', () => {
+    const handleGoogleSignIn = vi.fn();
+    mockUseAuthForm.mockReturnValue({ ...defaultAuthFormValues, handleGoogleSignIn });
+
+    render(
+      <MemoryRouter>
+        <Auth />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue with Google' }));
+    expect(handleGoogleSignIn).toHaveBeenCalledWith('/');
   });
 });

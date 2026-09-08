@@ -42,7 +42,18 @@ vi.mock('@/hooks/useToast', () => ({
   toast: (payload: unknown) => mockToast(payload),
 }));
 
-import NotificationsAdmin from '../NotificationsAdmin';
+import ContactInboxSection from '@/components/admin/contact/ContactInboxSection';
+
+import NotificationsTab from '../NotificationsTab';
+
+// These cases moved here from the deleted /admin/notifications page, which was
+// only a heading over these two sections. They render the same pair.
+const NotificationsSection = () => (
+  <>
+    <ContactInboxSection />
+    <NotificationsTab />
+  </>
+);
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -63,7 +74,7 @@ const makeNotification = (id: string, title: string, body: string): Notification
   expires_at: null,
 });
 
-describe('NotificationsAdmin', () => {
+describe('Notifications admin section', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ user: { id: 'admin-1' } });
@@ -89,7 +100,7 @@ describe('NotificationsAdmin', () => {
       data: [makeNotification('n-1', 'Rain delay', 'Week 3 is postponed')],
       isLoading: false,
     });
-    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    render(<NotificationsSection />, { wrapper: createWrapper() });
 
     await user.click(await screen.findByRole('button', { name: /delete notification/i }));
 
@@ -106,7 +117,7 @@ describe('NotificationsAdmin', () => {
       data: [makeNotification('n-1', 'Rain delay', 'Week 3 is postponed')],
       isLoading: false,
     });
-    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    render(<NotificationsSection />, { wrapper: createWrapper() });
 
     await user.click(await screen.findByRole('button', { name: /delete notification/i }));
     await user.click(screen.getByRole('button', { name: /cancel/i }));
@@ -119,7 +130,7 @@ describe('NotificationsAdmin', () => {
     const notification = makeNotification('n-1', 'Old title', 'Old body');
     const Wrapper = createWrapper();
 
-    const { rerender } = render(<NotificationsAdmin />, { wrapper: Wrapper });
+    const { rerender } = render(<NotificationsSection />, { wrapper: Wrapper });
 
     // Wait for the empty state to render, then simulate a notification arriving.
     await waitFor(() => expect(screen.getByText('No notifications yet.')).toBeInTheDocument());
@@ -128,7 +139,7 @@ describe('NotificationsAdmin', () => {
       data: [notification],
       isLoading: false,
     });
-    rerender(<NotificationsAdmin />);
+    rerender(<NotificationsSection />);
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 
@@ -141,7 +152,7 @@ describe('NotificationsAdmin', () => {
       data: [],
       isLoading: false,
     });
-    rerender(<NotificationsAdmin />);
+    rerender(<NotificationsSection />);
 
     await waitFor(() => expect(screen.getByText('New notification')).toBeInTheDocument());
 
@@ -169,7 +180,7 @@ describe('NotificationsAdmin', () => {
       body: 'New body',
     });
 
-    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    render(<NotificationsSection />, { wrapper: createWrapper() });
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 
@@ -197,7 +208,7 @@ describe('NotificationsAdmin', () => {
     mockUseNotificationsQuery.mockReturnValue({ data: [], isLoading: false });
     mockCreateMutateAsync.mockResolvedValueOnce(makeNotification('n-2', 'Rain', 'Off'));
 
-    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    render(<NotificationsSection />, { wrapper: createWrapper() });
 
     await user.type(screen.getByLabelText('Title'), 'Rain');
     await user.type(screen.getByLabelText('Message'), 'Off');
@@ -222,7 +233,7 @@ describe('NotificationsAdmin', () => {
     // Never settles, so the guard is the only thing that can stop the second call.
     mockCreateMutateAsync.mockImplementation(() => new Promise(() => undefined));
 
-    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    render(<NotificationsSection />, { wrapper: createWrapper() });
 
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Rain' } });
     fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Off' } });
@@ -246,7 +257,7 @@ describe('NotificationsAdmin', () => {
 
     mockUseNotificationsQuery.mockReturnValue({ data: [notification], isLoading: false });
 
-    render(<NotificationsAdmin />, { wrapper: createWrapper() });
+    render(<NotificationsSection />, { wrapper: createWrapper() });
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
 

@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/auth-context';
 import { useAuthForm } from '@/hooks/useAuthForm';
 import { useNativePlatform } from '@/hooks/useNativePlatform';
+import { cn } from '@/lib/utils';
+import { interactive } from '@/styles/design-system';
 import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
 import { authLog } from '@/utils/logger';
 
@@ -28,7 +30,7 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
         Don&apos;t have an account?{' '}
         <button
           type="button"
-          className="text-primary hover:underline py-2 px-1 -my-2"
+          className={cn(interactive.link.inline, 'py-2 px-1 -my-2')}
           onClick={() => setActiveTab('signup')}
         >
           Sign up
@@ -39,7 +41,7 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
         Already have an account?{' '}
         <button
           type="button"
-          className="text-primary hover:underline py-2 px-1 -my-2"
+          className={cn(interactive.link.inline, 'py-2 px-1 -my-2')}
           onClick={() => setActiveTab('login')}
         >
           Login
@@ -81,7 +83,7 @@ const Auth = () => {
   }, [user, navigate, returnTo, authInitialized]);
 
   return (
-    <PageLayout compact={true}>
+    <PageLayout compact>
       <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
         <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">

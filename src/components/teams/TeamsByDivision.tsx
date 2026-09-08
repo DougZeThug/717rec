@@ -22,20 +22,41 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
   viewMode,
   sortMode,
 }) => {
-  const [expandedDivision, setExpandedDivision] = React.useState<string | null>(
-    () => Object.keys(teamsByDivision).find((d) => teamsByDivision[d].length > 0) || null
-  );
-
-  const toggleDivision = (displayDivision: string) => {
-    setExpandedDivision((prevExpanded) =>
-      prevExpanded === displayDivision ? null : displayDivision
-    );
-  };
+  // `byVisitor` travels with the selection so the section knows whether to
+  // scroll itself into view: opening one by default must leave the page alone.
+  const [expanded, setExpanded] = React.useState<{
+    division: string;
+    byVisitor: boolean;
+  } | null>(null);
+  // Set once the default has been applied, and by any toggle, so a visitor who
+  // closes the opening division is never overridden.
+  const hasChosenDivision = React.useRef(false);
 
   // Filter out empty divisions
-  const nonEmptyDivisions = Object.keys(teamsByDivision).filter(
-    (displayDivision) => teamsByDivision[displayDivision].length > 0
+  const nonEmptyDivisions = useMemo(
+    () =>
+      Object.keys(teamsByDivision).filter(
+        (displayDivision) => teamsByDivision[displayDivision].length > 0
+      ),
+    [teamsByDivision]
   );
+
+  // Open the first division once the teams arrive. This used to be a lazy
+  // useState initialiser, which ran on first mount while teamsByDivision was
+  // still {} — so it settled on null and no division ever opened, leaving a
+  // phone visitor looking at three collapsed headings and no teams.
+  React.useEffect(() => {
+    if (hasChosenDivision.current || nonEmptyDivisions.length === 0) return;
+    hasChosenDivision.current = true;
+    setExpanded({ division: nonEmptyDivisions[0], byVisitor: false });
+  }, [nonEmptyDivisions]);
+
+  const toggleDivision = (displayDivision: string) => {
+    hasChosenDivision.current = true;
+    setExpanded((prev) =>
+      prev?.division === displayDivision ? null : { division: displayDivision, byVisitor: true }
+    );
+  };
 
   // Re-sort teams in each division appropriately
   const sortedTeamsByDivision = useMemo(() => {
@@ -69,7 +90,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
       {nonEmptyDivisions.map((displayDivision) => {
         const divisionTeams = sortedTeamsByDivision[displayDivision];
         const divisionName = getDivisionName(displayDivision);
-        const isExpanded = expandedDivision === displayDivision;
+        const isExpanded = expanded?.division === displayDivision;
 
         return (
           <TeamsDivisionSection
@@ -77,6 +98,7 @@ export const TeamsByDivision: React.FC<TeamsByDivisionProps> = ({
             divisionName={divisionName}
             teams={divisionTeams}
             isExpanded={isExpanded}
+            scrollIntoViewOnExpand={isExpanded && expanded.byVisitor}
             onToggleExpand={() => toggleDivision(displayDivision)}
             onEditTeam={onEditTeam}
             onDeleteTeam={onDeleteTeam}

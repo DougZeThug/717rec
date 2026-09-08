@@ -28,7 +28,9 @@ const AuthContainer: React.FC<AuthContainerProps> = ({
       <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl">{title}</CardTitle>
+            <CardTitle as="h1" className="text-2xl">
+              {title}
+            </CardTitle>
             <CardDescription>{description}</CardDescription>
           </CardHeader>
           <CardContent>{children}</CardContent>

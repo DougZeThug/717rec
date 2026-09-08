@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useAuth } from '@/contexts/auth-context';
 import { useNotificationsRealtime } from '@/hooks/notifications/useNotificationsRealtime';
 import { useUnreadNotifications } from '@/hooks/notifications/useUnreadNotifications';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
@@ -20,6 +21,7 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
   const { notifications, unreadCount, lastSeenAt, isLoading, markAllSeen } =
     useUnreadNotifications();
   const { isAdminAccessGranted } = useAdminAccess();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
   const handleOpenChange = (next: boolean) => {
@@ -27,6 +29,10 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
     if (next && unreadCount > 0) markAllSeen();
   };
 
+  // Announcements are public, but "unread" is not a thing a signed-out visitor
+  // can have: their last-seen time starts at the epoch, so every announcement
+  // counted, and the bell showed a red number that read as a broken state.
+  const showUnreadBadge = Boolean(user) && unreadCount > 0;
   const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
 
   return (
@@ -37,10 +43,10 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           variant="ghost"
           size="icon"
           className={cn('relative', className)}
-          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
+          aria-label={`Notifications${showUnreadBadge ? ` (${unreadCount} unread)` : ''}`}
         >
           <Bell className="size-5" />
-          {unreadCount > 0 && (
+          {showUnreadBadge && (
             <span
               className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-destructive-foreground"
               aria-hidden
