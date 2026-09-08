@@ -273,6 +273,31 @@ describe('in-game state', () => {
     );
   });
 
+  // The rotation is only a default. A pair can swap who throws, and the
+  // scorer's pick must survive picking the other side's thrower too.
+  it('submits the throwers the scorer picks instead of the rotated pair', async () => {
+    renderView(inGameBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Doug' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Sara' }));
+
+    expect(screen.getByRole('button', { name: 'Doug' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Sara' })).toHaveAttribute('aria-pressed', 'true');
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '7'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    expect(mockSubmitRound.mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({
+        roundNumber: 2,
+        team1ThrowerId: 'p1',
+        team2ThrowerId: 'p3',
+      })
+    );
+  });
+
   it('keeps the tapped scores when the save fails so the scorer can retry', async () => {
     mockSubmitRound.mutateAsync.mockRejectedValue(new Error('Failed to fetch'));
     renderView(inGameBundle());
@@ -552,6 +577,42 @@ describe('between games', () => {
       team1PlayerIds: ['p1', 'p2'],
       team2PlayerIds: ['p3', 'p4'],
     });
+  });
+
+  it.each([
+    ['Doug & Bill', 'Ken'],
+    ['Sara & Anne', 'Rae'],
+  ])('adds a player to the %s roster from the setup dialog', async (selectorLabel, newName) => {
+    const bundle = makeBundle({
+      games: [game({ status: 'completed', winner_team_id: 'team-1' })],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    await userEvent.click(screen.getByRole('button', { name: selectorLabel }));
+    await userEvent.type(await screen.findByLabelText('New player name'), newName);
+    await userEvent.click(screen.getByRole('button', { name: 'Add player' }));
+
+    expect(mockAddPlayer.mutate).toHaveBeenCalledWith(newName);
+  });
+
+  // Three games played with no side on two wins means the stored scores are
+  // wrong. Show the rounds and point at the fix instead of a blank panel.
+  it('explains the match looks inconsistent when no next game is possible', () => {
+    const bundle = makeBundle({
+      games: [
+        game({ status: 'completed', winner_team_id: 'team-1' }),
+        game({ id: 'game-2', game_number: 2, status: 'completed', winner_team_id: 'team-2' }),
+        game({ id: 'game-3', game_number: 3, status: 'completed', winner_team_id: null }),
+      ],
+      rounds: [round()],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    expect(screen.getByText(/games in this match look inconsistent/i)).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: /round history/i })).toBeInTheDocument();
+    expect(screen.queryByText(/setup$/)).not.toBeInTheDocument();
   });
 });
 

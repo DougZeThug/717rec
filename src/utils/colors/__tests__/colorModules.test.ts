@@ -20,6 +20,7 @@ import {
   getPowerScoreDescription,
   getPowerScoreRingColor,
 } from '../powerScoreColors';
+import { getStandingsPercentageColor } from '../standingsColors';
 import { getSweepRateColor } from '../sweepRateColors';
 import { getTeamColor } from '../teamColors';
 import { getTrendArrow, getTrendColor } from '../trendColors';
@@ -206,6 +207,23 @@ describe('color modules table-driven coverage', () => {
   ])('win% buckets for $input', ({ input, winColor, winBg }) => {
     expect(getWinPercentageColor(input)).toBe(winColor);
     expect(getWinPercentageBackgroundColor(input)).toBe(winBg);
+  });
+
+  // The standings run on a 0-100 scale and break at 40, where
+  // getWinPercentageColor runs on 0-1 and breaks at 45. Pinning both boundaries
+  // is what stops the two drifting back together.
+  it.each([
+    { input: 100, expected: 'text-green-600 dark:text-green-500' },
+    { input: 75, expected: 'text-green-600 dark:text-green-500' },
+    { input: 74.9, expected: 'text-blue-600 dark:text-blue-500' },
+    { input: 60, expected: 'text-blue-600 dark:text-blue-500' },
+    { input: 59.9, expected: 'text-orange-500 dark:text-orange-400' },
+    { input: 45, expected: 'text-orange-500 dark:text-orange-400' },
+    { input: 40, expected: 'text-orange-500 dark:text-orange-400' },
+    { input: 39.9, expected: 'text-red-600 dark:text-red-500' },
+    { input: 0, expected: 'text-red-600 dark:text-red-500' },
+  ])('standings percentage buckets for $input', ({ input, expected }) => {
+    expect(getStandingsPercentageColor(input)).toBe(expected);
   });
 
   it.each([

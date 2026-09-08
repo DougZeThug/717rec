@@ -8,6 +8,7 @@ import type { Team } from '@/types';
 
 type SectionProps = {
   divisionName: string;
+  teams: Team[];
   isExpanded: boolean;
   scrollIntoViewOnExpand: boolean;
   onToggleExpand: () => void;
@@ -16,6 +17,7 @@ type SectionProps = {
 vi.mock('@/components/teams/TeamsDivisionSection', () => ({
   TeamsDivisionSection: ({
     divisionName,
+    teams,
     isExpanded,
     scrollIntoViewOnExpand,
     onToggleExpand,
@@ -25,6 +27,7 @@ vi.mock('@/components/teams/TeamsDivisionSection', () => ({
       data-testid={divisionName}
       data-expanded={isExpanded}
       data-scroll={scrollIntoViewOnExpand}
+      data-teams={teams.map((t) => t.name).join(',')}
       onClick={onToggleExpand}
     >
       {divisionName}
@@ -41,7 +44,10 @@ const populated: Record<string, Team[]> = {
 
 const getDivisionName = (displayDivision: string | undefined) => `${displayDivision}`;
 
-const renderByDivision = (teamsByDivision: Record<string, Team[]>) => (
+const renderByDivision = (
+  teamsByDivision: Record<string, Team[]>,
+  sortMode: 'rank' | 'alpha' = 'rank'
+) => (
   <TeamsByDivision
     teamsByDivision={teamsByDivision}
     getDivisionName={getDivisionName}
@@ -49,7 +55,7 @@ const renderByDivision = (teamsByDivision: Record<string, Team[]>) => (
     onDeleteTeam={vi.fn()}
     isLoading={false}
     viewMode="grid"
-    sortMode="rank"
+    sortMode={sortMode}
   />
 );
 
@@ -97,6 +103,30 @@ describe('TeamsByDivision', () => {
     await userEvent.click(screen.getByTestId('Intermediate'));
 
     expect(screen.getByTestId('Intermediate')).toHaveAttribute('data-scroll', 'true');
+  });
+
+  it('sorts a division by name when the visitor asks for A-Z', () => {
+    const named = (id: string, name: string, power: number) =>
+      ({ id, name, power_score: power }) as unknown as Team;
+    const teams = {
+      Competitive: [named('c', 'Cobras', 90), named('a', 'Aces', 10), named('b', 'Bandits', 50)],
+    };
+
+    render(renderByDivision(teams, 'alpha'));
+
+    expect(screen.getByTestId('Competitive')).toHaveAttribute('data-teams', 'Aces,Bandits,Cobras');
+  });
+
+  it('sorts a division by power score by default', () => {
+    const named = (id: string, name: string, power: number) =>
+      ({ id, name, power_score: power }) as unknown as Team;
+    const teams = {
+      Competitive: [named('a', 'Aces', 10), named('c', 'Cobras', 90), named('b', 'Bandits', 50)],
+    };
+
+    render(renderByDivision(teams));
+
+    expect(screen.getByTestId('Competitive')).toHaveAttribute('data-teams', 'Cobras,Bandits,Aces');
   });
 
   it('opens one division at a time', async () => {
