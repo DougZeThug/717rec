@@ -331,11 +331,53 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
     expect(result.current.generatedMatches ?? []).toHaveLength(0);
 
     await act(async () => {
-      await result.current.handleSaveSchedule();
+      await result.current.handleSaveGeneratedSchedule();
     });
 
     expect(mockSaveMatches).toHaveBeenCalledTimes(1);
     const [savedMatches] = mockSaveMatches.mock.calls[0];
     expect(savedMatches).toHaveLength(2);
+  });
+
+  // Generating new pairings does not clear an applied draft, so saving the
+  // applied set from the Matches tab would silently write the older schedule.
+  it('saves the pairings on screen, not an older applied draft', async () => {
+    vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
+    mockGenerateMatchPairings.mockResolvedValue({
+      pairings: GENERATED_PAIRINGS,
+      unmatchedTeamIds: [],
+    } satisfies PairingResult);
+    mockSaveMatches.mockResolvedValue(true);
+
+    const { result } = renderHook(() => useAutoSchedule(), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.handleLoadTeams();
+    });
+    await act(async () => {
+      await result.current.handleGenerateClick();
+    });
+    // Apply once, leaving a draft in state.
+    act(() => {
+      result.current.handleApplySchedule();
+    });
+    expect(result.current.generatedMatches).toHaveLength(2);
+
+    // Regenerate with a different pairing set; the applied draft is untouched.
+    mockGenerateMatchPairings.mockResolvedValue({
+      pairings: { [BLOCK]: [GENERATED_PAIRINGS[BLOCK][0]] },
+      unmatchedTeamIds: [],
+    } satisfies PairingResult);
+    await act(async () => {
+      await result.current.handleGenerateClick();
+    });
+
+    await act(async () => {
+      await result.current.handleSaveGeneratedSchedule();
+    });
+
+    // One match, from the regenerated pairings — not the two-match stale draft.
+    const [savedMatches] = mockSaveMatches.mock.calls[0];
+    expect(savedMatches).toHaveLength(1);
   });
 });

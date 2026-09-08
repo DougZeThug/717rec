@@ -170,19 +170,47 @@ describe('MatchesTab', () => {
   // UX audit A-06: in preview mode the only footer action was "Export to Match
   // Form", so the admin had to find the Export tab to write anything.
   it('offers Save in preview mode, not only in edit mode', async () => {
-    const onSaveSchedule = vi.fn().mockResolvedValue(true);
-    render(<MatchesTab {...baseProps} isEditMode={false} onSaveSchedule={onSaveSchedule} />);
+    const onSaveGeneratedSchedule = vi.fn().mockResolvedValue(true);
+    render(
+      <MatchesTab
+        {...baseProps}
+        isEditMode={false}
+        onSaveGeneratedSchedule={onSaveGeneratedSchedule}
+      />
+    );
 
     const save = screen.getByRole('button', { name: /save schedule to database/i });
     expect(save).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /export to match form/i })).toBeInTheDocument();
 
     await userEvent.click(save);
-    expect(onSaveSchedule).toHaveBeenCalledTimes(1);
+    expect(onSaveGeneratedSchedule).toHaveBeenCalledTimes(1);
+  });
+
+  // It must save what this tab is previewing. The applied-set save would write
+  // an older draft, because generating new pairings does not clear one.
+  it('saves through the pairings-aware handler, not the applied-set one', async () => {
+    const onSaveSchedule = vi.fn().mockResolvedValue(true);
+    const onSaveGeneratedSchedule = vi.fn().mockResolvedValue(true);
+    render(
+      <MatchesTab
+        {...baseProps}
+        isEditMode={false}
+        onSaveSchedule={onSaveSchedule}
+        onSaveGeneratedSchedule={onSaveGeneratedSchedule}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /save schedule to database/i }));
+
+    expect(onSaveGeneratedSchedule).toHaveBeenCalledTimes(1);
+    expect(onSaveSchedule).not.toHaveBeenCalled();
   });
 
   it('shows the save in progress and refuses a second press in preview mode', () => {
-    render(<MatchesTab {...baseProps} isEditMode={false} isSaving />);
+    render(
+      <MatchesTab {...baseProps} isEditMode={false} isSaving onSaveGeneratedSchedule={vi.fn()} />
+    );
 
     expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled();
   });

@@ -11,6 +11,20 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useTeamComparison } from '@/hooks/useTeamComparison';
 import { Team } from '@/types';
 
+/**
+ * Resolve one side's incoming id against the loaded teams, returning the team
+ * to select or null when nothing needs to change (no id, same team already
+ * chosen, or an id that matches no visible team).
+ */
+const resolveTeamFromParam = (
+  teams: Team[],
+  paramId: string | null,
+  current: Team | null
+): Team | null => {
+  if (!paramId || paramId === current?.id) return null;
+  return teams.find((team) => team.id === paramId) ?? null;
+};
+
 /** Team comparison page: pick two teams (synced to the URL) and view their stats head-to-head. */
 const Compare: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,18 +52,12 @@ const Compare: React.FC = () => {
     // URL sync would stay blocked forever.
     hasAppliedUrlParams.current = true;
 
-    const team1Id = searchParams.get('team1');
-    const team2Id = searchParams.get('team2');
+    const incoming1 = resolveTeamFromParam(teams, searchParams.get('team1'), team1);
+    const incoming2 = resolveTeamFromParam(teams, searchParams.get('team2'), team2);
 
-    if (team1Id && team1Id !== team1?.id) {
-      const found = teams.find((t) => t.id === team1Id);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-      if (found) setTeam1(found);
-    }
-    if (team2Id && team2Id !== team2?.id) {
-      const found = teams.find((t) => t.id === team2Id);
-      if (found) setTeam2(found);
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
+    if (incoming1) setTeam1(incoming1);
+    if (incoming2) setTeam2(incoming2);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- applying the URL to state; team1/team2 deps would fight the user's own edits
   }, [teams, searchParams]);
 
