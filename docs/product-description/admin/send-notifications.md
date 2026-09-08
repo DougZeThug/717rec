@@ -129,9 +129,13 @@ of any page in the app with one click.
 
 ### The bell
 
-The bell is in the header for everyone. It shows a red badge counting
-notifications posted since this browser last opened the popover, capped at
-**9+**. Its label reads "Notifications (3 unread)".
+The bell is in the header for everyone. **For a signed-in member** it shows a
+red badge counting notifications posted since this browser last opened the
+popover, capped at **9+**, and its label reads "Notifications (3 unread)". A
+signed-out visitor gets the bell and the notifications but no badge, and a plain
+"Notifications" label — their last-seen time starts at the beginning of time, so
+every announcement would otherwise count as unread and the bell would show a red
+number to someone who could not have read anything.
 
 Opening it marks everything seen and shows, for an admin only, a compact **Post
 notification** form — title, message, and a Post button — which writes exactly
@@ -142,7 +146,8 @@ entry with a dot that is filled while it is unread.
 > **Technical note:** "unread" is one timestamp stored in the browser, not on
 > the account. It is per browser and per device, it is shared between tabs of
 > the same browser as soon as one of them opens the popover, and it is lost when
-> site data is cleared. Signing in or out has no effect on it.
+> site data is cleared. Signing in or out does not change the timestamp; it only
+> decides whether the count built from it is shown.
 
 ## Modifiers
 
@@ -208,7 +213,8 @@ renders the same management inside `/admin` rather than navigating here.
 **On a phone.** The page is already one narrow column and needs no change. The
 bell popover is fixed at 360 pixels, which is wider than the narrowest phones.
 
-**Accessibility.** The bell's label states the unread count. The unread dot is
+**Accessibility.** The bell's label states the unread count for a signed-in
+member, and is plain "Notifications" for everyone else. The unread dot is
 marked decorative, so a screen reader hears no difference between a read and an
 unread notification. The delete buttons are labelled "Delete notification" with
 nothing to say which one. Nothing announces the list changing under the reader
@@ -280,8 +286,8 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 - Not confirmed by hand: whether a notification posted while another admin has
   the bell open appears there without a reload.
 - Not confirmed by hand: how the 360-pixel popover behaves on a 320-pixel phone.
-- Not confirmed by hand: what a visitor with no account sees in the bell, and
-  whether the unread badge is meaningful for someone who never signs in.
+- Not confirmed by hand: what a visitor with no account sees inside the bell
+  popover; the badge itself is now shown only to a signed-in member.
 - Not confirmed by hand: whether the database refuses a non-admin's post, given
   the browser only hides the form.
 - Assumption: nothing anywhere else in the product creates a notification. Every
