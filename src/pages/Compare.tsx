@@ -25,29 +25,32 @@ const Compare: React.FC = () => {
   // the very ids we are waiting to read. See UX audit CP-01.
   const hasAppliedUrlParams = useRef(false);
 
-  // Initialize from URL params
+  // Apply the incoming link once the teams are available. Runs on every
+  // searchParams change, not just the first: the address bar can be edited
+  // while the page is mounted, and a team named there should still be picked
+  // up. The ref only gates the URL *sync* below, so the incoming ids are never
+  // overwritten before they have been read.
   useEffect(() => {
-    if (hasAppliedUrlParams.current) return;
     if (!teams || teams.length === 0) return;
 
-    // Teams are loaded, so this is the one chance to honour the incoming link.
-    // Mark it applied even when an id matches nothing (a hidden or deleted
-    // team), otherwise the URL sync would stay blocked forever.
+    // Teams are loaded, so the link has now had its chance. Mark it applied
+    // even when an id matches nothing (a hidden or deleted team), otherwise the
+    // URL sync would stay blocked forever.
     hasAppliedUrlParams.current = true;
 
     const team1Id = searchParams.get('team1');
     const team2Id = searchParams.get('team2');
 
-    if (team1Id && !team1) {
+    if (team1Id && team1Id !== team1?.id) {
       const found = teams.find((t) => t.id === team1Id);
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
       if (found) setTeam1(found);
     }
-    if (team2Id && !team2) {
+    if (team2Id && team2Id !== team2?.id) {
       const found = teams.find((t) => t.id === team2Id);
       if (found) setTeam2(found);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial team load from URL params; deps would clobber user edits
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- applying the URL to state; team1/team2 deps would fight the user's own edits
   }, [teams, searchParams]);
 
   // Sync selection to URL

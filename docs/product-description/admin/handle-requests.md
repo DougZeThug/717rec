@@ -144,11 +144,12 @@ failure the toast is "Error — Failed to update request. Please try again.", an
 Approving a team request writes a status and nothing else. **The schedule does
 not move.** Whatever was asked for — a different timeslot, a bye, a cancelled
 match — an admin still has to do by hand in the schedule tools. Approving a time
-change therefore raises a second toast that says so and names the work left:
-"Request approved — Now move {team} to {time} in Timeslots. Approving does not
-move it." It carries an **Open Timeslots** button that switches to that section.
-Bye and cancellation requests get no such toast, because there is no single
-place to send the admin.
+change therefore replaces the generic toast with one that says so and names the
+work left: "Request approved — Now move {team} to {time} in Timeslots. Approving
+does not move it." It carries an **Open Timeslots** button that switches to that
+section. There is still only one toast per action. Bye and cancellation
+requests keep the generic message, because there is no single place to send the
+admin.
 
 ## Modifiers
 

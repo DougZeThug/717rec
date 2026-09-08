@@ -268,6 +268,8 @@ notification is sent to any team.
   blank form beside copy claiming the matches already existed. The Export step
   now says the matches are ready and waits for Save, and Save is also offered on
   the Matches step so the admin never has to leave it to write the schedule.
+  Saving from the Matches step converts the generated pairings itself, so it
+  works before "Export to Match Form" has been pressed.
 - **Nothing prevents saving the same schedule twice.** A slow save that the admin
   retries doubles the night's matches, and undoing that is a matter of deleting
   matches one at a time. Worth raising as a product question.

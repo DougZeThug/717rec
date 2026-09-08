@@ -99,6 +99,12 @@ vi.mock('@/hooks/teams', () => ({
 
 // Toast + logger as no-op spies.
 const mockToast = vi.fn();
+const mockSaveMatches = vi.fn();
+
+vi.mock('../useAutoScheduleSave', () => ({
+  useAutoScheduleSave: () => ({ saveMatches: mockSaveMatches, isSaving: false }),
+}));
+
 vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
@@ -298,5 +304,38 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
       expect(result.current.validation).not.toBeNull();
       expect(result.current.validation?.isValid).toBe(true);
     });
+  });
+
+  // UX audit A-06 follow-up: Save is now offered on the Matches tab in preview
+  // mode, before "Export to Match Form" has been pressed. At that point the
+  // pairings exist but generatedMatches is still null, so saveSchedule has to
+  // convert them itself rather than refusing with "No Matches to Save".
+  it('saves straight from generated pairings, without applying first', async () => {
+    vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
+    mockGenerateMatchPairings.mockResolvedValue({
+      pairings: GENERATED_PAIRINGS,
+      unmatchedTeamIds: [],
+    } satisfies PairingResult);
+    mockSaveMatches.mockResolvedValue(true);
+
+    const { result } = renderHook(() => useAutoSchedule(), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.handleLoadTeams();
+    });
+    await act(async () => {
+      await result.current.handleGenerateClick();
+    });
+
+    // Deliberately no handleApplySchedule() here.
+    expect(result.current.generatedMatches ?? []).toHaveLength(0);
+
+    await act(async () => {
+      await result.current.handleSaveSchedule();
+    });
+
+    expect(mockSaveMatches).toHaveBeenCalledTimes(1);
+    const [savedMatches] = mockSaveMatches.mock.calls[0];
+    expect(savedMatches).toHaveLength(2);
   });
 });

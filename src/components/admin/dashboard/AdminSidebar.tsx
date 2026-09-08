@@ -279,8 +279,14 @@ const AdminSidebar: React.FC = () => {
                   key={item.id}
                   onClick={() => handleTabChange(item.id)}
                   // Collapsing hides the label text, so the button would otherwise
-                  // have no accessible name at all. See UX audit A-02.
-                  aria-label={item.label}
+                  // have no accessible name at all. An explicit label also
+                  // overrides the badge inside it, so fold the count in rather
+                  // than losing it. See UX audit A-02.
+                  aria-label={
+                    showRequestsBadge
+                      ? `${item.label}, ${pendingRequestsCount} pending`
+                      : item.label
+                  }
                   title={item.label}
                   aria-current={activeTab === item.id ? 'page' : undefined}
                   className={cn(
@@ -305,7 +311,7 @@ const AdminSidebar: React.FC = () => {
                   {showRequestsBadge && (
                     <Badge
                       variant="destructive"
-                      aria-label={`${pendingRequestsCount} pending`}
+                      aria-hidden="true"
                       className={cn(
                         'text-xs px-1.5 py-0.5 min-w-[20px] h-5',
                         isCollapsed ? 'absolute -top-0.5 right-0.5' : 'ml-auto'

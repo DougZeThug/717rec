@@ -88,6 +88,7 @@ describe('RequestsTab', () => {
         id: 'req-1',
         status: 'APPROVED',
         admin_notes: 'Slot freed up',
+        suppressSuccessToast: true,
       })
     );
     await waitFor(() => expect(screen.queryByText('Approve Request')).not.toBeInTheDocument());
@@ -107,6 +108,7 @@ describe('RequestsTab', () => {
         id: 'req-1',
         status: 'DENIED',
         admin_notes: undefined,
+        suppressSuccessToast: false,
       })
     );
   });
@@ -151,6 +153,13 @@ describe('RequestsTab', () => {
 
     await waitFor(() => expect(mockToast).toHaveBeenCalled());
 
+    // The mutation's own generic toast is suppressed, so the admin gets one
+    // message rather than two near-identical ones.
+    expect(mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ suppressSuccessToast: true })
+    );
+    expect(mockToast).toHaveBeenCalledTimes(1);
+
     const [{ title, description, action }] = mockToast.mock.calls[0];
     expect(title).toBe('Request approved');
     expect(description).toContain('The Baggers');
@@ -171,6 +180,10 @@ describe('RequestsTab', () => {
     await user.click(screen.getByRole('button', { name: 'Deny' }));
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
+    // The mutation keeps its own generic toast for this path.
+    expect(mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ suppressSuccessToast: false })
+    );
     expect(mockToast).not.toHaveBeenCalled();
   });
 

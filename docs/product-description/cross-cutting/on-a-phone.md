@@ -63,11 +63,15 @@ The top bar is the one exception, and it changes later:
 | --- | --- |
 | Every navigation link is behind a hamburger button in the top bar | The links sit across the top bar |
 
-That gap matters on a tablet. Between 768 and 1023 pixels there is no bottom tab
-bar and no link row, so the hamburger is the only way to reach Login, the
-notification bell, the theme button and the Admin Panel. Before this was fixed
-those controls were pushed off the edge of the screen with no hamburger to
-recover them.
+Below 1024 the top bar carries the hamburger **and**, beside it, the login or
+user menu (which holds the Admin Panel), the notification bell and the theme
+button. Only the navigation links fold behind the hamburger.
+
+That gap matters on a tablet. Between 768 and 1023 pixels the bottom tab bar is
+already gone, so the top bar is the only complete way around. Before this was
+fixed the top bar tried to lay out all nine links at that width and pushed the
+login menu, the bell and the theme button off the edge of the screen, with the
+hamburger hidden and no way to recover them.
 
 Everything else is the same content at a different width. Wide tables sit in
 their own box and scroll sideways inside it rather than stretching the page; the

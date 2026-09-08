@@ -22,6 +22,8 @@ interface ScheduleContentProps {
   selectedDate: Date;
   groupedTimeslots: Record<string, TeamTimeslot[]>;
   timeslotsLoading: boolean;
+  /** Whether the selected day has any match at all, played or not. */
+  hasMatchesOnSelectedDate?: boolean;
   /** Most recent night that was played, for the "see last night's results" link. */
   lastPlayedDate?: Date | null;
   /** Next night with matches scheduled, if any. */
@@ -39,6 +41,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   selectedDate,
   groupedTimeslots,
   timeslotsLoading,
+  hasMatchesOnSelectedDate = false,
   lastPlayedDate,
   nextScheduledDate,
   onDateSelect,
@@ -127,10 +130,11 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   // A date with neither timeslots nor matches used to render a bare "No
   // timeslots scheduled for this date." card, which is every visit between
   // league nights. Offer a way out instead. See UX audit SC-01.
+  // hasMatchesOnSelectedDate comes from the page's all-status set of match
+  // dates. It must not be derived from filteredMatches, which holds only
+  // completed matches while the Timeslots tab is open, so an upcoming match on
+  // the selected day would look like nothing at all.
   const hasTimeslots = Object.keys(groupedTimeslots).length > 0;
-  const hasMatchesOnSelectedDate = filteredMatches.some(
-    (match) => match.date && isSameDay(parseISO(match.date), selectedDate)
-  );
   const showNothingScheduled = !timeslotsLoading && !hasTimeslots && !hasMatchesOnSelectedDate;
 
   const nothingScheduledActions = [

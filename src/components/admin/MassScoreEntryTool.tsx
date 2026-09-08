@@ -139,7 +139,14 @@ const MassScoreEntryTool: React.FC = () => {
           )}
         </CardHeader>
 
-        <CardContent className="p-3 sm:p-4 pb-24 md:pb-20">
+        <CardContent
+          // Clearance for the fixed submit bar, which is out of flow and
+          // reserves no space of its own. On a phone it sits 5rem up (clearing
+          // the tab bar) and stands about 4.25rem tall, so its top edge is
+          // ~9.25rem above the viewport; /admin adds only 1rem of page padding
+          // below this card, so the padding has to cover the rest.
+          className="p-3 sm:p-4 pb-[calc(10.5rem+env(safe-area-inset-bottom,0px))] md:pb-24"
+        >
           {bracketsError && (
             <ErrorAlert
               message="Couldn't load brackets — retry."

@@ -16,7 +16,9 @@ reads "If an account exists for {address}, a reset link is on its way. The link
 works once and lasts one hour."
 
 Following that link opens `/reset-password`. The link signs the user in as it is
-consumed, so the page shows a "Set a new password" form with a new password and
+consumed. A member who has never chosen a username is normally sent to profile
+setup the moment a session appears; that redirect is suppressed on this page, so
+the reset can always be finished. The page shows a "Set a new password" form with a new password and
 a confirmation, both checked against the same six-character rule as sign-up.
 Saving raises "Password updated" and lands on the home page, signed in. A link
 that has already been used, or has run out of time, produces no session, and the

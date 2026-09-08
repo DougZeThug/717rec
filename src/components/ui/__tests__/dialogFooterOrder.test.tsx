@@ -27,6 +27,9 @@ describe('dialog footer stacking order', () => {
     const footer = screen.getByTestId('footer');
     expect(footer.className).toContain('flex-col');
     expect(footer.className).not.toContain('flex-col-reverse');
+    // The footer owns the stacking gap now that the buttons are not reversed;
+    // AlertDialogCancel's old mt-2 sat in the wrong place under flex-col.
+    expect(footer.className).toContain('gap-2');
 
     // The primary action is the last child, so it renders lowest.
     const buttons = Array.from(footer.querySelectorAll('button'));

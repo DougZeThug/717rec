@@ -55,37 +55,20 @@ const emptyComparison = {
   isLoading: false,
 };
 
-const renderCompare = (url: string) => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
-  });
-  return render(
-    <MemoryRouter initialEntries={[url]}>
-      <QueryClientProvider client={queryClient}>
-        <Compare />
-      </QueryClientProvider>
-    </MemoryRouter>
-  );
-};
-
 /** Reports the live URL so a test can prove the incoming link was not rewritten. */
 const LocationProbe: React.FC = () => {
   const location = useLocation();
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 };
 
-/** Renders Compare with a location probe, so the URL can be asserted after mount. */
-const renderCompareWithLocation = (url: string) => {
+const compareTree = (url: string) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
       mutations: { retry: false },
     },
   });
-  return render(
+  return (
     <MemoryRouter initialEntries={[url]}>
       <QueryClientProvider client={queryClient}>
         <Compare />
@@ -94,6 +77,8 @@ const renderCompareWithLocation = (url: string) => {
     </MemoryRouter>
   );
 };
+
+const renderCompare = (url: string) => render(compareTree(url));
 
 describe('Compare', () => {
   beforeEach(() => {
@@ -254,7 +239,7 @@ describe('Compare', () => {
     it('keeps both ids in the URL while the teams are still loading', async () => {
       vi.mocked(useTeamsQuery).mockReturnValue(loadingTeams);
 
-      const { rerender } = renderCompareWithLocation('/compare?team1=team-a&team2=team-b');
+      const { rerender } = renderCompare('/compare?team1=team-a&team2=team-b');
 
       // Nothing may be written to the URL before the ids have been applied.
       expect(screen.getByTestId('location')).toHaveTextContent(
@@ -269,14 +254,7 @@ describe('Compare', () => {
         headToHead: null,
         isLoading: false,
       });
-      rerender(
-        <MemoryRouter initialEntries={['/compare?team1=team-a&team2=team-b']}>
-          <QueryClientProvider client={new QueryClient()}>
-            <Compare />
-            <LocationProbe />
-          </QueryClientProvider>
-        </MemoryRouter>
-      );
+      rerender(compareTree('/compare?team1=team-a&team2=team-b'));
 
       await waitFor(() => {
         expect(screen.getByTestId('location')).toHaveTextContent(
@@ -288,7 +266,7 @@ describe('Compare', () => {
     it('selects both teams from the URL once they load', async () => {
       vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
 
-      renderCompareWithLocation('/compare?team1=team-a&team2=team-b');
+      renderCompare('/compare?team1=team-a&team2=team-b');
 
       const [team1Trigger, team2Trigger] = screen.getAllByRole('combobox');
       await waitFor(() => {
@@ -304,7 +282,7 @@ describe('Compare', () => {
       const user = userEvent.setup();
       vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
 
-      renderCompareWithLocation('/compare');
+      renderCompare('/compare');
 
       const [team1Trigger] = screen.getAllByRole('combobox');
       await user.click(team1Trigger);

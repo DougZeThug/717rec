@@ -109,10 +109,10 @@ const createTestQueryClient = () =>
 
 const testQueryClients: QueryClient[] = [];
 
-const renderPage = () => {
+const scheduleTree = () => {
   const queryClient = createTestQueryClient();
   testQueryClients.push(queryClient);
-  return render(
+  return (
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <Schedule />
@@ -120,6 +120,8 @@ const renderPage = () => {
     </QueryClientProvider>
   );
 };
+
+const renderPage = () => render(scheduleTree());
 
 const baseScheduleData = {
   matchesData: [],
@@ -327,6 +329,28 @@ describe('Schedule page', () => {
 
       // Still the pre-data guess, Thu Sep 10.
       expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
+    it('leaves the guess alone when the read failed, and picks after a retry', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseScheduleData.mockReturnValue({
+        ...baseScheduleData,
+        matchesError: true,
+        matchesErrorMessage: 'boom',
+      });
+      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+
+      const { rerender } = renderPage();
+
+      // A failed read is not an empty season, so the guess stands...
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+
+      // ...and a successful retry still gets to choose.
+      mockUseScheduleData.mockReturnValue(baseScheduleData);
+      rerender(scheduleTree());
+
+      expect(asKey(selectedDate())).toBe('2026-09-03');
     });
 
     // SC-05: useScheduleData rebuilds its arrays on every render. An effect that

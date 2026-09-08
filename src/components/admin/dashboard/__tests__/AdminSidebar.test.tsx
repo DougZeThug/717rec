@@ -156,6 +156,24 @@ describe('AdminSidebar', () => {
 
       expect(screen.getByText('4')).toBeInTheDocument();
     });
+
+    // An explicit aria-label replaces everything inside the button, so the
+    // badge would otherwise be silent for a screen reader.
+    it('announces the pending count as part of the button name', () => {
+      mockPendingRequestsCount.mockReturnValue(4);
+      render(<AdminSidebar />);
+
+      expect(screen.getByRole('button', { name: 'Requests, 4 pending' })).toBeInTheDocument();
+      // Other items keep their plain name.
+      expect(screen.getByRole('button', { name: 'Scores' })).toBeInTheDocument();
+    });
+
+    it('drops the count from the name when there is nothing pending', () => {
+      mockPendingRequestsCount.mockReturnValue(0);
+      render(<AdminSidebar />);
+
+      expect(screen.getByRole('button', { name: 'Requests' })).toBeInTheDocument();
+    });
   });
 
   it('marks the open section as the current page', async () => {

@@ -6,6 +6,12 @@ import { fetchAuthProfile } from '@/services/profile/ProfileService';
 import { UserProfile } from '@/types/user';
 import { errorLog } from '@/utils/logger';
 
+// Routes the user must be allowed to finish before anything else. A recovery
+// link signs the user in, so a member who never picked a username would
+// otherwise be redirected to profile setup and never reach the form that sets
+// their new password. See UX audit X-04.
+const PROFILE_SETUP_EXEMPT_PATHS = ['/reset-password'];
+
 /** Wait this long before the single automatic retry of a failed profile read. */
 const PROFILE_RETRY_DELAY_MS = 800;
 
@@ -44,9 +50,14 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
   // Check if user needs profile setup (missing username)
   const checkProfileSetup = useCallback(
     (profileData: UserProfile | null) => {
-      if (!profileData || !profileData.username) {
-        navigate('/setup-profile');
+      if (profileData?.username) return;
+      if (
+        typeof window !== 'undefined' &&
+        PROFILE_SETUP_EXEMPT_PATHS.includes(window.location.pathname)
+      ) {
+        return;
       }
+      navigate('/setup-profile');
     },
     [navigate]
   );

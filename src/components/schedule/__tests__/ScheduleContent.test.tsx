@@ -131,6 +131,7 @@ describe('ScheduleContent', () => {
       const onDateSelect = vi.fn();
       const { setActiveTab } = renderContent({
         activeTab: 'timeslots',
+        hasMatchesOnSelectedDate: false,
         lastPlayedDate,
         nextScheduledDate,
         onDateSelect,
@@ -170,6 +171,19 @@ describe('ScheduleContent', () => {
 
     it('stays out of the way while the timeslots are still loading', () => {
       renderContent({ activeTab: 'timeslots', timeslotsLoading: true, lastPlayedDate });
+
+      expect(screen.queryByText(/nothing scheduled for/i)).not.toBeInTheDocument();
+    });
+
+    // The Timeslots tab receives only completed matches in filteredMatches, so
+    // deriving this locally hid an upcoming match on the selected day.
+    it('stays out of the way when the day has a match, even an unplayed one', () => {
+      renderContent({
+        activeTab: 'timeslots',
+        hasMatchesOnSelectedDate: true,
+        lastPlayedDate,
+        nextScheduledDate,
+      });
 
       expect(screen.queryByText(/nothing scheduled for/i)).not.toBeInTheDocument();
     });

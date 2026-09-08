@@ -146,8 +146,16 @@ export function useAutoSchedule() {
 
   const saveSchedule = async () => {
     // Use editable matches if in edit mode, otherwise use generated matches
-    const matchesToSave =
+    let matchesToSave =
       isEditMode && editableMatches.length > 0 ? editableMatches : generatedMatches;
+
+    // Saving straight from the Matches tab in preview mode: the pairings exist
+    // but have not been converted to matches yet, which normally only happens
+    // in applySchedule. Convert them now rather than refusing the save. See UX
+    // audit A-06.
+    if (!matchesToSave || matchesToSave.length === 0) {
+      matchesToSave = applySchedule();
+    }
 
     if (!matchesToSave || matchesToSave.length === 0) {
       toast({

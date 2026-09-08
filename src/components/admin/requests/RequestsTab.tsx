@@ -52,11 +52,16 @@ const RequestsTab: React.FC = () => {
     // team and the timeslot the admin now has to move by hand.
     const request = requests?.find((r) => r.id === selectedRequest);
 
+    // A time change is the one case with follow-up work, so it gets its own
+    // toast below and the mutation's generic one is suppressed.
+    const needsTimeslotMove = actionType === 'approve' && request?.request_type === 'TIME_CHANGE';
+
     try {
       await updateMutation.mutateAsync({
         id: selectedRequest,
         status: actionType === 'approve' ? 'APPROVED' : 'DENIED',
         admin_notes: adminNotes || undefined,
+        suppressSuccessToast: needsTimeslotMove,
       });
     } catch {
       // The mutation already raised a destructive toast. Leave the dialog open
@@ -67,7 +72,7 @@ const RequestsTab: React.FC = () => {
 
     // Approving only flips a status word: nothing in the schedule moves. Point
     // the admin at where the actual change is made. See UX audit A-05.
-    if (actionType === 'approve' && request?.request_type === 'TIME_CHANGE') {
+    if (needsTimeslotMove && request) {
       const teamName = request.teams?.name ?? 'the team';
       const slot = request.requested_timeslot;
       toast({

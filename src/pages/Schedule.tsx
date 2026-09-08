@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
@@ -44,6 +44,12 @@ const getUpcomingThursday = () => {
   return new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
 };
 
+/** 'yyyy-MM-dd' to a local-midnight Date. */
+const dayKeyToDate = (key: string): Date => {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -76,16 +82,46 @@ const Schedule = () => {
   // Every night that has a match, oldest first. Derived from matchDates, which
   // memoizes over the stable query data — upcomingMatches/completedMatches are
   // rebuilt on every render and must never feed an effect that sets state.
-  const matchNights = useMemo(
-    () =>
-      Array.from(matchDates)
-        .sort()
-        .map((key) => {
-          const [year, month, day] = key.split('-').map(Number);
-          return new Date(year, month - 1, day);
-        }),
-    [matchDates]
+  const matchNights = useMemo(() => Array.from(matchDates).sort().map(dayKeyToDate), [matchDates]);
+
+  // The nights either side of today, for the empty state's two ways out. These
+  // come from the played/scheduled splits rather than the all-status matchDates
+  // set: a night whose matches have not been played yet is not a night with
+  // results to look at. Keyed on day strings so the Dates handed downstream
+  // stay referentially stable between renders.
+  const lastPlayedKey = useMemo(() => {
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    // completedMatches is sorted most-recent-first by useScheduleData.
+    return (
+      completedMatches
+        .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
+        .find((key) => key <= todayKey) ?? null
+    );
+  }, [completedMatches]);
+
+  const nextScheduledKey = useMemo(() => {
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    // upcomingMatches is sorted soonest-first by useScheduleData.
+    return (
+      upcomingMatches
+        .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
+        .find((key) => key > todayKey) ?? null
+    );
+  }, [upcomingMatches]);
+
+  const lastPlayedDate = useMemo(
+    () => (lastPlayedKey ? dayKeyToDate(lastPlayedKey) : null),
+    [lastPlayedKey]
   );
+  const nextScheduledDate = useMemo(
+    () => (nextScheduledKey ? dayKeyToDate(nextScheduledKey) : null),
+    [nextScheduledKey]
+  );
+
+  // Whether the selected day has any match at all, played or not. Read from the
+  // all-status matchDates set rather than the tab's filtered list, which holds
+  // only completed matches while the Timeslots tab is open.
+  const hasMatchesOnSelectedDate = matchDates.has(format(selectedDate, 'yyyy-MM-dd'));
 
   // The date is guessed as "the upcoming Thursday" before any data exists. Once
   // the matches arrive, move off that guess if it turns out to be an empty
@@ -93,21 +129,13 @@ const Schedule = () => {
   // the morning after league night lands on results rather than a blank page.
   // Runs at most once, so it can never fight a date the user picked, and can
   // never loop. See UX audit SC-01.
-  // The nights either side of today, for the empty state's two ways out.
-  const { lastPlayedDate, nextScheduledDate } = useMemo(() => {
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
-    return {
-      lastPlayedDate:
-        [...matchNights].reverse().find((night) => format(night, 'yyyy-MM-dd') <= todayKey) ?? null,
-      nextScheduledDate:
-        matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey) ?? null,
-    };
-  }, [matchNights]);
-
   const hasAutoPickedDate = useRef(false);
 
   useEffect(() => {
     if (hasAutoPickedDate.current || matchesLoading) return;
+    // A failed read is not an empty season: leave the guess alone and let a
+    // successful retry make the choice.
+    if (matchesError) return;
     hasAutoPickedDate.current = true;
 
     if (matchDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
@@ -125,7 +153,7 @@ const Schedule = () => {
       setSelectedDate(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
-  }, [matchesLoading, matchNights]);
+  }, [matchesLoading, matchesError, matchNights]);
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
@@ -291,6 +319,7 @@ const Schedule = () => {
             selectedDate={selectedDate}
             groupedTimeslots={groupedTimeslots}
             timeslotsLoading={timeslotsLoading}
+            hasMatchesOnSelectedDate={hasMatchesOnSelectedDate}
             lastPlayedDate={lastPlayedDate}
             nextScheduledDate={nextScheduledDate}
             onDateSelect={handleDateSelect}
