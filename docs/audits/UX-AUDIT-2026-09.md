@@ -382,7 +382,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q12 | Label both `<nav>`s, single `h1` per page, `<section>` instead of nested `<main>` | X-08 | Medium |
 | Q13 ✅ | Names on Compare selects/swap; sr-only title on the command palette | X-09 | Medium |
 | Q14 | Min 24 px tap rows and 12 px labels on Home, Stats, Teams, History, footer | X-10, H-03, HI-01 | Medium |
-| Q15 | Darken `--muted-foreground` for light theme; underline in-text links | X-11 | Medium |
+| Q15 ✅ | Darken `--muted-foreground` for light theme; underline in-text links | X-11 | Medium |
 | Q16 ✅ | Hide the notification badge when signed out | X-15 | Low |
 | Q17 | Redirect `/timeslots` and `/admin/notifications` to `/admin`; delete the pages | A-09 | Medium |
 | Q18 | Help tab: make steps navigate; fix "Run Playoffs" target; list all 21 sections | A-08 | Medium |

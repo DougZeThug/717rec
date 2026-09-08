@@ -18,6 +18,7 @@ import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import type { ContactRequestType } from '@/services/contact/ContactRequestService';
+import { interactive } from '@/styles/design-system';
 
 interface RequestTypeOption {
   value: ContactRequestType;
@@ -118,7 +119,7 @@ const PanelHeader: React.FC = () => (
     <p className="mt-2 text-xs text-muted-foreground">
       Your message is emailed to the league admins and appears in their admin inbox. Got a bug, an
       account problem, or a score dispute?{' '}
-      <a href="/contact" className="text-primary hover:underline">
+      <a href="/contact" className={interactive.link.inline}>
         Use the Contact page
       </a>{' '}
       instead.

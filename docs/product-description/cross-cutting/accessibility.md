@@ -138,6 +138,18 @@ remembered in the browser.
 **A theme the league turns off is swapped for dark under the user**, silently, on
 their next visit.
 
+**Secondary text is slate-600 in the light theme.** It was slate-500, which
+measured 4.34-4.48:1 against the card and page backgrounds — under the 4.5:1
+minimum — on the standings, the schedule and the teams list. The dark and winter
+themes are unaffected; both are light text on a dark ground.
+
+**A link inside a sentence is underlined, not merely coloured.** The three
+in-text links — the home page's "Use the Contact page", the contact page's two —
+and the sign-in card's Login and Sign up controls share one style. Underlining
+them at rest is what separates them from the muted text they sit in; in the dark
+theme they also lighten, because the app's primary blue is the same value in
+both themes and sits at 3.84:1 on a near-black card.
+
 Nothing in the product responds to a high-contrast or forced-colours setting.
 
 ## The interaction, event by event
@@ -281,8 +293,9 @@ or sent anywhere.
 - Not confirmed by hand: whether every page has exactly one first-level heading.
   The page shell was corrected once to avoid two main landmarks; headings were
   not audited.
-- Not confirmed by hand: contrast ratios in any of the three themes. The
-  Lighthouse floor of 0.9 leaves room for contrast failures on unscanned pages.
+- Not confirmed by hand: contrast ratios beyond the muted text and the in-text
+  links corrected above. The Lighthouse floor of 0.9 leaves room for contrast
+  failures on unscanned pages.
 - Not confirmed by hand: whether the reduced-motion behaviour is right in every
   case by eye. The snowfall and the page transitions were checked; the ~155 files
   that animate were not each looked at.

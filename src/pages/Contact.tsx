@@ -35,6 +35,7 @@ import {
   contactSchema,
   submitContactRequest,
 } from '@/services/support/ContactService';
+import { interactive } from '@/styles/design-system';
 import { trackContactForm } from '@/utils/analytics';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
@@ -149,7 +150,7 @@ export default function Contact() {
               </CardDescription>
               <p className="pt-2 text-sm text-muted-foreground">
                 Need a timeslot change, a score fixed, or to join the league? Use the{' '}
-                <a href="/#contact-panel" className="text-primary hover:underline">
+                <a href="/#contact-panel" className={interactive.link.inline}>
                   message form at the bottom of the home page
                 </a>{' '}
                 instead — it asks for the details the league needs for those.
@@ -262,7 +263,7 @@ export default function Contact() {
 
           <p className="text-center text-sm text-muted-foreground mt-6">
             You can also email us directly at{' '}
-            <a href="mailto:admin@717rec.com" className="text-primary hover:underline">
+            <a href="mailto:admin@717rec.com" className={interactive.link.inline}>
               admin@717rec.com
             </a>
           </p>
