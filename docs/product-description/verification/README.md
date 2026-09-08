@@ -126,7 +126,7 @@ What it covered and what it found:
 | Item | Result |
 | --- | --- |
 | All 13 public routes render content when signed out | pass (13/13) |
-| `/admin`, `/admin/notifications`, `/timeslots` redirect a signed-out visitor to `/auth` | pass (3/3) |
+| `/admin`, and the two paths that redirect into it, `/admin/notifications` and `/timeslots`, send a signed-out visitor to `/auth` | pass (3/3) |
 | An unknown route shows "Page Not Found" | pass |
 | `/my-team` signed out shows a "Join a team to participate…" prompt, not an error | pass — answers an open question in `foundations/accounts-and-roles.md` |
 | `/message-board` signed out shows "Sign in to post messages" and a Sign In button | pass — answers the same open question |

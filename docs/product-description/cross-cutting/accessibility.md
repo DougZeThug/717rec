@@ -202,9 +202,9 @@ score of 0.9.
 
 Everything else is unscanned. That includes `/schedule`, a team's own page,
 `/compare`, `/insights`, `/message-board`, `/my-team`, `/contact`, `/auth`,
-`/setup-profile`, `/oauth/consent`, `/admin/notifications`, `/timeslots`, the
-page-not-found screen, and **the whole of live scoring** — the one surface used
-under pressure, on a phone, by two people at once.
+`/setup-profile`, `/oauth/consent`, the page-not-found screen, and **the whole
+of live scoring** — the one surface used under pressure, on a phone, by two
+people at once.
 
 ## Interactions with other systems
 

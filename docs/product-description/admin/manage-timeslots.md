@@ -7,9 +7,10 @@ admin sets them a date at a time, picking a time and then picking the teams that
 play at it. The auto-scheduler reads those assignments to work out who is
 available to play whom; see [`build-the-schedule.md`](build-the-schedule.md).
 
-There are **two screens for this**, and they are not the same. `/timeslots` is a
-page of its own; **Timeslots** is the first section of the dashboard. They share
-the same two components and differ in what they support.
+There is **one screen for this**: **Timeslots**, the first section of the admin
+dashboard. There used to be a second, a page at `/timeslots` that nothing linked
+to and whose copy had drifted from the section's; that path now redirects to
+`/admin`.
 
 One behaviour dominates the whole feature and is never stated on screen:
 **choosing one time assigns two.** Times are organised into back-to-back pairs,
@@ -122,8 +123,8 @@ On success one toast names the count and the date. The ticked teams clear; **the
 chosen time stays**, so the next batch can go to the same slot without re-picking
 it.
 
-On failure one red toast appears. On the dashboard it reads "Error — Failed to
-assign timeslot. Please try again."; on `/timeslots` the same. The catch block
+On failure one red toast appears, reading "Error — Failed to assign timeslot.
+Please try again." The catch block
 raises exactly one toast: the server's specific reason when the error carries a
 user-visible one, and the generic sentence otherwise — never both. See
 [`../foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
@@ -148,25 +149,20 @@ A BYE row is removed on its own.
 On success a toast says "Timeslot Removed" or "Bye Week Removed". On failure a
 red toast says the removal failed and the row stays.
 
-## The two screens
+## The screen
 
-| | `/timeslots` | Dashboard **Timeslots** |
-| --- | --- | --- |
-| Heading | "Weekly Timeslot Assignments" | "Assign Timeslots" |
-| Date control | A calendar always on screen | A button that opens a calendar |
-| Layout | Calendar, assignment, list — three cards | Two columns inside one card |
-| Double headers | Supported | Supported |
-| Reached from | Nothing in the app links to it | The dashboard menu |
+| | Dashboard **Timeslots** |
+| --- | --- |
+| Heading | "Assign Timeslots" |
+| Date control | A button that opens a calendar |
+| Layout | Two columns inside one card |
+| Double headers | Supported |
+| Reached from | The dashboard menu |
 
-`/timeslots` is one of the three route-guarded routes; the gate is described in
+`/admin` is route-guarded; the gate is described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
-It then runs the same check a second time inside the page, with its own
-"Checking access..." and its own redirect.
-
-Both screens can now create a double header. `/timeslots` renders the assignment
-form twice — once for a narrow screen, once for a wide one — and neither copy
-used to pass a handler, so the button did nothing at all. See
-[Open questions](#open-questions-and-verification).
+`/timeslots` is guarded the same way and then redirects here, so an old
+bookmark still works and a signed-out visitor still lands on `/auth`.
 
 ## Reading team preferences
 
@@ -188,10 +184,10 @@ the player's side.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | Only an admin reaches either screen; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin elsewhere leaves both screens on display and the writes fail. |
+| The user's role (visitor, player, admin) | Only an admin reaches the screen; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin elsewhere leaves the screen on display and the writes fail. |
 | The record's state | A team already assigned on the chosen date is absent from the grid rather than shown as taken. | An assignment made in another browser reaches this screen within a minute, and the team then vanishes from the grid under the cursor. |
 | The season's state (active, archived, playoffs on) | **No effect.** Timeslots carry a date and a team and no season at all. | No effect. Archiving a season does not clear or archive its timeslots. |
-| Viewport | `/timeslots` stacks its three cards and drops the card frames. The dashboard section stacks its two columns. The team grid stays two across. | No effect beyond re-flowing. |
+| Viewport | The section stacks its two columns. The team grid stays two across. | No effect beyond re-flowing. |
 | Keys the form honours | Tab reaches Select All, then each team tile, then each time button, then submit. Team tiles respond to Enter and Space. | Enter on the submit button assigns. Escape closes the date popover or the confirmation dialog. |
 
 ## Cancel and interrupt
@@ -211,8 +207,7 @@ the player's side.
 
 ## Interactions with other systems
 
-**Permissions and roles.** Admin only. `/timeslots` is checked twice — once by
-the route guard and once by the page.
+**Permissions and roles.** Admin only, checked by the guard on `/admin`.
 
 **Season scoping.** None. A timeslot row carries a date and a team, and no
 season. Assignments from a finished season stay in the table forever.
@@ -236,11 +231,11 @@ is back. Assigning and removing both fail.
 generic sentence because a second, generic toast replaces the specific one the
 service raised. Teams are not told when their timeslot changes.
 
-**URL state.** Nothing — not even the date. `/timeslots?date=…` is not a thing,
-so an admin cannot link to a particular night.
+**URL state.** Nothing — not even the date. No section of the dashboard has a
+URL of its own, so an admin cannot link to a particular night.
 
-**On a phone.** `/timeslots` drops its card frames and stacks. The team grid
-stays two tiles across, which is tight but usable. The time buttons wrap.
+**On a phone.** The section stacks. The team grid stays two tiles across, which
+is tight but usable. The time buttons wrap.
 
 **Accessibility.** Team tiles are keyboard-operable and announce their ticked
 state. The removal confirmation names the team and the time. The times are plain
@@ -276,10 +271,9 @@ sent.
 ## Open questions and verification
 
 - Resolved: **`/timeslots` could not create a double header.** It was treated as
-  a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)).
-  The page renders the assignment form twice — once narrow, once wide — and
-  neither copy passed a handler. Both do now, and the write goes through the
-  same mutation the admin Timeslots tab uses.
+  a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed))
+  and fixed there. The page has since been deleted altogether; the path
+  redirects to `/admin`, so only the dashboard section remains.
 - Resolved: **9:30 PM was offered where it could not work.** It was treated as a
   bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)).
   It is a real block time and still offered for a single assignment; it simply

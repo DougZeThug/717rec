@@ -142,9 +142,10 @@ comment as agreed with the league admin):
 **Navigation and gating** (established by `foundations/navigation.md` and
 `foundations/accounts-and-roles.md`):
 
-- Only **three** routes are guarded: `/admin`, `/admin/notifications`, and
-  `/timeslots`. Every other route is open and handles its own signed-out state,
-  inconsistently. Do not describe any other route as "protected".
+- Only **three** paths are guarded: `/admin`, and the two that now redirect
+  into it, `/admin/notifications` and `/timeslots`. Every other route is open
+  and handles its own signed-out state, inconsistently. Do not describe any
+  other route as "protected".
 - `/matches/:matchId/live` is **public to watch**. Only editing is gated.
 - **No route resets scroll position** on navigation. **Four** routes restore
   their own — `/teams`, `/stats`, `/history`, `/insights` — which is a different

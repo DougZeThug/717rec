@@ -3,9 +3,9 @@
 ## Summary
 
 An admin can post a short announcement that everyone who opens the app sees in
-the bell in the header. This document owns the page that writes them,
-`/admin/notifications`, and the quick form in the bell that does the same job in
-fewer clicks.
+the bell in the header. This document owns the screen that writes them, the
+**Notifications** section of the admin dashboard, and the quick form in the bell
+that does the same job in fewer clicks.
 
 Two things to be clear about before anything else.
 
@@ -23,9 +23,8 @@ the notification form. That is not a notification feature and is owned by
 
 ## The simple case
 
-The admin opens the **Notifications** entry in the admin dashboard's sidebar, or
-types `/admin/notifications` into the address bar. The page is one of only three
-guarded routes; a non-admin is bounced with an "Access Denied" toast. See
+The admin opens the **Notifications** entry in the admin dashboard's sidebar.
+`/admin` is guarded; a non-admin is bounced with an "Access Denied" toast. See
 [`foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
 
 Under the contact inbox is a card headed **New notification** with two fields:
@@ -206,9 +205,9 @@ deleting toasts only on failure. The word "notification" means two different
 things on this page — the toast the admin sees and the announcement they are
 writing — and neither has anything to do with the other.
 
-**URL state.** `/admin/notifications` carries nothing. The address itself is
-linked from nowhere — the admin dashboard's **Notifications** sidebar entry
-renders the same management inside `/admin` rather than navigating here.
+**URL state.** None. No section of the admin dashboard has a URL of its own, so
+a notification cannot be linked to. The old `/admin/notifications` address
+redirects to `/admin`.
 
 **On a phone.** The page is already one narrow column and needs no change. The
 bell popover is fixed at 360 pixels, which is wider than the narrowest phones.
@@ -227,10 +226,11 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
 ## Edge cases
 
 - Resolved: **the page had no link**, so `/admin/notifications` had to be typed.
-  Fixed — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
-  The notification management now also appears as a **Notifications** item in the
-  admin dashboard's sidebar. The page itself is unchanged and still shows the
-  contact inbox above it.
+  First fixed by adding a **Notifications** item to the admin dashboard's
+  sidebar — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface)
+  — and finished by deleting the page, since the sidebar section did the same
+  job. The address now redirects to `/admin`. The contact inbox the page showed
+  above the form is its own **Contact Inbox** sidebar entry.
 - **Delete has no confirmation**, on the page and in the bell popover, and
   cannot be undone.
 - **A successful delete says nothing at all**, so a mis-click looks like the row
