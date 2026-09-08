@@ -38,7 +38,7 @@ const Navbar: React.FC = React.memo(() => {
               <NavBrand />
             </div>
 
-            <div className="hidden md:flex items-center space-x-1">
+            <div className="hidden lg:flex items-center space-x-1">
               <NavLinks />
 
               {/* Add desktop nav actions with proper spacing */}

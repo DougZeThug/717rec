@@ -18,14 +18,17 @@ scoring; see [`live-scoring/enter-a-round.md`](../live-scoring/enter-a-round.md)
 ## The simple case
 
 The admin opens `/admin` and picks **Scores**. The tool loads every match, then
-sets the date filter to the **latest match date it found** and reloads to just
-that day. Matches are grouped by date, then by start time inside the date.
+sets the date filter to the **most recent match date on or before today** and
+reloads to just that day. Matches are grouped by date, then by start time inside
+the date. The first date group and its first time group are already open, and
+the Submit button is pinned to the bottom of the screen, so there is a score to
+enter and a way to save it without scrolling or tapping anything first.
 
 Each match is a card: the two team names stacked with "vs" between them, a row
 of four score buttons, and a "Mark as Complete" switch. The admin presses
 **2–1** on the first card. The button fills in, the switch flips itself on, and
-a small blue "Edited" tag appears. The button at the foot of the panel changes
-from "Submit All Changes" to **"Submit (1) Changes"**.
+a small blue "Edited" tag appears. The button pinned to the bottom of the screen
+changes from "Submit All Changes" to **"Submit (1) Changes"**.
 
 They work down the list. When they are done the button reads "Submit (9)
 Changes". They press it. It becomes "Processing..." and every edited card shows
@@ -44,7 +47,7 @@ button. The failed cards keep their edits and turn red-edged.
 ```mermaid
 stateDiagram-v2
     [*] --> loading
-    loading --> listing : matches arrive (date filter auto-set to the latest date)
+    loading --> listing : matches arrive (date filter auto-set to the latest night on or before today)
     loading --> load_failed : the read fails
     load_failed --> loading : press Retry
     listing --> editing : press a score button, or flip Mark as Complete
@@ -68,16 +71,21 @@ matches load.
 **Two filters sit above the list.** A date picker reading "Filter by Date", and
 a bracket picker reading "Filter by Bracket" with "All Brackets" at the top. On
 the very first load, and only then, the tool looks at what came back, finds the
-**latest match date**, and sets the date filter to it. Clearing the filters
-afterwards does not make it happen again.
+**most recent match date on or before today**, and sets the date filter to it.
+Before a season starts, when every match is still ahead, it uses the earliest
+scheduled night instead, so the tool never opens on a day with nothing on it.
+The comparison is made in league time, so a late game stored under the next day
+in universal time still counts as tonight. Clearing the filters afterwards does
+not make it happen again.
 
 > **Technical note:** the date filter is *evening-aware*. A match played on
 > Sunday evening is stored with Monday's date in universal time, so the filter
 > asks for a range rather than a day. A line under the picker says "Showing
 > matches for the entire session (including evening games)".
 
-Date groups are collapsed unless there are three or fewer of them. Inside a
-date, time groups are open if that date has five or fewer matches. **A match
+The first date group is always open, and so is its first time group. Beyond
+that, date groups are collapsed unless there are three or fewer of them, and
+inside a date, time groups are open if that date has five or fewer matches. **A match
 with no date never appears** — the table groups by date and drops anything
 without one, silently. Nothing is written by arriving.
 
@@ -191,7 +199,7 @@ on other rows.
 | Escape, or a Cancel button | Closes an open filter. There is no Cancel button on the tool itself. | Closes the delete dialog without deleting, or an open filter. **It cannot stop a batch already sent**, and it never discards edits. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **Every unsaved edit is lost with no warning.** Switching to another admin section is enough — each section is unmounted when it is left. A batch already sent still completes and still lands; the admin never sees the summary toast. |
 | Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away, and the app cannot prevent it. |
-| Reload, or the tab closed | The tool reloads and re-picks the latest date. | Every unsaved edit is lost. Rows already written stay written. After a reload the table itself says which is which. |
+| Reload, or the tab closed | The tool reloads and re-picks the latest night on or before today. | Every unsaved edit is lost. Rows already written stay written. After a reload the table itself says which is which. |
 | Network lost mid-request | The list fails to load and a red banner says "Couldn't load matches — retry." with a Retry button. | The batch fails row by row. Every row is marked failed, the red banner appears, and the summary toast says 0 saved. Nothing is queued. |
 | The request fails or times out | As above. | The failed rows keep their edits and their errors; the rest are already saved. Retry failed re-sends only the failures. |
 | The session expires | The list will not load. | Each write is refused. The admin sees per-row failures with the league's message, not a sign-in prompt. |

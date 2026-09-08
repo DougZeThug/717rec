@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTeamsQuery } from '@/hooks/teams';
@@ -55,21 +55,30 @@ const emptyComparison = {
   isLoading: false,
 };
 
-const renderCompare = (url: string) => {
+/** Reports the live URL so a test can prove the incoming link was not rewritten. */
+const LocationProbe: React.FC = () => {
+  const location = useLocation();
+  return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
+};
+
+const compareTree = (url: string) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
       mutations: { retry: false },
     },
   });
-  return render(
+  return (
     <MemoryRouter initialEntries={[url]}>
       <QueryClientProvider client={queryClient}>
         <Compare />
+        <LocationProbe />
       </QueryClientProvider>
     </MemoryRouter>
   );
 };
+
+const renderCompare = (url: string) => render(compareTree(url));
 
 describe('Compare', () => {
   beforeEach(() => {
@@ -211,5 +220,109 @@ describe('Compare', () => {
     await waitFor(() => {
       expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
     });
+  });
+
+  // UX audit CP-01: the teams query resolves after mount, so on the first render
+  // there is nothing selected yet. The URL-sync effect used to run anyway and
+  // replace ?team1=&team2= with an empty query string, wiping the ids before the
+  // init effect could read them. A shared link then opened two empty selects.
+  describe('deep links when teams arrive after mount', () => {
+    const loadingTeams = {
+      data: undefined,
+      isLoading: true,
+    } as ReturnType<typeof useTeamsQuery>;
+    const loadedTeams = {
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>;
+
+    it('keeps both ids in the URL while the teams are still loading', async () => {
+      vi.mocked(useTeamsQuery).mockReturnValue(loadingTeams);
+
+      const { rerender } = renderCompare('/compare?team1=team-a&team2=team-b');
+
+      // Nothing may be written to the URL before the ids have been applied.
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/compare?team1=team-a&team2=team-b'
+      );
+
+      // Teams arrive.
+      vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
+      vi.mocked(useTeamComparison).mockReturnValue({
+        team1: buildSide('team-a', 'Alpha Aces'),
+        team2: buildSide('team-b', 'Bravo Bombers'),
+        headToHead: null,
+        isLoading: false,
+      });
+      rerender(compareTree('/compare?team1=team-a&team2=team-b'));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('location')).toHaveTextContent(
+          '/compare?team1=team-a&team2=team-b'
+        );
+      });
+    });
+
+    it('selects both teams from the URL once they load', async () => {
+      vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
+
+      renderCompare('/compare?team1=team-a&team2=team-b');
+
+      const [team1Trigger, team2Trigger] = screen.getAllByRole('combobox');
+      await waitFor(() => {
+        expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+      });
+      expect(within(team2Trigger).getByText('Bravo Bombers')).toBeInTheDocument();
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/compare?team1=team-a&team2=team-b'
+      );
+    });
+
+    it('still writes the URL for a selection made in the UI', async () => {
+      const user = userEvent.setup();
+      vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
+
+      renderCompare('/compare');
+
+      const [team1Trigger] = screen.getAllByRole('combobox');
+      await user.click(team1Trigger);
+      await user.click(await screen.findByRole('option', { name: /Alpha Aces/ }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-a');
+      });
+    });
+  });
+
+  it('swaps which team is on which side, and rewrites the URL to match', async () => {
+    const user = userEvent.setup();
+    vi.mocked(useTeamsQuery).mockReturnValue({
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>);
+    vi.mocked(useTeamComparison).mockReturnValue({
+      team1: buildSide('team-a', 'Alpha Aces'),
+      team2: buildSide('team-b', 'Bravo Bombers'),
+      headToHead: null,
+      isLoading: false,
+    });
+
+    renderCompare('/compare?team1=team-a&team2=team-b');
+
+    const [team1Trigger, team2Trigger] = screen.getAllByRole('combobox');
+    await waitFor(() => {
+      expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+    });
+
+    // The swap control is an unnamed icon button (audit X-09/Q13, not in this
+    // change), so it is located as the page's only plain button.
+    const swapButton = screen.getByRole('button');
+    await user.click(swapButton);
+
+    await waitFor(() => {
+      expect(within(team1Trigger).getByText('Bravo Bombers')).toBeInTheDocument();
+    });
+    expect(within(team2Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-b&team2=team-a');
   });
 });

@@ -32,6 +32,8 @@ interface MatchesTabProps {
   dualMatchMode?: boolean;
   onApplySchedule?: () => void;
   onSaveSchedule?: () => Promise<boolean>;
+  /** Preview-mode Save: converts the pairings on screen rather than an older applied draft. */
+  onSaveGeneratedSchedule?: () => Promise<boolean>;
   isSaving?: boolean;
   // Edit mode props
   isEditMode?: boolean;
@@ -217,6 +219,7 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
   dualMatchMode,
   onApplySchedule,
   onSaveSchedule,
+  onSaveGeneratedSchedule,
   isSaving = false,
   isEditMode = false,
   onToggleEditMode,
@@ -356,8 +359,28 @@ const MatchesTab: React.FC<MatchesTabProps> = ({
           )}
 
           {!isEditMode && (
-            <div className="flex justify-end mt-4">
-              <Button onClick={onApplySchedule}>Export to Match Form</Button>
+            <div className="flex flex-wrap justify-end gap-2 mt-4">
+              <Button variant="outline" onClick={onApplySchedule}>
+                Export to Match Form
+              </Button>
+              {/* Save is reachable from here too, so the admin does not have to
+                  find the Export tab to write the schedule. It saves what this
+                  tab is showing, not an older applied draft. See UX audit A-06. */}
+              {onSaveGeneratedSchedule && (
+                <Button onClick={() => onSaveGeneratedSchedule()} disabled={isSaving}>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 size-4" />
+                      Save Schedule to Database
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           )}
         </div>

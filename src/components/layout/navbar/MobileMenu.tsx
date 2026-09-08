@@ -69,7 +69,7 @@ const MobileMenu: React.FC = React.memo(() => {
   }, [isOpen]);
 
   return (
-    <div className="md:hidden" style={{ minWidth: '120px', minHeight: '44px' }}>
+    <div className="lg:hidden" style={{ minWidth: '120px', minHeight: '44px' }}>
       <div className="flex items-center justify-end gap-2">
         <NavActions size="sm" />
         <Button
@@ -97,7 +97,7 @@ const MobileMenu: React.FC = React.memo(() => {
         {isOpen && (
           <m.div
             id={PANEL_ID}
-            className="md:hidden pt-2 pb-3 space-y-1 overflow-hidden"
+            className="lg:hidden pt-2 pb-3 space-y-1 overflow-hidden"
             initial={{ opacity: 0, maxHeight: 0 }}
             animate={{ opacity: 1, maxHeight: '500px' }}
             exit={{ opacity: 0, maxHeight: 0 }}

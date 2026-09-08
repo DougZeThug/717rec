@@ -86,7 +86,10 @@ Two shell controls change what is on screen without changing any data:
 
 - The **collapse toggle** in the menu header narrows the menu to icons only. It
   is labelled "Collapse sidebar" or "Expand sidebar" for a screen reader. The
-  choice is **not remembered** — a reload brings the full menu back.
+  choice is **not remembered** — a reload brings the full menu back. Collapsing
+  hides the label text but not the meaning: every entry keeps its name for a
+  screen reader and as a hover tooltip, and the Requests count moves to a small
+  badge on the corner of its icon rather than disappearing.
 - The **search box** filters the menu by label. It is not remembered either.
 
 ### While editing
@@ -203,7 +206,10 @@ and **only on the first render** — changing sections later does not open the n
 section's group.
 
 **Accessibility.** Menu entries are real buttons with a 44-pixel minimum height.
-The collapse toggle is labelled. Swapping a section replaces the main content
+The menu is a labelled "Admin sections" landmark, every entry carries its own
+name whether the menu is collapsed or not, and the open section is marked as the
+current page, so a screen reader announces it as "Scores, current page". The
+collapse toggle is labelled. Swapping a section replaces the main content
 with no announcement, so a screen reader user gets no notice that the page
 changed under them.
 

@@ -1,50 +1,22 @@
 import { Scale } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useSearchParams } from 'react-router';
 
 import { TeamCompareSelector } from '@/components/compare/TeamCompareSelector';
 import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
+import { useCompareUrlState } from '@/hooks/compare/useCompareUrlState';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTeamComparison } from '@/hooks/useTeamComparison';
-import { Team } from '@/types';
 
 /** Team comparison page: pick two teams (synced to the URL) and view their stats head-to-head. */
 const Compare: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
   const { data: teams, isLoading: teamsLoading, error: teamsError, refetch } = useTeamsQuery();
 
-  const [team1, setTeam1] = useState<Team | null>(null);
-  const [team2, setTeam2] = useState<Team | null>(null);
-
-  // Initialize from URL params
-  useEffect(() => {
-    if (!teams || teams.length === 0) return;
-
-    const team1Id = searchParams.get('team1');
-    const team2Id = searchParams.get('team2');
-
-    if (team1Id && !team1) {
-      const found = teams.find((t) => t.id === team1Id);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-      if (found) setTeam1(found);
-    }
-    if (team2Id && !team2) {
-      const found = teams.find((t) => t.id === team2Id);
-      if (found) setTeam2(found);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial team load from URL params; deps would clobber user edits
-  }, [teams, searchParams]);
-
-  // Sync selection to URL
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (team1) params.set('team1', team1.id);
-    if (team2) params.set('team2', team2.id);
-    setSearchParams(params, { replace: true });
-  }, [team1, team2, setSearchParams]);
+  // Selection and address are kept in step by the hook, which owns the ordering
+  // that makes a shared link survive its first load. See UX audit CP-01.
+  const { team1, team2, setTeam1, setTeam2, swapTeams } = useCompareUrlState(teams);
 
   const {
     team1: comparison1,
@@ -52,12 +24,6 @@ const Compare: React.FC = () => {
     headToHead,
     isLoading: comparisonLoading,
   } = useTeamComparison(team1, team2);
-
-  /** Swap which team is on which side of the comparison. */
-  const handleSwap = () => {
-    setTeam1(team2);
-    setTeam2(team1);
-  };
 
   if (teamsLoading) {
     return (
@@ -113,7 +79,7 @@ const Compare: React.FC = () => {
             team2={team2}
             onTeam1Change={setTeam1}
             onTeam2Change={setTeam2}
-            onSwap={handleSwap}
+            onSwap={swapTeams}
           />
         </div>
 

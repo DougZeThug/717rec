@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---- Mocks referenced by vi.mock factories (must be `mock`-prefixed for hoisting) ----
 const mockHandleSubmitScore = vi.fn();
@@ -148,7 +148,16 @@ describe('useScoreEntryData - return shape', () => {
 });
 
 describe('useScoreEntryData - initial load', () => {
-  it('loads matches from the service, runs the real transform, and auto-sets the latest date filter', async () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('loads matches from the service, runs the real transform, and opens on the latest night on or before today', async () => {
+    // Between the two fixture nights (Jun 20 and Jun 25), so Jun 20 is the one
+    // with scores to enter. See UX audit A-03.
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2026-06-22T12:00:00Z'));
+
     const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
 
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -164,9 +173,23 @@ describe('useScoreEntryData - initial load', () => {
     expect(first?.team1?.name).toBe('Alpha');
     expect(first?.isEdited).toBe(false);
 
-    // Auto-set filter date to the latest match date (2026-06-25...)
+    // Opens on Jun 20, the most recent night played, not the scheduled Jun 25.
     await waitFor(() => expect(result.current.filters.date).toBeInstanceOf(Date));
-    expect(result.current.filters.date).toBeInstanceOf(Date);
+    expect(result.current.filters.date?.getMonth()).toBe(5); // June
+    expect(result.current.filters.date?.getDate()).toBe(20);
+  });
+
+  it('opens on the earliest scheduled night when the season has not started', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2026-05-01T12:00:00Z'));
+
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.filters.date).toBeInstanceOf(Date));
+
+    expect(result.current.filters.date?.getMonth()).toBe(5); // June
+    expect(result.current.filters.date?.getDate()).toBe(20);
   });
 });
 

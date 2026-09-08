@@ -14,6 +14,7 @@ import { errorLog } from '@/utils/logger';
 import AdminSectionWrapper from './AdminSectionWrapper';
 import ErrorAlert from './mass-score-entry/components/ErrorAlert';
 import ScoreEntryToolbar from './mass-score-entry/components/ScoreEntryToolbar';
+import StickySubmitBar from './mass-score-entry/components/StickySubmitBar';
 import SubmitButton from './mass-score-entry/components/SubmitButton';
 import { useScoreEntryData } from './mass-score-entry/hooks/useScoreEntryData';
 import MatchesTable from './mass-score-entry/MatchesTable';
@@ -138,7 +139,14 @@ const MassScoreEntryTool: React.FC = () => {
           )}
         </CardHeader>
 
-        <CardContent className="p-3 sm:p-4">
+        <CardContent
+          // Clearance for the fixed submit bar, which is out of flow and
+          // reserves no space of its own. On a phone it sits 5rem up (clearing
+          // the tab bar) and stands about 4.25rem tall, so its top edge is
+          // ~9.25rem above the viewport; /admin adds only 1rem of page padding
+          // below this card, so the padding has to cover the rest.
+          className="p-3 sm:p-4 pb-[calc(10.5rem+env(safe-area-inset-bottom,0px))] md:pb-24"
+        >
           {bracketsError && (
             <ErrorAlert
               message="Couldn't load brackets — retry."
@@ -174,14 +182,14 @@ const MassScoreEntryTool: React.FC = () => {
             />
           </div>
 
-          <div className="p-4 flex justify-end">
+          <StickySubmitBar>
             <SubmitButton
               onClick={handleSubmitAll}
               submitting={submitting}
               disabled={disableSubmit}
               editedMatchCount={validEditedMatchesCount}
             />
-          </div>
+          </StickySubmitBar>
         </CardContent>
       </Card>
 

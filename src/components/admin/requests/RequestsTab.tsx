@@ -20,13 +20,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ToastAction } from '@/components/ui/toast';
 import {
   useAllRequests,
   usePendingRequestsCount,
   useUpdateRequestStatus,
 } from '@/hooks/useTeamRequests';
+import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestStatus } from '@/types/teamRequest';
+import { switchAdminTab } from '@/utils/adminTabs';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 const RequestsTab: React.FC = () => {
@@ -40,15 +43,50 @@ const RequestsTab: React.FC = () => {
   );
   const { data: pendingCount } = usePendingRequestsCount();
   const updateMutation = useUpdateRequestStatus();
+  const { toast } = useToast();
 
   const handleAction = async () => {
     if (!selectedRequest || !actionType) return;
 
-    await updateMutation.mutateAsync({
-      id: selectedRequest,
-      status: actionType === 'approve' ? 'APPROVED' : 'DENIED',
-      admin_notes: adminNotes || undefined,
-    });
+    // Read the request before the list refetches, so the toast can name the
+    // team and the timeslot the admin now has to move by hand.
+    const request = requests?.find((r) => r.id === selectedRequest);
+
+    // A time change is the one case with follow-up work, so it gets its own
+    // toast below and the mutation's generic one is suppressed.
+    const needsTimeslotMove = actionType === 'approve' && request?.request_type === 'TIME_CHANGE';
+
+    try {
+      await updateMutation.mutateAsync({
+        id: selectedRequest,
+        status: actionType === 'approve' ? 'APPROVED' : 'DENIED',
+        admin_notes: adminNotes || undefined,
+        suppressSuccessToast: needsTimeslotMove,
+      });
+    } catch {
+      // The mutation already raised a destructive toast. Leave the dialog open
+      // so the admin can retry or cancel, rather than resetting as if it
+      // worked. See UX audit A-05.
+      return;
+    }
+
+    // Approving only flips a status word: nothing in the schedule moves. Point
+    // the admin at where the actual change is made. See UX audit A-05.
+    if (needsTimeslotMove && request) {
+      const teamName = request.teams?.name ?? 'the team';
+      const slot = request.requested_timeslot;
+      toast({
+        title: 'Request approved',
+        description: slot
+          ? `Now move ${teamName} to ${slot} in Timeslots. Approving does not move it.`
+          : `Now move ${teamName} to the requested time in Timeslots. Approving does not move it.`,
+        action: (
+          <ToastAction altText="Open Timeslots" onClick={() => switchAdminTab('timeslots')}>
+            Open Timeslots
+          </ToastAction>
+        ),
+      });
+    }
 
     setSelectedRequest(null);
     setAdminNotes('');

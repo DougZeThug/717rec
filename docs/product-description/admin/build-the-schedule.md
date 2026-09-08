@@ -236,8 +236,10 @@ notification is sent to any team.
   how many courts the venue has.
 - **A block with an odd number of teams leaves one team unmatched**, counted in
   the panel and in the generation toast, and then silently dropped.
-- **"Go to Batch Matches" and "Open Full Auto Schedule" change tab in place.**
-  Neither reloads the page.
+- **"Open Full Auto Schedule" changes tab in place.** It does not reload the
+  page. Auto Schedule's own Export step no longer offers a way out to Match
+  Creation: the two tools keep separate state, so that button always landed on
+  an empty form.
 - **Auto Schedule's draft is per browser tab.** A second tab starts empty and can
   save a conflicting schedule.
 - **Saving twice creates every match twice.** There is no duplicate check on
@@ -260,8 +262,15 @@ notification is sent to any team.
 - Resolved: **"Go to Batch Matches" and "Open Full Auto Schedule" did nothing.**
   Both set a URL fragment nothing listened for. They were treated as a bug
   ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). The
-  fragments were the admin tab ids, so tab navigation was the intent; both
-  buttons now change tab in place.
+  fragments were the admin tab ids, so tab navigation was the intent, and both
+  buttons were made to change tab in place. **"Go to Batch Matches" has since
+  been removed** — Match Creation keeps its own state, so the button opened a
+  blank form beside copy claiming the matches already existed. The Export step
+  now says the matches are ready and waits for Save, and Save is also offered on
+  the Matches step so the admin never has to leave it to write the schedule.
+  Saving from the Matches step converts the pairings on screen, so it works
+  before "Export to Match Form" has been pressed and, after a regenerate, saves
+  the new pairings rather than the older applied draft.
 - **Nothing prevents saving the same schedule twice.** A slow save that the admin
   retries doubles the night's matches, and undoing that is a matter of deleting
   matches one at a time. Worth raising as a product question.

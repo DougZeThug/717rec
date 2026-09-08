@@ -55,6 +55,7 @@ const AutoScheduleTab = () => {
     handleGenerateClick,
     handleApplySchedule,
     handleSaveSchedule,
+    handleSaveGeneratedSchedule,
 
     // Edit actions
     updateMatchTeam,
@@ -149,6 +150,7 @@ const AutoScheduleTab = () => {
           dualMatchMode={dualMatchMode}
           onApplySchedule={handleApplySchedule}
           onSaveSchedule={handleSaveSchedule}
+          onSaveGeneratedSchedule={handleSaveGeneratedSchedule}
           isSaving={isSaving}
           onManualTeamAssign={handleManualTeamAssign}
           isEditMode={isEditMode}

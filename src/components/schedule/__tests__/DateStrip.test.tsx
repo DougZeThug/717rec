@@ -71,4 +71,28 @@ describe('DateStrip', () => {
     expect(arg).toBeInstanceOf(Date);
     expect(isSameDay(arg as Date, tomorrow)).toBe(true);
   });
+
+  // UX audit SC-01: the window was a fixed today-3 .. today+10, so a page that
+  // opens on the last night played could select a day the strip never renders.
+  it('stretches back to include a selected date older than three days', () => {
+    const sixDaysAgo = addDays(today, -6);
+
+    render(<DateStrip selectedDate={sixDaysAgo} onDateSelect={vi.fn()} matchDates={new Set()} />);
+
+    // today-6 .. today+10 inclusive.
+    expect(screen.getAllByRole('button')).toHaveLength(17);
+
+    const selected = screen
+      .getAllByRole('button')
+      .find((button) => within(button).queryByText(String(sixDaysAgo.getDate())));
+    expect(selected).toBeDefined();
+  });
+
+  it('re-centres rather than rendering hundreds of days for a distant selection', () => {
+    render(
+      <DateStrip selectedDate={addDays(today, 200)} onDateSelect={vi.fn()} matchDates={new Set()} />
+    );
+
+    expect(screen.getAllByRole('button')).toHaveLength(14);
+  });
 });

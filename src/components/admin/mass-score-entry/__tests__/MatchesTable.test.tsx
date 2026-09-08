@@ -5,8 +5,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
 vi.mock('@/components/admin/mass-score-entry/components/DateMatchGroup', () => ({
-  default: ({ date }: { date: Date }) => (
-    <div data-testid={`date-group-${date.toISOString().slice(0, 10)}`} />
+  default: ({
+    date,
+    defaultExpanded,
+    isFirstDateGroup,
+  }: {
+    date: Date;
+    defaultExpanded?: boolean;
+    isFirstDateGroup?: boolean;
+  }) => (
+    <div
+      data-testid={`date-group-${date.toISOString().slice(0, 10)}`}
+      data-default-expanded={String(Boolean(defaultExpanded))}
+      data-first-group={String(Boolean(isFirstDateGroup))}
+    />
   ),
 }));
 
@@ -151,5 +163,33 @@ describe('MatchesTable', () => {
 
     const groups = screen.getAllByTestId(/^date-group-/);
     expect(groups).toHaveLength(1);
+  });
+
+  // UX audit A-03: every date group was collapsed once there were four or more
+  // of them, so the tool opened with nothing enterable.
+  it('opens the first date group even when there are too many to expand them all', () => {
+    render(
+      <MatchesTable
+        matches={[
+          makeMatch('m1', '2026-06-04T18:00:00.000Z'),
+          makeMatch('m2', '2026-06-11T18:00:00.000Z'),
+          makeMatch('m3', '2026-06-18T18:00:00.000Z'),
+          makeMatch('m4', '2026-06-25T18:00:00.000Z'),
+        ]}
+        loading={false}
+        onScoreChange={noop}
+        onGameWinsChange={noop}
+        onMarkCompleted={noop}
+      />
+    );
+
+    const first = screen.getByTestId('date-group-2026-06-04');
+    expect(first).toHaveAttribute('data-default-expanded', 'true');
+    expect(first).toHaveAttribute('data-first-group', 'true');
+
+    // The others keep the old all-or-nothing rule.
+    const later = screen.getByTestId('date-group-2026-06-25');
+    expect(later).toHaveAttribute('data-default-expanded', 'false');
+    expect(later).toHaveAttribute('data-first-group', 'false');
   });
 });

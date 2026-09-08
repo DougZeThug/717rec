@@ -20,7 +20,11 @@ The page shows only the **active season**. There is no season picker.
 A player opens `/schedule`. Across the top is a strip of fourteen dates, from
 three days ago to ten days ahead, with an orange dot under each date that has
 matches. One date is already selected: **the next Thursday**, or today if today
-is Thursday. Below the strip are a search box and a small calendar button.
+is Thursday. Once the matches arrive, if that date has none, the page moves to
+**the most recent night that was played** instead — or, before a season starts,
+to the next night scheduled. The strip stretches back to include that date if it
+is more than three days ago. Below the strip are a search box and a small
+calendar button.
 
 Under those are the three tabs. The page picks one for them: a past date opens
 **Completed**, a date from today onward opens **Upcoming** if the season has any
@@ -66,9 +70,12 @@ is unusual for 717rec and better than the generic sentences used elsewhere; see
 
 Three things are decided at arrival and never re-decided:
 
-- **The date strip's window** is built once, from the clock at first render. A tab
-  left open overnight keeps yesterday's fourteen days.
-- **The selected date** starts at the next Thursday. League night is Thursday.
+- **The date strip's window** is built from the clock and the selected date. A
+  tab left open overnight keeps yesterday's window.
+- **The selected date** starts at the next Thursday, because league night is
+  Thursday, and moves to the last night played if that Thursday turns out to be
+  empty. That correction happens **once**, when the matches first arrive, so it
+  can never override a date the player picks.
 - **The tab** starts from `scheduleActiveTab` in session storage, then is
   overwritten by the rule above once matches and timeslots have both finished
   loading.
@@ -83,7 +90,7 @@ beyond an ordinary pageview.
 The chosen tab survives, in session storage, and is used the next time the page
 is opened in the same browser tab. Everything else — the search text, the
 selected date, which groups were expanded — is thrown away. Coming back gives the
-default Thursday, an empty search box, and the first group open.
+default date again, an empty search box, and the first group open.
 
 ### Begin editing
 
@@ -245,6 +252,7 @@ ordinary pageview.
 - Not confirmed by hand: what the page shows in the seconds between the matches
   arriving and the timeslots arriving, since the tab rule waits for both.
 - Assumption: Thursday is the league's night. It is written into the page as a
-  fixed default with no setting behind it.
+  fixed first guess with no setting behind it, though the page now corrects
+  itself from the data when that guess lands on an empty night.
 
 Verified against `717rec` commit `ea5c8f4`.

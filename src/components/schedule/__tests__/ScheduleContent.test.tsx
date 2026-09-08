@@ -119,4 +119,73 @@ describe('ScheduleContent', () => {
 
     expect(setActiveTab).toHaveBeenCalledWith('completed');
   });
+
+  // UX audit SC-01: a date with no timeslots and no matches rendered a bare
+  // "No timeslots scheduled for this date." card with nothing to do next.
+  describe('the timeslots tab with nothing scheduled', () => {
+    const lastPlayedDate = new Date('2026-07-09T00:00:00');
+    const nextScheduledDate = new Date('2026-07-23T00:00:00');
+
+    it('names the empty date and offers both ways out', async () => {
+      const user = userEvent.setup();
+      const onDateSelect = vi.fn();
+      const { setActiveTab } = renderContent({
+        activeTab: 'timeslots',
+        hasMatchesOnSelectedDate: false,
+        lastPlayedDate,
+        nextScheduledDate,
+        onDateSelect,
+      });
+
+      expect(screen.getByText('Nothing scheduled for Wed Jul 15')).toBeInTheDocument();
+      expect(screen.getByText('The next league night is Thu Jul 23.')).toBeInTheDocument();
+      expect(screen.queryByText('No timeslots scheduled for this date.')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /see results from thu jul 9/i }));
+      expect(onDateSelect).toHaveBeenCalledWith(lastPlayedDate);
+      expect(setActiveTab).toHaveBeenCalledWith('completed');
+
+      await user.click(screen.getByRole('button', { name: /go to thu jul 23/i }));
+      expect(onDateSelect).toHaveBeenCalledWith(nextScheduledDate);
+      expect(setActiveTab).toHaveBeenCalledWith('timeslots');
+    });
+
+    it('says so plainly when no further night is scheduled', () => {
+      renderContent({ activeTab: 'timeslots', lastPlayedDate, nextScheduledDate: null });
+
+      expect(
+        screen.getByText('No more league nights are on the schedule yet.')
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^go to /i })).not.toBeInTheDocument();
+    });
+
+    it('shows the timeslots instead when the date has some', () => {
+      renderContent({
+        activeTab: 'timeslots',
+        groupedTimeslots: { '6:00 PM': [] },
+        lastPlayedDate,
+      });
+
+      expect(screen.queryByText(/nothing scheduled for/i)).not.toBeInTheDocument();
+    });
+
+    it('stays out of the way while the timeslots are still loading', () => {
+      renderContent({ activeTab: 'timeslots', timeslotsLoading: true, lastPlayedDate });
+
+      expect(screen.queryByText(/nothing scheduled for/i)).not.toBeInTheDocument();
+    });
+
+    // The Timeslots tab receives only completed matches in filteredMatches, so
+    // deriving this locally hid an upcoming match on the selected day.
+    it('stays out of the way when the day has a match, even an unplayed one', () => {
+      renderContent({
+        activeTab: 'timeslots',
+        hasMatchesOnSelectedDate: true,
+        lastPlayedDate,
+        nextScheduledDate,
+      });
+
+      expect(screen.queryByText(/nothing scheduled for/i)).not.toBeInTheDocument();
+    });
+  });
 });

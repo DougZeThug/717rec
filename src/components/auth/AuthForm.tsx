@@ -1,5 +1,6 @@
 import { AlertCircle, Loader2 } from 'lucide-react';
 import React, { useState } from 'react';
+import { Link } from 'react-router';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -58,7 +59,17 @@ const AuthForm: React.FC<AuthFormProps> = ({
         {emailError && <p className="text-sm text-destructive">{emailError}</p>}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label htmlFor="password">Password</Label>
+          {type === 'login' && (
+            <Link
+              to="/forgot-password"
+              className="text-sm text-primary underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          )}
+        </div>
         <Input
           id="password"
           type="password"

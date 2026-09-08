@@ -22,6 +22,13 @@ interface ScheduleContentProps {
   selectedDate: Date;
   groupedTimeslots: Record<string, TeamTimeslot[]>;
   timeslotsLoading: boolean;
+  /** Whether the selected day has any match at all, played or not. */
+  hasMatchesOnSelectedDate?: boolean;
+  /** Most recent night that was played, for the "see last night's results" link. */
+  lastPlayedDate?: Date | null;
+  /** Next night with matches scheduled, if any. */
+  nextScheduledDate?: Date | null;
+  onDateSelect?: (date: Date) => void;
   onEditMatch?: (match: Match) => void;
   onDeleteMatch?: (matchId: string) => void;
 }
@@ -34,6 +41,10 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   selectedDate,
   groupedTimeslots,
   timeslotsLoading,
+  hasMatchesOnSelectedDate = false,
+  lastPlayedDate,
+  nextScheduledDate,
+  onDateSelect,
   onEditMatch,
   onDeleteMatch,
 }) => {
@@ -115,6 +126,42 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
 
   // For empty state
   const isEmptyState = groupedMatches.length === 0;
+
+  // A date with neither timeslots nor matches used to render a bare "No
+  // timeslots scheduled for this date." card, which is every visit between
+  // league nights. Offer a way out instead. See UX audit SC-01.
+  // hasMatchesOnSelectedDate comes from the page's all-status set of match
+  // dates. It must not be derived from filteredMatches, which holds only
+  // completed matches while the Timeslots tab is open, so an upcoming match on
+  // the selected day would look like nothing at all.
+  const hasTimeslots = Object.keys(groupedTimeslots).length > 0;
+  const showNothingScheduled = !timeslotsLoading && !hasTimeslots && !hasMatchesOnSelectedDate;
+
+  const nothingScheduledActions = [
+    lastPlayedDate && {
+      label: `See results from ${format(lastPlayedDate, 'EEE MMM d')}`,
+      onClick: () => {
+        onDateSelect?.(lastPlayedDate);
+        setActiveTab('completed');
+      },
+      variant: 'default' as const,
+      icon: CheckCircle,
+    },
+    nextScheduledDate && {
+      label: `Go to ${format(nextScheduledDate, 'EEE MMM d')}`,
+      onClick: () => {
+        onDateSelect?.(nextScheduledDate);
+        setActiveTab('timeslots');
+      },
+      variant: 'outline' as const,
+      icon: CalendarDays,
+    },
+  ].filter(Boolean) as {
+    label: string;
+    onClick: () => void;
+    variant: 'default' | 'outline';
+    icon: typeof CheckCircle;
+  }[];
 
   const matchGroupsContent = (() => {
     if (isEmptyState) {
@@ -226,7 +273,20 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
         </div>
 
         <TabsContent value="timeslots" className="mt-3">
-          <TimeslotGrouping groupedTimeslots={groupedTimeslots} isLoading={timeslotsLoading} />
+          {showNothingScheduled ? (
+            <EmptyState
+              icon={CalendarDays}
+              title={`Nothing scheduled for ${format(selectedDate, 'EEE MMM d')}`}
+              description={
+                nextScheduledDate
+                  ? `The next league night is ${format(nextScheduledDate, 'EEE MMM d')}.`
+                  : 'No more league nights are on the schedule yet.'
+              }
+              actions={nothingScheduledActions}
+            />
+          ) : (
+            <TimeslotGrouping groupedTimeslots={groupedTimeslots} isLoading={timeslotsLoading} />
+          )}
         </TabsContent>
 
         <TabsContent value="upcoming" className="mt-3">

@@ -29,6 +29,8 @@ interface ScheduleWorkflowTabsProps {
   dualMatchMode?: boolean;
   onApplySchedule: () => void;
   onSaveSchedule?: () => Promise<boolean>;
+  /** Saves what the Matches tab is previewing, converting the live pairings. */
+  onSaveGeneratedSchedule?: () => Promise<boolean>;
   isSaving?: boolean;
   onManualTeamAssign?: (updatedTeams: TimeBlockTeamsMap) => void;
   // Edit mode props
@@ -60,6 +62,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   dualMatchMode,
   onApplySchedule,
   onSaveSchedule,
+  onSaveGeneratedSchedule,
   isSaving,
   onManualTeamAssign,
   isEditMode,
@@ -106,6 +109,7 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
               dualMatchMode={dualMatchMode}
               onApplySchedule={onApplySchedule}
               onSaveSchedule={onSaveSchedule}
+              onSaveGeneratedSchedule={onSaveGeneratedSchedule}
               isSaving={isSaving}
               isEditMode={isEditMode}
               onToggleEditMode={onToggleEditMode}

@@ -144,6 +144,27 @@ export function useAutoSchedule() {
     return result;
   };
 
+  /**
+   * Save what the Matches tab is currently previewing.
+   *
+   * The preview shows `generatedPairings`, which only becomes `generatedMatches`
+   * when the schedule is applied. Saving the applied set here would refuse the
+   * save before the first apply, and silently save an older draft after a
+   * regenerate, because generating new pairings does not clear the applied
+   * matches. Convert the live pairings instead. See UX audit A-06.
+   */
+  const saveGeneratedSchedule = async () => {
+    const applied = applySchedule();
+
+    if (!applied || applied.length === 0) {
+      // applySchedule has already explained why (no date, no pairings, stale
+      // pairings for another day).
+      return false;
+    }
+
+    return await saveMatches(applied, selectedDate, dualMatchMode, activeSeason?.id);
+  };
+
   const saveSchedule = async () => {
     // Use editable matches if in edit mode, otherwise use generated matches
     const matchesToSave =
@@ -228,6 +249,7 @@ export function useAutoSchedule() {
     handleGenerateClick: generateSchedule,
     handleApplySchedule: applySchedule,
     handleSaveSchedule: saveSchedule,
+    handleSaveGeneratedSchedule: saveGeneratedSchedule,
 
     // Edit actions
     updateMatchTeam,

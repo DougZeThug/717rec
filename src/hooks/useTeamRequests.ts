@@ -95,6 +95,11 @@ export const useUpdateRequestStatus = () => {
       id: string;
       status: TeamRequestStatus;
       admin_notes?: string;
+      /**
+       * Set when the caller raises its own, more specific success toast, so the
+       * admin does not get two near-identical messages for one action.
+       */
+      suppressSuccessToast?: boolean;
     }) => {
       return updateTeamRequestStatus({
         id,
@@ -105,6 +110,7 @@ export const useUpdateRequestStatus = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['team-requests'] });
+      if (variables.suppressSuccessToast) return;
       toast({
         title: `Request ${variables.status === 'APPROVED' ? 'Approved' : 'Denied'}`,
         description: `The request has been ${variables.status.toLowerCase()}.`,

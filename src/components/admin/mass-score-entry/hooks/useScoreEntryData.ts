@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/useToast';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
+import { pickDefaultEntryDate } from '../utils/defaultEntryDate';
 import { getMatchDisplayName, isSubmittableMatch } from '../utils/submissionEligibility';
 import { useErrorHandling } from './error/useErrorHandling';
 import { useMatchesFetching } from './fetching/useMatchesFetching';
@@ -98,12 +99,16 @@ export const useScoreEntryData = () => {
     // Only auto-set the date filter on initial mount (not after user clears filters)
     if (isInitialLoad.current && fetchedMatches.length > 0 && !filters.date) {
       isInitialLoad.current = false;
-      const latestMatch = [...fetchedMatches].sort((a, b) => {
-        return new Date(b.date ?? '').getTime() - new Date(a.date ?? '').getTime();
-      })[0];
-      if (latestMatch?.date) {
-        filterLog('Auto-setting filter date to latest match date', latestMatch.date);
-        updateFiltersForMatchDate(new Date(latestMatch.date));
+      // Open on the most recent night on or before today, not the furthest
+      // future one: once next week is scheduled, sorting descending landed the
+      // admin on a night with no scores to enter. See UX audit A-03.
+      const defaultDate = pickDefaultEntryDate(fetchedMatches);
+      if (defaultDate) {
+        filterLog(
+          'Auto-setting filter date to the latest match date on or before today',
+          defaultDate
+        );
+        updateFiltersForMatchDate(defaultDate);
       }
     } else {
       isInitialLoad.current = false;

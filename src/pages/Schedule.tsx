@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { format, parseISO } from 'date-fns';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -43,6 +44,12 @@ const getUpcomingThursday = () => {
   return new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
 };
 
+/** 'yyyy-MM-dd' to a local-midnight Date. */
+const dayKeyToDate = (key: string): Date => {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 const Schedule = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -71,6 +78,82 @@ const Schedule = () => {
 
   // Get dates that have matches for the date strip
   const matchDates = useMatchDates(matchesData);
+
+  // Every night that has a match, oldest first. Derived from matchDates, which
+  // memoizes over the stable query data — upcomingMatches/completedMatches are
+  // rebuilt on every render and must never feed an effect that sets state.
+  const matchNights = useMemo(() => Array.from(matchDates).sort().map(dayKeyToDate), [matchDates]);
+
+  // The nights either side of today, for the empty state's two ways out. These
+  // come from the played/scheduled splits rather than the all-status matchDates
+  // set: a night whose matches have not been played yet is not a night with
+  // results to look at. Keyed on day strings so the Dates handed downstream
+  // stay referentially stable between renders.
+  const lastPlayedKey = useMemo(() => {
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    // completedMatches is sorted most-recent-first by useScheduleData.
+    return (
+      completedMatches
+        .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
+        .find((key) => key <= todayKey) ?? null
+    );
+  }, [completedMatches]);
+
+  const nextScheduledKey = useMemo(() => {
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    // upcomingMatches is sorted soonest-first by useScheduleData.
+    return (
+      upcomingMatches
+        .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
+        .find((key) => key > todayKey) ?? null
+    );
+  }, [upcomingMatches]);
+
+  const lastPlayedDate = useMemo(
+    () => (lastPlayedKey ? dayKeyToDate(lastPlayedKey) : null),
+    [lastPlayedKey]
+  );
+  const nextScheduledDate = useMemo(
+    () => (nextScheduledKey ? dayKeyToDate(nextScheduledKey) : null),
+    [nextScheduledKey]
+  );
+
+  // Whether the selected day has any match at all, played or not. Read from the
+  // all-status matchDates set rather than the tab's filtered list, which holds
+  // only completed matches while the Timeslots tab is open.
+  const hasMatchesOnSelectedDate = matchDates.has(format(selectedDate, 'yyyy-MM-dd'));
+
+  // The date is guessed as "the upcoming Thursday" before any data exists. Once
+  // the matches arrive, move off that guess if it turns out to be an empty
+  // night: prefer the last night actually played, so a player opening the app
+  // the morning after league night lands on results rather than a blank page.
+  // Runs at most once, so it can never fight a date the user picked, and can
+  // never loop. See UX audit SC-01.
+  const hasAutoPickedDate = useRef(false);
+
+  useEffect(() => {
+    if (hasAutoPickedDate.current || matchesLoading) return;
+    // A failed read is not an empty season: leave the guess alone and let a
+    // successful retry make the choice.
+    if (matchesError) return;
+    hasAutoPickedDate.current = true;
+
+    if (matchDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
+
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const lastPlayed = [...matchNights]
+      .reverse()
+      .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
+    const nextNight = matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
+    const fallback = lastPlayed ?? nextNight;
+
+    if (fallback) {
+      scheduleLog('No matches on the default date; opening on', fallback);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot default once data has loaded
+      setSelectedDate(fallback);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
+  }, [matchesLoading, matchesError, matchNights]);
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
@@ -129,6 +212,7 @@ const Schedule = () => {
       localDateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
     });
 
+    hasAutoPickedDate.current = true;
     setSelectedDate(normalizedDate);
   };
 
@@ -200,7 +284,7 @@ const Schedule = () => {
   );
 
   return (
-    <PageLayout withBackground={true} gradientVariant="blueOrange">
+    <PageLayout withBackground gradientVariant="blueOrange">
       <SeoHead
         title="Schedule | 717REC Cornhole League"
         description="Upcoming and recent 717REC cornhole matches, weekly timeslots, and matchups by date."
@@ -235,6 +319,10 @@ const Schedule = () => {
             selectedDate={selectedDate}
             groupedTimeslots={groupedTimeslots}
             timeslotsLoading={timeslotsLoading}
+            hasMatchesOnSelectedDate={hasMatchesOnSelectedDate}
+            lastPlayedDate={lastPlayedDate}
+            nextScheduledDate={nextScheduledDate}
+            onDateSelect={handleDateSelect}
             onEditMatch={(match) => handleOpenForm(match)}
             onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
           />

@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MatchQualityMetrics } from '@/types/autoSchedule';
 import type { ScheduledMatch } from '@/types/schedule';
-import { switchAdminTab } from '@/utils/adminTabs';
 
 interface ExportTabProps {
   selectedDate: Date | null;
@@ -31,7 +30,7 @@ const ExportTab: React.FC<ExportTabProps> = ({
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Export Schedule</h3>
       <p className="text-sm text-muted-foreground">
-        The generated schedule can now be used in the Batch Matches tab.
+        Review the generated schedule, then save it to the database.
       </p>
 
       {generatedMatches && generatedMatches.length > 0 ? (
@@ -50,10 +49,10 @@ const ExportTab: React.FC<ExportTabProps> = ({
 
           <div className="border rounded-md p-4 bg-muted/30">
             <p className="text-center font-medium">
-              {generatedMatches.length} matches have been created
+              {generatedMatches.length} matches ready — press Save
             </p>
             <p className="text-sm text-center text-muted-foreground mt-1">
-              Go to the Batch Matches tab to view and edit them
+              Nothing is written to the database until you save.
             </p>
           </div>
 
@@ -106,14 +105,6 @@ const ExportTab: React.FC<ExportTabProps> = ({
                   Save Schedule to Database
                 </>
               )}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={() => switchAdminTab('batch-matches')}
-              className="w-full"
-            >
-              Go to Batch Matches
             </Button>
           </div>
         </div>

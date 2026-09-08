@@ -42,13 +42,13 @@ screen, not the bottom.
 
 ## What changes at 768 pixels
 
-The app has exactly one JavaScript breakpoint: **768 pixels wide**. Below it, the
-app calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
-480, 640, 768, 1024, 1280, 1536 — but only 768 changes what is on the screen.
+The app has one JavaScript breakpoint: **768 pixels wide**. Below it, the app
+calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
+480, 640, 768, 1024, 1280, 1536 — and two of them change what is on the screen:
+768 for everything in the table below, and **1024 for the top bar's links alone**.
 
 | Below 768 | From 768 up |
 | --- | --- |
-| Every navigation link is behind a hamburger button in the top bar | The links sit across the top bar |
 | A fixed tab bar at the bottom of the screen, four tabs: Standings, Schedule, Teams, Playoffs | No bottom bar. A second nav row under the header with Standings, Schedule, Teams |
 | No search | A Search button, and **Cmd/Ctrl+K** opens a command palette that jumps to seven pages or any of the first ten teams |
 | Pages get five extra lines of bottom padding, plus the phone's own safe area, so the tab bar clears the content | Ordinary page padding |
@@ -56,6 +56,22 @@ app calls itself mobile. Above it, desktop. The stylesheet has more breakpoints 
 | The teams list defaults to grouped by division | The teams list defaults to one list |
 | Several stats and standings tables render as stacked cards | The same data as a table |
 | One dialog — playoff team divisions — opens as a bottom drawer | It opens as a centred dialog |
+
+The top bar is the one exception, and it changes later:
+
+| Below 1024 | From 1024 up |
+| --- | --- |
+| Every navigation link is behind a hamburger button in the top bar | The links sit across the top bar |
+
+Below 1024 the top bar carries the hamburger **and**, beside it, the login or
+user menu (which holds the Admin Panel), the notification bell and the theme
+button. Only the navigation links fold behind the hamburger.
+
+That gap matters on a tablet. Between 768 and 1023 pixels the bottom tab bar is
+already gone, so the top bar is the only complete way around. Before this was
+fixed the top bar tried to lay out all nine links at that width and pushed the
+login menu, the bell and the theme button off the edge of the screen, with the
+hamburger hidden and no way to recover them.
 
 Everything else is the same content at a different width. Wide tables sit in
 their own box and scroll sideways inside it rather than stretching the page; the
@@ -71,17 +87,22 @@ The breakpoint is watched live, not read once. Rotating a large phone into
 landscape can push it past 768 pixels, and when that happens the bottom tab bar
 disappears and the desktop nav row appears **while the user is looking at the
 page**. Nothing is lost — no page state is tied to the breakpoint — but the
-controls move under the thumb.
+controls move under the thumb. The hamburger does **not** go with them: it stays
+until 1024 pixels, so a phone in landscape keeps a way to reach every link.
 
 ```mermaid
 stateDiagram-v2
     [*] --> narrow : the browser is under 768 pixels wide
-    [*] --> wide : the browser is 768 pixels or wider
-    narrow --> wide : rotate to landscape, or resize
-    wide --> narrow : rotate to portrait, or resize
+    [*] --> tablet : the browser is 768 to 1023 pixels wide
+    [*] --> wide : the browser is 1024 pixels or wider
+    narrow --> tablet : rotate to landscape, or resize
+    tablet --> wide : resize wider
+    wide --> tablet : resize narrower
+    tablet --> narrow : rotate to portrait, or resize
     narrow --> menu_open : tap the hamburger
+    tablet --> menu_open : tap the hamburger
     menu_open --> narrow : tap it again, navigate, or press Escape
-    menu_open --> wide : rotate while the menu is open (the menu is now hidden, not closed)
+    menu_open --> wide : resize past 1024 while the menu is open (the menu is now hidden, not closed)
 ```
 
 Rotating back does the reverse. The hamburger menu, if open, closes on the next

@@ -53,10 +53,12 @@ Once the list is there the page draws its heading, two dropdowns, and a swap
 button between them. The swap button is dead until at least one team is chosen.
 
 Then the address is read. `team1` and `team2` are team ids. Each is matched
-against the list and, if found, selected. **The list has hidden teams removed**,
-so a link naming a hidden team finds nothing, that side stays empty, and the
-address is quietly rewritten without it. Nothing tells the user their link lost
-half of itself.
+against the list and, if found, selected. The address is **left untouched until
+that has happened**: the team list arrives after the page mounts, so writing the
+still-empty selection back to the address would erase the very ids the page is
+waiting to read. **The list has hidden teams removed**, so a link naming a hidden
+team finds nothing, that side stays empty, and the address is then rewritten
+without it. Nothing tells the user their link lost half of itself.
 
 Nothing is focused. Neither dropdown has a default.
 
@@ -146,7 +148,8 @@ needs.
 
 **URL state.** Both teams are in the address as ids, and they are the only page
 state anywhere in 717rec that is. Selections replace rather than push, so the
-history does not fill up.
+history does not fill up. Nothing is written to the address until the incoming
+link has been read, so a shared link survives both the first load and a reload.
 
 **On a phone.** The dropdowns stack. Each comparison row keeps three columns, so
 a long record beside a percentile badge can be cramped. The page does not
