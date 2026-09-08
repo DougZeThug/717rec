@@ -82,6 +82,62 @@ interface HighlightsSummaryCardProps {
   isWinterTheme: boolean;
 }
 
+/** One "Most Wins — Bag Bandits (9)" line inside the highlights card. */
+const HighlightRow: React.FC<{ label: string; value: string; isWinterTheme: boolean }> = ({
+  label,
+  value,
+  isWinterTheme,
+}) => (
+  <div>
+    <p
+      className={cn(
+        'text-xs leading-tight',
+        isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
+      )}
+    >
+      {label}
+    </p>
+    <p
+      className={cn(
+        'text-xs font-semibold truncate leading-tight',
+        isWinterTheme ? 'text-white' : 'text-foreground'
+      )}
+    >
+      {value}
+    </p>
+  </div>
+);
+
+/** The three highlight lines, or nothing when the season has no results yet. */
+const HighlightRows: React.FC<{ highlights: Highlights; isWinterTheme: boolean }> = ({
+  highlights,
+  isWinterTheme,
+}) => {
+  const bestPowerScore = highlights.highestPS.power_score
+    ? (highlights.highestPS.power_score * 100).toFixed(1)
+    : 'N/A';
+
+  const rows = [
+    {
+      label: 'Most Wins',
+      value: `${highlights.mostWins.team_name} (${highlights.mostWins.match_wins})`,
+    },
+    { label: 'Best Power Score', value: `${highlights.highestPS.team_name} (${bestPowerScore})` },
+    {
+      label: 'Most Game Wins',
+      value: `${highlights.mostGameWins.team_name} (${highlights.mostGameWins.game_wins})`,
+    },
+  ];
+
+  return (
+    <div className="space-y-1">
+      {rows.map((row) => (
+        <HighlightRow key={row.label} {...row} isWinterTheme={isWinterTheme} />
+      ))}
+    </div>
+  );
+};
+
 const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
   highlights,
   isWinterTheme,
@@ -102,66 +158,7 @@ const HighlightsSummaryCard: React.FC<HighlightsSummaryCardProps> = ({
       Highlights
     </p>
     {highlights ? (
-      <div className="space-y-1">
-        <div>
-          <p
-            className={cn(
-              'text-xs leading-tight',
-              isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-            )}
-          >
-            Most Wins
-          </p>
-          <p
-            className={cn(
-              'text-xs font-semibold truncate leading-tight',
-              isWinterTheme ? 'text-white' : 'text-foreground'
-            )}
-          >
-            {highlights.mostWins.team_name} ({highlights.mostWins.match_wins})
-          </p>
-        </div>
-        <div>
-          <p
-            className={cn(
-              'text-xs leading-tight',
-              isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-            )}
-          >
-            Best Power Score
-          </p>
-          <p
-            className={cn(
-              'text-xs font-semibold truncate leading-tight',
-              isWinterTheme ? 'text-white' : 'text-foreground'
-            )}
-          >
-            {highlights.highestPS.team_name} (
-            {highlights.highestPS.power_score
-              ? (highlights.highestPS.power_score * 100).toFixed(1)
-              : 'N/A'}
-            )
-          </p>
-        </div>
-        <div>
-          <p
-            className={cn(
-              'text-xs leading-tight',
-              isWinterTheme ? 'text-white/50' : 'text-muted-foreground'
-            )}
-          >
-            Most Game Wins
-          </p>
-          <p
-            className={cn(
-              'text-xs font-semibold truncate leading-tight',
-              isWinterTheme ? 'text-white' : 'text-foreground'
-            )}
-          >
-            {highlights.mostGameWins.team_name} ({highlights.mostGameWins.game_wins})
-          </p>
-        </div>
-      </div>
+      <HighlightRows highlights={highlights} isWinterTheme={isWinterTheme} />
     ) : (
       <p
         className={cn('text-xs italic', isWinterTheme ? 'text-white/40' : 'text-muted-foreground')}

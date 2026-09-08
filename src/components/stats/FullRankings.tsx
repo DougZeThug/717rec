@@ -7,10 +7,16 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { Ranking } from '@/types';
 import { sortRankings } from '@/utils/rankingUtils';
 
+import {
+  standingsCardClasses,
+  standingsContentClasses,
+  standingsDescriptionClasses,
+  standingsHeaderClasses,
+  standingsTitleClasses,
+} from './fullRankingsStyles';
 import { PowerScoreInfoPopover } from './PowerScoreInfoPopover';
 import RankingsTable from './RankingsTable';
 import ViewToggle from './ViewToggle';
@@ -27,6 +33,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
   const { isWinterTheme } = useSeasonalTheme();
   const isLight = resolvedTheme === 'light';
   const isMobile = useIsMobile();
+  const theme = { isWinterTheme, isLight };
 
   // Sort rankings by power score for the unified view using the shared sorter so
   // tiebreakers (division tier, then win %, then name) are applied consistently.
@@ -40,10 +47,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
       <Card
         className={cn(
           'border-t-2 shadow-lg hover:shadow-xl transition-shadow duration-300',
-          isWinterTheme
-            ? 'winter-card-surface border-frost-primary/50'
-            : 'border-blue-300 dark:border-blue-700/80',
-          !isWinterTheme && isLight && gradients.card.blueOrange
+          ...standingsCardClasses(theme)
         )}
       >
         {/* Header is a plain container; only the chevron is the toggle button.
@@ -54,11 +58,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
           className={cn(
             isMobile ? 'py-2.5 px-3' : 'py-4',
             'rounded-t-lg transition-colors',
-            isWinterTheme
-              ? 'bg-frost-primary/5 border-b border-frost-border/30'
-              : isLight
-                ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 border-b border-blue-100'
-                : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80 border-b border-blue-900/30'
+            standingsHeaderClasses(theme)
           )}
         >
           <div className="flex items-center justify-between gap-2">
@@ -68,9 +68,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
                   className={cn(
                     'font-bebas uppercase tracking-wide',
                     isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                    isWinterTheme
-                      ? 'text-[hsl(var(--foreground))]'
-                      : 'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400'
+                    standingsTitleClasses(theme)
                   )}
                   style={{ letterSpacing: '0.5px' }}
                 >
@@ -82,14 +80,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
               </div>
               {!isMobile && (
                 <CardDescription
-                  className={cn(
-                    'line-clamp-2 font-inter',
-                    isWinterTheme
-                      ? 'text-[hsl(var(--muted-foreground))]'
-                      : isLight
-                        ? '!text-[#444444] !font-medium'
-                        : 'text-gray-400'
-                  )}
+                  className={cn('line-clamp-2 font-inter', standingsDescriptionClasses(theme))}
                 >
                   Based on opponent-weighted win percentage, strength of schedule (SOS), and
                   game-level performance
@@ -121,12 +112,7 @@ const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
 
         <CollapsibleContent>
           <CardContent
-            className={cn(
-              isMobile ? 'p-1 pt-0.5' : 'p-2 sm:p-4',
-              isWinterTheme
-                ? 'bg-transparent'
-                : 'bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900'
-            )}
+            className={cn(isMobile ? 'p-1 pt-0.5' : 'p-2 sm:p-4', standingsContentClasses(theme))}
           >
             <RankingsTable
               rankings={sortedRankings}

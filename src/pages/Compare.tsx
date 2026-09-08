@@ -2,8 +2,8 @@ import { Scale } from 'lucide-react';
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
+import { CompareOutcome } from '@/components/compare/CompareOutcome';
 import { TeamCompareSelector } from '@/components/compare/TeamCompareSelector';
-import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useCompareUrlState } from '@/hooks/compare/useCompareUrlState';
@@ -30,12 +30,7 @@ const Compare: React.FC = () => {
   // that makes a shared link survive its first load. See UX audit CP-01.
   const { team1, team2, setTeam1, setTeam2, swapTeams } = useCompareUrlState(teams);
 
-  const {
-    team1: comparison1,
-    team2: comparison2,
-    headToHead,
-    isLoading: comparisonLoading,
-  } = useTeamComparison(team1, team2);
+  const comparison = useTeamComparison(team1, team2);
 
   if (teamsLoading) {
     return (
@@ -94,33 +89,7 @@ const Compare: React.FC = () => {
         </div>
 
         {/* Comparison Content */}
-        {!team1 && !team2 && (
-          <div className="text-center py-16">
-            <Scale className="size-16 mx-auto mb-4 text-muted-foreground/50" />
-            <h2 className="text-xl font-semibold mb-2">Select Teams to Compare</h2>
-            <p className="text-muted-foreground">
-              Choose two teams from the dropdowns above to see a detailed comparison
-            </p>
-          </div>
-        )}
-
-        {(team1 || team2) && (!team1 || !team2) && (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground">
-              Select {!team1 ? 'the first' : 'the second'} team to start comparing
-            </p>
-          </div>
-        )}
-
-        {team1 && team2 && comparisonLoading && (
-          <div className="flex items-center justify-center py-16">
-            <LoadingState message="Loading comparison..." />
-          </div>
-        )}
-
-        {team1 && team2 && comparison1 && comparison2 && !comparisonLoading && (
-          <TeamComparisonView team1={comparison1} team2={comparison2} headToHead={headToHead} />
-        )}
+        <CompareOutcome team1={team1} team2={team2} comparison={comparison} />
       </div>
     </>
   );
