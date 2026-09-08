@@ -36,8 +36,10 @@ vi.mock('@/hooks/useMobile', () => ({
   useIsMobile: () => mockIsMobile(),
 }));
 
+const mockPendingRequestsCount = vi.fn(() => 0);
+
 vi.mock('@/hooks/useTeamRequests', () => ({
-  usePendingRequestsCount: () => ({ data: 0 }),
+  usePendingRequestsCount: () => ({ data: mockPendingRequestsCount() }),
 }));
 
 vi.mock('@/components/admin/dashboard/AdminMobileNav', () => ({
@@ -52,6 +54,7 @@ describe('AdminSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsMobile.mockReturnValue(false);
+    mockPendingRequestsCount.mockReturnValue(0);
     sessionStorage.clear();
   });
 
@@ -118,5 +121,68 @@ describe('AdminSidebar', () => {
 
     expect(screen.getByTestId('mobile-nav')).toHaveTextContent('active:scores');
     expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
+  });
+
+  // UX audit A-02: collapsing hid the label text, which was every item's only
+  // accessible name, leaving 21 unnamed icon buttons. It also hid the pending
+  // count, the one live number in the menu.
+  describe('when collapsed', () => {
+    const collapse = async (user: ReturnType<typeof userEvent.setup>) => {
+      await user.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
+      await screen.findByRole('button', { name: 'Expand sidebar' });
+    };
+
+    it('still names every section for a screen reader', async () => {
+      const user = userEvent.setup();
+      render(<AdminSidebar />);
+
+      await collapse(user);
+
+      // The visible text is gone, but the buttons keep their names.
+      expect(screen.queryByText('Timeslots')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Timeslots' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Scores' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Requests' })).toBeInTheDocument();
+    });
+
+    it('keeps the pending requests count visible', async () => {
+      const user = userEvent.setup();
+      mockPendingRequestsCount.mockReturnValue(4);
+      render(<AdminSidebar />);
+
+      expect(screen.getByText('4')).toBeInTheDocument();
+
+      await collapse(user);
+
+      expect(screen.getByText('4')).toBeInTheDocument();
+    });
+  });
+
+  it('marks the open section as the current page', async () => {
+    const user = userEvent.setup();
+    render(<AdminSidebar />);
+
+    // Default section is Timeslots.
+    expect(screen.getByRole('button', { name: 'Timeslots' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('button', { name: 'Scores' })).not.toHaveAttribute('aria-current');
+
+    await user.click(screen.getByRole('button', { name: 'Scores' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Scores' })).toHaveAttribute(
+        'aria-current',
+        'page'
+      );
+    });
+    expect(screen.getByRole('button', { name: 'Timeslots' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('labels the section list as a landmark', () => {
+    render(<AdminSidebar />);
+
+    expect(screen.getByRole('navigation', { name: 'Admin sections' })).toBeInTheDocument();
   });
 });

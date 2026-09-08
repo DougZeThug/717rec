@@ -220,6 +220,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                 type="button"
                 key={item.id}
                 onClick={() => handleTabSelect(item.id)}
+                aria-current={activeTab === item.id ? 'page' : undefined}
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors',
                   'hover:bg-accent hover:text-accent-foreground',
@@ -279,6 +280,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                           type="button"
                           key={tabId}
                           onClick={() => handleTabSelect(tabId)}
+                          aria-current={activeTab === tabId ? 'page' : undefined}
                           className={cn(
                             'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
                             'hover:bg-accent hover:text-accent-foreground',

@@ -266,43 +266,57 @@ const AdminSidebar: React.FC = () => {
 
         {/* Menu items */}
         <ScrollArea className="flex-1">
-          <nav className="p-2 space-y-1">
-            {filteredItems.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => handleTabChange(item.id)}
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  'min-h-[44px]', // Touch target
-                  activeTab === item.id
-                    ? 'bg-primary/10 text-primary dark:!text-blue-200 font-medium'
-                    : 'text-muted-foreground'
-                )}
-              >
-                <item.icon className="size-5 shrink-0" />
-                <AnimatePresence>
-                  {!isCollapsed && (
-                    <>
+          <nav className="p-2 space-y-1" aria-label="Admin sections">
+            {filteredItems.map((item) => {
+              const showRequestsBadge =
+                item.id === 'requests' &&
+                pendingRequestsCount !== undefined &&
+                pendingRequestsCount > 0;
+
+              return (
+                <button
+                  type="button"
+                  key={item.id}
+                  onClick={() => handleTabChange(item.id)}
+                  // Collapsing hides the label text, so the button would otherwise
+                  // have no accessible name at all. See UX audit A-02.
+                  aria-label={item.label}
+                  title={item.label}
+                  aria-current={activeTab === item.id ? 'page' : undefined}
+                  className={cn(
+                    'relative w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all',
+                    'hover:bg-accent hover:text-accent-foreground',
+                    'min-h-[44px]', // Touch target
+                    activeTab === item.id
+                      ? 'bg-primary/10 text-primary dark:!text-blue-200 font-medium'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  <item.icon className="size-5 shrink-0" />
+                  <AnimatePresence>
+                    {!isCollapsed && (
                       <m.span {...labelAnimateProps} className="truncate flex-1 text-left">
                         {item.label}
                       </m.span>
-                      {item.id === 'requests' &&
-                        pendingRequestsCount !== undefined &&
-                        pendingRequestsCount > 0 && (
-                          <Badge
-                            variant="destructive"
-                            className="ml-auto text-xs px-1.5 py-0.5 min-w-[20px] h-5"
-                          >
-                            {pendingRequestsCount}
-                          </Badge>
-                        )}
-                    </>
+                    )}
+                  </AnimatePresence>
+                  {/* Outside the collapse guard: the pending count is the one piece
+                      of live information in this menu and must survive collapsing. */}
+                  {showRequestsBadge && (
+                    <Badge
+                      variant="destructive"
+                      aria-label={`${pendingRequestsCount} pending`}
+                      className={cn(
+                        'text-xs px-1.5 py-0.5 min-w-[20px] h-5',
+                        isCollapsed ? 'absolute -top-0.5 right-0.5' : 'ml-auto'
+                      )}
+                    >
+                      {pendingRequestsCount}
+                    </Badge>
                   )}
-                </AnimatePresence>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </nav>
         </ScrollArea>
       </m.aside>
