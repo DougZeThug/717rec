@@ -166,4 +166,24 @@ describe('MatchesTab', () => {
     expect(onResetEdits).toHaveBeenCalledTimes(1);
     expect(screen.getByRole('button', { name: 'Save Matches' })).toBeDisabled();
   });
+
+  // UX audit A-06: in preview mode the only footer action was "Export to Match
+  // Form", so the admin had to find the Export tab to write anything.
+  it('offers Save in preview mode, not only in edit mode', async () => {
+    const onSaveSchedule = vi.fn().mockResolvedValue(true);
+    render(<MatchesTab {...baseProps} isEditMode={false} onSaveSchedule={onSaveSchedule} />);
+
+    const save = screen.getByRole('button', { name: /save schedule to database/i });
+    expect(save).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /export to match form/i })).toBeInTheDocument();
+
+    await userEvent.click(save);
+    expect(onSaveSchedule).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the save in progress and refuses a second press in preview mode', () => {
+    render(<MatchesTab {...baseProps} isEditMode={false} isSaving />);
+
+    expect(screen.getByRole('button', { name: /saving/i })).toBeDisabled();
+  });
 });

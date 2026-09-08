@@ -6,7 +6,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ExportTab from '@/components/admin/auto-schedule/tabs/ExportTab';
 import type { MatchQualityMetrics } from '@/types/autoSchedule';
 import type { ScheduledMatch } from '@/types/schedule';
-import { subscribeToAdminTabRequests } from '@/utils/adminTabs';
 
 const matches = [
   { team1Id: 't-1', team2Id: 't-2', timeSlot: '7:00 PM' },
@@ -35,10 +34,16 @@ describe('ExportTab', () => {
     expect(screen.getByText('Export the generated schedule first')).toBeInTheDocument();
   });
 
-  it('counts the matches waiting to be saved', () => {
+  it('counts the matches waiting to be saved without claiming they exist yet', () => {
     renderTab();
 
-    expect(screen.getByText('2 matches have been created')).toBeInTheDocument();
+    // UX audit A-06: the old copy said the matches "have been created" before
+    // anything was written to the database.
+    expect(screen.getByText('2 matches ready — press Save')).toBeInTheDocument();
+    expect(
+      screen.getByText('Nothing is written to the database until you save.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/have been created/i)).not.toBeInTheDocument();
   });
 
   it('saves the schedule when asked', async () => {
@@ -66,15 +71,13 @@ describe('ExportTab', () => {
     expect(screen.getByText(/You have unsaved edits to the schedule/i)).toBeInTheDocument();
   });
 
-  it('opens the Batch Matches section rather than setting a dead URL fragment', async () => {
-    const onRequest = vi.fn();
-    const unsubscribe = subscribeToAdminTabRequests(onRequest);
+  it('offers no exit to Match Creation, which owns separate state and would open blank', () => {
+    // UX audit A-06: the button landed on an empty form, implying the work was
+    // already done there.
     renderTab();
 
-    await userEvent.click(screen.getByRole('button', { name: /go to batch matches/i }));
-
-    expect(onRequest).toHaveBeenCalledWith('batch-matches');
-    unsubscribe();
+    expect(screen.queryByRole('button', { name: /batch matches/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/batch matches tab/i)).not.toBeInTheDocument();
   });
 
   it('reports the quality of the generated schedule', () => {
