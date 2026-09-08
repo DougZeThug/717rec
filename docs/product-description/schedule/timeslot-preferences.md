@@ -33,8 +33,12 @@ amber "Double Header (7:00 PM & 8:30 PM)" badge.
 Teams not playing that week are last, in an orange card headed "BYE WEEK". Each
 row there reads "Not playing this week".
 
-If nothing is assigned for the chosen date, one line says "No timeslots scheduled
-for this date."
+If nothing is assigned for the chosen date **and no match is scheduled on it
+either**, the tab says "Nothing scheduled for {day}" and offers up to two ways
+out: "See results from {last night played}", which switches to Completed, and
+"Go to {next league night}". When there are no more nights scheduled it says so
+instead. If there are matches on the date but no timeslot assignments, the
+older one-line "No timeslots scheduled for this date." still shows.
 
 ## The interaction, event by event
 

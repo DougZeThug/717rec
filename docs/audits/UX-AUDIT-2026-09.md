@@ -377,7 +377,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q7 ✅ | Delete the Auto Schedule "Go to Batch Matches" exit; fix its copy; show Save on tab 2 | A-06 | High |
 | Q8 ✅ | Requests approve → toast with "Move team in Timeslots" action; try/catch around approve | A-05 | High |
 | Q9 | Teams page: expand the first division on mobile; make chevrons real toggles with names | T-01, X-09 | High |
-| Q10 | Schedule empty state with "See last night's results →" and a default that prefers the last played date | SC-01 | High |
+| Q10 ✅ | Schedule empty state with "See last night's results →" and a default that prefers the last played date | SC-01 | High |
 | Q11 | Power Score info popover + colour legend on `/stats` | ST-01 | High |
 | Q12 | Label both `<nav>`s, single `h1` per page, `<section>` instead of nested `<main>` | X-08 | Medium |
 | Q13 | Names on Compare selects/swap; sr-only title on the command palette | X-09 | Medium |

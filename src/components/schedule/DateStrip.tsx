@@ -1,9 +1,21 @@
-import { addDays, format, isSameDay, isToday } from 'date-fns';
+import {
+  addDays,
+  differenceInCalendarDays,
+  format,
+  isSameDay,
+  isToday,
+  startOfDay,
+} from 'date-fns';
 import React, { useEffect, useRef } from 'react';
 
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
+
+const DAYS_BEFORE_TODAY = 3;
+const DAYS_AFTER_TODAY = 10;
+/** Cap on how far the strip stretches before it re-centres on the selection. */
+const MAX_STRIP_DAYS = 45;
 
 interface DateStripProps {
   selectedDate: Date;
@@ -15,15 +27,33 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   const scrollBehavior = useScrollBehavior();
   const selectedRef = useRef<HTMLButtonElement>(null);
 
-  // Generate 14 days: past 3 days + today + next 10 days
+  // 14 days around today: past 3 days + today + next 10. The window stretches to
+  // include the selected date, because the page can open on the last night that
+  // was played, which may be further back than three days. Without this the
+  // selected day would simply not be in the strip. See UX audit SC-01.
   const dates = React.useMemo(() => {
+    const today = startOfDay(new Date());
+    const selected = startOfDay(selectedDate);
+
+    let start = addDays(today, -DAYS_BEFORE_TODAY);
+    let end = addDays(today, DAYS_AFTER_TODAY);
+
+    if (selected < start) start = selected;
+    if (selected > end) end = selected;
+
+    // A date picked months away must not render hundreds of buttons; centre the
+    // usual window on it instead.
+    if (differenceInCalendarDays(end, start) > MAX_STRIP_DAYS) {
+      start = addDays(selected, -DAYS_BEFORE_TODAY);
+      end = addDays(selected, DAYS_AFTER_TODAY);
+    }
+
     const result: Date[] = [];
-    const today = new Date();
-    for (let i = -3; i <= 10; i++) {
-      result.push(addDays(today, i));
+    for (let day = start; day <= end; day = addDays(day, 1)) {
+      result.push(day);
     }
     return result;
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
     if (selectedRef.current) {
@@ -38,7 +68,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
         });
       });
     }
-  }, [scrollBehavior]);
+  }, [scrollBehavior, selectedDate]);
 
   const hasMatchesOnDate = (date: Date): boolean => {
     const dateStr = format(date, 'yyyy-MM-dd');

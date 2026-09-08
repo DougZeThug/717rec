@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { format } from 'date-fns';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -72,6 +73,60 @@ const Schedule = () => {
   // Get dates that have matches for the date strip
   const matchDates = useMatchDates(matchesData);
 
+  // Every night that has a match, oldest first. Derived from matchDates, which
+  // memoizes over the stable query data — upcomingMatches/completedMatches are
+  // rebuilt on every render and must never feed an effect that sets state.
+  const matchNights = useMemo(
+    () =>
+      Array.from(matchDates)
+        .sort()
+        .map((key) => {
+          const [year, month, day] = key.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        }),
+    [matchDates]
+  );
+
+  // The date is guessed as "the upcoming Thursday" before any data exists. Once
+  // the matches arrive, move off that guess if it turns out to be an empty
+  // night: prefer the last night actually played, so a player opening the app
+  // the morning after league night lands on results rather than a blank page.
+  // Runs at most once, so it can never fight a date the user picked, and can
+  // never loop. See UX audit SC-01.
+  // The nights either side of today, for the empty state's two ways out.
+  const { lastPlayedDate, nextScheduledDate } = useMemo(() => {
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    return {
+      lastPlayedDate:
+        [...matchNights].reverse().find((night) => format(night, 'yyyy-MM-dd') <= todayKey) ?? null,
+      nextScheduledDate:
+        matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey) ?? null,
+    };
+  }, [matchNights]);
+
+  const hasAutoPickedDate = useRef(false);
+
+  useEffect(() => {
+    if (hasAutoPickedDate.current || matchesLoading) return;
+    hasAutoPickedDate.current = true;
+
+    if (matchDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
+
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const lastPlayed = [...matchNights]
+      .reverse()
+      .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
+    const nextNight = matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
+    const fallback = lastPlayed ?? nextNight;
+
+    if (fallback) {
+      scheduleLog('No matches on the default date; opening on', fallback);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot default once data has loaded
+      setSelectedDate(fallback);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
+  }, [matchesLoading, matchNights]);
+
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
   const { activeTab, handleTabChange } = useScheduleTabs({
@@ -129,6 +184,7 @@ const Schedule = () => {
       localDateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
     });
 
+    hasAutoPickedDate.current = true;
     setSelectedDate(normalizedDate);
   };
 
@@ -235,6 +291,9 @@ const Schedule = () => {
             selectedDate={selectedDate}
             groupedTimeslots={groupedTimeslots}
             timeslotsLoading={timeslotsLoading}
+            lastPlayedDate={lastPlayedDate}
+            nextScheduledDate={nextScheduledDate}
+            onDateSelect={handleDateSelect}
             onEditMatch={(match) => handleOpenForm(match)}
             onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
           />
