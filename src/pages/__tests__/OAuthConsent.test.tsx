@@ -152,7 +152,7 @@ describe('OAuthConsent', () => {
   });
 
   describe('deciding', () => {
-    const promptFor = async (details: unknown = { client: { name: 'Scorekeeper' } }) => {
+    const promptFor = (details: unknown = { client: { name: 'Scorekeeper' } }) => {
       mockGetDetails.mockResolvedValue(ok(details));
       renderConsent();
       return screen.findByRole('button', { name: 'Approve' });

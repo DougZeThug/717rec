@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { Ranking } from '@/types';
+
 import { formatRankDisplay, getRankAriaLabel } from '../rankLabels';
 
 describe('formatRankDisplay (division rank, with the overall rank behind it)', () => {
@@ -38,7 +40,10 @@ describe('getRankAriaLabel (the same cell, spoken in full)', () => {
   });
 
   it('says nothing about movement when the team has not moved', () => {
+    // A team with no earlier rank carries no rankChange at all.
+    const noEarlierRank: Ranking['rankChange'] = undefined;
+
     expect(getRankAriaLabel(4, null, false, 0)).toBe('Rank 4');
-    expect(getRankAriaLabel(4, null, false, undefined)).toBe('Rank 4');
+    expect(getRankAriaLabel(4, null, false, noEarlierRank)).toBe('Rank 4');
   });
 });
