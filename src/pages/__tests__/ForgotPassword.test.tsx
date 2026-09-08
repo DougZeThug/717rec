@@ -8,10 +8,12 @@ import { DatabaseError } from '@/types/errors';
 
 import ForgotPassword from '../ForgotPassword';
 
-const mockResetPassword = vi.fn();
+const mockResetPassword = vi.fn((_email: string, _redirectTo: string): Promise<void> =>
+  Promise.resolve()
+);
 
 vi.mock('@/services/auth/AuthService', () => ({
-  resetPassword: (...args: unknown[]) => mockResetPassword(...args),
+  resetPassword: (email: string, redirectTo: string) => mockResetPassword(email, redirectTo),
 }));
 
 vi.mock('@/components/auth/AuthContainer', () => ({
@@ -49,7 +51,7 @@ const renderPage = () =>
 describe('ForgotPassword', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockResetPassword.mockResolvedValue(undefined);
+    mockResetPassword.mockResolvedValue();
   });
 
   it('refuses an address that is not an email and sends nothing', async () => {
@@ -101,5 +103,19 @@ describe('ForgotPassword', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.queryByText(/if an account exists for/i)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Send reset link' })).toBeEnabled();
+  });
+
+  it('lets the user go back and try a different address', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByLabelText('Email'), 'typo@example.com');
+    await user.click(screen.getByRole('button', { name: 'Send reset link' }));
+    expect(await screen.findByText(/if an account exists for/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Use a different address' }));
+
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.queryByText(/if an account exists for/i)).not.toBeInTheDocument();
   });
 });

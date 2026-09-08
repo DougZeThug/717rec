@@ -135,5 +135,36 @@ describe('useAuthProfile', () => {
       act(() => result.current.checkProfileSetup({ ...profile, username: 'admin' }));
       expect(navigate).not.toHaveBeenCalled();
     });
+
+    // A recovery link signs the user in, which is what triggers this check. A
+    // member who never chose a username would otherwise be sent to profile
+    // setup before they could reach the form that sets their new password, and
+    // completing setup lands on '/', so the password is never changed.
+    // See UX audit X-04.
+    it('lets a user finish a password reset before asking for a username', () => {
+      const original = window.location.pathname;
+      window.history.replaceState({}, '', '/reset-password');
+
+      try {
+        const { result } = renderHook(() => useAuthProfile(user, navigate));
+        act(() => result.current.checkProfileSetup({ ...profile, username: null }));
+        expect(navigate).not.toHaveBeenCalled();
+      } finally {
+        window.history.replaceState({}, '', original);
+      }
+    });
+
+    it('still asks for a username on any other page', () => {
+      const original = window.location.pathname;
+      window.history.replaceState({}, '', '/my-team');
+
+      try {
+        const { result } = renderHook(() => useAuthProfile(user, navigate));
+        act(() => result.current.checkProfileSetup({ ...profile, username: null }));
+        expect(navigate).toHaveBeenCalledWith('/setup-profile');
+      } finally {
+        window.history.replaceState({}, '', original);
+      }
+    });
   });
 });

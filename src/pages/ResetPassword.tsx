@@ -16,6 +16,42 @@ import { updatePassword } from '@/services/auth/AuthService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
+interface PasswordFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled: boolean;
+  invalid: boolean;
+  children?: React.ReactNode;
+}
+
+/** One labelled password input. Extracted to keep the form's tree shallow. */
+const PasswordField: React.FC<PasswordFieldProps> = ({
+  id,
+  label,
+  value,
+  onChange,
+  disabled,
+  invalid,
+  children,
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
+    <Input
+      id={id}
+      type="password"
+      autoComplete="new-password"
+      placeholder="••••••••"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      disabled={disabled}
+      className={invalid ? 'border-red-500' : ''}
+    />
+    {children}
+  </div>
+);
+
 /**
  * Set a new password after following a recovery link.
  *
@@ -68,7 +104,7 @@ const ResetPassword: React.FC = () => {
 
   if (!authInitialized || isLoading) {
     return (
-      <PageLayout compact={true}>
+      <PageLayout compact>
         <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
           <LoadingState message="Checking your reset link..." />
         </div>
@@ -80,7 +116,7 @@ const ResetPassword: React.FC = () => {
   // rather than redirecting, which reads as "the link did nothing".
   if (!user) {
     return (
-      <PageLayout compact={true}>
+      <PageLayout compact>
         <AuthContainer
           title="This link has expired"
           description="Reset links work once and last one hour."
@@ -100,7 +136,7 @@ const ResetPassword: React.FC = () => {
   }
 
   return (
-    <PageLayout compact={true}>
+    <PageLayout compact>
       <AuthContainer
         title="Set a new password"
         description="Choose a password you have not used here before."
@@ -111,33 +147,24 @@ const ResetPassword: React.FC = () => {
               <AlertDescription>{formError}</AlertDescription>
             </Alert>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="new-password">New password</Label>
-            <Input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              disabled={isSubmitting}
-              className={passwordError ? 'border-red-500' : ''}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Confirm new password</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              disabled={isSubmitting}
-              className={passwordError ? 'border-red-500' : ''}
-            />
+          <PasswordField
+            id="new-password"
+            label="New password"
+            value={password}
+            onChange={setPassword}
+            disabled={isSubmitting}
+            invalid={Boolean(passwordError)}
+          />
+          <PasswordField
+            id="confirm-password"
+            label="Confirm new password"
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            disabled={isSubmitting}
+            invalid={Boolean(passwordError)}
+          >
             {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
-          </div>
+          </PasswordField>
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>

@@ -293,4 +293,36 @@ describe('Compare', () => {
       });
     });
   });
+
+  it('swaps which team is on which side, and rewrites the URL to match', async () => {
+    const user = userEvent.setup();
+    vi.mocked(useTeamsQuery).mockReturnValue({
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>);
+    vi.mocked(useTeamComparison).mockReturnValue({
+      team1: buildSide('team-a', 'Alpha Aces'),
+      team2: buildSide('team-b', 'Bravo Bombers'),
+      headToHead: null,
+      isLoading: false,
+    });
+
+    renderCompare('/compare?team1=team-a&team2=team-b');
+
+    const [team1Trigger, team2Trigger] = screen.getAllByRole('combobox');
+    await waitFor(() => {
+      expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+    });
+
+    // The swap control is an unnamed icon button (audit X-09/Q13, not in this
+    // change), so it is located as the page's only plain button.
+    const swapButton = screen.getByRole('button');
+    await user.click(swapButton);
+
+    await waitFor(() => {
+      expect(within(team1Trigger).getByText('Bravo Bombers')).toBeInTheDocument();
+    });
+    expect(within(team2Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-b&team2=team-a');
+  });
 });

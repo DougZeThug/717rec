@@ -50,7 +50,7 @@ const ForgotPassword: React.FC = () => {
   };
 
   return (
-    <PageLayout compact={true}>
+    <PageLayout compact>
       <AuthContainer
         title="Reset your password"
         description="We will email you a link to set a new one."

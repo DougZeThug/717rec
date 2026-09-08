@@ -380,4 +380,25 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
     const [savedMatches] = mockSaveMatches.mock.calls[0];
     expect(savedMatches).toHaveLength(1);
   });
+
+  it('refuses to save when there are no pairings to convert', async () => {
+    vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
+    mockSaveMatches.mockResolvedValue(true);
+
+    const { result } = renderHook(() => useAutoSchedule(), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.handleLoadTeams();
+    });
+
+    // Never generated, so applySchedule has nothing to convert. It explains
+    // why itself; the save must not reach the database.
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.handleSaveGeneratedSchedule();
+    });
+
+    expect(saved).toBe(false);
+    expect(mockSaveMatches).not.toHaveBeenCalled();
+  });
 });

@@ -8,7 +8,7 @@ import { DatabaseError } from '@/types/errors';
 
 import ResetPassword from '../ResetPassword';
 
-const mockUpdatePassword = vi.fn();
+const mockUpdatePassword = vi.fn((_newPassword: string): Promise<void> => Promise.resolve());
 const mockNavigate = vi.fn();
 const mockUseAuth = vi.fn();
 
@@ -22,7 +22,7 @@ vi.mock('@/contexts/auth-context', () => ({
 }));
 
 vi.mock('@/services/auth/AuthService', () => ({
-  updatePassword: (...args: unknown[]) => mockUpdatePassword(...args),
+  updatePassword: (newPassword: string) => mockUpdatePassword(newPassword),
 }));
 
 vi.mock('@/components/auth/AuthContainer', () => ({
@@ -66,7 +66,7 @@ const renderPage = () =>
 describe('ResetPassword', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUpdatePassword.mockResolvedValue(undefined);
+    mockUpdatePassword.mockResolvedValue();
     mockUseAuth.mockReturnValue(signedIn);
   });
 
@@ -145,5 +145,15 @@ describe('ResetPassword', () => {
     expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'Save new password' })).toBeEnabled();
+  });
+
+  it('sends the user back for a fresh link when this one is spent', async () => {
+    const user = userEvent.setup();
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: true, isLoading: false });
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: /send a new link/i }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/forgot-password');
   });
 });

@@ -60,7 +60,7 @@ describe('RequestsTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mutateAsync.mockResolvedValue(undefined);
+    mutateAsync.mockResolvedValue();
     mockUseAllRequests.mockReturnValue({ data: [baseRequest], isLoading: false });
     mockUsePendingRequestsCount.mockReturnValue({ data: 1 });
   });
@@ -167,7 +167,7 @@ describe('RequestsTab', () => {
     expect(description).toContain('Timeslots');
 
     // The toast action opens the section where the move is actually made.
-    render(<>{action}</>);
+    render(action as React.ReactElement);
     await user.click(screen.getByRole('button', { name: 'Open Timeslots' }));
     expect(mockSwitchAdminTab).toHaveBeenCalledWith('timeslots');
   });
