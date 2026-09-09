@@ -31,6 +31,26 @@ export function buildParticipantSeedMap(
 }
 
 /**
+ * Take the participant logos out of the accessibility tree.
+ *
+ * brackets-viewer builds the `<img>` elements itself from the URLs we hand it,
+ * and its API has no place for alt text, so a bracket shipped 48 unnamed images
+ * — an axe `image-alt` failure on every playoff page. The team's name is
+ * rendered right beside each logo, so the image says nothing new: marking them
+ * decorative is both correct and what a screen reader wants.
+ *
+ * Deliberately separate from `decorateBracketDom`, which returns early for a
+ * dataset without groups or rounds. Legacy and JSONB brackets arrive that way,
+ * and their logos need naming just as much. Idempotent: it runs on every pass.
+ */
+export function hideParticipantImagesFromA11y(container: HTMLElement): void {
+  container.querySelectorAll('img').forEach((img) => {
+    img.setAttribute('alt', '');
+    img.setAttribute('aria-hidden', 'true');
+  });
+}
+
+/**
  * Decorate an already-rendered bracket with flow hints ("Winner of WB 1.1")
  * on TBD slots and persistent "#N" seed badges on filled slots.
  *

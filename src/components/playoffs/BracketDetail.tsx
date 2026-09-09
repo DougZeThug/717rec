@@ -123,7 +123,9 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
           )}
         </div>
       </CardHeader>
-      <CardContent className="p-0 overflow-x-auto">
+      {/* The bracket viewer owns the sideways scrolling, and its swipe hint sits
+          below it — a second scroller here only swallowed the gesture. */}
+      <CardContent className="p-0">
         {bracketLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="size-8 animate-spin text-cornhole-navy" />

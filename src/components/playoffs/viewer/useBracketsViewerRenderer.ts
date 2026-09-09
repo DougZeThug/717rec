@@ -6,7 +6,7 @@ import { BracketsViewerAdapter, ViewerDataWithMapping } from '@/services/bracket
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
-import { decorateBracketDom } from './bracketDecorations';
+import { decorateBracketDom, hideParticipantImagesFromA11y } from './bracketDecorations';
 
 type BracketsViewerCustomRoundInfo = {
   groupType?: 'final-group' | 'winner-bracket' | 'loser-bracket' | string;
@@ -212,6 +212,10 @@ export const useBracketsViewerRenderer = ({
         // badges. Cosmetic only — a failure here must never break the render.
         const runDecorations = (el: HTMLElement) => {
           try {
+            // First, and outside the flow-hint work below: that returns early
+            // for brackets with no groups or rounds, and their logos still need
+            // taking out of the accessibility tree.
+            hideParticipantImagesFromA11y(el);
             decorateBracketDom(el, {
               matches: viewerData.matches,
               groups: viewerData.groups,

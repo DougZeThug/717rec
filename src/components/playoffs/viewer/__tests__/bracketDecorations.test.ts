@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type {
   BracketGroupRow,
@@ -6,11 +6,13 @@ import type {
   ViewerMatch,
   ViewerParticipant,
 } from '@/services/brackets/viewer/types';
+import { expectNoAxeViolations } from '@/test/a11y';
 
 import {
   BracketDecorationData,
   buildParticipantSeedMap,
   decorateBracketDom,
+  hideParticipantImagesFromA11y,
   SEED_BADGE_CLASS,
 } from '../bracketDecorations';
 
@@ -120,7 +122,65 @@ beforeEach(() => {
   container = document.createElement('div');
 });
 
+afterEach(() => {
+  container.remove();
+});
+
 // ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe('hideParticipantImagesFromA11y', () => {
+  /** brackets-viewer puts the logo inside the name element it builds itself. */
+  const appendLogo = (matchEl: HTMLElement, src: string) => {
+    const image = document.createElement('img');
+    image.src = src;
+    matchEl.querySelector('.name')?.appendChild(image);
+    return image;
+  };
+
+  it('marks participant logos decorative, so nothing is left unnamed', () => {
+    const matchEl = appendMatchDom(3, [{ participantId: 1, name: 'Wolves' }, {}]);
+    const logo = appendLogo(matchEl, 'wolves.png');
+
+    hideParticipantImagesFromA11y(container);
+
+    expect(logo.getAttribute('alt')).toBe('');
+    expect(logo.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('can run twice, because the renderer decorates twice', () => {
+    const matchEl = appendMatchDom(3, [{ participantId: 1, name: 'Wolves' }, {}]);
+    const logo = appendLogo(matchEl, 'wolves.png');
+
+    hideParticipantImagesFromA11y(container);
+    hideParticipantImagesFromA11y(container);
+
+    expect(logo.getAttribute('alt')).toBe('');
+  });
+
+  // decorateBracketDom gives up on a dataset with no groups or rounds, which is
+  // how legacy and JSONB brackets arrive. Their logos still need naming.
+  it('works on a bracket the flow-hint pass gives up on', () => {
+    const matchEl = appendMatchDom(3, [{ participantId: 1, name: 'Wolves' }, {}]);
+    const logo = appendLogo(matchEl, 'wolves.png');
+
+    decorateBracketDom(container, { ...makeData(), groups: [], rounds: [] });
+    hideParticipantImagesFromA11y(container);
+
+    expect(logo.getAttribute('alt')).toBe('');
+    expect(matchEl).toBeTruthy();
+  });
+
+  it('leaves axe with nothing to report about the images', async () => {
+    const matchEl = appendMatchDom(3, [{ participantId: 1, name: 'Wolves' }, {}]);
+    appendLogo(matchEl, 'wolves.png');
+    // axe needs the nodes in the document to judge them.
+    document.body.appendChild(container);
+
+    hideParticipantImagesFromA11y(container);
+
+    await expectNoAxeViolations(container);
+  });
+});
 
 describe('decorateBracketDom', () => {
   it('injects hint class, title and text into empty TBD slots', () => {

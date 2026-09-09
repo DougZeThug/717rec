@@ -74,12 +74,9 @@
   letter-spacing: 0.5px !important;
 }
 
-/* Team/participant name styling */
-.brackets-viewer .participant-name {
-  font-size: 1.125rem !important;
-  letter-spacing: 0.5px !important;
-  flex: 1 !important;
-}
+/* Team names: brackets-viewer renders them in `.name`, and its size is set in
+   brackets-viewer-717rec-theme.css. A `.participant-name` rule used to live
+   here, matching nothing while looking like the one in charge. */
 
 /* Score styling */
 .brackets-viewer .score {

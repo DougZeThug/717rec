@@ -1,5 +1,5 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
@@ -40,7 +40,12 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
+
+  // Later rounds sit off the right of a phone screen with nothing to say so.
+  const [canScrollSideways, setCanScrollSideways] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
 
   // State for brackets-manager match editor
   const [selectedBMMatchId, setSelectedBMMatchId] = useState<number | null>(null);
@@ -53,6 +58,41 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   // 'match' table updates flow into the viewer without a synchronous effect
   // state update. Internal editor saves still bump refreshCounter below.
   const refreshKey = `${refreshCounter}:${refreshSignal ?? 'initial'}`;
+
+  /**
+   * Watches whether the bracket is wider than the screen.
+   *
+   * The viewer's own render is asynchronous and not awaited, so the container
+   * is empty at mount and any one-off measurement would report "it fits". A
+   * ResizeObserver answers whenever the injected DOM changes size, and again on
+   * rotation. It is observed on the wrapper (which grows when content lands) and
+   * on the scroller itself (which changes with the viewport) — never on the
+   * inner container, whose node React replaces on every refresh.
+   */
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const measure = () => {
+      const overflowing = scroller.scrollWidth - scroller.clientWidth > 8;
+      // Guarded by value: showing the hint changes the page height, which would
+      // otherwise call this straight back.
+      setCanScrollSideways((current) => (current === overflowing ? current : overflowing));
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroller);
+    if (wrapperRef.current) observer.observe(wrapperRef.current);
+
+    const onScroll = () => setHasScrolled(true);
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      scroller.removeEventListener('scroll', onScroll);
+    };
+  }, []);
 
   // Match click handler - routes to BM editor or legacy handler
   const handleMatchClicked = useCallback(
@@ -140,9 +180,13 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   return (
     <>
       <div
-        className="size-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background"
+        ref={scrollerRef}
+        className="size-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         role="region"
-        aria-label={`Playoff Bracket: ${bracket?.name || 'Tournament'}`}
+        // Focusable so the bracket can be scrolled with the arrow keys, which is
+        // the only way to reach the later rounds without a pointer.
+        tabIndex={0}
+        aria-label={`Playoff Bracket: ${bracket?.name || 'Tournament'}. Scroll sideways to see later rounds.`}
       >
         <div
           ref={wrapperRef}
@@ -167,6 +211,17 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         </div>
         {!isInitialized && <LoadingState variant="section" message="Loading bracket..." />}
       </div>
+
+      {/*
+        Outside the scrolling box, so it stays put instead of sliding away with
+        round one. Hidden from screen readers: the instruction is already in the
+        region's name, and it is about swiping.
+      */}
+      {canScrollSideways && !hasScrolled && (
+        <p aria-hidden="true" className="mt-2 text-center text-xs text-muted-foreground md:hidden">
+          Swipe to see later rounds →
+        </p>
+      )}
 
       {/* Brackets-manager match editor */}
       <BracketsManagerMatchEditor
