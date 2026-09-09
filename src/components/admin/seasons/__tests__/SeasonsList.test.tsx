@@ -90,6 +90,20 @@ describe('SeasonsList activation control', () => {
     expect(screen.getByRole('button', { name: /finalize playoffs/i })).toBeInTheDocument();
   });
 
+  // A-12: Edit was offered on every card, archived ones included, even though an
+  // archived season's stats are snapshotted and its champions already awarded.
+  it('offers Edit on a live season and refuses it on an archived one', () => {
+    renderList([
+      makeSeason({ id: 's-live', name: 'Spring 2026' }),
+      makeSeason({ id: 's-old', name: 'Winter 2025', is_archived: true }),
+    ]);
+
+    const [live, archived] = screen.getAllByRole('button', { name: 'Edit' });
+    expect(live).toBeEnabled();
+    expect(archived).toBeDisabled();
+    expect(archived).toHaveAttribute('title', expect.stringMatching(/cannot be edited/i));
+  });
+
   it('opens no dialog until Activate is pressed', () => {
     renderList([makeSeason()]);
 

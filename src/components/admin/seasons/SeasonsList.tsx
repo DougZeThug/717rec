@@ -133,6 +133,16 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                     size="sm"
                     onClick={() => onEditSeason(season)}
                     className="flex items-center gap-1"
+                    // An archived season is a closed record: its stats are
+                    // snapshotted and its champions awarded. Renaming it or
+                    // moving its dates now would rewrite history the History
+                    // page already shows.
+                    disabled={season.is_archived}
+                    title={
+                      season.is_archived
+                        ? 'Archived seasons cannot be edited — their results are already final.'
+                        : undefined
+                    }
                   >
                     <Edit className="size-3" />
                     Edit

@@ -21,8 +21,9 @@ many are inactive.
 Below them, on the left, is **Create New Season**. On the right — but only when a
 season is active — a green badge reads "Current Active Season" beside an **Open
 for confirmation** switch and an **Archive Season** button. Below that is every season, newest first, one card
-each, with a coloured status badge and an **Edit** button. A season that is
-neither active nor archived also has an **Activate** button. A season whose
+each, with a coloured status badge and an **Edit** button — greyed out on an
+archived season, which explains itself on hover. A season that is neither active
+nor archived also has an **Activate** button. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
@@ -100,10 +101,10 @@ Validation runs on submit, not while typing:
 | --- | --- | --- |
 | Season Name | at least one character | "Season name is required" |
 | Start Date | must be set | "Start date is required" |
-| End Date | none — may be left empty | — |
+| End Date | may be left empty; if given, on or after the start date | "The end date cannot be before the start date" |
 
-Nothing checks that the end date is after the start date, and nothing checks
-whether the dates overlap another season. Two seasons can cover the same weeks.
+Nothing checks whether the dates overlap another season. Two seasons can cover
+the same weeks.
 
 **Changing a start date silently re-numbers every week.** Week numbers are worked
 out from the match date against the season start, so moving the start date moves
@@ -111,8 +112,11 @@ every match into a different week everywhere the app groups by week, with no
 warning and no record. See
 [`../foundations/seasons.md`](../foundations/seasons.md#weeks).
 
-An archived season can be edited exactly like any other. The Edit button appears
-on every card.
+**An archived season cannot be edited.** Its Edit button is disabled and reads,
+on hover, "Archived seasons cannot be edited — their results are already final."
+Archiving snapshots every team's stats and awards the placement badges, so
+renaming a season or moving its dates afterwards would rewrite what the History
+page already shows.
 
 ### Submit
 
