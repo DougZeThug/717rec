@@ -405,4 +405,31 @@ describe('Schedule page', () => {
       expect(mockUseMatchTimeslots.mock.calls.length).toBeLessThan(10);
     });
   });
+
+  // UX audit SC-04: Home's "my match" row links to /schedule?date=...#match-<id>.
+  describe('a link naming one match', () => {
+    it('scrolls to the card once the matches have arrived', () => {
+      const scrollIntoView = vi.fn();
+      vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
+      const card = document.createElement('div');
+      card.id = 'match-m1';
+      document.body.appendChild(card);
+
+      renderPage('/schedule?date=2026-09-03#match-m1');
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      card.remove();
+    });
+
+    // The match may be on the other tab, or on a night the link did not name.
+    // Forcing a tab change would fight the page's own choice of tab.
+    it('does nothing when the card is not on the page', () => {
+      const scrollIntoView = vi.fn();
+      vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
+
+      renderPage('/schedule?date=2026-09-03#match-not-here');
+
+      expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+  });
 });

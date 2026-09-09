@@ -1,5 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -14,6 +15,7 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
+import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
 import { Match } from '@/types';
@@ -233,6 +235,25 @@ const Schedule = () => {
       );
     });
   }, [activeTab, upcomingMatches, completedMatches, searchTerm]);
+
+  // A link may name one match, e.g. Home's "my match" row. Scroll to it once
+  // the cards exist. Runs once: a refetch must not drag the reader back.
+  const linkedMatchId = useLocation().hash.replace('#match-', '');
+  const scrollBehavior = useScrollBehavior();
+  const hasScrolledToMatch = useRef(false);
+
+  useEffect(() => {
+    if (!linkedMatchId || hasScrolledToMatch.current || matchesLoading) return;
+
+    const card = document.getElementById(`match-${linkedMatchId}`);
+    // The match may be on the tab that is not open, or on another night. That
+    // is not worth forcing a tab change for: the link named a night, and the
+    // page is showing it.
+    if (!card) return;
+
+    hasScrolledToMatch.current = true;
+    card.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
+  }, [linkedMatchId, matchesLoading, scrollBehavior, filteredMatches]);
 
   const handleCreateMatchAdapter = (matchData: Omit<Match, 'id'>) =>
     handleCreateMatch(matchData, teams || []);

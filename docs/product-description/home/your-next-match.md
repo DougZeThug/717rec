@@ -25,7 +25,9 @@ middle, the opponent's logo on the right, both names under their logos, and the
 date and time on the right — "Thursday, Aug 28" above "7:00 PM". A chevron
 points to the right. Under the panel, a small link reads **See full schedule**.
 
-The whole row is a link. Tapping it opens `/schedule`.
+The whole row is a link. Tapping it opens the schedule **on the night that
+match is on, scrolled to that match's card** — `/schedule?date=2026-09-03#match-<id>`.
+A match with no date yet falls back to the plain `/schedule`.
 
 If the player is allowed to score that match, a second full-width button sits
 directly under the row: **Score live**, with a radio icon. That one opens the
@@ -156,8 +158,9 @@ after a reload.
 **Toasts and notifications.** None. The card never raises a message of any kind,
 including when its data fails to load.
 
-**URL state.** None. The card has no address and no way to link to the match it
-is showing.
+**URL state.** The card itself has no address, but the row builds one: the night
+in `?date=` and the match in the hash, which the schedule reads to scroll to the
+card.
 
 **On a phone.** Date and time move above the teams. Team names are truncated at
 about 80 pixels, so long names are cut. The **Score live** button is at least 40
@@ -182,12 +185,9 @@ from next to last, or vanishing is never announced.
   badge, and nothing says why.
 - **An opponent that has not been set reads "TBD"** with a placeholder logo.
 - **A match with no date reads "Date TBD"** and shows no time at all.
-- **The row always goes to `/schedule`**, never to the match. A user with one
-  match on the card still lands on the whole season's schedule and has to find it
-  again.
-- **`/schedule` does not keep any filter**, so following the row and pressing
-  back gives the home page and following it again gives the same unfiltered
-  schedule.
+- **A match the schedule is not showing is not chased.** The link names a night
+  and a match; if the card is on the other tab, the page does not switch tabs to
+  find it. The right night is still open.
 - **The heading counts rows, not matches.** Two matches on one Thursday give
   "YOUR NEXT MATCHES"; one gives the singular.
 - **A postponed or cancelled match is meant to be filtered out and is not.** See

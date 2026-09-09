@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Badge } from '@/components/ui/badge';
 import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
+import { getMatchDateKey } from '@/hooks/useMyNextMatch';
 import { cn } from '@/lib/utils';
 import { isMatchCompleted } from '@/utils/matchStatus';
 
@@ -246,8 +247,14 @@ export const MatchRow: React.FC<MatchRowProps> = ({
   const didWin = isCompleted && myTeamWins > opponentWins;
   const didLose = isCompleted && myTeamWins < opponentWins;
 
+  // The night the match is on, and the card itself. The row used to point at a
+  // bare /schedule, which opens on whichever night the page guesses — for a
+  // previous match, never the one the row is about. UX audit SC-04 / X-14.
+  const dayKey = getMatchDateKey(match);
+  const scheduleHref = dayKey ? `/schedule?date=${dayKey}#match-${match.id}` : '/schedule';
+
   const row = (
-    <Link to="/schedule" className="group block">
+    <Link to={scheduleHref} className="group block">
       <div className="py-3">
         <MobileDateTime
           formattedDate={formattedDate}
