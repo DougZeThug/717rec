@@ -75,6 +75,31 @@ describe('useUnsavedChangesGuard', () => {
     expect(beforeUnloadCalls(removeSpy)).toHaveLength(1);
   });
 
+  it('stops the browser leaving while there is work', () => {
+    renderHook(() => useUnsavedChangesGuard(true));
+
+    const event = new Event('beforeunload', { cancelable: true });
+    const preventDefault = vi.spyOn(event, 'preventDefault');
+    window.dispatchEvent(event);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('lets the browser leave once the work is saved', () => {
+    const { rerender } = renderHook(({ dirty }) => useUnsavedChangesGuard(dirty), {
+      initialProps: { dirty: true },
+    });
+
+    rerender({ dirty: false });
+
+    const event = new Event('beforeunload', { cancelable: true });
+    const preventDefault = vi.spyOn(event, 'preventDefault');
+    window.dispatchEvent(event);
+
+    expect(preventDefault).not.toHaveBeenCalled();
+  });
+
   it('asks about its own work when a Cancel button calls confirmDiscard', () => {
     const { result } = renderHook(() => useUnsavedChangesGuard(true, 'Lose the round?'));
 

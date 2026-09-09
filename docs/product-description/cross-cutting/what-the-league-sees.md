@@ -209,8 +209,11 @@ the app. Other screens hold their own; see
 third party; no message is ever sent because of something a player did. See
 [`foundations/messages-to-the-user.md`](../foundations/messages-to-the-user.md).
 
-**URL state.** The recorded path is the address only. No filter, tab, or sort
-order is in the URL, so none of them is ever counted.
+**URL state.** The recorded path is the **path** only — never the query string
+or the hash. Some views do reach the address now (the schedule's night and
+search, the standings view, the compared teams, the playoff bracket, the
+team-page section), and none of them is counted or sent: changing one leaves the
+path alone, so no second pageview is raised either.
 
 **On a phone.** A phone is recorded with its own device class and nothing else.
 See [`on-a-phone.md`](on-a-phone.md).

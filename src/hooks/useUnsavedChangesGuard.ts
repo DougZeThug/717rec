@@ -60,11 +60,15 @@ export const useUnsavedChangesGuard = (
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, [isDirty]);
 
   // Asks about this component's own work, not whatever else is registered, so
   // a Cancel button always shows the message that belongs to it.
+  // skipcq: JS-0052 -- a Cancel handler has to have its answer before it
+  // returns, and confirm is the only thing that answers synchronously
   const confirmDiscard = useCallback(
     () => !latest.current.isDirty || window.confirm(latest.current.message),
     []

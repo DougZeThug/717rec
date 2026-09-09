@@ -50,7 +50,7 @@ vi.mock('framer-motion', () => ({
 
 import React from 'react';
 
-import { ADMIN_TAB_STORAGE_KEY } from '@/utils/adminTabs';
+import { ADMIN_TAB_STORAGE_KEY, switchAdminTab } from '@/utils/adminTabs';
 
 import AdminDashboard from '../AdminDashboard';
 
@@ -167,6 +167,26 @@ describe('AdminDashboard page', () => {
     renderDashboard('/admin/not-a-section');
 
     expect(currentPath()).toBe('/admin/timeslots');
+  });
+
+  it('remembers the section it opens, so a bare /admin comes back to it', () => {
+    asAdmin();
+    renderDashboard('/admin/divisions');
+
+    expect(sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY)).toBe('divisions');
+  });
+
+  // Codex review: switchAdminTab used to record the section before the shell
+  // had a chance to refuse the switch, so cancelling over unsaved work still
+  // left the refused section as the one a bare /admin reopened.
+  it('does not remember a section that was only asked for', () => {
+    asAdmin();
+    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, 'timeslots');
+    renderDashboard('/admin/timeslots');
+
+    switchAdminTab('blind-draw');
+
+    expect(sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY)).toBe('timeslots');
   });
 
   it('ignores a remembered section that no longer exists', () => {

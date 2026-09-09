@@ -11,7 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
-import { rememberAdminSection, subscribeToAdminTabRequests } from '@/utils/adminTabs';
+import { subscribeToAdminTabRequests } from '@/utils/adminTabs';
 import { confirmDiscardUnsavedWork } from '@/utils/unsavedChanges';
 
 import AdminMobileNav from './AdminMobileNav';
@@ -52,7 +52,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
     (tabId: string) => {
       if (tabId === activeTab) return true;
       if (!confirmDiscardUnsavedWork()) return false;
-      rememberAdminSection(tabId);
       navigate(`/admin/${tabId}`);
       return true;
     },

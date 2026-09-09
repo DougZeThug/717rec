@@ -21,6 +21,38 @@ interface AdminMobileNavProps {
   pendingRequestsCount?: number;
 }
 
+/** The two jobs an admin reaches for on league night, always one tap away. */
+const QuickAccess: React.FC<{
+  activeTab: string;
+  onSelect: (tabId: string) => boolean;
+}> = ({ activeTab, onSelect }) => (
+  <div className="pb-3 border-b border-border">
+    <p className="text-xs text-muted-foreground mb-2 px-1 font-medium uppercase tracking-wide">
+      Quick Access
+    </p>
+    <div className="flex gap-2">
+      <Button
+        variant={activeTab === 'scores' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onSelect('scores')}
+        className="flex-1 h-10"
+      >
+        <ListChecks className="size-4 mr-2" />
+        Scores
+      </Button>
+      <Button
+        variant={activeTab === 'timeslots' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onSelect('timeslots')}
+        className="flex-1 h-10"
+      >
+        <Timer className="size-4 mr-2" />
+        Timeslots
+      </Button>
+    </div>
+  </div>
+);
+
 /**
  * The phone menu: one bar, and the full section list behind it in a drawer.
  *
@@ -52,49 +84,22 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
-        {/* Names the section as well as opening the menu, so the bar answers
-            "where am I?" without costing a second row. */}
-        <Button
-          variant="outline"
-          onClick={() => setIsOpen(true)}
-          aria-haspopup="dialog"
-          aria-expanded={isOpen}
-          className="flex-1 h-11 justify-start gap-2 min-w-0"
-        >
-          <Menu className="size-4 shrink-0" />
-          <span className="text-xs text-muted-foreground shrink-0">Sections</span>
-          <span className="truncate font-medium">{activeLabel}</span>
-          <ChevronDown className="size-4 shrink-0 ml-auto text-muted-foreground" />
-        </Button>
-      </div>
+      {/* Names the section as well as opening the menu, so the bar answers
+          "where am I?" without costing a second row. */}
+      <Button
+        variant="outline"
+        onClick={() => setIsOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className="w-full h-11 justify-start gap-2 min-w-0"
+      >
+        <Menu className="size-4 shrink-0" />
+        <span className="text-xs text-muted-foreground shrink-0">Sections</span>
+        <span className="truncate font-medium">{activeLabel}</span>
+        <ChevronDown className="size-4 shrink-0 ml-auto text-muted-foreground" />
+      </Button>
 
-      {/* Quick Access stays on the page: these are the two league-night jobs. */}
-      <div className="pb-3 border-b border-border">
-        <p className="text-xs text-muted-foreground mb-2 px-1 font-medium uppercase tracking-wide">
-          Quick Access
-        </p>
-        <div className="flex gap-2">
-          <Button
-            variant={activeTab === 'scores' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleTabSelect('scores')}
-            className="flex-1 h-10"
-          >
-            <ListChecks className="size-4 mr-2" />
-            Scores
-          </Button>
-          <Button
-            variant={activeTab === 'timeslots' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleTabSelect('timeslots')}
-            className="flex-1 h-10"
-          >
-            <Timer className="size-4 mr-2" />
-            Timeslots
-          </Button>
-        </div>
-      </div>
+      <QuickAccess activeTab={activeTab} onSelect={handleTabSelect} />
 
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent className="max-h-[90vh]">

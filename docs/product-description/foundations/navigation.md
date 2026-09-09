@@ -43,9 +43,9 @@ stop them, and nothing warns before leaving a page with unsaved work.
 | `/auth` | Sign in and register | Readable |
 | `/setup-profile` | Finish your profile | Not guarded |
 | `/oauth/consent` | Authorise another app | Not guarded |
-| `/admin` | The admin dashboard | **Guarded**: redirects to `/auth` |
-| `/admin/notifications` | Nothing of its own; redirects to `/admin` | **Guarded**: redirects to `/auth` when signed out |
-| `/timeslots` | Nothing of its own; redirects to `/admin` | **Guarded**: redirects to `/auth` when signed out |
+| `/admin` | The admin dashboard; redirects to the section last open | **Guarded**: redirects to `/auth` |
+| `/admin/:section` | One admin section, e.g. `/admin/scores` | **Guarded**: redirects to `/auth` when signed out |
+| `/timeslots` | Nothing of its own; redirects to `/admin/timeslots` | **Guarded**: redirects to `/auth` when signed out |
 | anything else | Page not found | Readable |
 
 Only three routes are guarded. See

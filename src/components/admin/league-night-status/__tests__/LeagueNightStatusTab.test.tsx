@@ -136,7 +136,10 @@ describe('LeagueNightStatusTab', () => {
     fireEvent.click(screen.getByRole('button', { name: /score approvals.*open section/i }));
 
     expect(onRequest).toHaveBeenCalledWith('pending-matches');
-    expect(sessionStorage.getItem('adminActiveTab')).toBe('pending-matches');
+    // Asking is all this tile does. The dashboard records the section once it
+    // has actually opened it, because the switch can be refused when the
+    // section on screen holds unsaved work.
+    expect(sessionStorage.getItem('adminActiveTab')).toBeNull();
     // The tab now changes in place; the page no longer reloads.
     expect(window.location.reload).not.toHaveBeenCalled();
 

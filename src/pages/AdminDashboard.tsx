@@ -11,13 +11,22 @@ import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
 import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { toast } from '@/hooks/useToast';
-import { readRememberedAdminSection } from '@/utils/adminTabs';
+import { readRememberedAdminSection, rememberAdminSection } from '@/utils/adminTabs';
 
 const AdminDashboard = () => {
   const { isAdminAccessGranted, requestAdminAccess, isLoading } = useAdminAccess();
   const { user, authInitialized } = useAuth();
   const navigate = useNavigate();
   const { section } = useParams<{ section?: string }>();
+  const openSection = isAdminSectionId(section) ? section : null;
+
+  // Remember whichever section is actually on screen, so a bare /admin reopens
+  // it. Recorded here rather than where a switch is requested: the switch can be
+  // refused when there is unsaved work, and an address typed straight into the
+  // bar never passes through a request at all.
+  useEffect(() => {
+    if (openSection) rememberAdminSection(openSection);
+  }, [openSection]);
 
   // Redirect users who aren't logged in to the auth page
   useEffect(() => {
@@ -31,7 +40,7 @@ const AdminDashboard = () => {
     return (
       <div className="container mx-auto py-8 px-4 flex items-center justify-center h-[60vh]">
         <div className="text-center">
-          <div className="animate-spin rounded-full size-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full size-12 border-b-2 border-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Checking access...</p>
         </div>
       </div>
@@ -62,7 +71,7 @@ const AdminDashboard = () => {
   if (!section) {
     return <Navigate to={`/admin/${readRememberedAdminSection()}`} replace />;
   }
-  if (!isAdminSectionId(section)) {
+  if (!openSection) {
     return <Navigate to={`/admin/${DEFAULT_ADMIN_SECTION}`} replace />;
   }
 
@@ -74,7 +83,7 @@ const AdminDashboard = () => {
       transition={{ duration: 0.3 }}
     >
       <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8">Admin Dashboard</h1>
-      <AdminSidebar section={section} />
+      <AdminSidebar section={openSection} />
     </m.div>
   );
 };

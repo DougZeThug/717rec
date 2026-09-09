@@ -28,7 +28,13 @@ export const ADMIN_TAB_STORAGE_KEY = 'adminActiveTab';
  */
 const ADMIN_TAB_EVENT = 'admin:switch-tab';
 
-/** Remember the open section for the next bare `/admin` visit. */
+/**
+ * Remember the open section for the next bare `/admin` visit.
+ *
+ * Called by the dashboard for the section it renders, so the memory always
+ * matches what was really on screen — including a section reached by typing its
+ * address, and never a switch the admin cancelled.
+ */
 export const rememberAdminSection = (sectionId: string): void => {
   try {
     sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, sectionId);
@@ -52,9 +58,15 @@ export const readRememberedAdminSection = (): string => {
   return DEFAULT_ADMIN_SECTION;
 };
 
-/** Ask the admin dashboard to open a different section. */
+/**
+ * Ask the admin dashboard to open a different section.
+ *
+ * Deliberately does **not** record the section: the shell can refuse the switch
+ * when the open section holds unsaved work, and recording here would leave a
+ * refused section as the one a bare `/admin` reopens. The dashboard records
+ * whichever section it actually renders instead.
+ */
 export const switchAdminTab = (tabId: string): void => {
-  rememberAdminSection(tabId);
   window.dispatchEvent(new CustomEvent<string>(ADMIN_TAB_EVENT, { detail: tabId }));
 };
 

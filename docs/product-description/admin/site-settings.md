@@ -235,8 +235,8 @@ separate content, and nothing in the admin dashboard edits it. See
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. | The hero card form's Cancel and Back both discard everything typed with no confirmation. Escape closes the delete or repair confirmation. Neither aborts a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **Everything typed in the hero card form is lost, with no warning**, including switching dashboard section. A switch already flipped has already been written. |
+| Escape, or a Cancel button | No effect. | The hero card form's Cancel and Back **ask first** when a field has been changed, and discard everything typed once the admin agrees. Escape closes the delete or repair confirmation. Neither aborts a request already sent. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the hero card form holds changes, then loses everything typed. A switch already flipped has already been written. |
 | Browser back or forward | Steps to the previously opened section. | Same as navigating away. The form is not a route of its own, so Back never returns to it. |
 | Reload, or the tab closed | Returns to the same section, with the form closed. | The form's contents are lost. A sent write still lands. |
 | Network lost mid-request | Nothing to lose. | The write fails and a red toast appears. Theme failures say nothing useful; hero card failures carry the server's message. The switch snaps back to its stored value on the next re-fetch. |

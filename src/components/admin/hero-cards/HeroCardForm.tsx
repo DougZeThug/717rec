@@ -149,10 +149,12 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
       } else {
         await createCard(payload);
       }
-    } catch (error) {
-      // The form stays open with the work intact, and is guarded again.
+    } catch {
+      // The mutation has already raised its own error toast, so there is
+      // nothing to add and nothing above this to catch a rethrow. Keep the form
+      // open with the work intact, and guarded again.
       setIsSaving(false);
-      throw error;
+      return;
     }
     onClose();
   };

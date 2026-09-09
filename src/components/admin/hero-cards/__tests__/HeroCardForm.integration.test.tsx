@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -163,6 +163,20 @@ describe('HeroCardForm unsaved changes', () => {
 
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByLabelText('Headline')).toHaveValue('Old updated');
+  });
+
+  it('keeps the form and the guard when the save fails', async () => {
+    mocks.updateCard.mockRejectedValueOnce(new Error('network'));
+    const onClose = vi.fn();
+    renderForm(<HeroCardForm card={makeCard()} onClose={onClose} />);
+
+    await userEvent.type(screen.getByLabelText('Headline'), ' updated');
+    await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    // The form stays put with the typed value, and still reports unsaved work.
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Headline')).toHaveValue('Old updated');
+    await waitFor(() => expect(findUnsavedWork()).not.toBeNull());
   });
 
   it('does not ask on the close that follows a save', async () => {

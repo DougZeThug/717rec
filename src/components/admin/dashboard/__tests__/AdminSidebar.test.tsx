@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
-import { ADMIN_TAB_STORAGE_KEY, switchAdminTab } from '@/utils/adminTabs';
+import { switchAdminTab } from '@/utils/adminTabs';
 import { clearUnsavedWork, registerUnsavedWork } from '@/utils/unsavedChanges';
 
 // Polyfill ResizeObserver for jsdom (Radix ScrollArea needs it).
@@ -82,6 +82,7 @@ describe('AdminSidebar', () => {
     mockIsMobile.mockReturnValue(false);
     mockPendingRequestsCount.mockReturnValue(0);
     sessionStorage.clear();
+    clearUnsavedWork();
   });
 
   afterEach(() => {
@@ -99,20 +100,24 @@ describe('AdminSidebar', () => {
     );
   });
 
-  it('goes to the section the admin picks, and remembers it', async () => {
+  // Remembering the section belongs to the page, which records whatever it
+  // renders; see AdminDashboard's tests.
+  it('goes to the section the admin picks', async () => {
     renderSidebar();
 
     await userEvent.click(tabButton(/divisions/i));
 
     await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
-    expect(sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY)).toBe('divisions');
   });
 
   it('changes section when another part of the dashboard asks it to', async () => {
     renderSidebar();
 
     // This is how the Export tab and the League Night Status tiles navigate.
-    switchAdminTab('divisions');
+    // Wrapped in act because the dispatch is synchronous and outside React:
+    // without it the navigation it triggers races the scheduler, which made
+    // this case flaky under a loaded parallel run.
+    act(() => switchAdminTab('divisions'));
 
     await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
   });
@@ -152,7 +157,7 @@ describe('AdminSidebar', () => {
       registerDirtySection();
       renderSidebar();
 
-      switchAdminTab('divisions');
+      act(() => switchAdminTab('divisions'));
 
       await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
       expect(currentPath()).toBe('/admin/timeslots');

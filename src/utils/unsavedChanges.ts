@@ -46,6 +46,9 @@ export const findUnsavedWork = (): UnsavedWorkSource | null => {
 export const confirmDiscardUnsavedWork = (): boolean => {
   const unsaved = findUnsavedWork();
   if (!unsaved) return true;
+  // skipcq: JS-0052 -- the shell has to have the answer before it navigates,
+  // and confirm is the only thing that answers synchronously. The reasoning is
+  // in this module's header.
   return window.confirm(unsaved.message);
 };
 
