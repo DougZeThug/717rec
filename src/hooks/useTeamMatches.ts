@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchTeamMatchesData } from '@/services/matches/MatchReadService';
 import { Match } from '@/types';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 export const useTeamMatches = (teamId: string | undefined) => {
   const matchesQuery = useQuery({
@@ -44,8 +45,8 @@ export const useTeamMatches = (teamId: string | undefined) => {
       })) as Match[];
 
       return {
-        upcomingMatches: mappedMatches.filter((m) => !m.iscompleted),
-        pastMatches: mappedMatches.filter((m) => m.iscompleted),
+        upcomingMatches: mappedMatches.filter((m) => !isMatchCompleted(m)),
+        pastMatches: mappedMatches.filter(isMatchCompleted),
       };
     },
     enabled: !!teamId,

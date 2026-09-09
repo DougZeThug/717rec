@@ -6,6 +6,7 @@ import { TeamLogo } from '@/components/shared/TeamLogo';
 import { Badge } from '@/components/ui/badge';
 import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
 import { cn } from '@/lib/utils';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import {
   DEFAULT_ROW_STYLES,
@@ -230,7 +231,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
   const { canScore } = useCanScoreMatch({
     team1_id: match.team1Id ?? null,
     team2_id: match.team2Id ?? null,
-    iscompleted: isPrevious,
+    iscompleted: match.iscompleted,
   });
 
   // Format date and time
@@ -240,8 +241,9 @@ export const MatchRow: React.FC<MatchRowProps> = ({
   const isTeam1 = match.team1Id === myTeam.id;
   const myTeamWins = (isTeam1 ? match.team1_game_wins : match.team2_game_wins) ?? 0;
   const opponentWins = (isTeam1 ? match.team2_game_wins : match.team1_game_wins) ?? 0;
-  const didWin = isPrevious && myTeamWins > opponentWins;
-  const didLose = isPrevious && myTeamWins < opponentWins;
+  const isCompleted = isMatchCompleted(match);
+  const didWin = isCompleted && myTeamWins > opponentWins;
+  const didLose = isCompleted && myTeamWins < opponentWins;
 
   const row = (
     <Link to="/schedule" className="group block">

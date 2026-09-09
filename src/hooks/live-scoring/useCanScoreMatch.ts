@@ -4,7 +4,7 @@ import { useTeamMembership } from '@/hooks/useTeamMembership';
 export interface CanScoreMatchInput {
   team1_id: string | null;
   team2_id: string | null;
-  iscompleted: boolean | null;
+  iscompleted: boolean | null | undefined;
 }
 
 /**
