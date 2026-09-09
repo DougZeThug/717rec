@@ -1,29 +1,4 @@
-import {
-  Activity,
-  Bell,
-  Calendar,
-  CalendarClock,
-  ChevronDown,
-  ClipboardCheck,
-  Clock,
-  HelpCircle,
-  Inbox,
-  LayoutGrid,
-  ListChecks,
-  Mail,
-  Palette,
-  Scale,
-  Search,
-  Shuffle,
-  SlidersHorizontal,
-  Sparkles,
-  Timer,
-  Trophy,
-  Users,
-  Users2,
-  Wrench,
-  X,
-} from 'lucide-react';
+import { ChevronDown, ListChecks, Search, Timer, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -31,91 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
-interface AdminMenuItem {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-}
-
-interface TabGroup {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  tabs: string[];
-}
-
-const adminMenuItems: AdminMenuItem[] = [
-  { id: 'timeslots', label: 'Timeslots', icon: Timer },
-  { id: 'batch-matches', label: 'Match Creation', icon: Sparkles },
-  { id: 'auto-schedule', label: 'Auto Schedule', icon: CalendarClock },
-  { id: 'matchups', label: 'Matchups', icon: Users2 },
-  { id: 'scores', label: 'Scores', icon: ListChecks },
-  { id: 'live-corrections', label: 'Live Corrections', icon: Wrench },
-  { id: 'seasons', label: 'Season', icon: Calendar },
-  { id: 'participation', label: 'Participation', icon: ClipboardCheck },
-  { id: 'requests', label: 'Requests', icon: Inbox },
-  { id: 'contact-inbox', label: 'Contact Inbox', icon: Mail },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'teams', label: 'Teams', icon: Users },
-  { id: 'divisions', label: 'Divisions', icon: Trophy },
-  { id: 'pending-matches', label: 'Score approvals', icon: Clock },
-  { id: 'hero-cards', label: 'Hero Cards', icon: LayoutGrid },
-  { id: 'themes', label: 'Themes', icon: Palette },
-  { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
-  { id: 'help', label: 'Help', icon: HelpCircle },
-  { id: 'league-night-status', label: 'League Night', icon: Activity },
-  { id: 'power-migration', label: 'Power Score Review', icon: Scale },
-  { id: 'power-sandbox', label: 'Power Score Sandbox', icon: SlidersHorizontal },
-];
-
-const tabGroups: TabGroup[] = [
-  {
-    id: 'scheduling',
-    label: 'Scheduling',
-    icon: CalendarClock,
-    tabs: ['timeslots', 'batch-matches', 'auto-schedule'],
-  },
-  {
-    id: 'scores-stats',
-    label: 'Scores & Stats',
-    icon: ListChecks,
-    tabs: ['scores', 'matchups', 'pending-matches', 'power-sandbox'],
-  },
-  {
-    id: 'corrections',
-    label: 'Corrections',
-    icon: Wrench,
-    tabs: ['live-corrections'],
-  },
-  {
-    id: 'teams-players',
-    label: 'Teams & Players',
-    icon: Users,
-    tabs: ['teams', 'divisions', 'requests', 'contact-inbox', 'participation'],
-  },
-  {
-    id: 'settings',
-    label: 'Settings & Content',
-    icon: LayoutGrid,
-    tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'notifications', 'help'],
-  },
-  {
-    id: 'operations',
-    label: 'Operations',
-    icon: Activity,
-    tabs: ['league-night-status', 'power-migration'],
-  },
-];
+import {
+  ADMIN_SECTION_GROUPS,
+  ADMIN_SECTIONS,
+  type AdminSectionGroup,
+  findAdminSection,
+} from './adminSections';
 
 interface AdminMobileNavProps {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   pendingRequestsCount?: number;
 }
-
-const getTabItem = (tabId: string): AdminMenuItem | undefined => {
-  return adminMenuItems.find((item) => item.id === tabId);
-};
 
 const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   activeTab,
@@ -126,7 +28,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 
   // Auto-open the group containing the active tab
   const initialOpen = useMemo(() => {
-    const group = tabGroups.find((g) => g.tabs.includes(activeTab));
+    const group = ADMIN_SECTION_GROUPS.find((g) => g.sections.includes(activeTab));
     return group ? new Set([group.id]) : new Set<string>();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- activeTab intentionally excluded to keep nav memo stable
   }, []);
@@ -141,8 +43,8 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
     });
   };
 
-  const getGroupBadgeCount = (group: TabGroup): number => {
-    if (group.tabs.includes('requests') && pendingRequestsCount > 0) {
+  const getGroupBadgeCount = (group: AdminSectionGroup): number => {
+    if (group.sections.includes('requests') && pendingRequestsCount > 0) {
       return pendingRequestsCount;
     }
     return 0;
@@ -150,7 +52,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 
   const filteredItems = useMemo(() => {
     if (!searchQuery) return [];
-    return adminMenuItems.filter((item) =>
+    return ADMIN_SECTIONS.filter((item) =>
       item.label.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery]);
@@ -243,7 +145,7 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
       ) : (
         /* Grouped Accordion Navigation */
         <div className="space-y-3">
-          {tabGroups.map((group) => {
+          {ADMIN_SECTION_GROUPS.map((group) => {
             const GroupIcon = group.icon;
             const groupBadge = getGroupBadgeCount(group);
 
@@ -270,8 +172,8 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
                 </button>
                 {openGroups.has(group.id) && (
                   <div className="border-t border-border">
-                    {group.tabs.map((tabId) => {
-                      const tab = getTabItem(tabId);
+                    {group.sections.map((tabId) => {
+                      const tab = findAdminSection(tabId);
                       if (!tab) return null;
                       const TabIcon = tab.icon;
 
