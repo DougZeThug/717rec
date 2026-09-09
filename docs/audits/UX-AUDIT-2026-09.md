@@ -388,7 +388,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q18 ✅ | Help tab: make steps navigate; fix "Run Playoffs" target; list all 21 sections | A-08 | Medium |
 | Q19 ✅ | Rename the realtime pill ("Live updates: on/off"), add a per-round "Saved" confirmation | LS-01 | Medium |
 | Q20 ✅ | Suppress the "round number moved" toast for the scorer's own save | LS-02 | Medium |
-| Q21 | "Leave Team" button wraps inside the membership card at 390 px | J2 / MT | Medium |
+| Q21 ✅ | "Leave Team" button wraps inside the membership card at 390 px | J2 / MT | Medium |
 | Q22 | Bracket: swipe hint, focusable scroll container, `alt`/`aria-hidden` on participant logos, larger names | PO-01 | High |
 | Q23 | Playoffs: derive season from `?bracket=`; put `season` in the URL | PO-02 | Medium |
 | Q24 | Timeslots: label chips as blocks, default date to next Thursday, disable Confirm while submitting | A-04 | Medium |
