@@ -124,6 +124,7 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 - **Recommend:** show an "Admin" item in the header/bottom bar when `isAdminAccessGranted`; add "Playoffs" to the League Night quick actions and fix the Help step target.
 - **Priority:** High. **Effort:** S.
 - **Accept:** an admin sees an Admin entry in the primary nav on phone and desktop; League Night links to `/playoffs`.
+- **Half done.** Q18 fixed the Help step's target and Q27 added a Playoffs quick action to League Night, so playoff administration is now reachable from inside the console. The Admin entry in the primary nav is still only in the user menu — that is **W11**.
 
 ### X-04 · No password recovery anywhere — **High**
 - **Where / who:** `/auth` (`src/components/auth/AuthForm.tsx`) · any member who forgot a password. **Observed:** the sign-in card has Login / Sign Up / Google and a "Sign up" link only (`anon/auth--m390--fold.jpg`); grep of `src/` finds no `resetPasswordForEmail` and no "forgot" copy.
@@ -395,7 +396,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q24 ✅ | Timeslots: label chips as blocks, default date to next Thursday, disable Confirm while submitting | A-04 | Medium |
 | Q25 ✅ | One vocabulary: "Score approvals", "Reject", "Match Creation"; `MATCH_STATUS_LABELS` | X-13 | Medium |
 | Q26 | Match Creation validation names the row; toast title "Missing details" not "Notification Error"; per-timeslot court numbers; block-time list | A-18 | Medium |
-| Q27 | League Night: fix header copy; add Timeslots, Match Creation, Notifications, Blind Draw, Playoffs quick actions; tuck developer links away | A-16, X-03 | Medium |
+| Q27 ✅ | League Night: fix header copy; add Timeslots, Match Creation, Notifications, Blind Draw, Playoffs quick actions; tuck developer links away | A-16, X-03 | Medium |
 | Q28 | Insights: drop self-pairing rows, show percentages | IN-01 | Medium |
 | Q29 | Pending: confirm on Reject; group conflicting reports | A-10 | Medium |
 | Q30 | Seasons: disable Edit on archived, allow Archive on inactive, validate end ≥ start | A-12 | Medium |
