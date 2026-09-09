@@ -59,41 +59,6 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
   // state update. Internal editor saves still bump refreshCounter below.
   const refreshKey = `${refreshCounter}:${refreshSignal ?? 'initial'}`;
 
-  /**
-   * Watches whether the bracket is wider than the screen.
-   *
-   * The viewer's own render is asynchronous and not awaited, so the container
-   * is empty at mount and any one-off measurement would report "it fits". A
-   * ResizeObserver answers whenever the injected DOM changes size, and again on
-   * rotation. It is observed on the wrapper (which grows when content lands) and
-   * on the scroller itself (which changes with the viewport) — never on the
-   * inner container, whose node React replaces on every refresh.
-   */
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    if (typeof ResizeObserver === 'undefined') return;
-
-    const measure = () => {
-      const overflowing = scroller.scrollWidth - scroller.clientWidth > 8;
-      // Guarded by value: showing the hint changes the page height, which would
-      // otherwise call this straight back.
-      setCanScrollSideways((current) => (current === overflowing ? current : overflowing));
-    };
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(scroller);
-    if (wrapperRef.current) observer.observe(wrapperRef.current);
-
-    const onScroll = () => setHasScrolled(true);
-    scroller.addEventListener('scroll', onScroll, { passive: true });
-
-    return () => {
-      observer.disconnect();
-      scroller.removeEventListener('scroll', onScroll);
-    };
-  }, []);
-
   // Match click handler - routes to BM editor or legacy handler
   const handleMatchClicked = useCallback(
     (match: BracketsViewerMatchClick) => {
@@ -144,6 +109,46 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
     refreshKey,
     onMatchClicked: handleMatchClicked,
   });
+
+  /**
+   * Watches whether the bracket is wider than the screen.
+   *
+   * The viewer's render is asynchronous and not awaited, so the container is
+   * empty at mount and any one-off measurement would report "it fits". The
+   * element that grows is the inner container, which is drawn at max-content
+   * width: the scroller and the wrapper keep the viewport's width however wide
+   * the bracket gets, so observing those alone would never fire again. The
+   * scroller is still observed for rotation and window resizes.
+   *
+   * Re-runs when the render finishes and when a refresh replaces the container
+   * node, so the observation never ends up attached to a node React has thrown
+   * away.
+   */
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    if (typeof ResizeObserver === 'undefined') return;
+
+    const measure = () => {
+      const overflowing = scroller.scrollWidth - scroller.clientWidth > 8;
+      // Guarded by value: showing the hint changes the page height, which would
+      // otherwise call this straight back.
+      setCanScrollSideways((current) => (current === overflowing ? current : overflowing));
+    };
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroller);
+    if (containerRef.current) observer.observe(containerRef.current);
+    measure();
+
+    const onScroll = () => setHasScrolled(true);
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      scroller.removeEventListener('scroll', onScroll);
+    };
+  }, [refreshKey, isInitialized]);
 
   // Guard: Require valid bracket with ID — moved AFTER all hooks to comply with
   // the Rules of Hooks (hooks must always be called in the same order).

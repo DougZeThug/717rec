@@ -78,6 +78,21 @@ export function usePlayoffPageData(): PlayoffPageData {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bracketParam]);
 
+  /**
+   * The address is the source of truth for the season once it names one. Back
+   * and Forward change the params without remounting this page, so a resolver
+   * that only ran while the season was unset would keep the season the reader
+   * had just navigated away from — and the mirror below would then write it
+   * straight back over the restored URL.
+   */
+  useEffect(() => {
+    if (seasonParam && seasonParam !== selectedSeasonId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
+      setSelectedSeasonId(seasonParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seasonParam]);
+
   const setSelectedBracketId = useCallback(
     (id: string | null) => {
       bracketLog('setSelectedBracketId called:', { newId: id, currentId: selectedBracketId });
@@ -129,15 +144,13 @@ export function usePlayoffPageData(): PlayoffPageData {
   useEffect(() => {
     if (selectedSeasonId) return;
 
-    if (seasonParam) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-      setSelectedSeasonId(seasonParam);
-      return;
-    }
+    // Named in the address: the effect above adopts it, including on a Back.
+    if (seasonParam) return;
 
     if (bracketParam && !selectedBracketError) {
       if (selectedBracketLoading) return;
       if (selectedBracket?.seasonId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
         setSelectedSeasonId(selectedBracket.seasonId);
         return;
       }
@@ -169,7 +182,12 @@ export function usePlayoffPageData(): PlayoffPageData {
    */
   useEffect(() => {
     if (!selectedSeasonId) return;
-    if (searchParams.get('season') === selectedSeasonId) return;
+    const inUrl = searchParams.get('season');
+    if (inUrl === selectedSeasonId) return;
+    // A different season in the address is a Back, a Forward, or a pasted link.
+    // The effect above adopts it; writing state over it here would undo the
+    // reader's own navigation.
+    if (inUrl) return;
     const next = new URLSearchParams(searchParams);
     next.set('season', selectedSeasonId);
     setSearchParams(next, { replace: true });

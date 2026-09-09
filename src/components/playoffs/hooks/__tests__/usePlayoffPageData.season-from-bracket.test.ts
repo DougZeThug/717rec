@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Same stubs as the season-default suite, but the URL and the bracket query are
@@ -154,6 +154,26 @@ describe('usePlayoffPageData season and the bracket in the URL', () => {
     expect(setSearchParams).toHaveBeenCalledWith(expect.any(URLSearchParams), { replace: true });
     expect(searchParams.get('season')).toBe('past-season');
     expect(searchParams.get('bracket')).toBe('b-past');
+  });
+
+  // Back and Forward change the address without remounting the page. Resolving
+  // the season only while it was unset left the reader on the season they had
+  // just navigated away from, and the address was rewritten to match it.
+  it('follows the address when Back restores the previous season', () => {
+    searchParams = new URLSearchParams('season=season-a');
+
+    const { result, rerender } = renderHook(() => usePlayoffPageData());
+    expect(result.current.selectedSeasonId).toBe('season-a');
+
+    act(() => result.current.setSelectedSeasonId('season-b'));
+    expect(result.current.selectedSeasonId).toBe('season-b');
+
+    // Back: the address returns to the earlier season, the page stays mounted.
+    searchParams = new URLSearchParams('season=season-a');
+    rerender();
+
+    expect(result.current.selectedSeasonId).toBe('season-a');
+    expect(searchParams.get('season')).toBe('season-a');
   });
 
   // The same disagreement, the other way round: the bracket on screen belongs

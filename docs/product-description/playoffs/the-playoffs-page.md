@@ -71,9 +71,15 @@ the request to finish, not for a season to appear on it: an old bracket can
 resolve with no season at all, and the page then falls back to the automatic
 choice. A bracket that fails to load does the same.
 
-Whichever way it is chosen, the season is written into the address as
-`?season=<id>`, replacing the current entry rather than adding a history step, so
-a copied link opens the same view and browser Back still leaves the page.
+However it is chosen, the season ends up in the address as `?season=<id>`, so a
+copied link opens the same view. A season the page worked out for itself
+replaces the current history entry, adding no step to go back through; a season
+**chosen from the picker** adds one, like choosing a bracket does.
+
+The address stays in charge after that. Back and Forward change the params
+without reloading the page, and the season follows them — back to the previous
+season, forward to the one just left — rather than the page rewriting the
+address to the season it happens to be holding.
 
 > **Technical note:** `/stats` resolves the same pair the other way round —
 > active season first. That is deliberate. The standings should follow the new
@@ -159,7 +165,7 @@ none. A league in its first season therefore never sees it.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket — "Back to brackets" and browser back are the only ways out of one, and "Back to brackets" appears only when the bracket failed to load. |
 | In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not. An in-flight load is abandoned. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Scroll position is not restored on this route. |
+| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
 | Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. |
 | Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
 | The request fails or times out | Each failing request gets its own banner, stacked above the list: "Loading brackets" and "Loading divisions" for the list, "Loading bracket" for the chosen one. The brackets banner has a "Try again" button. | The chosen bracket failing shows a "Loading bracket" banner with both "Try again" and "Back to brackets". **"Back to brackets" is the only thing that clears `?bracket=<id>`**, so without it a reload just retries the same broken bracket forever. |
