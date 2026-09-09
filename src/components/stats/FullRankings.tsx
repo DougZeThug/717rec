@@ -3,6 +3,7 @@ import React, { useMemo, useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { useStandingsViewParam } from '@/hooks/stats/useStandingsViewParam';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -43,7 +44,8 @@ const StandingsBody: React.FC<{
 );
 
 const FullRankings: React.FC<FullRankingsProps> = ({ rankings, myTeamId }) => {
-  const [view, setView] = useState<'division' | 'all'>('division');
+  // In the address, so the whole-league table can be linked to. UX audit X-14.
+  const [view, setView] = useStandingsViewParam();
   const [isOpen, setIsOpen] = useState(true); // Start uncollapsed
   const { resolvedTheme } = useTheme();
   const { isWinterTheme } = useSeasonalTheme();

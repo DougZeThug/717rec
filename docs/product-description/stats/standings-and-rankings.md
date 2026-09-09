@@ -69,8 +69,8 @@ browser's back button.
 ### Leave without changing anything
 
 Nothing is recorded and nothing is kept, except the compact-or-detailed choice on
-a phone, which is remembered in the browser. Division-or-all and the sort order
-are both forgotten.
+a phone, which is remembered in the browser, and division-or-all, which is in the
+address. The sort order is forgotten.
 
 ### Begin editing
 
@@ -204,9 +204,14 @@ offline reading.
 
 **Toasts and notifications.** None. This page produces no messages at all.
 
-**URL state.** None beyond the path. The sort, the view, the expanded row, and
-the collapsed cards are all lost on navigation, so a particular arrangement of
-the table cannot be shared or bookmarked.
+**URL state.** The Division / All choice is in the address: `/stats?view=all`.
+Divisions is the default and is written as *no* parameter, so a plain `/stats`
+stays plain and `/stats?view=all` is the shareable form. The choice replaces the
+current history entry rather than adding one, so Back leaves the page rather than
+stepping through view changes.
+
+The sort, the expanded row and the collapsed cards are still lost on navigation,
+so a particular arrangement of the table cannot be shared.
 
 **On a phone.** The table becomes cards. A "League Leaderboard" strip at the top
 shows the top three by power score with gold, silver and bronze borders — always
