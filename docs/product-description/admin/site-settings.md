@@ -197,8 +197,15 @@ editor, and the league's own operations playbook on GitHub.
 ## Help
 
 The Help section is a fixed page and cannot be changed from the app. It holds a
-six-step setup workflow, a reference list describing **eleven** of the
-dashboard's twenty sections, and four tips.
+six-step setup workflow, a reference list describing **all twenty-one** of the
+dashboard's sections, and four tips.
+
+Every entry is a control, not a label. Pressing a workflow step or a section
+card opens that section: the dashboard switches in place, and nothing reloads.
+Each step's badge carries the section's
+menu name ("Match Creation"), not its internal id. Step six, **Run Playoffs**,
+is the one that leaves: playoff administration lives on the public playoffs
+page, so it is a link to `/playoffs`.
 
 It is **not** the help page players see. `/help` is a separate route with
 separate content, and nothing in the admin dashboard edits it. See
@@ -290,8 +297,6 @@ immediately. Repairing counters rewrites the standings everybody reads.
   Champions or Event card's contents with it.
 - **League Night's tiles reload the whole app.** Work in progress in another
   section is lost without warning.
-- **The Help section lists eleven of twenty sections** and its sixth workflow
-  step points at the wrong one.
 - **The traffic chart's empty state blames the release**, saying the beacon
   started with it, which will read oddly a year from now.
 
@@ -309,9 +314,10 @@ immediately. Repairing counters rewrites the standings everybody reads.
 - **Switching section by reloading the page** discards unsaved work elsewhere in
   the dashboard, including a hero card being written. Worth raising as a product
   question.
-- **The admin Help section is out of date** with the dashboard it documents: nine
-  sections are missing and one step names the wrong section. It is static text,
-  so it will drift again.
+- Resolved: **the admin Help section was out of date** with the dashboard it
+  documents — nine sections were missing and one step named the wrong one. It now
+  describes every section, each entry opens that section, and a test compares its
+  list with the sidebar's, so it cannot drift again unnoticed.
 - Not confirmed by hand: what a player already using a theme sees after that
   theme is disabled — whether they are moved to another theme or keep it.
 - Not confirmed by hand: whether the hero card live preview matches what the home

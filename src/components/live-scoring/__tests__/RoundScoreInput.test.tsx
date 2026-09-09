@@ -183,6 +183,41 @@ describe('RoundScoreInput', () => {
     expect(onSelectionDiscarded).not.toHaveBeenCalled();
   });
 
+  it('says nothing when the round moved on because this scorer saved it', async () => {
+    // The save is away but its promise has not resolved, so the grids still hold
+    // the taps. The mutation can report itself finished a render before they are
+    // cleared, and the optimistic round has already moved the heading on. That
+    // gap used to announce the scorer's own round as scores taken away.
+    let settle: () => void = () => undefined;
+    onSubmit.mockReturnValue(
+      new Promise<void>((resolve) => {
+        settle = resolve;
+      })
+    );
+    const { rerender } = renderInput();
+
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+    expect(onSelectionDiscarded).not.toHaveBeenCalled();
+    settle();
+  });
+
+  it('still reports another scorer taking the round while scores are tapped', async () => {
+    const { rerender } = renderInput();
+
+    // Tapped but never saved, so the round can only have moved on elsewhere.
+    await tapScore('Baggers', 8);
+    await tapScore('Tossers', 5);
+
+    rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+    expect(onSelectionDiscarded).toHaveBeenCalledTimes(1);
+  });
+
   it('says nothing when the round moves on with no scores tapped', () => {
     const { rerender } = renderInput();
 

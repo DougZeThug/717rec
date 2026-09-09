@@ -3,27 +3,32 @@ import {
   Calendar,
   CalendarClock,
   CheckCircle2,
-  Clock,
-  LayoutGrid,
   Lightbulb,
   ListChecks,
-  Shuffle,
   Sparkles,
   Timer,
   Users,
-  Users2,
 } from 'lucide-react';
 import React from 'react';
+import { Link } from 'react-router';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { switchAdminTab } from '@/utils/adminTabs';
+
+import { adminSectionGuide } from './adminSectionGuide';
 
 interface WorkflowStep {
   step: number;
   title: string;
   description: string;
   icon: React.ElementType;
-  tab: string;
+  /** Admin section this step is done in. */
+  tab?: string;
+  /** Page this step is done on, when it is not an admin section. */
+  href?: string;
+  /** What to show on the badge when the step leaves the dashboard. */
+  hrefLabel?: string;
 }
 
 const workflowSteps: WorkflowStep[] = [
@@ -65,72 +70,12 @@ const workflowSteps: WorkflowStep[] = [
   {
     step: 6,
     title: 'Run Playoffs',
+    // Playoff administration is not a dashboard section: brackets are created
+    // and advanced from the public playoffs page, with an admin toolbar.
     description: 'Create brackets and manage tournament progression',
     icon: Sparkles,
-    tab: 'batch-matches',
-  },
-];
-
-const tabDescriptions = [
-  {
-    id: 'timeslots',
-    label: 'Timeslots',
-    icon: Timer,
-    description: 'Manage available match times and court assignments',
-  },
-  {
-    id: 'batch-matches',
-    label: 'Match Creation',
-    icon: Sparkles,
-    description: 'Create individual matches or batch import matchups',
-  },
-  {
-    id: 'auto-schedule',
-    label: 'Auto Schedule',
-    icon: CalendarClock,
-    description: 'Automatically generate balanced schedules for divisions',
-  },
-  {
-    id: 'matchups',
-    label: 'Matchups',
-    icon: Users2,
-    description: 'View opponent history and matchup frequency',
-  },
-  {
-    id: 'scores',
-    label: 'Scores',
-    icon: ListChecks,
-    description: 'Enter and manage match scores in bulk',
-  },
-  {
-    id: 'seasons',
-    label: 'Season',
-    icon: Calendar,
-    description: 'Configure season settings, dates, and champions',
-  },
-  {
-    id: 'teams',
-    label: 'Teams',
-    icon: Users,
-    description: 'Add, edit, and manage teams and their divisions',
-  },
-  {
-    id: 'pending-matches',
-    label: 'Pending',
-    icon: Clock,
-    description: 'Review and approve player-submitted scores',
-  },
-  {
-    id: 'hero-cards',
-    label: 'Hero',
-    icon: LayoutGrid,
-    description: 'Manage homepage hero cards and announcements',
-  },
-  {
-    id: 'blind-draw',
-    label: 'Blind Draw',
-    icon: Shuffle,
-    description: 'View and manage blind draw event signups',
+    href: '/playoffs',
+    hrefLabel: 'Playoffs page',
   },
 ];
 
@@ -140,6 +85,27 @@ const tips = [
   'Create playoff brackets after the regular season ends',
   'Update hero cards to highlight upcoming events',
 ];
+
+/** The sidebar name of the section a step opens. */
+const sectionLabel = (tabId: string) =>
+  adminSectionGuide.find((section) => section.id === tabId)?.label ?? tabId;
+
+const rowClasses =
+  'w-full rounded-md p-2 -m-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+
+/** Title, target badge and description — the same body for a button or a link. */
+const StepBody: React.FC<{ item: WorkflowStep }> = ({ item }) => (
+  <>
+    <div className="flex flex-wrap items-center gap-2">
+      <item.icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="font-medium">{item.title}</span>
+      <Badge variant="outline" className="text-xs">
+        {item.tab ? sectionLabel(item.tab) : item.hrefLabel}
+      </Badge>
+    </div>
+    <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
+  </>
+);
 
 const GettingStartedTab: React.FC = () => {
   return (
@@ -159,48 +125,58 @@ const GettingStartedTab: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <ol className="space-y-4">
             {workflowSteps.map((item, index) => (
-              <div key={item.step} className="flex items-start gap-4">
+              <li key={item.step} className="flex items-start gap-4">
                 <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-semibold text-primary">{item.step}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <item.icon className="size-4 text-muted-foreground" />
-                    <span className="font-medium">{item.title}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {item.tab}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-0.5">{item.description}</p>
+                  {item.href ? (
+                    <Link to={item.href} className={`block ${rowClasses}`}>
+                      <StepBody item={item} />
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      className={rowClasses}
+                      onClick={() => item.tab && switchAdminTab(item.tab)}
+                    >
+                      <StepBody item={item} />
+                    </button>
+                  )}
                 </div>
                 {index < workflowSteps.length - 1 && (
                   <ArrowRight className="size-4 text-muted-foreground/50 flex-shrink-0 mt-2" />
                 )}
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </CardContent>
       </Card>
 
-      {/* Tab Reference */}
+      {/* Section reference */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Admin Tabs Reference</CardTitle>
+          <CardTitle className="text-lg">All {adminSectionGuide.length} admin sections</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-2">
-            {tabDescriptions.map((tab) => (
-              <div key={tab.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+            {adminSectionGuide.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onClick={() => switchAdminTab(section.id)}
+              >
                 <div className="p-2 rounded-md bg-background">
-                  <tab.icon className="size-4 text-primary" />
+                  <section.icon className="size-4 text-primary" aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-medium text-sm">{tab.label}</p>
-                  <p className="text-xs text-muted-foreground">{tab.description}</p>
+                  <p className="font-medium text-sm">{section.label}</p>
+                  <p className="text-xs text-muted-foreground">{section.description}</p>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         </CardContent>

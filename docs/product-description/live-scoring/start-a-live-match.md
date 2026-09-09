@@ -56,7 +56,12 @@ worked out at the same time, and the screen waits for both.
 
 Two subscriptions open. One watches games and rounds for this match and pushes
 changes in as they happen. Its state is shown in the header, so a scorer can see
-whether the screen is live.
+whether the screen is live: **"Live updates: on"**, **"Live updates:
+connecting"** before the first answer, or **"Live updates: off · your scores
+still save"** while the channel is down and retrying. The note sits under the
+score, not above it, because it is a footnote about the channel and not about
+the match. Saving a round is an ordinary request and does not use this channel,
+so the words never claim otherwise.
 
 **Nothing is written by arriving.** Opening a match does not start it, claim it,
 or tell anyone else that somebody is looking.
@@ -87,7 +92,7 @@ first action, owned by its own document.
 ### While editing
 
 The header stays put through every stage. It shows both teams, the games won by
-each, and the connection state. On an officially completed match it shows the
+each, and below them the live-updates note. On an officially completed match it shows the
 saved game wins; otherwise it shows the game wins worked out from the games
 themselves.
 

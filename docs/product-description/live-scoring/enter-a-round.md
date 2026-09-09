@@ -119,7 +119,10 @@ disabled while the save is in flight and cleared only once it succeeds.
 
 On success the round is confirmed, the grids clear, the whole match is
 re-fetched, and the other scorer's screen receives the round over the realtime
-connection.
+connection. A green **"Round 4 saved"** confirmation appears under the
+scoreboard and clears itself after about three seconds. It is a plain statement
+that the round reached the league, and it does not depend on the realtime
+channel — it shows the same whether live updates are on or off.
 
 On failure the optimistic round is removed, the totals go back, and a toast
 explains. **The scorer's tapped numbers stay on screen**, still selected, so the
@@ -167,7 +170,7 @@ applies to the coming round only.
 | Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** Nothing is queued, so the scorer presses Save Round again once the signal returns. |
 | The request fails or times out | Not applicable. | As above. The scorer retries rather than re-entering the round. |
 | The session expires | Watching still works. | The save fails with the league's refusal as the message. |
-| The same record changed in another tab, or by another user | The round number and thrower advance as the other scorer's rounds arrive. | **The expected case.** The other scorer's round arrives and the totals move. The round number under the scorer's fingers advances, so any scores already tapped are dropped and a toast says so — **"The round number moved — Round 6 is now next, so your tapped scores were cleared."** This stops a kept score being filed under the wrong round. If both save the same number, one wins and the other is told plainly. |
+| The same record changed in another tab, or by another user | The round number and thrower advance as the other scorer's rounds arrive. | **The expected case.** The other scorer's round arrives and the totals move. The round number under the scorer's fingers advances, so any scores already tapped are dropped and a toast says so — **"The round number moved — Round 6 is now next, so your tapped scores were cleared."** This stops a kept score being filed under the wrong round. The message is only for a round taken by somebody else: the scorer's own save moves the round number too, and that never announces anything. If both save the same number, one wins and the other is told plainly. |
 | Browser autofill or a password manager writes into the form | No effect; there are no text fields. | No effect. |
 | The window loses focus | No effect. | No effect on a part-entered round. |
 

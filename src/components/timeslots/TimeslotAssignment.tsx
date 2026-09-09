@@ -1,10 +1,7 @@
-import { Check } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -13,13 +10,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { TeamLogo } from '@/components/ui/team/TeamLogo';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Team, TeamTimeslot } from '@/types';
-import { ALL_BLOCK_TIMES, DOUBLE_HEADER_START_TIMES } from '@/utils/autoSchedule/constants';
 
-// Built from the block constants so the choices cannot drift away from them.
-const TIME_SLOTS = ['BYE', ...ALL_BLOCK_TIMES];
+import { TimeslotBlockPicker } from './TimeslotBlockPicker';
+import { TimeslotTeamGrid } from './TimeslotTeamGrid';
 
 interface TimeslotAssignmentProps {
   selectedDate: Date;
@@ -28,6 +22,8 @@ interface TimeslotAssignmentProps {
   onAssign: (teamId: string, timeslot: string) => void;
   onBatchAssign?: (teamIds: string[], timeslot: string) => void;
   onBatchAssignDoubleHeaders?: (teamIds: string[], slot1: string, slot2: string) => void;
+  /** True while a booking is on its way, so Confirm cannot be pressed twice. */
+  isSubmitting?: boolean;
 }
 
 const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
@@ -37,6 +33,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   onAssign,
   onBatchAssign,
   onBatchAssignDoubleHeaders,
+  isSubmitting = false,
 }) => {
   const [teamId, setTeamId] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
@@ -158,67 +155,12 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           </Select>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-center">
-            <span className="block text-sm font-medium">Team Selection Grid</span>
-            <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
-              {selectedTeamIds.length === availableTeams.length ? 'Deselect All' : 'Select All'}
-            </Button>
-          </div>
-
-          <ScrollArea className="h-[200px] border rounded-md p-2">
-            {availableTeams.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                All teams have been assigned for this date
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {availableTeams.map((team) => {
-                  const isSelected = selectedTeamIds.includes(team.id);
-                  return (
-                    <div
-                      key={team.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => handleToggleTeam(team.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleToggleTeam(team.id);
-                        }
-                      }}
-                      className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
-                        isSelected ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted'
-                      }`}
-                    >
-                      <TeamLogo
-                        imageUrl={team.imageUrl || team.logoUrl}
-                        teamName={team.name}
-                        size="sm"
-                      />
-                      <span className="text-xs font-medium truncate flex-1">{team.name}</span>
-                      <div
-                        className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
-                          isSelected
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-primary'
-                        }`}
-                      >
-                        {isSelected && <Check className="size-3" />}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
-
-          {selectedTeamIds.length > 0 && (
-            <div className="text-sm text-primary dark:!text-blue-200">
-              {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
-            </div>
-          )}
-        </div>
+        <TimeslotTeamGrid
+          availableTeams={availableTeams}
+          selectedTeamIds={selectedTeamIds}
+          onToggleTeam={handleToggleTeam}
+          onSelectAll={handleSelectAll}
+        />
       )}
 
       {/* Double Header Toggle */}
@@ -238,73 +180,13 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <label className="block text-sm font-medium">
-            {isDoubleHeader ? 'Select Two Timeslots' : 'Select Timeslot'}
-          </label>
-          {isDoubleHeader && (
-            <Badge variant="doubleHeader" className="text-xs">
-              {selectedTimeslots.length}/2 selected
-            </Badge>
-          )}
-        </div>
-        {isDoubleHeader ? (
-          // Double header mode - multiple selection
-          <div className="flex flex-wrap justify-start gap-1.5">
-            {DOUBLE_HEADER_START_TIMES.map((time) => {
-              const isSelected = selectedTimeslots.includes(time);
-              return (
-                <Button
-                  key={time}
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleTimeslotToggle(time)}
-                  className={`
-                      px-3 py-1.5 transition-colors
-                      ${
-                        isSelected
-                          ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white border-transparent hover:from-amber-400 hover:to-orange-400'
-                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10 dark:!border-blue-200 dark:!text-blue-200 dark:hover:bg-blue-200/10'
-                      }
-                    `}
-                >
-                  {time}
-                </Button>
-              );
-            })}
-          </div>
-        ) : (
-          // Single timeslot mode
-          <ToggleGroup
-            type="single"
-            value={selectedTimeslot}
-            onValueChange={setSelectedTimeslot}
-            className="flex flex-wrap justify-start gap-1.5"
-          >
-            {TIME_SLOTS.map((time) => (
-              <ToggleGroupItem
-                key={time}
-                value={time}
-                className={`
-                  px-3 py-1.5 transition-colors
-                  ${
-                    time === 'BYE'
-                      ? selectedTimeslot === time
-                        ? 'bg-orange-600 text-white'
-                        : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:!border-orange-200 dark:!text-orange-200 dark:hover:bg-orange-200/10'
-                      : selectedTimeslot === time
-                        ? 'bg-cornhole-navy text-white'
-                        : 'border-cornhole-navy text-cornhole-navy dark:!border-blue-200 dark:!text-blue-200'
-                  }
-                `}
-              >
-                {time === 'BYE' ? 'BYE WEEK' : time}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        )}
-      </div>
+      <TimeslotBlockPicker
+        isDoubleHeader={isDoubleHeader}
+        selectedTimeslot={selectedTimeslot}
+        selectedTimeslots={selectedTimeslots}
+        onSelectTimeslot={setSelectedTimeslot}
+        onToggleTimeslot={handleTimeslotToggle}
+      />
 
       <Button
         type="submit"
@@ -317,14 +199,17 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           (!isDoubleHeader &&
             ((batchMode && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
               (!batchMode && (!teamId || !selectedTimeslot)))) ||
-          availableTeams.length === 0
+          availableTeams.length === 0 ||
+          isSubmitting
         }
       >
-        {isDoubleHeader
-          ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
-          : batchMode
-            ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
-            : 'Confirm Assignment'}
+        {isSubmitting
+          ? 'Booking…'
+          : isDoubleHeader
+            ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+            : batchMode
+              ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+              : 'Confirm Assignment'}
       </Button>
     </form>
   );

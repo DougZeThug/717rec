@@ -94,7 +94,16 @@ redraw when nothing that shows has changed, so a burst of writes produces one
 redraw rather than five.
 
 The bracket is wider than the screen almost always. It scrolls sideways inside
-its own card; the page behind it does not.
+its own card; the page behind it does not. Until it has been scrolled, a phone
+shows **"Swipe to see later rounds →"** underneath, which goes away for good
+after the first swipe and never appears when the whole bracket already fits. The
+scrolling box takes keyboard focus, so the arrow keys reach the later rounds
+without a pointer, and it is named "Playoff Bracket: *title*. Scroll sideways to
+see later rounds."
+
+Team logos are marked decorative. The library builds those images itself and has
+nowhere to put a description, and the team's name is printed beside every one, so
+a screen reader reads the name and skips the picture.
 
 ### Submit
 
@@ -144,7 +153,7 @@ appears stuck.
 | The user's role | A visitor and a player get an identical, inert bracket. An admin gets clickable match cards and a toolbar above the bracket: Repair Bracket, Rearrange Teams, Update Seeding, Edit Bracket, Delete, and — on a completed bracket missing its standings — Recalculate Standings. On a phone those six are behind a single **⋯** menu. | Admin granted or revoked elsewhere does not reach this card until it refetches. |
 | The record's state | A completed bracket shows the Final Standings card and greys out Rearrange and Update Seeding. Those two buttons stay pressable on an in-progress bracket, but the dialog behind Update Seeding refuses to save once a single result has been entered — see [`glossary.md`](../glossary.md) on *bracket state*. | A bracket completing while it is open adds the standings card and announces "Tournament Complete! Final standings have been calculated." |
 | The season's state | No effect. A bracket is drawn the same way whatever season it belongs to, including an archived one. | No effect. |
-| Viewport | The bracket scrolls sideways in its own container at every width; it is never scaled down to fit. On a phone the admin toolbar collapses from a row of buttons into one **⋯** menu. | No effect beyond re-flowing on rotation. |
+| Viewport | The bracket scrolls sideways in its own container at every width; it is never scaled down to fit. Below 768px the match cards narrow and the swipe hint appears while the bracket overflows. On a phone the admin toolbar collapses from a row of buttons into one **⋯** menu. | No effect beyond re-flowing on rotation. |
 | Keys the page honours | Nothing is focused and there are no shortcuts. The bracket is drawn as plain elements, so Tab does not step through matches. | No shortcuts. |
 
 ## Cancel and interrupt
@@ -193,9 +202,10 @@ is open.
 **URL state.** The bracket id only. There is no address for a round, a match, or
 a team inside a bracket.
 
-**On a phone.** The bracket scrolls sideways and is genuinely hard to read: it is
-never scaled to fit, and a sixteen-team double-elimination bracket is several
-screens wide. The admin toolbar collapses into a single **⋯** menu in the card
+**On a phone.** The bracket scrolls sideways: it is never scaled to fit, and a
+sixteen-team double-elimination bracket is several screens wide. It is drawn at
+full size, with names at 15px and slightly narrower match cards than on a
+desktop. It used to be shrunk to 80%, which made the names about 8px. The admin toolbar collapses into a single **⋯** menu in the card
 header, holding the same six controls. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 

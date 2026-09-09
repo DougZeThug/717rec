@@ -9,22 +9,13 @@ import {
   MatchCreateData,
 } from '@/services/matches/MatchWriteService';
 import { Team } from '@/types';
+import { nextThursday } from '@/utils/leagueNight';
 import { errorLog, matchLog, timezoneLog } from '@/utils/logger';
 
 import { MatchPair } from './MatchPairsList';
 
-function getNextThursday(): Date {
-  const today = new Date();
-  const day = today.getDay();
-  const daysUntilThursday = (4 - day + 7) % 7;
-  const thursday = new Date(today);
-  thursday.setDate(today.getDate() + (daysUntilThursday === 0 ? 0 : daysUntilThursday));
-  thursday.setHours(12, 0, 0, 0);
-  return thursday;
-}
-
 export const useBatchMatchForm = (_teams: Team[]) => {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(() => getNextThursday());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => nextThursday());
   const [matchPairs, setMatchPairs] = useState<MatchPair[]>([
     { id: '1', team1Id: null, team2Id: null, timeslot: null },
   ]);
@@ -166,7 +157,7 @@ export const useBatchMatchForm = (_teams: Team[]) => {
 
       // Reset form
       setMatchPairs([{ id: '1', team1Id: null, team2Id: null, timeslot: null }]);
-      setSelectedDate(getNextThursday());
+      setSelectedDate(nextThursday());
 
       return true;
     } catch (error) {

@@ -56,6 +56,7 @@ type BracketWithDivisionRow = Pick<
   | 'format'
   | 'state'
   | 'division_id'
+  | 'season_id'
   | 'challonge_tournament_id'
   | 'uses_brackets_manager'
   | 'bracket_data'
@@ -166,6 +167,7 @@ export const fetchBracketWithDivision = async (
       format,
       state,
       division_id,
+      season_id,
       divisions!inner(display_division, name),
       challonge_tournament_id,
       uses_brackets_manager,

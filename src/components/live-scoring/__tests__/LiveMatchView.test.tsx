@@ -298,6 +298,19 @@ describe('in-game state', () => {
     );
   });
 
+  // Saving is an ordinary request and works whether or not the realtime channel
+  // is up, but nothing on screen used to say so.
+  it('confirms the round it just saved', async () => {
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Round 2 saved');
+  });
+
   it('keeps the tapped scores when the save fails so the scorer can retry', async () => {
     mockSubmitRound.mutateAsync.mockRejectedValue(new Error('Failed to fetch'));
     renderView(inGameBundle());

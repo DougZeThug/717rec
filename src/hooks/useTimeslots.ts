@@ -28,6 +28,8 @@ export const useTimeslots = (date: Date) => {
   return {
     timeslots,
     isLoading: isLoading || isSubmitting,
+    /** Just the write, so a form can disable its own submit button. */
+    isSubmitting,
     error,
     groupedTimeslots,
     addTimeslot,

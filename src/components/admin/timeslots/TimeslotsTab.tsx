@@ -11,18 +11,37 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
+import { getBackToBackPair } from '@/utils/autoSchedule/constants';
 import { getUIErrorMessage } from '@/utils/errorHandler';
+import { nextThursday } from '@/utils/leagueNight';
 import { errorLog } from '@/utils/logger';
+
+/** "6:30 + 7:00 PM", the pair of times a booking actually writes. */
+const describeBlock = (timeslot: string): string => {
+  const second = getBackToBackPair(timeslot);
+  return second ? `${timeslot.replace(' PM', '')} + ${second}` : timeslot;
+};
 
 const TimeslotsTab = () => {
   const { toast } = useToast();
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // League night, not today: Timeslots is used to set up the next Thursday.
+  const [selectedDate, setSelectedDate] = useState<Date>(() => nextThursday());
 
   const { data: teams = [], isLoading: isLoadingTeams } = useTeamsQuery();
+
+  /** One team by name, several by count — an admin books both ways. */
+  const describeTeams = (teamIds: string[]): string => {
+    if (teamIds.length === 1) {
+      const team = teams.find((candidate) => candidate.id === teamIds[0]);
+      if (team) return team.name;
+    }
+    return `${teamIds.length} team${teamIds.length === 1 ? '' : 's'}`;
+  };
 
   const {
     timeslots,
     isLoading: isLoadingTimeslots,
+    isSubmitting,
     addTimeslot,
     deleteTimeslot,
     batchAssignTimeslots,
@@ -72,8 +91,8 @@ const TimeslotsTab = () => {
         // Use existing batch assignment function for regular timeslots
         await batchAssignTimeslots(selectedDate, teamIds, timeslot);
         toast({
-          title: 'Timeslots Assigned',
-          description: `${teamIds.length} team timeslots have been set for ${format(selectedDate, 'MMMM d, yyyy')}`,
+          title: 'Block booked',
+          description: `${describeTeams(teamIds)} booked for the ${describeBlock(timeslot)} block on ${format(selectedDate, 'MMMM d, yyyy')}`,
         });
       }
     } catch (error) {
@@ -171,6 +190,7 @@ const TimeslotsTab = () => {
                 onAssign={handleTimeslotAssign}
                 onBatchAssign={handleBatchTimeslotAssign}
                 onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
+                isSubmitting={isSubmitting}
               />
             )}
           </div>

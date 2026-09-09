@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 // working directory, so the test does not care where vitest was started from.
 import mobileSource from '@/components/admin/dashboard/AdminMobileNav.tsx?raw';
 import desktopSource from '@/components/admin/dashboard/AdminSidebar.tsx?raw';
+import { adminSectionGuide } from '@/components/admin/help/adminSectionGuide';
 
 /**
  * The desktop sidebar and the mobile nav each keep their own hardcoded menu
@@ -15,13 +16,14 @@ import desktopSource from '@/components/admin/dashboard/AdminSidebar.tsx?raw';
  * than imported. Exporting them only for a test would widen the public surface
  * of two components for no runtime purpose.
  */
-const menuIds = (source: string) => {
-  const list = source.slice(
-    source.indexOf('const adminMenuItems'),
-    source.indexOf('const tabGroups')
-  );
-  return [...list.matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
-};
+const menuSlice = (source: string) =>
+  source.slice(source.indexOf('const adminMenuItems'), source.indexOf('const tabGroups'));
+
+const menuLabels = (source: string) =>
+  [...menuSlice(source).matchAll(/label:\s*'([^']+)'/g)].map((match) => match[1]);
+
+const menuIds = (source: string) =>
+  [...menuSlice(source).matchAll(/id:\s*'([^']+)'/g)].map((match) => match[1]);
 
 describe('admin menu parity', () => {
   it('offers every desktop sidebar section in the mobile nav', () => {
@@ -46,5 +48,14 @@ describe('admin menu parity', () => {
     // A section in two groups would appear twice in the bottom bar.
     const duplicated = grouped.filter((id, i) => grouped.indexOf(id) !== i);
     expect(duplicated).toEqual([]);
+  });
+
+  // The Help section shipped documenting 10 of the 21 sections, so an admin
+  // reading it could not learn what half the dashboard did. It now lists every
+  // section, and this keeps it that way: a new section must be described before
+  // the suite goes green.
+  it('describes every sidebar section in the Help section, under the same name', () => {
+    expect(adminSectionGuide.map((section) => section.id)).toEqual(menuIds(desktopSource));
+    expect(adminSectionGuide.map((section) => section.label)).toEqual(menuLabels(desktopSource));
   });
 });

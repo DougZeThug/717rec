@@ -95,17 +95,18 @@ const TeamMembershipSection: React.FC = () => {
           }
         >
           <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-1 items-center gap-3">
                 <TeamLogo
                   imageUrl={membership.team?.imageUrl || membership.team?.logoUrl}
                   teamName={membership.team?.name || 'Team'}
                   size="md"
                   rounded
+                  className="shrink-0"
                 />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium">{membership.team?.name}</p>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate font-medium">{membership.team?.name}</p>
                     {membership.is_approved ? (
                       <Badge variant="default" className="bg-green-600">
                         <CheckCircle className="size-3 mr-1" />
@@ -134,7 +135,11 @@ const TeamMembershipSection: React.FC = () => {
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-destructive">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 self-start text-destructive sm:self-auto"
+                  >
                     <LogOut className="size-4 mr-2" />
                     Leave Team
                   </Button>

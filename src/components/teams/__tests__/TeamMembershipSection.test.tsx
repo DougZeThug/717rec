@@ -49,6 +49,31 @@ describe('TeamMembershipSection', () => {
     expect(screen.queryByText('Request declined')).not.toBeInTheDocument();
   });
 
+  // At 390 px the button used to be pushed off the right edge of the card: the
+  // row could not shrink, because nothing in it was allowed to. jsdom has no
+  // layout, so this guards the rules that let it shrink.
+  it('lets the membership card stack on a phone so Leave Team stays on screen', () => {
+    mockUseTeamMembership.mockReturnValue({
+      ...baseState,
+      membership: membership({
+        is_approved: true,
+        approved_at: '2026-08-02T12:00:00.000Z',
+        team: { id: 'team-1', name: 'The Extremely Long Team Name Society' },
+      }),
+    });
+    const { container } = render(<TeamMembershipSection />);
+
+    const name = screen.getByText('The Extremely Long Team Name Society');
+    expect(name).toHaveClass('truncate');
+
+    const row = container.querySelector('.flex-col.sm\\:flex-row');
+    expect(row).not.toBeNull();
+    expect(row).toContainElement(screen.getByRole('button', { name: /leave team/i }));
+
+    // The text column must be allowed to shrink, or the button is pushed out.
+    expect(name.closest('.min-w-0')).not.toBeNull();
+  });
+
   it('shows an approved membership', () => {
     mockUseTeamMembership.mockReturnValue({
       ...baseState,

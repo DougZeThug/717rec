@@ -20,14 +20,32 @@ export interface BracketDecorationData {
 
 /** Map participant id -> stored seed. Legacy bracket paths carry no
  * positions, which yields an empty map and turns badge injection into a no-op. */
-export function buildParticipantSeedMap(
-  participants: ViewerParticipant[] | undefined
-): Map<number, number> {
+export function buildParticipantSeedMap(participants?: ViewerParticipant[]): Map<number, number> {
   const seeds = new Map<number, number>();
   for (const participant of participants ?? []) {
     if (participant.position != null) seeds.set(participant.id, participant.position);
   }
   return seeds;
+}
+
+/**
+ * Take the participant logos out of the accessibility tree.
+ *
+ * brackets-viewer builds the `<img>` elements itself from the URLs we hand it,
+ * and its API has no place for alt text, so a bracket shipped 48 unnamed images
+ * — an axe `image-alt` failure on every playoff page. The team's name is
+ * rendered right beside each logo, so the image says nothing new: marking them
+ * decorative is both correct and what a screen reader wants.
+ *
+ * Deliberately separate from `decorateBracketDom`, which returns early for a
+ * dataset without groups or rounds. Legacy and JSONB brackets arrive that way,
+ * and their logos need naming just as much. Idempotent: it runs on every pass.
+ */
+export function hideParticipantImagesFromA11y(container: HTMLElement): void {
+  container.querySelectorAll('img').forEach((img) => {
+    img.setAttribute('alt', '');
+    img.setAttribute('aria-hidden', 'true');
+  });
 }
 
 /**

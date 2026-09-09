@@ -29,6 +29,8 @@ export interface SimpleBracketData {
   division: string;
   /** The division's database id, needed to edit or re-file the bracket. */
   divisionId: string | null;
+  /** The season this bracket belongs to, so a link to it can select that season. */
+  seasonId?: string | null;
   challonge_tournament_id?: number | null;
   uses_brackets_manager?: boolean;
   matches: Array<{

@@ -285,37 +285,34 @@
    Responsive Design - Mobile Scaling
    ============================================ */
 
-@media (max-width: 768px) {
-  /* Scale wrapper, NOT the viewer node itself to preserve connectors */
+/* 767.98px, not 768px: Tailwind's `md:` starts at exactly 768px, and the swipe
+   hint is `md:hidden`. At 768px the two rules would both apply. */
+@media (max-width: 767.98px) {
+  /*
+    The bracket used to be scaled to 80% here, which is what made team names
+    read at about 8px. A transform shrinks the tap targets with the text and
+    paints at 80% while still taking up the full layout height, leaving dead
+    space under the card. The bracket is now drawn at its real size and the
+    later rounds are reached by scrolling, which the viewer now offers a hint
+    and keyboard access for.
+  */
   #brackets-wrapper {
-    transform: scale(0.8);
-    transform-origin: top left;
+    transform: none;
   }
   
-  /* Remove scaling from viewer container */
-  #brackets-viewer-container {
-    transform: none !important; /* Override previous rule */
+  /* Tighter columns claw back some of the width the un-scaled bracket takes. */
+  .brackets-viewer {
+    --match-width: 200px;
+    --round-margin: 28px;
   }
   
-  /* Adjust outer container for scrolling */
-  .w-full.overflow-x-auto {
-    height: 50vh;
-    overflow-x: scroll;
-    overflow-y: scroll;
-  }
-  
-  .brackets-viewer .match {
-    font-size: 0.875rem;
+  .brackets-viewer .participant .name {
+    font-size: 15px;
   }
   
   .brackets-viewer .participant {
     padding: 6px 10px;
     gap: 6px;
-  }
-  
-  .brackets-viewer .participant-image {
-    width: 24px;
-    height: 24px;
   }
   
   .brackets-viewer .score {

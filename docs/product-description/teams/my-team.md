@@ -129,7 +129,7 @@ says "Left Team". The page returns to the join dropdown.
 | The user's role | A visitor gets the misleading empty state. A player gets one of the three states above. **An admin gets exactly the same page as a player** — being an admin gives no extra power here, and an admin with no membership is offered the same join dropdown. | Signing out in another tab collapses the page to the visitor state under the cursor. |
 | The record's state | Whether a membership exists, and whether it is approved, decides the whole page. An unapproved membership grants nothing except the sight of the waiting card. | An approval granted elsewhere does not reach an open page. The user keeps seeing the yellow card until a refetch, up to five minutes. |
 | The season's state | No effect. Memberships are not season-scoped, and neither is the team list offered. | No effect. |
-| Viewport | The page is a single narrow column at every width. The membership card's team block and its Leave Team button sit on one row, which is tight on a small screen. | Re-flows on rotation. |
+| Viewport | The page is a single narrow column at every width. On a phone the membership card stacks: the team block first, the **Leave Team** button under it on the left. From 640 px up the two sit on one row with the button on the right. A long team name is cut with an ellipsis rather than pushing the button off the screen. | Re-flows on rotation. |
 | Keys the app honours | Tab reaches the dropdown, then the button; or the Edit button, then the two fields, then Save and Cancel. | Enter opens the dropdown or presses the focused button. Escape closes the dropdown or the Leave Team dialog. |
 
 ## Cancel and interrupt

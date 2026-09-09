@@ -1,6 +1,31 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// jsdom has no ResizeObserver, and the component uses one to notice that the
+// bracket is wider than the screen. Keep the callbacks so a test can decide
+// when a "resize" happens.
+const resizeCallbacks: ResizeObserverCallback[] = [];
+const observedElements: Element[] = [];
+globalThis.ResizeObserver = class {
+  constructor(callback: ResizeObserverCallback) {
+    resizeCallbacks.push(callback);
+  }
+  observe = vi.fn((element: Element) => {
+    observedElements.push(element);
+  });
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+} as unknown as typeof ResizeObserver;
+
+/** Pretends the bracket is `scrollWidth` wide inside a `clientWidth` box. */
+const resizeTo = (element: HTMLElement, scrollWidth: number, clientWidth: number) => {
+  Object.defineProperty(element, 'scrollWidth', { value: scrollWidth, configurable: true });
+  Object.defineProperty(element, 'clientWidth', { value: clientWidth, configurable: true });
+  act(() => {
+    resizeCallbacks.forEach((callback) => callback([], {} as ResizeObserver));
+  });
+};
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
 
@@ -111,6 +136,8 @@ const teams = [makeTeam('t1'), makeTeam('t2')];
 describe('BracketsViewerComponent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resizeCallbacks.length = 0;
+    observedElements.length = 0;
     capturedOnMatchClicked = null;
     capturedRendererOpts = null;
     mockScriptIsReady = true;
@@ -157,6 +184,59 @@ describe('BracketsViewerComponent', () => {
       expect(
         screen.getByRole('region', { name: /Playoff Bracket: Championship/i })
       ).toBeInTheDocument();
+    });
+
+    // The scroller keeps the viewport's width however wide the bracket gets, so
+    // watching only it would never fire again after the viewer draws.
+    it('watches the element the bracket is drawn into, not just the scroller', () => {
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+
+      const region = screen.getByRole('region', { name: /Playoff Bracket: Championship/i });
+      const drawnInto = document.getElementById('brackets-viewer-container');
+
+      expect(observedElements).toContain(region);
+      expect(drawnInto).not.toBeNull();
+      expect(observedElements).toContain(drawnInto);
+    });
+
+    // Only round one fits on a phone. Nothing used to say the rest was there.
+    it('offers a swipe hint once the bracket is wider than the screen', () => {
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+      const region = screen.getByRole('region', { name: /Playoff Bracket: Championship/i });
+
+      expect(screen.queryByText(/swipe to see later rounds/i)).not.toBeInTheDocument();
+
+      resizeTo(region, 900, 390);
+
+      expect(screen.getByText(/swipe to see later rounds/i)).toBeInTheDocument();
+    });
+
+    it('says nothing when the whole bracket fits', () => {
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+      const region = screen.getByRole('region', { name: /Playoff Bracket: Championship/i });
+
+      resizeTo(region, 390, 390);
+
+      expect(screen.queryByText(/swipe to see later rounds/i)).not.toBeInTheDocument();
+    });
+
+    it('drops the hint once the reader has swiped', () => {
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+      const region = screen.getByRole('region', { name: /Playoff Bracket: Championship/i });
+      resizeTo(region, 900, 390);
+
+      fireEvent.scroll(region);
+
+      expect(screen.queryByText(/swipe to see later rounds/i)).not.toBeInTheDocument();
+    });
+
+    // Without a pointer, the arrow keys are the only way to reach the final.
+    it('lets the keyboard reach and scroll the bracket', () => {
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+
+      expect(
+        screen.getByRole('region', { name: /Playoff Bracket: Championship/i })
+      ).toHaveAttribute('tabindex', '0');
     });
 
     it('shows loading state when not initialized', () => {

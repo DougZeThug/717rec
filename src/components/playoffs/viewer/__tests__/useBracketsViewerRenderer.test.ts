@@ -707,6 +707,39 @@ describe('useBracketsViewerRenderer', () => {
       expect(names[1].textContent).toBe('#4 Team B');
     });
 
+    // The library builds the logo <img> itself and has nowhere to put alt text,
+    // so it has to be marked decorative after the fact — on both passes, since
+    // late-arriving DOM only gets the second one.
+    it('takes participant logos out of the accessibility tree', async () => {
+      renderMock.mockImplementation(() => {
+        const matchEl = appendMatchDom(1, [{ participantId: 1, name: 'Team A' }]);
+        matchEl.querySelector('.name')?.appendChild(document.createElement('img'));
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      const logo = container.querySelector('img');
+      expect(logo?.getAttribute('alt')).toBe('');
+      expect(logo?.getAttribute('aria-hidden')).toBe('true');
+    });
+
+    it('names logos that appear only after render (cleanup pass)', async () => {
+      vi.useFakeTimers();
+      renderMock.mockImplementation(() => undefined);
+
+      renderRenderer({ bracket: makeBracket() });
+      await flushAsync();
+
+      const matchEl = appendMatchDom(1, [{ participantId: 1, name: 'Team A' }]);
+      matchEl.querySelector('.name')?.appendChild(document.createElement('img'));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(container.querySelector('img')?.getAttribute('alt')).toBe('');
+    });
+
     it('does not duplicate decorations when the cleanup pass re-runs', async () => {
       vi.useFakeTimers();
       mockedAdapter.transformFromSql.mockResolvedValue(withHintableFinal());
@@ -730,7 +763,7 @@ describe('useBracketsViewerRenderer', () => {
     it('decorates matches whose DOM appears only after render (cleanup pass)', async () => {
       vi.useFakeTimers();
       mockedAdapter.transformFromSql.mockResolvedValue(withHintableFinal());
-      renderMock.mockImplementation(() => {});
+      renderMock.mockImplementation(() => undefined);
 
       renderRenderer({ bracket: makeBracket() });
       await flushAsync();

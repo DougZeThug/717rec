@@ -65,22 +65,11 @@ export function usePlayoffPageData(): PlayoffPageData {
   const { data: activeSeason } = useActiveSeason();
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (selectedSeasonId) return;
-    // Wait until both queries have settled (data is undefined while loading,
-    // null/object once resolved). This prevents a race where activeSeason
-    // resolves from cache first and gets selected before playoffSeason arrives.
-    if (playoffSeason === undefined || activeSeason === undefined) return;
-    if (playoffSeason) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-      setSelectedSeasonId(playoffSeason.id);
-    } else if (activeSeason) {
-      setSelectedSeasonId(activeSeason.id);
-    }
-  }, [playoffSeason, activeSeason, selectedSeasonId]);
+  // Season selection is resolved below, once the selected bracket is known.
 
   // Sync bracket selection from URL params
   const bracketParam = searchParams.get('bracket') || null;
+  const seasonParam = searchParams.get('season') || null;
   useEffect(() => {
     if (bracketParam !== selectedBracketId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
@@ -88,6 +77,21 @@ export function usePlayoffPageData(): PlayoffPageData {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bracketParam]);
+
+  /**
+   * The address is the source of truth for the season once it names one. Back
+   * and Forward change the params without remounting this page, so a resolver
+   * that only ran while the season was unset would keep the season the reader
+   * had just navigated away from — and the mirror below would then write it
+   * straight back over the restored URL.
+   */
+  useEffect(() => {
+    if (seasonParam && seasonParam !== selectedSeasonId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
+      setSelectedSeasonId(seasonParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seasonParam]);
 
   const setSelectedBracketId = useCallback(
     (id: string | null) => {
@@ -123,6 +127,88 @@ export function usePlayoffPageData(): PlayoffPageData {
     error: selectedBracketError,
     refetch: refetchSelectedBracket,
   } = useBracketData(selectedBracketId);
+
+  /**
+   * Which season the page is showing, in order of what the reader asked for:
+   *
+   * 1. `?season=` — an explicit choice, in a link or after a reload.
+   * 2. The season of the bracket in `?bracket=`. A link to a past bracket used
+   *    to leave the picker saying "Summer 2 2026 (Current)" over a Summer 1
+   *    bracket. It waits for the bracket query to settle rather than for a
+   *    season to appear on it, because a legacy bracket resolves to no data at
+   *    all and waiting for one would wait for ever.
+   * 3. The season whose playoffs are still in progress, then the active season.
+   *    Both are checked for `undefined` first: `activeSeason` can arrive from
+   *    the cache before `playoffSeason` and win a race it should lose.
+   */
+  useEffect(() => {
+    if (selectedSeasonId) return;
+
+    // Named in the address: the effect above adopts it, including on a Back.
+    if (seasonParam) return;
+
+    if (bracketParam && !selectedBracketError) {
+      if (selectedBracketLoading) return;
+      if (selectedBracket?.seasonId) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
+        setSelectedSeasonId(selectedBracket.seasonId);
+        return;
+      }
+      // Settled with no season on it. Fall through to the usual default.
+    }
+
+    if (playoffSeason === undefined || activeSeason === undefined) return;
+    if (playoffSeason) {
+      setSelectedSeasonId(playoffSeason.id);
+    } else if (activeSeason) {
+      setSelectedSeasonId(activeSeason.id);
+    }
+  }, [
+    playoffSeason,
+    activeSeason,
+    selectedSeasonId,
+    seasonParam,
+    bracketParam,
+    selectedBracket,
+    selectedBracketLoading,
+    selectedBracketError,
+  ]);
+
+  /**
+   * Keeps the season in the address, so a copied link opens the same view.
+   * Written on every render that needs it rather than once: `setSelectedBracketId`
+   * builds its URL from the params it captured on an earlier render, so a push
+   * can drop the season, and this puts it straight back.
+   */
+  useEffect(() => {
+    if (!selectedSeasonId) return;
+    const inUrl = searchParams.get('season');
+    if (inUrl === selectedSeasonId) return;
+    // A different season in the address is a Back, a Forward, or a pasted link.
+    // The effect above adopts it; writing state over it here would undo the
+    // reader's own navigation.
+    if (inUrl) return;
+    const next = new URLSearchParams(searchParams);
+    next.set('season', selectedSeasonId);
+    setSearchParams(next, { replace: true });
+  }, [selectedSeasonId, searchParams, setSearchParams]);
+
+  /**
+   * Choosing a season from the picker. The open bracket belongs to the season
+   * being left, so it is closed: leaving it on screen is the disagreement this
+   * fixes, in the other direction.
+   */
+  const selectSeason = useCallback(
+    (id: string) => {
+      setSelectedSeasonId(id);
+      setSelectedBracketIdState(null);
+      const next = new URLSearchParams(searchParams);
+      next.set('season', id);
+      next.delete('bracket');
+      setSearchParams(next);
+    },
+    [searchParams, setSearchParams]
+  );
 
   const { data: teamsData, isLoading: teamsLoading } = usePlayoffTeams();
 
@@ -354,6 +440,6 @@ export function usePlayoffPageData(): PlayoffPageData {
     deleteBracket,
     isLoading,
     selectedSeasonId,
-    setSelectedSeasonId,
+    setSelectedSeasonId: selectSeason,
   };
 }

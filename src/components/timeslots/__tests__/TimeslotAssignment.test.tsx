@@ -73,8 +73,9 @@ describe('TimeslotAssignment', () => {
     fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
     expect(screen.getByText('1 team selected')).toBeInTheDocument();
 
-    // Pick a timeslot from the single-mode ToggleGroup (Radix renders items as radios).
-    fireEvent.click(screen.getByRole('radio', { name: '7:00 PM' }));
+    // Pick a block from the single-mode ToggleGroup (Radix renders items as
+    // radios). The chip names both times; the value submitted is the first.
+    fireEvent.click(screen.getByRole('radio', { name: '7:00 + 7:30 PM' }));
 
     const submit = screen.getByRole('button', { name: 'Confirm Assignment (1 Team)' });
     expect(submit).toBeEnabled();
@@ -110,11 +111,27 @@ describe('TimeslotAssignment', () => {
     expect(onBatchAssignDoubleHeaders).toHaveBeenCalledWith(['t1'], '7:00 PM', '8:00 PM');
   });
 
-  it('offers 9:30 PM for a single assignment', () => {
+  it('names both times of the block a chip books', () => {
     renderForm();
 
-    // 9:30 PM is a real block time and a valid single assignment.
-    expect(screen.getByRole('radio', { name: '9:30 PM' })).toBeInTheDocument();
+    // Picking one time always writes two rows. The chips used to read "6:30 PM"
+    // and say nothing about the 7:00 PM row that came with it.
+    expect(screen.getByRole('radio', { name: '6:30 + 7:00 PM' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '9:00 + 9:30 PM' })).toBeInTheDocument();
+  });
+
+  it('does not offer 9:30 PM on its own', () => {
+    renderForm();
+
+    // It is the second half of the 9:00 block and starts no block of its own,
+    // so booking it used to fail on confirm.
+    expect(screen.queryByRole('radio', { name: '9:30 PM' })).not.toBeInTheDocument();
+  });
+
+  it('will not take a second press while a booking is on its way', () => {
+    renderForm({ isSubmitting: true });
+
+    expect(screen.getByRole('button', { name: 'Booking…' })).toBeDisabled();
   });
 
   it('does not offer 9:30 PM as a double-header start time', () => {

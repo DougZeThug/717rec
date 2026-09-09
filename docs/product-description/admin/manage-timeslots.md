@@ -19,17 +19,20 @@ and picking a pair's first time books the team for both halves.
 ## The simple case
 
 An admin opens the dashboard's **Timeslots** section. The card is headed "Assign
-Timeslots" with today's date on a button in the corner. Below, two columns:
-"Assign a New Timeslot" on the left, "Current Timeslots" on the right.
+Timeslots" with **the next league night** — the coming Thursday, or today if
+today is Thursday — on a button in the corner. Below, two columns: "Assign a New
+Timeslot" on the left, "Current Timeslots" on the right.
 
-They change the date to next Thursday. The right column empties.
+In the left column a grid lists every team, one across on a phone and two on a
+wider screen, each with its logo and a tick box. Long names wrap onto a second
+line rather than being cut short. They press **Select All**, then press
+**7:00 + 7:30 PM** in the row of block buttons, under the line "A block is two
+back-to-back times. Picking one books both." The submit button reads **Confirm
+Assignment (18 Teams)**.
 
-In the left column a grid lists every team, two across, each with its logo and a
-tick box. They press **Select All**, then press **7:00 PM** in the row of time
-buttons. The submit button reads **Confirm Assignment (18 Teams)**.
-
-They press it. A toast says "Timeslots Assigned — 18 team timeslots have been set
-for October 2, 2025". The team grid empties, because every team now has an
+They press it. While the write is on its way the button reads **Booking…** and
+cannot be pressed again. A toast says "Block booked — 18 teams booked for the
+7:00 + 7:30 PM block on October 2, 2025". The team grid empties, because every team now has an
 assignment for that date, and the right column fills with **thirty-six rows**:
 each team at 7:00 PM and again at 7:30 PM.
 
@@ -37,7 +40,7 @@ each team at 7:00 PM and again at 7:30 PM.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> idle : open Timeslots, today's date
+    [*] --> idle : open Timeslots, next league night
     idle --> idle : change the date (the list reloads, selections stay)
     idle --> picking : tick teams, or choose a time
     picking --> idle : Confirm Assignment (commit — two rows per team)
@@ -49,8 +52,8 @@ stateDiagram-v2
 
 ### Arrive
 
-Both screens open on **today's date**, fetch that date's assignments, and fetch
-the team list. Each column shows its own loading text.
+Both screens open on **the next league night**, fetch that date's assignments,
+and fetch the team list. Each column shows its own loading text.
 
 The assignment list is one of the handful of things in the app that **polls**: it
 re-fetches itself every sixty seconds, pausing while the tab is hidden or the
@@ -69,8 +72,8 @@ Nothing is selected and no time is chosen. Nothing is focused.
 
 ### Leave without changing anything
 
-Nothing is written and nothing is remembered. The date returns to today, the team
-selection empties, and the chosen time is forgotten.
+Nothing is written and nothing is remembered. The date returns to the next league
+night, the team selection empties, and the chosen block is forgotten.
 
 ### Begin editing
 
@@ -78,16 +81,18 @@ Selecting is the editing. Pressing a team's tile ticks it; pressing again untick
 it. **Select All** ticks every available team and turns into **Deselect All**. A
 line under the grid counts what is ticked.
 
-Pressing a time button chooses it. Only one can be chosen at a time, unless the
+Pressing a block button chooses it. Only one can be chosen at a time, unless the
 **Double Header** switch is on, in which case exactly two must be chosen and a
 badge counts them "0/2 selected".
 
-The times offered are **BYE, 5:00 PM, 5:30 PM, 6:00 PM, 6:30 PM, 7:00 PM,
-7:30 PM, 8:00 PM, 8:30 PM, 9:00 PM, 9:30 PM**. BYE is styled orange and labelled
-"BYE WEEK". In double header mode BYE is not offered, and neither is **9:30 PM**:
-a double header books a time and the 30 minutes after it, and nothing follows
-9:30 PM. The list runs from the block constants, so it cannot drift away from
-them.
+The blocks offered are **BYE, 5:00 + 5:30 PM, 5:30 + 6:00 PM, 6:00 + 6:30 PM,
+6:30 + 7:00 PM, 7:00 + 7:30 PM, 7:30 + 8:00 PM, 8:00 + 8:30 PM, 8:30 + 9:00 PM,
+9:00 + 9:30 PM** — every button names both times it books, because every booking
+writes both. BYE is styled orange and labelled "BYE WEEK". 9:30 PM is not offered
+on its own: it is the second half of the 9:00 block and starts no block of its
+own. In double header mode BYE is not offered either, and the buttons there name
+single start times rather than blocks. The list runs from the block constants, so
+it cannot drift away from them.
 
 Nothing marks the form dirty, and there is no draft.
 
@@ -97,19 +102,20 @@ The submit button is disabled until there is at least one team and a chosen time
 — two times in double header mode — and it is also disabled when no team is
 available on that date. Its label counts the ticked teams.
 
-Changing the date **keeps the ticked teams and the chosen time** while reloading
+Changing the date **keeps the ticked teams and the chosen block** while reloading
 the list. A team ticked on one date and then submitted on another is assigned to
 the second date, with nothing to say the selection carried over.
 
-Turning the Double Header switch on or off clears the chosen time or times, but
+Turning the Double Header switch on or off clears the chosen block or times, but
 not the ticked teams.
 
 ### Submit
 
 Assignment happens at once, with **no confirmation**.
 
-**A single time.** Every ticked team gets **two rows** — the chosen time and the
-next half hour. Picking 6:00 PM books 6:00 and 6:30. The pairs are fixed:
+**A block.** Every ticked team gets **two rows** — the block's first time and the
+next half hour. Picking "6:00 + 6:30 PM" books 6:00 and 6:30, which is what the
+button now says. The blocks are fixed:
 5:00/5:30, 5:30/6:00, 6:00/6:30, 6:30/7:00, 7:00/7:30, 7:30/8:00, 8:00/8:30,
 8:30/9:00, 9:00/9:30.
 
@@ -119,9 +125,13 @@ next half hour. Picking 6:00 PM books 6:00 and 6:30. The pairs are fixed:
 chosen pair. Two pairs that would overlap, such as 7:00 PM and 7:30 PM, are
 refused because the team would be booked twice at 7:30.
 
-On success one toast names the count and the date. The ticked teams clear; **the
-chosen time stays**, so the next batch can go to the same slot without re-picking
-it.
+On success one toast names the block, the teams and the date — "Block booked —
+3 Amigos booked for the 6:30 + 7:00 PM block on October 2, 2025", by name for one
+team and by count for several. The ticked teams clear; **the chosen block stays**,
+so the next batch can go to the same block without re-picking it.
+
+While a booking is on its way the submit button reads **Booking…** and is
+disabled, so it cannot be pressed twice.
 
 On failure one red toast appears, reading "Error — Failed to assign timeslot.
 Please try again." The catch block
@@ -188,19 +198,19 @@ the player's side.
 | The user's role (visitor, player, admin) | Only an admin reaches the screen; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). | Losing admin elsewhere leaves the screen on display and the writes fail. |
 | The record's state | A team already assigned on the chosen date is absent from the grid rather than shown as taken. | An assignment made in another browser reaches this screen within a minute, and the team then vanishes from the grid under the cursor. |
 | The season's state (active, archived, playoffs on) | **No effect.** Timeslots carry a date and a team and no season at all. | No effect. Archiving a season does not clear or archive its timeslots. |
-| Viewport | The section stacks its two columns. The team grid stays two across. | No effect beyond re-flowing. |
-| Keys the form honours | Tab reaches Select All, then each team tile, then each time button, then submit. Team tiles respond to Enter and Space. | Enter on the submit button assigns. Escape closes the date popover or the confirmation dialog. |
+| Viewport | The section stacks its two columns. The team grid is one across below 640px and two above, so a long team name has room to wrap. | No effect beyond re-flowing. |
+| Keys the form honours | Tab reaches Select All, then each team tile, then each block button, then submit. Team tiles respond to Enter and Space. | Enter on the submit button assigns. Escape closes the date popover or the confirmation dialog. |
 
 ## Cancel and interrupt
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Neither screen has a Cancel button for the assignment form. | Escape closes the date popover or the removal confirmation. It does not clear the selection and does not abort a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **The ticked teams, the chosen time, and the date are all lost with no warning.** An assignment already sent still lands. |
-| Browser back or forward | Leaves the screen. | Same as navigating away, and the app cannot prevent it. Coming back gives today's date and an empty selection. |
-| Reload, or the tab closed | Returns to today's date. | Everything selected is lost. A sent write still lands, and its rows appear on the reloaded list. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | **The ticked teams, the chosen block, and the date are all lost with no warning.** An assignment already sent still lands. |
+| Browser back or forward | Leaves the screen. | Same as navigating away, and the app cannot prevent it. Coming back gives the next league night and an empty selection. |
+| Reload, or the tab closed | Returns to the next league night. | Everything selected is lost. A sent write still lands, and its rows appear on the reloaded list. |
 | Network lost mid-request | Nothing to lose. | The write fails and a generic red toast appears. Nothing is queued. The selection is **not** cleared, so the admin can press again. |
-| The request fails or times out | Cannot happen. | The selection stays and the button comes back. The message is generic, so a refusal that can never succeed — a time with no pair — reads the same as a lost connection. |
+| The request fails or times out | Cannot happen. | The selection stays and the button comes back from "Booking…". The message is generic, so any refusal reads the same as a lost connection. |
 | The session expires | No effect while reading. | Writes fail. Nothing signs the admin out or moves them. |
 | The same record changed in another tab, or by another user | No realtime, but the list polls every sixty seconds, so another admin's work appears within a minute. | **Two admins can still assign the same team to two different times on the same night** inside that minute, because each sees the team as available. Nothing detects the clash. |
 | Browser autofill or a password manager writes into the form | Nothing here is a text field a password manager would fill. | Same. |
@@ -249,10 +259,9 @@ sent.
 
 ## Edge cases
 
-- **9:30 PM cannot start a double header.** It is a real block time and a valid
-  single assignment, but it is not the first half of any pair, so double header
-  mode does not offer it. See
-  [Open questions](#open-questions-and-verification).
+- **9:30 PM is never offered on its own.** It is the second half of the 9:00
+  block and starts no block of its own, so neither the block buttons nor double
+  header mode list it.
 - **The pairs overlap each other.** 5:30 PM is the second half of the 5:00 pair
   and the first half of the 5:30 pair, so a team booked at 5:00 and another
   booked at 5:30 both appear at 5:30.
@@ -275,12 +284,12 @@ sent.
   a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed))
   and fixed there. The page has since been deleted altogether; the path
   redirects to `/admin`, so only the dashboard section remains.
-- Resolved: **9:30 PM was offered where it could not work.** It was treated as a
-  bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)).
-  It is a real block time and still offered for a single assignment; it simply
-  has no back-to-back partner, because nothing follows it. Double-header mode
-  now lists only the times that start a pair, built from the pair constants so
-  it cannot drift from them again.
+- Resolved: **9:30 PM was offered where it could not work.** It was first
+  treated as a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)),
+  and double-header mode was made to list only the times that start a pair. It
+  was still offered as a single assignment, where confirming it failed for the
+  same reason: it has no back-to-back partner, because nothing follows it. The
+  buttons now name blocks rather than times, so it is not offered at all.
 - **The specific failure reason is always destroyed.** The service raises a toast
   naming the real cause, and the screen immediately raises a generic one over it.
   **May be worth treating as a bug rather than documenting.**
