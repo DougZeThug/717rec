@@ -51,7 +51,9 @@ export const useUnsavedChangesGuard = (
   );
 
   useEffect(() => {
-    if (!isDirty) return;
+    // Explicitly undefined rather than a bare return: every path out of this
+    // callback returns a value, which is what marks it as a cleanup or not.
+    if (!isDirty) return undefined;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
@@ -67,12 +69,12 @@ export const useUnsavedChangesGuard = (
 
   // Asks about this component's own work, not whatever else is registered, so
   // a Cancel button always shows the message that belongs to it.
-  // skipcq: JS-0052 -- a Cancel handler has to have its answer before it
-  // returns, and confirm is the only thing that answers synchronously
-  const confirmDiscard = useCallback(
-    () => !latest.current.isDirty || window.confirm(latest.current.message),
-    []
-  );
+  const confirmDiscard = useCallback(() => {
+    if (!latest.current.isDirty) return true;
+    // skipcq: JS-0052 -- a Cancel handler has to have its answer before it
+    // returns, and confirm is the only thing that answers synchronously
+    return window.confirm(latest.current.message);
+  }, []);
 
   return { confirmDiscard };
 };

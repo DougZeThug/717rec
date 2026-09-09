@@ -53,6 +53,32 @@ const QuickAccess: React.FC<{
   </div>
 );
 
+/** The whole section list, slid up from the bottom of the screen. */
+const SectionsDrawer: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  activeTab: string;
+  onSelect: (tabId: string) => boolean;
+  pendingRequestsCount: number;
+}> = ({ open, onOpenChange, activeTab, onSelect, pendingRequestsCount }) => (
+  <Drawer open={open} onOpenChange={onOpenChange}>
+    <DrawerContent className="max-h-[90vh]">
+      <DrawerHeader className="pb-2">
+        <DrawerTitle>Admin sections</DrawerTitle>
+        <DrawerDescription>Choose a section to open.</DrawerDescription>
+      </DrawerHeader>
+      {/* Twenty-one sections and six group headings do not fit a phone. */}
+      <div className="overflow-y-auto px-4 pb-6">
+        <AdminSectionList
+          activeTab={activeTab}
+          onTabChange={onSelect}
+          pendingRequestsCount={pendingRequestsCount}
+        />
+      </div>
+    </DrawerContent>
+  </Drawer>
+);
+
 /**
  * The phone menu: one bar, and the full section list behind it in a drawer.
  *
@@ -101,22 +127,13 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 
       <QuickAccess activeTab={activeTab} onSelect={handleTabSelect} />
 
-      <Drawer open={isOpen} onOpenChange={setIsOpen}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="pb-2">
-            <DrawerTitle>Admin sections</DrawerTitle>
-            <DrawerDescription>Choose a section to open.</DrawerDescription>
-          </DrawerHeader>
-          {/* Twenty-one sections and six group headings do not fit a phone. */}
-          <div className="overflow-y-auto px-4 pb-6">
-            <AdminSectionList
-              activeTab={activeTab}
-              onTabChange={handleTabSelect}
-              pendingRequestsCount={pendingRequestsCount}
-            />
-          </div>
-        </DrawerContent>
-      </Drawer>
+      <SectionsDrawer
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        activeTab={activeTab}
+        onSelect={handleTabSelect}
+        pendingRequestsCount={pendingRequestsCount}
+      />
     </div>
   );
 };

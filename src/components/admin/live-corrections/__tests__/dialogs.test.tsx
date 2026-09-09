@@ -409,7 +409,7 @@ describe('EditRoundDialog unsaved changes', () => {
 
   it('does not ask after the changes are saved', async () => {
     const onOpenChange = vi.fn();
-    const onSubmit = vi.fn(async () => {});
+    const onSubmit = vi.fn(() => Promise.resolve());
     const user = userEvent.setup();
 
     render(
