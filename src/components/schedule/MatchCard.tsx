@@ -99,7 +99,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const { canScore } = useCanScoreMatch({
     team1_id: match.team1Id ?? null,
     team2_id: match.team2Id ?? null,
-    iscompleted: isCompleted,
+    iscompleted: match.iscompleted,
+    status: match.status,
   });
 
   useEffect(() => {

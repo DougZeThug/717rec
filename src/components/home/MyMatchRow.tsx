@@ -232,6 +232,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
     team1_id: match.team1Id ?? null,
     team2_id: match.team2Id ?? null,
     iscompleted: match.iscompleted,
+    status: match.status,
   });
 
   // Format date and time

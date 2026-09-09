@@ -89,7 +89,7 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
       <div className="rounded-lg border bg-card p-6 text-center">
         <Trophy className="mx-auto mb-2 size-8 text-primary" aria-hidden />
         <h2 className="text-lg font-bold">
-          {winnerName ? `${winnerName} wins the match` : 'Match complete'}
+          {winnerName ? `${winnerName} wins the match` : 'Final'}
         </h2>
         <p className="font-display text-4xl font-bold tabular-nums">
           {gameWins.team1}–{gameWins.team2}

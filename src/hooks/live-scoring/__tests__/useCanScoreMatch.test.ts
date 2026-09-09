@@ -75,6 +75,22 @@ describe('useCanScoreMatch', () => {
     expect(result.current.isAdmin).toBe(true);
   });
 
+  it('nobody can score a match an admin has postponed or called off', () => {
+    setAuthState({ isAdmin: true });
+
+    const postponed = renderHook(() => useCanScoreMatch({ ...openMatch, status: 'postponed' }));
+    expect(postponed.result.current.canScore).toBe(false);
+
+    const canceled = renderHook(() => useCanScoreMatch({ ...openMatch, status: 'canceled' }));
+    expect(canceled.result.current.canScore).toBe(false);
+  });
+
+  it('can still score a match whose iscompleted was never set', () => {
+    setAuthState({ isAdmin: true });
+    const { result } = renderHook(() => useCanScoreMatch({ ...openMatch, iscompleted: null }));
+    expect(result.current.canScore).toBe(true);
+  });
+
   it('handles a missing match', () => {
     setAuthState({ isAdmin: true });
     const { result } = renderHook(() => useCanScoreMatch());
