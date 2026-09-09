@@ -249,6 +249,16 @@ find the 'opponent1_position' column of 'match'".
 > **Applying the power score weight sandbox** (`20260820120000`) also has its
 > own runbook: **§6b** below.
 
+> **Applying the archive counter-reset guard** (`20260909120000`) is urgent
+> whenever the Seasons screen is deployed with its per-card **Archive** button.
+> Before this migration, `archive_season` and `partial_archive_season` reset
+> **every** team's live wins, losses and game counts, whichever season was being
+> archived. That is correct for the active season and destructive for any other,
+> and it was safe only because the UI would not let an admin archive anything
+> else. Apply the migration **before** the code that offers the button, or an
+> admin closing out an old season will zero the current season's standings for
+> the whole league.
+
 > **Applying the career power score fix** (`20260901120000`) has its own
 > runbook too: **§6c** below. It changes who holds the King Slayer badge, so
 > read what players will notice before you run it.

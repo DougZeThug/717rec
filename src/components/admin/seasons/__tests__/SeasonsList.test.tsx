@@ -104,6 +104,31 @@ describe('SeasonsList activation control', () => {
     expect(archived).toHaveAttribute('title', expect.stringMatching(/cannot be edited/i));
   });
 
+  // A-12: Archive lived in the page header and only ever applied to the active
+  // season, so an old un-archived season could never be closed out.
+  it('offers Archive on an inactive season and on neither the active nor the archived one', () => {
+    renderList([
+      makeSeason({ id: 's-live', name: 'Spring 2026', is_active: true }),
+      makeSeason({ id: 's-idle', name: 'Summer 2026' }),
+      makeSeason({ id: 's-old', name: 'Winter 2025', is_archived: true }),
+    ]);
+
+    expect(screen.getAllByRole('button', { name: 'Archive' })).toHaveLength(1);
+  });
+
+  it('opens the archival dialog for the season whose Archive was pressed', async () => {
+    renderList([
+      makeSeason({ id: 's-idle', name: 'Summer 2026' }),
+      makeSeason({ id: 's-older', name: 'Winter 2025' }),
+    ]);
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Archive' })[1]);
+
+    expect(
+      screen.getByRole('heading', { name: /Archive Season: Winter 2025/ })
+    ).toBeInTheDocument();
+  });
+
   it('opens no dialog until Activate is pressed', () => {
     renderList([makeSeason()]);
 

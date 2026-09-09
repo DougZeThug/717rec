@@ -28,7 +28,8 @@ const season: Season = {
   name: 'Spring 2026',
   is_active: true,
   is_archived: false,
-  playoffs_active: false,
+  // The keep-playoffs choice is only offered while a bracket is running.
+  playoffs_active: true,
   start_date: '2026-01-01',
   end_date: null,
   created_at: '2026-01-01T00:00:00Z',
@@ -58,5 +59,22 @@ describe('SeasonArchivalDialog', () => {
 
     checkbox = screen.getByRole('checkbox', { name: /keep playoffs active/i });
     expect(checkbox).not.toBeChecked();
+  });
+
+  // A-12: Archive is now offered on any un-archived season, including old ones
+  // that never had playoffs. "Keep playoffs active" has nothing to keep there.
+  it('does not offer the playoffs choice when no bracket is running', () => {
+    render(
+      <SeasonArchivalDialog
+        isOpen
+        onClose={vi.fn()}
+        season={{ ...season, is_active: false, playoffs_active: false }}
+      />
+    );
+
+    expect(
+      screen.queryByRole('checkbox', { name: /keep playoffs active/i })
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Archive Season' })).toBeInTheDocument();
   });
 });

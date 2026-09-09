@@ -169,14 +169,16 @@ different season afterwards undoes it.
 
 ### Archive Season
 
-Only offered for the **active** season, and only when one exists. It opens a
-dialog headed "Archive Season: *name*" whose description ends "**This action
-cannot be undone.**" That is accurate: **nothing anywhere in the app un-archives
-a season.**
+Offered on **any season that is not already archived** — from the green header
+for the active season, and from an **Archive** button on the card of every
+inactive one. It opens a dialog headed "Archive Season: *name*" whose description
+ends "**This action cannot be undone.**" That is accurate: **nothing anywhere in
+the app un-archives a season.**
 
 A checkbox, "Keep playoffs active", chooses between two very different
-operations. It is unticked every time the dialog opens, even if it was ticked and
-the dialog was cancelled a moment earlier.
+operations. It appears **only while that season's playoffs are running**, since a
+season with no bracket has nothing to keep. It is unticked every time the dialog
+opens, even if it was ticked and the dialog was cancelled a moment earlier.
 
 **Unticked — full archival.** The dialog lists what will happen: snapshot all
 team stats and power scores; auto-detect division playoff champions from the
@@ -195,10 +197,20 @@ across the whole app move at once. On failure the dialog stays open, the button
 comes back, and a red toast carries the server's reason.
 
 **What happens to existing data.** Matches are moved to an archive rather than
-deleted, and the archived season keeps its own frozen copy of every stat. Team
-win/loss counters are reset to zero for the coming season, so **every team's
-record goes to 0-0 the moment this runs**. Nothing warns that the reset is about
-to happen to the live standings players are looking at.
+deleted, and the archived season keeps its own frozen copy of every stat.
+
+Archiving the **active** season resets every team's live win/loss counters to
+zero for the coming season, so **every team's record goes to 0-0 the moment this
+runs**. Nothing warns that the reset is about to happen to the live standings
+players are looking at.
+
+Archiving an **inactive** season does not touch those counters, and leaves its
+end date as it was rather than stamping today on it. Those counters are the
+league's live standings and carry no season of their own, so resetting them while
+closing out an old season would wipe the record of the season being played. That
+guard is in the database functions, not the screen — see
+[`../../OPERATIONS.md`](../../OPERATIONS.md) §6 for applying the migration that
+added it.
 
 ### Finalize Playoffs
 

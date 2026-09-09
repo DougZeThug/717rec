@@ -178,7 +178,12 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="max-w-md">
         <ArchivalDialogHeader seasonName={season?.name} />
-        <KeepPlayoffsCheckbox checked={keepPlayoffsActive} onChange={setKeepPlayoffsActive} />
+        {/* "Keep playoffs active" leaves the bracket editable so it can be
+            finalised later. A season with no playoffs running has nothing to
+            keep, so the choice is not offered. */}
+        {season?.playoffs_active && (
+          <KeepPlayoffsCheckbox checked={keepPlayoffsActive} onChange={setKeepPlayoffsActive} />
+        )}
         <ArchivalAlert partial={keepPlayoffsActive} />
         <ArchivalDialogFooter
           isArchiving={isArchiving}

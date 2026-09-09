@@ -10,6 +10,7 @@ import type { Season } from '@/types/season';
 import { toLocalDateString } from '@/utils/formatDateSafe';
 
 import SeasonActivationDialog from './SeasonActivationDialog';
+import SeasonArchivalDialog from './SeasonArchivalDialog';
 import SeasonFinalizePlayoffsDialog from './SeasonFinalizePlayoffsDialog';
 
 interface SeasonsListProps {
@@ -51,6 +52,7 @@ const getStatusIcon = (season: Season) => {
 const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSeason }) => {
   const [activatingSeason, setActivatingSeason] = useState<Season | null>(null);
   const [finalizingSeason, setFinalizingSeason] = useState<Season | null>(null);
+  const [archivingSeason, setArchivingSeason] = useState<Season | null>(null);
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -111,6 +113,23 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
                     >
                       <Play className="size-3" />
                       Activate
+                    </Button>
+                  </m.div>
+                )}
+                {/* Archive used to be offered on the active season alone, from the
+                    header above this list. An old season left un-archived kept its
+                    matches in the live tables and never awarded its placement
+                    badges, with no way to close it out (A-12). */}
+                {!season.is_active && !season.is_archived && (
+                  <m.div whileTap={{ scale: 0.95 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setArchivingSeason(season)}
+                      className="flex items-center gap-1"
+                    >
+                      <Archive className="size-3" />
+                      Archive
                     </Button>
                   </m.div>
                 )}
@@ -178,6 +197,13 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
           isOpen={Boolean(finalizingSeason)}
           onClose={() => setFinalizingSeason(null)}
           season={finalizingSeason}
+        />
+      )}
+      {archivingSeason && (
+        <SeasonArchivalDialog
+          isOpen={Boolean(archivingSeason)}
+          onClose={() => setArchivingSeason(null)}
+          season={archivingSeason}
         />
       )}
     </div>

@@ -32,7 +32,10 @@ so a non-zero exit code means drift was detected.
 - `season_rollover_workflow.sql` — end-to-end season rollover coverage for
   partial archive activation, active-season uniqueness, match archival, season
   stats preservation, team counter reset, playoff finalization snapshots, and
-  archived-season reactivation guards.
+  archived-season reactivation guards. Also pins the counter-reset guard added by
+  `20260909120000`: archiving an **inactive** season must leave the live
+  league-wide team counters and that season's end date alone, while archiving the
+  **active** season must still reset them.
 - `blind_draw_workflow.sql` — blind draw smoke coverage for public signup
   permissions, admin-only visibility/deletion, public signup counts, settings
   updates, and clear-signups behavior. Its privilege assertions depend on
