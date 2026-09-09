@@ -1,11 +1,7 @@
-import { ClipboardList, Pencil, Radio, Trash2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import React, { useCallback, useEffect, useState } from 'react';
+import React from 'react';
 
-import { MatchRecapDialog } from '@/components/live-scoring/MatchRecapDialog';
 import { MatchInteractions } from '@/components/matches';
-import { TransitionLink } from '@/components/transitions/TransitionLink';
-import { TeamLogo } from '@/components/ui/team';
 import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import type { HeadToHeadData } from '@/hooks/useBatchHeadToHead';
@@ -13,14 +9,17 @@ import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Match } from '@/types';
-import { MATCH_STATUS_LABELS, type MatchStatus } from '@/types/matchStatus';
 import { deriveMatchStatus, isMatchOpenForScoring } from '@/utils/matchStatus';
-import { toTeamSlug } from '@/utils/teamSlug';
 
+import { MatchCardAdminActions } from './match-card/MatchCardAdminActions';
+import { LiveScoreCta, MatchRecapCta } from './match-card/MatchCardCtas';
+import { MatchCardScore } from './match-card/MatchCardScore';
+import { MatchCardStatusBadge } from './match-card/MatchCardStatusBadge';
+import { MatchCardTeam } from './match-card/MatchCardTeam';
+import { useScoreAnimation } from './match-card/useScoreAnimation';
 import MatchCountdown from './MatchCountdown';
 import { MatchHeadToHead } from './MatchHeadToHead';
 import { MatchPrediction } from './MatchPrediction';
-import { UpsetTag } from './UpsetTag';
 
 interface MatchCardProps {
   match: Match;
@@ -37,22 +36,15 @@ interface MatchCardProps {
   liveScoredMatchIds?: ReadonlySet<string>;
 }
 
-// One pill per state. Keyed on the union minus `scheduled`, which shows no
-// pill at all, so a new state fails the typecheck until it is given a colour.
-const statusPillClasses: Record<Exclude<MatchStatus, 'scheduled'>, string> = {
-  completed: 'bg-primary/10 text-primary',
-  postponed: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-  canceled: 'bg-destructive/10 text-destructive',
-};
+/** Which side won, from game wins. Neither, on a tie or an unfinished match. */
+const winnerSides = (match: Match, isCompleted: boolean) => {
+  const hasGameWins = match.team1_game_wins !== undefined && match.team2_game_wins !== undefined;
+  if (!isCompleted || !hasGameWins) return { team1: false, team2: false };
 
-// The winner used to be marked by emerald text alone, which says nothing in
-// greyscale or to a screen reader. Add the word as well, and keep the colour.
-// Static, so it is built once rather than on every render.
-const winnerTag = (
-  <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-full">
-    Won
-  </span>
-);
+  const team1 = match.team1_game_wins || 0;
+  const team2 = match.team2_game_wins || 0;
+  return { team1: team1 > team2, team2: team2 > team1 };
+};
 
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
@@ -66,7 +58,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const { resolvedTheme } = useTheme();
   const { isAdminAccessGranted } = useAdminAccess();
   const isLight = resolvedTheme === 'light';
-  const [scoreAnimation, setScoreAnimation] = useState(false);
 
   // One question, asked once. Every branch below reads the answer.
   const status = deriveMatchStatus(match);
@@ -74,8 +65,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
   const team1Name = match.team1Details?.name || 'Unknown Team';
   const team2Name = match.team2Details?.name || 'Unknown Team';
-  const team1Logo = match.team1Details?.image_url || '';
-  const team2Logo = match.team2Details?.image_url || '';
 
   const { prediction, isUpsetResult } = useMatchPrediction({
     team1Details: match.team1Details,
@@ -85,16 +74,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
     prefetchedH2H,
   });
 
-  const team1IsWinner =
-    isCompleted &&
-    match.team1_game_wins !== undefined &&
-    match.team2_game_wins !== undefined &&
-    (match.team1_game_wins || 0) > (match.team2_game_wins || 0);
-  const team2IsWinner =
-    isCompleted &&
-    match.team1_game_wins !== undefined &&
-    match.team2_game_wins !== undefined &&
-    (match.team2_game_wins || 0) > (match.team1_game_wins || 0);
+  const winners = winnerSides(match, isCompleted);
+  const isAnimating = useScoreAnimation(match.team1Score, match.team2Score);
 
   const { canScore } = useCanScoreMatch({
     team1_id: match.team1Id ?? null,
@@ -102,36 +83,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
     iscompleted: match.iscompleted,
     status: match.status,
   });
-
-  useEffect(() => {
-    if (match.team1Score !== undefined || match.team2Score !== undefined) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-      setScoreAnimation(true);
-      const timer = setTimeout(() => setScoreAnimation(false), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [match.team1Score, match.team2Score]);
-
-  const getScoreStyle = useCallback(
-    (isWinner: boolean) =>
-      cn(
-        'text-2xl font-black tracking-wide tabular-nums transition-all duration-500',
-        scoreAnimation && 'animate-scale-in',
-        isWinner ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
-      ),
-    [scoreAnimation]
-  );
-
-  const getTeamNameStyle = useCallback(
-    (isWinner: boolean) =>
-      cn(
-        'text-xs font-medium truncate max-w-[120px] text-center',
-        isWinner ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-foreground'
-      ),
-    []
-  );
-
-  const shouldShowInteractions = showInteractions && isCompleted;
 
   return (
     <div className={cn('relative', animations.scaleIn)}>
@@ -145,86 +96,30 @@ const MatchCard: React.FC<MatchCardProps> = ({
         )}
       >
         <div className={cn('rounded-xl overflow-hidden', isLight ? 'bg-card' : 'bg-card')}>
-          {/* Status badge - centered top */}
-          {status !== 'scheduled' && (
-            <div className="flex items-center justify-center gap-2 pt-1.5">
-              <span
-                className={cn(
-                  'px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full',
-                  statusPillClasses[status]
-                )}
-              >
-                {MATCH_STATUS_LABELS[status]}
-              </span>
-              {isUpsetResult && <UpsetTag />}
-            </div>
-          )}
+          <MatchCardStatusBadge status={status} isUpsetResult={isUpsetResult} />
 
           <div className="px-3 py-2">
             {/* Centered layout: Logo - Score - Logo */}
             <div className="flex items-center justify-center gap-2">
-              {/* Team 1 */}
-              <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                <TransitionLink
-                  to={`/teams/${toTeamSlug(team1Name)}`}
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  <TeamLogo
-                    imageUrl={team1Logo}
-                    teamName={team1Name}
-                    teamId={match.team1Id}
-                    size="md"
-                  />
-                </TransitionLink>
-                <TransitionLink
-                  to={`/teams/${toTeamSlug(team1Name)}`}
-                  className="flex flex-col items-center gap-0.5 min-w-0"
-                >
-                  <span className={getTeamNameStyle(team1IsWinner)}>{team1Name}</span>
-                </TransitionLink>
-                {team1IsWinner && winnerTag}
-              </div>
-
-              {/* Score pill */}
-              <div className="flex flex-col items-center">
-                <div
-                  className={cn(
-                    'flex items-center gap-2 px-4 py-1.5 rounded-full',
-                    'bg-muted/80 dark:bg-muted/40',
-                    'shadow-sm'
-                  )}
-                >
-                  <span className={getScoreStyle(team1IsWinner)}>
-                    {isCompleted ? match.team1_game_wins || 0 : match.team1Score || 0}
-                  </span>
-                  <span className="text-lg font-bold text-muted-foreground/60">–</span>
-                  <span className={getScoreStyle(team2IsWinner)}>
-                    {isCompleted ? match.team2_game_wins || 0 : match.team2Score || 0}
-                  </span>
-                </div>
-              </div>
-
-              {/* Team 2 */}
-              <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
-                <TransitionLink
-                  to={`/teams/${toTeamSlug(team2Name)}`}
-                  className="hover:opacity-80 transition-opacity"
-                >
-                  <TeamLogo
-                    imageUrl={team2Logo}
-                    teamName={team2Name}
-                    teamId={match.team2Id}
-                    size="md"
-                  />
-                </TransitionLink>
-                <TransitionLink
-                  to={`/teams/${toTeamSlug(team2Name)}`}
-                  className="flex flex-col items-center gap-0.5 min-w-0"
-                >
-                  <span className={getTeamNameStyle(team2IsWinner)}>{team2Name}</span>
-                </TransitionLink>
-                {team2IsWinner && winnerTag}
-              </div>
+              <MatchCardTeam
+                teamId={match.team1Id}
+                teamName={team1Name}
+                logoUrl={match.team1Details?.image_url || ''}
+                isWinner={winners.team1}
+              />
+              <MatchCardScore
+                team1Score={(isCompleted ? match.team1_game_wins : match.team1Score) || 0}
+                team2Score={(isCompleted ? match.team2_game_wins : match.team2Score) || 0}
+                team1IsWinner={winners.team1}
+                team2IsWinner={winners.team2}
+                isAnimating={isAnimating}
+              />
+              <MatchCardTeam
+                teamId={match.team2Id}
+                teamName={team2Name}
+                logoUrl={match.team2Details?.image_url || ''}
+                isWinner={winners.team2}
+              />
             </div>
 
             {/* H2H Record */}
@@ -257,82 +152,26 @@ const MatchCard: React.FC<MatchCardProps> = ({
               </div>
             )}
 
-            {/* Live scoring entry for team members and admins */}
             {isMatchOpenForScoring(match) && canScore && (
-              <div className="mt-1.5">
-                <TransitionLink
-                  to={`/matches/${match.id}/live`}
-                  className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-primary/10 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
-                  aria-label={`Live score ${team1Name} vs ${team2Name}`}
-                >
-                  <Radio className="size-4" aria-hidden />
-                  Live score this match
-                </TransitionLink>
-              </div>
+              <LiveScoreCta matchId={match.id} team1Name={team1Name} team2Name={team2Name} />
             )}
 
-            {/* Recap entry for completed matches (only when live-scored) */}
             {isCompleted && liveScoredMatchIds?.has(match.id) && (
-              <div className="mt-1.5">
-                <MatchRecapDialog
-                  matchId={match.id}
-                  team1Name={team1Name}
-                  team2Name={team2Name}
-                  trigger={
-                    <button
-                      type="button"
-                      className="flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-lg bg-muted text-sm font-medium text-foreground/80 transition-colors hover:bg-muted/70"
-                      aria-label={`View match recap for ${team1Name} vs ${team2Name}`}
-                    >
-                      <ClipboardList className="size-4" aria-hidden />
-                      View match recap
-                    </button>
-                  }
-                />
-              </div>
+              <MatchRecapCta matchId={match.id} team1Name={team1Name} team2Name={team2Name} />
             )}
 
-            {/* Admin actions */}
-            {((onEdit && !isCompleted) || (onDelete && (!isCompleted || isAdminAccessGranted))) &&
-              isAdminAccessGranted && (
-                <div className="flex justify-end gap-2 pt-2">
-                  {onEdit && !isCompleted && (
-                    <button
-                      type="button"
-                      onClick={() => onEdit(match)}
-                      className="p-1.5 rounded-full transition-all duration-200 bg-muted hover:bg-muted/80 active:scale-95"
-                      aria-label="Edit match"
-                    >
-                      <Pencil className="size-3.5 text-muted-foreground" />
-                    </button>
-                  )}
-                  {onDelete && (
-                    <button
-                      type="button"
-                      onClick={() => onDelete(match.id)}
-                      className={cn(
-                        'p-1.5 rounded-full transition-all duration-200 active:scale-95',
-                        isCompleted
-                          ? 'bg-destructive/10 hover:bg-destructive/20'
-                          : 'bg-muted hover:bg-destructive/10'
-                      )}
-                      aria-label={
-                        isCompleted ? 'Permanently delete completed match' : 'Delete match'
-                      }
-                    >
-                      <Trash2
-                        className={cn(
-                          'size-3.5',
-                          isCompleted ? 'text-destructive' : 'text-muted-foreground'
-                        )}
-                      />
-                    </button>
-                  )}
-                </div>
-              )}
+            {isAdminAccessGranted && (
+              <MatchCardAdminActions
+                match={match}
+                isCompleted={isCompleted}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
+            )}
 
-            {/* Interactions */}
-            {shouldShowInteractions && <MatchInteractions matchId={match.id} className="mt-2" />}
+            {showInteractions && isCompleted && (
+              <MatchInteractions matchId={match.id} className="mt-2" />
+            )}
           </div>
         </div>
       </div>
