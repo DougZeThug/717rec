@@ -20,9 +20,7 @@ export interface BracketDecorationData {
 
 /** Map participant id -> stored seed. Legacy bracket paths carry no
  * positions, which yields an empty map and turns badge injection into a no-op. */
-export function buildParticipantSeedMap(
-  participants: ViewerParticipant[] | undefined
-): Map<number, number> {
+export function buildParticipantSeedMap(participants?: ViewerParticipant[]): Map<number, number> {
   const seeds = new Map<number, number>();
   for (const participant of participants ?? []) {
     if (participant.position != null) seeds.set(participant.id, participant.position);

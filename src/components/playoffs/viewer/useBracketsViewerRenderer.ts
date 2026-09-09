@@ -108,7 +108,8 @@ export const useBracketsViewerRenderer = ({
 
   useEffect(() => {
     if (!isScriptReady || !containerRef.current || !bracket?.id) {
-      return;
+      // `undefined`, not a bare return: this effect returns a cleanup below.
+      return undefined;
     }
 
     let cancelled = false;
@@ -122,7 +123,7 @@ export const useBracketsViewerRenderer = ({
 
         bracketLog('Starting bracket transformation', {
           usesBracketsManager: bracket.uses_brackets_manager,
-          hasBracketData: !!bracket.bracket_data,
+          hasBracketData: Boolean(bracket.bracket_data),
         });
 
         // Determine which transformation method to use
@@ -141,17 +142,22 @@ export const useBracketsViewerRenderer = ({
         getPlayoffMatchIdRef.current = result.getPlayoffMatchId;
 
         // Validate data structure before rendering
-        const m = result.data.matches;
-        const s = result.data.stages;
+        const matchRows = result.data.matches;
+        const stageRows = result.data.stages;
 
-        if (!Array.isArray(m) || m.length === 0 || !Array.isArray(s) || s.length === 0) {
+        if (
+          !Array.isArray(matchRows) ||
+          matchRows.length === 0 ||
+          !Array.isArray(stageRows) ||
+          stageRows.length === 0
+        ) {
           warnLog('Skipping render: matches or stages not ready');
           return;
         }
 
         // Validate source coverage (avoid premature render)
-        const totalSlots = m.length * 2;
-        const sourcedCount = m.reduce(
+        const totalSlots = matchRows.length * 2;
+        const sourcedCount = matchRows.reduce(
           (n, x) =>
             n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0),
           0
@@ -160,14 +166,14 @@ export const useBracketsViewerRenderer = ({
 
         if (sourcePct < 0.6) {
           bracketLog('Low source coverage (normal for new/bye-heavy brackets)', {
-            matches: m.length,
+            matches: matchRows.length,
             sourced: sourcedCount,
-            pct: Math.round(sourcePct * 100) + '%',
+            pct: `${Math.round(sourcePct * 100)}%`,
           });
         }
 
         // Prevent duplicate re-renders on identical data
-        const fp = fingerprint(m as unknown as FingerprintMatch[]);
+        const fp = fingerprint(matchRows as unknown as FingerprintMatch[]);
         if (lastFingerprintRef.current === fp) {
           bracketLog('No-op: identical fingerprint, skipping render');
           return;
@@ -230,8 +236,8 @@ export const useBracketsViewerRenderer = ({
 
         // Check if symbol tags survived (object identity validation)
         const tagsMissing = viewerData.matches.filter((match) => {
-          const need1 = !!match.opponent1;
-          const need2 = !!match.opponent2;
+          const need1 = Boolean(match.opponent1);
+          const need2 = Boolean(match.opponent2);
           const bad1 =
             match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
           const bad2 =

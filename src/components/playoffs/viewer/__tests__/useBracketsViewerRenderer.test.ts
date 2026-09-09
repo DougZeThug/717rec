@@ -763,7 +763,7 @@ describe('useBracketsViewerRenderer', () => {
     it('decorates matches whose DOM appears only after render (cleanup pass)', async () => {
       vi.useFakeTimers();
       mockedAdapter.transformFromSql.mockResolvedValue(withHintableFinal());
-      renderMock.mockImplementation(() => {});
+      renderMock.mockImplementation(() => undefined);
 
       renderRenderer({ bracket: makeBracket() });
       await flushAsync();

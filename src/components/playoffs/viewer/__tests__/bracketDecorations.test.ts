@@ -302,6 +302,6 @@ describe('buildParticipantSeedMap', () => {
   });
 
   it('returns an empty map for missing participant data', () => {
-    expect(buildParticipantSeedMap(undefined).size).toBe(0);
+    expect(buildParticipantSeedMap().size).toBe(0);
   });
 });
