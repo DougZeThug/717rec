@@ -30,7 +30,7 @@ per-file percentages with line-by-line highlighting.
 ## End-to-end tests (Playwright)
 
 E2E specs live in `e2e/` (separate from Vitest, which only picks up
-`__tests__/` and `tests/` folders). There are currently seven specs:
+`__tests__/` and `tests/` folders). There are currently eleven specs:
 
 | Spec                        | What it checks                                                          |
 | --------------------------- | ----------------------------------------------------------------------- |
@@ -40,6 +40,10 @@ E2E specs live in `e2e/` (separate from Vitest, which only picks up
 | `admin-mass-score.spec.ts`  | Admin mass score entry flow                                             |
 | `playoff-bracket.spec.ts`   | Bracket advances semifinal winners into the final and crowns a champion |
 | `a11y.spec.ts`              | axe WCAG 2 A/AA scan of six public routes (blocking step in CI's `browser` job) |
+| `admin-confirmations.spec.ts` | Destructive admin actions ask first: deleting a contact request or a notification, removing a Challonge fallback bracket, changing a team's division |
+| `navigation-scroll.spec.ts` | A linked page opens at the top; scroll resets going forward but is restored going back |
+| `toast-messages.spec.ts`    | Three toasts stack rather than replacing one another; a failed write shows the edge function's own reason, never supabase-js's placeholder |
+| `offline.spec.ts`           | Offline banner appears when the connection drops, an in-app navigation to an undownloaded page keeps the header and shows the recovery screen, and the page loads itself on reconnect |
 | `real-backend.spec.ts`      | Optional live Supabase golden path: logs in, views the schedule, submits a score for a seeded pending match, and verifies the submission row in `score_submissions`; skipped unless `E2E_SUPABASE_URL`, `E2E_SUPABASE_ANON_KEY`, `E2E_SUPABASE_SERVICE_ROLE_KEY`, `E2E_TEST_USER_EMAIL`, and `E2E_TEST_USER_PASSWORD` are set |
 
 **Honest caveat:** most specs intercept and mock all Supabase network calls

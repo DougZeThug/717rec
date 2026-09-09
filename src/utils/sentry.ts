@@ -69,7 +69,18 @@ export const initSentry = () => {
       // ── Browser-level noise filters (non-network) ──
       if (error instanceof Error) {
         const msg = error.message.toLowerCase();
-        if (msg.includes('resizeobserver loop') || msg.includes('loading chunk')) {
+        // A page's code failing to download is a lost connection or a deploy
+        // that replaced the files this tab was told to fetch. The route
+        // boundary recovers from it, so it is not a crash worth reporting.
+        // 'loading chunk' is the older bundler's wording; the three that follow
+        // are how Vite words it, which is what this build actually produces.
+        if (
+          msg.includes('resizeobserver loop') ||
+          msg.includes('loading chunk') ||
+          msg.includes('failed to fetch dynamically imported module') ||
+          msg.includes('error loading dynamically imported module') ||
+          msg.includes('importing a module script failed')
+        ) {
           return null;
         }
       }
