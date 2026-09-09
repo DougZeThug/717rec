@@ -29,6 +29,213 @@ interface MatchPairsListProps {
   errors?: Record<string, string>;
 }
 
+/** Logo and name, shown both in the closed select and in each option. */
+const TeamOption: React.FC<{ team: Team | null }> = ({ team }) => (
+  <div className="flex items-center gap-2">
+    <TeamLogo imageUrl={team?.imageUrl || ''} teamName={team?.name || ''} className="size-4" />
+    <span>{team?.name}</span>
+  </div>
+);
+
+/** The options list. Its own component so the item tree stays shallow. */
+const TeamOptions: React.FC<{ teams: Team[]; excludeTeamId: string | null }> = ({
+  teams,
+  excludeTeamId,
+}) => (
+  <div className="max-h-[300px] overflow-auto">
+    {teams
+      .filter((team) => team.id !== excludeTeamId)
+      .map((team) => (
+        <SelectItem key={team.id} value={team.id}>
+          <TeamOption team={team} />
+        </SelectItem>
+      ))}
+  </div>
+);
+
+interface TeamPickerProps {
+  id: string;
+  value: string | null;
+  excludeTeamId: string | null;
+  teams: Team[];
+  invalid: boolean;
+  describedBy?: string;
+  onChange: (teamId: string) => void;
+}
+
+const TeamPicker: React.FC<TeamPickerProps> = ({
+  id,
+  value,
+  excludeTeamId,
+  teams,
+  invalid,
+  describedBy,
+  onChange,
+}) => {
+  const selected = value ? (teams.find((team) => team.id === value) ?? null) : null;
+
+  return (
+    <Select value={value || ''} onValueChange={onChange}>
+      <SelectTrigger
+        id={id}
+        className="w-full"
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+      >
+        <SelectValue placeholder="Select team">
+          {selected && <TeamOption team={selected} />}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <TeamOptions teams={teams} excludeTeamId={excludeTeamId} />
+      </SelectContent>
+    </Select>
+  );
+};
+
+interface TeamSelectProps {
+  id: string;
+  label: string;
+  value: string | null;
+  /** The other side of this match, which cannot also be this side. */
+  excludeTeamId: string | null;
+  teams: Team[];
+  invalid: boolean;
+  describedBy?: string;
+  onChange: (teamId: string) => void;
+}
+
+/** One side of a pairing. Both sides are the same control with a different label. */
+const TeamSelect: React.FC<TeamSelectProps> = ({ id, label, ...picker }) => (
+  <div className="flex-1">
+    <label htmlFor={id} className="text-xs text-muted-foreground mb-1 block">
+      {label}
+    </label>
+    <TeamPicker id={id} {...picker} />
+  </div>
+);
+
+interface TimeslotSelectProps {
+  id: string;
+  value: string | null;
+  invalid: boolean;
+  describedBy?: string;
+  onChange: (timeslot: string) => void;
+}
+
+const TimeslotSelect: React.FC<TimeslotSelectProps> = ({
+  id,
+  value,
+  invalid,
+  describedBy,
+  onChange,
+}) => (
+  <div className="md:w-[150px]">
+    <label htmlFor={id} className="text-xs text-muted-foreground mb-1 block">
+      Timeslot
+    </label>
+    <Select value={value || ''} onValueChange={onChange}>
+      <SelectTrigger
+        id={id}
+        className="w-full"
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+      >
+        <SelectValue placeholder="Select time" />
+      </SelectTrigger>
+      <SelectContent>
+        {ALL_BLOCK_TIMES.map((time) => (
+          <SelectItem key={time} value={time}>
+            {time}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
+interface MatchPairRowProps {
+  pair: MatchPair;
+  rowNumber: number;
+  teams: Team[];
+  error?: string;
+  onUpdate: (id: string, updates: Partial<MatchPair>) => void;
+  onRemove: (id: string) => void;
+}
+
+const MatchPairRow: React.FC<MatchPairRowProps> = ({
+  pair,
+  rowNumber,
+  teams,
+  error,
+  onUpdate,
+  onRemove,
+}) => {
+  const errorId = `pair-error-${pair.id}`;
+  const describedBy = error ? errorId : undefined;
+  const invalid = Boolean(error);
+
+  return (
+    <div
+      className={cn(
+        'p-3 border rounded-lg bg-card shadow-sm',
+        error && 'border-destructive ring-1 ring-destructive'
+      )}
+    >
+      {/* Numbered so the validation message can point at a row on screen (A-18). */}
+      <p className="text-xs font-medium text-muted-foreground mb-2">Match {rowNumber}</p>
+      <div className="flex flex-col md:flex-row gap-3">
+        <TeamSelect
+          id={`pair-team1-${pair.id}`}
+          label="Team 1"
+          value={pair.team1Id}
+          excludeTeamId={pair.team2Id}
+          teams={teams}
+          invalid={invalid}
+          describedBy={describedBy}
+          onChange={(team1Id) => onUpdate(pair.id, { team1Id })}
+        />
+
+        <div className="flex items-center justify-center">
+          <span className="text-sm font-medium text-muted-foreground">VS</span>
+        </div>
+
+        <TeamSelect
+          id={`pair-team2-${pair.id}`}
+          label="Team 2"
+          value={pair.team2Id}
+          excludeTeamId={pair.team1Id}
+          teams={teams}
+          invalid={invalid}
+          describedBy={describedBy}
+          onChange={(team2Id) => onUpdate(pair.id, { team2Id })}
+        />
+
+        <TimeslotSelect
+          id={`pair-timeslot-${pair.id}`}
+          value={pair.timeslot}
+          invalid={invalid}
+          describedBy={describedBy}
+          onChange={(timeslot) => onUpdate(pair.id, { timeslot })}
+        />
+
+        <div className="flex items-end justify-end pb-0.5 mt-auto">
+          <DestructiveIconButton
+            onClick={() => onRemove(pair.id)}
+            title="Remove match pair"
+            size="sm"
+          />
+        </div>
+      </div>
+      {error && (
+        <p id={errorId} role="alert" className="mt-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+};
+
 /** Editable list of match pairings with team/timeslot selects; shows an empty state when none. */
 const MatchPairsList: React.FC<MatchPairsListProps> = ({
   pairs,
@@ -46,184 +253,19 @@ const MatchPairsList: React.FC<MatchPairsListProps> = ({
     );
   }
 
-  /** Looks up a team from the teams prop by id; returns null for missing or empty ids. */
-  const getTeamById = (id: string | null) => {
-    if (!id) return null;
-    return teams.find((t) => t.id === id) || null;
-  };
-
   return (
     <div className="space-y-3">
-      {pairs.map((pair, index) => {
-        const error = errors[pair.id];
-        const errorId = `pair-error-${pair.id}`;
-
-        return (
-          <div
-            key={pair.id}
-            className={cn(
-              'p-3 border rounded-lg bg-card shadow-sm',
-              error && 'border-destructive ring-1 ring-destructive'
-            )}
-          >
-            <p className="text-xs font-medium text-muted-foreground mb-2">Match {index + 1}</p>
-            <div className="flex flex-col md:flex-row gap-3">
-              {/* Team 1 Selection */}
-              <div className="flex-1">
-                <label
-                  htmlFor={`pair-team1-${pair.id}`}
-                  className="text-xs text-muted-foreground mb-1 block"
-                >
-                  Team 1
-                </label>
-                <Select
-                  value={pair.team1Id || ''}
-                  onValueChange={(value) => onUpdate(pair.id, { team1Id: value })}
-                >
-                  <SelectTrigger
-                    id={`pair-team1-${pair.id}`}
-                    className="w-full"
-                    aria-invalid={error ? true : undefined}
-                    aria-describedby={error ? errorId : undefined}
-                  >
-                    <SelectValue placeholder="Select team">
-                      {pair.team1Id && (
-                        <div className="flex items-center gap-2">
-                          <TeamLogo
-                            imageUrl={getTeamById(pair.team1Id)?.imageUrl || ''}
-                            teamName={getTeamById(pair.team1Id)?.name || ''}
-                            className="size-4"
-                          />
-                          <span>{getTeamById(pair.team1Id)?.name}</span>
-                        </div>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="max-h-[300px] overflow-auto">
-                      {teams
-                        .filter((team) => team.id !== pair.team2Id)
-                        .map((team) => (
-                          <SelectItem key={team.id} value={team.id}>
-                            <div className="flex items-center gap-2">
-                              <TeamLogo
-                                imageUrl={team.imageUrl || ''}
-                                teamName={team.name}
-                                className="size-4"
-                              />
-                              <span>{team.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </div>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* VS Symbol */}
-              <div className="flex items-center justify-center">
-                <span className="text-sm font-medium text-muted-foreground">VS</span>
-              </div>
-
-              {/* Team 2 Selection */}
-              <div className="flex-1">
-                <label
-                  htmlFor={`pair-team2-${pair.id}`}
-                  className="text-xs text-muted-foreground mb-1 block"
-                >
-                  Team 2
-                </label>
-                <Select
-                  value={pair.team2Id || ''}
-                  onValueChange={(value) => onUpdate(pair.id, { team2Id: value })}
-                >
-                  <SelectTrigger
-                    id={`pair-team2-${pair.id}`}
-                    className="w-full"
-                    aria-invalid={error ? true : undefined}
-                    aria-describedby={error ? errorId : undefined}
-                  >
-                    <SelectValue placeholder="Select team">
-                      {pair.team2Id && (
-                        <div className="flex items-center gap-2">
-                          <TeamLogo
-                            imageUrl={getTeamById(pair.team2Id)?.imageUrl || ''}
-                            teamName={getTeamById(pair.team2Id)?.name || ''}
-                            className="size-4"
-                          />
-                          <span>{getTeamById(pair.team2Id)?.name}</span>
-                        </div>
-                      )}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="max-h-[300px] overflow-auto">
-                      {teams
-                        .filter((team) => team.id !== pair.team1Id)
-                        .map((team) => (
-                          <SelectItem key={team.id} value={team.id}>
-                            <div className="flex items-center gap-2">
-                              <TeamLogo
-                                imageUrl={team.imageUrl || ''}
-                                teamName={team.name}
-                                className="size-4"
-                              />
-                              <span>{team.name}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                    </div>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Timeslot Selection */}
-              <div className="md:w-[150px]">
-                <label
-                  htmlFor={`pair-timeslot-${pair.id}`}
-                  className="text-xs text-muted-foreground mb-1 block"
-                >
-                  Timeslot
-                </label>
-                <Select
-                  value={pair.timeslot || ''}
-                  onValueChange={(value) => onUpdate(pair.id, { timeslot: value })}
-                >
-                  <SelectTrigger
-                    id={`pair-timeslot-${pair.id}`}
-                    className="w-full"
-                    aria-invalid={error ? true : undefined}
-                    aria-describedby={error ? errorId : undefined}
-                  >
-                    <SelectValue placeholder="Select time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ALL_BLOCK_TIMES.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Delete Button */}
-              <div className="flex items-end justify-end pb-0.5 mt-auto">
-                <DestructiveIconButton
-                  onClick={() => onRemove(pair.id)}
-                  title="Remove match pair"
-                  size="sm"
-                />
-              </div>
-            </div>
-            {error && (
-              <p id={errorId} role="alert" className="mt-2 text-sm text-destructive">
-                {error}
-              </p>
-            )}
-          </div>
-        );
-      })}
+      {pairs.map((pair, index) => (
+        <MatchPairRow
+          key={pair.id}
+          pair={pair}
+          rowNumber={index + 1}
+          teams={teams}
+          error={errors[pair.id]}
+          onUpdate={onUpdate}
+          onRemove={onRemove}
+        />
+      ))}
     </div>
   );
 };

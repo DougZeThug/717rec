@@ -176,9 +176,12 @@ ends "**This action cannot be undone.**" That is accurate: **nothing anywhere in
 the app un-archives a season.**
 
 A checkbox, "Keep playoffs active", chooses between two very different
-operations. It appears **only while that season's playoffs are running**, since a
-season with no bracket has nothing to keep. It is unticked every time the dialog
-opens, even if it was ticked and the dialog was cancelled a moment earlier.
+operations. It appears on the **active** season and on any season whose playoffs
+are already running — ticking it is the move that *starts* the playoffs, so the
+season being played has to be offered it before its bracket exists. It is hidden
+only on an old season that is neither active nor in playoffs, which has no
+bracket to keep. It is unticked every time the dialog opens, even if it was
+ticked and the dialog was cancelled a moment earlier.
 
 **Unticked — full archival.** The dialog lists what will happen: snapshot all
 team stats and power scores; auto-detect division playoff champions from the

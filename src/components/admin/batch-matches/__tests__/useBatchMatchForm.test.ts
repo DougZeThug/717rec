@@ -143,8 +143,9 @@ describe('useBatchMatchForm', () => {
   it('autoAssignTimeslots wraps around when pairs exceed slot count', () => {
     const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
 
-    // Add pairs one at a time to avoid stale-closure accumulation issues
-    for (let i = 0; i < ALL_BLOCK_TIMES.length; i++) {
+    // Add pairs one at a time to avoid stale-closure accumulation issues. One
+    // pair per block time, on top of the seed row the hook starts with.
+    for (const _blockTime of ALL_BLOCK_TIMES) {
       act(() => {
         result.current.addMatchPair();
       });
@@ -163,7 +164,7 @@ describe('useBatchMatchForm', () => {
   it('only ever offers a real block time', () => {
     const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
 
-    for (let i = 0; i < 3; i++) {
+    for (const _extraRow of ['second', 'third', 'fourth']) {
       act(() => {
         result.current.addMatchPair();
       });
