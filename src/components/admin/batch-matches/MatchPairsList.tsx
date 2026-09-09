@@ -37,21 +37,27 @@ const TeamOption: React.FC<{ team: Team | null }> = ({ team }) => (
   </div>
 );
 
-/** The options list. Its own component so the item tree stays shallow. */
+/**
+ * The options list, minus whichever team is already picked on the other side.
+ * Built in one pass rather than filter-then-map (React Doctor
+ * js-combine-iterations); it runs on every open of both selects on every row.
+ */
 const TeamOptions: React.FC<{ teams: Team[]; excludeTeamId: string | null }> = ({
   teams,
   excludeTeamId,
-}) => (
-  <div className="max-h-[300px] overflow-auto">
-    {teams
-      .filter((team) => team.id !== excludeTeamId)
-      .map((team) => (
-        <SelectItem key={team.id} value={team.id}>
-          <TeamOption team={team} />
-        </SelectItem>
-      ))}
-  </div>
-);
+}) => {
+  const options: React.ReactNode[] = [];
+  for (const team of teams) {
+    if (team.id === excludeTeamId) continue;
+    options.push(
+      <SelectItem key={team.id} value={team.id}>
+        <TeamOption team={team} />
+      </SelectItem>
+    );
+  }
+
+  return <div className="max-h-[300px] overflow-auto">{options}</div>;
+};
 
 interface TeamPickerProps {
   id: string;

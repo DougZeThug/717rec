@@ -72,6 +72,20 @@ const SectionActions: React.FC = () => (
   </div>
 );
 
+const DeveloperLinks: React.FC = () => (
+  <div className="flex flex-wrap gap-2">
+    {DEVELOPER_LINKS.map(({ href, label, Icon }) => (
+      <Button key={label} variant="outline" size="sm" asChild>
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          <Icon className="mr-2 size-4" aria-hidden="true" />
+          {label}
+          <ExternalLink className="ml-2 size-3" aria-hidden="true" />
+        </a>
+      </Button>
+    ))}
+  </div>
+);
+
 /**
  * The developer links, closed by default. Radix unmounts closed content, so
  * these are out of the tab order until asked for — the SQL editor used to sit
@@ -104,20 +118,6 @@ const DeveloperDisclosure: React.FC = () => {
     </Collapsible>
   );
 };
-
-const DeveloperLinks: React.FC = () => (
-  <div className="flex flex-wrap gap-2">
-    {DEVELOPER_LINKS.map(({ href, label, Icon }) => (
-      <Button key={label} variant="outline" size="sm" asChild>
-        <a href={href} target="_blank" rel="noopener noreferrer">
-          <Icon className="mr-2 size-4" aria-hidden="true" />
-          {label}
-          <ExternalLink className="ml-2 size-3" aria-hidden="true" />
-        </a>
-      </Button>
-    ))}
-  </div>
-);
 
 const QuickActionsCard: React.FC = () => (
   <Card>
