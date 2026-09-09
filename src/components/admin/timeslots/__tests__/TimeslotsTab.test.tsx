@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TimeslotsTab from '../TimeslotsTab';
 
@@ -28,11 +28,13 @@ type AssignProps = {
   onAssign: (teamId: string, timeslot: string) => void;
   onBatchAssign: (teamIds: string[], timeslot: string) => void;
   onBatchAssignDoubleHeaders: (teamIds: string[], slot1: string, slot2: string) => void;
+  isSubmitting?: boolean;
 };
 
 vi.mock('@/components/timeslots/TimeslotAssignment', () => ({
-  default: ({ onAssign, onBatchAssign, onBatchAssignDoubleHeaders }: AssignProps) => (
+  default: ({ onAssign, onBatchAssign, onBatchAssignDoubleHeaders, isSubmitting }: AssignProps) => (
     <div>
+      <span>submitting:{String(isSubmitting)}</span>
       <button onClick={() => onAssign('team-1', '6:00 PM')}>assign-regular</button>
       <button onClick={() => onAssign('team-1', 'BYE')}>assign-bye</button>
       <button onClick={() => onBatchAssign(['team-1', 'team-2'], '7:00 PM')}>batch-regular</button>
@@ -74,6 +76,47 @@ describe('TimeslotsTab', () => {
       batchAssignByeWeeks,
       removeByeWeek,
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // It used to open on today, which is a Monday four nights out of five.
+  it('opens on the next league night rather than today', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 8, 7, 9)); // Monday 7 September 2026
+
+    render(<TimeslotsTab />);
+
+    expect(screen.getByRole('button', { name: /September 10th, 2026/ })).toBeInTheDocument();
+  });
+
+  it('says which block was booked, not just "timeslots assigned"', async () => {
+    const user = userEvent.setup();
+    render(<TimeslotsTab />);
+
+    await user.click(screen.getByText('batch-regular'));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Block booked',
+          description: expect.stringContaining('2 teams booked for the 7:00 + 7:30 PM block'),
+        })
+      )
+    );
+  });
+
+  it('tells the form when a booking is on its way', () => {
+    mockUseTimeslots.mockReturnValue({
+      ...mockUseTimeslots(),
+      isSubmitting: true,
+    });
+
+    render(<TimeslotsTab />);
+
+    expect(screen.getByText('submitting:true')).toBeInTheDocument();
   });
 
   it('assigns a regular timeslot via addTimeslot with a success toast', async () => {

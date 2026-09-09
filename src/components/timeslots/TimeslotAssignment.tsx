@@ -16,10 +16,28 @@ import { Switch } from '@/components/ui/switch';
 import { TeamLogo } from '@/components/ui/team/TeamLogo';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Team, TeamTimeslot } from '@/types';
-import { ALL_BLOCK_TIMES, DOUBLE_HEADER_START_TIMES } from '@/utils/autoSchedule/constants';
+import { BACK_TO_BACK_PAIRS, DOUBLE_HEADER_START_TIMES } from '@/utils/autoSchedule/constants';
 
-// Built from the block constants so the choices cannot drift away from them.
-const TIME_SLOTS = ['BYE', ...ALL_BLOCK_TIMES];
+/**
+ * One chip per block, plus BYE.
+ *
+ * A timeslot is never booked on its own: every assignment writes the chosen
+ * time *and* the thirty minutes after it, as a back-to-back pair. The chips used
+ * to read "6:30 PM", so an admin picking one got two rows they never asked for.
+ * They now say what is booked.
+ *
+ * The value submitted is still the block's first time, which is what the
+ * service takes. That also drops 9:30 PM, which is the second half of the 9:00
+ * block and no block's start: picking it used to fail on confirm.
+ */
+const BLOCK_CHOICES: Array<{ value: string; label: string; description: string }> = [
+  { value: 'BYE', label: 'BYE WEEK', description: 'No match this week' },
+  ...Object.values(BACK_TO_BACK_PAIRS).map((pair) => ({
+    value: pair.primary,
+    label: `${pair.primary.replace(' PM', '')} + ${pair.secondary}`,
+    description: `Books ${pair.primary} and ${pair.secondary}`,
+  })),
+];
 
 interface TimeslotAssignmentProps {
   selectedDate: Date;
@@ -28,6 +46,8 @@ interface TimeslotAssignmentProps {
   onAssign: (teamId: string, timeslot: string) => void;
   onBatchAssign?: (teamIds: string[], timeslot: string) => void;
   onBatchAssignDoubleHeaders?: (teamIds: string[], slot1: string, slot2: string) => void;
+  /** True while a booking is on its way, so Confirm cannot be pressed twice. */
+  isSubmitting?: boolean;
 }
 
 const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
@@ -37,6 +57,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   onAssign,
   onBatchAssign,
   onBatchAssignDoubleHeaders,
+  isSubmitting = false,
 }) => {
   const [teamId, setTeamId] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
@@ -172,7 +193,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                 All teams have been assigned for this date
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {availableTeams.map((team) => {
                   const isSelected = selectedTeamIds.includes(team.id);
                   return (
@@ -180,6 +201,8 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                       key={team.id}
                       role="button"
                       tabIndex={0}
+                      title={team.name}
+                      aria-pressed={isSelected}
                       onClick={() => handleToggleTeam(team.id)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -196,7 +219,11 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
                         teamName={team.name}
                         size="sm"
                       />
-                      <span className="text-xs font-medium truncate flex-1">{team.name}</span>
+                      {/* Two lines rather than an ellipsis: "Baggin' & Braggin'"
+                          and "Baggin Rights" both read "Baggin…" cut short. */}
+                      <span className="line-clamp-2 flex-1 break-words text-xs font-medium">
+                        {team.name}
+                      </span>
                       <div
                         className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
                           isSelected
@@ -241,7 +268,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
           <label className="block text-sm font-medium">
-            {isDoubleHeader ? 'Select Two Timeslots' : 'Select Timeslot'}
+            {isDoubleHeader ? 'Select Two Timeslots' : 'Select a block'}
           </label>
           {isDoubleHeader && (
             <Badge variant="doubleHeader" className="text-xs">
@@ -249,6 +276,11 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
             </Badge>
           )}
         </div>
+        {!isDoubleHeader && (
+          <p className="text-xs text-muted-foreground">
+            A block is two back-to-back times. Picking one books both.
+          </p>
+        )}
         {isDoubleHeader ? (
           // Double header mode - multiple selection
           <div className="flex flex-wrap justify-start gap-1.5">
@@ -282,24 +314,25 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
             onValueChange={setSelectedTimeslot}
             className="flex flex-wrap justify-start gap-1.5"
           >
-            {TIME_SLOTS.map((time) => (
+            {BLOCK_CHOICES.map((choice) => (
               <ToggleGroupItem
-                key={time}
-                value={time}
+                key={choice.value}
+                value={choice.value}
+                title={choice.description}
                 className={`
                   px-3 py-1.5 transition-colors
                   ${
-                    time === 'BYE'
-                      ? selectedTimeslot === time
+                    choice.value === 'BYE'
+                      ? selectedTimeslot === choice.value
                         ? 'bg-orange-600 text-white'
                         : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:!border-orange-200 dark:!text-orange-200 dark:hover:bg-orange-200/10'
-                      : selectedTimeslot === time
+                      : selectedTimeslot === choice.value
                         ? 'bg-cornhole-navy text-white'
                         : 'border-cornhole-navy text-cornhole-navy dark:!border-blue-200 dark:!text-blue-200'
                   }
                 `}
               >
-                {time === 'BYE' ? 'BYE WEEK' : time}
+                {choice.label}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -317,14 +350,17 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           (!isDoubleHeader &&
             ((batchMode && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
               (!batchMode && (!teamId || !selectedTimeslot)))) ||
-          availableTeams.length === 0
+          availableTeams.length === 0 ||
+          isSubmitting
         }
       >
-        {isDoubleHeader
-          ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
-          : batchMode
-            ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
-            : 'Confirm Assignment'}
+        {isSubmitting
+          ? 'Booking…'
+          : isDoubleHeader
+            ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+            : batchMode
+              ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+              : 'Confirm Assignment'}
       </Button>
     </form>
   );
