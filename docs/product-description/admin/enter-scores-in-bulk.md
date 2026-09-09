@@ -25,7 +25,7 @@ the Submit button is pinned to the bottom of the screen, so there is a score to
 enter and a way to save it without scrolling or tapping anything first.
 
 Each match is a card: the two team names stacked with "vs" between them, a row
-of four score buttons, and a "Mark as Complete" switch. The admin presses
+of four score buttons, and a "Mark as final" switch. The admin presses
 **2–1** on the first card. The button fills in, the switch flips itself on, and
 a small blue "Edited" tag appears. The button pinned to the bottom of the screen
 changes from "Submit All Changes" to **"Submit (1) Changes"**.
@@ -50,7 +50,7 @@ stateDiagram-v2
     loading --> listing : matches arrive (date filter auto-set to the latest night on or before today)
     loading --> load_failed : the read fails
     load_failed --> loading : press Retry
-    listing --> editing : press a score button, or flip Mark as Complete
+    listing --> editing : press a score button, or flip Mark as final
     editing --> editing : change more rows
     editing --> submitting : press Submit (N) Changes
     submitting --> listing : every row saved (commit)
@@ -101,7 +101,7 @@ freshly loaded table and no edits.
 The first press of a score button does three things at once:
 
 1. Records the result on the row — the win, and the game wins.
-2. **Flips "Mark as Complete" on by itself.** The admin does not have to.
+2. **Flips "Mark as final" on by itself.** The admin does not have to.
 3. Marks the row edited, which is what makes it eligible to submit.
 
 An "Edited" tag appears beside the switch and the submit button's count goes up.
@@ -124,9 +124,9 @@ shows a grey hint under it:
 | Situation | Hint |
 | --- | --- |
 | Scores do not make one winner | "Invalid — fix scores before submitting." |
-| "Mark as Complete" switched off | "Marked incomplete — won't submit here. Use Live Corrections to reopen completed matches." |
+| "Mark as final" switched off | "Marked incomplete — won't submit here. Use Live Corrections to reopen completed matches." |
 
-That second hint is the important one. **Switching "Mark as Complete" off does
+That second hint is the important one. **Switching "Mark as final" off does
 not un-complete a match.** The row simply stops being submittable and the change
 is never sent.
 
