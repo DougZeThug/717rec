@@ -20,12 +20,12 @@ export const useMatchRosters = (
   const team1Roster = useQuery({
     queryKey: ['team-players', team1Id],
     queryFn: () => TeamPlayersService.fetchTeamPlayers(team1Id as string),
-    enabled: !!team1Id,
+    enabled: Boolean(team1Id),
   });
   const team2Roster = useQuery({
     queryKey: ['team-players', team2Id],
     queryFn: () => TeamPlayersService.fetchTeamPlayers(team2Id as string),
-    enabled: !!team2Id,
+    enabled: Boolean(team2Id),
   });
 
   return useMemo(() => {

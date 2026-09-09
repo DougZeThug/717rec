@@ -83,71 +83,71 @@ const MatchCard: React.FC<MatchCardProps> = ({
   });
 
   return (
-    <div className={cn('relative', animations.scaleIn)}>
-      {/* Gradient border wrapper */}
-      <div
-        className={cn(
-          'rounded-xl p-[1.5px]',
-          isCompleted
-            ? 'bg-gradient-to-br from-emerald-500/40 via-transparent to-emerald-500/20'
-            : 'bg-gradient-to-br from-primary/30 via-transparent to-accent/20'
-        )}
-      >
-        <div className="rounded-xl overflow-hidden bg-card">
-          <MatchCardStatusBadge status={status} isUpsetResult={isUpsetResult} />
+    // The gradient border is also the positioned, animated wrapper: two divs
+    // that only ever wrapped each other are one.
+    <div
+      className={cn(
+        'relative rounded-xl p-[1.5px]',
+        animations.scaleIn,
+        isCompleted
+          ? 'bg-gradient-to-br from-emerald-500/40 via-transparent to-emerald-500/20'
+          : 'bg-gradient-to-br from-primary/30 via-transparent to-accent/20'
+      )}
+    >
+      <div className="rounded-xl overflow-hidden bg-card">
+        <MatchCardStatusBadge status={status} isUpsetResult={isUpsetResult} />
 
-          <div className="px-3 py-2">
-            <MatchCardTeamsRow
-              match={match}
+        <div className="px-3 py-2">
+          <MatchCardTeamsRow
+            match={match}
+            team1Name={team1Name}
+            team2Name={team2Name}
+            isCompleted={isCompleted}
+            winners={winners}
+            isAnimating={isAnimating}
+          />
+
+          {/* H2H Record */}
+          <div className="mt-1.5">
+            <MatchHeadToHead
+              team1Id={match.team1Id}
+              team2Id={match.team2Id}
               team1Name={team1Name}
               team2Name={team2Name}
-              isCompleted={isCompleted}
-              winners={winners}
-              isAnimating={isAnimating}
+              prefetchedData={prefetchedH2H}
+              isBatchLoading={isBatchH2HLoading}
             />
-
-            {/* H2H Record */}
-            <div className="mt-1.5">
-              <MatchHeadToHead
-                team1Id={match.team1Id}
-                team2Id={match.team2Id}
-                team1Name={team1Name}
-                team2Name={team2Name}
-                prefetchedData={prefetchedH2H}
-                isBatchLoading={isBatchH2HLoading}
-              />
-            </div>
-
-            <MatchCardUpcomingExtras
-              isCompleted={isCompleted}
-              matchDate={match.date}
-              prediction={prediction}
-              team1Name={team1Name}
-              team2Name={team2Name}
-            />
-
-            <MatchCardCtas
-              match={match}
-              isCompleted={isCompleted}
-              canScore={canScore}
-              team1Name={team1Name}
-              team2Name={team2Name}
-              liveScoredMatchIds={liveScoredMatchIds}
-            />
-
-            {isAdminAccessGranted && (
-              <MatchCardAdminActions
-                match={match}
-                isCompleted={isCompleted}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            )}
-
-            {showInteractions && isCompleted && (
-              <MatchInteractions matchId={match.id} className="mt-2" />
-            )}
           </div>
+
+          <MatchCardUpcomingExtras
+            isCompleted={isCompleted}
+            matchDate={match.date}
+            prediction={prediction}
+            team1Name={team1Name}
+            team2Name={team2Name}
+          />
+
+          <MatchCardCtas
+            match={match}
+            isCompleted={isCompleted}
+            canScore={canScore}
+            team1Name={team1Name}
+            team2Name={team2Name}
+            liveScoredMatchIds={liveScoredMatchIds}
+          />
+
+          {isAdminAccessGranted && (
+            <MatchCardAdminActions
+              match={match}
+              isCompleted={isCompleted}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          )}
+
+          {showInteractions && isCompleted && (
+            <MatchInteractions matchId={match.id} className="mt-2" />
+          )}
         </div>
       </div>
     </div>

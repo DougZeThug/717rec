@@ -264,7 +264,10 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                       value={field.value === undefined ? '' : field.value}
                       onChange={(e) => {
                         const { value } = e.target;
-                        if (value === '') return field.onChange(missingScore);
+                        if (value === '') {
+                          field.onChange(missingScore);
+                          return;
+                        }
                         const parsed = parseInt(value, 10);
                         field.onChange(Number.isNaN(parsed) ? missingScore : parsed);
                       }}
@@ -291,7 +294,10 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                       value={field.value === undefined ? '' : field.value}
                       onChange={(e) => {
                         const { value } = e.target;
-                        if (value === '') return field.onChange(missingScore);
+                        if (value === '') {
+                          field.onChange(missingScore);
+                          return;
+                        }
                         const parsed = parseInt(value, 10);
                         field.onChange(Number.isNaN(parsed) ? missingScore : parsed);
                       }}
