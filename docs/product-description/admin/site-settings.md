@@ -259,7 +259,11 @@ for one season stays on the home page into the next until somebody hides it.
 enforced by the browser. One guard on themes. Nothing else is checked. Malformed
 advanced settings text is silently treated as empty.
 
-**Unsaved changes.** Not handled anywhere in this document's four sections.
+**Unsaved changes.** The hero card form is guarded: pressing Back or Cancel with
+a field changed asks "This hero card is not saved. Leave and lose the changes?"
+first, choosing another admin section asks the same, and leaving the site raises
+the browser's warning. Saving closes without asking. Nothing else in this
+document's four sections is guarded.
 
 **Optimistic updates and rollback.** None. Every switch waits for the server and
 then re-reads.

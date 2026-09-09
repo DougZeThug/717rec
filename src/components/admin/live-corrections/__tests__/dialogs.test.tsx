@@ -1,8 +1,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Tables } from '@/integrations/supabase/types';
+import { clearUnsavedWork, findUnsavedWork } from '@/utils/unsavedChanges';
 
 import { ChangeGameWinnerDialog } from '../ChangeGameWinnerDialog';
 import { DeleteRoundDialog } from '../DeleteRoundDialog';
@@ -325,5 +326,131 @@ describe('live correction dialogs', () => {
     await user.click(screen.getByRole('button', { name: 'Set winner' }));
 
     expect(onConfirm).toHaveBeenCalledWith('team-b');
+  });
+});
+
+// UX audit A-07: Cancel, Escape and a tap on the backdrop all threw a typed
+// correction away without asking.
+describe('EditRoundDialog unsaved changes', () => {
+  let confirmSpy: ReturnType<typeof vi.spyOn>;
+
+  const dialogProps = {
+    round: baseRound,
+    team1Name: 'Team A',
+    team2Name: 'Team B',
+    team1Players,
+    team2Players,
+    rosterById,
+    isSubmitting: false,
+  };
+
+  beforeEach(() => {
+    clearUnsavedWork();
+    confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    clearUnsavedWork();
+    confirmSpy.mockRestore();
+  });
+
+  it('closes without asking when nothing was changed', async () => {
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <EditRoundDialog open onOpenChange={onOpenChange} onSubmit={vi.fn()} {...dialogProps} />
+    );
+
+    expect(findUnsavedWork()).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('asks before Cancel throws a typed score away', async () => {
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <EditRoundDialog open onOpenChange={onOpenChange} onSubmit={vi.fn()} {...dialogProps} />
+    );
+
+    fireEvent.change(screen.getByLabelText('Score', { selector: '#team1-score' }), {
+      target: { value: '9' },
+    });
+    expect(findUnsavedWork()).not.toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('keeps the dialog open when the admin says no', async () => {
+    confirmSpy.mockReturnValue(false);
+    const onOpenChange = vi.fn();
+    const user = userEvent.setup();
+
+    render(
+      <EditRoundDialog open onOpenChange={onOpenChange} onSubmit={vi.fn()} {...dialogProps} />
+    );
+
+    fireEvent.change(screen.getByLabelText('Score', { selector: '#team1-score' }), {
+      target: { value: '9' },
+    });
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Score', { selector: '#team1-score' })).toHaveValue(9);
+  });
+
+  it('does not ask after the changes are saved', async () => {
+    const onOpenChange = vi.fn();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const user = userEvent.setup();
+
+    render(
+      <EditRoundDialog open onOpenChange={onOpenChange} onSubmit={onSubmit} {...dialogProps} />
+    );
+
+    fireEvent.change(screen.getByLabelText('Score', { selector: '#team1-score' }), {
+      target: { value: '3' },
+    });
+    fireEvent.change(screen.getByLabelText('On', { selector: '#team1-on' }), {
+      target: { value: '3' },
+    });
+    fireEvent.change(screen.getByLabelText('Off', { selector: '#team1-off' }), {
+      target: { value: '1' },
+    });
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  // A realtime refetch hands over a fresh round object without reloading the
+  // form; an untouched form must not start claiming it has work.
+  it('stays clean when the same round arrives again from the server', () => {
+    const { rerender } = render(
+      <EditRoundDialog open onOpenChange={vi.fn()} onSubmit={vi.fn()} {...dialogProps} />
+    );
+
+    rerender(
+      <EditRoundDialog
+        open
+        onOpenChange={vi.fn()}
+        onSubmit={vi.fn()}
+        {...dialogProps}
+        round={{ ...baseRound }}
+      />
+    );
+
+    expect(findUnsavedWork()).toBeNull();
   });
 });

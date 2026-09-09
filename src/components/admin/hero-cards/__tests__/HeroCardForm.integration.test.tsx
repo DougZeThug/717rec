@@ -2,9 +2,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HeroCard } from '@/types/heroCard';
+import { clearUnsavedWork, findUnsavedWork } from '@/utils/unsavedChanges';
 
 import HeroCardForm from '../HeroCardForm';
 
@@ -107,6 +108,72 @@ describe('HeroCardForm integration', () => {
     expect(mocks.updateCard).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'c1', title: 'Updated' })
     );
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+// UX audit A-07: closing the form replaced it with the list and threw the work
+// away with no warning.
+describe('HeroCardForm unsaved changes', () => {
+  let confirmSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearUnsavedWork();
+    confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    clearUnsavedWork();
+    confirmSpy.mockRestore();
+  });
+
+  it('closes without asking when nothing was typed', async () => {
+    const onClose = vi.fn();
+    renderForm(<HeroCardForm card={makeCard()} onClose={onClose} />);
+
+    expect(findUnsavedWork()).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: /Back/ }));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks before Back throws a typed change away', async () => {
+    const onClose = vi.fn();
+    renderForm(<HeroCardForm card={makeCard()} onClose={onClose} />);
+
+    await userEvent.type(screen.getByLabelText('Headline'), ' updated');
+    expect(findUnsavedWork()).not.toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: /Back/ }));
+
+    expect(confirmSpy).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the form when the admin says no', async () => {
+    confirmSpy.mockReturnValue(false);
+    const onClose = vi.fn();
+    renderForm(<HeroCardForm card={makeCard()} onClose={onClose} />);
+
+    await userEvent.type(screen.getByLabelText('Headline'), ' updated');
+    await userEvent.click(screen.getByRole('button', { name: /Back/ }));
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Headline')).toHaveValue('Old updated');
+  });
+
+  it('does not ask on the close that follows a save', async () => {
+    const onClose = vi.fn();
+    renderForm(<HeroCardForm card={makeCard()} onClose={onClose} />);
+
+    await userEvent.type(screen.getByLabelText('Headline'), ' updated');
+    await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+    expect(mocks.updateCard).toHaveBeenCalledTimes(1);
+    expect(confirmSpy).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

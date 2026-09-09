@@ -263,7 +263,12 @@ the current season's standings.
 again in the service before the write. Failures are toasts carrying the league's
 real message.
 
-**Unsaved changes.** Not guarded. Closing a dialog discards its input silently.
+**Unsaved changes.** The edit-round dialog is guarded: Cancel, Escape and a tap
+outside all ask "This round has changes that are not saved. Close and lose them?"
+once a field has been changed. Saving closes without asking, and a fresh copy of
+the same round arriving from the server does not count as a change. The other two
+dialogs hold nothing to lose. Browser Back is not guarded anywhere; see
+[`the-admin-dashboard.md`](the-admin-dashboard.md).
 
 **Optimistic updates and rollback.** None. Every write waits.
 
