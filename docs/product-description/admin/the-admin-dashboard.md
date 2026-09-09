@@ -25,7 +25,8 @@ about a third of a second.
 
 On the left is a bordered panel headed "Admin Menu", with a search box and
 twenty-one entries. The centre holds one section — **Timeslots** the first time, and
-after that whichever section was open last.
+after that whichever section was open last. On a phone the panel is replaced by a
+**Sections** button that opens the same list as a drawer.
 
 The admin types "sea" into the search box. The list shrinks to **Season**. They
 press it, the middle of the page shows Season Management, and the left column
@@ -156,7 +157,7 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 | The user's role (visitor, player, admin) | Only an admin reaches this page at all. A visitor is sent to `/auth`; a signed-in non-admin gets one "Access Denied" toast and lands on the home page. | Losing admin in another tab does not close the dashboard. The menu stays, the sections stay, and the writes start failing. |
 | The record's state | No effect. The shell holds no record. | No effect. |
 | The season's state (active, archived, playoffs on) | No effect on the shell. Individual sections show different things with no active season; each says so. | No effect on the shell. |
-| Viewport | Below the mobile breakpoint the left menu is replaced by a stacked accordion with six groups, two quick-access buttons (Scores, Timeslots), and its own search box. Above it, the sidebar. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
+| Viewport | Below the mobile breakpoint the left menu is replaced by a bar holding a **Sections** button and two quick-access buttons; the six groups and the search box live in a drawer behind it. Above the breakpoint, the sidebar. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
 | Keys the form honours | Tab reaches the collapse toggle, the search box, then every visible menu entry in order. No shortcut opens a section. | Typing in the search box filters as each character lands. Escape does nothing; the box has no clear button on a wide screen. |
 
 ## Cancel and interrupt
@@ -208,13 +209,22 @@ page.
 bookmarked, opened in a second tab, and stepped back through. The collapsed menu
 and the search text stay invisible to the address bar.
 
-**On a phone.** The menu becomes six collapsible groups with a search box above
-and two quick-access buttons. The group holding the open section is open, and
-**stays in step**: arriving in a section from anywhere — a League Night quick
-action, a Help step, a typed address — opens that section's group and marks the
-entry as the current page. Opening other groups by hand does not close them, and
-closing the open section's group by hand works; nothing reopens it until the
-section changes again.
+**On a phone.** The menu is one bar above the section: a **Sections** button
+naming the section on screen, and the two quick-access buttons (Scores,
+Timeslots). Pressing Sections slides the full list up from the bottom as a
+drawer — the search box and the six collapsible groups — and choosing a section
+closes it. The section itself therefore starts near the top of the page rather
+than below a screenful of menu.
+
+The bar does not stick to the top of the screen while scrolling; the site header
+already does, and two would overlap.
+
+Inside the drawer, the group holding the open section is open, and **stays in
+step**: arriving in a section from anywhere — a League Night quick action, a Help
+step, a typed address — opens that section's group and marks the entry as the
+current page. Opening other groups by hand does not close them, and closing the
+open section's group by hand works; nothing reopens it until the section changes
+again.
 
 **Accessibility.** Menu entries are real buttons with a 44-pixel minimum height.
 The menu is a labelled "Admin sections" landmark on a phone as well as on a wide

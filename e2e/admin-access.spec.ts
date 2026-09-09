@@ -138,6 +138,47 @@ test.describe('admin access control', () => {
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible();
   });
 
+  // UX audit X-06: the phone menu used to push every section about 660px down.
+  test('on a phone the section starts above the fold, with the menu in a drawer', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seedAuthenticatedUser(page, {
+      id: 'e2e-admin-user',
+      email: 'e2e-admin@example.com',
+      isAdmin: true,
+    });
+
+    await page.goto('/admin/scores');
+
+    const sectionsButton = page.getByRole('button', { name: /Sections/ });
+    await expect(sectionsButton).toBeVisible();
+    // Quick Access stays on the page rather than moving into the drawer.
+    await expect(page.getByRole('button', { name: /^Timeslots$/ })).toBeVisible();
+    // The list itself is not on the page until asked for.
+    await expect(page.getByPlaceholder('Search admin sections...')).toBeHidden();
+
+    const heading = page.getByRole('heading', { name: /Mass Score Entry/i });
+    await expect(heading).toBeVisible();
+    const box = await heading.boundingBox();
+    expect(box?.y ?? Infinity).toBeLessThan(844);
+
+    await sectionsButton.click();
+    const search = page.getByPlaceholder('Search admin sections...');
+    await expect(search).toBeVisible();
+
+    // Search reaches sections whose group is closed.
+    await search.fill('division');
+    await page
+      .getByRole('navigation', { name: 'Admin sections' })
+      .getByRole('button', { name: 'Divisions' })
+      .click();
+
+    await expect(page).toHaveURL(/\/admin\/divisions$/);
+    await expect(search).toBeHidden();
+    await expect(sectionsButton).toHaveText(/Divisions/);
+  });
+
   // /admin/notifications and /timeslots were pages of their own once.
   test('sends the old admin addresses to their sections', async ({ page }) => {
     await seedAuthenticatedUser(page, {
