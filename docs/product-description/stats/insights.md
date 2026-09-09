@@ -32,8 +32,9 @@ at the state of the league", and five blocks down the page:
    Very Low — a coloured bar, and three numbers: standard deviation of power
    score, the gap between the best and worst team, and how many teams sit within
    ten points of the average.
-4. **Division Matchups**: the combined head-to-head record between every pair of
-   divisions, six rows.
+4. **Division Matchups**: the combined head-to-head record between each pair of
+   *different* divisions, three rows, each ending in the share of games the
+   leading division won.
 5. **Top Performers**: up to six cards — Top Power Score, Best Win Rate, Toughest
    Schedule, Longest Win Streak, Most Improved, Biggest Drop — each naming a team
    and linking to it.
@@ -57,7 +58,7 @@ biggest fallers. The whole page waits for all three — there is one spinner for
 everything, not a skeleton per card.
 
 A fourth query, for Division Matchups, runs independently and fills that one card
-in later. Its card shows six grey bars while it waits.
+in later. Its card shows three grey bars while it waits.
 
 The page restores its scroll position when the user comes back with the browser's
 back button.
@@ -117,7 +118,7 @@ can come out half a match wrong and is rounded.
 | **Std Deviation** | The spread of power scores, one decimal. |
 | **Top-Bottom Gap** | Best active team's power score minus the worst active team's. |
 | **Competitive Teams** | Active teams within ten power-score points of the league average. |
-| **Division Matchups** | Combined wins between each pair of divisions, **across every season the league has ever played**, including playoffs. |
+| **Division Matchups** | Combined wins between each pair of different divisions, **across every season the league has ever played**. Matches played inside one division are not counted, and playoff matches never are — a bracket holds one division, so every playoff match is a same-division match. |
 | **Top Performers** | Six single-team superlatives, described below. |
 
 The six top performers, in order:
@@ -216,9 +217,10 @@ here directly is not.
 - **Division Matchups counts every season ever**, so the numbers there are far
   larger than anything else on the page and cannot be reconciled with the Matches
   Played card.
-- **Same-division rows in Division Matchups are always symmetric** — "Competitive
-  vs Competitive 112–112" — because every match inside a division adds one win to
-  each side. That is arithmetic, not a tie.
+- **Division Matchups no longer has same-division rows.** They used to read
+  "Competitive vs Competitive 112–112" — arithmetic, not a tie, because every
+  match inside a division adds one win to each side. Three rows remain, one per
+  pair of different divisions.
 - **A division pair with no matches reads "0 – 0 no matches"** rather than being
   hidden.
 - **Top Performers links to a team by its internal id**, while every other link

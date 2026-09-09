@@ -60,11 +60,6 @@ const rangeTableChain = (table: string, pages: Page[]) => {
   return chain;
 };
 
-// The brackets query is awaited directly off .select() (it is not paginated).
-const bracketsChain = (rows: unknown[]) => ({
-  select: () => Promise.resolve({ data: rows, error: null }),
-});
-
 const singlePage = (rows: unknown[]): Page[] => [{ data: rows, error: null }];
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -76,25 +71,34 @@ describe('fetchLeagueDivisionMatchups', () => {
   });
 
   it('orders every paginated query by a stable key before ranging', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'brackets') return bracketsChain([]);
-      return rangeTableChain(table, singlePage([]));
-    });
+    mockFrom.mockImplementation((table: string) => rangeTableChain(table, singlePage([])));
 
     await fetchLeagueDivisionMatchups();
 
-    // Each paginated query needs a stable, total ORDER BY. matches/archive/playoff
-    // sort by their unique id; team_season_stats has no id, so it sorts by the
-    // composite (season_id, team_id) natural key.
+    // Each paginated query needs a stable, total ORDER BY. matches and the
+    // archive sort by their unique id; team_season_stats has no id, so it sorts
+    // by the composite (season_id, team_id) natural key.
     expect(orderCalls).toEqual(
       expect.arrayContaining([
         { table: 'matches', column: 'id' },
         { table: 'matches_archive', column: 'id' },
-        { table: 'playoff_matches', column: 'id' },
         { table: 'team_season_stats', column: 'season_id' },
         { table: 'team_season_stats', column: 'team_id' },
       ])
     );
+  });
+
+  // IN-01: a bracket holds one division, so every playoff match is a
+  // same-division match and can never appear on this card. Fetching them was two
+  // Supabase round-trips on a public page for rows nothing read.
+  it('does not read playoff matches or brackets at all', async () => {
+    mockFrom.mockImplementation((table: string) => rangeTableChain(table, singlePage([])));
+
+    await fetchLeagueDivisionMatchups();
+
+    const tables = mockFrom.mock.calls.map((call) => call[0]);
+    expect(tables).not.toContain('playoff_matches');
+    expect(tables).not.toContain('brackets');
   });
 
   it('paginates past the 1,000-row cap, accumulating every page', async () => {
@@ -113,7 +117,6 @@ describe('fetchLeagueDivisionMatchups', () => {
     ]);
 
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'brackets') return bracketsChain([]);
       if (table === 'matches') return matchesChain;
       return rangeTableChain(table, singlePage([]));
     });
@@ -126,7 +129,6 @@ describe('fetchLeagueDivisionMatchups', () => {
 
   it('throws DatabaseError when a paginated query fails', async () => {
     mockFrom.mockImplementation((table: string) => {
-      if (table === 'brackets') return bracketsChain([]);
       if (table === 'matches') {
         return rangeTableChain(table, [{ data: null, error: pgError() }]);
       }

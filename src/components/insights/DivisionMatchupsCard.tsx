@@ -9,6 +9,7 @@ import {
   useLeagueDivisionMatchups,
 } from '@/hooks/useLeagueDivisionMatchups';
 import { cn } from '@/lib/utils';
+import { formatPercent, percentage } from '@/utils/liveScoring/pprCalc';
 
 const TIER_LABEL: Record<DivisionTier, string> = {
   competitive: 'Competitive',
@@ -24,6 +25,12 @@ const TIER_TEXT: Record<DivisionTier, string> = {
 
 const MatchupRow: React.FC<{ row: DivisionMatchupRecord }> = ({ row }) => {
   const total = row.winsA + row.winsB;
+  // Which side is ahead, and by how much. "288–30" on its own gives the reader
+  // arithmetic to do; the share says the thing the numbers are there for.
+  const leaderIsA = row.winsA >= row.winsB;
+  const leaderTier = leaderIsA ? row.tierA : row.tierB;
+  const share = percentage(leaderIsA ? row.winsA : row.winsB, total);
+
   return (
     <div className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-b-0">
       <div className="flex items-center gap-2 text-sm font-medium min-w-0">
@@ -35,8 +42,12 @@ const MatchupRow: React.FC<{ row: DivisionMatchupRecord }> = ({ row }) => {
         <span className={TIER_TEXT[row.tierA]}>{row.winsA}</span>
         <span className="text-muted-foreground">–</span>
         <span className={TIER_TEXT[row.tierB]}>{row.winsB}</span>
-        {total === 0 && (
+        {total === 0 ? (
           <span className="ml-2 text-xs font-normal text-muted-foreground">no matches</span>
+        ) : (
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            {TIER_LABEL[leaderTier]} won {formatPercent(share)}
+          </span>
         )}
       </div>
     </div>
@@ -54,18 +65,17 @@ const DivisionMatchupsCard: React.FC = () => {
           Division Matchups
         </CardTitle>
         <p className="text-xs text-muted-foreground">
-          Combined head-to-head records between divisions, using each team&apos;s display division
-          at the time of the match.
+          Combined head-to-head records between each pair of divisions, using each team&apos;s
+          display division at the time of the match. Matches inside one division are not counted —
+          they say nothing about how two divisions compare.
         </p>
       </CardHeader>
       <CardContent>
         {isLoading || !data ? (
           <div className="space-y-2">
-            {['dm-skel-1', 'dm-skel-2', 'dm-skel-3', 'dm-skel-4', 'dm-skel-5', 'dm-skel-6'].map(
-              (key) => (
-                <Skeleton key={key} className="h-8 w-full" />
-              )
-            )}
+            {['dm-skel-1', 'dm-skel-2', 'dm-skel-3'].map((key) => (
+              <Skeleton key={key} className="h-8 w-full" />
+            ))}
           </div>
         ) : (
           <div className="flex flex-col">

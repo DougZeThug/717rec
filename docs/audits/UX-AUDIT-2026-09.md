@@ -398,7 +398,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q25 ✅ | One vocabulary: "Score approvals", "Reject", "Match Creation"; `MATCH_STATUS_LABELS` | X-13 | Medium |
 | Q26 ✅ | Match Creation validation names the row; toast title "Missing details" not "Notification Error"; per-timeslot court numbers; block-time list | A-18 | Medium |
 | Q27 ✅ | League Night: fix header copy; add Timeslots, Match Creation, Notifications, Blind Draw, Playoffs quick actions; tuck developer links away | A-16, X-03 | Medium |
-| Q28 | Insights: drop self-pairing rows, show percentages | IN-01 | Medium |
+| Q28 ✅ | Insights: drop self-pairing rows, show percentages | IN-01 | Medium |
 | Q29 ✅ | Pending: confirm on Reject; group conflicting reports | A-10 | Medium |
 | Q30 | Seasons: disable Edit on archived, allow Archive on inactive, validate end ≥ start | A-12 | Medium |
 

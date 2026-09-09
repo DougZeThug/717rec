@@ -9,32 +9,37 @@ const tsd = (team_id: string, season_id: string, division_name: string) => ({
 });
 
 describe('computeDivisionMatchups', () => {
-  it('returns six pairings with zeroed counts when no matches', () => {
+  it('returns one pairing per pair of different divisions, zeroed, when no matches', () => {
     const result = computeDivisionMatchups({
       matches: [],
       archivedMatches: [],
-      playoffMatches: [],
       teamSeasonDivisions: [],
-      brackets: [],
     });
-    expect(result).toHaveLength(6);
+    expect(result).toHaveLength(3);
     expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
   });
 
-  it('counts same-tier matchups symmetrically', () => {
+  // IN-01: the card used to carry three self-pairing rows, which are symmetric by
+  // construction and could only ever read "433–433".
+  it('never returns a division paired with itself', () => {
+    const result = computeDivisionMatchups({
+      matches: [],
+      archivedMatches: [],
+      teamSeasonDivisions: [],
+    });
+    expect(result.every((r) => r.tierA !== r.tierB)).toBe(true);
+  });
+
+  it('ignores matches played inside one division', () => {
     const result = computeDivisionMatchups({
       matches: [
         { winner_id: 't1', loser_id: 't2', season_id: 's1' },
         { winner_id: 't2', loser_id: 't1', season_id: 's1' },
       ],
       archivedMatches: [],
-      playoffMatches: [],
       teamSeasonDivisions: [tsd('t1', 's1', 'Competitive'), tsd('t2', 's1', 'Competitive')],
-      brackets: [],
     });
-    const cc = result.find((r) => r.tierA === 'competitive' && r.tierB === 'competitive');
-    // 2 within-tier matches → each contributes one win and one loss to the tier.
-    expect(cc).toEqual({ tierA: 'competitive', tierB: 'competitive', winsA: 2, winsB: 2 });
+    expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
   });
 
   it('orients cross-tier matchups so the higher tier is side A', () => {
@@ -45,9 +50,7 @@ describe('computeDivisionMatchups', () => {
         { winner_id: 'i1', loser_id: 'c1', season_id: 's1' }, // int wins
       ],
       archivedMatches: [],
-      playoffMatches: [],
       teamSeasonDivisions: [tsd('c1', 's1', 'Competitive'), tsd('i1', 's1', 'Intermediate')],
-      brackets: [],
     });
     const ci = result.find((r) => r.tierA === 'competitive' && r.tierB === 'intermediate');
     expect(ci).toEqual({ tierA: 'competitive', tierB: 'intermediate', winsA: 1, winsB: 2 });
@@ -55,31 +58,27 @@ describe('computeDivisionMatchups', () => {
 
   it('uses historical division for each season independently', () => {
     const result = computeDivisionMatchups({
+      // Same two teams: one division apiece in s2, both recreational in s1.
       matches: [{ winner_id: 't1', loser_id: 't2', season_id: 's2' }],
       archivedMatches: [{ winner_id: 't1', loser_id: 't2', season_id: 's1' }],
-      playoffMatches: [],
       teamSeasonDivisions: [
         tsd('t1', 's1', 'Recreational'),
         tsd('t2', 's1', 'Recreational'),
         tsd('t1', 's2', 'Competitive'),
         tsd('t2', 's2', 'Intermediate'),
       ],
-      brackets: [],
     });
-    const rr = result.find((r) => r.tierA === 'recreational' && r.tierB === 'recreational');
     const ci = result.find((r) => r.tierA === 'competitive' && r.tierB === 'intermediate');
-    expect(rr?.winsA).toBe(1);
-    expect(rr?.winsB).toBe(1);
+    // Only the cross-division season counts; the same-division one is dropped.
     expect(ci).toEqual({ tierA: 'competitive', tierB: 'intermediate', winsA: 1, winsB: 0 });
+    expect(result.reduce((sum, r) => sum + r.winsA + r.winsB, 0)).toBe(1);
   });
 
   it('skips matches where a team has no historical division', () => {
     const result = computeDivisionMatchups({
       matches: [{ winner_id: 't1', loser_id: 'missing', season_id: 's1' }],
       archivedMatches: [],
-      playoffMatches: [],
       teamSeasonDivisions: [tsd('t1', 's1', 'Competitive')],
-      brackets: [],
     });
     expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
   });
@@ -88,25 +87,8 @@ describe('computeDivisionMatchups', () => {
     const result = computeDivisionMatchups({
       matches: [{ winner_id: 't1', loser_id: 't2', season_id: 's1' }],
       archivedMatches: [],
-      playoffMatches: [],
       teamSeasonDivisions: [tsd('t1', 's1', 'Hidden'), tsd('t2', 's1', 'Competitive')],
-      brackets: [],
     });
     expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
-  });
-
-  it('classifies playoff matches by bracket display division', () => {
-    const result = computeDivisionMatchups({
-      matches: [],
-      archivedMatches: [],
-      playoffMatches: [
-        { winner_id: 'x', loser_id: 'y', bracket_id: 'b1' },
-        { winner_id: 'y', loser_id: 'x', bracket_id: 'b1' },
-      ],
-      teamSeasonDivisions: [],
-      brackets: [{ id: 'b1', display_division: 'Recreational' }],
-    });
-    const rr = result.find((r) => r.tierA === 'recreational' && r.tierB === 'recreational');
-    expect(rr).toEqual({ tierA: 'recreational', tierB: 'recreational', winsA: 2, winsB: 2 });
   });
 });
