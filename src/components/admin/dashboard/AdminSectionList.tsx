@@ -1,5 +1,5 @@
 import { ChevronDown, Search, X } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -46,11 +46,19 @@ const AdminSectionList: React.FC<AdminSectionListProps> = ({
   // A-01). It only ever adds, so groups the admin opened by hand stay open, and
   // closing the open section's group by hand still works — nothing reopens it
   // until the section changes again.
-  useEffect(() => {
-    if (!activeGroupId) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync menu state from the section in the address
-    setOpenGroups((prev) => (prev.has(activeGroupId) ? prev : new Set(prev).add(activeGroupId)));
-  }, [activeGroupId]);
+  //
+  // Adjusted during render rather than in an effect, which is what React
+  // prescribes for state that follows a prop: an effect would paint the old
+  // group open for a frame first. React re-runs this render before touching the
+  // screen, so nothing flashes.
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [lastActiveGroupId, setLastActiveGroupId] = useState(activeGroupId);
+  if (activeGroupId !== lastActiveGroupId) {
+    setLastActiveGroupId(activeGroupId);
+    if (activeGroupId && !openGroups.has(activeGroupId)) {
+      setOpenGroups(new Set(openGroups).add(activeGroupId));
+    }
+  }
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((prev) => {

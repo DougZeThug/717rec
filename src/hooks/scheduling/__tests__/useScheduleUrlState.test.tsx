@@ -123,3 +123,23 @@ describe('useScheduleUrlState writes', () => {
     expect(url()).toContain('ref=email');
   });
 });
+
+describe('useScheduleUrlState date handling', () => {
+  it('stores local midnight whatever time of day it is given', () => {
+    const { result } = renderState();
+
+    act(() => result.current.setSelectedDate(new Date(2026, 8, 3, 19, 30, 45)));
+
+    expect(result.current.selectedDate.getHours()).toBe(0);
+    expect(result.current.selectedDate.getMinutes()).toBe(0);
+    expect(format(result.current.selectedDate, 'yyyy-MM-dd')).toBe('2026-09-03');
+  });
+
+  it('strips the time of day from the guessed night too', () => {
+    const { result } = renderHook(() => useScheduleUrlState(() => new Date(2026, 8, 10, 14, 5)), {
+      wrapper: wrapperFor('/schedule'),
+    });
+
+    expect(result.current.selectedDate.getHours()).toBe(0);
+  });
+});

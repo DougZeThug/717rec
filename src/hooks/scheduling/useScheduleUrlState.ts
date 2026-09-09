@@ -1,7 +1,17 @@
 import { format } from 'date-fns';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
+
+/**
+ * Local midnight on the same day, with any time of day stripped.
+ *
+ * Never `new Date(iso)`: the day this page shows is the local one, and the
+ * `yyyy-MM-dd` it writes to the address must round-trip to the same night in
+ * every timezone.
+ */
+const toLocalMidnight = (date: Date): Date =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 /** 'yyyy-MM-dd' as a local-midnight Date, or null when the text is not one. */
 const parseDayKey = (key: string | null): Date | null => {
@@ -17,7 +27,8 @@ const parseDayKey = (key: string | null): Date | null => {
 
 interface ScheduleUrlState {
   selectedDate: Date;
-  setSelectedDate: React.Dispatch<React.SetStateAction<Date>>;
+  /** Stores local midnight on the given day, whatever time of day it carries. */
+  setSelectedDate: (date: Date) => void;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   /**
@@ -50,7 +61,14 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
     search: searchParams.get('q') ?? '',
   }));
 
-  const [selectedDate, setSelectedDate] = useState<Date>(() => incoming.date ?? defaultDate());
+  const [selectedDate, setSelectedDateState] = useState<Date>(
+    () => incoming.date ?? toLocalMidnight(defaultDate())
+  );
+
+  const setSelectedDate = useCallback(
+    (date: Date) => setSelectedDateState(toLocalMidnight(date)),
+    []
+  );
   const [searchTerm, setSearchTerm] = useState(incoming.search);
 
   // Keep the address in step with what is on screen. The date is always

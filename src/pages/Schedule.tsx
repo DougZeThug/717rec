@@ -1,6 +1,5 @@
 import { format, parseISO } from 'date-fns';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router';
 
 import PageLayout from '@/components/layout/PageLayout';
 import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
@@ -11,11 +10,11 @@ import ScheduleHeader from '@/components/schedule/ScheduleHeader';
 import SeoHead from '@/components/seo/SeoHead';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { useScheduleUrlState } from '@/hooks/scheduling/useScheduleUrlState';
+import { useScrollToLinkedMatch } from '@/hooks/scheduling/useScrollToLinkedMatch';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
-import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
 import { Match } from '@/types';
@@ -82,6 +81,8 @@ const Schedule = () => {
 
   // Get dates that have matches for the date strip
   const matchDates = useMatchDates(matchesData);
+
+  useScrollToLinkedMatch(matchesLoading);
 
   // Every night that has a match, oldest first. Derived from matchDates, which
   // memoizes over the stable query data — upcomingMatches/completedMatches are
@@ -200,24 +201,13 @@ const Schedule = () => {
   };
 
   // Handle date selection with proper normalization
+  // Stripping the time of day is the hook's job now: it owns the date, and the
+  // address it writes carries the local day. All that is left here is recording
+  // that the night was chosen, so the auto-pick above leaves it alone.
   const handleDateSelect = (date: Date) => {
-    // Keep as local date - don't convert to UTC
-    // This ensures format(date, 'yyyy-MM-dd') produces the correct date string
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const day = date.getDate();
-
-    // Create a clean local date at midnight (strips any time component)
-    const normalizedDate = new Date(year, month, day);
-    scheduleLog('Date selection changed:', {
-      originalDate: date,
-      normalizedDate,
-      dateString: normalizedDate.toString(),
-      localDateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
-    });
-
+    scheduleLog('Date selection changed:', date);
     hasAutoPickedDate.current = true;
-    setSelectedDate(normalizedDate);
+    setSelectedDate(date);
   };
 
   const filteredMatches = React.useMemo(() => {
@@ -234,28 +224,6 @@ const Schedule = () => {
       );
     });
   }, [activeTab, upcomingMatches, completedMatches, searchTerm]);
-
-  // A link may name one match, e.g. Home's "my match" row. Scroll to it once
-  // the cards exist. Runs once: a refetch must not drag the reader back.
-  const arrivalHash = useLocation().hash;
-  const linkedMatchId = arrivalHash.startsWith('#match-')
-    ? arrivalHash.slice('#match-'.length)
-    : '';
-  const scrollBehavior = useScrollBehavior();
-  const hasScrolledToMatch = useRef(false);
-
-  useEffect(() => {
-    if (!linkedMatchId || hasScrolledToMatch.current || matchesLoading) return;
-
-    const card = document.getElementById(`match-${linkedMatchId}`);
-    // The match may be on the tab that is not open, or on another night. That
-    // is not worth forcing a tab change for: the link named a night, and the
-    // page is showing it.
-    if (!card) return;
-
-    hasScrolledToMatch.current = true;
-    card.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
-  }, [linkedMatchId, matchesLoading, scrollBehavior, filteredMatches]);
 
   const handleCreateMatchAdapter = (matchData: Omit<Match, 'id'>) =>
     handleCreateMatch(matchData, teams || []);

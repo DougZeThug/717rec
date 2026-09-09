@@ -68,6 +68,30 @@ const buildFormData = (card: HeroCard | null): HeroCardFormData =>
       }
     : defaultFormData;
 
+/** What the live preview shows: the typed values, with placeholders for blanks. */
+const buildPreviewCard = (card: HeroCard | null, formData: HeroCardFormData): HeroCard => ({
+  id: card?.id || 'preview',
+  slug: formData.slug || 'preview',
+  title: formData.title || 'Card Headline',
+  subtitle: formData.subtitle || null,
+  body: formData.body || null,
+  cta_label: formData.cta_label || null,
+  cta_url: formData.cta_url || null,
+  background_color: formData.background_color,
+  text_color: formData.text_color,
+  accent_color: formData.accent_color || null,
+  image_url: formData.image_url || null,
+  icon_name: formData.icon_name || null,
+  is_visible: formData.is_visible,
+  sort_order: formData.sort_order,
+  target_type: formData.target_type,
+  target_id: formData.target_id || null,
+  card_type: formData.card_type,
+  metadata: parseHeroCardMetadata(parseMetadata(formData.metadata), formData.card_type),
+  created_at: card?.created_at || new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
+
 const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   const { createCard, updateCard, isCreating, isUpdating } = useHeroCardMutations();
   // The form is keyed on the card id by its parent, so a different card mounts a
@@ -133,34 +157,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
     onClose();
   };
 
-  // Build preview card object
-  const previewMetadata = parseHeroCardMetadata(
-    parseMetadata(formData.metadata),
-    formData.card_type
-  );
-
-  const previewCard: HeroCard = {
-    id: card?.id || 'preview',
-    slug: formData.slug || 'preview',
-    title: formData.title || 'Card Headline',
-    subtitle: formData.subtitle || null,
-    body: formData.body || null,
-    cta_label: formData.cta_label || null,
-    cta_url: formData.cta_url || null,
-    background_color: formData.background_color,
-    text_color: formData.text_color,
-    accent_color: formData.accent_color || null,
-    image_url: formData.image_url || null,
-    icon_name: formData.icon_name || null,
-    is_visible: formData.is_visible,
-    sort_order: formData.sort_order,
-    target_type: formData.target_type,
-    target_id: formData.target_id || null,
-    card_type: formData.card_type,
-    metadata: previewMetadata,
-    created_at: card?.created_at || new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  };
+  const previewCard = buildPreviewCard(card, formData);
 
   return (
     <div className="space-y-6">
