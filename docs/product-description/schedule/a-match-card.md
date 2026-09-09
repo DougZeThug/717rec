@@ -9,6 +9,16 @@ Completed list. What it contains depends almost entirely on **the match's own
 state** — upcoming, postponed, cancelled, or completed — and only a little on who
 is looking.
 
+The card works that state out for itself from the match, with the one helper the
+whole app shares (`deriveMatchStatus()` in `src/utils/matchStatus.ts`). Exactly
+one of the four states is true at a time, and each has one word
+(`MATCH_STATUS_LABELS`): **Final**, **Upcoming**, **Postponed**, **Canceled**.
+
+**Postponed and cancelled cannot happen yet.** The `matches` table has no status
+column and no screen can set one, so every match today is either upcoming or
+completed. The card, the score queues and the live-scoring gate all handle the
+two exceptional states, and will start excluding them the day the column exists.
+
 The page the cards sit on is [`the-schedule-page.md`](the-schedule-page.md). This
 document owns one card: everything it can show, every control it can offer, and
 what each one does.
@@ -45,6 +55,11 @@ stateDiagram-v2
     upcoming --> completed : a result is recorded
     postponed --> completed : a result is recorded
     completed --> upcoming : an admin reopens the match
+    note right of completed
+        A recorded result wins over
+        postponed, so a match played
+        late reads as Final.
+    end note
     upcoming --> live_scoring : press Live score this match
     completed --> recap : press View match recap
     recap --> completed : close the dialog
@@ -85,9 +100,11 @@ change to live scoring, a dialog, an admin dialog, or a comment.
 
 ### While editing
 
-**Live score this match** appears only when the match is not completed, is not
-postponed or cancelled, and the viewer is an admin or has an approved membership
-of one of the two teams. It navigates to `/matches/:matchId/live`. What happens
+**Live score this match** appears only when the match is still open for a score —
+not completed, not postponed, not cancelled — and the viewer is an admin or has an
+approved membership of one of the two teams. That first half is one question,
+`isMatchOpenForScoring()`, and the live scoring screen's own permission check asks
+the same one, so the button and the screen behind it cannot disagree. It navigates to `/matches/:matchId/live`. What happens
 there is [`live-scoring/start-a-live-match.md`](../live-scoring/start-a-live-match.md).
 
 **View match recap** appears only on a completed match that has live-scoring data

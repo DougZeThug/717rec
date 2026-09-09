@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { fetchAllPages } from '@/services/shared/pagination';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
+import { isMatchOpenForScoring } from '@/utils/matchStatus';
 
 import { isConfirmedTie } from './tieMetadata';
 
@@ -114,11 +115,11 @@ export const fetchUncompletedMatches = async (): Promise<MatchListRow[]> => {
     .select(
       'id, team1_id, team2_id, team1_score, team2_score, date, location, iscompleted, winner_id, loser_id, round_number, position, bracket_id, match_type, next_match_id, next_loser_match_id, best_of, team1_game_wins, team2_game_wins, created_at'
     )
-    .eq('iscompleted', false)
+    .not('iscompleted', 'is', true)
     .order('date');
 
   if (error) handleDatabaseError(error, 'Failed to fetch uncompleted matches');
-  return data || [];
+  return (data ?? []).filter(isMatchOpenForScoring);
 };
 
 /**

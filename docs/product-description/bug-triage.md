@@ -342,7 +342,7 @@ entry's *Corrected on review* note.
   match nobody played, and its button files a free-text score report that an
   admin then approves down a *different* write path which can disagree with the
   games actually played. Live Corrections lists the match too, distinguishable
-  only by the absence of the word "finalized"
+  only by the absence of the word "final"
   (`src/components/admin/live-corrections/LiveCorrectionsSection.tsx:100-103`).
   The accurate claim is that nothing told a match that was **played and lost**
   apart from a match **nobody played**.

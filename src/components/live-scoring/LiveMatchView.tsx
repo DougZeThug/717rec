@@ -13,6 +13,7 @@ import {
   resolveWinnerName,
 } from '@/utils/liveScoring/matchWinner';
 import { DEFAULT_GAME_RULES } from '@/utils/liveScoring/rules';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { LiveMatchContent } from './LiveMatchContent';
 import { MatchScoringHeader } from './MatchScoringHeader';
@@ -50,7 +51,7 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
   const playerNames = usePlayerNames(team1Players.players, team2Players.players);
 
   const { matchState } = derived;
-  const isOfficiallyCompleted = match.iscompleted === true;
+  const isOfficiallyCompleted = isMatchCompleted(match);
 
   const winnerName = resolveWinnerName(matchState.matchWinner, team1Name, team2Name);
   const officialWinnerName = resolveOfficialWinnerName(

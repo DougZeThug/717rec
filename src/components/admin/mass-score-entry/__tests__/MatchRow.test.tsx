@@ -78,10 +78,10 @@ describe('MatchRow', () => {
     expect(screen.getByText('Team Beta')).toBeInTheDocument();
   });
 
-  it('renders Mark as Complete label', () => {
+  it('renders the mark-as-final label', () => {
     render(<MatchRow {...defaultProps} />);
 
-    expect(screen.getByText('Mark as Complete')).toBeInTheDocument();
+    expect(screen.getByText('Mark as final')).toBeInTheDocument();
   });
 
   it('shows submitting state with loader', () => {

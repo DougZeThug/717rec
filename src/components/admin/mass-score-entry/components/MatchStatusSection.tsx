@@ -40,7 +40,7 @@ const MatchStatusSection: React.FC<MatchStatusSectionProps> = ({
           className="flex items-center text-green-600 dark:text-green-400"
         >
           <Check className="size-3 mr-1" />
-          <span className="text-sm">Complete</span>
+          <span className="text-sm">Final</span>
         </m.div>
       ) : null}
 

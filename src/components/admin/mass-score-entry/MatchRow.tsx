@@ -4,6 +4,7 @@ import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { scoreLog } from '@/utils/logger';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import MatchStatusSection from './components/MatchStatusSection';
 import ScoreSection from './components/ScoreSection';
@@ -43,7 +44,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   const realMatchId = getRealMatchId(match.id);
   scoreLog(`MatchRow render for match ${match.id}:`, {
     matchId: match.id,
-    index: index,
+    index,
     isCompleted: match.iscompleted,
     scores: `${match.team1Score}-${match.team2Score}`,
     gameWins: `${match.team1_game_wins}-${match.team2_game_wins}`,
@@ -86,7 +87,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
   return (
     <div
-      className={`px-3 py-4 rounded-lg bg-background border transition-colors ${
+      className={`space-y-4 px-3 py-4 rounded-lg bg-background border transition-colors ${
         isSubmitting
           ? 'border-primary/50 bg-primary/5'
           : hasError
@@ -94,90 +95,88 @@ const MatchRow: React.FC<MatchRowProps> = ({
             : 'border-border'
       }`}
     >
-      <div className="space-y-4">
-        {/* Submission Status Indicator */}
-        {isSubmitting && (
-          <div className="flex items-center gap-2 text-sm text-primary">
-            <Loader2 className="size-4 animate-spin" />
-            <span>Submitting...</span>
-          </div>
-        )}
-        {hasError && !isSubmitting && (
-          <div className="flex items-center gap-2 text-sm text-destructive">
-            <AlertCircle className="size-4" />
-            <span>Submission failed - please retry</span>
-          </div>
-        )}
-
-        {unsubmittableHint && !isSubmitting && (
-          <div className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-            {unsubmittableHint}
-          </div>
-        )}
-
-        {/* Team Names Display - Stacked vertical layout */}
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between">
-            <TeamDisplay team={match.team1} align="left" />
-            {onDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-7 text-muted-foreground hover:text-destructive shrink-0"
-                onClick={() => {
-                  onDelete(realMatchId);
-                }}
-                disabled={isSubmitting}
-                aria-label="Delete match"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            )}
-          </div>
-          <span className="text-muted-foreground text-xs text-center py-0.5">vs</span>
-          <div className="flex justify-end">
-            <TeamDisplay team={match.team2} align="right" />
-          </div>
+      {/* Submission Status Indicator */}
+      {isSubmitting && (
+        <div className="flex items-center gap-2 text-sm text-primary">
+          <Loader2 className="size-4 animate-spin" />
+          <span>Submitting...</span>
         </div>
+      )}
+      {hasError && !isSubmitting && (
+        <div className="flex items-center gap-2 text-sm text-destructive">
+          <AlertCircle className="size-4" />
+          <span>Submission failed - please retry</span>
+        </div>
+      )}
 
-        {/* Score Section */}
-        <ScoreSection
-          match={match}
-          onScoreChange={handleScoreChangeWrapper}
-          onGameWinsChange={handleGameWinsChangeWrapper}
-          onAutoComplete={handleAutoComplete}
-          isSubmitting={isSubmitting}
-          hasError={hasError}
-          errorMessage={errorMessage}
-          onClearError={handleClearError}
-        />
+      {unsubmittableHint && !isSubmitting && (
+        <div className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+          {unsubmittableHint}
+        </div>
+      )}
 
-        {/* Match Status & Completion Toggle combined */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2">
-            <label
-              htmlFor={`mark-complete-${match.id}`}
-              className="text-sm font-medium cursor-pointer"
-            >
-              Mark as Complete
-            </label>
-            <Switch
-              id={`mark-complete-${match.id}`}
-              checked={match.iscompleted}
-              onCheckedChange={handleCompletedChange}
+      {/* Team Names Display - Stacked vertical layout */}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <TeamDisplay team={match.team1} align="left" />
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-destructive shrink-0"
+              onClick={() => {
+                onDelete(realMatchId);
+              }}
               disabled={isSubmitting}
-              data-match-id={match.id}
-              data-match-index={index}
-            />
-          </div>
-          <MatchStatusSection
-            isCompleted={match.iscompleted ?? false}
-            onCompletedChange={handleCompletedChange}
-            isEdited={match.isEdited ?? false}
-            isValid={match.isValid ?? false}
+              aria-label="Delete match"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
+        </div>
+        <span className="text-muted-foreground text-xs text-center py-0.5">vs</span>
+        <div className="flex justify-end">
+          <TeamDisplay team={match.team2} align="right" />
+        </div>
+      </div>
+
+      {/* Score Section */}
+      <ScoreSection
+        match={match}
+        onScoreChange={handleScoreChangeWrapper}
+        onGameWinsChange={handleGameWinsChangeWrapper}
+        onAutoComplete={handleAutoComplete}
+        isSubmitting={isSubmitting}
+        hasError={hasError}
+        errorMessage={errorMessage}
+        onClearError={handleClearError}
+      />
+
+      {/* Match Status & Completion Toggle combined */}
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center gap-2">
+          <label
+            htmlFor={`mark-complete-${match.id}`}
+            className="text-sm font-medium cursor-pointer"
+          >
+            Mark as final
+          </label>
+          <Switch
+            id={`mark-complete-${match.id}`}
+            checked={isMatchCompleted(match)}
+            onCheckedChange={handleCompletedChange}
             disabled={isSubmitting}
+            data-match-id={match.id}
+            data-match-index={index}
           />
         </div>
+        <MatchStatusSection
+          isCompleted={isMatchCompleted(match)}
+          onCompletedChange={handleCompletedChange}
+          isEdited={match.isEdited ?? false}
+          isValid={match.isValid ?? false}
+          disabled={isSubmitting}
+        />
       </div>
     </div>
   );

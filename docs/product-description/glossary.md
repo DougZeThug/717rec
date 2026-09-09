@@ -159,6 +159,19 @@ decision and appear in the pending list until one is made.
 
 ## Scores and their states
 
+**Match state.** One of four words describing where a match stands: **Upcoming**
+(no result yet), **Final** (a result is recorded), **Postponed**, or **Canceled**.
+Exactly one is true at a time. Every screen works it out with the same helper,
+`deriveMatchStatus()` in `src/utils/matchStatus.ts`, and takes the word from
+`MATCH_STATUS_LABELS`. A recorded result outranks postponed, so a match played
+late reads as Final.
+
+Two notes on it. The database column behind Upcoming and Final, `iscompleted`,
+can be null, which means nobody ever recorded a result — that counts as Upcoming.
+And **Postponed and Canceled cannot occur yet**: the `matches` table has no status
+column and no screen can set one. The app understands them and will exclude them
+from every score queue on the day that column exists.
+
 **Score submission.** A player's report of a completed match's result. A
 submission carries who sent it, which team they were on, a message, and a status.
 It is a request, not the result itself.

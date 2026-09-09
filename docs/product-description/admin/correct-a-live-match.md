@@ -29,7 +29,7 @@ the scorers; see [`live-scoring/correct-a-round.md`](../live-scoring/correct-a-r
 A team reports that game 2 was recorded 21–18 when it was 21–15. The admin opens
 `/admin`, picks **Live Corrections**, and leaves the season filter on "All
 seasons". A column of cards lists every match that was scored live — team names,
-date, and a line reading "3 games · 41 rounds · finalized".
+date, and a line reading "3 games · 41 rounds · final".
 
 They press the match. The panel on the right lists each game with its running
 totals and its winner, and under each game every round with its score and two

@@ -9,6 +9,7 @@ import WinterSection from '@/components/winter/WinterSection';
 import { useLiveScoredMatchIds } from '@/hooks/live-scoring/useLiveScoredMatchIds';
 import { useIsMobile } from '@/hooks/useMobile';
 import { Match, Team, TeamTimeslot } from '@/types';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import DateMatchGroup from './DateMatchGroup';
 import SwipeableDateGroups from './SwipeableDateGroups';
@@ -56,18 +57,26 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
 
   // Ids of completed matches that were actually live-scored (have games rows).
   // Used to hide the "View match recap" CTA for traditionally-scored matches.
-  const completedMatchIds = useMemo(
-    () => filteredMatches.filter((m) => m.iscompleted).map((m) => m.id),
-    [filteredMatches]
-  );
+  const completedMatchIds = useMemo(() => {
+    // One pass, not a filter followed by a map.
+    const ids: string[] = [];
+    for (const match of filteredMatches) {
+      if (isMatchCompleted(match)) ids.push(match.id);
+    }
+    return ids;
+  }, [filteredMatches]);
   const { liveScoredIds } = useLiveScoredMatchIds(completedMatchIds);
 
   // Group matches by date
   const groupedMatches = useMemo(() => {
     const isCompletedTab = activeTab === 'completed';
 
-    // Filter matches by completion status
-    const matchesForTab = filteredMatches.filter((match) => match.iscompleted === isCompletedTab);
+    // Filter matches by completion status. Compare the derived state, not the
+    // raw column: `iscompleted` is nullable, and a strict compare against a
+    // boolean used to drop null rows out of both tabs (UX audit X-13 / L1).
+    const matchesForTab = filteredMatches.filter(
+      (match) => isMatchCompleted(match) === isCompletedTab
+    );
 
     // Group by date
     const groups = matchesForTab.reduce(

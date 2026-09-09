@@ -10,6 +10,7 @@ import {
 import { Match, Team } from '@/types';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
 
@@ -46,6 +47,49 @@ const toUpdatedMatch = (
   // status field not on matches table
 });
 
+// Reconcile team season stats after a match edit. Returns false only on an
+// unrecovered partial failure (match saved but team records did not), which
+// signals the caller to abort the success path.
+const applyStatChanges = async (
+  prevMatch: Match,
+  nextMatch: Match,
+  _teams: Team[],
+  flags: {
+    wasCompleted: boolean;
+    isNowCompleted: boolean;
+    winnerChanged: boolean;
+    loserChanged: boolean;
+    gameWinsChanged: boolean;
+  }
+): Promise<boolean> => {
+  // Case 1: Match was completed and is now marked incomplete — clear the
+  // complete result through the atomic reopen/reversal RPC rather than the
+  // generic updater.
+  if (flags.wasCompleted && !flags.isNowCompleted) {
+    if (prevMatch.winnerId && prevMatch.loserId) {
+      await reopenMatchResult(prevMatch.id);
+    }
+    return true;
+  }
+
+  // Case 2: Match is (still or newly) completed and stats need updating
+  const needsUpdate =
+    !flags.wasCompleted || flags.winnerChanged || flags.loserChanged || flags.gameWinsChanged;
+  if (!(flags.isNowCompleted && needsUpdate && nextMatch.winnerId && nextMatch.loserId)) {
+    return true;
+  }
+
+  // Atomic: reverse prior + write new + apply counters in one transaction.
+  await resubmitMatchResult(
+    nextMatch.id,
+    nextMatch.winnerId,
+    nextMatch.loserId,
+    gameWinsFor(nextMatch, nextMatch.winnerId),
+    gameWinsFor(nextMatch, nextMatch.loserId)
+  );
+  return true;
+};
+
 interface UseMatchUpdateProps {
   matches: Match[];
   setMatches: (matches: Match[]) => void;
@@ -64,49 +108,6 @@ export const useMatchUpdate = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const isUpdatingRef = useRef(false);
 
-  // Reconcile team season stats after a match edit. Returns false only on an
-  // unrecovered partial failure (match saved but team records did not), which
-  // signals the caller to abort the success path.
-  const applyStatChanges = async (
-    prevMatch: Match,
-    nextMatch: Match,
-    _teams: Team[],
-    flags: {
-      wasCompleted: boolean | undefined;
-      isNowCompleted: boolean | undefined;
-      winnerChanged: boolean;
-      loserChanged: boolean;
-      gameWinsChanged: boolean;
-    }
-  ): Promise<boolean> => {
-    // Case 1: Match was completed and is now marked incomplete — clear the
-    // complete result through the atomic reopen/reversal RPC rather than the
-    // generic updater.
-    if (flags.wasCompleted && !flags.isNowCompleted) {
-      if (prevMatch.winnerId && prevMatch.loserId) {
-        await reopenMatchResult(prevMatch.id);
-      }
-      return true;
-    }
-
-    // Case 2: Match is (still or newly) completed and stats need updating
-    const needsUpdate =
-      !flags.wasCompleted || flags.winnerChanged || flags.loserChanged || flags.gameWinsChanged;
-    if (!(flags.isNowCompleted && needsUpdate && nextMatch.winnerId && nextMatch.loserId)) {
-      return true;
-    }
-
-    // Atomic: reverse prior + write new + apply counters in one transaction.
-    await resubmitMatchResult(
-      nextMatch.id,
-      nextMatch.winnerId,
-      nextMatch.loserId,
-      gameWinsFor(nextMatch, nextMatch.winnerId),
-      gameWinsFor(nextMatch, nextMatch.loserId)
-    );
-    return true;
-  };
-
   const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
     if (!editingMatch || isUpdatingRef.current) return false;
 
@@ -119,8 +120,8 @@ export const useMatchUpdate = ({
     try {
       // Check if the winner/loser has changed
       const winnerChanged = editingMatch.winnerId !== matchData.winnerId;
-      const wasCompleted = editingMatch.iscompleted;
-      const isNowCompleted = matchData.iscompleted;
+      const wasCompleted = isMatchCompleted(editingMatch);
+      const isNowCompleted = isMatchCompleted(matchData);
 
       // Check if game wins changed
       const gameWinsChanged =

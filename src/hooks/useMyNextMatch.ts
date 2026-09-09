@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { Match } from '@/types';
+import { isMatchOpenForScoring } from '@/utils/matchStatus';
 
 interface TeamInfo {
   id: string;
@@ -107,10 +108,9 @@ export const useMyNextMatch = (): MyNextMatchResult => {
       };
     };
 
-    // Filter out postponed/canceled matches (useTeamMatches already filtered by team)
-    const validUpcomingMatches = upcomingMatches.filter((match) => {
-      return match.status !== 'postponed' && match.status !== 'canceled';
-    });
+    // Only matches that still need to be played. Postponed and canceled ones
+    // drop out here through the same helper every score queue uses.
+    const validUpcomingMatches = upcomingMatches.filter(isMatchOpenForScoring);
 
     // If there are upcoming matches, get all on the earliest date
     if (validUpcomingMatches.length > 0) {

@@ -176,7 +176,7 @@ test.describe('admin mass score submission workflow', () => {
       timeout: 15000,
     });
 
-    await page.getByRole('switch', { name: 'Mark as Complete' }).click();
+    await page.getByRole('switch', { name: 'Mark as final' }).click();
     await expect(page.getByRole('button', { name: 'Submit All Changes' })).toBeDisabled();
     await expect(page.getByText('Invalid Score')).toBeVisible();
     expect(resultSubmissions).toEqual([]);

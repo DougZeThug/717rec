@@ -1,10 +1,12 @@
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { isMatchOpenForScoring } from '@/utils/matchStatus';
 
 export interface CanScoreMatchInput {
   team1_id: string | null;
   team2_id: string | null;
-  iscompleted: boolean | null;
+  iscompleted: boolean | null | undefined;
+  status?: 'postponed' | 'canceled' | null;
 }
 
 /**
@@ -24,7 +26,7 @@ export function useCanScoreMatch(match?: CanScoreMatchInput) {
   );
 
   const canScore = Boolean(
-    match && match.iscompleted !== true && (isAdminAccessGranted || isMemberOfMatch)
+    match && isMatchOpenForScoring(match) && (isAdminAccessGranted || isMemberOfMatch)
   );
 
   return {

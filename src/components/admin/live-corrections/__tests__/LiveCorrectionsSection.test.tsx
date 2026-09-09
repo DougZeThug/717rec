@@ -119,7 +119,7 @@ describe('LiveCorrectionsSection', () => {
     // parses as UTC midnight, so a hardcoded 'Aug 1, 2026' would render as
     // 'Jul 31, 2026' for anyone west of UTC and fail off the CI runner.
     expect(screen.getByText(format(new Date('2026-08-01'), 'MMM d, yyyy'))).toBeInTheDocument();
-    expect(screen.getByText('2 games · 9 rounds · finalized')).toBeInTheDocument();
+    expect(screen.getByText('2 games · 9 rounds · final')).toBeInTheDocument();
 
     // Singular wording and the missing-date fallback.
     expect(screen.getByText('No date')).toBeInTheDocument();
@@ -190,9 +190,9 @@ describe('LiveCorrectionsSection', () => {
     render(<LiveCorrectionsSection />);
 
     expect(
-      screen.getByText('3 games · 20 rounds · finalized · archived, read-only')
+      screen.getByText('3 games · 20 rounds · final · archived, read-only')
     ).toBeInTheDocument();
     // A live season's card says nothing about archiving.
-    expect(screen.getByText('2 games · 9 rounds · finalized')).toBeInTheDocument();
+    expect(screen.getByText('2 games · 9 rounds · final')).toBeInTheDocument();
   });
 });

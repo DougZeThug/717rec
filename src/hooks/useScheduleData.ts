@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 
 import { fetchScheduleMatches } from '@/services/matches/MatchReadService';
 import { errorLog, scheduleLog } from '@/utils/logger';
+import { isMatchCompleted } from '@/utils/matchStatus';
 import { type RawMatchRow, transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export const useScheduleData = () => {
@@ -24,7 +25,7 @@ export const useScheduleData = () => {
       }
 
       scheduleLog(
-        `Fetched ${data.length} matches (${data.filter((m) => m.iscompleted).length} completed)`
+        `Fetched ${data.length} matches (${data.filter(isMatchCompleted).length} completed)`
       );
 
       // Use centralized transformer with team details
@@ -63,8 +64,8 @@ export const useScheduleData = () => {
   });
 
   // Process and separate upcoming vs completed matches
-  const upcomingMatches = matchesData?.filter((match) => !match.iscompleted) || [];
-  const completedMatches = matchesData?.filter((match) => match.iscompleted) || [];
+  const upcomingMatches = matchesData?.filter((match) => !isMatchCompleted(match)) || [];
+  const completedMatches = matchesData?.filter(isMatchCompleted) || [];
 
   // Sort upcoming matches by date (closest first)
   upcomingMatches.sort((a, b) => {

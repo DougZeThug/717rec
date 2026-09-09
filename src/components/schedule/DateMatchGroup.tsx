@@ -6,6 +6,7 @@ import React from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { Match } from '@/types';
+import { isMatchCompleted } from '@/utils/matchStatus';
 import { groupMatchesByTimeSlot } from '@/utils/timeUtils';
 
 import TimeSlotMatchGroup from './TimeSlotMatchGroup';
@@ -34,7 +35,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
   const isLight = resolvedTheme === 'light';
 
   const formattedDate = format(date, 'EEEE, MMMM d');
-  const isCompleted = matches.every((match) => match.iscompleted);
+  const isCompleted = matches.every(isMatchCompleted);
 
   // Group matches by time slot
   const matchesByTimeSlot = groupMatchesByTimeSlot(matches);

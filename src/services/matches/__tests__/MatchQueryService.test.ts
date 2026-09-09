@@ -76,9 +76,9 @@ const selectEqIsOrderChain = (result: { data: unknown; error: unknown }) => ({
   select: () => ({ eq: () => ({ is: () => ({ order: () => Promise.resolve(result) }) }) }),
 });
 
-// Chain: .select().eq().order() (fetchUncompletedMatches)
-const selectEqOrderChain = (result: { data: unknown; error: unknown }) => ({
-  select: () => ({ eq: () => ({ order: () => Promise.resolve(result) }) }),
+// Chain: .select().not().order() (fetchUncompletedMatches)
+const selectNotOrderChain = (result: { data: unknown; error: unknown }) => ({
+  select: () => ({ not: () => ({ order: () => Promise.resolve(result) }) }),
 });
 
 // Chain: .select().limit() (fetchPendingScoresMatches)
@@ -219,18 +219,37 @@ describe('fetchUncompletedMatches', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns uncompleted matches', async () => {
-    mockFrom.mockReturnValue(selectEqOrderChain({ data: [makeMatch()], error: null }));
+    mockFrom.mockReturnValue(selectNotOrderChain({ data: [makeMatch()], error: null }));
     const result = await fetchUncompletedMatches();
     expect(result).toHaveLength(1);
   });
 
+  // `iscompleted` is nullable, and `.eq(false)` used to skip null rows, so a
+  // match nobody had touched never reached the queue (UX audit X-13 / L1).
+  it('keeps a match whose iscompleted was never set', async () => {
+    mockFrom.mockReturnValue(
+      selectNotOrderChain({ data: [makeMatch({ iscompleted: null })], error: null })
+    );
+    expect(await fetchUncompletedMatches()).toHaveLength(1);
+  });
+
+  it('drops a match an admin has called off', async () => {
+    mockFrom.mockReturnValue(
+      selectNotOrderChain({
+        data: [makeMatch({ iscompleted: false, status: 'canceled' })],
+        error: null,
+      })
+    );
+    expect(await fetchUncompletedMatches()).toEqual([]);
+  });
+
   it('returns empty array when no rows', async () => {
-    mockFrom.mockReturnValue(selectEqOrderChain({ data: null, error: null }));
+    mockFrom.mockReturnValue(selectNotOrderChain({ data: null, error: null }));
     expect(await fetchUncompletedMatches()).toEqual([]);
   });
 
   it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue(selectEqOrderChain({ data: null, error: pgError() }));
+    mockFrom.mockReturnValue(selectNotOrderChain({ data: null, error: pgError() }));
     await expect(fetchUncompletedMatches()).rejects.toThrow(DatabaseError);
   });
 });

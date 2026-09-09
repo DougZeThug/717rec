@@ -4,6 +4,7 @@ import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { scoreLog } from '@/utils/logger';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { MatchWithTeams } from '../types';
 import ScoreButtonGroup from './ScoreButtonGroup';
@@ -90,7 +91,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         disabled={isSubmitting}
         onComplete={handleAutoComplete}
         matchId={match.id}
-        isCompleted={match.iscompleted}
+        isCompleted={isMatchCompleted(match)}
         matchDate={match.date?.toString()}
         team1Name={match.team1?.name}
         team2Name={match.team2?.name}
