@@ -1,10 +1,7 @@
-import { Check } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -13,31 +10,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { TeamLogo } from '@/components/ui/team/TeamLogo';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Team, TeamTimeslot } from '@/types';
-import { BACK_TO_BACK_PAIRS, DOUBLE_HEADER_START_TIMES } from '@/utils/autoSchedule/constants';
 
-/**
- * One chip per block, plus BYE.
- *
- * A timeslot is never booked on its own: every assignment writes the chosen
- * time *and* the thirty minutes after it, as a back-to-back pair. The chips used
- * to read "6:30 PM", so an admin picking one got two rows they never asked for.
- * They now say what is booked.
- *
- * The value submitted is still the block's first time, which is what the
- * service takes. That also drops 9:30 PM, which is the second half of the 9:00
- * block and no block's start: picking it used to fail on confirm.
- */
-const BLOCK_CHOICES: Array<{ value: string; label: string; description: string }> = [
-  { value: 'BYE', label: 'BYE WEEK', description: 'No match this week' },
-  ...Object.values(BACK_TO_BACK_PAIRS).map((pair) => ({
-    value: pair.primary,
-    label: `${pair.primary.replace(' PM', '')} + ${pair.secondary}`,
-    description: `Books ${pair.primary} and ${pair.secondary}`,
-  })),
-];
+import { TimeslotBlockPicker } from './TimeslotBlockPicker';
+import { TimeslotTeamGrid } from './TimeslotTeamGrid';
 
 interface TimeslotAssignmentProps {
   selectedDate: Date;
@@ -179,73 +155,12 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
           </Select>
         </div>
       ) : (
-        <div className="space-y-1.5">
-          <div className="flex justify-between items-center">
-            <span className="block text-sm font-medium">Team Selection Grid</span>
-            <Button type="button" variant="outline" size="sm" onClick={handleSelectAll}>
-              {selectedTeamIds.length === availableTeams.length ? 'Deselect All' : 'Select All'}
-            </Button>
-          </div>
-
-          <ScrollArea className="h-[200px] border rounded-md p-2">
-            {availableTeams.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                All teams have been assigned for this date
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {availableTeams.map((team) => {
-                  const isSelected = selectedTeamIds.includes(team.id);
-                  return (
-                    <div
-                      key={team.id}
-                      role="button"
-                      tabIndex={0}
-                      title={team.name}
-                      aria-pressed={isSelected}
-                      onClick={() => handleToggleTeam(team.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleToggleTeam(team.id);
-                        }
-                      }}
-                      className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
-                        isSelected ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted'
-                      }`}
-                    >
-                      <TeamLogo
-                        imageUrl={team.imageUrl || team.logoUrl}
-                        teamName={team.name}
-                        size="sm"
-                      />
-                      {/* Two lines rather than an ellipsis: "Baggin' & Braggin'"
-                          and "Baggin Rights" both read "Baggin…" cut short. */}
-                      <span className="line-clamp-2 flex-1 break-words text-xs font-medium">
-                        {team.name}
-                      </span>
-                      <div
-                        className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
-                          isSelected
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-primary'
-                        }`}
-                      >
-                        {isSelected && <Check className="size-3" />}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </ScrollArea>
-
-          {selectedTeamIds.length > 0 && (
-            <div className="text-sm text-primary dark:!text-blue-200">
-              {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
-            </div>
-          )}
-        </div>
+        <TimeslotTeamGrid
+          availableTeams={availableTeams}
+          selectedTeamIds={selectedTeamIds}
+          onToggleTeam={handleToggleTeam}
+          onSelectAll={handleSelectAll}
+        />
       )}
 
       {/* Double Header Toggle */}
@@ -265,79 +180,13 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <div className="flex items-center gap-2">
-          <label className="block text-sm font-medium">
-            {isDoubleHeader ? 'Select Two Timeslots' : 'Select a block'}
-          </label>
-          {isDoubleHeader && (
-            <Badge variant="doubleHeader" className="text-xs">
-              {selectedTimeslots.length}/2 selected
-            </Badge>
-          )}
-        </div>
-        {!isDoubleHeader && (
-          <p className="text-xs text-muted-foreground">
-            A block is two back-to-back times. Picking one books both.
-          </p>
-        )}
-        {isDoubleHeader ? (
-          // Double header mode - multiple selection
-          <div className="flex flex-wrap justify-start gap-1.5">
-            {DOUBLE_HEADER_START_TIMES.map((time) => {
-              const isSelected = selectedTimeslots.includes(time);
-              return (
-                <Button
-                  key={time}
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleTimeslotToggle(time)}
-                  className={`
-                      px-3 py-1.5 transition-colors
-                      ${
-                        isSelected
-                          ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white border-transparent hover:from-amber-400 hover:to-orange-400'
-                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10 dark:!border-blue-200 dark:!text-blue-200 dark:hover:bg-blue-200/10'
-                      }
-                    `}
-                >
-                  {time}
-                </Button>
-              );
-            })}
-          </div>
-        ) : (
-          // Single timeslot mode
-          <ToggleGroup
-            type="single"
-            value={selectedTimeslot}
-            onValueChange={setSelectedTimeslot}
-            className="flex flex-wrap justify-start gap-1.5"
-          >
-            {BLOCK_CHOICES.map((choice) => (
-              <ToggleGroupItem
-                key={choice.value}
-                value={choice.value}
-                title={choice.description}
-                className={`
-                  px-3 py-1.5 transition-colors
-                  ${
-                    choice.value === 'BYE'
-                      ? selectedTimeslot === choice.value
-                        ? 'bg-orange-600 text-white'
-                        : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:!border-orange-200 dark:!text-orange-200 dark:hover:bg-orange-200/10'
-                      : selectedTimeslot === choice.value
-                        ? 'bg-cornhole-navy text-white'
-                        : 'border-cornhole-navy text-cornhole-navy dark:!border-blue-200 dark:!text-blue-200'
-                  }
-                `}
-              >
-                {choice.label}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        )}
-      </div>
+      <TimeslotBlockPicker
+        isDoubleHeader={isDoubleHeader}
+        selectedTimeslot={selectedTimeslot}
+        selectedTimeslots={selectedTimeslots}
+        onSelectTimeslot={setSelectedTimeslot}
+        onToggleTimeslot={handleTimeslotToggle}
+      />
 
       <Button
         type="submit"
