@@ -127,7 +127,14 @@ channel — it shows the same whether live updates are on or off.
 On failure the optimistic round is removed, the totals go back, and a toast
 explains. **The scorer's tapped numbers stay on screen**, still selected, so the
 round is saved by pressing Save Round again rather than re-entered from memory.
-Nothing is queued: the retry is the scorer's to make.
+Nothing is queued for a failure that the league answered: the retry is the
+scorer's to make.
+
+**A round pressed with no connection is different.** It is not a failure and
+raises no toast: the round is held, shown in the log, and sent by itself when
+the signal returns. The grids clear so the next round can be entered, and a line
+under the scoreboard reads **"Offline — 1 round waiting to sync."** No "Round N
+saved" appears, because it has not been.
 
 One failure is treated specially. If the other scorer saved the same round number
 first, the message is not an error but a plain toast: **"Round already recorded —
@@ -166,8 +173,9 @@ applies to the coming round only.
 | Escape, or a Cancel button | Nothing to cancel. | **There is no way to clear the grids.** No Cancel, no Escape handler, no clear button. A wrong tap is corrected by tapping the right number instead; a fully wrong round is corrected after saving, by undoing it. |
 | In-app navigation away, or switching tab within the page | Nothing lost. | **The tapped scores are lost.** A save already sent still lands, and the round appears when the scorer returns. |
 | Browser back or forward | Nothing lost. | As above. |
-| Reload, or the tab closed | The round input returns, empty, at the right round number. | The tapped scores are lost. A sent save may have landed; the round history after reloading says which. |
-| Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** Nothing is queued, so the scorer presses Save Round again once the signal returns. |
+| Reload, or the tab closed | The round input returns at the right round number, with any taps kept on the phone. | **The tapped scores come back** if the round number has not moved. A sent save may have landed; the round history after reloading says which. A round that was only *held* for a missing signal is not resent — its taps come back instead, for one more press. |
+| Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** The scorer presses Save Round again once the signal returns. |
+| Network already lost when Save Round is pressed | The match will not load. | The round is **held, not failed**: it shows in the log, the grids clear, and a line reads "Offline — 1 round waiting to sync". It is sent on reconnect with nothing pressed. |
 | The request fails or times out | Not applicable. | As above. The scorer retries rather than re-entering the round. |
 | The session expires | Watching still works. | The save fails with the league's refusal as the message. |
 | The same record changed in another tab, or by another user | The round number and thrower advance as the other scorer's rounds arrive. | **The expected case.** The other scorer's round arrives and the totals move. The round number under the scorer's fingers advances, so any scores already tapped are dropped and a toast says so — **"The round number moved — Round 6 is now next, so your tapped scores were cleared."** This stops a kept score being filed under the wrong round. The message is only for a round taken by somebody else: the scorer's own save moves the round number too, and that never announces anything. If both save the same number, one wins and the other is told plainly. |
@@ -187,8 +195,10 @@ are always right. What is lost is only ever the round being typed.
 **Validation and error display.** The grids make an invalid score impossible to
 tap. The league checks anyway and its messages are passed through in full.
 
-**Unsaved changes.** A part-entered round is unsaved and is lost on any
-interruption, without warning.
+**Unsaved changes.** A part-entered round is kept on the phone as it is tapped,
+keyed to the game and the round number, and comes back on the next visit. It is
+dropped once the round is recorded, and when the round moves on under the
+scorer. A copy older than twelve hours is not offered.
 
 **Optimistic updates and rollback.** Rounds are the app's clearest optimistic
 write: shown at once, rolled back on failure, with the failure explained. See
@@ -196,7 +206,10 @@ write: shown at once, rolled back on failure, with the failure explained. See
 
 **Realtime.** Rounds arrive from the other scorer as they are saved.
 
-**Offline.** Nothing can be saved and nothing is queued.
+**Offline.** A round pressed with no signal is held and sent on reconnect, and
+the taps are kept on the phone. The held round is in memory, so closing the tab
+loses the send — not the taps, which come back for one more press. Starting a
+game, ending one and saving the official result are not queued.
 
 **Toasts and notifications.** A failure raises a red toast with the real reason. A
 duplicate raises a plain one. The app shows up to three toasts at a time, so a
@@ -265,4 +278,7 @@ feed per-player statistics only once the result is saved.
 - Not confirmed by hand: what the round history shows for a round with no
   throwers named.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
+and the live-scoring round queue). Those passages were written from the change
+and its tests, not from a fresh pass over the running app.

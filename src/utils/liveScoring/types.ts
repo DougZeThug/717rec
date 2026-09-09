@@ -26,6 +26,18 @@ export interface BagBreakdown {
   bagsOff: number;
 }
 
+/**
+ * One side's half of a round the scorer is still tapping in.
+ *
+ * `bagsIn` stays undefined until an ambiguous score (3, 4 or 6) is resolved.
+ * It lives here rather than beside the input because the draft that survives a
+ * reload is written from the same shape.
+ */
+export interface SideSelection {
+  score: number | null;
+  bagsIn: number | undefined;
+}
+
 export interface GameSummary {
   gameNumber: number;
   status: 'in_progress' | 'completed';

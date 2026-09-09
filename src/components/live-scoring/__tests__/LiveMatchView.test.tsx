@@ -1,7 +1,8 @@
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Hook mocks (children render for real) ────────────────────────────────────
 
@@ -11,7 +12,12 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-const mockSubmitRound = { mutate: vi.fn(), mutateAsync: vi.fn(), isPending: false };
+const mockSubmitRound = {
+  mutate: vi.fn(),
+  mutateAsync: vi.fn(),
+  isPending: false,
+  isPaused: false,
+};
 const mockUndoLastRound = { mutate: vi.fn(), isPending: false };
 const mockStartGame = { mutate: vi.fn(), isPending: false };
 const mockConfirmGameComplete = { mutate: vi.fn(), isPending: false };
@@ -170,18 +176,29 @@ const gridButton = (grid: HTMLElement, label: string): HTMLButtonElement => {
   return button;
 };
 
+/**
+ * The panel counts rounds parked offline straight off the mutation cache, so
+ * this subtree needs a client even though every hook around it is mocked — the
+ * same one it has in the app.
+ */
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+});
+
 const viewElement = (
   bundle: LiveMatchBundle,
   { canScore = true, isAdmin = false }: { canScore?: boolean; isAdmin?: boolean } = {}
 ) => (
-  <LiveMatchView
-    matchId="match-1"
-    bundle={bundle}
-    derived={deriveLiveMatch(bundle)}
-    canScore={canScore}
-    isAdmin={isAdmin}
-    realtimeStatus="SUBSCRIBED"
-  />
+  <QueryClientProvider client={queryClient}>
+    <LiveMatchView
+      matchId="match-1"
+      bundle={bundle}
+      derived={deriveLiveMatch(bundle)}
+      canScore={canScore}
+      isAdmin={isAdmin}
+      realtimeStatus="SUBSCRIBED"
+    />
+  </QueryClientProvider>
 );
 
 const renderView = (
@@ -193,8 +210,16 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockSubmitRound.mutateAsync.mockImplementation(() => Promise.resolve());
   mockSubmitRound.isPending = false;
+  mockSubmitRound.isPaused = false;
+  localStorage.clear();
+  onlineManager.setOnline(true);
   mockFinalize.isError = false;
   mockFinalize.error = null;
+});
+
+afterEach(() => {
+  // Never leave a sibling test file believing the browser is offline.
+  onlineManager.setOnline(true);
 });
 
 // ─── States ───────────────────────────────────────────────────────────────────
@@ -309,6 +334,75 @@ describe('in-game state', () => {
     await userEvent.click(screen.getByRole('button', { name: /save round/i }));
 
     expect(await screen.findByRole('status')).toHaveTextContent('Round 2 saved');
+  });
+
+  // UX audit LS-03. A round filed with no signal is held by the query cache and
+  // sent when the connection returns. That leaves the save "pending" for as long
+  // as the signal is gone, which used to be indistinguishable from "saving".
+  describe('with no signal', () => {
+    it('files the round and lets the scorer carry on to the next one', async () => {
+      onlineManager.setOnline(false);
+      renderView(inGameBundle());
+
+      const grids = screen.getAllByRole('group');
+      await userEvent.click(gridButton(grids[0], '9'));
+      await userEvent.click(gridButton(grids[1], '0'));
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+      // Fired, not awaited: a parked save never settles, so awaiting it would
+      // strand the scorer on a round they have already filed.
+      await waitFor(() => expect(mockSubmitRound.mutate).toHaveBeenCalled());
+      expect(mockSubmitRound.mutateAsync).not.toHaveBeenCalled();
+
+      const after = screen.getAllByRole('group');
+      expect(gridButton(after[0], '9')).toHaveAttribute('aria-pressed', 'false');
+      expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('says the round is waiting rather than claiming it was saved', async () => {
+      onlineManager.setOnline(false);
+      renderView(inGameBundle());
+
+      const grids = screen.getAllByRole('group');
+      await userEvent.click(gridButton(grids[0], '9'));
+      await userEvent.click(gridButton(grids[1], '0'));
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+      await waitFor(() => expect(mockSubmitRound.mutate).toHaveBeenCalled());
+      expect(screen.getByTestId('round-sync-status')).toHaveTextContent(/offline/i);
+      expect(screen.queryByText(/round 2 saved/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves the panel usable while a round is parked', async () => {
+      onlineManager.setOnline(false);
+      // What a held save looks like: pending, but going nowhere.
+      mockSubmitRound.isPending = true;
+      mockSubmitRound.isPaused = true;
+
+      renderView(inGameBundle());
+
+      // None of this may be frozen: the round is filed, and the next one has to
+      // be enterable.
+      const grids = screen.getAllByRole('group');
+      expect(gridButton(grids[0], '7')).toBeEnabled();
+      expect(gridButton(grids[1], '7')).toBeEnabled();
+      expect(screen.getByRole('button', { name: /undo/i })).toBeEnabled();
+      expect(screen.getByRole('button', { name: /save round/i })).toHaveTextContent('Save Round');
+    });
+
+    it('keeps the tapped round on the phone so a reload hands it back', async () => {
+      onlineManager.setOnline(false);
+      renderView(inGameBundle());
+
+      const grids = screen.getAllByRole('group');
+      await userEvent.click(gridButton(grids[0], '9'));
+      await userEvent.click(gridButton(grids[1], '0'));
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+      await waitFor(() => expect(mockSubmitRound.mutate).toHaveBeenCalled());
+      // Nothing has reached the league yet, so the copy stays.
+      expect(localStorage.getItem('liveRoundDraft:v1:game-1')).not.toBeNull();
+    });
   });
 
   it('keeps the tapped scores when the save fails so the scorer can retry', async () => {

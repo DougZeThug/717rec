@@ -67,7 +67,9 @@ stateDiagram-v2
     failed --> retried : it was a read (one retry, immediately)
     retried --> failed_final : the retry also failed
     retried --> shown : the retry worked
-    failed --> failed_final : it was a write (no retry)
+    failed --> parked : it was a live-scoring round save with no connection
+    parked --> shown : the connection returned and it was sent
+    failed --> failed_final : it was any other write (no retry)
     failed_final --> reported : one red toast, or the page's empty state
     reported --> [*] : nothing is queued and nothing is remembered
 ```
@@ -85,13 +87,16 @@ so an operation that fails three times in a row shows all three; a fourth pushes
 the oldest out. A bulk action that reports per item still shows one line about
 one item.
 
-**What is remembered.** Nothing. There is no queue, no retry button on the toast,
-and no record that the attempt happened.
+**What is remembered.** Nothing, outside live scoring: no queue, no retry button
+on the toast, and no record that the attempt happened. A live-scoring round is
+the exception — it is held, and its taps are kept on the phone.
 
 ## Retrying, and where it differs
 
 - **Ordinary reads retry once.** No backoff, no second chance.
-- **Writes never retry.** A failed write is a failed write.
+- **Writes never retry, and one waits instead.** A failed write is a failed
+  write. A live-scoring round save with no connection is not a failed write: it
+  is parked, and sent when the connection returns.
 - **The two timeslot reads are different**: they retry **twice** with growing
   delays, and they are the only reads in the product that ask the browser
   whether it is online before polling again. Four things in the app poll on a
@@ -129,8 +134,14 @@ connection whenever a network interface is up, so a captive portal or a dead
 uplink still counts as online. It is reliable for "definitely offline" and not
 for "definitely working", which is why nothing is blocked on it.
 
-There is **no offline write queue anywhere in the product**. A round entered at a
-venue with no signal is lost, not queued. A long message typed offline is lost on
+There is **one offline write queue in the product, and it covers live scoring
+only**. A round entered at a venue with no signal is held rather than lost: it
+shows in the round log, a line under the scoreboard counts how many are waiting,
+and they are sent by themselves when the connection returns. The held round is in
+memory, so closing the tab loses it — but the tapped scores are kept on the phone
+for twelve hours, so a reload hands them back and one press files them again.
+
+Everywhere else there is still no queue. A long message typed offline is lost on
 submit. See
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
@@ -272,4 +283,7 @@ failures are reported with a stack trace. See
 - Assumption: the toast stays about five seconds. That is the component library's
   default and no override was found.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
+and the live-scoring round queue). Those passages were written from the change
+and its tests, not from a fresh pass over the running app.

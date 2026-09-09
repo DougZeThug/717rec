@@ -115,6 +115,7 @@ export const LiveMatchContent: React.FC<LiveMatchContentProps> = ({
     return (
       <ActiveGamePanel
         game={currentGame}
+        matchId={match.id}
         team1Name={team1Name}
         team2Name={team2Name}
         team1Id={match.team1_id}
