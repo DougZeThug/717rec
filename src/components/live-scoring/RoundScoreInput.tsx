@@ -63,18 +63,27 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
   // round. If that round is recorded elsewhere the heading moves on, and saving
   // them now would file them under the wrong round number.
   const settledKey = useRef(roundKey);
+  // Set while this scorer's own save is on its way, and cleared by the effect
+  // below as soon as the round number settles again. The round moving because
+  // *they* saved is not the round being taken away from them, so it must not be
+  // announced — the taps on screen are the ones they just filed.
+  const selfSaved = useRef(false);
   useEffect(() => {
     // The optimistic round bumps the round number the moment Save is pressed.
     // Ignore that; wait until the save settles and the number is real again.
     if (isSubmitting) return;
     if (settledKey.current === roundKey) return;
     settledKey.current = roundKey;
+    const ownSave = selfSaved.current;
+    selfSaved.current = false;
     // Our own successful save has already emptied the grids, so there is
-    // nothing to discard and nothing to announce.
+    // nothing to discard and nothing to announce. `isSubmitting` alone does not
+    // prove that: the mutation can report itself finished a render before the
+    // grids clear, and the taps are still on screen in that gap.
     const hadSelection = team1.score !== null || team2.score !== null;
     setTeam1(EMPTY);
     setTeam2(EMPTY);
-    if (hadSelection) onSelectionDiscarded?.();
+    if (hadSelection && !ownSave) onSelectionDiscarded?.();
   }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded]);
 
   const ready = isResolved(team1) && isResolved(team2);
@@ -92,6 +101,7 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
 
   const handleSubmit = async () => {
     if (!ready || team1.score === null || team2.score === null) return;
+    selfSaved.current = true;
     try {
       await onSubmit({
         team1Score: team1.score,
@@ -104,7 +114,9 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     } catch {
       // Keep the tapped scores so the scorer can press Save Round again
       // instead of re-entering the round from memory. The failure toast is
-      // already raised by useRoundMutations.
+      // already raised by useRoundMutations. Nothing was filed, so a round
+      // change from here on is somebody else's and must still be announced.
+      selfSaved.current = false;
     }
   };
 
