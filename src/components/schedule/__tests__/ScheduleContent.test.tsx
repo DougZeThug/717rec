@@ -112,6 +112,28 @@ describe('ScheduleContent', () => {
     expect(screen.queryByTestId('swipeable-date-groups')).not.toBeInTheDocument();
   });
 
+  // `iscompleted` is nullable. The tab split used to compare it strictly against
+  // a boolean, so a null row matched neither tab and was visible to nobody
+  // (UX audit X-13 / L1).
+  it('shows a match with no recorded result on the upcoming tab', () => {
+    renderContent({
+      activeTab: 'upcoming',
+      filteredMatches: [buildMatch({ id: 'm1', date: '2026-07-15', iscompleted: null })],
+    });
+
+    expect(screen.queryByText('No Upcoming Matches')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('date-match-group')[0]).toHaveTextContent('DateMatchGroup:1');
+  });
+
+  it('keeps a match with no recorded result off the completed tab', () => {
+    renderContent({
+      activeTab: 'completed',
+      filteredMatches: [buildMatch({ id: 'm1', date: '2026-07-15', iscompleted: null })],
+    });
+
+    expect(screen.queryByTestId('date-match-group')).not.toBeInTheDocument();
+  });
+
   it('calls setActiveTab when the Completed tab trigger is clicked (controlled tabs)', async () => {
     const { setActiveTab } = renderContent({ activeTab: 'upcoming', filteredMatches: [] });
 
