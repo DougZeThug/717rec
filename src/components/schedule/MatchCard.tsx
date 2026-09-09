@@ -1,4 +1,3 @@
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { MatchInteractions } from '@/components/matches';
@@ -9,17 +8,15 @@ import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Match } from '@/types';
-import { deriveMatchStatus, isMatchOpenForScoring } from '@/utils/matchStatus';
+import { deriveMatchStatus } from '@/utils/matchStatus';
 
 import { MatchCardAdminActions } from './match-card/MatchCardAdminActions';
-import { LiveScoreCta, MatchRecapCta } from './match-card/MatchCardCtas';
-import { MatchCardScore } from './match-card/MatchCardScore';
+import { MatchCardCtas } from './match-card/MatchCardCtas';
 import { MatchCardStatusBadge } from './match-card/MatchCardStatusBadge';
-import { MatchCardTeam } from './match-card/MatchCardTeam';
+import { MatchCardTeamsRow } from './match-card/MatchCardTeamsRow';
+import { MatchCardUpcomingExtras } from './match-card/MatchCardUpcomingExtras';
 import { useScoreAnimation } from './match-card/useScoreAnimation';
-import MatchCountdown from './MatchCountdown';
 import { MatchHeadToHead } from './MatchHeadToHead';
-import { MatchPrediction } from './MatchPrediction';
 
 interface MatchCardProps {
   match: Match;
@@ -46,6 +43,11 @@ const winnerSides = (match: Match, isCompleted: boolean) => {
   return { team1: team1 > team2, team2: team2 > team1 };
 };
 
+const teamNames = (match: Match) => ({
+  team1Name: match.team1Details?.name || 'Unknown Team',
+  team2Name: match.team2Details?.name || 'Unknown Team',
+});
+
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
   onEdit,
@@ -55,16 +57,12 @@ const MatchCard: React.FC<MatchCardProps> = ({
   isBatchH2HLoading = false,
   liveScoredMatchIds,
 }) => {
-  const { resolvedTheme } = useTheme();
   const { isAdminAccessGranted } = useAdminAccess();
-  const isLight = resolvedTheme === 'light';
 
   // One question, asked once. Every branch below reads the answer.
   const status = deriveMatchStatus(match);
   const isCompleted = status === 'completed';
-
-  const team1Name = match.team1Details?.name || 'Unknown Team';
-  const team2Name = match.team2Details?.name || 'Unknown Team';
+  const { team1Name, team2Name } = teamNames(match);
 
   const { prediction, isUpsetResult } = useMatchPrediction({
     team1Details: match.team1Details,
@@ -95,32 +93,18 @@ const MatchCard: React.FC<MatchCardProps> = ({
             : 'bg-gradient-to-br from-primary/30 via-transparent to-accent/20'
         )}
       >
-        <div className={cn('rounded-xl overflow-hidden', isLight ? 'bg-card' : 'bg-card')}>
+        <div className="rounded-xl overflow-hidden bg-card">
           <MatchCardStatusBadge status={status} isUpsetResult={isUpsetResult} />
 
           <div className="px-3 py-2">
-            {/* Centered layout: Logo - Score - Logo */}
-            <div className="flex items-center justify-center gap-2">
-              <MatchCardTeam
-                teamId={match.team1Id}
-                teamName={team1Name}
-                logoUrl={match.team1Details?.image_url || ''}
-                isWinner={winners.team1}
-              />
-              <MatchCardScore
-                team1Score={(isCompleted ? match.team1_game_wins : match.team1Score) || 0}
-                team2Score={(isCompleted ? match.team2_game_wins : match.team2Score) || 0}
-                team1IsWinner={winners.team1}
-                team2IsWinner={winners.team2}
-                isAnimating={isAnimating}
-              />
-              <MatchCardTeam
-                teamId={match.team2Id}
-                teamName={team2Name}
-                logoUrl={match.team2Details?.image_url || ''}
-                isWinner={winners.team2}
-              />
-            </div>
+            <MatchCardTeamsRow
+              match={match}
+              team1Name={team1Name}
+              team2Name={team2Name}
+              isCompleted={isCompleted}
+              winners={winners}
+              isAnimating={isAnimating}
+            />
 
             {/* H2H Record */}
             <div className="mt-1.5">
@@ -134,31 +118,22 @@ const MatchCard: React.FC<MatchCardProps> = ({
               />
             </div>
 
-            {/* Countdown for upcoming */}
-            {!isCompleted && match.date && (
-              <div className="mt-1.5">
-                <MatchCountdown matchDate={match.date} />
-              </div>
-            )}
+            <MatchCardUpcomingExtras
+              isCompleted={isCompleted}
+              matchDate={match.date}
+              prediction={prediction}
+              team1Name={team1Name}
+              team2Name={team2Name}
+            />
 
-            {/* Prediction bar for upcoming */}
-            {!isCompleted && prediction && (
-              <div className="mt-1.5">
-                <MatchPrediction
-                  prediction={prediction}
-                  team1Name={team1Name}
-                  team2Name={team2Name}
-                />
-              </div>
-            )}
-
-            {isMatchOpenForScoring(match) && canScore && (
-              <LiveScoreCta matchId={match.id} team1Name={team1Name} team2Name={team2Name} />
-            )}
-
-            {isCompleted && liveScoredMatchIds?.has(match.id) && (
-              <MatchRecapCta matchId={match.id} team1Name={team1Name} team2Name={team2Name} />
-            )}
+            <MatchCardCtas
+              match={match}
+              isCompleted={isCompleted}
+              canScore={canScore}
+              team1Name={team1Name}
+              team2Name={team2Name}
+              liveScoredMatchIds={liveScoredMatchIds}
+            />
 
             {isAdminAccessGranted && (
               <MatchCardAdminActions

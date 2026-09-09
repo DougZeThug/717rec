@@ -2,8 +2,9 @@ import React, { useCallback, useState } from 'react';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { useAdminCorrections } from '@/hooks/live-scoring/useAdminCorrections';
+import type { LiveMatchDerived } from '@/hooks/live-scoring/useLiveMatch';
 import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
-import { useSeasons } from '@/hooks/useSeasons';
+import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { ArchivedSeasonBanner } from './ArchivedSeasonBanner';
@@ -11,6 +12,7 @@ import { GameCorrectionCard } from './GameCorrectionCard';
 import { type CorrectionSelection, MatchCorrectionDialogs } from './MatchCorrectionDialogs';
 import { ReopenAndResaveNotice } from './ReopenAndResaveNotice';
 import { useMatchRosters } from './useMatchRosters';
+import { useMatchSeason } from './useMatchSeason';
 
 const NO_SELECTION: CorrectionSelection = {
   editingRoundId: null,
@@ -18,24 +20,19 @@ const NO_SELECTION: CorrectionSelection = {
   winnerGameId: null,
 };
 
-export interface MatchCorrectionsPanelProps {
+interface LoadedProps {
   matchId: string;
+  bundle: LiveMatchBundle;
+  derived: LiveMatchDerived;
 }
 
-/** Admin panel for editing rounds, deleting rounds, and changing game winners on a match. */
-export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
-  const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
-  const finalized = bundle ? isMatchCompleted(bundle.match) : false;
-
-  // B-20: an archived season is frozen. Read it from this match's own season
-  // rather than from the section's season filter, because a selected match stays
-  // open when the filter changes. useSeasons is already cached by the section, so
-  // this costs no extra request.
-  const { data: seasons } = useSeasons();
-  const matchSeason = (seasons ?? []).find((s) => s.id === bundle?.match.season_id) ?? null;
-  const seasonArchived = matchSeason?.is_archived === true;
-
+/** The panel once the match is known to exist. Split out so nothing below has
+ *  to cope with a missing bundle. */
+const LoadedMatchCorrections: React.FC<LoadedProps> = ({ matchId, bundle, derived }) => {
+  const finalized = isMatchCompleted(bundle.match);
+  const season = useMatchSeason(bundle.match.season_id);
   const corrections = useAdminCorrections({ matchId, affectsStandings: finalized });
+  const rosterById = useMatchRosters(bundle.match.team1_id, bundle.match.team2_id);
 
   // Store only IDs; the dialogs derive their row from the realtime-updated
   // bundle, so an open dialog always reflects the latest data and closes itself
@@ -51,25 +48,16 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
     []
   );
 
-  const team1Id = bundle?.match.team1_id ?? null;
-  const team2Id = bundle?.match.team2_id ?? null;
-  const rosterById = useMatchRosters(team1Id, team2Id);
-
-  if (isLoading) return <LoadingState variant="section" message="Loading match…" />;
-  if (isNotEnabled || !bundle || !derived) {
-    return <p className="text-sm text-muted-foreground">No live-scoring data for this match.</p>;
-  }
-
-  const team1 = { id: team1Id, name: bundle.match.team1?.name ?? 'Team 1' };
-  const team2 = { id: team2Id, name: bundle.match.team2?.name ?? 'Team 2' };
+  const team1 = { id: bundle.match.team1_id, name: bundle.match.team1?.name ?? 'Team 1' };
+  const team2 = { id: bundle.match.team2_id, name: bundle.match.team2?.name ?? 'Team 2' };
 
   return (
     <div className="space-y-4">
-      {seasonArchived && <ArchivedSeasonBanner seasonName={matchSeason?.name ?? null} />}
+      {season.isArchived && <ArchivedSeasonBanner seasonName={season.name} />}
 
       {/* Nothing can be edited into disagreeing on an archived season, so the
           finalized warning and its one-press fix belong only to a live one. */}
-      {finalized && !seasonArchived && <ReopenAndResaveNotice matchId={matchId} />}
+      {finalized && !season.isArchived && <ReopenAndResaveNotice matchId={matchId} />}
 
       {derived.games.map((g) => (
         <GameCorrectionCard
@@ -80,7 +68,7 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
           team2Id={team2.id}
           team1Name={team1.name}
           team2Name={team2.name}
-          readOnly={seasonArchived}
+          readOnly={season.isArchived}
           onEditRound={select('editingRoundId')}
           onDeleteRound={select('deletingRoundId')}
           onChangeWinner={select('winnerGameId')}
@@ -99,4 +87,20 @@ export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ ma
       />
     </div>
   );
+};
+
+export interface MatchCorrectionsPanelProps {
+  matchId: string;
+}
+
+/** Admin panel for editing rounds, deleting rounds, and changing game winners on a match. */
+export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
+  const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
+
+  if (isLoading) return <LoadingState variant="section" message="Loading match…" />;
+  if (isNotEnabled || !bundle || !derived) {
+    return <p className="text-sm text-muted-foreground">No live-scoring data for this match.</p>;
+  }
+
+  return <LoadedMatchCorrections matchId={matchId} bundle={bundle} derived={derived} />;
 };
