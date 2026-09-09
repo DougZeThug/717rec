@@ -58,8 +58,16 @@ vi.mock('@/components/teams/TeamPerformanceCards', () => ({
 }));
 vi.mock('@/components/teams/PlayerList', () => ({ default: () => <p>Roster Section</p> }));
 vi.mock('@/components/ui/CollapsibleSection', () => ({
-  CollapsibleSection: ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <section>
+  CollapsibleSection: ({
+    title,
+    children,
+    defaultOpen,
+  }: {
+    title: string;
+    children: React.ReactNode;
+    defaultOpen?: boolean;
+  }) => (
+    <section data-open={defaultOpen ? 'true' : 'false'}>
       <h2>{title}</h2>
       {children}
     </section>
@@ -76,8 +84,11 @@ vi.mock('@/components/teams/TeamReportCard', () => ({ default: () => <p>Report C
 vi.mock('@/components/teams/RivalryHighlights', () => ({ default: () => <p>Rivalries</p> }));
 vi.mock('@/components/stats/HeadToHeadRecords', () => ({ default: () => <p>Head to Head</p> }));
 vi.mock('@/components/teams/MatchList', () => ({
-  default: ({ matches }: { matches: unknown[] }) =>
-    matches.length === 0 ? <p>No Match History</p> : <p>Match History Loaded</p>,
+  default: ({ matches, defaultOpen }: { matches: unknown[]; defaultOpen?: boolean }) => (
+    <p data-testid="match-history" data-open={defaultOpen ? 'true' : 'false'}>
+      {matches.length === 0 ? 'No Match History' : 'Match History Loaded'}
+    </p>
+  ),
 }));
 vi.mock('@/components/teams/TeamTotals', () => ({ default: () => <p>Career Totals</p> }));
 vi.mock('@/components/teams/TeamCareerPowerScoreChart', () => ({
@@ -177,5 +188,52 @@ describe('TeamDetails page', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);
     expect(mockNavigate).not.toHaveBeenCalledWith('/stats');
+  });
+
+  // UX audit T-03: Match History is the section a player came for, and it used
+  // to cost a tap; the sections could not be linked to at all.
+  describe('linking to a section', () => {
+    const sectionNamed = (title: string) =>
+      screen.getByRole('heading', { name: title }).closest('section');
+
+    it('opens Match History without a tap', () => {
+      renderPage();
+
+      expect(screen.getByTestId('match-history')).toHaveAttribute('data-open', 'true');
+    });
+
+    it('leaves the other sections closed when nothing is named', () => {
+      renderPage();
+
+      expect(sectionNamed('Stats & Report Card')).toHaveAttribute('data-open', 'false');
+      expect(sectionNamed('Matchups & Rivalries')).toHaveAttribute('data-open', 'false');
+      expect(sectionNamed('Career & Achievements')).toHaveAttribute('data-open', 'false');
+    });
+
+    it('opens the section the address names', () => {
+      renderPage('/teams/falcons#h2h');
+
+      expect(sectionNamed('Matchups & Rivalries')).toHaveAttribute('data-open', 'true');
+      expect(sectionNamed('Stats & Report Card')).toHaveAttribute('data-open', 'false');
+    });
+
+    it('scrolls to the section the address names, once the team has arrived', () => {
+      const scrollIntoView = vi.fn();
+      vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
+
+      renderPage('/teams/falcons#career');
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    });
+
+    it('ignores an address naming something that is not a section', () => {
+      const scrollIntoView = vi.fn();
+      vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
+
+      renderPage('/teams/falcons#nowhere');
+
+      expect(scrollIntoView).not.toHaveBeenCalled();
+      expect(sectionNamed('Stats & Report Card')).toHaveAttribute('data-open', 'false');
+    });
   });
 });

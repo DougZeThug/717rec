@@ -95,6 +95,12 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
     (sectionId: string) => {
       const element = document.getElementById(sectionId);
       if (element) {
+        // Put the section in the address so it can be linked to and reloaded
+        // (UX audit T-03). replaceState rather than a router navigation: the
+        // route has not changed, and a history entry per tap would turn Back
+        // into a walk back up the page. The observer above must never do this —
+        // it fires continuously while scrolling.
+        window.history.replaceState(window.history.state, '', `#${sectionId}`);
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             // Calculate offset dynamically based on actual nav height

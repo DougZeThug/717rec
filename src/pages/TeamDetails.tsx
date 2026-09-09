@@ -1,6 +1,6 @@
 import { ArrowLeft, BarChart3, GraduationCap, Swords, TrendingUp, Trophy } from 'lucide-react';
-import { lazy, Suspense, useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router';
 
 import TeamBadgeCollection from '@/components/badges/TeamBadgeCollection';
 import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
@@ -19,6 +19,7 @@ import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { useResolveTeamSlug } from '@/hooks/useResolveTeamSlug';
 import { useTeamDetails } from '@/hooks/useTeamDetails';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
@@ -84,6 +85,7 @@ interface TeamStatsSectionProps {
   teamRanking: TeamRanking | undefined;
   sweepStats: SweepStats;
   clutchRecord: ClutchRecord;
+  defaultOpen?: boolean;
 }
 
 const TeamStatsSection = ({
@@ -96,13 +98,14 @@ const TeamStatsSection = ({
   teamRanking,
   sweepStats,
   clutchRecord,
+  defaultOpen,
 }: TeamStatsSectionProps) => (
   <section id="stats" className="scroll-mt-20" aria-labelledby="stats-heading">
     <CollapsibleSection
       title="Stats & Report Card"
       icon={BarChart3}
       iconColor="text-blue-500"
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       headingId="stats-heading"
       summaryValue={`${team.wins}-${team.losses}`}
     >
@@ -148,15 +151,16 @@ const TeamStatsSection = ({
 interface TeamMatchupsSectionProps {
   teamId: string | undefined;
   teamName: string;
+  defaultOpen?: boolean;
 }
 
-const TeamMatchupsSection = ({ teamId, teamName }: TeamMatchupsSectionProps) => (
+const TeamMatchupsSection = ({ teamId, teamName, defaultOpen }: TeamMatchupsSectionProps) => (
   <section id="h2h" className="scroll-mt-20" aria-labelledby="h2h-heading">
     <CollapsibleSection
       title="Matchups & Rivalries"
       icon={Swords}
       iconColor="text-rose-500"
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       headingId="h2h-heading"
     >
       {teamId && <RivalryHighlights teamId={teamId} standalone />}
@@ -169,13 +173,19 @@ const TeamMatchupsSection = ({ teamId, teamName }: TeamMatchupsSectionProps) => 
   </section>
 );
 
-const TeamCareerSection = ({ teamId }: { teamId: string | undefined }) => (
+const TeamCareerSection = ({
+  teamId,
+  defaultOpen,
+}: {
+  teamId: string | undefined;
+  defaultOpen?: boolean;
+}) => (
   <section id="career" className="scroll-mt-20" aria-labelledby="career-heading">
     <CollapsibleSection
       title="Career & Achievements"
       icon={TrendingUp}
       iconColor="text-purple-500"
-      defaultOpen={false}
+      defaultOpen={defaultOpen}
       headingId="career-heading"
     >
       {teamId && <TeamTotals teamId={teamId} standalone />}
@@ -206,10 +216,23 @@ const TeamCareerSection = ({ teamId }: { teamId: string | undefined }) => (
   </section>
 );
 
+/** Sections a link may name, matching the ids on the page. */
+const LINKABLE_SECTIONS = ['performance', 'stats', 'h2h', 'matches', 'career'];
+
 const TeamDetails = () => {
   const { teamId: teamParam } = useParams<{ teamId: string }>();
   const { teamId, isResolving } = useResolveTeamSlug(teamParam);
   const navigate = useNavigate();
+  const scrollBehavior = useScrollBehavior();
+
+  // The section a link named, read once at arrival. The sticky nav writes the
+  // address as the reader moves down the page, and re-reading that would keep
+  // reopening sections under them. UX audit T-03.
+  const arrivalHash = useLocation().hash;
+  const [linkedSection] = useState(() => {
+    const section = arrivalHash.replace('#', '');
+    return LINKABLE_SECTIONS.includes(section) ? section : null;
+  });
 
   const { team, isLoading } = useTeamDetails(teamId);
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
@@ -227,6 +250,22 @@ const TeamDetails = () => {
   );
 
   logTeamRender(team);
+
+  // The team arrives after the first render, and the sections only exist once
+  // it has, so the scroll waits for it. It runs once: a later render must not
+  // drag the reader back up the page.
+  const hasScrolledToLinkedSection = useRef(false);
+  useEffect(() => {
+    if (!linkedSection || hasScrolledToLinkedSection.current) return;
+    if (isLoading || isLoadingMatches || isResolving || !team) return;
+
+    const element = document.getElementById(linkedSection);
+    if (!element) return;
+
+    hasScrolledToLinkedSection.current = true;
+    // scroll-mt-20 on each section keeps the heading clear of the header.
+    element.scrollIntoView({ behavior: scrollBehavior, block: 'start' });
+  }, [linkedSection, isLoading, isLoadingMatches, isResolving, team, scrollBehavior]);
 
   /**
    * Go back through history rather than pushing the previous route again.
@@ -334,6 +373,7 @@ const TeamDetails = () => {
 
         {/* 3. Stats & Report Card - combined, default closed */}
         <TeamStatsSection
+          defaultOpen={linkedSection === 'stats'}
           team={team}
           teamId={teamId}
           winPct={winPct}
@@ -346,9 +386,14 @@ const TeamDetails = () => {
         />
 
         {/* 4. Matchups & Rivalries - combined, default closed */}
-        <TeamMatchupsSection teamId={teamId} teamName={team.name} />
+        <TeamMatchupsSection
+          teamId={teamId}
+          teamName={team.name}
+          defaultOpen={linkedSection === 'h2h'}
+        />
 
-        {/* 5. Match History - default closed */}
+        {/* 5. Match History - open by default: it is the section a player came
+            for, and it used to cost a tap. UX audit T-03. */}
         <section id="matches" className="scroll-mt-20" aria-labelledby="matches-heading">
           <MatchList
             title="Match History"
@@ -358,13 +403,13 @@ const TeamDetails = () => {
             isPast
             highlightWinnerLoser
             collapsible
-            defaultOpen={false}
+            defaultOpen
             headingId="matches-heading"
           />
         </section>
 
         {/* 6. Career & Achievements - combined, default closed */}
-        <TeamCareerSection teamId={teamId} />
+        <TeamCareerSection teamId={teamId} defaultOpen={linkedSection === 'career'} />
       </div>
     </>
   );
