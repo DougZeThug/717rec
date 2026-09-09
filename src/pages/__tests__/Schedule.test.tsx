@@ -109,19 +109,19 @@ const createTestQueryClient = () =>
 
 const testQueryClients: QueryClient[] = [];
 
-const scheduleTree = () => {
+const scheduleTree = (initialPath = '/schedule') => {
   const queryClient = createTestQueryClient();
   testQueryClients.push(queryClient);
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[initialPath]}>
         <Schedule />
       </MemoryRouter>
     </QueryClientProvider>
   );
 };
 
-const renderPage = () => render(scheduleTree());
+const renderPage = (initialPath?: string) => render(scheduleTree(initialPath));
 
 const baseScheduleData = {
   matchesData: [],
@@ -307,6 +307,39 @@ describe('Schedule page', () => {
       renderPage();
 
       expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
+    // UX audit SC-04: the night is in the address now, and a named night must
+    // survive the SC-01 "open on a night with something on it" correction.
+    it('opens on the night the address names', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+
+      renderPage('/schedule?date=2026-08-27');
+
+      expect(asKey(selectedDate())).toBe('2026-08-27');
+    });
+
+    it('keeps an empty night the address names rather than correcting it', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+
+      // Nothing is on that night, but it was asked for by name.
+      renderPage('/schedule?date=2026-09-17');
+
+      expect(asKey(selectedDate())).toBe('2026-09-17');
+    });
+
+    it('still corrects the guess when the address names no night', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+
+      renderPage('/schedule?q=amigos');
+
+      expect(asKey(selectedDate())).toBe('2026-09-03');
     });
 
     it('uses the next scheduled night before a season has been played', () => {

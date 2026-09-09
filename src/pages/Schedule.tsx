@@ -9,6 +9,7 @@ import ScheduleContentSkeleton from '@/components/schedule/ScheduleContentSkelet
 import ScheduleHeader from '@/components/schedule/ScheduleHeader';
 import SeoHead from '@/components/seo/SeoHead';
 import { ErrorDisplay } from '@/components/ui/error-display';
+import { useScheduleUrlState } from '@/hooks/scheduling/useScheduleUrlState';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
@@ -51,9 +52,10 @@ const dayKeyToDate = (key: string): Date => {
 };
 
 const Schedule = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const [selectedDate, setSelectedDate] = useState<Date>(() => getUpcomingThursday());
+  // The night and the search text live in the address, so a week can be linked
+  // to and neither resets on the way back. See UX audit SC-04.
+  const { selectedDate, setSelectedDate, searchTerm, setSearchTerm, hadDateInUrl } =
+    useScheduleUrlState(getUpcomingThursday);
 
   // Log date for debugging
   useEffect(() => {
@@ -128,8 +130,9 @@ const Schedule = () => {
   // night: prefer the last night actually played, so a player opening the app
   // the morning after league night lands on results rather than a blank page.
   // Runs at most once, so it can never fight a date the user picked, and can
-  // never loop. See UX audit SC-01.
-  const hasAutoPickedDate = useRef(false);
+  // never loop. A date in the address counts as picked, so a shared link is
+  // never moved off the night it named. See UX audit SC-01.
+  const hasAutoPickedDate = useRef(hadDateInUrl);
 
   useEffect(() => {
     if (hasAutoPickedDate.current || matchesLoading) return;
@@ -149,7 +152,7 @@ const Schedule = () => {
 
     if (fallback) {
       scheduleLog('No matches on the default date; opening on', fallback);
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot default once data has loaded
+
       setSelectedDate(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
