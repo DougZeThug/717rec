@@ -36,8 +36,17 @@ lists.
 users. Approving asks you for the result." is one card per report: which match it
 is about, who sent it, which team they said they were on, what they wrote, when
 they sent it, and a Reject and an Approve button. Approve opens a dialog offering
-the four results a best-of-three match can end in. When there is nothing to review
-the section says "No pending score submissions to review."
+the four results a best-of-three match can end in. Reject opens a confirmation
+first: "Reject this score report?", naming the submitter and the match, and
+saying the match keeps whatever result it has and the report cannot be brought
+back. When there is nothing to review the section says "No score reports waiting
+for approval."
+
+**Reports for the same match are kept together**, in the order they arrived,
+under an amber banner: "2 reports for Owls vs Hawks. Read all of them before you
+approve one — a report is a message, not a score, so they may not agree." The app
+cannot tell whether they agree, because a report carries free text and no
+numbers; it can only say how many there are.
 
 **Unresolved matches** follows, and is drawn only when the list is not empty.
 Under the line "These matches are finished but have no winner. Name the winner or
@@ -53,7 +62,7 @@ stateDiagram-v2
     no_result --> waiting : sixteen hours pass; the match joins the Pending Scores card
     waiting --> waiting : somebody sends a report (the match does not move)
     waiting --> reviewing : an admin opens the Score approvals section
-    reviewing --> decided : Reject (the report is stamped, the match is untouched)
+    reviewing --> decided : Reject, then confirm (the report is stamped, the match is untouched)
     decided --> waiting : the match still has no result
     reviewing --> resolved : Approve — the admin enters the result and it is written
     waiting --> resolved : a result is recorded by live scoring or bulk entry
@@ -139,7 +148,7 @@ Only that write moves standings, records, badges, and power scores.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. Neither queue has a Cancel. | Closes the report dialog if it is open, discarding what was typed. Neither Approve nor Reject can be cancelled or confirmed. |
+| Escape, or a Cancel button | Closes the reject confirmation without rejecting anything. | Closes the report dialog if it is open, discarding what was typed. Approve and Reject both confirm first — Approve by asking for the result, Reject by asking whether to throw the report away. |
 | In-app navigation away, or switching tab within the page | Nothing is lost; neither queue holds any state. | A decision already sent still lands. The card was already removed from the list, so leaving looks the same as succeeding. |
 | Browser back or forward | Returns to the previous page. | Same as navigating away. |
 | Reload, or the tab closed | Both queues are fetched again from scratch. Neither caches. | A sent decision still lands; an unsent one is gone. The list after the reload is the truth. |
