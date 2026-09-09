@@ -41,7 +41,8 @@ export interface Match {
    */
   orderKey?: number;
   location?: string;
-  iscompleted?: boolean;
+  /** Nullable in the database: `null` means no result was ever recorded. */
+  iscompleted?: boolean | null;
   round_number?: number;
   position?: number;
   bracket_id?: string;

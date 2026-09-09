@@ -15,7 +15,7 @@ export interface MatchWithTeams extends Omit<
   team2_game_wins?: number | null;
   date?: string;
   location?: string;
-  iscompleted?: boolean;
+  iscompleted?: boolean | null;
   id: string;
   isEdited?: boolean;
   isValid?: boolean;

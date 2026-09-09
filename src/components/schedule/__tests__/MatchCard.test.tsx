@@ -107,7 +107,6 @@ describe('MatchCard', () => {
           team1_game_wins: 3,
           team2_game_wins: 1,
         }}
-        isCompleted
       />
     );
 
@@ -133,7 +132,6 @@ describe('MatchCard', () => {
           team1_game_wins: 3,
           team2_game_wins: 1,
         }}
-        isCompleted
       />
     );
 
@@ -143,7 +141,7 @@ describe('MatchCard', () => {
     expect(wonTags[0].parentElement).toHaveTextContent('Team Alpha');
 
     // An unfinished match marks nobody.
-    rerender(<MatchCard match={{ ...baseMatch, iscompleted: false }} isCompleted={false} />);
+    rerender(<MatchCard match={{ ...baseMatch, iscompleted: false }} />);
     expect(screen.queryByText('Won')).not.toBeInTheDocument();
   });
 
@@ -152,7 +150,7 @@ describe('MatchCard', () => {
     const onDelete = vi.fn();
     const match: Match = { ...baseMatch, iscompleted: false };
 
-    render(<MatchCard match={match} isCompleted={false} onEdit={onEdit} onDelete={onDelete} />);
+    render(<MatchCard match={match} onEdit={onEdit} onDelete={onDelete} />);
 
     // Upcoming match shows countdown, not the Final badge.
     expect(screen.queryByText('Final')).not.toBeInTheDocument();
@@ -171,12 +169,7 @@ describe('MatchCard', () => {
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false });
 
     render(
-      <MatchCard
-        match={{ ...baseMatch, iscompleted: false }}
-        isCompleted={false}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
-      />
+      <MatchCard match={{ ...baseMatch, iscompleted: false }} onEdit={vi.fn()} onDelete={vi.fn()} />
     );
 
     expect(screen.queryByRole('button', { name: 'Edit match' })).not.toBeInTheDocument();
@@ -186,7 +179,7 @@ describe('MatchCard', () => {
   it('links authorized scorers to live scoring for upcoming matches', () => {
     mockUseCanScoreMatch.mockReturnValue({ canScore: true, isAdmin: false, isLoading: false });
 
-    render(<MatchCard match={{ ...baseMatch, iscompleted: false }} isCompleted={false} />);
+    render(<MatchCard match={{ ...baseMatch, iscompleted: false }} />);
 
     // The TransitionLink test stub only forwards to/children, so the
     // accessible name is the visible text.
@@ -195,7 +188,7 @@ describe('MatchCard', () => {
   });
 
   it('hides the live scoring link from users who cannot score', () => {
-    render(<MatchCard match={{ ...baseMatch, iscompleted: false }} isCompleted={false} />);
+    render(<MatchCard match={{ ...baseMatch, iscompleted: false }} />);
 
     expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
   });
@@ -203,27 +196,24 @@ describe('MatchCard', () => {
   it('hides the live scoring link for completed and postponed matches', () => {
     mockUseCanScoreMatch.mockReturnValue({ canScore: true, isAdmin: true, isLoading: false });
 
-    const { rerender } = render(
-      <MatchCard match={{ ...baseMatch, iscompleted: true }} isCompleted />
-    );
+    const { rerender } = render(<MatchCard match={{ ...baseMatch, iscompleted: true }} />);
     expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
 
-    rerender(
-      <MatchCard
-        match={{ ...baseMatch, status: 'postponed', iscompleted: false }}
-        isCompleted={false}
-      />
-    );
+    rerender(<MatchCard match={{ ...baseMatch, status: 'postponed', iscompleted: false }} />);
     expect(screen.queryByText('Live score this match')).not.toBeInTheDocument();
   });
 
+  // `iscompleted` is nullable. A null row used to fall out of both Schedule
+  // tabs and be visible to nobody (UX audit X-13 / L1).
+  it('treats a match with no recorded result as upcoming, not finished', () => {
+    render(<MatchCard match={{ ...baseMatch, iscompleted: null }} />);
+
+    expect(screen.queryByText('Final')).not.toBeInTheDocument();
+    expect(screen.getByTestId('countdown')).toBeInTheDocument();
+  });
+
   it('renders the postponed status badge for a postponed match', () => {
-    render(
-      <MatchCard
-        match={{ ...baseMatch, status: 'postponed', iscompleted: false }}
-        isCompleted={false}
-      />
-    );
+    render(<MatchCard match={{ ...baseMatch, status: 'postponed', iscompleted: false }} />);
 
     expect(screen.getByText('Postponed')).toBeInTheDocument();
     expect(screen.queryByText('Final')).not.toBeInTheDocument();
@@ -232,12 +222,7 @@ describe('MatchCard', () => {
   // Both exceptional states read their word from MATCH_STATUS_LABELS, so this
   // covers the second half of that map (UX audit X-13).
   it('renders the canceled status badge for a canceled match', () => {
-    render(
-      <MatchCard
-        match={{ ...baseMatch, status: 'canceled', iscompleted: false }}
-        isCompleted={false}
-      />
-    );
+    render(<MatchCard match={{ ...baseMatch, status: 'canceled', iscompleted: false }} />);
 
     expect(screen.getByText('Canceled')).toBeInTheDocument();
     expect(screen.queryByText('Postponed')).not.toBeInTheDocument();
@@ -251,15 +236,13 @@ describe('MatchCard', () => {
       team2_game_wins: 1,
     };
 
-    const { rerender } = render(<MatchCard match={completed} isCompleted />);
+    const { rerender } = render(<MatchCard match={completed} />);
     expect(screen.queryByText('View match recap')).not.toBeInTheDocument();
 
-    rerender(
-      <MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['other-id'])} />
-    );
+    rerender(<MatchCard match={completed} liveScoredMatchIds={new Set(['other-id'])} />);
     expect(screen.queryByText('View match recap')).not.toBeInTheDocument();
 
-    rerender(<MatchCard match={completed} isCompleted liveScoredMatchIds={new Set(['match-1'])} />);
+    rerender(<MatchCard match={completed} liveScoredMatchIds={new Set(['match-1'])} />);
     // Now rendered as a dialog trigger button, not a link.
     const trigger = screen.getByRole('button', { name: /view match recap/i });
     expect(trigger).toBeInTheDocument();

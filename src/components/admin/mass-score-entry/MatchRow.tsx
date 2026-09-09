@@ -4,6 +4,7 @@ import React, { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { scoreLog } from '@/utils/logger';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import MatchStatusSection from './components/MatchStatusSection';
 import ScoreSection from './components/ScoreSection';
@@ -163,7 +164,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
             </label>
             <Switch
               id={`mark-complete-${match.id}`}
-              checked={match.iscompleted}
+              checked={isMatchCompleted(match)}
               onCheckedChange={handleCompletedChange}
               disabled={isSubmitting}
               data-match-id={match.id}

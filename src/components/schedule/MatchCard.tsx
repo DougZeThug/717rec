@@ -13,7 +13,8 @@ import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Match } from '@/types';
-import { MATCH_STATUS_LABELS } from '@/types/matchStatus';
+import { MATCH_STATUS_LABELS, type MatchStatus } from '@/types/matchStatus';
+import { deriveMatchStatus, isMatchOpenForScoring } from '@/utils/matchStatus';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import MatchCountdown from './MatchCountdown';
@@ -23,7 +24,6 @@ import { UpsetTag } from './UpsetTag';
 
 interface MatchCardProps {
   match: Match;
-  isCompleted: boolean;
   onEdit?: (match: Match) => void;
   onDelete?: (matchId: string) => void;
   showInteractions?: boolean;
@@ -37,6 +37,14 @@ interface MatchCardProps {
   liveScoredMatchIds?: ReadonlySet<string>;
 }
 
+// One pill per state. Keyed on the union minus `scheduled`, which shows no
+// pill at all, so a new state fails the typecheck until it is given a colour.
+const statusPillClasses: Record<Exclude<MatchStatus, 'scheduled'>, string> = {
+  completed: 'bg-primary/10 text-primary',
+  postponed: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
+  canceled: 'bg-destructive/10 text-destructive',
+};
+
 // The winner used to be marked by emerald text alone, which says nothing in
 // greyscale or to a screen reader. Add the word as well, and keep the colour.
 // Static, so it is built once rather than on every render.
@@ -48,7 +56,6 @@ const winnerTag = (
 
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
-  isCompleted,
   onEdit,
   onDelete,
   showInteractions = true,
@@ -60,6 +67,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const { isAdminAccessGranted } = useAdminAccess();
   const isLight = resolvedTheme === 'light';
   const [scoreAnimation, setScoreAnimation] = useState(false);
+
+  // One question, asked once. Every branch below reads the answer.
+  const status = deriveMatchStatus(match);
+  const isCompleted = status === 'completed';
 
   const team1Name = match.team1Details?.name || 'Unknown Team';
   const team2Name = match.team2Details?.name || 'Unknown Team';
@@ -84,10 +95,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
     match.team1_game_wins !== undefined &&
     match.team2_game_wins !== undefined &&
     (match.team2_game_wins || 0) > (match.team1_game_wins || 0);
-
-  const isPostponed = match.status === 'postponed';
-  const isCanceled = match.status === 'canceled';
-  const hasSpecialStatus = isPostponed || isCanceled;
 
   const { canScore } = useCanScoreMatch({
     team1_id: match.team1Id ?? null,
@@ -138,26 +145,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
       >
         <div className={cn('rounded-xl overflow-hidden', isLight ? 'bg-card' : 'bg-card')}>
           {/* Status badge - centered top */}
-          {(isCompleted || hasSpecialStatus) && (
+          {status !== 'scheduled' && (
             <div className="flex items-center justify-center gap-2 pt-1.5">
-              {isCompleted && (
-                <span className="px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary rounded-full">
-                  Final
-                </span>
-              )}
+              <span
+                className={cn(
+                  'px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full',
+                  statusPillClasses[status]
+                )}
+              >
+                {MATCH_STATUS_LABELS[status]}
+              </span>
               {isUpsetResult && <UpsetTag />}
-              {hasSpecialStatus && (
-                <span
-                  className={cn(
-                    'px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full',
-                    isPostponed
-                      ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
-                      : 'bg-destructive/10 text-destructive'
-                  )}
-                >
-                  {isPostponed ? MATCH_STATUS_LABELS.postponed : MATCH_STATUS_LABELS.canceled}
-                </span>
-              )}
             </div>
           )}
 
@@ -259,7 +257,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             )}
 
             {/* Live scoring entry for team members and admins */}
-            {!isCompleted && !hasSpecialStatus && canScore && (
+            {isMatchOpenForScoring(match) && canScore && (
               <div className="mt-1.5">
                 <TransitionLink
                   to={`/matches/${match.id}/live`}
@@ -273,7 +271,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
             )}
 
             {/* Recap entry for completed matches (only when live-scored) */}
-            {isCompleted && !hasSpecialStatus && liveScoredMatchIds?.has(match.id) && (
+            {isCompleted && liveScoredMatchIds?.has(match.id) && (
               <div className="mt-1.5">
                 <MatchRecapDialog
                   matchId={match.id}

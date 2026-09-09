@@ -68,7 +68,6 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
             <MatchCard
               key={match.id}
               match={match}
-              isCompleted={!!match.iscompleted}
               onEdit={onEditMatch}
               onDelete={onDeleteMatch}
               prefetchedH2H={getHeadToHead(match.team1Id, match.team2Id)}

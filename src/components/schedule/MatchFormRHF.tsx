@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import {
   createDateWithTime,
@@ -61,7 +62,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
           date: new Date(match.date ?? ''),
           timeSlot:
             match.timeSlot || (match.date ? getTimeSlotFromDate(new Date(match.date)) : null),
-          isCompleted: match.iscompleted,
+          isCompleted: isMatchCompleted(match),
           team1Score: match.team1Score,
           team2Score: match.team2Score,
         }

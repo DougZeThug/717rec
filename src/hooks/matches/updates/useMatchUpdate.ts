@@ -10,6 +10,7 @@ import {
 import { Match, Team } from '@/types';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { invalidateAllDataQueries } from './utils/queryInvalidation';
 
@@ -72,8 +73,8 @@ export const useMatchUpdate = ({
     nextMatch: Match,
     _teams: Team[],
     flags: {
-      wasCompleted: boolean | undefined;
-      isNowCompleted: boolean | undefined;
+      wasCompleted: boolean;
+      isNowCompleted: boolean;
       winnerChanged: boolean;
       loserChanged: boolean;
       gameWinsChanged: boolean;
@@ -119,8 +120,8 @@ export const useMatchUpdate = ({
     try {
       // Check if the winner/loser has changed
       const winnerChanged = editingMatch.winnerId !== matchData.winnerId;
-      const wasCompleted = editingMatch.iscompleted;
-      const isNowCompleted = matchData.iscompleted;
+      const wasCompleted = isMatchCompleted(editingMatch);
+      const isNowCompleted = isMatchCompleted(matchData);
 
       // Check if game wins changed
       const gameWinsChanged =
