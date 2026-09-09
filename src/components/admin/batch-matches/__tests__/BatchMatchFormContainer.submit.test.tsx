@@ -13,6 +13,9 @@ const testTeams = [
   { id: 'team-a', name: 'Alpha', imageUrl: '' },
   { id: 'team-b', name: 'Bravo', imageUrl: '' },
   { id: 'team-c', name: 'Charlie', imageUrl: '' },
+  { id: 'team-d', name: 'Delta', imageUrl: '' },
+  { id: 'team-e', name: 'Echo', imageUrl: '' },
+  { id: 'team-f', name: 'Foxtrot', imageUrl: '' },
 ];
 
 // --- Mocks (must be declared before importing the component under test) ---
@@ -144,8 +147,8 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
     await waitFor(() =>
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: 'Success',
-          description: expect.stringMatching(/created 1 matches for/i),
+          title: 'Matches created',
+          description: expect.stringMatching(/created 1 match for/i),
         })
       )
     );
@@ -171,9 +174,14 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           variant: 'destructive',
-          description: expect.stringMatching(/please fill in all match details/i),
+          title: 'Missing details',
+          description: expect.stringMatching(/match 1 still needs team 2 and a timeslot/i),
         })
       )
+    );
+    // A-18: the row itself says what is wrong, not just the toast.
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      /match 1 still needs team 2 and a timeslot/i
     );
     expect(mockBatchCreateMatches).not.toHaveBeenCalled();
   });
@@ -205,11 +213,48 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           variant: 'destructive',
-          description: expect.stringMatching(/teams cannot be used in multiple matches/i),
+          title: 'Missing details',
+          description: expect.stringMatching(/match 2 uses a team already playing in match 1/i),
         })
       )
     );
     expect(mockBatchCreateMatches).not.toHaveBeenCalled();
+  });
+
+  // A-18: courts were numbered by the row's place in the whole night, so the
+  // last match of the evening was "Court 20". They restart in each timeslot.
+  it('numbers courts within a timeslot, not across the night', async () => {
+    const user = userEvent.setup();
+    renderContainer();
+
+    const firstRow = screen.getAllByRole('combobox');
+    await chooseOption(user, firstRow[0], 'Alpha');
+    await chooseOption(user, firstRow[1], 'Bravo');
+    await chooseOption(user, firstRow[2], '6:30 PM');
+
+    await user.click(screen.getByRole('button', { name: /add another match/i }));
+    await waitFor(() => expect(screen.getAllByRole('combobox')).toHaveLength(6));
+    const withSecond = screen.getAllByRole('combobox');
+    await chooseOption(user, withSecond[3], 'Charlie');
+    await chooseOption(user, withSecond[4], 'Delta');
+    await chooseOption(user, withSecond[5], '6:30 PM');
+
+    await user.click(screen.getByRole('button', { name: /add another match/i }));
+    await waitFor(() => expect(screen.getAllByRole('combobox')).toHaveLength(9));
+    const withThird = screen.getAllByRole('combobox');
+    await chooseOption(user, withThird[6], 'Echo');
+    await chooseOption(user, withThird[7], 'Foxtrot');
+    await chooseOption(user, withThird[8], '7:00 PM');
+
+    await user.click(screen.getByRole('button', { name: /create matches/i }));
+
+    await waitFor(() => expect(mockBatchCreateMatches).toHaveBeenCalledTimes(1));
+    const payload = mockBatchCreateMatches.mock.calls[0][0];
+    expect(payload.map((match: { location: string }) => match.location)).toEqual([
+      'Court 1',
+      'Court 2',
+      'Court 1',
+    ]);
   });
 
   it('keeps the form intact when the service rejects', async () => {

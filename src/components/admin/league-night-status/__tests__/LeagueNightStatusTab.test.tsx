@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { LastPowerSnapshot } from '@/services/opsHealth/OpsHealthService';
@@ -46,13 +47,16 @@ vi.mock('@/hooks/useSeasons', () => ({
 import LeagueNightStatusTab from '../LeagueNightStatusTab';
 import { OPS_LINKS } from '../opsLinks';
 
-// CounterDriftCard uses TanStack Query hooks, so the tree needs a provider.
+// CounterDriftCard uses TanStack Query hooks, so the tree needs a provider, and
+// the Playoffs quick action is a router Link, so it needs a router too.
 const renderTab = () =>
   render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
-      <LeagueNightStatusTab />
+      <MemoryRouter>
+        <LeagueNightStatusTab />
+      </MemoryRouter>
     </QueryClientProvider>
   );
 
@@ -129,7 +133,7 @@ describe('LeagueNightStatusTab', () => {
     const unsubscribe = subscribeToAdminTabRequests(onRequest);
     renderTab();
 
-    fireEvent.click(screen.getByRole('button', { name: /score reports.*open section/i }));
+    fireEvent.click(screen.getByRole('button', { name: /score approvals.*open section/i }));
 
     expect(onRequest).toHaveBeenCalledWith('pending-matches');
     expect(sessionStorage.getItem('adminActiveTab')).toBe('pending-matches');
@@ -146,8 +150,46 @@ describe('LeagueNightStatusTab', () => {
     ).toBeInTheDocument();
   });
 
-  it('quick actions open external links safely', () => {
+  // A-16: the card offered two of the night's nine jobs. These are the ones an
+  // admin actually reaches for between 6:30 and 9:30.
+  it('opens every league-night section from the quick actions', () => {
+    const onRequest = vi.fn();
+    const unsubscribe = subscribeToAdminTabRequests(onRequest);
     renderTab();
+
+    const expected: [RegExp, string][] = [
+      [/^timeslots$/i, 'timeslots'],
+      [/^match creation$/i, 'batch-matches'],
+      [/^mass score entry$/i, 'scores'],
+      [/^live corrections$/i, 'live-corrections'],
+      [/^notifications$/i, 'notifications'],
+      [/^blind draw$/i, 'blind-draw'],
+    ];
+
+    for (const [name, tabId] of expected) {
+      fireEvent.click(screen.getByRole('button', { name }));
+      expect(onRequest).toHaveBeenCalledWith(tabId);
+    }
+
+    unsubscribe();
+  });
+
+  // X-03: playoff administration lives on the public playoffs page, and nothing
+  // inside /admin used to point at it.
+  it('links out to the playoffs page, which is not an admin section', () => {
+    renderTab();
+
+    expect(screen.getByRole('link', { name: /playoffs/i })).toHaveAttribute('href', '/playoffs');
+  });
+
+  it('keeps the developer links out of the way until they are asked for', () => {
+    renderTab();
+
+    expect(screen.queryByRole('link', { name: /supabase status/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /sql editor/i })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /developer/i }));
+
     const supabaseLink = screen.getByRole('link', { name: /supabase status/i });
     expect(supabaseLink).toHaveAttribute('href', OPS_LINKS.supabaseStatus);
     expect(supabaseLink).toHaveAttribute('target', '_blank');

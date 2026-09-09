@@ -94,14 +94,14 @@ describe('RequestsTab', () => {
     await waitFor(() => expect(screen.queryByText('Approve Request')).not.toBeInTheDocument());
   });
 
-  it('denies a request and omits empty admin notes', async () => {
+  it('rejects a request and omits empty admin notes', async () => {
     const user = userEvent.setup();
     render(<RequestsTab />);
 
-    await user.click(screen.getByRole('button', { name: /deny/i }));
-    expect(screen.getByText('Deny Request')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /reject/i }));
+    expect(screen.getByText('Reject Request')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Deny' }));
+    await user.click(screen.getByRole('button', { name: 'Reject' }));
 
     await waitFor(() =>
       expect(mutateAsync).toHaveBeenCalledWith({
@@ -124,7 +124,7 @@ describe('RequestsTab', () => {
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 
-  it('hides approve/deny actions for non-pending requests', () => {
+  it('hides approve/reject actions for non-pending requests', () => {
     mockUseAllRequests.mockReturnValue({
       data: [{ ...baseRequest, status: 'APPROVED', admin_notes: 'done' }],
       isLoading: false,
@@ -172,12 +172,12 @@ describe('RequestsTab', () => {
     expect(mockSwitchAdminTab).toHaveBeenCalledWith('timeslots');
   });
 
-  it('does not point at Timeslots when denying', async () => {
+  it('does not point at Timeslots when rejecting', async () => {
     const user = userEvent.setup();
     render(<RequestsTab />);
 
-    await user.click(screen.getByRole('button', { name: /deny/i }));
-    await user.click(screen.getByRole('button', { name: 'Deny' }));
+    await user.click(screen.getByRole('button', { name: /reject/i }));
+    await user.click(screen.getByRole('button', { name: 'Reject' }));
 
     await waitFor(() => expect(mutateAsync).toHaveBeenCalled());
     // The mutation keeps its own generic toast for this path.

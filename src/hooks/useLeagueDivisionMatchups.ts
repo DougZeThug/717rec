@@ -7,10 +7,10 @@ import type { DivisionTier } from '@/utils/career/types';
 export type { DivisionTier } from '@/utils/career/types';
 
 export interface DivisionMatchupRecord {
-  // Higher tier (or equal) side comes first.
+  // Higher tier comes first. The two tiers are always different.
   tierA: DivisionTier;
   tierB: DivisionTier;
-  // Wins by each side. For same-tier matchups, winsA === lossesA (symmetric).
+  // Wins by each side.
   winsA: number;
   winsB: number;
 }
@@ -21,13 +21,17 @@ const TIER_ORDER: Record<DivisionTier, number> = {
   recreational: 2,
 };
 
+/**
+ * Every pair of *different* divisions. Same-division pairs are left out on
+ * purpose: within one division every match is one team's win and another's
+ * loss, so the row could only ever read "Competitive vs Competitive 433–433"
+ * (UX audit IN-01). A number that is always equal to itself says nothing about
+ * how the divisions compare, which is the whole question this card answers.
+ */
 const PAIRINGS: Array<[DivisionTier, DivisionTier]> = [
-  ['competitive', 'competitive'],
   ['competitive', 'intermediate'],
   ['competitive', 'recreational'],
-  ['intermediate', 'intermediate'],
   ['intermediate', 'recreational'],
-  ['recreational', 'recreational'],
 ];
 
 const pairKey = (a: DivisionTier, b: DivisionTier) => `${a}|${b}`;
@@ -35,33 +39,19 @@ const pairKey = (a: DivisionTier, b: DivisionTier) => `${a}|${b}`;
 export function computeDivisionMatchups(input: {
   matches: { winner_id: string; loser_id: string; season_id: string | null }[];
   archivedMatches: { winner_id: string; loser_id: string; season_id: string | null }[];
-  playoffMatches: { winner_id: string; loser_id: string; bracket_id: string | null }[];
   teamSeasonDivisions: { team_id: string; season_id: string; division_name: string | null }[];
-  brackets: { id: string; display_division: string | null }[];
 }): DivisionMatchupRecord[] {
   const divisionMap = new Map<string, string | null>();
   for (const row of input.teamSeasonDivisions) {
     divisionMap.set(`${row.team_id}_${row.season_id}`, row.division_name);
   }
 
-  const bracketDivisionMap = new Map<string, string | null>();
-  for (const b of input.brackets) {
-    bracketDivisionMap.set(b.id, b.display_division);
-  }
-
   const counts = new Map<string, { winsA: number; winsB: number }>();
   for (const [a, b] of PAIRINGS) counts.set(pairKey(a, b), { winsA: 0, winsB: 0 });
 
   const recordMatchup = (winnerTier: DivisionTier, loserTier: DivisionTier) => {
-    if (winnerTier === loserTier) {
-      // Within a tier every match adds one win and one loss, so the two
-      // sides are intrinsically symmetric ("Competitive vs Competitive 112-112").
-      const bucket = counts.get(pairKey(winnerTier, loserTier));
-      if (!bucket) return;
-      bucket.winsA += 1;
-      bucket.winsB += 1;
-      return;
-    }
+    // A match inside one division tells us nothing about two divisions.
+    if (winnerTier === loserTier) return;
     // Cross-tier: orient so tierA is the higher (lower-ordinal) tier.
     const winnerFirst = TIER_ORDER[winnerTier] < TIER_ORDER[loserTier];
     const tierA = winnerFirst ? winnerTier : loserTier;
@@ -84,13 +74,8 @@ export function computeDivisionMatchups(input: {
     recordMatchup(winnerTier, loserTier);
   }
 
-  for (const m of input.playoffMatches) {
-    if (!m.bracket_id) continue;
-    const tier = categorizeDivision(bracketDivisionMap.get(m.bracket_id) ?? null);
-    if (!tier) continue;
-    // Both teams are in the same bracket-tier playoff.
-    recordMatchup(tier, tier);
-  }
+  // Playoff matches are not read at all: a bracket holds one division, so every
+  // playoff match is a same-division match and cannot land on any of these rows.
 
   return PAIRINGS.map(([tierA, tierB]) => {
     const bucket = counts.get(pairKey(tierA, tierB)) ?? { winsA: 0, winsB: 0 };

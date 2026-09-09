@@ -5,8 +5,8 @@
 Four dashboard sections change what the app looks like and tell an admin whether
 it is working. **Themes** decides which colour schemes players may pick. **Hero**
 owns the cards on the home page and the read-only playoff fallback. **Help** is a
-static guide for admins. **League Night** is a read-only health board with one
-repair button on it.
+static guide for admins. **League Night** is a health board — mostly reporting,
+with one repair button and the shortcuts to every screen the night needs.
 
 They are grouped here because none is large enough for a document of its own and
 because all four are settings rather than league data. Nothing in this document
@@ -36,7 +36,7 @@ history.
 ```mermaid
 stateDiagram-v2
     [*] --> viewing : open Themes, Hero, Help, or League Night
-    viewing --> viewing : Help and League Night are read-only
+    viewing --> viewing : Help is read-only; League Night reports and links out
     viewing --> written : flip a switch (commit — immediate, no confirmation)
     viewing --> editing : Create Card, or Edit a card
     editing --> viewing : Cancel or Back (nothing written)
@@ -132,7 +132,8 @@ confirmation at all.**
 
 ## League Night in detail
 
-Everything on it is read-only except one button.
+The cards report; one button repairs; the quick actions at the foot open other
+screens.
 
 **Realtime.** A coloured dot and a label: connected, connecting, channel closed,
 or error, with how long ago the state last changed. On an error it adds "If a
@@ -190,9 +191,18 @@ explaining that it recomputes every team's wins, losses and game counts from
 completed matches and refreshes the season stats cache, and that it is safe to
 run any time. It reports how many teams it repaired, or "Already in sync".
 
-**Quick actions.** Two buttons that reload the page into another section, and
-four links that open externally: two service status pages, the database's SQL
-editor, and the league's own operations playbook on GitHub.
+**Quick actions.** Seven shortcuts to the jobs a league night is made of, in the
+order they come up: Timeslots, Match Creation, Mass score entry, Live
+corrections, Notifications, Blind Draw, and Playoffs. The first six switch the
+dashboard to that section in place; **Playoffs** leaves the dashboard for
+`/playoffs`, because playoff administration lives on the public page behind an
+admin toolbar and is not a dashboard section at all.
+
+Below them, a closed **Developer** disclosure holds the four links that open
+externally: two service status pages, the database's SQL editor, and the
+league's own operations playbook on GitHub. They are one press away rather than
+sitting in the same row as the league-night buttons, so the SQL editor is no
+longer a mis-tap next to Mass score entry.
 
 ## Help
 

@@ -116,6 +116,87 @@ BEGIN
   END;
 END $$;
 
+-- UX audit A-12 / Q30: the Seasons screen now offers Archive on any season that
+-- is not yet archived, not just the active one. `public.teams.wins / losses /
+-- game_wins / game_losses` are the LIVE league-wide standings with no season id
+-- on them, so archiving an old, inactive season must leave them alone — before
+-- the guard it zeroed every team's current record.
+DO $$
+DECLARE
+  v_admin_id uuid := '00000000-0000-0000-0000-00000000aa02';
+  v_active_season_id uuid := '00000000-0000-0000-0000-00000000ab11';
+  v_stale_season_id uuid := '00000000-0000-0000-0000-00000000ab12';
+  v_division_id uuid := '00000000-0000-0000-0000-00000000ac11';
+  v_team1_id uuid := '00000000-0000-0000-0000-00000000ad11';
+  v_team2_id uuid := '00000000-0000-0000-0000-00000000ad12';
+  v_end_date date;
+BEGIN
+  DELETE FROM public.team_details_archive WHERE season_id IN (v_active_season_id, v_stale_season_id);
+  DELETE FROM public.team_season_stats WHERE season_id IN (v_active_season_id, v_stale_season_id);
+  DELETE FROM public.teams WHERE id IN (v_team1_id, v_team2_id);
+  DELETE FROM public.divisions WHERE id = v_division_id;
+  DELETE FROM public.seasons WHERE id IN (v_active_season_id, v_stale_season_id);
+  DELETE FROM public.profiles WHERE id = v_admin_id;
+  UPDATE public.seasons SET is_active = false WHERE is_active = true;
+
+  PERFORM set_config('session_replication_role', 'replica', true);
+  INSERT INTO public.profiles (id, username, full_name, is_admin)
+  VALUES (v_admin_id, 'archive-guard-admin', 'Archive Guard Admin', true);
+  PERFORM set_config('session_replication_role', 'origin', true);
+
+  -- One season being played now, and one older season nobody ever archived.
+  INSERT INTO public.seasons (id, name, start_date, end_date, is_active, is_archived)
+  VALUES
+    (v_active_season_id, 'Guard Active Season', '2026-01-01', NULL, true, false),
+    (v_stale_season_id, 'Guard Stale Season', '2024-01-01', '2024-06-30', false, false);
+
+  INSERT INTO public.divisions (id, name, display_division)
+  VALUES (v_division_id, 'Guard Division', 'Guard Division');
+
+  -- The live standings of the season in progress.
+  INSERT INTO public.teams (id, name, division_id, wins, losses, game_wins, game_losses)
+  VALUES
+    (v_team1_id, 'Guard Team One', v_division_id, 7, 2, 15, 6),
+    (v_team2_id, 'Guard Team Two', v_division_id, 2, 7, 6, 15);
+
+  PERFORM public.archive_season(v_stale_season_id);
+
+  IF NOT EXISTS (
+    SELECT 1 FROM public.teams
+    WHERE id = v_team1_id AND wins = 7 AND losses = 2 AND game_wins = 15 AND game_losses = 6
+  ) THEN
+    RAISE EXCEPTION 'archiving an inactive season wiped the active season live standings';
+  END IF;
+
+  -- And it must not stamp today over a historical end date.
+  SELECT end_date INTO v_end_date FROM public.seasons WHERE id = v_stale_season_id;
+  IF v_end_date <> DATE '2024-06-30' THEN
+    RAISE EXCEPTION 'archiving an inactive season overwrote its end date (got %)', v_end_date;
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM public.seasons WHERE id = v_stale_season_id AND is_archived = true) THEN
+    RAISE EXCEPTION 'archive_season did not archive the inactive season';
+  END IF;
+
+  -- The active season still resets the counters, and still ends today.
+  PERFORM public.archive_season(v_active_season_id);
+
+  IF EXISTS (
+    SELECT 1 FROM public.teams
+    WHERE id IN (v_team1_id, v_team2_id)
+      AND (wins <> 0 OR losses <> 0 OR game_wins <> 0 OR game_losses <> 0)
+  ) THEN
+    RAISE EXCEPTION 'archiving the active season no longer resets the live standings';
+  END IF;
+
+  SELECT end_date INTO v_end_date FROM public.seasons WHERE id = v_active_season_id;
+  IF v_end_date <> CURRENT_DATE THEN
+    RAISE EXCEPTION 'archiving the active season did not stamp its end date (got %)', v_end_date;
+  END IF;
+END $$;
+
+DO $$ BEGIN RAISE NOTICE 'archive counter-reset guard OK'; END $$;
+
 DO $$ BEGIN RAISE NOTICE 'season rollover workflow OK'; END $$;
 
 ROLLBACK;

@@ -124,6 +124,7 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 - **Recommend:** show an "Admin" item in the header/bottom bar when `isAdminAccessGranted`; add "Playoffs" to the League Night quick actions and fix the Help step target.
 - **Priority:** High. **Effort:** S.
 - **Accept:** an admin sees an Admin entry in the primary nav on phone and desktop; League Night links to `/playoffs`.
+- **Half done.** Q18 fixed the Help step's target and Q27 added a Playoffs quick action to League Night, so playoff administration is now reachable from inside the console. The Admin entry in the primary nav is still only in the user menu — that is **W11**.
 
 ### X-04 · No password recovery anywhere — **High**
 - **Where / who:** `/auth` (`src/components/auth/AuthForm.tsx`) · any member who forgot a password. **Observed:** the sign-in card has Login / Sign Up / Google and a "Sign up" link only (`anon/auth--m390--fold.jpg`); grep of `src/` finds no `resetPasswordForEmail` and no "forgot" copy.
@@ -181,6 +182,7 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 ### X-13 · The same concept has up to five labels (status vocabulary) — **Medium**
 - **Inferred from code, confirmed in screenshots:** "Final / Completed / finalized / Champion" for a finished match; "Pending Scores / Unresolved matches / Pending Review / Pending / Score reports / Score submissions" for the approval queue (`PendingScoresCard.tsx:27`, `PendingMatchesSection.tsx:59`, `ScoreSubmissionsList.tsx:42`, `AdminSidebar.tsx:119`, `LeagueNightStatusTab.tsx:216`); "Reject" vs "Deny"; "Match Creation / Batch Match Creation / Create Multiple Matches / Batch Matches"; "Live" in the scoring header means *websocket connected*, not *match in progress* (`MatchScoringHeader.tsx:27,40`). There is no match-status enum; six components derive status from different fields (see `notes` §5 in the evidence folder).
 - **Recommend:** one `deriveMatchStatus()` + `MATCH_STATUS_LABELS` map; rename the sidebar item to "Score approvals"; use "Reject" everywhere; rename the realtime pill to "Connected / Reconnecting".
+- **Partly done (Q25).** The labels are one vocabulary now: the queue is "Score approvals" in the menu, the section heading and the League Night tile; one report is a "Score report"; "Deny" is gone; the Match Creation section is named that in every heading. `MATCH_STATUS_LABELS` (`src/types/matchStatus.ts`) covers the two exceptional states a match can carry. The realtime pill was already renamed by Q19 — "Live updates: on / connecting / off" rather than the "Connected / Reconnecting" suggested here. The `deriveMatchStatus()` unification across the nine derivation sites is **L1**, still open.
 - **Priority:** Medium. **Effort:** M. **Accept:** grep finds one label per status; the admin menu item, section heading and League Night tile use the same noun.
 
 ### X-14 · Four persistence mechanisms, only two shareable — **Medium**
@@ -333,12 +335,14 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
 - **A-10 · Pending queue: Reject has no confirmation, conflicting reports for the same match are not grouped, four names for one queue — Medium.** *Observed:* two submissions for the same match rendered as independent cards (`admin/tab-pending-matches--m390.jpg`); Reject fires immediately (`ScoreSubmissionsList.tsx:93-101`); menu "Pending", heading "Score submissions", badge "Pending Review", tile "Score reports". *Recommend:* group by match with a "2 reports disagree" banner, `ConfirmDialog` on Reject, one noun ("Score approvals"). *Effort:* S–M.
 - **A-11 · Live Corrections opens on "All seasons" with no date or team filter; on a phone the detail panel is below the whole list — Medium.** *Observed:* selecting a match scrolls nowhere (`scrollY` unchanged, `admin/lc-match-selected--m390.jpg`); "Clear selection" is a ghost button at the bottom right. *Recommend:* default to the active season + tonight; `scrollIntoView` on selection; a "Back to list" affordance. *Effort:* S.
 - **A-12 · Seasons: archived seasons remain editable, only the active season can be archived, end date is not validated — Medium (inferred; edit buttons observed on every archived card in `admin/tab-seasons--d1440.jpg`).** `SeasonsList.tsx:130-140`, `SeasonManagementTab.tsx:90`, `SeasonForm.tsx:22-26`. *Effort:* S.
+  - **Fixed (Q30), and it was not an S.** Exposing Archive on an inactive season needed a database change first: `archive_season` and `partial_archive_season` both ended with an unconditional `UPDATE public.teams SET wins = 0, losses = 0, game_wins = 0, game_losses = 0 WHERE id IS NOT NULL` — the live league-wide standings, which carry no season id. That is right when archiving the season being played and destructive otherwise, and it was safe only because the UI restricted Archive to the active season. Migration `20260909120000_scope_archive_counter_reset_to_active_season.sql` guards both resets on `is_active`, and stops `archive_season` stamping `CURRENT_DATE` over a historical end date. Proven by a new case in `supabase/tests/season_rollover_workflow.sql`, which fails against the old function definition. **The migration must be applied by hand before the UI ships — see `docs/OPERATIONS.md` §6.**
 - **A-13 · Contact Inbox: one row's action disables every row; support tickets can't be deleted with no explanation — Low.** `ContactInboxSection.tsx:169-170,289,299,140`. *Effort:* S.
 - **A-14 · Participation table has no overflow wrapper, exports a UUID-named CSV without quote escaping — Low.** `SeasonParticipationTab.tsx:211,94,100` (axe `scrollable-region-focusable` on 390). *Effort:* S.
 - **A-15 · Teams pane breaks at `sm:` while the shell breaks at `md:`; no team delete; "Hero" vs "Hero Cards" labels; logo status uses emoji values — Low.** `TeamListMobile.tsx:93`, `TeamTableDesktop.tsx:111`, `AdminSidebar.tsx:120` vs `AdminMobileNav.tsx:62`, `BulkLogoUpdateTab.tsx:165-167`. *Effort:* S.
 - **A-16 · League Night: header says "Everything here is read-only" above a "Repair now" button; quick actions cover 2 of ~9 league-night jobs; SQL editor link one tap away — Medium.** (`admin/tab-league-night-status--m390.jpg`; `LeagueNightStatusTab.tsx:130-132,256-292`). *Recommend:* add Timeslots, Match Creation, Notifications, Blind Draw and Playoffs to quick actions; move the developer links under a "Developer" disclosure; fix the header copy. *Effort:* S.
 - **A-17 · Blind Draw "Clear All" has no pending state; Themes toggle disables every switch while one saves; both toast without descriptions — Low.** `BlindDrawSignupsTab.tsx:166-171`, `ThemeManagementTab.tsx:80,26-37`. *Effort:* S.
 - **A-18 · Match Creation: validation says "Please fill in all match details" with no row highlighted, the toast is titled "Notification Error", courts are numbered per row across the night, timeslot list includes 10:00 PM which the scheduler never produces — Medium.** *Observed:* empty submit → toast "Notification Error — Please fill in all match details" (`admin/batch-create-empty--m390.jpg`). *Code:* `useBatchMatchForm.ts:77-112,142`, `MatchPairsList.tsx:28-40` vs `constants.ts:101-103`. *Effort:* S.
+  - **Fixed (Q26).** Note on the toast title: "Notification Error" is not a string in the codebase. `ToastProvider` passes no `label`, so Radix's default announcement label "Notification" was being read out in front of our title, `'Error'`. The titles are specific now ("Missing details", "Pick a date", "Matches created"); the shared default label is untouched, because changing it would move the announcement for all 81 `title: 'Error'` toasts across 39 files.
 - **A-19 · Power Score Review / Sandbox address the admin as a developer** ("run the Lovable prompt from the pull request…", "copy-paste into the Supabase SQL editor") — Low. `PowerMigrationReviewTab.tsx:63-83`, `PowerScoreSandboxTab.tsx:63-68`. Review's status RPC is admin-only; it showed its error state under the harness (`admin/tab-power-migration--m390.jpg`), which itself reads well.
 - **A-20 · Playoff admin is reachable only from the public Playoffs page; bracket admin toolbar works on phones (B-24 verified)** — see X-03.
 
@@ -392,12 +396,12 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q22 ✅ | Bracket: swipe hint, focusable scroll container, `alt`/`aria-hidden` on participant logos, larger names | PO-01 | High |
 | Q23 ✅ | Playoffs: derive season from `?bracket=`; put `season` in the URL | PO-02 | Medium |
 | Q24 ✅ | Timeslots: label chips as blocks, default date to next Thursday, disable Confirm while submitting | A-04 | Medium |
-| Q25 | One vocabulary: "Score approvals", "Reject", "Match Creation"; `MATCH_STATUS_LABELS` | X-13 | Medium |
-| Q26 | Match Creation validation names the row; toast title "Missing details" not "Notification Error"; per-timeslot court numbers; block-time list | A-18 | Medium |
-| Q27 | League Night: fix header copy; add Timeslots, Match Creation, Notifications, Blind Draw, Playoffs quick actions; tuck developer links away | A-16, X-03 | Medium |
-| Q28 | Insights: drop self-pairing rows, show percentages | IN-01 | Medium |
-| Q29 | Pending: confirm on Reject; group conflicting reports | A-10 | Medium |
-| Q30 | Seasons: disable Edit on archived, allow Archive on inactive, validate end ≥ start | A-12 | Medium |
+| Q25 ✅ | One vocabulary: "Score approvals", "Reject", "Match Creation"; `MATCH_STATUS_LABELS` | X-13 | Medium |
+| Q26 ✅ | Match Creation validation names the row; toast title "Missing details" not "Notification Error"; per-timeslot court numbers; block-time list | A-18 | Medium |
+| Q27 ✅ | League Night: fix header copy; add Timeslots, Match Creation, Notifications, Blind Draw, Playoffs quick actions; tuck developer links away | A-16, X-03 | Medium |
+| Q28 ✅ | Insights: drop self-pairing rows, show percentages | IN-01 | Medium |
+| Q29 ✅ | Pending: confirm on Reject; group conflicting reports | A-10 | Medium |
+| Q30 ✅ | Seasons: disable Edit on archived, allow Archive on inactive, validate end ≥ start | A-12 | Medium |
 
 ### 5.2 Workflow improvements (M)
 | # | Item | Findings |
@@ -413,7 +417,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | W9 | Playoffs pre-bracket state: projected seeds + "brackets open after week X" | PO-03 |
 | W10 | Live Corrections defaults (active season, tonight), scroll-to-panel, back affordance | A-11 |
 | W11 | Consolidate navigation: remove `DesktopNav`, add Compare/Insights to palette and Help, show Admin in nav for admins | X-02, X-03 |
-| W12 | Pending queue grouping by match with conflict banner | A-10 |
+| W12 ✅ | Pending queue grouping by match with conflict banner (done with Q29) | A-10 |
 
 ### 5.3 Larger changes (L)
 | # | Item | Findings | Why it is worth it |

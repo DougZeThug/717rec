@@ -35,6 +35,8 @@ vi.mock('@/utils/logger', () => ({
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 
+import { ALL_BLOCK_TIMES } from '@/utils/autoSchedule/constants';
+
 import { useBatchMatchForm } from '../useBatchMatchForm';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -141,8 +143,9 @@ describe('useBatchMatchForm', () => {
   it('autoAssignTimeslots wraps around when pairs exceed slot count', () => {
     const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
 
-    // Add 11 more pairs one at a time to avoid stale-closure accumulation issues
-    for (let i = 0; i < 11; i++) {
+    // Add pairs one at a time to avoid stale-closure accumulation issues. One
+    // pair per block time, on top of the seed row the hook starts with.
+    for (const _blockTime of ALL_BLOCK_TIMES) {
       act(() => {
         result.current.addMatchPair();
       });
@@ -151,8 +154,28 @@ describe('useBatchMatchForm', () => {
       result.current.autoAssignTimeslots();
     });
 
-    // 12 pairs total; index 11 wraps to slot index (11 % 11) = 0 → '5:00 PM'
-    expect(result.current.matchPairs[11].timeslot).toBe('5:00 PM');
+    // One more pair than there are block times, so the last one wraps to the first.
+    expect(result.current.matchPairs).toHaveLength(ALL_BLOCK_TIMES.length + 1);
+    expect(result.current.matchPairs[ALL_BLOCK_TIMES.length].timeslot).toBe(ALL_BLOCK_TIMES[0]);
+  });
+
+  // A-18: this list used to be a local copy that also offered 10:00 PM, which no
+  // block starts and the scheduler never produces.
+  it('only ever offers a real block time', () => {
+    const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
+
+    for (const _extraRow of ['second', 'third', 'fourth']) {
+      act(() => {
+        result.current.addMatchPair();
+      });
+    }
+    act(() => {
+      result.current.autoAssignTimeslots();
+    });
+
+    for (const pair of result.current.matchPairs) {
+      expect(ALL_BLOCK_TIMES).toContain(pair.timeslot);
+    }
   });
 
   it('handleSubmit returns false and shows destructive toast when no date', async () => {
@@ -233,7 +256,7 @@ describe('useBatchMatchForm', () => {
 
     expect(mockFetchActiveSeason).toHaveBeenCalled();
     expect(mockBatchCreateMatches).toHaveBeenCalled();
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Matches created' }));
     // Form resets to one empty pair
     expect(result.current.matchPairs).toHaveLength(1);
     expect(result.current.matchPairs[0]).toMatchObject({

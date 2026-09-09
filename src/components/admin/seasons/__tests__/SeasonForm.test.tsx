@@ -105,6 +105,40 @@ describe('SeasonForm', () => {
       expect(mockCreateMutateAsync).not.toHaveBeenCalled();
     });
 
+    // A-12: nothing stopped a season ending before it began.
+    it('refuses an end date that falls before the start date', async () => {
+      render(<SeasonForm onClose={mockOnClose} />);
+
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'Fall 2025');
+      // The name is filled, so the two remaining empty inputs are the dates.
+      const [startDate, endDate] = screen.getAllByDisplayValue('');
+      fireEvent.change(startDate, { target: { value: '2025-09-01' } });
+      fireEvent.change(endDate, { target: { value: '2025-08-01' } });
+
+      await userEvent.click(screen.getByRole('button', { name: /create season/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('The end date cannot be before the start date')
+        ).toBeInTheDocument();
+      });
+      expect(mockCreateMutateAsync).not.toHaveBeenCalled();
+    });
+
+    it('accepts a season that starts and ends on the same day', async () => {
+      render(<SeasonForm onClose={mockOnClose} />);
+
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'One Day 2025');
+      // The name is filled, so the two remaining empty inputs are the dates.
+      const [startDate, endDate] = screen.getAllByDisplayValue('');
+      fireEvent.change(startDate, { target: { value: '2025-09-01' } });
+      fireEvent.change(endDate, { target: { value: '2025-09-01' } });
+
+      await userEvent.click(screen.getByRole('button', { name: /create season/i }));
+
+      await waitFor(() => expect(mockCreateMutateAsync).toHaveBeenCalled());
+    });
+
     it('calls createSeason.mutateAsync with correct data on valid submit', async () => {
       render(<SeasonForm onClose={mockOnClose} />);
 

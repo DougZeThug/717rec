@@ -13,6 +13,7 @@ import { useMatchPrediction } from '@/hooks/useMatchPrediction';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { Match } from '@/types';
+import { MATCH_STATUS_LABELS } from '@/types/matchStatus';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import MatchCountdown from './MatchCountdown';
@@ -154,7 +155,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
                       : 'bg-destructive/10 text-destructive'
                   )}
                 >
-                  {isPostponed ? 'Postponed' : 'Canceled'}
+                  {isPostponed ? MATCH_STATUS_LABELS.postponed : MATCH_STATUS_LABELS.canceled}
                 </span>
               )}
             </div>

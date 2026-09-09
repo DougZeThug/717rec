@@ -116,7 +116,12 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'notifications', label: 'Notifications', icon: Bell, Component: NotificationsTab },
   { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
   { id: 'divisions', label: 'Divisions', icon: Trophy, Component: DivisionsTab },
-  { id: 'pending-matches', label: 'Pending', icon: Clock, Component: PendingMatchesSection },
+  {
+    id: 'pending-matches',
+    label: 'Score approvals',
+    icon: Clock,
+    Component: PendingMatchesSection,
+  },
   { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, Component: HeroCardsTab },
   { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },

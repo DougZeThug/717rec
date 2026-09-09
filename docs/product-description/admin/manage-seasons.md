@@ -21,8 +21,9 @@ many are inactive.
 Below them, on the left, is **Create New Season**. On the right — but only when a
 season is active — a green badge reads "Current Active Season" beside an **Open
 for confirmation** switch and an **Archive Season** button. Below that is every season, newest first, one card
-each, with a coloured status badge and an **Edit** button. A season that is
-neither active nor archived also has an **Activate** button. A season whose
+each, with a coloured status badge and an **Edit** button — greyed out on an
+archived season, which explains itself on hover. A season that is neither active
+nor archived also has an **Activate** button. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
@@ -100,10 +101,10 @@ Validation runs on submit, not while typing:
 | --- | --- | --- |
 | Season Name | at least one character | "Season name is required" |
 | Start Date | must be set | "Start date is required" |
-| End Date | none — may be left empty | — |
+| End Date | may be left empty; if given, on or after the start date | "The end date cannot be before the start date" |
 
-Nothing checks that the end date is after the start date, and nothing checks
-whether the dates overlap another season. Two seasons can cover the same weeks.
+Nothing checks whether the dates overlap another season. Two seasons can cover
+the same weeks.
 
 **Changing a start date silently re-numbers every week.** Week numbers are worked
 out from the match date against the season start, so moving the start date moves
@@ -111,8 +112,11 @@ every match into a different week everywhere the app groups by week, with no
 warning and no record. See
 [`../foundations/seasons.md`](../foundations/seasons.md#weeks).
 
-An archived season can be edited exactly like any other. The Edit button appears
-on every card.
+**An archived season cannot be edited.** Its Edit button is disabled and reads,
+on hover, "Archived seasons cannot be edited — their results are already final."
+Archiving snapshots every team's stats and awards the placement badges, so
+renaming a season or moving its dates afterwards would rewrite what the History
+page already shows.
 
 ### Submit
 
@@ -165,14 +169,19 @@ different season afterwards undoes it.
 
 ### Archive Season
 
-Only offered for the **active** season, and only when one exists. It opens a
-dialog headed "Archive Season: *name*" whose description ends "**This action
-cannot be undone.**" That is accurate: **nothing anywhere in the app un-archives
-a season.**
+Offered on **any season that is not already archived** — from the green header
+for the active season, and from an **Archive** button on the card of every
+inactive one. It opens a dialog headed "Archive Season: *name*" whose description
+ends "**This action cannot be undone.**" That is accurate: **nothing anywhere in
+the app un-archives a season.**
 
 A checkbox, "Keep playoffs active", chooses between two very different
-operations. It is unticked every time the dialog opens, even if it was ticked and
-the dialog was cancelled a moment earlier.
+operations. It appears on the **active** season and on any season whose playoffs
+are already running — ticking it is the move that *starts* the playoffs, so the
+season being played has to be offered it before its bracket exists. It is hidden
+only on an old season that is neither active nor in playoffs, which has no
+bracket to keep. It is unticked every time the dialog opens, even if it was
+ticked and the dialog was cancelled a moment earlier.
 
 **Unticked — full archival.** The dialog lists what will happen: snapshot all
 team stats and power scores; auto-detect division playoff champions from the
@@ -191,10 +200,20 @@ across the whole app move at once. On failure the dialog stays open, the button
 comes back, and a red toast carries the server's reason.
 
 **What happens to existing data.** Matches are moved to an archive rather than
-deleted, and the archived season keeps its own frozen copy of every stat. Team
-win/loss counters are reset to zero for the coming season, so **every team's
-record goes to 0-0 the moment this runs**. Nothing warns that the reset is about
-to happen to the live standings players are looking at.
+deleted, and the archived season keeps its own frozen copy of every stat.
+
+Archiving the **active** season resets every team's live win/loss counters to
+zero for the coming season, so **every team's record goes to 0-0 the moment this
+runs**. Nothing warns that the reset is about to happen to the live standings
+players are looking at.
+
+Archiving an **inactive** season does not touch those counters, and leaves its
+end date as it was rather than stamping today on it. Those counters are the
+league's live standings and carry no season of their own, so resetting them while
+closing out an old season would wipe the record of the season being played. That
+guard is in the database functions, not the screen — see
+[`../../OPERATIONS.md`](../../OPERATIONS.md) §6 for applying the migration that
+added it.
 
 ### Finalize Playoffs
 

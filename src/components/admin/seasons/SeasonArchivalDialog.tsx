@@ -178,7 +178,15 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent className="max-w-md">
         <ArchivalDialogHeader seasonName={season?.name} />
-        <KeepPlayoffsCheckbox checked={keepPlayoffsActive} onChange={setKeepPlayoffsActive} />
+        {/* "Keep playoffs active" archives the regular season but leaves the
+            bracket editable, to be finalised later. It is the move that STARTS
+            the playoffs — partial_archive_season is what sets playoffs_active —
+            so the season being played must be offered it even though its
+            playoffs have not begun. Only an old season that is neither active
+            nor in playoffs has no bracket to keep. */}
+        {(season?.is_active || season?.playoffs_active) && (
+          <KeepPlayoffsCheckbox checked={keepPlayoffsActive} onChange={setKeepPlayoffsActive} />
+        )}
         <ArchivalAlert partial={keepPlayoffsActive} />
         <ArchivalDialogFooter
           isArchiving={isArchiving}

@@ -19,11 +19,18 @@ import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { toast } from '@/hooks/useToast';
 import { Season } from '@/types/season';
 
-const seasonSchema = z.object({
-  name: z.string().min(1, 'Season name is required'),
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().optional(),
-});
+const seasonSchema = z
+  .object({
+    name: z.string().min(1, 'Season name is required'),
+    start_date: z.string().min(1, 'Start date is required'),
+    end_date: z.string().optional(),
+  })
+  // The end date is optional, so this only bites once one is given. Both are
+  // yyyy-mm-dd from a date input, which compares correctly as plain strings.
+  .refine((data) => !data.end_date || data.end_date >= data.start_date, {
+    message: 'The end date cannot be before the start date',
+    path: ['end_date'],
+  });
 
 type SeasonFormData = z.infer<typeof seasonSchema>;
 

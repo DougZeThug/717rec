@@ -14,8 +14,8 @@ export const AdminScoringSection: React.FC = () => {
           <strong>Individual Games:</strong> Enter game-by-game scores for best-of series.
         </li>
         <li>
-          <strong>Pending Scores:</strong> Review and approve player-submitted scores in the Pending
-          tab.
+          <strong>Score approvals:</strong> Review and approve the scores players reported, in the
+          Score approvals section.
         </li>
       </ol>
       <p className="text-muted-foreground">

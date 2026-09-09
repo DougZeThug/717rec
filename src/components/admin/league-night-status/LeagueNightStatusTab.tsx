@@ -1,19 +1,7 @@
-import {
-  Activity,
-  AlertTriangle,
-  ExternalLink,
-  FileText,
-  Inbox,
-  ListChecks,
-  Mail,
-  RefreshCw,
-  Server,
-  Wrench,
-} from 'lucide-react';
+import { Activity, AlertTriangle, Inbox, ListChecks, Mail, RefreshCw } from 'lucide-react';
 import React, { useCallback } from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   type RealtimeConnectionState,
@@ -26,7 +14,7 @@ import { switchAdminTab } from '@/utils/adminTabs';
 
 import CounterDriftCard from './CounterDriftCard';
 import MatchResultDriftCard from './MatchResultDriftCard';
-import { OPS_LINKS } from './opsLinks';
+import QuickActionsCard from './QuickActionsCard';
 import TrafficMiniChart from './TrafficMiniChart';
 import UnsavedLiveMatchesCard from './UnsavedLiveMatchesCard';
 
@@ -127,8 +115,8 @@ const LeagueNightStatusTab: React.FC = () => {
       <header>
         <h2 className="text-xl font-semibold">League Night Status</h2>
         <p className="text-sm text-muted-foreground">
-          At-a-glance health for the incident commander. Everything here is read-only — actions open
-          the relevant admin section or an external status page.
+          How league night is running, at a glance. Most cards only report; a few offer a repair,
+          and the quick actions below open the section you need next.
         </p>
       </header>
 
@@ -213,7 +201,7 @@ const LeagueNightStatusTab: React.FC = () => {
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <QueueTile
-            label="Score reports"
+            label="Score approvals"
             count={countsQuery.data?.pendingScoreSubmissions ?? 0}
             icon={ListChecks}
             loading={countsQuery.isLoading}
@@ -248,50 +236,7 @@ const LeagueNightStatusTab: React.FC = () => {
       {/* Data integrity: standings counter drift detector + one-click repair */}
       <CounterDriftCard />
 
-      {/* Quick actions */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Quick actions</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={goToTab('live-corrections')}>
-            <Wrench className="mr-2 size-4" aria-hidden="true" />
-            Live corrections
-          </Button>
-          <Button variant="secondary" size="sm" onClick={goToTab('scores')}>
-            <ListChecks className="mr-2 size-4" aria-hidden="true" />
-            Mass score entry
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href={OPS_LINKS.supabaseStatus} target="_blank" rel="noopener noreferrer">
-              <Server className="mr-2 size-4" aria-hidden="true" />
-              Supabase status
-              <ExternalLink className="ml-2 size-3" aria-hidden="true" />
-            </a>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href={OPS_LINKS.lovableStatus} target="_blank" rel="noopener noreferrer">
-              <Server className="mr-2 size-4" aria-hidden="true" />
-              Lovable status
-              <ExternalLink className="ml-2 size-3" aria-hidden="true" />
-            </a>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href={OPS_LINKS.supabaseSqlEditor} target="_blank" rel="noopener noreferrer">
-              <FileText className="mr-2 size-4" aria-hidden="true" />
-              SQL editor
-              <ExternalLink className="ml-2 size-3" aria-hidden="true" />
-            </a>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <a href={OPS_LINKS.operationsDoc} target="_blank" rel="noopener noreferrer">
-              <FileText className="mr-2 size-4" aria-hidden="true" />
-              Playbook
-              <ExternalLink className="ml-2 size-3" aria-hidden="true" />
-            </a>
-          </Button>
-        </CardContent>
-      </Card>
+      <QuickActionsCard />
     </div>
   );
 };
