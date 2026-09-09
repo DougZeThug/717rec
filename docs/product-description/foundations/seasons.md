@@ -61,8 +61,7 @@ Corrections panel and cannot be changed there: the controls are absent and the
 write is refused. This was not always true — see
 [B-20](../bug-triage.md#b-20-archived-seasons-are-editable-through-live-corrections).
 
-Two things the freeze still does **not** cover, deliberately: a season's name and
-dates can be edited like any other's, and the bulk Scores tool is not
+The freeze still does not cover the bulk Scores tool, deliberately: it is not
 season-scoped.
 
 This is a real product decision with a visible consequence: **two seasons' power
