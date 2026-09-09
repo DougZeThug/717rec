@@ -1,5 +1,5 @@
 import { ChevronDown, ListChecks, Search, Timer, X } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import {
   ADMIN_SECTIONS,
   type AdminSectionGroup,
   findAdminSection,
+  findAdminSectionGroup,
 } from './adminSections';
 
 interface AdminMobileNavProps {
@@ -26,13 +27,23 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Auto-open the group containing the active tab
-  const initialOpen = useMemo(() => {
-    const group = ADMIN_SECTION_GROUPS.find((g) => g.sections.includes(activeTab));
-    return group ? new Set([group.id]) : new Set<string>();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- activeTab intentionally excluded to keep nav memo stable
-  }, []);
-  const [openGroups, setOpenGroups] = useState<Set<string>>(initialOpen);
+  const activeGroupId = findAdminSectionGroup(activeTab)?.id;
+
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() =>
+    activeGroupId ? new Set([activeGroupId]) : new Set<string>()
+  );
+
+  // Follow the open section. This used to be worked out on the first render
+  // only, so arriving in Live Corrections from a League Night quick action left
+  // the menu showing the wrong group open and nothing highlighted (UX audit
+  // A-01). It only ever adds, so groups the admin opened by hand stay open, and
+  // closing the open section's group by hand still works — nothing reopens it
+  // until the section changes again.
+  useEffect(() => {
+    if (!activeGroupId) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync menu state from the section in the address
+    setOpenGroups((prev) => (prev.has(activeGroupId) ? prev : new Set(prev).add(activeGroupId)));
+  }, [activeGroupId]);
 
   const toggleGroup = (groupId: string) => {
     setOpenGroups((prev) => {
@@ -111,104 +122,108 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
         </div>
       </div>
 
-      {/* Search Results (flat list) */}
-      {searchQuery ? (
-        <div className="space-y-1">
-          {filteredItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No sections found</p>
-          ) : (
-            filteredItems.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => handleTabSelect(item.id)}
-                aria-current={activeTab === item.id ? 'page' : undefined}
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  activeTab === item.id
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground'
-                )}
-              >
-                <item.icon className="size-4 shrink-0" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.id === 'requests' && pendingRequestsCount > 0 && (
-                  <Badge variant="destructive" className="text-xs">
-                    {pendingRequestsCount}
-                  </Badge>
-                )}
-              </button>
-            ))
-          )}
-        </div>
-      ) : (
-        /* Grouped Accordion Navigation */
-        <div className="space-y-3">
-          {ADMIN_SECTION_GROUPS.map((group) => {
-            const GroupIcon = group.icon;
-            const groupBadge = getGroupBadgeCount(group);
-
-            return (
-              <div key={group.id} className="border border-border rounded-lg">
+      {/* Named to match the sidebar, so the section list is a landmark on
+          a phone too rather than a bare stack of buttons. */}
+      <nav aria-label="Admin sections">
+        {/* Search Results (flat list) */}
+        {searchQuery ? (
+          <div className="space-y-1">
+            {filteredItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No sections found</p>
+            ) : (
+              filteredItems.map((item) => (
                 <button
                   type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
+                  key={item.id}
+                  onClick={() => handleTabSelect(item.id)}
+                  aria-current={activeTab === item.id ? 'page' : undefined}
+                  className={cn(
+                    'w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors',
+                    'hover:bg-accent hover:text-accent-foreground',
+                    activeTab === item.id
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-foreground'
+                  )}
                 >
-                  <GroupIcon className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
-                  {groupBadge > 0 && (
+                  <item.icon className="size-4 shrink-0" />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  {item.id === 'requests' && pendingRequestsCount > 0 && (
                     <Badge variant="destructive" className="text-xs">
-                      {groupBadge}
+                      {pendingRequestsCount}
                     </Badge>
                   )}
-                  <ChevronDown
-                    className={cn(
-                      'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
-                      openGroups.has(group.id) && 'rotate-180'
-                    )}
-                  />
                 </button>
-                {openGroups.has(group.id) && (
-                  <div className="border-t border-border">
-                    {group.sections.map((tabId) => {
-                      const tab = findAdminSection(tabId);
-                      if (!tab) return null;
-                      const TabIcon = tab.icon;
+              ))
+            )}
+          </div>
+        ) : (
+          /* Grouped Accordion Navigation */
+          <div className="space-y-3">
+            {ADMIN_SECTION_GROUPS.map((group) => {
+              const GroupIcon = group.icon;
+              const groupBadge = getGroupBadgeCount(group);
 
-                      return (
-                        <button
-                          type="button"
-                          key={tabId}
-                          onClick={() => handleTabSelect(tabId)}
-                          aria-current={activeTab === tabId ? 'page' : undefined}
-                          className={cn(
-                            'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
-                            'hover:bg-accent hover:text-accent-foreground',
-                            'border-b border-border last:border-b-0',
-                            activeTab === tabId
-                              ? 'bg-primary/10 text-primary font-medium'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          <TabIcon className="size-4 shrink-0" />
-                          <span className="flex-1 text-left">{tab.label}</span>
-                          {tabId === 'requests' && pendingRequestsCount > 0 && (
-                            <Badge variant="destructive" className="text-xs">
-                              {pendingRequestsCount}
-                            </Badge>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+              return (
+                <div key={group.id} className="border border-border rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.id)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
+                  >
+                    <GroupIcon className="size-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
+                    {groupBadge > 0 && (
+                      <Badge variant="destructive" className="text-xs">
+                        {groupBadge}
+                      </Badge>
+                    )}
+                    <ChevronDown
+                      className={cn(
+                        'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
+                        openGroups.has(group.id) && 'rotate-180'
+                      )}
+                    />
+                  </button>
+                  {openGroups.has(group.id) && (
+                    <div className="border-t border-border">
+                      {group.sections.map((tabId) => {
+                        const tab = findAdminSection(tabId);
+                        if (!tab) return null;
+                        const TabIcon = tab.icon;
+
+                        return (
+                          <button
+                            type="button"
+                            key={tabId}
+                            onClick={() => handleTabSelect(tabId)}
+                            aria-current={activeTab === tabId ? 'page' : undefined}
+                            className={cn(
+                              'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
+                              'hover:bg-accent hover:text-accent-foreground',
+                              'border-b border-border last:border-b-0',
+                              activeTab === tabId
+                                ? 'bg-primary/10 text-primary font-medium'
+                                : 'text-muted-foreground'
+                            )}
+                          >
+                            <TabIcon className="size-4 shrink-0" />
+                            <span className="flex-1 text-left">{tab.label}</span>
+                            {tabId === 'requests' && pendingRequestsCount > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                {pendingRequestsCount}
+                              </Badge>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </nav>
     </div>
   );
 };

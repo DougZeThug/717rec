@@ -209,17 +209,20 @@ bookmarked, opened in a second tab, and stepped back through. The collapsed menu
 and the search text stay invisible to the address bar.
 
 **On a phone.** The menu becomes six collapsible groups with a search box above
-and two quick-access buttons. Only the group holding the active section is open,
-and **only on the first render** — changing sections later does not open the new
-section's group.
+and two quick-access buttons. The group holding the open section is open, and
+**stays in step**: arriving in a section from anywhere — a League Night quick
+action, a Help step, a typed address — opens that section's group and marks the
+entry as the current page. Opening other groups by hand does not close them, and
+closing the open section's group by hand works; nothing reopens it until the
+section changes again.
 
 **Accessibility.** Menu entries are real buttons with a 44-pixel minimum height.
-The menu is a labelled "Admin sections" landmark, every entry carries its own
-name whether the menu is collapsed or not, and the open section is marked as the
-current page, so a screen reader announces it as "Scores, current page". The
-collapse toggle is labelled. Swapping a section replaces the main content
-with no announcement, so a screen reader user gets no notice that the page
-changed under them.
+The menu is a labelled "Admin sections" landmark on a phone as well as on a wide
+screen, every entry carries its own name whether the menu is collapsed or not,
+and the open section is marked as the current page, so a screen reader announces
+it as "Scores, current page". The collapse toggle is labelled. Swapping a section
+is a navigation, so it is announced as "Admin Dashboard" and focus moves to the
+section content.
 
 **Side effects the user can notice.** Every section switch is a navigation now,
 so it records a pageview, is announced to a screen reader as "Admin Dashboard",
@@ -260,9 +263,6 @@ long as the dashboard is open.
 - **The Requests badge has no error state.** When its poll fails it keeps showing
   the last number it had, so an admin can be looking at a stale count with nothing
   to say so. Minor, but it is the one number the shell shows.
-- Not confirmed by hand: whether the mobile accordion really leaves the new
-  section's group closed after a section change, or whether some other render
-  reopens it.
 - Not confirmed by hand: how long the "Loading admin section..." panel is visible
   on a slow connection for the heaviest sections.
 - Not confirmed by hand: what the search box does with leading or trailing
