@@ -14,6 +14,8 @@ interface MatchPairsSectionProps {
   removeMatchPair: (id: string) => void;
   showAutoSchedule: boolean;
   setShowAutoSchedule: (show: boolean) => void;
+  /** Message per row id, from the last attempt to submit. */
+  rowErrors: Record<string, string>;
 }
 
 export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
@@ -23,6 +25,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
   removeMatchPair,
   showAutoSchedule,
   setShowAutoSchedule,
+  rowErrors,
 }) => {
   return (
     <>
@@ -52,6 +55,7 @@ export const MatchPairsSection: React.FC<MatchPairsSectionProps> = ({
           teams={teams}
           onUpdate={updateMatchPair}
           onRemove={removeMatchPair}
+          errors={rowErrors}
         />
       </m.div>
     </>

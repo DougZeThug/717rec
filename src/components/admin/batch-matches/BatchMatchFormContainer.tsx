@@ -21,6 +21,7 @@ const BatchMatchFormContainer = () => {
     setSelectedDate,
     matchPairs,
     isSubmitting,
+    rowErrors,
     addMatchPair,
     updateMatchPair,
     removeMatchPair,
@@ -58,6 +59,7 @@ const BatchMatchFormContainer = () => {
         removeMatchPair={removeMatchPair}
         showAutoSchedule={showAutoSchedule}
         setShowAutoSchedule={setShowAutoSchedule}
+        rowErrors={rowErrors}
       />
 
       {showAutoSchedule && (

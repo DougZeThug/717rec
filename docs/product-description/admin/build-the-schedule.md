@@ -97,10 +97,17 @@ not moving to another dashboard section.
 
 ### While editing
 
-**Match Creation** validates nothing until submit. Then it checks, in order: a
-date is selected; every pairing has both teams and a timeslot; no team appears in
-two pairings. The first failure raises a red toast titled "Error" and stops. The
-messages are generic — "Please fill in all match details" does not say which row.
+**Match Creation** validates nothing until submit. Then it checks every row: both
+teams and a timeslot are filled in; the two teams are different; no team appears
+in two pairings. A missing date is checked first and stops everything, with a red
+toast titled "Pick a date".
+
+Otherwise **every** bad row is marked at once. Each one gets a red edge and a
+message naming itself — "Match 2 still needs team 2 and a timeslot", "Match 3
+uses a team already playing in match 1. A team can only play once a night." The
+toast is titled "Missing details" and repeats the message when one row is wrong,
+or says how many rows need fixing when several are. Rows are numbered on screen,
+so the number in the message points at something the admin can see.
 
 **Auto Schedule** validates continuously in edit mode and blocks Save when the
 result is invalid. It refuses a match with a team missing, a team playing itself,
@@ -121,9 +128,11 @@ Three refusals are worth knowing:
 
 **Match Creation.** "Create Matches" reads "Creating..." while it runs. It finds
 the active season, builds one match per pairing at the chosen date and time, and
-labels each one **Court 1, Court 2, …** by its position in the list. On success
-the form resets to one empty pairing and the next Thursday, and the schedule
-re-fetches. One success toast fires, naming the count and the date.
+numbers courts **within each timeslot** — two matches at 6:30 are Court 1 and
+Court 2, and 7:00 starts again at Court 1, the same rule Auto Schedule uses. On
+success the form resets to one empty pairing and the next Thursday, and the
+schedule re-fetches. One toast fires, titled "Matches created" and naming the
+count and the date.
 
 **Auto Schedule.** "Save Matches" (or "Save Schedule to Database" on the Export
 tab) validates, warns about rematches, then inserts every match at once with
@@ -231,9 +240,9 @@ notification is sent to any team.
 - **Auto Assign Timeslots cycles a fixed list by position**, so the fourth
   pairing always gets 6:30 PM whether or not those teams are free then. It also
   waits half a second before its toast for no reason the user can see.
-- **Court numbers are positional.** Match Creation numbers courts by the row's
-  position in the list; Auto Schedule numbers them per timeslot. Neither knows
-  how many courts the venue has.
+- **Court numbers do not know the venue.** Both Match Creation and Auto Schedule
+  number courts per timeslot, so the two agree, but neither knows how many courts
+  the venue actually has.
 - **A block with an odd number of teams leaves one team unmatched**, counted in
   the panel and in the generation toast, and then silently dropped.
 - **"Open Full Auto Schedule" changes tab in place.** It does not reload the
@@ -255,10 +264,12 @@ notification is sent to any team.
   a block, the duplicate-team check refused the save every time, so no time was
   ever written and no live match was ever stored at midnight. With Dual Match
   Mode on, the default, times were always correct. Both paths now save. See B-03.
-- **The edit-mode timeslot picker now lists every real block time.** It is built
-  from the block constants, so it covers 5:00 PM to 9:30 PM and cannot drift away
-  from them again. It previously offered 6:00 PM to 10:00 PM, which both omitted
-  two real block times and offered one that was not a block time at all.
+- **Every timeslot picker now lists the real block times.** Auto Schedule's
+  edit-mode picker, Match Creation's per-row picker, and Auto Assign Timeslots
+  all read the same block constants, so they cover 5:00 PM to 9:30 PM and cannot
+  drift apart. Auto Schedule previously offered 6:00 PM to 10:00 PM and Match
+  Creation kept two copies of its own list, both of which offered 10:00 PM — a
+  time no block starts and nothing else in the app will ever hand out.
 - Resolved: **"Go to Batch Matches" and "Open Full Auto Schedule" did nothing.**
   Both set a URL fragment nothing listened for. They were treated as a bug
   ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)). The
