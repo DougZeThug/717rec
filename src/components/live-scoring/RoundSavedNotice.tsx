@@ -25,7 +25,9 @@ export const RoundSavedNotice: React.FC<RoundSavedNoticeProps> = ({ saved, showF
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!saved) return;
+    // `undefined` rather than a bare return: the other path returns a cleanup,
+    // and an arrow has to be consistent about whether it returns anything.
+    if (!saved) return undefined;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- a saved round is an event, and the notice hides itself again
     setVisible(true);
     const timer = window.setTimeout(() => setVisible(false), showForMs);

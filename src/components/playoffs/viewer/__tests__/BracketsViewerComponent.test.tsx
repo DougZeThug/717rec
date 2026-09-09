@@ -11,11 +11,11 @@ globalThis.ResizeObserver = class {
   constructor(callback: ResizeObserverCallback) {
     resizeCallbacks.push(callback);
   }
-  observe(element: Element) {
+  observe = vi.fn((element: Element) => {
     observedElements.push(element);
-  }
-  unobserve() {}
-  disconnect() {}
+  });
+  unobserve = vi.fn();
+  disconnect = vi.fn();
 } as unknown as typeof ResizeObserver;
 
 /** Pretends the bracket is `scrollWidth` wide inside a `clientWidth` box. */

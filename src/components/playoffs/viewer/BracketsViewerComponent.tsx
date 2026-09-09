@@ -126,8 +126,10 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
    */
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
-    if (typeof ResizeObserver === 'undefined') return;
+    // `undefined` rather than a bare return: the effect returns a cleanup below,
+    // and an arrow has to be consistent about whether it returns anything.
+    if (!scroller) return undefined;
+    if (typeof ResizeObserver === 'undefined') return undefined;
 
     const measure = () => {
       const overflowing = scroller.scrollWidth - scroller.clientWidth > 8;

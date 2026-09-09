@@ -726,7 +726,7 @@ describe('useBracketsViewerRenderer', () => {
 
     it('names logos that appear only after render (cleanup pass)', async () => {
       vi.useFakeTimers();
-      renderMock.mockImplementation(() => {});
+      renderMock.mockImplementation(() => undefined);
 
       renderRenderer({ bracket: makeBracket() });
       await flushAsync();
