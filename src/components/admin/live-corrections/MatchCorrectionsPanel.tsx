@@ -7,6 +7,7 @@ import { useLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import { useSeasons } from '@/hooks/useSeasons';
 import type { Tables } from '@/integrations/supabase/types';
 import { TeamPlayersService } from '@/services/liveScoring/TeamPlayersService';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { ArchivedSeasonBanner } from './ArchivedSeasonBanner';
 import { ChangeGameWinnerDialog } from './ChangeGameWinnerDialog';
@@ -24,7 +25,7 @@ export interface MatchCorrectionsPanelProps {
 /** Admin panel for editing rounds, deleting rounds, and changing game winners on a match. */
 export const MatchCorrectionsPanel: React.FC<MatchCorrectionsPanelProps> = ({ matchId }) => {
   const { bundle, derived, isLoading, isNotEnabled } = useLiveMatch(matchId);
-  const finalized = bundle?.match.iscompleted === true;
+  const finalized = bundle ? isMatchCompleted(bundle.match) : false;
 
   // B-20: an archived season is frozen. Read it from this match's own season
   // rather than from the section's season filter, because a selected match stays

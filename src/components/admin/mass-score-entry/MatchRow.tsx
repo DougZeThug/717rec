@@ -160,7 +160,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
               htmlFor={`mark-complete-${match.id}`}
               className="text-sm font-medium cursor-pointer"
             >
-              Mark as Complete
+              Mark as final
             </label>
             <Switch
               id={`mark-complete-${match.id}`}

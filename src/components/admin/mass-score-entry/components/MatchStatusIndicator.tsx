@@ -31,7 +31,7 @@ const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({
       {isCompleted && !isEdited && (
         <span className="text-xs text-green-500 flex items-center">
           <Check className="size-3 mr-1" />
-          Completed
+          Final
         </span>
       )}
       {!isValid && <span className="text-xs text-red-500 flex items-center">Invalid Score</span>}

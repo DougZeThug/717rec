@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { useAdminLiveScoredMatches } from '@/hooks/live-scoring/useAdminCorrections';
 import { useSeasons } from '@/hooks/useSeasons';
+import { isMatchCompleted } from '@/utils/matchStatus';
 
 import { MatchCorrectionsPanel } from './MatchCorrectionsPanel';
 
@@ -107,7 +108,7 @@ const LiveCorrectionsSection: React.FC = () => {
                     <div>
                       {m.gameCount} game{m.gameCount === 1 ? '' : 's'} · {m.roundCount} round
                       {m.roundCount === 1 ? '' : 's'}
-                      {m.iscompleted ? ' · finalized' : ''}
+                      {isMatchCompleted(m) ? ' · final' : ''}
                       {m.season_id && archivedSeasonIds.has(m.season_id)
                         ? ' · archived, read-only'
                         : ''}
