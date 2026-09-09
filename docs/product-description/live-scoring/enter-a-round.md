@@ -119,7 +119,10 @@ disabled while the save is in flight and cleared only once it succeeds.
 
 On success the round is confirmed, the grids clear, the whole match is
 re-fetched, and the other scorer's screen receives the round over the realtime
-connection.
+connection. A green **"Round 4 saved"** confirmation appears under the
+scoreboard and clears itself after about three seconds. It is a plain statement
+that the round reached the league, and it does not depend on the realtime
+channel — it shows the same whether live updates are on or off.
 
 On failure the optimistic round is removed, the totals go back, and a toast
 explains. **The scorer's tapped numbers stay on screen**, still selected, so the

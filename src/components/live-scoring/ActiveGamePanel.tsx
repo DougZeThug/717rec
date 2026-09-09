@@ -10,6 +10,8 @@ import { GameScoreboard } from './GameScoreboard';
 import { GameWonBanner } from './GameWonBanner';
 import { LiveScoringControls } from './LiveScoringControls';
 import { RoundLog } from './RoundLog';
+import type { SavedRound } from './RoundSavedNotice';
+import { RoundSavedNotice } from './RoundSavedNotice';
 import type { RoundSubmission } from './RoundScoreInput';
 import { RoundScoreInput } from './RoundScoreInput';
 import { ThrowerBar } from './ThrowerBar';
@@ -60,6 +62,9 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
     team2: string | null;
   } | null>(null);
 
+  /** The last round this scorer filed, for the on-screen confirmation. */
+  const [savedRound, setSavedRound] = useState<SavedRound | null>(null);
+
   const overrideKey = `${game.game.id}:${game.nextRoundNumber}`;
   const override = throwerOverride?.key === overrideKey ? throwerOverride : null;
   const team1ThrowerId = override?.team1 ?? game.nextThrowers.team1ThrowerId;
@@ -90,24 +95,31 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
    * Saves the next round using the currently selected throwers. Rejecting
    * tells RoundScoreInput to keep the tapped scores for a retry.
    */
-  const handleSubmit = (submission: RoundSubmission) =>
-    submitRound
-      .mutateAsync({
-        gameId: game.game.id,
-        roundNumber: game.nextRoundNumber,
-        team1Score: submission.team1Score,
-        team2Score: submission.team2Score,
-        team1ThrowerId,
-        team2ThrowerId,
-        team1Bags: submission.team1Bags,
-        team2Bags: submission.team2Bags,
-      })
-      .catch((error: unknown) => {
-        // Another scorer already recorded this round, so the tapped scores
-        // are stale — resolve and let the grids clear for the next round.
-        if (error instanceof DuplicateRoundError) return;
-        throw error;
-      });
+  const handleSubmit = (submission: RoundSubmission) => {
+    const roundNumber = game.nextRoundNumber;
+    return (
+      submitRound
+        .mutateAsync({
+          gameId: game.game.id,
+          roundNumber,
+          team1Score: submission.team1Score,
+          team2Score: submission.team2Score,
+          team1ThrowerId,
+          team2ThrowerId,
+          team1Bags: submission.team1Bags,
+          team2Bags: submission.team2Bags,
+        })
+        // Say so plainly, whatever the realtime channel is doing. A duplicate
+        // takes the catch below instead: that round is the other scorer's.
+        .then(() => setSavedRound({ round: roundNumber, at: Date.now() }))
+        .catch((error: unknown) => {
+          // Another scorer already recorded this round, so the tapped scores
+          // are stale — resolve and let the grids clear for the next round.
+          if (error instanceof DuplicateRoundError) return;
+          throw error;
+        })
+    );
+  };
 
   const undoLabel = lastRound
     ? `round ${lastRound.round_number} (${lastRound.team1_score}–${lastRound.team2_score})`
@@ -123,6 +135,8 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
         leaderSide={leaderSide(game.totals)}
         rulesLabel={rulesLabel}
       />
+
+      <RoundSavedNotice saved={savedRound} />
 
       {gameWon && (
         <GameWonBanner

@@ -15,6 +15,22 @@ interface MatchScoringHeaderProps {
   realtimeStatus: string;
 }
 
+/**
+ * What the realtime channel is doing, in words about the feature rather than
+ * the socket. Saving a round is an ordinary request and does not use this
+ * channel, so "off" must never read as "your scores are not being saved".
+ *
+ * `connecting` is the seeded state before the first subscribe answer;
+ * CHANNEL_ERROR, TIMED_OUT and CLOSED all retry in the background, and all of
+ * them mean the same thing to a scorer: rounds saved on the other phone are not
+ * arriving here yet.
+ */
+const realtimeLabel = (status: string): string => {
+  if (status === 'SUBSCRIBED') return 'Live updates: on';
+  if (status === 'connecting') return 'Live updates: connecting';
+  return 'Live updates: off';
+};
+
 export const MatchScoringHeader: React.FC<MatchScoringHeaderProps> = ({
   team1Name,
   team2Name,
@@ -28,23 +44,13 @@ export const MatchScoringHeader: React.FC<MatchScoringHeaderProps> = ({
 
   return (
     <div className="rounded-lg border bg-card p-4">
-      <div className="mb-2 flex items-center justify-between">
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5 text-xs font-medium',
-            isLive ? 'text-green-600 dark:text-green-500' : 'text-muted-foreground'
-          )}
-          data-testid="realtime-status"
-        >
-          <Radio className={cn('size-3.5', isLive && 'animate-pulse')} aria-hidden />
-          {isLive ? 'Live' : 'Connecting…'}
-        </span>
-        {!canScore && (
+      {!canScore && (
+        <div className="mb-2 flex justify-end">
           <Badge variant="secondary" className="gap-1">
             <Eye className="size-3" aria-hidden /> View only
           </Badge>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-center gap-3">
         <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
@@ -63,6 +69,24 @@ export const MatchScoringHeader: React.FC<MatchScoringHeaderProps> = ({
           <TeamLogo imageUrl={team2Logo} teamName={team2Name} size="md" />
           <span className="max-w-full truncate text-sm font-semibold">{team2Name}</span>
         </div>
+      </div>
+
+      {/*
+        Below the score, not above it: this is a footnote about the channel, and
+        it used to be the first thing on the screen.
+      */}
+      <div className="mt-3 flex justify-center">
+        <span
+          className={cn(
+            'inline-flex flex-wrap items-center justify-center gap-1.5 text-xs font-medium',
+            isLive ? 'text-green-600 dark:text-green-500' : 'text-muted-foreground'
+          )}
+          data-testid="realtime-status"
+        >
+          <Radio className={cn('size-3.5', isLive && 'animate-pulse')} aria-hidden />
+          {realtimeLabel(realtimeStatus)}
+          {!isLive && <span>· your scores still save</span>}
+        </span>
       </div>
     </div>
   );
