@@ -4,8 +4,8 @@
 
 The **Season** section of the dashboard is where a season is created, renamed,
 re-dated, archived, and closed out. It is the most consequential screen in the
-product: archiving rewrites every team's record and freezes a season's numbers
-for good, and there is no undo anywhere on it.
+product: archiving the active season rewrites every team's record, and any archive
+freezes a season's numbers for good, and there is no undo anywhere on it.
 
 What a season is, what its four flags mean, and why nearly every page is scoped
 to one are settled in
@@ -23,7 +23,7 @@ season is active — a green badge reads "Current Active Season" beside an **Ope
 for confirmation** switch and an **Archive Season** button. Below that is every season, newest first, one card
 each, with a coloured status badge and an **Edit** button — greyed out on an
 archived season, which explains itself on hover. A season that is neither active
-nor archived also has an **Activate** button. A season whose
+nor archived also has **Activate** and **Archive** buttons. A season whose
 playoffs are still running also has a **Finalize Playoffs** button.
 
 Pressing Create New Season opens a small form: a name, a start date, and an
@@ -45,7 +45,7 @@ stateDiagram-v2
     list --> activating : Activate (season that is neither active nor archived)
     activating --> list : Cancel
     activating --> list : Activate Season (commit — any previous active season is deactivated)
-    list --> archiving : Archive Season (active season only)
+    list --> archiving : Archive Season / Archive (any un-archived season)
     archiving --> list : Cancel
     archiving --> archived : Archive Season (commit — irreversible)
     archiving --> playoffsRunning : Archive and Keep Playoffs (commit — irreversible)
@@ -263,7 +263,7 @@ window could never be opened — see
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role (visitor, player, admin) | Only an admin reaches the dashboard at all; see [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated). Every admin sees every control. | Losing admin elsewhere leaves the buttons on screen. The server refuses the writes. |
-| The record's state | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows Archive Season. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
+| The record's state | An archived season shows an Archived badge and an Edit button, and no Activate button. A season that is neither active nor archived also shows Activate. A playoffs-in-progress season shows both Activate and Finalize Playoffs. Only the active season shows the **Archive Season** button in the header; every other un-archived season shows an **Archive** button on its card. | A season archived in another browser keeps showing its old badge here for up to ten minutes. |
 | The season's state (active, archived, playoffs on) | With no active season, the top card reads "None" and the Archive Season button is absent rather than disabled. Every un-archived season still offers Activate, and its dialog shows no deactivation warning and no tick box, so the league can be restarted from here. | If the active season changes elsewhere, this screen does not notice until it re-fetches. |
 | Viewport | The three cards stack on a narrow screen. The form's two date fields stack. The list is one card per season either way. | No effect beyond re-flowing. |
 | Keys the form honours | Tab moves through Name, Start Date, End Date, Cancel, and the submit button. | Enter in a text field submits the form. Escape closes an open dialog, which cancels the archive or the finalise. |
