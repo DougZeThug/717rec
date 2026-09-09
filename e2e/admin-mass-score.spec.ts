@@ -159,6 +159,39 @@ test.describe('admin mass score submission workflow', () => {
     ]);
   });
 
+  // UX audit A-07: switching section threw typed scores away with no warning.
+  test('asks before an unsaved score is lost to another section', async ({ page }) => {
+    await page.goto('/admin/scores');
+
+    await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible({
+      timeout: 15000,
+    });
+    await page.getByTestId('score-button-2\u20130').click();
+    await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
+
+    const adminMenu = page.getByRole('navigation', { name: 'Admin sections' });
+
+    // Playwright dismisses dialogs unless a handler is registered first, so
+    // without this the Cancel path would pass without ever being exercised.
+    let asked = '';
+    page.once('dialog', async (dialog) => {
+      asked = dialog.message();
+      await dialog.dismiss();
+    });
+
+    await adminMenu.getByRole('button', { name: 'Divisions' }).click();
+
+    expect(asked).toMatch(/not submitted/i);
+    await expect(page).toHaveURL(/\/admin\/scores$/);
+    await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
+
+    // Accepting does leave, and the score goes with it.
+    page.once('dialog', (dialog) => dialog.accept());
+    await adminMenu.getByRole('button', { name: 'Divisions' }).click();
+
+    await expect(page).toHaveURL(/\/admin\/divisions$/);
+  });
+
   test('blocks an invalid completed mass score before writing match updates', async ({ page }) => {
     const resultSubmissions: unknown[] = [];
     page.on('request', (request) => {
