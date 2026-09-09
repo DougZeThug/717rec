@@ -45,6 +45,21 @@ describe('transformBracketsManagerData', () => {
     expect(result.divisionId).toBeNull();
   });
 
+  it('carries the season id through, so a link to a bracket can select its season', () => {
+    const result = transformBracketsManagerData({
+      ...baseInput,
+      bracket: { ...baseInput.bracket, season_id: 's-past' },
+    });
+
+    expect(result.seasonId).toBe('s-past');
+  });
+
+  it('reports a missing season id as null rather than undefined', () => {
+    const result = transformBracketsManagerData(baseInput);
+
+    expect(result.seasonId).toBeNull();
+  });
+
   it('resolves teams by team_id, so a rename does not strand a match', () => {
     const result = transformBracketsManagerData({
       ...baseInput,

@@ -97,6 +97,26 @@ describe('BracketInfoService', () => {
     await expect(fetchBracketInfo('b-1')).rejects.toThrow(NotFoundError);
   });
 
+  // The playoffs page reads the season off the bracket a link opens, so the
+  // picker can agree with what is on screen.
+  it('asks for the bracket season alongside the division', async () => {
+    const select = vi.fn().mockReturnValue({
+      eq: () => ({
+        single: () =>
+          Promise.resolve({
+            data: { ...makeBracket(), season_id: 's-past', divisions: { name: 'Gold' } },
+            error: null,
+          }),
+      }),
+    });
+    mockFrom.mockReturnValue({ select });
+
+    const result = await fetchBracketWithDivision('b-1');
+
+    expect(select.mock.calls[0][0]).toContain('season_id');
+    expect(result.season_id).toBe('s-past');
+  });
+
   it('throws DatabaseError when bracket with division query fails', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
