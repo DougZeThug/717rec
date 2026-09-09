@@ -98,11 +98,11 @@ attached to the report being disputed.
 
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
-| The user's role (visitor, player, admin) | **The only modifier that matters.** A visitor and a player cannot see any submission. An admin sees every pending one at `/admin`, in the Pending section, with the match and its two team names, the submitter's name, their team, the message, and Approve and Reject buttons. Being on the team in the match grants nothing extra. | Admin granted or revoked elsewhere does not change what is on screen until the profile is re-fetched. |
+| The user's role (visitor, player, admin) | **The only modifier that matters.** A visitor and a player cannot see any submission. An admin sees every pending one at `/admin`, in the Score approvals section, with the match and its two team names, the submitter's name, their team, the message, and Approve and Reject buttons. Being on the team in the match grants nothing extra. | Admin granted or revoked elsewhere does not change what is on screen until the profile is re-fetched. |
 | The record's state | A submission is pending, approved, or rejected. **Only pending ones are ever listed**, so approving or rejecting one makes it vanish from the only screen that shows it and it cannot be found again from inside the app. | An admin acting on a submission in another tab does not remove it from this one until it is re-fetched. Approving an already-recorded match writes the same result again without double-counting it. |
 | The season's state (active, archived, playoffs on) | No effect. Submissions carry a match, not a season. | No effect. |
 | Viewport | The admin review list is one card per submission at any width; the two buttons sit at the bottom right. | No effect. |
-| Keys the form honours | Tab reaches Reject then Approve on each card. Nothing is focused on arrival. | Enter or Space activates the focused button. There are no shortcuts. Approve opens a dialog; Reject acts on the first press. |
+| Keys the form honours | Tab reaches Reject then Approve on each card. Nothing is focused on arrival. | Enter or Space activates the focused button. There are no shortcuts. Approve opens a dialog; Reject opens a confirmation first. |
 
 ## Cancel and interrupt
 
@@ -111,7 +111,7 @@ only interaction that exists.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | Approve opens a dialog with a Cancel button, which closes it and discards the numbers typed. Reject has no Cancel and no confirmation. | No effect. Neither a confirmed Approve nor a Reject can be undone or called back once sent. |
+| Escape, or a Cancel button | Approve opens a dialog with a Cancel button, which closes it and discards the numbers typed. Reject opens a confirmation first; cancelling it leaves the report. | No effect. Neither a confirmed Approve nor a Reject can be undone or called back once sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | The write still lands. The card was already removed from the list optimistically, so leaving looks identical to succeeding. |
 | Browser back or forward | Returns to the previous page. | Same as navigating away. |
 | Reload, or the tab closed | The list is fetched again from scratch every time the section is opened. | A sent decision still lands. The list after the reload is the truth. |
@@ -183,7 +183,7 @@ stamped, so the queue never clears on a stale match.
   can revisit.
 - **Approve asks for the result before it writes.** A submission carries only the
   reporter's free-text message, so the admin reads it in the dialog and picks one
-  of four fixed results. **Reject still has no confirmation**, and
+  of four fixed results. **Reject confirms first**, and
   neither has an undo.
 - **Two admins can decide the same submission**, and the last write wins with no
   warning.
@@ -212,7 +212,7 @@ stamped, so the queue never clears on a stale match.
 - Not confirmed by hand: what an admin actually does when two reports contradict
   each other, and whether the league has a convention for it.
 - Not confirmed by hand: whether the admin review list is discoverable — it is one
-  section of the admin dashboard labelled only "Pending".
+  section of the admin dashboard labelled only "Score approvals".
 - Not confirmed by hand: whether any part of the league's process outside the app
   tells the second team that a result was reported.
 - Assumption: reports are expected to be honest and rare, and the league is
