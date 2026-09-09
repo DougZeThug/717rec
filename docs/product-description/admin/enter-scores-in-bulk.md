@@ -7,9 +7,10 @@ once. It lists every match for one date, offers four buttons per match — 2–0
 2–1, 1–2, 0–2 — and writes them all with one press. It is the fastest way to
 result a match in the product, and the only way to result many at a time.
 
-It is a section of the admin dashboard, not a route: `/admin`, then **Scores**
-in the admin menu. Nothing about it is in the address bar. It is also the only
-place in the app where a match can be **deleted**.
+It is a section of the admin dashboard: `/admin/scores`, or **Scores** in the
+admin menu. Nothing inside it — the date, the filters, the typed scores — is in
+the address bar. It is also the only place in the app where a match can be
+**deleted**.
 
 The four buttons are the whole vocabulary. A match resulted here has a winner
 and a game-win split, and nothing else. Round-by-round detail belongs to live
@@ -238,9 +239,8 @@ put back to edited-with-an-error rather than rolled back to its old value.
 **Toasts and notifications.** One summary toast per batch, one per delete. No
 notification is sent to anyone when a match is resulted.
 
-**URL state.** None at all. The active admin section is remembered in the
-browser for the tab, not in the address, so this tool cannot be linked to and
-the filters cannot be shared.
+**URL state.** The tool's address is `/admin/scores`, so it can be linked to.
+The filters cannot: neither the date nor the bracket is in the address.
 
 **On a phone.** The admin menu becomes a grouped list at the top. Cards go to
 one column. The four score buttons stay in a row of four and remain tappable.

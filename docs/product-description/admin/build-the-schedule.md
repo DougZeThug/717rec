@@ -181,7 +181,7 @@ naming the match. It can no longer reach the database.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Neither tool has a Cancel button. | Closes an open dropdown or date popover. Auto Schedule's **Reset** discards edits back to the generated schedule with no confirmation. Nothing aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **Match Creation loses everything with no warning**, including switching dashboard section. **Auto Schedule loses nothing** — its state is written to the browser tab. Switching between its own three tabs is always safe. |
-| Browser back or forward | Leaves the dashboard. | Same as navigating away for each tool. The unsaved-changes warning does **not** fire on in-app navigation, only on a browser-level leave. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away for each tool. The unsaved-changes warning does **not** fire on in-app navigation, only on a browser-level leave. |
 | Reload, or the tab closed | Match Creation returns to the next Thursday and one blank row. Auto Schedule returns exactly as it was. | Auto Schedule shows the browser's own "leave site?" prompt when there are unsaved edits, then restores everything if the admin stays or reloads anyway. Match Creation loses the lot with no prompt. |
 | Network lost mid-request | Nothing to lose. | The save fails, a red toast carries the reason, and nothing is queued. Auto Schedule's working state is **not** cleared, so the admin can press Save again once the connection is back. |
 | The request fails or times out | Cannot happen. | Both keep everything on screen. A save that timed out may still have created the matches; pressing Save again would then create them a second time. |
@@ -217,8 +217,10 @@ auto-assigning times, and saving each raise exactly one. Up to three are shown a
 once ([B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost)),
 so a rematch warning raised immediately before a success message survives.
 
-**URL state.** Nothing. Neither the date, the settings, nor the proposed schedule
-is in the address bar, so a proposed schedule cannot be shared for review.
+**URL state.** The two tools have addresses — `/admin/batch-matches` and
+`/admin/auto-schedule` — but nothing inside them does. Neither the date, the
+settings, nor the proposed schedule is in the address bar, so a proposed
+schedule still cannot be shared for review.
 
 **On a phone.** Both tools work but are cramped. The editable match cards stack
 into a tall column, and the Teams tab's block view needs a lot of scrolling.

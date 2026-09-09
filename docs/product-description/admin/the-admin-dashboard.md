@@ -2,9 +2,11 @@
 
 ## Summary
 
-`/admin` is where everything an admin can do lives. It is one page, not a set of
-pages: a menu down the left and one section in the middle. Choosing a menu entry
-swaps the middle, and the address bar never changes.
+`/admin` is where everything an admin can do lives. It is one page with a menu
+down the left and one section in the middle. Choosing a menu entry swaps the
+middle **and changes the address**: every section has one, such as
+`/admin/scores`, so a section can be linked, bookmarked and stepped back
+through.
 
 The dashboard holds **twenty-one sections**. They range from a whole scheduling tool
 to a single switch. Nothing groups them by importance on a wide screen, and there
@@ -54,8 +56,12 @@ one-time "Access Denied" toast for a signed-in non-admin are all described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
 Nothing on this page repeats or softens that gate.
 
-Once past the gate, the page reads which section was open last from the browser's
-per-tab storage and opens it. If there is no record, it opens **Timeslots**.
+`/admin/<section>` opens that section. A **bare `/admin`** names none, so the
+page reads which section was open last from the browser's per-tab storage and
+redirects there; with no record it opens **Timeslots**. An address naming no
+section at all — a typo, or a link from a build where a section was called
+something else — also lands on **Timeslots**, rather than the remembered
+section, so a bad link always ends up in the same place.
 
 **Only the chosen section is loaded.** The other nineteen are not fetched, not
 mounted, and cost nothing. A section opened for the first time in a session shows
@@ -139,8 +145,9 @@ In menu order, with the document that owns each:
 | Power Score Review | Revert or re-apply the power score change — [`../stats/power-score.md`](../stats/power-score.md) |
 | Power Score Sandbox | Try new power score weights before applying — [`../stats/power-score.md`](../stats/power-score.md) |
 
-`/admin/notifications` no longer has a page; it redirects here and opens the console's own Notifications section. `/timeslots` does the same for Timeslots.
-See [`send-notifications.md`](send-notifications.md).
+`/admin/notifications` is simply the address of the Notifications section now —
+it used to be a page of its own. `/timeslots` was one too, and redirects to
+`/admin/timeslots`. See [`send-notifications.md`](send-notifications.md).
 
 ## Modifiers
 
@@ -149,7 +156,7 @@ See [`send-notifications.md`](send-notifications.md).
 | The user's role (visitor, player, admin) | Only an admin reaches this page at all. A visitor is sent to `/auth`; a signed-in non-admin gets one "Access Denied" toast and lands on the home page. | Losing admin in another tab does not close the dashboard. The menu stays, the sections stay, and the writes start failing. |
 | The record's state | No effect. The shell holds no record. | No effect. |
 | The season's state (active, archived, playoffs on) | No effect on the shell. Individual sections show different things with no active season; each says so. | No effect on the shell. |
-| Viewport | Below the mobile breakpoint the left menu is replaced by a stacked accordion with six groups, two quick-access buttons (Scores, Timeslots), and its own search box. Above it, the sidebar. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept; the mobile accordion's open group is not recalculated. |
+| Viewport | Below the mobile breakpoint the left menu is replaced by a stacked accordion with six groups, two quick-access buttons (Scores, Timeslots), and its own search box. Above it, the sidebar. | Crossing the breakpoint by resizing swaps the whole navigation. The open section is kept, because it is in the address rather than in either menu. |
 | Keys the form honours | Tab reaches the collapse toggle, the search box, then every visible menu entry in order. No shortcut opens a section. | Typing in the search box filters as each character lands. Escape does nothing; the box has no clear button on a wide screen. |
 
 ## Cancel and interrupt
@@ -158,7 +165,7 @@ See [`send-notifications.md`](send-notifications.md).
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. The shell has no Cancel. | No effect on the shell. Whether Escape cancels anything is up to the open section. |
 | In-app navigation away, or switching tab within the page | The open section is remembered. Coming back reopens it. | **Switching section discards whatever the old section held in memory, with no warning.** Only Auto Schedule survives, because it writes its working state to the browser. |
-| Browser back or forward | Leaves `/admin` entirely; there is no history entry per section, so Back never steps between sections. | Same. The open section is remembered, but nothing it held is. |
+| Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | Same, and **nothing the old section held is kept**. Back cannot be interrupted to ask first; see the *Unsaved changes* note below. |
 | Reload, or the tab closed | A reload returns to the same section. Closing the tab forgets it, and the next visit opens Timeslots. | A reload loses everything the open section held, except Auto Schedule's working state. |
 | Network lost mid-request | The request-count badge stops updating and keeps showing its last value. | The shell keeps working because it is already loaded. **A section not yet opened cannot load at all** and shows its loading panel indefinitely. |
 | The request fails or times out | The badge silently keeps its old number. There is no error state for it. | Handled by the section, not the shell. |
@@ -196,10 +203,10 @@ Un-opened sections never load. See
 message on refusal, which appears after the redirect and therefore over the home
 page.
 
-**URL state.** **Nothing about the dashboard is in the URL.** The open section,
-the collapsed menu, and the search text are all invisible to the address bar, so
-an admin cannot link a colleague to a section, cannot bookmark one, and cannot
-open two sections in two tabs by URL.
+**URL state.** **The open section is the address**: `/admin/scores`,
+`/admin/pending-matches`, and so on, one per section. A section can be linked,
+bookmarked, opened in a second tab, and stepped back through. The collapsed menu
+and the search text stay invisible to the address bar.
 
 **On a phone.** The menu becomes six collapsible groups with a search box above
 and two quick-access buttons. Only the group holding the active section is open,
@@ -214,8 +221,11 @@ collapse toggle is labelled. Swapping a section replaces the main content
 with no announcement, so a screen reader user gets no notice that the page
 changed under them.
 
-**Side effects the user can notice.** Opening `/admin` records a pageview like
-any route. The request-count poll issues a request every thirty seconds for as
+**Side effects the user can notice.** Every section switch is a navigation now,
+so it records a pageview, is announced to a screen reader as "Admin Dashboard",
+and moves keyboard focus to the section content — the same as any other page
+change in the app. Tab after choosing a section therefore continues into the
+section rather than down the menu. The request-count poll issues a request every thirty seconds for as
 long as the dashboard is open.
 
 ## Edge cases
@@ -228,7 +238,9 @@ long as the dashboard is open.
   keeps rendering a section that is no longer in the list.
 - **The collapsed menu is not remembered**, but the open section is. The two
   pieces of shell state behave differently for no visible reason.
-- **A second browser tab starts at Timeslots**, because the memory is per tab.
+- **A second browser tab opened at a bare `/admin` starts at Timeslots**,
+  because the memory of the last section is per tab. Opening a section's own
+  address in a second tab opens that section.
 - **Sections in the League Night list jump by reloading the page.** Its queue
   tiles and quick actions set the remembered section and then reload the whole
   app rather than switching in place. See [`site-settings.md`](site-settings.md).

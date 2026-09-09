@@ -101,10 +101,61 @@ test.describe('admin access control', () => {
 
     await page.goto('/admin');
 
-    await expect(page).toHaveURL(/\/admin$/);
+    // A bare /admin names no section, so it redirects to the one it opens.
+    await expect(page).toHaveURL(/\/admin\/timeslots$/);
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible({
       timeout: 15000,
     });
     await expect(page.getByRole('button', { name: 'Timeslots' })).toBeVisible();
+  });
+
+  // UX audit A-01: sections had no addresses, so they could not be linked and
+  // Back left the console entirely.
+  test('opens the section named in the address, and Back steps between sections', async ({
+    page,
+  }) => {
+    await seedAuthenticatedUser(page, {
+      id: 'e2e-admin-user',
+      email: 'e2e-admin@example.com',
+      isAdmin: true,
+    });
+
+    await page.goto('/admin/pending-matches');
+
+    const adminMenu = page.getByRole('navigation', { name: 'Admin sections' });
+
+    await expect(page).toHaveURL(/\/admin\/pending-matches$/);
+    await expect(adminMenu.getByRole('button', { name: 'Score approvals' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+
+    await adminMenu.getByRole('button', { name: 'Divisions' }).click();
+    await expect(page).toHaveURL(/\/admin\/divisions$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/admin\/pending-matches$/);
+    await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible();
+  });
+
+  // /admin/notifications and /timeslots were pages of their own once.
+  test('sends the old admin addresses to their sections', async ({ page }) => {
+    await seedAuthenticatedUser(page, {
+      id: 'e2e-admin-user',
+      email: 'e2e-admin@example.com',
+      isAdmin: true,
+    });
+
+    await page.goto('/timeslots');
+    await expect(page).toHaveURL(/\/admin\/timeslots$/);
+
+    await page.goto('/admin/notifications');
+    await expect(page).toHaveURL(/\/admin\/notifications$/);
+    // Scoped to the menu: the navbar's notification bell shares the name.
+    await expect(
+      page
+        .getByRole('navigation', { name: 'Admin sections' })
+        .getByRole('button', { name: 'Notifications' })
+    ).toHaveAttribute('aria-current', 'page');
   });
 });

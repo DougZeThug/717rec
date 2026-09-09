@@ -32,6 +32,9 @@ const EXACT_ROUTE_NAMES: Record<string, string> = {
 const PREFIX_ROUTE_NAMES: Array<{ prefix: string; name: string }> = [
   { prefix: '/teams/', name: 'Team Details' },
   { prefix: '/matches/', name: 'Live Scoring' },
+  // Every admin section is its own address now, so without this the announcer
+  // would read out "Page Not Found" on each switch inside the console.
+  { prefix: '/admin/', name: 'Admin Dashboard' },
 ];
 
 /**

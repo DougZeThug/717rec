@@ -44,8 +44,9 @@ src/
 
 **Protected Routes**:
 - `/my-team` - User's team management
-- `/admin` - Admin dashboard (admin-only)
-- `/timeslots` - Redirects to `/admin`; timeslots are a section there (admin-only)
+- `/admin` - Admin dashboard; redirects to the last section opened (admin-only)
+- `/admin/:section` - One admin section, e.g. `/admin/scores` (admin-only)
+- `/timeslots` - Redirects to `/admin/timeslots` (admin-only)
 
 Routes use lazy loading for code splitting via `React.lazy()`.
 

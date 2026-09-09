@@ -1,6 +1,7 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,10 +11,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
-import { ADMIN_TAB_STORAGE_KEY, subscribeToAdminTabRequests } from '@/utils/adminTabs';
+import { rememberAdminSection, subscribeToAdminTabRequests } from '@/utils/adminTabs';
 
 import AdminMobileNav from './AdminMobileNav';
-import { ADMIN_SECTIONS, DEFAULT_ADMIN_SECTION, findAdminSection } from './adminSections';
+import { ADMIN_SECTIONS, findAdminSection } from './adminSections';
 
 // Memoized animation props to prevent recreating objects on every render
 const sidebarAnimateProps = { expanded: { width: 240 }, collapsed: { width: 60 } };
@@ -29,18 +30,28 @@ const labelAnimateProps = {
   exit: { opacity: 0, width: 0 },
 };
 
-/** Admin dashboard shell: searchable section nav (sidebar or mobile) persisting the active tab. */
-const AdminSidebar: React.FC = () => {
-  const isMobile = useIsMobile();
-  const { data: pendingRequestsCount } = usePendingRequestsCount();
-  const [activeTab, setActiveTab] = useState(() => {
-    return sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY) || DEFAULT_ADMIN_SECTION;
-  });
+interface AdminSidebarProps {
+  /** Section named by the address. `AdminDashboard` has already checked it. */
+  section: string;
+}
 
-  const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId);
-    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, tabId);
-  }, []);
+/** Admin dashboard shell: searchable section nav (sidebar or mobile) for the section in the address. */
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { data: pendingRequestsCount } = usePendingRequestsCount();
+
+  // Menu entries are buttons that navigate rather than links, so every way of
+  // reaching another section — the menu, the phone drawer, and the
+  // `switchAdminTab` requests below — passes through this one function.
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      if (tabId === activeTab) return;
+      rememberAdminSection(tabId);
+      navigate(`/admin/${tabId}`);
+    },
+    [activeTab, navigate]
+  );
 
   // A control inside one section can ask for another section; see utils/adminTabs.
   useEffect(() => subscribeToAdminTabRequests(handleTabChange), [handleTabChange]);

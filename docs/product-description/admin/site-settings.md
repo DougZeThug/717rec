@@ -237,7 +237,7 @@ separate content, and nothing in the admin dashboard edits it. See
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. | The hero card form's Cancel and Back both discard everything typed with no confirmation. Escape closes the delete or repair confirmation. Neither aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **Everything typed in the hero card form is lost, with no warning**, including switching dashboard section. A switch already flipped has already been written. |
-| Browser back or forward | Leaves the dashboard. | Same as navigating away. The form is not a route, so Back never returns to it. |
+| Browser back or forward | Steps to the previously opened section. | Same as navigating away. The form is not a route of its own, so Back never returns to it. |
 | Reload, or the tab closed | Returns to the same section, with the form closed. | The form's contents are lost. A sent write still lands. |
 | Network lost mid-request | Nothing to lose. | The write fails and a red toast appears. Theme failures say nothing useful; hero card failures carry the server's message. The switch snaps back to its stored value on the next re-fetch. |
 | The request fails or times out | Cannot happen. | The hero card form keeps its contents. A theme switch that failed keeps showing its old position, which is correct. A repair that timed out may still have run. |
@@ -275,8 +275,10 @@ Every write fails.
 card failures carry the server's message. No player is notified of any change
 here, but every player sees the result the next time their page re-fetches.
 
-**URL state.** Nothing. The section, the open form, and the card being edited are
-all invisible to the address bar.
+**URL state.** Each section has its own address — `/admin/hero-cards`,
+`/admin/themes`, `/admin/help`, `/admin/league-night-status`. Nothing inside one
+does: the open form and the card being edited are invisible to the address
+bar.
 
 **On a phone.** The hero card form's live preview drops below the fields, so an
 admin editing on a phone cannot see the preview and the field at the same time.

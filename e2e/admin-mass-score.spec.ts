@@ -57,7 +57,6 @@ test.describe('admin mass score submission workflow', () => {
           user,
         };
         window.localStorage.setItem(key, JSON.stringify(session));
-        window.sessionStorage.setItem('adminActiveTab', 'scores');
       },
       { key: AUTH_STORAGE_KEY, user: adminUser }
     );
@@ -132,7 +131,7 @@ test.describe('admin mass score submission workflow', () => {
       }
     });
 
-    await page.goto('/admin');
+    await page.goto('/admin/scores');
 
     await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible({
       timeout: 15000,
@@ -171,7 +170,7 @@ test.describe('admin mass score submission workflow', () => {
       }
     });
 
-    await page.goto('/admin');
+    await page.goto('/admin/scores');
     await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible({
       timeout: 15000,
     });

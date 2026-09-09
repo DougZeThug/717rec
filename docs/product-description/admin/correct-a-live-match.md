@@ -276,8 +276,9 @@ real message.
 **Toasts and notifications.** One toast per action, and the failure toasts are
 specific. Nothing is sent to the teams whose match was corrected.
 
-**URL state.** None. Neither the selected season nor the selected match is in
-the address, so a correction cannot be handed to another admin as a link.
+**URL state.** The section's address is `/admin/live-corrections`. Neither the
+selected season nor the selected match is in it, so the section can be handed to
+another admin as a link but a particular correction cannot.
 
 **On a phone.** The layout stacks. The edit dialog's eight numeric fields in a
 four-column grid are cramped.

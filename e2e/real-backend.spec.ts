@@ -163,11 +163,8 @@ test.describe('@real-backend golden paths', () => {
       await page.getByRole('button', { name: /^Login$/i }).click();
       await expect(page).toHaveURL(/\/(?!auth)/, { timeout: 15_000 });
 
-      // Preselect the Scores tab so AdminSidebar restores it on first render.
-      await page.evaluate(() => {
-        sessionStorage.setItem('adminActiveTab', 'scores');
-      });
-      await page.goto('/admin');
+      // The Scores section has its own address, so open it directly.
+      await page.goto('/admin/scores');
 
       // Wait for the Mass Score Entry heading to render (admin gate cleared).
       await expect(page.getByRole('heading', { name: /Mass Score Entry/i })).toBeVisible({
