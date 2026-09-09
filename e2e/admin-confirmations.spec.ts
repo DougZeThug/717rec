@@ -32,7 +32,7 @@ test.describe('destructive admin actions ask first', () => {
   });
 
   test('deleting a contact request', async ({ page }) => {
-    await seedAdminAuth(page, { tab: 'contact-inbox' });
+    await seedAdminAuth(page);
     await page.route(/\/rest\/v1\/contact_requests/, (route) =>
       route.fulfill(
         jsonResponse([
@@ -58,7 +58,7 @@ test.describe('destructive admin actions ask first', () => {
     );
 
     const writes = recordWrites(page, /contact_requests/);
-    await page.goto('/admin');
+    await page.goto('/admin/contact-inbox');
 
     await page.getByRole('button', { name: /^Delete$/ }).click();
     const dialog = page.getByRole('alertdialog');
@@ -73,7 +73,7 @@ test.describe('destructive admin actions ask first', () => {
   });
 
   test('deleting a notification', async ({ page }) => {
-    await seedAdminAuth(page, { tab: 'notifications' });
+    await seedAdminAuth(page);
     await page.route(/\/rest\/v1\/admin_notifications/, (route) =>
       route.fulfill(
         jsonResponse([
@@ -90,7 +90,7 @@ test.describe('destructive admin actions ask first', () => {
     );
 
     const writes = recordWrites(page, /admin_notifications/);
-    await page.goto('/admin');
+    await page.goto('/admin/notifications');
 
     await page.getByRole('button', { name: 'Delete notification' }).click();
     const dialog = page.getByRole('alertdialog');
@@ -105,7 +105,7 @@ test.describe('destructive admin actions ask first', () => {
   });
 
   test('removing a Challonge fallback bracket', async ({ page }) => {
-    await seedAdminAuth(page, { tab: 'hero-cards' });
+    await seedAdminAuth(page);
     await page.route(/\/rest\/v1\/challonge_fallback_config/, (route) =>
       route.fulfill(
         jsonResponse({
@@ -126,7 +126,7 @@ test.describe('destructive admin actions ask first', () => {
     );
 
     const writes = recordWrites(page, /challonge_fallback_brackets/);
-    await page.goto('/admin');
+    await page.goto('/admin/hero-cards');
 
     await page.getByRole('button', { name: 'Remove bracket' }).click();
     const dialog = page.getByRole('alertdialog');
@@ -141,7 +141,7 @@ test.describe('destructive admin actions ask first', () => {
   });
 
   test("changing a team's division", async ({ page }) => {
-    await seedAdminAuth(page, { tab: 'teams' });
+    await seedAdminAuth(page);
     await page.route(/\/rest\/v1\/v_team_details/, (route) =>
       route.fulfill(
         jsonResponse([
@@ -190,7 +190,7 @@ test.describe('destructive admin actions ask first', () => {
     );
 
     const writes = recordWrites(page, /\/rest\/v1\/teams/);
-    await page.goto('/admin');
+    await page.goto('/admin/teams');
 
     const divisionSelect = page.getByRole('combobox', { name: 'Set division for Bag Boys' });
     await expect(divisionSelect).toBeVisible();

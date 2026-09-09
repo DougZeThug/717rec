@@ -196,9 +196,10 @@ means a busy Completed tab holds two open channels per card.
 **Toasts and notifications.** Failures produce a red toast; a visitor pressing a
 reaction gets a plain one. Nothing about a card sends a notification to anyone.
 
-**URL state.** None. A card cannot be linked to. The nearest thing to a link for
-one match is its live scoring address, and that only exists for matches that have
-been opened there.
+**URL state.** Each card carries `#match-<id>`, so a link can name one match:
+`/schedule?date=2026-09-03#match-<id>` opens that night and scrolls to that card.
+Home's "my match" row is built that way. The card holds no other state, and its
+live scoring address still only exists for matches opened there.
 
 **On a phone.** Cards are full width and one per row. The live-scoring and recap
 buttons are 40 pixels tall and full width, so they are the easiest things on the

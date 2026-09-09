@@ -244,8 +244,10 @@ fallback is a single league-wide setting and the signup list is one flat table.
 team count in three places over. Creation failures are shown twice: inside the
 dialog and as a toast. Every other control reports only by toast.
 
-**Unsaved changes.** Not guarded anywhere. The create form, the seeding order,
-and an unsaved Challonge row are all lost on close.
+**Unsaved changes.** The Blind Draw signup message is guarded: an edit that has
+not been saved asks before another admin section is opened, and raises the
+browser's warning on leaving the site. Nothing else here is. The create form, the
+seeding order, and an unsaved Challonge row are all lost on close.
 
 **Optimistic updates and rollback.** None. Every write waits. A failed creation
 tries to delete its own half-made bracket row.

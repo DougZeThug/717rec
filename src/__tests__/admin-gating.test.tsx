@@ -128,6 +128,53 @@ describe('admin route gating', () => {
     expect(window.location.pathname).toBe('/admin');
     expect(screen.queryByRole('heading', { name: /home page/i })).not.toBeInTheDocument();
   });
+
+  // Each section is its own address, so the guard has to cover them all and not
+  // just the bare /admin it was written for.
+  it('renders a section address for an admin and turns a non-admin away', async () => {
+    window.history.replaceState({}, '', '/admin/pending-matches');
+    mockUseAuth.mockReturnValue({
+      user: { id: 'admin-1', email: 'admin@example.com' },
+      authInitialized: true,
+      profile: { id: 'profile-admin-1', is_admin: true },
+      isProfileLoading: false,
+      profileLoadFailed: false,
+    });
+    mockUseAdminAccess.mockReturnValue({
+      isAdminAccessGranted: true,
+      isLoading: false,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
+      requestAdminAccess: vi.fn(),
+    });
+
+    const { unmount } = render(<App />);
+
+    expect(await screen.findByRole('heading', { name: /admin dashboard/i })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/admin/pending-matches');
+    unmount();
+
+    window.history.replaceState({}, '', '/admin/pending-matches');
+    mockUseAuth.mockReturnValue({
+      user: { id: 'user-1', email: 'player@example.com' },
+      authInitialized: true,
+      profile: { id: 'profile-1', is_admin: false },
+      isProfileLoading: false,
+      profileLoadFailed: false,
+    });
+    mockUseAdminAccess.mockReturnValue({
+      isAdminAccessGranted: false,
+      isLoading: false,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
+      requestAdminAccess: vi.fn(),
+    });
+
+    render(<App />);
+
+    await waitFor(() => expect(window.location.pathname).toBe('/'));
+    expect(screen.queryByRole('heading', { name: /admin dashboard/i })).not.toBeInTheDocument();
+  });
   it('keeps an admin on /admin with a retry card when the profile failed to load', async () => {
     const retryAccessCheck = vi.fn();
     mockUseAuth.mockReturnValue({

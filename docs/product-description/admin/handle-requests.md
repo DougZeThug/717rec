@@ -213,9 +213,10 @@ both a league request and a support ticket send an alert to `admin@717rec.com`
 as well as landing in the Contact Inbox. Membership and team requests send no
 alert at all.
 
-**URL state.** None. Not the queue, not the filter, not the selected request.
+**URL state.** The two sections have addresses — `/admin/requests` and
+`/admin/contact-inbox`. The filter and the selected request do not.
 `/admin/notifications` used to carry a second copy of the contact inbox; that
-page is gone and the address redirects to `/admin`. See
+page is gone, and the address now opens the Notifications section. See
 [`send-notifications.md`](send-notifications.md).
 
 **On a phone.** All three stack. The team-request grid of dates and timeslots

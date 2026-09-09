@@ -182,7 +182,7 @@ waiting. It is described in [`handle-requests.md`](handle-requests.md).
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. | Escape closes the team dialog and discards it with no confirmation. The division editor's Cancel restores all three fields. The Create Team tab's Cancel returns to Manage Teams. Nothing aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. The search and filter reset when the section is reopened. | **Everything typed is lost, with no warning** — including switching between the four tabs inside the Teams section. A division change already sent still lands. |
-| Browser back or forward | Leaves the dashboard. | Same as navigating away, and the app cannot prevent it. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away, and the app cannot prevent it. |
 | Reload, or the tab closed | Returns to the same section, with an empty search and the Manage Teams tab. | Everything in a form is lost. A sent write still lands. An uploaded image stays uploaded whether or not the form was saved. |
 | Network lost mid-request | Nothing to lose. | The write fails and a red toast says so. The division dropdown snaps back to the value it was showing. Nothing is queued and nothing retries. |
 | The request fails or times out | Cannot happen. | The team dialog stays open with its contents. The division dropdown keeps its old value. The messages are generic for teams and the server's own for divisions. |
@@ -219,8 +219,9 @@ upload fails.
 raises two and shows only the second. Team failures use a generic per-feature
 sentence; division failures carry the server's reason.
 
-**URL state.** Nothing. The section, tab, search text, filter, and the team being
-edited are all invisible to the address bar.
+**URL state.** The two sections have addresses — `/admin/teams` and
+`/admin/divisions`. Nothing inside them does: the tab, search text, filter, and
+the team being edited are all invisible to the address bar.
 
 **On a phone.** The team table becomes cards, each with a full-width division
 dropdown, so the single most consequential control on the screen is also the

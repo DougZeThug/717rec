@@ -171,8 +171,8 @@ red toast says the removal failed and the row stays.
 
 `/admin` is route-guarded; the gate is described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
-`/timeslots` is guarded the same way and then redirects here, opening this
-section rather than whichever one was last used, so an old bookmark still works
+This section's own address is `/admin/timeslots`. `/timeslots` is guarded the
+same way and then redirects there, so an old bookmark still opens this section
 and a signed-out visitor still lands on `/auth`.
 
 ## Reading team preferences
@@ -207,7 +207,7 @@ the player's side.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Neither screen has a Cancel button for the assignment form. | Escape closes the date popover or the removal confirmation. It does not clear the selection and does not abort a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **The ticked teams, the chosen block, and the date are all lost with no warning.** An assignment already sent still lands. |
-| Browser back or forward | Leaves the screen. | Same as navigating away, and the app cannot prevent it. Coming back gives the next league night and an empty selection. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away, and the app cannot prevent it. Coming back gives the next league night and an empty selection. |
 | Reload, or the tab closed | Returns to the next league night. | Everything selected is lost. A sent write still lands, and its rows appear on the reloaded list. |
 | Network lost mid-request | Nothing to lose. | The write fails and a generic red toast appears. Nothing is queued. The selection is **not** cleared, so the admin can press again. |
 | The request fails or times out | Cannot happen. | The selection stays and the button comes back from "Booking…". The message is generic, so any refusal reads the same as a lost connection. |
@@ -242,8 +242,8 @@ is back. Assigning and removing both fail.
 generic sentence because a second, generic toast replaces the specific one the
 service raised. Teams are not told when their timeslot changes.
 
-**URL state.** Nothing — not even the date. No section of the dashboard has a
-URL of its own, so an admin cannot link to a particular night.
+**URL state.** The section's address is `/admin/timeslots`, but the date is not
+in it, so an admin can link to this section and not to a particular night.
 
 **On a phone.** The section stacks. The team grid stays two tiles across, which
 is tight but usable. The time buttons wrap.
@@ -283,7 +283,7 @@ sent.
 - Resolved: **`/timeslots` could not create a double header.** It was treated as
   a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed))
   and fixed there. The page has since been deleted altogether; the path
-  redirects to `/admin`, so only the dashboard section remains.
+  redirects to `/admin/timeslots`, so only the dashboard section remains.
 - Resolved: **9:30 PM was offered where it could not work.** It was first
   treated as a bug ([B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed)),
   and double-header mode was made to list only the times that start a pair. It

@@ -63,3 +63,13 @@ describe('getRouteName', () => {
     expect(getRouteName('/does-not-exist')).toBe('Page Not Found');
   });
 });
+
+// Every admin section is its own address now. Without a prefix entry the
+// announcer would tell a screen-reader user "Page Not Found" on each switch.
+describe('admin section addresses', () => {
+  it('names every admin section address as the dashboard', () => {
+    expect(getRouteName('/admin')).toBe('Admin Dashboard');
+    expect(getRouteName('/admin/scores')).toBe('Admin Dashboard');
+    expect(getRouteName('/admin/pending-matches')).toBe('Admin Dashboard');
+  });
+});

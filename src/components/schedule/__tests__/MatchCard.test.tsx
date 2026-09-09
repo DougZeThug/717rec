@@ -248,4 +248,11 @@ describe('MatchCard', () => {
     expect(trigger).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /view match recap/i })).not.toBeInTheDocument();
   });
+
+  // A link may name one match — Home's "my match" row does. UX audit SC-04.
+  it('carries an id a link can point at', () => {
+    const { container } = render(<MatchCard match={baseMatch} />);
+
+    expect(container.querySelector(`#match-${baseMatch.id}`)).not.toBeNull();
+  });
 });

@@ -24,7 +24,7 @@ const jsonResponse = (body: unknown, status = 200) => ({
   body: JSON.stringify(body),
 });
 
-const seedAdminAuth = async (page: Page, activeTab: string) => {
+const seedAdminAuth = async (page: Page) => {
   const user = {
     id: 'e2e-a11y-admin-user',
     aud: 'authenticated',
@@ -36,7 +36,7 @@ const seedAdminAuth = async (page: Page, activeTab: string) => {
   };
 
   await page.addInitScript(
-    ({ key, seededUser, tab }) => {
+    ({ key, seededUser }) => {
       window.localStorage.setItem(
         key,
         JSON.stringify({
@@ -48,9 +48,8 @@ const seedAdminAuth = async (page: Page, activeTab: string) => {
           user: seededUser,
         })
       );
-      window.sessionStorage.setItem('adminActiveTab', tab);
     },
-    { key: AUTH_STORAGE_KEY, seededUser: user, tab: activeTab }
+    { key: AUTH_STORAGE_KEY, seededUser: user }
   );
 
   await page.route(/\/auth\/v1\/user/, async (route) => {
@@ -143,8 +142,8 @@ for (const section of adminSections) {
   test(`a11y: /admin ${section.label} has no detectable WCAG 2 A/AA violations`, async ({
     page,
   }) => {
-    await seedAdminAuth(page, section.id);
-    await page.goto('/admin', { waitUntil: 'networkidle' });
+    await seedAdminAuth(page);
+    await page.goto(`/admin/${section.id}`, { waitUntil: 'networkidle' });
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toBeVisible({
       timeout: 15000,
     });

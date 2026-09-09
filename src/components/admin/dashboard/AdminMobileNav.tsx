@@ -1,312 +1,139 @@
-import {
-  Activity,
-  Bell,
-  Calendar,
-  CalendarClock,
-  ChevronDown,
-  ClipboardCheck,
-  Clock,
-  HelpCircle,
-  Inbox,
-  LayoutGrid,
-  ListChecks,
-  Mail,
-  Palette,
-  Scale,
-  Search,
-  Shuffle,
-  SlidersHorizontal,
-  Sparkles,
-  Timer,
-  Trophy,
-  Users,
-  Users2,
-  Wrench,
-  X,
-} from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { ChevronDown, ListChecks, Menu, Timer } from 'lucide-react';
+import React, { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 
-interface AdminMenuItem {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-}
-
-interface TabGroup {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  tabs: string[];
-}
-
-const adminMenuItems: AdminMenuItem[] = [
-  { id: 'timeslots', label: 'Timeslots', icon: Timer },
-  { id: 'batch-matches', label: 'Match Creation', icon: Sparkles },
-  { id: 'auto-schedule', label: 'Auto Schedule', icon: CalendarClock },
-  { id: 'matchups', label: 'Matchups', icon: Users2 },
-  { id: 'scores', label: 'Scores', icon: ListChecks },
-  { id: 'live-corrections', label: 'Live Corrections', icon: Wrench },
-  { id: 'seasons', label: 'Season', icon: Calendar },
-  { id: 'participation', label: 'Participation', icon: ClipboardCheck },
-  { id: 'requests', label: 'Requests', icon: Inbox },
-  { id: 'contact-inbox', label: 'Contact Inbox', icon: Mail },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'teams', label: 'Teams', icon: Users },
-  { id: 'divisions', label: 'Divisions', icon: Trophy },
-  { id: 'pending-matches', label: 'Score approvals', icon: Clock },
-  { id: 'hero-cards', label: 'Hero Cards', icon: LayoutGrid },
-  { id: 'themes', label: 'Themes', icon: Palette },
-  { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },
-  { id: 'help', label: 'Help', icon: HelpCircle },
-  { id: 'league-night-status', label: 'League Night', icon: Activity },
-  { id: 'power-migration', label: 'Power Score Review', icon: Scale },
-  { id: 'power-sandbox', label: 'Power Score Sandbox', icon: SlidersHorizontal },
-];
-
-const tabGroups: TabGroup[] = [
-  {
-    id: 'scheduling',
-    label: 'Scheduling',
-    icon: CalendarClock,
-    tabs: ['timeslots', 'batch-matches', 'auto-schedule'],
-  },
-  {
-    id: 'scores-stats',
-    label: 'Scores & Stats',
-    icon: ListChecks,
-    tabs: ['scores', 'matchups', 'pending-matches', 'power-sandbox'],
-  },
-  {
-    id: 'corrections',
-    label: 'Corrections',
-    icon: Wrench,
-    tabs: ['live-corrections'],
-  },
-  {
-    id: 'teams-players',
-    label: 'Teams & Players',
-    icon: Users,
-    tabs: ['teams', 'divisions', 'requests', 'contact-inbox', 'participation'],
-  },
-  {
-    id: 'settings',
-    label: 'Settings & Content',
-    icon: LayoutGrid,
-    tabs: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'notifications', 'help'],
-  },
-  {
-    id: 'operations',
-    label: 'Operations',
-    icon: Activity,
-    tabs: ['league-night-status', 'power-migration'],
-  },
-];
+import AdminSectionList from './AdminSectionList';
+import { findAdminSection } from './adminSections';
 
 interface AdminMobileNavProps {
+  /** Section named by the address. */
   activeTab: string;
-  onTabChange: (tabId: string) => void;
+  /** Returns false when the section did not change, e.g. unsaved work stopped it. */
+  onTabChange: (tabId: string) => boolean;
   pendingRequestsCount?: number;
 }
 
-const getTabItem = (tabId: string): AdminMenuItem | undefined => {
-  return adminMenuItems.find((item) => item.id === tabId);
-};
+/** The two jobs an admin reaches for on league night, always one tap away. */
+const QuickAccess: React.FC<{
+  activeTab: string;
+  onSelect: (tabId: string) => boolean;
+}> = ({ activeTab, onSelect }) => (
+  <div className="pb-3 border-b border-border">
+    <p className="text-xs text-muted-foreground mb-2 px-1 font-medium uppercase tracking-wide">
+      Quick Access
+    </p>
+    <div className="flex gap-2">
+      <Button
+        variant={activeTab === 'scores' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onSelect('scores')}
+        className="flex-1 h-10"
+      >
+        <ListChecks className="size-4 mr-2" />
+        Scores
+      </Button>
+      <Button
+        variant={activeTab === 'timeslots' ? 'default' : 'outline'}
+        size="sm"
+        onClick={() => onSelect('timeslots')}
+        className="flex-1 h-10"
+      >
+        <Timer className="size-4 mr-2" />
+        Timeslots
+      </Button>
+    </div>
+  </div>
+);
 
+/** The whole section list, slid up from the bottom of the screen. */
+const SectionsDrawer: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  activeTab: string;
+  onSelect: (tabId: string) => boolean;
+  pendingRequestsCount: number;
+}> = ({ open, onOpenChange, activeTab, onSelect, pendingRequestsCount }) => (
+  <Drawer open={open} onOpenChange={onOpenChange}>
+    <DrawerContent className="max-h-[90vh]">
+      <DrawerHeader className="pb-2">
+        <DrawerTitle>Admin sections</DrawerTitle>
+        <DrawerDescription>Choose a section to open.</DrawerDescription>
+      </DrawerHeader>
+      {/* Twenty-one sections and six group headings do not fit a phone. */}
+      <div className="overflow-y-auto px-4 pb-6">
+        <AdminSectionList
+          activeTab={activeTab}
+          onTabChange={onSelect}
+          pendingRequestsCount={pendingRequestsCount}
+        />
+      </div>
+    </DrawerContent>
+  </Drawer>
+);
+
+/**
+ * The phone menu: one bar, and the full section list behind it in a drawer.
+ *
+ * The search box, the six groups and the quick-access buttons all used to sit
+ * above the section, so every section started about 660 pixels down and a
+ * league-night task began with a full-screen scroll (UX audit X-06). Only the
+ * bar is on the page now.
+ *
+ * The bar is deliberately **not** sticky, though the finding suggested it: the
+ * site header is already `sticky top-0`, so a second sticky bar slides
+ * underneath it. The finding is about the first screen, which one short bar
+ * fixes on its own.
+ */
 const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   activeTab,
   onTabChange,
   pendingRequestsCount = 0,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Auto-open the group containing the active tab
-  const initialOpen = useMemo(() => {
-    const group = tabGroups.find((g) => g.tabs.includes(activeTab));
-    return group ? new Set([group.id]) : new Set<string>();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- activeTab intentionally excluded to keep nav memo stable
-  }, []);
-  const [openGroups, setOpenGroups] = useState<Set<string>>(initialOpen);
-
-  const toggleGroup = (groupId: string) => {
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(groupId)) next.delete(groupId);
-      else next.add(groupId);
-      return next;
-    });
-  };
-
-  const getGroupBadgeCount = (group: TabGroup): number => {
-    if (group.tabs.includes('requests') && pendingRequestsCount > 0) {
-      return pendingRequestsCount;
-    }
-    return 0;
-  };
-
-  const filteredItems = useMemo(() => {
-    if (!searchQuery) return [];
-    return adminMenuItems.filter((item) =>
-      item.label.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+  const [isOpen, setIsOpen] = useState(false);
+  const activeLabel = findAdminSection(activeTab)?.label ?? 'Sections';
 
   const handleTabSelect = (tabId: string) => {
-    onTabChange(tabId);
-    setSearchQuery('');
+    const switched = onTabChange(tabId);
+    // Leave the menu up when the switch was refused, so the admin can see they
+    // are still where they were.
+    if (switched) setIsOpen(false);
+    return switched;
   };
 
   return (
     <div className="space-y-3">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          placeholder="Search admin sections..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 pr-9 h-10"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="size-4" />
-          </button>
-        )}
-      </div>
+      {/* Names the section as well as opening the menu, so the bar answers
+          "where am I?" without costing a second row. */}
+      <Button
+        variant="outline"
+        onClick={() => setIsOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className="w-full h-11 justify-start gap-2 min-w-0"
+      >
+        <Menu className="size-4 shrink-0" />
+        <span className="text-xs text-muted-foreground shrink-0">Sections</span>
+        <span className="truncate font-medium">{activeLabel}</span>
+        <ChevronDown className="size-4 shrink-0 ml-auto text-muted-foreground" />
+      </Button>
 
-      {/* Quick Access */}
-      <div className="pb-3 border-b border-border">
-        <p className="text-xs text-muted-foreground mb-2 px-1 font-medium uppercase tracking-wide">
-          Quick Access
-        </p>
-        <div className="flex gap-2">
-          <Button
-            variant={activeTab === 'scores' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleTabSelect('scores')}
-            className="flex-1 h-10"
-          >
-            <ListChecks className="size-4 mr-2" />
-            Scores
-          </Button>
-          <Button
-            variant={activeTab === 'timeslots' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => handleTabSelect('timeslots')}
-            className="flex-1 h-10"
-          >
-            <Timer className="size-4 mr-2" />
-            Timeslots
-          </Button>
-        </div>
-      </div>
+      <QuickAccess activeTab={activeTab} onSelect={handleTabSelect} />
 
-      {/* Search Results (flat list) */}
-      {searchQuery ? (
-        <div className="space-y-1">
-          {filteredItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">No sections found</p>
-          ) : (
-            filteredItems.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                onClick={() => handleTabSelect(item.id)}
-                aria-current={activeTab === item.id ? 'page' : undefined}
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-3 rounded-md text-sm transition-colors',
-                  'hover:bg-accent hover:text-accent-foreground',
-                  activeTab === item.id
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground'
-                )}
-              >
-                <item.icon className="size-4 shrink-0" />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.id === 'requests' && pendingRequestsCount > 0 && (
-                  <Badge variant="destructive" className="text-xs">
-                    {pendingRequestsCount}
-                  </Badge>
-                )}
-              </button>
-            ))
-          )}
-        </div>
-      ) : (
-        /* Grouped Accordion Navigation */
-        <div className="space-y-3">
-          {tabGroups.map((group) => {
-            const GroupIcon = group.icon;
-            const groupBadge = getGroupBadgeCount(group);
-
-            return (
-              <div key={group.id} className="border border-border rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => toggleGroup(group.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 bg-muted/30 rounded-t-lg"
-                >
-                  <GroupIcon className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 text-left font-medium text-sm">{group.label}</span>
-                  {groupBadge > 0 && (
-                    <Badge variant="destructive" className="text-xs">
-                      {groupBadge}
-                    </Badge>
-                  )}
-                  <ChevronDown
-                    className={cn(
-                      'size-4 shrink-0 text-muted-foreground transition-transform duration-200',
-                      openGroups.has(group.id) && 'rotate-180'
-                    )}
-                  />
-                </button>
-                {openGroups.has(group.id) && (
-                  <div className="border-t border-border">
-                    {group.tabs.map((tabId) => {
-                      const tab = getTabItem(tabId);
-                      if (!tab) return null;
-                      const TabIcon = tab.icon;
-
-                      return (
-                        <button
-                          type="button"
-                          key={tabId}
-                          onClick={() => handleTabSelect(tabId)}
-                          aria-current={activeTab === tabId ? 'page' : undefined}
-                          className={cn(
-                            'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
-                            'hover:bg-accent hover:text-accent-foreground',
-                            'border-b border-border last:border-b-0',
-                            activeTab === tabId
-                              ? 'bg-primary/10 text-primary font-medium'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          <TabIcon className="size-4 shrink-0" />
-                          <span className="flex-1 text-left">{tab.label}</span>
-                          {tabId === 'requests' && pendingRequestsCount > 0 && (
-                            <Badge variant="destructive" className="text-xs">
-                              {pendingRequestsCount}
-                            </Badge>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <SectionsDrawer
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        activeTab={activeTab}
+        onSelect={handleTabSelect}
+        pendingRequestsCount={pendingRequestsCount}
+      />
     </div>
   );
 };

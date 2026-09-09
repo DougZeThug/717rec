@@ -142,16 +142,18 @@ comment as agreed with the league admin):
 **Navigation and gating** (established by `foundations/navigation.md` and
 `foundations/accounts-and-roles.md`):
 
-- Only **three** paths are guarded: `/admin`, and the two that now redirect
-  into it, `/admin/notifications` and `/timeslots`. Every other route is open
+- Only the admin console is guarded: `/admin`, every `/admin/:section`
+  address, and `/timeslots`, which redirects into it. Every other route is open
   and handles its own signed-out state, inconsistently. Do not describe any
   other route as "protected".
 - `/matches/:matchId/live` is **public to watch**. Only editing is gated.
 - **No route resets scroll position** on navigation. **Four** routes restore
   their own — `/teams`, `/stats`, `/history`, `/insights` — which is a different
   behaviour and does not help a user arriving at any of the other sixteen.
-- Nothing but a record id is ever in the URL. Filters, tabs, and sort orders are
-  lost on navigation.
+- The URL carries record ids, the open admin section, the schedule's night and
+  search, the standings view, the compared teams, the playoff season and
+  bracket, and the team-page section. It does not carry sort orders, most tabs,
+  or which panels are expanded; those are lost on navigation.
 
 **Freshness** (established by `foundations/saving-and-freshness.md`):
 

@@ -1,10 +1,12 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
+import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
-import { ADMIN_TAB_STORAGE_KEY, switchAdminTab } from '@/utils/adminTabs';
+import { switchAdminTab } from '@/utils/adminTabs';
+import { clearUnsavedWork, registerUnsavedWork } from '@/utils/unsavedChanges';
 
 // Polyfill ResizeObserver for jsdom (Radix ScrollArea needs it).
 globalThis.ResizeObserver =
@@ -50,51 +52,121 @@ vi.mock('@/components/admin/dashboard/AdminMobileNav', () => ({
 
 const tabButton = (name: RegExp) => screen.getByRole('button', { name });
 
+const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
+
+const SectionRoute = () => {
+  const { section } = useParams<{ section: string }>();
+  return <AdminSidebar section={section as string} />;
+};
+
+/**
+ * The sidebar reads the open section from the address and changes it by
+ * navigating, so the cases below run it inside a real router rather than
+ * passing the prop by hand. `location` reports where a click landed.
+ */
+const renderSidebar = (section = 'timeslots') =>
+  render(
+    <MemoryRouter initialEntries={[`/admin/${section}`]}>
+      <LocationProbe />
+      <Routes>
+        <Route path="/admin/:section" element={<SectionRoute />} />
+      </Routes>
+    </MemoryRouter>
+  );
+
+const currentPath = () => screen.getByTestId('location').textContent;
+
 describe('AdminSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsMobile.mockReturnValue(false);
     mockPendingRequestsCount.mockReturnValue(0);
     sessionStorage.clear();
+    clearUnsavedWork();
   });
 
   afterEach(() => {
     sessionStorage.clear();
+    clearUnsavedWork();
   });
 
-  it('opens on Timeslots when nothing was remembered', () => {
-    render(<AdminSidebar />);
+  // Which section a bare /admin opens is AdminDashboard's job; see its tests.
+  it('opens the section named by the address', () => {
+    renderSidebar('divisions');
 
-    expect(tabButton(/timeslots/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Divisions' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
   });
 
-  it('reopens the section remembered from last time', () => {
-    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, 'divisions');
-    render(<AdminSidebar />);
-
-    expect(tabButton(/divisions/i)).toBeInTheDocument();
-  });
-
-  it('remembers the section the admin picks', async () => {
-    render(<AdminSidebar />);
+  // Remembering the section belongs to the page, which records whatever it
+  // renders; see AdminDashboard's tests.
+  it('goes to the section the admin picks', async () => {
+    renderSidebar();
 
     await userEvent.click(tabButton(/divisions/i));
 
-    expect(sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY)).toBe('divisions');
+    await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
   });
 
   it('changes section when another part of the dashboard asks it to', async () => {
-    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, 'timeslots');
-    render(<AdminSidebar />);
+    renderSidebar();
 
     // This is how the Export tab and the League Night Status tiles navigate.
-    switchAdminTab('divisions');
+    // Wrapped in act because the dispatch is synchronous and outside React:
+    // without it the navigation it triggers races the scheduler, which made
+    // this case flaky under a loaded parallel run.
+    act(() => switchAdminTab('divisions'));
 
-    await waitFor(() => expect(sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY)).toBe('divisions'));
+    await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
+  });
+
+  // UX audit A-07: switching section threw away unsaved work with no warning.
+  describe('when a section holds unsaved work', () => {
+    const registerDirtySection = () =>
+      registerUnsavedWork({ isDirty: () => true, message: 'Lose the scores?' });
+
+    it('asks before leaving, and stays put when the admin says no', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      registerDirtySection();
+      renderSidebar();
+
+      await userEvent.click(tabButton(/divisions/i));
+
+      expect(confirmSpy).toHaveBeenCalledWith('Lose the scores?');
+      expect(currentPath()).toBe('/admin/timeslots');
+      confirmSpy.mockRestore();
+    });
+
+    it('leaves once the admin says to discard it', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+      registerDirtySection();
+      renderSidebar();
+
+      await userEvent.click(tabButton(/divisions/i));
+
+      await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
+      confirmSpy.mockRestore();
+    });
+
+    // League Night quick actions, the Help steps and the Requests toast all
+    // arrive this way, and must be asked about too.
+    it('asks when another part of the dashboard requests the switch', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      registerDirtySection();
+      renderSidebar();
+
+      act(() => switchAdminTab('divisions'));
+
+      await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
+      expect(currentPath()).toBe('/admin/timeslots');
+      confirmSpy.mockRestore();
+    });
   });
 
   it('filters the menu as the admin searches', async () => {
-    render(<AdminSidebar />);
+    renderSidebar();
 
     expect(tabButton(/divisions/i)).toBeInTheDocument();
 
@@ -105,7 +177,7 @@ describe('AdminSidebar', () => {
   });
 
   it('collapses and expands the sidebar, hiding the search when collapsed', async () => {
-    render(<AdminSidebar />);
+    renderSidebar();
 
     await userEvent.click(screen.getByRole('button', { name: 'Collapse sidebar' }));
     expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
@@ -116,8 +188,7 @@ describe('AdminSidebar', () => {
 
   it('uses the grouped mobile navigation on a phone', () => {
     mockIsMobile.mockReturnValue(true);
-    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, 'scores');
-    render(<AdminSidebar />);
+    renderSidebar('scores');
 
     expect(screen.getByTestId('mobile-nav')).toHaveTextContent('active:scores');
     expect(screen.queryByPlaceholderText('Search...')).not.toBeInTheDocument();
@@ -134,7 +205,7 @@ describe('AdminSidebar', () => {
 
     it('still names every section for a screen reader', async () => {
       const user = userEvent.setup();
-      render(<AdminSidebar />);
+      renderSidebar();
 
       await collapse(user);
 
@@ -148,7 +219,7 @@ describe('AdminSidebar', () => {
     it('keeps the pending requests count visible', async () => {
       const user = userEvent.setup();
       mockPendingRequestsCount.mockReturnValue(4);
-      render(<AdminSidebar />);
+      renderSidebar();
 
       expect(screen.getByText('4')).toBeInTheDocument();
 
@@ -161,7 +232,7 @@ describe('AdminSidebar', () => {
     // badge would otherwise be silent for a screen reader.
     it('announces the pending count as part of the button name', () => {
       mockPendingRequestsCount.mockReturnValue(4);
-      render(<AdminSidebar />);
+      renderSidebar();
 
       expect(screen.getByRole('button', { name: 'Requests, 4 pending' })).toBeInTheDocument();
       // Other items keep their plain name.
@@ -170,7 +241,7 @@ describe('AdminSidebar', () => {
 
     it('drops the count from the name when there is nothing pending', () => {
       mockPendingRequestsCount.mockReturnValue(0);
-      render(<AdminSidebar />);
+      renderSidebar();
 
       expect(screen.getByRole('button', { name: 'Requests' })).toBeInTheDocument();
     });
@@ -178,9 +249,8 @@ describe('AdminSidebar', () => {
 
   it('marks the open section as the current page', async () => {
     const user = userEvent.setup();
-    render(<AdminSidebar />);
+    renderSidebar();
 
-    // Default section is Timeslots.
     expect(screen.getByRole('button', { name: 'Timeslots' })).toHaveAttribute(
       'aria-current',
       'page'
@@ -199,7 +269,7 @@ describe('AdminSidebar', () => {
   });
 
   it('labels the section list as a landmark', () => {
-    render(<AdminSidebar />);
+    renderSidebar();
 
     expect(screen.getByRole('navigation', { name: 'Admin sections' })).toBeInTheDocument();
   });

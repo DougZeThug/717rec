@@ -1,31 +1,7 @@
 import { AnimatePresence, m } from 'framer-motion';
-import {
-  Activity,
-  Bell,
-  Calendar,
-  CalendarClock,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardCheck,
-  Clock,
-  HelpCircle,
-  Inbox,
-  LayoutGrid,
-  ListChecks,
-  Mail,
-  Palette,
-  Scale,
-  Search,
-  Shuffle,
-  SlidersHorizontal,
-  Sparkles,
-  Timer,
-  Trophy,
-  Users,
-  Users2,
-  Wrench,
-} from 'lucide-react';
-import React, { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,116 +11,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
-import { ADMIN_TAB_STORAGE_KEY, subscribeToAdminTabRequests } from '@/utils/adminTabs';
+import { subscribeToAdminTabRequests } from '@/utils/adminTabs';
+import { confirmDiscardUnsavedWork } from '@/utils/unsavedChanges';
 
 import AdminMobileNav from './AdminMobileNav';
-
-interface AdminMenuItem {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  Component: React.LazyExoticComponent<React.ComponentType>;
-}
-
-const TimeslotsTab = lazy(() => import('@/components/admin/timeslots/TimeslotsTab'));
-const BatchMatchCreationTab = lazy(
-  () => import('@/components/admin/batch-matches/BatchMatchCreationTab')
-);
-const AutoScheduleTab = lazy(() => import('@/components/admin/auto-schedule/AutoScheduleTab'));
-const OpponentHistoryTab = lazy(
-  () => import('@/components/admin/opponent-history/OpponentHistoryTab')
-);
-const MassScoresTab = lazy(() => import('@/components/admin/scores/MassScoresTab'));
-const NotificationsTab = lazy(() => import('@/components/admin/notifications/NotificationsTab'));
-const SeasonManagementTab = lazy(() => import('@/components/admin/seasons/SeasonManagementTab'));
-const SeasonParticipationTab = lazy(
-  () => import('@/components/admin/participation/SeasonParticipationTab')
-);
-const RequestsTab = lazy(() => import('@/components/admin/requests/RequestsTab'));
-const ContactInboxSection = lazy(() => import('@/components/admin/contact/ContactInboxSection'));
-const TeamManagementTab = lazy(() => import('@/components/admin/teams/TeamManagementTab'));
-const DivisionsTab = lazy(() => import('@/components/admin/divisions/DivisionsTab'));
-const PendingMatchesSection = lazy(() => import('@/components/admin/PendingMatchesSection'));
-const HeroCardsTab = lazy(() => import('@/components/admin/hero-cards/HeroCardsTab'));
-const ThemeManagementTab = lazy(() => import('@/components/admin/theme/ThemeManagementTab'));
-const BlindDrawSignupsTab = lazy(() => import('@/components/admin/blind-draw/BlindDrawSignupsTab'));
-const GettingStartedTab = lazy(() => import('@/components/admin/help/GettingStartedTab'));
-const LiveCorrectionsSection = lazy(
-  () => import('@/components/admin/live-corrections/LiveCorrectionsSection')
-);
-const LeagueNightStatusTab = lazy(
-  () => import('@/components/admin/league-night-status/LeagueNightStatusTab')
-);
-const PowerMigrationReviewTab = lazy(
-  () => import('@/components/admin/power-migration/PowerMigrationReviewTab')
-);
-const PowerScoreSandboxTab = lazy(
-  () => import('@/components/admin/power-sandbox/PowerScoreSandboxTab')
-);
-
-const adminMenuItems: AdminMenuItem[] = [
-  { id: 'timeslots', label: 'Timeslots', icon: Timer, Component: TimeslotsTab },
-  {
-    id: 'batch-matches',
-    label: 'Match Creation',
-    icon: Sparkles,
-    Component: BatchMatchCreationTab,
-  },
-  {
-    id: 'auto-schedule',
-    label: 'Auto Schedule',
-    icon: CalendarClock,
-    Component: AutoScheduleTab,
-  },
-  { id: 'matchups', label: 'Matchups', icon: Users2, Component: OpponentHistoryTab },
-  { id: 'scores', label: 'Scores', icon: ListChecks, Component: MassScoresTab },
-  {
-    id: 'live-corrections',
-    label: 'Live Corrections',
-    icon: Wrench,
-    Component: LiveCorrectionsSection,
-  },
-  { id: 'seasons', label: 'Season', icon: Calendar, Component: SeasonManagementTab },
-  {
-    id: 'participation',
-    label: 'Participation',
-    icon: ClipboardCheck,
-    Component: SeasonParticipationTab,
-  },
-  { id: 'requests', label: 'Requests', icon: Inbox, Component: RequestsTab },
-  { id: 'contact-inbox', label: 'Contact Inbox', icon: Mail, Component: ContactInboxSection },
-  { id: 'notifications', label: 'Notifications', icon: Bell, Component: NotificationsTab },
-  { id: 'teams', label: 'Teams', icon: Users, Component: TeamManagementTab },
-  { id: 'divisions', label: 'Divisions', icon: Trophy, Component: DivisionsTab },
-  {
-    id: 'pending-matches',
-    label: 'Score approvals',
-    icon: Clock,
-    Component: PendingMatchesSection,
-  },
-  { id: 'hero-cards', label: 'Hero', icon: LayoutGrid, Component: HeroCardsTab },
-  { id: 'themes', label: 'Themes', icon: Palette, Component: ThemeManagementTab },
-  { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle, Component: BlindDrawSignupsTab },
-  { id: 'help', label: 'Help', icon: HelpCircle, Component: GettingStartedTab },
-  {
-    id: 'league-night-status',
-    label: 'League Night',
-    icon: Activity,
-    Component: LeagueNightStatusTab,
-  },
-  {
-    id: 'power-migration',
-    label: 'Power Score Review',
-    icon: Scale,
-    Component: PowerMigrationReviewTab,
-  },
-  {
-    id: 'power-sandbox',
-    label: 'Power Score Sandbox',
-    icon: SlidersHorizontal,
-    Component: PowerScoreSandboxTab,
-  },
-];
+import { ADMIN_SECTIONS, findAdminSection } from './adminSections';
 
 // Memoized animation props to prevent recreating objects on every render
 const sidebarAnimateProps = { expanded: { width: 240 }, collapsed: { width: 60 } };
@@ -160,18 +31,32 @@ const labelAnimateProps = {
   exit: { opacity: 0, width: 0 },
 };
 
-/** Admin dashboard shell: searchable section nav (sidebar or mobile) persisting the active tab. */
-const AdminSidebar: React.FC = () => {
-  const isMobile = useIsMobile();
-  const { data: pendingRequestsCount } = usePendingRequestsCount();
-  const [activeTab, setActiveTab] = useState(() => {
-    return sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY) || 'timeslots';
-  });
+interface AdminSidebarProps {
+  /** Section named by the address. `AdminDashboard` has already checked it. */
+  section: string;
+}
 
-  const handleTabChange = useCallback((tabId: string) => {
-    setActiveTab(tabId);
-    sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, tabId);
-  }, []);
+/** Admin dashboard shell: searchable section nav (sidebar or mobile) for the section in the address. */
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
+  const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { data: pendingRequestsCount } = usePendingRequestsCount();
+
+  // Menu entries are buttons that navigate rather than links, so every way of
+  // reaching another section — the menu, the phone drawer, and the
+  // `switchAdminTab` requests below — passes through this one function. That is
+  // what lets the unsaved-work check below cover all of them at once.
+  // Reports whether the switch happened, so the phone menu can stay open when
+  // unsaved work stopped it.
+  const handleTabChange = useCallback(
+    (tabId: string) => {
+      if (tabId === activeTab) return true;
+      if (!confirmDiscardUnsavedWork()) return false;
+      navigate(`/admin/${tabId}`);
+      return true;
+    },
+    [activeTab, navigate]
+  );
 
   // A control inside one section can ask for another section; see utils/adminTabs.
   useEffect(() => subscribeToAdminTabRequests(handleTabChange), [handleTabChange]);
@@ -181,14 +66,11 @@ const AdminSidebar: React.FC = () => {
 
   const filteredItems = useMemo(
     () =>
-      adminMenuItems.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase())),
+      ADMIN_SECTIONS.filter((item) => item.label.toLowerCase().includes(searchQuery.toLowerCase())),
     [searchQuery]
   );
 
-  const activeItem = useMemo(
-    () => adminMenuItems.find((item) => item.id === activeTab),
-    [activeTab]
-  );
+  const activeItem = useMemo(() => findAdminSection(activeTab), [activeTab]);
 
   // Mobile: Use grouped collapsible navigation
   if (isMobile) {

@@ -149,4 +149,30 @@ describe('TeamDetailsStickyNav', () => {
 
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }));
   });
+
+  // UX audit T-03: the nav scrolled without ever writing the address, so a
+  // section could not be linked to.
+  it('puts the section in the address, in place of the current entry', async () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    render(<TeamDetailsStickyNav />);
+    scrollPageTo(250);
+
+    await userEvent.click(screen.getByRole('button', { name: /match history/i }));
+
+    // The existing history state is passed through unchanged; jsdom's is null.
+    expect(replaceState).toHaveBeenCalledWith(window.history.state, '', '#matches');
+    expect(window.location.hash).toBe('#matches');
+    replaceState.mockRestore();
+  });
+
+  // The observer fires continuously while the page scrolls; writing from there
+  // would flood the history API.
+  it('does not write the address while the reader scrolls', () => {
+    const replaceState = vi.spyOn(window.history, 'replaceState');
+    render(<TeamDetailsStickyNav />);
+    scrollPageTo(250);
+
+    expect(replaceState).not.toHaveBeenCalled();
+    replaceState.mockRestore();
+  });
 });

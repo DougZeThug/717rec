@@ -235,9 +235,9 @@ separate content, and nothing in the admin dashboard edits it. See
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. | The hero card form's Cancel and Back both discard everything typed with no confirmation. Escape closes the delete or repair confirmation. Neither aborts a request already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | **Everything typed in the hero card form is lost, with no warning**, including switching dashboard section. A switch already flipped has already been written. |
-| Browser back or forward | Leaves the dashboard. | Same as navigating away. The form is not a route, so Back never returns to it. |
+| Escape, or a Cancel button | No effect. | The hero card form's Cancel and Back **ask first** when a field has been changed, and discard everything typed once the admin agrees. Escape closes the delete or repair confirmation. Neither aborts a request already sent. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the hero card form holds changes, then loses everything typed. A switch already flipped has already been written. |
+| Browser back or forward | Steps to the previously opened section. | Same as navigating away. The form is not a route of its own, so Back never returns to it. |
 | Reload, or the tab closed | Returns to the same section, with the form closed. | The form's contents are lost. A sent write still lands. |
 | Network lost mid-request | Nothing to lose. | The write fails and a red toast appears. Theme failures say nothing useful; hero card failures carry the server's message. The switch snaps back to its stored value on the next re-fetch. |
 | The request fails or times out | Cannot happen. | The hero card form keeps its contents. A theme switch that failed keeps showing its old position, which is correct. A repair that timed out may still have run. |
@@ -259,7 +259,11 @@ for one season stays on the home page into the next until somebody hides it.
 enforced by the browser. One guard on themes. Nothing else is checked. Malformed
 advanced settings text is silently treated as empty.
 
-**Unsaved changes.** Not handled anywhere in this document's four sections.
+**Unsaved changes.** The hero card form is guarded: pressing Back or Cancel with
+a field changed asks "This hero card is not saved. Leave and lose the changes?"
+first, choosing another admin section asks the same, and leaving the site raises
+the browser's warning. Saving closes without asking. Nothing else in this
+document's four sections is guarded.
 
 **Optimistic updates and rollback.** None. Every switch waits for the server and
 then re-reads.
@@ -275,8 +279,10 @@ Every write fails.
 card failures carry the server's message. No player is notified of any change
 here, but every player sees the result the next time their page re-fetches.
 
-**URL state.** Nothing. The section, the open form, and the card being edited are
-all invisible to the address bar.
+**URL state.** Each section has its own address — `/admin/hero-cards`,
+`/admin/themes`, `/admin/help`, `/admin/league-night-status`. Nothing inside one
+does: the open form and the card being edited are invisible to the address
+bar.
 
 **On a phone.** The hero card form's live preview drops below the fields, so an
 admin editing on a phone cannot see the preview and the field at the same time.

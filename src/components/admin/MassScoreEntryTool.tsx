@@ -7,6 +7,7 @@ import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { invalidateAllDataQueries } from '@/hooks/matches/updates/utils/queryInvalidation';
 import { useToast } from '@/hooks/useToast';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { deleteMatchWithStatsReversal } from '@/services/matches/MatchWriteService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
@@ -50,6 +51,14 @@ const MassScoreEntryTool: React.FC = () => {
     clearFilters,
     removeMatch,
   } = useScoreEntryData();
+
+  // Every edited row carries `isEdited` until it is submitted, so this is the
+  // whole of "there are typed scores nobody has saved". See UX audit A-07.
+  const hasUnsavedScores = matches.some((match) => match.isEdited);
+  useUnsavedChangesGuard(
+    hasUnsavedScores,
+    'You have scores that are not submitted. Leave and lose them?'
+  );
 
   const handleDeleteConfirm = async () => {
     if (!deleteMatchId) return;

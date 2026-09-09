@@ -208,9 +208,9 @@ deleting toasts only on failure. The word "notification" means two different
 things on this page — the toast the admin sees and the announcement they are
 writing — and neither has anything to do with the other.
 
-**URL state.** None. No section of the admin dashboard has a URL of its own, so
-a notification cannot be linked to. The old `/admin/notifications` address
-redirects to `/admin` and opens this section.
+**URL state.** This section's own address is `/admin/notifications`, which is
+also the address the old standalone page used, so an old bookmark opens the
+section. An individual notification still cannot be linked to.
 
 **On a phone.** The page is already one narrow column and needs no change. The
 bell popover is fixed at 360 pixels, which is wider than the narrowest phones.
@@ -232,7 +232,7 @@ Nothing is emailed, pushed, or sent anywhere outside the app.
   First fixed by adding a **Notifications** item to the admin dashboard's
   sidebar — see [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface)
   — and finished by deleting the page, since the sidebar section did the same
-  job. The address now redirects to `/admin`. The contact inbox the page showed
+  job. The address is now the Notifications section itself. The contact inbox the page showed
   above the form is its own **Contact Inbox** sidebar entry.
 - **Delete has no confirmation**, on the page and in the bell popover, and
   cannot be undone.

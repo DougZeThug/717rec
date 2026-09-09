@@ -80,13 +80,14 @@ const makeUser = (id: string, email: string) => ({
  * Both halves of the gate are client-side: ProtectedAdminRoute needs a session
  * (read from localStorage) and `profile.is_admin` (read over REST). Neither is
  * verified in the browser, which is what makes the admin screens reachable in a
- * spec. Set `tab` to deep-link a dashboard section without clicking through.
+ * spec. Each section has its own address, so a spec opens one with
+ * `page.goto('/admin/<section>')` rather than seeding anything here.
  */
-export const seedAdminAuth = async (page: Page, options: { tab?: string } = {}) => {
+export const seedAdminAuth = async (page: Page) => {
   const user = makeUser('e2e-regression-admin', 'e2e-regression-admin@example.com');
 
   await page.addInitScript(
-    ({ key, seededUser, tab }) => {
+    ({ key, seededUser }) => {
       window.localStorage.setItem(
         key,
         JSON.stringify({
@@ -98,10 +99,10 @@ export const seedAdminAuth = async (page: Page, options: { tab?: string } = {}) 
           user: seededUser,
         })
       );
-      if (tab) window.sessionStorage.setItem('adminActiveTab', tab);
-      else window.sessionStorage.removeItem('adminActiveTab');
+      // Nothing remembered, so a bare /admin always opens the default section.
+      window.sessionStorage.removeItem('adminActiveTab');
     },
-    { key: AUTH_STORAGE_KEY, seededUser: user, tab: options.tab ?? null }
+    { key: AUTH_STORAGE_KEY, seededUser: user }
   );
 
   await page.route(/\/auth\/v1\/user/, async (route) => {

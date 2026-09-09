@@ -226,8 +226,8 @@ in a single press. See [`site-settings.md`](site-settings.md).
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. "Clear selection" empties the right-hand panel. | Closes the dialog and writes nothing. It cannot stop a save already sent. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | An unsaved dialog is lost with no warning. A save already sent still lands; the admin never sees the toast. |
+| Escape, or a Cancel button | Nothing to cancel. "Clear selection" empties the right-hand panel. | The edit-round dialog **asks first** when a field has been changed; the other two close straight away. Nothing is written either way, and neither can stop a save already sent. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the edit-round dialog holds changes, then loses them. A save already sent still lands; the admin never sees the toast. |
 | Browser back or forward | As above, and the app cannot prevent it. | As above. |
 | Reload, or the tab closed | The panel returns with no match selected. | An unsaved edit is gone. A sent write may have landed; the round list after reloading says which. |
 | Network lost mid-request | The list fails with "Failed to load matches." | The write fails and its red toast carries the reason. Nothing is queued and the dialog stays open with the input intact. |
@@ -263,7 +263,12 @@ the current season's standings.
 again in the service before the write. Failures are toasts carrying the league's
 real message.
 
-**Unsaved changes.** Not guarded. Closing a dialog discards its input silently.
+**Unsaved changes.** The edit-round dialog is guarded: Cancel, Escape and a tap
+outside all ask "This round has changes that are not saved. Close and lose them?"
+once a field has been changed. Saving closes without asking, and a fresh copy of
+the same round arriving from the server does not count as a change. The other two
+dialogs hold nothing to lose. Browser Back is not guarded anywhere; see
+[`the-admin-dashboard.md`](the-admin-dashboard.md).
 
 **Optimistic updates and rollback.** None. Every write waits.
 
@@ -276,8 +281,9 @@ real message.
 **Toasts and notifications.** One toast per action, and the failure toasts are
 specific. Nothing is sent to the teams whose match was corrected.
 
-**URL state.** None. Neither the selected season nor the selected match is in
-the address, so a correction cannot be handed to another admin as a link.
+**URL state.** The section's address is `/admin/live-corrections`. Neither the
+selected season nor the selected match is in it, so the section can be handed to
+another admin as a link but a particular correction cannot.
 
 **On a phone.** The layout stacks. The edit dialog's eight numeric fields in a
 four-column grid are cramped.

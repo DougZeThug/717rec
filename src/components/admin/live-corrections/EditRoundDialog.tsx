@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import type { Tables } from '@/integrations/supabase/types';
 import type { UpdateRoundPatch } from '@/services/liveScoring/AdminCorrectionsService';
 import { validateBreakdown } from '@/utils/liveScoring/bagBreakdown';
@@ -64,6 +65,24 @@ const toSide = (
 
 const NULL_THROWER = '__none__';
 
+/** Both sides of a round as the form holds them. */
+const sidesFromRound = (round: MatchRoundRow) => ({
+  side1: toSide(
+    round.team1_score,
+    round.team1_bags_in,
+    round.team1_bags_on,
+    round.team1_bags_off,
+    round.team1_thrower_id
+  ),
+  side2: toSide(
+    round.team2_score,
+    round.team2_bags_in,
+    round.team2_bags_on,
+    round.team2_bags_off,
+    round.team2_thrower_id
+  ),
+});
+
 export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
   open,
   onOpenChange,
@@ -76,24 +95,14 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
   onSubmit,
   isSubmitting,
 }) => {
-  const [side1, setSide1] = useState<SideState>(() =>
-    toSide(
-      round.team1_score,
-      round.team1_bags_in,
-      round.team1_bags_on,
-      round.team1_bags_off,
-      round.team1_thrower_id
-    )
-  );
-  const [side2, setSide2] = useState<SideState>(() =>
-    toSide(
-      round.team2_score,
-      round.team2_bags_in,
-      round.team2_bags_on,
-      round.team2_bags_off,
-      round.team2_thrower_id
-    )
-  );
+  const [side1, setSide1] = useState<SideState>(() => sidesFromRound(round).side1);
+  const [side2, setSide2] = useState<SideState>(() => sidesFromRound(round).side2);
+
+  // What the form was last loaded with. Compared against, rather than the
+  // `round` prop, for the same reason the effect below keys on the round id: a
+  // realtime refetch hands over a fresh object without reloading the form, and
+  // that must not read as the admin having typed something.
+  const [loadedSides, setLoadedSides] = useState(() => sidesFromRound(round));
 
   // Which round the form currently holds. Cleared on close so reopening always
   // reloads stored values.
@@ -112,25 +121,10 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
     if (loadedRoundIdRef.current === round.id) return;
     loadedRoundIdRef.current = round.id;
 
-    setSide1(
-      toSide(
-        round.team1_score,
-        round.team1_bags_in,
-        round.team1_bags_on,
-        round.team1_bags_off,
-        round.team1_thrower_id
-      )
-    );
-
-    setSide2(
-      toSide(
-        round.team2_score,
-        round.team2_bags_in,
-        round.team2_bags_on,
-        round.team2_bags_off,
-        round.team2_thrower_id
-      )
-    );
+    const loaded = sidesFromRound(round);
+    setLoadedSides(loaded);
+    setSide1(loaded.side1);
+    setSide2(loaded.side2);
   }, [open, round]);
 
   const validation = useMemo(() => {
@@ -172,6 +166,24 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
   const playerLabel = (gp: GamePlayerRow) =>
     rosterById.get(gp.player_id)?.display_name ?? 'Unknown player';
 
+  // Closing throws the typed correction away; the dialog keeps nothing.
+  const isDirty =
+    open &&
+    (JSON.stringify(side1) !== JSON.stringify(loadedSides.side1) ||
+      JSON.stringify(side2) !== JSON.stringify(loadedSides.side2));
+
+  const { confirmDiscard } = useUnsavedChangesGuard(
+    isDirty,
+    'This round has changes that are not saved. Close and lose them?'
+  );
+
+  // Covers Cancel, Escape and a tap on the backdrop in one place. Only the
+  // close is guarded; opening never asks.
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen && !confirmDiscard()) return;
+    onOpenChange(nextOpen);
+  };
+
   const handleSubmit = async () => {
     if (!validation.ok) return;
     const s1 = Number(side1.score);
@@ -199,6 +211,8 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
       };
     }
     await onSubmit(patch);
+    // Saved values are the baseline now, so the close that follows never asks.
+    setLoadedSides({ side1, side2 });
   };
 
   const renderSide = (
@@ -275,7 +289,7 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
   );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit round {round.round_number}</DialogTitle>
@@ -297,7 +311,7 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!validation.ok || isSubmitting}>

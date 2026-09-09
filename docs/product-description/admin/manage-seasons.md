@@ -274,7 +274,7 @@ window could never be opened — see
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. | Cancel and the X close the form and discard everything typed, with no confirmation. Escape closes a confirmation dialog and abandons the archive or finalise. Neither aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **Everything typed is lost, with no warning.** Switching dashboard section unmounts the form. An archive already sent still completes and its toast may appear over another section. |
-| Browser back or forward | Leaves the dashboard. | Same as navigating away, and the app cannot prevent it. Coming back gives a closed, empty form. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away, and the app cannot prevent it. Coming back gives a closed, empty form. |
 | Reload, or the tab closed | Returns to the Season section, since the open section is remembered. | Everything typed is lost. A request already sent still lands. Nothing tells the admin which. |
 | Network lost mid-request | Nothing to lose. | The write fails, the dialog or form stays as it was, and a red toast carries the failure. Nothing is queued and nothing retries. |
 | The request fails or times out | Cannot happen. | The form or dialog keeps its contents and the button comes back. The message is the server's own reason, not a generic sentence. An archive that timed out may still have run. |
@@ -308,8 +308,9 @@ screen until it re-fetches.
 season; failure toasts carry the server's reason. **Players are told nothing** —
 a season changing over produces no notification at all.
 
-**URL state.** Nothing. The open form, the season being edited, and the dialog
-are invisible to the address bar.
+**URL state.** The section's address is `/admin/seasons`. Nothing inside it is:
+the open form, the season being edited, and the dialog are all invisible to the
+address bar.
 
 **On a phone.** The cards and the form's date fields stack. The dialogs are
 capped at a small width and remain fully usable.

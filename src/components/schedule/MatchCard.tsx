@@ -86,8 +86,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
     // The gradient border is also the positioned, animated wrapper: two divs
     // that only ever wrapped each other are one.
     <div
+      // The anchor a link to one match points at, e.g. Home's "my match" row.
+      // scroll-mt keeps the card clear of the sticky header on arrival.
+      id={`match-${match.id}`}
       className={cn(
-        'relative rounded-xl p-[1.5px]',
+        'relative rounded-xl p-[1.5px] scroll-mt-24',
         animations.scaleIn,
         isCompleted
           ? 'bg-gradient-to-br from-emerald-500/40 via-transparent to-emerald-500/20'

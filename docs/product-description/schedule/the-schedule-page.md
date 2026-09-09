@@ -183,9 +183,20 @@ Timeslots poll stops, and an admin's write fails and is lost. See
 **Toasts and notifications.** The page raises none of its own. Toasts seen here
 come from an admin's dialogs or from a write started on another page.
 
-**URL state.** `/schedule` carries nothing. The tab, the date, the search text,
-and the expanded groups are all invisible to the URL, so a filtered schedule
-cannot be linked to, bookmarked, or shared.
+**URL state.** The night and the search text are in the address:
+`/schedule?date=2026-09-03&q=amigos`. The date is always written, even on a visit
+that did not name one, so the week on screen can always be linked to, bookmarked
+or reloaded. Both are written in place rather than as new history entries, so
+typing in the search box does not fill the Back button.
+
+A night named in the address is treated as a chosen night: the page's own habit
+of moving off an empty guess to the last night played (see **Arrive**) is left
+alone, so a shared link always opens the night it names, even an empty one. An
+address whose date is not a real day is ignored and the guess applies as usual.
+
+The tab and the expanded groups are still not in the address. The tab does not
+need to be: it is chosen to suit the night, so a link to a past night opens on
+Completed by itself.
 
 **On a phone.** The date strip scrolls sideways. The date groups become a swipeable
 carousel that starts on today's group, or the next future one. The tab bar sticks

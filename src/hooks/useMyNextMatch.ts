@@ -34,7 +34,7 @@ interface MyNextMatchResult {
  * different key from earlier games on the same local day and is dropped from
  * the group. Local time also matches the day the UI renders for the match.
  */
-const getMatchDateKey = (match: Match): string | null => {
+export const getMatchDateKey = (match: Match): string | null => {
   if (!match.date) return null;
   const matchDate = parseISO(match.date);
   if (!isValid(matchDate)) return null;

@@ -109,19 +109,19 @@ const createTestQueryClient = () =>
 
 const testQueryClients: QueryClient[] = [];
 
-const scheduleTree = () => {
+const scheduleTree = (initialPath = '/schedule') => {
   const queryClient = createTestQueryClient();
   testQueryClients.push(queryClient);
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[initialPath]}>
         <Schedule />
       </MemoryRouter>
     </QueryClientProvider>
   );
 };
 
-const renderPage = () => render(scheduleTree());
+const renderPage = (initialPath?: string) => render(scheduleTree(initialPath));
 
 const baseScheduleData = {
   matchesData: [],
@@ -309,6 +309,39 @@ describe('Schedule page', () => {
       expect(asKey(selectedDate())).toBe('2026-09-10');
     });
 
+    // UX audit SC-04: the night is in the address now, and a named night must
+    // survive the SC-01 "open on a night with something on it" correction.
+    it('opens on the night the address names', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+
+      renderPage('/schedule?date=2026-08-27');
+
+      expect(asKey(selectedDate())).toBe('2026-08-27');
+    });
+
+    it('keeps an empty night the address names rather than correcting it', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+
+      // Nothing is on that night, but it was asked for by name.
+      renderPage('/schedule?date=2026-09-17');
+
+      expect(asKey(selectedDate())).toBe('2026-09-17');
+    });
+
+    it('still corrects the guess when the address names no night', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+
+      renderPage('/schedule?q=amigos');
+
+      expect(asKey(selectedDate())).toBe('2026-09-03');
+    });
+
     it('uses the next scheduled night before a season has been played', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 4, 1, 9, 0, 0));
@@ -370,6 +403,33 @@ describe('Schedule page', () => {
       renderPage();
 
       expect(mockUseMatchTimeslots.mock.calls.length).toBeLessThan(10);
+    });
+  });
+
+  // UX audit SC-04: Home's "my match" row links to /schedule?date=...#match-<id>.
+  describe('a link naming one match', () => {
+    it('scrolls to the card once the matches have arrived', () => {
+      const scrollIntoView = vi.fn();
+      vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
+      const card = document.createElement('div');
+      card.id = 'match-m1';
+      document.body.appendChild(card);
+
+      renderPage('/schedule?date=2026-09-03#match-m1');
+
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      card.remove();
+    });
+
+    // The match may be on the other tab, or on a night the link did not name.
+    // Forcing a tab change would fight the page's own choice of tab.
+    it('does nothing when the card is not on the page', () => {
+      const scrollIntoView = vi.fn();
+      vi.spyOn(HTMLElement.prototype, 'scrollIntoView').mockImplementation(scrollIntoView);
+
+      renderPage('/schedule?date=2026-09-03#match-not-here');
+
+      expect(scrollIntoView).not.toHaveBeenCalled();
     });
   });
 });

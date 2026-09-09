@@ -26,10 +26,10 @@ Under that, two cards side by side: **Power Score**, with a gauge and the team's
 record; and **Ranking**, showing the team's place out of the whole field with an
 arrow for which way it has moved.
 
-Then **ROSTER**, already open, listing every player as a chip. Then five closed
-sections: Stats & Report Card, Matchups & Rivalries, Match History, Career &
-Achievements, and — only when the league has been scoring matches live — Player
-Stats.
+Then **ROSTER**, already open, listing every player as a chip. Then **Match
+History**, also already open — it is what most people came for. Then four closed
+sections: Stats & Report Card, Matchups & Rivalries, Career & Achievements, and —
+only when the league has been scoring matches live — Player Stats.
 
 Once the user scrolls past the header, a bar drops in at the top of the window
 with five buttons: Overview, Stats, Matchups, Matches, Career. Tapping one
@@ -74,12 +74,13 @@ What is shown once it resolves, in order:
 | Player Stats | **absent** unless live scoring has recorded rounds for this team | per-player points and bags per round |
 | Stats & Report Card | closed | the season's full breakdown, advanced stats by season, and a report card |
 | Matchups & Rivalries | closed | closest rival, best matchup, worst matchup, and the record against every opponent |
-| Match History | closed | every completed match this season |
+| Match History | **open** | every completed match this season |
 | Career & Achievements | closed | career totals, a power score chart across seasons, and every badge |
 
 The closed sections' contents are **not loaded until they are opened**, so the
 first opening of Stats, Matchups, or Career costs a wait, and closing and
-reopening within five minutes is instant.
+reopening within five minutes is instant. A section named in the address counts
+as opened, and pays that cost on arrival.
 
 The closed section headers show a summary where they have one: Stats & Report
 Card carries the team's record beside its chevron.
@@ -166,9 +167,16 @@ load when opened, with a retry card.
 
 **Toasts and notifications.** None. This page never raises a message.
 
-**URL state.** The team is in the address and nothing else. Which sections are
-open, and where the page is scrolled, are not, so a link to this page is always a
-link to the top of it with everything folded.
+**URL state.** The team is in the address, and so is the section: tapping a
+button on the section bar writes `#matches`, `#stats`, `#h2h`, `#career` or
+`#performance` in place of the current entry, so Back leaves the page rather than
+walking back up it. Opening one of those addresses scrolls to that section and
+opens it, once the team has loaded. An address naming something that is not a
+section is ignored.
+
+The section is read **once, on arrival**. Moving around the page afterwards
+changes the address but never reopens anything under the reader. How far the page
+is scrolled is still not in the address.
 
 **On a phone.** A single Back button replaces the breadcrumbs. The section bar
 scrolls sideways rather than wrapping. Badges are tapped for a dialog rather than

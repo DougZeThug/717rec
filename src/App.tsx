@@ -2,9 +2,8 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@ta
 import { domAnimation, LazyMotion, MotionConfig } from 'framer-motion';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
 
-import { LegacyAdminRedirect } from '@/components/admin/LegacyAdminRedirect';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -192,17 +191,21 @@ const AppContent = () => {
                     </RouteErrorBoundary>
                   }
                 />
-                {/* Both of these were pages nothing linked to, duplicating
-                    sections that live inside the admin console. The guard stays
-                    so a signed-out visitor still lands on /auth, not /admin. */}
+                {/* This was a page nothing linked to, duplicating a section
+                    that lives inside the admin console. The guard stays so a
+                    signed-out visitor still lands on /auth, not /admin.
+                    `/admin/notifications` needs no redirect of its own: it is
+                    now the real address of the Notifications section. */}
                 <Route
                   path="/timeslots"
                   element={
                     <ProtectedAdminRoute>
-                      <LegacyAdminRedirect section="timeslots" />
+                      <Navigate to="/admin/timeslots" replace />
                     </ProtectedAdminRoute>
                   }
                 />
+                {/* Bare /admin reopens the last section; /admin/:section is the
+                    shareable address of one. Both render the same page. */}
                 <Route
                   path="/admin"
                   element={
@@ -214,10 +217,12 @@ const AppContent = () => {
                   }
                 />
                 <Route
-                  path="/admin/notifications"
+                  path="/admin/:section"
                   element={
                     <ProtectedAdminRoute>
-                      <LegacyAdminRedirect section="notifications" />
+                      <RouteErrorBoundary routeName="Admin Dashboard">
+                        <AdminDashboard />
+                      </RouteErrorBoundary>
                     </ProtectedAdminRoute>
                   }
                 />
