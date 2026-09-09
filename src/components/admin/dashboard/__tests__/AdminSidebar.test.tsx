@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
 import { ADMIN_TAB_STORAGE_KEY, switchAdminTab } from '@/utils/adminTabs';
+import { clearUnsavedWork, registerUnsavedWork } from '@/utils/unsavedChanges';
 
 // Polyfill ResizeObserver for jsdom (Radix ScrollArea needs it).
 globalThis.ResizeObserver =
@@ -85,6 +86,7 @@ describe('AdminSidebar', () => {
 
   afterEach(() => {
     sessionStorage.clear();
+    clearUnsavedWork();
   });
 
   // Which section a bare /admin opens is AdminDashboard's job; see its tests.
@@ -113,6 +115,49 @@ describe('AdminSidebar', () => {
     switchAdminTab('divisions');
 
     await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
+  });
+
+  // UX audit A-07: switching section threw away unsaved work with no warning.
+  describe('when a section holds unsaved work', () => {
+    const registerDirtySection = () =>
+      registerUnsavedWork({ isDirty: () => true, message: 'Lose the scores?' });
+
+    it('asks before leaving, and stays put when the admin says no', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      registerDirtySection();
+      renderSidebar();
+
+      await userEvent.click(tabButton(/divisions/i));
+
+      expect(confirmSpy).toHaveBeenCalledWith('Lose the scores?');
+      expect(currentPath()).toBe('/admin/timeslots');
+      confirmSpy.mockRestore();
+    });
+
+    it('leaves once the admin says to discard it', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+      registerDirtySection();
+      renderSidebar();
+
+      await userEvent.click(tabButton(/divisions/i));
+
+      await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
+      confirmSpy.mockRestore();
+    });
+
+    // League Night quick actions, the Help steps and the Requests toast all
+    // arrive this way, and must be asked about too.
+    it('asks when another part of the dashboard requests the switch', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      registerDirtySection();
+      renderSidebar();
+
+      switchAdminTab('divisions');
+
+      await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
+      expect(currentPath()).toBe('/admin/timeslots');
+      confirmSpy.mockRestore();
+    });
   });
 
   it('filters the menu as the admin searches', async () => {

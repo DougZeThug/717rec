@@ -12,6 +12,7 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { usePendingRequestsCount } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
 import { rememberAdminSection, subscribeToAdminTabRequests } from '@/utils/adminTabs';
+import { confirmDiscardUnsavedWork } from '@/utils/unsavedChanges';
 
 import AdminMobileNav from './AdminMobileNav';
 import { ADMIN_SECTIONS, findAdminSection } from './adminSections';
@@ -43,10 +44,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
 
   // Menu entries are buttons that navigate rather than links, so every way of
   // reaching another section — the menu, the phone drawer, and the
-  // `switchAdminTab` requests below — passes through this one function.
+  // `switchAdminTab` requests below — passes through this one function. That is
+  // what lets the unsaved-work check below cover all of them at once.
   const handleTabChange = useCallback(
     (tabId: string) => {
       if (tabId === activeTab) return;
+      if (!confirmDiscardUnsavedWork()) return;
       rememberAdminSection(tabId);
       navigate(`/admin/${tabId}`);
     },

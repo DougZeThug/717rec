@@ -109,10 +109,9 @@ screen — the menu simply empties.
 way down to one entry while a completely different section is still displayed in
 the middle of the page.
 
-Pressing a menu entry swaps the section immediately and records the choice. There
-is no confirmation and no check for work in progress, which matters because one
-section — Auto Schedule — holds a generated schedule that is not yet saved. See
-[`build-the-schedule.md`](build-the-schedule.md).
+Pressing a menu entry changes the address, swaps the section and records the
+choice. A section holding unsaved work is asked about first; see **Unsaved
+changes** below.
 
 ### Submit
 
@@ -165,7 +164,7 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. The shell has no Cancel. | No effect on the shell. Whether Escape cancels anything is up to the open section. |
-| In-app navigation away, or switching tab within the page | The open section is remembered. Coming back reopens it. | **Switching section discards whatever the old section held in memory, with no warning.** Only Auto Schedule survives, because it writes its working state to the browser. |
+| In-app navigation away, or switching tab within the page | The open section is remembered. Coming back reopens it. | Switching section discards whatever the old section held in memory, **after asking** where the section reports unsaved work. Auto Schedule also survives regardless, because it writes its working state to the browser. |
 | Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | Same, and **nothing the old section held is kept**. Back cannot be interrupted to ask first; see the *Unsaved changes* note below. |
 | Reload, or the tab closed | A reload returns to the same section. Closing the tab forgets it, and the next visit opens Timeslots. | A reload loses everything the open section held, except Auto Schedule's working state. |
 | Network lost mid-request | The request-count badge stops updating and keeps showing its last value. | The shell keeps working because it is already loaded. **A section not yet opened cannot load at all** and shows its loading panel indefinitely. |
@@ -187,8 +186,21 @@ the active season; see [`../foundations/seasons.md`](../foundations/seasons.md).
 **Validation and error display.** None at the shell level. A section that fails
 to load shows its loading panel and nothing else.
 
-**Unsaved changes.** Not handled by the shell. Switching sections is
-unprotected. Auto Schedule guards a browser-level reload on its own.
+**Unsaved changes.** The shell asks before it throws work away. A section that
+holds unsaved work says so, and choosing another section — from the menu, from
+Quick Access, or from a League Night quick action — puts up "You have unsaved
+changes. Leave and lose them?" first. Saying no keeps the section and the work.
+Leaving the site, reloading, or closing the tab raises the browser's own warning.
+
+**Three ways out are not covered, and cannot be cheaply:**
+
+- **Browser Back and Forward.** The app is told the address has already changed,
+  so there is nothing left to stop. Back has always lost this work; it is only
+  more reachable now that sections have addresses.
+- **A typed or pasted address**, for the same reason.
+- **Links outside the console** — the site header, the logo, the user menu.
+
+Which sections take part is listed in each section's own document.
 
 **Optimistic updates and rollback.** None. The shell writes nothing.
 
