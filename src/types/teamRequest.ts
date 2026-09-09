@@ -35,5 +35,5 @@ export const REQUEST_TYPE_LABELS: Record<TeamRequestType, string> = {
 export const REQUEST_STATUS_LABELS: Record<TeamRequestStatus, string> = {
   PENDING: 'Pending',
   APPROVED: 'Approved',
-  DENIED: 'Denied',
+  DENIED: 'Rejected',
 };

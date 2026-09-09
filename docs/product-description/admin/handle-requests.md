@@ -10,7 +10,7 @@ different places. This document owns all three.
 | **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **marks the request refused** |
 | **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*) | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
 | **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message sent from the `/contact` page, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
-| **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Deny, each with optional notes |
+| **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Reject, each with optional notes |
 
 Contact requests and support tickets share one screen and one set of outcome
 words, but the rest share nothing: no common list, no common state words, no
@@ -18,7 +18,7 @@ common badge. Only team requests are counted on the admin menu. Only the Contact
 Inbox updates by itself. Only membership requests change what someone can do.
 
 One thing that looks like it belongs here and does not: **score submissions** are
-a fourth queue, under **Pending**; see
+a fourth queue, under **Score approvals**; see
 [`scores/pending-scores.md`](../scores/pending-scores.md).
 
 ## The simple case
@@ -49,7 +49,7 @@ stateDiagram-v2
     queue --> acting : press Approve on a membership (no dialog)
     acting --> queue : written (commit — the request leaves the list)
     acting --> queue : failed (the request stays, red toast)
-    queue --> confirming : press Reject, Approve, or Deny where a dialog exists
+    queue --> confirming : press Approve or Reject where a dialog exists
     confirming --> queue : Cancel or Escape (nothing written)
     confirming --> acting : confirm
     queue --> deleting : press Delete on a contact request
@@ -73,7 +73,7 @@ link where it looks like one, the message, and, for a join request, the players
 they listed.
 
 **Requests** loads team requests filtered to **Pending** by default, with a
-picker offering All, Pending, Approved, Denied. Pending rows are outlined amber.
+picker offering All, Pending, Approved, Rejected. Pending rows are outlined amber.
 Each shows the team, the request type, the status, when it was submitted and by
 whom, the dates and timeslots involved, the reason, any admin notes, and when it
 was processed.
@@ -94,9 +94,9 @@ Reject opens a confirmation.
 **Contact.** There is nothing to edit either — no reply box, no note field, no
 assignment. The three buttons act directly.
 
-**Team requests.** Approve and Deny both open the same dialog, headed "Approve
-Request" or "Deny Request", with one optional notes box: "Approve this request?
-You can add optional notes." or "Deny this request? Consider adding a reason."
+**Team requests.** Approve and Reject both open the same dialog, headed "Approve
+Request" or "Reject Request", with one optional notes box: "Approve this request?
+You can add optional notes." or "Reject this request? Consider adding a reason."
 Typing in the box is the only editing anywhere in this document.
 
 ### While editing
@@ -105,7 +105,7 @@ The notes box is free text with no limit, no counter, and no validation. It is
 cleared each time a dialog is opened, so notes typed for one request never leak
 into another.
 
-The dialog's buttons are Cancel and Approve, or Cancel and a red Deny.
+The dialog's buttons are Cancel and Approve, or Cancel and a red Reject.
 
 ### Submit
 
@@ -137,7 +137,7 @@ explanation. Success says nothing at all; the list simply changes.
 
 **Team requests** are written with the status, the notes, and who processed
 them. On success the dialog closes, everything is cleared, and a toast says
-"Request Approved — The request has been approved." or "Request Denied". On
+"Request Approved — The request has been approved." or "Request Rejected". On
 failure the toast is "Error — Failed to update request. Please try again.", and
 **the dialog stays open with the notes intact** so the admin can retry.
 

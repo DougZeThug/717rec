@@ -124,7 +124,7 @@ export const adminSectionGuide: AdminSectionGuideEntry[] = [
   },
   {
     id: 'pending-matches',
-    label: 'Pending',
+    label: 'Score approvals',
     icon: Clock,
     description: 'Approve or reject the scores players reported.',
   },

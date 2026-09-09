@@ -229,6 +229,20 @@ describe('MatchCard', () => {
     expect(screen.queryByText('Final')).not.toBeInTheDocument();
   });
 
+  // Both exceptional states read their word from MATCH_STATUS_LABELS, so this
+  // covers the second half of that map (UX audit X-13).
+  it('renders the canceled status badge for a canceled match', () => {
+    render(
+      <MatchCard
+        match={{ ...baseMatch, status: 'canceled', iscompleted: false }}
+        isCompleted={false}
+      />
+    );
+
+    expect(screen.getByText('Canceled')).toBeInTheDocument();
+    expect(screen.queryByText('Postponed')).not.toBeInTheDocument();
+  });
+
   it('shows "View match recap" trigger only when the match id is in liveScoredMatchIds', () => {
     const completed: Match = {
       ...baseMatch,

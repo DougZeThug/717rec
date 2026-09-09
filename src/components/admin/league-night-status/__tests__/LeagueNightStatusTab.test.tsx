@@ -129,7 +129,7 @@ describe('LeagueNightStatusTab', () => {
     const unsubscribe = subscribeToAdminTabRequests(onRequest);
     renderTab();
 
-    fireEvent.click(screen.getByRole('button', { name: /score reports.*open section/i }));
+    fireEvent.click(screen.getByRole('button', { name: /score approvals.*open section/i }));
 
     expect(onRequest).toHaveBeenCalledWith('pending-matches');
     expect(sessionStorage.getItem('adminActiveTab')).toBe('pending-matches');

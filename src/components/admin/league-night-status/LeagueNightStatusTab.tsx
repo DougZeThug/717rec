@@ -213,7 +213,7 @@ const LeagueNightStatusTab: React.FC = () => {
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <QueueTile
-            label="Score reports"
+            label="Score approvals"
             count={countsQuery.data?.pendingScoreSubmissions ?? 0}
             icon={ListChecks}
             loading={countsQuery.isLoading}

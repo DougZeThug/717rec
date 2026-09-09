@@ -9,8 +9,8 @@ and links here.
 | What it is called | What it actually is | Who sees it | Who can act |
 | --- | --- | --- | --- |
 | **Pending Scores** (a card on the home page) | Matches with **no result yet**, more than sixteen hours after their start time | Everyone, including visitors | Anyone can send a report |
-| **Pending score submission** | One person's **report** of a result, waiting for review | Admins only | Admins only |
-| **Pending match** | A match marked completed with **no winner** — a tie | Admins only, in `/admin` → **Pending** → **Unresolved matches** | Admins only |
+| **Score report** | One person's **report** of a result, waiting for approval | Admins only | Admins only |
+| **Pending match** | A match marked completed with **no winner** — a tie | Admins only, in `/admin` → **Score approvals** → **Unresolved matches** | Admins only |
 
 The card and the submissions are named alike and are not the same thing: the card
 lists matches nobody has entered, and a submission is one attempt to say what
@@ -29,10 +29,10 @@ A player opens the home page on a Friday morning. Part-way down is a card headed
 matches are there, each with a Report button. When every match has a result the
 card disappears entirely — it is only drawn when the list is not empty.
 
-An admin opens `/admin` and picks the section labelled **Pending**. It holds two
+An admin opens `/admin` and picks the section labelled **Score approvals**. It holds two
 lists.
 
-**Score submissions** comes first. Under the line "Review score reports sent in by
+**Score approvals** comes first. Under the line "Review score reports sent in by
 users. Approving asks you for the result." is one card per report: which match it
 is about, who sent it, which team they said they were on, what they wrote, when
 they sent it, and a Reject and an Approve button. Approve opens a dialog offering
@@ -52,7 +52,7 @@ stateDiagram-v2
     [*] --> no_result : a match is played and nothing is entered
     no_result --> waiting : sixteen hours pass; the match joins the Pending Scores card
     waiting --> waiting : somebody sends a report (the match does not move)
-    waiting --> reviewing : an admin opens the Pending section
+    waiting --> reviewing : an admin opens the Score approvals section
     reviewing --> decided : Reject (the report is stamped, the match is untouched)
     decided --> waiting : the match still has no result
     reviewing --> resolved : Approve — the admin enters the result and it is written
@@ -102,10 +102,11 @@ There is nothing to edit in a queue. The three actions available are Report (see
 
 The queues do not filter, sort, or page. Their length is their only variable.
 
-The admin dashboard's league-night view shows a tile counting **Score reports**
+The admin dashboard's league-night view shows a tile counting **Score approvals**
 beside tiles for team requests and the contact inbox, and pressing it jumps to the
-Pending section. That count is of pending submissions, not of matches missing a
-result, so it can read zero on a night when four matches have no score at all.
+Score approvals section. That count is of reports waiting for approval, not of
+matches missing a result, so it can read zero on a night when four matches have no
+score at all.
 
 ### Submit
 
@@ -212,12 +213,15 @@ so numbers elsewhere move some time afterwards.
   non-empty.
 - **Nothing ever ages out of the card.** A match from a finished season with no
   result is on it forever.
-- **The admin section is labelled "Pending" and contains score reports**, while its
-  internal name and the ordinary meaning of "pending match" both point at ties.
+- **The admin section is labelled "Score approvals" and contains score reports.**
+  Its internal id is still `pending-matches`, and the ordinary meaning of "pending
+  match" points at ties, which live in the same section under **Unresolved
+  matches**.
 - **The league-night tile counts reports, not unscored matches**, so it can read
   zero while four matches are waiting.
 - **A tie is admin-only.** A match completed with no winner appears in
-  **Unresolved matches** in the admin Pending tab, and on no player-facing card.
+  **Unresolved matches** in the admin Score approvals section, and on no
+  player-facing card.
 - **Approving a report records the result.** The admin picks one of four fixed
   results, the match is marked complete, and it leaves the Pending Scores card.
 - **The sixteen-hour delay means a match played this evening is not on the card
@@ -226,7 +230,8 @@ so numbers elsewhere move some time afterwards.
 ## Open questions and verification
 
 - **Fixed (was B-09): the pending-match list now exists.** Ties are listed under
-  **Unresolved matches** in the admin Pending tab, and an admin resolves one by
+  **Unresolved matches** in the admin Score approvals section, and an admin
+  resolves one by
   naming a winner or recording the tie.
 - **Fixed (was B-01): approving a report now records the result.** Approve opens a
   dialog offering the four results a best-of-three match can end in, writes the

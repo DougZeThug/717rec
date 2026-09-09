@@ -23,7 +23,7 @@ const PendingMatchesSection = () => {
   const [submissionToApprove, setSubmissionToApprove] = useState<ScoreSubmission | null>(null);
 
   if (isLoading || isLoadingMatches) {
-    return <LoadingState variant="section" message="Loading submissions..." />;
+    return <LoadingState variant="section" message="Loading score reports..." />;
   }
 
   // usePendingMatches already reports failures in a toast, so swallow the
@@ -40,7 +40,7 @@ const PendingMatchesSection = () => {
     <div className="space-y-8">
       <section className="space-y-4">
         <div>
-          <h3 className="text-base font-semibold">Score submissions</h3>
+          <h3 className="text-base font-semibold">Score approvals</h3>
           <p className="text-sm text-muted-foreground">
             Review score reports sent in by users. Approving asks you for the result.
           </p>

@@ -31,7 +31,7 @@ const submission = {
 describe('ScoreSubmissionsList', () => {
   it('shows the empty state', () => {
     render(<ScoreSubmissionsList submissions={[]} onApprove={vi.fn()} onReject={vi.fn()} />);
-    expect(screen.getByText('No pending score submissions to review.')).toBeInTheDocument();
+    expect(screen.getByText('No score reports waiting for approval.')).toBeInTheDocument();
   });
 
   it('shows which match the report is about', () => {

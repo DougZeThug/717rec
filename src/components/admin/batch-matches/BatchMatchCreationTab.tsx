@@ -8,10 +8,10 @@ import BatchMatchFormContainer from './BatchMatchFormContainer';
 
 const BatchMatchCreationTab = () => {
   return (
-    <AdminSectionWrapper title="Batch Match Creation" icon={Calendar}>
+    <AdminSectionWrapper title="Match Creation" icon={Calendar}>
       <Card className="rounded-xl shadow-md">
         <CardHeader>
-          <CardTitle>Create Multiple Matches</CardTitle>
+          <CardTitle>Create several matches at once</CardTitle>
         </CardHeader>
         <CardContent>
           <BatchMatchFormContainer />

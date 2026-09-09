@@ -36,7 +36,7 @@ const RequestsTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<TeamRequestStatus | 'ALL'>('PENDING');
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
-  const [actionType, setActionType] = useState<'approve' | 'deny' | null>(null);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
 
   const { data: requests, isLoading } = useAllRequests(
     statusFilter === 'ALL' ? undefined : statusFilter
@@ -93,7 +93,7 @@ const RequestsTab: React.FC = () => {
     setActionType(null);
   };
 
-  const openActionDialog = (requestId: string, action: 'approve' | 'deny') => {
+  const openActionDialog = (requestId: string, action: 'approve' | 'reject') => {
     setSelectedRequest(requestId);
     setActionType(action);
     setAdminNotes('');
@@ -122,7 +122,7 @@ const RequestsTab: React.FC = () => {
             <SelectItem value="ALL">All Requests</SelectItem>
             <SelectItem value="PENDING">Pending</SelectItem>
             <SelectItem value="APPROVED">Approved</SelectItem>
-            <SelectItem value="DENIED">Denied</SelectItem>
+            <SelectItem value="DENIED">Rejected</SelectItem>
           </SelectContent>
         </Select>
       </CardHeader>
@@ -187,10 +187,10 @@ const RequestsTab: React.FC = () => {
                         size="sm"
                         variant="outline"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => openActionDialog(request.id, 'deny')}
+                        onClick={() => openActionDialog(request.id, 'reject')}
                       >
                         <X className="size-4 mr-1" />
-                        Deny
+                        Reject
                       </Button>
                     </div>
                   )}
@@ -259,12 +259,12 @@ const RequestsTab: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {actionType === 'approve' ? 'Approve Request' : 'Deny Request'}
+              {actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
             </DialogTitle>
             <DialogDescription>
               {actionType === 'approve'
                 ? 'Approve this request? You can add optional notes.'
-                : 'Deny this request? Consider adding a reason.'}
+                : 'Reject this request? Consider adding a reason.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -286,7 +286,7 @@ const RequestsTab: React.FC = () => {
               variant={actionType === 'approve' ? 'default' : 'destructive'}
             >
               {updateMutation.isPending && <Loader2 className="size-4 animate-spin mr-2" />}
-              {actionType === 'approve' ? 'Approve' : 'Deny'}
+              {actionType === 'approve' ? 'Approve' : 'Reject'}
             </Button>
           </DialogFooter>
         </DialogContent>

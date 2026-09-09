@@ -58,7 +58,7 @@ const adminMenuItems: AdminMenuItem[] = [
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'teams', label: 'Teams', icon: Users },
   { id: 'divisions', label: 'Divisions', icon: Trophy },
-  { id: 'pending-matches', label: 'Pending', icon: Clock },
+  { id: 'pending-matches', label: 'Score approvals', icon: Clock },
   { id: 'hero-cards', label: 'Hero Cards', icon: LayoutGrid },
   { id: 'themes', label: 'Themes', icon: Palette },
   { id: 'blind-draw', label: 'Blind Draw', icon: Shuffle },

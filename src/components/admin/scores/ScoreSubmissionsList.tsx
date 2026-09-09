@@ -19,7 +19,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
       <Card>
         <CardContent className="p-8 text-center">
           <Clock className="size-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">No pending score submissions to review.</p>
+          <p className="text-muted-foreground">No score reports waiting for approval.</p>
         </CardContent>
       </Card>
     );
@@ -36,10 +36,10 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
           <Card key={submission.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Score Submission</CardTitle>
+                <CardTitle className="text-lg">Score report</CardTitle>
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <Clock className="size-3" />
-                  Pending Review
+                  Awaiting approval
                 </Badge>
               </div>
             </CardHeader>

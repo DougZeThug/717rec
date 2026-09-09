@@ -181,6 +181,7 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 ### X-13 · The same concept has up to five labels (status vocabulary) — **Medium**
 - **Inferred from code, confirmed in screenshots:** "Final / Completed / finalized / Champion" for a finished match; "Pending Scores / Unresolved matches / Pending Review / Pending / Score reports / Score submissions" for the approval queue (`PendingScoresCard.tsx:27`, `PendingMatchesSection.tsx:59`, `ScoreSubmissionsList.tsx:42`, `AdminSidebar.tsx:119`, `LeagueNightStatusTab.tsx:216`); "Reject" vs "Deny"; "Match Creation / Batch Match Creation / Create Multiple Matches / Batch Matches"; "Live" in the scoring header means *websocket connected*, not *match in progress* (`MatchScoringHeader.tsx:27,40`). There is no match-status enum; six components derive status from different fields (see `notes` §5 in the evidence folder).
 - **Recommend:** one `deriveMatchStatus()` + `MATCH_STATUS_LABELS` map; rename the sidebar item to "Score approvals"; use "Reject" everywhere; rename the realtime pill to "Connected / Reconnecting".
+- **Partly done (Q25).** The labels are one vocabulary now: the queue is "Score approvals" in the menu, the section heading and the League Night tile; one report is a "Score report"; "Deny" is gone; the Match Creation section is named that in every heading. `MATCH_STATUS_LABELS` (`src/types/matchStatus.ts`) covers the two exceptional states a match can carry. The realtime pill was already renamed by Q19 — "Live updates: on / connecting / off" rather than the "Connected / Reconnecting" suggested here. The `deriveMatchStatus()` unification across the nine derivation sites is **L1**, still open.
 - **Priority:** Medium. **Effort:** M. **Accept:** grep finds one label per status; the admin menu item, section heading and League Night tile use the same noun.
 
 ### X-14 · Four persistence mechanisms, only two shareable — **Medium**
@@ -392,7 +393,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | Q22 ✅ | Bracket: swipe hint, focusable scroll container, `alt`/`aria-hidden` on participant logos, larger names | PO-01 | High |
 | Q23 ✅ | Playoffs: derive season from `?bracket=`; put `season` in the URL | PO-02 | Medium |
 | Q24 ✅ | Timeslots: label chips as blocks, default date to next Thursday, disable Confirm while submitting | A-04 | Medium |
-| Q25 | One vocabulary: "Score approvals", "Reject", "Match Creation"; `MATCH_STATUS_LABELS` | X-13 | Medium |
+| Q25 ✅ | One vocabulary: "Score approvals", "Reject", "Match Creation"; `MATCH_STATUS_LABELS` | X-13 | Medium |
 | Q26 | Match Creation validation names the row; toast title "Missing details" not "Notification Error"; per-timeslot court numbers; block-time list | A-18 | Medium |
 | Q27 | League Night: fix header copy; add Timeslots, Match Creation, Notifications, Blind Draw, Playoffs quick actions; tuck developer links away | A-16, X-03 | Medium |
 | Q28 | Insights: drop self-pairing rows, show percentages | IN-01 | Medium |

@@ -112,8 +112,10 @@ export const useUpdateRequestStatus = () => {
       queryClient.invalidateQueries({ queryKey: ['team-requests'] });
       if (variables.suppressSuccessToast) return;
       toast({
-        title: `Request ${variables.status === 'APPROVED' ? 'Approved' : 'Denied'}`,
-        description: `The request has been ${variables.status.toLowerCase()}.`,
+        title: `Request ${variables.status === 'APPROVED' ? 'Approved' : 'Rejected'}`,
+        description: `The request has been ${
+          variables.status === 'APPROVED' ? 'approved' : 'rejected'
+        }.`,
       });
     },
     onError: (error) => {
