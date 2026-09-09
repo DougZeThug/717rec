@@ -57,10 +57,14 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
 
   // Ids of completed matches that were actually live-scored (have games rows).
   // Used to hide the "View match recap" CTA for traditionally-scored matches.
-  const completedMatchIds = useMemo(
-    () => filteredMatches.filter(isMatchCompleted).map((m) => m.id),
-    [filteredMatches]
-  );
+  const completedMatchIds = useMemo(() => {
+    // One pass, not a filter followed by a map.
+    const ids: string[] = [];
+    for (const match of filteredMatches) {
+      if (isMatchCompleted(match)) ids.push(match.id);
+    }
+    return ids;
+  }, [filteredMatches]);
   const { liveScoredIds } = useLiveScoredMatchIds(completedMatchIds);
 
   // Group matches by date
