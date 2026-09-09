@@ -90,10 +90,12 @@ the other side's list, so a team cannot play itself.
 - **Export tab.** No editing, only saving.
 
 The moment edit mode holds anything different from what was generated, the screen
-counts it as **unsaved edits**, shows a Reset and a Save Matches button, and
-**registers a browser warning before leaving the page**. This is the only unsaved
-changes guard anywhere in the product — and it catches a reload or a closed tab,
-not moving to another dashboard section.
+counts it as **unsaved edits** and shows a Reset and a Save Matches button.
+
+A schedule that has been generated and never saved is treated as unsaved work
+too, edited or not. Either way, leaving the site raises the browser's warning and
+choosing another admin section asks "This schedule is not saved yet. Leave and
+lose it?" first.
 
 ### While editing
 
@@ -181,8 +183,8 @@ naming the match. It can no longer reach the database.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Neither tool has a Cancel button. | Closes an open dropdown or date popover. Auto Schedule's **Reset** discards edits back to the generated schedule with no confirmation. Nothing aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **Match Creation loses everything with no warning**, including switching dashboard section. **Auto Schedule loses nothing** — its state is written to the browser tab. Switching between its own three tabs is always safe. |
-| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away for each tool. The unsaved-changes warning does **not** fire on in-app navigation, only on a browser-level leave. |
-| Reload, or the tab closed | Match Creation returns to the next Thursday and one blank row. Auto Schedule returns exactly as it was. | Auto Schedule shows the browser's own "leave site?" prompt when there are unsaved edits, then restores everything if the admin stays or reloads anyway. Match Creation loses the lot with no prompt. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away for each tool. Back is the one route out that the unsaved-changes warning cannot stop. |
+| Reload, or the tab closed | Match Creation returns to the next Thursday and one blank row. Auto Schedule returns exactly as it was. | Auto Schedule shows the browser's own "leave site?" prompt when there is unsaved work, then restores everything if the admin stays or reloads anyway. Match Creation loses the lot with no prompt. |
 | Network lost mid-request | Nothing to lose. | The save fails, a red toast carries the reason, and nothing is queued. Auto Schedule's working state is **not** cleared, so the admin can press Save again once the connection is back. |
 | The request fails or times out | Cannot happen. | Both keep everything on screen. A save that timed out may still have created the matches; pressing Save again would then create them a second time. |
 | The session expires | No effect while reading. | The save fails. Nothing signs the admin out or moves them. |
@@ -202,8 +204,10 @@ moment of saving. Neither tool lets an admin choose a season.
 generic toast. Auto Schedule checks continuously, disables Save, and marks the
 offending card in red with the reason on it. Rematch warnings never block.
 
-**Unsaved changes.** Auto Schedule is the only place in the app with a guard, and
-it covers only a browser-level leave. Match Creation has none.
+**Unsaved changes.** Auto Schedule asks before its work is lost, both on leaving
+the site and on switching admin section, and counts a generated-but-unsaved
+schedule as work, not only hand edits. Browser Back is not guarded; see
+[`the-admin-dashboard.md`](the-admin-dashboard.md). Match Creation has no guard.
 
 **Optimistic updates and rollback.** None. Both wait for the server.
 

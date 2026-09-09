@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useTeamsMap } from '@/hooks/teams';
 import { useActiveSeason } from '@/hooks/useSeasons';
@@ -97,7 +97,23 @@ export function useAutoSchedule() {
   } = usePairingOperations(setActiveTab, loadedTeamBlockMap, Object.values(teams));
 
   // Get save operations
-  const { saveMatches, isSaving } = useAutoScheduleSave();
+  const { saveMatches: saveMatchesToDatabase, isSaving } = useAutoScheduleSave();
+
+  /**
+   * Whether the schedule on screen has been written to the database.
+   *
+   * A successful save clears the persisted copy but leaves `generatedMatches`
+   * and `generatedPairings` in state, so "a schedule exists" is not the same as
+   * "there is unsaved work". Generating or applying makes new work; saving
+   * settles it. UX audit A-07.
+   */
+  const [isScheduleSaved, setIsScheduleSaved] = useState(false);
+
+  const saveMatches: typeof saveMatchesToDatabase = async (...args) => {
+    const saved = await saveMatchesToDatabase(...args);
+    if (saved) setIsScheduleSaved(true);
+    return saved;
+  };
 
   // Combined loading state
   const isLoadingState = isLoading || isGenerating || isProcessing || isSaving;
@@ -113,6 +129,7 @@ export function useAutoSchedule() {
   };
 
   const generateSchedule = async () => {
+    setIsScheduleSaved(false);
     // Convert return type to void by not returning the result
     await handleGenerateClick(
       selectedDate,
@@ -127,6 +144,7 @@ export function useAutoSchedule() {
   };
 
   const applySchedule = () => {
+    setIsScheduleSaved(false);
     const result = handleApplySchedule(
       generatedPairings,
       selectedDate,
@@ -209,6 +227,19 @@ export function useAutoSchedule() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- flagged dep not actually referenced inside memo body
   }, [isEditMode, editableMatches, generatedMatches, checkHasUnsavedEdits]);
 
+  /**
+   * Anything on screen that would be lost. Wider than `hasUnsavedEdits`, which
+   * only reports hand edits made in edit mode: a schedule that was generated
+   * and never saved is work too, and used to be thrown away silently.
+   */
+  const hasUnsavedWork = useMemo(
+    () =>
+      hasUnsavedEdits ||
+      (!isScheduleSaved &&
+        ((generatedMatches?.length ?? 0) > 0 || Object.keys(generatedPairings).length > 0)),
+    [hasUnsavedEdits, isScheduleSaved, generatedMatches, generatedPairings]
+  );
+
   return {
     // State
     selectedDate,
@@ -230,6 +261,7 @@ export function useAutoSchedule() {
     setIsEditMode,
     validation,
     hasUnsavedEdits,
+    hasUnsavedWork,
 
     // Data
     isLoading: isLoadingState,

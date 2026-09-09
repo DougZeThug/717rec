@@ -22,6 +22,7 @@ import {
   useClearBlindDrawSignups,
   useDeleteBlindDrawSignup,
 } from '@/hooks/useBlindDrawSignups';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 import SignupsListSkeleton from './SignupsListSkeleton';
@@ -43,7 +44,8 @@ const BlindDrawSettingsCard: React.FC = () => {
     }
   }, [settings]);
 
-  const hasChanges = settings && message !== settings.signup_confirmation_message;
+  const hasChanges = Boolean(settings && message !== settings.signup_confirmation_message);
+  useUnsavedChangesGuard(hasChanges, 'The signup message is not saved. Leave and lose the change?');
 
   const handleSave = () => {
     if (!settings || !hasChanges) return;

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { useAutoSchedule } from '@/hooks/useAutoSchedule/index';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { scheduleLog } from '@/utils/logger';
 
@@ -36,6 +37,7 @@ const AutoScheduleTab = () => {
     setIsEditMode,
     validation,
     hasUnsavedEdits,
+    hasUnsavedWork,
 
     // Data
     isLoading,
@@ -73,21 +75,11 @@ const AutoScheduleTab = () => {
     scheduleLog(`Auto schedule tab changed to: ${activeTab}`);
   }, [activeTab]);
 
-  // Warn before leaving with unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedEdits) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    if (hasUnsavedEdits) {
-      window.addEventListener('beforeunload', handleBeforeUnload);
-    }
-
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [hasUnsavedEdits]);
+  // Warn before unsaved work is lost, whether by leaving the site or by choosing
+  // another admin section. `hasUnsavedWork` is wider than the hand-rolled check
+  // this replaces: that one only noticed edits made in edit mode, so a schedule
+  // that was generated and never saved went silently. UX audit A-07.
+  useUnsavedChangesGuard(hasUnsavedWork, 'This schedule is not saved yet. Leave and lose it?');
 
   // Handle manual team assignment
   const handleManualTeamAssign = (updatedTeams: TimeBlockTeamsMap) => {

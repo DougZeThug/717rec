@@ -401,4 +401,64 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
     expect(saved).toBe(false);
     expect(mockSaveMatches).not.toHaveBeenCalled();
   });
+
+  // UX audit A-07: the hand-rolled beforeunload only noticed edits made in edit
+  // mode, so a schedule that was generated and never saved went silently.
+  describe('unsaved work', () => {
+    it('reports nothing before a schedule exists', async () => {
+      vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
+      const { result } = renderHook(() => useAutoSchedule(), { wrapper: createWrapper() });
+
+      await act(async () => {
+        await result.current.handleLoadTeams();
+      });
+
+      expect(result.current.hasUnsavedWork).toBe(false);
+    });
+
+    it('reports a generated schedule that has never been saved', async () => {
+      const result = await renderReadyToEdit();
+
+      expect(result.current.hasUnsavedEdits).toBe(false);
+      expect(result.current.hasUnsavedWork).toBe(true);
+    });
+
+    it('stops reporting once the schedule is saved', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+
+      await act(async () => {
+        await result.current.handleSaveSchedule();
+      });
+
+      await waitFor(() => expect(result.current.hasUnsavedWork).toBe(false));
+    });
+
+    it('keeps reporting when the save fails', async () => {
+      mockSaveMatches.mockResolvedValue(false);
+      const result = await renderReadyToEdit();
+
+      await act(async () => {
+        await result.current.handleSaveSchedule();
+      });
+
+      expect(result.current.hasUnsavedWork).toBe(true);
+    });
+
+    it('reports again after a saved schedule is applied afresh', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+
+      await act(async () => {
+        await result.current.handleSaveSchedule();
+      });
+      await waitFor(() => expect(result.current.hasUnsavedWork).toBe(false));
+
+      act(() => {
+        result.current.handleApplySchedule();
+      });
+
+      expect(result.current.hasUnsavedWork).toBe(true);
+    });
+  });
 });
