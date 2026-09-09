@@ -16,7 +16,8 @@ import {
 interface AdminSectionListProps {
   /** Section named by the address. */
   activeTab: string;
-  onTabChange: (tabId: string) => void;
+  /** Returns false when the section did not change, e.g. unsaved work stopped it. */
+  onTabChange: (tabId: string) => boolean;
   pendingRequestsCount?: number;
 }
 
@@ -75,8 +76,9 @@ const AdminSectionList: React.FC<AdminSectionListProps> = ({
   }, [searchQuery]);
 
   const handleTabSelect = (tabId: string) => {
-    onTabChange(tabId);
-    setSearchQuery('');
+    // A refused switch leaves the search as it was, so the list does not jump
+    // back to the groups under the admin.
+    if (onTabChange(tabId)) setSearchQuery('');
   };
 
   return (

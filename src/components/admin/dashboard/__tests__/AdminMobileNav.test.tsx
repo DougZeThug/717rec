@@ -17,7 +17,7 @@ vi.mock('@/components/ui/drawer', () => ({
   DrawerDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
 }));
 
-const onTabChange = vi.fn();
+const onTabChange = vi.fn(() => true);
 
 const renderNav = (activeTab = 'timeslots') =>
   render(<AdminMobileNav activeTab={activeTab} onTabChange={onTabChange} />);
@@ -25,7 +25,11 @@ const renderNav = (activeTab = 'timeslots') =>
 const sectionsButton = () => screen.getByRole('button', { name: /Sections/ });
 
 describe('AdminMobileNav', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks keeps implementations, so a refused-switch case would leak.
+    onTabChange.mockReturnValue(true);
+  });
 
   // UX audit X-06: the whole menu used to sit above the section, so every
   // league-night task on a phone began with a full-screen scroll.
@@ -50,6 +54,18 @@ describe('AdminMobileNav', () => {
     expect(screen.getByTestId('sections-drawer')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Search admin sections...')).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Admin sections' })).toBeInTheDocument();
+  });
+
+  // A refused switch (unsaved work) must leave the menu up, or the admin sees
+  // it close as though something happened.
+  it('leaves the drawer open when the switch is refused', async () => {
+    onTabChange.mockReturnValue(false);
+    renderNav('scores');
+
+    await userEvent.click(sectionsButton());
+    await userEvent.click(screen.getByRole('button', { name: 'Matchups' }));
+
+    expect(screen.getByTestId('sections-drawer')).toBeInTheDocument();
   });
 
   it('closes the drawer once a section is chosen', async () => {

@@ -200,6 +200,9 @@ Leaving the site, reloading, or closing the tab raises the browser's own warning
 - **A typed or pasted address**, for the same reason.
 - **Links outside the console** — the site header, the logo, the user menu.
 
+Saying no keeps the section on screen, and on a phone the menu stays up rather
+than closing as though something had happened.
+
 Which sections take part is listed in each section's own document.
 
 **Optimistic updates and rollback.** None. The shell writes nothing.

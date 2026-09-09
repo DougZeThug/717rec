@@ -16,7 +16,8 @@ import { findAdminSection } from './adminSections';
 interface AdminMobileNavProps {
   /** Section named by the address. */
   activeTab: string;
-  onTabChange: (tabId: string) => void;
+  /** Returns false when the section did not change, e.g. unsaved work stopped it. */
+  onTabChange: (tabId: string) => boolean;
   pendingRequestsCount?: number;
 }
 
@@ -42,8 +43,11 @@ const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   const activeLabel = findAdminSection(activeTab)?.label ?? 'Sections';
 
   const handleTabSelect = (tabId: string) => {
-    onTabChange(tabId);
-    setIsOpen(false);
+    const switched = onTabChange(tabId);
+    // Leave the menu up when the switch was refused, so the admin can see they
+    // are still where they were.
+    if (switched) setIsOpen(false);
+    return switched;
   };
 
   return (

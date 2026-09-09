@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import AdminSectionList from '@/components/admin/dashboard/AdminSectionList';
 
-const onTabChange = vi.fn();
+const onTabChange = vi.fn(() => true);
 
 const renderList = (activeTab = 'timeslots', pendingRequestsCount = 0) =>
   render(
@@ -23,7 +23,11 @@ const noSectionButton = (name: string) =>
   expect(within(menu()).queryByRole('button', { name })).not.toBeInTheDocument();
 
 describe('AdminSectionList', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks keeps implementations, so a refused-switch case would leak.
+    onTabChange.mockReturnValue(true);
+  });
 
   it('opens the group holding the section on screen', () => {
     renderList('scores');
@@ -80,6 +84,17 @@ describe('AdminSectionList', () => {
     await userEvent.click(sectionButton('Matchups'));
 
     expect(onTabChange).toHaveBeenCalledWith('matchups');
+  });
+
+  it('keeps the search text when the switch is refused', async () => {
+    onTabChange.mockReturnValue(false);
+    renderList('scores');
+
+    const search = screen.getByPlaceholderText('Search admin sections...');
+    await userEvent.type(search, 'division');
+    await userEvent.click(sectionButton('Divisions'));
+
+    expect(search).toHaveValue('division');
   });
 
   it('searches every section, not just the open groups', async () => {

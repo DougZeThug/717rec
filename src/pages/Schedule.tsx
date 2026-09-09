@@ -154,7 +154,6 @@ const Schedule = () => {
 
     if (fallback) {
       scheduleLog('No matches on the default date; opening on', fallback);
-
       setSelectedDate(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
@@ -238,7 +237,10 @@ const Schedule = () => {
 
   // A link may name one match, e.g. Home's "my match" row. Scroll to it once
   // the cards exist. Runs once: a refetch must not drag the reader back.
-  const linkedMatchId = useLocation().hash.replace('#match-', '');
+  const arrivalHash = useLocation().hash;
+  const linkedMatchId = arrivalHash.startsWith('#match-')
+    ? arrivalHash.slice('#match-'.length)
+    : '';
   const scrollBehavior = useScrollBehavior();
   const hasScrolledToMatch = useRef(false);
 
