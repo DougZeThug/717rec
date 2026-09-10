@@ -5,6 +5,7 @@ import React, { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ResponsiveTable, type ResponsiveTableColumn } from '@/components/ui/responsive-table';
 import {
   Select,
   SelectContent,
@@ -12,14 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { useSeasonParticipations } from '@/hooks/useSeasonParticipation';
 import { useSeasons } from '@/hooks/useSeasons';
 import { useTeams } from '@/hooks/useTeams';
@@ -27,6 +20,79 @@ import { cn } from '@/lib/utils';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 type StatusFilter = 'all' | 'PLAYING' | 'NOT_PLAYING' | 'NO_RESPONSE';
+
+type ParticipationStatus = 'PLAYING' | 'NOT_PLAYING' | 'NO_RESPONSE';
+
+interface ParticipationRow {
+  id: string;
+  name: string;
+  divisionName?: string | null;
+  status: ParticipationStatus;
+  updatedAt?: string | null;
+  submittedBy?: string | null;
+}
+
+const STATUS_PRESENTATION: Record<
+  ParticipationStatus,
+  { label: string; icon: typeof Check; className: string }
+> = {
+  PLAYING: {
+    label: 'Playing',
+    icon: Check,
+    className: 'bg-green-500/10 text-green-600 border-green-500/30',
+  },
+  NOT_PLAYING: {
+    label: 'Not Playing',
+    icon: X,
+    className: 'bg-red-500/10 text-red-600 border-red-500/30',
+  },
+  NO_RESPONSE: {
+    label: 'No Response',
+    icon: HelpCircle,
+    className: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
+  },
+};
+
+const StatusBadge: React.FC<{ status: ParticipationStatus }> = ({ status }) => {
+  const { label, icon: Icon, className } = STATUS_PRESENTATION[status];
+
+  return (
+    <Badge variant="outline" className={cn(className)}>
+      <Icon className="size-3 mr-1" />
+      {label}
+    </Badge>
+  );
+};
+
+// One array, so a heading and the label it gets on a phone are the same string.
+const participationColumns: ResponsiveTableColumn<ParticipationRow>[] = [
+  {
+    id: 'name',
+    header: 'Team Name',
+    card: 'title',
+    className: 'font-medium',
+    cell: (team) => team.name,
+  },
+  {
+    id: 'division',
+    header: 'Division',
+    className: 'text-muted-foreground',
+    cell: (team) => team.divisionName ?? '-',
+  },
+  { id: 'status', header: 'Status', cell: (team) => <StatusBadge status={team.status} /> },
+  {
+    id: 'updated',
+    header: 'Updated',
+    className: 'text-muted-foreground',
+    cell: (team) => formatWithPattern(team.updatedAt, 'MMM d, h:mm a', '-'),
+  },
+  {
+    id: 'submittedBy',
+    header: 'Submitted By',
+    className: 'text-muted-foreground',
+    cell: (team) => team.submittedBy ?? '-',
+  },
+];
 
 const SeasonParticipationTab: React.FC = () => {
   const { data: seasons, isLoading: seasonsLoading } = useSeasons();
@@ -208,63 +274,13 @@ const SeasonParticipationTab: React.FC = () => {
               <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Team Name</TableHead>
-                  <TableHead>Division</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Updated</TableHead>
-                  <TableHead>Submitted By</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTeams.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No teams found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredTeams.map((team) => (
-                    <TableRow key={team.id}>
-                      <TableCell className="font-medium">{team.name}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {team.divisionName ?? '-'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            team.status === 'PLAYING' &&
-                              'bg-green-500/10 text-green-600 border-green-500/30',
-                            team.status === 'NOT_PLAYING' &&
-                              'bg-red-500/10 text-red-600 border-red-500/30',
-                            team.status === 'NO_RESPONSE' &&
-                              'bg-yellow-500/10 text-yellow-600 border-yellow-500/30'
-                          )}
-                        >
-                          {team.status === 'PLAYING' && <Check className="size-3 mr-1" />}
-                          {team.status === 'NOT_PLAYING' && <X className="size-3 mr-1" />}
-                          {team.status === 'NO_RESPONSE' && <HelpCircle className="size-3 mr-1" />}
-                          {team.status === 'PLAYING'
-                            ? 'Playing'
-                            : team.status === 'NOT_PLAYING'
-                              ? 'Not Playing'
-                              : 'No Response'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground" suppressHydrationWarning>
-                        {formatWithPattern(team.updatedAt, 'MMM d, h:mm a', '-')}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {team.submittedBy ?? '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <ResponsiveTable
+              caption="Season participation by team"
+              columns={participationColumns}
+              rows={filteredTeams}
+              rowKey={(team) => team.id}
+              empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
+            />
           )}
         </CardContent>
       </Card>
