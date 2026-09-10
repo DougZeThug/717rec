@@ -19,6 +19,7 @@ import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
+import { useTimeslotDates } from '@/hooks/useTimeslotDates';
 import { Match } from '@/types';
 import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 import { normalizeDate } from '@/utils/dateNormalization';
