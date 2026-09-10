@@ -48,12 +48,8 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
           <TableRow>
             {/* Not sortable: the number in this column is the row's position
                 under the current sort, not a value of its own. */}
-            <TableHead className="w-10 text-center px-1.5" scope="col">
-              #
-            </TableHead>
-            <TableHead className="w-auto min-w-[150px] px-2" scope="col">
-              Team
-            </TableHead>
+            <TableHead className="w-10 text-center px-1.5">#</TableHead>
+            <TableHead className="w-auto min-w-[150px] px-2">Team</TableHead>
             <SortableColumnHeader
               field="careerPowerScore"
               activeField={sortOptions.field}

@@ -226,33 +226,37 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2">
+                    <th scope="col" className="text-left py-2">
                       <SortButton field="opponent_name" onSort={handleSort}>
                         Opponent
                       </SortButton>
                     </th>
-                    <th className="text-center py-2">
+                    <th scope="col" className="text-center py-2">
                       <SortButton field="wins" onSort={handleSort}>
                         W-L
                       </SortButton>
                     </th>
-                    <th className="text-center py-2">
+                    <th scope="col" className="text-center py-2">
                       <SortButton field="win_pct" onSort={handleSort}>
                         Win%
                       </SortButton>
                     </th>
-                    <th className="text-center py-2">
+                    <th scope="col" className="text-center py-2">
                       <SortButton field="matches_played" onSort={handleSort}>
                         Matches
                       </SortButton>
                     </th>
-                    <th className="text-center py-2">
+                    <th scope="col" className="text-center py-2">
                       <SortButton field="game_wins" onSort={handleSort}>
                         Game W-L
                       </SortButton>
                     </th>
-                    <th className="text-left py-2">Last Played</th>
-                    <th className="text-right py-2">Action</th>
+                    <th scope="col" className="text-left py-2">
+                      Last Played
+                    </th>
+                    <th scope="col" className="text-right py-2">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody>

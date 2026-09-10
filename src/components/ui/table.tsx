@@ -85,12 +85,23 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
 );
 TableRow.displayName = 'TableRow';
 
+/**
+ * A column heading.
+ *
+ * `scope` defaults to `'col'` because every `TableHead` in the app is a column
+ * heading, and without it a screen reader reads a row of numbers with nothing
+ * naming the columns. Callers can still pass `scope="row"` and win — it is
+ * destructured out of `props`, not overwritten by the spread.
+ *
+ * See L3 in `docs/audits/UX-AUDIT-2026-09.md`.
+ */
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+>(({ className, scope = 'col', ...props }, ref) => (
   <th
     ref={ref}
+    scope={scope}
     className={cn(
       'h-12 px-4 text-left align-middle font-medium text-gray-700 dark:text-gray-200',
       className

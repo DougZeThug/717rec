@@ -12,12 +12,23 @@ const SignupsListSkeleton: React.FC = () => {
       <table className="w-full">
         <thead className="bg-muted/50">
           <tr>
-            <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8">#</th>
-            <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">Name</th>
-            <th className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell">
+            <th
+              scope="col"
+              className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8"
+            >
+              #
+            </th>
+            <th scope="col" className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">
+              Name
+            </th>
+            <th
+              scope="col"
+              className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell"
+            >
               Signed Up
             </th>
             <th
+              scope="col"
               aria-label="Actions"
               className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"
             />

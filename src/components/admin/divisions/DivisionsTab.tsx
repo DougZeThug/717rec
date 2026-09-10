@@ -44,10 +44,18 @@ const DivisionsTab: React.FC = () => {
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
                 <tr className="text-left">
-                  <th className="py-2 px-3 font-medium">Name</th>
-                  <th className="py-2 px-3 font-medium">Display Division</th>
-                  <th className="py-2 px-3 font-medium">Weight</th>
-                  <th className="py-2 px-3 font-medium text-right">Actions</th>
+                  <th scope="col" className="py-2 px-3 font-medium">
+                    Name
+                  </th>
+                  <th scope="col" className="py-2 px-3 font-medium">
+                    Display Division
+                  </th>
+                  <th scope="col" className="py-2 px-3 font-medium">
+                    Weight
+                  </th>
+                  <th scope="col" className="py-2 px-3 font-medium text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>

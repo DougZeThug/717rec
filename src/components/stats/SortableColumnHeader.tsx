@@ -29,8 +29,8 @@ interface SortableColumnHeaderProps<F extends string> {
  *
  * The control is a real `<Button>` inside the `<th>`, not a click handler on
  * the `<th>` itself, so the column can be sorted with Tab + Enter/Space and is
- * reachable by anything that navigates by interactive element. The `<th>` keeps
- * `scope` and `aria-sort` so the sort state is still announced.
+ * reachable by anything that navigates by interactive element. The `<th>` carries
+ * `aria-sort` so the sort state is still announced; `TableHead` supplies `scope`.
  *
  * Both rankings tables used bare clickable `<th>` elements and could not be
  * sorted from a keyboard at all — see B-34 in
@@ -55,7 +55,7 @@ export function SortableColumnHeader<F extends string>({
   const Down = icon === 'chevron' ? ChevronDown : ArrowDown;
 
   return (
-    <TableHead className={cn('font-medium', className)} aria-sort={ariaSort} scope="col">
+    <TableHead className={cn('font-medium', className)} aria-sort={ariaSort}>
       <Button
         variant="ghost"
         size="sm"
