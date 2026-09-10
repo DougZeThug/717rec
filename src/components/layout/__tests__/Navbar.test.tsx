@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import Navbar from '@/components/layout/Navbar';
 
@@ -21,8 +21,16 @@ vi.mock('framer-motion', () => ({
   },
 }));
 
+const adminAccessMock = vi.fn(() => ({ isAdminAccessGranted: false, isLoading: false }));
+
 vi.mock('@/hooks/useAdminAccess', () => ({
-  useAdminAccess: () => ({ isAdminAccessGranted: false }),
+  useAdminAccess: () => adminAccessMock(),
+}));
+
+const isMobileMock = vi.fn(() => false);
+
+vi.mock('@/hooks/useMobile', () => ({
+  useIsMobile: () => isMobileMock(),
 }));
 
 vi.mock('@/hooks/useSeasonalThemeBase', () => ({
@@ -38,6 +46,11 @@ vi.mock('@/components/layout/navbar/NavActions', () => ({
     <div data-testid="nav-actions">actions-{size ?? 'default'}</div>
   ),
 }));
+
+beforeEach(() => {
+  adminAccessMock.mockReturnValue({ isAdminAccessGranted: false, isLoading: false });
+  isMobileMock.mockReturnValue(false);
+});
 
 describe('Navbar', () => {
   it('renders route links and toggles mobile menu open/close', () => {
@@ -57,6 +70,63 @@ describe('Navbar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Close menu' }));
     expect(screen.getByRole('button', { name: 'Open menu' })).toBeInTheDocument();
+  });
+
+  it('hides Admin from everyone who is not an admin', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('puts Admin in the header for an admin, on desktop and in the phone menu', () => {
+    // X-03: the only link to /admin used to be inside the user menu.
+    adminAccessMock.mockReturnValue({ isAdminAccessGranted: true, isLoading: false });
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute('href', '/admin');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open menu' }));
+    expect(screen.getAllByRole('link', { name: 'Admin' }).at(-1)).toHaveAttribute('href', '/admin');
+  });
+
+  it('holds Admin back until the profile has loaded, so it does not appear late', () => {
+    adminAccessMock.mockReturnValue({ isAdminAccessGranted: true, isLoading: true });
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('carries the command palette that the deleted pill bar used to host', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId('command-palette')).toBeInTheDocument();
+  });
+
+  it('leaves the palette unmounted on a phone, where Cmd+K cannot be pressed', () => {
+    isMobileMock.mockReturnValue(true);
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId('command-palette')).toBeNull();
   });
 
   it('matches snapshot in closed state', () => {

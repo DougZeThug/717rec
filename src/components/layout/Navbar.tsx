@@ -1,5 +1,7 @@
 import React from 'react';
 
+import CommandPalette from '@/components/navigation/CommandPalette';
+import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +14,7 @@ import NavLinks from './navbar/NavLinks';
 const Navbar: React.FC = React.memo(() => {
   // Use base theme hook - no location dependency
   const { isWinterTheme } = useSeasonalThemeBase();
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -39,15 +42,24 @@ const Navbar: React.FC = React.memo(() => {
               <NavBrand />
             </div>
 
-            <div className="hidden lg:flex items-center space-x-1">
-              <NavLinks />
+            <div className="flex items-center gap-2">
+              <div className="hidden lg:flex items-center space-x-1">
+                <NavLinks />
 
-              {/* Add desktop nav actions with proper spacing */}
-              <NavActions className="ml-4" />
+                {/* Add desktop nav actions with proper spacing */}
+                <NavActions className="ml-4" />
+              </div>
+
+              {/* The palette used to be mounted by `DesktopNav`, the pill bar
+                  under the page content that X-02 removed. That bar returned
+                  null below 768 px, so this is rendered rather than merely
+                  hidden: a CSS-hidden palette would still attach its ⌘K
+                  listener on a phone, where there is no way to press it. */}
+              {!isMobile && <CommandPalette />}
+
+              {/* Mobile menu with hamburger */}
+              <MobileMenu />
             </div>
-
-            {/* Mobile menu with hamburger */}
-            <MobileMenu />
           </div>
         </div>
       </nav>

@@ -49,8 +49,8 @@ calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
 
 | Below 768 | From 768 up |
 | --- | --- |
-| A fixed tab bar at the bottom of the screen, four tabs: Standings, Schedule, Teams, Playoffs | No bottom bar. A second nav row under the header with Standings, Schedule, Teams |
-| No search | A Search button, and **Cmd/Ctrl+K** opens a command palette that jumps to seven pages or any of the first ten teams |
+| A fixed tab bar at the bottom of the screen, four tabs: Standings, Schedule, Teams, Playoffs | No bottom bar, and nothing replaces it — the top bar is the only navigation |
+| No search | A Search button in the top bar, and **Cmd/Ctrl+K** opens a command palette that jumps to nine pages or any of the first ten teams |
 | Pages get five extra lines of bottom padding, plus the phone's own safe area, so the tab bar clears the content | Ordinary page padding |
 | Toasts fill the width at the top of the screen | Toasts are at most 420 pixels wide, bottom right |
 | The teams list defaults to grouped by division | The teams list defaults to one list |
@@ -78,16 +78,18 @@ their own box and scroll sideways inside it rather than stretching the page; the
 page itself never scrolls sideways.
 
 The command palette is worth naming plainly: **the app's only keyboard shortcut
-exists only on a screen wider than 768 pixels**, because the component that
-listens for it is not rendered below that.
+exists only on a screen 768 pixels or wider**, because the component that listens
+for it is not rendered below that. It lives in the top bar, beside the hamburger
+on a tablet and after the links on a desktop.
 
 ## Crossing the line while using the app
 
 The breakpoint is watched live, not read once. Rotating a large phone into
 landscape can push it past 768 pixels, and when that happens the bottom tab bar
-disappears and the desktop nav row appears **while the user is looking at the
-page**. Nothing is lost — no page state is tied to the breakpoint — but the
-controls move under the thumb. The hamburger does **not** go with them: it stays
+disappears and the top bar's Search button appears **while the user is looking at
+the page**. Nothing replaces the tab bar; every link is behind the hamburger
+until 1024 pixels. Nothing is lost — no page state is tied to the breakpoint —
+but the controls move out from under the thumb. The hamburger does **not** go with them: it stays
 until 1024 pixels, so a phone in landscape keeps a way to reach every link.
 
 ```mermaid
@@ -136,8 +138,10 @@ step. Its six documents start at
   bar, the padding under every page, and the playoffs page's own bottom bar. A
   notch or a home indicator does not sit over them.
 - The bottom tab bar reaches four of the app's twenty routes. Everything else —
-  the message board, my team, history, insights, compare, help, contact, admin —
-  is reachable only from the hamburger or the user menu.
+  the message board, history, help, contact, and Admin for an admin — is behind
+  the hamburger; my team and the profile are in the user menu. Insights and
+  compare are in the hamburger's list only through Help's Quick Navigation and
+  the command palette, neither of which a phone can reach.
 - The message board puts its list in a fixed-height scrolling box sized from the
   viewport, so the page has a scroller inside a scroller. On a phone the outer
   page barely moves and the inner list does the scrolling.

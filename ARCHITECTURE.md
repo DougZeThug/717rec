@@ -23,7 +23,8 @@ src/
 │   ├── matches/       # Match displays, score entry
 │   ├── playoffs/      # Bracket visualization
 │   ├── schedule/      # Calendar, timeslot views
-│   └── layout/        # Navbar, Footer
+│   ├── layout/        # Navbar, Footer
+│   └── navigation/    # BottomNav (phone tabs), CommandPalette, NavItem
 ├── hooks/             # Custom hooks, organized by feature
 ├── services/          # Business logic (Supabase queries)
 ├── integrations/      # Supabase client + auto-generated types
@@ -102,7 +103,7 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 - Playoffs: `src/components/playoffs/`
 
 **Layout**:
-- Navigation: `src/components/layout/Navbar.tsx`
+- Navigation: `src/components/layout/Navbar.tsx` (header shell), `src/components/layout/navbar/NavLinks.tsx` (the link list, shared by the header row and the phone menu), `src/components/navigation/BottomNav.tsx` (phone tabs), `src/components/navigation/CommandPalette.tsx` (⌘K)
 - Page wrapper: `src/components/layout/PageLayout.tsx`
 - Footer: `src/components/layout/Footer.tsx`
 
@@ -203,7 +204,7 @@ Compare (/compare)
 **Add a new page**:
 1. Create component in `src/pages/`
 2. Add route in `src/App.tsx`
-3. Add to navbar in `src/components/layout/Navbar.tsx`
+3. Add to the nav link list in `src/components/layout/navbar/NavLinks.tsx`, or to `src/components/navigation/CommandPalette.tsx` if it is a secondary page. `src/components/navigation/__tests__/routeReachability.test.ts` fails if a new route reaches no menu at all. Add it to `src/utils/routePrefetch.ts` too, or hover-prefetch silently does nothing for it.
 
 **Fetch new data**:
 1. Create service in `src/services/` (Supabase query)

@@ -2,7 +2,9 @@ import {
   BarChart3,
   Calendar,
   Clock,
+  GitCompareArrows,
   Home,
+  Lightbulb,
   MessageSquare,
   Search,
   Trophy,
@@ -39,6 +41,10 @@ const quickActions = [
   { name: 'View Playoffs', icon: Trophy, path: '/playoffs' },
   { name: 'Season History', icon: Clock, path: '/history' },
   { name: 'Message Board', icon: MessageSquare, path: '/message-board' },
+  // X-02: /compare was reachable only by typing the URL and /insights only from
+  // a button on /stats. The palette is a primary way in, so they belong here.
+  { name: 'Compare Teams', icon: GitCompareArrows, path: '/compare' },
+  { name: 'League Insights', icon: Lightbulb, path: '/insights' },
 ];
 
 /** Cmd/Ctrl+K command palette for jumping to pages and teams. */

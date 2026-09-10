@@ -117,6 +117,12 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 - **Recommend:** delete `DesktopNav` (keep the search trigger in the header), add Compare and Insights to the palette and to Help's Quick Navigation, and make the bottom tab bar's four items match the header's first four. Remove the unused `GlobalNav.tsx` duplicate.
 - **Priority:** High (discoverability + wasted space on every desktop page). **Effort:** S–M (mostly deletion; check tests that reference `DesktopNav`).
 - **Accept:** every route in `App.tsx` is reachable from at least one of header, bottom bar, user menu or palette; no navigation renders below `<main>`.
+- **Done (W11).** `DesktopNav` and the unused `GlobalNav` duplicate are deleted, so the pill bar under the page content is gone and `AppNavigation` is the phone tab bar and nothing else. Compare and Insights are in the palette (7 quick actions → 9) and in Help's Quick Navigation (4 buttons → 6), and both gained `routePrefetch` entries — without one, hover-prefetch on a new link silently does nothing.
+- **The palette had to be re-homed, not just moved.** `DesktopNav` was its only mount, and the ⌘K listener lives inside the component, so deleting the bar would have deleted the app's one keyboard shortcut. It is rendered from `Navbar` behind `!useIsMobile()` rather than a CSS `hidden`, because a hidden palette still attaches its listener on a phone, where there is no way to press it. That keeps availability exactly where it was: 768 px up, including the tablet range where the header links are already folded away.
+- **One deviation on "no navigation below `<main>`".** `AppNavigation` still renders after `</main>` in `App.tsx`. `BottomNav` is `fixed bottom-0`, so it is not visually below the content, and moving it earlier would put a tab bar ahead of the page in tab order. The criterion was about the pill bar, and the pill bar is gone.
+- **`GlobalNav`'s test was the only test `BottomNav` had**, and knip's vitest plugin was the only thing keeping the component alive. Both are deleted together and the coverage is re-homed to `navigation/__tests__/BottomNav.test.tsx` — where the mock path is also corrected: the old file mocked `@/hooks/useSeasonalThemeBase`, which does not exist, so the real hook had been running all along.
+- **Nothing stops this happening again except a test.** `navigation/__tests__/routeReachability.test.ts` parses `App.tsx` the way `routeName.test.ts` does and fails, naming the route, when a new one reaches no menu. Four routes are exempt by design and say why: the two password routes, the OAuth consent page, and the not-found catch-all.
+- **Not done: one shared nav-link list.** Six places still hardcode their own. That is a real cleanup, but it is not what X-02 asked for and it would touch every navigation test at once.
 
 ### X-03 · The Admin Panel is reachable from exactly one place (the user menu) and the playoff admin from nowhere in the console — **High**
 - **Where / who:** `src/components/auth/UserMenu.tsx` (only `/admin` link in the UI); `src/components/admin/**` contains no link to `/playoffs`; Help tab step "Run Playoffs" points at Match Creation (`help/GettingStartedTab.tsx:66-71`). Inferred from code, confirmed by journey J9 (no `/playoffs` link found inside `/admin`).
@@ -125,6 +131,8 @@ Each finding lists: where · who · what happens and how to reproduce · evidenc
 - **Priority:** High. **Effort:** S.
 - **Accept:** an admin sees an Admin entry in the primary nav on phone and desktop; League Night links to `/playoffs`.
 - **Half done.** Q18 fixed the Help step's target and Q27 added a Playoffs quick action to League Night, so playoff administration is now reachable from inside the console. The Admin entry in the primary nav is still only in the user menu — that is **W11**.
+- **Done (W11).** An admin sees an "Admin" link in the header link list, which is the same list the phone hamburger renders — so it is in the primary navigation on phone and desktop from one change. It is held back until the profile has loaded, so it does not appear a beat late. `useAdminAccess` was already called in `NavLinks` and its result thrown away into a discarded variable.
+- **No fifth bottom tab.** The phone tab bar stays at four. Five tabs would narrow the tap targets and change the bar's shape depending on who is signed in, and the hamburger already carries Admin on a phone.
 
 ### X-04 · No password recovery anywhere — **High**
 - **Where / who:** `/auth` (`src/components/auth/AuthForm.tsx`) · any member who forgot a password. **Observed:** the sign-in card has Login / Sign Up / Google and a "Sign up" link only (`anon/auth--m390--fold.jpg`); grep of `src/` finds no `resetPasswordForEmail` and no "forgot" copy.
@@ -474,7 +482,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | W8 ✅ | Schedule filters: division chips + "My team" (the season half of SC-02 is not done — see its notes) | SC-02 |
 | W9 ✅ | Playoffs pre-bracket state: projected seeds + "brackets open after week X" (active season only, and the week comes from `end_date` — see the PO-03 notes) | PO-03 |
 | W10 ✅ | Live Corrections defaults (active season, tonight), scroll-to-panel, back affordance | A-11 |
-| W11 | Consolidate navigation: remove `DesktopNav`, add Compare/Insights to palette and Help, show Admin in nav for admins | X-02, X-03 |
+| W11 ✅ | Consolidate navigation: remove `DesktopNav`, add Compare/Insights to palette and Help, show Admin in nav for admins | X-02, X-03 |
 | W12 ✅ | Pending queue grouping by match with conflict banner (done with Q29) | A-10 |
 
 ### 5.3 Larger changes (L)

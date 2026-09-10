@@ -125,7 +125,7 @@ Not applicable to navigation itself.
 | The record's state | Only `/teams/:teamId` and `/matches/:matchId/live` read a record from the URL. A missing or invalid id gives that page's own empty state, not the 404 page. | No effect on routing. |
 | The season's state | No effect on which routes exist. | No effect. |
 | Viewport | The navigation bar collapses to a menu on a narrow screen. | Re-flows on rotation. |
-| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to a page. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
+| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to one of nine pages, or to a team by name. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. It lives in the top bar, along with its Search button. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
 
 ## Cancel and interrupt
 
@@ -224,6 +224,11 @@ development build the analytics call does nothing.
   match, and pressing back gives an unfiltered schedule.
 - **The command palette is desktop-only.** Cmd/Ctrl+K does nothing below 768
   pixels, where the app is most used.
+- **Four routes are never in a menu, by design.** `/forgot-password` and
+  `/reset-password` are reached from the sign-in form and from an email;
+  `/oauth/consent` is reached by another app; the not-found route is reached by
+  being wrong. Every other route is offered by the top bar, the phone tab bar,
+  the user menu or the palette.
 
 ## Open questions and verification
 
@@ -243,4 +248,8 @@ development build the analytics call does nothing.
 - Assumption: the three preloaded routes are teams, schedule, and history because
   they are the cheapest, as the code comment says. Not measured.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the navigation surfaces, which
+changed with W11: the desktop pill bar that used to sit under the page content is
+gone, the command palette moved into the top bar, Compare and Insights joined the
+palette and Help's Quick Navigation, and an admin sees an "Admin" link in the top
+bar and the phone menu rather than only in the user menu.

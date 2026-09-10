@@ -15,6 +15,8 @@ const prefetchRoutes = {
   messageBoard: () => import('../pages/MessageBoard'),
   help: () => import('../pages/Help'),
   contact: () => import('../pages/Contact'),
+  compare: () => import('../pages/Compare'),
+  insights: () => import('../pages/Insights'),
   admin: () => import('../pages/AdminDashboard'),
   auth: () => import('../pages/Auth'),
 } as const;
@@ -27,6 +29,8 @@ const routePrefetchMap: Record<string, () => Promise<unknown>> = {
   '/stats': prefetchRoutes.stats,
   '/playoffs': prefetchRoutes.playoffs,
   '/history': prefetchRoutes.history,
+  '/compare': prefetchRoutes.compare,
+  '/insights': prefetchRoutes.insights,
   '/message-board': prefetchRoutes.messageBoard,
   '/help': prefetchRoutes.help,
   '/contact': prefetchRoutes.contact,
