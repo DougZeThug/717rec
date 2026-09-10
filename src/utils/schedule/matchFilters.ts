@@ -19,10 +19,23 @@ export interface DivisionOption {
   /** The value in the address: the label, lowercased. */
   value: string;
   label: string;
+  /** Compact chip text, so the whole filter row fits one phone line. */
+  shortLabel: string;
   ids: Set<string>;
   /** Lowercased division names, for rows that carry a name and no id. */
   names: Set<string>;
 }
+
+/** Hidden divisions are administrative; the rest of the app already skips them. */
+const isHiddenLabel = (label: string): boolean => /^hidden/i.test(label.trim());
+
+const SHORT_LABELS: Record<string, string> = {
+  competitive: 'Comp',
+  intermediate: 'Int',
+  recreational: 'Rec',
+};
+
+const shortenLabel = (label: string): string => SHORT_LABELS[label.trim().toLowerCase()] ?? label;
 
 interface DivisionRow {
   id: string;
