@@ -1,5 +1,5 @@
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
-import { Calendar, CalendarDays, CheckCircle, Clock, Trophy } from 'lucide-react';
+import { Calendar, CalendarDays, CheckCircle, Clock, Filter, Trophy } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -32,6 +32,16 @@ interface ScheduleContentProps {
   onDateSelect?: (date: Date) => void;
   onEditMatch?: (match: Match) => void;
   onDeleteMatch?: (matchId: string) => void;
+  /** True when a division or "my team" chip is narrowing the list. */
+  hasFilters?: boolean;
+  onClearFilters?: () => void;
+  /**
+   * Whether the night has any timeslot at all, before the chips are applied.
+   * `groupedTimeslots` arrives already filtered, so it cannot answer "is
+   * anything scheduled tonight?" — a chip that empties the list would otherwise
+   * read as an empty league night.
+   */
+  hasAnyTimeslots?: boolean;
 }
 
 const ScheduleContent: React.FC<ScheduleContentProps> = ({
@@ -48,6 +58,9 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   onDateSelect,
   onEditMatch,
   onDeleteMatch,
+  hasFilters = false,
+  onClearFilters,
+  hasAnyTimeslots,
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -144,7 +157,12 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   // completed matches while the Timeslots tab is open, so an upcoming match on
   // the selected day would look like nothing at all.
   const hasTimeslots = Object.keys(groupedTimeslots).length > 0;
-  const showNothingScheduled = !timeslotsLoading && !hasTimeslots && !hasMatchesOnSelectedDate;
+  const nightHasTimeslots = hasAnyTimeslots ?? hasTimeslots;
+  const showNothingScheduled = !timeslotsLoading && !nightHasTimeslots && !hasMatchesOnSelectedDate;
+  // Scheduled, but not in the division or team asked for. Saying "nothing
+  // scheduled" here would blame the league for the reader's own chip.
+  const showFilteredOutTimeslots =
+    !timeslotsLoading && !showNothingScheduled && !hasTimeslots && hasFilters;
 
   const nothingScheduledActions = [
     lastPlayedDate && {
@@ -172,8 +190,32 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
     icon: typeof CheckCircle;
   }[];
 
+  const filteredOutState = (
+    <EmptyState
+      icon={Filter}
+      title="No matches match these filters"
+      description="Nothing here is in the division or team you picked. Clear the filters to see the whole week."
+      actions={
+        onClearFilters
+          ? [
+              {
+                label: 'Clear filters',
+                onClick: onClearFilters,
+                variant: 'default' as const,
+                icon: Filter,
+              },
+            ]
+          : []
+      }
+    />
+  );
+
   const matchGroupsContent = (() => {
     if (isEmptyState) {
+      // The list is empty because of a chip, not because the league has nothing
+      // on. Saying "check back soon" here would be a claim about the season
+      // that the page cannot make.
+      if (hasFilters) return filteredOutState;
       if (activeTab === 'upcoming') {
         return (
           <EmptyState
@@ -293,6 +335,8 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
               }
               actions={nothingScheduledActions}
             />
+          ) : showFilteredOutTimeslots ? (
+            filteredOutState
           ) : (
             <TimeslotGrouping groupedTimeslots={groupedTimeslots} isLoading={timeslotsLoading} />
           )}

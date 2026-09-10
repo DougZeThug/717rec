@@ -1,8 +1,20 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ScheduleHeader from '../ScheduleHeader';
+
+const renderHeader = (props: Partial<React.ComponentProps<typeof ScheduleHeader>> = {}) =>
+  render(
+    <ScheduleHeader
+      searchTerm=""
+      setSearchTerm={vi.fn()}
+      selectedDate={new Date()}
+      onDateSelect={vi.fn()}
+      {...props}
+    />
+  );
 
 describe('ScheduleHeader', () => {
   beforeEach(() => {
@@ -76,5 +88,16 @@ describe('ScheduleHeader', () => {
       screen.queryByRole('button', { name: 'Filter schedule by date' })
     ).not.toBeInTheDocument();
     expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+  it('renders the filter chips it is handed', () => {
+    renderHeader({ filters: <p>chip row</p> });
+
+    expect(screen.getByText('chip row')).toBeInTheDocument();
+  });
+
+  it('is fine with no chips at all', () => {
+    renderHeader();
+
+    expect(screen.queryByText('chip row')).not.toBeInTheDocument();
   });
 });

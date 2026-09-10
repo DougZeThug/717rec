@@ -67,6 +67,11 @@ const Probe = () => {
       <button onClick={() => state.setSelectedDate(new Date(2026, 8, 3))}>pick night</button>
       <button onClick={() => state.setSearchTerm('amigos')}>search</button>
       <button onClick={() => state.setSearchTerm('')}>clear search</button>
+      <button onClick={() => state.setDivision('intermediate')}>pick division</button>
+      <button onClick={() => state.setDivision('all')}>every division</button>
+      <button onClick={() => state.setTeam('mine')}>my team</button>
+      <button onClick={() => state.clearFilters()}>clear filters</button>
+      <div data-testid="has-filters">{state.hasFilters ? 'yes' : 'no'}</div>
     </>
   );
 };
@@ -141,5 +146,88 @@ describe('useScheduleUrlState date handling', () => {
     });
 
     expect(result.current.selectedDate.getHours()).toBe(0);
+  });
+});
+
+describe('useScheduleUrlState filters', () => {
+  const renderProbe = (initialPath = '/schedule') =>
+    render(
+      <MemoryRouter initialEntries={[initialPath]}>
+        <Probe />
+      </MemoryRouter>
+    );
+
+  const url = () => screen.getByTestId('url').textContent;
+
+  it('reads the division chip from the address', () => {
+    const { result } = renderState('/schedule?division=intermediate');
+
+    expect(result.current.division).toBe('intermediate');
+    expect(result.current.hasFilters).toBe(true);
+  });
+
+  it('reads the my-team chip from the address', () => {
+    const { result } = renderState('/schedule?team=mine');
+
+    expect(result.current.team).toBe('mine');
+    expect(result.current.hasFilters).toBe(true);
+  });
+
+  // Anything else in that parameter is not a division slug.
+  it('ignores a division value that could not be one', () => {
+    expect(renderState('/schedule?division=%3Cscript%3E').result.current.division).toBe('all');
+    expect(renderState('/schedule?division=').result.current.division).toBe('all');
+  });
+
+  it('treats any other team value as everyone', () => {
+    expect(renderState('/schedule?team=t-123').result.current.team).toBe('all');
+  });
+
+  it('writes a chip that is on, and no parameter at all for one that is off', () => {
+    renderProbe();
+
+    act(() => screen.getByText('pick division').click());
+    expect(url()).toBe('/schedule?date=2026-09-10&division=intermediate');
+
+    act(() => screen.getByText('every division').click());
+    expect(url()).toBe('/schedule?date=2026-09-10');
+  });
+
+  it('writes both chips together', () => {
+    renderProbe();
+
+    act(() => screen.getByText('pick division').click());
+    act(() => screen.getByText('my team').click());
+
+    expect(url()).toBe('/schedule?date=2026-09-10&division=intermediate&team=mine');
+  });
+
+  it('clears both chips at once and leaves the night alone', () => {
+    renderProbe('/schedule?date=2026-09-03&division=intermediate&team=mine');
+
+    expect(screen.getByTestId('has-filters')).toHaveTextContent('yes');
+
+    act(() => screen.getByText('clear filters').click());
+
+    expect(url()).toBe('/schedule?date=2026-09-03');
+    expect(screen.getByTestId('has-filters')).toHaveTextContent('no');
+  });
+
+  // One hook owns this address. A chip must never drop the night or the search.
+  it('keeps the night and the search text when a chip changes', () => {
+    renderProbe('/schedule?date=2026-09-03&q=amigos');
+
+    act(() => screen.getByText('pick division').click());
+
+    expect(url()).toBe('/schedule?date=2026-09-03&q=amigos&division=intermediate');
+  });
+
+  it('still leaves an unrelated parameter alone', () => {
+    renderProbe('/schedule?date=2026-09-03&ref=email');
+
+    act(() => screen.getByText('my team').click());
+
+    expect(url()).toContain('ref=email');
+    expect(url()).toContain('team=mine');
   });
 });

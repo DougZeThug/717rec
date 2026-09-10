@@ -15,6 +15,8 @@ interface ScheduleHeaderProps {
   selectedDate?: Date;
   onDateSelect?: (date: Date) => void;
   matchDates?: Set<string>;
+  /** The division and "my team" chips, when the page has any to show. */
+  filters?: React.ReactNode;
 }
 
 const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
@@ -23,6 +25,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   selectedDate = new Date(),
   onDateSelect,
   matchDates = new Set(),
+  filters,
 }) => {
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onDateSelect) {
@@ -76,6 +79,8 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
             </Popover>
           )}
         </div>
+
+        {filters}
       </div>
     </header>
   );

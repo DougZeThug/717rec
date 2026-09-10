@@ -26,6 +26,8 @@ const mockUseMatchTimeslots = vi.fn();
 const mockUseScheduleTabs = vi.fn();
 const mockUseTeamsQuery = vi.fn();
 const mockUseMatchManagement = vi.fn();
+const mockUseDivisions = vi.fn();
+const mockUseTeamMembership = vi.fn();
 
 vi.mock('react-helmet-async', () => ({
   Helmet: ({ children }: { children: React.ReactNode }) => children,
@@ -49,15 +51,30 @@ vi.mock('@/hooks/teams', () => ({
 vi.mock('@/hooks/useMatchManagement', () => ({
   useMatchManagement: (...args: unknown[]) => mockUseMatchManagement(...args),
 }));
+vi.mock('@/hooks/useDivisions', () => ({
+  useDivisions: () => mockUseDivisions(),
+}));
+vi.mock('@/hooks/useTeamMembership', () => ({
+  useTeamMembership: () => mockUseTeamMembership(),
+}));
 
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
+// The real chip row renders inside this slot, so the filter tests click real
+// chips rather than a stand-in.
 vi.mock('@/components/schedule/ScheduleHeader', () => ({
-  default: ({ setSearchTerm }: { setSearchTerm: (term: string) => void }) => (
+  default: ({
+    setSearchTerm,
+    filters,
+  }: {
+    setSearchTerm: (term: string) => void;
+    filters?: React.ReactNode;
+  }) => (
     <div>
       <button onClick={() => setSearchTerm('alpha')}>Filter Alpha</button>
+      {filters}
     </div>
   ),
 }));
@@ -71,6 +88,9 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     filteredMatches,
     activeTab,
     setActiveTab,
+    groupedTimeslots = {},
+    hasFilters = false,
+    onClearFilters,
   }: {
     filteredMatches: Array<{
       id: string;
@@ -79,6 +99,9 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     }>;
     activeTab: string;
     setActiveTab: (value: string) => void;
+    groupedTimeslots?: Record<string, unknown[]>;
+    hasFilters?: boolean;
+    onClearFilters?: () => void;
   }) => (
     <section>
       <p>Active tab: {activeTab}</p>
@@ -87,7 +110,10 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
       ) : (
         <p>Showing {filteredMatches.length} matches</p>
       )}
+      <p>Timeslot rows: {Object.values(groupedTimeslots).flat().length}</p>
+      <p>Filters on: {hasFilters ? 'yes' : 'no'}</p>
       <button onClick={() => setActiveTab('completed')}>Switch To Completed</button>
+      <button onClick={() => onClearFilters?.()}>Clear filters</button>
     </section>
   ),
 }));
@@ -130,6 +156,35 @@ const baseScheduleData = {
   completedMatches: [],
 };
 
+/** Two real divisions under one chip, plus one of its own — the league's shape. */
+const testDivisions = [
+  {
+    id: 'div-comp-hi',
+    name: 'Competitive High',
+    display_division: 'Competitive',
+    division_weight: 3,
+  },
+  {
+    id: 'div-comp-lo',
+    name: 'Competitive Low',
+    display_division: 'Competitive',
+    division_weight: 3,
+  },
+  { id: 'div-int', name: 'Intermediate', display_division: 'Intermediate', division_weight: 2 },
+];
+
+const matchIn = (
+  id: string,
+  team1: { teamId: string; divisionId: string; name: string },
+  team2: { teamId: string; divisionId: string; name: string }
+) => ({
+  id,
+  team1Id: team1.teamId,
+  team2Id: team2.teamId,
+  team1Details: { team_id: team1.teamId, name: team1.name, division_id: team1.divisionId },
+  team2Details: { team_id: team2.teamId, name: team2.name, division_id: team2.divisionId },
+});
+
 describe('Schedule page', () => {
   afterEach(() => {
     cleanup();
@@ -149,6 +204,8 @@ describe('Schedule page', () => {
     mockUseMatchTimeslots.mockReturnValue({ groupedTimeslots: {}, isLoading: false });
     mockUseScheduleTabs.mockReturnValue({ activeTab: 'upcoming', handleTabChange: vi.fn() });
     mockUseTeamsQuery.mockReturnValue({ data: [], isLoading: false });
+    mockUseDivisions.mockReturnValue({ divisions: testDivisions, isLoading: false, error: null });
+    mockUseTeamMembership.mockReturnValue({ activeMembership: null });
     mockUseMatchManagement.mockReturnValue({
       matches: [],
       editingMatch: null,
@@ -430,6 +487,169 @@ describe('Schedule page', () => {
       renderPage('/schedule?date=2026-09-03#match-not-here');
 
       expect(scrollIntoView).not.toHaveBeenCalled();
+    });
+  });
+  // UX audit SC-02: the page carried a date and a free-text search and nothing
+  // else, so a player had to know the night or type their team's name.
+  describe('filters', () => {
+    const compVsComp = matchIn(
+      'm1',
+      { teamId: 't1', divisionId: 'div-comp-hi', name: 'Alpha' },
+      { teamId: 't2', divisionId: 'div-comp-lo', name: 'Bravo' }
+    );
+    const intVsInt = matchIn(
+      'm2',
+      { teamId: 't3', divisionId: 'div-int', name: 'Charlie' },
+      { teamId: 't4', divisionId: 'div-int', name: 'Delta' }
+    );
+    const crossDivision = matchIn(
+      'm3',
+      { teamId: 't5', divisionId: 'div-comp-hi', name: 'Echo' },
+      { teamId: 't6', divisionId: 'div-int', name: 'Foxtrot' }
+    );
+
+    const withMatches = () =>
+      mockUseScheduleData.mockReturnValue({
+        ...baseScheduleData,
+        upcomingMatches: [compVsComp, intVsInt, crossDivision],
+      });
+
+    it('offers one chip per display division, not one per real division', () => {
+      withMatches();
+      renderPage();
+
+      // Competitive High and Competitive Low are one chip.
+      expect(screen.getByRole('button', { name: 'Competitive' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Intermediate' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Competitive High' })).not.toBeInTheDocument();
+    });
+
+    it('narrows the week to one division in one tap', () => {
+      withMatches();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Intermediate' }));
+
+      // The all-Intermediate match and the cross-division one.
+      expect(screen.getByText('Showing 2 matches')).toBeInTheDocument();
+    });
+
+    it('keeps a cross-division match under either chip', () => {
+      mockUseScheduleData.mockReturnValue({
+        ...baseScheduleData,
+        upcomingMatches: [crossDivision],
+      });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Competitive' }));
+      expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Intermediate' }));
+      expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+    });
+
+    it('marks the chosen chip as pressed', () => {
+      withMatches();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Intermediate' }));
+
+      expect(screen.getByRole('button', { name: 'Intermediate' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('opens on the division the address names', () => {
+      withMatches();
+      renderPage('/schedule?division=intermediate');
+
+      expect(screen.getByText('Showing 2 matches')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Intermediate' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+    });
+
+    it('shows everything when the address names a division the league does not have', () => {
+      withMatches();
+      renderPage('/schedule?division=hyperbolic');
+
+      expect(screen.getByText('Showing 3 matches')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    it('hides My team from a visitor with no approved team', () => {
+      withMatches();
+      renderPage();
+
+      expect(screen.queryByRole('button', { name: /my team/i })).not.toBeInTheDocument();
+    });
+
+    it('hides My team while a membership is still waiting for approval', () => {
+      withMatches();
+      mockUseTeamMembership.mockReturnValue({
+        activeMembership: { team_id: 't3', is_approved: false },
+      });
+      renderPage();
+
+      expect(screen.queryByRole('button', { name: /my team/i })).not.toBeInTheDocument();
+    });
+
+    it('narrows the week to a member own matches in one tap', () => {
+      withMatches();
+      mockUseTeamMembership.mockReturnValue({
+        activeMembership: { team_id: 't3', is_approved: true },
+      });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: /my team/i }));
+
+      expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+    });
+
+    it('combines a division chip with the search box', () => {
+      withMatches();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Competitive' }));
+      // The mocked header types "alpha", which only the first match carries.
+      fireEvent.click(screen.getByText('Filter Alpha'));
+
+      expect(screen.getByText('Showing 1 matches')).toBeInTheDocument();
+    });
+
+    it('narrows the timeslots tab by the same chip', () => {
+      mockUseMatchTimeslots.mockReturnValue({
+        groupedTimeslots: {
+          '6:30 PM': [
+            { id: 'ts1', team_id: 't1', teams: { divisionName: 'Competitive High' } },
+            { id: 'ts2', team_id: 't3', teams: { divisionName: 'Intermediate' } },
+          ],
+        },
+        isLoading: false,
+      });
+      renderPage();
+
+      expect(screen.getByText('Timeslot rows: 2')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Intermediate' }));
+
+      expect(screen.getByText('Timeslot rows: 1')).toBeInTheDocument();
+    });
+
+    it('tells the page a filter is on, and clears back to everything', () => {
+      withMatches();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Intermediate' }));
+      expect(screen.getByText('Filters on: yes')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Clear filters'));
+
+      expect(screen.getByText('Filters on: no')).toBeInTheDocument();
+      expect(screen.getByText('Showing 3 matches')).toBeInTheDocument();
     });
   });
 });
