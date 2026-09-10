@@ -52,13 +52,13 @@ const DoubleHeaderPill = ({
 }: {
   teamId: string;
   isDoubleHeader: boolean;
-  doubleHeaderInfo?: Map<string, { slot1: string; slot2: string }>;
+  doubleHeaderInfo?: Map<string, string[]>;
 }) => {
   if (!isDoubleHeader || !doubleHeaderInfo?.has(teamId)) return null;
-  const slots = doubleHeaderInfo.get(teamId);
+  const slots = doubleHeaderInfo.get(teamId) ?? [];
   return (
     <Badge variant="doubleHeader" className="text-[10px] leading-tight px-1.5 py-0.5 mt-0.5">
-      DH {slots?.slot1}/{slots?.slot2}
+      {slots.length > 2 ? 'TH' : 'DH'} {slots.join('/')}
     </Badge>
   );
 };
@@ -72,7 +72,7 @@ export const TimeslotMatchRowMobile = ({
   teamTimeslot: TeamTimeslot;
   isWinterTheme: boolean;
   isByeWeek?: boolean;
-  doubleHeaderInfo?: Map<string, { slot1: string; slot2: string }>;
+  doubleHeaderInfo?: Map<string, string[]>;
 }) => {
   const teamName = teamTimeslot.teams?.name;
   const cardClass = cn(
@@ -137,7 +137,7 @@ export const TimeslotMatchRow = ({
   teamTimeslot: TeamTimeslot;
   teamIndex: number;
   isWinterTheme: boolean;
-  doubleHeaderInfo: Map<string, { slot1: string; slot2: string }>;
+  doubleHeaderInfo: Map<string, string[]>;
 }) => (
   <div
     className={cn(
@@ -188,10 +188,13 @@ export const TimeslotMatchRow = ({
             'sm:w-auto sm:flex-row sm:items-center sm:gap-1 sm:text-xs'
           )}
         >
-          <span className="font-semibold">Double Header</span>
+          <span className="font-semibold">
+            {(doubleHeaderInfo.get(teamTimeslot.team_id)?.length ?? 0) > 2
+              ? 'Triple Header'
+              : 'Double Header'}
+          </span>
           <span className="opacity-90">
-            ({doubleHeaderInfo.get(teamTimeslot.team_id)?.slot1} &{' '}
-            {doubleHeaderInfo.get(teamTimeslot.team_id)?.slot2})
+            ({doubleHeaderInfo.get(teamTimeslot.team_id)?.join(' & ')})
           </span>
         </Badge>
       )}

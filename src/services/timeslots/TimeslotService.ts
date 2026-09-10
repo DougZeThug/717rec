@@ -19,6 +19,7 @@ export const TimeslotService = {
     TimeslotQueryService.fetchWeekTimeslotsByTeam.bind(TimeslotQueryService),
   fetchTimeslotsForPair: TimeslotQueryService.fetchTimeslotsForPair.bind(TimeslotQueryService),
   fetchTimeslotValidation: TimeslotQueryService.fetchTimeslotValidation.bind(TimeslotQueryService),
+  fetchTimeslotDates: TimeslotQueryService.fetchTimeslotDates.bind(TimeslotQueryService),
 
   // ── Back-to-back ───────────────────────────────────────────────────────────
   addBackToBackTimeslot:

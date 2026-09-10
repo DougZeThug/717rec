@@ -215,4 +215,24 @@ export const TimeslotQueryService = {
     // No rows (data is null/empty) genuinely means "no assignment" — return null.
     return data ?? null;
   },
+
+  /**
+   * Every night that has at least one posted timeslot, newest first.
+   * The schedule page uses this so a night with slots but no matches yet is
+   * still a night the page knows about.
+   */
+  async fetchTimeslotDates(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('team_timeslots')
+      .select('match_date')
+      .order('match_date', { ascending: false });
+
+    if (error) handleDatabaseError(error, 'Failed to fetch timeslot dates');
+
+    const seen = new Set<string>();
+    for (const row of data ?? []) {
+      if (row.match_date) seen.add(row.match_date);
+    }
+    return Array.from(seen).sort().reverse();
+  },
 };

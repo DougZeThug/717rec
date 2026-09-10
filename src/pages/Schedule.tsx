@@ -19,6 +19,7 @@ import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
+import { useTimeslotDates } from '@/hooks/useTimeslotDates';
 import { Match } from '@/types';
 import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 import { normalizeDate } from '@/utils/dateNormalization';
@@ -95,12 +96,30 @@ const Schedule = () => {
   // Get dates that have matches for the date strip
   const matchDates = useMatchDates(matchesData);
 
+  // Nights whose timeslots are posted, even when no match row exists yet. On
+  // league night the slots go up before any match is created, so the strip and
+  // the auto-pick below must know about them or the page opens on last week.
+  const { timeslotDates, isLoading: timeslotDatesLoading } = useTimeslotDates();
+
+  // Every night the page knows about: matches or posted timeslots.
+  const scheduleDates = useMemo(() => {
+    const dates = new Set(matchDates);
+    timeslotDates.forEach((key) => dates.add(key));
+    return dates;
+  }, [matchDates, timeslotDates]);
+
   useScrollToLinkedMatch(matchesLoading);
 
   // Every night that has a match, oldest first. Derived from matchDates, which
   // memoizes over the stable query data — upcomingMatches/completedMatches are
   // rebuilt on every render and must never feed an effect that sets state.
   const matchNights = useMemo(() => Array.from(matchDates).sort().map(dayKeyToDate), [matchDates]);
+
+  // Posted-timeslot nights, oldest first.
+  const timeslotNights = useMemo(
+    () => [...timeslotDates].sort().map(dayKeyToDate),
+    [timeslotDates]
+  );
 
   // The nights either side of today, for the empty state's two ways out. These
   // come from the played/scheduled splits rather than the all-status matchDates
@@ -151,27 +170,41 @@ const Schedule = () => {
   const hasAutoPickedDate = useRef(hadDateInUrl);
 
   useEffect(() => {
-    if (hasAutoPickedDate.current || matchesLoading) return;
+    if (hasAutoPickedDate.current || matchesLoading || timeslotDatesLoading) return;
     // A failed read is not an empty season: leave the guess alone and let a
     // successful retry make the choice.
     if (matchesError) return;
     hasAutoPickedDate.current = true;
 
-    if (matchDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
+    // A night with posted timeslots is a real night, even with no match rows.
+    if (scheduleDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
 
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const today = new Date();
+    const todayKey = format(today, 'yyyy-MM-dd');
     const lastPlayed = [...matchNights]
       .reverse()
       .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
     const nextNight = matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
-    const fallback = lastPlayed ?? nextNight;
+    // The newest night whose timeslots are posted, today or earlier.
+    const latestPostedNight = [...timeslotNights]
+      .reverse()
+      .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
+    // On league night itself, upcoming matches matter more than last week's
+    // results: if tonight is not entered yet, open on the next scheduled
+    // night, and failing that on the most recently posted timeslot night.
+    // Every other day, prefer the last played night so the morning after
+    // league night still lands on results.
+    const fallback =
+      today.getDay() === 4
+        ? (nextNight ?? latestPostedNight ?? lastPlayed)
+        : (lastPlayed ?? nextNight ?? latestPostedNight);
 
     if (fallback) {
       scheduleLog('No matches on the default date; opening on', fallback);
       setSelectedDate(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
-  }, [matchesLoading, matchesError, matchNights]);
+  }, [matchesLoading, timeslotDatesLoading, matchesError, matchNights, timeslotNights]);
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
@@ -298,7 +331,7 @@ const Schedule = () => {
           setSearchTerm={setSearchTerm}
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
-          matchDates={matchDates}
+          matchDates={scheduleDates}
           filters={
             <ScheduleFilters
               options={divisionOptions}

@@ -30,12 +30,27 @@ describe('TimeslotMatchRowMobile', () => {
       is_double_header: true,
       teams: { id: 't1', name: 'Team One', divisionName: 'Rec' },
     };
-    const dhInfo = new Map([['t1', { slot1: '7:00 PM', slot2: '9:00 PM' }]]);
+    const dhInfo = new Map([['t1', ['7:00 PM', '9:00 PM']]]);
     render(
       <MemoryRouter>
         <TimeslotMatchRowMobile teamTimeslot={ts} isWinterTheme={false} doubleHeaderInfo={dhInfo} />
       </MemoryRouter>
     );
     expect(screen.getByText(/DH 7:00 PM\/9:00 PM/)).toBeInTheDocument();
+  });
+
+  it('shows a triple-header badge when a team has three start times', () => {
+    const ts: TeamTimeslot = {
+      ...base,
+      is_double_header: true,
+      teams: { id: 't1', name: 'Team One', divisionName: 'Rec' },
+    };
+    const thInfo = new Map([['t1', ['6:30 PM', '7:30 PM', '8:30 PM']]]);
+    render(
+      <MemoryRouter>
+        <TimeslotMatchRowMobile teamTimeslot={ts} isWinterTheme={false} doubleHeaderInfo={thInfo} />
+      </MemoryRouter>
+    );
+    expect(screen.getByText(/TH 6:30 PM\/7:30 PM\/8:30 PM/)).toBeInTheDocument();
   });
 });
