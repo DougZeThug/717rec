@@ -3,6 +3,7 @@ type TimeslotRowTeam = {
   name: string | null;
   logo_url?: string | null;
   image_url?: string | null;
+  division_id?: string | null;
 };
 
 export type TimeslotRow = {

@@ -36,7 +36,8 @@ export const TimeslotTransformer = {
             name: item.teams.name ?? '',
             logo_url: item.teams.logo_url,
             image_url: item.teams.image_url,
-            divisionName: null, // Will be populated separately if needed
+            divisionName: null, // Names are not joined; filtering uses divisionId
+            divisionId: item.teams.division_id ?? null,
           }
         : undefined,
     };

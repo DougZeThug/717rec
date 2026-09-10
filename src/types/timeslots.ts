@@ -14,6 +14,7 @@ export interface TeamTimeslot {
     logo_url?: string | null;
     image_url?: string | null;
     divisionName: string | null;
+    divisionId?: string | null;
   };
 }
 

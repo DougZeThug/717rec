@@ -26,7 +26,7 @@ type MatchListRow = Omit<MatchRow, 'metadata' | 'season_id'>;
 
 /** A timeslot row plus its joined team summary. */
 type MatchTimeslotRow = Tables<'team_timeslots'> & {
-  teams: MatchTeamSummary | null;
+  teams: (MatchTeamSummary & Pick<Tables<'teams'>, 'division_id'>) | null;
 };
 
 export interface MatchFilters {
@@ -160,7 +160,8 @@ export const fetchMatchTimeslots = async (formattedDate: string): Promise<MatchT
         id,
         name,
         logo_url,
-        image_url
+        image_url,
+        division_id
       )
     `
     )
