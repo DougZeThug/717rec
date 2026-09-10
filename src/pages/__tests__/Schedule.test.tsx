@@ -43,6 +43,9 @@ vi.mock('@/hooks/useMatchDates', () => ({
 vi.mock('@/hooks/useMatchTimeslots', () => ({
   useMatchTimeslots: (...args: unknown[]) => mockUseMatchTimeslots(...args),
 }));
+vi.mock('@/hooks/useTimeslotDates', () => ({
+  useTimeslotDates: () => mockUseTimeslotDates(),
+}));
 vi.mock('@/hooks/useScheduleTabs', () => ({
   useScheduleTabs: (...args: unknown[]) => mockUseScheduleTabs(...args),
 }));
