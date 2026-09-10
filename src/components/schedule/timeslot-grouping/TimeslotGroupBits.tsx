@@ -52,13 +52,13 @@ const DoubleHeaderPill = ({
 }: {
   teamId: string;
   isDoubleHeader: boolean;
-  doubleHeaderInfo?: Map<string, { slot1: string; slot2: string }>;
+  doubleHeaderInfo?: Map<string, string[]>;
 }) => {
   if (!isDoubleHeader || !doubleHeaderInfo?.has(teamId)) return null;
-  const slots = doubleHeaderInfo.get(teamId);
+  const slots = doubleHeaderInfo.get(teamId) ?? [];
   return (
     <Badge variant="doubleHeader" className="text-[10px] leading-tight px-1.5 py-0.5 mt-0.5">
-      DH {slots?.slot1}/{slots?.slot2}
+      {slots.length > 2 ? 'TH' : 'DH'} {slots.join('/')}
     </Badge>
   );
 };
