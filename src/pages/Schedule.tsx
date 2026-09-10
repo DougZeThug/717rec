@@ -95,12 +95,30 @@ const Schedule = () => {
   // Get dates that have matches for the date strip
   const matchDates = useMatchDates(matchesData);
 
+  // Nights whose timeslots are posted, even when no match row exists yet. On
+  // league night the slots go up before any match is created, so the strip and
+  // the auto-pick below must know about them or the page opens on last week.
+  const { timeslotDates, isLoading: timeslotDatesLoading } = useTimeslotDates();
+
+  // Every night the page knows about: matches or posted timeslots.
+  const scheduleDates = useMemo(() => {
+    const dates = new Set(matchDates);
+    timeslotDates.forEach((key) => dates.add(key));
+    return dates;
+  }, [matchDates, timeslotDates]);
+
   useScrollToLinkedMatch(matchesLoading);
 
   // Every night that has a match, oldest first. Derived from matchDates, which
   // memoizes over the stable query data — upcomingMatches/completedMatches are
   // rebuilt on every render and must never feed an effect that sets state.
   const matchNights = useMemo(() => Array.from(matchDates).sort().map(dayKeyToDate), [matchDates]);
+
+  // Posted-timeslot nights, oldest first.
+  const timeslotNights = useMemo(
+    () => [...timeslotDates].sort().map(dayKeyToDate),
+    [timeslotDates]
+  );
 
   // The nights either side of today, for the empty state's two ways out. These
   // come from the played/scheduled splits rather than the all-status matchDates
