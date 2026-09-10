@@ -331,7 +331,7 @@ const Schedule = () => {
           setSearchTerm={setSearchTerm}
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
-          matchDates={matchDates}
+          matchDates={scheduleDates}
           filters={
             <ScheduleFilters
               options={divisionOptions}
