@@ -87,6 +87,82 @@ const opponentHistoryColumns: ResponsiveTableColumn<TeamOpponentRow>[] = [
   },
 ];
 
+interface DivisionFilterSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  divisions: string[];
+}
+
+const DivisionFilterSelect: React.FC<DivisionFilterSelectProps> = ({
+  value,
+  onChange,
+  divisions,
+}) => (
+  <Select value={value} onValueChange={onChange}>
+    <SelectTrigger className="w-full sm:w-[200px]">
+      <SelectValue placeholder="Filter by division" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">All Divisions</SelectItem>
+      {divisions.map((div) => (
+        <SelectItem key={div} value={div}>
+          {div}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
+
+interface OpponentHistoryFiltersProps extends Omit<
+  DivisionFilterSelectProps,
+  'value' | 'onChange'
+> {
+  searchTerm: string;
+  onSearchTermChange: (value: string) => void;
+  divisionFilter: string;
+  onDivisionFilterChange: (value: string) => void;
+  onExport: () => void;
+  exportDisabled: boolean;
+  isExporting: boolean;
+}
+
+const OpponentHistoryFilters: React.FC<OpponentHistoryFiltersProps> = ({
+  searchTerm,
+  onSearchTermChange,
+  divisionFilter,
+  onDivisionFilterChange,
+  divisions,
+  onExport,
+  exportDisabled,
+  isExporting,
+}) => (
+  <div className="flex flex-col sm:flex-row gap-3">
+    <div className="relative flex-1">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+      <Input
+        aria-label="Search teams"
+        placeholder="Search teams..."
+        value={searchTerm}
+        onChange={(e) => onSearchTermChange(e.target.value)}
+        className="pl-9"
+      />
+    </div>
+    <DivisionFilterSelect
+      value={divisionFilter}
+      onChange={onDivisionFilterChange}
+      divisions={divisions}
+    />
+    <Button variant="outline" size="sm" onClick={onExport} disabled={exportDisabled}>
+      {isExporting ? (
+        <Loader2 className="size-4 mr-2 animate-spin" />
+      ) : (
+        <Download className="size-4 mr-2" />
+      )}
+      Export to Excel
+    </Button>
+  </div>
+);
+
 const OpponentHistoryTab: React.FC = () => {
   const { data, isLoading, error } = useSeasonOpponentHistory();
   const [searchTerm, setSearchTerm] = useState('');
@@ -173,45 +249,16 @@ const OpponentHistoryTab: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              aria-label="Search teams"
-              placeholder="Search teams..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={divisionFilter} onValueChange={setDivisionFilter}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <SelectValue placeholder="Filter by division" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Divisions</SelectItem>
-              {divisions.map((div) => (
-                <SelectItem key={div} value={div}>
-                  {div}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            disabled={!data || isExporting}
-          >
-            {isExporting ? (
-              <Loader2 className="size-4 mr-2 animate-spin" />
-            ) : (
-              <Download className="size-4 mr-2" />
-            )}
-            Export to Excel
-          </Button>
-        </div>
+        <OpponentHistoryFilters
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          divisionFilter={divisionFilter}
+          onDivisionFilterChange={setDivisionFilter}
+          divisions={divisions}
+          onExport={handleExport}
+          exportDisabled={!data || isExporting}
+          isExporting={isExporting}
+        />
 
         {/* Summary */}
         <div className="text-sm text-muted-foreground">

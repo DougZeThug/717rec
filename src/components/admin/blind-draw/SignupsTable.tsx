@@ -21,23 +21,28 @@ export const SIGNUPS_CELL = 'px-2 sm:px-4 py-2';
  * card per signup would be more chrome for less information. See
  * `src/docs/TABLE_PATTERNS.md`.
  */
+/** The four headings, kept out of the table body so neither tree nests deeply. */
+const SignupsTableHeader: React.FC = () => (
+  <thead className="bg-muted/50">
+    <tr>
+      <th scope="col" className={cn(HEADER_CELL, 'w-8')}>
+        #
+      </th>
+      <th scope="col" className={HEADER_CELL}>
+        Name
+      </th>
+      <th scope="col" className={cn(HEADER_CELL, 'hidden sm:table-cell')}>
+        Signed Up
+      </th>
+      <th scope="col" aria-label="Actions" className={cn(HEADER_CELL, 'text-right w-12')} />
+    </tr>
+  </thead>
+);
+
 const SignupsTable: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="border rounded-lg overflow-hidden">
     <table className="w-full">
-      <thead className="bg-muted/50">
-        <tr>
-          <th scope="col" className={cn(HEADER_CELL, 'w-8')}>
-            #
-          </th>
-          <th scope="col" className={HEADER_CELL}>
-            Name
-          </th>
-          <th scope="col" className={cn(HEADER_CELL, 'hidden sm:table-cell')}>
-            Signed Up
-          </th>
-          <th scope="col" aria-label="Actions" className={cn(HEADER_CELL, 'text-right w-12')} />
-        </tr>
-      </thead>
+      <SignupsTableHeader />
       <tbody className="divide-y">{children}</tbody>
     </table>
   </div>

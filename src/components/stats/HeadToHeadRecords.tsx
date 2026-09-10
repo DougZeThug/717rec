@@ -66,6 +66,145 @@ const H2H_SORTABLE_COLUMNS: {
   { field: 'game_wins', label: 'Game W-L', align: 'center' },
 ];
 
+const H2HTableHeader: React.FC<{
+  sortField: SortField;
+  sortDirection: SortDirection;
+  onSort: (field: SortField) => void;
+}> = ({ sortField, sortDirection, onSort }) => (
+  <TableHeader>
+    <TableRow>
+      {H2H_SORTABLE_COLUMNS.map((column) => (
+        <SortableColumnHeader
+          key={column.field}
+          field={column.field}
+          activeField={sortField}
+          direction={sortDirection}
+          onSort={onSort}
+          align={column.align}
+          icon="arrow"
+        >
+          {column.label}
+        </SortableColumnHeader>
+      ))}
+      <TableHead>Last Played</TableHead>
+      <TableHead className="text-right">Action</TableHead>
+    </TableRow>
+  </TableHeader>
+);
+
+/** The opponent's logo, or their initial when they have none. */
+const OpponentAvatar: React.FC<{ record: HeadToHeadRecord }> = ({ record }) =>
+  record.opponent_image_url ? (
+    <img
+      src={record.opponent_image_url}
+      alt={`${record.opponent_name} logo`}
+      className="size-8 rounded-sm object-cover flex-shrink-0"
+    />
+  ) : (
+    <div className="size-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+      <span className="text-xs font-medium text-muted-foreground">
+        {record.opponent_name.charAt(0).toUpperCase()}
+      </span>
+    </div>
+  );
+
+/** Opens the opponent's team page. A real button, so Enter and Tab are free. */
+const OpponentButton: React.FC<{ record: HeadToHeadRecord; onClick: () => void }> = ({
+  record,
+  onClick,
+}) => {
+  const rivalryType = getRivalryType(record);
+  const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
+
+  return (
+    <Button
+      variant="ghost"
+      aria-label={`View team details for ${record.opponent_name}`}
+      className="flex h-auto min-h-6 w-full items-center justify-start space-x-3 rounded-md p-1 text-left font-normal hover:bg-muted/30"
+      onClick={onClick}
+    >
+      <OpponentAvatar record={record} />
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="font-medium hover:text-primary transition-colors truncate">
+          {record.opponent_name}
+        </span>
+        {badge && (
+          <span
+            className={cn(
+              'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
+              badge.className
+            )}
+          >
+            {badge.label}
+          </span>
+        )}
+      </div>
+    </Button>
+  );
+};
+
+const WinLossCell: React.FC<{ record: HeadToHeadRecord }> = ({ record }) => (
+  <div className="flex items-center justify-center space-x-1">
+    <Trophy className="size-3 text-emerald-500" />
+    <span className="text-emerald-600 font-medium">{record.wins}</span>
+    <span>-</span>
+    <X className="size-3 text-rose-500" />
+    <span className="text-rose-600 font-medium">{record.losses}</span>
+  </div>
+);
+
+const LastPlayedCell: React.FC<{ lastPlayedAt: string | null }> = ({ lastPlayedAt }) => {
+  if (!lastPlayedAt) return <>-</>;
+
+  return (
+    <div className="flex items-center space-x-1">
+      <Calendar className="size-3" />
+      <span>{formatWithPattern(lastPlayedAt, 'MMM d, yyyy')}</span>
+    </div>
+  );
+};
+
+const H2HTableRow: React.FC<{
+  record: HeadToHeadRecord;
+  onOpponentClick: (opponentId: string, opponentName: string) => void;
+  onViewDetails: (opponent: { id: string; name: string }) => void;
+}> = ({ record, onOpponentClick, onViewDetails }) => (
+  <TableRow>
+    <TableCell>
+      <OpponentButton
+        record={record}
+        onClick={() => onOpponentClick(record.opponent_id, record.opponent_name)}
+      />
+    </TableCell>
+    <TableCell className="text-center">
+      <WinLossCell record={record} />
+    </TableCell>
+    <TableCell className="text-center">
+      <Badge variant={record.win_pct >= 50 ? 'default' : 'secondary'}>
+        {Number(record.win_pct).toFixed(1)}%
+      </Badge>
+    </TableCell>
+    <TableCell className="text-center font-mono">{record.matches_played}</TableCell>
+    <TableCell className="text-center font-mono">
+      {record.game_wins}-{record.game_losses}
+    </TableCell>
+    <TableCell className="text-sm text-muted-foreground">
+      <LastPlayedCell lastPlayedAt={record.last_played_at} />
+    </TableCell>
+    <TableCell className="text-right">
+      {record.opponent_id && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onViewDetails({ id: record.opponent_id, name: record.opponent_name })}
+        >
+          View Details
+        </Button>
+      )}
+    </TableCell>
+  </TableRow>
+);
+
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
   teamId,
   teamName = 'Team',
@@ -212,127 +351,26 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
           </div>
         ) : (
           /* Desktop: the shared table primitive */
-          <div className="relative">
-            <Table>
-              <TableCaption className="sr-only">
-                Head-to-head record against every opponent
-              </TableCaption>
-              <TableHeader>
-                <TableRow>
-                  {H2H_SORTABLE_COLUMNS.map((column) => (
-                    <SortableColumnHeader
-                      key={column.field}
-                      field={column.field}
-                      activeField={sortField}
-                      direction={sortDirection}
-                      onSort={handleSort}
-                      align={column.align}
-                      icon="arrow"
-                    >
-                      {column.label}
-                    </SortableColumnHeader>
-                  ))}
-                  <TableHead>Last Played</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRecords.map((record) => (
-                  <TableRow key={record.opponent_name}>
-                    <TableCell>
-                      {(() => {
-                        const rivalryType = getRivalryType(record);
-                        const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
-                        return (
-                          <Button
-                            variant="ghost"
-                            aria-label={`View team details for ${record.opponent_name}`}
-                            className="flex h-auto min-h-6 w-full items-center justify-start space-x-3 rounded-md p-1 text-left font-normal hover:bg-muted/30"
-                            onClick={() =>
-                              handleTeamClick(record.opponent_id, record.opponent_name)
-                            }
-                          >
-                            {record.opponent_image_url ? (
-                              <img
-                                src={record.opponent_image_url}
-                                alt={`${record.opponent_name} logo`}
-                                className="size-8 rounded-sm object-cover flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="size-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {record.opponent_name.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="font-medium hover:text-primary transition-colors truncate">
-                                {record.opponent_name}
-                              </span>
-                              {badge && (
-                                <span
-                                  className={cn(
-                                    'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
-                                    badge.className
-                                  )}
-                                >
-                                  {badge.label}
-                                </span>
-                              )}
-                            </div>
-                          </Button>
-                        );
-                      })()}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center space-x-1">
-                        <Trophy className="size-3 text-emerald-500" />
-                        <span className="text-emerald-600 font-medium">{record.wins}</span>
-                        <span>-</span>
-                        <X className="size-3 text-rose-500" />
-                        <span className="text-rose-600 font-medium">{record.losses}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant={record.win_pct >= 50 ? 'default' : 'secondary'}>
-                        {Number(record.win_pct).toFixed(1)}%
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-center font-mono">{record.matches_played}</TableCell>
-                    <TableCell className="text-center font-mono">
-                      {record.game_wins}-{record.game_losses}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {record.last_played_at ? (
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="size-3" />
-                          <span>{formatWithPattern(record.last_played_at, 'MMM d, yyyy')}</span>
-                        </div>
-                      ) : (
-                        '-'
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {record.opponent_id && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setSelectedOpponent({
-                              id: record.opponent_id,
-                              name: record.opponent_name,
-                            })
-                          }
-                        >
-                          View Details
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <Table>
+            <TableCaption className="sr-only">
+              Head-to-head record against every opponent
+            </TableCaption>
+            <H2HTableHeader
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+            <TableBody>
+              {filteredRecords.map((record) => (
+                <H2HTableRow
+                  key={record.opponent_name}
+                  record={record}
+                  onOpponentClick={handleTeamClick}
+                  onViewDetails={setSelectedOpponent}
+                />
+              ))}
+            </TableBody>
+          </Table>
         )}
       </>
     );

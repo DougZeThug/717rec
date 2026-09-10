@@ -1,6 +1,6 @@
 import { m } from 'framer-motion';
-import { Copy, Edit, GripVertical, Loader2, Trash2 } from 'lucide-react';
-import React, { useState } from 'react';
+import { Copy, Edit, GripVertical, Loader2, type LucideIcon, Trash2 } from 'lucide-react';
+import React, { forwardRef, useState } from 'react';
 
 import {
   AlertDialog,
@@ -38,6 +38,46 @@ const cardTypeBadgeColors: Record<string, string> = {
   event: 'bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-700',
   announcement: 'bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-700',
 };
+
+interface HeroCardActionProps {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+/**
+ * The animated button on its own, forwarding a ref so Radix's `asChild`
+ * trigger can reach the DOM node it needs to position against.
+ */
+const AnimatedIconButton = forwardRef<HTMLDivElement, HeroCardActionProps>(
+  ({ icon: Icon, label, onClick, disabled, className, ...triggerProps }, ref) => (
+    <m.div ref={ref} whileTap={{ scale: 0.9 }} {...triggerProps}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onClick}
+        disabled={disabled}
+        className={className}
+        aria-label={label}
+      >
+        <Icon className="size-4" />
+      </Button>
+    </m.div>
+  )
+);
+AnimatedIconButton.displayName = 'AnimatedIconButton';
+
+/** One row action. The label names the button and captions its tooltip. */
+const HeroCardAction: React.FC<HeroCardActionProps> = (props) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <AnimatedIconButton {...props} />
+    </TooltipTrigger>
+    <TooltipContent>{props.label}</TooltipContent>
+  </Tooltip>
+);
 
 // Find friendly names
 const getCardTypeName = (typeId: string) => {
@@ -196,56 +236,20 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
       align: 'right',
       cell: (card) => (
         <div className="flex justify-end gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <m.div whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => onEdit(card)}
-                  aria-label="Edit card"
-                >
-                  <Edit className="size-4" />
-                </Button>
-              </m.div>
-            </TooltipTrigger>
-            <TooltipContent>Edit card</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <m.div whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDuplicate(card)}
-                  disabled={isCreating}
-                  aria-label="Duplicate card"
-                >
-                  <Copy className="size-4" />
-                </Button>
-              </m.div>
-            </TooltipTrigger>
-            <TooltipContent>Duplicate card</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <m.div whileTap={{ scale: 0.9 }}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setDeletingCardId(card.id)}
-                  disabled={isDeleting}
-                  className="text-destructive hover:text-destructive"
-                  aria-label="Delete card"
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </m.div>
-            </TooltipTrigger>
-            <TooltipContent>Delete card</TooltipContent>
-          </Tooltip>
+          <HeroCardAction icon={Edit} label="Edit card" onClick={() => onEdit(card)} />
+          <HeroCardAction
+            icon={Copy}
+            label="Duplicate card"
+            onClick={() => handleDuplicate(card)}
+            disabled={isCreating}
+          />
+          <HeroCardAction
+            icon={Trash2}
+            label="Delete card"
+            onClick={() => setDeletingCardId(card.id)}
+            disabled={isDeleting}
+            className="text-destructive hover:text-destructive"
+          />
         </div>
       ),
     },

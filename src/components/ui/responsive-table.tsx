@@ -1,4 +1,4 @@
-import * as React from 'react';
+import type { ReactElement, ReactNode } from 'react';
 
 import { Card } from '@/components/ui/card';
 import {
@@ -34,8 +34,8 @@ export interface ResponsiveTableColumn<T> {
    */
   header: string;
   /** A richer heading (an icon beside the text). `header` stays the plain name. */
-  headerNode?: React.ReactNode;
-  cell: (row: T) => React.ReactNode;
+  headerNode?: ReactNode;
+  cell: (row: T) => ReactNode;
   /** Where this column goes in card mode. Defaults to `'meta'`. */
   card?: ResponsiveTableCardSlot;
   align?: 'left' | 'center' | 'right';
@@ -52,8 +52,11 @@ export interface ResponsiveTableProps<T> {
    * `<caption>` in table mode and as the list's label in card mode.
    */
   caption: string;
-  /** Shown instead of the table when there are no rows. */
-  empty?: React.ReactNode;
+  /**
+   * Shown instead of the table when there are no rows. An element rather than
+   * a node, so it can be returned as-is without a Fragment around it.
+   */
+  empty?: ReactElement;
   /**
    * Classes for whichever element is rendered — the `<table>` or the card list.
    * Because it applies to both, a fixed width (`min-w-[700px]`) does not belong
@@ -113,7 +116,7 @@ export function ResponsiveTable<T>({
   const asCards = mode === 'auto' ? isMobileViewport : mode === 'cards';
 
   if (rows.length === 0 && empty !== undefined) {
-    return <>{empty}</>;
+    return empty;
   }
 
   if (asCards) {
