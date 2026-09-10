@@ -386,6 +386,40 @@ describe('Schedule page', () => {
       expect(asKey(selectedDate())).toBe('2026-09-10');
     });
 
+    // Tonight's timeslots are posted before any match row exists. The page must
+    // stay on tonight rather than falling back to last week's results.
+    it('stays on tonight when only tonight timeslots are posted', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      mockUseTimeslotDates.mockReturnValue({
+        timeslotDates: ['2026-09-10', '2026-09-03'],
+        isLoading: false,
+        error: null,
+      });
+
+      renderPage();
+
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
+    // No matches anywhere ahead; the newest posted timeslot night wins.
+    it('opens on the newest posted timeslot night when no match night fits', () => {
+      // Saturday Sep 12. Slots posted for Sep 10, no matches at all.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 12, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set());
+      mockUseTimeslotDates.mockReturnValue({
+        timeslotDates: ['2026-09-10', '2026-09-03'],
+        isLoading: false,
+        error: null,
+      });
+
+      renderPage();
+
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
     it('keeps the upcoming Thursday when it does have matches', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
