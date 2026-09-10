@@ -90,6 +90,24 @@ describe('buildDivisionOptions', () => {
     ]);
     expect(only.label).toBe('Rec Night');
   });
+
+  it('never offers a Hidden division', () => {
+    expect(
+      buildDivisionOptions([
+        { id: 'h1', name: 'Hidden', display_division: 'Hidden', division_weight: 1 },
+        { id: 'h2', name: 'Hidden2', display_division: 'Hidden2', division_weight: 1 },
+      ])
+    ).toEqual([]);
+  });
+
+  it('shortens the three league divisions for the chip row', () => {
+    const [comp, int, rec] = buildDivisionOptions([
+      { id: 'c', name: 'Competitive', display_division: 'Competitive', division_weight: 3 },
+      { id: 'i', name: 'Intermediate', display_division: 'Intermediate', division_weight: 2 },
+      { id: 'r', name: 'Recreational', display_division: 'Recreational', division_weight: 1 },
+    ]);
+    expect([comp.shortLabel, int.shortLabel, rec.shortLabel]).toEqual(['Comp', 'Int', 'Rec']);
+  });
 });
 
 describe('matchIsInDivision', () => {
