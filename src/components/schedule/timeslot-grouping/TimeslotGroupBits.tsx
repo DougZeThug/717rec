@@ -137,7 +137,7 @@ export const TimeslotMatchRow = ({
   teamTimeslot: TeamTimeslot;
   teamIndex: number;
   isWinterTheme: boolean;
-  doubleHeaderInfo: Map<string, { slot1: string; slot2: string }>;
+  doubleHeaderInfo: Map<string, string[]>;
 }) => (
   <div
     className={cn(
