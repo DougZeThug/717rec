@@ -40,6 +40,7 @@ interface FilterChipProps {
  */
 const FilterChip: React.FC<FilterChipProps> = ({
   label,
+  accessibleLabel,
   pressed,
   onClick,
   activeClassName,
@@ -48,6 +49,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
   <button
     type="button"
     aria-pressed={pressed}
+    aria-label={accessibleLabel}
     onClick={onClick}
     className={cn(
       'flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors',
