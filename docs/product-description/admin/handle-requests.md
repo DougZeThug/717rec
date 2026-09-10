@@ -73,7 +73,9 @@ link where it looks like one, the message, and, for a join request, the players
 they listed.
 
 **Requests** loads team requests filtered to **Pending** by default, with a
-picker offering All, Pending, Approved, Rejected. Pending rows are outlined amber.
+picker offering All, Pending, Approved, Rejected. A time change names one of the
+league's blocks, because that is what the form offers; requests stored before
+that change can name anything the team typed. Pending rows are outlined amber.
 Each shows the team, the request type, the status, when it was submitted and by
 whom, the dates and timeslots involved, the reason, any admin notes, and when it
 was processed.
@@ -158,11 +160,12 @@ Timeslots** button. There is still only one toast per action.
 
 Two things can be missing, and the toast says which:
 
-- **The time cannot be read.** `requested_timeslot` is a free-text box with no
-  validation, so a team can type "as early as possible". Nothing is chosen on a
-  guess. The toast quotes the words back — "The Baggers asked for 'as early as
-  possible', which is not one of the blocks. Open Timeslots to pick one on
-  Sep 17." — and the night and team are still carried.
+- **The time cannot be read.** The form now offers the league's real blocks
+  rather than a text box, so a new request always names one. **Requests stored
+  before that change can hold anything** a team typed — "as early as possible" —
+  and nothing is chosen on a guess. The toast quotes the words back: "The Baggers
+  asked for 'as early as possible', which is not one of the blocks. Open
+  Timeslots to pick one on Sep 17." The night and team are still carried.
 - **No night was named.** The date field is optional. The toast says "The
   request did not name a night, so check the one shown", and Timeslots opens on
   the next league night as usual.

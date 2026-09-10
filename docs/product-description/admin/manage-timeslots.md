@@ -229,8 +229,12 @@ can play. **No screen in the product lets a team state one.** What exists is:
 - A team sees its own assigned timeslot for the current week on its pages,
   read-only.
 - A team can send a **request** to change a timeslot, carrying the date, the
-  current time and the wanted time. Those arrive in the dashboard's **Requests**
-  section, not here; see [`handle-requests.md`](handle-requests.md).
+  current time and the wanted time. **Both times are chosen from the same blocks
+  this screen books** — the request form offers them as "6:30 + 7:00 PM" and
+  stores the block's first time — so what a team asks for is always something an
+  admin can act on directly. Those requests arrive in the dashboard's
+  **Requests** section, not here; see
+  [`handle-requests.md`](handle-requests.md).
 
 So an admin building a schedule works from requests and from outside knowledge.
 There is no list of who prefers what. See

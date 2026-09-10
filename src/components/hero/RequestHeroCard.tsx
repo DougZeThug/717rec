@@ -24,6 +24,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTeamsArray } from '@/hooks/teams';
 import { useSubmitRequest, useTeamRequests } from '@/hooks/useTeamRequests';
@@ -31,6 +38,7 @@ import { cn } from '@/lib/utils';
 import { HeroCard as HeroCardType } from '@/types/heroCard';
 import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
 import { formatWithPattern } from '@/utils/formatDateSafe';
+import { BLOCK_OPTIONS } from '@/utils/timeslotMove';
 
 import HeroCardBase from './HeroCardBase';
 
@@ -48,6 +56,8 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: false });
   const submitMutation = useSubmitRequest();
   const teamListboxId = React.useId();
+  const currentSlotId = React.useId();
+  const requestedSlotId = React.useId();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedType, setSelectedType] = useState<TeamRequestType | null>(null);
@@ -231,27 +241,58 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 />
               </div>
 
-              {/* Time change specific fields */}
+              {/* Time change specific fields.
+                  Both are chosen from the league's real blocks rather than
+                  typed. A typed time could be anything — "7ish", "as early as
+                  possible" — and the admin approving it then has nothing exact
+                  to act on. */}
               {selectedType === 'TIME_CHANGE' && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium opacity-90">Current timeslot</Label>
-                    <Input
-                      placeholder="e.g., 6:00 PM"
-                      value={currentTimeslot}
-                      onChange={(e) => setCurrentTimeslot(e.target.value)}
-                      className="bg-background/20 border-white/20 text-inherit placeholder:text-inherit/50"
-                    />
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor={currentSlotId} className="text-sm font-medium opacity-90">
+                        Current timeslot
+                      </Label>
+                      <Select value={currentTimeslot} onValueChange={setCurrentTimeslot}>
+                        <SelectTrigger
+                          id={currentSlotId}
+                          className="bg-background/20 border-white/20 text-inherit"
+                        >
+                          <SelectValue placeholder="Pick a time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BLOCK_OPTIONS.map((block) => (
+                            <SelectItem key={block.value} value={block.value}>
+                              {block.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={requestedSlotId} className="text-sm font-medium opacity-90">
+                        Requested timeslot
+                      </Label>
+                      <Select value={requestedTimeslot} onValueChange={setRequestedTimeslot}>
+                        <SelectTrigger
+                          id={requestedSlotId}
+                          className="bg-background/20 border-white/20 text-inherit"
+                        >
+                          <SelectValue placeholder="Pick a time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BLOCK_OPTIONS.map((block) => (
+                            <SelectItem key={block.value} value={block.value}>
+                              {block.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium opacity-90">Requested timeslot</Label>
-                    <Input
-                      placeholder="e.g., 7:00 PM"
-                      value={requestedTimeslot}
-                      onChange={(e) => setRequestedTimeslot(e.target.value)}
-                      className="bg-background/20 border-white/20 text-inherit placeholder:text-inherit/50"
-                    />
-                  </div>
+                  <p className="text-xs opacity-75">
+                    Each time is a block of two back-to-back slots. You play both.
+                  </p>
                 </div>
               )}
 
@@ -272,7 +313,10 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               <Button
                 onClick={handleSubmit}
                 disabled={
-                  submitMutation.isPending || (selectedType === 'EMERGENCY_CANCEL' && !reason)
+                  submitMutation.isPending ||
+                  (selectedType === 'EMERGENCY_CANCEL' && !reason) ||
+                  // A time change that names no time is nothing anyone can act on.
+                  (selectedType === 'TIME_CHANGE' && !requestedTimeslot)
                 }
                 className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
               >

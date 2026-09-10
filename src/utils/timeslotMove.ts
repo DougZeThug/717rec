@@ -13,11 +13,23 @@ export const describeBlock = (timeslot: string): string => {
 };
 
 /**
+ * Every block a team can be booked into, as a choice.
+ *
+ * The value is the block's first time, which is what a booking takes; the label
+ * names both times it covers, because booking one books both. Anything that
+ * asks a person to name a time offers these rather than a text box.
+ */
+export const BLOCK_OPTIONS: ReadonlyArray<{ value: string; label: string }> =
+  DOUBLE_HEADER_START_TIMES.map((start) => ({ value: start, label: describeBlock(start) }));
+
+/**
  * Read a block out of the free text a team typed when it asked for a time.
  *
- * `team_requests.requested_timeslot` has no constraint of any kind — the form
- * is a plain text box with "e.g., 7:00 PM" as a hint — so this has to cope with
- * what people type. The rule it follows is the whole point of it:
+ * `team_requests.requested_timeslot` has no constraint of any kind, and for a
+ * long time the form was a plain text box, so stored rows can hold anything a
+ * person typed. **The form offers `BLOCK_OPTIONS` now**, so new rows always
+ * hold a block's first time and this reads them straight through; it stays for
+ * every row written before that. The rule it follows is the whole point of it:
  *
  * **It may answer "I do not know". It may never be wrong.**
  *
@@ -74,20 +86,24 @@ export interface TeamNight {
 
 /** What the team holds on this night, read off the night's rows. */
 export const readTeamNight = (timeslots: TeamTimeslot[], teamId: string): TeamNight => {
-  const rows = timeslots.filter((row) => row.team_id === teamId);
+  const night: TeamNight = { blocks: [], hasBye: false, looseTimes: [], rowIds: [] };
 
-  return {
-    // A block writes two rows and marks the first of them, so counting the
-    // firsts counts the blocks: one for a block, two for a double header.
-    blocks: rows
-      .filter((row) => row.is_back_to_back && row.match_sequence === 1)
-      .map((row) => row.timeslot),
-    hasBye: rows.some((row) => row.timeslot === BYE_SLOT),
-    looseTimes: rows
-      .filter((row) => !row.is_back_to_back && row.timeslot !== BYE_SLOT)
-      .map((row) => row.timeslot),
-    rowIds: rows.map((row) => row.id),
-  };
+  for (const row of timeslots) {
+    if (row.team_id !== teamId) continue;
+    night.rowIds.push(row.id);
+
+    if (row.timeslot === BYE_SLOT) {
+      night.hasBye = true;
+    } else if (row.is_back_to_back) {
+      // A block writes two rows and marks the first of them, so counting the
+      // firsts counts the blocks: one for a block, two for a double header.
+      if (row.match_sequence === 1) night.blocks.push(row.timeslot);
+    } else {
+      night.looseTimes.push(row.timeslot);
+    }
+  }
+
+  return night;
 };
 
 /**
