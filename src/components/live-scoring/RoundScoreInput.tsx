@@ -43,7 +43,7 @@ interface RoundScoreInputProps {
    * concerned and the next one has to be enterable — but the copy kept for a
    * reload stays, because nothing has reached the league yet.
    */
-  onSubmit: (submission: RoundSubmission) => Promise<RoundSaveOutcome | void>;
+  onSubmit: (submission: RoundSubmission) => Promise<RoundSaveOutcome | undefined>;
   /**
    * Identifies the round the selections belong to. When it changes, the round
    * moved on and any kept selections are stale, so they are dropped.

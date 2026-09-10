@@ -58,6 +58,15 @@ const toSelection = (side: PersistedRoundDraft['team1']): SideSelection => ({
   bagsIn: side.bagsIn ?? undefined,
 });
 
+/** Called once the round is really recorded, or once it belongs to somebody else. */
+export const clearRoundDraft = (gameId: string): void => {
+  try {
+    localStorage.removeItem(keyFor(gameId));
+  } catch (error) {
+    warnLog('Could not clear the live-scoring round draft:', error);
+  }
+};
+
 /**
  * The tapped round for this game, if one was left behind and it is still the
  * round being played.
@@ -115,14 +124,5 @@ export const saveRoundDraft = (draft: RoundDraft): void => {
     localStorage.setItem(keyFor(draft.gameId), JSON.stringify(persisted));
   } catch (error) {
     warnLog('Could not keep the live-scoring round draft:', error);
-  }
-};
-
-/** Called once the round is really recorded, or once it belongs to somebody else. */
-export const clearRoundDraft = (gameId: string): void => {
-  try {
-    localStorage.removeItem(keyFor(gameId));
-  } catch (error) {
-    warnLog('Could not clear the live-scoring round draft:', error);
   }
 };

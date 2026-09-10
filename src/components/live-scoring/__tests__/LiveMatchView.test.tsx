@@ -373,7 +373,7 @@ describe('in-game state', () => {
       expect(screen.queryByText(/round 2 saved/i)).not.toBeInTheDocument();
     });
 
-    it('leaves the panel usable while a round is parked', async () => {
+    it('leaves the panel usable while a round is parked', () => {
       onlineManager.setOnline(false);
       // What a held save looks like: pending, but going nowhere.
       mockSubmitRound.isPending = true;

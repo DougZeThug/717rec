@@ -57,9 +57,9 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
   const isAnsweredByEmail = topic.channel === 'support';
   const showTeam = topic.needsTeam || Boolean(team) || !isAnsweredByEmail;
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    void submit({ topic, name, contact, team, players, message, website });
+    await submit({ topic, name, contact, team, players, message, website });
   };
 
   return (

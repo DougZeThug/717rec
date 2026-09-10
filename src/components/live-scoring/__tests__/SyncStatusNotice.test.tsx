@@ -15,7 +15,7 @@ describe('SyncStatusNotice', () => {
 
     const notice = screen.getByTestId('round-sync-status');
     expect(notice).toHaveAttribute('role', 'status');
-    expect(notice).toHaveTextContent(/offline — keep scoring/i);
+    expect(notice).toHaveTextContent(/offline — keep scoring/iu);
   });
 
   it('counts one round waiting', () => {

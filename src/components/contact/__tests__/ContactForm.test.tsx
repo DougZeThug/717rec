@@ -239,7 +239,7 @@ describe('ContactForm', () => {
       expect(within(nameLabel as HTMLElement).queryByText('Verified')).not.toBeInTheDocument();
     });
 
-    it('still lets them propose a new team name when joining the league', async () => {
+    it('still lets them propose a new team name when joining the league', () => {
       mockUser = { email: 'captain@example.com', user_metadata: { full_name: 'Casey Captain' } };
       mockMembership = { team: { name: 'Rail Riders' } };
       renderForm('/contact?type=join_league');

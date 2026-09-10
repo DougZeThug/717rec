@@ -12,12 +12,19 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
 
-/** Fires a save under the given key, the way useRoundMutations does. */
-const saveRound = (mutationKey: readonly unknown[]) =>
+/**
+ * Fires a save under the given key, the way useRoundMutations does.
+ *
+ * The promise is deliberately dropped: a save parked with no connection never
+ * settles, and what it eventually does is not what these tests are about.
+ */
+const saveRound = (mutationKey: readonly unknown[]): void => {
   queryClient
     .getMutationCache()
     .build(queryClient, { mutationKey: mutationKey as unknown[], mutationFn: vi.fn() })
-    .execute(undefined);
+    .execute(undefined)
+    .catch(() => undefined);
+};
 
 beforeEach(() => {
   queryClient = new QueryClient({
@@ -42,8 +49,8 @@ describe('usePausedRoundCount', () => {
     const { result } = renderHook(() => usePausedRoundCount('match-1'), { wrapper });
 
     act(() => {
-      void saveRound(liveScoringKeys.submitRound('match-1'));
-      void saveRound(liveScoringKeys.submitRound('match-1'));
+      saveRound(liveScoringKeys.submitRound('match-1'));
+      saveRound(liveScoringKeys.submitRound('match-1'));
     });
 
     await waitFor(() => expect(result.current).toBe(2));
@@ -54,8 +61,8 @@ describe('usePausedRoundCount', () => {
     const { result } = renderHook(() => usePausedRoundCount('match-1'), { wrapper });
 
     act(() => {
-      void saveRound(liveScoringKeys.submitRound('match-1'));
-      void saveRound(liveScoringKeys.submitRound('match-2'));
+      saveRound(liveScoringKeys.submitRound('match-1'));
+      saveRound(liveScoringKeys.submitRound('match-2'));
     });
 
     await waitFor(() => expect(result.current).toBe(1));
@@ -66,7 +73,7 @@ describe('usePausedRoundCount', () => {
     const { result } = renderHook(() => usePausedRoundCount('match-1'), { wrapper });
 
     act(() => {
-      void saveRound(liveScoringKeys.submitRound('match-1'));
+      saveRound(liveScoringKeys.submitRound('match-1'));
     });
     await waitFor(() => expect(result.current).toBe(1));
 
