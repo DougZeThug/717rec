@@ -28,6 +28,7 @@ const mockUseTeamsQuery = vi.fn();
 const mockUseMatchManagement = vi.fn();
 const mockUseDivisions = vi.fn();
 const mockUseTeamMembership = vi.fn();
+const mockUseTimeslotDates = vi.fn();
 
 vi.mock('react-helmet-async', () => ({
   Helmet: ({ children }: { children: React.ReactNode }) => children,
@@ -41,6 +42,9 @@ vi.mock('@/hooks/useMatchDates', () => ({
 }));
 vi.mock('@/hooks/useMatchTimeslots', () => ({
   useMatchTimeslots: (...args: unknown[]) => mockUseMatchTimeslots(...args),
+}));
+vi.mock('@/hooks/useTimeslotDates', () => ({
+  useTimeslotDates: () => mockUseTimeslotDates(),
 }));
 vi.mock('@/hooks/useScheduleTabs', () => ({
   useScheduleTabs: (...args: unknown[]) => mockUseScheduleTabs(...args),
@@ -202,6 +206,7 @@ describe('Schedule page', () => {
     mockUseScheduleData.mockReturnValue(baseScheduleData);
     mockUseMatchDates.mockReturnValue(new Set());
     mockUseMatchTimeslots.mockReturnValue({ groupedTimeslots: {}, isLoading: false });
+    mockUseTimeslotDates.mockReturnValue({ timeslotDates: [], isLoading: false, error: null });
     mockUseScheduleTabs.mockReturnValue({ activeTab: 'upcoming', handleTabChange: vi.fn() });
     mockUseTeamsQuery.mockReturnValue({ data: [], isLoading: false });
     mockUseDivisions.mockReturnValue({ divisions: testDivisions, isLoading: false, error: null });
@@ -375,6 +380,40 @@ describe('Schedule page', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
       mockUseMatchDates.mockReturnValue(new Set(['2026-09-03', '2026-09-10']));
+
+      renderPage();
+
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
+    // Tonight's timeslots are posted before any match row exists. The page must
+    // stay on tonight rather than falling back to last week's results.
+    it('stays on tonight when only tonight timeslots are posted', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      mockUseTimeslotDates.mockReturnValue({
+        timeslotDates: ['2026-09-10', '2026-09-03'],
+        isLoading: false,
+        error: null,
+      });
+
+      renderPage();
+
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
+    // No matches anywhere ahead; the newest posted timeslot night wins.
+    it('opens on the newest posted timeslot night when no match night fits', () => {
+      // Saturday Sep 12. Slots posted for Sep 10, no matches at all.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 12, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set());
+      mockUseTimeslotDates.mockReturnValue({
+        timeslotDates: ['2026-09-10', '2026-09-03'],
+        isLoading: false,
+        error: null,
+      });
 
       renderPage();
 
