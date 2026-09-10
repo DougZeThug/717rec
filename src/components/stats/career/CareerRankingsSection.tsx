@@ -83,13 +83,7 @@ const CareerRankingsSection: React.FC = () => {
                   Career Statistics
                 </CardTitle>
                 {!isMobile && (
-                  <CardDescription
-                    className={cn(
-                      isLight
-                        ? '!text-[#444444] !font-medium font-inter'
-                        : 'text-gray-400 font-inter'
-                    )}
-                  >
+                  <CardDescription className="font-inter">
                     Historical performance across all seasons and playoffs
                   </CardDescription>
                 )}
