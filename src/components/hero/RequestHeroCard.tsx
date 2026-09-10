@@ -1,57 +1,39 @@
 import { AnimatePresence, m } from 'framer-motion';
-import {
-  AlertTriangle,
-  Calendar,
-  Check,
-  ChevronDown,
-  Clock,
-  History,
-  Loader2,
-  Send,
-} from 'lucide-react';
+import { History, Loader2, Send } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { useTeamsArray } from '@/hooks/teams';
 import { useSubmitRequest, useTeamRequests } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
 import { HeroCard as HeroCardType } from '@/types/heroCard';
-import { REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
+import { TeamRequestType } from '@/types/teamRequest';
 
 import HeroCardBase from './HeroCardBase';
+import {
+  buildRequestPayload,
+  DATE_FIELD_LABEL,
+  isRequestIncomplete,
+  REASON_FIELD_LABEL,
+} from './requestForm';
 import RequestHistoryList from './RequestHistoryList';
+import RequestTeamPicker from './RequestTeamPicker';
 import RequestTimeslotFields from './RequestTimeslotFields';
+import RequestTypePicker from './RequestTypePicker';
 
 interface RequestHeroCardProps {
   card: HeroCardType;
 }
 
-const REQUEST_OPTIONS: { type: TeamRequestType; icon: React.ElementType; description: string }[] = [
-  { type: 'TIME_CHANGE', icon: Clock, description: 'Request a different time slot' },
-  { type: 'BYE_REQUEST', icon: Calendar, description: 'Request a bye week' },
-  { type: 'EMERGENCY_CANCEL', icon: AlertTriangle, description: 'Emergency cancellation' },
-];
-
 const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: false });
   const submitMutation = useSubmitRequest();
-  const teamListboxId = React.useId();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedType, setSelectedType] = useState<TeamRequestType | null>(null);
-  const [teamSearchOpen, setTeamSearchOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   // Form fields
@@ -64,7 +46,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
     selectedTeamId || undefined
   );
 
-  const selectedTeam = teams?.find((t) => t.id === selectedTeamId);
+  const selectedTeam = teams?.find((team) => team.id === selectedTeamId);
 
   const resetForm = () => {
     setSelectedType(null);
@@ -74,19 +56,20 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
     setReason('');
   };
 
+  const values = {
+    teamId: selectedTeamId,
+    type: selectedType,
+    matchDate,
+    currentTimeslot,
+    requestedTimeslot,
+    reason,
+  };
+
   const handleSubmit = async () => {
-    if (!selectedTeamId || !selectedType) return;
+    const payload = buildRequestPayload(values, selectedTeam?.name);
+    if (!payload) return;
 
-    await submitMutation.mutateAsync({
-      team_id: selectedTeamId,
-      request_type: selectedType,
-      match_date: matchDate || undefined,
-      current_timeslot: currentTimeslot || undefined,
-      requested_timeslot: requestedTimeslot || undefined,
-      reason: reason || undefined,
-      submitted_by_name: selectedTeam?.name,
-    });
-
+    await submitMutation.mutateAsync(payload);
     resetForm();
   };
 
@@ -120,92 +103,23 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
       {card.subtitle && <p className="text-sm opacity-80 mb-4">{card.subtitle}</p>}
 
       <div className="space-y-4">
-        {/* Team selector */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium opacity-90">Select your team</Label>
-          <Popover open={teamSearchOpen} onOpenChange={setTeamSearchOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={teamSearchOpen}
-                aria-controls={teamListboxId}
-                className={cn(
-                  'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
-                  'text-inherit hover:text-inherit'
-                )}
-                disabled={teamsLoading}
-              >
-                {teamsLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : selectedTeam ? (
-                  selectedTeam.name
-                ) : (
-                  'Choose a team...'
-                )}
-                <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent id={teamListboxId} className="w-[300px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search teams..." />
-                <CommandList>
-                  <CommandEmpty>No team found.</CommandEmpty>
-                  <CommandGroup>
-                    {teams?.map((team) => (
-                      <CommandItem
-                        key={team.id}
-                        value={team.name}
-                        onSelect={() => {
-                          setSelectedTeamId(team.id);
-                          setTeamSearchOpen(false);
-                          resetForm();
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 size-4',
-                            selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                        {team.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </div>
+        <RequestTeamPicker
+          teams={teams}
+          isLoading={teamsLoading}
+          selectedTeamId={selectedTeamId}
+          onSelect={(teamId) => {
+            setSelectedTeamId(teamId);
+            resetForm();
+          }}
+        />
 
-        {/* Request type selection */}
         {selectedTeamId && !showHistory && (
           <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="space-y-3"
           >
-            <Label className="text-sm font-medium opacity-90">What do you need?</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {REQUEST_OPTIONS.map(({ type, icon: Icon, description }) => (
-                <button
-                  type="button"
-                  key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={cn(
-                    'flex flex-col items-center gap-2 p-4 rounded-lg transition-all text-center',
-                    'border-2',
-                    selectedType === type
-                      ? 'bg-white/20 border-white/50'
-                      : 'bg-background/10 border-white/20 hover:bg-background/20'
-                  )}
-                >
-                  <Icon className="size-6" />
-                  <span className="font-semibold text-sm">{REQUEST_TYPE_LABELS[type]}</span>
-                  <span className="text-xs opacity-70">{description}</span>
-                </button>
-              ))}
-            </div>
+            <RequestTypePicker selectedType={selectedType} onSelect={setSelectedType} />
           </m.div>
         )}
 
@@ -221,7 +135,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Date field */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium opacity-90">
-                  {selectedType === 'BYE_REQUEST' ? 'Date to skip' : 'Match date'}
+                  {DATE_FIELD_LABEL[selectedType]}
                 </Label>
                 <Input
                   type="date"
@@ -243,7 +157,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Reason field */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium opacity-90">
-                  {selectedType === 'EMERGENCY_CANCEL' ? 'Reason (required)' : 'Reason (optional)'}
+                  {REASON_FIELD_LABEL[selectedType]}
                 </Label>
                 <Textarea
                   placeholder="Explain your request..."
@@ -256,12 +170,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Submit button */}
               <Button
                 onClick={handleSubmit}
-                disabled={
-                  submitMutation.isPending ||
-                  (selectedType === 'EMERGENCY_CANCEL' && !reason) ||
-                  // A time change that names no time is nothing anyone can act on.
-                  (selectedType === 'TIME_CHANGE' && !requestedTimeslot)
-                }
+                disabled={submitMutation.isPending || isRequestIncomplete(values)}
                 className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
               >
                 {submitMutation.isPending ? (
