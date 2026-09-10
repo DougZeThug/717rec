@@ -23,7 +23,8 @@ let signupsQuery: { data: typeof signups | undefined; isLoading: boolean; error:
   isLoading: false,
   error: null,
 };
-const deleteSignup = vi.fn().mockResolvedValue(undefined);
+// Plain vi.fn(); the tests assert it is *not* called, and never await it.
+const deleteSignup = vi.fn();
 
 vi.mock('@/hooks/useBlindDrawSettings', () => ({
   useBlindDrawSettings: () => ({
