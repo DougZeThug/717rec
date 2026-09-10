@@ -39,5 +39,6 @@ export const TimeslotService = {
   batchAssignTimeslots: TimeslotBatchService.batchAssignTimeslots.bind(TimeslotBatchService),
   insertTimeslot: TimeslotBatchService.insertTimeslot.bind(TimeslotBatchService),
   deleteTimeslotSimple: TimeslotBatchService.deleteTimeslotSimple.bind(TimeslotBatchService),
+  deleteTimeslotsByIds: TimeslotBatchService.deleteTimeslotsByIds.bind(TimeslotBatchService),
   batchInsertTimeslots: TimeslotBatchService.batchInsertTimeslots.bind(TimeslotBatchService),
 };

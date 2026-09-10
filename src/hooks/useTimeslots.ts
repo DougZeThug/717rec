@@ -16,6 +16,7 @@ export const useTimeslots = (date: Date) => {
     assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
+    moveTeamBooking,
   } = useTimeslotMutation();
 
   // Function to refresh timeslots data (useful after bye week operations)
@@ -39,6 +40,7 @@ export const useTimeslots = (date: Date) => {
     assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
+    moveTeamBooking,
     refreshTimeslots,
   };
 };

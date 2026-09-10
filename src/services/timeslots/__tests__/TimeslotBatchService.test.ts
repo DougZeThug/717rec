@@ -64,6 +64,15 @@ const deleteEqChain = (result: { error: unknown }) => ({
   delete: () => ({ eq: () => Promise.resolve(result) }),
 });
 
+const deleteInChain = (result: { error: unknown }, capture?: (ids: string[]) => void) => ({
+  delete: () => ({
+    in: (_column: string, ids: string[]) => {
+      capture?.(ids);
+      return Promise.resolve(result);
+    },
+  }),
+});
+
 // ─── batchAssignBackToBackTimeslots ───────────────────────────────────────────
 
 describe('TimeslotBatchService.batchAssignBackToBackTimeslots', () => {
@@ -152,6 +161,42 @@ describe('TimeslotBatchService.deleteTimeslotSimple', () => {
   it('throws DatabaseError on Supabase error', async () => {
     mockFrom.mockReturnValue(deleteEqChain({ error: pgError() }));
     await expect(TimeslotBatchService.deleteTimeslotSimple('ts-1')).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── deleteTimeslotsByIds ─────────────────────────────────────────────────────
+
+describe('TimeslotBatchService.deleteTimeslotsByIds', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  // Moving a booking writes the new rows first and clears the old ones after,
+  // so this delete must take exactly the rows it is handed and nothing else.
+  it('deletes exactly the rows it is given', async () => {
+    let asked: string[] = [];
+    mockFrom.mockReturnValue(deleteInChain({ error: null }, (ids) => (asked = ids)));
+
+    await expect(
+      TimeslotBatchService.deleteTimeslotsByIds(['ts-1', 'ts-2'])
+    ).resolves.toBeUndefined();
+
+    expect(asked).toEqual(['ts-1', 'ts-2']);
+    expect(mockFrom).toHaveBeenCalledWith('team_timeslots');
+  });
+
+  // A team with nothing booked is a real answer, not a query with no filter —
+  // which would be a delete of the whole table.
+  it('sends nothing when there are no ids', async () => {
+    await expect(TimeslotBatchService.deleteTimeslotsByIds([])).resolves.toBeUndefined();
+
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('throws DatabaseError on Supabase error', async () => {
+    mockFrom.mockReturnValue(deleteInChain({ error: pgError() }));
+
+    await expect(TimeslotBatchService.deleteTimeslotsByIds(['ts-1'])).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 
