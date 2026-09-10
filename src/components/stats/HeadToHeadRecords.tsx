@@ -1,4 +1,4 @@
-import { ArrowUpDown, Calendar, Download, Search, Swords, Trophy, X } from 'lucide-react';
+import { Calendar, Download, Search, Swords, Trophy, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -14,17 +14,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useHeadToHead } from '@/hooks/useHeadToHead';
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import type { HeadToHeadRecord } from '@/types/headToHead';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
 import { formatWithPattern } from '@/utils/formatDateSafe';
-import { getRivalryType, type RivalryType } from '@/utils/teamDetailsUtils/rivalryUtils';
+import { getRivalryType, rivalryBadgeConfig } from '@/utils/teamDetailsUtils/rivalryUtils';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import H2HMobileCard from './H2HMobileCard';
 import { OpponentHistoryModal } from './OpponentHistoryModal';
+import { SortableColumnHeader } from './SortableColumnHeader';
 
 interface HeadToHeadRecordsProps {
   teamId: string;
@@ -35,45 +45,26 @@ interface HeadToHeadRecordsProps {
 type SortField = 'opponent_name' | 'win_pct' | 'matches_played' | 'wins' | 'game_wins';
 type SortDirection = 'asc' | 'desc';
 
-// Module-scope sort button so React keeps a stable component identity.
-const SortButton: React.FC<{
+/**
+ * The sortable columns, declared once so the header row is a map rather than
+ * five near-identical blocks.
+ *
+ * These render through `SortableColumnHeader`, which puts a real `<Button>`
+ * inside the `<th>` and sets `aria-sort`. The local `SortButton` this replaced
+ * had neither: it showed the same up-and-down icon on every column, so there
+ * was no way — by eye or by screen reader — to tell which column was sorted.
+ */
+const H2H_SORTABLE_COLUMNS: {
   field: SortField;
-  onSort: (field: SortField) => void;
-  children: React.ReactNode;
-}> = ({ field, onSort, children }) => (
-  <Button
-    variant="ghost"
-    size="sm"
-    onClick={() => onSort(field)}
-    className="h-auto p-1 font-medium justify-start text-foreground hover:text-foreground hover:bg-muted/80"
-  >
-    {children}
-    <ArrowUpDown className="ml-1 size-3" />
-  </Button>
-);
-
-const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
-  rival: {
-    label: 'Rival',
-    className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
-  },
-  dominated: {
-    label: 'Dominated',
-    className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
-  },
-  favorite: {
-    label: 'Favorite',
-    className: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
-  },
-  nemesis: {
-    label: 'Nemesis',
-    className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
-  },
-  tough_matchup: {
-    label: 'Tough Matchup',
-    className: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
-  },
-};
+  label: string;
+  align: 'left' | 'center';
+}[] = [
+  { field: 'opponent_name', label: 'Opponent', align: 'left' },
+  { field: 'wins', label: 'W-L', align: 'center' },
+  { field: 'win_pct', label: 'Win%', align: 'center' },
+  { field: 'matches_played', label: 'Matches', align: 'center' },
+  { field: 'game_wins', label: 'Game W-L', align: 'center' },
+];
 
 const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
   teamId,
@@ -220,149 +211,127 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
             ))}
           </div>
         ) : (
-          /* Desktop: Table (unchanged) */
+          /* Desktop: the shared table primitive */
           <div className="relative">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th scope="col" className="text-left py-2">
-                      <SortButton field="opponent_name" onSort={handleSort}>
-                        Opponent
-                      </SortButton>
-                    </th>
-                    <th scope="col" className="text-center py-2">
-                      <SortButton field="wins" onSort={handleSort}>
-                        W-L
-                      </SortButton>
-                    </th>
-                    <th scope="col" className="text-center py-2">
-                      <SortButton field="win_pct" onSort={handleSort}>
-                        Win%
-                      </SortButton>
-                    </th>
-                    <th scope="col" className="text-center py-2">
-                      <SortButton field="matches_played" onSort={handleSort}>
-                        Matches
-                      </SortButton>
-                    </th>
-                    <th scope="col" className="text-center py-2">
-                      <SortButton field="game_wins" onSort={handleSort}>
-                        Game W-L
-                      </SortButton>
-                    </th>
-                    <th scope="col" className="text-left py-2">
-                      Last Played
-                    </th>
-                    <th scope="col" className="text-right py-2">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRecords.map((record) => (
-                    <tr key={record.opponent_name} className="border-b hover:bg-muted/50">
-                      <td className="py-3">
-                        {(() => {
-                          const rivalryType = getRivalryType(record);
-                          const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
-                          return (
-                            <div
-                              role="button"
-                              tabIndex={0}
-                              aria-label={`View team details for ${record.opponent_name}`}
-                              className="flex min-h-6 items-center space-x-3 cursor-pointer hover:bg-muted/30 rounded-md p-1 transition-colors"
-                              onClick={() =>
-                                handleTeamClick(record.opponent_id, record.opponent_name)
-                              }
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                  e.preventDefault();
-                                  handleTeamClick(record.opponent_id, record.opponent_name);
-                                }
-                              }}
-                            >
-                              {record.opponent_image_url ? (
-                                <img
-                                  src={record.opponent_image_url}
-                                  alt={`${record.opponent_name} logo`}
-                                  className="size-8 rounded-sm object-cover flex-shrink-0"
-                                />
-                              ) : (
-                                <div className="size-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
-                                  <span className="text-xs font-medium text-muted-foreground">
-                                    {record.opponent_name.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span className="font-medium hover:text-primary transition-colors truncate">
-                                  {record.opponent_name}
-                                </span>
-                                {badge && (
-                                  <span
-                                    className={cn(
-                                      'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
-                                      badge.className
-                                    )}
-                                  >
-                                    {badge.label}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </td>
-                      <td className="text-center">
-                        <div className="flex items-center justify-center space-x-1">
-                          <Trophy className="size-3 text-emerald-500" />
-                          <span className="text-emerald-600 font-medium">{record.wins}</span>
-                          <span>-</span>
-                          <X className="size-3 text-rose-500" />
-                          <span className="text-rose-600 font-medium">{record.losses}</span>
-                        </div>
-                      </td>
-                      <td className="text-center">
-                        <Badge variant={record.win_pct >= 50 ? 'default' : 'secondary'}>
-                          {Number(record.win_pct).toFixed(1)}%
-                        </Badge>
-                      </td>
-                      <td className="text-center font-mono">{record.matches_played}</td>
-                      <td className="text-center font-mono">
-                        {record.game_wins}-{record.game_losses}
-                      </td>
-                      <td className="text-left text-sm text-muted-foreground">
-                        {record.last_played_at ? (
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="size-3" />
-                            <span>{formatWithPattern(record.last_played_at, 'MMM d, yyyy')}</span>
-                          </div>
-                        ) : (
-                          '-'
-                        )}
-                      </td>
-                      <td className="text-right">
-                        {record.opponent_id && (
+            <Table>
+              <TableCaption className="sr-only">
+                Head-to-head record against every opponent
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  {H2H_SORTABLE_COLUMNS.map((column) => (
+                    <SortableColumnHeader
+                      key={column.field}
+                      field={column.field}
+                      activeField={sortField}
+                      direction={sortDirection}
+                      onSort={handleSort}
+                      align={column.align}
+                      icon="arrow"
+                    >
+                      {column.label}
+                    </SortableColumnHeader>
+                  ))}
+                  <TableHead>Last Played</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRecords.map((record) => (
+                  <TableRow key={record.opponent_name}>
+                    <TableCell>
+                      {(() => {
+                        const rivalryType = getRivalryType(record);
+                        const badge = rivalryType ? rivalryBadgeConfig[rivalryType] : null;
+                        return (
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant="ghost"
+                            aria-label={`View team details for ${record.opponent_name}`}
+                            className="flex h-auto min-h-6 w-full items-center justify-start space-x-3 rounded-md p-1 text-left font-normal hover:bg-muted/30"
                             onClick={() =>
-                              setSelectedOpponent({
-                                id: record.opponent_id,
-                                name: record.opponent_name,
-                              })
+                              handleTeamClick(record.opponent_id, record.opponent_name)
                             }
                           >
-                            View Details
+                            {record.opponent_image_url ? (
+                              <img
+                                src={record.opponent_image_url}
+                                alt={`${record.opponent_name} logo`}
+                                className="size-8 rounded-sm object-cover flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="size-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {record.opponent_name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="font-medium hover:text-primary transition-colors truncate">
+                                {record.opponent_name}
+                              </span>
+                              {badge && (
+                                <span
+                                  className={cn(
+                                    'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap',
+                                    badge.className
+                                  )}
+                                >
+                                  {badge.label}
+                                </span>
+                              )}
+                            </div>
                           </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                        );
+                      })()}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center space-x-1">
+                        <Trophy className="size-3 text-emerald-500" />
+                        <span className="text-emerald-600 font-medium">{record.wins}</span>
+                        <span>-</span>
+                        <X className="size-3 text-rose-500" />
+                        <span className="text-rose-600 font-medium">{record.losses}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant={record.win_pct >= 50 ? 'default' : 'secondary'}>
+                        {Number(record.win_pct).toFixed(1)}%
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-center font-mono">{record.matches_played}</TableCell>
+                    <TableCell className="text-center font-mono">
+                      {record.game_wins}-{record.game_losses}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {record.last_played_at ? (
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="size-3" />
+                          <span>{formatWithPattern(record.last_played_at, 'MMM d, yyyy')}</span>
+                        </div>
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {record.opponent_id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setSelectedOpponent({
+                              id: record.opponent_id,
+                              name: record.opponent_name,
+                            })
+                          }
+                        >
+                          View Details
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </>

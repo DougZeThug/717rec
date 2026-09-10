@@ -100,12 +100,35 @@ describe('HeadToHeadRecords', () => {
     expect(screen.getByText('No head-to-head records yet')).toBeInTheDocument();
   });
 
-  it('renders clickable opponent name as a keyboard-accessible button', () => {
+  it('opens the opponent team page from a real button, not a div pretending to be one', async () => {
+    const user = userEvent.setup();
     renderRecords();
-    const opponentButton = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent?.includes('Bandits'));
-    expect(opponentButton).toBeDefined();
-    expect(opponentButton).toHaveAttribute('tabIndex', '0');
+
+    // A real <button> is focusable and Enter-activated by the browser, so there
+    // is no tabIndex or onKeyDown to assert — which is the point of the change.
+    const opponentButton = screen.getByRole('button', {
+      name: 'View team details for Bandits',
+    });
+    await user.click(opponentButton);
+
+    expect(navigate).toHaveBeenCalledWith('/teams/bandits');
+  });
+
+  it('says which column it is sorted by, and only that one', async () => {
+    const user = userEvent.setup();
+    renderRecords();
+
+    const winPct = screen.getByRole('columnheader', { name: /Win%/ });
+    expect(winPct).toHaveAttribute('aria-sort', 'none');
+
+    await user.click(within(winPct).getByRole('button'));
+
+    expect(winPct).toHaveAttribute('aria-sort', 'descending');
+    const otherSorts = screen
+      .getAllByRole('columnheader')
+      .filter((header) => header !== winPct)
+      .map((header) => header.getAttribute('aria-sort'));
+    // 'Last Played' and 'Action' are not sortable, so they carry no aria-sort.
+    expect(otherSorts).toEqual(['none', 'none', 'none', 'none', null, null]);
   });
 });
