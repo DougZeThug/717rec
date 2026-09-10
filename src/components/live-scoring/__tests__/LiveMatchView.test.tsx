@@ -22,7 +22,6 @@ const mockUndoLastRound = { mutate: vi.fn(), isPending: false };
 const mockStartGame = { mutate: vi.fn(), isPending: false };
 const mockConfirmGameComplete = { mutate: vi.fn(), isPending: false };
 const mockReopenGame = { mutate: vi.fn(), isPending: false };
-const mockUpdateGamePlayers = { mutate: vi.fn(), isPending: false };
 const mockFinalize = { mutate: vi.fn(), isPending: false, isError: false, error: null as unknown };
 const mockReopen = { mutate: vi.fn(), isPending: false };
 const mockAddPlayer = { mutate: vi.fn(), isPending: false };
@@ -35,7 +34,6 @@ vi.mock('@/hooks/live-scoring/useGameFlow', () => ({
   useGameFlow: () => ({
     startGame: mockStartGame,
     confirmGameComplete: mockConfirmGameComplete,
-    updateGamePlayers: mockUpdateGamePlayers,
     reopenGame: mockReopenGame,
   }),
 }));
