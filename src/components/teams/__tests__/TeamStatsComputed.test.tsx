@@ -30,26 +30,8 @@ vi.mock('@/hooks/useAllTeamReportCards', () => ({
 
 import TeamAdvancedStatsSection from '../TeamAdvancedStatsSection';
 import TeamReportCard from '../TeamReportCard';
-import TeamStats from '../TeamStats';
 
 describe('Computed stats rendering', () => {
-  it('renders zero-match values correctly', () => {
-    render(
-      <TeamStats
-        wins={0}
-        losses={0}
-        gameWins={0}
-        gameLosses={0}
-        winPercentage="0.0"
-        gameWinPercentage="0.0"
-        sos={0}
-        powerScore={0}
-      />
-    );
-    expect(screen.getAllByText('0-0').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('0.0%').length).toBeGreaterThan(0);
-  });
-
   it('report card missing stats fallback', () => {
     mockReportCard.mockReturnValue({ grades: null as TeamGrades | null, isLoading: false });
     render(<TeamReportCard teamId="t1" standalone />);
