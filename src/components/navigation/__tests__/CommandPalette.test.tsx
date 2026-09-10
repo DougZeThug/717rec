@@ -22,8 +22,10 @@ vi.mock('react-router', async () => {
   return { ...actual, useNavigate: () => navigateMock };
 });
 
+const teamsMock = vi.fn(() => ({ data: [] as Array<Record<string, unknown>> }));
+
 vi.mock('@/hooks/teams', () => ({
-  useTeamsQuery: () => ({ data: [] }),
+  useTeamsQuery: () => teamsMock(),
 }));
 
 const openPalette = async () => {
@@ -37,8 +39,15 @@ const openPalette = async () => {
   return user;
 };
 
+const team = (id: string, name: string, divisionName?: string) => ({
+  id,
+  name,
+  divisionName,
+});
+
 beforeEach(() => {
   vi.clearAllMocks();
+  teamsMock.mockReturnValue({ data: [] });
 });
 
 describe('CommandPalette', () => {
@@ -87,6 +96,38 @@ describe('CommandPalette', () => {
     );
 
     expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
+  });
+
+  it('lists teams by name, with their division', async () => {
+    teamsMock.mockReturnValue({
+      data: [team('t1', 'Bag Ass Bandits', 'Competitive'), team('t2', 'Cuzzo Crew')],
+    });
+    const user = await openPalette();
+
+    expect(await screen.findByText('Bag Ass Bandits')).toBeInTheDocument();
+    expect(screen.getByText('Competitive')).toBeInTheDocument();
+    // A team with no division shows its name and nothing beside it.
+    expect(screen.getByText('Cuzzo Crew')).toBeInTheDocument();
+
+    await user.click(screen.getByText('Bag Ass Bandits'));
+
+    expect(navigateMock).toHaveBeenCalledWith('/teams/bag-ass-bandits');
+  });
+
+  it('offers the whole teams page once there are more than ten', async () => {
+    teamsMock.mockReturnValue({
+      data: Array.from({ length: 12 }, (_, i) => team(`t${i}`, `Team ${i}`)),
+    });
+    const user = await openPalette();
+
+    const viewAll = await screen.findByText('View all 12 teams...');
+    expect(viewAll).toBeInTheDocument();
+    // Only the first ten are listed individually.
+    expect(screen.queryByText('Team 10')).not.toBeInTheDocument();
+
+    await user.click(viewAll);
+
+    expect(navigateMock).toHaveBeenCalledWith('/teams');
   });
 
   it('opens on Cmd+K', async () => {

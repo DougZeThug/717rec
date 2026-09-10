@@ -102,7 +102,7 @@ describe('getFinalRegularSeasonWeek', () => {
 
   it('gives no number when the season has no end date', () => {
     expect(getFinalRegularSeasonWeek('2026-06-02', null)).toBeNull();
-    expect(getFinalRegularSeasonWeek('2026-06-02', undefined)).toBeNull();
+    expect(getFinalRegularSeasonWeek('2026-06-02')).toBeNull();
   });
 
   it('gives no number when the season has no start date', () => {

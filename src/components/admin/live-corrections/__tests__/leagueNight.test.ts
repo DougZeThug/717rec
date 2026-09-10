@@ -25,7 +25,7 @@ describe('leagueNightKey', () => {
 
   it('has no key for a match without a usable date', () => {
     expect(leagueNightKey(null)).toBeNull();
-    expect(leagueNightKey(undefined)).toBeNull();
+    expect(leagueNightKey()).toBeNull();
     expect(leagueNightKey('')).toBeNull();
     expect(leagueNightKey('not-a-date')).toBeNull();
   });

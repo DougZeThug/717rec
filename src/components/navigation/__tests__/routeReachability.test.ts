@@ -5,6 +5,9 @@ import { describe, expect, it } from 'vitest';
 // test does not care where vitest was started from.
 import appSource from '@/App.tsx?raw';
 import userMenuSource from '@/components/auth/UserMenu.tsx?raw';
+// skipcq: JS-W1028 -- `?raw` resolves to a string, so the module's own exports
+// are irrelevant. Only this one is flagged because HelpQuickLinks is the one
+// file here with a named export and no default.
 import helpQuickLinksSource from '@/components/help/HelpQuickLinks.tsx?raw';
 import navLinksSource from '@/components/layout/navbar/NavLinks.tsx?raw';
 import bottomNavSource from '@/components/navigation/BottomNav.tsx?raw';

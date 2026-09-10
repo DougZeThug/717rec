@@ -10,6 +10,8 @@ const MAPPED_ROUTES = [
   '/stats',
   '/playoffs',
   '/history',
+  '/compare',
+  '/insights',
   '/message-board',
   '/help',
   '/contact',

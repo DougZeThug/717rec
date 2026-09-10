@@ -29,6 +29,12 @@ vi.mock('@/hooks/useAdminAccess', () => ({
 
 const isMobileMock = vi.fn(() => false);
 
+const prefetchRouteMock = vi.fn();
+
+vi.mock('@/utils/routePrefetch', () => ({
+  prefetchRoute: (path: string) => prefetchRouteMock(path),
+}));
+
 vi.mock('@/hooks/useMobile', () => ({
   useIsMobile: () => isMobileMock(),
 }));
@@ -48,6 +54,7 @@ vi.mock('@/components/layout/navbar/NavActions', () => ({
 }));
 
 beforeEach(() => {
+  vi.clearAllMocks();
   adminAccessMock.mockReturnValue({ isAdminAccessGranted: false, isLoading: false });
   isMobileMock.mockReturnValue(false);
 });
@@ -106,6 +113,25 @@ describe('Navbar', () => {
     );
 
     expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('prefetches a route on hover, focus and touch, not only on click', () => {
+    // Three separate handlers; a link reached by keyboard or by thumb should
+    // start the same chunk load a mouse does.
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    const teams = screen.getByRole('link', { name: 'Teams' });
+
+    fireEvent.mouseEnter(teams);
+    fireEvent.focus(teams);
+    fireEvent.touchStart(teams);
+
+    expect(prefetchRouteMock).toHaveBeenCalledTimes(3);
+    expect(prefetchRouteMock).toHaveBeenCalledWith('/teams');
   });
 
   it('carries the command palette that the deleted pill bar used to host', () => {
