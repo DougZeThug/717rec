@@ -13,6 +13,11 @@ vi.mock('@/hooks/useSeasonOpponentHistory', () => ({
 }));
 vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => mockIsMobile }));
 
+const exportMatchupsToExcel = vi.fn();
+vi.mock('@/utils/exportMatchupsToExcel', () => ({
+  exportMatchupsToExcel: (...args: unknown[]) => exportMatchupsToExcel(...args),
+}));
+
 import OpponentHistoryTab from '../OpponentHistoryTab';
 
 type TeamRow = SeasonOpponentData['teams'][number];
@@ -63,6 +68,7 @@ describe('OpponentHistoryTab', () => {
   });
 
   beforeEach(() => {
+    vi.clearAllMocks();
     mockIsMobile = false;
     mockUseSeasonOpponentHistory.mockReturnValue({ data, isLoading: false, error: null });
   });
@@ -131,6 +137,34 @@ describe('OpponentHistoryTab', () => {
     // The heading text is reused as the card label.
     const firstCard = within(list).getAllByRole('listitem')[0];
     expect(within(firstCard).getByText('# Matches')).toBeInTheDocument();
+  });
+
+  it('shows a spinner before any data arrives', () => {
+    mockUseSeasonOpponentHistory.mockReturnValue({ data: undefined, isLoading: true, error: null });
+    render(<OpponentHistoryTab />);
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.queryByRole('list')).not.toBeInTheDocument();
+  });
+
+  it('says so when the season has no completed matches at all', () => {
+    mockUseSeasonOpponentHistory.mockReturnValue({
+      data: { ...data, teams: [] },
+      isLoading: false,
+      error: null,
+    });
+    render(<OpponentHistoryTab />);
+
+    expect(screen.getByText(/No completed matches found/i)).toBeInTheDocument();
+  });
+
+  it('exports the season to Excel', async () => {
+    const user = userEvent.setup();
+    render(<OpponentHistoryTab />);
+
+    await user.click(screen.getByRole('button', { name: /Export to Excel/i }));
+
+    expect(exportMatchupsToExcel).toHaveBeenCalledWith(data);
   });
 
   it('reports a load failure instead of an empty table', () => {

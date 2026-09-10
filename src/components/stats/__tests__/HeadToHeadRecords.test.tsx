@@ -14,7 +14,8 @@ const navigate = vi.fn();
 vi.mock('@/hooks/useHeadToHead', () => ({
   useHeadToHead: (teamId: string) => mockUseHeadToHead(teamId),
 }));
-vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => false }));
+let mockIsMobile = false;
+vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => mockIsMobile }));
 vi.mock('react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router')>();
   return { ...actual, useNavigate: () => navigate };
@@ -49,6 +50,7 @@ const records = [
 describe('HeadToHeadRecords', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockIsMobile = false;
     mockUseHeadToHead.mockReturnValue({ data: records, isLoading: false, error: null });
   });
 
@@ -124,11 +126,95 @@ describe('HeadToHeadRecords', () => {
     await user.click(within(winPct).getByRole('button'));
 
     expect(winPct).toHaveAttribute('aria-sort', 'descending');
+
+    // Pressing the same column again flips the direction rather than resetting.
+    await user.click(within(winPct).getByRole('button'));
+    expect(winPct).toHaveAttribute('aria-sort', 'ascending');
     const otherSorts = screen
       .getAllByRole('columnheader')
       .filter((header) => header !== winPct)
       .map((header) => header.getAttribute('aria-sort'));
     // 'Last Played' and 'Action' are not sortable, so they carry no aria-sort.
     expect(otherSorts).toEqual(['none', 'none', 'none', 'none', null, null]);
+  });
+
+  it('shows the loading state before any record arrives', () => {
+    mockUseHeadToHead.mockReturnValue({ data: undefined, isLoading: true, error: null });
+    renderRecords();
+
+    expect(screen.getByText('Loading records...')).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('reports a load failure instead of an empty table', () => {
+    mockUseHeadToHead.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('nope'),
+    });
+    renderRecords();
+
+    expect(screen.getByText(/Error loading head-to-head records/i)).toBeInTheDocument();
+  });
+
+  it('says so when a search matches no opponent', async () => {
+    const user = userEvent.setup();
+    renderRecords();
+
+    await user.type(screen.getByRole('textbox', { name: 'Search opponents' }), 'nobody');
+
+    expect(screen.getByText(/No opponents found matching/)).toBeInTheDocument();
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  });
+
+  it('falls back to a dash when a pair has never played', () => {
+    mockUseHeadToHead.mockReturnValue({
+      data: [makeRecord({ opponent_name: 'Newcomers', last_played_at: null })],
+      isLoading: false,
+      error: null,
+    });
+    renderRecords();
+
+    // The W-L cell also renders a '-' between the two numbers, so address the
+    // Last Played cell by position rather than by text.
+    const row = screen.getAllByRole('row')[1];
+    const lastPlayed = within(row).getAllByRole('cell')[5];
+    expect(lastPlayed).toHaveTextContent('-');
+  });
+
+  describe('on a phone', () => {
+    beforeEach(() => {
+      mockIsMobile = true;
+    });
+
+    it('shows cards instead of a table, and a sort control instead of headings', () => {
+      renderRecords();
+
+      // Card mode has no column headings to press, so the dropdown is the only
+      // way to sort — see the note on it in HeadToHeadRecords.
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByText('Aces')).toBeInTheDocument();
+      expect(screen.getByText('Bandits')).toBeInTheDocument();
+    });
+
+    it('opens the opponent history from a card', async () => {
+      const user = userEvent.setup();
+      renderRecords();
+
+      await user.click(screen.getByRole('button', { name: /Bandits/ }));
+
+      expect(await screen.findByTestId('history-modal')).toHaveTextContent('Bandits');
+    });
+
+    it('still filters by search', async () => {
+      const user = userEvent.setup();
+      renderRecords();
+
+      await user.type(screen.getByRole('textbox', { name: 'Search opponents' }), 'Aces');
+
+      expect(screen.getByText('Aces')).toBeInTheDocument();
+      expect(screen.queryByText('Bandits')).not.toBeInTheDocument();
+    });
   });
 });
