@@ -18,6 +18,8 @@ interface ScheduleFiltersProps {
 
 interface FilterChipProps {
   label: string;
+  /** Full name, when the visible label is shortened. */
+  accessibleLabel?: string;
   pressed: boolean;
   onClick: () => void;
   /** Classes for the pressed state, so a division wears its own colour. */
@@ -38,6 +40,7 @@ interface FilterChipProps {
  */
 const FilterChip: React.FC<FilterChipProps> = ({
   label,
+  accessibleLabel,
   pressed,
   onClick,
   activeClassName,
@@ -46,6 +49,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
   <button
     type="button"
     aria-pressed={pressed}
+    aria-label={accessibleLabel}
     onClick={onClick}
     className={cn(
       'flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors',
@@ -93,7 +97,8 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
           {options.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={option.shortLabel}
+              accessibleLabel={option.label}
               pressed={known && division === option.value}
               onClick={() => onDivisionChange(option.value)}
               // The division's own colour, the one this page already uses on
