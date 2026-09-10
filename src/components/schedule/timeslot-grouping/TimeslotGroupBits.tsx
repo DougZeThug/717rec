@@ -72,7 +72,7 @@ export const TimeslotMatchRowMobile = ({
   teamTimeslot: TeamTimeslot;
   isWinterTheme: boolean;
   isByeWeek?: boolean;
-  doubleHeaderInfo?: Map<string, { slot1: string; slot2: string }>;
+  doubleHeaderInfo?: Map<string, string[]>;
 }) => {
   const teamName = teamTimeslot.teams?.name;
   const cardClass = cn(
