@@ -125,7 +125,7 @@ Not applicable to navigation itself.
 | The record's state | Only `/teams/:teamId` and `/matches/:matchId/live` read a record from the URL. A missing or invalid id gives that page's own empty state, not the 404 page. | No effect on routing. |
 | The season's state | No effect on which routes exist. | No effect. |
 | Viewport | The navigation bar collapses to a menu on a narrow screen. | Re-flows on rotation. |
-| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to one of nine pages, or to a team by name. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. It lives in the top bar, along with its Search button. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
+| Keys the app honours | **Cmd/Ctrl+K opens a command palette** for searching and jumping to one of nine pages, or to a team by name. It is the app's one global shortcut and it exists only on a screen 768 pixels or wider — on a phone there is no way to reach it. It lives in the top bar as a search icon, whose tooltip names the shortcut. Tab reaches a skip link to the main content first. | The palette can be opened at any time and closed with Escape. |
 
 ## Cancel and interrupt
 

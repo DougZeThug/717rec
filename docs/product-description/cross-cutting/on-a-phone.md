@@ -50,7 +50,7 @@ calls itself mobile. Above it, desktop. The stylesheet has more breakpoints —
 | Below 768 | From 768 up |
 | --- | --- |
 | A fixed tab bar at the bottom of the screen, four tabs: Standings, Schedule, Teams, Playoffs | No bottom bar, and nothing replaces it — the top bar is the only navigation |
-| No search | A Search button in the top bar, and **Cmd/Ctrl+K** opens a command palette that jumps to nine pages or any of the first ten teams |
+| No search | A search icon in the top bar, and **Cmd/Ctrl+K** opens a command palette that jumps to nine pages or any of the first ten teams |
 | Pages get five extra lines of bottom padding, plus the phone's own safe area, so the tab bar clears the content | Ordinary page padding |
 | Toasts fill the width at the top of the screen | Toasts are at most 420 pixels wide, bottom right |
 | The teams list defaults to grouped by division | The teams list defaults to one list |

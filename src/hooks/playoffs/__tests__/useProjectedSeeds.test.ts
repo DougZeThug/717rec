@@ -6,10 +6,12 @@ import type { Ranking } from '@/types';
 import { useProjectedSeeds } from '../useProjectedSeeds';
 
 const mockUseActiveSeason = vi.fn();
+const mockUsePlayoffActiveSeason = vi.fn();
 const mockUseTeamRankings = vi.fn();
 
 vi.mock('@/hooks/useSeasons', () => ({
   useActiveSeason: () => mockUseActiveSeason(),
+  usePlayoffActiveSeason: () => mockUsePlayoffActiveSeason(),
 }));
 
 vi.mock('@/hooks/useTeamRankings', () => ({
@@ -47,6 +49,7 @@ const ACTIVE_SEASON = {
 beforeEach(() => {
   vi.clearAllMocks();
   mockUseActiveSeason.mockReturnValue({ data: ACTIVE_SEASON, isLoading: false });
+  mockUsePlayoffActiveSeason.mockReturnValue({ data: null, isLoading: false });
   mockUseTeamRankings.mockReturnValue({
     rankings: [ranked('c1', 'Competitive', 90), ranked('c2', 'Competitive', 80)],
     isLoading: false,
@@ -94,13 +97,43 @@ describe('useProjectedSeeds', () => {
     expect(result.current.seedsByDivision).toEqual({});
   });
 
-  it('shows nothing when the league has no active season', () => {
+  it('shows nothing when the league has no live season at all', () => {
     mockUseActiveSeason.mockReturnValue({ data: null, isLoading: false });
 
     const { result } = renderHook(() => useProjectedSeeds('season-active'));
 
     expect(result.current.isReady).toBe(false);
     expect(result.current.seedsByDivision).toEqual({});
+  });
+
+  it('still seeds once playoffs start and there is no active season', () => {
+    // `partial_archive_season` clears is_active and sets playoffs_active in one
+    // step, so between it and the first bracket nothing is active — but the
+    // standings still describe that season, exactly as
+    // `current_standings_season_id()` says.
+    mockUseActiveSeason.mockReturnValue({ data: null, isLoading: false });
+    mockUsePlayoffActiveSeason.mockReturnValue({
+      data: { ...ACTIVE_SEASON, is_active: false, playoffs_active: true },
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useProjectedSeeds('season-active'));
+
+    expect(result.current.isReady).toBe(true);
+    expect(result.current.finalWeek).toBe(10);
+    expect(result.current.seedsByDivision.Competitive).toHaveLength(2);
+  });
+
+  it('prefers the active season over the playoff one, as the database does', () => {
+    mockUsePlayoffActiveSeason.mockReturnValue({
+      data: { ...ACTIVE_SEASON, id: 'season-old-playoffs' },
+      isLoading: false,
+    });
+
+    expect(renderHook(() => useProjectedSeeds('season-active')).result.current.isReady).toBe(true);
+    expect(renderHook(() => useProjectedSeeds('season-old-playoffs')).result.current.isReady).toBe(
+      false
+    );
   });
 
   it('is not ready while either query is loading', () => {
@@ -113,6 +146,10 @@ describe('useProjectedSeeds', () => {
       error: null,
     });
     mockUseActiveSeason.mockReturnValue({ data: ACTIVE_SEASON, isLoading: true });
+    expect(renderHook(() => useProjectedSeeds('season-active')).result.current.isReady).toBe(false);
+
+    mockUseActiveSeason.mockReturnValue({ data: ACTIVE_SEASON, isLoading: false });
+    mockUsePlayoffActiveSeason.mockReturnValue({ data: null, isLoading: true });
     expect(renderHook(() => useProjectedSeeds('season-active')).result.current.isReady).toBe(false);
   });
 

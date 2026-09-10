@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { useActiveSeason } from '@/hooks/useSeasons';
+import { useActiveSeason, usePlayoffActiveSeason } from '@/hooks/useSeasons';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
 import type { ProjectedSeed } from '@/utils/playoffs/projectedSeeds';
 import { getFinalRegularSeasonWeek, groupSeedsByDivision } from '@/utils/playoffs/projectedSeeds';
@@ -8,7 +8,10 @@ import { getFinalRegularSeasonWeek, groupSeedsByDivision } from '@/utils/playoff
 export interface ProjectedSeedsResult {
   seedsByDivision: Record<string, ProjectedSeed[]>;
   finalWeek: number | null;
-  /** False while loading, on error, or when the chosen season is not the active one. */
+  /**
+   * False while loading, on error, or when the chosen season is not the one the
+   * live standings describe.
+   */
   isReady: boolean;
 }
 
@@ -17,11 +20,18 @@ const EMPTY_SEEDS: Record<string, ProjectedSeed[]> = {};
 /**
  * Projected playoff seeds for the season shown on `/playoffs`.
  *
- * **Active season only.** Power scores come from `v_team_details`, which carries
- * no `season_id` — it is always the season being played. Showing those numbers
- * against a past season would be quietly wrong, so `isReady` is false whenever
- * the chosen season is not the active one and the caller falls back to the plain
- * "no brackets yet" copy.
+ * **The live season only.** Power scores come from `v_team_details`, which
+ * carries no `season_id` — it is always the season the standings describe.
+ * Showing those numbers against any other season would be quietly wrong, so
+ * `isReady` is false then and the caller falls back to the plain "no brackets
+ * yet" copy.
+ *
+ * Which season that is has to match the database, not just `is_active`:
+ * `current_standings_season_id()` is the active season **falling back to the
+ * season whose playoffs are still running**. `partial_archive_season` clears
+ * `is_active` and sets `playoffs_active` in one step, so between that call and
+ * the first bracket there is no active season at all — and the standings still
+ * describe the season the page is showing.
  *
  * Mount this lazily. `useTeamRankings` fetches teams, matches and previous
  * rankings unconditionally — its optional arguments do not gate the requests and
@@ -31,29 +41,33 @@ const EMPTY_SEEDS: Record<string, ProjectedSeed[]> = {};
  * that cost where it belongs.
  */
 export const useProjectedSeeds = (selectedSeasonId: string | null): ProjectedSeedsResult => {
-  const { data: activeSeason, isLoading: seasonLoading } = useActiveSeason();
+  const { data: activeSeason, isLoading: activeLoading } = useActiveSeason();
+  const { data: playoffSeason, isLoading: playoffLoading } = usePlayoffActiveSeason();
   const { rankings, isLoading: rankingsLoading, error } = useTeamRankings();
 
-  const isActiveSeason = Boolean(
-    selectedSeasonId && activeSeason?.id && selectedSeasonId === activeSeason.id
+  // The same order `current_standings_season_id()` uses.
+  const standingsSeason = activeSeason ?? playoffSeason ?? null;
+
+  const isStandingsSeason = Boolean(
+    selectedSeasonId && standingsSeason?.id && selectedSeasonId === standingsSeason.id
   );
 
   const seedsByDivision = useMemo(
-    () => (isActiveSeason && !error ? groupSeedsByDivision(rankings) : EMPTY_SEEDS),
-    [isActiveSeason, error, rankings]
+    () => (isStandingsSeason && !error ? groupSeedsByDivision(rankings) : EMPTY_SEEDS),
+    [isStandingsSeason, error, rankings]
   );
 
   const finalWeek = useMemo(
     () =>
-      isActiveSeason
-        ? getFinalRegularSeasonWeek(activeSeason?.start_date, activeSeason?.end_date)
+      isStandingsSeason
+        ? getFinalRegularSeasonWeek(standingsSeason?.start_date, standingsSeason?.end_date)
         : null,
-    [isActiveSeason, activeSeason?.start_date, activeSeason?.end_date]
+    [isStandingsSeason, standingsSeason?.start_date, standingsSeason?.end_date]
   );
 
   return {
     seedsByDivision,
     finalWeek,
-    isReady: isActiveSeason && !seasonLoading && !rankingsLoading && !error,
+    isReady: isStandingsSeason && !activeLoading && !playoffLoading && !rankingsLoading && !error,
   };
 };

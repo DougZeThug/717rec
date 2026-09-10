@@ -22,15 +22,49 @@ declare global {
 /** The offset the original report recorded on /schedule. */
 const REPORTED_OFFSET = 337;
 
+/** Short enough that any real page's content overflows it. */
+const MEASURE_HEIGHT = 200;
+
+/** The window these tests start in, before the page is measured. */
+const DEFAULT_VIEWPORT = { width: 1280, height: 600 };
+
+/**
+ * Size the window so the page overflows it, whatever the page happens to weigh.
+ *
+ * These pages are short with stubbed data, and they got shorter: /schedule had
+ * only ~97px of scroll at 1280x600 before the desktop nav row was removed, and
+ * removing it took that to zero, which made the tests fail their own
+ * precondition. Sizing the window to the content keeps them about what they are
+ * for — the reset on navigation — rather than about whether a page happens to
+ * be taller than a fixed viewport.
+ *
+ * Measured at a deliberately short window first: the app shell is
+ * `min-h-screen`, so the document is never shorter than the window and a tall
+ * one tells you nothing about the content.
+ */
+const fitWindowToContent = async (page: Page) => {
+  await page.setViewportSize({ width: DEFAULT_VIEWPORT.width, height: MEASURE_HEIGHT });
+  const content = await page.evaluate(() => document.documentElement.scrollHeight);
+
+  await page.setViewportSize({
+    width: DEFAULT_VIEWPORT.width,
+    // Leave the reported offset of scroll where the content allows it, and
+    // never grow past the window the tests would otherwise have used.
+    height: Math.max(MEASURE_HEIGHT, Math.min(DEFAULT_VIEWPORT.height, content - REPORTED_OFFSET)),
+  });
+};
+
 /**
  * Scroll as far as the page allows, up to the reported offset, and return where
  * we actually landed.
  *
- * Reading the value back matters: with no fixture data /schedule is only ~97px
- * scrollable, so a blind `scrollTo(0, 337)` clamps and every assertion built on
- * it would pass without testing anything.
+ * Reading the value back matters: a blind `scrollTo(0, 337)` on a page with
+ * less scroll than that clamps, and every assertion built on it would pass
+ * without testing anything.
  */
 const scrollDown = async (page: Page) => {
+  await fitWindowToContent(page);
+
   const target = await page.evaluate((wanted) => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
     return Math.min(wanted, max);
@@ -58,7 +92,7 @@ const recordedScrolls = (page: Page) => page.evaluate(() => window.__e2eScrollCa
 test.describe('scroll position on navigation', () => {
   test.beforeEach(async ({ page }) => {
     await stubSupabase(page);
-    await page.setViewportSize({ width: 1280, height: 600 });
+    await page.setViewportSize(DEFAULT_VIEWPORT);
   });
 
   // '/schedule' is the route named in the original report; '/' is the one that
