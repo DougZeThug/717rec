@@ -3,7 +3,12 @@ import { createRoot } from 'react-dom/client';
 
 import App from './App.tsx';
 import { isSupabaseConfigured } from './integrations/supabase/client';
+import { initOnlineStatus } from './utils/onlineStatus';
 import { initSentry } from './utils/sentry';
+
+// Before anything reads it: the query client's online state starts as `true`
+// regardless of the browser, so an app opened with no signal would not know.
+initOnlineStatus();
 
 // Defer Sentry initialization well beyond TTI window to avoid forced reflow during critical rendering
 // Error tracking is non-critical for initial page render - delay 8+ seconds

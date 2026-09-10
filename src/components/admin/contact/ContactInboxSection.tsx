@@ -195,8 +195,10 @@ const ContactInboxSection: React.FC = () => {
             ]}
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            League requests come from the message form at the foot of the home page. Support
-            messages come from the Contact page and are also emailed to the league.
+            Everything here comes from the one form on the Contact page. What the sender said it was
+            about decides which list it lands in: timeslots, scores and joining the league are
+            league requests; bugs, accounts and ideas are support messages, which are also emailed
+            to the league.
           </p>
         </div>
 

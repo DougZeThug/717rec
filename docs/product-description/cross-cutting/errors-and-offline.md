@@ -29,11 +29,13 @@ in at the edge of the screen: a bold word, then a sentence telling them to try
 again. The control comes back and nothing on the page has changed.
 
 They try again on a train, out of signal. The same thing happens, in the same
-words. Nothing anywhere says they are offline. Nothing was saved for later.
+words — but a bar under the header now says they are offline, so the failure has
+a reason on screen. Nothing was saved for later.
 
-They open a page whose code has not downloaded yet. A spinner says "Loading
-page..." and stays there. There is no timeout and no error; the page never
-arrives and never gives up.
+They open a page whose code has not downloaded yet. Instead of a spinner that
+never ends, they get a short screen saying the page did not download and that it
+will open on its own when the signal is back. It does: the moment the connection
+returns the app loads the page again with nothing pressed.
 
 ## The four things that can fail
 
@@ -65,7 +67,9 @@ stateDiagram-v2
     failed --> retried : it was a read (one retry, immediately)
     retried --> failed_final : the retry also failed
     retried --> shown : the retry worked
-    failed --> failed_final : it was a write (no retry)
+    failed --> parked : it was a live-scoring round save with no connection
+    parked --> shown : the connection returned and it was sent
+    failed --> failed_final : it was any other write (no retry)
     failed_final --> reported : one red toast, or the page's empty state
     reported --> [*] : nothing is queued and nothing is remembered
 ```
@@ -83,13 +87,16 @@ so an operation that fails three times in a row shows all three; a fourth pushes
 the oldest out. A bulk action that reports per item still shows one line about
 one item.
 
-**What is remembered.** Nothing. There is no queue, no retry button on the toast,
-and no record that the attempt happened.
+**What is remembered.** Nothing, outside live scoring: no queue, no retry button
+on the toast, and no record that the attempt happened. A live-scoring round is
+the exception — it is held, and its taps are kept on the phone.
 
 ## Retrying, and where it differs
 
 - **Ordinary reads retry once.** No backoff, no second chance.
-- **Writes never retry.** A failed write is a failed write.
+- **Writes never retry, and one waits instead.** A failed write is a failed
+  write. A live-scoring round save with no connection is not a failed write: it
+  is parked, and sent when the connection returns.
 - **The two timeslot reads are different**: they retry **twice** with growing
   delays, and they are the only reads in the product that ask the browser
   whether it is online before polling again. Four things in the app poll on a
@@ -99,21 +106,42 @@ and no record that the attempt happened.
   then four, up to thirty, with a little randomness so several phones at the same
   match do not all retry together. Every reconnection refetches rather than
   assuming nothing was missed.
-- **A page's code never retries.** If the download fails, the spinner stays
-  forever.
+- **A page's code does not retry, but it does recover.** A failed download is
+  final for the life of the page: the browser caches the failure and re-throws
+  it on every later attempt, so there is nothing to retry in place. Instead the
+  app loads the document again as soon as the connection returns, which is the
+  only thing that clears that cache.
 
 ## Offline
 
-Offline is not a state 717rec knows about. There is no banner, no badge, no
+**A bar under the header says so**, on every page, within a moment of the
+connection dropping, and it says the opposite for a few seconds when the
+connection comes back. It sits in normal flow rather than pinned, because the
+site header is already pinned and a second pinned bar would slide underneath it.
+
+That is the whole of what the app knows. There is still no badge, no
 disabled-while-offline control, and no check before a form is opened.
 
 What actually happens: data already fetched stays on screen and looks current;
-pages already fetched still navigate; the signed-in session lives in the browser,
-so every signed-in control is still drawn; and every request fails. The user
-finds out by pressing something.
+pages already fetched still navigate; **a page whose code has not been fetched
+shows a short "this page did not download" screen and opens itself on
+reconnect**; the signed-in session lives in the browser, so every signed-in
+control is still drawn; and every request fails. Apart from the bar, the user
+still finds out by pressing something.
 
-There is **no offline write queue anywhere in the product**. A round entered at a
-venue with no signal is lost, not queued. A long message typed offline is lost on
+The bar reads the browser's own answer, which is optimistic: it reports a
+connection whenever a network interface is up, so a captive portal or a dead
+uplink still counts as online. It is reliable for "definitely offline" and not
+for "definitely working", which is why nothing is blocked on it.
+
+There is **one offline write queue in the product, and it covers live scoring
+only**. A round entered at a venue with no signal is held rather than lost: it
+shows in the round log, a line under the scoreboard counts how many are waiting,
+and they are sent by themselves when the connection returns. The held round is in
+memory, so closing the tab loses it — but the tapped scores are kept on the phone
+for twelve hours, so a reload hands them back and one press files them again.
+
+Everywhere else there is still no queue. A long message typed offline is lost on
 submit. See
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
 
@@ -206,8 +234,12 @@ failures are reported with a stack trace. See
 
 ## Edge cases
 
-- **A page whose code never downloads leaves the spinner forever.** No timeout,
-  no error, no Try Again.
+- **A page whose code does not download says so and waits.** It cannot be
+  retried in place — the browser caches the failed download — so recovery is the
+  document loading again, which happens by itself on reconnect or on Try again.
+  That automatic attempt is allowed **once in any half-minute**: a file that is
+  genuinely gone would otherwise reload the app forever. After it, the screen
+  says loading again did not help and leaves the button.
 - **A failed read and an empty list look identical** on any page that falls back
   to its empty state. The empty state is a positive claim and is sometimes false.
 - **A rate-limited or over-length contact message is told to try again**, which
@@ -235,19 +267,26 @@ failures are reported with a stack trace. See
   [B-12](../bug-triage.md#b-12-failure-messages-discard-the-reason-the-server-gave),
   whose sanitiser supersedes them. See also
   [B-31](../bug-triage.md#b-31-two-dead-features-are-visible-in-the-interface).
-- **Nothing detects offline except two timeslot reads.** Whether a visible
-  offline indicator is wanted is a product question, but the current state — an
-  app that looks fully working with no connection — is worth deciding
-  deliberately.
+- Resolved: **a visible offline indicator was wanted, and exists.** The bar
+  under the header is the answer to what used to be an open product question
+  here, from UX audit X-12. What still has no offline treatment is every
+  individual control: nothing is disabled and no form warns before it is filled
+  in.
 - Not confirmed by hand: what each page shows when its first read fails. This
   needs one checklist item per page and is the largest gap in this document.
 - Not confirmed by hand: whether the installed home-screen app opens offline at
   all, and what it shows if it does.
-- Not confirmed by hand: how long the "Loading page..." spinner stays before a
-  user gives up, and whether a failed chunk ever recovers on its own.
+- Resolved: **a failed page download did not recover on its own, and now does.**
+  It never could by re-rendering: the browser caches the failure for the life of
+  the document. The app loads the document again on reconnect instead. What is
+  still not confirmed by hand is whether the installed home-screen app's cached
+  shell answers that reload while the signal is only partly back.
 - Not confirmed by hand: whether "Try Again" on the route error screen recovers
   or re-throws immediately.
 - Assumption: the toast stays about five seconds. That is the component library's
   default and no override was found.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
+and the live-scoring round queue). Those passages were written from the change
+and its tests, not from a fresh pass over the running app.

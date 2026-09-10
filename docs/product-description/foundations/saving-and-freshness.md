@@ -136,13 +136,21 @@ away is receiving comments live.
 
 ## Offline
 
-**There is no offline write queue anywhere in the product.** Offline means
-requests fail.
+**There is one offline write queue in the product, and it covers live scoring
+only.** Everywhere else, offline still means requests fail.
 
-Data already fetched stays on screen. Pages already fetched still navigate.
-Anything the user tries to write fails, reports whatever failure message that
-feature has, and is lost. Nothing is stored to be sent later, and nothing warns
-the user before they start typing that they will not be able to save.
+Data already fetched stays on screen. Pages already fetched still navigate. A
+bar under the header now says the connection is gone. Anything the user tries to
+write outside live scoring still fails, reports whatever failure message that
+feature has, and is lost; nothing else is stored to be sent later, and nothing
+warns the user before they start typing that they will not be able to save.
+
+**Live scoring is the exception.** Save Round with no signal holds the round
+rather than failing it: the round appears in the log, a line under the
+scoreboard says how many are waiting, and they are sent by themselves when the
+connection returns. The held round lives in memory, so closing the tab loses it —
+but the tapped scores are kept on the phone for twelve hours, so a reload hands
+them back and one press files them again.
 
 The signed-in session lives in the browser, so an offline user still appears
 signed in and still sees every control they would normally see, right up to the
@@ -248,4 +256,7 @@ yet moved.
   above are read from the hooks. Not confirmed by hand is whether the pollers
   actually pause when the tab is hidden, as their code intends.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit items W5 and W6 (the offline banner, the page-download recovery screen,
+and the live-scoring round queue). Those passages were written from the change
+and its tests, not from a fresh pass over the running app.

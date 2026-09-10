@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 
 import type { useGameFlow } from '@/hooks/live-scoring/useGameFlow';
 import type { LiveGameDerived } from '@/hooks/live-scoring/useLiveMatch';
+import { usePausedRoundCount } from '@/hooks/live-scoring/usePausedRoundCount';
 import type { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from '@/hooks/useToast';
 import { DuplicateRoundError } from '@/types/errors';
 
@@ -12,12 +14,14 @@ import { LiveScoringControls } from './LiveScoringControls';
 import { RoundLog } from './RoundLog';
 import type { SavedRound } from './RoundSavedNotice';
 import { RoundSavedNotice } from './RoundSavedNotice';
-import type { RoundSubmission } from './RoundScoreInput';
+import type { RoundSaveOutcome, RoundSubmission } from './RoundScoreInput';
 import { RoundScoreInput } from './RoundScoreInput';
+import { SyncStatusNotice } from './SyncStatusNotice';
 import { ThrowerBar } from './ThrowerBar';
 
 interface ActiveGamePanelProps {
   game: LiveGameDerived;
+  matchId: string;
   team1Name: string;
   team2Name: string;
   team1Id: string | null;
@@ -43,6 +47,7 @@ const leaderSide = (totals: { team1: number; team2: number }): 1 | 2 | null => {
  */
 export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
   game,
+  matchId,
   team1Name,
   team2Name,
   team1Id,
@@ -64,6 +69,17 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
 
   /** The last round this scorer filed, for the on-screen confirmation. */
   const [savedRound, setSavedRound] = useState<SavedRound | null>(null);
+
+  const isOnline = useOnlineStatus();
+  const pausedRounds = usePausedRoundCount(matchId);
+
+  /**
+   * A round held for a missing connection stays `isPending` for as long as the
+   * signal is gone. Reading that as "saving" would freeze the whole panel — the
+   * grids disabled, Undo blocked and the button spinning — for a round that is
+   * already filed. Only a save actually on its way counts.
+   */
+  const isSavingRound = submitRound.isPending && !submitRound.isPaused;
 
   const overrideKey = `${game.game.id}:${game.nextRoundNumber}`;
   const override = throwerOverride?.key === overrideKey ? throwerOverride : null;
@@ -95,27 +111,43 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
    * Saves the next round using the currently selected throwers. Rejecting
    * tells RoundScoreInput to keep the tapped scores for a retry.
    */
-  const handleSubmit = (submission: RoundSubmission) => {
+  const handleSubmit = (submission: RoundSubmission): Promise<RoundSaveOutcome> => {
     const roundNumber = game.nextRoundNumber;
+    const input = {
+      gameId: game.game.id,
+      roundNumber,
+      team1Score: submission.team1Score,
+      team2Score: submission.team2Score,
+      team1ThrowerId,
+      team2ThrowerId,
+      team1Bags: submission.team1Bags,
+      team2Bags: submission.team2Bags,
+    };
+
+    if (!isOnline) {
+      // With no signal the save is parked, and its promise never settles until
+      // the connection comes back — so awaiting it would leave the scorer stuck
+      // on a round they have already filed. Fire it and say it is queued: the
+      // optimistic round is in the log, the round number moves on, and the
+      // notice above explains where it went. No "Round N saved": it has not
+      // been.
+      submitRound.mutate(input);
+      return Promise.resolve('queued');
+    }
+
     return (
       submitRound
-        .mutateAsync({
-          gameId: game.game.id,
-          roundNumber,
-          team1Score: submission.team1Score,
-          team2Score: submission.team2Score,
-          team1ThrowerId,
-          team2ThrowerId,
-          team1Bags: submission.team1Bags,
-          team2Bags: submission.team2Bags,
-        })
+        .mutateAsync(input)
         // Say so plainly, whatever the realtime channel is doing. A duplicate
         // takes the catch below instead: that round is the other scorer's.
-        .then(() => setSavedRound({ round: roundNumber, at: Date.now() }))
-        .catch((error: unknown) => {
+        .then((): RoundSaveOutcome => {
+          setSavedRound({ round: roundNumber, at: Date.now() });
+          return 'saved';
+        })
+        .catch((error: unknown): RoundSaveOutcome => {
           // Another scorer already recorded this round, so the tapped scores
           // are stale — resolve and let the grids clear for the next round.
-          if (error instanceof DuplicateRoundError) return;
+          if (error instanceof DuplicateRoundError) return 'saved';
           throw error;
         })
     );
@@ -137,6 +169,8 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
       />
 
       <RoundSavedNotice saved={savedRound} />
+
+      <SyncStatusNotice isOnline={isOnline} pausedCount={pausedRounds} />
 
       {gameWon && (
         <GameWonBanner
@@ -160,7 +194,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
         flight. Stay mounted until it settles, so a failure that rolls the
         round back does not take the scorer's tapped scores with it.
       */}
-      {canScore && (!gameWon || submitRound.isPending) && (
+      {canScore && (!gameWon || isSavingRound) && (
         <>
           <ThrowerBar
             team1Label={team1Name}
@@ -175,16 +209,17 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
             onChangeTeam2={(id) =>
               setThrowerOverride({ key: overrideKey, team1: override?.team1 ?? null, team2: id })
             }
-            disabled={submitRound.isPending}
+            disabled={isSavingRound}
           />
           <RoundScoreInput
             roundNumber={game.nextRoundNumber}
             team1Name={team1Name}
             team2Name={team2Name}
+            gameId={game.game.id}
             onSubmit={handleSubmit}
             roundKey={overrideKey}
             onSelectionDiscarded={announceDiscardedSelection}
-            isSubmitting={submitRound.isPending}
+            isSubmitting={isSavingRound}
             disabled={undoLastRound.isPending}
           />
         </>
@@ -192,7 +227,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
 
       {canScore && (
         <LiveScoringControls
-          canUndo={lastRound !== null && !submitRound.isPending}
+          canUndo={lastRound !== null && !isSavingRound}
           isUndoing={undoLastRound.isPending}
           lastRoundLabel={undoLabel}
           onUndo={() =>

@@ -1,7 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DuplicateRoundError } from '@/types/errors';
 
@@ -69,6 +69,10 @@ const createWrapper = () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  onlineManager.setOnline(true);
 });
 
 describe('submitRound', () => {
@@ -197,5 +201,65 @@ describe('undoLastRound', () => {
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Could not undo round', variant: 'destructive' })
     );
+  });
+});
+
+describe('submitRound with no signal', () => {
+  it('parks the round instead of failing it', async () => {
+    onlineManager.setOnline(false);
+    const { result } = renderHook(() => useRoundMutations('match-1'), { wrapper: createWrapper() });
+
+    act(() => result.current.submitRound.mutate(submitInput()));
+
+    await waitFor(() => expect(result.current.submitRound.isPaused).toBe(true));
+    expect(mockInsertRound).not.toHaveBeenCalled();
+    // A parked round is not a failure, so the scorer must not be told it is one.
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+
+  it('still shows the round in the log while it waits', async () => {
+    onlineManager.setOnline(false);
+    const { result } = renderHook(() => useRoundMutations('match-1'), { wrapper: createWrapper() });
+
+    act(() => result.current.submitRound.mutate(submitInput()));
+
+    await waitFor(() => {
+      const bundle = queryClient.getQueryData<LiveMatchBundle>(queryKey);
+      expect(bundle?.rounds).toHaveLength(1);
+    });
+    const bundle = queryClient.getQueryData<LiveMatchBundle>(queryKey);
+    expect(bundle?.rounds[0].id).toBe('optimistic-game-1-1');
+  });
+
+  it('sends it by itself when the connection returns, with nothing pressed', async () => {
+    onlineManager.setOnline(false);
+    mockInsertRound.mockResolvedValue({ id: 'round-1' });
+    const { result } = renderHook(() => useRoundMutations('match-1'), { wrapper: createWrapper() });
+
+    act(() => result.current.submitRound.mutate(submitInput()));
+    await waitFor(() => expect(result.current.submitRound.isPaused).toBe(true));
+
+    act(() => onlineManager.setOnline(true));
+
+    await waitFor(() => expect(mockInsertRound).toHaveBeenCalledTimes(1));
+    expect(mockInsertRound).toHaveBeenCalledWith(
+      expect.objectContaining({ gameId: 'game-1', roundNumber: 1, enteredByUserId: 'user-1' })
+    );
+  });
+
+  it('can hold more than one round at a time', async () => {
+    onlineManager.setOnline(false);
+    const { result } = renderHook(() => useRoundMutations('match-1'), { wrapper: createWrapper() });
+
+    act(() => result.current.submitRound.mutate(submitInput({ roundNumber: 1 })));
+    act(() => result.current.submitRound.mutate(submitInput({ roundNumber: 2 })));
+
+    await waitFor(() => {
+      const paused = queryClient
+        .getMutationCache()
+        .findAll({ mutationKey: liveScoringKeys.submitRound('match-1') })
+        .filter((mutation) => mutation.state.isPaused);
+      expect(paused).toHaveLength(2);
+    });
   });
 });

@@ -6,7 +6,10 @@ import { AlertTriangle, ArrowLeft, Home, RefreshCw } from 'lucide-react';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { isChunkLoadError } from '@/utils/chunkLoadError';
 import { captureError } from '@/utils/sentry';
+
+import { ChunkLoadRecovery } from './ChunkLoadRecovery';
 
 interface Props {
   children: ReactNode;
@@ -29,6 +32,9 @@ export class RouteErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // A page that could not be downloaded is a lost connection or a fresh
+    // deploy, not a defect in the page. Reporting it buries real crashes.
+    if (isChunkLoadError(error)) return;
     // Log to Sentry with route context
     captureError(error, {
       componentStack: errorInfo.componentStack,
@@ -50,6 +56,12 @@ export class RouteErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
+      // The page's code never arrived, so there is nothing to try again here.
+      // ChunkLoadRecovery owns that case, because it needs a reload.
+      if (isChunkLoadError(this.state.error)) {
+        return <ChunkLoadRecovery />;
+      }
+
       return (
         <div className="flex items-center justify-center min-h-[60vh] p-4">
           <div className="max-w-md w-full text-center space-y-6">

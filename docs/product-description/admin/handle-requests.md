@@ -8,8 +8,8 @@ different places. This document owns all three.
 | Queue | Where | What arrives | Outcomes |
 | --- | --- | --- | --- |
 | **Membership requests** | `/admin` → **Teams** → **Member Approvals** | A signed-in person asked to join a team | Approve, or Reject — which **marks the request refused** |
-| **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*) | A message sent from the panel at the foot of the home page | Mark resolved, Reopen, or **Delete** |
-| **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message sent from the `/contact` page, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
+| **Contact requests** | `/admin` → **Contact Inbox** (filter: *League requests*) | A message from `/contact` about a timeslot, a score, joining the league, or a general question | Mark resolved, Reopen, or **Delete** |
+| **Support tickets** | `/admin` → **Contact Inbox** (filter: *Support*), same place | A message from `/contact` about a bug, an account, or an idea, which is also emailed to the league | Mark resolved or Reopen. **No Delete** — the table has no delete policy |
 | **Team requests** | `/admin` → **Requests** | A team asked for a time change, a bye, or an emergency cancellation | Approve or Reject, each with optional notes |
 
 Contact requests and support tickets share one screen and one set of outcome
@@ -237,11 +237,15 @@ changes.
 
 - **The Contact Inbox holds two kinds of message and says which is which.** The
   segmented filter reads *All*, *League requests*, and *Support*, each with a
-  count. League requests come from the panel at the foot of the home page;
-  support messages come from `/contact` and carry a **Support** badge. The two
-  forms ask for different things and keep their own subject lists, so a support
-  row shows an email address where a league row shows a team and a phone number.
-  Fixed in B-10; before it, `/contact` messages reached no admin screen at all.
+  count. **Both now come from the one form at `/contact`**: what the sender said
+  the message was about decides which list it lands in — timeslots, scores,
+  joining the league and general questions are league requests; bugs, accounts
+  and ideas are support messages, which carry a **Support** badge and are also
+  emailed. The two stores keep their own fields and their own subject lists, so a
+  support row shows an email address where a league row shows a team and may show
+  a phone number. Fixed in B-10; before it, `/contact` messages reached no admin
+  screen at all. The two *forms* were merged into one by W7 (UX audit H-02); the
+  two stores were deliberately not.
 - **A support ticket cannot be deleted.** Its table grants admins read and update
   only, so the row offers Mark resolved and Reopen but no Delete. Deleting is
   offered on league requests only.
@@ -298,4 +302,6 @@ changes.
 - Assumption: nothing anywhere emails or notifies a requester about any of these
   three outcomes. No such call was found on any of the paths.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit item W7 (the two message forms became one). Those passages were written
+from the change and its tests, not from a fresh pass over the running app.

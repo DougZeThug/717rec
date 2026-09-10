@@ -25,6 +25,16 @@ const parseDayKey = (key: string | null): Date | null => {
   return date;
 };
 
+/** A display division, lowercased, or every division. */
+export type DivisionFilter = 'all' | string;
+
+/** Only the signed-in member's own matches, or everyone's. */
+export type TeamFilter = 'all' | 'mine';
+
+/** Anything that is not a plausible division slug is not one. */
+const parseDivision = (raw: string | null): DivisionFilter =>
+  raw && /^[a-z0-9][a-z0-9 -]{0,48}$/.test(raw) ? raw : 'all';
+
 interface ScheduleUrlState {
   selectedDate: Date;
   /** Stores local midnight on the given day, whatever time of day it carries. */
@@ -36,6 +46,19 @@ interface ScheduleUrlState {
    * own "pick a sensible night" guess alone: a date in a link is a chosen date.
    */
   hadDateInUrl: boolean;
+  /**
+   * The division chip, as its lowercased label. A value naming no real division
+   * simply filters nothing — the chip row shows "All" — rather than being
+   * rewritten, which would mean an effect writing the address on first paint.
+   */
+  division: DivisionFilter;
+  setDivision: (division: DivisionFilter) => void;
+  /** Whether the week is narrowed to the signed-in member's own team. */
+  team: TeamFilter;
+  setTeam: (team: TeamFilter) => void;
+  /** True when a division or team chip is on, for the "nothing matches" state. */
+  hasFilters: boolean;
+  clearFilters: () => void;
 }
 
 /**
@@ -47,11 +70,16 @@ interface ScheduleUrlState {
  * SC-04 and X-14.
  *
  * `useCompareUrlState` needs a guard against writing before it has read, because
- * its teams arrive after mount. This one does not: both values are seeded from
+ * its teams arrive after mount. This one does not: every value is seeded from
  * the address in the state initialisers, so the first write back is already what
  * came in. Every write replaces the current history entry rather than adding
  * one, so typing in the search box does not fill the Back button with a step per
  * keystroke.
+ *
+ * The division and "my team" chips (UX audit SC-02) live here too rather than in
+ * a hook of their own: this effect rebuilds the whole query string from what is
+ * on screen, so a second writer doing the same would drop whichever parameter it
+ * did not know about. One writer, one address.
  */
 export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -59,6 +87,8 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
   const [incoming] = useState(() => ({
     date: parseDayKey(searchParams.get('date')),
     search: searchParams.get('q') ?? '',
+    division: parseDivision(searchParams.get('division')),
+    team: searchParams.get('team') === 'mine' ? ('mine' as const) : ('all' as const),
   }));
 
   const [selectedDate, setSelectedDateState] = useState<Date>(
@@ -70,6 +100,13 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
     []
   );
   const [searchTerm, setSearchTerm] = useState(incoming.search);
+  const [division, setDivision] = useState<DivisionFilter>(incoming.division);
+  const [team, setTeam] = useState<TeamFilter>(incoming.team);
+
+  const clearFilters = useCallback(() => {
+    setDivision('all');
+    setTeam('all');
+  }, []);
 
   // Keep the address in step with what is on screen. The date is always
   // written, even when the visit did not name one, so the night being looked at
@@ -81,13 +118,19 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
     next.set('date', dayKey);
     if (searchTerm) next.set('q', searchTerm);
     else next.delete('q');
+    // A filter that is off is written as no parameter at all, so a plain
+    // `/schedule?date=…` link is what an unfiltered week looks like.
+    if (division !== 'all') next.set('division', division);
+    else next.delete('division');
+    if (team === 'mine') next.set('team', 'mine');
+    else next.delete('team');
 
     if (next.toString() === searchParams.toString()) return;
     setSearchParams(next, { replace: true });
     // searchParams is deliberately not a dependency: this effect writes it, and
     // reacting to its own write would loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, searchTerm, setSearchParams]);
+  }, [selectedDate, searchTerm, division, team, setSearchParams]);
 
   return {
     selectedDate,
@@ -95,5 +138,11 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
     searchTerm,
     setSearchTerm,
     hadDateInUrl: incoming.date !== null,
+    division,
+    setDivision,
+    team,
+    setTeam,
+    hasFilters: division !== 'all' || team === 'mine',
+    clearFilters,
   };
 };

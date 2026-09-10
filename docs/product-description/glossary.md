@@ -532,8 +532,9 @@ explicitly stored in the browser.
 **Tab closed.** As reload, except the user does not come back. Nothing that
 depended on the page staying open completes.
 
-**Network lost.** The browser has no connection. Requests fail rather than
-queue. There is no offline write queue anywhere in the product; see
+**Network lost.** The browser has no connection. A bar under the header says so.
+Requests fail rather than queue, except a live-scoring round save, which is held
+and sent on reconnect — the one offline write queue in the product; see
 [`cross-cutting/errors-and-offline.md`](cross-cutting/errors-and-offline.md).
 
 **Request failed.** The server answered with an error, or the request timed out.

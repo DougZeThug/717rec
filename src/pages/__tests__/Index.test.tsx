@@ -59,7 +59,7 @@ vi.mock('@/components/hero/HeroCard', () => ({ default: () => <p>Hero Card</p> }
 vi.mock('@/components/hero/ParticipationHeroCard', () => ({
   default: () => <p>Participation Card</p>,
 }));
-vi.mock('@/components/home/ContactPanel', () => ({ default: () => <p>Contact Panel</p> }));
+vi.mock('@/components/home/ContactCard', () => ({ default: () => <p>Contact Card</p> }));
 vi.mock('@/components/home/TopTeams', () => ({
   default: ({ teams }: { teams: Array<{ id: string }> }) =>
     teams.length ? <p>Top Teams Loaded</p> : <p>No Top Teams</p>,
@@ -109,9 +109,9 @@ describe('Index page', () => {
     renderPage();
     expect(screen.getByText('Hero Section')).toBeInTheDocument();
     expect(screen.getByText('Loading hero cards...')).toBeInTheDocument();
-    // TopTeams and ContactPanel are lazy + Suspense, so resolve asynchronously
+    // TopTeams and ContactCard are lazy + Suspense, so resolve asynchronously
     expect(await screen.findByText('Top Teams Loaded')).toBeInTheDocument();
-    expect(await screen.findByText('Contact Panel')).toBeInTheDocument();
+    expect(await screen.findByText('Contact Card')).toBeInTheDocument();
     expect(screen.queryByText('My Matches')).not.toBeInTheDocument();
   });
 

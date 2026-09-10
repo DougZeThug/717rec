@@ -1,7 +1,9 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { loadRoundDraft, saveRoundDraft } from '@/utils/liveScoring/roundDraftStorage';
 
 import { RoundScoreInput } from '../RoundScoreInput';
 
@@ -13,6 +15,7 @@ const inputElement = (props: Partial<React.ComponentProps<typeof RoundScoreInput
     roundNumber={3}
     team1Name="Baggers"
     team2Name="Tossers"
+    gameId="game-1"
     onSubmit={onSubmit}
     roundKey="game-1:3"
     onSelectionDiscarded={onSelectionDiscarded}
@@ -37,6 +40,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   // clearAllMocks keeps implementations, so drop any rejection a test installed.
   onSubmit.mockReset();
+  // The tapped round is kept on the phone between renders now, so a leftover
+  // draft would seed the next test's grids.
+  localStorage.clear();
 });
 
 describe('RoundScoreInput', () => {
@@ -235,5 +241,126 @@ describe('RoundScoreInput', () => {
     for (const button of team1Grid.querySelectorAll('button')) {
       expect(button).toBeDisabled();
     }
+  });
+  // UX audit LS-03: the venue is where the connection drops, and a reload there
+  // used to mean re-entering the round from memory.
+  describe('the round kept for a reload', () => {
+    it('hands the taps back after a reload of the same round', () => {
+      saveRoundDraft({
+        gameId: 'game-1',
+        roundNumber: 3,
+        team1: { score: 9, bagsIn: undefined },
+        team2: { score: 0, bagsIn: undefined },
+      });
+
+      renderInput();
+
+      expect(within(grid('Baggers')).getByRole('button', { name: '9' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(within(grid('Tossers')).getByRole('button', { name: '0' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+    });
+
+    it('does not offer a round the scorer is no longer on', () => {
+      saveRoundDraft({
+        gameId: 'game-1',
+        roundNumber: 2,
+        team1: { score: 9, bagsIn: undefined },
+        team2: { score: 0, bagsIn: undefined },
+      });
+
+      renderInput();
+
+      expect(within(grid('Baggers')).getByRole('button', { name: '9' })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+    });
+
+    it('keeps a copy as each score is tapped', async () => {
+      renderInput();
+
+      await tapScore('Baggers', 9);
+
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+    });
+
+    it('lets go of the copy once the round is recorded', async () => {
+      onSubmit.mockResolvedValue('saved');
+      renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+      await waitFor(() => expect(loadRoundDraft('game-1', 3)).toBeNull());
+    });
+
+    it('holds on to the copy while the round is only queued', async () => {
+      onSubmit.mockResolvedValue('queued');
+      renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+      // The grids clear so the next round can be entered, but nothing has
+      // reached the league, so the copy has to survive a reload.
+      await waitFor(() =>
+        expect(within(grid('Baggers')).getByRole('button', { name: '9' })).toHaveAttribute(
+          'aria-pressed',
+          'false'
+        )
+      );
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+    });
+
+    it('keeps the copy when the save fails, alongside the taps on screen', async () => {
+      onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+      renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+    });
+
+    // The offline save advances the round number itself the moment it queues,
+    // which used to run the round-moved path and delete the copy it had just
+    // deliberately kept.
+    it('keeps the copy when the queued round advances the round number', async () => {
+      onSubmit.mockResolvedValue('queued');
+      const { rerender } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+      // The optimistic round lands, so the panel moves on to round 4.
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+      // And nobody is told their taps were taken away: they filed them.
+      expect(onSelectionDiscarded).not.toHaveBeenCalled();
+    });
+
+    it('drops the copy when the round moves on under the scorer', async () => {
+      onSubmit.mockRejectedValue(new Error('Failed to fetch'));
+      const { rerender } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await waitFor(() => expect(loadRoundDraft('game-1', 3)).not.toBeNull());
+
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+      expect(loadRoundDraft('game-1', 3)).toBeNull();
+    });
   });
 });

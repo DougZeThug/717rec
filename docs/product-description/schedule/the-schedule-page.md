@@ -24,7 +24,8 @@ is Thursday. Once the matches arrive, if that date has none, the page moves to
 **the most recent night that was played** instead — or, before a season starts,
 to the next night scheduled. The strip stretches back to include that date if it
 is more than three days ago. Below the strip are a search box and a small
-calendar button.
+calendar button, and below those a row of chips: **All** and one per division,
+plus **My team** for a signed-in member whose membership has been approved.
 
 Under those are the three tabs. The page picks one for them: a past date opens
 **Completed**, a date from today onward opens **Upcoming** if the season has any
@@ -117,6 +118,25 @@ Timeslots. There is no clear button and no result count. Searching to zero
 results gives the ordinary "No Upcoming Matches" empty state, not a
 search-specific one.
 
+**The division chips.** One chip per *display* division, so a league running
+"Competitive High" and "Competitive Low" shows one **Competitive** chip covering
+both. Single-select, like the Division/All toggle on Standings. A match counts as
+being in a division when **either** team is: a Competitive team's match against
+an Intermediate one appears under both chips. Unlike the search box, the chips
+apply to **all three tabs**, including Timeslots, and a time whose every row is
+filtered out is dropped rather than shown empty.
+
+**My team.** Shown only to a signed-in member whose membership has been approved
+— for anyone else there is nothing to filter to, so there is no chip to explain.
+It narrows every tab to matches that member's team is playing in, on either side.
+It is a separate control from the division chips because it is a different
+question: a member can want their own matches in any division, or every match in
+one.
+
+Filtering to nothing gives its own empty state — "No matches match these
+filters" with a **Clear filters** button — rather than the season-level "check
+back soon", which would be a claim about the league that the chips caused.
+
 **The tabs.** Switching tabs writes the choice to session storage at once.
 
 Groups remember being opened only until the data under them changes.
@@ -183,11 +203,19 @@ Timeslots poll stops, and an admin's write fails and is lost. See
 **Toasts and notifications.** The page raises none of its own. Toasts seen here
 come from an admin's dialogs or from a write started on another page.
 
-**URL state.** The night and the search text are in the address:
-`/schedule?date=2026-09-03&q=amigos`. The date is always written, even on a visit
-that did not name one, so the week on screen can always be linked to, bookmarked
-or reloaded. Both are written in place rather than as new history entries, so
-typing in the search box does not fill the Back button.
+**URL state.** The night, the search text and both chips are in the address:
+`/schedule?date=2026-09-03&q=amigos&division=intermediate&team=mine`. The date is
+always written, even on a visit that did not name one, so the week on screen can
+always be linked to, bookmarked or reloaded. A chip that is off is written as no
+parameter at all, so an unfiltered week is a plain `?date=` link. Everything is
+written in place rather than as new history entries, so typing in the search box
+does not fill the Back button.
+
+`team=mine` names no team, so a link shared by one member does not show *their*
+team to whoever opens it — it shows the reader's own, or nothing if they have
+none. A `division` naming no real division filters nothing and the chips show
+**All**; it is left in the address rather than rewritten, because correcting it
+would mean writing the address before the reader has done anything.
 
 A night named in the address is treated as a chosen night: the page's own habit
 of moving off an empty guess to the last night played (see **Arrive**) is left
@@ -266,4 +294,6 @@ ordinary pageview.
   fixed first guess with no setting behind it, though the page now corrects
   itself from the data when that guess lands on an empty night.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit item W8 (the division and My team chips). Those passages were written
+from the change and its tests, not from a fresh pass over the running app.

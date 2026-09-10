@@ -6,9 +6,11 @@ import DeleteMatchDialog from '@/components/schedule/DeleteMatchDialog';
 import MatchFormDialog from '@/components/schedule/MatchFormDialog';
 import ScheduleContent from '@/components/schedule/ScheduleContent';
 import ScheduleContentSkeleton from '@/components/schedule/ScheduleContentSkeleton';
+import { ScheduleFilters } from '@/components/schedule/ScheduleFilters';
 import ScheduleHeader from '@/components/schedule/ScheduleHeader';
 import SeoHead from '@/components/seo/SeoHead';
 import { ErrorDisplay } from '@/components/ui/error-display';
+import { useScheduleFiltering } from '@/hooks/scheduling/useScheduleFiltering';
 import { useScheduleUrlState } from '@/hooks/scheduling/useScheduleUrlState';
 import { useScrollToLinkedMatch } from '@/hooks/scheduling/useScrollToLinkedMatch';
 import { useTeamsQuery } from '@/hooks/teams';
@@ -55,8 +57,19 @@ const dayKeyToDate = (key: string): Date => {
 const Schedule = () => {
   // The night and the search text live in the address, so a week can be linked
   // to and neither resets on the way back. See UX audit SC-04.
-  const { selectedDate, setSelectedDate, searchTerm, setSearchTerm, hadDateInUrl } =
-    useScheduleUrlState(getUpcomingThursday);
+  const {
+    selectedDate,
+    setSelectedDate,
+    searchTerm,
+    setSearchTerm,
+    hadDateInUrl,
+    division,
+    setDivision,
+    team: teamFilter,
+    setTeam: setTeamFilter,
+    hasFilters,
+    clearFilters,
+  } = useScheduleUrlState(getUpcomingThursday);
 
   // Log date for debugging
   useEffect(() => {
@@ -210,20 +223,14 @@ const Schedule = () => {
     setSelectedDate(date);
   };
 
-  const filteredMatches = React.useMemo(() => {
-    const sourceMatches = activeTab === 'upcoming' ? upcomingMatches : completedMatches;
-    if (!searchTerm) return sourceMatches;
-    return sourceMatches.filter((match) => {
-      const team1Name = match.team1Details?.name || '';
-      const team2Name = match.team2Details?.name || '';
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        team1Name.toLowerCase().includes(searchLower) ||
-        team2Name.toLowerCase().includes(searchLower) ||
-        match.location?.toLowerCase().includes(searchLower)
-      );
-    });
-  }, [activeTab, upcomingMatches, completedMatches, searchTerm]);
+  // Division chips and "my team" (UX audit SC-02), plus the search box.
+  const { divisionOptions, myTeamId, filteredMatches, visibleTimeslots } = useScheduleFiltering({
+    division,
+    team: teamFilter,
+    matches: activeTab === 'upcoming' ? upcomingMatches : completedMatches,
+    searchTerm,
+    groupedTimeslots,
+  });
 
   const handleCreateMatchAdapter = (matchData: Omit<Match, 'id'>) =>
     handleCreateMatch(matchData, teams || []);
@@ -292,6 +299,16 @@ const Schedule = () => {
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           matchDates={matchDates}
+          filters={
+            <ScheduleFilters
+              options={divisionOptions}
+              division={division}
+              onDivisionChange={setDivision}
+              team={teamFilter}
+              onTeamChange={setTeamFilter}
+              showMyTeam={myTeamId !== null}
+            />
+          }
         />
 
         {/* Matches section with Timeslots tab */}
@@ -311,7 +328,10 @@ const Schedule = () => {
             filteredMatches={filteredMatches}
             teams={teams || []}
             selectedDate={selectedDate}
-            groupedTimeslots={groupedTimeslots}
+            groupedTimeslots={visibleTimeslots}
+            hasAnyTimeslots={Object.keys(groupedTimeslots).length > 0}
+            hasFilters={hasFilters}
+            onClearFilters={clearFilters}
             timeslotsLoading={timeslotsLoading}
             hasMatchesOnSelectedDate={hasMatchesOnSelectedDate}
             lastPlayedDate={lastPlayedDate}

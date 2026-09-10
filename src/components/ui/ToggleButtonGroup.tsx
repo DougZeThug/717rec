@@ -37,6 +37,9 @@ export function ToggleButtonGroup<T extends string>({
             <button
               type="button"
               key={option.value}
+              // Without this a screen reader hears a row of buttons with no way
+              // to tell which one is on.
+              aria-pressed={isActive}
               onClick={() => onChange(option.value)}
               className={cn(
                 'px-3 py-1 text-sm rounded-md transition-all',
@@ -66,6 +69,7 @@ export function ToggleButtonGroup<T extends string>({
           <button
             type="button"
             key={option.value}
+            aria-pressed={isActive}
             onClick={() => onChange(option.value)}
             className={cn(
               'flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',

@@ -102,14 +102,13 @@ above a half-written message and move it down the screen.
 
 ### Submit
 
-**The message form at the bottom of the home page is not the contact form.** It
-looks similar and it is a different form for a different job. It asks for a
-request type — Timeslot Request, Score update / correction, Join the league,
-General message, Other — a name, a team, a contact, and a message, and it files
-a request for the league to work through in
-[`admin/handle-requests.md`](../admin/handle-requests.md). The contact form at
-`/contact` is for support: bugs, account problems, score disputes; see
-[`help/contact-the-league.md`](../help/contact-the-league.md).
+**The home page no longer carries a form of its own.** It used to: a second
+message form, similar to the contact form but with different fields and a
+different job, and each of the two told the reader to use the other. That was UX
+audit **H-02**. In its place is a card — a heading, one line naming what the
+league's form is for, and a button to `/contact`, which is now the only message
+form in the app. Its `contact-panel` anchor is kept, so an old link still lands
+on it. See [`help/contact-the-league.md`](../help/contact-the-league.md).
 
 **Both now end up in the same place.** Since B-10 each form both stores its
 message and emails `admin@717rec.com`, and the admin Contact Inbox lists both
@@ -270,4 +269,6 @@ message form is submitted, which creates a request an admin will see.
   can be visible at once, and they are drawn one under another above everything
   else on the page.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit item W7 (the two message forms became one). Those passages were written
+from the change and its tests, not from a fresh pass over the running app.

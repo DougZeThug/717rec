@@ -110,8 +110,9 @@ comment as agreed with the league admin):
   (`src/utils/errorHandler.ts`, `handleDatabaseError`, `ensureFound`). A failed
   write therefore always has an error to report; if no toast appears, that is a
   bug worth flagging.
-- There is no offline write queue anywhere in the product. Offline means requests
-  fail.
+- There is one offline write queue, and it covers live scoring only: Save Round
+  holds a round with no signal and sends it on reconnect. Everywhere else offline
+  still means requests fail.
 - Realtime subscriptions exist only where a hook opens a channel; live scoring is
   the main one. Everywhere else, "changed elsewhere" means the user keeps seeing
   the old value until a refetch.
@@ -171,7 +172,9 @@ comment as agreed with the league admin):
   **standings, team records, power scores, the schedule, memberships, divisions
   and seasons have no subscription** — those change under the user only on a
   refetch. That is the gap worth describing.
-- **There is no offline write queue.** Offline means writes fail and are lost.
+- **There is one offline write queue, in live scoring only.** A round saved with
+  no signal is held and sent on reconnect, and its tapped scores are kept on the
+  phone so a reload does not lose them. Every other write fails and is lost.
 
 **Messages** (established by `foundations/messages-to-the-user.md`):
 

@@ -1,144 +1,80 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import Contact from '../Contact';
-
-const mockToast = vi.fn();
-const mockSubmitContactRequest = vi.fn();
+const mockToast = vi.hoisted(() => vi.fn());
 
 vi.mock('react-helmet-async', () => ({
   Helmet: ({ children }: { children: React.ReactNode }) => children,
+  HelmetProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
-vi.mock('@/components/seo/SeoHead', () => ({ default: () => null }));
-
-vi.mock('react-hook-form', () => ({
-  useForm: () => ({
-    control: {},
-    register: vi.fn(() => ({})),
-    reset: vi.fn(),
-    handleSubmit:
-      (onSubmit: (data: unknown) => Promise<void>) =>
-      async (e?: { preventDefault?: () => void }) => {
-        e?.preventDefault?.();
-        await onSubmit({
-          name: 'Test User',
-          email: 'test@example.com',
-          subject: 'general_question',
-          message: 'Need help',
-          website: '',
-        });
-      },
-  }),
+vi.mock('@/hooks/useToast', () => ({
+  toast: mockToast,
+  useToast: () => ({ toast: mockToast }),
 }));
 
-vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: mockToast }) }));
-vi.mock('@/services/support/ContactService', async () => {
-  const actual = await vi.importActual('@/services/support/ContactService');
-  return {
-    ...actual,
-    submitContactRequest: (...args: unknown[]) => mockSubmitContactRequest(...args),
-  };
-});
-vi.mock('@/utils/analytics', () => ({ trackContactForm: vi.fn() }));
-
-vi.mock('@/components/layout/PageLayout', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}));
+// PageTransition reads the navigation context, which the app supplies and this
+// test does not need.
 vi.mock('@/components/transitions/PageTransition', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
-vi.mock('@/components/ui/card', () => ({
-  Card: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CardContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CardDescription: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CardHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  CardTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
-}));
-vi.mock('@/components/ui/button', () => ({
-  Button: (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props} />,
-}));
-vi.mock('@/components/ui/input', () => ({
-  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => <input {...props} />,
-}));
-vi.mock('@/components/ui/textarea', () => ({
-  Textarea: (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => <textarea {...props} />,
-}));
-vi.mock('@/components/ui/select', () => ({
-  Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectValue: ({ placeholder }: { placeholder: string }) => <span>{placeholder}</span>,
-}));
-vi.mock('@/components/ui/form', () => ({
-  Form: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  FormControl: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  FormField: ({
-    render,
-  }: {
-    render: (props: { field: { value: string; onChange: () => void } }) => React.ReactNode;
-  }) => render({ field: { value: '', onChange: vi.fn() } }),
-  FormItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  FormLabel: ({ children }: { children: React.ReactNode }) => <label>{children}</label>,
-  FormMessage: () => null,
+
+// The form has its own tests. Here it only needs to report that it sent.
+vi.mock('@/components/contact/ContactForm', () => ({
+  ContactForm: ({ onSent }: { onSent: () => void }) => (
+    <button onClick={onSent}>pretend to send</button>
+  ),
 }));
 
-const createTestQueryClient = () =>
-  new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+import Contact from '../Contact';
 
-const renderPage = () => {
-  const queryClient = createTestQueryClient();
-  return render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <Contact />
-      </MemoryRouter>
-    </QueryClientProvider>
+const renderPage = () =>
+  render(
+    <MemoryRouter initialEntries={['/contact']}>
+      <Contact />
+    </MemoryRouter>
   );
-};
+
+beforeEach(() => {
+  mockToast.mockReset();
+});
 
 describe('Contact page', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockSubmitContactRequest.mockImplementation(() => Promise.resolve());
+  it('shows the message form', () => {
+    renderPage();
+
+    expect(screen.getByRole('heading', { name: /contact the league/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /pretend to send/i })).toBeInTheDocument();
   });
 
-  it('shows loading state during form submission', async () => {
-    mockSubmitContactRequest.mockImplementation(() => new Promise<void>(() => undefined));
-
+  // Both forms used to tell the reader to use the other one (UX audit H-02).
+  it('says where the message goes, and names one inbox', () => {
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
 
-    const submitButton = await screen.findByRole('button', { name: /Sending.../i });
-    expect(submitButton).toBeDisabled();
+    expect(screen.getByText(/admins/i)).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /home page/i })).toBeNull();
   });
 
-  it('shows happy path after successful submission', async () => {
-    renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
-    expect(await screen.findByText('Message Sent!')).toBeInTheDocument();
+  it('points at no second form anywhere on the page', () => {
+    const { container } = renderPage();
+
+    expect(container.textContent).not.toMatch(/message form at the bottom/i);
+    expect(container.querySelector('a[href="/#contact-panel"]')).toBeNull();
   });
 
-  it('shows error branch toast when submission fails', async () => {
-    mockSubmitContactRequest.mockRejectedValue(new Error('failed'));
+  it('confirms a sent message, and offers to send another', async () => {
     renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /Send Message/i }));
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({ title: 'Error', variant: 'destructive' })
-      );
-    });
-  });
-  it('says where the message goes and points at the other form', () => {
-    renderPage();
-    expect(screen.getByText(/emailed to the league admins/i)).toBeInTheDocument();
-    const other = screen.getByRole('link', {
-      name: /message form at the bottom of the home page/i,
-    });
-    expect(other).toHaveAttribute('href', '/#contact-panel');
+
+    await userEvent.click(screen.getByRole('button', { name: /pretend to send/i }));
+
+    expect(screen.getByRole('heading', { name: /message sent/i })).toBeInTheDocument();
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Message sent' }));
+
+    await userEvent.click(screen.getByRole('button', { name: /send another message/i }));
+
+    expect(screen.getByRole('button', { name: /pretend to send/i })).toBeInTheDocument();
   });
 });

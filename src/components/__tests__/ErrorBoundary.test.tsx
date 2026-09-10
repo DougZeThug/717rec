@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -124,5 +125,33 @@ describe('ErrorBoundary', () => {
 
     screen.getByRole('button', { name: /Go Home/i }).click();
     expect(window.location.href).toBe('/');
+  });
+  it('shows the offline recovery panel when a page never downloaded', () => {
+    onlineManager.setOnline(false);
+
+    render(
+      <ErrorBoundary>
+        <Bomb message="Failed to fetch dynamically imported module: /assets/Stats.js" />
+      </ErrorBoundary>
+    );
+
+    expect(screen.getByRole('heading', { name: /did not download/i })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /something went wrong/i })).toBeNull();
+
+    onlineManager.setOnline(true);
+  });
+
+  it('does not report a failed page download as a crash', () => {
+    onlineManager.setOnline(false);
+
+    render(
+      <ErrorBoundary>
+        <Bomb message="Failed to fetch dynamically imported module: /assets/Stats.js" />
+      </ErrorBoundary>
+    );
+
+    expect(mockCaptureError).not.toHaveBeenCalled();
+
+    onlineManager.setOnline(true);
   });
 });

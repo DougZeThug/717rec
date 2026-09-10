@@ -63,6 +63,12 @@ export function useRoundMutations(matchId: string) {
   const queryKey = liveScoringKeys.liveMatch(matchId);
 
   const submitRound = useMutation({
+    // Named so a parked save can be found in the mutation cache and counted.
+    mutationKey: liveScoringKeys.submitRound(matchId),
+    // `networkMode` is deliberately left at its default of 'online'. That is
+    // what parks a save with no signal instead of failing it: `onMutate` still
+    // runs, so the round shows in the log, and TanStack sends it by itself when
+    // the connection returns. Setting 'always' here would undo LS-03.
     mutationFn: (input: SubmitRoundInput) => {
       if (!user) throw new Error('You must be signed in to score a match');
       return RoundService.insertRound({
