@@ -46,7 +46,7 @@ const TimeSlotMatchGroup: React.FC<TimeSlotMatchGroupProps> = ({
       <CollapsibleTrigger
         className={cn(
           'flex w-full items-center justify-between p-2 text-left text-sm rounded transition-all',
-          'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+          'bg-muted hover:bg-muted-foreground/10'
         )}
       >
         <div className="flex items-center gap-2">

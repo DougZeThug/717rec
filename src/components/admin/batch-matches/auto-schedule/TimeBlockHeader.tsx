@@ -22,7 +22,7 @@ export const TimeBlockHeader: React.FC<TimeBlockHeaderProps> = ({
   return (
     <div
       className={`px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between ${
-        isWinterTheme ? 'bg-[hsl(222,30%,15%)]' : 'bg-muted dark:bg-card'
+        isWinterTheme ? 'bg-[hsl(222,30%,15%)]' : 'bg-muted'
       }`}
     >
       <div className="flex items-center gap-2">

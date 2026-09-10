@@ -111,7 +111,7 @@ const TeamBadgeCollection: React.FC<TeamBadgeCollectionProps> = ({
       {hiddenCount > 0 && (
         <div
           className={cn(
-            'flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs font-medium',
+            'flex items-center justify-center rounded-lg bg-muted text-muted-foreground text-xs font-medium',
             size === 'sm' ? 'size-5' : size === 'md' ? 'size-6' : 'size-8'
           )}
         >

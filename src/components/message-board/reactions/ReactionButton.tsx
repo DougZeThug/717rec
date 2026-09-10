@@ -24,7 +24,7 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({ emoji, count, hasReacte
               'h-8 min-h-[36px] sm:h-6 sm:min-h-0',
               hasReacted
                 ? 'bg-accent/30 border-primary/30 hover:bg-accent/40'
-                : 'bg-background/80 border-gray-200 dark:border-gray-700 hover:bg-accent/10'
+                : 'bg-background/80 border-border hover:bg-accent/10'
             )}
             onClick={onClick}
             aria-label={`${emoji} reaction (${count})`}

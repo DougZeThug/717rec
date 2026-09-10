@@ -23,7 +23,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
     <AnimatedChartWrapper delay={0.1}>
       <Card
         className={cn(
-          'bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:border-0 dark:text-white rounded-xl shadow-sm',
+          'bg-card text-foreground border border-border rounded-xl shadow-sm',
           animations.fadeInSlideUp,
           'animation-delay-200'
         )}
@@ -43,7 +43,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
         >
           <CardTitle
             className={cn(
-              'font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase',
+              'font-semibold font-inter tracking-wide text-foreground uppercase',
               isMobile ? 'text-base' : 'text-lg'
             )}
             style={{ letterSpacing: '.03em' }}
@@ -51,7 +51,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
             Top {isMobile ? '5' : '8'} Power Scores
           </CardTitle>
           {!isMobile && (
-            <CardDescription className="text-sm text-muted-foreground dark:text-muted-foreground font-inter">
+            <CardDescription className="text-sm text-muted-foreground font-inter">
               Elite team performance ranking
             </CardDescription>
           )}

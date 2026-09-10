@@ -61,11 +61,7 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   return (
     <div className="flex flex-col w-full py-2">
       {/* Match date display */}
-      {matchDate && (
-        <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-1 px-2">
-          {matchDate}
-        </div>
-      )}
+      {matchDate && <div className="text-xs text-muted-foreground mb-1 px-2">{matchDate}</div>}
 
       <div
         className={cn('flex items-center w-full justify-between gap-x-3', 'text-sm md:text-base')}

@@ -71,7 +71,7 @@ const PowerScoreTrendsCard: React.FC = () => {
     <AnimatedChartWrapper delay={0.2}>
       <Card
         className={cn(
-          'bg-white text-gray-900 border border-gray-200 dark:bg-gray-900 dark:border-0 dark:text-white rounded-xl shadow-sm',
+          'bg-card text-foreground border border-border rounded-xl shadow-sm',
           animations.fadeInSlideUp,
           'animation-delay-300'
         )}
@@ -91,7 +91,7 @@ const PowerScoreTrendsCard: React.FC = () => {
         >
           <CardTitle
             className={cn(
-              'font-semibold font-inter tracking-wide text-gray-800 dark:text-white uppercase',
+              'font-semibold font-inter tracking-wide text-foreground uppercase',
               isMobile ? 'text-base' : 'text-lg'
             )}
             style={{ letterSpacing: '.03em' }}
@@ -99,10 +99,7 @@ const PowerScoreTrendsCard: React.FC = () => {
             Power Score Trends
           </CardTitle>
           <CardDescription
-            className={cn(
-              'text-gray-600 dark:text-gray-300 font-inter',
-              isMobile ? 'text-xs' : 'text-sm'
-            )}
+            className={cn('text-muted-foreground font-inter', isMobile ? 'text-xs' : 'text-sm')}
           >
             {getDescription()}
           </CardDescription>

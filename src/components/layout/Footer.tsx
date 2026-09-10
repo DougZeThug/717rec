@@ -14,9 +14,7 @@ const Footer = () => {
     <footer
       className={cn(
         'border-t py-4 transition-colors duration-300',
-        isWinterTheme
-          ? 'winter-card-surface border-frost-border/30'
-          : 'bg-slate-50 dark:bg-slate-900 border-gray-200 dark:border-gray-800'
+        isWinterTheme ? 'winter-card-surface border-frost-border/30' : 'bg-muted border-border'
       )}
       // minHeight still reserves the space against layout shift; the fixed
       // height clipped the taller links on a narrow phone.
@@ -49,26 +47,20 @@ const Footer = () => {
             <p
               className={cn(
                 'text-sm flex items-center justify-center md:justify-start gap-2 font-inter transition-colors duration-300',
-                isWinterTheme
-                  ? 'text-[hsl(var(--muted-foreground))]'
-                  : 'text-gray-500 dark:text-gray-400'
+                isWinterTheme ? 'text-[hsl(var(--muted-foreground))]' : 'text-muted-foreground'
               )}
             >
               <Mail
                 size={16}
                 className={
-                  isWinterTheme
-                    ? 'text-[hsl(var(--frost-glow))]'
-                    : 'text-gray-600 dark:text-gray-300'
+                  isWinterTheme ? 'text-[hsl(var(--frost-glow))]' : 'text-muted-foreground'
                 }
               />
               <a
                 href="mailto:admin@717rec.com"
                 className={cn(
                   'inline-flex min-h-6 items-center transition-colors font-inter font-medium',
-                  isWinterTheme
-                    ? 'hover:text-[hsl(var(--foreground))]'
-                    : 'hover:text-gray-900 dark:hover:text-white'
+                  isWinterTheme ? 'hover:text-[hsl(var(--foreground))]' : 'hover:text-foreground'
                 )}
               >
                 admin@717rec.com
@@ -78,9 +70,7 @@ const Footer = () => {
                 href="/contact"
                 className={cn(
                   'inline-flex min-h-6 items-center transition-colors font-inter font-medium',
-                  isWinterTheme
-                    ? 'hover:text-[hsl(var(--foreground))]'
-                    : 'hover:text-gray-900 dark:hover:text-white'
+                  isWinterTheme ? 'hover:text-[hsl(var(--foreground))]' : 'hover:text-foreground'
                 )}
               >
                 Contact us
@@ -93,9 +83,7 @@ const Footer = () => {
         <div
           className={cn(
             'mt-3 text-center text-[0.85rem] font-inter transition-colors duration-300',
-            isWinterTheme
-              ? 'text-[hsl(var(--muted-foreground))]'
-              : 'text-gray-600 dark:text-gray-400'
+            isWinterTheme ? 'text-[hsl(var(--muted-foreground))]' : 'text-muted-foreground'
           )}
           style={{ fontSize: '0.85rem' }}
         >

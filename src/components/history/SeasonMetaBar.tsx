@@ -61,15 +61,13 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
     <div
       className={cn(
         'rounded-xl p-4 border',
-        isWinterTheme
-          ? 'bg-white/5 border-white/10'
-          : 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600'
+        isWinterTheme ? 'bg-white/5 border-white/10' : 'bg-muted border-border'
       )}
     >
       <h5
         className={cn(
           'text-sm font-semibold mb-3 flex items-center gap-2',
-          isWinterTheme ? 'text-white/80' : 'text-gray-700 dark:text-gray-300'
+          isWinterTheme ? 'text-white/80' : 'text-foreground'
         )}
       >
         <Award className="size-4" />
@@ -80,15 +78,8 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
         <div className="flex items-center gap-2">
           <Target className="size-4 text-blue-500" />
           <div>
-            <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
-              Most Wins
-            </p>
-            <p
-              className={cn(
-                'font-medium',
-                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
-              )}
-            >
+            <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>Most Wins</p>
+            <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>
               {mostWins.team_name} ({mostWins.match_wins})
             </p>
           </div>
@@ -97,15 +88,10 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
         <div className="flex items-center gap-2">
           <TrendingUp className="size-4 text-green-500" />
           <div>
-            <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
+            <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>
               Highest Power Score
             </p>
-            <p
-              className={cn(
-                'font-medium',
-                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
-              )}
-            >
+            <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>
               {highestPowerScore.team_name} (
               {highestPowerScore.power_score
                 ? (highestPowerScore.power_score * 100).toFixed(1)
@@ -118,15 +104,10 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
         <div className="flex items-center gap-2">
           <Calendar className="size-4 text-purple-500" />
           <div>
-            <p className={isWinterTheme ? 'text-white/60' : 'text-gray-600 dark:text-gray-400'}>
+            <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>
               Most Game Wins
             </p>
-            <p
-              className={cn(
-                'font-medium',
-                isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
-              )}
-            >
+            <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>
               {mostGameWins.team_name} ({mostGameWins.game_wins})
             </p>
           </div>
@@ -135,12 +116,9 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
 
       {season.end_date && (
         <div
-          className={cn(
-            'mt-3 pt-3 border-t',
-            isWinterTheme ? 'border-white/10' : 'border-gray-200 dark:border-slate-600'
-          )}
+          className={cn('mt-3 pt-3 border-t', isWinterTheme ? 'border-white/10' : 'border-border')}
         >
-          <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Season completed on {toLocalDateString(season.end_date)}
           </p>
         </div>

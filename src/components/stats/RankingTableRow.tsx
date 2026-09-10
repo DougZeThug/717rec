@@ -34,7 +34,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
   const globalRank = index + 1;
   const divisionRank = ranking.divisionRank;
   // Text color based on theme
-  const textColor = isWinterTheme ? 'text-card-foreground' : 'text-slate-900 dark:text-white';
+  const textColor = isWinterTheme ? 'text-card-foreground' : 'text-foreground';
 
   // NOTE: the row is intentionally NOT a focusable `role="button"`. It contains
   // interactive links (team details, compare), and nesting focusable controls
@@ -47,7 +47,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
         'border-b transition-colors group',
         isWinterTheme
           ? 'border-frost-border/20 even:bg-white/5 hover:bg-white/10'
-          : 'border-gray-100 dark:border-slate-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-gray-50 dark:hover:bg-slate-700/50',
+          : 'border-border even:bg-muted/50 hover:bg-accent',
         isExpanded && (isWinterTheme ? 'bg-frost-primary/20' : 'bg-blue-50 dark:bg-blue-900/20')
       )}
       onClick={onToggleExpand}

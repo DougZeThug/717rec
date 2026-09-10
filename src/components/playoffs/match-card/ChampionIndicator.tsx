@@ -11,8 +11,8 @@ const ChampionIndicator: React.FC<ChampionIndicatorProps> = ({ winner }) => {
   if (!winner) return null;
 
   return (
-    <div className="mt-2 pt-2 border-t border-border dark:border-border text-center">
-      <div className="text-xs text-muted-foreground dark:text-muted-foreground">Champion</div>
+    <div className="mt-2 pt-2 border-t border-border text-center">
+      <div className="text-xs text-muted-foreground">Champion</div>
       <div className={blueAmber.text.heading + ' font-semibold'}>{winner.name}</div>
     </div>
   );

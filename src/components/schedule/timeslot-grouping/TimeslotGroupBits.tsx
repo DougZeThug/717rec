@@ -82,8 +82,8 @@ export const TimeslotMatchRowMobile = ({
         ? 'border-orange-500/30 bg-orange-900/20 hover:bg-orange-900/30'
         : 'border-orange-200 dark:border-orange-700 bg-card hover:bg-orange-100/50 dark:hover:bg-orange-800/20'
       : isWinterTheme
-        ? 'bg-white/5 hover:bg-white/10 border-gray-200 dark:border-gray-700'
-        : 'bg-card hover:bg-accent/50 border-gray-200 dark:border-gray-700',
+        ? 'bg-white/5 hover:bg-white/10 border-border'
+        : 'bg-card hover:bg-accent/50 border-border',
     'transition-colors duration-150 touch-manipulation'
   );
   const content = (
@@ -142,8 +142,8 @@ export const TimeslotMatchRow = ({
   <div
     className={cn(
       'flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between',
-      teamIndex % 2 === 1 && (isWinterTheme ? 'bg-white/5' : 'bg-gray-50 dark:bg-white/5'),
-      isWinterTheme ? 'hover:bg-white/10' : 'hover:bg-gray-100 dark:hover:bg-gray-800',
+      teamIndex % 2 === 1 && (isWinterTheme ? 'bg-white/5' : 'bg-muted'),
+      isWinterTheme ? 'hover:bg-white/10' : 'hover:bg-accent',
       'transition-colors duration-150',
       animations.fadeInSlideUp,
       `animation-delay-${teamIndex * 100 + 100}`,
@@ -172,9 +172,7 @@ export const TimeslotMatchRow = ({
             {teamTimeslot.teams.name}
           </Link>
         ) : (
-          <span className="text-muted-foreground dark:text-muted-foreground truncate">
-            Unknown Team
-          </span>
+          <span className="text-muted-foreground truncate">Unknown Team</span>
         )}
       </div>
     </div>

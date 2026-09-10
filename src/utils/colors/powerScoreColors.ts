@@ -16,7 +16,7 @@ export const POWER_SCORE_BAND_FLOORS = [85, 70, 60, 50, 40, 30, 20, 0] as const;
 
 export const getPowerScoreColor = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {
-    return 'text-gray-400 dark:text-gray-500'; // Neutral color for no data
+    return 'text-muted-foreground'; // Neutral color for no data
   }
 
   // Score is already on 0-100 scale from v_team_details view
@@ -42,7 +42,7 @@ export const getPowerScoreColor = (score: number | null | undefined): string => 
 
 export const getPowerScoreBackgroundColor = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {
-    return 'bg-gray-100 dark:bg-gray-900/20';
+    return 'bg-muted';
   }
 
   // Score is already on 0-100 scale
@@ -58,7 +58,7 @@ export const getPowerScoreBackgroundColor = (score: number | null | undefined): 
 
 export const getPowerScoreBorderColor = (score: number | null | undefined): string => {
   if (score === null || score === undefined) {
-    return 'border-gray-300 dark:border-gray-700';
+    return 'border-border';
   }
 
   // Score is already on 0-100 scale

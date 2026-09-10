@@ -109,7 +109,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
             variant="ghost"
             onClick={onClearFilters}
             size="sm"
-            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200 dark:text-muted-foreground dark:hover:text-gray-200"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors duration-200"
           >
             <X className="size-3" />
             Clear All Filters

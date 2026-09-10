@@ -26,7 +26,7 @@ export const useMatchCardStyles = (
       case 'play-in-2':
         return 'border-teal-300 dark:border-teal-800 shadow-teal-900/5 dark:shadow-teal-500/5';
       default:
-        return 'border-gray-300 dark:border-gray-700';
+        return 'border-border';
     }
   };
 

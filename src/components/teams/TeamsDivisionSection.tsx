@@ -67,9 +67,9 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
           aria-controls={contentId}
           className={cn(
             'flex w-full justify-between items-center text-left',
-            'bg-gray-50/50 dark:bg-gray-900/50 rounded-lg',
+            'bg-muted/50 rounded-lg',
             'px-3 py-2 sm:px-4 sm:py-3',
-            'hover:bg-gray-100 dark:hover:bg-gray-800/70 transition-colors',
+            'hover:bg-accent transition-colors',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
           )}
         >

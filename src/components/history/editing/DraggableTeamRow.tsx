@@ -50,7 +50,7 @@ const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }) => {
         isOver && !isDragging && 'border-primary/50 bg-primary/5',
         'cursor-grab active:cursor-grabbing',
         team.champion && 'border-yellow-400/50 bg-yellow-50/50 dark:bg-yellow-900/10',
-        team.runner_up && 'border-gray-400/50 bg-gray-50/50 dark:bg-gray-800/20'
+        team.runner_up && 'border-gray-400/50 bg-muted/50'
       )}
     >
       {/* Drag Handle - Larger touch target */}
@@ -70,7 +70,7 @@ const DraggableTeamRow: React.FC<DraggableTeamRowProps> = ({ team, rank }) => {
           team.champion
             ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'
             : team.runner_up
-              ? 'bg-gray-500/20 text-gray-600 dark:text-gray-400'
+              ? 'bg-gray-500/20 text-muted-foreground'
               : 'bg-primary/10 text-primary'
         )}
       >

@@ -13,12 +13,12 @@ interface TeamStatsProps {
 export const TeamStats: React.FC<TeamStatsProps> = ({ team, isWinter = false }) => {
   const labelClasses = cn(
     'font-inter uppercase text-xs tracking-widest',
-    isWinter ? 'text-cyan-300/70' : 'text-gray-500 dark:text-gray-400'
+    isWinter ? 'text-cyan-300/70' : 'text-muted-foreground'
   );
 
   const valueClasses = cn(
     'font-mono text-base font-medium tabular-nums',
-    isWinter ? 'text-cyan-50' : 'text-gray-800 dark:text-white'
+    isWinter ? 'text-cyan-50' : 'text-foreground'
   );
 
   return (
