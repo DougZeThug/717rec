@@ -34,9 +34,20 @@ Results" once the bracket is finished.
 Pressing the button replaces the list with the drawn bracket and adds
 `?bracket=<id>` to the address. Pressing browser back returns to the list.
 
-Out of playoff season the same page shows the same division cards, each reading
-"No brackets yet for this division". Nothing says "the playoffs have not started
-yet"; an empty division card is the whole message.
+Out of playoff season the same page shows the same division cards, and each one
+answers the question the reader actually has. Under the heading **"Projected
+seeds"** the card lists every team in that division in seed order — rank, name,
+and power score — followed by one line: "Brackets open after week 10. The order
+follows the Power Score today. It can still change." Under the list is a link,
+"See the full standings", to `/stats`.
+
+The week number comes from the season's end date. A season with no end date on
+record says "Brackets open when the regular season ends." instead, with no number.
+
+This happens **only on the active season**. Power scores are the season being
+played and carry no season of their own, so on any other season — and while the
+rankings are still loading, or if they fail — the card falls back to the old
+message, "No brackets yet for this division", and nothing else.
 
 ## The interaction, event by event
 
@@ -240,8 +251,12 @@ opens again instantly.
   only when both seasons exist, differ, and the playoff one is selected.
 - **Divisions come out strongest first** because they are ordered by division
   weight. Nothing labels them as ordered.
-- **A division with no bracket still gets a card.** For a player it reads
-  "No brackets yet for this division" and offers nothing to press.
+- **A division with no bracket still gets a card.** On the active season it
+  lists that division's projected seeds and links to the standings. On any other
+  season, and whenever the rankings are unavailable, it reads "No brackets yet
+  for this division" and offers nothing to press.
+- **A division with no teams** reads "No brackets yet for this division" even on
+  the active season — there is nothing to seed.
 - **With no divisions at all**, the whole list is replaced by one empty state:
   "No Playoff Brackets Yet — Playoff brackets will appear here once they're
   created. Check back during playoff season!"

@@ -18,6 +18,10 @@ describe('Help sections', () => {
     expect(screen.getByRole('link', { name: /Schedule/i })).toHaveAttribute('href', '/schedule');
     expect(screen.getByRole('link', { name: /Standings/i })).toHaveAttribute('href', '/stats');
     expect(screen.getByRole('link', { name: /Playoffs/i })).toHaveAttribute('href', '/playoffs');
+    // X-02: neither page was in any menu in the app. "Compare" rather than
+    // "Compare Teams", so the /Teams/ query above stays unambiguous.
+    expect(screen.getByRole('link', { name: /Compare/i })).toHaveAttribute('href', '/compare');
+    expect(screen.getByRole('link', { name: /Insights/i })).toHaveAttribute('href', '/insights');
   });
 
   it('renders admin CTA action and supports user interaction', () => {

@@ -70,7 +70,7 @@ visible focus ring on everything focusable. Every score button, filter, and menu
 item reachable by Tab. Dialogs, dropdown menus, popovers, selects, and the bottom
 drawer all trap focus, close on Escape, and restore focus afterwards.
 
-**The one shortcut.** Cmd/Ctrl+K opens a command palette that jumps to seven
+**The one shortcut.** Cmd/Ctrl+K opens a command palette that jumps to nine
 pages or to a team by name. It exists only on a screen 768 pixels or wider,
 because the component that listens for the key is not rendered below that; see
 [`on-a-phone.md`](on-a-phone.md). There are no other keyboard shortcuts anywhere.

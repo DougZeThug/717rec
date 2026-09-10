@@ -56,6 +56,14 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: () => mockBracketInfoQuery,
 }));
 
+// This file mocks @tanstack/react-query down to useQuery, so anything reaching
+// for useMutation throws. An empty division would mount the projected seeds and
+// their ranking queries; none is rendered here today, but stub it so a future
+// case cannot break this file from a distance.
+vi.mock('@/hooks/playoffs/useProjectedSeeds', () => ({
+  useProjectedSeeds: () => ({ seedsByDivision: {}, finalWeek: null, isReady: false }),
+}));
+
 vi.mock('@/hooks/brackets/useBracketData', () => ({
   useBracketData: () => mockBracketData,
 }));

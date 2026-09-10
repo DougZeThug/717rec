@@ -23,8 +23,13 @@ losers' side — comes from the team count and the format, not from the admin.
 ## The simple case
 
 The season is over. The admin opens `/playoffs`, picks the season, and sees one
-card per division reading "No brackets yet for this division" with a **Create
-Bracket** button.
+card per division with a **Create Bracket** button. On the active season each
+card lists that division's projected seeds above the button — the same order the
+bracket will be built in, so the admin can see the seeding before creating it.
+On any other season the card reads "No brackets yet for this division" instead.
+
+The seeds are projected, not final: a team given a manual seed jumps the queue
+when the bracket is created, and the admin chooses which teams go in.
 
 The dialog is "Create New Playoff Bracket": a title, a division, a format —
 Single or Double Elimination, defaulting to Double — and, for a double

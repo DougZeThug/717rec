@@ -2,7 +2,9 @@ import {
   BarChart3,
   Calendar,
   Clock,
+  GitCompareArrows,
   Home,
+  Lightbulb,
   MessageSquare,
   Search,
   Trophy,
@@ -39,6 +41,10 @@ const quickActions = [
   { name: 'View Playoffs', icon: Trophy, path: '/playoffs' },
   { name: 'Season History', icon: Clock, path: '/history' },
   { name: 'Message Board', icon: MessageSquare, path: '/message-board' },
+  // X-02: /compare was reachable only by typing the URL and /insights only from
+  // a button on /stats. The palette is a primary way in, so they belong here.
+  { name: 'Compare Teams', icon: GitCompareArrows, path: '/compare' },
+  { name: 'League Insights', icon: Lightbulb, path: '/insights' },
 ];
 
 /** Cmd/Ctrl+K command palette for jumping to pages and teams. */
@@ -75,19 +81,21 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, o
   return (
     <>
       {/* Search trigger button */}
+      {/* Icon-sized at every width. The 15rem expanded form this had from `xl`
+          was built for the deleted pill bar, which gave it a whole flex column;
+          the header row has about 96px of slack, so a 240px control overflowed
+          it at every desktop width and the shell's `overflow-x-hidden` swallowed
+          the evidence. The shortcut lives in the tooltip instead. */}
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className={cn(
-          'relative size-9 p-0 xl:h-10 xl:w-60 xl:justify-start xl:px-3 xl:py-2',
-          'text-muted-foreground'
-        )}
+        className={cn('relative size-9 p-0', 'text-muted-foreground')}
+        title="Search (⌘K)"
       >
-        <Search className="size-4 xl:mr-2" />
-        <span className="hidden xl:inline-flex">Search...</span>
-        <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
+        <Search className="size-4" aria-hidden="true" />
+        {/* The button is the icon alone, so without this it has no accessible
+            name — the unnamed header button axe reports under X-01. */}
+        <span className="sr-only">Search</span>
       </Button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>

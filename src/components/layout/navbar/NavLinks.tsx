@@ -6,6 +6,7 @@ import {
   Home,
   Mail,
   MessageSquare,
+  Shield,
   Trophy,
   Users,
 } from 'lucide-react';
@@ -23,11 +24,14 @@ interface NavLinksProps {
 }
 
 const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLinkClick }) => {
-  const { isAdminAccessGranted: _isAdminAccessGranted } = useAdminAccess();
+  const { isAdminAccessGranted, isLoading: adminCheckLoading } = useAdminAccess();
   const activeClass = 'bg-white/20 dark:bg-slate-700 text-white dark:text-white';
+  // px-3, not px-4: the row holds nine links, three account controls, the search
+  // button and — for an admin — Admin, inside a container that stops growing at
+  // 1368px. The extra 8px a side was 72px the row could not spare.
   const baseClass = isMobile
     ? 'flex items-center w-full px-4 py-3 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-cornhole-navy'
-    : 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-4';
+    : 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3';
 
   // Memoize handler to prevent recreating on each render
   const handleLinkClick = useCallback(() => {
@@ -35,8 +39,8 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
   }, [onLinkClick]);
 
   // Memoize navItems to prevent recreating on each render
-  const navItems = useMemo(
-    () => [
+  const navItems = useMemo(() => {
+    const items = [
       { href: '/', label: 'Home', icon: Home },
       { href: '/teams', label: 'Teams', icon: Users },
       { href: '/schedule', label: 'Schedule', icon: Calendar },
@@ -47,9 +51,18 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
       { href: '/message-board', label: 'Messages', icon: MessageSquare },
       { href: '/help', label: 'Help', icon: HelpCircle },
       { href: '/contact', label: 'Contact', icon: Mail },
-    ],
-    []
-  );
+    ];
+
+    // X-03: the Admin Panel used to be reachable from the user menu and nowhere
+    // else. This list is rendered both across the header and inside the phone
+    // hamburger, so one entry here puts it in the primary navigation on both.
+    // Held back until the profile has loaded, so it does not appear late.
+    if (isAdminAccessGranted && !adminCheckLoading) {
+      items.push({ href: '/admin', label: 'Admin', icon: Shield });
+    }
+
+    return items;
+  }, [isAdminAccessGranted, adminCheckLoading]);
 
   return (
     <>

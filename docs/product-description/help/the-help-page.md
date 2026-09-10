@@ -23,8 +23,8 @@ The user opens `/help` and sees a heading, "Help & Getting Started", and a line
 under it promising "Everything you need to know about using 717REC for league
 management and participation."
 
-Below that is a **Quick Navigation** card with four buttons — Teams, Schedule,
-Standings, Playoffs — which go straight to those pages.
+Below that is a **Quick Navigation** card with six buttons — Teams, Schedule,
+Standings, Playoffs, Compare, Insights — which go straight to those pages.
 
 Under that is a stack of nine closed bars, each with an icon and a title:
 Welcome to 717REC, Viewing Standings & Stats, Understanding the Schedule, Team
@@ -110,8 +110,8 @@ instantly.
 | The user's role (visitor, player, admin) | Visitors and players see nine sections and no dashboard card. An admin sees an "Admin Guide" heading, five further sections, and a card at the bottom linking to the admin dashboard. | Gaining or losing admin re-draws the page: the extra sections and the card appear or vanish, and an open section can be pushed down the page as they do. |
 | The record's state | No effect. Nothing on this page is attached to a record. | No effect. |
 | The season's state (active, archived, playoffs on) | No effect. The help page is the same in every season and when there is none. | No effect. |
-| Viewport | The Quick Navigation buttons are four across on a wide screen and two across on a phone. Everything else is one column at every width. | No effect beyond re-flowing. |
-| Keys the form honours | Tab reaches the four Quick Navigation links and every section bar. Enter and Space open a section. Arrow keys move between the bars. | Escape does nothing. There is no key that closes an open section other than pressing its bar again. |
+| Viewport | The Quick Navigation buttons are three across on a wide screen and two across on a phone. Everything else is one column at every width. | No effect beyond re-flowing. |
+| Keys the form honours | Tab reaches the six Quick Navigation links and every section bar. Enter and Space open a section. Arrow keys move between the bars. | Escape does nothing. There is no key that closes an open section other than pressing its bar again. |
 
 The power score weights are the one thing on this page that can change without the
 app changing. An admin who changes them elsewhere changes the sentence every user
