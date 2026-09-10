@@ -237,6 +237,9 @@ failures are reported with a stack trace. See
 - **A page whose code does not download says so and waits.** It cannot be
   retried in place — the browser caches the failed download — so recovery is the
   document loading again, which happens by itself on reconnect or on Try again.
+  That automatic attempt is allowed **once in any half-minute**: a file that is
+  genuinely gone would otherwise reload the app forever. After it, the screen
+  says loading again did not help and leaves the button.
 - **A failed read and an empty list look identical** on any page that falls back
   to its empty state. The empty state is a positive claim and is sometimes false.
 - **A rate-limited or over-length contact message is told to try again**, which
