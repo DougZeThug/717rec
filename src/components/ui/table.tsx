@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => {
-    const { isWinterTheme } = useSeasonalTheme();
+    const { isWinterTheme } = useSeasonalThemeBase();
 
     return (
       <div
@@ -25,7 +25,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  const { isWinterTheme } = useSeasonalTheme();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   return (
     <thead
@@ -47,7 +47,7 @@ const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  const { isWinterTheme } = useSeasonalTheme();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   return (
     <tbody
@@ -65,7 +65,7 @@ TableBody.displayName = 'TableBody';
 
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => {
-    const { isWinterTheme } = useSeasonalTheme();
+    const { isWinterTheme } = useSeasonalThemeBase();
 
     return (
       <tr
@@ -104,7 +104,7 @@ const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => {
-  const { isWinterTheme } = useSeasonalTheme();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   return (
     <td
