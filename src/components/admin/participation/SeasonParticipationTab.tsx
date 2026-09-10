@@ -196,7 +196,7 @@ const SeasonParticipationTab: React.FC = () => {
 
           {/* Status filter */}
           <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[160px]" aria-label="Filter by status">
               <SelectValue placeholder="Filter status" />
             </SelectTrigger>
             <SelectContent>
