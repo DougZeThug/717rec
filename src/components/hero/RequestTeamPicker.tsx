@@ -22,14 +22,34 @@ interface RequestTeamPickerProps {
   onSelect: (teamId: string) => void;
 }
 
-/** What the button says before, during and after the teams arrive. */
-const TriggerLabel: React.FC<{ isLoading: boolean; selectedTeam: Team | undefined }> = ({
-  isLoading,
-  selectedTeam,
-}) => {
-  if (isLoading) return <Loader2 className="size-4 animate-spin" />;
-  return <>{selectedTeam?.name ?? 'Choose a team...'}</>;
-};
+interface TeamSearchListProps {
+  teams: Team[] | undefined;
+  selectedTeamId: string;
+  onSelect: (teamId: string) => void;
+}
+
+/** The searchable list itself, so neither it nor the popover nests deeply. */
+const TeamSearchList: React.FC<TeamSearchListProps> = ({ teams, selectedTeamId, onSelect }) => (
+  <Command>
+    <CommandInput placeholder="Search teams..." />
+    <CommandList>
+      <CommandEmpty>No team found.</CommandEmpty>
+      <CommandGroup>
+        {teams?.map((team) => (
+          <CommandItem key={team.id} value={team.name} onSelect={() => onSelect(team.id)}>
+            <Check
+              className={cn(
+                'mr-2 size-4',
+                selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
+              )}
+            />
+            {team.name}
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </CommandList>
+  </Command>
+);
 
 /** Which team the request is for: a searchable list, because there are many. */
 const RequestTeamPicker: React.FC<RequestTeamPickerProps> = ({
@@ -41,6 +61,13 @@ const RequestTeamPicker: React.FC<RequestTeamPickerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const listboxId = React.useId();
   const selectedTeam = teams?.find((team) => team.id === selectedTeamId);
+
+  // What the button says before, during and after the teams arrive.
+  const label = isLoading ? (
+    <Loader2 className="size-4 animate-spin" />
+  ) : (
+    (selectedTeam?.name ?? 'Choose a team...')
+  );
 
   return (
     <div className="space-y-2">
@@ -58,37 +85,19 @@ const RequestTeamPicker: React.FC<RequestTeamPickerProps> = ({
             )}
             disabled={isLoading}
           >
-            <TriggerLabel isLoading={isLoading} selectedTeam={selectedTeam} />
+            {label}
             <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent id={listboxId} className="w-[300px] p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Search teams..." />
-            <CommandList>
-              <CommandEmpty>No team found.</CommandEmpty>
-              <CommandGroup>
-                {teams?.map((team) => (
-                  <CommandItem
-                    key={team.id}
-                    value={team.name}
-                    onSelect={() => {
-                      onSelect(team.id);
-                      setIsOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        'mr-2 size-4',
-                        selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
-                      )}
-                    />
-                    {team.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
+          <TeamSearchList
+            teams={teams}
+            selectedTeamId={selectedTeamId}
+            onSelect={(teamId) => {
+              onSelect(teamId);
+              setIsOpen(false);
+            }}
+          />
         </PopoverContent>
       </Popover>
     </div>
