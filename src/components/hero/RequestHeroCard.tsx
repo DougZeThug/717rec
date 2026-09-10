@@ -18,6 +18,7 @@ import {
   DATE_FIELD_LABEL,
   isRequestIncomplete,
   REASON_FIELD_LABEL,
+  selectRequestPanels,
 } from './requestForm';
 import RequestHistoryList from './RequestHistoryList';
 import RequestTeamPicker from './RequestTeamPicker';
@@ -65,6 +66,13 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
     reason,
   };
 
+  const panels = selectRequestPanels({
+    hasTeam: Boolean(selectedTeamId),
+    type: selectedType,
+    isHistoryOpen: showHistory,
+    pastRequestCount: teamRequests?.length ?? 0,
+  });
+
   const handleSubmit = async () => {
     const payload = buildRequestPayload(values, selectedTeam?.name);
     if (!payload) return;
@@ -87,7 +95,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             {card.title || 'Submit a Request'}
           </h3>
         </div>
-        {selectedTeamId && teamRequests && teamRequests.length > 0 && (
+        {panels.showHistoryButton && (
           <Button
             variant="ghost"
             size="sm"
@@ -113,7 +121,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
           }}
         />
 
-        {selectedTeamId && !showHistory && (
+        {panels.showTypePicker && (
           <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -125,7 +133,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
 
         {/* Request details form */}
         <AnimatePresence>
-          {selectedTeamId && selectedType && !showHistory && (
+          {panels.formType && (
             <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -135,7 +143,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Date field */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium opacity-90">
-                  {DATE_FIELD_LABEL[selectedType]}
+                  {DATE_FIELD_LABEL[panels.formType]}
                 </Label>
                 <Input
                   type="date"
@@ -145,7 +153,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 />
               </div>
 
-              {selectedType === 'TIME_CHANGE' && (
+              {panels.formType === 'TIME_CHANGE' && (
                 <RequestTimeslotFields
                   currentTimeslot={currentTimeslot}
                   onCurrentTimeslotChange={setCurrentTimeslot}
@@ -157,7 +165,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Reason field */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium opacity-90">
-                  {REASON_FIELD_LABEL[selectedType]}
+                  {REASON_FIELD_LABEL[panels.formType]}
                 </Label>
                 <Textarea
                   placeholder="Explain your request..."
@@ -186,7 +194,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
 
         {/* Request history */}
         <AnimatePresence>
-          {selectedTeamId && showHistory && (
+          {panels.showHistory && (
             <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}

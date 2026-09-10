@@ -59,3 +59,40 @@ export const buildRequestPayload = (values: RequestFormValues, teamName?: string
     submitted_by_name: teamName,
   };
 };
+
+/** Which parts of the request card are on screen. */
+export interface RequestCardPanels {
+  showHistoryButton: boolean;
+  showTypePicker: boolean;
+  /** The kind of request the form is for, or null when there is no form. */
+  formType: TeamRequestType | null;
+  showHistory: boolean;
+}
+
+/**
+ * What the card shows, as one decision.
+ *
+ * These four used to be four separate conditions in the render, each repeating
+ * "a team is chosen" and "history is not open". Four expressions that have to
+ * agree with each other is a rule waiting to be broken; this is the rule.
+ */
+export const selectRequestPanels = (state: {
+  hasTeam: boolean;
+  type: TeamRequestType | null;
+  isHistoryOpen: boolean;
+  pastRequestCount: number;
+}): RequestCardPanels => {
+  const base = {
+    showHistoryButton: state.hasTeam && state.pastRequestCount > 0,
+    showTypePicker: false,
+    formType: null,
+    showHistory: false,
+  };
+
+  if (!state.hasTeam) return base;
+  if (state.isHistoryOpen) return { ...base, showHistory: true };
+
+  // The type picker stays above the form rather than being replaced by it, so
+  // the reader can change their mind without starting again.
+  return { ...base, showTypePicker: true, formType: state.type };
+};

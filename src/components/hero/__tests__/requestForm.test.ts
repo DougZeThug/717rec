@@ -6,6 +6,7 @@ import {
   isRequestIncomplete,
   REASON_FIELD_LABEL,
   type RequestFormValues,
+  selectRequestPanels,
 } from '../requestForm';
 
 const values = (overrides: Partial<RequestFormValues> = {}): RequestFormValues => ({
@@ -78,5 +79,57 @@ describe('field labels', () => {
     expect(DATE_FIELD_LABEL.TIME_CHANGE).toBe('Match date');
     expect(REASON_FIELD_LABEL.EMERGENCY_CANCEL).toBe('Reason (required)');
     expect(REASON_FIELD_LABEL.TIME_CHANGE).toBe('Reason (optional)');
+  });
+});
+
+describe('selectRequestPanels', () => {
+  const state = {
+    hasTeam: true,
+    type: 'TIME_CHANGE' as const,
+    isHistoryOpen: false,
+    pastRequestCount: 0,
+  };
+
+  it('shows nothing until a team is chosen', () => {
+    const panels = selectRequestPanels({ ...state, hasTeam: false });
+
+    expect(panels).toEqual({
+      showHistoryButton: false,
+      showTypePicker: false,
+      formType: null,
+      showHistory: false,
+    });
+  });
+
+  it('asks what is needed once a team is chosen', () => {
+    const panels = selectRequestPanels({ ...state, type: null });
+
+    expect(panels.showTypePicker).toBe(true);
+    expect(panels.formType).toBeNull();
+  });
+
+  // The picker stays above the form, so a reader can change their mind without
+  // starting again.
+  it('keeps the picker on screen beside the form', () => {
+    const panels = selectRequestPanels(state);
+
+    expect(panels.showTypePicker).toBe(true);
+    expect(panels.formType).toBe('TIME_CHANGE');
+  });
+
+  it('replaces the whole form with the history', () => {
+    const panels = selectRequestPanels({ ...state, isHistoryOpen: true });
+
+    expect(panels.showHistory).toBe(true);
+    expect(panels.showTypePicker).toBe(false);
+    expect(panels.formType).toBeNull();
+  });
+
+  it('offers history only when there is some', () => {
+    expect(selectRequestPanels(state).showHistoryButton).toBe(false);
+    expect(selectRequestPanels({ ...state, pastRequestCount: 2 }).showHistoryButton).toBe(true);
+    expect(
+      selectRequestPanels({ ...state, hasTeam: false, pastRequestCount: 2 }).showHistoryButton
+    ).toBe(false);
   });
 });
