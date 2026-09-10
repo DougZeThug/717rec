@@ -40,7 +40,7 @@ export const BLOCK_OPTIONS: ReadonlyArray<{ value: string; label: string }> =
  * Returns a block's *first* time, which is the value a booking takes. 9:30 PM
  * is a legal stored time but starts no block, so it is never returned.
  */
-export const parseRequestedBlock = (raw: string | null | undefined): string | null => {
+export const parseRequestedBlock = (raw?: string | null): string | null => {
   if (!raw) return null;
 
   const text = raw.trim().toLowerCase().replace(/\s+/g, ' ');

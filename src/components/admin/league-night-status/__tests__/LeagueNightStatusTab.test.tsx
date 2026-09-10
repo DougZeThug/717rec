@@ -135,7 +135,7 @@ describe('LeagueNightStatusTab', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /score approvals.*open section/i }));
 
-    expect(onRequest).toHaveBeenCalledWith('pending-matches', undefined);
+    expect(onRequest.mock.calls[0][0]).toBe('pending-matches');
     // Asking is all this tile does. The dashboard records the section once it
     // has actually opened it, because the switch can be refused when the
     // section on screen holds unsaved work.
@@ -171,7 +171,7 @@ describe('LeagueNightStatusTab', () => {
 
     for (const [name, tabId] of expected) {
       fireEvent.click(screen.getByRole('button', { name }));
-      expect(onRequest).toHaveBeenCalledWith(tabId, undefined);
+      expect(onRequest.mock.lastCall?.[0]).toBe(tabId);
     }
 
     unsubscribe();

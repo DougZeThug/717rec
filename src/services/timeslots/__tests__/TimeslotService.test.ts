@@ -35,7 +35,7 @@ vi.mock('../TimeslotBatchService', () => ({
     batchAssignTimeslots: vi.fn().mockResolvedValue([]),
     insertTimeslot: vi.fn().mockResolvedValue(null),
     deleteTimeslotSimple: vi.fn().mockResolvedValue(null),
-    deleteTimeslotsByIds: vi.fn().mockResolvedValue(undefined),
+    deleteTimeslotsByIds: vi.fn().mockResolvedValue(null),
     batchInsertTimeslots: vi.fn().mockResolvedValue([]),
   },
 }));

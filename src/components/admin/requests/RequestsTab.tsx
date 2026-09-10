@@ -63,7 +63,7 @@ const RequestsTab: React.FC = () => {
         id: selectedRequest,
         status: isApproval ? 'APPROVED' : 'DENIED',
         admin_notes: adminNotes || undefined,
-        suppressSuccessToast: isApproval && !!request,
+        suppressSuccessToast: isApproval && Boolean(request),
       });
     } catch {
       // The mutation already raised a destructive toast. Leave the dialog open

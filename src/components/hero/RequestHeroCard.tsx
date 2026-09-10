@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Command,
@@ -24,23 +23,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useTeamsArray } from '@/hooks/teams';
 import { useSubmitRequest, useTeamRequests } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
 import { HeroCard as HeroCardType } from '@/types/heroCard';
-import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
-import { formatWithPattern } from '@/utils/formatDateSafe';
-import { BLOCK_OPTIONS } from '@/utils/timeslotMove';
+import { REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
 
 import HeroCardBase from './HeroCardBase';
+import RequestHistoryList from './RequestHistoryList';
+import RequestTimeslotFields from './RequestTimeslotFields';
 
 interface RequestHeroCardProps {
   card: HeroCardType;
@@ -56,8 +48,6 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: false });
   const submitMutation = useSubmitRequest();
   const teamListboxId = React.useId();
-  const currentSlotId = React.useId();
-  const requestedSlotId = React.useId();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedType, setSelectedType] = useState<TeamRequestType | null>(null);
@@ -241,59 +231,13 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 />
               </div>
 
-              {/* Time change specific fields.
-                  Both are chosen from the league's real blocks rather than
-                  typed. A typed time could be anything — "7ish", "as early as
-                  possible" — and the admin approving it then has nothing exact
-                  to act on. */}
               {selectedType === 'TIME_CHANGE' && (
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor={currentSlotId} className="text-sm font-medium opacity-90">
-                        Current timeslot
-                      </Label>
-                      <Select value={currentTimeslot} onValueChange={setCurrentTimeslot}>
-                        <SelectTrigger
-                          id={currentSlotId}
-                          className="bg-background/20 border-white/20 text-inherit"
-                        >
-                          <SelectValue placeholder="Pick a time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BLOCK_OPTIONS.map((block) => (
-                            <SelectItem key={block.value} value={block.value}>
-                              {block.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={requestedSlotId} className="text-sm font-medium opacity-90">
-                        Requested timeslot
-                      </Label>
-                      <Select value={requestedTimeslot} onValueChange={setRequestedTimeslot}>
-                        <SelectTrigger
-                          id={requestedSlotId}
-                          className="bg-background/20 border-white/20 text-inherit"
-                        >
-                          <SelectValue placeholder="Pick a time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BLOCK_OPTIONS.map((block) => (
-                            <SelectItem key={block.value} value={block.value}>
-                              {block.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <p className="text-xs opacity-75">
-                    Each time is a block of two back-to-back slots. You play both.
-                  </p>
-                </div>
+                <RequestTimeslotFields
+                  currentTimeslot={currentTimeslot}
+                  onCurrentTimeslotChange={setCurrentTimeslot}
+                  requestedTimeslot={requestedTimeslot}
+                  onRequestedTimeslotChange={setRequestedTimeslot}
+                />
               )}
 
               {/* Reason field */}
@@ -340,59 +284,11 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               exit={{ opacity: 0, height: 0 }}
               className="space-y-3"
             >
-              <Label className="text-sm font-medium opacity-90">Recent Requests</Label>
-              {requestsLoading ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="size-5 animate-spin" />
-                </div>
-              ) : teamRequests && teamRequests.length > 0 ? (
-                <div className="space-y-2">
-                  {teamRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-background/10 border border-white/10"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">
-                            {REQUEST_TYPE_LABELS[request.request_type]}
-                          </span>
-                          <Badge
-                            variant={
-                              request.status === 'APPROVED'
-                                ? 'default'
-                                : request.status === 'DENIED'
-                                  ? 'destructive'
-                                  : 'secondary'
-                            }
-                            className="text-xs"
-                          >
-                            {REQUEST_STATUS_LABELS[request.status]}
-                          </Badge>
-                        </div>
-                        {request.match_date && (
-                          <span className="text-xs opacity-70" suppressHydrationWarning>
-                            {formatWithPattern(request.match_date, 'MMM d, yyyy')}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs opacity-50" suppressHydrationWarning>
-                        {formatWithPattern(request.created_at, 'MMM d')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm opacity-70 text-center py-4">No requests yet</p>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowHistory(false)}
-                className="w-full text-inherit hover:bg-white/10"
-              >
-                Back to form
-              </Button>
+              <RequestHistoryList
+                requests={teamRequests}
+                isLoading={requestsLoading}
+                onBack={() => setShowHistory(false)}
+              />
             </m.div>
           )}
         </AnimatePresence>

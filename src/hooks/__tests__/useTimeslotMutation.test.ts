@@ -461,7 +461,7 @@ describe('useTimeslotMutation.moveTeamBooking', () => {
     vi.clearAllMocks();
     vi.mocked(TimeslotValidator.validateTimeslotAssignment).mockReturnValue({ valid: true });
     vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockResolvedValue([]);
-    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockResolvedValue(undefined);
+    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockResolvedValue();
     vi.mocked(ByeWeekService.assignByeWeek).mockResolvedValue(sampleSlot('bye-1'));
   });
 
@@ -469,12 +469,13 @@ describe('useTimeslotMutation.moveTeamBooking', () => {
   // booking at all if the booking then failed, and nobody would see it.
   it('books the new block before it clears the old rows', async () => {
     const order: string[] = [];
-    vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockImplementation(async () => {
+    vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockImplementation(() => {
       order.push('book');
-      return [];
+      return Promise.resolve([]);
     });
-    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockImplementation(async () => {
+    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockImplementation(() => {
       order.push('clear');
+      return Promise.resolve();
     });
 
     const { result } = renderHook(() => useTimeslotMutation());

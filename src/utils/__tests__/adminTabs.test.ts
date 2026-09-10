@@ -24,7 +24,7 @@ describe('adminTabs', () => {
 
     switchAdminTab('batch-matches');
 
-    expect(onRequest).toHaveBeenCalledWith('batch-matches', undefined);
+    expect(onRequest.mock.calls[0]).toEqual(['batch-matches', undefined]);
     unsubscribe();
   });
 
@@ -86,7 +86,7 @@ describe('adminTabs', () => {
     const unsubscribe = subscribeToAdminTabRequests(onRequest);
 
     expect(() => switchAdminTab('teams')).not.toThrow();
-    expect(onRequest).toHaveBeenCalledWith('teams', undefined);
+    expect(onRequest.mock.calls[0]).toEqual(['teams', undefined]);
     expect(() => rememberAdminSection('teams')).not.toThrow();
     expect(readRememberedAdminSection()).toBe('timeslots');
 

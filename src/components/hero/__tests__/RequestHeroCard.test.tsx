@@ -22,17 +22,10 @@ vi.mock('@/hooks/useTeamRequests', () => ({
 }));
 
 vi.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  m: new Proxy(
-    {},
-    {
-      get: () => (props: Record<string, unknown>) => {
-        const { children, ...rest } = props as { children?: React.ReactNode };
-        void rest;
-        return <div>{children}</div>;
-      },
-    }
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
+  m: {
+    div: ({ children }: React.HTMLAttributes<HTMLDivElement>) => <div>{children}</div>,
+  },
 }));
 
 vi.mock('../HeroCardBase', () => ({
@@ -55,11 +48,16 @@ describe('RequestHeroCard', () => {
   beforeAll(() => {
     // The team picker is built on cmdk, which observes its own size, and Radix
     // Select captures the pointer. jsdom has neither.
-    global.ResizeObserver = class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    } as unknown as typeof ResizeObserver;
+    function ResizeObserverCtor(this: {
+      observe: () => undefined;
+      unobserve: () => undefined;
+      disconnect: () => undefined;
+    }) {
+      this.observe = () => undefined;
+      this.unobserve = () => undefined;
+      this.disconnect = () => undefined;
+    }
+    globalThis.ResizeObserver = ResizeObserverCtor as unknown as typeof ResizeObserver;
     HTMLElement.prototype.setPointerCapture = vi.fn();
     HTMLElement.prototype.releasePointerCapture = vi.fn();
     HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
@@ -68,7 +66,6 @@ describe('RequestHeroCard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mutateAsync.mockResolvedValue(undefined);
   });
 
   // A typed time could be anything — "7ish", "as early as possible" — and the

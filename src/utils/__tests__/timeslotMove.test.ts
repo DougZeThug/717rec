@@ -105,7 +105,7 @@ describe('parseRequestedBlock', () => {
 
   it('refuses an empty field', () => {
     expect(parseRequestedBlock(null)).toBeNull();
-    expect(parseRequestedBlock(undefined)).toBeNull();
+    expect(parseRequestedBlock()).toBeNull();
   });
 });
 
