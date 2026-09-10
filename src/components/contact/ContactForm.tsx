@@ -1,5 +1,5 @@
 import { Send } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/auth-context';
-import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toast } from '@/hooks/useToast';
 import { submitContactMessage } from '@/services/contact/ContactSubmissionService';
 import {
@@ -26,14 +24,18 @@ import {
 import { trackContactForm } from '@/utils/analytics';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
-import { contactFormSchema, type ContactFormValues } from './contactFormSchema';
+import {
+  type ContactFieldErrors,
+  contactFormSchema,
+  type ContactFormValues,
+  toFieldErrors,
+} from './contactFormSchema';
 import { LockableField } from './LockableField';
+import { useVerifiedIdentity } from './useVerifiedIdentity';
 
 interface ContactFormProps {
   onSent: () => void;
 }
-
-type FieldErrors = Partial<Record<'name' | 'contact' | 'team' | 'message', string>>;
 
 /**
  * The league's one message form (UX audit H-02).
@@ -48,8 +50,6 @@ type FieldErrors = Partial<Record<'name' | 'contact' | 'team' | 'message', strin
  * anonymous one.
  */
 export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
-  const { user } = useAuth();
-  const { activeMembership: membership } = useTeamMembership();
   const [searchParams] = useSearchParams();
 
   // Read once, on arrival. `?type=` seeds the picker; after that the picker is
@@ -59,30 +59,16 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
   );
 
   const [topicValue, setTopicValue] = useState<ContactTopic>(initialTopic);
-  const [nameDraft, setNameDraft] = useState<string | null>(null);
-  const [teamDraft, setTeamDraft] = useState<string | null>(null);
-  const [contactDraft, setContactDraft] = useState<string | null>(null);
   const [players, setPlayers] = useState('');
   const [message, setMessage] = useState('');
   const [website, setWebsite] = useState('');
-  const [errors, setErrors] = useState<FieldErrors>({});
+  const [errors, setErrors] = useState<ContactFieldErrors>({});
   const [isSending, setIsSending] = useState(false);
 
-  const verifiedName = useMemo(() => {
-    const meta = user?.user_metadata as { full_name?: string; name?: string } | undefined;
-    return meta?.full_name || meta?.name || user?.email || '';
-  }, [user]);
-  const verifiedTeam = membership?.team?.name ?? '';
-
   const topic = findContactTopic(topicValue) ?? CONTACT_TOPIC_OPTIONS[0];
-  const name = nameDraft ?? (user ? verifiedName : '');
-  const team = teamDraft ?? (user ? verifiedTeam : '');
-  const contact = contactDraft ?? user?.email ?? '';
+  const { isSignedIn, name, team, contact, setName, setTeam, setContact, nameLocked, teamLocked } =
+    useVerifiedIdentity({ allowNewTeamName: Boolean(topic.needsTeam) });
 
-  const nameLocked = Boolean(user) && Boolean(verifiedName) && name === verifiedName;
-  // Joining the league always lets them propose a new team name.
-  const teamLocked =
-    Boolean(user) && Boolean(verifiedTeam) && team === verifiedTeam && !topic.needsTeam;
   const showTeam = topic.needsTeam || Boolean(team) || topic.channel === 'league';
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -99,14 +85,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
     });
 
     if (!parsed.success) {
-      const next: FieldErrors = {};
-      for (const issue of parsed.error.issues) {
-        const field = issue.path[0];
-        if (field === 'name' || field === 'contact' || field === 'team' || field === 'message') {
-          next[field] ??= issue.message;
-        }
-      }
-      setErrors(next);
+      setErrors(toFieldErrors(parsed.error));
       return;
     }
 
@@ -177,7 +156,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
           id="contact-name"
           label="Name"
           value={name}
-          onChange={setNameDraft}
+          onChange={setName}
           locked={nameLocked}
           maxLength={120}
           placeholder="Jane Doe"
@@ -188,7 +167,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
           id="contact-contact"
           label={topic.channel === 'support' ? 'Email' : 'Contact (email or phone)'}
           value={contact}
-          onChange={setContactDraft}
+          onChange={setContact}
           locked={false}
           maxLength={255}
           placeholder={
@@ -202,7 +181,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
             id="contact-team"
             label={topic.needsTeam ? 'Proposed team name' : 'Team name'}
             value={team}
-            onChange={setTeamDraft}
+            onChange={setTeam}
             locked={teamLocked}
             maxLength={120}
             placeholder={topic.needsTeam ? 'Bag Boys' : 'Your team (optional)'}
@@ -247,7 +226,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-3">
-        {user && (
+        {isSignedIn && (
           <span className="text-xs text-muted-foreground">
             Signed in — your message is marked verified.
           </span>

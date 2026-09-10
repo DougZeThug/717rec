@@ -17,6 +17,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/useToast';
 
+/** Constant, so it is built once rather than on every render. */
+const SEO = (
+  <SeoHead
+    title="Contact | 717REC Cornhole League"
+    description="Message the 717REC admins about a timeslot, a score, joining the league, your account, or anything else."
+    path="/contact"
+  />
+);
+
 export default function Contact() {
   const [isSuccess, setIsSuccess] = useState(false);
   const { toast } = useToast();
@@ -26,18 +35,10 @@ export default function Contact() {
     toast({ title: 'Message sent', description: 'The admins will get back to you.' });
   };
 
-  const seo = (
-    <SeoHead
-      title="Contact | 717REC Cornhole League"
-      description="Message the 717REC admins about a timeslot, a score, joining the league, your account, or anything else."
-      path="/contact"
-    />
-  );
-
   if (isSuccess) {
     return (
       <PageLayout>
-        {seo}
+        {SEO}
         <PageTransition>
           <div className="container max-w-2xl py-12">
             <Card>
@@ -62,7 +63,7 @@ export default function Contact() {
 
   return (
     <PageLayout>
-      {seo}
+      {SEO}
       <PageTransition>
         <div className="container max-w-2xl py-12">
           <div className="text-center mb-8">

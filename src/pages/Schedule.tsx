@@ -10,26 +10,19 @@ import { ScheduleFilters } from '@/components/schedule/ScheduleFilters';
 import ScheduleHeader from '@/components/schedule/ScheduleHeader';
 import SeoHead from '@/components/seo/SeoHead';
 import { ErrorDisplay } from '@/components/ui/error-display';
+import { useScheduleFiltering } from '@/hooks/scheduling/useScheduleFiltering';
 import { useScheduleUrlState } from '@/hooks/scheduling/useScheduleUrlState';
 import { useScrollToLinkedMatch } from '@/hooks/scheduling/useScrollToLinkedMatch';
 import { useTeamsQuery } from '@/hooks/teams';
-import { useDivisions } from '@/hooks/useDivisions';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
-import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { Match } from '@/types';
 import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
-import {
-  buildDivisionOptions,
-  filterGroupedTimeslots,
-  matchInvolvesTeam,
-  matchIsInDivision,
-} from '@/utils/schedule/matchFilters';
 
 // Get upcoming Thursday (or today if it's Thursday)
 const getUpcomingThursday = () => {
@@ -182,21 +175,6 @@ const Schedule = () => {
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
-  // Division chips and "my team" (UX audit SC-02). Division is already on every
-  // match row through the team join, so neither chip costs an extra fetch.
-  const { divisions } = useDivisions();
-  const divisionOptions = useMemo(() => buildDivisionOptions(divisions), [divisions]);
-  const selectedDivision = useMemo(
-    () => divisionOptions.find((option) => option.value === division) ?? null,
-    [divisionOptions, division]
-  );
-
-  const { activeMembership } = useTeamMembership();
-  // The same rule Standings uses to decide whose row to highlight: an
-  // unapproved membership is not yet a team.
-  const myTeamId = activeMembership?.is_approved ? activeMembership.team_id : null;
-  const myTeamFilterId = teamFilter === 'mine' ? myTeamId : null;
-
   const { activeTab, handleTabChange } = useScheduleTabs({
     selectedDate,
     matchesLoading,
@@ -245,40 +223,14 @@ const Schedule = () => {
     setSelectedDate(date);
   };
 
-  const filteredMatches = React.useMemo(() => {
-    const sourceMatches = activeTab === 'upcoming' ? upcomingMatches : completedMatches;
-    const searchLower = searchTerm.toLowerCase();
-
-    if (!searchTerm && !selectedDivision && !myTeamFilterId) return sourceMatches;
-
-    // One pass, not a chain of filters: these lists are rebuilt on every render
-    // and this page is the one scorers keep open.
-    return sourceMatches.filter((match) => {
-      if (selectedDivision && !matchIsInDivision(match, selectedDivision)) return false;
-      if (myTeamFilterId && !matchInvolvesTeam(match, myTeamFilterId)) return false;
-      if (!searchTerm) return true;
-
-      const team1Name = match.team1Details?.name || '';
-      const team2Name = match.team2Details?.name || '';
-      return (
-        team1Name.toLowerCase().includes(searchLower) ||
-        team2Name.toLowerCase().includes(searchLower) ||
-        match.location?.toLowerCase().includes(searchLower)
-      );
-    });
-  }, [activeTab, upcomingMatches, completedMatches, searchTerm, selectedDivision, myTeamFilterId]);
-
-  // The Timeslots tab is fed by a different query, so it answers the chips here
-  // rather than through filteredMatches. Showing the chips on two tabs and
-  // ignoring them on the third would be worse than not having them.
-  const visibleTimeslots = React.useMemo(
-    () =>
-      filterGroupedTimeslots(groupedTimeslots, {
-        division: selectedDivision,
-        teamId: myTeamFilterId,
-      }),
-    [groupedTimeslots, selectedDivision, myTeamFilterId]
-  );
+  // Division chips and "my team" (UX audit SC-02), plus the search box.
+  const { divisionOptions, myTeamId, filteredMatches, visibleTimeslots } = useScheduleFiltering({
+    division,
+    team: teamFilter,
+    matches: activeTab === 'upcoming' ? upcomingMatches : completedMatches,
+    searchTerm,
+    groupedTimeslots,
+  });
 
   const handleCreateMatchAdapter = (matchData: Omit<Match, 'id'>) =>
     handleCreateMatch(matchData, teams || []);

@@ -1,5 +1,5 @@
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
-import { Calendar, CalendarDays, CheckCircle, Clock, Filter, Trophy } from 'lucide-react';
+import { Calendar, CalendarDays, CheckCircle, Clock, Trophy } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -12,6 +12,7 @@ import { Match, Team, TeamTimeslot } from '@/types';
 import { isMatchCompleted } from '@/utils/matchStatus';
 
 import DateMatchGroup from './DateMatchGroup';
+import { FilteredOutEmptyState } from './FilteredOutEmptyState';
 import SwipeableDateGroups from './SwipeableDateGroups';
 import TimeslotGrouping from './TimeslotGrouping';
 
@@ -190,25 +191,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
     icon: typeof CheckCircle;
   }[];
 
-  const filteredOutState = (
-    <EmptyState
-      icon={Filter}
-      title="No matches match these filters"
-      description="Nothing here is in the division or team you picked. Clear the filters to see the whole week."
-      actions={
-        onClearFilters
-          ? [
-              {
-                label: 'Clear filters',
-                onClick: onClearFilters,
-                variant: 'default' as const,
-                icon: Filter,
-              },
-            ]
-          : []
-      }
-    />
-  );
+  const filteredOutState = <FilteredOutEmptyState onClearFilters={onClearFilters} />;
 
   const matchGroupsContent = (() => {
     if (isEmptyState) {

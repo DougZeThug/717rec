@@ -38,7 +38,7 @@ export const contactFormSchema = z
       });
     }
 
-    if (topicNeedsEmail(topic) && !z.string().email().safeParse(values.contact).success) {
+    if (topicNeedsEmail(topic) && !z.email().safeParse(values.contact).success) {
       ctx.addIssue({
         code: 'custom',
         path: ['contact'],
@@ -57,3 +57,25 @@ export const contactFormSchema = z
   });
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>;
+
+/** The fields that can carry a message under them. */
+export type ContactFieldErrors = Partial<Record<'name' | 'contact' | 'team' | 'message', string>>;
+
+const REPORTABLE_FIELDS = new Set(['name', 'contact', 'team', 'message']);
+
+/**
+ * The first complaint about each field, keyed by field.
+ *
+ * Only the first: two rules can object to the same value, and stacking both
+ * under one input says less than either alone.
+ */
+export const toFieldErrors = (error: z.ZodError): ContactFieldErrors => {
+  const errors: ContactFieldErrors = {};
+  for (const issue of error.issues) {
+    const field = String(issue.path[0]);
+    if (REPORTABLE_FIELDS.has(field)) {
+      errors[field as keyof ContactFieldErrors] ??= issue.message;
+    }
+  }
+  return errors;
+};

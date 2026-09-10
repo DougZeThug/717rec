@@ -1,13 +1,8 @@
 import { CloudOff, RefreshCw } from 'lucide-react';
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-
-interface ChunkLoadRecoveryProps {
-  /** Reloading is the recovery; injected so a test does not reload the runner. */
-  reload?: () => void;
-}
 
 /**
  * Shown when a page's code could not be downloaded, rather than the generic
@@ -25,22 +20,21 @@ interface ChunkLoadRecoveryProps {
  * what the finding asks for. The button stays for anyone who would rather not
  * wait, and for the other cause of this error: a deploy that replaced the files
  * this tab was told to fetch.
+ *
+ * The reload is called straight out of this component rather than through a
+ * prop, so nothing is handed back to a parent and no extra render is spent on
+ * it. Tests stand in for it by stubbing `window.location`.
  */
-export const ChunkLoadRecovery: React.FC<ChunkLoadRecoveryProps> = ({ reload }) => {
+export const ChunkLoadRecovery: React.FC = () => {
   const isOnline = useOnlineStatus();
   // A reload replaces the document, so a second one is only ever a loop.
   const hasReloaded = useRef(false);
 
-  const handleReload = useCallback(() => {
-    if (reload) reload();
-    else window.location.reload();
-  }, [reload]);
-
   useEffect(() => {
     if (!isOnline || hasReloaded.current) return;
     hasReloaded.current = true;
-    handleReload();
-  }, [isOnline, handleReload]);
+    window.location.reload();
+  }, [isOnline]);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
@@ -61,7 +55,7 @@ export const ChunkLoadRecovery: React.FC<ChunkLoadRecoveryProps> = ({ reload }) 
         </div>
 
         <div className="flex justify-center">
-          <Button onClick={handleReload} variant="default" size="sm">
+          <Button onClick={() => window.location.reload()} variant="default" size="sm">
             <RefreshCw className="mr-2 size-4" />
             Try again
           </Button>
