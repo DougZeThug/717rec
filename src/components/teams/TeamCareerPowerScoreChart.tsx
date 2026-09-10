@@ -1,5 +1,4 @@
 import { TrendingUp } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import type { TooltipContentProps } from 'recharts';
 import {
   CartesianGrid,
@@ -14,6 +13,7 @@ import type { Props as DotProps } from 'recharts/types/shape/Dot';
 
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useTeamCareerPowerScore } from '@/hooks/useTeamCareerPowerScore';
 import { SeasonPowerScoreData } from '@/types/teamCareerPowerScore';
@@ -26,8 +26,7 @@ interface TeamCareerPowerScoreChartProps {
 
 const CustomDot = (props: DotProps & { payload?: SeasonPowerScoreData }) => {
   const { cx, cy, payload } = props;
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const isDark = useIsDarkSurface();
 
   if (!payload || payload.powerScore === null || cx === undefined || cy === undefined) {
     return null;
@@ -119,9 +118,8 @@ const TeamCareerPowerScoreChart = ({
   standalone = false,
 }: TeamCareerPowerScoreChartProps) => {
   const { data: seasonData, isLoading } = useTeamCareerPowerScore(teamId);
-  const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
-  const isDark = resolvedTheme === 'dark';
+  const isDark = useIsDarkSurface();
 
   if (isLoading) {
     return (

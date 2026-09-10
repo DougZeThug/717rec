@@ -18,6 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { MultiSelect } from '@/components/ui/multi-select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TeamCareerData, useAllTeamsCareerPowerScores } from '@/hooks/useAllTeamsCareerPowerScores';
+import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -106,10 +107,10 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
 
 const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
   const { data: teamsData, isLoading } = useAllTeamsCareerPowerScores();
-  const { theme, resolvedTheme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
   const { isWinterTheme } = useSeasonalThemeBase();
-  const isDark = theme === 'dark';
+  const isDark = useIsDarkSurface();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
 
