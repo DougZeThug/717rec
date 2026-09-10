@@ -1,6 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { format } from 'date-fns';
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -9,10 +8,17 @@ import LiveCorrectionsSection from '../LiveCorrectionsSection';
 // ─── Hook mocks ───────────────────────────────────────────────────────────────
 
 const useSeasonsMock = vi.fn();
+const useActiveSeasonMock = vi.fn();
 const useAdminLiveScoredMatchesMock = vi.fn();
+const useIsMobileMock = vi.fn();
 
 vi.mock('@/hooks/useSeasons', () => ({
   useSeasons: () => useSeasonsMock(),
+  useActiveSeason: () => useActiveSeasonMock(),
+}));
+
+vi.mock('@/hooks/useMobile', () => ({
+  useIsMobile: () => useIsMobileMock(),
 }));
 
 vi.mock('@/hooks/live-scoring/useAdminCorrections', () => ({
@@ -74,6 +80,8 @@ describe('LiveCorrectionsSection', () => {
         { id: 'season-2', name: 'Winter 1', is_archived: true },
       ],
     });
+    useActiveSeasonMock.mockReturnValue({ data: { id: 'season-1', name: 'Summer 1' } });
+    useIsMobileMock.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -94,34 +102,91 @@ describe('LiveCorrectionsSection', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Failed to load matches.');
   });
 
-  it('explains when no live-scored matches exist', () => {
+  it('explains when no live-scored matches exist anywhere', () => {
+    useActiveSeasonMock.mockReturnValue({ data: null });
     setMatches({ data: [] });
     render(<LiveCorrectionsSection />);
 
     expect(screen.getByText('No live-scored matches yet.')).toBeInTheDocument();
   });
 
-  it('starts with all seasons and no match selected', () => {
+  it('opens on the active season and the most recent night, with no match selected', () => {
+    setMatches({ data: matches });
+    render(<LiveCorrectionsSection />);
+
+    // A-11: league night is the job, so the season being played is the default.
+    expect(useAdminLiveScoredMatchesMock).toHaveBeenCalledWith('season-1');
+    expect(screen.getByRole('combobox', { name: 'Season' })).toHaveTextContent('Summer 1');
+    expect(screen.getByRole('combobox', { name: 'Night' })).toHaveTextContent('Jul 31, 2026');
+    expect(screen.getByText('Select a match to view and correct its rounds.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /clear selection|back to list/i })).toBeNull();
+  });
+
+  it('falls back to all seasons when the league has no active season', () => {
+    useActiveSeasonMock.mockReturnValue({ data: null });
     setMatches({ data: matches });
     render(<LiveCorrectionsSection />);
 
     expect(useAdminLiveScoredMatchesMock).toHaveBeenCalledWith(null);
-    expect(screen.getByText('Select a match to view and correct its rounds.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Clear selection' })).toBeDisabled();
+    expect(screen.getByRole('combobox', { name: 'Season' })).toHaveTextContent('All seasons');
   });
 
-  it('lists each match with its date and game/round counts', () => {
+  it('narrows the list to the chosen night and widens again for All nights', async () => {
+    const user = userEvent.setup();
     setMatches({ data: matches });
     render(<LiveCorrectionsSection />);
 
+    // The dated match is on the default night; the undated one is not on any.
     expect(screen.getByText('Team A vs Team B')).toBeInTheDocument();
-    // Anchored to the same formatting the component uses. A date-only column
-    // parses as UTC midnight, so a hardcoded 'Aug 1, 2026' would render as
-    // 'Jul 31, 2026' for anyone west of UTC and fail off the CI runner.
-    expect(screen.getByText(format(new Date('2026-08-01'), 'MMM d, yyyy'))).toBeInTheDocument();
+    expect(screen.queryByText('Team C vs Team D')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await user.click(await screen.findByRole('option', { name: 'All nights' }));
+
+    expect(screen.getByText('Team C vs Team D')).toBeInTheDocument();
+  });
+
+  it('says the night is empty rather than pretending nothing was ever scored', async () => {
+    const user = userEvent.setup();
+    setMatches({
+      data: [
+        matches[0],
+        { ...matches[0], id: 'match-old', date: '2026-06-04', team1: { name: 'Team G' } },
+      ],
+    });
+    render(<LiveCorrectionsSection />);
+
+    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await user.click(await screen.findByRole('option', { name: 'Jun 3, 2026' }));
+    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await user.click(await screen.findByRole('option', { name: 'Jul 31, 2026' }));
+
+    expect(screen.queryByText('No live-scored matches yet.')).not.toBeInTheDocument();
+  });
+
+  it('names the season when it holds no live-scored matches', () => {
+    setMatches({ data: [] });
+    render(<LiveCorrectionsSection />);
+
+    expect(screen.getByText('No live-scored matches in this season.')).toBeInTheDocument();
+  });
+
+  it('lists each match with its night and game/round counts', async () => {
+    const user = userEvent.setup();
+    setMatches({ data: matches });
+    render(<LiveCorrectionsSection />);
+
+    // Dates read in league time, so the day is the same on a UTC runner as it
+    // is in the league's own timezone. An 8 PM game is stored on the next UTC
+    // day; '2026-08-01' at UTC midnight is the night of Jul 31 in league time.
+    expect(screen.getByText('Team A vs Team B')).toBeInTheDocument();
+    expect(screen.getAllByText('Jul 31, 2026').length).toBeGreaterThan(0);
     expect(screen.getByText('2 games · 9 rounds · final')).toBeInTheDocument();
 
-    // Singular wording and the missing-date fallback.
+    // A match with no date belongs to no night, so it needs the wider view.
+    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await user.click(await screen.findByRole('option', { name: 'All nights' }));
+
     expect(screen.getByText('No date')).toBeInTheDocument();
     expect(screen.getByText('1 game · 1 round')).toBeInTheDocument();
   });
@@ -145,12 +210,41 @@ describe('LiveCorrectionsSection', () => {
     expect(screen.getByText('Select a match to view and correct its rounds.')).toBeInTheDocument();
   });
 
+  it('scrolls to the panel on a phone and offers a way back to the list', async () => {
+    const user = userEvent.setup();
+    useIsMobileMock.mockReturnValue(true);
+    setMatches({ data: matches });
+    render(<LiveCorrectionsSection />);
+
+    await user.click(screen.getByRole('button', { name: /Team A vs Team B/ }));
+
+    // A-11: on a phone the panel is below the whole list, so selecting a match
+    // used to move nothing on screen.
+    await waitFor(() => expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: 'Back to list' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Back to list' }));
+
+    expect(screen.queryByTestId('corrections-panel')).not.toBeInTheDocument();
+  });
+
+  it('does not scroll on a desktop, where the panel is already beside the list', async () => {
+    const user = userEvent.setup();
+    setMatches({ data: matches });
+    render(<LiveCorrectionsSection />);
+
+    await user.click(screen.getByRole('button', { name: /Team A vs Team B/ }));
+
+    expect(HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+
   it('refetches for the chosen season', async () => {
     const user = userEvent.setup();
     setMatches({ data: matches });
     render(<LiveCorrectionsSection />);
 
-    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('combobox', { name: 'Season' }));
     await user.click(await screen.findByRole('option', { name: /Winter 1/ }));
 
     expect(useAdminLiveScoredMatchesMock).toHaveBeenLastCalledWith('season-2');
@@ -163,7 +257,7 @@ describe('LiveCorrectionsSection', () => {
     setMatches({ data: matches });
     render(<LiveCorrectionsSection />);
 
-    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('combobox', { name: 'Season' }));
 
     expect(
       await screen.findByRole('option', { name: 'Winter 1 (archived — read-only)' })
@@ -171,7 +265,8 @@ describe('LiveCorrectionsSection', () => {
     expect(await screen.findByRole('option', { name: 'Summer 1' })).toBeInTheDocument();
   });
 
-  it('marks a match from an archived season on its card, under "All seasons"', () => {
+  it('marks a match from an archived season on its card, under "All seasons"', async () => {
+    const user = userEvent.setup();
     setMatches({
       data: [
         ...matches,
@@ -188,6 +283,13 @@ describe('LiveCorrectionsSection', () => {
       ],
     });
     render(<LiveCorrectionsSection />);
+
+    // The default is now the active season and one night, so both widenings are
+    // needed before the two seasons appear side by side.
+    await user.click(screen.getByRole('combobox', { name: 'Season' }));
+    await user.click(await screen.findByRole('option', { name: 'All seasons' }));
+    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await user.click(await screen.findByRole('option', { name: 'All nights' }));
 
     expect(
       screen.getByText('3 games · 20 rounds · final · archived, read-only')

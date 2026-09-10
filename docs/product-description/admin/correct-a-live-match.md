@@ -27,9 +27,11 @@ the scorers; see [`live-scoring/correct-a-round.md`](../live-scoring/correct-a-r
 ## The simple case
 
 A team reports that game 2 was recorded 21–18 when it was 21–15. The admin opens
-`/admin`, picks **Live Corrections**, and leaves the season filter on "All
-seasons". A column of cards lists every match that was scored live — team names,
-date, and a line reading "3 games · 41 rounds · final".
+`/admin` and picks **Live Corrections**. It opens on the season being played and
+on the most recent night with live-scored matches, so the column of cards is
+tonight's work: team names, the night, and a line reading "3 games · 41 rounds ·
+final". Two pickers above it — Season and Night — widen the view when the match
+is older.
 
 They press the match. The panel on the right lists each game with its running
 totals and its winner, and under each game every round with its score and two
@@ -59,8 +61,8 @@ disagree with their rounds** card on the admin dashboard names it.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> browsing : Live Corrections opens, all seasons
-    browsing --> browsing : change the season filter
+    [*] --> browsing : opens on the active season, most recent night
+    browsing --> browsing : change the season or night filter
     browsing --> selected : press a match
     selected --> editing_round : press the pencil on a round
     editing_round --> selected : Cancel or Escape (nothing written)
@@ -74,7 +76,7 @@ stateDiagram-v2
     selected --> confirming_resave : press Reopen & re-save result
     confirming_resave --> selected : Leave it alone
     confirming_resave --> selected : Reopen & re-save (commit — the result follows the games)
-    selected --> browsing : press Clear selection
+    selected --> browsing : press Clear selection / Back to list
 ```
 
 ### Arrive
@@ -87,13 +89,28 @@ completed game. Only matches scored live are listed here."
 tool, or through a player's score report, has no games and no rounds and never
 appears here. There is nothing this panel can do for it.
 
-A season picker defaults to **All seasons**. Archived seasons are listed in it
-and named as such — "Winter 1 (archived — read-only)" — and every card belonging
-to one ends its counts line with "archived, read-only", because "All seasons"
-mixes them in without anyone choosing them. While the list loads, "Loading
-live-scored matches…". If it fails, "Failed to load matches." in red. If the
-list is empty — including when a season filter emptied it — the panel says "No
-live-scored matches yet."
+**Two pickers, both defaulted to tonight's work.** The season picker defaults to
+the **active season**, falling back to "All seasons" when the league has no
+active season. The night picker defaults to the **most recent night on or before
+today** that has live-scored matches, falling back to the earliest future night.
+Its options are the nights present in the loaded list, so the default can never
+land on a night with nothing on it. "All seasons" and "All nights" are both still
+one tap away.
+
+Nights are read in league time. A match stored at 00:00 UTC is the evening
+before in league time, and that is the night it is filed under — so the picker
+and the cards say the same day wherever the browser is.
+
+Archived seasons are listed in the season picker and named as such — "Winter 1
+(archived — read-only)" — and every card belonging to one ends its counts line
+with "archived, read-only", because "All seasons" mixes them in without anyone
+choosing them.
+
+While the list loads, "Loading live-scored matches…". If it fails, "Failed to
+load matches." in red. If the season holds nothing, "No live-scored matches in
+this season." — or "No live-scored matches yet." under "All seasons". If a night
+is what emptied it, "No live-scored matches on that night. Choose another night,
+or “All nights”."
 
 The right-hand side starts as a dashed box reading "Select a match to view and
 correct its rounds."
@@ -103,8 +120,8 @@ Nothing is written by arriving.
 ### Leave without changing anything
 
 Nothing is recorded. The selected match is held in the page, so leaving the
-section clears the selection. Coming back starts at "All seasons" with nothing
-selected.
+section clears the selection. Coming back starts at the active season and the
+most recent night, with nothing selected.
 
 ### Begin editing
 
@@ -219,14 +236,14 @@ in a single press. See [`site-settings.md`](site-settings.md).
 | The user's role | Admin only, by the guard on `/admin`. Reopening a match likewise needs admin; **reopening a single game does not** — any scorer can do that from the live page. | Losing admin leaves the panel on screen; the writes then fail with the league's refusal as the message. |
 | The record's state | A finalised match shows the amber warning, offers **Reopen & re-save result**, and refreshes standings after each edit. An unfinalised one does none of the three. Only a completed game offers Change winner. | A match finalised elsewhere while the panel is open does not show the warning until the panel is re-read. |
 | The season's state | An **archived** season is read-only: a grey banner replaces the amber one, and the pencil, the bin, **Change winner** and **Reopen & re-save result** are all absent. The service refuses the write as well, naming the season. | Read from **the open match's own season**, not from the filter, so a match selected under one filter keeps the right answer after the filter changes. |
-| Viewport | The list sits beside the panel on a wide screen and stacks above it on a narrow one. The dialogs are full-width on a phone. | No effect. |
+| Viewport | The list sits beside the panel on a wide screen and stacks above it on a narrow one. Below 768 pixels, selecting a match scrolls to the panel and the clear button reads "Back to list" with a left arrow; at or above it there is no scroll and the button reads "Clear selection". The dialogs are full-width on a phone. | No effect. |
 | Keys the app honours | All three dialogs are proper dialogs: Escape closes, Tab is trapped, focus returns to the trigger. | Escape is the same as Cancel or "Keep round" and never writes. |
 
 ## Cancel and interrupt
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | Nothing to cancel. "Clear selection" empties the right-hand panel. | The edit-round dialog **asks first** when a field has been changed; the other two close straight away. Nothing is written either way, and neither can stop a save already sent. |
+| Escape, or a Cancel button | Nothing to cancel. "Clear selection" — "Back to list" on a phone — empties the right-hand panel. It appears at the top of the panel only while a match is selected. | The edit-round dialog **asks first** when a field has been changed; the other two close straight away. Nothing is written either way, and neither can stop a save already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the edit-round dialog holds changes, then loses them. A save already sent still lands; the admin never sees the toast. |
 | Browser back or forward | As above, and the app cannot prevent it. | As above. |
 | Reload, or the tab closed | The panel returns with no match selected. | An unsaved edit is gone. A sent write may have landed; the round list after reloading says which. |
@@ -285,8 +302,12 @@ specific. Nothing is sent to the teams whose match was corrected.
 selected season nor the selected match is in it, so the section can be handed to
 another admin as a link but a particular correction cannot.
 
-**On a phone.** The layout stacks. The edit dialog's eight numeric fields in a
-four-column grid are cramped.
+**On a phone.** The layout stacks: the list first, the panel under it. Pressing a
+match scrolls the panel into view, and a **← Back to list** button at the top of
+the panel clears the selection and scrolls back up. Neither happens on a wide
+screen, where the panel is already beside the list and the same button reads
+"Clear selection". The edit dialog's eight numeric fields in a four-column grid
+are cramped.
 
 **Accessibility.** Each round's buttons are labelled "Edit round *N*" and
 "Delete round *N*". The delete confirmation is a proper alert dialog. The
@@ -322,11 +343,15 @@ two disagree until someone re-saves — which the admin dashboard now lists and
   rounds produce, which may not be what the recorded result assumed.
 - **Only live-scored matches appear.** A match resulted in bulk has no rounds to
   correct, so the only correction available is re-scoring or deleting it.
-- **A selected match survives a season filter change**, so the panel can show a
-  match that the list beside it no longer contains. Whether it is read-only is
-  read from that match's own season, so the answer stays right.
-- **The empty state says "No live-scored matches yet"** even when a season
-  filter is what emptied it.
+- **Changing the season clears the night and the selection**, because both
+  belong to the season they were picked in. Changing the *night* keeps the
+  selection, so the panel can show a match the list beside it no longer contains.
+  Whether it is read-only is read from that match's own season, so the answer
+  stays right.
+- **A match with no date belongs to no night** and is only listed under "All
+  nights".
+- **The empty state names what emptied it** — the season, or the night — rather
+  than saying nothing was ever scored.
 - **Nothing records that a correction happened.** There is no audit trail on
   rounds, games, or results anywhere a user can see. The dashboard card shows the
   *state*, not the history: once a match is re-saved it drops off the list and
