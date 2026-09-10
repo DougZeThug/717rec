@@ -125,8 +125,11 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     const hadSelection = team1.score !== null || team2.score !== null;
     setTeam1(EMPTY);
     setTeam2(EMPTY);
-    // The round moved on, so the kept copy belongs to nobody now.
-    clearRoundDraft(gameId);
+    // A round that moved on because somebody *else* recorded it makes the kept
+    // copy stale, so it goes. One the scorer filed themselves does not: an
+    // offline save advances the round number the moment it is queued, and that
+    // copy is the only way back if the tab dies before the signal returns.
+    if (!ownSave) clearRoundDraft(gameId);
     if (hadSelection && !ownSave) onSelectionDiscarded?.();
   }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId]);
 

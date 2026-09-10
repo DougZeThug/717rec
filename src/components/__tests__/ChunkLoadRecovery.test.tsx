@@ -28,6 +28,7 @@ afterAll(() => {
 beforeEach(() => {
   reload = window.location.reload as ReturnType<typeof vi.fn>;
   reload.mockClear();
+  sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -77,5 +78,54 @@ describe('ChunkLoadRecovery', () => {
     await userEvent.click(screen.getByRole('button', { name: /try again/i }));
 
     expect(reload).toHaveBeenCalledTimes(1);
+  });
+  // A reload builds a new component with a fresh ref, so a file that is
+  // genuinely gone would otherwise reload, fail and reload forever.
+  describe('when the page still will not download', () => {
+    it('reloads once for a file that failed while the connection was fine', () => {
+      render(<ChunkLoadRecovery />);
+
+      expect(reload).toHaveBeenCalledTimes(1);
+      expect(sessionStorage.getItem('chunkReloadAt')).not.toBeNull();
+    });
+
+    it('does not reload again when it has just tried', () => {
+      sessionStorage.setItem('chunkReloadAt', String(Date.now()));
+
+      render(<ChunkLoadRecovery />);
+
+      expect(reload).not.toHaveBeenCalled();
+      expect(screen.getByText(/did not help/i)).toBeInTheDocument();
+    });
+
+    it('offers the button rather than looping', async () => {
+      sessionStorage.setItem('chunkReloadAt', String(Date.now()));
+      render(<ChunkLoadRecovery />);
+
+      await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+      expect(reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('tries again for a failure long after the last one', () => {
+      // A later incident in the same visit is not the same loop.
+      sessionStorage.setItem('chunkReloadAt', String(Date.now() - 60_000));
+
+      render(<ChunkLoadRecovery />);
+
+      expect(reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not reload at all when the browser refuses storage', () => {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('SecurityError');
+      });
+
+      render(<ChunkLoadRecovery />);
+
+      // Without a way to remember an attempt, one reload could become endless.
+      expect(reload).not.toHaveBeenCalled();
+      vi.restoreAllMocks();
+    });
   });
 });

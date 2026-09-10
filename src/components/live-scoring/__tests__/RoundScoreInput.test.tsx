@@ -331,6 +331,26 @@ describe('RoundScoreInput', () => {
       expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
     });
 
+    // The offline save advances the round number itself the moment it queues,
+    // which used to run the round-moved path and delete the copy it had just
+    // deliberately kept.
+    it('keeps the copy when the queued round advances the round number', async () => {
+      onSubmit.mockResolvedValue('queued');
+      const { rerender } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+      // The optimistic round lands, so the panel moves on to round 4.
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+      // And nobody is told their taps were taken away: they filed them.
+      expect(onSelectionDiscarded).not.toHaveBeenCalled();
+    });
+
     it('drops the copy when the round moves on under the scorer', async () => {
       onSubmit.mockRejectedValue(new Error('Failed to fetch'));
       const { rerender } = renderInput();

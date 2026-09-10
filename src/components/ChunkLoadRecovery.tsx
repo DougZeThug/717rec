@@ -1,8 +1,40 @@
 import { CloudOff, RefreshCw } from 'lucide-react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { warnLog } from '@/utils/logger';
+
+const RELOAD_MARKER = 'chunkReloadAt';
+
+/**
+ * How soon a second failure counts as a loop rather than a new problem.
+ *
+ * A reload that does not fix anything comes straight back, well inside this.
+ * A genuine second incident — the signal dropping again later in the same
+ * visit — is minutes away and gets its own automatic attempt.
+ */
+const LOOP_WINDOW_MS = 30_000;
+
+/** Whether this document is here because a reload we asked for did not work. */
+const reloadedRecently = (): boolean => {
+  try {
+    const at = Number(sessionStorage.getItem(RELOAD_MARKER));
+    return Number.isFinite(at) && at > 0 && Date.now() - at < LOOP_WINDOW_MS;
+  } catch (error) {
+    // A browser that refuses storage cannot loop-check; better to not reload.
+    warnLog('Could not read the page-reload marker:', error);
+    return true;
+  }
+};
+
+const markReloaded = (): void => {
+  try {
+    sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
+  } catch (error) {
+    warnLog('Could not record the page reload:', error);
+  }
+};
 
 /**
  * Shown when a page's code could not be downloaded, rather than the generic
@@ -24,17 +56,27 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
  * The reload is called straight out of this component rather than through a
  * prop, so nothing is handed back to a parent and no extra render is spent on
  * it. Tests stand in for it by stubbing `window.location`.
+ *
+ * **The reload is allowed once, and the record of it outlives the document.**
+ * A ref cannot hold that: a reload builds a new component with a fresh ref, so
+ * a file that is genuinely gone — a deploy that removed it, a CDN that keeps
+ * failing — would reload, fail, reload, forever. The marker lives in session
+ * storage instead, and after that one attempt the reader gets the panel and
+ * the button rather than another silent reload.
  */
 export const ChunkLoadRecovery: React.FC = () => {
   const isOnline = useOnlineStatus();
-  // A reload replaces the document, so a second one is only ever a loop.
+  // Read once: this must not change under the effect between renders.
+  const [alreadyTried] = useState(reloadedRecently);
   const hasReloaded = useRef(false);
+  const canRetryItself = !alreadyTried;
 
   useEffect(() => {
-    if (!isOnline || hasReloaded.current) return;
+    if (!isOnline || alreadyTried || hasReloaded.current) return;
     hasReloaded.current = true;
+    markReloaded();
     window.location.reload();
-  }, [isOnline]);
+  }, [isOnline, alreadyTried]);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
@@ -48,9 +90,11 @@ export const ChunkLoadRecovery: React.FC = () => {
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-foreground">This page did not download</h2>
           <p className="text-muted-foreground text-sm">
-            {isOnline
-              ? 'The connection is back. Loading the page again…'
-              : 'You are offline, so this page could not be fetched. It will open on its own as soon as the signal is back.'}
+            {!isOnline
+              ? 'You are offline, so this page could not be fetched. It will open on its own as soon as the signal is back.'
+              : canRetryItself
+                ? 'The connection is back. Loading the page again…'
+                : 'Loading the page again did not help. The site may have been updated a moment ago — try again, or come back shortly.'}
           </p>
         </div>
 
