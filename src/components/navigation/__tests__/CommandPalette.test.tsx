@@ -77,6 +77,18 @@ describe('CommandPalette', () => {
     expect(navigateMock).toHaveBeenCalledWith('/insights');
   });
 
+  it('names its trigger even when it is the icon alone', () => {
+    // Below xl the button has no visible text. Unnamed, it is the header's
+    // axe `button-name` violation from X-01.
+    render(
+      <MemoryRouter>
+        <CommandPalette />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
+  });
+
   it('opens on Cmd+K', async () => {
     const user = userEvent.setup();
     render(

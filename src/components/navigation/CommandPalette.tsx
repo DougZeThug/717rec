@@ -89,7 +89,12 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, o
           'text-muted-foreground'
         )}
       >
-        <Search className="size-4 xl:mr-2" />
+        <Search className="size-4 xl:mr-2" aria-hidden="true" />
+        {/* Below xl the button is the icon alone, which left it with no
+            accessible name — the unnamed header button axe reports under X-01.
+            From xl the visible "Search..." names it, so this hides to avoid
+            doubling it up. */}
+        <span className="sr-only xl:hidden">Search</span>
         <span className="hidden xl:inline-flex">Search...</span>
         <kbd className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 xl:flex">
           <span className="text-xs">⌘</span>K
