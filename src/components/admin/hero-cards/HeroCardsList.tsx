@@ -14,16 +14,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ResponsiveTable, type ResponsiveTableColumn } from '@/components/ui/responsive-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   HERO_CARD_COLOR_PRESETS,
@@ -109,6 +102,155 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
     }
   };
 
+  // Rebuilt each render: the cells close over handlers that are themselves new
+  // each render, so memoising would need every one of them wrapped first and
+  // would save nothing — `ResponsiveTable` is not memoised.
+  const columns: ResponsiveTableColumn<HeroCard>[] = [
+    {
+      id: 'order',
+      header: 'Order',
+      className: 'w-16',
+      cell: (card) => (
+        <div className="flex items-center gap-1">
+          <GripVertical className="size-4 text-muted-foreground/50" />
+          <span className="font-mono text-sm">{card.sort_order}</span>
+        </div>
+      ),
+    },
+    {
+      id: 'theme',
+      header: 'Theme',
+      className: 'w-14',
+      cell: (card) => (
+        <Tooltip>
+          <TooltipTrigger>
+            <div
+              className="size-8 rounded-md border shadow-sm"
+              style={{ background: getColorPreview(card.background_color) }}
+            />
+          </TooltipTrigger>
+          <TooltipContent>{getColorPresetName(card.background_color)}</TooltipContent>
+        </Tooltip>
+      ),
+    },
+    {
+      id: 'name',
+      header: 'Card Name',
+      card: 'title',
+      cell: (card) => (
+        <Tooltip>
+          <TooltipTrigger className="text-left">
+            <div>
+              <div className="font-medium">{card.title}</div>
+              <div className="text-xs text-muted-foreground">{card.slug}</div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Internal ID: {card.slug}</p>
+          </TooltipContent>
+        </Tooltip>
+      ),
+    },
+    {
+      id: 'type',
+      header: 'Type',
+      cell: (card) => (
+        <Badge variant="outline" className={cardTypeBadgeColors[card.card_type] || ''}>
+          {getCardTypeName(card.card_type)}
+        </Badge>
+      ),
+    },
+    {
+      id: 'target',
+      header: 'Target',
+      cell: (card) =>
+        getTargetTypeName(card.target_type) ? (
+          <span className="text-sm text-muted-foreground">
+            {getTargetTypeName(card.target_type)}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground/60">—</span>
+        ),
+    },
+    {
+      id: 'visible',
+      header: 'On Homepage?',
+      className: 'w-36',
+      cell: (card) => (
+        <div className="flex items-center gap-2">
+          <Switch
+            checked={card.is_visible}
+            onCheckedChange={() => handleToggleVisibility(card)}
+            aria-label={`Show ${card.title} on the homepage`}
+          />
+          <span className="text-xs text-muted-foreground">
+            {card.is_visible ? 'Visible' : 'Hidden'}
+          </span>
+        </div>
+      ),
+    },
+    {
+      id: 'actions',
+      header: 'Actions',
+      card: 'actions',
+      align: 'right',
+      cell: (card) => (
+        <div className="flex justify-end gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <m.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(card)}
+                  aria-label="Edit card"
+                >
+                  <Edit className="size-4" />
+                </Button>
+              </m.div>
+            </TooltipTrigger>
+            <TooltipContent>Edit card</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <m.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDuplicate(card)}
+                  disabled={isCreating}
+                  aria-label="Duplicate card"
+                >
+                  <Copy className="size-4" />
+                </Button>
+              </m.div>
+            </TooltipTrigger>
+            <TooltipContent>Duplicate card</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <m.div whileTap={{ scale: 0.9 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDeletingCardId(card.id)}
+                  disabled={isDeleting}
+                  className="text-destructive hover:text-destructive"
+                  aria-label="Delete card"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </m.div>
+            </TooltipTrigger>
+            <TooltipContent>Delete card</TooltipContent>
+          </Tooltip>
+        </div>
+      ),
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -130,139 +272,12 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
 
   return (
     <TooltipProvider>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">Order</TableHead>
-              <TableHead className="w-14">Theme</TableHead>
-              <TableHead>Card Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Target</TableHead>
-              <TableHead className="w-36">On Homepage?</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {cards.map((card) => (
-              <TableRow
-                key={card.id}
-                className="transition-colors duration-150 hover:bg-muted/50 active:bg-muted"
-              >
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    <GripVertical className="size-4 text-muted-foreground/50" />
-                    <span className="font-mono text-sm">{card.sort_order}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <div
-                        className="size-8 rounded-md border shadow-sm"
-                        style={{ background: getColorPreview(card.background_color) }}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent>{getColorPresetName(card.background_color)}</TooltipContent>
-                  </Tooltip>
-                </TableCell>
-                <TableCell>
-                  <Tooltip>
-                    <TooltipTrigger className="text-left">
-                      <div>
-                        <div className="font-medium">{card.title}</div>
-                        <div className="text-xs text-muted-foreground">{card.slug}</div>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Internal ID: {card.slug}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={cardTypeBadgeColors[card.card_type] || ''}>
-                    {getCardTypeName(card.card_type)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {getTargetTypeName(card.target_type) ? (
-                    <span className="text-sm text-muted-foreground">
-                      {getTargetTypeName(card.target_type)}
-                    </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground/60">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={card.is_visible}
-                      onCheckedChange={() => handleToggleVisibility(card)}
-                    />
-                    <span className="text-xs text-muted-foreground">
-                      {card.is_visible ? 'Visible' : 'Hidden'}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-1">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <m.div whileTap={{ scale: 0.9 }}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => onEdit(card)}
-                            aria-label="Edit card"
-                          >
-                            <Edit className="size-4" />
-                          </Button>
-                        </m.div>
-                      </TooltipTrigger>
-                      <TooltipContent>Edit card</TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <m.div whileTap={{ scale: 0.9 }}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDuplicate(card)}
-                            disabled={isCreating}
-                            aria-label="Duplicate card"
-                          >
-                            <Copy className="size-4" />
-                          </Button>
-                        </m.div>
-                      </TooltipTrigger>
-                      <TooltipContent>Duplicate card</TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <m.div whileTap={{ scale: 0.9 }}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeletingCardId(card.id)}
-                            disabled={isDeleting}
-                            className="text-destructive hover:text-destructive"
-                            aria-label="Delete card"
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </m.div>
-                      </TooltipTrigger>
-                      <TooltipContent>Delete card</TooltipContent>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <ResponsiveTable
+        caption="Hero cards on the home page"
+        columns={columns}
+        rows={cards}
+        rowKey={(card) => card.id}
+      />
 
       <AlertDialog
         open={!!deletingCardId}

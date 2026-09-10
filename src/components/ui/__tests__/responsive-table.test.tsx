@@ -28,17 +28,19 @@ interface Team {
   name: string;
   power: number;
   division: string;
+  form: string;
 }
 
 const columns: ResponsiveTableColumn<Team>[] = [
   { id: 'name', header: 'Team', card: 'title', cell: (t) => t.name },
   { id: 'power', header: 'Power', cell: (t) => t.power },
   { id: 'division', header: 'Division', card: 'hidden', cell: (t) => t.division },
+  { id: 'form', header: 'Recent form', card: 'block', cell: (t) => t.form },
 ];
 
 const rows: Team[] = [
-  { id: 'a', name: 'Ringers', power: 84.8, division: 'Competitive' },
-  { id: 'b', name: 'Cornstars', power: 71.2, division: 'Intermediate' },
+  { id: 'a', name: 'Ringers', power: 84.8, division: 'Competitive', form: 'W W L W' },
+  { id: 'b', name: 'Cornstars', power: 71.2, division: 'Intermediate', form: 'L W L L' },
 ];
 
 const renderTable = (mode: 'table' | 'cards', override?: Partial<{ rows: Team[] }>) =>
@@ -58,7 +60,7 @@ describe('ResponsiveTable in table mode', () => {
     renderTable('table');
 
     const headers = screen.getAllByRole('columnheader');
-    expect(headers.map((h) => h.textContent)).toEqual(['Team', 'Power', 'Division']);
+    expect(headers.map((h) => h.textContent)).toEqual(['Team', 'Power', 'Division', 'Recent form']);
     for (const header of headers) {
       expect(header).toHaveAttribute('scope', 'col');
     }
@@ -106,6 +108,20 @@ describe('ResponsiveTable in card mode', () => {
     expect(within(firstCard).queryByText('Team')).not.toBeInTheDocument();
     expect(within(firstCard).queryByText('Division')).not.toBeInTheDocument();
     expect(within(firstCard).queryByText('Competitive')).not.toBeInTheDocument();
+  });
+
+  it('gives a block column its own line, so wide content is not squeezed beside a label', () => {
+    renderTable('cards');
+
+    const firstCard = within(screen.getByRole('list')).getAllByRole('listitem')[0];
+    const blockLine = within(firstCard).getByText('Recent form').parentElement;
+    const metaLine = within(firstCard).getByText('Power').parentElement;
+
+    // A meta column sits its value beside the label in a flex row. A block
+    // column stacks them, which is the whole difference between the two.
+    expect(metaLine).toHaveClass('flex');
+    expect(blockLine).not.toHaveClass('flex');
+    expect(blockLine).toContainElement(within(firstCard).getByText('W W L W'));
   });
 
   it('has no accessibility violations', async () => {

@@ -59,12 +59,13 @@ const teamColumns: ResponsiveTableColumn<TeamRow>[] = [
 
 ### `card` — where a column goes on a phone
 
-| Value       | Effect                                                             |
-| ----------- | ------------------------------------------------------------------ |
-| `'title'`   | First line of the card, no label. Use for the team or person name. |
-| `'meta'`    | A "Heading: value" line in the card body. **The default.**         |
-| `'actions'` | Pinned to the bottom of the card, no label.                        |
-| `'hidden'`  | Not shown on a phone at all.                                       |
+| Value       | Effect                                                                                                                                    |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `'title'`   | First line of the card, no label. Use for the team or person name.                                                                        |
+| `'meta'`    | A "Heading: value" line in the card body. **The default.**                                                                                |
+| `'block'`   | The heading on its own line, then the value at full width below. For content too wide to sit beside a label — a badge list, a `<Select>`. |
+| `'actions'` | Pinned to the bottom of the card, no label.                                                                                               |
+| `'hidden'`  | Not shown on a phone at all.                                                                                                              |
 
 ### `caption` is required, and is not decoration
 
@@ -105,6 +106,7 @@ Do not bend the API to fit these. If you find a sixth pattern, add it here.
 | `admin/divisions/DivisionsTab.tsx`                                | Its rows share inline-edit state across their cells (one Edit button turns three cells into inputs). A `cell: (row) => ReactNode` function cannot hold that state. Keeps the two-tree pattern with `DivisionRow layout="row" \| "card"`. |
 | `admin/power-migration/ComparisonTable.tsx`                       | Two header rows, plus an expandable nested detail table.                                                                                                                                                                                 |
 | `stats/CompactStandings.tsx`                                      | Its phone view is a `VirtualizedList` of cards, which cannot live inside a `<table>`.                                                                                                                                                    |
+| `timeslots/TimeslotList.tsx`                                      | Three short columns (Time, Team, Actions). It already reads fine on a phone, so a card per row would be more chrome for less information.                                                                                                |
 | `stats/RankingsTable.tsx`, `stats/career/CareerRankingsTable.tsx` | Their phone views are **richer** than their tables, not duplicates of them — a leaderboard carousel, team badges, a Compact/Detailed toggle and a reduced sort set. A generic card mode would delete all of it.                          |
 
 ## Related

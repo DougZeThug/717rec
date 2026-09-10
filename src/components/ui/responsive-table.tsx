@@ -18,10 +18,12 @@ import { cn } from '@/lib/utils';
  *
  * - `title`   the first line of the card, with no label — the team or person name
  * - `meta`    a "Heading: value" line in the card body (the default)
+ * - `block`   the heading on its own line, then the value at full width below —
+ *             for content too wide to sit beside a label, such as a badge list
  * - `actions` pinned to the bottom of the card, with no label
  * - `hidden`  not shown on a phone at all
  */
-type ResponsiveTableCardSlot = 'title' | 'meta' | 'actions' | 'hidden';
+type ResponsiveTableCardSlot = 'title' | 'meta' | 'block' | 'actions' | 'hidden';
 
 export interface ResponsiveTableColumn<T> {
   /** Stable id for this column. */
@@ -52,6 +54,12 @@ export interface ResponsiveTableProps<T> {
   caption: string;
   /** Shown instead of the table when there are no rows. */
   empty?: React.ReactNode;
+  /**
+   * Classes for whichever element is rendered — the `<table>` or the card list.
+   * Because it applies to both, a fixed width (`min-w-[700px]`) does not belong
+   * here: it would force a phone to scroll sideways, which is what card mode
+   * exists to prevent. Put per-column widths on `column.className` instead.
+   */
   className?: string;
   /**
    * Forces a rendering instead of measuring the viewport. `'auto'` is what the
@@ -110,7 +118,10 @@ export function ResponsiveTable<T>({
 
   if (asCards) {
     const titleColumn = columns.find((column) => column.card === 'title');
-    const metaColumns = columns.filter((column) => (column.card ?? 'meta') === 'meta');
+    const bodyColumns = columns.filter((column) => {
+      const slot = column.card ?? 'meta';
+      return slot === 'meta' || slot === 'block';
+    });
     const actionColumns = columns.filter((column) => column.card === 'actions');
 
     return (
@@ -119,12 +130,22 @@ export function ResponsiveTable<T>({
           <li key={rowKey(row)}>
             <Card className="p-4 space-y-2">
               {titleColumn && <div className="font-medium">{titleColumn.cell(row)}</div>}
-              {metaColumns.map((column) => (
-                <div key={column.id} className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="text-muted-foreground shrink-0">{column.header}</span>
-                  <span className="text-right">{column.cell(row)}</span>
-                </div>
-              ))}
+              {bodyColumns.map((column) =>
+                column.card === 'block' ? (
+                  <div key={column.id} className="space-y-1 text-sm">
+                    <span className="text-muted-foreground">{column.header}</span>
+                    <div>{column.cell(row)}</div>
+                  </div>
+                ) : (
+                  <div
+                    key={column.id}
+                    className="flex items-baseline justify-between gap-3 text-sm"
+                  >
+                    <span className="text-muted-foreground shrink-0">{column.header}</span>
+                    <span className="text-right">{column.cell(row)}</span>
+                  </div>
+                )
+              )}
               {actionColumns.map((column) => (
                 <div key={column.id}>{column.cell(row)}</div>
               ))}

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { ResponsiveTable, type ResponsiveTableColumn } from '@/components/ui/responsive-table';
 import {
   Select,
   SelectContent,
@@ -12,16 +13,79 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { useSeasonOpponentHistory } from '@/hooks/useSeasonOpponentHistory';
 import { cn } from '@/lib/utils';
+import type { SeasonOpponentData } from '@/services/matches/MatchHistoryService';
+
+type TeamOpponentRow = SeasonOpponentData['teams'][number];
+
+const OpponentBadges: React.FC<{ team: TeamOpponentRow }> = ({ team }) => {
+  if (team.opponents.length === 0) {
+    return <span className="text-muted-foreground text-sm">No opponents yet</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {team.opponents.map((opp) => (
+        <Badge
+          key={opp.opponentId}
+          variant="secondary"
+          className={cn(
+            'text-xs cursor-default',
+            opp.wins > opp.losses &&
+              'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+            opp.wins < opp.losses && 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+          )}
+          title={`${opp.wins}-${opp.losses} vs ${opp.opponentName}`}
+        >
+          {opp.opponentName}
+          {opp.matchCount > 1 && <span className="ml-1 opacity-70">×{opp.matchCount}</span>}
+        </Badge>
+      ))}
+    </div>
+  );
+};
+
+const opponentHistoryColumns: ResponsiveTableColumn<TeamOpponentRow>[] = [
+  {
+    id: 'team',
+    header: 'Team',
+    card: 'title',
+    className: 'w-[200px] font-medium',
+    cell: (team) => team.teamName,
+  },
+  {
+    id: 'division',
+    header: 'Division',
+    className: 'w-[140px]',
+    cell: (team) => (
+      <Badge variant="outline" className="text-xs">
+        {team.divisionName || '—'}
+      </Badge>
+    ),
+  },
+  {
+    // The badge list is far too wide to sit beside a label on a phone.
+    id: 'opponents',
+    header: 'Opponents Played',
+    card: 'block',
+    cell: (team) => <OpponentBadges team={team} />,
+  },
+  {
+    id: 'uniqueOpponents',
+    header: '# Opp',
+    align: 'center',
+    className: 'w-[80px] font-mono',
+    cell: (team) => team.uniqueOpponentCount,
+  },
+  {
+    id: 'totalMatches',
+    header: '# Matches',
+    align: 'center',
+    className: 'w-[80px] font-mono',
+    cell: (team) => team.totalMatches,
+  },
+];
 
 const OpponentHistoryTab: React.FC = () => {
   const { data, isLoading, error } = useSeasonOpponentHistory();
@@ -155,69 +219,15 @@ const OpponentHistoryTab: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="border rounded-lg overflow-x-auto">
-          <Table className="min-w-[700px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[200px]">Team</TableHead>
-                <TableHead className="w-[140px]">Division</TableHead>
-                <TableHead>Opponents Played</TableHead>
-                <TableHead className="w-[80px] text-center"># Opp</TableHead>
-                <TableHead className="w-[80px] text-center"># Matches</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTeams.map((team) => (
-                <TableRow key={team.teamId}>
-                  <TableCell className="font-medium">{team.teamName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="text-xs">
-                      {team.divisionName || '—'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {team.opponents.length === 0 ? (
-                        <span className="text-muted-foreground text-sm">No opponents yet</span>
-                      ) : (
-                        team.opponents.map((opp) => (
-                          <Badge
-                            key={opp.opponentId}
-                            variant="secondary"
-                            className={cn(
-                              'text-xs cursor-default',
-                              opp.wins > opp.losses &&
-                                'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-                              opp.wins < opp.losses &&
-                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                            )}
-                            title={`${opp.wins}-${opp.losses} vs ${opp.opponentName}`}
-                          >
-                            {opp.opponentName}
-                            {opp.matchCount > 1 && (
-                              <span className="ml-1 opacity-70">×{opp.matchCount}</span>
-                            )}
-                          </Badge>
-                        ))
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center font-mono">
-                    {team.uniqueOpponentCount}
-                  </TableCell>
-                  <TableCell className="text-center font-mono">{team.totalMatches}</TableCell>
-                </TableRow>
-              ))}
-              {filteredTeams.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No teams match your filters
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <ResponsiveTable
+          caption="Teams and the opponents they have played"
+          columns={opponentHistoryColumns}
+          rows={filteredTeams}
+          rowKey={(team) => team.teamId}
+          empty={
+            <p className="text-center py-8 text-muted-foreground">No teams match your filters</p>
+          }
+        />
       </CardContent>
     </Card>
   );

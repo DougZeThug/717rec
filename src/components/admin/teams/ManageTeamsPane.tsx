@@ -13,8 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Team } from '@/types';
 
-import TeamListMobile, { TeamItemActionApi } from './TeamListMobile';
-import TeamTableDesktop from './TeamTableDesktop';
+import TeamsTable, { type TeamItemActionApi } from './TeamsTable';
 
 // display_division is what the public site groups by; useDivisions already
 // returns it, the narrower prop type just never named it.
@@ -123,8 +122,7 @@ const ManageTeamsPane = ({
           divisions={divisions}
         />
 
-        <TeamListMobile teams={filteredTeams} divisions={divisions} actions={guardedActions} />
-        <TeamTableDesktop teams={filteredTeams} divisions={divisions} actions={guardedActions} />
+        <TeamsTable teams={filteredTeams} divisions={divisions} actions={guardedActions} />
 
         {filteredTeams.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
