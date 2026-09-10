@@ -37,20 +37,23 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
       sortTimeslotKeys(a, b)
     );
     const allTimeslots = orderedEntries.flatMap(([, teams]) => teams);
-    const doubleHeaderTeams = new Map<string, { slot1: string; slot2: string }>();
+    // Start times of every booking a team has that night (two for a double
+    // header, three for the rare triple header). Only the first slot of each
+    // back-to-back pair is a real start time.
+    const doubleHeaderTeams = new Map<string, string[]>();
     const seenDoubleHeaderTeams = new Set<string>();
 
     allTimeslots.forEach((ts) => {
       if (!ts.is_double_header || doubleHeaderTeams.has(ts.team_id)) return;
-      const teamSlots = allTimeslots
-        .filter((t) => t.team_id === ts.team_id && t.is_double_header)
-        .sort((a, b) => (a.match_sequence || 0) - (b.match_sequence || 0));
+      const teamSlots = allTimeslots.filter((t) => t.team_id === ts.team_id && t.is_double_header);
+      const startTimes = [
+        ...new Set(
+          teamSlots.filter((t) => (t.match_sequence ?? 1) === 1).map((t) => t.timeslot)
+        ),
+      ].sort(sortTimeslotKeys);
 
-      if (teamSlots.length === 2) {
-        doubleHeaderTeams.set(ts.team_id, {
-          slot1: teamSlots[0].timeslot,
-          slot2: teamSlots[1].timeslot,
-        });
+      if (startTimes.length >= 2) {
+        doubleHeaderTeams.set(ts.team_id, startTimes);
       }
     });
 
