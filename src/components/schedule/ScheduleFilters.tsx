@@ -18,6 +18,8 @@ interface ScheduleFiltersProps {
 
 interface FilterChipProps {
   label: string;
+  /** Full name, when the visible label is shortened. */
+  accessibleLabel?: string;
   pressed: boolean;
   onClick: () => void;
   /** Classes for the pressed state, so a division wears its own colour. */
