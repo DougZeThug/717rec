@@ -9,12 +9,20 @@ import { PlayoffBracket } from '@/types';
 import { getDivisionSoftClasses } from '@/utils/colors/divisionColors';
 import { bracketLog } from '@/utils/logger';
 
+import { NO_BRACKETS_COPY } from './emptyBracketCopy';
+
 interface DivisionBracketsCardProps {
   division: string;
   brackets: Array<Partial<PlayoffBracket>>;
   onViewBracket?: (bracketId: string) => void;
   onCreateBracket?: () => void;
   onDeleteBracket?: (id: string, name: string) => void;
+  /**
+   * What to show in place of the "no brackets yet" line when this division has
+   * none. `BracketList` passes the projected seeds. Left out, the card keeps the
+   * plain sentence, which is what the card's own tests render.
+   */
+  emptyStateSlot?: React.ReactNode;
 }
 
 const getDivisionBorderColor = (division: string): string =>
@@ -110,6 +118,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   onCreateBracket,
   onViewBracket,
   onDeleteBracket,
+  emptyStateSlot,
 }) => {
   return (
     <div
@@ -171,7 +180,9 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
             >
               <Trophy className={cn('size-5', getDivisionTextColor(division))} />
             </div>
-            <p className="text-sm text-muted-foreground mb-3">No brackets yet for this division</p>
+            {emptyStateSlot ?? (
+              <p className="text-sm text-muted-foreground mb-3">{NO_BRACKETS_COPY}</p>
+            )}
             {onCreateBracket && (
               <Button
                 size="sm"

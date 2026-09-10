@@ -75,6 +75,10 @@ const AdminView: React.FC<AdminViewProps> = ({
             onViewBracket={data.setSelectedBracketId}
             onDeleteBracket={onDeleteBracket}
             isLoading={data.isLoading}
+            // Same test the wrapper's `hidden` class uses: while a bracket is
+            // open the list is still mounted, and no season means the projected
+            // seeds behind it stay unfetched.
+            seasonId={!data.selectedBracketId || !data.bracket ? data.selectedSeasonId : null}
           />
         </div>
 

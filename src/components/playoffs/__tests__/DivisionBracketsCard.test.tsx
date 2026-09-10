@@ -73,4 +73,34 @@ describe('DivisionBracketsCard', () => {
     expect(screen.getByText('No brackets yet for this division')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /create bracket/i })).toBeInTheDocument();
   });
+
+  it('lets the caller replace the empty line, keeping Create Bracket below it', () => {
+    render(
+      <DivisionBracketsCard
+        division="Intermediate"
+        brackets={[]}
+        onViewBracket={vi.fn()}
+        onCreateBracket={vi.fn()}
+        emptyStateSlot={<p>Projected seeds go here</p>}
+      />
+    );
+
+    expect(screen.getByText('Projected seeds go here')).toBeInTheDocument();
+    expect(screen.queryByText('No brackets yet for this division')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create bracket/i })).toBeInTheDocument();
+  });
+
+  it('ignores the slot when the division already has a bracket', () => {
+    render(
+      <DivisionBracketsCard
+        division="Intermediate"
+        brackets={[bracket('live', 'in_progress')]}
+        onViewBracket={vi.fn()}
+        emptyStateSlot={<p>Projected seeds go here</p>}
+      />
+    );
+
+    expect(screen.queryByText('Projected seeds go here')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View Live Bracket' })).toBeInTheDocument();
+  });
 });
