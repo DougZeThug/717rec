@@ -10,6 +10,7 @@ vi.mock('../TimeslotQueryService', () => ({
     fetchWeekTimeslotsByTeam: vi.fn().mockResolvedValue([]),
     fetchTimeslotsForPair: vi.fn().mockResolvedValue([]),
     fetchTimeslotValidation: vi.fn().mockResolvedValue(null),
+    fetchTimeslotDates: vi.fn().mockResolvedValue([]),
   },
 }));
 
