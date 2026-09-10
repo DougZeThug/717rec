@@ -26,6 +26,7 @@ const mutationFns = {
   assignByeWeek: vi.fn(),
   batchAssignByeWeeks: vi.fn(),
   removeByeWeek: vi.fn(),
+  moveTeamBooking: vi.fn(),
 };
 vi.mock('../useTimeslotMutation', () => ({
   useTimeslotMutation: () => mutationFns,
@@ -103,6 +104,7 @@ describe('useTimeslots', () => {
     expect(result.current.assignByeWeek).toBe(mutationFns.assignByeWeek);
     expect(result.current.batchAssignByeWeeks).toBe(mutationFns.batchAssignByeWeeks);
     expect(result.current.removeByeWeek).toBe(mutationFns.removeByeWeek);
+    expect(result.current.moveTeamBooking).toBe(mutationFns.moveTeamBooking);
   });
 
   it('invalidates the date-scoped timeslot cache via refreshTimeslots', async () => {

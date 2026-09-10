@@ -7,7 +7,18 @@ import { ByeWeekService } from '@/services/timeslots/ByeWeekService';
 import { TimeslotService } from '@/services/timeslots/TimeslotService';
 import { TimeslotValidator } from '@/services/timeslots/TimeslotValidator';
 import { TeamTimeslot } from '@/types/timeslots';
+import { getBackToBackPairName } from '@/utils/autoSchedule/constants';
 import { getUIErrorMessage } from '@/utils/errorHandler';
+
+/**
+ * How a move ended.
+ *
+ * A move is two writes and there is no transaction, so "it worked" is not the
+ * only good answer. `booked-not-cleared` is the one that needs saying out loud:
+ * the team now holds the new block *and* the old one, which is visible in the
+ * night's list and repaired by removing a row.
+ */
+export type TimeslotMoveOutcome = 'moved' | 'booked-not-cleared' | 'refused';
 
 export const useTimeslotMutation = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -237,6 +248,98 @@ export const useTimeslotMutation = () => {
     }
   };
 
+  /**
+   * Move one team's booking on one night: book the new block, then clear the
+   * rows the caller read before that.
+   *
+   * **Book first, clear second, and clear by id.** `team_timeslots` has no
+   * update path, so every move is two writes. Clearing first would leave the
+   * team with nothing at all if the booking then failed — a hole nobody sees
+   * until league night. Booking first means the worst case is the team booked
+   * twice, which sits in the night's list where an admin reads it. Clearing by
+   * id rather than by rule is what makes that order possible: the rule-based
+   * delete in `TimeslotService.deleteTimeslot` would take the new rows too.
+   */
+  const moveTeamBooking = async (
+    date: Date,
+    teamId: string,
+    /** The block's first time, or 'BYE'. */
+    slot: string,
+    /** Rows to clear afterwards, read before the booking is written. */
+    removeIds: string[]
+  ): Promise<TimeslotMoveOutcome> => {
+    const isBye = slot === 'BYE';
+
+    // Byes skip the past-date check everywhere else in this file, so they skip
+    // it here too rather than disagreeing with the screen they came from.
+    if (!isBye) {
+      const validation = TimeslotValidator.validateTimeslotAssignment(date, teamId, slot);
+      if (!validation.valid) {
+        toast({
+          title: 'Validation Error',
+          description: validation.error,
+          variant: 'destructive',
+        });
+        return 'refused';
+      }
+    }
+
+    const pairName = isBye ? null : getBackToBackPairName(slot);
+    if (!isBye && !pairName) {
+      toast({
+        title: 'Validation Error',
+        description: `${slot} does not start a block, so it cannot be booked.`,
+        variant: 'destructive',
+      });
+      return 'refused';
+    }
+
+    const formattedDate = format(date, 'yyyy-MM-dd');
+    const refresh = () => {
+      queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
+      queryClient.invalidateQueries({ queryKey: ['match-timeslots', formattedDate] });
+    };
+
+    setIsSubmitting(true);
+    try {
+      if (isBye) {
+        await ByeWeekService.assignByeWeek(date, teamId);
+      } else {
+        await TimeslotService.batchAssignBackToBackTimeslots(date, [teamId], pairName as string);
+      }
+      refresh();
+
+      try {
+        await TimeslotService.deleteTimeslotsByIds(removeIds);
+      } catch (clearErr) {
+        // The booking stands. Say what is on the screen and what fixes it,
+        // rather than reporting the whole move as a failure.
+        toast({
+          title: 'Booked, but the old time is still there',
+          description: getUIErrorMessage(
+            clearErr,
+            'The new booking was made and the old one could not be removed. Remove it in the list of current timeslots'
+          ),
+          variant: 'destructive',
+        });
+        refresh();
+        return 'booked-not-cleared';
+      }
+
+      refresh();
+      return 'moved';
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: getUIErrorMessage(err, 'Failed to move the booking'),
+        variant: 'destructive',
+      });
+      throw err;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
     isSubmitting,
     addTimeslot,
@@ -246,5 +349,6 @@ export const useTimeslotMutation = () => {
     assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
+    moveTeamBooking,
   };
 };

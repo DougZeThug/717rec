@@ -1,57 +1,40 @@
 import { AnimatePresence, m } from 'framer-motion';
-import {
-  AlertTriangle,
-  Calendar,
-  Check,
-  ChevronDown,
-  Clock,
-  History,
-  Loader2,
-  Send,
-} from 'lucide-react';
+import { History, Loader2, Send } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Textarea } from '@/components/ui/textarea';
 import { useTeamsArray } from '@/hooks/teams';
 import { useSubmitRequest, useTeamRequests } from '@/hooks/useTeamRequests';
 import { cn } from '@/lib/utils';
 import { HeroCard as HeroCardType } from '@/types/heroCard';
-import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestType } from '@/types/teamRequest';
-import { formatWithPattern } from '@/utils/formatDateSafe';
+import { TeamRequestType } from '@/types/teamRequest';
 
 import HeroCardBase from './HeroCardBase';
+import {
+  buildRequestPayload,
+  DATE_FIELD_LABEL,
+  isRequestIncomplete,
+  REASON_FIELD_LABEL,
+  selectRequestPanels,
+} from './requestForm';
+import RequestHistoryList from './RequestHistoryList';
+import RequestTeamPicker from './RequestTeamPicker';
+import RequestTimeslotFields from './RequestTimeslotFields';
+import RequestTypePicker from './RequestTypePicker';
 
 interface RequestHeroCardProps {
   card: HeroCardType;
 }
 
-const REQUEST_OPTIONS: { type: TeamRequestType; icon: React.ElementType; description: string }[] = [
-  { type: 'TIME_CHANGE', icon: Clock, description: 'Request a different time slot' },
-  { type: 'BYE_REQUEST', icon: Calendar, description: 'Request a bye week' },
-  { type: 'EMERGENCY_CANCEL', icon: AlertTriangle, description: 'Emergency cancellation' },
-];
-
 const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
   const { teams, isLoading: teamsLoading } = useTeamsArray({ includeHidden: false });
   const submitMutation = useSubmitRequest();
-  const teamListboxId = React.useId();
 
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedType, setSelectedType] = useState<TeamRequestType | null>(null);
-  const [teamSearchOpen, setTeamSearchOpen] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
   // Form fields
@@ -64,7 +47,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
     selectedTeamId || undefined
   );
 
-  const selectedTeam = teams?.find((t) => t.id === selectedTeamId);
+  const selectedTeam = teams?.find((team) => team.id === selectedTeamId);
 
   const resetForm = () => {
     setSelectedType(null);
@@ -74,19 +57,27 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
     setReason('');
   };
 
+  const values = {
+    teamId: selectedTeamId,
+    type: selectedType,
+    matchDate,
+    currentTimeslot,
+    requestedTimeslot,
+    reason,
+  };
+
+  const panels = selectRequestPanels({
+    hasTeam: Boolean(selectedTeamId),
+    type: selectedType,
+    isHistoryOpen: showHistory,
+    pastRequestCount: teamRequests?.length ?? 0,
+  });
+
   const handleSubmit = async () => {
-    if (!selectedTeamId || !selectedType) return;
+    const payload = buildRequestPayload(values, selectedTeam?.name);
+    if (!payload) return;
 
-    await submitMutation.mutateAsync({
-      team_id: selectedTeamId,
-      request_type: selectedType,
-      match_date: matchDate || undefined,
-      current_timeslot: currentTimeslot || undefined,
-      requested_timeslot: requestedTimeslot || undefined,
-      reason: reason || undefined,
-      submitted_by_name: selectedTeam?.name,
-    });
-
+    await submitMutation.mutateAsync(payload);
     resetForm();
   };
 
@@ -104,7 +95,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
             {card.title || 'Submit a Request'}
           </h3>
         </div>
-        {selectedTeamId && teamRequests && teamRequests.length > 0 && (
+        {panels.showHistoryButton && (
           <Button
             variant="ghost"
             size="sm"
@@ -120,98 +111,29 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
       {card.subtitle && <p className="text-sm opacity-80 mb-4">{card.subtitle}</p>}
 
       <div className="space-y-4">
-        {/* Team selector */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium opacity-90">Select your team</Label>
-          <Popover open={teamSearchOpen} onOpenChange={setTeamSearchOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={teamSearchOpen}
-                aria-controls={teamListboxId}
-                className={cn(
-                  'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
-                  'text-inherit hover:text-inherit'
-                )}
-                disabled={teamsLoading}
-              >
-                {teamsLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : selectedTeam ? (
-                  selectedTeam.name
-                ) : (
-                  'Choose a team...'
-                )}
-                <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent id={teamListboxId} className="w-[300px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search teams..." />
-                <CommandList>
-                  <CommandEmpty>No team found.</CommandEmpty>
-                  <CommandGroup>
-                    {teams?.map((team) => (
-                      <CommandItem
-                        key={team.id}
-                        value={team.name}
-                        onSelect={() => {
-                          setSelectedTeamId(team.id);
-                          setTeamSearchOpen(false);
-                          resetForm();
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            'mr-2 size-4',
-                            selectedTeamId === team.id ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                        {team.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </div>
+        <RequestTeamPicker
+          teams={teams}
+          isLoading={teamsLoading}
+          selectedTeamId={selectedTeamId}
+          onSelect={(teamId) => {
+            setSelectedTeamId(teamId);
+            resetForm();
+          }}
+        />
 
-        {/* Request type selection */}
-        {selectedTeamId && !showHistory && (
+        {panels.showTypePicker && (
           <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="space-y-3"
           >
-            <Label className="text-sm font-medium opacity-90">What do you need?</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {REQUEST_OPTIONS.map(({ type, icon: Icon, description }) => (
-                <button
-                  type="button"
-                  key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={cn(
-                    'flex flex-col items-center gap-2 p-4 rounded-lg transition-all text-center',
-                    'border-2',
-                    selectedType === type
-                      ? 'bg-white/20 border-white/50'
-                      : 'bg-background/10 border-white/20 hover:bg-background/20'
-                  )}
-                >
-                  <Icon className="size-6" />
-                  <span className="font-semibold text-sm">{REQUEST_TYPE_LABELS[type]}</span>
-                  <span className="text-xs opacity-70">{description}</span>
-                </button>
-              ))}
-            </div>
+            <RequestTypePicker selectedType={selectedType} onSelect={setSelectedType} />
           </m.div>
         )}
 
         {/* Request details form */}
         <AnimatePresence>
-          {selectedTeamId && selectedType && !showHistory && (
+          {panels.formType && (
             <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
@@ -221,7 +143,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Date field */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium opacity-90">
-                  {selectedType === 'BYE_REQUEST' ? 'Date to skip' : 'Match date'}
+                  {DATE_FIELD_LABEL[panels.formType]}
                 </Label>
                 <Input
                   type="date"
@@ -231,34 +153,19 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
                 />
               </div>
 
-              {/* Time change specific fields */}
-              {selectedType === 'TIME_CHANGE' && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium opacity-90">Current timeslot</Label>
-                    <Input
-                      placeholder="e.g., 6:00 PM"
-                      value={currentTimeslot}
-                      onChange={(e) => setCurrentTimeslot(e.target.value)}
-                      className="bg-background/20 border-white/20 text-inherit placeholder:text-inherit/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium opacity-90">Requested timeslot</Label>
-                    <Input
-                      placeholder="e.g., 7:00 PM"
-                      value={requestedTimeslot}
-                      onChange={(e) => setRequestedTimeslot(e.target.value)}
-                      className="bg-background/20 border-white/20 text-inherit placeholder:text-inherit/50"
-                    />
-                  </div>
-                </div>
+              {panels.formType === 'TIME_CHANGE' && (
+                <RequestTimeslotFields
+                  currentTimeslot={currentTimeslot}
+                  onCurrentTimeslotChange={setCurrentTimeslot}
+                  requestedTimeslot={requestedTimeslot}
+                  onRequestedTimeslotChange={setRequestedTimeslot}
+                />
               )}
 
               {/* Reason field */}
               <div className="space-y-2">
                 <Label className="text-sm font-medium opacity-90">
-                  {selectedType === 'EMERGENCY_CANCEL' ? 'Reason (required)' : 'Reason (optional)'}
+                  {REASON_FIELD_LABEL[panels.formType]}
                 </Label>
                 <Textarea
                   placeholder="Explain your request..."
@@ -271,9 +178,7 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
               {/* Submit button */}
               <Button
                 onClick={handleSubmit}
-                disabled={
-                  submitMutation.isPending || (selectedType === 'EMERGENCY_CANCEL' && !reason)
-                }
+                disabled={submitMutation.isPending || isRequestIncomplete(values)}
                 className="w-full bg-white/20 hover:bg-white/30 text-inherit border border-white/20"
               >
                 {submitMutation.isPending ? (
@@ -289,66 +194,18 @@ const RequestHeroCard: React.FC<RequestHeroCardProps> = ({ card }) => {
 
         {/* Request history */}
         <AnimatePresence>
-          {selectedTeamId && showHistory && (
+          {panels.showHistory && (
             <m.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="space-y-3"
             >
-              <Label className="text-sm font-medium opacity-90">Recent Requests</Label>
-              {requestsLoading ? (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="size-5 animate-spin" />
-                </div>
-              ) : teamRequests && teamRequests.length > 0 ? (
-                <div className="space-y-2">
-                  {teamRequests.map((request) => (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between p-3 rounded-lg bg-background/10 border border-white/10"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">
-                            {REQUEST_TYPE_LABELS[request.request_type]}
-                          </span>
-                          <Badge
-                            variant={
-                              request.status === 'APPROVED'
-                                ? 'default'
-                                : request.status === 'DENIED'
-                                  ? 'destructive'
-                                  : 'secondary'
-                            }
-                            className="text-xs"
-                          >
-                            {REQUEST_STATUS_LABELS[request.status]}
-                          </Badge>
-                        </div>
-                        {request.match_date && (
-                          <span className="text-xs opacity-70" suppressHydrationWarning>
-                            {formatWithPattern(request.match_date, 'MMM d, yyyy')}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-xs opacity-50" suppressHydrationWarning>
-                        {formatWithPattern(request.created_at, 'MMM d')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm opacity-70 text-center py-4">No requests yet</p>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowHistory(false)}
-                className="w-full text-inherit hover:bg-white/10"
-              >
-                Back to form
-              </Button>
+              <RequestHistoryList
+                requests={teamRequests}
+                isLoading={requestsLoading}
+                onBack={() => setShowHistory(false)}
+              />
             </m.div>
           )}
         </AnimatePresence>

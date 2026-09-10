@@ -39,6 +39,8 @@ vi.mock('@/services/timeslots/TimeslotService', () => ({
     deleteTimeslot: vi.fn(),
     batchAssignTimeslots: vi.fn(),
     batchAssignDoubleHeaders: vi.fn(),
+    batchAssignBackToBackTimeslots: vi.fn(),
+    deleteTimeslotsByIds: vi.fn(),
   },
 }));
 
@@ -448,6 +450,146 @@ describe('useTimeslotMutation', () => {
       title: 'Error',
       description: 'Failed to remove bye week. Please try again.',
       variant: 'destructive',
+    });
+  });
+});
+
+// ─── moveTeamBooking ──────────────────────────────────────────────────────────
+
+describe('useTimeslotMutation.moveTeamBooking', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(TimeslotValidator.validateTimeslotAssignment).mockReturnValue({ valid: true });
+    vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockResolvedValue([]);
+    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockResolvedValue();
+    vi.mocked(ByeWeekService.assignByeWeek).mockResolvedValue(sampleSlot('bye-1'));
+  });
+
+  // The whole point of the order. Clearing first would leave the team with no
+  // booking at all if the booking then failed, and nobody would see it.
+  it('books the new block before it clears the old rows', async () => {
+    const order: string[] = [];
+    vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockImplementation(() => {
+      order.push('book');
+      return Promise.resolve([]);
+    });
+    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockImplementation(() => {
+      order.push('clear');
+      return Promise.resolve();
+    });
+
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(order).toEqual(['book', 'clear']);
+    expect(outcome).toBe('moved');
+    expect(TimeslotService.batchAssignBackToBackTimeslots).toHaveBeenCalledWith(
+      TEST_DATE,
+      ['team-1'],
+      'MidEarly'
+    );
+    expect(TimeslotService.deleteTimeslotsByIds).toHaveBeenCalledWith(['ts-1']);
+  });
+
+  it('leaves the old rows alone when the booking fails', async () => {
+    vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockRejectedValue(
+      new Error('insert refused')
+    );
+
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    await expect(
+      act(async () => {
+        await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+      })
+    ).rejects.toThrow('insert refused');
+
+    expect(TimeslotService.deleteTimeslotsByIds).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+  });
+
+  // Booked twice is visible in the night's list, so the message names the
+  // repair rather than reporting the move as a failure.
+  it('keeps the new booking and names the repair when the old rows will not clear', async () => {
+    vi.mocked(TimeslotService.deleteTimeslotsByIds).mockRejectedValue(new Error('delete refused'));
+
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(outcome).toBe('booked-not-cleared');
+    expect(toast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Booked, but the old time is still there',
+        variant: 'destructive',
+      })
+    );
+  });
+
+  it('books a bye through the bye service and skips the past-date check', async () => {
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', 'BYE', ['ts-1']);
+    });
+
+    expect(outcome).toBe('moved');
+    expect(ByeWeekService.assignByeWeek).toHaveBeenCalledWith(TEST_DATE, 'team-1');
+    expect(TimeslotValidator.validateTimeslotAssignment).not.toHaveBeenCalled();
+    expect(TimeslotService.deleteTimeslotsByIds).toHaveBeenCalledWith(['ts-1']);
+  });
+
+  it('writes nothing when the night is refused', async () => {
+    vi.mocked(TimeslotValidator.validateTimeslotAssignment).mockReturnValue({
+      valid: false,
+      error: 'Cannot assign timeslots to past dates',
+    });
+
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(outcome).toBe('refused');
+    expect(TimeslotService.batchAssignBackToBackTimeslots).not.toHaveBeenCalled();
+    expect(TimeslotService.deleteTimeslotsByIds).not.toHaveBeenCalled();
+  });
+
+  // 9:30 PM is a legal stored value that starts no block, so it can be read off
+  // an old row but never booked as one.
+  it('writes nothing for a time that starts no block', async () => {
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '9:30 PM', ['ts-1']);
+    });
+
+    expect(outcome).toBe('refused');
+    expect(TimeslotService.batchAssignBackToBackTimeslots).not.toHaveBeenCalled();
+    expect(TimeslotService.deleteTimeslotsByIds).not.toHaveBeenCalled();
+  });
+
+  it('refreshes the night it changed', async () => {
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    await act(async () => {
+      await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['timeslots', FORMATTED_DATE] });
+    expect(invalidateQueries).toHaveBeenCalledWith({
+      queryKey: ['match-timeslots', FORMATTED_DATE],
     });
   });
 });

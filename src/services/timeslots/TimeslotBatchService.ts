@@ -110,6 +110,23 @@ export const TimeslotBatchService = {
   },
 
   /**
+   * Delete exactly the rows named, in one statement.
+   *
+   * Deliberately by id, unlike `BackToBackTimeslotService.deleteTimeslot`,
+   * which deletes by rule (team + date + back-to-back) and so would take rows
+   * the caller did not ask about. Moving a booking needs the narrower promise:
+   * the new rows are written first, and only the rows read *before* that are
+   * cleared afterwards.
+   */
+  async deleteTimeslotsByIds(ids: string[]): Promise<void> {
+    // No ids is a real answer — a team with nothing booked — not a query.
+    if (ids.length === 0) return;
+
+    const { error } = await supabase.from('team_timeslots').delete().in('id', ids);
+    if (error) handleDatabaseError(error, 'Failed to remove timeslots');
+  },
+
+  /**
    * Batch insert timeslots (used by useTimeslotOperations.batchAssignTimeslots).
    */
   async batchInsertTimeslots(

@@ -6,7 +6,8 @@ import { useTimeslotQuery } from './useTimeslotQuery';
 
 export const useTimeslots = (date: Date) => {
   const queryClient = useQueryClient();
-  const { timeslots, groupedTimeslots, isLoading, error } = useTimeslotQuery(date);
+  const { timeslots, groupedTimeslots, isLoading, isPlaceholderData, error } =
+    useTimeslotQuery(date);
   const {
     isSubmitting,
     addTimeslot,
@@ -16,6 +17,7 @@ export const useTimeslots = (date: Date) => {
     assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
+    moveTeamBooking,
   } = useTimeslotMutation();
 
   // Function to refresh timeslots data (useful after bye week operations)
@@ -30,6 +32,12 @@ export const useTimeslots = (date: Date) => {
     isLoading: isLoading || isSubmitting,
     /** Just the write, so a form can disable its own submit button. */
     isSubmitting,
+    /**
+     * True when `timeslots` really is this date's rows. Anything that writes
+     * using them must wait for it: while a newly chosen night loads, the rows
+     * on screen are still the night before's, and their ids are too.
+     */
+    isNightLoaded: !isLoading && !isPlaceholderData,
     error,
     groupedTimeslots,
     addTimeslot,
@@ -39,6 +47,7 @@ export const useTimeslots = (date: Date) => {
     assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
+    moveTeamBooking,
     refreshTimeslots,
   };
 };

@@ -35,6 +35,7 @@ vi.mock('../TimeslotBatchService', () => ({
     batchAssignTimeslots: vi.fn().mockResolvedValue([]),
     insertTimeslot: vi.fn().mockResolvedValue(null),
     deleteTimeslotSimple: vi.fn().mockResolvedValue(null),
+    deleteTimeslotsByIds: vi.fn().mockResolvedValue(null),
     batchInsertTimeslots: vi.fn().mockResolvedValue([]),
   },
 }));
@@ -110,6 +111,11 @@ describe('TimeslotService', () => {
       'team-1',
       '6:30 PM'
     );
+  });
+
+  it('delegates deleteTimeslotsByIds to TimeslotBatchService', async () => {
+    await TimeslotService.deleteTimeslotsByIds(['ts-1', 'ts-2']);
+    expect(TimeslotBatchService.deleteTimeslotsByIds).toHaveBeenCalledWith(['ts-1', 'ts-2']);
   });
 
   it('delegates deleteTimeslotSimple to TimeslotBatchService', async () => {
