@@ -88,8 +88,10 @@ export const matchInvolvesTeam = (match: Match, teamId: string): boolean =>
   match.team1Id === teamId ||
   match.team2Id === teamId;
 
-/** A timeslot row carries the division's name rather than its id. */
+/** A timeslot row carries its team's division id, and sometimes only the name. */
 export const timeslotIsInDivision = (row: TeamTimeslot, option: DivisionOption): boolean => {
+  const id = row.teams?.divisionId;
+  if (id) return option.ids.has(id);
   const name = row.teams?.divisionName;
   return Boolean(name && option.names.has(name.toLowerCase()));
 };
