@@ -26,6 +26,7 @@ import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 import SignupsListSkeleton from './SignupsListSkeleton';
+import SignupsTable, { SIGNUPS_CELL } from './SignupsTable';
 
 interface SignupToDelete {
   id: string;
@@ -180,77 +181,46 @@ const BlindDrawSignupsTab: React.FC = () => {
           {isLoading ? (
             <SignupsListSkeleton />
           ) : signups && signups.length > 0 ? (
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-8"
+            <SignupsTable>
+              {signups.map((signup, index) => (
+                <tr key={signup.id} className="hover:bg-muted/30">
+                  <td className={`${SIGNUPS_CELL} text-xs sm:text-sm text-muted-foreground`}>
+                    {index + 1}
+                  </td>
+                  <td className={SIGNUPS_CELL}>
+                    <div className="font-medium text-sm">
+                      {signup.first_name} {signup.last_initial}.
+                    </div>
+                    <div
+                      className="text-xs text-muted-foreground sm:hidden"
+                      suppressHydrationWarning
                     >
-                      #
-                    </th>
-                    <th
-                      scope="col"
-                      className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium"
-                    >
-                      Name
-                    </th>
-                    <th
-                      scope="col"
-                      className="text-left px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium hidden sm:table-cell"
-                    >
-                      Signed Up
-                    </th>
-                    <th
-                      scope="col"
-                      aria-label="Actions"
-                      className="text-right px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium w-12"
+                      {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
+                    </div>
+                  </td>
+                  <td
+                    className={`${SIGNUPS_CELL} text-sm text-muted-foreground hidden sm:table-cell`}
+                    suppressHydrationWarning
+                  >
+                    {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
+                  </td>
+                  <td className={`${SIGNUPS_CELL} text-right`}>
+                    <DestructiveIconButton
+                      onClick={() =>
+                        setDeletingSignup({
+                          id: signup.id,
+                          name: `${signup.first_name} ${signup.last_initial}.`,
+                        })
+                      }
+                      disabled={deleteSignup.isPending}
+                      title="Remove signup"
+                      size="sm"
+                      className="size-8 p-0"
                     />
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {signups.map((signup, index) => (
-                    <tr key={signup.id} className="hover:bg-muted/30">
-                      <td className="px-2 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground">
-                        {index + 1}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2">
-                        <div className="font-medium text-sm">
-                          {signup.first_name} {signup.last_initial}.
-                        </div>
-                        <div
-                          className="text-xs text-muted-foreground sm:hidden"
-                          suppressHydrationWarning
-                        >
-                          {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
-                        </div>
-                      </td>
-                      <td
-                        className="px-2 sm:px-4 py-2 text-sm text-muted-foreground hidden sm:table-cell"
-                        suppressHydrationWarning
-                      >
-                        {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 text-right">
-                        <DestructiveIconButton
-                          onClick={() =>
-                            setDeletingSignup({
-                              id: signup.id,
-                              name: `${signup.first_name} ${signup.last_initial}.`,
-                            })
-                          }
-                          disabled={deleteSignup.isPending}
-                          title="Remove signup"
-                          size="sm"
-                          className="size-8 p-0"
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </td>
+                </tr>
+              ))}
+            </SignupsTable>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="size-12 mx-auto mb-2 opacity-30" />
