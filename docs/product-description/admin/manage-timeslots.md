@@ -143,6 +143,15 @@ A date in the past is refused before anything is sent, with "Validation Error �
 Cannot assign timeslots to past dates". A **bye** on a past date is **not**
 refused; that path skips the check.
 
+**A move is two writes, and they happen in this order: book, then clear.** A
+team's timeslot cannot be edited — there is no such operation — so changing one
+means writing the new rows and deleting the old ones. The new booking goes
+first on purpose. Clearing first would leave the team with **nothing at all** on
+that night if the booking then failed, and no screen shows that. Booking first
+means the worst case is a team booked twice, which is visible in the list on the
+right, and that case gets its own message: "Booked, but the old time is still
+there — … Remove it in the list of current timeslots."
+
 ### Removing an assignment
 
 The trash button opens a confirmation: "Remove Timeslot — Are you sure you want
@@ -158,6 +167,43 @@ A BYE row is removed on its own.
 
 On success a toast says "Timeslot Removed" or "Bye Week Removed". On failure a
 red toast says the removal failed and the row stays.
+
+### Arriving from an approved request
+
+An admin who has just approved a team request can press **Open Timeslots** on
+the toast. That opens this section on **the night the request named**, and shows
+one card above the two columns, saying what the change would be:
+
+> **Move 3 Amigos**
+> 3 Amigos has the 6:00 + 6:30 PM block on Thursday, 17 September. This books
+> the 7:00 + 7:30 PM block and removes what they have now.
+> `[ Move them ]` `[ Not now ]`
+
+Pressing **Move them** does the whole change: it books the new block and removes
+the old one. A toast then names what was booked, and the card goes.
+
+The card says what it will remove as well as what it will add, because a move is
+both. It reads differently depending on what the team already has that night:
+
+| What the team has | What the card says | Button |
+| --- | --- | --- |
+| Nothing | "…has nothing on Thursday, 17 September. This books the 7:00 + 7:30 PM block." | **Book the block** |
+| One block, or a bye | "…This books the 7:00 + 7:30 PM block and removes what they have now." | **Move them** |
+| Anything, and the request is for a bye | "A bye means they are not playing, so this removes the 6:00 + 6:30 PM block." Every game is named. | **Give the bye** |
+| Already exactly what was asked for | "3 Amigos is already in the 7:00 + 7:30 PM block on Thursday, 17 September." | **None** |
+| **Two games that night** | "…The request does not say which game to move, so this cannot be done in one press. Remove the one you want to move from the list of current timeslots, then book the new block below." | **None** |
+| A requested time that is not a block | "The request asked for 'as early as possible', which is not one of the blocks. Pick a block below." | **None** |
+
+**Not playing at all is the one case where a double header is still one press.**
+A bye means no games, so which game was meant does not arise, and the card names
+every game it removes.
+
+**Not now** puts the card away without writing anything. So does making the
+change. Either way the night stays on screen and the instruction leaves the
+address, so reloading does not bring the card back.
+
+The card also says what a move does **not** do: it changes when the team is
+expected, and it does not change a match already created for that night.
 
 ## The screen
 
@@ -242,8 +288,14 @@ is back. Assigning and removing both fail.
 generic sentence because a second, generic toast replaces the specific one the
 service raised. Teams are not told when their timeslot changes.
 
-**URL state.** The section's address is `/admin/timeslots`, but the date is not
-in it, so an admin can link to this section and not to a particular night.
+**URL state.** The section's address is `/admin/timeslots`. The date is **not**
+kept in it, so an admin still cannot link to a particular night. What the address
+can carry is a one-off instruction from an approved request —
+`?date=&team=&slot=` — which opens the night and raises the move card. Those
+three are read once on arrival and taken back out as soon as the card is used or
+dismissed, so a reload does not repeat the instruction. Anything the address
+does not understand is ignored: a day that does not exist, a team that is not an
+id, and a time that starts no block.
 
 **On a phone.** The section stacks. The team grid stays two tiles across, which
 is tight but usable. The time buttons wrap.
@@ -277,6 +329,17 @@ sent.
   form with no explanation beyond "All teams have been assigned for this date".
 - **Removing one half of a pair removes both**, and the confirmation names only
   the half that was pressed.
+- **A move onto a team with two games that night is refused, not guessed at.**
+  The request names a time, not a game, so one press could only pick one of the
+  two — and picking wrong deletes a game. The card says so and points at the
+  list on the right.
+- **A move can leave a team booked twice** if the new booking is written and the
+  old rows will not delete. It is visible in the list, and the message says to
+  remove the old row. This is the deliberate failure mode; the other order fails
+  invisibly.
+- **A move does not change a match.** Timeslots say when a team is expected;
+  a match created for that night carries its own date and is untouched.
+- **A bye assigned this way skips the past-date check**, like every other bye.
 
 ## Open questions and verification
 
@@ -308,4 +371,6 @@ sent.
 
 Verified against `717rec` commit `ea5c8f4`, except the double-header and 9:30 PM
 behaviour above, which was changed after that commit — see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed).
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) — and
+"Arriving from an approved request", which was written alongside UX audit item
+L4, from the change and its tests rather than a fresh pass over the running app.

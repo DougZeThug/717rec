@@ -136,20 +136,39 @@ contact request", or "Failed to delete contact request" — a title with no
 explanation. Success says nothing at all; the list simply changes.
 
 **Team requests** are written with the status, the notes, and who processed
-them. On success the dialog closes, everything is cleared, and a toast says
-"Request Approved — The request has been approved." or "Request Rejected". On
-failure the toast is "Error — Failed to update request. Please try again.", and
-**the dialog stays open with the notes intact** so the admin can retry.
+them. On success the dialog closes, everything is cleared, and a toast appears:
+"Request Rejected" for a refusal, and for an approval the "Request approved"
+toast described below, which replaces the generic one. On failure the toast is
+"Error — Failed to update request. Please try again.", and **the dialog stays
+open with the notes intact** so the admin can retry.
 
 Approving a team request writes a status and nothing else. **The schedule does
-not move.** Whatever was asked for — a different timeslot, a bye, a cancelled
-match — an admin still has to do by hand in the schedule tools. Approving a time
-change therefore replaces the generic toast with one that says so and names the
-work left: "Request approved — Now move {team} to {time} in Timeslots. Approving
-does not move it." It carries an **Open Timeslots** button that switches to that
-section. There is still only one toast per action. Bye and cancellation
-requests keep the generic message, because there is no single place to send the
-admin.
+not move.** What changed is that the admin is now taken to where it does, with
+everything already filled in.
+
+Every approval — all three kinds — replaces the generic toast with one headed
+"Request approved" that says what is left to do and carries an **Open
+Timeslots** button. There is still only one toast per action.
+
+| Request | What the toast says | Where the button goes |
+| --- | --- | --- |
+| Time change | "Open Timeslots to move The Baggers to the 8:00 + 8:30 PM block on Sep 17. Approving does not move it." | Timeslots, on that night, for that team, at that block |
+| Bye request | "Open Timeslots to give The Baggers a bye on Sep 17." | The same, with **BYE** chosen |
+| Emergency cancellation | The same as a bye — an approved cancellation means the team is not playing that night | The same, with **BYE** chosen |
+
+Two things can be missing, and the toast says which:
+
+- **The time cannot be read.** `requested_timeslot` is a free-text box with no
+  validation, so a team can type "as early as possible". Nothing is chosen on a
+  guess. The toast quotes the words back — "The Baggers asked for 'as early as
+  possible', which is not one of the blocks. Open Timeslots to pick one on
+  Sep 17." — and the night and team are still carried.
+- **No night was named.** The date field is optional. The toast says "The
+  request did not name a night, so check the one shown", and Timeslots opens on
+  the next league night as usual.
+
+What happens on the other side is in
+[`manage-timeslots.md`](manage-timeslots.md#arriving-from-an-approved-request).
 
 ## Modifiers
 
@@ -214,7 +233,11 @@ as well as landing in the Contact Inbox. Membership and team requests send no
 alert at all.
 
 **URL state.** The two sections have addresses — `/admin/requests` and
-`/admin/contact-inbox`. The filter and the selected request do not.
+`/admin/contact-inbox`. The filter and the selected request do not. An approval
+does produce one: the **Open Timeslots** button opens
+`/admin/timeslots?date=&team=&slot=`, which is a one-off instruction to that
+section rather than a link worth keeping. See
+[`manage-timeslots.md`](manage-timeslots.md#interactions-with-other-systems).
 `/admin/notifications` used to carry a second copy of the contact inbox; that
 page is gone, and the address now opens the Notifications section. See
 [`send-notifications.md`](send-notifications.md).
@@ -264,8 +287,12 @@ changes.
 - **The Contact Inbox holds only the hundred most recent requests.** There is no
   paging and nothing says older ones exist.
 - **Contact requests have an admin-notes field that no screen can write.**
-- **Approving a team request changes nothing but its status.** The schedule,
-  the timeslots, and the match are all untouched.
+- **Approving a team request still changes nothing but its status.** The
+  schedule, the timeslots, and the match are all untouched by the approval
+  itself. What the approval does is hand the Timeslots section the night, the
+  team and the block, so making the change is one more press rather than six.
+  It is deliberate that the write happens there: that screen shows the night, so
+  a clash or a time typed wrong is visible before anything moves.
 - **The admin menu's red badge counts team requests only.** Pending memberships
   are counted only on the Teams tab, and pending contact requests only on the
   Contact Inbox itself.
@@ -303,5 +330,6 @@ changes.
   three outcomes. No such call was found on any of the paths.
 
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
-UX audit item W7 (the two message forms became one). Those passages were written
-from the change and its tests, not from a fresh pass over the running app.
+UX audit items W7 (the two message forms became one) and L4 (an approval hands
+Timeslots the change to make). Those passages were written from the change and
+its tests, not from a fresh pass over the running app.
