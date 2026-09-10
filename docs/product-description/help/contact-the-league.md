@@ -2,19 +2,24 @@
 
 ## Summary
 
-The contact form is one of two ways to send a message to whoever runs the league
-from inside the app. It is the **support** one: bugs, account problems, score
-disputes, and general questions. It takes a name, an email address, a subject
-chosen from a fixed list, and a message, and it sends them to the league as an
-email and as a stored ticket. Both land in front of an admin: the email at
-`admin@717rec.com`, the ticket in the admin Contact Inbox under its *Support*
-filter. It is the only write in the whole app that a *visitor* can perform
-without an account.
+The contact form is **the** way to send a message to whoever runs the league from
+inside the app. Its first field is **"What is this about?"**, and the answer
+covers everything: a timeslot change, a score to fix, joining the league, a bug,
+an account problem, an idea, or a plain question. It is the only write in the
+whole app that a *visitor* can perform without an account.
 
-The other way is the message form at the foot of the home page, for league
-business — timeslot changes, score corrections, joining the league. See
-[`home/the-home-page.md`](../home/the-home-page.md). Each form now says which is
-which and links to the other, so a sender who picked the wrong one can tell.
+There used to be two forms — this one for support, and a second at the foot of
+the home page for league business — with different fields, and each telling the
+reader to use the other one. That was UX audit **H-02**. The home page carries a
+card pointing here now, and no page tells anyone to go somewhere else.
+
+**Two mailboxes are still behind it, and the topic decides which.** Timeslots,
+scores, joining the league and general questions become *league requests*; bugs,
+account problems and ideas become *support messages*, which are additionally
+emailed to `admin@717rec.com`. Both land in the same admin Contact Inbox, under
+its *League requests* and *Support* filters, so nobody reading them has to know
+about the split. Merging the two stores is a database change and was deliberately
+left out.
 
 It lives at `/contact`, on its own page, reached from the **navbar**, from the
 footer, and from the help page. Nothing signals that it is "active"; it is a
@@ -24,22 +29,28 @@ league's state changes it.
 
 ## The simple case
 
-The user arrives at `/contact` and sees a heading, four fields, and one button
-that says "Send Message". Nothing is filled in and nothing is focused. Below the
-form is a line offering `admin@717rec.com` as a direct alternative.
+The user arrives at `/contact` and sees a heading, a topic picker already reading
+**General question**, then a name, a contact field, a team name and a message,
+and one button that says "Send message". Nothing else is filled in and nothing is
+focused.
 
-The user types a name, an email address, picks a subject from the dropdown, and
-types a message. No errors appear while they type. They press "Send Message".
-The button changes to "Sending..." and goes dead.
+Changing the topic changes the form under it. **Join the league** asks for a
+proposed team name and who else is playing. **Report a bug**, **Account problem**
+and **Suggest an improvement** ask for an email rather than "email or phone",
+because those are answered by email, and they drop the team field. A line under
+the picker says in one sentence what the chosen topic is for.
+
+The user fills it in. No errors appear while they type. They press "Send
+message". The button changes to "Sending…" and goes dead.
 
 A second later the whole form is replaced by a panel with a tick, the words
 "Message Sent!", and a promise of a reply "within 24-48 hours". A toast says
-"Message sent successfully!". A button offers "Send Another Message"; pressing it
-returns the user to an empty form on the same page.
+"Message sent". A button offers "Send Another Message"; pressing it returns the
+user to an empty form on the same page.
 
 If it fails instead, the form stays exactly as it was — every field still filled
-— and a red toast says "Failed to send message. Please try again." The button
-comes back to life. The user is not told why it failed.
+— and a red toast says why, as far as the league's server said. The button comes
+back to life.
 
 ## The interaction, event by event
 
@@ -62,10 +73,20 @@ or skeleton the first time in a session. Nothing is fetched: the form needs no
 data from the league, which is why it works when signed out and why it is the
 only page in the app that cannot show stale numbers.
 
-All four fields start empty. **No field is focused**, so a user who arrives and
-starts typing types nothing. The subject dropdown reads "Select a subject" as
-placeholder text, which is not a value — an unopened dropdown is an empty field,
-not a defaulted one.
+Every field starts empty except the topic, which starts on **General question**.
+**No field is focused**, so a user who arrives and starts typing types nothing.
+
+**An address can choose the topic**: `/contact?type=join_league` opens on Join
+the league with its extra fields already showing. It is read once, on arrival —
+after that the picker belongs to the reader, and the address is never rewritten
+to follow it. An unknown value is ignored and the form opens on General question.
+
+For a **signed-in member** the name, the team and the contact field arrive filled
+in from their profile, and the name and team are read-only with a small
+"Verified" badge — unless the topic is Join the league, which always lets them
+propose a new team name. Those values are derived as the page renders rather than
+copied into the form, so a name typed before the profile arrives is not
+overwritten by it.
 
 A fifth field exists that the user cannot see: a text input positioned far off
 the left of the screen, hidden from screen readers, and skipped by Tab. It is a
@@ -93,6 +114,11 @@ moment the page loads, whether or not anything has been typed.
 exist but they are only checked when the button is pressed. A user can type a
 one-letter name and an address with no `@` in it and see no complaint at all
 until they try to send.
+
+Three of the rules depend on the topic: a team name is required only for Join the
+league, a real email address is required only for the topics answered by email,
+and the message length allowed differs between the two mailboxes (2,000
+characters for a league request, 5,000 for a support message).
 
 Nothing is captured or snapshotted at this point, because there is nothing to
 restore to. The form has no discard, no reset, and no undo.
@@ -128,9 +154,11 @@ The button becomes "Sending..." and is disabled, so the form cannot be submitted
 twice from the button. The four visible fields stay enabled and editable while
 the request is in flight; typing during it changes nothing about what was sent.
 
-What is sent is one request to the league carrying the name, email, subject key,
-message, and the hidden field. It goes to a server function, not straight to the
-database.
+What is sent is one request to the league carrying the name, the contact, the
+topic's own code, the message, and the hidden field — plus the team and the
+players when the topic asked for them. It goes to a server function, not straight
+to the database. **Which** server function depends on the topic; see
+[Summary](#summary).
 
 On success, three things happen at once: the form is emptied, the page is
 replaced by the success panel, and a toast says "Message sent successfully!". The
@@ -194,9 +222,11 @@ survives leaving this page is what already reached the league.
 This is the only write in the app with no permission check in front of it, which
 is why the league's server carries its own rate limit and spam checks instead.
 
-**Season scoping.** None. The message is not attached to a season, a team, or a
-match, even when the subject is "Score Dispute". Whoever reads it has to work out
-from the text which match is meant.
+**Season scoping.** None. The message is not attached to a season or a match,
+even when the topic is a score correction. Whoever reads it has to work out from
+the text which match is meant. A league request does carry a team name, and for a
+signed-in member the league's server replaces it with the team they are actually
+approved for.
 
 **Validation and error display.** Field rules run only on submit, then per-field
 as the user corrects them. Errors appear under each field in the standard form
@@ -303,4 +333,6 @@ analytics event carrying the chosen subject — never the name, address, or mess
 - Assumption: "within 24-48 hours" on the success panel is a statement of intent
   by the league, not something the product enforces or measures.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+UX audit item W7 (the two message forms became one). Those passages were written
+from the change and its tests, not from a fresh pass over the running app.

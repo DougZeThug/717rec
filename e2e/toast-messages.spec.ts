@@ -13,18 +13,45 @@ import { jsonResponse, stubSupabase } from './helpers/supabaseMocks';
  */
 const toastCloseButtons = 'button[aria-label="Close notification"]';
 
+/**
+ * Fills the league's one message form on a topic that goes to the support
+ * inbox, which is the mailbox these tests intercept. "What is this about?"
+ * decides which one: a bug is answered by email, so the contact field is a
+ * plain Email.
+ */
+const fillContactForm = async (page: import('@playwright/test').Page) => {
+  await page.goto('/contact');
+  await page.getByRole('combobox', { name: 'What is this about?' }).click();
+  await page.getByRole('option', { name: 'Report a bug' }).click();
+  await page.getByLabel('Name').fill('Regression Tester');
+  await page.getByLabel('Email').fill('regression@example.com');
+  await page.getByLabel('Message').fill('Checking that the failure reason reaches the user.');
+};
+
 test.describe('toast messages', () => {
   test.beforeEach(async ({ page }) => {
     await stubSupabase(page);
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
+  // This used to press the home page's own message form, whose client-side
+  // guard toasted on an empty submit. W7 merged the two forms into one, and the
+  // survivor reports a bad field under the field rather than as a toast — so
+  // the three toasts come from three refused sends instead, which is the
+  // situation a real user hits when the league's rate limit is reached.
   test('shows three toasts at once instead of replacing the previous one', async ({ page }) => {
-    // The home contact panel rejects an empty name or message from a
-    // client-side guard, so this raises real toasts with no network at all.
-    await page.goto('/');
-    const send = page.getByRole('button', { name: 'Send message' });
-    await expect(send).toBeVisible();
+    await page.route(/\/functions\/v1\/send-support-email/, async (route) => {
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill(jsonResponse(null, 204));
+        return;
+      }
+      await route.fulfill(
+        jsonResponse({ error: 'Too many requests. Please try again later.' }, 429)
+      );
+    });
+
+    await fillContactForm(page);
+    const send = page.getByRole('button', { name: 'Send Message' });
 
     await send.click();
     await expect(page.locator(toastCloseButtons)).toHaveCount(1);
@@ -42,15 +69,6 @@ test.describe('toast messages', () => {
   });
 
   test.describe('when a write fails', () => {
-    const fillContactForm = async (page: import('@playwright/test').Page) => {
-      await page.goto('/contact');
-      await page.getByLabel('Name').fill('Regression Tester');
-      await page.getByLabel('Email').fill('regression@example.com');
-      await page.getByRole('combobox').click();
-      await page.getByRole('option', { name: 'General Question' }).click();
-      await page.getByLabel('Message').fill('Checking that the failure reason reaches the user.');
-    };
-
     test("shows the edge function's own reason", async ({ page }) => {
       // The rate limit cannot be triggered for real here: the function's CORS
       // allowlist omits port 8080 (open bug B-15), and a real run would send

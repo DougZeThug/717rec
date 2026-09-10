@@ -15,6 +15,10 @@ test.describe('offline', () => {
 
   test('says the connection is gone, and says it is back', async ({ page, context }) => {
     await page.goto('/');
+    // Let every lazy piece of the page finish arriving first. Cutting the
+    // network while one is still in flight is a different test — the one below
+    // — and it ends in a reload, which would take this banner with it.
+    await page.waitForLoadState('networkidle');
     await expect(page.getByTestId('offline-banner')).toBeHidden();
 
     await context.setOffline(true);
