@@ -202,6 +202,7 @@ describe('Schedule page', () => {
     mockUseScheduleData.mockReturnValue(baseScheduleData);
     mockUseMatchDates.mockReturnValue(new Set());
     mockUseMatchTimeslots.mockReturnValue({ groupedTimeslots: {}, isLoading: false });
+    mockUseTimeslotDates.mockReturnValue({ timeslotDates: [], isLoading: false, error: null });
     mockUseScheduleTabs.mockReturnValue({ activeTab: 'upcoming', handleTabChange: vi.fn() });
     mockUseTeamsQuery.mockReturnValue({ data: [], isLoading: false });
     mockUseDivisions.mockReturnValue({ divisions: testDivisions, isLoading: false, error: null });
