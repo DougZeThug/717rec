@@ -47,9 +47,7 @@ export const useTimeslotGrouping = (groupedTimeslots: Record<string, TeamTimeslo
       if (!ts.is_double_header || doubleHeaderTeams.has(ts.team_id)) return;
       const teamSlots = allTimeslots.filter((t) => t.team_id === ts.team_id && t.is_double_header);
       const startTimes = [
-        ...new Set(
-          teamSlots.filter((t) => (t.match_sequence ?? 1) === 1).map((t) => t.timeslot)
-        ),
+        ...new Set(teamSlots.filter((t) => (t.match_sequence ?? 1) === 1).map((t) => t.timeslot)),
       ].sort(sortTimeslotKeys);
 
       if (startTimes.length >= 2) {

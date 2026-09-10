@@ -92,6 +92,8 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 
 **Base Components** (`src/components/ui/`):
 - Buttons, inputs, cards, dialogs, tables, etc.
+- `ResponsiveTable` renders a table above `md` and a stack of cards below it —
+  see `src/docs/TABLE_PATTERNS.md`. `ResponsiveDialog` does the same for modals.
 - Built on Radix UI primitives
 - Modify these to change app-wide styling
 

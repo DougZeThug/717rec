@@ -1,11 +1,11 @@
 import * as React from 'react';
 
-import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
 const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
   ({ className, ...props }, ref) => {
-    const { isWinterTheme } = useSeasonalTheme();
+    const { isWinterTheme } = useSeasonalThemeBase();
 
     return (
       <div
@@ -25,7 +25,7 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  const { isWinterTheme } = useSeasonalTheme();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   return (
     <thead
@@ -47,7 +47,7 @@ const TableBody = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => {
-  const { isWinterTheme } = useSeasonalTheme();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   return (
     <tbody
@@ -65,7 +65,7 @@ TableBody.displayName = 'TableBody';
 
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => {
-    const { isWinterTheme } = useSeasonalTheme();
+    const { isWinterTheme } = useSeasonalThemeBase();
 
     return (
       <tr
@@ -85,12 +85,23 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
 );
 TableRow.displayName = 'TableRow';
 
+/**
+ * A column heading.
+ *
+ * `scope` defaults to `'col'` because every `TableHead` in the app is a column
+ * heading, and without it a screen reader reads a row of numbers with nothing
+ * naming the columns. Callers can still pass `scope="row"` and win — it is
+ * destructured out of `props`, not overwritten by the spread.
+ *
+ * See L3 in `docs/audits/UX-AUDIT-2026-09.md`.
+ */
 const TableHead = React.forwardRef<
   HTMLTableCellElement,
   React.ThHTMLAttributes<HTMLTableCellElement>
->(({ className, ...props }, ref) => (
+>(({ className, scope = 'col', ...props }, ref) => (
   <th
     ref={ref}
+    scope={scope}
     className={cn(
       'h-12 px-4 text-left align-middle font-medium text-gray-700 dark:text-gray-200',
       className
@@ -104,7 +115,7 @@ const TableCell = React.forwardRef<
   HTMLTableCellElement,
   React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => {
-  const { isWinterTheme } = useSeasonalTheme();
+  const { isWinterTheme } = useSeasonalThemeBase();
 
   return (
     <td
@@ -120,4 +131,12 @@ const TableCell = React.forwardRef<
 });
 TableCell.displayName = 'TableCell';
 
-export { Table, TableBody, TableCell, TableHead, TableHeader, TableRow };
+const TableCaption = React.forwardRef<
+  HTMLTableCaptionElement,
+  React.HTMLAttributes<HTMLTableCaptionElement>
+>(({ className, ...props }, ref) => (
+  <caption ref={ref} className={cn('mt-4 text-sm text-muted-foreground', className)} {...props} />
+));
+TableCaption.displayName = 'TableCaption';
+
+export { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow };

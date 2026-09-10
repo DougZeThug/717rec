@@ -134,9 +134,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
               {/* Not sortable: the number in this column IS the current sort
                   position, so there is nothing of its own to sort by. The career
                   rankings table has always treated "#" the same way. */}
-              <TableHead className={cn('w-12 font-medium', headerTextColor)} scope="col">
-                #
-              </TableHead>
+              <TableHead className={cn('w-12 font-medium', headerTextColor)}>#</TableHead>
               <SortableColumnHeader
                 field="teamName"
                 activeField={sortOptions.field}
@@ -153,7 +151,6 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                     'font-medium',
                     isWinterTheme ? 'text-card-foreground' : 'text-gray-700 dark:text-gray-200'
                   )}
-                  scope="col"
                 >
                   Division
                 </TableHead>
@@ -226,7 +223,6 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                   'text-center font-medium',
                   isWinterTheme ? 'text-card-foreground' : 'text-gray-700 dark:text-gray-200'
                 )}
-                scope="col"
               >
                 Trend
               </TableHead>

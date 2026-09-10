@@ -64,6 +64,36 @@ export const getRivalryType = (record: HeadToHeadRecord): RivalryType | null => 
 };
 
 /**
+ * How a rivalry type is shown as a badge.
+ *
+ * Lives here rather than in a component because the head-to-head table and the
+ * head-to-head card both need it, and it was copied character-for-character
+ * between the two until L3.
+ */
+export const rivalryBadgeConfig: Record<RivalryType, { label: string; className: string }> = {
+  rival: {
+    label: 'Rival',
+    className: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+  },
+  dominated: {
+    label: 'Dominated',
+    className: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+  },
+  favorite: {
+    label: 'Favorite',
+    className: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border-teal-500/30',
+  },
+  nemesis: {
+    label: 'Nemesis',
+    className: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
+  },
+  tough_matchup: {
+    label: 'Tough Matchup',
+    className: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
+  },
+};
+
+/**
  * Gets a narrative label for a rivalry matchup on the schedule.
  */
 export const getRivalryLabel = (

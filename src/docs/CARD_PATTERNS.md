@@ -1,5 +1,8 @@
 # Card Patterns Guide
 
+> Building a **table** that becomes cards on a phone? Use `ResponsiveTable` —
+> see `src/docs/TABLE_PATTERNS.md`. It is built on the `Card` below.
+
 ## Component Hierarchy
 
 1. **`Card`** - Base shadcn component for all card-like containers

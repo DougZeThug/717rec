@@ -50,7 +50,7 @@ const SeasonsTable = ({
         <thead>
           <tr className="border-b border-border text-left">
             {tableHeaders.map((header) => (
-              <th key={header.label} className={header.className}>
+              <th scope="col" key={header.label} className={header.className}>
                 {header.label}
               </th>
             ))}

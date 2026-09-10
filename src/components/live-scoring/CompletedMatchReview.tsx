@@ -124,17 +124,33 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-muted-foreground">
-                  <th className="pb-1 pr-2 font-medium">Player</th>
-                  <th className="px-2 pb-1 text-right font-medium">Rounds</th>
-                  <th className="px-2 pb-1 text-right font-medium">Points</th>
-                  <th className="px-2 pb-1 text-right font-medium">PPR</th>
-                  <th className="px-2 pb-1 text-right font-medium" title="Bags in the hole">
+                  <th scope="col" className="pb-1 pr-2 font-medium">
+                    Player
+                  </th>
+                  <th scope="col" className="px-2 pb-1 text-right font-medium">
+                    Rounds
+                  </th>
+                  <th scope="col" className="px-2 pb-1 text-right font-medium">
+                    Points
+                  </th>
+                  <th scope="col" className="px-2 pb-1 text-right font-medium">
+                    PPR
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-2 pb-1 text-right font-medium"
+                    title="Bags in the hole"
+                  >
                     Hole%
                   </th>
-                  <th className="px-2 pb-1 text-right font-medium" title="Bags on the board">
+                  <th
+                    scope="col"
+                    className="px-2 pb-1 text-right font-medium"
+                    title="Bags on the board"
+                  >
                     Board%
                   </th>
-                  <th className="pb-1 pl-2 text-right font-medium" title="Four-baggers">
+                  <th scope="col" className="pb-1 pl-2 text-right font-medium" title="Four-baggers">
                     4B
                   </th>
                 </tr>

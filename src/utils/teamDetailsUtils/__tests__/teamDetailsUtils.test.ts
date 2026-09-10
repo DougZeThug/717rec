@@ -12,7 +12,13 @@ import {
   getScoreDisplay,
   getUpcomingAndPastMatches,
 } from '../matchUtils';
-import { classifyRivalries, getRivalryLabel, getRivalryType } from '../rivalryUtils';
+import {
+  classifyRivalries,
+  getRivalryLabel,
+  getRivalryType,
+  rivalryBadgeConfig,
+  type RivalryType,
+} from '../rivalryUtils';
 import { calculateSweepRate } from '../sweepRateUtils';
 
 type MinimalMatch = Pick<
@@ -427,5 +433,28 @@ describe('teamDetails utilities', () => {
     expect(getRivalryLabel('rival', 'Opponent', { wins: 2, losses: 2, matches_played: 4 })).toBe(
       'Rivalry: 2-2 all-time'
     );
+  });
+
+  it('has a label for every rivalry type, not just the two most common', () => {
+    const record = { wins: 3, losses: 1, matches_played: 4 };
+
+    expect(getRivalryLabel('tough_matchup', 'Opponent', record)).toBe(
+      'Tough matchup: 3-1 all-time'
+    );
+    expect(getRivalryLabel('favorite', 'Opponent', record)).toBe('Favorite: 3-1 all-time');
+    expect(getRivalryLabel('dominated', 'Opponent', record)).toBe('Opponent is 3-1 all-time');
+  });
+
+  it('has a badge for every rivalry type', () => {
+    // The head-to-head table and the head-to-head card both read this. It was
+    // copied between them, character for character, until L3 moved it here —
+    // so a type without an entry would now break both at once.
+    const types: RivalryType[] = ['rival', 'dominated', 'favorite', 'nemesis', 'tough_matchup'];
+
+    for (const type of types) {
+      expect(rivalryBadgeConfig[type].label).toBeTruthy();
+      expect(rivalryBadgeConfig[type].className).toBeTruthy();
+    }
+    expect(Object.keys(rivalryBadgeConfig)).toHaveLength(types.length);
   });
 });
