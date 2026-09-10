@@ -188,10 +188,13 @@ export const TimeslotMatchRow = ({
             'sm:w-auto sm:flex-row sm:items-center sm:gap-1 sm:text-xs'
           )}
         >
-          <span className="font-semibold">Double Header</span>
+          <span className="font-semibold">
+            {(doubleHeaderInfo.get(teamTimeslot.team_id)?.length ?? 0) > 2
+              ? 'Triple Header'
+              : 'Double Header'}
+          </span>
           <span className="opacity-90">
-            ({doubleHeaderInfo.get(teamTimeslot.team_id)?.slot1} &{' '}
-            {doubleHeaderInfo.get(teamTimeslot.team_id)?.slot2})
+            ({doubleHeaderInfo.get(teamTimeslot.team_id)?.join(' & ')})
           </span>
         </Badge>
       )}
