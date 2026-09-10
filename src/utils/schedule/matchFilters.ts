@@ -50,14 +50,15 @@ export const buildDivisionOptions = (divisions: DivisionRow[]): DivisionOption[]
 
   for (const division of divisions) {
     const label = division.display_division?.trim() || division.name?.trim();
-    if (!label) continue;
+    if (!label || isHiddenLabel(label)) continue;
 
     const existing = byLabel.get(label);
-    const option = existing ?? {
+    const option: DivisionOption = existing ?? {
       value: label.toLowerCase(),
       label,
-      ids: new Set(),
-      names: new Set(),
+      shortLabel: shortenLabel(label),
+      ids: new Set<string>(),
+      names: new Set<string>(),
     };
     if (division.id) option.ids.add(division.id);
     if (division.name) option.names.add(division.name.toLowerCase());
