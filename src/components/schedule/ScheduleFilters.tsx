@@ -97,7 +97,8 @@ export const ScheduleFilters: React.FC<ScheduleFiltersProps> = ({
           {options.map((option) => (
             <FilterChip
               key={option.value}
-              label={option.label}
+              label={option.shortLabel}
+              accessibleLabel={option.label}
               pressed={known && division === option.value}
               onClick={() => onDivisionChange(option.value)}
               // The division's own colour, the one this page already uses on
