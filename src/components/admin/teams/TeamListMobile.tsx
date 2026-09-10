@@ -90,7 +90,7 @@ const TeamMobileCard = ({ team, divisions, actions }: TeamMobileCardProps) => (
 );
 
 const TeamListMobile = ({ teams, divisions, actions }: TeamListMobileProps) => (
-  <div className="space-y-3 sm:hidden">
+  <div className="space-y-3 md:hidden">
     {teams.map((team) => (
       <TeamMobileCard key={team.id} team={team} divisions={divisions} actions={actions} />
     ))}

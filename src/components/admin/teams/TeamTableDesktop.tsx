@@ -108,7 +108,7 @@ const TeamTableRowItem = ({ team, divisions, actions }: TeamTableRowProps) => (
 );
 
 const TeamTableDesktop = ({ teams, divisions, actions }: TeamTableDesktopProps) => (
-  <div className="border rounded-lg hidden sm:block">
+  <div className="border rounded-lg hidden md:block">
     <Table>
       <TeamTableHeader />
       <TableBody>
