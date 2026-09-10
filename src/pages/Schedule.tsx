@@ -159,12 +159,17 @@ const Schedule = () => {
 
     if (matchDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
 
-    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const today = new Date();
+    const todayKey = format(today, 'yyyy-MM-dd');
     const lastPlayed = [...matchNights]
       .reverse()
       .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
     const nextNight = matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
-    const fallback = lastPlayed ?? nextNight;
+    // On league night itself, upcoming matches matter more than last week's
+    // results: if tonight is not entered yet, open on the next scheduled
+    // night. Every other day, prefer the last played night so the morning
+    // after league night still lands on results.
+    const fallback = today.getDay() === 4 ? (nextNight ?? lastPlayed) : (lastPlayed ?? nextNight);
 
     if (fallback) {
       scheduleLog('No matches on the default date; opening on', fallback);

@@ -356,6 +356,31 @@ describe('Schedule page', () => {
       expect(asKey(selectedDate())).toBe('2026-09-03');
     });
 
+    // On league night itself the upcoming schedule matters more than last
+    // week's results: when tonight is not entered yet, open on the next
+    // scheduled night instead of the last played one.
+    it('prefers the next scheduled night over last week on a Thursday', () => {
+      // Thursday Sep 10. Tonight is empty; last played is Sep 3, next
+      // scheduled is Sep 17.
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03', '2026-09-17']));
+
+      renderPage();
+
+      expect(asKey(selectedDate())).toBe('2026-09-17');
+    });
+
+    it('stays on tonight when tonight has matches', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03', '2026-09-10']));
+
+      renderPage();
+
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+    });
+
     it('keeps the upcoming Thursday when it does have matches', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
