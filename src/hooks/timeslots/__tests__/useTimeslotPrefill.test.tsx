@@ -1,20 +1,30 @@
 import { act, renderHook } from '@testing-library/react';
 import React from 'react';
-import { MemoryRouter, useLocation } from 'react-router';
+import { MemoryRouter, useLocation, useSearchParams } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { useTimeslotPrefill } from '../useTimeslotPrefill';
 
 const TEAM_ID = '3f1b2c8e-5a41-4c9d-9f2a-77b0d6e8c123';
+const OTHER_TEAM_ID = '8c2d4a19-6b03-4f77-a1e5-902c4b7d3e81';
 
 const renderPrefill = (entry: string) => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
     <MemoryRouter initialEntries={[entry]}>{children}</MemoryRouter>
   );
 
-  return renderHook(() => ({ prefill: useTimeslotPrefill(), search: useLocation().search }), {
-    wrapper,
-  });
+  return renderHook(
+    () => {
+      const [, setSearchParams] = useSearchParams();
+      return {
+        prefill: useTimeslotPrefill(),
+        search: useLocation().search,
+        /** Stands in for a second approval changing only the query string. */
+        setSearch: (next: string) => setSearchParams(new URLSearchParams(next)),
+      };
+    },
+    { wrapper }
+  );
 };
 
 describe('useTimeslotPrefill', () => {
@@ -95,8 +105,8 @@ describe('useTimeslotPrefill', () => {
     expect(result.current.search).toBe('?keep=this');
   });
 
-  // The address is an instruction, not a record of what is on screen. Reading
-  // it again would put the card back under an admin who just dismissed it.
+  // Clearing takes the instruction out of the address, so re-reading it cannot
+  // put a dismissed card back — the instruction is gone, not just ignored.
   it('stays cleared even though the address is read on every render', () => {
     const { result, rerender } = renderPrefill(`/admin/timeslots?team=${TEAM_ID}&slot=BYE`);
 
@@ -104,5 +114,45 @@ describe('useTimeslotPrefill', () => {
     rerender();
 
     expect(result.current.prefill.hasPrefill).toBe(false);
+  });
+
+  // A second approval can arrive while Timeslots is already open. Reading the
+  // address once left it changed with nothing on screen.
+  it('picks up a second instruction without being remounted', () => {
+    const { result } = renderPrefill(`/admin/timeslots?team=${TEAM_ID}&slot=BYE`);
+
+    act(() => result.current.prefill.clear());
+    expect(result.current.prefill.hasPrefill).toBe(false);
+
+    act(() => result.current.setSearch(`?date=2026-09-24&team=${OTHER_TEAM_ID}&slot=7%3A00%20PM`));
+
+    expect(result.current.prefill.hasPrefill).toBe(true);
+    expect(result.current.prefill.teamId).toBe(OTHER_TEAM_ID);
+    expect(result.current.prefill.slot).toBe('7:00 PM');
+    expect(result.current.prefill.dateKey).toBe('2026-09-24');
+  });
+
+  it('carries the words a team used when they name no block', () => {
+    const { result } = renderPrefill(
+      `/admin/timeslots?team=${TEAM_ID}&asked=${encodeURIComponent('as early as possible')}`
+    );
+
+    expect(result.current.prefill.askedFor).toBe('as early as possible');
+    expect(result.current.prefill.slot).toBeNull();
+  });
+
+  it('takes the words out of the address along with the rest', () => {
+    const { result } = renderPrefill(`/admin/timeslots?team=${TEAM_ID}&asked=7ish`);
+
+    act(() => result.current.prefill.clear());
+
+    expect(result.current.search).toBe('');
+    expect(result.current.prefill.askedFor).toBeNull();
+  });
+
+  it('reports no night when the address names none', () => {
+    const { result } = renderPrefill(`/admin/timeslots?team=${TEAM_ID}`);
+
+    expect(result.current.prefill.dateKey).toBeNull();
   });
 });

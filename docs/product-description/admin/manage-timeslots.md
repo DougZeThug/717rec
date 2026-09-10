@@ -192,15 +192,22 @@ both. It reads differently depending on what the team already has that night:
 | Anything, and the request is for a bye | "A bye means they are not playing, so this removes the 6:00 + 6:30 PM block." Every game is named. | **Give the bye** |
 | Already exactly what was asked for | "3 Amigos is already in the 7:00 + 7:30 PM block on Thursday, 17 September." | **None** |
 | **Two games that night** | "…The request does not say which game to move, so this cannot be done in one press. Remove the one you want to move from the list of current timeslots, then book the new block below." | **None** |
-| A requested time that is not a block | "The request asked for 'as early as possible', which is not one of the blocks. Pick a block below." | **None** |
+| A requested time that is not a block | "The request asked for 'as early as possible', which is not one of the blocks. Pick a block below." — the team's own words are carried across and shown | **None** |
 
 **Not playing at all is the one case where a double header is still one press.**
 A bye means no games, so which game was meant does not arise, and the card names
 every game it removes.
 
+**The card waits for the night.** Changing the date keeps the previous night's
+rows on screen while the new ones load, so the card is not offered until the
+list really is the chosen night's. Otherwise one quick press could clear a
+booking on the night before.
+
 **Not now** puts the card away without writing anything. So does making the
 change. Either way the night stays on screen and the instruction leaves the
-address, so reloading does not bring the card back.
+address, so reloading does not bring the card back — and a second approval,
+arriving while this section is already open, raises a fresh card on its own
+night.
 
 The card also says what a move does **not** do: it changes when the team is
 expected, and it does not change a match already created for that night.
@@ -343,6 +350,9 @@ sent.
   invisibly.
 - **A move does not change a match.** Timeslots say when a team is expected;
   a match created for that night carries its own date and is untouched.
+- **The card is absent for a moment after the date changes.** The list keeps the
+  previous night's rows while the new ones load, and the card will not plan
+  against them.
 - **A bye assigned this way skips the past-date check**, like every other bye.
 
 ## Open questions and verification

@@ -26,6 +26,15 @@ const TimeslotsTab = () => {
   // A night named in the address wins, because something asked for it.
   const [selectedDate, setSelectedDate] = useState<Date>(() => prefill.date ?? nextThursday());
 
+  // A second approval can arrive while this section is already open, naming a
+  // different night. Following it during render rather than in an effect keeps
+  // the calendar and the card from disagreeing for a frame.
+  const [openedNight, setOpenedNight] = useState<string | null>(prefill.dateKey);
+  if (prefill.dateKey && prefill.dateKey !== openedNight) {
+    setOpenedNight(prefill.dateKey);
+    if (prefill.date) setSelectedDate(prefill.date);
+  }
+
   const { data: teams = [], isLoading: isLoadingTeams } = useTeamsQuery();
 
   /** One team by name, several by count — an admin books both ways. */
@@ -49,6 +58,7 @@ const TimeslotsTab = () => {
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,
+    isNightLoaded,
   } = useTimeslots(selectedDate);
 
   const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
@@ -162,8 +172,11 @@ const TimeslotsTab = () => {
     timeslots.find((row) => row.team_id === prefill.teamId)?.teams?.name ??
     'This team';
 
+  // Only ever planned against this night's own rows. While a newly chosen night
+  // loads, `timeslots` still holds the night before's rows, and clearing by
+  // their ids would delete bookings on a night nobody was looking at.
   const movePlan =
-    prefill.hasPrefill && prefill.teamId
+    prefill.hasPrefill && prefill.teamId && isNightLoaded
       ? buildMovePlan(timeslots, prefill.teamId, prefill.slot)
       : null;
 
@@ -227,6 +240,7 @@ const TimeslotsTab = () => {
             plan={movePlan}
             teamName={prefillTeamName}
             dateLabel={format(selectedDate, 'EEEE, d MMMM')}
+            requestedText={prefill.askedFor}
             isSubmitting={isSubmitting}
             onMove={handleMove}
             onDismiss={prefill.clear}

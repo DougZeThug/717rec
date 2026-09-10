@@ -63,6 +63,28 @@ describe('buildTimeslotHandoff', () => {
     expect(description).toContain('not one of the blocks');
   });
 
+  // The screen that has to choose a block needs to see what was asked for, and
+  // the address is the only thing that reaches it.
+  it('carries the words the team used so the next screen can show them', () => {
+    const { search } = buildTimeslotHandoff(
+      request({ requested_timeslot: 'as early as possible' })
+    );
+
+    expect(params(search).get('asked')).toBe('as early as possible');
+  });
+
+  it('carries no words when the block was read cleanly', () => {
+    const { search } = buildTimeslotHandoff(request());
+
+    expect(params(search).get('asked')).toBeNull();
+  });
+
+  it('does not put an essay in the address', () => {
+    const { search } = buildTimeslotHandoff(request({ requested_timeslot: 'x'.repeat(500) }));
+
+    expect(params(search).get('asked')).toHaveLength(80);
+  });
+
   it('leaves the block unchosen when no time was given at all', () => {
     const { search, description } = buildTimeslotHandoff(request({ requested_timeslot: null }));
 

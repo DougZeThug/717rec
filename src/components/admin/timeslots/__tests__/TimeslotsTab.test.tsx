@@ -256,10 +256,11 @@ describe('TimeslotsTab, opened by an approved request', () => {
     vi.useRealTimers();
   });
 
-  const setNight = (timeslots: unknown[]) =>
+  const setNight = (timeslots: unknown[], isNightLoaded = true) =>
     mockUseTimeslots.mockReturnValue({
       timeslots,
       isLoading: false,
+      isNightLoaded,
       addTimeslot,
       deleteTimeslot,
       batchAssignTimeslots,
@@ -410,5 +411,27 @@ describe('TimeslotsTab, opened by an approved request', () => {
 
     await waitFor(() => expect(screen.queryByText('Move 3 Amigos')).not.toBeInTheDocument());
     expect(moveTeamBooking).not.toHaveBeenCalled();
+  });
+
+  // The rows on screen belong to the night before until the newly chosen one
+  // loads. Planning against them would clear bookings on a night nobody was
+  // looking at, because a move clears by row id.
+  it('plans nothing until the night on screen is its own', () => {
+    setNight(blockRows('6:00 PM', '6:30 PM'), false);
+
+    renderTab(`/admin/timeslots?date=2026-09-17&team=${TEAM_ID}&slot=7%3A00+PM`);
+
+    expect(screen.queryByText('Move 3 Amigos')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Move them' })).not.toBeInTheDocument();
+  });
+
+  it('shows the words a team used when they name no block', () => {
+    setNight(blockRows('6:00 PM', '6:30 PM'));
+
+    renderTab(
+      `/admin/timeslots?date=2026-09-17&team=${TEAM_ID}&asked=${encodeURIComponent('as early as possible')}`
+    );
+
+    expect(screen.getByText(/"as early as possible"/)).toBeInTheDocument();
   });
 });

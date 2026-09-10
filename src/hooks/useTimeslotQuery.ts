@@ -37,6 +37,16 @@ export const useTimeslotQuery = (date: Date | null) => {
     timeslots: query.data?.timeslots || [],
     groupedTimeslots: query.data?.groupedTimeslots || {},
     isLoading: query.isLoading,
+    /**
+     * True while the rows on screen belong to a **previously** chosen night.
+     *
+     * `placeholderData` keeps the last night's rows visible when the date
+     * changes, rather than blanking the column. That is right for reading and
+     * wrong for acting: anything that writes using these rows has to wait, or
+     * it would act on another night's bookings. `isLoading` does not cover it —
+     * with placeholder data present the query is no longer pending.
+     */
+    isPlaceholderData: query.isPlaceholderData,
     error: query.error?.message || null,
   };
 };

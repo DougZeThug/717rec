@@ -30,10 +30,15 @@ export const buildTimeslotHandoff = (request: TeamRequestWithTeam): TimeslotHand
   const wantsBye = request.request_type !== 'TIME_CHANGE';
   const block = wantsBye ? BYE_SLOT : parseRequestedBlock(request.requested_timeslot);
 
+  const asked = request.requested_timeslot?.trim();
+
   const params = new URLSearchParams();
   if (request.match_date) params.set('date', request.match_date);
   params.set('team', request.team_id);
   if (block) params.set('slot', block);
+  // Carry the team's own words when they could not be read as a block, so the
+  // screen that has to choose one can show what was actually asked for.
+  if (!block && asked) params.set('asked', asked.slice(0, 80));
 
   const nightLabel = request.match_date
     ? ` on ${formatWithPattern(request.match_date, 'MMM d')}`
@@ -42,7 +47,6 @@ export const buildTimeslotHandoff = (request: TeamRequestWithTeam): TimeslotHand
   // The time the team typed is free text, so it can be anything. Naming what
   // could not be read beats silently opening on no block at all.
   if (!block) {
-    const asked = request.requested_timeslot?.trim();
     return {
       search: `?${params.toString()}`,
       description: asked
