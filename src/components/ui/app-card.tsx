@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import { Link } from 'react-router';
 
-import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { cn } from '@/lib/utils';
 import { getCardStyle, gradients } from '@/styles/design-system';
 
@@ -55,8 +54,6 @@ export const AppCard: React.FC<AppCardProps> = ({
   elevation = 'default',
   gradient = 'default',
 }) => {
-  const { isDark } = useThemeConsistency();
-
   /** Shared header/body/footer markup reused by all three card render variants below. */
   const cardContent = (
     <>
@@ -64,13 +61,10 @@ export const AppCard: React.FC<AppCardProps> = ({
         <CardHeader
           className={cn(
             'flex flex-row items-start justify-between gap-4',
-            badge &&
-              cn(
-                'bg-gradient-to-br',
-                isDark
-                  ? 'from-gray-800/90 via-gray-800/70 to-gray-900/80'
-                  : 'from-white via-white to-gray-50'
-              ),
+            // A faint wash behind a badged header. It was a light/dark pair of
+            // hand-written greys, which drew the light wash on the dark winter
+            // page; `--muted` is the same wash in every theme.
+            badge && 'bg-muted/30',
             headerClassName
           )}
         >
@@ -87,17 +81,7 @@ export const AppCard: React.FC<AppCardProps> = ({
         </CardHeader>
       )}
       {children && <CardContent className={contentClassName}>{children}</CardContent>}
-      {footer && (
-        <CardFooter
-          className={cn(
-            'bg-gradient-to-br',
-            isDark ? 'from-gray-800/30 to-transparent' : 'from-gray-50/50 to-transparent',
-            footerClassName
-          )}
-        >
-          {footer}
-        </CardFooter>
-      )}
+      {footer && <CardFooter className={cn('bg-muted/20', footerClassName)}>{footer}</CardFooter>}
     </>
   );
 

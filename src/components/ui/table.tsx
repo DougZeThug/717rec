@@ -34,7 +34,7 @@ const TableHeader = React.forwardRef<
         '[&_tr]:border-b font-semibold',
         isWinterTheme
           ? 'border-frost-border/30 text-card-foreground'
-          : 'border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100',
+          : 'border-border text-foreground',
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ const TableBody = React.forwardRef<
       ref={ref}
       className={cn(
         '[&_tr:last-child]:border-0',
-        isWinterTheme ? 'text-card-foreground' : 'text-gray-800 dark:text-gray-100',
+        isWinterTheme ? 'text-card-foreground' : 'text-foreground',
         className
       )}
       {...props}
@@ -74,7 +74,7 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
           'border-b transition-colors',
           isWinterTheme
             ? 'border-frost-border/20 even:bg-white/5 hover:bg-white/10'
-            : 'border-gray-200 dark:border-gray-700 even:bg-gray-50 dark:even:bg-white/5 hover:bg-muted/50',
+            : 'border-border even:bg-muted/50 hover:bg-muted/50',
           'data-[state=selected]:bg-muted',
           className
         )}
@@ -102,10 +102,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     scope={scope}
-    className={cn(
-      'h-12 px-4 text-left align-middle font-medium text-gray-700 dark:text-gray-200',
-      className
-    )}
+    className={cn('h-12 px-4 text-left align-middle font-medium text-muted-foreground', className)}
     {...props}
   />
 ));
@@ -122,7 +119,7 @@ const TableCell = React.forwardRef<
       ref={ref}
       className={cn(
         'p-4 align-middle [&:has([role=checkbox])]:pr-0',
-        isWinterTheme ? 'text-card-foreground' : 'text-gray-800 dark:text-gray-100',
+        isWinterTheme ? 'text-card-foreground' : 'text-foreground',
         className
       )}
       {...props}
