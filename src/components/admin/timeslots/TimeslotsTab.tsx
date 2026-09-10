@@ -9,23 +9,22 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTeamsQuery } from '@/hooks/teams';
+import { useTimeslotPrefill } from '@/hooks/timeslots/useTimeslotPrefill';
 import { useTimeslots } from '@/hooks/useTimeslots';
 import { useToast } from '@/hooks/useToast';
-import { getBackToBackPair } from '@/utils/autoSchedule/constants';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { nextThursday } from '@/utils/leagueNight';
 import { errorLog } from '@/utils/logger';
+import { buildMovePlan, describeBlock } from '@/utils/timeslotMove';
 
-/** "6:30 + 7:00 PM", the pair of times a booking actually writes. */
-const describeBlock = (timeslot: string): string => {
-  const second = getBackToBackPair(timeslot);
-  return second ? `${timeslot.replace(' PM', '')} + ${second}` : timeslot;
-};
+import TimeslotMoveCard from './TimeslotMoveCard';
 
 const TimeslotsTab = () => {
   const { toast } = useToast();
+  const prefill = useTimeslotPrefill();
   // League night, not today: Timeslots is used to set up the next Thursday.
-  const [selectedDate, setSelectedDate] = useState<Date>(() => nextThursday());
+  // A night named in the address wins, because something asked for it.
+  const [selectedDate, setSelectedDate] = useState<Date>(() => prefill.date ?? nextThursday());
 
   const { data: teams = [], isLoading: isLoadingTeams } = useTeamsQuery();
 
@@ -49,6 +48,7 @@ const TimeslotsTab = () => {
     assignByeWeek,
     batchAssignByeWeeks,
     removeByeWeek,
+    moveTeamBooking,
   } = useTimeslots(selectedDate);
 
   const handleTimeslotAssign = async (teamId: string, timeslot: string) => {
@@ -152,6 +152,51 @@ const TimeslotsTab = () => {
     }
   };
 
+  // ── The change an approved request asked for ───────────────────────────────
+
+  const prefillTeam = prefill.teamId ? teams.find((team) => team.id === prefill.teamId) : undefined;
+  // A team hidden from the public list still has rows, so fall back to the
+  // name on the booking rather than showing an id or nothing.
+  const prefillTeamName =
+    prefillTeam?.name ??
+    timeslots.find((row) => row.team_id === prefill.teamId)?.teams?.name ??
+    'This team';
+
+  const movePlan =
+    prefill.hasPrefill && prefill.teamId
+      ? buildMovePlan(timeslots, prefill.teamId, prefill.slot)
+      : null;
+
+  const handleMove = async () => {
+    if (!movePlan || !prefill.teamId || !movePlan.target) return;
+
+    try {
+      const outcome = await moveTeamBooking(
+        selectedDate,
+        prefill.teamId,
+        movePlan.target,
+        movePlan.removeIds
+      );
+
+      // A refusal already said why, and the card stays so the admin can change
+      // the night and try again. A part-done move already named its repair.
+      if (outcome !== 'moved') return;
+
+      toast({
+        title: movePlan.target === 'BYE' ? 'Bye Week Assigned' : 'Block booked',
+        description:
+          movePlan.target === 'BYE'
+            ? `${prefillTeamName} is not playing on ${format(selectedDate, 'MMMM d, yyyy')}`
+            : `${prefillTeamName} booked for the ${describeBlock(movePlan.target)} block on ${format(selectedDate, 'MMMM d, yyyy')}`,
+      });
+      prefill.clear();
+    } catch (error) {
+      // moveTeamBooking already raised the reason. Adding a second toast here
+      // would replace it with a generic one.
+      errorLog('Error moving a booking:', error);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -177,6 +222,16 @@ const TimeslotsTab = () => {
         </div>
       </CardHeader>
       <CardContent>
+        {movePlan && (
+          <TimeslotMoveCard
+            plan={movePlan}
+            teamName={prefillTeamName}
+            dateLabel={format(selectedDate, 'EEEE, d MMMM')}
+            isSubmitting={isSubmitting}
+            onMove={handleMove}
+            onDismiss={prefill.clear}
+          />
+        )}
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
