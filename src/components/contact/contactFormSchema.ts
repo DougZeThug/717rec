@@ -56,8 +56,6 @@ export const contactFormSchema = z
     }
   });
 
-export type ContactFormValues = z.infer<typeof contactFormSchema>;
-
 /** The fields that can carry a message under them. */
 export type ContactFieldErrors = Partial<Record<'name' | 'contact' | 'team' | 'message', string>>;
 

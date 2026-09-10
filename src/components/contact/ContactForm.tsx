@@ -4,16 +4,7 @@ import { useSearchParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/useToast';
-import { submitContactMessage } from '@/services/contact/ContactSubmissionService';
 import {
   CONTACT_TOPIC_OPTIONS,
   type ContactTopic,
@@ -21,16 +12,10 @@ import {
   findContactTopic,
   messageLimitFor,
 } from '@/services/contact/contactTopics';
-import { trackContactForm } from '@/utils/analytics';
-import { getUIErrorMessage } from '@/utils/errorHandler';
 
-import {
-  type ContactFieldErrors,
-  contactFormSchema,
-  type ContactFormValues,
-  toFieldErrors,
-} from './contactFormSchema';
+import { ContactTopicField } from './ContactTopicField';
 import { LockableField } from './LockableField';
+import { useContactSubmit } from './useContactSubmit';
 import { useVerifiedIdentity } from './useVerifiedIdentity';
 
 interface ContactFormProps {
@@ -62,59 +47,19 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
   const [players, setPlayers] = useState('');
   const [message, setMessage] = useState('');
   const [website, setWebsite] = useState('');
-  const [errors, setErrors] = useState<ContactFieldErrors>({});
-  const [isSending, setIsSending] = useState(false);
 
   const topic = findContactTopic(topicValue) ?? CONTACT_TOPIC_OPTIONS[0];
   const { isSignedIn, name, team, contact, setName, setTeam, setContact, nameLocked, teamLocked } =
     useVerifiedIdentity({ allowNewTeamName: Boolean(topic.needsTeam) });
+  const { errors, isSending, submit } = useContactSubmit(onSent);
 
-  const showTeam = topic.needsTeam || Boolean(team) || topic.channel === 'league';
+  // Answered by email means the contact field has to be one.
+  const isAnsweredByEmail = topic.channel === 'support';
+  const showTeam = topic.needsTeam || Boolean(team) || !isAnsweredByEmail;
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-
-    const parsed = contactFormSchema.safeParse({
-      topic: topic.value,
-      name,
-      contact,
-      team,
-      players,
-      message,
-      website,
-    });
-
-    if (!parsed.success) {
-      setErrors(toFieldErrors(parsed.error));
-      return;
-    }
-
-    setErrors({});
-    setIsSending(true);
-    try {
-      const values: ContactFormValues = parsed.data;
-      await submitContactMessage({
-        topic,
-        name: values.name,
-        contact: values.contact,
-        team: values.team ?? null,
-        players: values.players ?? null,
-        message: values.message,
-        website: values.website,
-      });
-      // Same event name as before the two forms merged, so the history stays
-      // comparable; the topic takes the place of the old subject.
-      trackContactForm(topic.value);
-      onSent();
-    } catch (error) {
-      toast({
-        title: 'Could not send',
-        description: getUIErrorMessage(error, 'Failed to send message'),
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSending(false);
-    }
+    void submit({ topic, name, contact, team, players, message, website });
   };
 
   return (
@@ -132,25 +77,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
       />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <Label htmlFor="contact-topic">What is this about?</Label>
-          <Select
-            value={topic.value}
-            onValueChange={(value) => setTopicValue(value as ContactTopic)}
-          >
-            <SelectTrigger id="contact-topic" className="mt-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CONTACT_TOPIC_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {topic.helper && <p className="mt-1 text-xs text-muted-foreground">{topic.helper}</p>}
-        </div>
+        <ContactTopicField topic={topic} onChange={setTopicValue} />
 
         <LockableField
           id="contact-name"
@@ -165,14 +92,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
 
         <LockableField
           id="contact-contact"
-          label={topic.channel === 'support' ? 'Email' : 'Contact (email or phone)'}
+          label={isAnsweredByEmail ? 'Email' : 'Contact (email or phone)'}
           value={contact}
           onChange={setContact}
           locked={false}
           maxLength={255}
-          placeholder={
-            topic.channel === 'support' ? 'you@example.com' : 'you@example.com or 717-555-1234'
-          }
+          placeholder={isAnsweredByEmail ? 'you@example.com' : 'you@example.com or 717-555-1234'}
           error={errors.contact}
         />
 
