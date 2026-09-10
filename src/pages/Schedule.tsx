@@ -170,13 +170,14 @@ const Schedule = () => {
   const hasAutoPickedDate = useRef(hadDateInUrl);
 
   useEffect(() => {
-    if (hasAutoPickedDate.current || matchesLoading) return;
+    if (hasAutoPickedDate.current || matchesLoading || timeslotDatesLoading) return;
     // A failed read is not an empty season: leave the guess alone and let a
     // successful retry make the choice.
     if (matchesError) return;
     hasAutoPickedDate.current = true;
 
-    if (matchDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
+    // A night with posted timeslots is a real night, even with no match rows.
+    if (scheduleDates.has(format(selectedDate, 'yyyy-MM-dd'))) return;
 
     const today = new Date();
     const todayKey = format(today, 'yyyy-MM-dd');
@@ -184,18 +185,26 @@ const Schedule = () => {
       .reverse()
       .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
     const nextNight = matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
+    // The newest night whose timeslots are posted, today or earlier.
+    const latestPostedNight = [...timeslotNights]
+      .reverse()
+      .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
     // On league night itself, upcoming matches matter more than last week's
     // results: if tonight is not entered yet, open on the next scheduled
-    // night. Every other day, prefer the last played night so the morning
-    // after league night still lands on results.
-    const fallback = today.getDay() === 4 ? (nextNight ?? lastPlayed) : (lastPlayed ?? nextNight);
+    // night, and failing that on the most recently posted timeslot night.
+    // Every other day, prefer the last played night so the morning after
+    // league night still lands on results.
+    const fallback =
+      today.getDay() === 4
+        ? (nextNight ?? latestPostedNight ?? lastPlayed)
+        : (lastPlayed ?? nextNight ?? latestPostedNight);
 
     if (fallback) {
       scheduleLog('No matches on the default date; opening on', fallback);
       setSelectedDate(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
-  }, [matchesLoading, matchesError, matchNights]);
+  }, [matchesLoading, timeslotDatesLoading, matchesError, matchNights, timeslotNights]);
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
