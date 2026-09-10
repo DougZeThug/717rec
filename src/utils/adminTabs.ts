@@ -58,26 +58,44 @@ export const readRememberedAdminSection = (): string => {
   return DEFAULT_ADMIN_SECTION;
 };
 
+/** What a section asks for: which section, and optionally what to open it on. */
+interface AdminTabRequest {
+  tabId: string;
+  /** A query string including its leading `?`, or nothing. */
+  search?: string;
+}
+
 /**
  * Ask the admin dashboard to open a different section.
+ *
+ * `search` lets one section hand facts to the next one — the night, the team
+ * and the block that the Requests approval toast sends to Timeslots. It travels
+ * in the address rather than in the event, so the section that receives it can
+ * be reloaded, shared and stepped back to like any other page. A switch from
+ * the menu passes nothing, which is what clears a stale one.
  *
  * Deliberately does **not** record the section: the shell can refuse the switch
  * when the open section holds unsaved work, and recording here would leave a
  * refused section as the one a bare `/admin` reopens. The dashboard records
  * whichever section it actually renders instead.
  */
-export const switchAdminTab = (tabId: string): void => {
-  window.dispatchEvent(new CustomEvent<string>(ADMIN_TAB_EVENT, { detail: tabId }));
+export const switchAdminTab = (tabId: string, search?: string): void => {
+  window.dispatchEvent(
+    new CustomEvent<AdminTabRequest>(ADMIN_TAB_EVENT, { detail: { tabId, search } })
+  );
 };
 
 /**
  * Listen for tab requests. Returns an unsubscribe function, so it can be
  * returned directly from a `useEffect`.
  */
-export const subscribeToAdminTabRequests = (onRequest: (tabId: string) => void): (() => void) => {
+export const subscribeToAdminTabRequests = (
+  onRequest: (tabId: string, search?: string) => void
+): (() => void) => {
   const handler = (event: Event) => {
-    const tabId = (event as CustomEvent<string>).detail;
-    if (typeof tabId === 'string' && tabId) onRequest(tabId);
+    const request = (event as CustomEvent<AdminTabRequest>).detail;
+    if (!request || typeof request.tabId !== 'string' || !request.tabId) return;
+    onRequest(request.tabId, request.search);
   };
 
   window.addEventListener(ADMIN_TAB_EVENT, handler);

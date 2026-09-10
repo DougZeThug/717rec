@@ -48,11 +48,15 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
   // what lets the unsaved-work check below cover all of them at once.
   // Reports whether the switch happened, so the phone menu can stay open when
   // unsaved work stopped it.
+  //
+  // `search` is how one section hands facts to the next (see utils/adminTabs).
+  // A request that carries one is never a no-op, even for the section already
+  // open: the address is what the receiving section reads, so it has to change.
   const handleTabChange = useCallback(
-    (tabId: string) => {
-      if (tabId === activeTab) return true;
+    (tabId: string, search?: string) => {
+      if (tabId === activeTab && !search) return true;
       if (!confirmDiscardUnsavedWork()) return false;
-      navigate(`/admin/${tabId}`);
+      navigate(`/admin/${tabId}${search ?? ''}`);
       return true;
     },
     [activeTab, navigate]

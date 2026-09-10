@@ -52,7 +52,10 @@ vi.mock('@/components/admin/dashboard/AdminMobileNav', () => ({
 
 const tabButton = (name: RegExp) => screen.getByRole('button', { name });
 
-const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
+const LocationProbe = () => {
+  const { pathname, search } = useLocation();
+  return <div data-testid="location">{`${pathname}${search}`}</div>;
+};
 
 const SectionRoute = () => {
   const { section } = useParams<{ section: string }>();
@@ -122,6 +125,28 @@ describe('AdminSidebar', () => {
     await waitFor(() => expect(currentPath()).toBe('/admin/divisions'));
   });
 
+  // The Requests approval toast sends Timeslots the night, the team and the
+  // block this way, so the query string has to survive the switch.
+  it('opens a section at the address another part of the dashboard asks for', async () => {
+    renderSidebar();
+
+    act(() => switchAdminTab('timeslots', '?date=2026-09-17&team=t1&slot=BYE'));
+
+    await waitFor(() =>
+      expect(currentPath()).toBe('/admin/timeslots?date=2026-09-17&team=t1&slot=BYE')
+    );
+  });
+
+  // Asking for the section already open is normally a no-op. It cannot be when
+  // the request carries facts: the address is what the section reads.
+  it('re-opens the section already on screen when the request carries an address', async () => {
+    renderSidebar('timeslots');
+
+    act(() => switchAdminTab('timeslots', '?date=2026-09-17&team=t1'));
+
+    await waitFor(() => expect(currentPath()).toBe('/admin/timeslots?date=2026-09-17&team=t1'));
+  });
+
   // UX audit A-07: switching section threw away unsaved work with no warning.
   describe('when a section holds unsaved work', () => {
     const registerDirtySection = () =>
@@ -158,6 +183,18 @@ describe('AdminSidebar', () => {
       renderSidebar();
 
       act(() => switchAdminTab('divisions'));
+
+      await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
+      expect(currentPath()).toBe('/admin/timeslots');
+      confirmSpy.mockRestore();
+    });
+
+    it('still asks when the request carries an address', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      registerDirtySection();
+      renderSidebar();
+
+      act(() => switchAdminTab('timeslots', '?date=2026-09-17&team=t1&slot=BYE'));
 
       await waitFor(() => expect(confirmSpy).toHaveBeenCalled());
       expect(currentPath()).toBe('/admin/timeslots');

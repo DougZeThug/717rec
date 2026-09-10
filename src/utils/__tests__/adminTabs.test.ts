@@ -24,7 +24,20 @@ describe('adminTabs', () => {
 
     switchAdminTab('batch-matches');
 
-    expect(onRequest).toHaveBeenCalledWith('batch-matches');
+    expect(onRequest).toHaveBeenCalledWith('batch-matches', undefined);
+    unsubscribe();
+  });
+
+  // One section hands the next one what to open on: the Requests approval toast
+  // sends Timeslots the night, the team and the block. It travels in the
+  // address, so the receiving section can be reloaded and stepped back to.
+  it('passes a query string through to the listener', () => {
+    const onRequest = vi.fn();
+    const unsubscribe = subscribeToAdminTabRequests(onRequest);
+
+    switchAdminTab('timeslots', '?date=2026-09-17&team=t1&slot=7%3A00+PM');
+
+    expect(onRequest).toHaveBeenCalledWith('timeslots', '?date=2026-09-17&team=t1&slot=7%3A00+PM');
     unsubscribe();
   });
 
@@ -73,7 +86,7 @@ describe('adminTabs', () => {
     const unsubscribe = subscribeToAdminTabRequests(onRequest);
 
     expect(() => switchAdminTab('teams')).not.toThrow();
-    expect(onRequest).toHaveBeenCalledWith('teams');
+    expect(onRequest).toHaveBeenCalledWith('teams', undefined);
     expect(() => rememberAdminSection('teams')).not.toThrow();
     expect(readRememberedAdminSection()).toBe('timeslots');
 
@@ -86,9 +99,10 @@ describe('adminTabs', () => {
     const onRequest = vi.fn();
     const unsubscribe = subscribeToAdminTabRequests(onRequest);
 
-    // The literal is deliberate: it pins the event name, which is private to
-    // the module and would otherwise be free to drift.
-    window.dispatchEvent(new CustomEvent('admin:switch-tab', { detail: '' }));
+    // The literals are deliberate: they pin the event name and the payload
+    // shape, both private to the module and otherwise free to drift.
+    window.dispatchEvent(new CustomEvent('admin:switch-tab', { detail: { tabId: '' } }));
+    window.dispatchEvent(new CustomEvent('admin:switch-tab', { detail: undefined }));
 
     expect(onRequest).not.toHaveBeenCalled();
     unsubscribe();
