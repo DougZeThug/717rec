@@ -4,7 +4,11 @@ import type { Ranking } from '@/types';
 import type { CareerRanking } from '@/types/career';
 import type { LeagueTeamMatchStats } from '@/utils/teamDetailsUtils/leagueMatchStats';
 
-import { collectCareerPopulations, collectSeasonPopulations } from '../reportCardPopulations';
+import {
+  collectCareerPopulations,
+  collectSeasonPopulations,
+  isCareerGradeable,
+} from '../reportCardPopulations';
 
 const ranking = (overrides: Partial<Ranking>): Ranking =>
   ({
@@ -27,6 +31,8 @@ const careerRanking = (overrides: Partial<CareerRanking>): CareerRanking =>
   ({
     teamId: 'team-1',
     teamName: 'Team One',
+    careerMatchWins: 5,
+    careerMatchLosses: 5,
     careerWinPercentage: 0.5,
     careerGameWinPercentage: 0.5,
     careerSweepRate: 20,
@@ -200,7 +206,82 @@ describe('collectCareerPopulations', () => {
     expect(populations.powerScores).toHaveLength(2);
   });
 
+  // The career twin of the season case above. A team that has never played gets
+  // a career power score of 0 rather than null, so it cannot be spotted by the
+  // score — it is counted out by its career match record instead.
+  it('leaves a team that has never played a career match out of every list', () => {
+    const populations = collectCareerPopulations([
+      careerRanking({
+        teamId: 'never-played',
+        careerMatchWins: 0,
+        careerMatchLosses: 0,
+        careerPowerScore: 0,
+        careerWinPercentage: 0,
+        careerGameWinPercentage: 0,
+        careerSweepRate: 0,
+        careerClutchGame3s: 0,
+      }),
+    ]);
+
+    expect(populations).toEqual({
+      powerScores: [],
+      winPcts: [],
+      sos: [],
+      gameWinPcts: [],
+      sweepRates: [],
+      clutchRates: [],
+    });
+  });
+
+  it('stops a team that has never played flattering the teams that have', () => {
+    const played = [
+      careerRanking({ teamId: 'strong', careerPowerScore: 80 }),
+      careerRanking({ teamId: 'weak', careerPowerScore: 40 }),
+    ];
+    const withNewcomer = [
+      ...played,
+      careerRanking({
+        teamId: 'newcomer',
+        careerMatchWins: 0,
+        careerMatchLosses: 0,
+        careerPowerScore: 0,
+      }),
+    ];
+
+    expect(collectCareerPopulations(withNewcomer).powerScores).toEqual(
+      collectCareerPopulations(played).powerScores
+    );
+    // The old behaviour produced [80, 40, 0] — a third value at the very floor,
+    // which lifted every real team's percentile.
+    expect(collectCareerPopulations(withNewcomer).powerScores).toEqual([80, 40]);
+  });
+
+  it('counts a team that has only ever lost, because it did play', () => {
+    const populations = collectCareerPopulations([
+      careerRanking({
+        teamId: 'winless',
+        careerMatchWins: 0,
+        careerMatchLosses: 6,
+        careerWinPercentage: 0,
+      }),
+    ]);
+
+    expect(populations.powerScores).toHaveLength(1);
+    expect(populations.winPcts).toEqual([0]);
+  });
+
   it('returns empty lists for no teams', () => {
     expect(collectCareerPopulations([]).clutchRates).toEqual([]);
+  });
+});
+
+describe('isCareerGradeable', () => {
+  it.each([
+    ['a team with wins and losses', 4, 2, true],
+    ['a team that has only won', 3, 0, true],
+    ['a team that has only lost', 0, 3, true],
+    ['a team that has never played', 0, 0, false],
+  ])('%s', (_label, careerMatchWins, careerMatchLosses, expected) => {
+    expect(isCareerGradeable({ careerMatchWins, careerMatchLosses })).toBe(expected);
   });
 });

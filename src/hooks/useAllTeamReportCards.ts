@@ -7,6 +7,7 @@ import { calculatePercentile } from '@/utils/percentileUtils';
 import {
   collectCareerPopulations,
   collectSeasonPopulations,
+  isCareerGradeable,
   isGradeable,
 } from '@/utils/reportCardPopulations';
 import { calculateGPA, calculateGrade, LetterGrade } from '@/utils/reportCardUtils';
@@ -69,36 +70,41 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
 
       const populations = collectCareerPopulations(careerRankings);
 
-      return careerRankings
-        .map((team) => {
-          const overallGrade = gradeAgainst(team.careerPowerScore, populations.powerScores);
-          const consistencyGrade = gradeAgainst(team.careerWinPercentage, populations.winPcts);
-          const gamesGrade = gradeAgainst(team.careerGameWinPercentage, populations.gameWinPcts);
-          const offenseGrade = gradeAgainst(team.careerSweepRate, populations.sweepRates);
-          const clutchGrade = gradeAgainst(
-            team.careerClutchGame3s > 0 ? team.careerClutchWinPct : null,
-            populations.clutchRates
-          );
-          const scheduleGrade = gradeAgainst(team.careerSos, populations.sos);
+      return (
+        careerRankings
+          // A team with no career match has no career GPA to list, for the same
+          // reason the season loop below stops at `isGradeable`.
+          .filter((team) => isCareerGradeable(team))
+          .map((team) => {
+            const overallGrade = gradeAgainst(team.careerPowerScore, populations.powerScores);
+            const consistencyGrade = gradeAgainst(team.careerWinPercentage, populations.winPcts);
+            const gamesGrade = gradeAgainst(team.careerGameWinPercentage, populations.gameWinPcts);
+            const offenseGrade = gradeAgainst(team.careerSweepRate, populations.sweepRates);
+            const clutchGrade = gradeAgainst(
+              team.careerClutchGame3s > 0 ? team.careerClutchWinPct : null,
+              populations.clutchRates
+            );
+            const scheduleGrade = gradeAgainst(team.careerSos, populations.sos);
 
-          const gpa = calculateGPA([
-            { grade: overallGrade, weight: 3 },
-            { grade: consistencyGrade, weight: 2 },
-            { grade: gamesGrade, weight: 1.5 },
-            { grade: offenseGrade, weight: 1 },
-            { grade: clutchGrade, weight: 1 },
-            { grade: scheduleGrade, weight: 1 },
-          ]);
+            const gpa = calculateGPA([
+              { grade: overallGrade, weight: 3 },
+              { grade: consistencyGrade, weight: 2 },
+              { grade: gamesGrade, weight: 1.5 },
+              { grade: offenseGrade, weight: 1 },
+              { grade: clutchGrade, weight: 1 },
+              { grade: scheduleGrade, weight: 1 },
+            ]);
 
-          return {
-            teamId: team.teamId,
-            teamName: team.teamName,
-            logoUrl: team.logoUrl ?? null,
-            gpa,
-            overallGrade,
-          };
-        })
-        .sort((a, b) => b.gpa - a.gpa);
+            return {
+              teamId: team.teamId,
+              teamName: team.teamName,
+              logoUrl: team.logoUrl ?? null,
+              gpa,
+              overallGrade,
+            };
+          })
+          .sort((a, b) => b.gpa - a.gpa)
+      );
     }
 
     // Season mode

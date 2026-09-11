@@ -7,6 +7,7 @@ import { calculatePercentile } from '@/utils/percentileUtils';
 import {
   collectCareerPopulations,
   collectSeasonPopulations,
+  isCareerGradeable,
   isGradeable,
 } from '@/utils/reportCardPopulations';
 import { calculateGPA, calculateGrade, GradeCategory, TeamGrades } from '@/utils/reportCardUtils';
@@ -97,6 +98,11 @@ export function useTeamReportCard(teamId: string | undefined, mode: ReportCardMo
 
       const teamCareer = careerRankings.find((r) => r.teamId === teamId);
       if (!teamCareer) return null;
+      // Never played a career match, so there is nothing to grade. Same reason
+      // the season branch below stops at `isGradeable`: six grades built from
+      // zeroes the team never earned are worse than the card's "play some
+      // matches first" panel.
+      if (!isCareerGradeable(teamCareer)) return null;
 
       const populations = collectCareerPopulations(careerRankings);
 
