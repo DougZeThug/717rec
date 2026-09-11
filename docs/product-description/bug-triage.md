@@ -12,8 +12,8 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **41 entries**: 13 high, 22 medium, and 6 low.
-Two of the 41 were **not raised as defects by any document**. B-40, a `high`, was
+merging by root cause they come to **42 entries**: 13 high, 23 medium, and 6 low.
+Two of the 42 were **not raised as defects by any document**. B-40, a `high`, was
 found while checking B-20. B-41, a `medium`, was recorded in
 `home/the-home-page.md` as an open question and could not be reached until
 [B-31](#b-31-two-dead-features-are-visible-in-the-interface) added the control
@@ -1074,8 +1074,9 @@ finding read a superseded migration.
   stamped on a posted message. A refused row is truthy, so all four would have
   shown a team the person had just been refused from. They now read a derived
   `activeMembership`, which is null for a refusal. (They were already treating a
-  *pending* row the same way; that is a separate, pre-existing question and was
-  left alone.)
+  *pending* row the same way; that is a separate, pre-existing question, left
+  alone here and since answered and fixed in
+  [B-42](#b-42-a-player-waiting-for-team-approval-cannot-post-on-the-message-board-at-all).)
 
   `types.ts` is generated from the live database and could not be regenerated
   here. The two columns were added to it by hand, in the same commit as the
@@ -1900,6 +1901,47 @@ finding read a superseded migration.
   database level using two teams deliberately given one name, and CI replays
   every migration before running it.
 - **Raised by:** [`history/head-to-head.md`](history/head-to-head.md#edge-cases).
+
+### B-42: A player waiting for team approval cannot post on the message board at all
+
+- **Where the user meets it:** anybody whose request to join a team is still in
+  the admin queue, on `/message-board`.
+- **What happens / what was expected:** the composer takes the message, the send
+  fails, and one red toast says "Your message could not be posted. Please try
+  again." Nothing names approval. Retrying can never work, because every retry
+  sends the same unapproved team. Expected: a signed-in player can post.
+- **Why (from the code):** `src/hooks/message-board/useMessageApi.ts` stamped
+  `team_id` from the membership row without reading `is_approved`, and a request
+  waiting for approval is a real row. The database guard
+  `enforce_message_identity` (`20260722120157`) refuses any message whose
+  `team_id` has no **approved** membership behind it, and accepts a message with
+  no team from any signed-in user. The browser therefore sent the one value the
+  league was certain to refuse. That guard raises without
+  `USING HINT = 'user-visible'`, which is why the reason never reached the
+  toast — see B-12.
+- **Severity:** `medium`. One feature is unusable, with nothing on the screen it
+  happens on to explain it or work around it, for as long as the request sits in
+  the queue. Nothing pushes a new request to an admin, so that is however long it
+  takes an admin to look at the queue.
+- **Decision needed:** `fix`.
+- **Raised by:** [`message-board/post-and-reply.md`](message-board/post-and-reply.md#edge-cases).
+- **Status:** **fixed.** The team is stamped only when the membership is
+  approved. A request still waiting sends no team, which the league accepts, so
+  the message is posted under the author's name with no team badge. Three tests
+  in `src/hooks/message-board/__tests__/useMessageApi.test.ts` pin the three
+  states — approved, waiting, and no team at all — and the waiting one was shown
+  red against the old code first.
+
+  The choice was between posting with no badge and switching the composer off
+  with a "waiting for approval" message. Posting with no badge was taken: the
+  league already accepts a message with no team from any signed-in user, and a
+  new player waiting to be let into a team is among the likeliest to have
+  something to ask.
+
+  Nothing else changed. `activeMembership` still keeps a waiting request, which
+  is what the join screen and `/my-team` need to show it; only the message
+  board's own stamp reads `is_approved`. The generic toast on every other failed
+  post is B-12.
 
 ---
 
