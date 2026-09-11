@@ -42,7 +42,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start min-h-[44px] transition-all duration-200 hover:bg-accent"
+              className="w-full justify-start min-h-[44px] transition-colors duration-200 hover:bg-accent"
             >
               <CalendarIcon className="mr-2 size-4" />
               {filters.date ? format(filters.date, 'MMM d, yyyy') : 'Filter by Date'}
