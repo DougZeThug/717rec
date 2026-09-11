@@ -21,30 +21,13 @@ import {
 import { useUpdateBracket } from '@/hooks/playoffs/useUpdateBracket';
 import { useDivisions } from '@/hooks/useDivisions';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
+import { hasPlayStarted } from '@/utils/playoffs/playoffUtils';
 
 interface EditBracketDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bracket: PlayoffBracket;
 }
-
-/**
- * True once any match in the bracket has been played.
- *
- * Read from the matches rather than `bracket.state`, because nothing in the app
- * ever writes an in-progress state: a bracket goes straight from `pending` to
- * `completed` when the whole thing ends. Trusting `state` would leave the
- * division editable through an entire tournament.
- */
-const hasPlayStarted = (bracket: PlayoffBracket): boolean =>
-  (bracket.matches ?? []).some(
-    (match) =>
-      match.winnerId !== null ||
-      (match.team1Score ?? 0) > 0 ||
-      (match.team2Score ?? 0) > 0 ||
-      (match.team1GameWins ?? 0) > 0 ||
-      (match.team2GameWins ?? 0) > 0
-  );
 
 const EditBracketHeader = ({ canEditDivision }: { canEditDivision: boolean }) => (
   <DialogHeader>
@@ -68,6 +51,17 @@ const NameField = ({ value, onChange }: { value: string; onChange: (value: strin
     {!value.trim() && <p className="text-sm text-destructive">Enter a name for the bracket.</p>}
   </div>
 );
+
+/**
+ * Every division a bracket may be filed under.
+ *
+ * The seeded "Hidden" division is left out. The playoffs page drops it from
+ * every division list, so a bracket moved there disappears from the bracket
+ * list with no way back to it. The Create-bracket form skips it the same way.
+ */
+const selectableDivisions = <T extends { name: string; display_division?: string }>(
+  divisions: T[]
+): T[] => divisions.filter((division) => (division.display_division || division.name) !== 'Hidden');
 
 const DivisionField = ({
   value,
@@ -121,7 +115,7 @@ const EditBracketDialog: React.FC<EditBracketDialogProps> = ({ open, onOpenChang
   const [title, setTitle] = useState(bracket.name ?? '');
   const [divisionId, setDivisionId] = useState(bracket.divisionId ?? '');
 
-  const hasStarted = bracket.state !== 'pending' || hasPlayStarted(bracket);
+  const hasStarted = bracket.state !== 'pending' || hasPlayStarted(bracket.matches);
   const trimmedTitle = title.trim();
   const divisionChanged = divisionId !== (bracket.divisionId ?? '');
   const isUnchanged = trimmedTitle === (bracket.name ?? '') && !divisionChanged;
@@ -150,7 +144,7 @@ const EditBracketDialog: React.FC<EditBracketDialogProps> = ({ open, onOpenChang
           <DivisionField
             value={divisionId}
             onChange={setDivisionId}
-            divisions={divisions ?? []}
+            divisions={selectableDivisions(divisions ?? [])}
             locked={hasStarted}
           />
         </div>

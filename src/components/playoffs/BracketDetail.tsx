@@ -151,6 +151,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
         bracketName={bracket.name ?? ''}
         currentParticipants={(participants || []).map((p) => ({ ...p, name: p.name ?? '' }))}
         bracketState={bracket.state || 'pending'}
+        matches={bracket.matches}
       />
 
       <RearrangeBracketDialog
