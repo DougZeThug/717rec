@@ -103,6 +103,16 @@ const TimeBlockHeader: React.FC<{
   </div>
 );
 
+/** The "clear this block" row under a block's team list. */
+const ClearBlockButton: React.FC<{ onClear: () => void }> = ({ onClear }) => (
+  <div className="mt-3 pt-3 border-t border-border">
+    <Button variant="outline" size="sm" onClick={onClear} className="text-xs">
+      <Trash2 className="size-3 mr-1" />
+      Clear All Teams
+    </Button>
+  </div>
+);
+
 const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   timeBlockTeams,
   date,
@@ -273,20 +283,12 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
               />
 
               {isEditMode && teams.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setConfirmAction({ type: 'clear', blockKey: block });
-                      setShowConfirmDialog(true);
-                    }}
-                    className="text-xs"
-                  >
-                    <Trash2 className="size-3 mr-1" />
-                    Clear All Teams
-                  </Button>
-                </div>
+                <ClearBlockButton
+                  onClear={() => {
+                    setConfirmAction({ type: 'clear', blockKey: block });
+                    setShowConfirmDialog(true);
+                  }}
+                />
               )}
             </CardContent>
           </Card>
