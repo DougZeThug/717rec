@@ -144,6 +144,89 @@ describe('EditBracketDialog', () => {
     expect(screen.getByLabelText('Division')).not.toBeDisabled();
   });
 
+  // A bracket whose team count is not a power of two is drawn with BYE matches,
+  // and the bracket library writes the win for the team facing the BYE as it
+  // draws them. That is not a game anybody played.
+  it('leaves the division editable on a new bracket drawn with a BYE', async () => {
+    const user = userEvent.setup();
+    renderDialog({
+      state: 'pending',
+      matches: [
+        // Team 1 against a BYE: a winner, no opponent, nothing played.
+        {
+          id: 'm1',
+          team1Id: 'team-1',
+          team2Id: null,
+          winnerId: 'team-1',
+          team1Score: null,
+          team2Score: null,
+          status: 'pending',
+        },
+        // A real first-round pairing, not yet played.
+        {
+          id: 'm2',
+          team1Id: 'team-2',
+          team2Id: 'team-3',
+          winnerId: null,
+          team1Score: null,
+          team2Score: null,
+          status: 'ready',
+        },
+      ],
+    } as unknown as Partial<PlayoffBracket>);
+
+    expect(screen.getByLabelText('Division')).not.toBeDisabled();
+
+    await user.click(screen.getByLabelText('Division'));
+    await user.click(await screen.findByRole('option', { name: 'Recreational' }));
+    await user.click(screen.getByRole('button', { name: /save changes/i }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      { title: 'Summer Finals', division_id: 'd-2' },
+      expect.anything()
+    );
+  });
+
+  // An admin can walk a one-sided match forward on an older bracket. That marks
+  // the match played, so the bracket has started even though it scored 0.
+  it('locks the division once a BYE match has been marked played', () => {
+    renderDialog({
+      state: 'pending',
+      matches: [
+        {
+          id: 'm1',
+          team1Id: 'team-1',
+          team2Id: null,
+          winnerId: 'team-1',
+          team1Score: 0,
+          team2Score: null,
+          status: 'completed',
+        },
+      ],
+    } as unknown as Partial<PlayoffBracket>);
+
+    expect(screen.getByLabelText('Division')).toBeDisabled();
+  });
+
+  it('locks the division while a match is being played, before any score', () => {
+    renderDialog({
+      state: 'pending',
+      matches: [
+        {
+          id: 'm1',
+          team1Id: 'team-1',
+          team2Id: 'team-2',
+          winnerId: null,
+          team1Score: 0,
+          team2Score: 0,
+          status: 'running',
+        },
+      ],
+    } as unknown as Partial<PlayoffBracket>);
+
+    expect(screen.getByLabelText('Division')).toBeDisabled();
+  });
+
   it('sends the new division when the admin changes it', async () => {
     const user = userEvent.setup();
     renderDialog();
