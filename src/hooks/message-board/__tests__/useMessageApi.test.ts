@@ -80,7 +80,8 @@ describe('useMessageApi.createMessage', () => {
     vi.clearAllMocks();
     mocks.auth = { user: { id: 'user-1' }, profile: { username: 'doug' } };
     mocks.activeMembership = null;
-    vi.mocked(MessageService.createMessage).mockResolvedValue(undefined);
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    vi.mocked(MessageService.createMessage).mockResolvedValue(undefined); // skipcq: JS-W1042
   });
 
   it('stamps the team on the message when the membership is approved', async () => {
