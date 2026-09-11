@@ -38,6 +38,7 @@ vi.mock('@/services/messages/MessageService', () => ({
   },
 }));
 
+import { toast } from '@/hooks/useToast';
 import { MessageService } from '@/services/messages/MessageService';
 
 import { useMessageApi } from '../useMessageApi';
@@ -124,5 +125,26 @@ describe('useMessageApi.createMessage', () => {
     expect(MessageService.createMessage).toHaveBeenCalledWith(
       expect.objectContaining({ team_id: null, team_name: null })
     );
+  });
+
+  it('refuses the post and says so when nobody is signed in', async () => {
+    mocks.auth = { user: null, profile: null };
+    const { result } = renderHook(() => useMessageApi());
+
+    await expect(result.current.createMessage('hello')).rejects.toThrow('User not authenticated');
+    expect(MessageService.createMessage).not.toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Not authenticated', variant: 'destructive' })
+    );
+  });
+
+  // The same guard: a signed-in account that has not set a username yet cannot
+  // post either, because the message carries the username.
+  it('refuses the post when the account has no username yet', async () => {
+    mocks.auth = { user: { id: 'user-1' }, profile: null };
+    const { result } = renderHook(() => useMessageApi());
+
+    await expect(result.current.createMessage('hello')).rejects.toThrow('User not authenticated');
+    expect(MessageService.createMessage).not.toHaveBeenCalled();
   });
 });
