@@ -17,12 +17,15 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
  *
  * The promise is deliberately dropped: a save parked with no connection never
  * settles, and what it eventually does is not what these tests are about.
+ *
+ * `execute` takes a required variables argument, so undefined is passed
+ * explicitly; the mutation here has none.
  */
 const saveRound = (mutationKey: readonly unknown[]): void => {
   queryClient
     .getMutationCache()
     .build(queryClient, { mutationKey: mutationKey as unknown[], mutationFn: vi.fn() })
-    .execute(undefined)
+    .execute(undefined) // skipcq: JS-W1042
     .catch(() => undefined);
 };
 

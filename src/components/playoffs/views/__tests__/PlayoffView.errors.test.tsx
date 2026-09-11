@@ -40,7 +40,8 @@ const makeData = (overrides: Partial<PlayoffPageData> = {}): PlayoffPageData =>
     allBracketsData: [],
     handleBracketCreated: vi.fn(),
     handleTeamDivisionChange: vi.fn(),
-    refetchBrackets: vi.fn().mockResolvedValue(undefined),
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    refetchBrackets: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
     bracket: null,
     teams: [],
     teamsLoading: false,
@@ -107,7 +108,7 @@ describe('PlayoffView error surfacing', () => {
   });
 
   it('surfaces list-level failures that previously had no reader', async () => {
-    const refetchBrackets = vi.fn().mockResolvedValue(undefined);
+    const refetchBrackets = vi.fn().mockResolvedValue(undefined); // skipcq: JS-W1042
     renderView(
       makeData({
         bracketsError: 'brackets down',

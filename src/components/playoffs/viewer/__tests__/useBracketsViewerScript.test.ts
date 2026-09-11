@@ -51,7 +51,8 @@ describe('useBracketsViewerScript', () => {
     // resetAllMocks (not clearAllMocks) so a mockRejectedValue set in one
     // test cannot leak its rejection into the next test's default behavior.
     vi.resetAllMocks();
-    mocks.loadBracketStyles.mockResolvedValue(undefined);
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    mocks.loadBracketStyles.mockResolvedValue(undefined); // skipcq: JS-W1042
     delete windowWithViewer.bracketsViewer;
   });
 

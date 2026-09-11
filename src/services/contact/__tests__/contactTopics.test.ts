@@ -77,7 +77,8 @@ describe('contactTopics', () => {
     it('is null for anything it does not know', () => {
       expect(findContactTopic('nonsense')).toBeNull();
       expect(findContactTopic(null)).toBeNull();
-      expect(findContactTopic(undefined)).toBeNull();
+      // `value` is a required parameter, so the undefined case must be explicit.
+      expect(findContactTopic(undefined)).toBeNull(); // skipcq: JS-W1042
       expect(findContactTopic('')).toBeNull();
     });
   });

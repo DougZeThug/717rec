@@ -129,7 +129,8 @@ describe('MassScoreEntryTool delete flow', () => {
   });
 
   it('routes delete through the atomic RPC, removes the row, and invalidates caches', async () => {
-    mockDeleteMatchWithStatsReversal.mockResolvedValue(undefined);
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    mockDeleteMatchWithStatsReversal.mockResolvedValue(undefined); // skipcq: JS-W1042
     const user = userEvent.setup();
     renderTool();
 
