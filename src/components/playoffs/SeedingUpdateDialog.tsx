@@ -32,6 +32,8 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
+import type { PlayoffMatch } from '@/utils/playoffs/playoffTypes';
+import { hasPlayStarted } from '@/utils/playoffs/playoffUtils';
 
 import { DragOverlayItem } from './form/bracket-teams/components/DragOverlayItem';
 import { SortableTeamItem } from './form/bracket-teams/components/SortableTeamItem';
@@ -50,6 +52,11 @@ interface SeedingUpdateDialogProps {
   bracketName: string;
   currentParticipants: Participant[];
   bracketState: 'pending' | 'in_progress' | 'completed';
+  /**
+   * The bracket's matches, so the dialog can tell whether play has started.
+   * `bracketState` alone cannot: it never reads 'in_progress' in practice.
+   */
+  matches: PlayoffMatch[];
 }
 
 interface TeamItem {
@@ -65,6 +72,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   bracketName,
   currentParticipants,
   bracketState,
+  matches,
 }) => {
   const [teams, setTeams] = useState<TeamItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -99,7 +107,14 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
     setTeams(processedTeams);
   }, [currentParticipants]);
 
-  const canUpdate = bracketState === 'pending';
+  /**
+   * Re-seeding is only safe before the bracket starts. `bracketState` cannot
+   * answer that on its own: nothing writes 'in_progress' to it, so a bracket
+   * half way through a tournament still says 'pending'. The matches are
+   * checked too, exactly as the Edit Bracket dialog checks them.
+   */
+  const canUpdate = bracketState === 'pending' && !hasPlayStarted(matches);
+  const stateLabel = bracketState === 'completed' ? 'completed' : 'in progress';
 
   const activeTeam = useMemo(() => teams.find((t) => t.id === activeId), [teams, activeId]);
 
@@ -196,7 +211,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
             <AlertTriangle className="size-4" />
             <AlertDescription>
               Cannot update seeding after matches have started. This bracket is currently{' '}
-              {bracketState.replace('_', ' ')}.
+              {stateLabel}.
             </AlertDescription>
           </Alert>
         )}
