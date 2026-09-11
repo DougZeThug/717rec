@@ -115,10 +115,39 @@ const seedTheme = async (page: Page, theme: string) => {
   }, theme);
 };
 
+/**
+ * Keep the seeded theme selected, whatever the league has switched on.
+ *
+ * `theme_settings` is live, admin-editable data and is readable by anyone
+ * (`20260310133050_*.sql`). `ThemeToggle` reads it and calls `setTheme('dark')`
+ * on mount if the current theme is not enabled there. So an admin turning the
+ * light theme off would break this required gate — and break it as a failed
+ * theme-class assertion, which looks nothing like the accessibility problem it
+ * is not. Answer that one request with both themes enabled, so the scan tests
+ * the code rather than the league's current settings.
+ */
+const stubEnabledThemes = async (page: Page) => {
+  await page.route(/\/rest\/v1\/theme_settings/, async (route) => {
+    await route.fulfill(
+      jsonResponse(
+        THEMES.map((key, index) => ({
+          id: key,
+          theme_key: key,
+          label: key,
+          is_enabled: true,
+          sort_order: index + 1,
+          updated_at: '2026-01-01T00:00:00.000Z',
+        }))
+      )
+    );
+  });
+};
+
 for (const theme of THEMES) {
   for (const route of routes) {
     test(`a11y: ${route} has no WCAG 2 A/AA violations in the ${theme} theme`, async ({ page }) => {
       await seedTheme(page, theme);
+      await stubEnabledThemes(page);
       await page.goto(route, { waitUntil: 'networkidle' });
 
       // Without this the light run silently scans dark and passes for the
