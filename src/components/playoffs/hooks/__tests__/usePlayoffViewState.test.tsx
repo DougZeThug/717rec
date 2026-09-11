@@ -34,8 +34,9 @@ describe('usePlayoffViewState', () => {
 
   it('closes the dialog and refetches after a successful delete', async () => {
     const data = createData();
-    data.deleteBracket.mockResolvedValue(undefined);
-    data.refetchBrackets.mockResolvedValue(undefined);
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    data.deleteBracket.mockResolvedValue(undefined); // skipcq: JS-W1042
+    data.refetchBrackets.mockResolvedValue(undefined); // skipcq: JS-W1042
 
     const { result } = renderHook(() =>
       usePlayoffViewState(
@@ -94,7 +95,8 @@ describe('usePlayoffViewState', () => {
 
   it('closes the dialog and shows a separate warning toast when delete succeeds but refetch fails', async () => {
     const data = createData();
-    data.deleteBracket.mockResolvedValue(undefined);
+    // The delete must resolve so the hook goes on to the refetch that fails.
+    data.deleteBracket.mockResolvedValue(undefined); // skipcq: JS-W1042
     data.refetchBrackets.mockRejectedValue(new Error('Refetch failed'));
 
     const { result } = renderHook(() =>

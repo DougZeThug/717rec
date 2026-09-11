@@ -51,7 +51,8 @@ describe('useBracketsViewerScript', () => {
     // resetAllMocks (not clearAllMocks) so a mockRejectedValue set in one
     // test cannot leak its rejection into the next test's default behavior.
     vi.resetAllMocks();
-    mocks.loadBracketStyles.mockResolvedValue(undefined);
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    mocks.loadBracketStyles.mockResolvedValue(undefined); // skipcq: JS-W1042
     delete windowWithViewer.bracketsViewer;
   });
 
@@ -68,9 +69,9 @@ describe('useBracketsViewerScript', () => {
   });
 
   it('loads the viewer from the bundled npm dependency — no script tag, no CDN', async () => {
-    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(() => {
       windowWithViewer.bracketsViewer = fakeViewer();
-      return {};
+      return Promise.resolve({});
     });
     const useBracketsViewerScript = await importHook();
 
@@ -112,9 +113,9 @@ describe('useBracketsViewerScript', () => {
   });
 
   it('reports an error when loading the bracket styles fails', async () => {
-    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(() => {
       windowWithViewer.bracketsViewer = fakeViewer();
-      return {};
+      return Promise.resolve({});
     });
     mocks.loadBracketStyles.mockRejectedValue(new Error('css import failed'));
     const useBracketsViewerScript = await importHook();
@@ -126,9 +127,9 @@ describe('useBracketsViewerScript', () => {
   });
 
   it('shares one bundle evaluation across concurrent mounts', async () => {
-    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(() => {
       windowWithViewer.bracketsViewer = fakeViewer();
-      return {};
+      return Promise.resolve({});
     });
     const useBracketsViewerScript = await importHook();
 
@@ -153,9 +154,9 @@ describe('useBracketsViewerScript', () => {
     // Browsers do not cache failed dynamic-import fetches, so a later mount
     // re-requests the chunk; vi.resetModules() emulates that fresh registry.
     vi.resetModules();
-    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(() => {
       windowWithViewer.bracketsViewer = fakeViewer();
-      return {};
+      return Promise.resolve({});
     });
     useBracketsViewerScript = await importHook();
     const second = renderHook(() => useBracketsViewerScript());

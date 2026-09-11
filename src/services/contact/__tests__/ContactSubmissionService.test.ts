@@ -30,8 +30,9 @@ const base = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockLeagueSubmit.mockResolvedValue(undefined);
-  mockSupportSubmit.mockResolvedValue(undefined);
+  // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+  mockLeagueSubmit.mockResolvedValue(undefined); // skipcq: JS-W1042
+  mockSupportSubmit.mockResolvedValue(undefined); // skipcq: JS-W1042
 });
 
 describe('submitContactMessage', () => {

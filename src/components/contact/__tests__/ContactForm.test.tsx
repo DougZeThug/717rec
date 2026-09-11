@@ -55,7 +55,9 @@ beforeEach(() => {
   onSent.mockReset();
   mockToast.mockReset();
   mockSubmit.mockReset();
-  mockSubmit.mockResolvedValue(undefined);
+  // mockReset above clears the implementation, so this restores the default.
+  // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+  mockSubmit.mockResolvedValue(undefined); // skipcq: JS-W1042
 });
 
 describe('ContactForm', () => {

@@ -113,7 +113,8 @@ describe('BracketUpdateService', () => {
     stageRows = [{ id: 7, child_count: 0, status: 2 }];
 
     storage = { select: vi.fn(), update: vi.fn() };
-    manager = { update: { match: vi.fn().mockResolvedValue(undefined) } };
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    manager = { update: { match: vi.fn().mockResolvedValue(undefined) } }; // skipcq: JS-W1042
 
     mockFrom.mockImplementation((table: string) => {
       if (table === 'brackets') {

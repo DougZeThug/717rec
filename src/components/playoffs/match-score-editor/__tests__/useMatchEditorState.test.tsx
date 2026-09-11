@@ -24,7 +24,8 @@ vi.mock('@/services/brackets/manager', () => ({
     checkByeEligibility: vi
       .fn()
       .mockResolvedValue({ ok: false, meta: { status: 0, currentStatusName: 'Locked' } }),
-    updateMatch: vi.fn().mockResolvedValue(undefined),
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    updateMatch: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
     adminToggleByeReady: vi.fn(),
   },
 }));

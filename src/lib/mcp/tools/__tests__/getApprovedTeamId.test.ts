@@ -44,7 +44,9 @@ describe('getApprovedTeamId', () => {
   });
 
   it('rejects a missing user id', async () => {
-    const result = await getApprovedTeamId(client([]), undefined);
+    // `userId` is a required parameter (a `columns` argument follows it), so the
+    // missing-user case must pass undefined explicitly.
+    const result = await getApprovedTeamId(client([]), undefined); // skipcq: JS-W1042
     expect(result.error).toBe('Not authenticated');
   });
 });

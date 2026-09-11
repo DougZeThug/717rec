@@ -25,6 +25,7 @@ describe('isChunkLoadError', () => {
   it('is false for anything that is not an error', () => {
     expect(isChunkLoadError('Failed to fetch dynamically imported module')).toBe(false);
     expect(isChunkLoadError(null)).toBe(false);
-    expect(isChunkLoadError(undefined)).toBe(false);
+    // `error` is a required parameter, so the undefined case must be explicit.
+    expect(isChunkLoadError(undefined)).toBe(false); // skipcq: JS-W1042
   });
 });

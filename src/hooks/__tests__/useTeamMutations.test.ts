@@ -45,7 +45,8 @@ describe('useTeamMutations', () => {
   });
 
   it('deleteTeam invalidates the teams list and team details caches', async () => {
-    vi.mocked(deleteTeamApi).mockResolvedValue(undefined);
+    // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
+    vi.mocked(deleteTeamApi).mockResolvedValue(undefined); // skipcq: JS-W1042
     const { result, invalidateSpy } = setup();
 
     await act(async () => {
