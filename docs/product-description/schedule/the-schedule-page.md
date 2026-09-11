@@ -18,14 +18,18 @@ The page shows only the **active season**. There is no season picker.
 ## The simple case
 
 A player opens `/schedule`. Across the top is a strip of fourteen dates, from
-three days ago to ten days ahead, with an orange dot under each date that has
-matches. One date is already selected: **the next Thursday**, or today if today
-is Thursday. Once the matches arrive, if that date has none, the page moves to
-**the most recent night that was played** instead — or, before a season starts,
-to the next night scheduled. The strip stretches back to include that date if it
-is more than three days ago. Below the strip are a search box and a small
-calendar button, and below those a row of chips: **All** and one per division,
-plus **My team** for a signed-in member whose membership has been approved.
+three days ago to ten days ahead, with an orange dot under each date that
+has matches or posted timeslots. One date is already selected: **the next
+Thursday**, or today if today is Thursday. Once the matches arrive, if that
+date has none, the page moves to **the most recent night that was played**
+instead — or, before a season starts, to the next night scheduled. On a
+league night itself (Thursday) the order flips to the next scheduled night
+rather than last week's results, and a night whose timeslots are posted but
+whose matches are not yet created also counts as a known night the page
+can stay on. The strip stretches back to include that date if it is more
+than three days ago. Below the strip are a search box and a small calendar
+button, and below those a row of chips: **All** and one per division, plus
+**My team** for a signed-in member whose membership has been approved.
 
 Under those are the three tabs. The page picks one for them: a past date opens
 **Completed**, a date from today onward opens **Upcoming** if the season has any
@@ -74,9 +78,12 @@ Three things are decided at arrival and never re-decided:
 - **The date strip's window** is built from the clock and the selected date. A
   tab left open overnight keeps yesterday's window.
 - **The selected date** starts at the next Thursday, because league night is
-  Thursday, and moves to the last night played if that Thursday turns out to be
-  empty. That correction happens **once**, when the matches first arrive, so it
-  can never override a date the player picks.
+  Thursday, and moves on if that Thursday turns out to be empty — to the next
+  scheduled night on a league night itself, otherwise to the last night
+  played. A night whose timeslots are posted but whose matches are not yet
+  created counts as a known night too. That correction happens **once**,
+  when the matches first arrive, so it can never override a date the player
+  picks.
 - **The tab** starts from `scheduleActiveTab` in session storage, then is
   overwritten by the rule above once matches and timeslots have both finished
   loading.
