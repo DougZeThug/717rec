@@ -51,6 +51,13 @@ const submitButton = () => screen.getByRole('button', { name: /update seeding/i 
 
 const notStarted = [{ id: 'm1', team1Id: 't-1', team2Id: 't-2', winnerId: null, status: 'ready' }];
 
+/**
+ * The drag handles. dnd-kit gives each sortable row this role description and
+ * no accessible name, so there is nothing friendlier to ask for.
+ */
+const dragHandles = () =>
+  Array.from(document.querySelectorAll<HTMLElement>('[aria-roledescription="sortable"]'));
+
 describe('SeedingUpdateDialog seeding lock', () => {
   beforeAll(() => {
     HTMLElement.prototype.setPointerCapture = vi.fn();
@@ -181,6 +188,33 @@ describe('SeedingUpdateDialog saving a new seeding', () => {
           variant: 'destructive',
         })
       )
+    );
+  });
+
+  // Picking a team up and putting it straight back down must not disturb the
+  // seeding. This also walks both drag handlers, which nothing else reaches:
+  // dnd-kit needs real element geometry to work out where a team landed, and
+  // jsdom reports every element as zero sized, so a keyboard drag can lift and
+  // drop but never move anything.
+  it('leaves the order alone when a team is picked up and put straight down', async () => {
+    const user = userEvent.setup();
+    renderDialog(notStarted);
+
+    const [firstHandle] = dragHandles();
+    expect(firstHandle).toBeDefined();
+    firstHandle.focus();
+    await user.keyboard('{ }');
+    await user.keyboard('{ }');
+
+    await user.click(submitButton());
+
+    expect(updateSeeding).toHaveBeenCalledWith(
+      expect.objectContaining({
+        newSeeding: [
+          { id: 't-1', name: 'Alpha', seed: 1 },
+          { id: 't-2', name: 'Bravo', seed: 2 },
+        ],
+      })
     );
   });
 
