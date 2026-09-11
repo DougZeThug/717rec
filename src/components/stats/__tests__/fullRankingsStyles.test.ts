@@ -48,8 +48,11 @@ describe('standings card theme classes', () => {
     expect(standingsDescriptionClasses(dark)).toBe('');
   });
 
-  it('leaves the content transparent in winter', () => {
+  it('leaves the content transparent in winter, and washes it from tokens otherwise', () => {
     expect(standingsContentClasses(winter)).toBe('bg-transparent');
-    expect(standingsContentClasses(dark)).toContain('from-white');
+    // Light and dark share one wash now. `--muted` and `--card` are set by each
+    // theme, so the same two classes are right in both and need no `dark:` twin.
+    expect(standingsContentClasses(dark)).toBe('bg-gradient-to-br from-muted to-card');
+    expect(standingsContentClasses(light)).toBe(standingsContentClasses(dark));
   });
 });

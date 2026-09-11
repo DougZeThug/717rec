@@ -41,6 +41,4 @@ export const standingsDescriptionClasses = ({ isWinterTheme }: StandingsTheme): 
   isWinterTheme ? 'text-[hsl(var(--muted-foreground))]' : '';
 
 export const standingsContentClasses = ({ isWinterTheme }: StandingsTheme): string =>
-  isWinterTheme
-    ? 'bg-transparent'
-    : 'bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900';
+  isWinterTheme ? 'bg-transparent' : 'bg-gradient-to-br from-muted to-card';

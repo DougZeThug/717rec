@@ -127,9 +127,7 @@ const CareerRankingsSection: React.FC = () => {
           <CardContent
             className={cn(
               'p-2 sm:p-4',
-              isWinterTheme
-                ? 'bg-[hsl(var(--card))]'
-                : 'bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900'
+              isWinterTheme ? 'bg-[hsl(var(--card))]' : 'bg-gradient-to-br from-muted to-card'
             )}
           >
             {isLoading ? (

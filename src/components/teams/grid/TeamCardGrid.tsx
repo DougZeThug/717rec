@@ -159,10 +159,8 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
 
   const headerGradient = isWinterTheme
     ? 'bg-transparent'
-    : 'bg-gradient-to-br from-blue-50 via-gray-50 to-orange-50/20 dark:from-gray-800/70 dark:via-gray-800/80 dark:to-gray-800/70';
-  const contentGradient = isWinterTheme
-    ? 'bg-transparent'
-    : 'bg-gradient-to-br from-white to-gray-50/70 dark:from-gray-900 dark:to-gray-900/90';
+    : 'bg-gradient-to-br from-blue-500/[0.06] via-muted to-orange-500/[0.05]';
+  const contentGradient = isWinterTheme ? 'bg-transparent' : 'bg-gradient-to-br from-muted to-card';
 
   return (
     <EntityCard division={team.divisionName ?? undefined}>
