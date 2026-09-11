@@ -1,3 +1,4 @@
+import type { JsonValueInput } from '@lovable.dev/mcp-js';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 type RuntimeGlobals = typeof globalThis & {
@@ -64,7 +65,7 @@ export function anonClient(): SupabaseClient {
 export function textResult(payload: unknown) {
   return {
     content: [{ type: 'text' as const, text: JSON.stringify(payload, null, 2) }],
-    structuredContent: { data: payload } as Record<string, unknown>,
+    structuredContent: { data: payload as JsonValueInput },
   };
 }
 
