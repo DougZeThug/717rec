@@ -42,7 +42,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start min-h-[44px] transition-all duration-200 dark:bg-card dark:border-border dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-foreground"
+              className="w-full justify-start min-h-[44px] transition-all duration-200 hover:bg-accent"
             >
               <CalendarIcon className="mr-2 size-4" />
               {filters.date ? format(filters.date, 'MMM d, yyyy') : 'Filter by Date'}
@@ -64,7 +64,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
         >
           <SelectTrigger
             aria-label="Filter by bracket"
-            className="w-full min-h-[44px] dark:bg-card dark:border-border dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:text-foreground"
+            className="w-full min-h-[44px] hover:bg-accent"
           >
             <SelectValue placeholder="Filter by Bracket" />
           </SelectTrigger>

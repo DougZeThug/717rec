@@ -168,6 +168,16 @@ measured 4.34-4.48:1 against the card and page backgrounds — under the 4.5:1
 minimum — on the standings, the schedule and the teams list. The dark and winter
 themes are unaffected; both are light text on a dark ground.
 
+**Colour comes from the theme, not from the component.** Screens used to write
+each colour twice by hand, once for light and once for dark, which is how the
+contrast above went unnoticed for so long: nobody checked the light half, and
+the dark half did nothing at all under the winter theme. Every screen now names
+the *role* — "this is muted text", "this is a border" — and the theme supplies
+the value. Three more contrast failures fell out of that: a power score with no
+data read 2.57:1 on a white card, and two greys read 4.83:1. A scan of the six
+main pages reports no contrast failures in either theme, and that scan runs on
+every change.
+
 **A link inside a sentence is underlined, not merely coloured.** The three
 in-text links — the home page's "Use the Contact page", the contact page's two —
 and the sign-in card's Login and Sign up controls share one style. Underlining

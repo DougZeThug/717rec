@@ -117,7 +117,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
           'overflow-auto rounded-lg border shadow-sm',
           isWinterTheme
             ? 'border-frost-border/30 winter-card-surface'
-            : 'border-blue-200/50 dark:border-blue-800/30 dark:bg-gray-800/50'
+            : 'border-blue-200/50 dark:border-blue-800/30 dark:bg-muted/50'
         )}
       >
         <Table>

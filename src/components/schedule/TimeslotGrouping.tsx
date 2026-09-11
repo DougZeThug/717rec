@@ -184,7 +184,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
             </div>
           </div>
           <div className="hidden md:block p-4">
-            <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+            <div className="divide-y divide-border">
               {teams.map((teamTimeslot, teamIndex) => (
                 <TimeslotMatchRow
                   key={teamTimeslot.id}

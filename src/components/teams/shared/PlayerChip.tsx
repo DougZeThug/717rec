@@ -25,7 +25,7 @@ export const PlayerChip: React.FC<PlayerChipProps> = ({
   return (
     <div
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted dark:bg-card 
-        text-foreground dark:text-foreground text-xs hover:bg-gray-200 dark:hover:bg-gray-700 
+        text-foreground text-xs hover:bg-accent 
         transition-all hover:scale-105 cursor-default ${className}`}
     >
       <Avatar className="size-4">

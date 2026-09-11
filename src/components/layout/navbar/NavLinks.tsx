@@ -25,7 +25,7 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLinkClick }) => {
   const { isAdminAccessGranted, isLoading: adminCheckLoading } = useAdminAccess();
-  const activeClass = 'bg-white/20 dark:bg-slate-700 text-white dark:text-white';
+  const activeClass = 'bg-white/20 text-white';
   // px-3, not px-4: the row holds nine links, three account controls, the search
   // button and — for an admin — Admin, inside a container that stops growing at
   // 1368px. The extra 8px a side was 72px the row could not spare.

@@ -36,6 +36,7 @@ const TYPE_LABELS: Record<string, { label: string; cls: string }> = {
   },
   general: {
     label: 'General',
+    // eslint-disable-next-line no-restricted-syntax -- slate is this category's colour, one of a set with blue, amber and emerald
     cls: 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/30',
   },
   other: {

@@ -496,9 +496,85 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 | # | Item | Findings | Why it is worth it |
 |---|---|---|---|
 | L1 ✅ | One status model: `deriveMatchStatus()` used by Schedule, Home, Pending, Corrections and Live scoring. Playoffs kept separate — bracket status is `brackets-manager`'s numeric code, a different axis. The postponed/canceled exclusion is wired through `isMatchOpenForScoring()` but dormant: there is no `status` column to exclude on (see X-13) | X-13 | Removed five vocabularies; fixed matches vanishing from both Schedule tabs |
-| L2 | Theme tokens for winter/light/dark instead of 77 files of inline branches; fixes the light-mode contrast class of bugs at the source | X-11, code §7 | Every new component today has to remember three branches |
+| L2 ✅ | Theme tokens for light/dark instead of hand-written pairs in 55 files; fixes the light-mode contrast class of bugs at the source. The winter branches are deliberately left standing — see the notes under this table | X-11, code §7 | Every new component today has to remember three branches |
 | L3 ✅ | Responsive table primitive: `TableHead` defaults `scope="col"`, and `ResponsiveTable` renders a table above `md` and cards below it. Adopted by four admin tables. The rankings, career and H2H phone views are **kept** — they are richer than their tables, not duplicates of them (see the notes under this table) | code §4d, ST-04 | 9 admin tables lack `scope`; three ranking components are duplicated |
 | L4 ✅ | Request approval opens Timeslots prefilled, with a card that makes the change in one press. Approval itself still writes only a status — see the notes under this table | A-05 | Turns a status flip into the actual league-night action |
+
+**Notes on L2.**
+
+- **Done, for light and dark. Winter was left alone on purpose.** The row asks
+  for one token system across all three themes. The owner chose to fix light and
+  dark now and leave every `isWinterTheme ? A : B` branch standing, so this
+  change rewrites only the *other* arm of each branch. A new component still has
+  to remember the winter branch; it no longer has to remember light and dark
+  separately, which is where the contrast bugs came from.
+- **The tokens already existed and were already complete.** `src/styles/theme.css`
+  defines the full set on `:root` and `.dark`, and `winter-homepage.css:15-79`
+  redefines the *same names* on `.winter-frozen`. So `text-muted-foreground` was
+  always correct in all three themes. 55 files simply did not use it. This was
+  never a missing-token problem; it was a not-using-the-token problem.
+- **The rule was already written down.** `CONTRIBUTING.md` has said "never use
+  direct colors — always use CSS variables" the whole time. The change makes the
+  code obey it and adds a lint rule so it stays obeyed. That rule now passes
+  across the codebase with three documented exceptions.
+- **Correction to this row's premise.** It says "77 files of inline branches",
+  counting anything that reads the theme. The count that mattered was different:
+  **45 files wrote a colour twice by hand** (`text-gray-600 dark:text-gray-400`),
+  which is what caused X-11. The other ~35 read the theme for winter effects —
+  frost surfaces, snowfall, icon swaps — which are not colour and not in scope.
+- **Correction to "fixes the light-mode contrast class of bugs".** X-11's own two
+  fixes had already shipped under Q15. What was still open was every component
+  that *skipped* the token, and three of those were failing outright: the
+  no-data power score at **2.57:1** on a white card, and two greys at 4.83:1.
+  Those were found by the sweep, not by the audit.
+- **A bug found on the way, fixed.** Charts asked `resolvedTheme === 'dark'`,
+  which is false under winter — so every chart drew a **white background and dark
+  grey text on a near-black page**. `useIsDarkSurface()` asks whether the theme
+  is `light` instead, so any dark theme gets dark chart colours. The test for it
+  fails against the old code with exactly that symptom.
+- **Five hard-coded hex colours were beating the tokens, and were fighting
+  nothing.** `card.tsx` forced `!text-[#222222]`, `!text-[#111111]` and
+  `!text-[#444444] !font-medium` in the light theme, copied into two more files.
+  `cn()` is tailwind-merge, which strips `!` and resolves last-wins, so the only
+  class they ever beat was the token two lines above them. Removing them
+  *improved* two of the three (15.9→20.0 and 18.9→20.0); the third went 9.7→7.6,
+  still well clear of 4.5. Card descriptions lost `font-medium` in light, so
+  light and dark now match.
+- **Three regressions were introduced by the sweep and caught by reading the
+  diff, not by a test.** `--muted` and `--accent` hold the *same* value in this
+  theme, so one `bg-muted hover:bg-accent` was a hover that did nothing; a seed
+  circle disappeared into the row behind it; an unplayed-game dot faded into the
+  card. Worth knowing before the next mechanical sweep: a token swap that type-
+  checks and passes 5268 tests can still be invisible on screen.
+- **Colour that carries meaning was left alone.** Silver on a second-place badge
+  is a medal beside gold and bronze; slate on the "General" contact badge and the
+  "Standard" hero-card badge is one of a set with blue, amber and emerald. None
+  is a theme neutral. Each carries an `eslint-disable` line saying so.
+- **105 lines of design-system presets had no caller at all** and are gone. One
+  of them, `blueAmber.border.default`, used `border-gradient-to-b`, which is not
+  a Tailwind class — dead *and* broken.
+- **`PageLayout` was throwing its own gradient away.** An inline
+  `style={{ background: '#f8f8f8' }}` used the `background` shorthand, which
+  resets `background-image`, so the light-theme page gradient had never rendered.
+- **The gate now covers both themes.** `e2e/a11y.spec.ts` ran only in the default
+  theme, which is dark — so the light theme, where X-11 lives, was never scanned.
+  It now runs every route in both, and **asserts the `<html>` class actually
+  changed before scanning**; without that line the light pass silently scans dark
+  and passes for the wrong reason. Verified: **zero `color-contrast` violations
+  on `/`, `/teams`, `/stats`, `/history` and `/help` in both themes.** Winter is
+  deliberately not scanned — it is disabled in the database and `ThemeToggle`
+  switches away from a disabled theme on mount, so the scan would race that.
+- **Two things found and deliberately not fixed.** `frost-primary` is used by
+  eleven winter classes and **is not defined** in `tailwind.config.ts`, which
+  maps only `frost.border` and `frost.glow` — so those eleven compile to nothing.
+  And `--success`, `--warning` and `--info` exist in `theme.css` but are never
+  mapped into Tailwind, so `text-success` does not exist. Both are winter- or
+  status-colour work, not this row.
+- **What would finish the job.** One line in `tailwind.config.ts` —
+  `darkMode: ['variant', …]` — would make all ~400 `dark:` utilities apply under
+  `.winter-frozen` too, at which point every remaining `isWinterTheme ? A : B`
+  branch collapses to a single string. It changes how winter looks, so it is its
+  own change.
 
 **Notes on L3.**
 

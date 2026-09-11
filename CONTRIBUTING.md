@@ -199,6 +199,11 @@ export const MyComponent: React.FC<MyComponentProps> = ({ title, onAction }) => 
 - Use Tailwind CSS with semantic tokens from the design system
 - **Never use direct colors** - always use CSS variables (`text-foreground`, `bg-background`, etc.)
 - All colors must be HSL format in the design system
+- `npm run lint` enforces this: a fixed grey written alongside a `dark:` twin is
+  an error (the `no-restricted-syntax` rule in `eslint.config.js`). There are
+  three themes, and `dark:` does nothing under the winter one, whose class is
+  `winter-frozen`. A colour that carries meaning rather than a theme role — a
+  medal, a category badge — may disable the rule on the line with a reason.
 
 ```typescript
 // ✅ Good - using semantic tokens
