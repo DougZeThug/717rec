@@ -153,16 +153,34 @@ describe('InteractiveSchedulePreview', () => {
     it('selects and deselects a whole block at once', async () => {
       const { user } = setup();
       const card = blockCard('6:00 PM');
-      // The "Select All" wording sits beside its checkbox rather than labelling
-      // it, so the control is the first checkbox in the block, not the text.
-      const toggleAll = () => within(card).getAllByRole('checkbox')[0];
 
-      await user.click(toggleAll());
+      // Clicking the words, not the 16px box: the label is real now.
+      await user.click(within(card).getByText('Select All'));
       expect(within(card).getByRole('button', { name: /Remove \(3\)/ })).toBeInTheDocument();
       expect(within(card).getByText('Deselect All')).toBeInTheDocument();
 
-      await user.click(toggleAll());
+      await user.click(within(card).getByText('Deselect All'));
       expect(within(card).queryByRole('button', { name: /Remove/ })).toBeNull();
+    });
+
+    it('lets the admin hit the words, not just the 16px box', async () => {
+      const { user } = setup();
+      const card = blockCard('6:00 PM');
+
+      const label = within(card).getByText('Select All');
+      expect(label.tagName).toBe('LABEL');
+      expect(label).toHaveAttribute('for', within(card).getAllByRole('checkbox')[0].id);
+
+      await user.click(label);
+      expect(within(card).getByRole('button', { name: /Remove \(3\)/ })).toBeInTheDocument();
+    });
+
+    it('partly-selected blocks say how many of how many', async () => {
+      const { user } = setup();
+      const card = blockCard('6:00 PM');
+
+      await selectTeam(user, 'Tigers');
+      expect(within(card).getByText(/Select All \(1\/3\)/)).toBeInTheDocument();
     });
   });
 
