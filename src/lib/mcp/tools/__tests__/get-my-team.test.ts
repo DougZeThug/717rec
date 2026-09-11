@@ -1,4 +1,4 @@
-import type { ToolContext } from '@lovable.dev/mcp-js';
+import type { JsonValueInput, ToolContext } from '@lovable.dev/mcp-js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import getMyTeam from '../get-my-team';
@@ -33,7 +33,7 @@ vi.mock('../_supabase', () => ({
   }),
   textResult: (payload: unknown) => ({
     content: [{ type: 'text' as const, text: JSON.stringify(payload, null, 2) }],
-    structuredContent: { data: payload } as Record<string, unknown>,
+    structuredContent: { data: payload as JsonValueInput },
   }),
 }));
 
