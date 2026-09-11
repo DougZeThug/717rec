@@ -120,6 +120,9 @@ const confirmActionMessage = (action: ConfirmAction | null, selectedCount: numbe
     case 'move':
       return `Move ${selectedCount} selected team(s) from ${action.blockKey} to ${action.targetBlock} block?`;
     default:
+      // skipcq: TCV-001 -- unreachable: the switch is exhaustive over
+      // ConfirmAction['type'] and TS enforces it, so no test can arrive here.
+      // assertNever itself is covered by src/utils/__tests__/assertNever.test.ts.
       return assertNever(action.type);
   }
 };
@@ -261,6 +264,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
         break;
 
       default:
+        // skipcq: TCV-001 -- unreachable, as above.
         assertNever(confirmAction.type, 'team operation');
     }
 
