@@ -110,7 +110,9 @@ account, their username, and their team. **What the browser sends for the last
 three is not what is stored.** The league overwrites the username from the
 author's profile and works the team name out from the membership itself, so a
 message always carries the author's real name and current team no matter what the
-browser claimed.
+browser claimed. The browser attaches a team only when the membership is
+approved: a request still waiting in the admin queue sends no team at all, and
+the message carries none.
 
 On success the box empties and the category picker stays where it was. There is
 no success toast and no optimistic insert: **the author's own message reaches
@@ -237,12 +239,16 @@ how the message looks.
 
 ## Edge cases
 
-- **A player waiting for team approval may not be able to post at all.** The
-  browser attaches whatever membership the account has, approved or not, and the
-  league refuses a message attached to a team the author is not an approved member
-  of. The author sees only the generic "could not be posted" toast, with nothing
-  about approval, and retrying can never work. **May be worth treating as a bug
-  rather than documenting.**
+- **A player waiting for team approval posts with no team badge.** The browser
+  attaches a team only when the membership is approved, so a message sent while
+  the request sits in the admin queue carries the author's name and nothing else.
+  Once an admin approves them, their later messages carry the team badge; the
+  ones already posted keep no team.
+
+  > Until B-42 was fixed the browser attached the unapproved membership, the
+  > league refused a message attached to a team the author is not an approved
+  > member of, and the author saw only the generic "could not be posted" toast,
+  > with nothing about approval. Retrying could never work.
 - **A message with reactions on it may be undeletable.** Reactions point at the
   message and nothing appears to clear them when the message goes, so the delete is
   refused and the author gets the generic failure toast for a message they will
@@ -279,8 +285,9 @@ how the message looks.
 - **Whether a message with reactions can be deleted** depends on how the reaction
   link was defined on the live database, which the migrations guard rather than
   define. It should be tested by reacting to a message and then deleting it.
-- **Whether a player with an unapproved membership can post** should be tested
-  directly: request to join a team, do not have it approved, and try to post.
+- ~~**Whether a player with an unapproved membership can post.**~~ Answered:
+  they could not post at all. Fixed in B-42 — they now post with no team badge
+  until an admin approves them.
 - Not confirmed by hand: whether the author's own message really only appears
   through the live connection, or whether something else refreshes the list on a
   successful post.

@@ -52,7 +52,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-house mr-2"
+                class="lucide lucide-house lucide-home mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -163,7 +163,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-chart-column mr-2"
+                class="lucide lucide-chart-column lucide-bar-chart-3 mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -304,7 +304,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-circle-question-mark mr-2"
+                class="lucide lucide-circle-question-mark lucide-help-circle lucide-circle-help mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"

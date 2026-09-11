@@ -39,8 +39,13 @@ export const useMessageApi = () => {
       category,
       user_id: user.id,
       username: profile.username || 'Anonymous',
-      team_id: membership?.team_id || null,
-      team_name: membership?.team?.name || null,
+      // A request still waiting for approval is a membership row, but not an
+      // approved one. The league refuses a message stamped with a team the
+      // author is not an approved member of, so stamping it here made every
+      // post fail while the request sat in the queue. Somebody waiting posts
+      // as themselves, with no team, until an admin approves them. See B-42.
+      team_id: membership?.is_approved ? membership.team_id : null,
+      team_name: membership?.is_approved ? (membership.team?.name ?? null) : null,
     };
 
     try {
