@@ -58,10 +58,20 @@ its title, that title is now the heading; where it does not — the schedule,
 whose date strip is the point of the page, and live scoring — the heading is
 spoken but not drawn.
 
+That holds for **every state of a page**, not only the one where everything
+loaded. Live scoring is the page with the most of them: it can be waiting for the
+match, telling the reader the match does not exist, that it could not be loaded,
+that live scoring is switched off, or that the teams are not set yet. Each of
+those names the page too — the empty-state cards raise their own title to the
+first level, and the waiting state carries a heading that is spoken but not
+drawn. Only the success state used to have one, so a link followed straight to a
+missing match said nothing at all.
+
 An automated scan blocks a merge that reintroduces any of this: it checks for
 duplicate or nested main landmarks, unnamed duplicate landmarks, and a missing
-first-level heading, on twelve public routes. Skipped heading *levels* inside a
-page are a separate, unfinished piece of work and are not in that gate.
+first-level heading, on thirteen routes — twelve public pages, plus live scoring
+for a match that does not exist. Skipped heading *levels* inside a page are a
+separate, unfinished piece of work and are not in that gate.
 
 ## Keyboard
 
