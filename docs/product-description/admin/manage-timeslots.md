@@ -303,7 +303,7 @@ service raised. Teams are not told when their timeslot changes.
 kept in it, so an admin still cannot link to a particular night. What the address
 can carry is a one-off instruction from an approved request —
 `?date=&team=&slot=` — which opens the night and raises the move card. Those
-three are read once on arrival and taken back out as soon as the card is used or
+three are read on every render and taken back out as soon as the card is used or
 dismissed, so a reload does not repeat the instruction. Anything the address
 does not understand is ignored: a day that does not exist, a team that is not an
 id, and a time that starts no block.
