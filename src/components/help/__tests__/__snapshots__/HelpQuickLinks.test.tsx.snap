@@ -99,7 +99,7 @@ exports[`Help sections > matches snapshot for quick links section 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="lucide lucide-chart-column size-4 mr-2"
+            class="lucide lucide-chart-column lucide-bar-chart-3 size-4 mr-2"
             fill="none"
             height="24"
             stroke="currentColor"
