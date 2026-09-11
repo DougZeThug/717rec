@@ -103,6 +103,56 @@ const TimeBlockHeader: React.FC<{
   </div>
 );
 
+interface ConfirmAction {
+  type: 'remove' | 'clear' | 'move';
+  blockKey?: string;
+  targetBlock?: string;
+}
+
+/** What the confirmation dialog asks, for each thing it can be confirming. */
+const confirmActionMessage = (action: ConfirmAction | null, selectedCount: number): string => {
+  if (!action) return '';
+  switch (action.type) {
+    case 'remove':
+      return `Remove ${selectedCount} selected team(s) from ${action.blockKey} block?`;
+    case 'clear':
+      return `Clear all teams from ${action.blockKey} block?`;
+    case 'move':
+      return `Move ${selectedCount} selected team(s) from ${action.blockKey} to ${action.targetBlock} block?`;
+    default:
+      return assertNever(action.type);
+  }
+};
+
+/**
+ * The one dialog that confirms every destructive block operation.
+ *
+ * Lifted out of the block list, which put it five JSX levels deep
+ * (DeepSource JS-0415).
+ */
+const ConfirmActionDialog: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  action: ConfirmAction | null;
+  selectedCount: number;
+  onConfirm: () => void;
+}> = ({ open, onOpenChange, action, selectedCount, onConfirm }) => (
+  <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+        <AlertDialogDescription>
+          {confirmActionMessage(action, selectedCount)}
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm}>Confirm</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 /** The "clear this block" row under a block's team list. */
 const ClearBlockButton: React.FC<{ onClear: () => void }> = ({ onClear }) => (
   <div className="mt-3 pt-3 border-t border-border">
@@ -123,11 +173,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   const [selectedTeams, setSelectedTeams] = useState<Record<string, string[]>>({});
   const [moveToBlock, setMoveToBlock] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<{
-    type: 'remove' | 'clear' | 'move';
-    blockKey?: string;
-    targetBlock?: string;
-  } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
 
   // Check if we have teams loaded
   const hasTeams = Object.values(timeBlockTeams).some((teams) => teams?.length > 0);
@@ -301,25 +347,13 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
         </div>
       )}
 
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmAction?.type === 'remove' &&
-                `Remove ${selectedTeams[confirmAction.blockKey ?? '']?.length || 0} selected team(s) from ${confirmAction.blockKey} block?`}
-              {confirmAction?.type === 'clear' &&
-                `Clear all teams from ${confirmAction.blockKey} block?`}
-              {confirmAction?.type === 'move' &&
-                `Move ${selectedTeams[confirmAction.blockKey ?? '']?.length || 0} selected team(s) from ${confirmAction.blockKey} to ${confirmAction.targetBlock} block?`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={executeTeamOperation}>Confirm</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmActionDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        action={confirmAction}
+        selectedCount={selectedTeams[confirmAction?.blockKey ?? '']?.length || 0}
+        onConfirm={executeTeamOperation}
+      />
     </div>
   );
 };

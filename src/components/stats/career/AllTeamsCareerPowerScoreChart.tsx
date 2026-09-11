@@ -105,6 +105,75 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   );
 };
 
+interface ChartTheme {
+  isWinterTheme: boolean;
+  isLight: boolean;
+}
+
+/**
+ * The card's three-way theme choice, out of the render.
+ *
+ * These were nested ternaries inside `cn()` calls, which is most of what made
+ * this component's control flow hard to follow. Same split as
+ * `fullRankingsStyles.ts`.
+ */
+const chartCardClasses = ({ isWinterTheme, isLight }: ChartTheme): string[] => [
+  isWinterTheme
+    ? 'border-frost-border/50 bg-[hsl(var(--card))]'
+    : 'border-blue-300 dark:border-blue-700/80',
+  isLight ? gradients.card.blueOrange : '',
+];
+
+const chartHeaderClasses = ({ isWinterTheme, isLight }: ChartTheme): string[] => {
+  if (isWinterTheme) {
+    return ['bg-[hsl(var(--card))]', 'border-b border-frost-border/30'];
+  }
+  return [
+    isLight
+      ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
+      : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
+    'border-b border-blue-100 dark:border-blue-900/30',
+  ];
+};
+
+/** The card shown while the seasons are still loading. */
+const ChartSkeleton: React.FC = () => (
+  <Card className="mb-4">
+    <CardHeader>
+      <Skeleton className="h-6 w-64" />
+      <Skeleton className="h-4 w-96 mt-2" />
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-[400px] w-full" />
+    </CardContent>
+  </Card>
+);
+
+/** The colour key under the chart, one row per highlighted team. */
+const SelectedTeamsLegend: React.FC<{
+  teamsData: ReturnType<typeof useAllTeamsCareerPowerScores>['data'];
+  selectedTeamIds: string[];
+  isDark: boolean;
+}> = ({ teamsData, selectedTeamIds, isDark }) => (
+  <div className="mt-4 flex flex-wrap gap-3">
+    {selectedTeamIds.map((teamId) => {
+      const team = teamsData?.find((t) => t.teamId === teamId);
+      if (!team) return null;
+      return (
+        <div key={teamId} className="flex items-center gap-2 text-sm">
+          <div className="w-6 h-0.5" style={{ backgroundColor: getTeamColor(teamId, isDark) }} />
+          <Link
+            to={`/teams/${toTeamSlug(team.teamName || teamId)}`}
+            className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
+          >
+            {team.teamName}
+          </Link>
+        </div>
+      );
+    })}
+  </div>
+);
+
 const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
   const { data: teamsData, isLoading } = useAllTeamsCareerPowerScores();
   const { resolvedTheme } = useTheme();
@@ -116,6 +185,7 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
 
   const chartData = useMemo(() => transformDataForChart(teamsData), [teamsData]);
   const isLight = !isWinterTheme && resolvedTheme === 'light';
+  const theme: ChartTheme = { isWinterTheme, isLight };
 
   const teamOptions = useMemo(
     () =>
@@ -129,17 +199,7 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
   );
 
   if (isLoading) {
-    return (
-      <Card className="mb-4">
-        <CardHeader>
-          <Skeleton className="h-6 w-64" />
-          <Skeleton className="h-4 w-96 mt-2" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[400px] w-full" />
-        </CardContent>
-      </Card>
-    );
+    return <ChartSkeleton />;
   }
 
   if (!teamsData || teamsData.length === 0) {
@@ -151,25 +211,15 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
       <Card
         className={cn(
           'border-t-2',
-          isWinterTheme
-            ? 'border-frost-border/50 bg-[hsl(var(--card))]'
-            : 'border-blue-300 dark:border-blue-700/80',
           'shadow-lg hover:shadow-xl transition-shadow duration-300',
-          isLight ? gradients.card.blueOrange : ''
+          chartCardClasses(theme)
         )}
       >
         <CollapsibleTrigger className="w-full">
           <CardHeader
             className={cn(
               isMobile ? 'py-2.5 px-3' : 'py-4',
-              isWinterTheme
-                ? 'bg-[hsl(var(--card))]'
-                : isLight
-                  ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
-                  : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
-              isWinterTheme
-                ? 'border-b border-frost-border/30'
-                : 'border-b border-blue-100 dark:border-blue-900/30',
+              chartHeaderClasses(theme),
               'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
             )}
           >
@@ -187,11 +237,7 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
                   Career Power Score Trends
                 </CardTitle>
                 {!isMobile && (
-                  <CardDescription
-                    className={cn(
-                      isLight ? 'text-gray-600 font-medium font-inter' : 'text-gray-400 font-inter'
-                    )}
-                  >
+                  <CardDescription className="font-inter">
                     Compare team performance across multiple seasons
                   </CardDescription>
                 )}
@@ -262,24 +308,11 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
             </ResponsiveContainer>
 
             {selectedTeamIds.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-3">
-                {selectedTeamIds.map((teamId) => {
-                  const team = teamsData?.find((t) => t.teamId === teamId);
-                  if (!team) return null;
-                  const color = getTeamColor(teamId, isDark);
-                  return (
-                    <div key={teamId} className="flex items-center gap-2 text-sm">
-                      <div className="w-6 h-0.5" style={{ backgroundColor: color }} />
-                      <Link
-                        to={`/teams/${toTeamSlug(team?.teamName || teamId)}`}
-                        className="hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-colors cursor-pointer"
-                      >
-                        {team.teamName}
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
+              <SelectedTeamsLegend
+                teamsData={teamsData}
+                selectedTeamIds={selectedTeamIds}
+                isDark={isDark}
+              />
             )}
           </CardContent>
         </CollapsibleContent>
