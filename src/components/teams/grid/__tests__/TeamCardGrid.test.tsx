@@ -101,6 +101,25 @@ describe('TeamCardGrid', () => {
 
       expect(screen.queryByText('Competitive')).not.toBeInTheDocument();
     });
+
+    it.each([
+      ['Competitive', 'competitive'],
+      ['Intermediate', 'intermediate'],
+      ['Recreational', 'recreational'],
+      ['Summer Rec', 'recreational'],
+    ])('gives the %s badge its own colour', (divisionName, variant) => {
+      renderCard({ team: makeTeam({ divisionName }) });
+
+      // Each division reads its variant off the name, case-insensitively, and
+      // anything unrecognised falls back to recreational rather than crashing.
+      expect(screen.getByText(divisionName).className).toContain(variant);
+    });
+
+    it('greys out a hidden division instead of colouring it', () => {
+      renderCard({ team: makeTeam({ divisionName: 'Hidden Division' }) });
+
+      expect(screen.getByText('Hidden Division').className).toContain('text-muted-foreground');
+    });
   });
 
   describe('on a phone', () => {

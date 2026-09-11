@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
@@ -86,7 +86,8 @@ describe('AllTeamsCareerPowerScoreChart', () => {
     isWinterTheme = false;
     resolvedTheme = 'light';
     query = {
-      data: [teamCareer('t1', 'Tigers', [70, 75]), teamCareer('t2', 'Lions', [60, 65])],
+      // power_score is stored as a fraction; the chart plots it out of 100.
+      data: [teamCareer('t1', 'Tigers', [0.7, 0.75]), teamCareer('t2', 'Lions', [0.6, 0.65])],
       isLoading: false,
     };
   });
@@ -157,6 +158,64 @@ describe('AllTeamsCareerPowerScoreChart', () => {
     expect(
       screen.queryByText('Select teams above to highlight their trends')
     ).not.toBeInTheDocument();
+  });
+
+  describe('the tooltip', () => {
+    /**
+     * Recharts' accessibility layer: focus the plot, then walk it with the
+     * arrow keys. No mouse, and no made-up pixel coordinates — which also
+     * means this covers the keyboard route a screen-reader user takes.
+     */
+    const pointAtASeason = async (container: HTMLElement) => {
+      const wrapper = container.querySelector('.recharts-wrapper') as HTMLElement;
+      fireEvent.focus(wrapper);
+      fireEvent.keyDown(wrapper, { key: 'ArrowRight' });
+      await waitFor(() => {
+        expect(container.querySelector('.recharts-tooltip-wrapper')?.innerHTML).not.toBe('');
+      });
+      return container.querySelector('.recharts-tooltip-wrapper') as HTMLElement;
+    };
+
+    it('names the season and every team, best score first', async () => {
+      const user = userEvent.setup();
+      const { container } = renderChart();
+
+      await open(user);
+      const tip = await pointAtASeason(container);
+
+      expect(tip).toHaveTextContent('Season 2');
+      // The fraction is shown out of 100, and the leader is listed first.
+      expect(Array.from(tip.querySelectorAll('p.text-xs')).map((p) => p.textContent)).toEqual([
+        'Tigers: 75.0',
+        'Lions: 65.0',
+      ]);
+    });
+
+    it('links each team in the tooltip to its own page', async () => {
+      const user = userEvent.setup();
+      const { container } = renderChart();
+
+      await open(user);
+      const tip = await pointAtASeason(container);
+
+      expect(within(tip).getByText('Tigers').closest('a')).toHaveAttribute('href', '/teams/tigers');
+      expect(within(tip).getByText('Lions').closest('a')).toHaveAttribute('href', '/teams/lions');
+    });
+
+    it('narrows to the highlighted teams once some are picked', async () => {
+      const user = userEvent.setup();
+      const { container } = renderChart();
+
+      await open(user);
+      await user.click(screen.getByRole('combobox'));
+      await user.click(await screen.findByRole('option', { name: 'Tigers' }));
+      await user.keyboard('{Escape}');
+
+      const tip = await pointAtASeason(container);
+
+      expect(tip).toHaveTextContent('Tigers');
+      expect(tip).not.toHaveTextContent('Lions');
+    });
   });
 
   it('keeps its description on a wide screen and drops it on a phone', () => {
