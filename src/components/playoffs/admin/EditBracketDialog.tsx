@@ -90,6 +90,17 @@ const NameField = ({ value, onChange }: { value: string; onChange: (value: strin
   </div>
 );
 
+/**
+ * Every division a bracket may be filed under.
+ *
+ * The seeded "Hidden" division is left out. The playoffs page drops it from
+ * every division list, so a bracket moved there disappears from the bracket
+ * list with no way back to it. The Create-bracket form skips it the same way.
+ */
+const selectableDivisions = <T extends { name: string; display_division?: string }>(
+  divisions: T[]
+): T[] => divisions.filter((division) => (division.display_division || division.name) !== 'Hidden');
+
 const DivisionField = ({
   value,
   onChange,
@@ -171,7 +182,7 @@ const EditBracketDialog: React.FC<EditBracketDialogProps> = ({ open, onOpenChang
           <DivisionField
             value={divisionId}
             onChange={setDivisionId}
-            divisions={divisions ?? []}
+            divisions={selectableDivisions(divisions ?? [])}
             locked={hasStarted}
           />
         </div>

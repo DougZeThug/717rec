@@ -16,6 +16,9 @@ vi.mock('@/hooks/useDivisions', () => ({
     divisions: [
       { id: 'd-1', name: 'Competitive' },
       { id: 'd-2', name: 'Recreational' },
+      // The seeded Hidden division, in both spellings the database carries.
+      { id: 'd-hidden', name: 'Hidden Placeholder', display_division: 'Hidden' },
+      { id: 'd-hidden-legacy', name: 'Hidden' },
     ],
   }),
 }));
@@ -225,6 +228,20 @@ describe('EditBracketDialog', () => {
     } as unknown as Partial<PlayoffBracket>);
 
     expect(screen.getByLabelText('Division')).toBeDisabled();
+  });
+
+  // A bracket moved into Hidden drops out of every division list on the
+  // playoffs page, so there is no way back to it.
+  it('does not offer the Hidden division as somewhere to move a bracket', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+
+    await user.click(screen.getByLabelText('Division'));
+
+    expect(await screen.findByRole('option', { name: 'Competitive' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Recreational' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Hidden Placeholder' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'Hidden' })).not.toBeInTheDocument();
   });
 
   it('sends the new division when the admin changes it', async () => {
