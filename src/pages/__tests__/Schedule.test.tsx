@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { format } from 'date-fns';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -87,6 +88,8 @@ vi.mock('@/components/schedule/ScheduleContentSkeleton', () => ({
   default: () => <p>Loading schedule...</p>,
 }));
 
+const dayKey = (date?: Date | null) => (date ? format(date, 'yyyy-MM-dd') : 'none');
+
 vi.mock('@/components/schedule/ScheduleContent', () => ({
   default: ({
     filteredMatches,
@@ -95,6 +98,8 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     groupedTimeslots = {},
     hasFilters = false,
     onClearFilters,
+    lastPlayedDate,
+    nextScheduledDate,
   }: {
     filteredMatches: Array<{
       id: string;
@@ -106,6 +111,8 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     groupedTimeslots?: Record<string, unknown[]>;
     hasFilters?: boolean;
     onClearFilters?: () => void;
+    lastPlayedDate?: Date | null;
+    nextScheduledDate?: Date | null;
   }) => (
     <section>
       <p>Active tab: {activeTab}</p>
@@ -116,6 +123,8 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
       )}
       <p>Timeslot rows: {Object.values(groupedTimeslots).flat().length}</p>
       <p>Filters on: {hasFilters ? 'yes' : 'no'}</p>
+      <p>Next night: {dayKey(nextScheduledDate)}</p>
+      <p>Last played: {dayKey(lastPlayedDate)}</p>
       <button onClick={() => setActiveTab('completed')}>Switch To Completed</button>
       <button onClick={() => onClearFilters?.()}>Clear filters</button>
     </section>
@@ -335,6 +344,68 @@ describe('Schedule page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Switch To Completed' }));
 
     expect(handleTabChange).toHaveBeenCalledWith('completed');
+  });
+
+  // The two ways out of the "Nothing scheduled for {date}" card: a link back to
+  // the last night played, and one forward to the next league night. The
+  // forward one used to be worked out with a strict "later than today", so an
+  // unplayed match tonight was not "the next league night" — the card skipped
+  // it for next week, and with tonight the only unplayed match left it said "No
+  // more league nights are on the schedule yet" on a league night.
+  describe("the empty card's two ways out", () => {
+    const nextNight = () => screen.getByText(/^Next night:/).textContent;
+    const lastPlayed = () => screen.getByText(/^Last played:/).textContent;
+
+    const onThursdayNight = (
+      upcoming: string[],
+      completed: string[] = [],
+      matchDates: string[] = []
+    ) => {
+      vi.useFakeTimers();
+      // Thursday Dec 17, league night, morning.
+      vi.setSystemTime(new Date(2026, 11, 17, 9, 0, 0));
+      mockUseMatchDates.mockReturnValue(new Set(matchDates));
+      mockUseScheduleData.mockReturnValue({
+        ...baseScheduleData,
+        upcomingMatches: upcoming.map((date, i) => ({ id: `u${i}`, date, iscompleted: false })),
+        completedMatches: completed.map((date, i) => ({ id: `c${i}`, date, iscompleted: true })),
+      });
+      renderPage();
+    };
+
+    it('counts tonight as the next league night, not next week', () => {
+      onThursdayNight(['2026-12-17', '2026-12-24']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-17');
+    });
+
+    it('still offers tonight when tonight is the only night left', () => {
+      onThursdayNight(['2026-12-17']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-17');
+    });
+
+    it('moves on to the next night once tonight has been played', () => {
+      // Tonight is no longer upcoming — it is in the completed list.
+      onThursdayNight(['2026-12-24'], ['2026-12-17']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-24');
+      expect(lastPlayed()).toBe('Last played: 2026-12-17');
+    });
+
+    it('has no next night when nothing is left to play', () => {
+      onThursdayNight([], ['2026-12-10']);
+
+      expect(nextNight()).toBe('Next night: none');
+      expect(lastPlayed()).toBe('Last played: 2026-12-10');
+    });
+
+    it('skips a night already in the past', () => {
+      // A match left unplayed on a past night is not a night still to come.
+      onThursdayNight(['2026-12-10', '2026-12-24']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-24');
+    });
   });
 
   // UX audit SC-01: the page guessed "the upcoming Thursday" before any data

@@ -139,10 +139,16 @@ const Schedule = () => {
   const nextScheduledKey = useMemo(() => {
     const todayKey = format(new Date(), 'yyyy-MM-dd');
     // upcomingMatches is sorted soonest-first by useScheduleData.
+    //
+    // Inclusive of today, to match lastPlayedKey above. A match that has not
+    // been played yet is a night still to come even when it is tonight, so a
+    // strict `>` here skipped it: the card pointed at next week instead of this
+    // evening, and — when tonight was the only unplayed match left — printed
+    // "No more league nights are on the schedule yet" on a league night.
     return (
       upcomingMatches
         .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
-        .find((key) => key > todayKey) ?? null
+        .find((key) => key >= todayKey) ?? null
     );
   }, [upcomingMatches]);
 
