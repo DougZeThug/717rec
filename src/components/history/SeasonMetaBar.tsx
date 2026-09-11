@@ -34,6 +34,28 @@ interface SeasonMetaBarProps {
   seasonData: SeasonData[];
 }
 
+/**
+ * One "Season Awards" entry: an icon, a label, and the team that won it.
+ *
+ * The same eleven lines of markup were written out three times, once per award.
+ * Extracting them also takes the section under the JSX nesting limit
+ * (DeepSource JS-0415).
+ */
+const AwardItem: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  isWinterTheme: boolean;
+}> = ({ icon, label, value, isWinterTheme }) => (
+  <div className="flex items-center gap-2">
+    {icon}
+    <div>
+      <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>{label}</p>
+      <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>{value}</p>
+    </div>
+  </div>
+);
+
 const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
 
@@ -75,43 +97,26 @@ const SeasonMetaBar: React.FC<SeasonMetaBarProps> = ({ season, seasonData }) => 
       </h5>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <Target className="size-4 text-blue-500" />
-          <div>
-            <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>Most Wins</p>
-            <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>
-              {mostWins.team_name} ({mostWins.match_wins})
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <TrendingUp className="size-4 text-green-500" />
-          <div>
-            <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>
-              Highest Power Score
-            </p>
-            <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>
-              {highestPowerScore.team_name} (
-              {highestPowerScore.power_score
-                ? (highestPowerScore.power_score * 100).toFixed(1)
-                : 'N/A'}
-              )
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Calendar className="size-4 text-purple-500" />
-          <div>
-            <p className={isWinterTheme ? 'text-white/60' : 'text-muted-foreground'}>
-              Most Game Wins
-            </p>
-            <p className={cn('font-medium', isWinterTheme ? 'text-white' : 'text-foreground')}>
-              {mostGameWins.team_name} ({mostGameWins.game_wins})
-            </p>
-          </div>
-        </div>
+        <AwardItem
+          icon={<Target className="size-4 text-blue-500" />}
+          label="Most Wins"
+          value={`${mostWins.team_name} (${mostWins.match_wins})`}
+          isWinterTheme={isWinterTheme}
+        />
+        <AwardItem
+          icon={<TrendingUp className="size-4 text-green-500" />}
+          label="Highest Power Score"
+          value={`${highestPowerScore.team_name} (${
+            highestPowerScore.power_score ? (highestPowerScore.power_score * 100).toFixed(1) : 'N/A'
+          })`}
+          isWinterTheme={isWinterTheme}
+        />
+        <AwardItem
+          icon={<Calendar className="size-4 text-purple-500" />}
+          label="Most Game Wins"
+          value={`${mostGameWins.team_name} (${mostGameWins.game_wins})`}
+          isWinterTheme={isWinterTheme}
+        />
       </div>
 
       {season.end_date && (

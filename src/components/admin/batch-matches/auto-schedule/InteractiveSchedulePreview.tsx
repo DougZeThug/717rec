@@ -31,6 +31,78 @@ interface InteractiveSchedulePreviewProps {
 
 const EMPTY_UNMATCHED: string[] = [];
 
+/**
+ * The bar above each time block: which block it is, how many teams are in it,
+ * and — in edit mode, with a selection — the remove and move controls.
+ *
+ * Pulled out of the block list so that list stays inside the JSX nesting limit
+ * (DeepSource JS-0415). It takes callbacks rather than the dialog state setters,
+ * so it knows nothing about the confirmation dialog.
+ */
+const TimeBlockHeader: React.FC<{
+  block: string;
+  teamCount: number;
+  isEditMode: boolean;
+  selectedCount: number;
+  moveToBlock: string;
+  onMoveToBlockChange: (value: string) => void;
+  availableBlocks: string[];
+  onRemove: () => void;
+  onMove: () => void;
+}> = ({
+  block,
+  teamCount,
+  isEditMode,
+  selectedCount,
+  moveToBlock,
+  onMoveToBlockChange,
+  availableBlocks,
+  onRemove,
+  onMove,
+}) => (
+  <div className="bg-muted px-4 py-2 flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <Clock className="size-4 text-muted-foreground" />
+      <span className="font-medium">{block} Block</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <Badge variant={teamCount % 2 === 0 ? 'outline' : 'destructive'} className="text-xs">
+        {teamCount} Teams {teamCount % 2 !== 0 && '(Odd Number)'}
+      </Badge>
+
+      {isEditMode && selectedCount > 0 && (
+        <div className="flex items-center gap-1 ml-2">
+          <Button variant="outline" size="xs" onClick={onRemove} className="h-6 px-2">
+            <Trash2 className="size-3 mr-1" />
+            Remove ({selectedCount})
+          </Button>
+
+          <Select value={moveToBlock} onValueChange={onMoveToBlockChange}>
+            <SelectTrigger className="h-6 w-24 text-xs">
+              <Move className="size-3" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableBlocks
+                .filter((b) => b !== block)
+                .map((blockKey) => (
+                  <SelectItem key={blockKey} value={blockKey}>
+                    {blockKey}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+
+          {moveToBlock && (
+            <Button variant="outline" size="xs" onClick={onMove} className="h-6 px-2">
+              Move
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   timeBlockTeams,
   date,
@@ -166,74 +238,26 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
 
       {Object.entries(timeBlockTeams).map(([block, teams]) => {
         const selectedForBlock = getSelectedTeamsForBlock(block);
-        const hasSelection = selectedForBlock.length > 0;
 
         return (
           <Card key={block} className="overflow-hidden">
-            <div className="bg-muted px-4 py-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="size-4 text-muted-foreground" />
-                <span className="font-medium">{block} Block</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={teams.length % 2 === 0 ? 'outline' : 'destructive'}
-                  className="text-xs"
-                >
-                  {teams.length} Teams {teams.length % 2 !== 0 && '(Odd Number)'}
-                </Badge>
-
-                {isEditMode && hasSelection && (
-                  <div className="flex items-center gap-1 ml-2">
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() => {
-                        setConfirmAction({ type: 'remove', blockKey: block });
-                        setShowConfirmDialog(true);
-                      }}
-                      className="h-6 px-2"
-                    >
-                      <Trash2 className="size-3 mr-1" />
-                      Remove ({selectedForBlock.length})
-                    </Button>
-
-                    <Select value={moveToBlock} onValueChange={setMoveToBlock}>
-                      <SelectTrigger className="h-6 w-24 text-xs">
-                        <Move className="size-3" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableBlocks
-                          .filter((b) => b !== block)
-                          .map((blockKey) => (
-                            <SelectItem key={blockKey} value={blockKey}>
-                              {blockKey}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-
-                    {moveToBlock && (
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        onClick={() => {
-                          setConfirmAction({
-                            type: 'move',
-                            blockKey: block,
-                            targetBlock: moveToBlock,
-                          });
-                          setShowConfirmDialog(true);
-                        }}
-                        className="h-6 px-2"
-                      >
-                        Move
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <TimeBlockHeader
+              block={block}
+              teamCount={teams.length}
+              isEditMode={isEditMode}
+              selectedCount={selectedForBlock.length}
+              moveToBlock={moveToBlock}
+              onMoveToBlockChange={setMoveToBlock}
+              availableBlocks={availableBlocks}
+              onRemove={() => {
+                setConfirmAction({ type: 'remove', blockKey: block });
+                setShowConfirmDialog(true);
+              }}
+              onMove={() => {
+                setConfirmAction({ type: 'move', blockKey: block, targetBlock: moveToBlock });
+                setShowConfirmDialog(true);
+              }}
+            />
 
             <CardContent className="p-3">
               <TimeBlockTeamsList
