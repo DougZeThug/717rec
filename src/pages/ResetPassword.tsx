@@ -67,24 +67,31 @@ const ResetPassword: React.FC = () => {
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  // One error per field, not one shared between the two. A single message could
+  // only ever render in one place, so the "too short" complaint about the new
+  // password appeared under Confirm — a field whose value may be perfectly long
+  // enough. See UX audit X-04.
+  const [newPasswordError, setNewPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setFormError(null);
+    setNewPasswordError(null);
+    setConfirmPasswordError(null);
 
     const parsed = passwordSchema.safeParse(password);
     if (!parsed.success) {
-      setPasswordError(parsed.error.issues[0].message);
+      setNewPasswordError(parsed.error.issues[0].message);
       return;
     }
     if (password !== confirmPassword) {
-      setPasswordError('Passwords do not match');
+      // The mismatch belongs to Confirm: the new password on its own is fine.
+      setConfirmPasswordError('Passwords do not match');
       return;
     }
-    setPasswordError(null);
     setIsSubmitting(true);
 
     try {
@@ -153,17 +160,21 @@ const ResetPassword: React.FC = () => {
             value={password}
             onChange={setPassword}
             disabled={isSubmitting}
-            invalid={Boolean(passwordError)}
-          />
+            invalid={Boolean(newPasswordError)}
+          >
+            {newPasswordError && <p className="text-sm text-destructive">{newPasswordError}</p>}
+          </PasswordField>
           <PasswordField
             id="confirm-password"
             label="Confirm new password"
             value={confirmPassword}
             onChange={setConfirmPassword}
             disabled={isSubmitting}
-            invalid={Boolean(passwordError)}
+            invalid={Boolean(confirmPasswordError)}
           >
-            {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+            {confirmPasswordError && (
+              <p className="text-sm text-destructive">{confirmPasswordError}</p>
+            )}
           </PasswordField>
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (

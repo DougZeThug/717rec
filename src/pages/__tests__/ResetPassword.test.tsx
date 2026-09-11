@@ -121,6 +121,66 @@ describe('ResetPassword', () => {
     expect(mockUpdatePassword).not.toHaveBeenCalled();
   });
 
+  // The two fields used to share one error slot, and the slot sat under Confirm.
+  // So "too short" — a complaint about the new password — was printed under a
+  // confirmation that could be long enough, and marked that field red as well.
+  describe('which field each complaint lands on', () => {
+    const fieldOf = (input: HTMLElement) => input.closest('div');
+
+    it('puts the length complaint on the new password, not on a valid Confirm', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      const newPassword = screen.getByLabelText('New password');
+      const confirmPassword = screen.getByLabelText('Confirm new password');
+      await user.type(newPassword, 'short');
+      await user.type(confirmPassword, 'hunter22');
+      await user.click(screen.getByRole('button', { name: 'Save new password' }));
+
+      const message = await screen.findByText('Password must be at least 6 characters');
+      expect(fieldOf(newPassword)).toContainElement(message);
+      expect(fieldOf(confirmPassword)).not.toContainElement(message);
+      expect(confirmPassword).not.toHaveClass('border-red-500');
+    });
+
+    it('puts the mismatch on Confirm, where the value that has to change is', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      const newPassword = screen.getByLabelText('New password');
+      const confirmPassword = screen.getByLabelText('Confirm new password');
+      await user.type(newPassword, 'hunter22');
+      await user.type(confirmPassword, 'hunter23');
+      await user.click(screen.getByRole('button', { name: 'Save new password' }));
+
+      const message = await screen.findByText('Passwords do not match');
+      expect(fieldOf(confirmPassword)).toContainElement(message);
+      expect(fieldOf(newPassword)).not.toContainElement(message);
+      expect(newPassword).not.toHaveClass('border-red-500');
+    });
+
+    it('clears a stale complaint from the other field on the next attempt', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      const newPassword = screen.getByLabelText('New password');
+      const confirmPassword = screen.getByLabelText('Confirm new password');
+      const save = screen.getByRole('button', { name: 'Save new password' });
+
+      await user.type(newPassword, 'short');
+      await user.type(confirmPassword, 'hunter22');
+      await user.click(save);
+      expect(await screen.findByText('Password must be at least 6 characters')).toBeInTheDocument();
+
+      // Long enough now, but still not a match: only the mismatch should show.
+      await user.type(newPassword, 'er22');
+      await user.click(save);
+
+      expect(await screen.findByText('Passwords do not match')).toBeInTheDocument();
+      expect(screen.queryByText('Password must be at least 6 characters')).not.toBeInTheDocument();
+    });
+  });
+
   it('saves the password and lands the user signed in', async () => {
     const user = userEvent.setup();
     renderPage();

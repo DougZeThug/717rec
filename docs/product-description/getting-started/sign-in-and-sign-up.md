@@ -20,6 +20,9 @@ consumed. A member who has never chosen a username is normally sent to profile
 setup the moment a session appears; that redirect is suppressed on this page, so
 the reset can always be finished. The page shows a "Set a new password" form with a new password and
 a confirmation, both checked against the same six-character rule as sign-up.
+Each complaint is printed under the field it is about, and reddens only that
+field: "Password must be at least 6 characters" under the new password, and
+"Passwords do not match" under the confirmation.
 Saving raises "Password updated" and lands on the home page, signed in. A link
 that has already been used, or has run out of time, produces no session, and the
 page says "This link has expired" with a button to request another rather than
