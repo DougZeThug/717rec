@@ -50,14 +50,11 @@ beforeAll(() => {
 
   // The picker's popover watches its trigger for size changes. jsdom has no
   // layout, so nothing ever resizes and a no-op observer is enough.
-  globalThis.ResizeObserver ??= class ResizeObserver {
-    /** Starts watching an element; no-op in jsdom tests. */
-    observe() {}
-    /** Stops watching an element; no-op in jsdom tests. */
-    unobserve() {}
-    /** Stops watching everything; no-op in jsdom tests. */
-    disconnect() {}
-  };
+  globalThis.ResizeObserver ??= class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  } as unknown as typeof ResizeObserver;
 });
 
 const teamCareer = (id: string, name: string, scores: Array<number | null>): TeamCareerData => ({
@@ -162,7 +159,7 @@ describe('AllTeamsCareerPowerScoreChart', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('keeps its description on a wide screen and drops it on a phone', async () => {
+  it('keeps its description on a wide screen and drops it on a phone', () => {
     const wide = renderChart();
     expect(
       screen.getByText('Compare team performance across multiple seasons')

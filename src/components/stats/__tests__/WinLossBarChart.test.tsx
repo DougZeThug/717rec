@@ -94,7 +94,7 @@ describe('WinLossBarChart', () => {
 
       // `title` is what a mouse hover shows, so the full name is never lost.
       expect(screen.getByText('Bag Fumblers United')).toBeInTheDocument();
-      expect(screen.getByText(/^Bag Fumbler…$/)).toBeInTheDocument();
+      expect(screen.getByText(/^Bag Fumbler…$/u)).toBeInTheDocument();
     });
 
     it('shortens names harder on a phone, where there is less room', () => {
@@ -104,7 +104,7 @@ describe('WinLossBarChart', () => {
           isMobile
         />
       );
-      expect(screen.getByText(/^Bag Fu…$/)).toBeInTheDocument();
+      expect(screen.getByText(/^Bag Fu…$/u)).toBeInTheDocument();
     });
 
     it('leaves a name that already fits alone', () => {
@@ -112,7 +112,7 @@ describe('WinLossBarChart', () => {
       // Twice: once as the drawn label, once as the hover title. Both are the
       // whole name, and nothing is elided.
       expect(screen.getAllByText('Tigers')).toHaveLength(2);
-      expect(screen.queryByText(/…/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/…/u)).not.toBeInTheDocument();
     });
   });
 });
