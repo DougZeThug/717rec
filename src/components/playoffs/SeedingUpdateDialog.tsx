@@ -55,8 +55,9 @@ interface SeedingUpdateDialogProps {
   /**
    * The bracket's matches, so the dialog can tell whether play has started.
    * `bracketState` alone cannot: it never reads 'in_progress' in practice.
+   * Undefined until they load, which reads the same as none.
    */
-  matches: PlayoffMatch[];
+  matches: PlayoffMatch[] | undefined;
 }
 
 interface TeamItem {

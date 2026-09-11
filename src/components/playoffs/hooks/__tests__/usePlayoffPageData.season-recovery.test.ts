@@ -103,7 +103,7 @@ describe('usePlayoffPageData season after a bracket link fails to load', () => {
     expect(searchParams.get('bracket')).toBe('b-past');
   });
 
-  it('takes the season from the bracket once a retry succeeds', async () => {
+  it('takes the season from the bracket once a retry succeeds', () => {
     searchParams = new URLSearchParams('bracket=b-past');
     bracketRef.current = { data: null, isLoading: false, error: new Error('fetch failed') };
 
@@ -119,7 +119,9 @@ describe('usePlayoffPageData season after a bracket link fails to load', () => {
       return Promise.resolve();
     });
 
-    await act(async () => {
+    // The refetch stub swaps the bracket in synchronously, so there is nothing
+    // to await here.
+    act(() => {
       result.current.retrySelectedBracket();
     });
     rerender();

@@ -89,6 +89,8 @@ const makeMatch = (overrides: Partial<PlayoffMatch>): PlayoffMatch =>
 describe('hasPlayStarted', () => {
   it('returns false when there are no matches', () => {
     expect(hasPlayStarted([])).toBe(false);
+    // A bracket carries no matches at all until they load, and both dialogs
+    // pass that straight through. skipcq: JS-W1042
     expect(hasPlayStarted(undefined)).toBe(false);
   });
 
