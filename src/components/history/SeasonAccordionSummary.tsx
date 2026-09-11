@@ -27,7 +27,10 @@ const ChampionsSummaryCard: React.FC<ChampionsSummaryCardProps> = ({
     <p
       className={cn(
         'text-xs font-semibold uppercase tracking-wider mb-1.5',
-        isWinterTheme ? 'text-amber-300/80' : 'text-amber-600 dark:text-amber-400'
+        // amber-700, not amber-600: at 12px on `bg-muted/50` over a white card
+        // this measured 3.04:1 in the light theme, under the 4.5:1 minimum.
+        // amber-700 is 4.8:1. The dark arm is 10:1 and is unchanged.
+        isWinterTheme ? 'text-amber-300/80' : 'text-amber-700 dark:text-amber-400'
       )}
     >
       <Crown className="size-3 inline mr-1 -mt-0.5" />

@@ -1,7 +1,7 @@
-import { useTheme } from 'next-themes';
 import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { chartLog } from '@/utils/logger';
 
 import ChartEmptyState from './ChartEmptyState';
@@ -59,8 +59,7 @@ const CustomXAxisTick: React.FC<{
 };
 
 const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
+  const isDark = useIsDarkSurface();
   const chartBgColor = isDark ? '#1f2937' : '#ffffff';
   const chartGridColor = isDark ? '#374151' : '#e5e7eb';
   const barColorWin = '#10b981';

@@ -1,5 +1,5 @@
 import { Users } from 'lucide-react';
-import React from 'react';
+import React, { useId } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -31,6 +31,10 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
   onDeselectAll,
 }) => {
   const { isWinterTheme } = useSeasonalThemeBase();
+  // Every block renders this list, so the checkbox needs an id of its own for
+  // its label to point at.
+  const selectAllId = useId();
+
   if (teams.length === 0) {
     return (
       <InlineEmptyState
@@ -50,6 +54,7 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
       {isInteractive && (
         <div className="flex items-center gap-2 py-2 border-b border-border">
           <Checkbox
+            id={selectAllId}
             checked={allSelected}
             onCheckedChange={(checked) => {
               if (checked) {
@@ -60,12 +65,19 @@ export const TimeBlockTeamsList: React.FC<TimeBlockTeamsListProps> = ({
             }}
             className="size-4"
           />
-          <span className="text-sm text-muted-foreground">
-            {allSelected ? 'Deselect All' : someSelected ? 'Select All' : 'Select All'}
+          {/* A real label, not a span beside the box: the words used to be dead
+              to the pointer, so only the 16px checkbox could be hit. Radix's
+              Checkbox renders a <button>, which is a labelable element, so
+              htmlFor reaches it. */}
+          <label
+            htmlFor={selectAllId}
+            className="text-sm text-muted-foreground cursor-pointer select-none"
+          >
+            {allSelected ? 'Deselect All' : 'Select All'}
             {someSelected &&
               !allSelected &&
               ` (${selectedTeamIds.filter((id) => teams.some((team) => team.id === id)).length}/${teams.length})`}
-          </span>
+          </label>
         </div>
       )}
 

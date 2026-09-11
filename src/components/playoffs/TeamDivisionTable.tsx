@@ -104,7 +104,7 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
             <TabsTrigger key={division} value={division} className="capitalize">
               {division === 'all' ? 'All Teams' : division}
               {division !== 'all' && (
-                <span className="ml-1 text-xs bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 rounded-full">
+                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
                   {division === 'Unassigned'
                     ? teamsByDivision['Unassigned']?.length || 0
                     : teamsByDivision[division]?.length || 0}

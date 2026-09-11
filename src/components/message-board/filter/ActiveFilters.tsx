@@ -28,7 +28,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
           <button
             type="button"
             onClick={() => onFilterChange({ category: null })}
-            className="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="ml-0.5 p-0.5 rounded hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Remove category filter"
           >
             <X className="size-3" />
@@ -41,7 +41,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
           <button
             type="button"
             onClick={() => onFilterChange({ teamId: null })}
-            className="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="ml-0.5 p-0.5 rounded hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Remove team filter"
           >
             <X className="size-3" />
@@ -54,7 +54,7 @@ const ActiveFilters: React.FC<ActiveFiltersProps> = ({ filterOptions, onFilterCh
           <button
             type="button"
             onClick={() => onFilterChange({ searchQuery: null })}
-            className="ml-0.5 p-0.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-primary"
+            className="ml-0.5 p-0.5 rounded hover:bg-accent focus:outline-none focus:ring-1 focus:ring-primary"
             aria-label="Remove search filter"
           >
             <X className="size-3" />

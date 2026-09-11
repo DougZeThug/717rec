@@ -73,7 +73,9 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
       lightIcicles
       className={cn(
         'max-w-7xl mx-auto px-2 sm:px-4',
-        isWinterTheme ? 'bg-transparent' : 'bg-gray-50 dark:bg-transparent'
+        // A faint wash separates this container from a white page. A dark page
+        // needs no separation, so it stays transparent there.
+        isWinterTheme ? 'bg-transparent' : 'bg-muted dark:bg-transparent'
       )}
     >
       <StatsPageHeader />

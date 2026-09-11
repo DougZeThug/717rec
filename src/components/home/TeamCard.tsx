@@ -60,7 +60,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
             'h-44 relative flex items-center justify-center p-4',
             isWinter
               ? 'bg-gradient-to-br from-slate-800/80 via-slate-800/50 to-slate-900/60'
-              : 'bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-800/80 dark:via-gray-800/50 dark:to-gray-900/60'
+              : 'bg-gradient-to-br from-muted to-card'
           )}
         >
           <div
@@ -94,7 +94,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
             'p-4',
             isWinter
               ? 'bg-gradient-to-br from-slate-800/90 to-slate-900/95'
-              : 'bg-gradient-to-br from-white to-gray-50/70 dark:from-[#1E1E1E] dark:to-gray-900/90'
+              : 'bg-gradient-to-br from-muted to-card'
           )}
         >
           <h3

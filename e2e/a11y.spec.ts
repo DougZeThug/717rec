@@ -92,11 +92,71 @@ const assertNoA11yViolations = async (page: Page) => {
 
 const routes = ['/', '/teams', '/stats', '/history', '/playoffs', '/help'];
 
-for (const route of routes) {
-  test(`a11y: ${route} has no detectable WCAG 2 A/AA violations`, async ({ page }) => {
-    await page.goto(route, { waitUntil: 'networkidle' });
-    await assertNoA11yViolations(page);
+// The app defaults to dark (`main.tsx`), so the scan above only ever saw one of
+// the two themes a visitor can pick. Light is where the contrast bugs were:
+// X-11 measured muted text at 4.34-4.48:1 there, under the 4.5:1 minimum.
+// L2 put every colour on a token, and this is what keeps it that way.
+//
+// `winter-frozen` is deliberately not scanned. It is disabled in the database,
+// and `ThemeToggle` switches away from a disabled theme on mount, so the scan
+// would race that redirect and report on whatever theme won.
+const THEMES = ['dark', 'light'] as const;
+
+/**
+ * Seed the theme before the page's own scripts run.
+ *
+ * next-themes reads `localStorage.theme` and writes it to the `<html>` class
+ * (`attribute="class"` in `main.tsx`), so setting the key in an init script is
+ * enough — there is no need to find and press the toggle.
+ */
+const seedTheme = async (page: Page, theme: string) => {
+  await page.addInitScript((value) => {
+    window.localStorage.setItem('theme', value);
+  }, theme);
+};
+
+/**
+ * Keep the seeded theme selected, whatever the league has switched on.
+ *
+ * `theme_settings` is live, admin-editable data and is readable by anyone
+ * (`20260310133050_*.sql`). `ThemeToggle` reads it and calls `setTheme('dark')`
+ * on mount if the current theme is not enabled there. So an admin turning the
+ * light theme off would break this required gate — and break it as a failed
+ * theme-class assertion, which looks nothing like the accessibility problem it
+ * is not. Answer that one request with both themes enabled, so the scan tests
+ * the code rather than the league's current settings.
+ */
+const stubEnabledThemes = async (page: Page) => {
+  await page.route(/\/rest\/v1\/theme_settings/, async (route) => {
+    await route.fulfill(
+      jsonResponse(
+        THEMES.map((key, index) => ({
+          id: key,
+          theme_key: key,
+          label: key,
+          is_enabled: true,
+          sort_order: index + 1,
+          updated_at: '2026-01-01T00:00:00.000Z',
+        }))
+      )
+    );
   });
+};
+
+for (const theme of THEMES) {
+  for (const route of routes) {
+    test(`a11y: ${route} has no WCAG 2 A/AA violations in the ${theme} theme`, async ({ page }) => {
+      await seedTheme(page, theme);
+      await stubEnabledThemes(page);
+      await page.goto(route, { waitUntil: 'networkidle' });
+
+      // Without this the light run silently scans dark and passes for the
+      // wrong reason, which is worse than not running it at all.
+      await expect(page.locator('html')).toHaveClass(new RegExp(`\\b${theme}\\b`));
+
+      await assertNoA11yViolations(page);
+    });
+  }
 }
 
 // Landmarks and headings are how a screen-reader user works out where they are.

@@ -33,6 +33,7 @@ interface HeroCardsListProps {
 }
 
 const cardTypeBadgeColors: Record<string, string> = {
+  // eslint-disable-next-line no-restricted-syntax -- slate is this badge's category colour, one of a set with amber, emerald and blue
   standard: 'bg-slate-500/10 text-slate-600 border-slate-200 dark:border-slate-700',
   champions: 'bg-amber-500/10 text-amber-600 border-amber-200 dark:border-amber-700',
   event: 'bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-700',

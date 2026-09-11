@@ -12,10 +12,10 @@ interface ScheduleContentSkeletonProps {
 const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activeTab }) => {
   return (
     <Tabs value={activeTab} className="mb-6">
-      <TabsList className="w-full md:min-w-[340px] font-inter bg-gray-200 dark:bg-gray-700">
+      <TabsList className="w-full md:min-w-[340px] font-inter bg-muted">
         <TabsTrigger
           value="upcoming"
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6"
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-background px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
             <Calendar className="size-4 mr-2 flex-shrink-0" />
@@ -24,7 +24,7 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
         </TabsTrigger>
         <TabsTrigger
           value="completed"
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 px-2 md:px-6"
+          className="flex-1 md:flex-grow-0 data-[state=active]:bg-background px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
             <CheckCircle className="size-4 mr-2 flex-shrink-0" />

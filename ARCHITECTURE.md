@@ -113,6 +113,12 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 - Global styles: `src/styles/`
 - Tailwind config: `tailwind.config.ts`
 - Theme tokens: `src/styles/theme.css` and `src/styles/themes/`
+  - All three themes (light, dark, winter) define the **same token names**, so
+    `text-foreground`, `bg-card` and `border-border` are already correct in each
+    one and need no `dark:` twin. Where a colour cannot be a class — a chart
+    library that takes colour props — `useIsDarkSurface()`
+    (`src/hooks/useIsDarkSurface.ts`) answers "is the page dark?" correctly for
+    winter as well as dark.
 - Theme admin/runtime: `src/components/admin/theme/`, `src/hooks/useThemeSettings.ts`,
   `src/services/ThemeSettingsService.ts`
 

@@ -28,7 +28,7 @@ const MatchReactionButton: React.FC<MatchReactionButtonProps> = ({
               'py-0 h-6 px-1.5 gap-1 text-xs border transition-all duration-150',
               hasReacted
                 ? 'bg-accent/30 border-primary/30 hover:bg-accent/40'
-                : 'bg-background/80 border-gray-200 dark:border-gray-700 hover:bg-accent/10'
+                : 'bg-background/80 border-border hover:bg-accent/10'
             )}
             onClick={onClick}
             aria-label={`${emoji} reaction (${count})`}

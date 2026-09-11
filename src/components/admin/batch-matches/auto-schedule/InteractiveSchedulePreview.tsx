@@ -31,6 +31,141 @@ interface InteractiveSchedulePreviewProps {
 
 const EMPTY_UNMATCHED: string[] = [];
 
+/**
+ * The bar above each time block: which block it is, how many teams are in it,
+ * and — in edit mode, with a selection — the remove and move controls.
+ *
+ * Pulled out of the block list so that list stays inside the JSX nesting limit
+ * (DeepSource JS-0415). It takes callbacks rather than the dialog state setters,
+ * so it knows nothing about the confirmation dialog.
+ */
+const TimeBlockHeader: React.FC<{
+  block: string;
+  teamCount: number;
+  isEditMode: boolean;
+  selectedCount: number;
+  moveToBlock: string;
+  onMoveToBlockChange: (value: string) => void;
+  availableBlocks: string[];
+  onRemove: () => void;
+  onMove: () => void;
+}> = ({
+  block,
+  teamCount,
+  isEditMode,
+  selectedCount,
+  moveToBlock,
+  onMoveToBlockChange,
+  availableBlocks,
+  onRemove,
+  onMove,
+}) => (
+  <div className="bg-muted px-4 py-2 flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <Clock className="size-4 text-muted-foreground" />
+      <span className="font-medium">{block} Block</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <Badge variant={teamCount % 2 === 0 ? 'outline' : 'destructive'} className="text-xs">
+        {teamCount} Teams {teamCount % 2 !== 0 && '(Odd Number)'}
+      </Badge>
+
+      {isEditMode && selectedCount > 0 && (
+        <div className="flex items-center gap-1 ml-2">
+          <Button variant="outline" size="xs" onClick={onRemove} className="h-6 px-2">
+            <Trash2 className="size-3 mr-1" />
+            Remove ({selectedCount})
+          </Button>
+
+          <Select value={moveToBlock} onValueChange={onMoveToBlockChange}>
+            <SelectTrigger className="h-6 w-24 text-xs">
+              <Move className="size-3" />
+            </SelectTrigger>
+            <SelectContent>
+              {availableBlocks
+                .filter((b) => b !== block)
+                .map((blockKey) => (
+                  <SelectItem key={blockKey} value={blockKey}>
+                    {blockKey}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+
+          {moveToBlock && (
+            <Button variant="outline" size="xs" onClick={onMove} className="h-6 px-2">
+              Move
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+interface ConfirmAction {
+  type: 'remove' | 'clear' | 'move';
+  blockKey?: string;
+  targetBlock?: string;
+}
+
+/** What the confirmation dialog asks, for each thing it can be confirming. */
+const confirmActionMessage = (action: ConfirmAction | null, selectedCount: number): string => {
+  if (!action) return '';
+  switch (action.type) {
+    case 'remove':
+      return `Remove ${selectedCount} selected team(s) from ${action.blockKey} block?`;
+    case 'clear':
+      return `Clear all teams from ${action.blockKey} block?`;
+    case 'move':
+      return `Move ${selectedCount} selected team(s) from ${action.blockKey} to ${action.targetBlock} block?`;
+    default:
+      // skipcq: TCV-001 -- unreachable: the switch is exhaustive over
+      // ConfirmAction['type'] and TS enforces it, so no test can arrive here.
+      // assertNever itself is covered by src/utils/__tests__/assertNever.test.ts.
+      return assertNever(action.type);
+  }
+};
+
+/**
+ * The one dialog that confirms every destructive block operation.
+ *
+ * Lifted out of the block list, which put it five JSX levels deep
+ * (DeepSource JS-0415).
+ */
+const ConfirmActionDialog: React.FC<{
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  action: ConfirmAction | null;
+  selectedCount: number;
+  onConfirm: () => void;
+}> = ({ open, onOpenChange, action, selectedCount, onConfirm }) => (
+  <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Confirm Action</AlertDialogTitle>
+        <AlertDialogDescription>
+          {confirmActionMessage(action, selectedCount)}
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm}>Confirm</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+/** The "clear this block" row under a block's team list. */
+const ClearBlockButton: React.FC<{ onClear: () => void }> = ({ onClear }) => (
+  <div className="mt-3 pt-3 border-t border-border">
+    <Button variant="outline" size="sm" onClick={onClear} className="text-xs">
+      <Trash2 className="size-3 mr-1" />
+      Clear All Teams
+    </Button>
+  </div>
+);
+
 const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   timeBlockTeams,
   date,
@@ -41,11 +176,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
   const [selectedTeams, setSelectedTeams] = useState<Record<string, string[]>>({});
   const [moveToBlock, setMoveToBlock] = useState<string>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<{
-    type: 'remove' | 'clear' | 'move';
-    blockKey?: string;
-    targetBlock?: string;
-  } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
 
   // Check if we have teams loaded
   const hasTeams = Object.values(timeBlockTeams).some((teams) => teams?.length > 0);
@@ -133,6 +264,7 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
         break;
 
       default:
+        // skipcq: TCV-001 -- unreachable, as above.
         assertNever(confirmAction.type, 'team operation');
     }
 
@@ -166,74 +298,26 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
 
       {Object.entries(timeBlockTeams).map(([block, teams]) => {
         const selectedForBlock = getSelectedTeamsForBlock(block);
-        const hasSelection = selectedForBlock.length > 0;
 
         return (
           <Card key={block} className="overflow-hidden">
-            <div className="bg-muted dark:bg-card px-4 py-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="size-4 text-muted-foreground" />
-                <span className="font-medium">{block} Block</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge
-                  variant={teams.length % 2 === 0 ? 'outline' : 'destructive'}
-                  className="text-xs"
-                >
-                  {teams.length} Teams {teams.length % 2 !== 0 && '(Odd Number)'}
-                </Badge>
-
-                {isEditMode && hasSelection && (
-                  <div className="flex items-center gap-1 ml-2">
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      onClick={() => {
-                        setConfirmAction({ type: 'remove', blockKey: block });
-                        setShowConfirmDialog(true);
-                      }}
-                      className="h-6 px-2"
-                    >
-                      <Trash2 className="size-3 mr-1" />
-                      Remove ({selectedForBlock.length})
-                    </Button>
-
-                    <Select value={moveToBlock} onValueChange={setMoveToBlock}>
-                      <SelectTrigger className="h-6 w-24 text-xs">
-                        <Move className="size-3" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableBlocks
-                          .filter((b) => b !== block)
-                          .map((blockKey) => (
-                            <SelectItem key={blockKey} value={blockKey}>
-                              {blockKey}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-
-                    {moveToBlock && (
-                      <Button
-                        variant="outline"
-                        size="xs"
-                        onClick={() => {
-                          setConfirmAction({
-                            type: 'move',
-                            blockKey: block,
-                            targetBlock: moveToBlock,
-                          });
-                          setShowConfirmDialog(true);
-                        }}
-                        className="h-6 px-2"
-                      >
-                        Move
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+            <TimeBlockHeader
+              block={block}
+              teamCount={teams.length}
+              isEditMode={isEditMode}
+              selectedCount={selectedForBlock.length}
+              moveToBlock={moveToBlock}
+              onMoveToBlockChange={setMoveToBlock}
+              availableBlocks={availableBlocks}
+              onRemove={() => {
+                setConfirmAction({ type: 'remove', blockKey: block });
+                setShowConfirmDialog(true);
+              }}
+              onMove={() => {
+                setConfirmAction({ type: 'move', blockKey: block, targetBlock: moveToBlock });
+                setShowConfirmDialog(true);
+              }}
+            />
 
             <CardContent className="p-3">
               <TimeBlockTeamsList
@@ -249,20 +333,12 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
               />
 
               {isEditMode && teams.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setConfirmAction({ type: 'clear', blockKey: block });
-                      setShowConfirmDialog(true);
-                    }}
-                    className="text-xs"
-                  >
-                    <Trash2 className="size-3 mr-1" />
-                    Clear All Teams
-                  </Button>
-                </div>
+                <ClearBlockButton
+                  onClear={() => {
+                    setConfirmAction({ type: 'clear', blockKey: block });
+                    setShowConfirmDialog(true);
+                  }}
+                />
               )}
             </CardContent>
           </Card>
@@ -275,25 +351,13 @@ const InteractiveSchedulePreview: React.FC<InteractiveSchedulePreviewProps> = ({
         </div>
       )}
 
-      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Action</AlertDialogTitle>
-            <AlertDialogDescription>
-              {confirmAction?.type === 'remove' &&
-                `Remove ${selectedTeams[confirmAction.blockKey ?? '']?.length || 0} selected team(s) from ${confirmAction.blockKey} block?`}
-              {confirmAction?.type === 'clear' &&
-                `Clear all teams from ${confirmAction.blockKey} block?`}
-              {confirmAction?.type === 'move' &&
-                `Move ${selectedTeams[confirmAction.blockKey ?? '']?.length || 0} selected team(s) from ${confirmAction.blockKey} to ${confirmAction.targetBlock} block?`}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={executeTeamOperation}>Confirm</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmActionDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        action={confirmAction}
+        selectedCount={selectedTeams[confirmAction?.blockKey ?? '']?.length || 0}
+        onConfirm={executeTeamOperation}
+      />
     </div>
   );
 };

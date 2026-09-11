@@ -21,7 +21,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         'border-2 p-1 rounded-lg shadow-md',
         isWinterTheme
           ? 'bg-[hsl(var(--secondary))] border-frost-border/40'
-          : 'bg-white dark:bg-gray-800 border-blue-300 dark:border-blue-600'
+          : 'bg-card border-blue-300 dark:border-blue-600'
       )}
     >
       <ToggleGroupItem
@@ -35,7 +35,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
               : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-sm'
             : isWinterTheme
               ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'text-muted-foreground hover:bg-accent'
         )}
       >
         <Grid2x2 className="size-4 mr-1.5" />
@@ -52,7 +52,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
               : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-sm'
             : isWinterTheme
               ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              : 'text-muted-foreground hover:bg-accent'
         )}
       >
         <List className="size-4 mr-1.5" />

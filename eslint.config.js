@@ -88,6 +88,25 @@ export default tseslint.config(
           message:
             "Avoid wildcard select('*') in Supabase queries — list the columns you need explicitly (see CLAUDE.md → Architecture Rules).",
         },
+        // Never write a colour twice, once for light and once after `dark:`.
+        // The token already holds the right value for every theme, and the
+        // `dark:` half does nothing under the winter theme, whose class is
+        // `winter-frozen`, not `dark`. Matches a fixed grey sitting in the same
+        // class string as any `dark:` variant — the signature of a hand-written
+        // pair. `-white/…` and `-black/…` are deliberately not matched: winter
+        // arms use those and are out of scope for now.
+        {
+          selector:
+            "Literal[value=/(^|\\s)(hover:|focus:|active:|group-hover:|even:|odd:)?(text|bg|border|from|via|to|divide|ring|placeholder|fill|stroke)-(gray|slate|zinc|neutral|stone)-[0-9]{2,3}(\\/[0-9]+)?(\\s|$)/][value=/(^|\\s)dark:/]",
+          message:
+            'Use a theme token instead of a fixed grey with a `dark:` twin: text-foreground, text-muted-foreground, bg-card, bg-muted, bg-accent, border-border (see CONTRIBUTING.md → Styling). If the colour carries meaning rather than a theme role — a medal, a category badge — disable this rule on the line and say why.',
+        },
+        {
+          selector:
+            "TemplateElement[value.raw=/(^|\\s)(hover:|focus:|active:|group-hover:|even:|odd:)?(text|bg|border|from|via|to|divide|ring|placeholder|fill|stroke)-(gray|slate|zinc|neutral|stone)-[0-9]{2,3}(\\/[0-9]+)?(\\s|$)/][value.raw=/(^|\\s)dark:/]",
+          message:
+            'Use a theme token instead of a fixed grey with a `dark:` twin: text-foreground, text-muted-foreground, bg-card, bg-muted, bg-accent, border-border (see CONTRIBUTING.md → Styling). If the colour carries meaning rather than a theme role — a medal, a category badge — disable this rule on the line and say why.',
+        },
       ],
 
       // Import Ordering - AUTO-FIXABLE

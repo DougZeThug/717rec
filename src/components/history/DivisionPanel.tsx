@@ -72,7 +72,7 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
           'flex justify-between items-center cursor-pointer rounded-lg px-3 py-2 md:px-4 md:py-3 transition-colors',
           isWinterTheme
             ? 'bg-white/5 hover:bg-white/10 border border-white/10'
-            : 'bg-gray-50/50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800/70'
+            : 'bg-muted/50 hover:bg-accent'
         )}
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -80,14 +80,14 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
           <h4
             className={cn(
               'text-base md:text-lg font-semibold',
-              isWinterTheme ? 'text-white' : 'text-slate-900 dark:text-white'
+              isWinterTheme ? 'text-white' : 'text-foreground'
             )}
           >
             {divisionName}
             <span
               className={cn(
                 'ml-2 text-base font-normal',
-                isWinterTheme ? 'text-white/60' : 'text-gray-500 dark:text-gray-400'
+                isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
               )}
             >
               ({teams.length})

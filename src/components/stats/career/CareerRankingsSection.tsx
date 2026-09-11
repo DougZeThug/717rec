@@ -83,13 +83,7 @@ const CareerRankingsSection: React.FC = () => {
                   Career Statistics
                 </CardTitle>
                 {!isMobile && (
-                  <CardDescription
-                    className={cn(
-                      isLight
-                        ? '!text-[#444444] !font-medium font-inter'
-                        : 'text-gray-400 font-inter'
-                    )}
-                  >
+                  <CardDescription className="font-inter">
                     Historical performance across all seasons and playoffs
                   </CardDescription>
                 )}
@@ -133,9 +127,7 @@ const CareerRankingsSection: React.FC = () => {
           <CardContent
             className={cn(
               'p-2 sm:p-4',
-              isWinterTheme
-                ? 'bg-[hsl(var(--card))]'
-                : 'bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900'
+              isWinterTheme ? 'bg-[hsl(var(--card))]' : 'bg-gradient-to-br from-muted to-card'
             )}
           >
             {isLoading ? (

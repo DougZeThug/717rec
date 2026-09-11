@@ -78,8 +78,9 @@ All cards should have:
 - [ ] Consistent border radius: use `rounded-lg` (default) or `rounded-xl` (summary)
 - [ ] Consistent borders: `border border-border`
 - [ ] Appropriate shadow: `shadow-sm` (default), `shadow-md` (elevated)
-- [ ] Theme-aware colors using design system tokens
-- [ ] Winter theme support via `useSeasonalTheme` hook
+- [ ] Colour from tokens: `bg-card`, `text-card-foreground`, `text-muted-foreground`,
+      `border-border`. No `dark:` twin — each theme sets the token to its own value
+- [ ] Winter surface effects (frost, icicles) via `useSeasonalTheme` hook
 - [ ] Interactive feedback if clickable: hover scale + shadow
 
 ---
@@ -115,9 +116,24 @@ import { cardAnimations } from "@/styles/design-system/cards";
 
 ---
 
-## Winter Theme Support
+## Colour, and winter
 
-Cards must check for winter theme and apply appropriate styles:
+**Colour needs no branch.** `bg-card`, `text-card-foreground` and `border-border`
+are tokens, and all three themes — light, dark and winter — set them to their own
+values (`src/styles/theme.css` and `src/styles/themes/winter-homepage.css`). Write
+the token once:
+
+```tsx
+<div className="rounded-lg border border-border bg-card text-card-foreground">
+```
+
+Do **not** write the colour twice by hand. `text-gray-600 dark:text-gray-400` is
+wrong twice over: it says the colour instead of the role, and the `dark:` half
+does nothing under the winter theme, whose class is `winter-frozen`, not `dark`.
+`CONTRIBUTING.md` → Styling is the rule; `npm run lint` enforces it.
+
+**Winter needs a branch only for its surface effects** — the frosted glass and
+the frost edge, which are decoration rather than colour:
 
 ```tsx
 import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
@@ -125,10 +141,8 @@ import { useSeasonalTheme } from "@/hooks/useSeasonalTheme";
 const { isWinterTheme } = useSeasonalTheme();
 
 <div className={cn(
-  "rounded-lg border",
-  isWinterTheme 
-    ? "winter-card-surface border-frost-border/30" 
-    : "bg-card border-border"
+  "rounded-lg border border-border bg-card text-card-foreground",
+  isWinterTheme && "winter-card-surface frost-edge"
 )}>
 ```
 

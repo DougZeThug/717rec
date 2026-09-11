@@ -95,7 +95,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   // Header text color based on theme
   const headerTextColor = isWinterTheme
     ? 'text-card-foreground hover:text-frost-primary'
-    : 'text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white';
+    : 'text-foreground hover:text-foreground';
 
   return (
     <div className="mb-6 sm:mb-8">
@@ -117,7 +117,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
           'overflow-auto rounded-lg border shadow-sm',
           isWinterTheme
             ? 'border-frost-border/30 winter-card-surface'
-            : 'border-blue-200/50 dark:border-blue-800/30 dark:bg-gray-800/50'
+            : 'border-blue-200/50 dark:border-blue-800/30 dark:bg-muted/50'
         )}
       >
         <Table>
@@ -149,7 +149,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
                 <TableHead
                   className={cn(
                     'font-medium',
-                    isWinterTheme ? 'text-card-foreground' : 'text-gray-700 dark:text-gray-200'
+                    isWinterTheme ? 'text-card-foreground' : 'text-foreground'
                   )}
                 >
                   Division
@@ -221,7 +221,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
               <TableHead
                 className={cn(
                   'text-center font-medium',
-                  isWinterTheme ? 'text-card-foreground' : 'text-gray-700 dark:text-gray-200'
+                  isWinterTheme ? 'text-card-foreground' : 'text-foreground'
                 )}
               >
                 Trend

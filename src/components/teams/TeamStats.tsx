@@ -37,7 +37,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
           <StatBlock
             label="Match Record"
             value={`${wins}-${losses}`}
-            className="bg-muted dark:bg-black/30"
+            className="bg-muted"
             icon={<Trophy size={18} className="text-emerald-500" />}
           />
 
@@ -45,7 +45,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
           <StatBlock
             label="Win Percentage"
             value={`${winPercentage}%`}
-            className="bg-muted dark:bg-black/30"
+            className="bg-muted"
             icon={<Target size={18} className="text-purple-500" />}
           />
 
@@ -53,7 +53,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
           <StatBlock
             label="Game Record"
             value={`${gameWins}-${gameLosses}`}
-            className="bg-muted dark:bg-black/30"
+            className="bg-muted"
             icon={<Users size={18} className="text-indigo-500" />}
           />
 
@@ -61,7 +61,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
           <StatBlock
             label="Game Win %"
             value={`${gameWinPercentage}%`}
-            className="bg-muted dark:bg-black/30"
+            className="bg-muted"
             icon={<Target size={18} className="text-teal-500" />}
           />
 
@@ -70,7 +70,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
             <StatBlock
               label="Strength of Schedule"
               value={<span className={sosColor}>{sos.toFixed(3)}</span>}
-              className="bg-muted dark:bg-black/30"
+              className="bg-muted"
               icon={<Scale size={18} className="text-blue-500" />}
             />
           )}
@@ -80,7 +80,7 @@ const TeamStats: React.FC<TeamStatsProps> = ({
             <StatBlock
               label="Power Score"
               value={<span className={powerScoreColor}>{formatPowerScore(powerScore)}</span>}
-              className="bg-muted dark:bg-black/30"
+              className="bg-muted"
               icon={<Zap size={18} className="text-amber-500" />}
             />
           )}

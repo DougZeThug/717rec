@@ -67,9 +67,7 @@ const ByeWeekDesktopRow = ({ teamTimeslot, teamIndex, isWinterTheme }: ByeWeekDe
             {teamTimeslot.teams.name}
           </Link>
         ) : (
-          <span className="text-muted-foreground dark:text-muted-foreground truncate">
-            Unknown Team
-          </span>
+          <span className="text-muted-foreground truncate">Unknown Team</span>
         )}
         <span
           className={cn(
@@ -149,13 +147,11 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           'text-center py-8 rounded-xl',
           'bg-gradient-to-br from-blue-50/50 via-gray-50 to-orange-50/30',
           'dark:from-gray-800/50 dark:via-gray-800/30 dark:to-gray-900/50',
-          'border border-gray-200 dark:border-gray-700'
+          'border border-border'
         )}
       >
-        <Calendar className="size-8 mx-auto mb-2 text-muted-foreground dark:text-gray-500" />
-        <p className="text-muted-foreground dark:text-muted-foreground">
-          No timeslots scheduled for this date.
-        </p>
+        <Calendar className="size-8 mx-auto mb-2 text-muted-foreground" />
+        <p className="text-muted-foreground">No timeslots scheduled for this date.</p>
       </div>
     );
   }
@@ -170,7 +166,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
           open={expandedTimeslots[timeslot]}
           onToggle={() => toggleTimeslot(timeslot)}
           cardClass={cn(
-            'overflow-hidden border-gray-200 dark:border-gray-700 transition-all duration-300 p-0',
+            'overflow-hidden border-border transition-all duration-300 p-0',
             animations.entranceLeft,
             `animation-delay-${index * 100}`
           )}
@@ -188,7 +184,7 @@ const TimeslotGrouping: React.FC<TimeslotGroupingProps> = ({ groupedTimeslots, i
             </div>
           </div>
           <div className="hidden md:block p-4">
-            <div className="divide-y divide-gray-100 dark:divide-gray-700/50">
+            <div className="divide-y divide-border">
               {teams.map((teamTimeslot, teamIndex) => (
                 <TimeslotMatchRow
                   key={teamTimeslot.id}

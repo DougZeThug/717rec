@@ -59,12 +59,10 @@ export function getCardStyle({
 
   return cn(
     'rounded-lg border',
-    'border-gray-200 dark:border-gray-700/80',
+    'border-border',
     cardGradient,
     getCardElevation(elevationType),
-    isInteractive
-      ? 'hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200'
-      : '',
+    isInteractive ? 'hover:bg-accent transition-colors duration-200' : '',
     className
   );
 }
@@ -73,11 +71,11 @@ export function getCardStyle({
 function getCardGradient(variant: 'default' | 'subtle' | 'highlight'): string {
   switch (variant) {
     case 'subtle':
-      return 'bg-gradient-to-br from-white to-gray-100 dark:from-gray-800/80 dark:to-gray-900/80';
+      return 'bg-gradient-to-br from-muted to-card';
     case 'highlight':
-      return 'bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900/90';
+      return 'bg-gradient-to-br from-blue-500/[0.07] to-card';
     default:
-      return 'bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900';
+      return 'bg-gradient-to-br from-muted to-card';
   }
 }
 

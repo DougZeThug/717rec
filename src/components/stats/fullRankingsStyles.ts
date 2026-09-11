@@ -29,12 +29,16 @@ export const standingsTitleClasses = ({ isWinterTheme }: StandingsTheme): string
     ? 'text-[hsl(var(--foreground))]'
     : 'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400';
 
-export const standingsDescriptionClasses = ({ isWinterTheme, isLight }: StandingsTheme): string => {
-  if (isWinterTheme) return 'text-[hsl(var(--muted-foreground))]';
-  return isLight ? '!text-[#444444] !font-medium' : 'text-gray-400';
-};
+/**
+ * The description under the standings title.
+ *
+ * Light and dark used to be written out by hand — a forced `#444444` and
+ * `text-gray-400`. Both are what `--muted-foreground` already resolves to in
+ * their own theme, so neither arm is needed: `CardDescription` carries
+ * `text-muted-foreground` and it is correct in every theme.
+ */
+export const standingsDescriptionClasses = ({ isWinterTheme }: StandingsTheme): string =>
+  isWinterTheme ? 'text-[hsl(var(--muted-foreground))]' : '';
 
 export const standingsContentClasses = ({ isWinterTheme }: StandingsTheme): string =>
-  isWinterTheme
-    ? 'bg-transparent'
-    : 'bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-800/90 dark:to-gray-900';
+  isWinterTheme ? 'bg-transparent' : 'bg-gradient-to-br from-muted to-card';

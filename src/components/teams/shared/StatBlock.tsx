@@ -37,18 +37,18 @@ export const StatBlock: React.FC<StatBlockProps> = ({
   const baseClasses = cn(
     getGradient(),
     'p-3 sm:p-4 rounded-lg text-left transition-all duration-200 hover:shadow-md border',
-    isWinterTheme ? 'border-[hsl(199,60%,50%,0.3)]' : 'border-gray-200 dark:border-gray-700/50'
+    isWinterTheme ? 'border-[hsl(199,60%,50%,0.3)]' : 'border-border'
   );
 
   const labelClasses = cn(
     'font-inter uppercase text-xs tracking-widest',
-    isWinterTheme ? 'text-[hsl(210,20%,65%)]' : 'text-gray-600 dark:text-gray-400'
+    isWinterTheme ? 'text-[hsl(210,20%,65%)]' : 'text-muted-foreground'
   );
 
   // Apply gradient to the value text based on variant
   const valueClasses = cn(
     'font-mono text-base sm:text-lg font-medium',
-    isWinterTheme ? 'text-[hsl(210,40%,96%)]' : 'text-gray-800 dark:text-white'
+    isWinterTheme ? 'text-[hsl(210,40%,96%)]' : 'text-foreground'
   );
 
   if (orientation === 'horizontal') {
@@ -56,7 +56,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
       <div className={`${baseClasses} flex items-center justify-between ${className}`}>
         <div className="flex items-center gap-1.5 sm:gap-2">
           {icon && (
-            <span className="text-muted-foreground dark:text-muted-foreground [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
+            <span className="text-muted-foreground [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
               {icon}
             </span>
           )}
@@ -71,7 +71,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
     <div className={`${baseClasses} flex flex-col ${className}`}>
       <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-1.5">
         {icon && (
-          <span className="text-muted-foreground dark:text-muted-foreground [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
+          <span className="text-muted-foreground [&>svg]:w-3.5 [&>svg]:h-3.5 sm:[&>svg]:w-[18px] sm:[&>svg]:h-[18px]">
             {icon}
           </span>
         )}

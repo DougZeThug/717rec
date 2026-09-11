@@ -18,7 +18,7 @@ const getTeamRowClasses = (isWinner: boolean) =>
     'flex items-center p-2 rounded-md',
     isWinner
       ? 'bg-green-50 border-l-4 border-green-500 dark:bg-green-900/20 dark:border-green-500'
-      : 'bg-gray-50 dark:bg-gray-800/40'
+      : 'bg-muted/50'
   );
 
 const TeamRow: React.FC<TeamRowProps> = ({
@@ -36,7 +36,7 @@ const TeamRow: React.FC<TeamRowProps> = ({
           <div
             className={cn(
               'flex-none size-6 flex items-center justify-center mr-2 rounded-full',
-              'bg-gray-200 dark:bg-gray-700 text-xs font-bold',
+              'bg-muted text-xs font-bold',
               matchType === 'winners' && 'bg-blue-100 dark:bg-blue-900/30'
             )}
           >

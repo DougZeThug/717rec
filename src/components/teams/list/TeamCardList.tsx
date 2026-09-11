@@ -40,7 +40,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         'team-list-card border rounded-xl overflow-hidden h-full font-inter shadow-sm',
         isWinterTheme
           ? 'winter-card-surface border-frost-border/30'
-          : 'bg-white text-gray-900 dark:bg-gray-900 dark:text-white border-gray-200 dark:border-gray-800'
+          : 'bg-card text-foreground border-border'
       )}
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
@@ -70,7 +70,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
               <h3
                 className={cn(
                   'font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl',
-                  isWinterTheme ? 'text-[hsl(var(--foreground))]' : 'text-gray-900 dark:text-white'
+                  isWinterTheme ? 'text-[hsl(var(--foreground))]' : 'text-foreground'
                 )}
               >
                 {team.name}
@@ -82,7 +82,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="size-9 -mt-1 text-muted-foreground dark:text-muted-foreground hover:text-gray-900 dark:hover:text-white hover:bg-accent dark:hover:bg-white/10"
+                  className="size-9 -mt-1 text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-white/10"
                 >
                   <MoreHorizontal size={18} />
                   <span className="sr-only">Open menu</span>
@@ -184,9 +184,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 return <PlayerChip key={key} playerName={player} />;
               })
             ) : (
-              <span className="text-xs text-muted-foreground dark:text-muted-foreground">
-                No players
-              </span>
+              <span className="text-xs text-muted-foreground">No players</span>
             )}
           </div>
         </div>

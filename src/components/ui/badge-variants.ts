@@ -11,7 +11,7 @@ export const badgeVariants = cva(
           'border-transparent bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground',
         destructive:
           'border-transparent bg-gradient-to-r from-destructive to-destructive/90 text-destructive-foreground',
-        outline: 'text-foreground border border-gray-200 dark:border-gray-700',
+        outline: 'text-foreground border border-border',
         // Tier badges use the muted division tokens so large lists of team
         // cards stay inside the app theme instead of shouting.
         recreational:

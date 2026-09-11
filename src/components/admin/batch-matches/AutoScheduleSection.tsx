@@ -54,7 +54,7 @@ export const AutoScheduleSection: React.FC<AutoScheduleSectionProps> = ({
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
       exit={{ opacity: 0, height: 0 }}
-      className="bg-muted dark:bg-background p-4 rounded-md border"
+      className="bg-muted p-4 rounded-md border"
     >
       <ScheduleHeader totalTeams={totalTeams} oddBlocks={oddBlocks} />
 

@@ -1,8 +1,6 @@
-import { useTheme } from 'next-themes';
 import React from 'react';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { formatDistanceFrom } from '@/utils/formatDateSafe';
 
 interface MessageContentProps {
@@ -12,9 +10,6 @@ interface MessageContentProps {
 }
 
 const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, updatedAt }) => {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-
   const lines = content.split('\n');
   const formattedText = lines.map((line, i) => {
     // Lines have no inherent identity; disambiguate identical lines by
@@ -38,12 +33,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, upda
         <TooltipProvider>
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
-              <span
-                className={cn(
-                  'text-xs inline-block mt-1 cursor-default',
-                  isDark ? 'text-gray-400' : 'text-muted-foreground'
-                )}
-              >
+              <span className="text-xs inline-block mt-1 cursor-default text-muted-foreground">
                 (edited)
               </span>
             </TooltipTrigger>

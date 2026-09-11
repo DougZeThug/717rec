@@ -28,7 +28,7 @@ const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
     <Button
       variant={hasActiveFilters ? 'blueOrange' : 'outline'}
       size="icon"
-      className={cn('flex-shrink-0 border', !hasActiveFilters && 'dark:border-gray-600')}
+      className={cn('flex-shrink-0 border')}
       onClick={onClick}
       aria-label={_isActive ? 'Hide filters' : 'Show filters'}
       aria-expanded={_isActive}

@@ -38,7 +38,6 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
           applyWinter && 'winter-card-surface frost-edge relative',
           // Light mode gradient (skip when winter theme active)
           isLight && !applyWinter ? gradientClass : '',
-          isLight && !applyWinter ? '!text-[#222222]' : '',
           className
         )}
         {...props}
@@ -64,44 +63,26 @@ interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
 }
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, CardTitleProps>(
-  ({ className, as: Heading = 'h3', ...props }, ref) => {
-    const { resolvedTheme } = useTheme();
-    const isLight = resolvedTheme === 'light';
-
-    return (
-      <Heading
-        ref={ref}
-        className={cn(
-          'text-2xl font-semibold leading-none tracking-tight',
-          isLight ? '!text-[#111111]' : '',
-          className
-        )}
-        {...props}
-      />
-    );
-  }
+  ({ className, as: Heading = 'h3', ...props }, ref) => (
+    <Heading
+      ref={ref}
+      className={cn('text-2xl font-semibold leading-none tracking-tight', className)}
+      {...props}
+    />
+  )
 );
 CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
->(({ className, ...props }, ref) => {
-  const { resolvedTheme } = useTheme();
-  const isLight = resolvedTheme === 'light';
-
-  return (
-    <p
-      ref={ref}
-      className={cn(
-        'text-sm text-muted-foreground leading-relaxed',
-        isLight ? '!text-[#444444] !font-medium' : '',
-        className
-      )}
-      {...props}
-    />
-  );
-});
+>(({ className, ...props }, ref) => (
+  <p
+    ref={ref}
+    className={cn('text-sm text-muted-foreground leading-relaxed', className)}
+    {...props}
+  />
+));
 CardDescription.displayName = 'CardDescription';
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(

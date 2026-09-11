@@ -34,7 +34,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
   fallbackText,
 }) => {
   const containerClasses = cn(
-    'flex items-center justify-center bg-gray-100 dark:bg-gray-800',
+    'flex items-center justify-center bg-muted',
     rounded && 'rounded-full overflow-hidden',
     sizeClasses[size],
     className
@@ -54,7 +54,7 @@ export const TeamLogo: React.FC<TeamLogoProps> = ({
           }}
         />
       ) : (
-        <div className="flex items-center justify-center text-muted-foreground dark:text-gray-600 size-full">
+        <div className="flex items-center justify-center text-muted-foreground size-full">
           <span className="text-xs">{fallbackText || teamName.substring(0, 2)}</span>
         </div>
       )}

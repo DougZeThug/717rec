@@ -19,10 +19,7 @@ const LoadingStateContainer = () => {
           <CardContent className="p-4 pt-1 sm:pt-4">
             <div className="space-y-4">
               {['ls-row-1', 'ls-row-2', 'ls-row-3', 'ls-row-4', 'ls-row-5'].map((sk) => (
-                <div
-                  key={sk}
-                  className="flex items-center gap-3 p-2 border-b border-gray-100 dark:border-border"
-                >
+                <div key={sk} className="flex items-center gap-3 p-2 border-b border-border">
                   <Skeleton className="size-5" />
                   <Skeleton className="size-8 rounded-full" />
                   <Skeleton className="h-4 w-40" />
