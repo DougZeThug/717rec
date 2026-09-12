@@ -22,19 +22,26 @@ interface PasswordFieldProps {
   value: string;
   onChange: (value: string) => void;
   disabled: boolean;
-  invalid: boolean;
-  children?: React.ReactNode;
+  /** The complaint about this one field, or null when it is fine. */
+  error: string | null;
 }
 
-/** One labelled password input. Extracted to keep the form's tree shallow. */
+/**
+ * One labelled password input and its own error. Extracted to keep the form's
+ * tree shallow.
+ *
+ * The field owns the message rather than taking it as children, so it can point
+ * at it: a red border is all a sighted reader needs, but `aria-invalid` and
+ * `aria-describedby` are what tell a screen-reader user that this field is the
+ * wrong one and read the reason out. Same pattern as `LockableField`.
+ */
 const PasswordField: React.FC<PasswordFieldProps> = ({
   id,
   label,
   value,
   onChange,
   disabled,
-  invalid,
-  children,
+  error,
 }) => (
   <div className="space-y-2">
     <Label htmlFor={id}>{label}</Label>
@@ -46,9 +53,15 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
       value={value}
       onChange={(event) => onChange(event.target.value)}
       disabled={disabled}
-      className={invalid ? 'border-red-500' : ''}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={error ? `${id}-error` : undefined}
+      className={error ? 'border-red-500' : ''}
     />
-    {children}
+    {error && (
+      <p id={`${id}-error`} className="text-sm text-destructive">
+        {error}
+      </p>
+    )}
   </div>
 );
 
@@ -160,22 +173,16 @@ const ResetPassword: React.FC = () => {
             value={password}
             onChange={setPassword}
             disabled={isSubmitting}
-            invalid={Boolean(newPasswordError)}
-          >
-            {newPasswordError && <p className="text-sm text-destructive">{newPasswordError}</p>}
-          </PasswordField>
+            error={newPasswordError}
+          />
           <PasswordField
             id="confirm-password"
             label="Confirm new password"
             value={confirmPassword}
             onChange={setConfirmPassword}
             disabled={isSubmitting}
-            invalid={Boolean(confirmPasswordError)}
-          >
-            {confirmPasswordError && (
-              <p className="text-sm text-destructive">{confirmPasswordError}</p>
-            )}
-          </PasswordField>
+            error={confirmPasswordError}
+          />
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? (
               <>

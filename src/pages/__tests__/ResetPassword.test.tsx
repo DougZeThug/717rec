@@ -141,6 +141,10 @@ describe('ResetPassword', () => {
       expect(fieldOf(newPassword)).toContainElement(message);
       expect(fieldOf(confirmPassword)).not.toContainElement(message);
       expect(confirmPassword).not.toHaveClass('border-red-500');
+      // The red border is for the eye; these two are what a screen reader reads.
+      expect(newPassword).toHaveAttribute('aria-invalid', 'true');
+      expect(newPassword).toHaveAccessibleDescription('Password must be at least 6 characters');
+      expect(confirmPassword).not.toHaveAttribute('aria-invalid');
     });
 
     it('puts the mismatch on Confirm, where the value that has to change is', async () => {
@@ -157,6 +161,9 @@ describe('ResetPassword', () => {
       expect(fieldOf(confirmPassword)).toContainElement(message);
       expect(fieldOf(newPassword)).not.toContainElement(message);
       expect(newPassword).not.toHaveClass('border-red-500');
+      expect(confirmPassword).toHaveAttribute('aria-invalid', 'true');
+      expect(confirmPassword).toHaveAccessibleDescription('Passwords do not match');
+      expect(newPassword).not.toHaveAttribute('aria-invalid');
     });
 
     it('clears a stale complaint from the other field on the next attempt', async () => {
