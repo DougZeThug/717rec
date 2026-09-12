@@ -301,4 +301,7 @@ username taken from the address. Nothing else is written.
   the tab-switch emptying, and Enter-to-submit are read from the page itself
   rather than from a passing test.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except password recovery and the
+per-field errors on "Set a new password", added after that commit alongside UX
+audit item X-04 and written from the change and its tests rather than a fresh
+pass over the running app.

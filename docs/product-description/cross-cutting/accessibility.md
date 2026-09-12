@@ -356,4 +356,7 @@ hamburger-menu and the colour-alone behaviour above, all changed after that
 commit — see
 [B-22](../bug-triage.md#b-22-reduced-motion-is-honoured-in-one-stylesheet-and-ignored-everywhere-else),
 [B-23](../bug-triage.md#b-23-the-mobile-menu-is-not-a-dialog) and
-[B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places).
+[B-29](../bug-triage.md#b-29-results-are-distinguished-by-colour-alone-in-two-places)
+— and the first-level headings, changed after it too, alongside UX audit items
+X-08 and Q12, and written from the change and its tests rather than a fresh pass
+over the running app.

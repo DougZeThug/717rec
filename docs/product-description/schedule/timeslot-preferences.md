@@ -232,4 +232,7 @@ assignment turns into a wrong match date later.
 - Assumption: the second half of a back-to-back pair is hidden deliberately, to
   keep one row per team, rather than by accident.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the "Nothing scheduled for
+{day}" card and the two ways out it offers, added after that commit alongside UX
+audit item SC-01 and written from the change and its tests rather than a fresh
+pass over the running app.

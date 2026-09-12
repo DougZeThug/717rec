@@ -290,4 +290,7 @@ page in a session fills in immediately.
 Verified against `717rec` commit `ea5c8f4`, except the report card grades, which
 were changed after that commit, together with the handling of unrated teams and
 of a failed load — see
-[B-36](../bug-triage.md#b-36-two-grades-on-the-team-report-card-are-not-real-measurements).
+[B-36](../bug-triage.md#b-36-two-grades-on-the-team-report-card-are-not-real-measurements)
+— and the career comparison, which was narrowed to teams that have played after
+that commit, in the change that raised this same question for career mode and
+written from it and its tests rather than a fresh pass over the running app.
