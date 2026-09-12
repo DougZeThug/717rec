@@ -356,8 +356,11 @@ describe('Schedule page', () => {
     const nextNight = () => screen.getByText(/^Next night:/).textContent;
     const lastPlayed = () => screen.getByText(/^Last played:/).textContent;
 
+    /** An upcoming night: a plain date, or one tagged with a called-off status. */
+    type UpcomingNight = string | { date: string; status: 'postponed' | 'canceled' };
+
     const onThursdayNight = (
-      upcoming: string[],
+      upcoming: UpcomingNight[],
       completed: string[] = [],
       matchDates: string[] = []
     ) => {
@@ -367,7 +370,11 @@ describe('Schedule page', () => {
       mockUseMatchDates.mockReturnValue(new Set(matchDates));
       mockUseScheduleData.mockReturnValue({
         ...baseScheduleData,
-        upcomingMatches: upcoming.map((date, i) => ({ id: `u${i}`, date, iscompleted: false })),
+        upcomingMatches: upcoming.map((night, i) => ({
+          id: `u${i}`,
+          iscompleted: false,
+          ...(typeof night === 'string' ? { date: night } : night),
+        })),
         completedMatches: completed.map((date, i) => ({ id: `c${i}`, date, iscompleted: true })),
       });
       renderPage();
@@ -405,6 +412,26 @@ describe('Schedule page', () => {
       onThursdayNight(['2026-12-10', '2026-12-24']);
 
       expect(nextNight()).toBe('Next night: 2026-12-24');
+    });
+
+    // A called-off match has no result either, so it sits in the upcoming list
+    // for good. It is not a night still to come.
+    it('skips a night whose only match is canceled', () => {
+      onThursdayNight([{ date: '2026-12-17', status: 'canceled' }, '2026-12-24']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-24');
+    });
+
+    it('skips a night whose only match is postponed', () => {
+      onThursdayNight([{ date: '2026-12-17', status: 'postponed' }, '2026-12-24']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-24');
+    });
+
+    it('still counts a night that has one called-off match and one to play', () => {
+      onThursdayNight([{ date: '2026-12-17', status: 'canceled' }, '2026-12-17', '2026-12-24']);
+
+      expect(nextNight()).toBe('Next night: 2026-12-17');
     });
   });
 

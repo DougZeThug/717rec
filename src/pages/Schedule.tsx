@@ -24,6 +24,7 @@ import { Match } from '@/types';
 import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 import { normalizeDate } from '@/utils/dateNormalization';
 import { scheduleLog } from '@/utils/logger';
+import { isMatchOpenForScoring } from '@/utils/matchStatus';
 
 // Get upcoming Thursday (or today if it's Thursday)
 const getUpcomingThursday = () => {
@@ -145,8 +146,14 @@ const Schedule = () => {
     // strict `>` here skipped it: the card pointed at next week instead of this
     // evening, and — when tonight was the only unplayed match left — printed
     // "No more league nights are on the schedule yet" on a league night.
+    //
+    // "Not played" is not the same as "still to play": upcomingMatches holds
+    // every match without a result, called-off ones included. A night whose only
+    // matches are canceled or postponed is not a night still to come, so it must
+    // not be named as the next one.
     return (
       upcomingMatches
+        .filter(isMatchOpenForScoring)
         .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
         .find((key) => key >= todayKey) ?? null
     );

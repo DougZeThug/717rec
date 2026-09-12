@@ -38,8 +38,11 @@ either**, the tab says "Nothing scheduled for {day}" and offers up to two ways
 out: "See results from {last night played}", which switches to Completed, and
 "Go to {next league night}". Both count today: the last night played can be
 today, and the next league night is tonight when tonight's matches have not been
-played yet. When there are no more nights scheduled it says so instead. If there are matches on the date but no timeslot assignments, the
-older one-line "No timeslots scheduled for this date." still shows.
+played yet. A night whose every remaining match is postponed or canceled is not
+counted — it is not a night still to play. When there are no more nights
+scheduled it says so instead. If there are matches on the date but no timeslot
+assignments, the older one-line "No timeslots scheduled for this date." still
+shows.
 
 ## The interaction, event by event
 
