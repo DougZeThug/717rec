@@ -36,9 +36,13 @@ row there reads "Not playing this week".
 If nothing is assigned for the chosen date **and no match is scheduled on it
 either**, the tab says "Nothing scheduled for {day}" and offers up to two ways
 out: "See results from {last night played}", which switches to Completed, and
-"Go to {next league night}". When there are no more nights scheduled it says so
-instead. If there are matches on the date but no timeslot assignments, the
-older one-line "No timeslots scheduled for this date." still shows.
+"Go to {next league night}". Both count today: the last night played can be
+today, and the next league night is tonight when tonight's matches have not been
+played yet. A night whose every remaining match is postponed or canceled is not
+counted — it is not a night still to play. When there are no more nights
+scheduled it says so instead. If there are matches on the date but no timeslot
+assignments, the older one-line "No timeslots scheduled for this date." still
+shows.
 
 ## The interaction, event by event
 
@@ -228,4 +232,7 @@ assignment turns into a wrong match date later.
 - Assumption: the second half of a back-to-back pair is hidden deliberately, to
   keep one row per team, rather than by accident.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the "Nothing scheduled for
+{day}" card and the two ways out it offers, added after that commit alongside UX
+audit item SC-01 and written from the change and its tests rather than a fresh
+pass over the running app.

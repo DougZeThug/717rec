@@ -16,14 +16,26 @@ const LiveScoring: React.FC = () => {
   const { status: realtimeStatus } = useLiveMatchRealtime(matchId);
   const { canScore, isAdmin, isLoading: isPermissionLoading } = useCanScoreMatch(bundle?.match);
 
+  // Every branch below owns a level-1 heading, because every one of them is the
+  // whole page: the success branch has its own inside LiveMatchView, the empty
+  // states promote their title with `titleAs`, and the loading branch carries a
+  // hidden one of its own. It is how a screen-reader user is told where they
+  // have landed — RouteAnnouncer skips the first render, so a deep link or a
+  // refresh onto a failed load is announced by nothing else. Audit Q12 / X-08.
   let content: React.ReactNode;
   if (isLoading || isPermissionLoading) {
-    content = <LoadingState message="Loading match…" variant="section" size="lg" />;
+    content = (
+      <>
+        <h1 className="sr-only">Live scoring</h1>
+        <LoadingState message="Loading match…" variant="section" size="lg" />
+      </>
+    );
   } else if (isNotEnabled) {
     content = (
       <EmptyState
         icon={Construction}
         title="Live scoring is not enabled yet"
+        titleAs="h1"
         description="The database update for live scoring has not been applied. Check back soon!"
       />
     );
@@ -32,6 +44,7 @@ const LiveScoring: React.FC = () => {
       <EmptyState
         icon={CalendarX}
         title="Match not found"
+        titleAs="h1"
         description="This match does not exist or was removed from the schedule."
       />
     );
@@ -40,6 +53,7 @@ const LiveScoring: React.FC = () => {
       <EmptyState
         icon={CalendarX}
         title="Could not load the match"
+        titleAs="h1"
         description="Something went wrong loading live scoring. Please try again."
       />
     );
@@ -48,6 +62,7 @@ const LiveScoring: React.FC = () => {
       <EmptyState
         icon={CalendarX}
         title="Teams not set"
+        titleAs="h1"
         description="Live scoring opens once both teams are assigned to this match."
       />
     );

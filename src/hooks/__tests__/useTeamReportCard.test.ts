@@ -68,6 +68,8 @@ const match = (
 const careerTeam = (overrides: Record<string, unknown>) => ({
   teamId: 'team-1',
   teamName: 'Team One',
+  careerMatchWins: 5,
+  careerMatchLosses: 5,
   careerPowerScore: 50,
   careerWinPercentage: 0.5,
   careerSos: 0.5,
@@ -453,6 +455,83 @@ describe('useTeamReportCard', () => {
       mockUseCareerRankings.mockReturnValue({ data: [], isLoading: false });
       const { result } = renderHook(() => useTeamReportCard('team-1', 'career'));
       expect(result.current.grades).toBeNull();
+    });
+
+    // The career twin of the season case: a team that has never played gets six
+    // grades built from zeroes it never earned. The season branch has stopped
+    // doing this since `isGradeable`; the career branch went on doing it,
+    // because a career power score of 0 reads as a real score.
+    it('returns null for a team that has never played a career match', () => {
+      mockUseCareerRankings.mockReturnValue({
+        data: [
+          careerTeam({
+            teamId: 'team-1',
+            careerMatchWins: 0,
+            careerMatchLosses: 0,
+            careerPowerScore: 0,
+            careerWinPercentage: 0,
+            careerGameWinPercentage: 0,
+            careerSweepRate: 0,
+            careerClutchGame3s: 0,
+          }),
+          careerTeam({ teamId: 'team-2', careerPowerScore: 60 }),
+        ],
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'career'));
+
+      expect(result.current.grades).toBeNull();
+    });
+
+    it('still grades a team whose career is nothing but losses', () => {
+      mockUseCareerRankings.mockReturnValue({
+        data: [
+          careerTeam({
+            teamId: 'team-1',
+            careerMatchWins: 0,
+            careerMatchLosses: 8,
+            careerWinPercentage: 0,
+            careerPowerScore: 15,
+          }),
+          careerTeam({ teamId: 'team-2', careerPowerScore: 60 }),
+        ],
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useTeamReportCard('team-1', 'career'));
+
+      expect(required(result.current.grades).overall.grade).not.toBeNull();
+    });
+
+    it('does not let a team that has never played lift a real percentile', () => {
+      const played = [
+        careerTeam({ teamId: 'team-1', careerPowerScore: 40 }),
+        careerTeam({ teamId: 'team-2', careerPowerScore: 60 }),
+        careerTeam({ teamId: 'team-3', careerPowerScore: 80 }),
+      ];
+      mockUseCareerRankings.mockReturnValue({ data: played, isLoading: false });
+      const withoutNewcomers = required(
+        renderHook(() => useTeamReportCard('team-1', 'career')).result.current.grades
+      ).overall.percentile;
+
+      mockUseCareerRankings.mockReturnValue({
+        data: [
+          ...played,
+          careerTeam({
+            teamId: 'newcomer',
+            careerMatchWins: 0,
+            careerMatchLosses: 0,
+            careerPowerScore: 0,
+          }),
+        ],
+        isLoading: false,
+      });
+      const withNewcomers = required(
+        renderHook(() => useTeamReportCard('team-1', 'career')).result.current.grades
+      ).overall.percentile;
+
+      expect(withNewcomers).toBe(withoutNewcomers);
     });
   });
 

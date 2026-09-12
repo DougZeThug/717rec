@@ -8,7 +8,8 @@ import {
 /**
  * The league-wide numbers each report card grade is ranked against.
  *
- * Only teams that have a rating are in them — see `isGradeable`.
+ * Only teams there is something to measure are in them — see `isGradeable` for
+ * the season and `isCareerGradeable` for the career.
  *
  * Both the team's own card (`useTeamReportCard`) and the GPA leaderboard
  * (`useAllTeamReportCards`) grade against these. They used to build them
@@ -48,6 +49,26 @@ export interface GradePopulations {
  */
 export const isGradeable = (team: Pick<Ranking, 'powerScore'>): boolean =>
   team.powerScore !== null && team.powerScore !== undefined;
+
+/**
+ * Whether a team can be graded on its career.
+ *
+ * The career twin of `isGradeable`, and it asks a different question because the
+ * career table has no "no rating" value to read: a team that has never played
+ * gets a career power score of **0**, not null (`calculateCareerPowerScore.ts`,
+ * so it sits at the foot of the table rather than mid-pack). Counting career
+ * matches is what tells the two apart. Everything else about such a team is
+ * unmeasured too: its win and game rates are 0/0, and its strength of schedule
+ * is a default rather than a schedule it faced.
+ *
+ * Without this the career card did both wrong things `isGradeable` was added to
+ * stop — handed six grades to a team that has never thrown a bag, and padded
+ * the population with a 0 at the very bottom, so **every real team's percentile
+ * came out better than it was**.
+ */
+export const isCareerGradeable = (
+  team: Pick<CareerRanking, 'careerMatchWins' | 'careerMatchLosses'>
+): boolean => team.careerMatchWins + team.careerMatchLosses > 0;
 
 const emptyPopulations = (): GradePopulations => ({
   powerScores: [],
@@ -95,6 +116,9 @@ export const collectSeasonPopulations = (
  * Career populations, straight off the career ranking rows. Career sweep and
  * clutch figures are already counted per team by `useCareerRankings`, so there
  * is no match list to consult here.
+ *
+ * Only teams that have played a career match are in them — see
+ * `isCareerGradeable`.
  */
 export const collectCareerPopulations = (
   careerRankings: readonly CareerRanking[]
@@ -102,6 +126,8 @@ export const collectCareerPopulations = (
   const populations = emptyPopulations();
 
   for (const team of careerRankings) {
+    if (!isCareerGradeable(team)) continue;
+
     populations.powerScores.push(team.careerPowerScore);
     populations.winPcts.push(team.careerWinPercentage);
     populations.sos.push(team.careerSos);
