@@ -100,6 +100,9 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     onClearFilters,
     lastPlayedDate,
     nextScheduledDate,
+    onEditMatch,
+    onDeleteMatch,
+    onDateSelect,
   }: {
     filteredMatches: Array<{
       id: string;
@@ -113,6 +116,9 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
     onClearFilters?: () => void;
     lastPlayedDate?: Date | null;
     nextScheduledDate?: Date | null;
+    onEditMatch?: (match: { id: string }) => void;
+    onDeleteMatch?: (matchId: string) => void;
+    onDateSelect?: (date: Date) => void;
   }) => (
     <section>
       <p>Active tab: {activeTab}</p>
@@ -127,15 +133,50 @@ vi.mock('@/components/schedule/ScheduleContent', () => ({
       <p>Last played: {dayKey(lastPlayedDate)}</p>
       <button onClick={() => setActiveTab('completed')}>Switch To Completed</button>
       <button onClick={() => onClearFilters?.()}>Clear filters</button>
+      <button onClick={() => onEditMatch?.({ id: 'm-edit' })}>Edit match</button>
+      <button onClick={() => onDeleteMatch?.('m-del')}>Delete match</button>
+      <button onClick={() => onDateSelect?.(new Date(2026, 11, 24))}>Pick Dec 24</button>
     </section>
   ),
 }));
 
+// The dialogs are stubbed down to the controls the page wires into them, so the
+// page's own submit/close/confirm handlers can be driven without the real forms.
 vi.mock('@/components/schedule/MatchFormDialog', () => ({
-  default: () => null,
+  default: ({
+    isOpen,
+    onClose,
+    onSubmit,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: Record<string, unknown>) => void;
+  }) =>
+    isOpen ? (
+      <div>
+        <p>Match form open</p>
+        <button onClick={() => onSubmit({ date: '2026-12-17' })}>Submit match</button>
+        <button onClick={onClose}>Close form</button>
+      </div>
+    ) : null,
 }));
 vi.mock('@/components/schedule/DeleteMatchDialog', () => ({
-  default: () => null,
+  default: ({
+    isOpen,
+    onClose,
+    onConfirm,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+  }) =>
+    isOpen ? (
+      <div>
+        <p>Delete dialog open</p>
+        <button onClick={onConfirm}>Confirm delete</button>
+        <button onClick={onClose}>Close delete</button>
+      </div>
+    ) : null,
 }));
 
 const createTestQueryClient = () =>
@@ -344,6 +385,223 @@ describe('Schedule page', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Switch To Completed' }));
 
     expect(handleTabChange).toHaveBeenCalledWith('completed');
+  });
+
+  // The page publishes its upcoming matches as schema.org SportsEvent data for
+  // search engines. Nothing on screen shows it, so only a test that reads the
+  // script tag covers the builder — and with an empty match list its per-match
+  // body never runs at all.
+  describe('the schema.org data for search engines', () => {
+    const scheduleJsonLd = () => {
+      const scripts = Array.from(
+        document.querySelectorAll('script[type="application/ld+json"]')
+      ).map((el) => JSON.parse(el.textContent ?? '{}'));
+      return scripts.find((data) => data['@type'] === 'ItemList');
+    };
+
+    const withUpcoming = (matches: Array<Record<string, unknown>>) => {
+      mockUseScheduleData.mockReturnValue({ ...baseScheduleData, upcomingMatches: matches });
+      renderPage();
+    };
+
+    it('lists each upcoming match as an event, in order', () => {
+      withUpcoming([
+        {
+          id: 'u1',
+          date: '2026-12-17',
+          location: 'Lanes 1-4',
+          team1Details: { name: 'Bag Bandits' },
+          team2Details: { name: 'Corn Stars' },
+        },
+        { id: 'u2', date: '2026-12-24', team1Details: { name: 'Sack Attack' } },
+      ]);
+
+      const data = scheduleJsonLd();
+      expect(data.itemListElement).toHaveLength(2);
+      expect(data.itemListElement[0].position).toBe(1);
+      expect(data.itemListElement[0].item).toMatchObject({
+        name: 'Bag Bandits vs Corn Stars',
+        sport: 'Cornhole',
+        startDate: '2026-12-17',
+        location: { '@type': 'Place', name: 'Lanes 1-4' },
+        homeTeam: { '@type': 'SportsTeam', name: 'Bag Bandits' },
+        awayTeam: { '@type': 'SportsTeam', name: 'Corn Stars' },
+      });
+      // A team that is not set yet reads TBD rather than breaking the feed, and
+      // a match with no location simply omits it.
+      expect(data.itemListElement[1].item.name).toBe('Sack Attack vs TBD');
+      expect(data.itemListElement[1].item.location).toBeUndefined();
+    });
+
+    it.each([
+      ['postponed', 'https://schema.org/EventPostponed'],
+      ['canceled', 'https://schema.org/EventCancelled'],
+      [undefined, 'https://schema.org/EventScheduled'],
+    ])('reports a %s match as %s', (status, expected) => {
+      withUpcoming([
+        {
+          id: 'u1',
+          date: '2026-12-17',
+          status,
+          team1Details: { name: 'A' },
+          team2Details: { name: 'B' },
+        },
+      ]);
+
+      expect(scheduleJsonLd().itemListElement[0].item.eventStatus).toBe(expected);
+    });
+
+    it('publishes an empty list when nothing is scheduled', () => {
+      renderPage();
+
+      expect(scheduleJsonLd().itemListElement).toEqual([]);
+    });
+
+    it('caps the feed at twenty matches', () => {
+      withUpcoming(
+        Array.from({ length: 25 }, (_, i) => ({
+          id: `u${i}`,
+          date: '2026-12-17',
+          team1Details: { name: `Team ${i}` },
+          team2Details: { name: 'Rivals' },
+        }))
+      );
+
+      expect(scheduleJsonLd().itemListElement).toHaveLength(20);
+    });
+  });
+
+  // The page owns the handlers it hands to the header, the content and the two
+  // dialogs. Each is a real user path, and none of them was driven by a test.
+  describe('the handlers the page hands out', () => {
+    const matchManagement = (overrides: Record<string, unknown> = {}) => {
+      const base = {
+        matches: [],
+        editingMatch: null,
+        isFormOpen: false,
+        deleteMatchId: null,
+        isDeleting: false,
+        isUpdating: false,
+        isCreating: false,
+        setEditingMatch: vi.fn(),
+        setIsFormOpen: vi.fn(),
+        setDeleteMatchId: vi.fn(),
+        handleCreateMatch: vi.fn(),
+        handleUpdateMatch: vi.fn(),
+        handleDeleteMatch: vi.fn(),
+      };
+      const value = { ...base, ...overrides };
+      mockUseMatchManagement.mockReturnValue(value);
+      return value;
+    };
+
+    /** The date the page asked useMatchTimeslots about, i.e. the selected one. */
+    const selectedKey = () => {
+      const date = mockUseMatchTimeslots.mock.calls.at(-1)?.[0] as Date;
+      return format(date, 'yyyy-MM-dd');
+    };
+
+    it('moves to a night the user picks, and stops correcting the date after', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 11, 17, 9, 0, 0));
+      matchManagement();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Pick Dec 24' }));
+
+      expect(selectedKey()).toBe('2026-12-24');
+    });
+
+    it('asks to delete the match the list names', () => {
+      const { setDeleteMatchId } = matchManagement();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete match' }));
+
+      expect(setDeleteMatchId).toHaveBeenCalledWith('m-del');
+    });
+
+    it('creates a match when the form has no match to edit', () => {
+      const { handleCreateMatch, handleUpdateMatch } = matchManagement({
+        isFormOpen: true,
+        editingMatch: null,
+      });
+      mockUseTeamsQuery.mockReturnValue({ data: [{ id: 't1' }], isLoading: false });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Submit match' }));
+
+      expect(handleCreateMatch).toHaveBeenCalledWith({ date: '2026-12-17' }, [{ id: 't1' }]);
+      expect(handleUpdateMatch).not.toHaveBeenCalled();
+    });
+
+    it('updates instead when the form was opened on a match', () => {
+      const { handleCreateMatch, handleUpdateMatch } = matchManagement({
+        isFormOpen: true,
+        editingMatch: { id: 'm-edit' },
+      });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Submit match' }));
+
+      expect(handleUpdateMatch).toHaveBeenCalledWith({ date: '2026-12-17' }, []);
+      expect(handleCreateMatch).not.toHaveBeenCalled();
+    });
+
+    it('closes the match form', () => {
+      const { setIsFormOpen } = matchManagement({ isFormOpen: true });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Close form' }));
+
+      expect(setIsFormOpen).toHaveBeenCalledWith(false);
+    });
+
+    it('confirms and cancels a deletion', () => {
+      const { handleDeleteMatch, setDeleteMatchId } = matchManagement({ deleteMatchId: 'm-del' });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm delete' }));
+      expect(handleDeleteMatch).toHaveBeenCalledWith([]);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Close delete' }));
+      expect(setDeleteMatchId).toHaveBeenCalledWith(null);
+    });
+
+    it('retries the read from the error card', () => {
+      const refetchMatches = vi.fn();
+      matchManagement();
+      mockUseScheduleData.mockReturnValue({
+        ...baseScheduleData,
+        matchesError: new Error('boom'),
+        matchesErrorMessage: 'Failed to load schedule.',
+        refetchMatches,
+      });
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: /try again|retry/i }));
+
+      expect(refetchMatches).toHaveBeenCalled();
+    });
+  });
+
+  // Editing a match opens the form, which is also what makes the page fetch the
+  // team list — it is loaded lazily, only once a form needs it.
+  it('opens the match form and loads the teams it needs', () => {
+    const setEditingMatch = vi.fn();
+    mockUseMatchManagement.mockReturnValue({
+      ...mockUseMatchManagement(),
+      setEditingMatch,
+    });
+    renderPage();
+
+    // The teams query stays disabled until a form asks for it.
+    expect(mockUseTeamsQuery).toHaveBeenLastCalledWith({ enabled: false });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit match' }));
+
+    expect(setEditingMatch).toHaveBeenCalledWith({ id: 'm-edit' });
+    expect(mockUseTeamsQuery).toHaveBeenLastCalledWith({ enabled: true });
   });
 
   // The two ways out of the "Nothing scheduled for {date}" card: a link back to
