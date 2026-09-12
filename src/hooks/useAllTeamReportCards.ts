@@ -16,7 +16,7 @@ import {
   EMPTY_LEAGUE_MATCH_STATS,
 } from '@/utils/teamDetailsUtils/leagueMatchStats';
 
-import { ReportCardMode } from './useTeamReportCard';
+import { GRADE_WEIGHTS, ReportCardMode } from './useTeamReportCard';
 
 /**
  * A grade for a value ranked against the league, or `null` when there is
@@ -74,25 +74,33 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
         careerRankings
           // A team with no career match has no career GPA to list, for the same
           // reason the season loop below stops at `isGradeable`.
-          .filter((team) => isCareerGradeable(team))
+          .filter(isCareerGradeable)
           .map((team) => {
             const overallGrade = gradeAgainst(team.careerPowerScore, populations.powerScores);
-            const consistencyGrade = gradeAgainst(team.careerWinPercentage, populations.winPcts);
-            const gamesGrade = gradeAgainst(team.careerGameWinPercentage, populations.gameWinPcts);
-            const offenseGrade = gradeAgainst(team.careerSweepRate, populations.sweepRates);
             const clutchGrade = gradeAgainst(
               team.careerClutchGame3s > 0 ? team.careerClutchWinPct : null,
               populations.clutchRates
             );
-            const scheduleGrade = gradeAgainst(team.careerSos, populations.sos);
 
             const gpa = calculateGPA([
-              { grade: overallGrade, weight: 3 },
-              { grade: consistencyGrade, weight: 2 },
-              { grade: gamesGrade, weight: 1.5 },
-              { grade: offenseGrade, weight: 1 },
-              { grade: clutchGrade, weight: 1 },
-              { grade: scheduleGrade, weight: 1 },
+              { grade: overallGrade, weight: GRADE_WEIGHTS.overall },
+              {
+                grade: gradeAgainst(team.careerWinPercentage, populations.winPcts),
+                weight: GRADE_WEIGHTS.consistency,
+              },
+              {
+                grade: gradeAgainst(team.careerGameWinPercentage, populations.gameWinPcts),
+                weight: GRADE_WEIGHTS.games,
+              },
+              {
+                grade: gradeAgainst(team.careerSweepRate, populations.sweepRates),
+                weight: GRADE_WEIGHTS.offense,
+              },
+              { grade: clutchGrade, weight: GRADE_WEIGHTS.clutch },
+              {
+                grade: gradeAgainst(team.careerSos, populations.sos),
+                weight: GRADE_WEIGHTS.schedule,
+              },
             ]);
 
             return {
@@ -133,12 +141,21 @@ export function useAllTeamReportCards(mode: ReportCardMode) {
       );
 
       const gpa = calculateGPA([
-        { grade: overallGrade, weight: 3 },
-        { grade: gradeAgainst(team.winPercentage, populations.winPcts), weight: 2 },
-        { grade: gradeAgainst(team.gameWinPercentage, populations.gameWinPcts), weight: 1.5 },
-        { grade: gradeAgainst(teamStats.sweepRate, populations.sweepRates), weight: 1 },
-        { grade: clutchGrade, weight: 1 },
-        { grade: gradeAgainst(team.sos, populations.sos), weight: 1 },
+        { grade: overallGrade, weight: GRADE_WEIGHTS.overall },
+        {
+          grade: gradeAgainst(team.winPercentage, populations.winPcts),
+          weight: GRADE_WEIGHTS.consistency,
+        },
+        {
+          grade: gradeAgainst(team.gameWinPercentage, populations.gameWinPcts),
+          weight: GRADE_WEIGHTS.games,
+        },
+        {
+          grade: gradeAgainst(teamStats.sweepRate, populations.sweepRates),
+          weight: GRADE_WEIGHTS.offense,
+        },
+        { grade: clutchGrade, weight: GRADE_WEIGHTS.clutch },
+        { grade: gradeAgainst(team.sos, populations.sos), weight: GRADE_WEIGHTS.schedule },
       ]);
 
       entries.push({

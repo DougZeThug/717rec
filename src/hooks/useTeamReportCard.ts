@@ -38,8 +38,15 @@ const gradeAgainst = (
   return { label, grade: calculateGrade(percentile), percentile, description };
 };
 
-/** The six categories and the weight each carries in the GPA. */
-const GRADE_WEIGHTS = {
+/**
+ * The six categories and the weight each carries in the GPA.
+ *
+ * Shared with the GPA leaderboard (`useAllTeamReportCards`) rather than written
+ * out again there. The card and the leaderboard show the same team's GPA, so a
+ * second copy of these numbers is a way for the two to disagree — which is what
+ * B-36 already was, for the populations.
+ */
+export const GRADE_WEIGHTS = {
   overall: 3,
   consistency: 2,
   games: 1.5,
