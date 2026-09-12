@@ -512,6 +512,18 @@ describe('Schedule page', () => {
       expect(selectedKey()).toBe('2026-12-24');
     });
 
+    // The form's open state is the page's to set, and it is what the user sees
+    // happen when they choose a match to edit.
+    it('opens the form on the match chosen for editing', () => {
+      const { setEditingMatch, setIsFormOpen } = matchManagement();
+      renderPage();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Edit match' }));
+
+      expect(setEditingMatch).toHaveBeenCalledWith({ id: 'm-edit' });
+      expect(setIsFormOpen).toHaveBeenCalledWith(true);
+    });
+
     it('asks to delete the match the list names', () => {
       const { setDeleteMatchId } = matchManagement();
       renderPage();
