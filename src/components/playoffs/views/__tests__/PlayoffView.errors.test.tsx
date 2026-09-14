@@ -32,12 +32,10 @@ const makeData = (overrides: Partial<PlayoffPageData> = {}): PlayoffPageData =>
     divisions: [],
     divisionsLoading: false,
     availableDivisions: [],
-    allBrackets: [],
     bracketsLoading: false,
     teamsByDivision: {},
     bracketsByDivision: {},
     typesafeBracketsByDivision: {},
-    allBracketsData: [],
     handleBracketCreated: vi.fn(),
     handleTeamDivisionChange: vi.fn(),
     // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
