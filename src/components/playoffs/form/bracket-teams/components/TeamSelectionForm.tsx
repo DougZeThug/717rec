@@ -37,8 +37,8 @@ const EMPTY_SEED_VALIDATION: SeedValidationState = {
 // Shared no-op for absent handler callbacks (expression body, not an empty fn).
 const noop = () => undefined;
 
-// The form state with every field guaranteed present (no cleanup helper).
-type SafeFormState = Omit<BracketFormStateResult, 'cleanup'>;
+// The form state with every field guaranteed present.
+type SafeFormState = BracketFormStateResult;
 
 /**
  * Normalize the incoming form state so every property has a safe default,
@@ -119,10 +119,6 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   // Ensure formState has all required properties with proper defaults
   const safeFormState = buildSafeFormState(formState, {
     percentage: 0,
-    selected: 0,
-    required: minTeams,
-    maximum: maxTeams,
-    available: validTeams.length,
   });
 
   /**
