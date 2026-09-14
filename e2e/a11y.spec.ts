@@ -174,6 +174,13 @@ const STRUCTURE_RULES = [
   // regressions behind an unrelated failure.
 ];
 
+// One parameterized route is in here too. Live scoring renders six different
+// branches depending on how the match loads, and five of them once left the page
+// with no h1 at all — the heading lives inside the success view. A match id that
+// exists in no league lands on one of the failure branches, which is exactly the
+// case that used to be silent. See audit Q12 / X-08.
+const LIVE_SCORING_NO_SUCH_MATCH = '/matches/00000000-0000-0000-0000-000000000000/live';
+
 const structureRoutes = [
   ...routes,
   '/schedule',
@@ -182,6 +189,7 @@ const structureRoutes = [
   '/auth',
   '/setup-profile',
   '/no-such-page',
+  LIVE_SCORING_NO_SUCH_MATCH,
 ];
 
 for (const route of structureRoutes) {

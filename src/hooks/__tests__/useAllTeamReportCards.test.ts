@@ -218,6 +218,8 @@ describe('useAllTeamReportCards', () => {
     const careerTeam = (overrides: Record<string, unknown>) => ({
       teamId: 'team-1',
       teamName: 'Team One',
+      careerMatchWins: 5,
+      careerMatchLosses: 5,
       careerPowerScore: 50,
       careerWinPercentage: 0.5,
       careerSos: 0.5,
@@ -267,6 +269,57 @@ describe('useAllTeamReportCards', () => {
       // The missing clutch grade is left out of the average, not counted as an
       // F, so the better team still leads.
       expect(result.current.leaderboard[0].teamId).toBe('elite');
+    });
+
+    // The career twin of the season case above: a team with no career match has
+    // no career GPA, and used to be listed with one built from zeroes.
+    it('leaves out a team that has never played a career match', () => {
+      mockUseCareerRankings.mockReturnValue({
+        data: [
+          careerTeam({ teamId: 'played', careerPowerScore: 60 }),
+          careerTeam({
+            teamId: 'newcomer',
+            careerMatchWins: 0,
+            careerMatchLosses: 0,
+            careerPowerScore: 0,
+            careerWinPercentage: 0,
+            careerGameWinPercentage: 0,
+            careerSweepRate: 0,
+            careerClutchGame3s: 0,
+          }),
+        ],
+        isLoading: false,
+      });
+
+      const { result } = renderHook(() => useAllTeamReportCards('career'));
+
+      expect(result.current.leaderboard.map((e) => e.teamId)).toEqual(['played']);
+    });
+
+    it('does not let a team that has never played lift a listed GPA', () => {
+      const played = [
+        careerTeam({ teamId: 'weak', careerPowerScore: 40, careerWinPercentage: 0.4 }),
+        careerTeam({ teamId: 'strong', careerPowerScore: 80, careerWinPercentage: 0.8 }),
+      ];
+      mockUseCareerRankings.mockReturnValue({ data: played, isLoading: false });
+      const before = renderHook(() => useAllTeamReportCards('career')).result.current.leaderboard;
+
+      mockUseCareerRankings.mockReturnValue({
+        data: [
+          ...played,
+          careerTeam({
+            teamId: 'newcomer',
+            careerMatchWins: 0,
+            careerMatchLosses: 0,
+            careerPowerScore: 0,
+            careerWinPercentage: 0,
+          }),
+        ],
+        isLoading: false,
+      });
+      const after = renderHook(() => useAllTeamReportCards('career')).result.current.leaderboard;
+
+      expect(after).toEqual(before);
     });
   });
 });

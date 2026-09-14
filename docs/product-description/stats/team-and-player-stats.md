@@ -142,13 +142,17 @@ All six are ranked against the rest of the league, in both modes. A team's sweep
 rate and game-3 record are counted from the league's match list, so a team is
 compared with what its opponents actually did.
 
-**Only teams that have a rating are in that comparison.** A team whose Power
-column reads "—" has played nothing to measure — its win rate and game rate are
-0 out of 0, and its strength of schedule is a filler value rather than a
-schedule it faced. It is left out of all six comparisons, and it gets no report
-card of its own: the card says "Not enough data to generate a report card yet.
-Play some matches first!" So a new team neither collects six F grades it has not
-earned nor makes every other team's grade look better than it is.
+**Only teams there is something to measure are in that comparison.** In season
+mode that means a rating: a team whose Power column reads "—" has played nothing
+to measure — its win rate and game rate are 0 out of 0, and its strength of
+schedule is a filler value rather than a schedule it faced. In career mode it
+means a career match played, because a team that has never played is scored 0
+rather than "—", so that it sits at the foot of the career table. Either way the
+team is left out of all six comparisons, and it gets no report card of its own:
+the card says "Not enough data to generate a report card yet. Play some matches
+first!" So a new team neither collects six F grades it has not earned nor makes
+every other team's grade look better than it is. A team with a losing record
+still counts in both modes — it played.
 
 A team that has never played a deciding third game has no game-3 record to rank.
 Its Clutch card shows a dash rather than a letter, and the GPA is worked out from
@@ -286,4 +290,7 @@ page in a session fills in immediately.
 Verified against `717rec` commit `ea5c8f4`, except the report card grades, which
 were changed after that commit, together with the handling of unrated teams and
 of a failed load — see
-[B-36](../bug-triage.md#b-36-two-grades-on-the-team-report-card-are-not-real-measurements).
+[B-36](../bug-triage.md#b-36-two-grades-on-the-team-report-card-are-not-real-measurements)
+— and the career comparison, which was narrowed to teams that have played after
+that commit, in the change that raised this same question for career mode and
+written from it and its tests rather than a fresh pass over the running app.

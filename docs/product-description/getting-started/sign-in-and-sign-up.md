@@ -20,6 +20,11 @@ consumed. A member who has never chosen a username is normally sent to profile
 setup the moment a session appears; that redirect is suppressed on this page, so
 the reset can always be finished. The page shows a "Set a new password" form with a new password and
 a confirmation, both checked against the same six-character rule as sign-up.
+Each complaint is printed under the field it is about, and reddens only that
+field: "Password must be at least 6 characters" under the new password, and
+"Passwords do not match" under the confirmation. That field is also marked
+invalid and pointed at its message, so a screen reader reports the fault on the
+field itself rather than leaving the text stranded beside it.
 Saving raises "Password updated" and lands on the home page, signed in. A link
 that has already been used, or has run out of time, produces no session, and the
 page says "This link has expired" with a button to request another rather than
@@ -296,4 +301,7 @@ username taken from the address. Nothing else is written.
   the tab-switch emptying, and Enter-to-submit are read from the page itself
   rather than from a passing test.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except password recovery and the
+per-field errors on "Set a new password", added after that commit alongside UX
+audit item X-04 and written from the change and its tests rather than a fresh
+pass over the running app.
