@@ -11,8 +11,9 @@ import { Badge } from '@/components/ui/badge';
  *   4 = Completed
  *   5 = Archived (a downstream round has progressed — locked by the library)
  *
- * Admins can still edit Archived matches because BracketUpdateService
- * temporarily flips status 5 -> 4 before applying updates.
+ * Admins can still edit Archived matches: BracketUpdateService writes a
+ * same-winner score correction directly to the columns, and only a winner flip
+ * temporarily flips status 5 -> 4 to go through the library.
  */
 interface MatchStatusBadgeProps {
   status: number | undefined;
