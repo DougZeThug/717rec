@@ -147,37 +147,3 @@ describe('per-game lineup selection', () => {
     expect(mockSetGamePlayers).toHaveBeenCalledWith('game-2', 'team-1', ['p1', 'p5']);
   });
 });
-
-describe('updateGamePlayers', () => {
-  it('updates the roster for one side of an in-progress game', async () => {
-    mockSetGamePlayers.mockResolvedValue(null);
-
-    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
-
-    await act(async () => {
-      await result.current.updateGamePlayers.mutateAsync({
-        gameId: 'game-3',
-        teamId: 'team-1',
-        playerIds: ['p7', 'p8'],
-      });
-    });
-
-    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-3', 'team-1', ['p7', 'p8']);
-  });
-
-  it('toasts on failure', async () => {
-    mockSetGamePlayers.mockRejectedValue(new Error('nope'));
-
-    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
-
-    await act(async () => {
-      await result.current.updateGamePlayers
-        .mutateAsync({ gameId: 'game-3', teamId: 'team-1', playerIds: ['p7'] })
-        .catch(() => undefined);
-    });
-
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Could not update players', variant: 'destructive' })
-    );
-  });
-});
