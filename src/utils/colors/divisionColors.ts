@@ -2,61 +2,6 @@
  * Division color utilities for styling division-specific UI elements
  */
 
-import { cn } from '@/lib/utils';
-
-// Division gradients for cards and UI elements
-export const getDivisionGradientClass = (division: string): string => {
-  const divisionNameLower = division.toLowerCase();
-
-  if (divisionNameLower.includes('competitive')) {
-    return 'bg-gradient-to-br from-card via-[hsl(var(--competitive-soft)/0.06)] to-[hsl(var(--competitive-soft)/0.1)]';
-  }
-
-  if (divisionNameLower.includes('intermediate')) {
-    return 'bg-gradient-to-br from-card via-[hsl(var(--intermediate-soft)/0.06)] to-[hsl(var(--intermediate-soft)/0.1)]';
-  }
-
-  if (divisionNameLower.includes('recreational')) {
-    return 'bg-gradient-to-br from-card via-[hsl(var(--recreational-soft)/0.06)] to-[hsl(var(--recreational-soft)/0.1)]';
-  }
-
-  // Default gradient
-  return 'bg-gradient-to-br from-card to-muted';
-};
-
-// Division header gradients
-export const getDivisionHeaderClass = (division: string): string => {
-  const divisionNameLower = division.toLowerCase();
-
-  if (divisionNameLower.includes('competitive')) {
-    return cn(
-      'bg-gradient-to-br from-[hsl(var(--competitive-soft)/0.16)] to-[hsl(var(--competitive-soft)/0.04)]',
-      'border-b-2 border-[hsl(var(--competitive-soft)/0.35)]'
-    );
-  }
-
-  if (divisionNameLower.includes('intermediate')) {
-    return cn(
-      'bg-gradient-to-br from-[hsl(var(--intermediate-soft)/0.16)] to-[hsl(var(--intermediate-soft)/0.04)]',
-      'border-b-2 border-[hsl(var(--intermediate-soft)/0.35)]'
-    );
-  }
-
-  if (divisionNameLower.includes('recreational')) {
-    return cn(
-      'bg-gradient-to-br from-[hsl(var(--recreational-soft)/0.16)] to-[hsl(var(--recreational-soft)/0.04)]',
-      'border-b-2 border-[hsl(var(--recreational-soft)/0.35)]'
-    );
-  }
-
-  // Default header gradient
-  return cn('bg-gradient-to-br from-muted to-card', 'border-b-2 border-border');
-};
-
-// Division text color classes
-export const getDivisionTextClass = (division: string): string =>
-  getDivisionSoftClasses(division).text;
-
 // Division badge color classes (for small badges/chips)
 /**
  * Softer, theme-friendly division styling.
