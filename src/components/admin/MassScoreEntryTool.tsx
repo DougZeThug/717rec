@@ -55,10 +55,24 @@ const MassScoreEntryTool: React.FC = () => {
   // Every edited row carries `isEdited` until it is submitted, so this is the
   // whole of "there are typed scores nobody has saved". See UX audit A-07.
   const hasUnsavedScores = matches.some((match) => match.isEdited);
-  useUnsavedChangesGuard(
+  const { confirmDiscard } = useUnsavedChangesGuard(
     hasUnsavedScores,
     'You have scores that are not submitted. Leave and lose them?'
   );
+
+  // Narrowing the filter rebuilds the table from the new night's rows, and an
+  // edited row the new night does not hold is simply dropped — the edits live
+  // in local state only, so nothing can bring them back. Ask first, the same
+  // way the console shell asks before it switches section.
+  //
+  // Clearing the filters is not guarded: it widens the fetch to every match, so
+  // the edited row is always in the result and nothing is lost.
+  const handleDateChange = (date?: Date) => {
+    if (confirmDiscard()) setFilterDate(date);
+  };
+  const handleBracketChange = (bracketId?: string) => {
+    if (confirmDiscard()) setBracketFilter(bracketId);
+  };
 
   const handleDeleteConfirm = async () => {
     if (!deleteMatchId) return;
@@ -123,8 +137,8 @@ const MassScoreEntryTool: React.FC = () => {
           <ScoreEntryToolbar
             filters={filters}
             brackets={brackets}
-            onDateChange={setFilterDate}
-            onBracketChange={setBracketFilter}
+            onDateChange={handleDateChange}
+            onBracketChange={handleBracketChange}
             onClearFilters={clearFilters}
           />
 
