@@ -10,10 +10,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import { Input } from '@/components/ui/input';
 import { useBlindDrawSettings, useUpdateBlindDrawSettings } from '@/hooks/useBlindDrawSettings';
@@ -104,6 +104,7 @@ const BlindDrawSettingsCard: React.FC = () => {
 
 const BlindDrawSignupsTab: React.FC = () => {
   const [deletingSignup, setDeletingSignup] = useState<SignupToDelete | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
   const { data: signups, isLoading, error } = useBlindDrawSignups();
   const deleteSignup = useDeleteBlindDrawSignup();
@@ -150,31 +151,15 @@ const BlindDrawSignupsTab: React.FC = () => {
         <CardContent className="space-y-4 px-3 sm:px-6">
           {signups && signups.length > 0 && (
             <div className="flex justify-end">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="size-4 mr-1" />
-                    Clear All
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Clear all signups?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will remove all {signups.length} signups. This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => clearSignups.mutate()}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Clear All
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsClearing(true)}
+                disabled={clearSignups.isPending}
+              >
+                <Trash2 className="size-4 mr-1" />
+                Clear All
+              </Button>
             </div>
           )}
 
@@ -229,6 +214,25 @@ const BlindDrawSignupsTab: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/*
+        The shared prompt rather than a hand-rolled one: it holds itself open
+        while the wipe runs, disables both buttons and swaps in "Clearing...".
+        The inline dialog this replaces closed the instant it was confirmed, so
+        a destructive bulk delete ran with nothing on screen saying so, and a
+        failure left only a toast that faded. `onSuccess`, not `onSettled`, so a
+        failure leaves the prompt open to retry — matching Remove below.
+      */}
+      <ConfirmDialog
+        open={isClearing}
+        onOpenChange={setIsClearing}
+        title="Clear all signups?"
+        description={`This will remove all ${signups?.length ?? 0} signups. This action cannot be undone.`}
+        onConfirm={() => clearSignups.mutate(undefined, { onSuccess: () => setIsClearing(false) })}
+        isPending={clearSignups.isPending}
+        confirmLabel="Clear All"
+        pendingLabel="Clearing..."
+      />
 
       <AlertDialog
         open={!!deletingSignup}

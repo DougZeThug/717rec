@@ -414,6 +414,18 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
   - **Breakpoint half done (L3).** The Teams pane switches to cards at `md:` now, the same width as `useIsMobile()`, the admin shell and every other table, so the 640–767 px band where the pane disagreed with itself is gone. `ManageTeamsPane` still renders both children and hides one with CSS; `display:none` keeps the hidden one out of the accessibility tree, so there is no duplicate content. **The other three halves of this finding are untouched:** no team delete, "Hero" vs "Hero Cards", and the emoji logo-status values.
 - **A-16 · League Night: header says "Everything here is read-only" above a "Repair now" button; quick actions cover 2 of ~9 league-night jobs; SQL editor link one tap away — Medium.** (`admin/tab-league-night-status--m390.jpg`; `LeagueNightStatusTab.tsx:130-132,256-292`). *Recommend:* add Timeslots, Match Creation, Notifications, Blind Draw and Playoffs to quick actions; move the developer links under a "Developer" disclosure; fix the header copy. *Effort:* S.
 - **A-17 · Blind Draw "Clear All" has no pending state; Themes toggle disables every switch while one saves; both toast without descriptions — Low.** `BlindDrawSignupsTab.tsx:166-171`, `ThemeManagementTab.tsx:80,26-37`. *Effort:* S.
+  - **Clear All half done.** It is the shared `ConfirmDialog` now, so the prompt
+    holds itself open while the wipe runs, disables both of its buttons, swaps
+    the label to a spinner and "Clearing...", and greys the trigger behind it.
+    It closes on success only — a failure leaves it up to retry, rather than
+    handing the admin a toast that fades and a list that still shows everyone.
+    The old inline dialog auto-closed on click, because `AlertDialogAction`
+    does that by default and nothing called `e.preventDefault()`; the mutation
+    ran fire-and-forget and `clearSignups.isPending` was never read. The
+    sibling Remove dialog had been fixed in 8fac81c48 without this one being
+    retrofitted. **The other two halves are untouched:** the Themes toggle
+    still disables every switch while one saves, and both still toast without
+    descriptions.
 - **A-18 · Match Creation: validation says "Please fill in all match details" with no row highlighted, the toast is titled "Notification Error", courts are numbered per row across the night, timeslot list includes 10:00 PM which the scheduler never produces — Medium.** *Observed:* empty submit → toast "Notification Error — Please fill in all match details" (`admin/batch-create-empty--m390.jpg`). *Code:* `useBatchMatchForm.ts:77-112,142`, `MatchPairsList.tsx:28-40` vs `constants.ts:101-103`. *Effort:* S.
   - **Fixed (Q26).** Note on the toast title: "Notification Error" is not a string in the codebase. `ToastProvider` passes no `label`, so Radix's default announcement label "Notification" was being read out in front of our title, `'Error'`. The titles are specific now ("Missing details", "Pick a date", "Matches created"); the shared default label is untouched, because changing it would move the announcement for all 81 `title: 'Error'` toasts across 39 files.
 - **A-19 · Power Score Review / Sandbox address the admin as a developer** ("run the Lovable prompt from the pull request…", "copy-paste into the Supabase SQL editor") — Low. `PowerMigrationReviewTab.tsx:63-83`, `PowerScoreSandboxTab.tsx:63-68`. Review's status RPC is admin-only; it showed its error state under the harness (`admin/tab-power-migration--m390.jpg`), which itself reads well.

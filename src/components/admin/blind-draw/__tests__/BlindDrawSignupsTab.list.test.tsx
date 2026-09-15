@@ -25,6 +25,7 @@ let signupsQuery: { data: typeof signups | undefined; isLoading: boolean; error:
 };
 // Plain vi.fn(); the tests assert it is *not* called, and never await it.
 const deleteSignup = vi.fn();
+let clearSignupsMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
 
 vi.mock('@/hooks/useBlindDrawSettings', () => ({
   useBlindDrawSettings: () => ({
@@ -37,7 +38,7 @@ vi.mock('@/hooks/useBlindDrawSettings', () => ({
 vi.mock('@/hooks/useBlindDrawSignups', () => ({
   useBlindDrawSignups: () => signupsQuery,
   useDeleteBlindDrawSignup: () => ({ mutateAsync: deleteSignup, isPending: false }),
-  useClearBlindDrawSignups: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useClearBlindDrawSignups: () => clearSignupsMutation,
 }));
 
 import BlindDrawSignupsTab from '../BlindDrawSignupsTab';
@@ -53,6 +54,7 @@ describe('Blind Draw signups list', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     signupsQuery = { data: signups, isLoading: false, error: null };
+    clearSignupsMutation = { mutate: vi.fn(), isPending: false };
   });
 
   it('gives every column a scoped heading', () => {
