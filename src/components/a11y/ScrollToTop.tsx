@@ -4,10 +4,15 @@ import { useLocation, useNavigationType } from 'react-router';
 /**
  * Scrolls to the top of the page when the route changes.
  *
- * React Router does not do this by itself, and `<ScrollRestoration>` is not
- * available here because the app uses `<BrowserRouter>` rather than a data
- * router. Without it a user who is scrolled down and follows a link lands part
- * way down the new page — often below all of its content, so it looks blank.
+ * React Router does not do this by itself. Without it a user who is scrolled
+ * down and follows a link lands part way down the new page — often below all of
+ * its content, so it looks blank.
+ *
+ * `<ScrollRestoration>` became available when the app moved to a data router,
+ * and is deliberately not used: it would own scroll for the whole app, and
+ * three things already share that job — this component, `RouteFocusManager` and
+ * `useScrollRestoration` — each skipping POP so the others can act. Two owners
+ * would fight. See `e2e/navigation-scroll.spec.ts`.
  *
  * Two deliberate limits, matching RouteFocusManager:
  *
