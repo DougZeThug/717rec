@@ -8,10 +8,13 @@ const mockSubmit = vi.fn();
 const mockToast = vi.hoisted(() => vi.fn());
 let mockUser: { email?: string; user_metadata?: { full_name?: string; name?: string } } | null =
   null;
+// The verified name comes from the profiles row, not from user_metadata, which
+// only Google sign-in fills in.
+let mockProfile: { full_name?: string | null; username?: string | null } | null = null;
 let mockMembership: { team?: { name: string }; rejected_at?: string } | null = null;
 
 vi.mock('@/contexts/auth-context', () => ({
-  useAuth: () => ({ user: mockUser }),
+  useAuth: () => ({ user: mockUser, profile: mockProfile }),
 }));
 
 vi.mock('@/hooks/useTeamMembership', () => ({
@@ -51,6 +54,7 @@ const fillMessage = (text = 'Please move our match to the later slot.') =>
 
 beforeEach(() => {
   mockUser = null;
+  mockProfile = null;
   mockMembership = null;
   onSent.mockReset();
   mockToast.mockReset();
@@ -192,7 +196,8 @@ describe('ContactForm', () => {
 
       expect(screen.getByLabelText(/^name/i)).toHaveValue('');
 
-      mockUser = { email: 'captain@example.com', user_metadata: { full_name: 'Casey Captain' } };
+      mockUser = { email: 'captain@example.com' };
+      mockProfile = { full_name: 'Casey Captain' };
       mockMembership = { team: { name: 'Rail Riders' } };
       rerender(<MemoryRouter initialEntries={['/contact']}>{formElement()}</MemoryRouter>);
 
@@ -202,7 +207,8 @@ describe('ContactForm', () => {
     });
 
     it('sends the derived values without copying them through an effect', async () => {
-      mockUser = { email: 'captain@example.com', user_metadata: { full_name: 'Casey Captain' } };
+      mockUser = { email: 'captain@example.com' };
+      mockProfile = { full_name: 'Casey Captain' };
       mockMembership = { team: { name: 'Rail Riders' } };
 
       renderForm();
@@ -229,7 +235,8 @@ describe('ContactForm', () => {
       expect(nameInput.value).toBe('Typed Name');
       expect(nameInput.readOnly).toBe(false);
 
-      mockUser = { email: 'user@test.com', user_metadata: { full_name: 'Verified Name' } };
+      mockUser = { email: 'user@test.com' };
+      mockProfile = { full_name: 'Verified Name' };
       mockMembership = { team: { name: 'Test Team' } };
       rerender(<MemoryRouter initialEntries={['/contact']}>{formElement()}</MemoryRouter>);
 
@@ -241,8 +248,46 @@ describe('ContactForm', () => {
       expect(within(nameLabel as HTMLElement).queryByText('Verified')).not.toBeInTheDocument();
     });
 
+    // Only Google sign-in fills user_metadata. Reading the name from there put
+    // every email-and-password member's address in the Name box, locked, under
+    // a green "Verified" badge — and for a support request that address was
+    // then stored and emailed to admins as the sender's name.
+    it('shows the profile name, not the email, for a member who signed up with a password', () => {
+      mockUser = { email: 'captain@example.com', user_metadata: {} };
+      mockProfile = { full_name: 'Casey Captain' };
+      renderForm();
+
+      const nameInput = screen.getByLabelText(/^name/i) as HTMLInputElement;
+      expect(nameInput.value).toBe('Casey Captain');
+      expect(nameInput.readOnly).toBe(true);
+    });
+
+    it('falls back to the username when the profile has no full name', () => {
+      mockUser = { email: 'captain@example.com', user_metadata: {} };
+      mockProfile = { full_name: null, username: 'cap717' };
+      renderForm();
+
+      expect(screen.getByLabelText(/^name/i)).toHaveValue('cap717');
+    });
+
+    // Nothing to verify against, so the field must stay open rather than lock
+    // an empty value behind a badge.
+    it('leaves the name editable and unbadged when the profile names them nowhere', () => {
+      mockUser = { email: 'captain@example.com', user_metadata: {} };
+      mockProfile = { full_name: null, username: null };
+      renderForm();
+
+      const nameInput = screen.getByLabelText(/^name/i) as HTMLInputElement;
+      expect(nameInput.value).toBe('');
+      expect(nameInput.readOnly).toBe(false);
+
+      const nameLabel = screen.getByText('Name').closest('label');
+      expect(within(nameLabel as HTMLElement).queryByText('Verified')).not.toBeInTheDocument();
+    });
+
     it('still lets them propose a new team name when joining the league', () => {
-      mockUser = { email: 'captain@example.com', user_metadata: { full_name: 'Casey Captain' } };
+      mockUser = { email: 'captain@example.com' };
+      mockProfile = { full_name: 'Casey Captain' };
       mockMembership = { team: { name: 'Rail Riders' } };
       renderForm('/contact?type=join_league');
 

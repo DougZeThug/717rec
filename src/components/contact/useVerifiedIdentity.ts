@@ -40,17 +40,23 @@ interface VerifiedIdentity {
 export const useVerifiedIdentity = ({
   allowNewTeamName,
 }: VerifiedIdentityOptions): VerifiedIdentity => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { activeMembership: membership } = useTeamMembership();
 
   const [nameDraft, setName] = useState<string | null>(null);
   const [teamDraft, setTeam] = useState<string | null>(null);
   const [contactDraft, setContact] = useState<string | null>(null);
 
-  const verifiedName = useMemo(() => {
-    const meta = user?.user_metadata as { full_name?: string; name?: string } | undefined;
-    return meta?.full_name || meta?.name || user?.email || '';
-  }, [user]);
+  // The name comes from the profiles row, which every member has, whichever
+  // way they signed up. `user_metadata` is only filled in by Google sign-in,
+  // so reading it put an email-and-password member's address in the Name box —
+  // locked, and badged as verified. There is no fallback to the email: an
+  // address is not a name, and a member with neither name on file is better
+  // served by an open field than by a locked wrong one.
+  //
+  // This is the same rule the server applies in submit-contact-request, which
+  // overrides the submitted name with profiles.full_name || profiles.username.
+  const verifiedName = useMemo(() => profile?.full_name || profile?.username || '', [profile]);
   const verifiedTeam = membership?.team?.name ?? '';
 
   const isSignedIn = Boolean(user);
