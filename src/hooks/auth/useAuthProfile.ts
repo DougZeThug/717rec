@@ -4,6 +4,7 @@ import { NavigateFunction } from 'react-router';
 
 import { fetchAuthProfile } from '@/services/profile/ProfileService';
 import { UserProfile } from '@/types/user';
+import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
 import { errorLog } from '@/utils/logger';
 
 // Routes the user must be allowed to finish before anything else. A recovery
@@ -14,6 +15,37 @@ const PROFILE_SETUP_EXEMPT_PATHS = ['/reset-password'];
 
 /** Wait this long before the single automatic retry of a failed profile read. */
 const PROFILE_RETRY_DELAY_MS = 800;
+
+const PROFILE_SETUP_PATH = '/setup-profile';
+
+/**
+ * The `?next=` to carry into profile setup, or '' when there is nothing worth
+ * carrying.
+ *
+ * Google sign-in bakes the destination into its OAuth redirect as
+ * `/setup-profile?next=...` so it survives the round trip, and this check fires
+ * straight afterwards. Navigating to a bare `/setup-profile` threw that away,
+ * and setup reads its destination only from its own URL — so every new member
+ * arriving from a deep link finished setup on the home page instead.
+ *
+ * A next already on the URL wins; otherwise the page the member is standing on
+ * is the destination. Sanitized before it is written, so an off-site
+ * destination is never even stored in the link.
+ */
+const profileSetupNextQuery = (): string => {
+  if (typeof window === 'undefined') return '';
+
+  const { pathname, search, hash } = window.location;
+  const candidate =
+    new URLSearchParams(search).get('next') ??
+    (pathname !== PROFILE_SETUP_PATH ? `${pathname}${search}${hash}` : null);
+  if (!candidate) return '';
+
+  // sanitizeReturnTo falls back to '/', which is where setup would send them
+  // anyway — so treat it as nothing to carry.
+  const safeNext = sanitizeReturnTo(candidate);
+  return safeNext === '/' ? '' : `?next=${encodeURIComponent(safeNext)}`;
+};
 
 /**
  * Hook for managing user profile state and operations
@@ -57,7 +89,7 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
       ) {
         return;
       }
-      navigate('/setup-profile');
+      navigate(`/setup-profile${profileSetupNextQuery()}`);
     },
     [navigate]
   );

@@ -124,6 +124,18 @@ describe('useAuthProfile', () => {
   });
 
   describe('checkProfileSetup', () => {
+    /** Run the check as though the browser were sitting on `url`. */
+    const atUrl = (url: string, profileData: UserProfile | null) => {
+      const original = window.location.pathname + window.location.search + window.location.hash;
+      window.history.replaceState({}, '', url);
+      try {
+        const { result } = renderHook(() => useAuthProfile(user, navigate));
+        act(() => result.current.checkProfileSetup(profileData));
+      } finally {
+        window.history.replaceState({}, '', original);
+      }
+    };
+
     it('sends a user with no profile to the setup page', () => {
       const { result } = renderHook(() => useAuthProfile(user, navigate));
       act(() => result.current.checkProfileSetup(null));
@@ -154,17 +166,53 @@ describe('useAuthProfile', () => {
       }
     });
 
-    it('still asks for a username on any other page', () => {
-      const original = window.location.pathname;
-      window.history.replaceState({}, '', '/my-team');
+    it('still asks for a username on any other page, and remembers that page', () => {
+      atUrl('/my-team', { ...profile, username: null });
+      expect(navigate).toHaveBeenCalledWith('/setup-profile?next=%2Fmy-team');
+    });
 
-      try {
-        const { result } = renderHook(() => useAuthProfile(user, navigate));
-        act(() => result.current.checkProfileSetup({ ...profile, username: null }));
+    // signInWithGoogle deliberately bakes the destination into the OAuth
+    // redirect as /setup-profile?next=..., so it survives the round trip. This
+    // check fires straight afterwards and used to navigate to a bare
+    // /setup-profile, throwing that destination away — after which setup had
+    // nothing to return to and sent every new member to the home page.
+    describe('the page the member was headed for', () => {
+      it('keeps a next that is already on the URL', () => {
+        atUrl('/setup-profile?next=%2Fteams%2Fabc', { ...profile, username: null });
+        expect(navigate).toHaveBeenCalledWith('/setup-profile?next=%2Fteams%2Fabc');
+      });
+
+      it('uses the current deep link when there is no next yet', () => {
+        atUrl('/teams/abc', { ...profile, username: null });
+        expect(navigate).toHaveBeenCalledWith('/setup-profile?next=%2Fteams%2Fabc');
+      });
+
+      it('keeps the query and hash of that deep link', () => {
+        atUrl('/teams/abc?tab=roster#players', { ...profile, username: null });
+        expect(navigate).toHaveBeenCalledWith(
+          '/setup-profile?next=%2Fteams%2Fabc%3Ftab%3Droster%23players'
+        );
+      });
+
+      it('does not point setup at itself', () => {
+        atUrl('/setup-profile', { ...profile, username: null });
         expect(navigate).toHaveBeenCalledWith('/setup-profile');
-      } finally {
-        window.history.replaceState({}, '', original);
-      }
+      });
+
+      it('adds nothing when the destination is the home page anyway', () => {
+        atUrl('/', { ...profile, username: null });
+        expect(navigate).toHaveBeenCalledWith('/setup-profile');
+      });
+
+      // sanitizeReturnTo already guards the read side. Applying it here too
+      // means an off-site destination is never even written into the link.
+      it('drops an off-site next rather than carrying it', () => {
+        atUrl('/setup-profile?next=https%3A%2F%2Fevil.example', {
+          ...profile,
+          username: null,
+        });
+        expect(navigate).toHaveBeenCalledWith('/setup-profile');
+      });
     });
   });
 });
