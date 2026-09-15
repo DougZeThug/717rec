@@ -622,6 +622,62 @@ describe('in-game state', () => {
       finalTotals: { team1: 21, team2: 0 },
     });
   });
+
+  // Ending a game sends the totals as they stand, and those totals fold in any
+  // round still held for a missing signal. Sent later, they could file a score —
+  // and a winner — the recorded rounds do not agree with, which then decides the
+  // match. So the game waits for the signal instead.
+  it('will not end the game with no signal', async () => {
+    onlineManager.setOnline(false);
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 12, team2_score: 0, net_points: 12, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 9, team2_score: 0, net_points: 9, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    // The banner still names the winner; only the writing waits.
+    expect(screen.getByText(/baggers wins game 1, 21–0/iu)).toBeInTheDocument();
+    expect(screen.getByText(/cannot be ended until it comes back/i)).toBeInTheDocument();
+
+    const endGame = screen.getByRole('button', { name: /end game 1/i });
+    expect(endGame).toBeDisabled();
+
+    await userEvent.click(endGame);
+    expect(screen.queryByRole('button', { name: 'End game' })).not.toBeInTheDocument();
+    expect(mockConfirmGameComplete.mutate).not.toHaveBeenCalled();
+  });
+
+  // Reconnecting flips the signal back on the moment the browser says so, while
+  // the round it held is still on its way and can still be refused. The totals
+  // are not safe to write down until it has settled.
+  it('will not end the game while the round it won on is still in flight', async () => {
+    // What a held round looks like as it resumes: on its way, not parked.
+    mockSubmitRound.isPending = true;
+    mockSubmitRound.isPaused = false;
+
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 12, team2_score: 0, net_points: 12, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 9, team2_score: 0, net_points: 9, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    expect(screen.getByText(/baggers wins game 1, 21–0/iu)).toBeInTheDocument();
+    expect(screen.getByText(/waiting for the last round to be filed/i)).toBeInTheDocument();
+
+    const endGame = screen.getByRole('button', { name: /end game 1/i });
+    expect(endGame).toBeDisabled();
+
+    await userEvent.click(endGame);
+    expect(mockConfirmGameComplete.mutate).not.toHaveBeenCalled();
+  });
 });
 
 describe('between games', () => {

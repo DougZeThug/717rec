@@ -51,10 +51,11 @@ vi.mock('@/components/timeslots/TimeslotAssignment', () => ({
   ),
 }));
 
-type ListProps = { onDelete: (id: string) => void };
+type ListProps = { onDelete: (id: string) => void; canDelete?: boolean };
 vi.mock('@/components/timeslots/TimeslotList', () => ({
-  default: ({ onDelete }: ListProps) => (
+  default: ({ onDelete, canDelete }: ListProps) => (
     <div>
+      <span>canDelete:{String(canDelete)}</span>
       <button onClick={() => onDelete('ts-regular')}>delete-regular</button>
       <button onClick={() => onDelete('ts-bye')}>delete-bye</button>
     </div>
@@ -75,24 +76,28 @@ const renderTab = (entry = '/admin/timeslots') =>
   );
 
 describe('TimeslotsTab', () => {
+  /** The chosen night's own rows, already loaded. */
+  const thisNight = {
+    timeslots: [
+      { id: 'ts-regular', timeslot: '6:00 PM' },
+      { id: 'ts-bye', timeslot: 'BYE' },
+    ],
+    isLoading: false,
+    isNightLoaded: true,
+    addTimeslot,
+    deleteTimeslot,
+    batchAssignTimeslots,
+    batchAssignDoubleHeaders,
+    assignByeWeek,
+    batchAssignByeWeeks,
+    removeByeWeek,
+    moveTeamBooking,
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseTeamsQuery.mockReturnValue({ data: [], isLoading: false });
-    mockUseTimeslots.mockReturnValue({
-      timeslots: [
-        { id: 'ts-regular', timeslot: '6:00 PM' },
-        { id: 'ts-bye', timeslot: 'BYE' },
-      ],
-      isLoading: false,
-      addTimeslot,
-      deleteTimeslot,
-      batchAssignTimeslots,
-      batchAssignDoubleHeaders,
-      assignByeWeek,
-      batchAssignByeWeeks,
-      removeByeWeek,
-      moveTeamBooking,
-    });
+    mockUseTimeslots.mockReturnValue(thisNight);
     moveTeamBooking.mockResolvedValue('moved');
   });
 
@@ -211,6 +216,49 @@ describe('TimeslotsTab', () => {
     await user.click(screen.getByText('delete-bye'));
     await waitFor(() => expect(removeByeWeek).toHaveBeenCalledWith('ts-bye'));
     expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Bye Week Removed' }));
+  });
+
+  // The rows on screen belong to the night before until the newly chosen one
+  // loads. Removing by their ids would clear a booking on a night nobody was
+  // looking at — and for a back-to-back row the delete goes by team and date,
+  // so it would take that team's whole pair on the other night with it.
+  it('removes nothing until the night on screen is its own', async () => {
+    mockUseTimeslots.mockReturnValue({ ...thisNight, isNightLoaded: false });
+    const user = userEvent.setup();
+    renderTab();
+
+    expect(screen.getByText('canDelete:false')).toBeInTheDocument();
+
+    await user.click(screen.getByText('delete-regular'));
+    await user.click(screen.getByText('delete-bye'));
+
+    expect(deleteTimeslot).not.toHaveBeenCalled();
+    expect(removeByeWeek).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  // A confirmation left open across a change of date still names a row from the
+  // night before. Once the new night loads, `isNightLoaded` is true again, so
+  // the id itself has to be refused.
+  it('refuses an id the night on screen does not hold', async () => {
+    mockUseTimeslots.mockReturnValue({
+      ...thisNight,
+      timeslots: [{ id: 'ts-other-night', timeslot: '7:00 PM' }],
+    });
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('delete-regular'));
+
+    expect(deleteTimeslot).not.toHaveBeenCalled();
+    expect(removeByeWeek).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it("lets the list offer removal once the rows are the chosen night's", () => {
+    renderTab();
+
+    expect(screen.getByText('canDelete:true')).toBeInTheDocument();
   });
 });
 

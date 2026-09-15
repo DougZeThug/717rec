@@ -73,6 +73,47 @@ describe('TimeslotList', () => {
     expect(within(rows[2]).getByText('Team Bravo')).toBeInTheDocument();
   });
 
+  // The joined name is the one the component prefers, and it is the path that
+  // matters: the public teams list filters out hidden and opted-out teams, so
+  // the prop alone would show those bookings as Unknown Team.
+  it('prefers the name the query joined, and says Unknown Team without a team', () => {
+    const timeslots: TeamTimeslot[] = [
+      makeTimeslot({
+        id: 'ts-joined',
+        timeslot: '5:00 PM',
+        team_id: 't1',
+        teams: { id: 't1', name: 'Hidden Heroes', divisionName: null },
+      }),
+      makeTimeslot({ id: 'ts-teamless', timeslot: '6:00 PM', team_id: '' }),
+    ];
+
+    renderWithRouter(<TimeslotList timeslots={timeslots} teams={teams} onDelete={vi.fn()} />);
+
+    // 't1' is Team Alpha in the teams prop, so the joined name winning is the
+    // whole point of the check.
+    expect(screen.getByText('Hidden Heroes')).toBeInTheDocument();
+    expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
+    expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+  });
+
+  // Two teams really can share a block — that is what a double header is — so
+  // the sort has to leave equal times alone rather than treat them as ordered.
+  it('puts the rows in time order and keeps a shared block together', () => {
+    const timeslots: TeamTimeslot[] = [
+      makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM', team_id: 't2' }),
+      makeTimeslot({ id: 'ts-early-a', timeslot: '5:00 PM', team_id: 't1' }),
+      makeTimeslot({ id: 'ts-early-b', timeslot: '5:00 PM', team_id: 't2' }),
+    ];
+
+    renderWithRouter(<TimeslotList timeslots={timeslots} teams={teams} onDelete={vi.fn()} />);
+
+    const times = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => within(row).getAllByRole('cell')[0].textContent);
+    expect(times).toEqual(['5:00 PM', '5:00 PM', '8:00 PM']);
+  });
+
   it('confirms deletion through the alert dialog and calls onDelete with the timeslot id', async () => {
     const onDelete = vi.fn();
     const timeslots: TeamTimeslot[] = [
@@ -95,6 +136,71 @@ describe('TimeslotList', () => {
     await waitFor(() => expect(onDelete).toHaveBeenCalledWith('ts-late'));
     // Dialog closes after a successful delete.
     await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  });
+
+  // The rows on screen belong to the night before until the newly chosen one
+  // loads, and removal goes by row id, so nothing may be removed until the list
+  // really is the chosen night's.
+  it("offers no removal while the rows are not the chosen night's", () => {
+    const timeslots: TeamTimeslot[] = [
+      makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM', team_id: 't2' }),
+      makeTimeslot({ id: 'ts-early', timeslot: '5:00 PM', team_id: 'ghost' }),
+    ];
+
+    renderWithRouter(
+      <TimeslotList timeslots={timeslots} teams={teams} onDelete={vi.fn()} canDelete={false} />
+    );
+
+    for (const button of screen.getAllByRole('button', { name: /Remove timeslot/i })) {
+      expect(button).toBeDisabled();
+    }
+  });
+
+  it('refuses a dialog left open across a change of night', async () => {
+    const onDelete = vi.fn();
+    const timeslots: TeamTimeslot[] = [makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM' })];
+
+    const { rerender } = renderWithRouter(
+      <TimeslotList timeslots={timeslots} teams={teams} onDelete={onDelete} />
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Remove timeslot/i })[0]);
+    const dialog = await screen.findByRole('alertdialog');
+
+    // The admin picks another date while the confirmation is still open.
+    rerender(
+      <MemoryRouter>
+        <TimeslotList timeslots={timeslots} teams={teams} onDelete={onDelete} canDelete={false} />
+      </MemoryRouter>
+    );
+
+    const remove = within(dialog).getByRole('button', { name: 'Remove' });
+    expect(remove).toBeDisabled();
+    fireEvent.click(remove);
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it('closes a dialog whose row is gone after the night changed', async () => {
+    const onDelete = vi.fn();
+    const nightA: TeamTimeslot[] = [makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM' })];
+    const nightB: TeamTimeslot[] = [makeTimeslot({ id: 'ts-other', timeslot: '6:00 PM' })];
+
+    const { rerender } = renderWithRouter(
+      <TimeslotList timeslots={nightA} teams={teams} onDelete={onDelete} />
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Remove timeslot/i })[0]);
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+
+    // The new night's rows arrive, so the row the dialog names is no longer here.
+    rerender(
+      <MemoryRouter>
+        <TimeslotList timeslots={nightB} teams={teams} onDelete={onDelete} />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(onDelete).not.toHaveBeenCalled();
   });
 
   it('closes the dialog without deleting when Cancel is clicked', async () => {

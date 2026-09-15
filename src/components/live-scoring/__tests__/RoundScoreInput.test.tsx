@@ -351,6 +351,64 @@ describe('RoundScoreInput', () => {
       expect(onSelectionDiscarded).not.toHaveBeenCalled();
     });
 
+    // The signal comes back, the held round is sent, and the league refuses it.
+    // The optimistic round rolls back, so the number the scorer is on comes
+    // back to the round they filed. Their grids were emptied when it queued, so
+    // this copy is the only record of the taps left anywhere.
+    it('keeps the copy when a held round is refused and the round comes back', async () => {
+      onSubmit.mockResolvedValue('queued');
+      const { rerender } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+      rerender(inputElement({ roundNumber: 3, roundKey: 'game-1:3' }));
+
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+      expect(loadRoundDraft('game-1', 3)?.team2.score).toBe(0);
+      // Nothing was taken away from them, so nothing is announced.
+      expect(onSelectionDiscarded).not.toHaveBeenCalled();
+    });
+
+    // Same start, but the held round was refused because another scorer had
+    // already filed round 3. The round number comes back and then moves on
+    // again, and that second move is somebody else's — so the copy goes.
+    it('drops the copy once the round moves on again after coming back', async () => {
+      onSubmit.mockResolvedValue('queued');
+      const { rerender } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+      rerender(inputElement({ roundNumber: 3, roundKey: 'game-1:3' }));
+      // The refetch after the refusal puts the other scorer's round 3 in place.
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+      expect(loadRoundDraft('game-1', 3)).toBeNull();
+    });
+
+    // An undo moves the round number backwards as well, and that really is the
+    // round being taken away — so it must not be mistaken for a held save of
+    // this scorer's coming back.
+    it('still reports an undo that takes the round back, with scores tapped', async () => {
+      const { rerender } = renderInput({ roundNumber: 5, roundKey: 'game-1:5' });
+
+      await tapScore('Baggers', 9);
+      await waitFor(() => expect(loadRoundDraft('game-1', 5)).not.toBeNull());
+
+      // Somebody undoes round 4, so the round on screen goes back to 4.
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+      expect(onSelectionDiscarded).toHaveBeenCalled();
+      expect(loadRoundDraft('game-1', 5)).toBeNull();
+    });
+
     it('drops the copy when the round moves on under the scorer', async () => {
       onSubmit.mockRejectedValue(new Error('Failed to fetch'));
       const { rerender } = renderInput();

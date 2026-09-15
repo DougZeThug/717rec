@@ -163,6 +163,19 @@ removing every back-to-back row that team has on that date — so removing the
 6:00 PM half also removes 6:30 PM, and removing one quarter of a double header
 removes all four rows.
 
+**Removal waits for the night, like the move card.** Changing the date keeps the
+previous night's rows on screen while the new ones load, and a removal goes by
+row id. For that moment every trash button is greyed out, and a confirmation
+already open has its Remove button greyed out too. Otherwise one quick press
+would clear a booking on the night before — and for a back-to-back row it would
+take that team's whole pair on that night with it.
+
+**A confirmation does not outlive the row it names.** If the admin changes the
+date while one is open, it closes by itself as soon as the new night's rows
+arrive, rather than handing Remove back still pointing at the night before. A
+removal is refused outright if the row it names is not one the night on screen
+holds.
+
 A BYE row is removed on its own.
 
 On success a toast says "Timeslot Removed" or "Bye Week Removed". On failure a
@@ -352,7 +365,8 @@ sent.
   a match created for that night carries its own date and is untouched.
 - **The card is absent for a moment after the date changes.** The list keeps the
   previous night's rows while the new ones load, and the card will not plan
-  against them.
+  against them. Removal is held back for the same moment and for the same
+  reason.
 - **A bye assigned this way skips the past-date check**, like every other bye.
 
 ## Open questions and verification

@@ -136,6 +136,15 @@ the signal returns. The grids clear so the next round can be entered, and a line
 under the scoreboard reads **"Offline — 1 round waiting to sync."** No "Round N
 saved" appears, because it has not been.
 
+**If a held round is refused when it is finally sent**, the round drops out of
+the log and the round number comes back to it. The grids are empty — they were
+cleared when it was held — but **the taps are still on the phone**, so a reload
+hands them back for one more press. Nothing is announced: the round coming back
+is the scorer's own save settling, not somebody taking it from them. If it was
+refused because the other scorer had already filed that round, the round number
+moves on again as the scoreboard catches up, and the taps on the phone are let
+go of at that point — they are stale.
+
 One failure is treated specially. If the other scorer saved the same round number
 first, the message is not an error but a plain toast: **"Round already recorded —
 Another scorer saved this round first — refreshing the scoreboard."** The round

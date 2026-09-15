@@ -133,11 +133,23 @@ const TimeslotsTab = () => {
   };
 
   const handleTimeslotDelete = async (id: string) => {
-    try {
-      // Check if this is a bye week by looking at the timeslot data
-      const timeslotToDelete = timeslots.find((ts) => ts.id === id);
+    // Only ever applied to this night's own rows, for the same reason as the
+    // move plan below. While a newly chosen night loads, `timeslots` still
+    // holds the night before's rows, and removal goes by row id — so a press
+    // here would clear a booking on a night nobody was looking at. The list
+    // greys its own buttons out too; this is the guard that has to hold when a
+    // dialog was already open as the date changed.
+    if (!isNightLoaded) return;
 
-      if (timeslotToDelete?.timeslot === 'BYE') {
+    // An id this night's rows do not hold came from a list that has since been
+    // replaced — a confirmation left open across a change of date. Removal goes
+    // by id, and for a back-to-back row by team and date, so acting on it would
+    // clear a booking on the night before.
+    const timeslotToDelete = timeslots.find((ts) => ts.id === id);
+    if (!timeslotToDelete) return;
+
+    try {
+      if (timeslotToDelete.timeslot === 'BYE') {
         // Handle bye week deletion separately
         await removeByeWeek(id);
         toast({
@@ -270,7 +282,12 @@ const TimeslotsTab = () => {
               <p>Loading timeslots...</p>
             ) : (
               <div className="bg-card p-4 rounded-md border border-border">
-                <TimeslotList timeslots={timeslots} teams={teams} onDelete={handleTimeslotDelete} />
+                <TimeslotList
+                  timeslots={timeslots}
+                  teams={teams}
+                  onDelete={handleTimeslotDelete}
+                  canDelete={isNightLoaded}
+                />
               </div>
             )}
           </div>

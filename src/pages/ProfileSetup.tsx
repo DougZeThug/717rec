@@ -23,7 +23,13 @@ const ProfileSetup = () => {
   const { user, profile, refreshProfile, isLoading, authInitialized } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const nextPath = sanitizeReturnTo(searchParams.get('next') ?? undefined);
+  const rawNext = searchParams.get('next');
+  // `sanitizeReturnTo` falls back to '/', so on its own it cannot tell "nobody
+  // asked to go anywhere" from "they asked for the home page". Only a
+  // destination that was really asked for is sanitized; without one this is
+  // null, and the page stays put and shows the form — which is what the Edit
+  // Profile link in the user menu needs.
+  const nextPath = rawNext ? sanitizeReturnTo(rawNext) : null;
   const [retries, setRetries] = useState(0);
   const maxRetries = 3;
 

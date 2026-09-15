@@ -1,7 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react';
+import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockCreateGame = vi.fn();
 const mockSetGamePlayers = vi.fn();
@@ -27,7 +27,7 @@ import { useGameFlow } from '../useGameFlow';
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+    defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
   });
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
@@ -36,6 +36,11 @@ const createWrapper = () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  onlineManager.setOnline(true);
+});
+
+afterEach(() => {
+  onlineManager.setOnline(true);
 });
 
 describe('startGame', () => {
@@ -98,6 +103,31 @@ describe('confirmGameComplete', () => {
     });
 
     expect(mockCompleteGame).toHaveBeenCalledWith('game-1', 'team-2', { team1: 18, team2: 21 });
+  });
+
+  // A round save is deliberately parked when the signal is gone. This is not:
+  // it carries a snapshot of the totals, and a round held at the same moment can
+  // still be refused before a parked completion would replay — writing a
+  // finished game the recorded rounds do not agree with. It fails now instead.
+  it('fails with no signal rather than waiting to be sent', async () => {
+    onlineManager.setOnline(false);
+    mockCompleteGame.mockRejectedValue(new Error('Failed to fetch'));
+
+    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
+
+    act(() => {
+      result.current.confirmGameComplete.mutate({
+        gameId: 'game-1',
+        winnerTeamId: 'team-2',
+        finalTotals: { team1: 18, team2: 21 },
+      });
+    });
+
+    await waitFor(() => expect(result.current.confirmGameComplete.isError).toBe(true));
+    expect(result.current.confirmGameComplete.isPaused).toBe(false);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Could not complete game', variant: 'destructive' })
+    );
   });
 });
 

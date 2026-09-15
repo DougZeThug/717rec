@@ -42,7 +42,7 @@ vi.mock('@/components/transitions/PageTransition', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-const renderPage = () => {
+const renderPage = (entry = '/setup-profile') => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
@@ -52,7 +52,7 @@ const renderPage = () => {
 
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[entry]}>
         <ProfileSetup />
       </MemoryRouter>
     </QueryClientProvider>
@@ -156,6 +156,35 @@ describe('ProfileSetup', () => {
     expect(screen.getByRole('button', { name: 'Save Profile' })).toBeInTheDocument();
     // Real TeamMembershipSection
     expect(screen.getByText('Team Membership')).toBeInTheDocument();
+  });
+
+  // The user menu's Edit Profile link carries no destination. The page must not
+  // read that as "they asked for the home page" and forward them there, or the
+  // only way to change a username is gone for everybody who already has one.
+  describe('arriving with a profile that is already finished', () => {
+    beforeEach(() => {
+      vi.mocked(useAuth).mockReturnValue(authenticatedAuth() as never);
+    });
+
+    it('stays on the page when no destination was asked for', () => {
+      renderPage('/setup-profile');
+
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(screen.getByText('Set Up Your Profile')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Save Profile' })).toBeInTheDocument();
+    });
+
+    it('forwards to the destination that was asked for', () => {
+      renderPage('/setup-profile?next=%2Fhelp');
+
+      expect(mockNavigate).toHaveBeenCalledWith('/help', { replace: true });
+    });
+
+    it('sends a destination it will not trust to the home page instead', () => {
+      renderPage('/setup-profile?next=%2F%2Fevil.example');
+
+      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
+    });
   });
 
   describe('TeamMembershipSection states', () => {
