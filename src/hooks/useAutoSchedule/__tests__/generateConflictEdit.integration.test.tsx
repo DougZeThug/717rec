@@ -469,6 +469,39 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
       expect(result.current.hasUnsavedWork).toBe(false);
     });
 
+    // Leaving edit mode on save looked tidy and reopened the same hole from the
+    // other side. The preview renders generatedPairings, which editing never
+    // touches, and the tab only offers "Save Schedule to Database" while edit
+    // mode is off. So dropping out of edit mode would show the admin their
+    // pre-edit schedule and hand them a button that re-applies those stale
+    // pairings — writing the unedited night on top of the edited one just
+    // saved. Re-baselining generatedMatches is what settles the flags; staying
+    // in edit mode is what keeps that second path out of reach.
+    it('stays in edit mode after saving, so the stale preview cannot be saved over it', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+
+      const matchToEdit = result.current.editableMatches[1];
+      act(() => {
+        result.current.updateMatchTimeslot(matchToEdit.id, OTHER_BLOCK_TIME);
+      });
+      await waitFor(() => expect(result.current.hasUnsavedEdits).toBe(true));
+
+      await act(async () => {
+        await result.current.handleSaveSchedule();
+      });
+
+      expect(result.current.isEditMode).toBe(true);
+      await waitFor(() => expect(result.current.hasUnsavedEdits).toBe(false));
+
+      // And what was written is the edit, not the pairing it came from.
+      const [savedMatches] = mockSaveMatches.mock.calls[0];
+      expect(
+        (savedMatches as { id: string; timeslot: string }[]).find((m) => m.id === matchToEdit.id)
+          ?.timeslot
+      ).toBe(OTHER_BLOCK_TIME);
+    });
+
     it('reports again after a saved schedule is applied afresh', async () => {
       mockSaveMatches.mockResolvedValue(true);
       const result = await renderReadyToEdit();

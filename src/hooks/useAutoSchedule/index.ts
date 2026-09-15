@@ -220,9 +220,15 @@ export function useAutoSchedule() {
     // all survive the save, and a second press writes the night twice.
     // Baseline from `matchesToSave` rather than `editableMatches`: in edit mode
     // with nothing editable those two differ, and the saved set is the truth.
+    //
+    // Re-baselining is the whole fix; edit mode stays on deliberately. Save and
+    // Reset are gated on `isEditMode && hasUnsavedEdits`, so the closed diff
+    // already retires them. Dropping out of edit mode would instead render the
+    // preview, which reads `generatedPairings` — untouched by editing — and
+    // offers "Save Schedule to Database" against those stale pairings, writing
+    // the pre-edit night on top of the edited one just saved.
     if (saved && isEditMode) {
       setGeneratedMatches(structuredClone(matchesToSave));
-      setIsEditMode(false);
     }
 
     return saved;
