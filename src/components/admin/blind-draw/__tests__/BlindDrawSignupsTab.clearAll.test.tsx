@@ -51,7 +51,7 @@ vi.mock('@/hooks/useBlindDrawSignups', () => ({
 import BlindDrawSignupsTab from '../BlindDrawSignupsTab';
 
 /** Opens the prompt on one named night, or on every night. */
-const openThePrompt = async (chooseNight: string = 'Sep 4, 2026') => {
+const openThePrompt = async (chooseNight = 'Sep 4, 2026') => {
   const user = userEvent.setup();
   const { rerender } = render(<BlindDrawSignupsTab />);
 

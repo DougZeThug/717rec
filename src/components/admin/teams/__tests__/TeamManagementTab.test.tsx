@@ -175,12 +175,13 @@ describe('TeamManagementTab', () => {
   // with it, leaving Edit reachable on the same row mid-write.
   it('keeps the prompt up, showing "Changing...", until the write lands', async () => {
     let settleUpdate: (() => void) | undefined;
-    mockUpdateTeam.mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          settleUpdate = resolve;
-        })
-    );
+    let writeInFlight: Promise<void> | undefined;
+    mockUpdateTeam.mockImplementation(() => {
+      writeInFlight = new Promise<void>((resolve) => {
+        settleUpdate = resolve;
+      });
+      return writeInFlight;
+    });
 
     const user = userEvent.setup();
     render(<TeamManagementTab />);
@@ -195,8 +196,11 @@ describe('TeamManagementTab', () => {
     expect(await screen.findByText('Changing...')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
 
+    // Let the write land inside `act`, so the close it triggers is a render
+    // React has already processed by the time the assertion below looks.
     await act(async () => {
       settleUpdate?.();
+      await writeInFlight;
     });
 
     await waitFor(() =>
