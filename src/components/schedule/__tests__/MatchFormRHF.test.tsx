@@ -117,9 +117,7 @@ describe('MatchFormRHF (edit mode)', () => {
       iscompleted: false,
     };
 
-    render(
-      <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />
-    );
+    render(<MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: /update match/i }));
 

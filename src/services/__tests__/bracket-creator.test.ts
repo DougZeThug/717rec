@@ -211,8 +211,22 @@ describe('createBracket — seeding order', () => {
     // come from the stored column.
     installSupabase({
       fullTeamData: [
-        { team_id: 'alpha', name: 'Alpha', power_score: 50, win_percentage: 0.3, wins: 3, losses: 3 },
-        { team_id: 'bravo', name: 'Bravo', power_score: 50, win_percentage: 0.4, wins: 4, losses: 6 },
+        {
+          team_id: 'alpha',
+          name: 'Alpha',
+          power_score: 50,
+          win_percentage: 0.3,
+          wins: 3,
+          losses: 3,
+        },
+        {
+          team_id: 'bravo',
+          name: 'Bravo',
+          power_score: 50,
+          win_percentage: 0.4,
+          wins: 4,
+          losses: 6,
+        },
       ],
     });
     await createBracket({

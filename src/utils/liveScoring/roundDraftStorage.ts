@@ -63,8 +63,7 @@ const isPersistedRoundDraft = (v: unknown): v is PersistedRoundDraft => {
  * round while the last one is still held. With one slot per game the next
  * round's first tap wrote over the held round's only copy.
  */
-const keyFor = (gameId: string, roundNumber: number) =>
-  `${STORAGE_PREFIX}${gameId}:${roundNumber}`;
+const keyFor = (gameId: string, roundNumber: number) => `${STORAGE_PREFIX}${gameId}:${roundNumber}`;
 
 const toSelection = (side: PersistedRoundDraft['team1']): SideSelection => ({
   score: side.score,

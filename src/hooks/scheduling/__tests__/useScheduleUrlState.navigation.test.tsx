@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { format } from 'date-fns';
-import React, { useRef } from 'react';
+import React from 'react';
 import { MemoryRouter, useLocation, useNavigate } from 'react-router';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { useScheduleUrlState } from '../useScheduleUrlState';
 
@@ -19,9 +19,6 @@ const Probe = () => {
   const state = useScheduleUrlState(defaultDate);
   const location = useLocation();
   const navigate = useNavigate();
-  const renders = useRef(0);
-  renders.current += 1;
-
   return (
     <>
       <div data-testid="url">{location.pathname + location.search}</div>
@@ -29,11 +26,22 @@ const Probe = () => {
       <div data-testid="search">{state.searchTerm}</div>
       <div data-testid="division">{state.division}</div>
       <div data-testid="team">{state.team}</div>
-      <div data-testid="renders">{renders.current}</div>
       <button onClick={() => navigate('/schedule')}>nav schedule</button>
       <button onClick={() => navigate('/schedule?date=2026-09-17')}>nav other night</button>
       <button onClick={() => navigate('/schedule?division=advanced')}>nav division</button>
       <button onClick={() => navigate(-1)}>back</button>
+    </>
+  );
+};
+
+/** The same probe, but with the default night supplied by the test. */
+const CountingProbe = ({ defaultDate: supplied }: { defaultDate: () => Date }) => {
+  const state = useScheduleUrlState(supplied);
+  const navigate = useNavigate();
+  return (
+    <>
+      <div data-testid="date">{format(state.selectedDate, 'yyyy-MM-dd')}</div>
+      <button onClick={() => navigate('/schedule')}>nav schedule</button>
     </>
   );
 };
@@ -85,13 +93,19 @@ describe('useScheduleUrlState same-route navigation', () => {
     // `parseDayKey` and `toLocalMidnight` allocate a fresh Date each call, so a
     // reader comparing dates by identity would set state, write the address,
     // read it back and set state again for ever. This is the canary for that.
-    renderProbe('/schedule?date=2026-09-03&q=amigos');
-    const before = Number(screen.getByTestId('renders').textContent);
+    // The reader asks for the default night on every pass where the address
+    // names none, so counting those calls counts the passes.
+    const countedDefault = vi.fn(() => DEFAULT_DATE);
+    render(
+      <MemoryRouter initialEntries={['/schedule?date=2026-09-03&q=amigos']}>
+        <CountingProbe defaultDate={countedDefault} />
+      </MemoryRouter>
+    );
+    const before = countedDefault.mock.calls.length;
 
     fireEvent.click(screen.getByText('nav schedule'));
 
-    const after = Number(screen.getByTestId('renders').textContent);
-    expect(after - before).toBeLessThan(10);
+    expect(countedDefault.mock.calls.length - before).toBeLessThan(10);
   });
 });
 

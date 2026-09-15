@@ -1,11 +1,10 @@
 import React from 'react';
 
+import { LoadingState } from '@/components/ui/loading-state';
 import type { useGameFlow } from '@/hooks/live-scoring/useGameFlow';
 import type { LiveGameDerived } from '@/hooks/live-scoring/useLiveMatch';
 import type { useTeamPlayers } from '@/hooks/live-scoring/useTeamPlayers';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
-
-import { LoadingState } from '@/components/ui/loading-state';
 
 import { GameSetupPanel } from './GameSetupPanel';
 import { ReopenGameButton } from './ReopenGameButton';

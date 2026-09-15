@@ -135,15 +135,15 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
     const incomingDivision = parseDivision(searchParams.get('division'));
     const incomingTeam = searchParams.get('team') === 'mine' ? 'mine' : 'all';
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the address
+    // Syncing state from the address is what this effect is for. Each setter
+    // returns the current value unchanged when it already matches, so a pass
+    // that has nothing to apply schedules no render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDateState((current) =>
       current.getTime() === incomingDate.getTime() ? current : incomingDate
     );
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the address
     setSearchTerm((current) => (current === incomingSearch ? current : incomingSearch));
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the address
     setDivision((current) => (current === incomingDivision ? current : incomingDivision));
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the address
     setTeam((current) => (current === incomingTeam ? current : incomingTeam));
     // `defaultDate` is deliberately not a dependency: callers pass an inline
     // lambda, which would run this on every render of a hook that re-renders
