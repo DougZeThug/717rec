@@ -86,9 +86,44 @@ describe('MatchFormRHF (create mode)', () => {
         winnerId: undefined,
         loserId: undefined,
         timeSlot: '7:00 PM',
-        location: '',
       })
     );
     expect(typeof onSubmit.mock.calls[0][0].date).toBe('string');
+    // The form has no court control, so it says nothing about the location
+    // rather than sending an empty one. Sending '' is what used to wipe the
+    // court off every match that went through this form.
+    expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('location');
+  });
+});
+
+describe('MatchFormRHF (edit mode)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Auto Schedule and Batch Match Creation write "Court N" onto every match
+  // they make. This form has no court control, so an edit that only moves the
+  // date must not have an opinion about the court — it used to send '' and
+  // wipe it.
+  it('says nothing about the location, so an existing court survives a save', async () => {
+    const onSubmit = vi.fn();
+    const match = {
+      id: 'match-1',
+      team1Id: 'team-a',
+      team2Id: 'team-b',
+      date: new Date(2026, 7, 20, 19, 0).toISOString(),
+      location: 'Court 3',
+      timeSlot: '7:00 PM',
+      iscompleted: false,
+    };
+
+    render(
+      <MatchFormRHF match={match} teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /update match/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('location');
   });
 });
