@@ -209,6 +209,12 @@ keyed to the game and the round number, and comes back on the next visit. It is
 dropped once the round is recorded, and when the round moves on under the
 scorer. A copy older than twelve hours is not offered.
 
+A round filed with no signal keeps its copy until it reaches the league, and the
+round number moves on the moment it is held — so the scorer is tapping the next
+round while the last one is still waiting. Each round has its own copy, so those
+taps do not land on the held round's. If only one of several held rounds can be
+handed back after a reload, it is the round the scorer is put back on.
+
 **Optimistic updates and rollback.** Rounds are the app's clearest optimistic
 write: shown at once, rolled back on failure, with the failure explained. See
 [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).

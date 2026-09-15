@@ -400,8 +400,9 @@ describe('in-game state', () => {
       await userEvent.click(screen.getByRole('button', { name: /save round/i }));
 
       await waitFor(() => expect(mockSubmitRound.mutate).toHaveBeenCalled());
-      // Nothing has reached the league yet, so the copy stays.
-      expect(localStorage.getItem('liveRoundDraft:v1:game-1')).not.toBeNull();
+      // Nothing has reached the league yet, so the copy stays — under the
+      // round it was filed from, so the next round's taps cannot land on it.
+      expect(localStorage.getItem('liveRoundDraft:v2:game-1:2')).not.toBeNull();
     });
   });
 

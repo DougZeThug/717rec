@@ -82,7 +82,7 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
 
   /** Keeps the copy in step with the grids. Cleared only once a round lands. */
   const remember = (next1: SideSelection, next2: SideSelection) => {
-    if (next1.score === null && next2.score === null) clearRoundDraft(gameId);
+    if (next1.score === null && next2.score === null) clearRoundDraft(gameId, roundNumber);
     else saveRoundDraft({ gameId, roundNumber, team1: next1, team2: next2 });
   };
 
@@ -104,7 +104,11 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
   // A failed save keeps the tapped scores for a retry, but they belong to one
   // round. If that round is recorded elsewhere the heading moves on, and saving
   // them now would file them under the wrong round number.
-  const settledKey = useRef(roundKey);
+  // The round key, and the game and round it names, together. A held round's
+  // copy has to be cleared under the round it was *filed from*, not the one now
+  // on screen, and `gameId` travels with it because an admin reopening a game
+  // swaps it under a component that does not remount.
+  const settled = useRef({ key: roundKey, gameId, roundNumber });
   // Set while this scorer's own save is on its way, and cleared by the effect
   // below as soon as the round number settles again. The round moving because
   // *they* saved is not the round being taken away from them, so it must not be
@@ -124,8 +128,9 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     // The optimistic round bumps the round number the moment Save is pressed.
     // Ignore that; wait until the save settles and the number is real again.
     if (isSubmitting) return;
-    if (settledKey.current === roundKey) return;
-    settledKey.current = roundKey;
+    if (settled.current.key === roundKey) return;
+    const previous = settled.current;
+    settled.current = { key: roundKey, gameId, roundNumber };
     // The round this scorer held coming back to them: `selfSaved` cannot see it
     // on its own, because queuing the round already spent it.
     const heldSaveCameBack = heldSaveKey.current === roundKey;
@@ -148,9 +153,9 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     // same holds when a refused held save brings the number back — the grids
     // were emptied when it was queued, so the copy is all that is left of it.
     // A round that then moves on *again* is another scorer's, and clears it.
-    if (!ownSave) clearRoundDraft(gameId);
+    if (!ownSave) clearRoundDraft(previous.gameId, previous.roundNumber);
     if (hadSelection && !ownSave) onSelectionDiscarded?.();
-  }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId]);
+  }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId, roundNumber]);
 
   const ready = isResolved(team1) && isResolved(team2);
   const net =
@@ -183,7 +188,9 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
       // The round it was filed from is remembered too, because a refusal will
       // bring the number back here and that is not the round being taken away.
       if (outcome === 'queued') heldSaveKey.current = roundKey;
-      else clearRoundDraft(gameId);
+      // `roundNumber` as this render saw it, which is the round that was filed
+      // rather than whatever is on screen by the time the save settles.
+      else clearRoundDraft(gameId, roundNumber);
     } catch {
       // Keep the tapped scores so the scorer can press Save Round again
       // instead of re-entering the round from memory. The failure toast is
