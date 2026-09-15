@@ -23,7 +23,15 @@ import {
 } from '@/components/ui/table';
 import { Team, TeamTimeslot } from '@/types';
 
-/** The table's column headings, lifted out to keep the table's tree shallow. */
+/*
+ * The list is written as small named pieces rather than one tree. A table and a
+ * confirmation dialog nest deeply on their own — heading inside header inside
+ * content inside dialog, before any text — and read as one block they are hard
+ * to follow and trip the JSX nesting limit. Each piece below owns one part of
+ * the screen and nothing else.
+ */
+
+/** The table's column headings. */
 const TimeslotTableHead: React.FC = () => (
   <TableHeader>
     <TableRow>
@@ -52,6 +60,122 @@ const TimeslotRow: React.FC<TimeslotRowProps> = ({ timeslot, teamName, canDelete
   </TableRow>
 );
 
+interface TimeslotTableProps {
+  timeslots: TeamTimeslot[];
+  teamNameOf: (timeslot: TeamTimeslot) => string;
+  canDelete: boolean;
+  onRemove: (id: string) => void;
+}
+
+/** Every booked timeslot for the night on screen, in time order. */
+const TimeslotTable: React.FC<TimeslotTableProps> = ({
+  timeslots,
+  teamNameOf,
+  canDelete,
+  onRemove,
+}) => (
+  <div className="overflow-x-auto">
+    <Table>
+      <TimeslotTableHead />
+      <TableBody>
+        {timeslots.map((timeslot) => (
+          <TimeslotRow
+            key={timeslot.id}
+            timeslot={timeslot}
+            teamName={teamNameOf(timeslot)}
+            canDelete={canDelete}
+            onRemove={() => onRemove(timeslot.id)}
+          />
+        ))}
+      </TableBody>
+    </Table>
+  </div>
+);
+
+interface RemoveTimeslotHeadingProps {
+  timeslot: TeamTimeslot | null;
+  teamName: string | null;
+}
+
+/** Names the booking about to go, so the admin can see they have the right one. */
+const RemoveTimeslotHeading: React.FC<RemoveTimeslotHeadingProps> = ({ timeslot, teamName }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>Remove Timeslot</AlertDialogTitle>
+    <AlertDialogDescription>
+      Are you sure you want to remove the timeslot
+      {timeslot ? (
+        <>
+          {' '}
+          for <strong>{teamName}</strong> at <strong>{timeslot.timeslot}</strong>
+        </>
+      ) : (
+        ''
+      )}
+      ? This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
+interface RemoveTimeslotActionsProps {
+  isDeleting: boolean;
+  canDelete: boolean;
+  onConfirm: () => void;
+}
+
+/** Cancel and Remove. Remove is held shut while the rows are another night's. */
+const RemoveTimeslotActions: React.FC<RemoveTimeslotActionsProps> = ({
+  isDeleting,
+  canDelete,
+  onConfirm,
+}) => (
+  <AlertDialogFooter>
+    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+    <AlertDialogAction
+      onClick={(e) => {
+        e.preventDefault();
+        onConfirm();
+      }}
+      disabled={isDeleting || !canDelete}
+      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+    >
+      {isDeleting ? (
+        <>
+          <Loader2 className="size-4 mr-2 animate-spin" />
+          Removing...
+        </>
+      ) : (
+        'Remove'
+      )}
+    </AlertDialogAction>
+  </AlertDialogFooter>
+);
+
+interface RemoveTimeslotDialogProps {
+  timeslot: TeamTimeslot | null;
+  teamName: string | null;
+  isDeleting: boolean;
+  canDelete: boolean;
+  onConfirm: () => void;
+  onDismiss: () => void;
+}
+
+/** Open only while it has a row to name — see `timeslotToDelete` below. */
+const RemoveTimeslotDialog: React.FC<RemoveTimeslotDialogProps> = ({
+  timeslot,
+  teamName,
+  isDeleting,
+  canDelete,
+  onConfirm,
+  onDismiss,
+}) => (
+  <AlertDialog open={timeslot !== null} onOpenChange={(open) => !open && onDismiss()}>
+    <AlertDialogContent>
+      <RemoveTimeslotHeading timeslot={timeslot} teamName={teamName} />
+      <RemoveTimeslotActions isDeleting={isDeleting} canDelete={canDelete} onConfirm={onConfirm} />
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 interface TimeslotListProps {
   timeslots: TeamTimeslot[];
   teams: Team[];
@@ -75,7 +199,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Helper function to get team name by ID
-  const getTeamName = (timeslot: TeamTimeslot): string => {
+  const teamNameOf = (timeslot: TeamTimeslot): string => {
     // Prefer the joined team name from the timeslot query — it always
     // resolves, even when the public teams list filters out hidden/opted-out
     // teams. Fall back to the teams prop, then to a friendly placeholder.
@@ -125,66 +249,20 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <Table>
-          <TimeslotTableHead />
-          <TableBody>
-            {sortedTimeslots.map((timeslot) => (
-              <TimeslotRow
-                key={timeslot.id}
-                timeslot={timeslot}
-                teamName={getTeamName(timeslot)}
-                canDelete={canDelete}
-                onRemove={() => setDeletingTimeslotId(timeslot.id)}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <AlertDialog
-        open={timeslotToDelete !== null}
-        onOpenChange={(open) => !open && setDeletingTimeslotId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Timeslot</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove the timeslot
-              {timeslotToDelete ? (
-                <>
-                  {' '}
-                  for <strong>{getTeamName(timeslotToDelete)}</strong> at{' '}
-                  <strong>{timeslotToDelete.timeslot}</strong>
-                </>
-              ) : (
-                ''
-              )}
-              ? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleConfirmDelete();
-              }}
-              disabled={isDeleting || !canDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  Removing...
-                </>
-              ) : (
-                'Remove'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <TimeslotTable
+        timeslots={sortedTimeslots}
+        teamNameOf={teamNameOf}
+        canDelete={canDelete}
+        onRemove={setDeletingTimeslotId}
+      />
+      <RemoveTimeslotDialog
+        timeslot={timeslotToDelete}
+        teamName={timeslotToDelete ? teamNameOf(timeslotToDelete) : null}
+        isDeleting={isDeleting}
+        canDelete={canDelete}
+        onConfirm={handleConfirmDelete}
+        onDismiss={() => setDeletingTimeslotId(null)}
+      />
     </>
   );
 };
