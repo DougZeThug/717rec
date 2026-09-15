@@ -13,7 +13,7 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
-import { isAdminConsolePath } from '@/utils/adminTabs';
+import { isAdminConsolePath } from '@/utils/adminPath';
 import { confirmDiscardUnsavedWork, confirmLeavingClick } from '@/utils/unsavedChanges';
 
 interface UserMenuProps {

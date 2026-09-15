@@ -16,7 +16,7 @@ import { NavLink, useLocation } from 'react-router';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
-import { isAdminConsolePath } from '@/utils/adminTabs';
+import { isAdminConsolePath } from '@/utils/adminPath';
 import { prefetchRoute } from '@/utils/routePrefetch';
 import { confirmLeavingClick } from '@/utils/unsavedChanges';
 

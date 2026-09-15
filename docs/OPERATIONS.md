@@ -163,12 +163,28 @@ Branch protection matches checks by their **exact job name**. These are the curr
 |---|---|---|
 | `Quality and tests` | lint, typecheck, the full unit/integration test suite, knip dead-code scan | **Yes** |
 | `DeepSource coverage` | full test run with coverage **thresholds** (fails if coverage drops below the floors in `vitest.config.ts`), then uploads to DeepSource | **Yes** |
-| `Build and bundle size` | production build + bundle size budgets | **Yes** |
+| `Build and bundle size` | production build + bundle size budgets (`.size-limit.json`) | **Yes** |
 | `Browser smoke, a11y, and Lighthouse` | Playwright smoke tests, axe accessibility scan, Lighthouse | **Yes** |
 | `React Doctor` | third-party advisory scan | No — advisory |
 | `E2E (real Supabase)` | real-backend e2e — **not currently defined in `ci.yml`**; the spec (`e2e/real-backend.spec.ts`) runs locally only. Re-adding the job is tracked in the PR-03 brief | No — n/a until PR-03 re-adds the job |
 | `supabase db lint`, `Apply migrations + SQL smoke tests`, `Edge function Deno tests` | database CI — runs only when `supabase/**` changes | No — must stay advisory: the workflow is path-filtered, so requiring any of these would freeze every non-database PR on "Expected — waiting for status" |
 | `npm audit`, `Gitleaks`, `No committed local env files` | security workflow — runs only when dependency/security-related files change | No — must stay advisory (also path-filtered, same freeze risk) |
+
+**On the main-entry budget.** `.size-limit.json` caps the eagerly-loaded entry
+chunk. It sat at 150 kB while the branch built at 149.99 kB — ten bytes of
+headroom, so the gate rejected any new eager code regardless of merit. It is
+155 kB now, chosen to leave room rather than to fit one change. Raising it is
+the last resort, not the first: when this check goes red, find what newly
+entered the entry before touching the number. The quickest way is to diff the
+entry chunk's own sourcemap between the two builds —
+
+```bash
+npm run build
+python3 -c "import json,glob;print('\n'.join(sorted(json.load(open(sorted(glob.glob('dist/assets/index-*.js.map'), key=lambda f: -len(open(f).read()))[0]))['sources'])))"
+```
+
+— which is how a navbar import was caught dragging the admin section table, and
+its fourteen icons, into every visitor's download.
 
 **Naming note:** the review brief says to require a check called "Quality, tests, and coverage". That job has since been split in two: the tests live in `Quality and tests` and the coverage thresholds moved to `DeepSource coverage`. Require **both** — together they are the old check.
 

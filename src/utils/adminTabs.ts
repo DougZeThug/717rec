@@ -44,21 +44,6 @@ export const rememberAdminSection = (sectionId: string): void => {
 };
 
 /**
- * Is this address inside the admin console?
- *
- * Links into a bare `/admin` need to know. From outside the console it opens
- * the remembered section, which is what they are for. From inside, the
- * remembered section is the one already on screen, so the redirect lands back
- * where it started — but on the way the dashboard returns `<Navigate>` in place
- * of its own subtree, which tears the section down and builds a fresh one.
- * Sections keep their unsaved work in component state, so the round trip throws
- * it away, and no guard runs because nothing was ever asked. A link with
- * nowhere to go should go nowhere instead.
- */
-export const isAdminConsolePath = (pathname: string): boolean =>
-  pathname === '/admin' || pathname.startsWith('/admin/');
-
-/**
  * The section a bare `/admin` should open. Falls back to the default for a
  * first visit, for a value left behind by an older build, and for a browser
  * that refuses session storage.

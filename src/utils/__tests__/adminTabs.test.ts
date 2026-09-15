@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ADMIN_TAB_STORAGE_KEY,
-  isAdminConsolePath,
   readRememberedAdminSection,
   rememberAdminSection,
   subscribeToAdminTabRequests,
@@ -107,19 +106,5 @@ describe('adminTabs', () => {
 
     expect(onRequest).not.toHaveBeenCalled();
     unsubscribe();
-  });
-  describe('isAdminConsolePath', () => {
-    it('knows the console, section or not', () => {
-      expect(isAdminConsolePath('/admin')).toBe(true);
-      expect(isAdminConsolePath('/admin/scores')).toBe(true);
-      expect(isAdminConsolePath('/admin/blind-draw')).toBe(true);
-    });
-
-    it('knows everything else, including addresses that merely start the same', () => {
-      expect(isAdminConsolePath('/')).toBe(false);
-      expect(isAdminConsolePath('/teams')).toBe(false);
-      // Not a route today, but the prefix test must not claim it.
-      expect(isAdminConsolePath('/administrators')).toBe(false);
-    });
   });
 });
