@@ -192,16 +192,27 @@ Quick Access, or from a League Night quick action — puts up "You have unsaved
 changes. Leave and lose them?" first. Saying no keeps the section and the work.
 Leaving the site, reloading, or closing the tab raises the browser's own warning.
 
-**Three ways out are not covered, and cannot be cheaply:**
+**The site chrome asks too.** The console shares its header, its footer and —
+on a phone — its bottom tab bar with every public page, so all of those sit
+around an unsaved section. Every one of them that navigates now asks first: the
+nine header links, the logo, all four user-menu items, **Logout**, the four
+phone tabs, and every jump in the search palette. They used to take the work
+with them without a word, which made the phone tab bar the easiest way to lose
+a night's scores.
+
+**Two ways out are still not covered, and cannot be cheaply:**
 
 - **Browser Back and Forward.** The app is told the address has already changed,
   so there is nothing left to stop. Back has always lost this work; it is only
   more reachable now that sections have addresses.
 - **A typed or pasted address**, for the same reason.
-- **Links outside the console** — the site header, the logo, the user menu.
 
-Saying no keeps the section on screen, and on a phone the menu stays up rather
-than closing as though something had happened.
+The footer's "Contact us" needs no guard of its own: it is a plain link that
+loads a fresh page, so the browser raises its own warning.
+
+Saying no keeps the section on screen, and nothing that was only a menu closes
+either — the phone menu stays up, the user menu stays up, and the search palette
+stays open, rather than shutting as though something had happened.
 
 **The two links back into the console are the exception, and they no longer lose
 anything.** "Admin" in the site header and "Admin Panel" in the user menu both

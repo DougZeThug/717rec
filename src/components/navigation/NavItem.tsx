@@ -13,7 +13,8 @@ export interface NavItemProps {
   icon?: React.ReactNode;
   isActive?: boolean;
   className?: string;
-  onClick?: () => void;
+  /** Takes the event so a caller can cancel the navigation, not only react to it. */
+  onClick?: (event: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
 export const NavItem: React.FC<NavItemProps> = React.memo(

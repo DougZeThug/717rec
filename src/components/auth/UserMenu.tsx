@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { isAdminConsolePath } from '@/utils/adminTabs';
+import { confirmDiscardUnsavedWork, confirmLeavingClick } from '@/utils/unsavedChanges';
 
 interface UserMenuProps {
   className?: string;
@@ -38,7 +39,11 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
   // `isAdminConsolePath`.
   const handleAdminLinkClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>) => {
-      if (isAdminConsolePath(location.pathname)) event.preventDefault();
+      if (isAdminConsolePath(location.pathname)) {
+        event.preventDefault();
+        return;
+      }
+      confirmLeavingClick(event);
     },
     [location.pathname]
   );
@@ -50,7 +55,10 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
     });
   }, [navigate, location.pathname, location.search, location.hash]);
 
+  // Signing out jumps to the home page in-app, so it loses unsaved admin work
+  // exactly like any link here does — the browser never gets a chance to ask.
   const handleSignOut = useCallback(() => {
+    if (!confirmDiscardUnsavedWork()) return;
     signOut();
   }, [signOut]);
 
@@ -109,21 +117,33 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
         {/* Always /my-team: it is the only page with Leave Team and the team
             edit control, so a member must be able to reach it. */}
         <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-          <Link to="/my-team" className="cursor-pointer flex items-center">
+          <Link
+            to="/my-team"
+            onClick={confirmLeavingClick}
+            className="cursor-pointer flex items-center"
+          >
             <User className="size-4 mr-2" />
             {membership?.team ? 'My Team' : 'Join a Team'}
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-          <Link to="/message-board" className="cursor-pointer flex items-center">
+          <Link
+            to="/message-board"
+            onClick={confirmLeavingClick}
+            className="cursor-pointer flex items-center"
+          >
             <Settings className="size-4 mr-2" />
             Message Board
           </Link>
         </DropdownMenuItem>
 
         <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-          <Link to="/setup-profile" className="cursor-pointer flex items-center">
+          <Link
+            to="/setup-profile"
+            onClick={confirmLeavingClick}
+            className="cursor-pointer flex items-center"
+          >
             <Settings className="size-4 mr-2" />
             Edit Profile
           </Link>

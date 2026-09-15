@@ -2,11 +2,13 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseAdminAccess = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAccess() }));
 vi.mock('@/utils/routePrefetch', () => ({ prefetchRoute: vi.fn() }));
+
+import { clearUnsavedWork, registerUnsavedWork } from '@/utils/unsavedChanges';
 
 import NavLinks from '../NavLinks';
 
@@ -82,5 +84,74 @@ describe('NavLinks', () => {
       expect(onLinkClick).toHaveBeenCalled();
       expect(screen.getByTestId('location')).toHaveTextContent('/teams');
     });
+  });
+
+  /**
+   * The admin console shares this header with every public page, so these links
+   * are on screen while a section holds unsaved work — and were the quickest
+   * way to lose it. Only the console's own section switches asked first.
+   */
+  describe('with unsaved work on screen', () => {
+    let confirmSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      clearUnsavedWork();
+      confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+      registerUnsavedWork({ isDirty: () => true, message: 'Unsaved scores' });
+    });
+
+    afterEach(() => {
+      confirmSpy.mockRestore();
+      clearUnsavedWork();
+    });
+
+    it('asks before a link throws it away', async () => {
+      renderLinks('/admin/scores');
+
+      await userEvent.click(screen.getByRole('link', { name: /teams/i }));
+
+      expect(confirmSpy).toHaveBeenCalledWith('Unsaved scores');
+      expect(screen.getByTestId('location')).toHaveTextContent('/teams');
+    });
+
+    it('stays put when the admin says no', async () => {
+      confirmSpy.mockReturnValue(false);
+      renderLinks('/admin/scores');
+
+      await userEvent.click(screen.getByRole('link', { name: /teams/i }));
+
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
+    });
+
+    it('leaves the phone menu open when the admin says no', async () => {
+      confirmSpy.mockReturnValue(false);
+      const onLinkClick = vi.fn();
+      renderLinks('/admin/scores', onLinkClick);
+
+      await userEvent.click(screen.getByRole('link', { name: /teams/i }));
+
+      expect(onLinkClick).not.toHaveBeenCalled();
+    });
+
+    it('does not ask twice for Admin, which goes nowhere anyway', async () => {
+      renderLinks('/admin/scores');
+
+      await userEvent.click(screen.getByRole('link', { name: /admin/i }));
+
+      expect(confirmSpy).not.toHaveBeenCalled();
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
+    });
+  });
+
+  it('never asks while there is nothing to lose', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    clearUnsavedWork();
+    renderLinks('/admin/scores');
+
+    await userEvent.click(screen.getByRole('link', { name: /teams/i }));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(screen.getByTestId('location')).toHaveTextContent('/teams');
+    confirmSpy.mockRestore();
   });
 });

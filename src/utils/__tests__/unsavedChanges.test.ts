@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   clearUnsavedWork,
   confirmDiscardUnsavedWork,
+  confirmLeavingClick,
   findUnsavedWork,
   registerUnsavedWork,
 } from '../unsavedChanges';
@@ -67,5 +68,33 @@ describe('unsaved work registry', () => {
 
     unregister();
     expect(findUnsavedWork()).toBeNull();
+  });
+
+  describe('confirmLeavingClick', () => {
+    it('lets a click through when there is nothing to lose', () => {
+      const event = { preventDefault: vi.fn() };
+
+      expect(confirmLeavingClick(event)).toBe(true);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(confirmSpy).not.toHaveBeenCalled();
+    });
+
+    it('lets a click through once the admin says to discard the work', () => {
+      registerUnsavedWork({ isDirty: () => true, message: 'Unsaved scores' });
+      const event = { preventDefault: vi.fn() };
+
+      expect(confirmLeavingClick(event)).toBe(true);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      expect(confirmSpy).toHaveBeenCalledWith('Unsaved scores');
+    });
+
+    it('cancels the click when the admin chooses to stay', () => {
+      confirmSpy.mockReturnValue(false);
+      registerUnsavedWork({ isDirty: () => true, message: 'Unsaved scores' });
+      const event = { preventDefault: vi.fn() };
+
+      expect(confirmLeavingClick(event)).toBe(false);
+      expect(event.preventDefault).toHaveBeenCalled();
+    });
   });
 });

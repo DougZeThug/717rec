@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
 import { isAdminConsolePath } from '@/utils/adminTabs';
 import { prefetchRoute } from '@/utils/routePrefetch';
+import { confirmLeavingClick } from '@/utils/unsavedChanges';
 
 interface NavLinksProps {
   isMobile?: boolean;
@@ -45,6 +46,10 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
         event.preventDefault();
         return;
       }
+      // Every other link really does leave. The console shares this header with
+      // the public pages, so these were the quickest way to lose unsaved work
+      // without being asked. Returning early keeps the phone menu open too.
+      if (!confirmLeavingClick(event)) return;
       onLinkClick?.();
     },
     [onLinkClick, pathname]

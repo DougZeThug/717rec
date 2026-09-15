@@ -52,6 +52,24 @@ export const confirmDiscardUnsavedWork = (): boolean => {
   return window.confirm(unsaved.message);
 };
 
+/**
+ * Click handler for anything in the site chrome that navigates away — the
+ * header links, the logo, the user menu, the phone tab bar.
+ *
+ * The admin console shares its shell with every public page, so all of those
+ * are on screen while a section holds unsaved work, and every one of them used
+ * to throw it away without asking. Only the console's own section switches went
+ * through a guard.
+ *
+ * Returns false when the admin chose to stay, so a caller can skip its own side
+ * effects too — closing a menu that is not going anywhere, for one.
+ */
+export const confirmLeavingClick = (event: { preventDefault: () => void }): boolean => {
+  if (confirmDiscardUnsavedWork()) return true;
+  event.preventDefault();
+  return false;
+};
+
 /** Test helper: the registry is module state and outlives a single render. */
 export const clearUnsavedWork = (): void => {
   sources.clear();
