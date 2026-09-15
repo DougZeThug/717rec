@@ -81,15 +81,21 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
     return 0;
   });
 
+  // The row the confirmation names, looked up in the rows on screen *now*. A
+  // confirmation can outlive the rows it was opened against — the admin picks
+  // another date while it is open — and `canDelete` only greys Remove out while
+  // the new night loads, so it would be handed back the moment those rows
+  // arrive, still naming a row from the night before. Reading the row rather
+  // than the id means the dialog simply is not open once its row is gone.
   const timeslotToDelete = deletingTimeslotId
-    ? timeslots.find((t) => t.id === deletingTimeslotId)
+    ? (timeslots.find((t) => t.id === deletingTimeslotId) ?? null)
     : null;
 
   const handleConfirmDelete = async () => {
-    if (!deletingTimeslotId) return;
+    if (!timeslotToDelete) return;
     setIsDeleting(true);
     try {
-      await onDelete(deletingTimeslotId);
+      await onDelete(timeslotToDelete.id);
       setDeletingTimeslotId(null);
     } finally {
       setIsDeleting(false);
@@ -132,7 +138,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
       </div>
 
       <AlertDialog
-        open={Boolean(deletingTimeslotId)}
+        open={timeslotToDelete !== null}
         onOpenChange={(open) => !open && setDeletingTimeslotId(null)}
       >
         <AlertDialogContent>

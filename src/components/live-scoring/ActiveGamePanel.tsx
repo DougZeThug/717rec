@@ -103,6 +103,22 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
       description: `Round ${game.nextRoundNumber} is now next, so your tapped scores were cleared.`,
     });
 
+  /**
+   * Why the game cannot be ended yet, or null when it can.
+   *
+   * The totals the banner shows fold in every optimistic round, so they are
+   * only safe to write down once nothing can take one back. A signal is not
+   * enough on its own: reconnecting flips `isOnline` the moment the browser
+   * says so, while the round it held is still on its way and can still be
+   * refused. Ending the game in that gap would file a score — and a winner —
+   * that the recorded rounds go on to disagree with.
+   */
+  const endGameBlockedReason = !isOnline
+    ? 'Waiting for a signal — the game cannot be ended until it comes back.'
+    : submitRound.isPending || pausedRounds > 0
+      ? 'Waiting for the last round to be filed — the game cannot be ended until it is.'
+      : null;
+
   const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
   const gameWon = game.pendingWinnerSide !== null;
   const pendingWinnerName = game.pendingWinnerSide === 1 ? team1Name : team2Name;
@@ -178,14 +194,13 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
           winnerName={pendingWinnerName}
           totals={game.totals}
           canScore={canScore}
-          isOnline={isOnline}
+          blockedReason={endGameBlockedReason}
           isConfirming={confirmGameComplete.isPending}
           onConfirm={() => {
-            // The totals sent here include any round still held for a missing
-            // signal. Ending the game with no connection would file them for a
-            // round that may yet be refused, so the banner stays and the scorer
-            // ends the game once the signal is back.
-            if (!isOnline) return;
+            // Belt and braces: the button is already disabled for this, but a
+            // completion written against totals a round can still take back is
+            // not recoverable, so it is refused here too.
+            if (endGameBlockedReason) return;
             confirmGameComplete.mutate({
               gameId: game.game.id,
               winnerTeamId: game.pendingWinnerSide === 1 ? (team1Id ?? '') : (team2Id ?? ''),

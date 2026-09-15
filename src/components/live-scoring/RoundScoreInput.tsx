@@ -104,28 +104,36 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
   // A failed save keeps the tapped scores for a retry, but they belong to one
   // round. If that round is recorded elsewhere the heading moves on, and saving
   // them now would file them under the wrong round number.
-  const settled = useRef({ key: roundKey, gameId, roundNumber });
+  const settledKey = useRef(roundKey);
   // Set while this scorer's own save is on its way, and cleared by the effect
   // below as soon as the round number settles again. The round moving because
   // *they* saved is not the round being taken away from them, so it must not be
   // announced — the taps on screen are the ones they just filed.
   const selfSaved = useRef(false);
+  /**
+   * The round key a *held* save was filed from, for as long as it is held.
+   *
+   * A save with no signal advances the round number the moment it is queued and
+   * brings it back if the league later refuses it, so the number returning to
+   * this key is that save settling rather than the round being taken away. It
+   * is the held save that is tracked, not the direction the number moved: an
+   * undo moves it backwards too, and that really is the round being taken away.
+   */
+  const heldSaveKey = useRef<string | null>(null);
   useEffect(() => {
     // The optimistic round bumps the round number the moment Save is pressed.
     // Ignore that; wait until the save settles and the number is real again.
     if (isSubmitting) return;
-    if (settled.current.key === roundKey) return;
-    const previous = settled.current;
-    settled.current = { key: roundKey, gameId, roundNumber };
-    // Only this scorer's own device moves the round number *backwards*: a round
-    // held for a missing signal advances the number the moment it is queued, and
-    // brings it back if the league later refuses it. Another scorer can only
-    // ever push it forwards. So a round coming back is their own save settling,
-    // not the round being taken away — and `selfSaved` cannot see that on its
-    // own, because the advance already spent it.
-    const cameBack = gameId === previous.gameId && roundNumber < previous.roundNumber;
-    const ownSave = selfSaved.current || cameBack;
+    if (settledKey.current === roundKey) return;
+    settledKey.current = roundKey;
+    // The round this scorer held coming back to them: `selfSaved` cannot see it
+    // on its own, because queuing the round already spent it.
+    const heldSaveCameBack = heldSaveKey.current === roundKey;
+    const ownSave = selfSaved.current || heldSaveCameBack;
     selfSaved.current = false;
+    // Once it is back the held save is spent. From here the round moving is
+    // somebody else recording it, and the copy kept for a reload is stale.
+    if (heldSaveCameBack) heldSaveKey.current = null;
     // Our own successful save has already emptied the grids, so there is
     // nothing to discard and nothing to announce. `isSubmitting` alone does not
     // prove that: the mutation can report itself finished a render before the
@@ -142,7 +150,7 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     // A round that then moves on *again* is another scorer's, and clears it.
     if (!ownSave) clearRoundDraft(gameId);
     if (hadSelection && !ownSave) onSelectionDiscarded?.();
-  }, [roundKey, roundNumber, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId]);
+  }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId]);
 
   const ready = isResolved(team1) && isResolved(team2);
   const net =
@@ -160,6 +168,7 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
   const handleSubmit = async () => {
     if (!ready || team1.score === null || team2.score === null) return;
     selfSaved.current = true;
+    heldSaveKey.current = null;
     try {
       const outcome = await onSubmit({
         team1Score: team1.score,
@@ -171,7 +180,10 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
       setTeam2(EMPTY);
       // A queued round has not reached the league, so its copy stays: a reload
       // before the signal returns would otherwise lose it with nothing said.
-      if (outcome !== 'queued') clearRoundDraft(gameId);
+      // The round it was filed from is remembered too, because a refusal will
+      // bring the number back here and that is not the round being taken away.
+      if (outcome === 'queued') heldSaveKey.current = roundKey;
+      else clearRoundDraft(gameId);
     } catch {
       // Keep the tapped scores so the scorer can press Save Round again
       // instead of re-entering the round from memory. The failure toast is

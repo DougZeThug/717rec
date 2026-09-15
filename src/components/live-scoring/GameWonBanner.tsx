@@ -19,8 +19,8 @@ interface GameWonBannerProps {
   winnerName: string;
   totals: { team1: number; team2: number };
   canScore: boolean;
-  /** False holds the game open: the totals shown may include a held round. */
-  isOnline: boolean;
+  /** Why the game cannot be ended yet, or null when it can. */
+  blockedReason: string | null;
   isConfirming: boolean;
   onConfirm: () => void;
 }
@@ -34,7 +34,7 @@ export const GameWonBanner: React.FC<GameWonBannerProps> = ({
   winnerName,
   totals,
   canScore,
-  isOnline,
+  blockedReason,
   isConfirming,
   onConfirm,
 }) => (
@@ -47,9 +47,9 @@ export const GameWonBanner: React.FC<GameWonBannerProps> = ({
     <p className="mb-3 text-xs text-muted-foreground">
       Wrong score? Undo the last round instead of ending the game.
     </p>
-    {canScore && !isOnline && (
+    {canScore && blockedReason && (
       <p className="mb-3 text-xs font-medium text-muted-foreground" role="status">
-        Waiting for a signal — the game cannot be ended until it comes back.
+        {blockedReason}
       </p>
     )}
     {canScore && (
@@ -58,7 +58,7 @@ export const GameWonBanner: React.FC<GameWonBannerProps> = ({
           <Button
             type="button"
             className="min-h-[48px] w-full"
-            disabled={isConfirming || !isOnline}
+            disabled={isConfirming || blockedReason !== null}
           >
             {isConfirming ? 'Ending game…' : `End Game ${gameNumber}`}
           </Button>

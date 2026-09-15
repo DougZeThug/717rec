@@ -393,6 +393,22 @@ describe('RoundScoreInput', () => {
       expect(loadRoundDraft('game-1', 3)).toBeNull();
     });
 
+    // An undo moves the round number backwards as well, and that really is the
+    // round being taken away — so it must not be mistaken for a held save of
+    // this scorer's coming back.
+    it('still reports an undo that takes the round back, with scores tapped', async () => {
+      const { rerender } = renderInput({ roundNumber: 5, roundKey: 'game-1:5' });
+
+      await tapScore('Baggers', 9);
+      await waitFor(() => expect(loadRoundDraft('game-1', 5)).not.toBeNull());
+
+      // Somebody undoes round 4, so the round on screen goes back to 4.
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+
+      expect(onSelectionDiscarded).toHaveBeenCalled();
+      expect(loadRoundDraft('game-1', 5)).toBeNull();
+    });
+
     it('drops the copy when the round moves on under the scorer', async () => {
       onSubmit.mockRejectedValue(new Error('Failed to fetch'));
       const { rerender } = renderInput();

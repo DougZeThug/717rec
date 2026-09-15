@@ -237,6 +237,24 @@ describe('TimeslotsTab', () => {
     expect(toast).not.toHaveBeenCalled();
   });
 
+  // A confirmation left open across a change of date still names a row from the
+  // night before. Once the new night loads, `isNightLoaded` is true again, so
+  // the id itself has to be refused.
+  it('refuses an id the night on screen does not hold', async () => {
+    mockUseTimeslots.mockReturnValue({
+      ...thisNight,
+      timeslots: [{ id: 'ts-other-night', timeslot: '7:00 PM' }],
+    });
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('delete-regular'));
+
+    expect(deleteTimeslot).not.toHaveBeenCalled();
+    expect(removeByeWeek).not.toHaveBeenCalled();
+    expect(toast).not.toHaveBeenCalled();
+  });
+
   it("lets the list offer removal once the rows are the chosen night's", () => {
     renderTab();
 

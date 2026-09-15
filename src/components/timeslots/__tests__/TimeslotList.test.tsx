@@ -139,6 +139,29 @@ describe('TimeslotList', () => {
     expect(onDelete).not.toHaveBeenCalled();
   });
 
+  it('closes a dialog whose row is gone after the night changed', async () => {
+    const onDelete = vi.fn();
+    const nightA: TeamTimeslot[] = [makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM' })];
+    const nightB: TeamTimeslot[] = [makeTimeslot({ id: 'ts-other', timeslot: '6:00 PM' })];
+
+    const { rerender } = renderWithRouter(
+      <TimeslotList timeslots={nightA} teams={teams} onDelete={onDelete} />
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Remove timeslot/i })[0]);
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument();
+
+    // The new night's rows arrive, so the row the dialog names is no longer here.
+    rerender(
+      <MemoryRouter>
+        <TimeslotList timeslots={nightB} teams={teams} onDelete={onDelete} />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
   it('closes the dialog without deleting when Cancel is clicked', async () => {
     const onDelete = vi.fn();
     const timeslots: TeamTimeslot[] = [

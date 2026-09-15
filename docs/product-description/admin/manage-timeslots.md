@@ -170,6 +170,12 @@ already open has its Remove button greyed out too. Otherwise one quick press
 would clear a booking on the night before — and for a back-to-back row it would
 take that team's whole pair on that night with it.
 
+**A confirmation does not outlive the row it names.** If the admin changes the
+date while one is open, it closes by itself as soon as the new night's rows
+arrive, rather than handing Remove back still pointing at the night before. A
+removal is refused outright if the row it names is not one the night on screen
+holds.
+
 A BYE row is removed on its own.
 
 On success a toast says "Timeslot Removed" or "Bye Week Removed". On failure a
