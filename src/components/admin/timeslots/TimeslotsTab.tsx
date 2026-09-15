@@ -7,6 +7,7 @@ import TimeslotList from '@/components/timeslots/TimeslotList';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTimeslotPrefill } from '@/hooks/timeslots/useTimeslotPrefill';
@@ -35,7 +36,12 @@ const TimeslotsTab = () => {
     if (prefill.date) setSelectedDate(prefill.date);
   }
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useTeamsQuery();
+  const {
+    data: teams = [],
+    isLoading: isLoadingTeams,
+    error: teamsError,
+    refetch: refetchTeams,
+  } = useTeamsQuery();
 
   /** One team by name, several by count — an admin books both ways. */
   const describeTeams = (teamIds: string[]): string => {
@@ -263,6 +269,14 @@ const TimeslotsTab = () => {
             <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
             {isLoadingTeams ? (
               <p>Loading teams...</p>
+            ) : teamsError ? (
+              // Only this column needs the team list. The current timeslots
+              // beside it still read fine, so the failure stays local rather
+              // than blanking the whole tab.
+              <ErrorDisplay
+                error="We couldn't load the teams. Please try again."
+                onRetry={() => refetchTeams()}
+              />
             ) : (
               <TimeslotAssignment
                 selectedDate={selectedDate}

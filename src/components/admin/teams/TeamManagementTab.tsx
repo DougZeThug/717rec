@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import TeamForm from '@/components/teams/TeamForm';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useDivisions } from '@/hooks/useDivisions';
@@ -163,6 +164,7 @@ const TeamManagementTab = () => {
   const {
     data: teams,
     isLoading: isLoadingTeams,
+    error: teamsError,
     refetch: refetchTeams,
   } = useTeamsQuery({ includeHidden: true });
   const { divisions, isLoading: isLoadingDivisions } = useDivisions();
@@ -248,6 +250,18 @@ const TeamManagementTab = () => {
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
       </div>
+    );
+  }
+
+  // A failed fetch leaves `isLoading` false with no data, so without this the
+  // tab drew an empty table under "0 Total Teams" — a league with no teams.
+  if (teamsError) {
+    return (
+      <ErrorDisplay
+        variant="card"
+        error="We couldn't load the teams. Please try again."
+        onRetry={() => refetchTeams()}
+      />
     );
   }
 

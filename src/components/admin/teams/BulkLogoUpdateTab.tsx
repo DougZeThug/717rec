@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle, Image, Search, XCircle } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -20,7 +21,7 @@ type FilterStatus = 'all' | LogoStatus;
 type SortOption = 'name' | 'status';
 
 const BulkLogoUpdateTab: React.FC = () => {
-  const { data: teams, isLoading, refetch } = useTeamsQuery({ includeHidden: true });
+  const { data: teams, isLoading, error, refetch } = useTeamsQuery({ includeHidden: true });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('status');
@@ -78,6 +79,18 @@ const BulkLogoUpdateTab: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full size-8 border-b-2 border-primary"></div>
       </div>
+    );
+  }
+
+  // Without this the tab drew an empty logo list under four zeroed counts,
+  // which reads as "every logo is already sorted".
+  if (error) {
+    return (
+      <ErrorDisplay
+        variant="card"
+        error="We couldn't load the teams. Please try again."
+        onRetry={() => refetch()}
+      />
     );
   }
 

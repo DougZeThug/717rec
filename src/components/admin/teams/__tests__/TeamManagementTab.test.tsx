@@ -219,6 +219,29 @@ describe('TeamManagementTab', () => {
     );
   });
 
+  // A failed fetch leaves isLoading false with no data, so an isLoading-only
+  // guard fell through to an empty table under "0 Total Teams" — which reads as
+  // a league with no teams rather than a list that failed to arrive.
+  it('says so when the teams cannot be loaded, instead of showing none', async () => {
+    const refetch = vi.fn();
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+      refetch,
+    });
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "We couldn't load the teams. Please try again."
+    );
+    expect(screen.queryByPlaceholderText(/search teams/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
   it('opens and closes edit dialog', async () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);

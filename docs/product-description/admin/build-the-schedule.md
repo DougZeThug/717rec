@@ -210,8 +210,9 @@ schedule as work, not only hand edits. Browser Back is not guarded; see
 [`the-admin-dashboard.md`](the-admin-dashboard.md). Match Creation has no guard.
 
 **When the team list will not load.** Match Creation shows "We couldn't load the
-teams. Please try again." with a Try again button, in place of the form. It used
-to draw the whole form with empty team pickers and say nothing, which reads
+teams. Please try again." with a Try again button, in place of the form. Auto
+Schedule's manual assignment panel says the same in place of itself. Both used
+to draw their controls with empty team pickers and say nothing, which reads
 exactly like a league with no teams in it.
 
 **Optimistic updates and rollback.** None. Both wait for the server.

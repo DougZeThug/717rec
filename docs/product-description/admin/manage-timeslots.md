@@ -163,6 +163,11 @@ removing every back-to-back row that team has on that date — so removing the
 6:00 PM half also removes 6:30 PM, and removing one quarter of a double header
 removes all four rows.
 
+**The two columns fail separately.** If the team list will not load, the
+assignment column says "We couldn't load the teams. Please try again." with a
+Retry button, and the current timeslots beside it still read normally. Booking
+needs the team list; reading the night does not.
+
 **Removal waits for the night, like the move card.** Changing the date keeps the
 previous night's rows on screen while the new ones load, and a load that fails
 leaves nothing to go by at all; a removal goes by row id. For that moment every trash button is greyed out, and a confirmation

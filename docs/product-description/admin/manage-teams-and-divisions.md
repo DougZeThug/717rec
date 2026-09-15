@@ -59,7 +59,10 @@ stateDiagram-v2
 ### Arrive
 
 The Teams section fetches every team **including hidden ones** and the list of
-divisions, and shows a spinner until both arrive. Everywhere else in the app,
+divisions, and shows a spinner until both arrive. If the team list fails to
+arrive it says "We couldn't load the teams. Please try again." with a Try again
+button, in place of the section. Update Logos does the same. Both used to draw
+an empty list under zeroed counts, which reads as a league with no teams. Everywhere else in the app,
 hidden teams are filtered out; this is the only screen that shows them.
 
 The Divisions section fetches divisions ordered by weight, heaviest first, and
