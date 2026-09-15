@@ -5,6 +5,8 @@ import type { LiveGameDerived } from '@/hooks/live-scoring/useLiveMatch';
 import type { useTeamPlayers } from '@/hooks/live-scoring/useTeamPlayers';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 
+import { LoadingState } from '@/components/ui/loading-state';
+
 import { GameSetupPanel } from './GameSetupPanel';
 import { ReopenGameButton } from './ReopenGameButton';
 import { RoundLog } from './RoundLog';
@@ -72,6 +74,21 @@ export const NextGameSetupPanel: React.FC<NextGameSetupPanelProps> = ({
         />
       </div>
     );
+  }
+
+  // `GameSetupPanel` reads its initial ids once, when it mounts, and never
+  // again — which is right, because re-reading them would throw away a change
+  // the scorer had already made by hand. So the panel must not mount until
+  // those ids are worth reading. `useTeamPlayers` returns an empty roster while
+  // its query is in flight, and `prefillFrom` filters the previous game's
+  // players against that roster, so mounting early seeds the selection from
+  // nothing and the arriving roster cannot put it back. That is every first
+  // visit to a between-games match on a cold cache.
+  //
+  // A query that never starts reports `isLoading: false`, so a match with a
+  // team id missing cannot hang here.
+  if (team1Players.isLoading || team2Players.isLoading) {
+    return <LoadingState message="Loading rosters…" variant="section" />;
   }
 
   return (
