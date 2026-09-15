@@ -37,7 +37,8 @@ const AssignmentColumn = ({
   /** The team list never arrived. A failed *refresh* is not this. */
   hasFailed: boolean;
   onRetry: () => void;
-  children: React.ReactNode;
+  /** The booking form. One element, so it can be returned as it is. */
+  children: React.ReactElement;
 }) => {
   if (isLoading) return <p>Loading teams...</p>;
   // Only this column needs the team list. The current timeslots beside it still
@@ -45,7 +46,7 @@ const AssignmentColumn = ({
   if (hasFailed) {
     return <ErrorDisplay error="We couldn't load the teams. Please try again." onRetry={onRetry} />;
   }
-  return <>{children}</>;
+  return children;
 };
 
 const TimeslotsTab = () => {
