@@ -20,14 +20,23 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast }),
 }));
 
-const participants = [
+const participants: {
+  id: number;
+  name: string;
+  position: number | null;
+  team_id?: string | null;
+}[] = [
   { id: 1, name: 'Alpha', position: 1, team_id: 't-1' },
   { id: 2, name: 'Bravo', position: 2, team_id: 't-2' },
 ];
 
 const onOpenChange = vi.fn();
 
-const renderDialog = (matches: unknown[], bracketState: PlayoffBracket['state'] = 'pending') => {
+const renderDialog = (
+  matches: unknown[],
+  bracketState: PlayoffBracket['state'] = 'pending',
+  currentParticipants: typeof participants = participants
+) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -39,7 +48,7 @@ const renderDialog = (matches: unknown[], bracketState: PlayoffBracket['state'] 
         onOpenChange={onOpenChange}
         bracketId="b-1"
         bracketName="Summer Finals"
-        currentParticipants={participants}
+        currentParticipants={currentParticipants}
         bracketState={bracketState}
         matches={matches as PlayoffMatch[]}
       />
@@ -150,6 +159,34 @@ describe('SeedingUpdateDialog saving a new seeding', () => {
 
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
     expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Seeding updated' }));
+  });
+
+  // Brackets built before `participant.team_id` existed still carry BYE rows
+  // with no team_id and no name. BracketDetail coerces that null name to '',
+  // which used to slip them past the dialog's `name !== null` filter; they were
+  // then submitted as teams under a fake id (the participant row's own primary
+  // key), and the save failed — two of them collided on the empty name, one on
+  // its own broke the team_id insert. Either way the bracket could not be
+  // re-seeded at all.
+  it('leaves legacy BYE rows out of the seeding it submits', async () => {
+    const user = userEvent.setup();
+    renderDialog(notStarted, 'pending', [
+      { id: 1, name: 'Alpha', position: 1, team_id: 't-1' },
+      { id: 2, name: 'Bravo', position: 2, team_id: 't-2' },
+      { id: 3, name: '', position: 3, team_id: null },
+      { id: 4, name: '', position: 4, team_id: null },
+    ]);
+
+    await user.click(submitButton());
+
+    expect(updateSeeding).toHaveBeenCalledWith({
+      bracketId: 'b-1',
+      newSeeding: [
+        { id: 't-1', name: 'Alpha', seed: 1 },
+        { id: 't-2', name: 'Bravo', seed: 2 },
+      ],
+      keepSameSize: true,
+    });
   });
 
   // The library refuses a re-seed that would move a team out of a match it has

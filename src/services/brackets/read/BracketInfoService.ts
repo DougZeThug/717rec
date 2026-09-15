@@ -136,24 +136,33 @@ export const fetchBracketsOverview = async (
 /**
  * Fetch bracket info for JSONB/uses_brackets_manager check
  * Used by BracketView component
+ *
+ * maybeSingle, not single: PostgREST answers a 0-row `single` with an error
+ * (PGRST116) rather than with empty data, so handleDatabaseError threw first
+ * and the ensureFound below could never run. A stale link to a deleted bracket
+ * reached the page as "Cannot coerce the result to a single JSON object".
+ * Matches fetchPlayoffBracketData above.
  */
 export const fetchBracketInfo = async (bracketId: string): Promise<BracketInfoRow> => {
   const { data, error } = await supabase
     .from('brackets')
     .select('id, title, format, state, uses_brackets_manager, bracket_data, participants')
     .eq('id', bracketId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     handleDatabaseError(error, 'Failed to fetch bracket info');
   }
 
-  return ensureFound(data, 'BracketInfo', bracketId) as BracketInfoRow;
+  // 'Bracket', not the row type's name: this reaches the page as the reason.
+  return ensureFound(data, 'Bracket', bracketId) as BracketInfoRow;
 };
 
 /**
  * Fetch bracket with division join for bracket data loading
  * Used by useBracketData hook (step 1)
+ *
+ * maybeSingle for the reason given on fetchBracketInfo above.
  */
 export const fetchBracketWithDivision = async (
   bracketId: string
@@ -175,11 +184,11 @@ export const fetchBracketWithDivision = async (
     `
     )
     .eq('id', bracketId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     handleDatabaseError(error, 'Failed to fetch bracket with division');
   }
 
-  return ensureFound(data, 'BracketWithDivision', bracketId) as BracketWithDivisionRow;
+  return ensureFound(data, 'Bracket', bracketId) as BracketWithDivisionRow;
 };

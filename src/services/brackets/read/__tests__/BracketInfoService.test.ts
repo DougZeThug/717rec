@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DatabaseError, NotFoundError } from '@/types/errors';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const { mockFrom } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
@@ -87,14 +88,45 @@ describe('BracketInfoService', () => {
     expect(eq).toHaveBeenCalledWith('season_id', 's-1');
   });
 
+  // Both of these used to pair .single() with ensureFound. Under .single()
+  // PostgREST answers a 0-row result with an error (PGRST116), not with empty
+  // data, so handleDatabaseError threw first and ensureFound was unreachable —
+  // a deleted bracket produced "Cannot coerce the result to a single JSON
+  // object" instead of the intended not-found. The mocks below are the shape
+  // .maybeSingle() really returns.
   it('throws NotFoundError when bracket info is missing', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
       }),
     });
 
     await expect(fetchBracketInfo('b-1')).rejects.toThrow(NotFoundError);
+  });
+
+  it('throws NotFoundError when the bracket with its division is missing', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
+    });
+
+    await expect(fetchBracketWithDivision('b-missing')).rejects.toThrow(NotFoundError);
+  });
+
+  // What the playoffs page puts on screen for a stale link.
+  it('describes a missing bracket in words rather than PostgREST internals', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: null }) }),
+      }),
+    });
+
+    const error = await fetchBracketInfo('b-1').catch((e: unknown) => e);
+    const shown = getUIErrorMessage(error, 'Failed to load bracket');
+
+    expect(shown).toBe("Failed to load bracket: Bracket with ID 'b-1' not found");
+    expect(shown).not.toContain('coerce');
   });
 
   // The playoffs page reads the season off the bracket a link opens, so the
@@ -102,7 +134,7 @@ describe('BracketInfoService', () => {
   it('asks for the bracket season alongside the division', async () => {
     const select = vi.fn().mockReturnValue({
       eq: () => ({
-        single: () =>
+        maybeSingle: () =>
           Promise.resolve({
             data: { ...makeBracket(), season_id: 's-past', divisions: { name: 'Gold' } },
             error: null,
@@ -120,7 +152,7 @@ describe('BracketInfoService', () => {
   it('throws DatabaseError when bracket with division query fails', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
       }),
     });
 

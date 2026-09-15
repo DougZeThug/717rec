@@ -211,7 +211,27 @@ export function useAutoSchedule() {
     }
 
     // Pass seasonId from already-fetched active season to avoid redundant query
-    return await saveMatches(matchesToSave, selectedDate, dualMatchMode, activeSeason?.id);
+    const saved = await saveMatches(matchesToSave, selectedDate, dualMatchMode, activeSeason?.id);
+
+    // What is on screen is now what is in the database, so it is no longer
+    // unsaved. `hasUnsavedEdits` diffs the editable copy against
+    // `generatedMatches`, which still holds the pre-edit baseline — without
+    // re-baselining it the alert, the leave guards and an enabled Save button
+    // all survive the save, and a second press writes the night twice.
+    // Baseline from `matchesToSave` rather than `editableMatches`: in edit mode
+    // with nothing editable those two differ, and the saved set is the truth.
+    //
+    // Re-baselining is the whole fix; edit mode stays on deliberately. Save and
+    // Reset are gated on `isEditMode && hasUnsavedEdits`, so the closed diff
+    // already retires them. Dropping out of edit mode would instead render the
+    // preview, which reads `generatedPairings` — untouched by editing — and
+    // offers "Save Schedule to Database" against those stale pairings, writing
+    // the pre-edit night on top of the edited one just saved.
+    if (saved && isEditMode) {
+      setGeneratedMatches(structuredClone(matchesToSave));
+    }
+
+    return saved;
   };
 
   // Team statistics

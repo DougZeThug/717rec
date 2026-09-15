@@ -285,7 +285,7 @@ describe('fetchBracketInfo', () => {
   it('returns bracket info on success', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }),
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeBracket(), error: null }) }),
       }),
     });
     const result = await fetchBracketInfo('b-1');
@@ -295,7 +295,7 @@ describe('fetchBracketInfo', () => {
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
       }),
     });
     await expect(fetchBracketInfo('b-1')).rejects.toThrow(DatabaseError);
@@ -550,7 +550,7 @@ describe('fetchBracketWithDivision', () => {
   it('returns bracket data on success', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: makeBracket(), error: null }) }),
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: makeBracket(), error: null }) }),
       }),
     });
     const result = await fetchBracketWithDivision('b-1');
@@ -560,7 +560,7 @@ describe('fetchBracketWithDivision', () => {
   it('throws DatabaseError on error', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: pgError() }) }),
+        eq: () => ({ maybeSingle: () => Promise.resolve({ data: null, error: pgError() }) }),
       }),
     });
     await expect(fetchBracketWithDivision('b-1')).rejects.toThrow(DatabaseError);
