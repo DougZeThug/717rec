@@ -164,8 +164,8 @@ removing every back-to-back row that team has on that date — so removing the
 removes all four rows.
 
 **Removal waits for the night, like the move card.** Changing the date keeps the
-previous night's rows on screen while the new ones load, and a removal goes by
-row id. For that moment every trash button is greyed out, and a confirmation
+previous night's rows on screen while the new ones load, and a load that fails
+leaves nothing to go by at all; a removal goes by row id. For that moment every trash button is greyed out, and a confirmation
 already open has its Remove button greyed out too. Otherwise one quick press
 would clear a booking on the night before — and for a back-to-back row it would
 take that team's whole pair on that night with it.
@@ -215,6 +215,14 @@ every game it removes.
 rows on screen while the new ones load, so the card is not offered until the
 list really is the chosen night's. Otherwise one quick press could clear a
 booking on the night before.
+
+**It waits for a night that fails to load, too.** An empty column means one of
+two things — the night really is free, or its rows never arrived — and only the
+first is safe to act on. A failed load withholds the card and greys the trash
+buttons, exactly as a load in progress does. The red banner above the columns
+says the load failed. Before this, a failed load read as an empty night, and the
+card offered to book a team that already had a slot that night without clearing
+it, leaving the team booked twice.
 
 **Not now** puts the card away without writing anything. So does making the
 change. Either way the night stays on screen and the instruction leaves the

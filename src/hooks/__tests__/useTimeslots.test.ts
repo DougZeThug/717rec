@@ -80,6 +80,9 @@ describe('useTimeslotQuery', () => {
     });
     await waitFor(() => expect(result.current.error).toBe('db down'), { timeout: 12_000 });
     expect(result.current.timeslots).toEqual([]);
+    // The empty array is the absence of a result, not an empty night. Nothing
+    // that writes may treat the two the same.
+    expect(result.current.hasData).toBe(false);
   }, 15_000);
 });
 
@@ -97,6 +100,7 @@ describe('useTimeslots', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.timeslots).toEqual(sampleRows);
+    expect(result.current.isNightLoaded).toBe(true);
     expect(result.current.addTimeslot).toBe(mutationFns.addTimeslot);
     expect(result.current.deleteTimeslot).toBe(mutationFns.deleteTimeslot);
     expect(result.current.batchAssignTimeslots).toBe(mutationFns.batchAssignTimeslots);
@@ -117,6 +121,38 @@ describe('useTimeslots', () => {
     result.current.refreshTimeslots();
     expect(spy).toHaveBeenCalledWith({ queryKey: ['timeslots', '2026-06-05'] });
   });
+
+  it('calls an empty night loaded, because an empty night is a result', async () => {
+    (TimeslotService.fetchByDate as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (TimeslotTransformer.groupByTimeslot as ReturnType<typeof vi.fn>).mockReturnValue({});
+
+    const { result } = renderHook(() => useTimeslots(new Date('2026-06-05T00:00:00')), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.isNightLoaded).toBe(true));
+    expect(result.current.timeslots).toEqual([]);
+  });
+
+  // The move card and every trash button key off this flag. Called loaded with
+  // no rows, the card plans a booking that clears nothing, and a team that
+  // already had a slot that night ends up booked twice.
+  it('never calls a night loaded when its rows failed to arrive', async () => {
+    // The hook hardcodes retry: 2 with exponential backoff, so the error only
+    // lands after all three attempts (~3-7s).
+    (TimeslotService.fetchByDate as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('db down')
+    );
+
+    const { result } = renderHook(() => useTimeslots(new Date('2026-06-05T00:00:00')), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.error).toBe('db down'), { timeout: 12_000 });
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.timeslots).toEqual([]);
+    expect(result.current.isNightLoaded).toBe(false);
+  }, 15_000);
 
   it('reports loading while a mutation is submitting', () => {
     mutationFns.isSubmitting = true;
