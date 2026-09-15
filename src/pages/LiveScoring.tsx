@@ -48,7 +48,14 @@ const LiveScoring: React.FC = () => {
         description="This match does not exist or was removed from the schedule."
       />
     );
-  } else if (error || !bundle || !derived) {
+    // `!bundle`, not just `error`: a background refetch that fails after a good
+    // load keeps the bundle and sets the error beside it. Realtime invalidates
+    // this query on nearly every match event, so one blip on venue wifi would
+    // otherwise replace a working scoring panel — and every control on it — with
+    // an error card mid-match. The screen below is for a cold open that failed,
+    // which is what the spec reserves it for. Same distinction `useTimeslots`
+    // draws with `hasData`.
+  } else if (!bundle || !derived) {
     content = (
       <EmptyState
         icon={CalendarX}

@@ -94,6 +94,22 @@ describe('LiveScoring page', () => {
     expect(screen.getByText(/could not load the match/i)).toBeInTheDocument();
   });
 
+  it('keeps the scoring view when a refresh fails after a good load', () => {
+    // TanStack keeps the bundle it already has when a background refetch fails
+    // and sets the error beside it. Realtime invalidates this query on nearly
+    // every match event, so one blip on venue wifi must not take the scoring
+    // controls away mid-match.
+    mockUseLiveMatch.mockReturnValue({
+      ...baseHookResult,
+      bundle: bundleFor(),
+      derived: { games: [], currentGame: null },
+      error: new Error('refetch failed'),
+    });
+    renderPage();
+    expect(screen.getByTestId('live-match-view')).toBeInTheDocument();
+    expect(screen.queryByText(/could not load the match/i)).not.toBeInTheDocument();
+  });
+
   it('blocks matches without both teams assigned', () => {
     mockUseLiveMatch.mockReturnValue({
       ...baseHookResult,
