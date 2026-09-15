@@ -165,7 +165,7 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. The shell has no Cancel. | No effect on the shell. Whether Escape cancels anything is up to the open section. |
 | In-app navigation away, or switching tab within the page | The open section is remembered. Coming back reopens it. | Switching section discards whatever the old section held in memory, **after asking** where the section reports unsaved work. Auto Schedule also survives regardless, because it writes its working state to the browser. |
-| Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | Same, and **nothing the old section held is kept**. Back cannot be interrupted to ask first; see the *Unsaved changes* note below. |
+| Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | **Asks first**, the same question a menu press asks. Saying no keeps the section and the work; saying yes loses whatever the old section held. Back out of the console entirely raises the browser's own warning instead. |
 | Reload, or the tab closed | A reload returns to the same section. Closing the tab forgets it, and the next visit opens Timeslots. | A reload loses everything the open section held, except Auto Schedule's working state. |
 | Network lost mid-request | The request-count badge stops updating and keeps showing its last value. | The shell keeps working because it is already loaded. **A section not yet opened cannot load at all** and shows its loading panel indefinitely. |
 | The request fails or times out | The badge silently keeps its old number. There is no error state for it. | Handled by the section, not the shell. |
@@ -200,15 +200,19 @@ phone tabs, and every jump in the search palette. They used to take the work
 with them without a word, which made the phone tab bar the easiest way to lose
 a night's scores.
 
-**Two ways out are still not covered, and cannot be cheaply:**
+**Browser Back and Forward ask too, now.** They were the last way out that did
+not. There is no click to interrupt, so the app catches the press itself and
+puts up the same question; saying no leaves the address and the work where they
+were. Pressing Back repeatedly is safe — a refusal leaves the history intact,
+and the next press asks again.
 
-- **Browser Back and Forward.** The app is told the address has already changed,
-  so there is nothing left to stop. Back has always lost this work; it is only
-  more reachable now that sections have addresses.
-- **A typed or pasted address**, for the same reason.
+**One press behaves differently, and correctly**: Back onto the page you were on
+*before* the app loaded. That leaves the site altogether, so it raises the
+browser's own warning instead of ours. The footer's "Contact us" is the same
+case — a plain link that loads a fresh page.
 
-The footer's "Contact us" needs no guard of its own: it is a plain link that
-loads a fresh page, so the browser raises its own warning.
+**A typed or pasted address** was listed here as uncovered. That was wrong: it
+unloads the page, so the browser has always warned about it.
 
 Saying no keeps the section on screen, and nothing that was only a menu closes
 either — the phone menu stays up, the user menu stays up, and the search palette

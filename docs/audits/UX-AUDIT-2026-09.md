@@ -394,6 +394,20 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
 - **A-07 · Unsaved work is lost on any section switch — High (inferred, code; partially observed).** No route blocker exists; `AutoScheduleTab.tsx:75-88` is the only `beforeunload` and it ignores generated-but-unsaved schedules (`index.ts:185-189`); Mass Score Entry keeps local edits (`useScoreEntryData.ts:68`) but switching sections discards them silently; the hero-card form replaces the list with no guard (`HeroCardsTab.tsx:33-35`); `ScoreSubmissionModal` resets on backdrop tap. *Recommend:* one `useUnsavedChangesGuard(dirty)` hook (beforeunload + `window.confirm` in `AdminSidebar.handleTabChange`) wired to Mass Score Entry, Auto Schedule, Hero form, Edit Round and Blind Draw settings. *Effort:* M. *Accept:* switching sections with unsaved scores asks first.
   - **Done (W3).** `useUnsavedChangesGuard(isDirty, message)` (`src/hooks/useUnsavedChangesGuard.ts`) registers with a small module-level registry (`src/utils/unsavedChanges.ts`) and adds the `beforeunload` listener. The console shell checks the registry inside `handleTabChange`, the one function every section switch already passes through, so the menu, the phone drawer, Quick Access and every `switchAdminTab` caller are covered by one line. All five screens are wired, plus `confirmDiscard()` for the two that close in place.
   - **Correction to the finding's premise.** It reads as though one hook guards *navigation*. It cannot: `useBlocker` needs a react-router **data** router and this app uses `<BrowserRouter>` + `<Routes>`, so **browser Back and Forward, a typed address, and links outside the console are not guarded** and cannot be without converting all 25 routes. The accurate claim, and the one the docs make, is: switching admin section asks first, and leaving the site asks first. Back has always lost this work — W1 only makes it easier to reach.
+  - **Back and Forward are guarded now, and the premise above is retired.** The
+    correction was right that `useBlocker` needs a data router; it was wrong that
+    getting one "would touch every route in the app". `createRoutesFromElements`
+    takes the existing `<Route>` JSX unchanged, so the conversion moved the
+    wrapper and nothing else — the full suite reported the same 651 files and
+    5535 tests before and after. `UnsavedWorkBlocker`
+    (`src/components/navigation/UnsavedWorkBlocker.tsx`) then catches POP
+    navigations only, so it never doubles up with the click guards below. Proven
+    in a real browser: `e2e/admin-mass-score.spec.ts` presses Back with a typed
+    score and asserts both answers. **The typed-address half of the correction
+    was also wrong** — typing an address unloads the document, so `beforeunload`
+    has always covered it. What genuinely remains: Back onto a page from before
+    the app loaded, which the router cannot undo and `beforeunload` covers
+    instead.
   - **Links outside the console are guarded now.** The premise above is still right about what a *router-level* blocker would take, but it turns out one is not needed for them: the chrome's links are ordinary click handlers, and `confirmLeavingClick` (`src/utils/unsavedChanges.ts`) cancels the click. Wired to the nine header links and the phone hamburger, the logo, all four user-menu items, Logout (an in-app jump to `/`, so `beforeunload` never fired), the four phone tabs, and the search palette. The phone tab bar was the worst of them: pinned to the bottom of every admin screen, on the device scores are typed on. **Back, Forward and a typed address are still out of reach** and still need the data router.
   - **Auto Schedule's dirty test was too narrow, and is wider now.** `hasUnsavedEdits` was only true in edit mode. A successful save clears the persisted copy but leaves `generatedMatches` in state, so "a schedule exists" could not stand in for "unsaved": the save itself is tracked instead (`hasUnsavedWork`), and generating or applying marks the work unsaved again.
   - **The hero form and the edit-round dialog compare against a baseline, not their props.** The round dialog deliberately does not reload while a realtime refetch hands it a fresh object for the round being edited; comparing against the prop would have made an untouched form claim it had work.
@@ -494,7 +508,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 |---|---|---|
 | W1 ✅ | URL-addressable admin sections (`/admin/:section`) + mobile menu that follows the active section | A-01, X-06 |
 | W2 ✅ | Mobile admin menu as a drawer behind a "Sections" button (not sticky — see A-01/X-06 notes); Quick Access stays visible | X-06 |
-| W3 ✅ | Unsaved-changes guard hook wired to Mass Score Entry, Auto Schedule, Hero form, Edit Round, Blind Draw (Back is not guarded — see A-07 notes) | A-07 |
+| W3 ✅ | Unsaved-changes guard hook wired to Mass Score Entry, Auto Schedule, Hero form, Edit Round, Blind Draw. Every way out now asks: section switches, the site chrome, Back and Forward, and leaving the site — see A-07 notes | A-07 |
 | W4 ✅ | URL state for Schedule date/search, Standings view, team-page section; Home "my match" deep link | X-14, SC-04, T-03 |
 | W5 ✅ | Offline banner + chunk-load recovery (the boundary had to move above `Suspense` — see X-12 notes) | X-12 |
 | W6 ✅ | Live scoring offline queue (held in memory, taps kept on the phone — see LS-03 notes) | LS-03 |

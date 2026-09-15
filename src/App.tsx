@@ -33,6 +33,7 @@ import Footer from './components/layout/Footer';
 import Navbar from './components/layout/Navbar';
 import { OfflineBanner } from './components/layout/OfflineBanner';
 import AppNavigation from './components/navigation/AppNavigation';
+import { UnsavedWorkBlocker } from './components/navigation/UnsavedWorkBlocker';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import PageTransition from './components/transitions/PageTransition';
 
@@ -130,6 +131,7 @@ const AppLayout = () => {
       <NavigationProvider>
         <RouteAnnouncer />
         <ScrollToTop />
+        <UnsavedWorkBlocker />
         <div className="flex flex-col min-h-screen overflow-x-hidden">
           <Navbar />
           {/* Under the header and in normal flow, never sticky: the header is

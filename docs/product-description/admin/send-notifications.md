@@ -167,7 +167,7 @@ entry with a dot that is filled while it is unread.
 | --- | --- | --- |
 | Escape, or a Cancel button | Closes the bell popover. There is no Cancel on the page's form until an edit is started. | **Cancel** clears the form and abandons the edit without asking. Escape does not. Neither can stop a write already sent, and there is nothing at all to cancel on a delete. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | Everything typed is lost with no warning. A write already sent still lands; the admin never sees the toast. |
-| Browser back or forward | Returns to the previous page. | As above, and the app cannot prevent it. |
+| Browser back or forward | Returns to the previous page. | As above. |
 | Reload, or the tab closed | The page reloads with an empty form. | Everything typed is lost. A sent write may have landed; the list after reloading says which. |
 | Network lost mid-request | The list shows "Loading…" and then nothing. | The write fails, the fields are kept, and "Save failed" carries the reason. Nothing is queued. |
 | The request fails or times out | As above. | As above. A failed delete says only "Failed to delete notification". |

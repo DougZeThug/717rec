@@ -183,7 +183,7 @@ naming the match. It can no longer reach the database.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Neither tool has a Cancel button. | Closes an open dropdown or date popover. Auto Schedule's **Reset** discards edits back to the generated schedule with no confirmation. Nothing aborts a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **Match Creation loses everything with no warning**, including switching dashboard section. **Auto Schedule loses nothing** — its state is written to the browser tab. Switching between its own three tabs is always safe. |
-| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away for each tool. Back is the one route out that the unsaved-changes warning cannot stop. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | **Asks first** now, the same question a section switch asks; see [`the-admin-dashboard.md`](the-admin-dashboard.md). |
 | Reload, or the tab closed | Match Creation returns to the next Thursday and one blank row. Auto Schedule returns exactly as it was. | Auto Schedule shows the browser's own "leave site?" prompt when there is unsaved work, then restores everything if the admin stays or reloads anyway. Match Creation loses the lot with no prompt. |
 | Network lost mid-request | Nothing to lose. | The save fails, a red toast carries the reason, and nothing is queued. Auto Schedule's working state is **not** cleared, so the admin can press Save again once the connection is back. |
 | The request fails or times out | Cannot happen. | Both keep everything on screen. A save that timed out may still have created the matches; pressing Save again would then create them a second time. |
@@ -204,10 +204,11 @@ moment of saving. Neither tool lets an admin choose a season.
 generic toast. Auto Schedule checks continuously, disables Save, and marks the
 offending card in red with the reason on it. Rematch warnings never block.
 
-**Unsaved changes.** Auto Schedule asks before its work is lost, both on leaving
-the site and on switching admin section, and counts a generated-but-unsaved
-schedule as work, not only hand edits. Browser Back is not guarded; see
-[`the-admin-dashboard.md`](the-admin-dashboard.md). Match Creation has no guard.
+**Unsaved changes.** Auto Schedule asks before its work is lost — on leaving the
+site, on switching admin section, on any link in the site chrome, and on browser
+Back — and counts a generated-but-unsaved schedule as work, not only hand edits.
+See [`the-admin-dashboard.md`](the-admin-dashboard.md). Match Creation has no
+guard, so nothing asks about a half-filled match form.
 
 **When the team list will not load.** Match Creation shows "We couldn't load the
 teams. Please try again." with a Try again button, in place of the form. Auto

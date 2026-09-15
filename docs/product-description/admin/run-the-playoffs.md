@@ -223,7 +223,7 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 | --- | --- | --- |
 | Escape, or a Cancel button | Nothing to cancel. | Closes any dialog and writes nothing. It cannot stop a creation already sent, and it cannot un-do seeds saved from the Seeds tab. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | A half-filled create form is lost with no warning. A creation already sent still completes and the bracket still appears. |
-| Browser back or forward | As above, and the app cannot prevent it. | As above. The automatic navigation a second after creation can also land while the admin is doing something else. |
+| Browser back or forward | As above. | As above. The automatic navigation a second after creation can also land while the admin is doing something else. |
 | Reload, or the tab closed | The page reloads with no bracket selected. | The form is gone. A sent creation may have landed; the division card says which. |
 | Network lost mid-request | The brackets list shows its error banner. | Creation fails with "Network Error: Please check your internet connection and try again" in the dialog and a toast. Nothing is queued. |
 | The request fails or times out | As above. | The dialog keeps the form and shows the reason, so the admin can retry without re-ticking twelve teams. |
