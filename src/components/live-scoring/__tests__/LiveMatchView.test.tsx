@@ -622,6 +622,34 @@ describe('in-game state', () => {
       finalTotals: { team1: 21, team2: 0 },
     });
   });
+
+  // Ending a game sends the totals as they stand, and those totals fold in any
+  // round still held for a missing signal. Sent later, they could file a score —
+  // and a winner — the recorded rounds do not agree with, which then decides the
+  // match. So the game waits for the signal instead.
+  it('will not end the game with no signal', async () => {
+    onlineManager.setOnline(false);
+    const bundle = makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 12, team2_score: 0, net_points: 12, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 9, team2_score: 0, net_points: 9, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+    renderView(bundle);
+
+    // The banner still names the winner; only the writing waits.
+    expect(screen.getByText(/baggers wins game 1, 21–0/iu)).toBeInTheDocument();
+    expect(screen.getByText(/cannot be ended until it comes back/i)).toBeInTheDocument();
+
+    const endGame = screen.getByRole('button', { name: /end game 1/i });
+    expect(endGame).toBeDisabled();
+
+    await userEvent.click(endGame);
+    expect(screen.queryByRole('button', { name: 'End game' })).not.toBeInTheDocument();
+    expect(mockConfirmGameComplete.mutate).not.toHaveBeenCalled();
+  });
 });
 
 describe('between games', () => {

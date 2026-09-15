@@ -113,6 +113,7 @@ banner stays exactly as it was. Nothing is lost and the scorer can press again.
 | Modifier | Set at arrival | Changed while editing |
 | --- | --- | --- |
 | The user's role | A scorer sees the End Game button. A spectator sees the banner alone and cannot end anything. | Losing the right to score leaves the button on screen until the screen refetches; the write then fails. |
+| The connection | With no signal the End Game button is greyed out and a line above it says the game cannot be ended until the signal comes back. | Losing the signal greys the button; it comes back by itself on reconnect. |
 | The record's state | The banner appears only from the totals. A game already ended does not show it. | The other scorer ending the game first replaces the banner with the next stage, mid-dialog. |
 | The season's state | No effect. | No effect. |
 | Viewport | The banner is full width; the End Game button is 48 pixels high. The dialog fills a phone screen. | No effect. |
@@ -153,7 +154,14 @@ the banner exists at all.
 **Realtime.** Both scorers' screens show the banner as soon as the winning round
 lands, and both lose it when the game is ended or the round is undone.
 
-**Offline.** Nothing can be ended.
+**Offline.** Nothing can be ended, and the banner says so. With no signal the
+End Game button is greyed out under the line "Waiting for a signal — the game
+cannot be ended until it comes back." The banner itself still names the winner
+and the score; only the writing waits. This is deliberate rather than a
+limitation: the totals sent are the totals on screen, and those fold in any
+round still held for the same missing signal. Held for later and sent on
+reconnect, they could file a finished game — and a match winner — that the
+rounds actually recorded do not agree with.
 
 **Toasts and notifications.** Failure only. A successful end says nothing; the
 screen changing is the confirmation.

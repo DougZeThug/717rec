@@ -178,14 +178,20 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
           winnerName={pendingWinnerName}
           totals={game.totals}
           canScore={canScore}
+          isOnline={isOnline}
           isConfirming={confirmGameComplete.isPending}
-          onConfirm={() =>
+          onConfirm={() => {
+            // The totals sent here include any round still held for a missing
+            // signal. Ending the game with no connection would file them for a
+            // round that may yet be refused, so the banner stays and the scorer
+            // ends the game once the signal is back.
+            if (!isOnline) return;
             confirmGameComplete.mutate({
               gameId: game.game.id,
               winnerTeamId: game.pendingWinnerSide === 1 ? (team1Id ?? '') : (team2Id ?? ''),
               finalTotals: game.totals,
-            })
-          }
+            });
+          }}
         />
       )}
 

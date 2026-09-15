@@ -49,6 +49,13 @@ export function useGameFlow(matchId: string) {
   });
 
   const confirmGameComplete = useMutation({
+    // Not parked for a missing signal, unlike a round save. This carries a
+    // snapshot of the folded totals, and a round held at the same moment can
+    // still be refused before this would replay — which would file a finished
+    // game whose score, and possibly whose winner, the recorded rounds do not
+    // agree with. Failing now and leaving the banner up is recoverable; a wrong
+    // result written later is not.
+    networkMode: 'always',
     mutationFn: (input: CompleteGameInput) =>
       LiveMatchService.completeGame(input.gameId, input.winnerTeamId, input.finalTotals),
     onError: onError('Could not complete game'),
