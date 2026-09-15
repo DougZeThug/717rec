@@ -95,11 +95,17 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
 
   // Update teams whenever currentParticipants changes
   useEffect(() => {
+    // A participant row with no team_id is a BYE, not a team. Filtering on the
+    // name cannot find them: brackets built before `participant.team_id`
+    // existed store those rows with a null name, and BracketDetail coerces that
+    // to '' on the way in. They used to be submitted as teams under the
+    // participant row's own primary key, which is not a team id, and the
+    // re-seed failed outright.
     const processedTeams = currentParticipants
-      .filter((p) => p.name !== null)
+      .filter((p): p is Participant & { team_id: string } => Boolean(p.team_id))
       .sort((a, b) => (a.position || 0) - (b.position || 0))
       .map((p, idx) => ({
-        id: p.team_id ?? String(p.id),
+        id: p.team_id,
         name: p.name,
         seed: p.position || idx + 1,
       }));
