@@ -13,6 +13,7 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
+import { isAdminConsolePath } from '@/utils/adminTabs';
 
 interface UserMenuProps {
   className?: string;
@@ -30,6 +31,17 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
   const handleMenuItemClick = useCallback(() => {
     setOpen(false);
   }, []);
+
+  // Inside the console this link has nowhere to go: `/admin` reopens the
+  // section already on screen, and the redirect unmounts it on the way, taking
+  // any unsaved work with it. Close the menu and stay put. See
+  // `isAdminConsolePath`.
+  const handleAdminLinkClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (isAdminConsolePath(location.pathname)) event.preventDefault();
+    },
+    [location.pathname]
+  );
 
   // Memoize handlers to prevent recreating on each render
   const handleLoginClick = useCallback(() => {
@@ -81,7 +93,11 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
         {isAdminAccessGranted && (
           <>
             <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-              <Link to="/admin" className="cursor-pointer flex items-center">
+              <Link
+                to="/admin"
+                onClick={handleAdminLinkClick}
+                className="cursor-pointer flex items-center"
+              >
                 <Shield className="size-4 mr-2" />
                 Admin Panel
               </Link>

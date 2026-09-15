@@ -19,9 +19,9 @@ is named here and pointed at one.
 
 ## The simple case
 
-An admin opens the user menu and picks "Admin Panel". The screen shows a spinner
-and "Checking access...", then the heading **Admin Dashboard** fades in over
-about a third of a second.
+An admin, not already in the console, opens the user menu and picks "Admin
+Panel". The screen shows a spinner and "Checking access...", then the heading
+**Admin Dashboard** fades in over about a third of a second.
 
 On the left is a bordered panel headed "Admin Menu", with a search box and
 twenty-one entries. The centre holds one section — **Timeslots** the first time, and
@@ -202,6 +202,16 @@ Leaving the site, reloading, or closing the tab raises the browser's own warning
 
 Saying no keeps the section on screen, and on a phone the menu stays up rather
 than closing as though something had happened.
+
+**The two links back into the console are the exception, and they no longer lose
+anything.** "Admin" in the site header and "Admin Panel" in the user menu both
+point at a bare `/admin`, which reopens the remembered section — from inside the
+console, the section already on screen. The round trip used to rebuild that
+section from scratch and throw its unsaved work away, while looking to the admin
+as though the click had done nothing. Both links now do nothing for real when
+the console is already open: no navigation, no prompt, nothing lost. From
+anywhere else they open the console as before. On a phone the menu stays up, for
+the same reason as above.
 
 Which sections take part is listed in each section's own document.
 

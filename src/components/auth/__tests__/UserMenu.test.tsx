@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseAuth = vi.hoisted(() => vi.fn());
@@ -16,10 +16,13 @@ vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAcc
 
 import UserMenu from '../UserMenu';
 
-const renderMenu = () =>
+const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
+
+const renderMenu = (initialPath = '/') =>
   render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialPath]}>
       <UserMenu />
+      <LocationProbe />
     </MemoryRouter>
   );
 
@@ -81,5 +84,44 @@ describe('UserMenu', () => {
 
     expect(screen.queryByRole('menuitem', { name: /my team/i })).not.toBeInTheDocument();
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
+  });
+  /**
+   * A bare `/admin` reopens the remembered section. From inside the console
+   * that is the section already on screen, and the redirect swaps the
+   * dashboard's subtree for a `<Navigate>` on the way, unmounting the section
+   * and losing whatever it held. Nothing asks first, because nothing navigates
+   * through the shell's guard. See `isAdminConsolePath`.
+   */
+  describe('the Admin Panel link', () => {
+    beforeEach(() => {
+      mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: true });
+    });
+
+    it('opens the console from outside it', async () => {
+      renderMenu('/teams');
+      await openMenu();
+
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin');
+    });
+
+    it('goes nowhere when the console is already open', async () => {
+      renderMenu('/admin/scores');
+      await openMenu();
+
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
+    });
+
+    it('goes nowhere from a bare /admin either', async () => {
+      renderMenu('/admin');
+      await openMenu();
+
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+
+      expect(screen.getByTestId('location')).toHaveTextContent('/admin');
+    });
   });
 });
