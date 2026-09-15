@@ -373,9 +373,16 @@ sent.
   two — and picking wrong deletes a game. The card says so and points at the
   list on the right.
 - **A move can leave a team booked twice** if the new booking is written and the
-  old rows will not delete. It is visible in the list, and the message says to
-  remove the old row. This is the deliberate failure mode; the other order fails
-  invisibly.
+  old rows do not go — either because the delete failed, or because another
+  admin booked the team into a second block after this admin's list was last
+  fetched, so the delete never aimed at those rows. Either way the move reads
+  the night back afterwards and says so: the team is visible in the list twice,
+  and the message says to remove the one that is not wanted. This is the
+  deliberate failure mode; the other order fails invisibly.
+- **The check is a narrowing, not a guarantee.** A booking made in the moment
+  between the delete and the read back is still missed, and if the read itself
+  fails the move reports success rather than raising a repair nobody can
+  confirm. Only doing both writes in one transaction closes it completely.
 - **A move does not change a match.** Timeslots say when a team is expected;
   a match created for that night carries its own date and is untouched.
 - **The card is absent for a moment after the date changes.** The list keeps the

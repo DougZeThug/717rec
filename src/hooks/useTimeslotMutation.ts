@@ -9,6 +9,8 @@ import { TimeslotValidator } from '@/services/timeslots/TimeslotValidator';
 import { TeamTimeslot } from '@/types/timeslots';
 import { getBackToBackPairName } from '@/utils/autoSchedule/constants';
 import { getUIErrorMessage } from '@/utils/errorHandler';
+import { warnLog } from '@/utils/logger';
+import { countHoldings, readTeamNight } from '@/utils/timeslotMove';
 
 /**
  * How a move ended.
@@ -309,21 +311,50 @@ export const useTimeslotMutation = () => {
       }
       refresh();
 
-      try {
-        await TimeslotService.deleteTimeslotsByIds(removeIds);
-      } catch (clearErr) {
+      const notCleared = (reason: unknown, fallback: string): TimeslotMoveOutcome => {
         // The booking stands. Say what is on the screen and what fixes it,
         // rather than reporting the whole move as a failure.
         toast({
           title: 'Booked, but the old time is still there',
-          description: getUIErrorMessage(
-            clearErr,
-            'The new booking was made and the old one could not be removed. Remove it in the list of current timeslots'
-          ),
+          description: getUIErrorMessage(reason, fallback),
           variant: 'destructive',
         });
         refresh();
         return 'booked-not-cleared';
+      };
+
+      try {
+        await TimeslotService.deleteTimeslotsByIds(removeIds);
+      } catch (clearErr) {
+        return notCleared(
+          clearErr,
+          'The new booking was made and the old one could not be removed. Remove it in the list of current timeslots'
+        );
+      }
+
+      // A delete by id resolves the same way whether it took the old rows or
+      // matched nothing at all, so it cannot say on its own that the team is
+      // left in one block. `removeIds` was read from a cache that polls once a
+      // minute, so a second admin booking this team inside that window leaves
+      // rows the delete never aimed at — and the move used to report success
+      // over a team booked twice. Read the night back and say what is there.
+      try {
+        const rows = await TimeslotService.fetchWeekTimeslotsByTeam(
+          teamId,
+          formattedDate,
+          formattedDate
+        );
+        if (countHoldings(readTeamNight(rows, teamId)) > 1) {
+          return notCleared(
+            null,
+            'The new booking was made and the team is still in another block, booked somewhere else while this was being saved. Remove the one you do not want in the list of current timeslots'
+          );
+        }
+      } catch (verifyErr) {
+        // Both writes reported success and only the check failed, so there is
+        // nothing to repair that we know of. Crying wolf here would teach
+        // admins to ignore the message that matters.
+        warnLog('Could not confirm the moved booking cleared:', verifyErr);
       }
 
       refresh();
