@@ -23,6 +23,17 @@ import {
 } from '@/components/ui/table';
 import { Team, TeamTimeslot } from '@/types';
 
+/** The table's column headings, lifted out to keep the table's tree shallow. */
+const TimeslotTableHead: React.FC = () => (
+  <TableHeader>
+    <TableRow>
+      <TableHead>Time</TableHead>
+      <TableHead>Team</TableHead>
+      <TableHead className="w-[100px]">Actions</TableHead>
+    </TableRow>
+  </TableHeader>
+);
+
 interface TimeslotRowProps {
   timeslot: TeamTimeslot;
   teamName: string;
@@ -116,13 +127,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
     <>
       <div className="overflow-x-auto">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead className="w-[100px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+          <TimeslotTableHead />
           <TableBody>
             {sortedTimeslots.map((timeslot) => (
               <TimeslotRow

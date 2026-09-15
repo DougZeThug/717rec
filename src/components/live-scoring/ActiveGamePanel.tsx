@@ -34,6 +34,24 @@ interface ActiveGamePanelProps {
   confirmGameComplete: ReturnType<typeof useGameFlow>['confirmGameComplete'];
 }
 
+/**
+ * Why a won game cannot be ended yet, or null when it can.
+ *
+ * The totals the banner shows fold in every optimistic round, so they are only
+ * safe to write down once nothing can take one back. A signal is not enough on
+ * its own: reconnecting flips it back the moment the browser says so, while the
+ * round it held is still on its way and can still be refused. Ending the game
+ * in that gap would file a score — and a winner — that the recorded rounds go
+ * on to disagree with.
+ */
+const endGameBlocker = (isOnline: boolean, roundSaveUnsettled: boolean): string | null => {
+  if (!isOnline) return 'Waiting for a signal — the game cannot be ended until it comes back.';
+  if (roundSaveUnsettled) {
+    return 'Waiting for the last round to be filed — the game cannot be ended until it is.';
+  }
+  return null;
+};
+
 /** Which side is ahead, or null while the totals are level. */
 const leaderSide = (totals: { team1: number; team2: number }): 1 | 2 | null => {
   if (totals.team1 === totals.team2) return null;
@@ -103,21 +121,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
       description: `Round ${game.nextRoundNumber} is now next, so your tapped scores were cleared.`,
     });
 
-  /**
-   * Why the game cannot be ended yet, or null when it can.
-   *
-   * The totals the banner shows fold in every optimistic round, so they are
-   * only safe to write down once nothing can take one back. A signal is not
-   * enough on its own: reconnecting flips `isOnline` the moment the browser
-   * says so, while the round it held is still on its way and can still be
-   * refused. Ending the game in that gap would file a score — and a winner —
-   * that the recorded rounds go on to disagree with.
-   */
-  const endGameBlockedReason = !isOnline
-    ? 'Waiting for a signal — the game cannot be ended until it comes back.'
-    : submitRound.isPending || pausedRounds > 0
-      ? 'Waiting for the last round to be filed — the game cannot be ended until it is.'
-      : null;
+  const endGameBlockedReason = endGameBlocker(isOnline, submitRound.isPending || pausedRounds > 0);
 
   const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
   const gameWon = game.pendingWinnerSide !== null;
