@@ -125,9 +125,18 @@ database refuses a delete from anyone who is not an admin, so even a crafted
 request fails.
 
 Removing a signup is an admin action on the admin dashboard's blind-draw tab,
-where each row has a bin icon and a confirmation dialog. The tab also has a
-"Clear All" button. See
+where each row has a bin icon and a confirmation dialog. See
 [`admin/run-the-playoffs.md`](../admin/run-the-playoffs.md).
+
+**The tab works one night at a time.** A **Night** picker sits beside the count,
+listing the nights that actually have signups on them and opening on the next
+one — or the most recent, once they have all passed. Each row names the night it
+is for. The clear button names it too, reading "Clear Sep 18, 2026", and clears
+only that night; the prompt says other nights are left alone.
+
+**"All nights" widens it in one tap**, for looking at every night at once. The
+button then reads "Clear every night" and the prompt says "for every night, not
+just tonight", because from there it really does delete all of them.
 
 A player who signs up by mistake has one option: ask the league. There is nothing
 on the confirmation panel that says so.
@@ -215,8 +224,6 @@ list and the public count goes up by one. Nothing else in the app changes.
 - **A player cannot tell whether they already signed up.** The panel resets on
   every reload, and the list is admin-only. The only evidence is the count going
   up, which is up to two minutes stale.
-- **"Clear All" clears every date, not just tonight.** The admin's list is
-  unfiltered, and the clear removes every row in the table.
 - **The event date comes from the card's start time in Eastern time.** A card
   whose start time is set wrongly signs everybody up for the wrong day, and
   nothing on the panel shows which date is being written.
@@ -244,8 +251,11 @@ list and the public count goes up by one. Nothing else in the app changes.
   on how the league runs the draw, and that is a decision for the league.
 - Not confirmed by hand: whether the hero card is normally switched on and off by
   hand each week, and how long before the event.
-- Not confirmed by hand: what the admin's list looks like with several dates in
-  it at once, and whether the missing date filter is a real problem in practice.
+- Resolved: **the missing date filter was a real problem.** The admin list held
+  every night at once, never showed which night a row was for, and "Clear All"
+  deleted all of them — so clearing after Thursday's draw also wiped everyone who
+  had already signed up for the following week. The tab now opens on one night
+  and clears one night. See the Night picker above.
 - Not confirmed by hand: whether the count pill updates for a player who signs up
   — the mutation invalidates it, so it should, but only for their own browser.
 - Assumption: "L.I." is understood by players to mean last initial. Nothing on

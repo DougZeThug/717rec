@@ -15,10 +15,10 @@ import SignupsTable from '../SignupsTable';
  * headings are asserted once, and the skeleton is asserted to show the same
  * ones — so the two can only drift apart by making this file fail.
  */
-const HEADINGS = ['#', 'Name', 'Signed Up'];
+const HEADINGS = ['#', 'Name', 'Night', 'Signed Up'];
 
 describe('SignupsTable', () => {
-  it('gives the list its four column headings, all scoped', () => {
+  it('gives the list its five column headings, all scoped', () => {
     render(
       <SignupsTable>
         <tr>
@@ -31,7 +31,7 @@ describe('SignupsTable', () => {
     );
 
     const headers = screen.getAllByRole('columnheader');
-    expect(headers).toHaveLength(4);
+    expect(headers).toHaveLength(5);
     for (const header of headers) {
       expect(header).toHaveAttribute('scope', 'col');
     }

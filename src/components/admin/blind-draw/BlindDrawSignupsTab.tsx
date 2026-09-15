@@ -1,5 +1,5 @@
 import { AlertCircle, Loader2, Save, Settings, Shuffle, Trash2, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 import {
   AlertDialog,
@@ -16,6 +16,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { DestructiveIconButton } from '@/components/ui/destructive-icon-button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useBlindDrawSettings, useUpdateBlindDrawSettings } from '@/hooks/useBlindDrawSettings';
 import {
   useBlindDrawSignups,
@@ -25,6 +32,12 @@ import {
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
+// `formatLeagueNight` turns a YYYY-MM-DD key into "Sep 18, 2026". It lives with
+// the corrections section because that is where league nights were first named,
+// but it knows nothing about corrections. Same shape as `useCorrectionsFilters`
+// borrowing `pickDefaultEntryDate` from mass score entry.
+import { formatLeagueNight } from '../live-corrections/leagueNight';
+import { ALL_NIGHTS, pickDefaultSignupNight, signupNights } from './signupNights';
 import SignupsListSkeleton from './SignupsListSkeleton';
 import SignupsTable, { SIGNUPS_CELL } from './SignupsTable';
 
@@ -105,10 +118,26 @@ const BlindDrawSettingsCard: React.FC = () => {
 const BlindDrawSignupsTab: React.FC = () => {
   const [deletingSignup, setDeletingSignup] = useState<SignupToDelete | null>(null);
   const [isClearing, setIsClearing] = useState(false);
+  // Null means "the admin has not chosen", so the default below applies.
+  const [chosenNight, setChosenNight] = useState<string | null>(null);
 
   const { data: signups, isLoading, error } = useBlindDrawSignups();
   const deleteSignup = useDeleteBlindDrawSignup();
   const clearSignups = useClearBlindDrawSignups();
+
+  // Every night is fetched and the night is narrowed here, the same way the
+  // corrections list does it. The query, its key and the service stay as they
+  // were — and the `event_date` index was dropped in 20260710190922, so a
+  // server-side filter would scan the table anyway.
+  const nights = useMemo(() => signupNights(signups ?? []), [signups]);
+  const night = chosenNight ?? pickDefaultSignupNight(nights) ?? ALL_NIGHTS;
+  const visibleSignups = useMemo(() => {
+    if (night === ALL_NIGHTS) return signups ?? [];
+    return (signups ?? []).filter((signup) => signup.event_date === night);
+  }, [signups, night]);
+
+  const clearsEveryNight = night === ALL_NIGHTS;
+  const clearLabel = clearsEveryNight ? 'Clear every night' : `Clear ${formatLeagueNight(night)}`;
 
   const handleConfirmDelete = async () => {
     if (!deletingSignup) return;
@@ -140,16 +169,34 @@ const BlindDrawSignupsTab: React.FC = () => {
               <Shuffle className="size-5 text-primary" />
               Blind Draw Signups
             </CardTitle>
-            <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
-              <Users className="size-4 text-primary" />
-              <span className="font-semibold text-primary text-sm">
-                {signups?.length || 0} signed up
-              </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <label htmlFor="signup-night" className="text-sm font-medium">
+                Night
+              </label>
+              <Select value={night} onValueChange={setChosenNight}>
+                <SelectTrigger id="signup-night" className="w-[170px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_NIGHTS}>All nights</SelectItem>
+                  {nights.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {formatLeagueNight(key)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
+                <Users className="size-4 text-primary" />
+                <span className="font-semibold text-primary text-sm">
+                  {visibleSignups.length} signed up
+                </span>
+              </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4 px-3 sm:px-6">
-          {signups && signups.length > 0 && (
+          {visibleSignups.length > 0 && (
             <div className="flex justify-end">
               <Button
                 variant="destructive"
@@ -158,16 +205,16 @@ const BlindDrawSignupsTab: React.FC = () => {
                 disabled={clearSignups.isPending}
               >
                 <Trash2 className="size-4 mr-1" />
-                Clear All
+                {clearLabel}
               </Button>
             </div>
           )}
 
           {isLoading ? (
             <SignupsListSkeleton />
-          ) : signups && signups.length > 0 ? (
+          ) : visibleSignups.length > 0 ? (
             <SignupsTable>
-              {signups.map((signup, index) => (
+              {visibleSignups.map((signup, index) => (
                 <tr key={signup.id} className="hover:bg-muted/30">
                   <td className={`${SIGNUPS_CELL} text-xs sm:text-sm text-muted-foreground`}>
                     {index + 1}
@@ -176,12 +223,17 @@ const BlindDrawSignupsTab: React.FC = () => {
                     <div className="font-medium text-sm">
                       {signup.first_name} {signup.last_initial}.
                     </div>
-                    <div
-                      className="text-xs text-muted-foreground sm:hidden"
-                      suppressHydrationWarning
-                    >
-                      {formatWithPattern(signup.created_at, 'MMM d, h:mm a')}
+                    {/* The night, not the timestamp: on a phone there is room
+                        for one line under the name, and which draw a player is
+                        in matters more than the minute they signed up. */}
+                    <div className="text-xs text-muted-foreground sm:hidden">
+                      {formatLeagueNight(signup.event_date)}
                     </div>
+                  </td>
+                  <td
+                    className={`${SIGNUPS_CELL} text-sm text-muted-foreground hidden sm:table-cell`}
+                  >
+                    {formatLeagueNight(signup.event_date)}
                   </td>
                   <td
                     className={`${SIGNUPS_CELL} text-sm text-muted-foreground hidden sm:table-cell`}
@@ -209,7 +261,13 @@ const BlindDrawSignupsTab: React.FC = () => {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="size-12 mx-auto mb-2 opacity-30" />
-              <p>No signups yet</p>
+              {/* Name what emptied it. An admin who picked a quiet night should
+                  not read it as nobody having signed up for anything. */}
+              <p>
+                {signups && signups.length > 0
+                  ? 'Nobody signed up for that night'
+                  : 'No signups yet'}
+              </p>
             </div>
           )}
         </CardContent>
@@ -226,11 +284,19 @@ const BlindDrawSignupsTab: React.FC = () => {
       <ConfirmDialog
         open={isClearing}
         onOpenChange={setIsClearing}
-        title="Clear all signups?"
-        description={`This will remove all ${signups?.length ?? 0} signups. This action cannot be undone.`}
-        onConfirm={() => clearSignups.mutate(undefined, { onSuccess: () => setIsClearing(false) })}
+        title={clearsEveryNight ? 'Clear every night?' : 'Clear this night?'}
+        description={
+          clearsEveryNight
+            ? `This will remove all ${visibleSignups.length} signups, for every night, not just tonight. This action cannot be undone.`
+            : `This will remove the ${visibleSignups.length} signups for ${formatLeagueNight(night)}. Other nights are left alone. This action cannot be undone.`
+        }
+        onConfirm={() =>
+          clearSignups.mutate(clearsEveryNight ? undefined : night, {
+            onSuccess: () => setIsClearing(false),
+          })
+        }
         isPending={clearSignups.isPending}
-        confirmLabel="Clear All"
+        confirmLabel={clearLabel}
         pendingLabel="Clearing..."
       />
 
