@@ -104,7 +104,7 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
   // A failed save keeps the tapped scores for a retry, but they belong to one
   // round. If that round is recorded elsewhere the heading moves on, and saving
   // them now would file them under the wrong round number.
-  const settledKey = useRef(roundKey);
+  const settled = useRef({ key: roundKey, gameId, roundNumber });
   // Set while this scorer's own save is on its way, and cleared by the effect
   // below as soon as the round number settles again. The round moving because
   // *they* saved is not the round being taken away from them, so it must not be
@@ -114,9 +114,17 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     // The optimistic round bumps the round number the moment Save is pressed.
     // Ignore that; wait until the save settles and the number is real again.
     if (isSubmitting) return;
-    if (settledKey.current === roundKey) return;
-    settledKey.current = roundKey;
-    const ownSave = selfSaved.current;
+    if (settled.current.key === roundKey) return;
+    const previous = settled.current;
+    settled.current = { key: roundKey, gameId, roundNumber };
+    // Only this scorer's own device moves the round number *backwards*: a round
+    // held for a missing signal advances the number the moment it is queued, and
+    // brings it back if the league later refuses it. Another scorer can only
+    // ever push it forwards. So a round coming back is their own save settling,
+    // not the round being taken away — and `selfSaved` cannot see that on its
+    // own, because the advance already spent it.
+    const cameBack = gameId === previous.gameId && roundNumber < previous.roundNumber;
+    const ownSave = selfSaved.current || cameBack;
     selfSaved.current = false;
     // Our own successful save has already emptied the grids, so there is
     // nothing to discard and nothing to announce. `isSubmitting` alone does not
@@ -128,10 +136,13 @@ export const RoundScoreInput: React.FC<RoundScoreInputProps> = ({
     // A round that moved on because somebody *else* recorded it makes the kept
     // copy stale, so it goes. One the scorer filed themselves does not: an
     // offline save advances the round number the moment it is queued, and that
-    // copy is the only way back if the tab dies before the signal returns.
+    // copy is the only way back if the tab dies before the signal returns. The
+    // same holds when a refused held save brings the number back — the grids
+    // were emptied when it was queued, so the copy is all that is left of it.
+    // A round that then moves on *again* is another scorer's, and clears it.
     if (!ownSave) clearRoundDraft(gameId);
     if (hadSelection && !ownSave) onSelectionDiscarded?.();
-  }, [roundKey, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId]);
+  }, [roundKey, roundNumber, isSubmitting, team1.score, team2.score, onSelectionDiscarded, gameId]);
 
   const ready = isResolved(team1) && isResolved(team2);
   const net =
