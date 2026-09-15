@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseTeamsQuery = vi.hoisted(() => vi.fn());
+const mockToast = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/teams', () => ({ useTeamsQuery: () => mockUseTeamsQuery() }));
-vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: mockToast }) }));
 
 import ManualTeamAssignment from '../ManualTeamAssignment';
 
@@ -14,10 +15,31 @@ const teams = [
   { id: '2', name: 'Bravo', imageUrl: null },
 ];
 
-const renderPanel = () =>
-  render(<ManualTeamAssignment selectedDate={new Date('2026-09-17')} onTeamsAssigned={vi.fn()} />);
+const renderPanel = ({
+  date,
+  onTeamsAssigned,
+}: { date?: Date | null; onTeamsAssigned?: () => void } = {}) =>
+  render(
+    <ManualTeamAssignment
+      selectedDate={date === undefined ? new Date('2026-09-17') : date}
+      onTeamsAssigned={onTeamsAssigned ?? vi.fn()}
+    />
+  );
+
+/** The checkboxes appear only once a block is chosen, so every flow starts here. */
+const chooseFirstBlock = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole('combobox'));
+  await user.click(await screen.findByRole('option', { name: /SuperUltraEarly Block/ }));
+};
 
 describe('ManualTeamAssignment', () => {
+  beforeAll(() => {
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+    HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseTeamsQuery.mockReturnValue({
@@ -86,5 +108,40 @@ describe('ManualTeamAssignment', () => {
 
     expect(screen.getByText(/loading teams/i)).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  // `handleTeamToggle` removes an id it already holds. Only the adding half ran
+  // in any test, so unchecking a team was never exercised.
+  it('takes a team back off the list when it is unchecked again', async () => {
+    const user = userEvent.setup();
+    renderPanel();
+    await chooseFirstBlock(user);
+
+    const alpha = screen.getByRole('checkbox', { name: 'Alpha' });
+    await user.click(alpha);
+    expect(alpha).toBeChecked();
+    expect(screen.getByText('1 teams selected')).toBeInTheDocument();
+
+    await user.click(alpha);
+    expect(alpha).not.toBeChecked();
+    expect(screen.getByText('0 teams selected')).toBeInTheDocument();
+  });
+
+  // The Assign button only needs a block and a team to become pressable, so it
+  // can be pressed with no night chosen. The guard says which one is missing
+  // rather than assigning to nothing.
+  it('asks for a date instead of assigning, when no night is chosen', async () => {
+    const onTeamsAssigned = vi.fn();
+    const user = userEvent.setup();
+    renderPanel({ date: null, onTeamsAssigned });
+    await chooseFirstBlock(user);
+
+    await user.click(screen.getByRole('checkbox', { name: 'Alpha' }));
+    await user.click(screen.getByRole('button', { name: /assign teams/i }));
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Date Required', variant: 'destructive' })
+    );
+    expect(onTeamsAssigned).not.toHaveBeenCalled();
   });
 });

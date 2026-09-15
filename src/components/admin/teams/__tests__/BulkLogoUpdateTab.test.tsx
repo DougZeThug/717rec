@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseTeamsQuery = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/teams', () => ({ useTeamsQuery: () => mockUseTeamsQuery() }));
@@ -17,6 +17,13 @@ const teams = [
 ];
 
 describe('BulkLogoUpdateTab', () => {
+  beforeAll(() => {
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+    HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseTeamsQuery.mockReturnValue({
@@ -83,5 +90,24 @@ describe('BulkLogoUpdateTab', () => {
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+  });
+
+  // The tab opens sorted by priority, so the name comparator never ran. Alpha
+  // has a logo and Bravo has none, which puts them opposite ways round under
+  // the two orders — so the order itself is the assertion.
+  it('sorts by name when asked, instead of by logo status', async () => {
+    const user = userEvent.setup();
+    render(<BulkLogoUpdateTab />);
+
+    const namesInOrder = () =>
+      screen.getAllByText(/^(Alpha|Bravo)$/).map((node) => node.textContent);
+
+    // By Priority: missing logos first.
+    expect(namesInOrder()).toEqual(['Bravo', 'Alpha']);
+
+    await user.click(screen.getByRole('combobox', { name: /sort teams/i }));
+    await user.click(await screen.findByRole('option', { name: 'By Name' }));
+
+    expect(namesInOrder()).toEqual(['Alpha', 'Bravo']);
   });
 });
