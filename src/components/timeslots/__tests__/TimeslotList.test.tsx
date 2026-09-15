@@ -73,6 +73,47 @@ describe('TimeslotList', () => {
     expect(within(rows[2]).getByText('Team Bravo')).toBeInTheDocument();
   });
 
+  // The joined name is the one the component prefers, and it is the path that
+  // matters: the public teams list filters out hidden and opted-out teams, so
+  // the prop alone would show those bookings as Unknown Team.
+  it('prefers the name the query joined, and says Unknown Team without a team', () => {
+    const timeslots: TeamTimeslot[] = [
+      makeTimeslot({
+        id: 'ts-joined',
+        timeslot: '5:00 PM',
+        team_id: 't1',
+        teams: { id: 't1', name: 'Hidden Heroes', divisionName: null },
+      }),
+      makeTimeslot({ id: 'ts-teamless', timeslot: '6:00 PM', team_id: '' }),
+    ];
+
+    renderWithRouter(<TimeslotList timeslots={timeslots} teams={teams} onDelete={vi.fn()} />);
+
+    // 't1' is Team Alpha in the teams prop, so the joined name winning is the
+    // whole point of the check.
+    expect(screen.getByText('Hidden Heroes')).toBeInTheDocument();
+    expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
+    expect(screen.getByText('Unknown Team')).toBeInTheDocument();
+  });
+
+  // Two teams really can share a block — that is what a double header is — so
+  // the sort has to leave equal times alone rather than treat them as ordered.
+  it('puts the rows in time order and keeps a shared block together', () => {
+    const timeslots: TeamTimeslot[] = [
+      makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM', team_id: 't2' }),
+      makeTimeslot({ id: 'ts-early-a', timeslot: '5:00 PM', team_id: 't1' }),
+      makeTimeslot({ id: 'ts-early-b', timeslot: '5:00 PM', team_id: 't2' }),
+    ];
+
+    renderWithRouter(<TimeslotList timeslots={timeslots} teams={teams} onDelete={vi.fn()} />);
+
+    const times = screen
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) => within(row).getAllByRole('cell')[0].textContent);
+    expect(times).toEqual(['5:00 PM', '5:00 PM', '8:00 PM']);
+  });
+
   it('confirms deletion through the alert dialog and calls onDelete with the timeslot id', async () => {
     const onDelete = vi.fn();
     const timeslots: TeamTimeslot[] = [
