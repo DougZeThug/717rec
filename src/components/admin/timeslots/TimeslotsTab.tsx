@@ -37,11 +37,15 @@ const TimeslotsTab = () => {
   }
 
   const {
-    data: teams = [],
+    data: loadedTeams,
     isLoading: isLoadingTeams,
     error: teamsError,
     refetch: refetchTeams,
   } = useTeamsQuery();
+  const teams = loadedTeams ?? [];
+  // A refetch that fails after a good load keeps the rows and sets the error
+  // beside them; only a load that never landed leaves nothing to work with.
+  const teamsNeverLoaded = loadedTeams === undefined;
 
   /** One team by name, several by count — an admin books both ways. */
   const describeTeams = (teamIds: string[]): string => {
@@ -269,7 +273,7 @@ const TimeslotsTab = () => {
             <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
             {isLoadingTeams ? (
               <p>Loading teams...</p>
-            ) : teamsError ? (
+            ) : teamsError && teamsNeverLoaded ? (
               // Only this column needs the team list. The current timeslots
               // beside it still read fine, so the failure stays local rather
               // than blanking the whole tab.

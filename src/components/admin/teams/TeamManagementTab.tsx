@@ -255,7 +255,11 @@ const TeamManagementTab = () => {
 
   // A failed fetch leaves `isLoading` false with no data, so without this the
   // tab drew an empty table under "0 Total Teams" — a league with no teams.
-  if (teamsError) {
+  // `!teams`, not just `error`: a background refetch that fails after a good
+  // load leaves the rows in place and sets the error alongside them. Blanking a
+  // working screen for that would be worse than the failure. Same distinction
+  // `useTimeslots` draws with `hasData`.
+  if (teamsError && !teams) {
     return (
       <ErrorDisplay
         variant="card"

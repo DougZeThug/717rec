@@ -242,6 +242,19 @@ describe('TeamManagementTab', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
+  it('keeps the table when a refetch fails but the teams are already loaded', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: teams,
+      isLoading: false,
+      error: new Error('refetch failed'),
+      refetch: vi.fn(),
+    });
+    render(<TeamManagementTab />);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search teams/i)).toBeInTheDocument();
+  });
+
   it('opens and closes edit dialog', async () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);

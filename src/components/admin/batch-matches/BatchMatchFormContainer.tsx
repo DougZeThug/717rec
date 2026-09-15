@@ -51,7 +51,11 @@ const BatchMatchFormContainer = () => {
 
   // Without this the form drew itself with empty team pickers and said nothing,
   // which reads exactly like a league with no teams in it.
-  if (error) {
+  // `!teams`, not just `error`: a background refetch that fails after a good
+  // load leaves the rows in place and sets the error alongside them. Blanking a
+  // working screen for that would be worse than the failure. Same distinction
+  // `useTimeslots` draws with `hasData`.
+  if (error && !teams) {
     return (
       <ErrorDisplay
         variant="card"

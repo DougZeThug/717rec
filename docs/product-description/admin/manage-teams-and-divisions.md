@@ -62,7 +62,12 @@ The Teams section fetches every team **including hidden ones** and the list of
 divisions, and shows a spinner until both arrive. If the team list fails to
 arrive it says "We couldn't load the teams. Please try again." with a Try again
 button, in place of the section. Update Logos does the same. Both used to draw
-an empty list under zeroed counts, which reads as a league with no teams. Everywhere else in the app,
+an empty list under zeroed counts, which reads as a league with no teams.
+
+**A later failure does not take the screen away.** The error stands in only when
+nothing ever loaded. If a background refresh fails after a good load, the teams
+already on screen stay on screen — they are still the truth, just not the newest
+one, and blanking a working table would be worse than the failure. Everywhere else in the app,
 hidden teams are filtered out; this is the only screen that shows them.
 
 The Divisions section fetches divisions ordered by weight, heaviest first, and

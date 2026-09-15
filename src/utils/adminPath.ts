@@ -21,5 +21,11 @@
  * it away, and no guard runs because nothing was ever asked. A link with
  * nowhere to go should go nowhere instead.
  */
-export const isAdminConsolePath = (pathname: string): boolean =>
-  pathname === '/admin' || pathname.startsWith('/admin/');
+export const isAdminConsolePath = (pathname: string): boolean => {
+  // The console serves `/admin` and `/admin/:section` — one segment, no more.
+  // A deeper address like `/admin/scores/typo` matches neither and lands on the
+  // not-found page, where the link has to work: treating it as an open console
+  // would leave an admin stranded with a dead Admin link and no way back in.
+  const segments = pathname.split('/').filter(Boolean);
+  return segments[0] === 'admin' && segments.length <= 2;
+};

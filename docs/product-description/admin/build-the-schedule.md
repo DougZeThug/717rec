@@ -214,7 +214,9 @@ guard, so nothing asks about a half-filled match form.
 teams. Please try again." with a Try again button, in place of the form. Auto
 Schedule's manual assignment panel says the same in place of itself. Both used
 to draw their controls with empty team pickers and say nothing, which reads
-exactly like a league with no teams in it.
+exactly like a league with no teams in it. Both keep the form when a *later*
+refresh fails and the teams are already loaded: the pickers still work, so
+taking them away would help nobody.
 
 **Optimistic updates and rollback.** None. Both wait for the server.
 

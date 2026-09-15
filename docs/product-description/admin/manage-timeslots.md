@@ -166,7 +166,9 @@ removes all four rows.
 **The two columns fail separately.** If the team list will not load, the
 assignment column says "We couldn't load the teams. Please try again." with a
 Retry button, and the current timeslots beside it still read normally. Booking
-needs the team list; reading the night does not.
+needs the team list; reading the night does not. A refresh that fails *after* a
+good load leaves the form where it is, because the teams it holds are still
+usable.
 
 **Removal waits for the night, like the move card.** Changing the date keeps the
 previous night's rows on screen while the new ones load, and a load that fails

@@ -339,6 +339,21 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
       expect(mockRefetchTeams).toHaveBeenCalled();
     });
 
+    // A refetch that fails after a good load keeps the rows and sets the error
+    // beside them. Blanking a working form for that is worse than the failure.
+    it('keeps the form when a refetch fails but the teams are already loaded', () => {
+      teamsQuery = {
+        data: testTeams,
+        isLoading: false,
+        error: new Error('refetch failed'),
+        refetch: mockRefetchTeams,
+      };
+      renderContainer();
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0);
+    });
+
     it('shows the spinner, not the error, while the first fetch is still running', () => {
       teamsQuery = {
         data: undefined,

@@ -62,6 +62,19 @@ describe('ManualTeamAssignment', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
+  it('keeps the panel when a refetch fails but the teams are already loaded', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: teams,
+      isLoading: false,
+      error: new Error('refetch failed'),
+      refetch: vi.fn(),
+    });
+    renderPanel();
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText('Manually Assign Teams')).toBeInTheDocument();
+  });
+
   it('shows the spinner, not the error, while the first fetch is running', () => {
     mockUseTeamsQuery.mockReturnValue({
       data: undefined,

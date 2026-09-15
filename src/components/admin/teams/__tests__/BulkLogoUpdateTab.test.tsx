@@ -59,6 +59,19 @@ describe('BulkLogoUpdateTab', () => {
     expect(refetch).toHaveBeenCalled();
   });
 
+  it('keeps the list when a refetch fails but the teams are already loaded', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: teams,
+      isLoading: false,
+      error: new Error('refetch failed'),
+      refetch: vi.fn(),
+    });
+    render(<BulkLogoUpdateTab />);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+  });
+
   it('shows the spinner, not the error, while the first fetch is running', () => {
     mockUseTeamsQuery.mockReturnValue({
       data: undefined,

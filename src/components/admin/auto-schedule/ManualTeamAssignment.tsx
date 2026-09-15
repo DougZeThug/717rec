@@ -114,7 +114,11 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
 
   // Without this the panel drew an empty checkbox list with an Assign button
   // above it, and nothing said the team list had failed to arrive.
-  if (error) {
+  // `!teams`, not just `error`: a background refetch that fails after a good
+  // load leaves the rows in place and sets the error alongside them. Blanking a
+  // working screen for that would be worse than the failure. Same distinction
+  // `useTimeslots` draws with `hasData`.
+  if (error && !teams) {
     return (
       <ErrorDisplay
         variant="card"
