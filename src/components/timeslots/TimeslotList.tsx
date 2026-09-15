@@ -27,9 +27,21 @@ interface TimeslotListProps {
   timeslots: TeamTimeslot[];
   teams: Team[];
   onDelete: (id: string) => void;
+  /**
+   * False while the rows on screen still belong to a **previously** chosen
+   * night. Removal goes by row id, so a press during that window would clear a
+   * booking on the night the admin has just left. Defaults to true for callers
+   * that never show another night's rows.
+   */
+  canDelete?: boolean;
 }
 
-const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete }) => {
+const TimeslotList: React.FC<TimeslotListProps> = ({
+  timeslots,
+  teams,
+  onDelete,
+  canDelete = true,
+}) => {
   const [deletingTimeslotId, setDeletingTimeslotId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -96,6 +108,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete 
                   <DestructiveIconButton
                     onClick={() => setDeletingTimeslotId(timeslot.id)}
                     title="Remove timeslot"
+                    disabled={!canDelete}
                   />
                 </TableCell>
               </TableRow>
@@ -132,7 +145,7 @@ const TimeslotList: React.FC<TimeslotListProps> = ({ timeslots, teams, onDelete 
                 e.preventDefault();
                 handleConfirmDelete();
               }}
-              disabled={isDeleting}
+              disabled={isDeleting || !canDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? (
