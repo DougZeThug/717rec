@@ -445,6 +445,30 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
       expect(result.current.hasUnsavedWork).toBe(true);
     });
 
+    // A save in edit mode used to leave `generatedMatches` holding the pre-edit
+    // copy, so the diff against it never closed: the amber alert stayed up, the
+    // guards stayed armed, and Save stayed enabled — a second press wrote the
+    // whole night a second time.
+    it('settles after a save that followed a real edit', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+
+      const matchToEdit = result.current.editableMatches[1];
+      act(() => {
+        result.current.updateMatchTimeslot(matchToEdit.id, OTHER_BLOCK_TIME);
+      });
+
+      await waitFor(() => expect(result.current.hasUnsavedEdits).toBe(true));
+
+      await act(async () => {
+        await result.current.handleSaveSchedule();
+      });
+
+      expect(mockSaveMatches).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(result.current.hasUnsavedEdits).toBe(false));
+      expect(result.current.hasUnsavedWork).toBe(false);
+    });
+
     it('reports again after a saved schedule is applied afresh', async () => {
       mockSaveMatches.mockResolvedValue(true);
       const result = await renderReadyToEdit();
