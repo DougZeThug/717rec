@@ -131,6 +131,31 @@ describe('AdminCorrectionsService.updateRound', () => {
     expect(result.id).toBe('r1');
   });
 
+  it('writes NULL to every bag column when the patch clears a breakdown', async () => {
+    const { write } = wire({ written: { id: 'r1', team1_score: 8 } });
+
+    // null is "clear them"; an absent key is "leave them alone". The edit
+    // dialog sends null now, so this is the path a cleared breakdown takes.
+    await AdminCorrectionsService.updateRound('r1', { team1Score: 8, team1Bags: null });
+
+    expect(write.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        team1_score: 8,
+        team1_bags_in: null,
+        team1_bags_on: null,
+        team1_bags_off: null,
+      })
+    );
+  });
+
+  it('leaves the bag columns out entirely when the patch omits them', async () => {
+    const { write } = wire({ written: { id: 'r1', team1_score: 8 } });
+
+    await AdminCorrectionsService.updateRound('r1', { team1Score: 8 });
+
+    expect(write.update).toHaveBeenCalledWith(expect.not.objectContaining({ team1_bags_in: null }));
+  });
+
   it('refuses to edit a round in an archived season and writes nothing', async () => {
     const { write } = wire({ season: ARCHIVED });
 

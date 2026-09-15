@@ -153,6 +153,12 @@ fields — In, On, Off — and a Thrower list holding that game's players plus
 
 11 is not a possible round score, which is why it is missing from the list.
 
+**Emptying all three bag fields clears the stored breakdown**, rather than
+leaving the old numbers behind. That is how a breakdown recorded by mistake is
+taken off a round: blank all three and save. It used to save without complaint
+and change nothing, and correcting the score at the same time failed outright,
+because the old breakdown no longer matched the new score.
+
 The dialog loads the round's stored values when it opens and **does not reload
 them if the round changes underneath**, so a half-finished correction is not
 wiped by a background refresh.

@@ -303,6 +303,45 @@ describe('live correction dialogs', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('clears a stored breakdown when all three bag fields are emptied', async () => {
+    const onSubmit = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+
+    render(
+      <EditRoundDialog
+        open
+        onOpenChange={vi.fn()}
+        round={baseRound}
+        team1Name="Team A"
+        team2Name="Team B"
+        team1Players={team1Players}
+        team2Players={team2Players}
+        rosterById={rosterById}
+        onSubmit={onSubmit}
+        isSubmitting={false}
+      />
+    );
+
+    for (const field of ['#team1-in', '#team1-on', '#team1-off']) {
+      fireEvent.change(screen.getByLabelText(/In|On|Off/, { selector: field }), {
+        target: { value: '' },
+      });
+    }
+
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    // null, not an absent key: the service leaves the stored columns alone when
+    // the key is missing, so an omitted breakdown never cleared.
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          team1Bags: null,
+          team2Bags: { bagsIn: 0, bagsOn: 1, bagsOff: 3 },
+        })
+      );
+    });
+  });
+
   it('submits the selected game winner', async () => {
     const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
     const user = userEvent.setup();
