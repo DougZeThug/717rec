@@ -36,8 +36,11 @@ type TeamDetailRow = {
   team_id: string;
   name: string;
   power_score: number | null;
-  wins: number;
-  losses: number;
+  /** The stored column the standings read, not a local wins/(wins+losses). */
+  win_percentage: number;
+  /** Carried only so a fixture can show the two numbers disagreeing. */
+  wins?: number;
+  losses?: number;
 };
 
 let bracketInsertCapture: Record<string, unknown> | null = null;
@@ -128,7 +131,7 @@ describe('createBracket — seeding order', () => {
 
   it('places the only manually-seeded team first', async () => {
     installSupabase({
-      fullTeamData: [{ team_id: 'a', name: 'A', power_score: 100, wins: 9, losses: 1 }],
+      fullTeamData: [{ team_id: 'a', name: 'A', power_score: 100, win_percentage: 0.9 }],
     });
     await createBracket({
       ...baseOptions,
@@ -146,9 +149,9 @@ describe('createBracket — seeding order', () => {
   it('sorts unseeded teams by power score descending', async () => {
     installSupabase({
       fullTeamData: [
-        { team_id: 'a', name: 'A', power_score: 50, wins: 5, losses: 5 },
-        { team_id: 'b', name: 'B', power_score: 90, wins: 5, losses: 5 },
-        { team_id: 'c', name: 'C', power_score: 70, wins: 5, losses: 5 },
+        { team_id: 'a', name: 'A', power_score: 50, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 90, win_percentage: 0.5 },
+        { team_id: 'c', name: 'C', power_score: 70, win_percentage: 0.5 },
       ],
     });
     await createBracket({
@@ -167,7 +170,7 @@ describe('createBracket — seeding order', () => {
   it('sinks teams with a null power score to the end', async () => {
     // 'a' is absent from v_team_details → power_score resolves to null
     installSupabase({
-      fullTeamData: [{ team_id: 'b', name: 'B', power_score: 80, wins: 5, losses: 5 }],
+      fullTeamData: [{ team_id: 'b', name: 'B', power_score: 80, win_percentage: 0.5 }],
     });
     await createBracket({
       ...baseOptions,
@@ -183,8 +186,8 @@ describe('createBracket — seeding order', () => {
   it('breaks equal power scores by win percentage descending', async () => {
     installSupabase({
       fullTeamData: [
-        { team_id: 'a', name: 'A', power_score: 50, wins: 8, losses: 2 },
-        { team_id: 'b', name: 'B', power_score: 50, wins: 5, losses: 5 },
+        { team_id: 'a', name: 'A', power_score: 50, win_percentage: 0.8 },
+        { team_id: 'b', name: 'B', power_score: 50, win_percentage: 0.5 },
       ],
     });
     await createBracket({
@@ -198,11 +201,56 @@ describe('createBracket — seeding order', () => {
     expect(seededTeams().map((t) => t.id)).toEqual(['a', 'b']);
   });
 
+  it('seeds on the stored win percentage, not wins over wins-plus-losses', async () => {
+    // The view divides by every completed match, so a match that completed
+    // without a winner sits in the denominator and in neither `wins` nor
+    // `losses`. Alpha has four of those: stored 3/10 = 0.30, but a local
+    // 3/(3+3) would read 0.50 and put Alpha first. The standings — and so the
+    // projected-seeds preview the admin checks the bracket against — say
+    // Bravo. `localeCompare` would also say Alpha, so this ordering can only
+    // come from the stored column.
+    installSupabase({
+      fullTeamData: [
+        { team_id: 'alpha', name: 'Alpha', power_score: 50, win_percentage: 0.3, wins: 3, losses: 3 },
+        { team_id: 'bravo', name: 'Bravo', power_score: 50, win_percentage: 0.4, wins: 4, losses: 6 },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'alpha', name: 'Alpha' },
+        { id: 'bravo', name: 'Bravo' },
+      ],
+    });
+
+    expect(seededTeams().map((t) => t.id)).toEqual(['bravo', 'alpha']);
+  });
+
+  it('keeps a team whose power score is zero in score order, not at the end', async () => {
+    // `||` read a real 0 as "no score" and sank the team below every team with
+    // one, including teams scoring below zero. `??` keeps it where it belongs.
+    installSupabase({
+      fullTeamData: [
+        { team_id: 'zero', name: 'Zero', power_score: 0, win_percentage: 0 },
+        { team_id: 'minus', name: 'Minus', power_score: -5, win_percentage: 0 },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'minus', name: 'Minus' },
+        { id: 'zero', name: 'Zero' },
+      ],
+    });
+
+    expect(seededTeams().map((t) => t.id)).toEqual(['zero', 'minus']);
+  });
+
   it('breaks equal power and win percentage alphabetically by name', async () => {
     installSupabase({
       fullTeamData: [
-        { team_id: 'z', name: 'Zeta', power_score: 50, wins: 5, losses: 5 },
-        { team_id: 'al', name: 'Alpha', power_score: 50, wins: 5, losses: 5 },
+        { team_id: 'z', name: 'Zeta', power_score: 50, win_percentage: 0.5 },
+        { team_id: 'al', name: 'Alpha', power_score: 50, win_percentage: 0.5 },
       ],
     });
     await createBracket({
@@ -223,8 +271,8 @@ describe('createBracket — persistence', () => {
   it('writes no legacy tables and no JSONB metadata — participants and grandFinalType live in brackets-manager tables', async () => {
     installSupabase({
       fullTeamData: [
-        { team_id: 'a', name: 'A', power_score: 30, wins: 5, losses: 5 },
-        { team_id: 'b', name: 'B', power_score: 90, wins: 5, losses: 5 },
+        { team_id: 'a', name: 'A', power_score: 30, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 90, win_percentage: 0.5 },
       ],
     });
     await createBracket({
@@ -252,8 +300,8 @@ describe('createBracket — persistence', () => {
   it('returns a bracket record reflecting the seeded participants', async () => {
     installSupabase({
       fullTeamData: [
-        { team_id: 'a', name: 'A', power_score: 30, wins: 5, losses: 5 },
-        { team_id: 'b', name: 'B', power_score: 90, wins: 5, losses: 5 },
+        { team_id: 'a', name: 'A', power_score: 30, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 90, win_percentage: 0.5 },
       ],
     });
     const bracket = await createBracket({

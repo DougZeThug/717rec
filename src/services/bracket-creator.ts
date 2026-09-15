@@ -36,7 +36,7 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
     // Fetch complete team data with power scores for proper seeding
     const { data: fullTeamData, error: teamError } = await supabase
       .from('v_team_details')
-      .select('team_id, name, power_score, wins, losses, divisionname')
+      .select('team_id, name, power_score, win_percentage, divisionname')
       .in(
         'team_id',
         teams.map((t) => t.id)
@@ -53,9 +53,11 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
         return {
           ...team,
           seed: team.seed || null, // Preserve manual seed if provided
-          power_score: fullData?.power_score || null,
-          wins: fullData?.wins || 0,
-          losses: fullData?.losses || 0,
+          // `??`, not `||`, exactly as useTeamRankings does: a real power
+          // score of 0 is a score, and `||` turned it into "no score" and sank
+          // that team to the bottom of the bracket.
+          power_score: fullData?.power_score ?? null,
+          winPercentage: fullData?.win_percentage || 0,
           divisionName: fullData?.divisionname || 'Unassigned',
         };
       })
@@ -79,8 +81,15 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
         const aDisplayed = getDisplayedPowerScore(a.power_score);
         const bDisplayed = getDisplayedPowerScore(b.power_score);
 
-        const aWinPct = a.wins && a.wins + a.losses > 0 ? a.wins / (a.wins + a.losses) : 0;
-        const bWinPct = b.wins && b.wins + b.losses > 0 ? b.wins / (b.wins + b.losses) : 0;
+        // The stored column, not a local `wins / (wins + losses)`. The view
+        // divides by every completed match, so a match that completed without a
+        // winner counts in its denominator and not in `wins` or `losses`. The
+        // local sum silently dropped those, which made this tiebreaker disagree
+        // with the standings the admin is looking at — and with the projected
+        // seeds, which take the standings order as given and promise it matches
+        // what this function assigns.
+        const aWinPct = a.winPercentage;
+        const bWinPct = b.winPercentage;
         const tierA = getTierFromDivision(a.divisionName);
         const tierB = getTierFromDivision(b.divisionName);
 
