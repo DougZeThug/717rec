@@ -10,6 +10,7 @@ import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerR
 import { useBracketCompletion } from '@/hooks/useBracketCompletion';
 import { fetchBracketInfo } from '@/services/brackets/BracketReadService';
 import type { BracketViewData } from '@/types/playoff';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { bracketLog, debugLog, errorLog, log } from '@/utils/logger';
 import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
@@ -183,7 +184,11 @@ const BracketView: React.FC<BracketViewProps> = ({
           <AlertCircle className="size-4" />
           <AlertDescription>
             <div className="space-y-2">
-              <p>Failed to load bracket: {error.message}</p>
+              {/* Never error.message: that is raw PostgREST text, which names
+                  tables and constraints. getUIErrorMessage keeps the reason
+                  when there is a safe one and falls back to a plain sentence
+                  otherwise. */}
+              <p>{getUIErrorMessage(error, 'Failed to load bracket')}</p>
             </div>
           </AlertDescription>
         </Alert>
