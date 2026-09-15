@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -168,6 +168,55 @@ describe('TeamManagementTab', () => {
     expect(mockUpdateTeam).not.toHaveBeenCalled();
     // The Select is controlled from server data, so the trigger still reads East.
     expect(getComboboxByText('East')).toBeInTheDocument();
+  });
+
+  // The prompt used to close the instant it was confirmed, so the pending state
+  // it was wired for had no render to appear in — and the modal overlay went
+  // with it, leaving Edit reachable on the same row mid-write.
+  it('keeps the prompt up, showing "Changing...", until the write lands', async () => {
+    let settleUpdate: (() => void) | undefined;
+    mockUpdateTeam.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          settleUpdate = resolve;
+        })
+    );
+
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    await user.click(getComboboxByText('East'));
+    await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
+    await user.click(await screen.findByRole('button', { name: /change division/i }));
+
+    await waitFor(() => expect(mockUpdateTeam).toHaveBeenCalled());
+
+    expect(screen.getByText("Change this team's division?")).toBeInTheDocument();
+    expect(await screen.findByText('Changing...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+
+    await act(async () => {
+      settleUpdate?.();
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText("Change this team's division?")).not.toBeInTheDocument()
+    );
+  });
+
+  it('closes the prompt even when the write fails', async () => {
+    mockUpdateTeam.mockRejectedValue(new Error('nope'));
+
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    await user.click(getComboboxByText('East'));
+    await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
+    await user.click(await screen.findByRole('button', { name: /change division/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Change this team's division?")).not.toBeInTheDocument()
+    );
   });
 
   it('opens and closes edit dialog', async () => {

@@ -27,9 +27,11 @@ Manage Teams is a search box, a division filter, and a table of every team
 including hidden ones. Each row is a logo, a name, a division dropdown, and an
 Edit button.
 
-The admin picks a different division from a row's dropdown. The dropdown goes
-dead for a moment, a toast says "Division Updated", and the table re-fetches.
-That is the whole interaction: **there is no Save.**
+The admin picks a different division from a row's dropdown. A prompt asks first,
+because the change is written the moment it is confirmed and there is no undo.
+Confirming keeps the prompt on screen reading "Changing..." until the write
+lands, then a toast says "Division Updated" and the table re-fetches. **There is
+no Save button** — the prompt is the save.
 
 In the **Divisions** section, each division is a row of name, display division,
 weight, and Edit and delete buttons. Pressing Edit turns the row into three
@@ -40,8 +42,9 @@ inputs; Save writes them and a toast says "Division updated".
 ```mermaid
 stateDiagram-v2
     [*] --> list : open Teams or Divisions
-    list --> rowEdit : change a team's division dropdown
-    rowEdit --> list : written at once (commit — no Save, no undo)
+    list --> confirmDivision : change a team's division dropdown
+    confirmDivision --> list : Cancel (nothing written, the trigger still reads the old division)
+    confirmDivision --> list : Change division (commit — no undo; the prompt stays up while it writes)
     list --> dialog : Edit a team, or Create Team
     dialog --> list : Cancel (nothing written)
     dialog --> list : Update or Create Team (commit)
@@ -111,10 +114,18 @@ with a tooltip explaining why.
 
 ### Submit
 
-**Division dropdown.** The write goes at once. The dropdown is disabled while it
-runs. Success raises "Division Updated"; failure raises "Update Failed — Failed
-to update team division. Please try again." There is no undo: the previous
-division is not recorded anywhere the admin can reach.
+**Division dropdown.** Picking a division opens a prompt — "Change this team's
+division?" — naming the team and where it is going, and warning when the target
+is Hidden. Cancel writes nothing and needs no revert, because the trigger is
+controlled from server data and still reads the old division.
+
+Confirming writes. The prompt **stays up** with a spinner reading "Changing...",
+and both its buttons are dead until the write lands. That is deliberate: its
+overlay is what keeps Edit on the same row out of reach, and an Edit saved
+mid-write could commit last and undo the division change. Success raises
+"Division Updated"; failure raises "Update Failed — Failed to update team
+division. Please try again." Either way the prompt closes. There is no undo: the
+previous division is not recorded anywhere the admin can reach.
 
 **Team form.** The button reads "Update Team" or "Create Team" and is disabled
 while an image is uploading. On success the dialog closes and the list
@@ -238,10 +249,10 @@ live season's power scores; archived seasons do not move.
 
 ## Edge cases
 
-- **Changing a division has no confirmation and no undo**, and it is a single
-  dropdown press on every row of the table.
-- **Hiding a team is the same press**, so a team can be removed from the whole
-  public site by one mis-click on a dropdown.
+- **Changing a division has no undo.** It is asked about first, but once
+  confirmed the previous division is not recorded anywhere the admin can reach.
+- **Hiding a team is the same dropdown**, so the prompt naming Hidden is the
+  only thing standing between a mis-click and a team leaving the public site.
 - **A team can be created with no division and no players.** It appears in the
   Unassigned count and in every public list.
 - **An image uploaded in a form that is then cancelled is still stored.**
