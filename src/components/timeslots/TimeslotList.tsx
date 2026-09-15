@@ -23,6 +23,24 @@ import {
 } from '@/components/ui/table';
 import { Team, TeamTimeslot } from '@/types';
 
+interface TimeslotRowProps {
+  timeslot: TeamTimeslot;
+  teamName: string;
+  canDelete: boolean;
+  onRemove: () => void;
+}
+
+/** One assigned timeslot, with the control that removes it. */
+const TimeslotRow: React.FC<TimeslotRowProps> = ({ timeslot, teamName, canDelete, onRemove }) => (
+  <TableRow>
+    <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
+    <TableCell>{teamName}</TableCell>
+    <TableCell>
+      <DestructiveIconButton onClick={onRemove} title="Remove timeslot" disabled={!canDelete} />
+    </TableCell>
+  </TableRow>
+);
+
 interface TimeslotListProps {
   timeslots: TeamTimeslot[];
   teams: Team[];
@@ -101,24 +119,20 @@ const TimeslotList: React.FC<TimeslotListProps> = ({
           </TableHeader>
           <TableBody>
             {sortedTimeslots.map((timeslot) => (
-              <TableRow key={timeslot.id}>
-                <TableCell className="font-medium">{timeslot.timeslot}</TableCell>
-                <TableCell>{getTeamName(timeslot)}</TableCell>
-                <TableCell>
-                  <DestructiveIconButton
-                    onClick={() => setDeletingTimeslotId(timeslot.id)}
-                    title="Remove timeslot"
-                    disabled={!canDelete}
-                  />
-                </TableCell>
-              </TableRow>
+              <TimeslotRow
+                key={timeslot.id}
+                timeslot={timeslot}
+                teamName={getTeamName(timeslot)}
+                canDelete={canDelete}
+                onRemove={() => setDeletingTimeslotId(timeslot.id)}
+              />
             ))}
           </TableBody>
         </Table>
       </div>
 
       <AlertDialog
-        open={!!deletingTimeslotId}
+        open={Boolean(deletingTimeslotId)}
         onOpenChange={(open) => !open && setDeletingTimeslotId(null)}
       >
         <AlertDialogContent>
