@@ -198,8 +198,9 @@ on other rows.
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
 | Escape, or a Cancel button | Closes an open filter. There is no Cancel button on the tool itself. | Closes the delete dialog without deleting, or an open filter. **It cannot stop a batch already sent**, and it never discards edits. |
-| In-app navigation away, or switching tab within the page | Nothing is lost. | Switching to another admin section **asks first**, because each section is unmounted when it is left. Saying yes loses every unsaved edit. A batch already sent still completes and still lands; the admin never sees the summary toast. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Same as navigating away, and the app cannot prevent it. |
+| Changing the date or the bracket | The new filter loads. | **Asks first.** Saying no keeps the scores and the night. Clearing the filters does not ask, because it widens the fetch and loses nothing. |
+| In-app navigation away, or switching tab within the page | Nothing is lost. | Switching to another admin section **asks first**, because each section is unmounted when it is left. So does anything in the site chrome — a header link, the logo, the user menu, Logout, a phone tab, a jump from the search palette. Saying yes loses every unsaved edit. A batch already sent still completes and still lands; the admin never sees the summary toast. |
+| Browser back or forward | Returns to the previous page. Nothing is recorded. | **Asks first** now, the same question a section switch asks; see [`the-admin-dashboard.md`](the-admin-dashboard.md). Back out of the site raises the browser's own warning. |
 | Reload, or the tab closed | The tool reloads and re-picks the latest night on or before today. | The browser asks first. Carrying on loses every unsaved edit; rows already written stay written, and after a reload the table itself says which is which. |
 | Network lost mid-request | The list fails to load and a red banner says "Couldn't load matches — retry." with a Retry button. | The batch fails row by row. Every row is marked failed, the red banner appears, and the summary toast says 0 saved. Nothing is queued. |
 | The request fails or times out | As above. | The failed rows keep their edits and their errors; the rest are already saved. Retry failed re-sends only the failures. |
@@ -230,8 +231,14 @@ Choosing another admin section asks "You have scores that are not submitted.
 Leave and lose them?" first, and saying no keeps them. Leaving the site,
 reloading or closing the tab raises the browser's own warning. There is still no
 draft and no restore: if the work is discarded it is gone, and Back is not
-guarded at all (see [`the-admin-dashboard.md`](the-admin-dashboard.md)). Edits
-survive a filter change only if the row is still in the new result.
+guarded at all (see [`the-admin-dashboard.md`](the-admin-dashboard.md)).
+
+**Changing the date or the bracket asks the same question**, because a narrower
+filter rebuilds the table from the new night's rows and an edited row the new
+night does not hold is dropped. Saying no keeps both the scores and the night.
+**Clearing the filters never asks**: it widens the fetch to every match, so the
+edited row is always in the result and nothing is lost. Filter changes used to
+throw the scores away with no warning.
 
 **Optimistic updates and rollback.** Rows are marked "Submitting..." at once,
 but no score is shown as saved before the league confirms it. A failed row is

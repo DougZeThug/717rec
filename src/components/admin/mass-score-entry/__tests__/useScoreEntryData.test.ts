@@ -228,6 +228,35 @@ describe('useScoreEntryData - filter changes', () => {
     expect(edited?.isEdited).toBe(true);
     expect(edited?.team1Score).toBe(1);
   });
+
+  // The hook itself cannot save an edit the new filter excludes: the table is
+  // rebuilt from the rows the server sent, and nothing else holds the edits.
+  // This is why the tool asks before it changes a filter — see
+  // MassScoreEntryTool.filters.test.tsx.
+  it('drops an unsaved edit when the new filter excludes its row', async () => {
+    const { result } = renderHook(() => useScoreEntryData(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.matches.length).toBe(2));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+
+    act(() => {
+      result.current.handleScoreChange(0, 1, 0);
+    });
+    const editedId = result.current.matches[0].id;
+    expect(result.current.matches[0].isEdited).toBe(true);
+
+    // The night the admin switches to holds only the other match.
+    vi.mocked(fetchMatchesForAdmin).mockResolvedValue([
+      defaultRows.find((row) => row.id !== editedId),
+    ] as never);
+
+    act(() => {
+      result.current.setFilterDate(new Date('2026-06-25T18:00:00.000Z'));
+    });
+
+    await waitFor(() => expect(result.current.matches.length).toBe(1));
+    expect(result.current.matches.find((m) => m.id === editedId)).toBeUndefined();
+    expect(result.current.matches.some((m) => m.isEdited)).toBe(false);
+  });
 });
 
 describe('useScoreEntryData - cross-filter cache hygiene', () => {

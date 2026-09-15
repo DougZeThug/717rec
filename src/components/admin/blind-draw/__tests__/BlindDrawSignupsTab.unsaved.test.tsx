@@ -15,10 +15,12 @@ vi.mock('@/hooks/useBlindDrawSettings', () => ({
   useUpdateBlindDrawSettings: () => ({ mutate: mockMutate, isPending: false }),
 }));
 
+let clearSignupsMutation: { mutate: ReturnType<typeof vi.fn>; isPending: boolean };
+
 vi.mock('@/hooks/useBlindDrawSignups', () => ({
   useBlindDrawSignups: () => ({ data: [], isLoading: false, error: null }),
   useDeleteBlindDrawSignup: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useClearBlindDrawSignups: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useClearBlindDrawSignups: () => clearSignupsMutation,
 }));
 
 import { clearUnsavedWork, findUnsavedWork } from '@/utils/unsavedChanges';
@@ -29,6 +31,7 @@ describe('Blind Draw signup message', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     clearUnsavedWork();
+    clearSignupsMutation = { mutate: vi.fn(), isPending: false };
   });
 
   afterEach(() => clearUnsavedWork());

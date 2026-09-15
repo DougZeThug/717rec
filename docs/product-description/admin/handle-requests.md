@@ -189,7 +189,7 @@ What happens on the other side is in
 | --- | --- | --- |
 | Escape, or a Cancel button | Nothing to cancel. | Closes the reject or approve/deny dialog and writes nothing. **There is nothing to cancel on a contact-request delete** — it is already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | Typed admin notes are lost with no warning. A write already sent still lands; the admin never sees the toast. Switching admin section is enough. |
-| Browser back or forward | As above, and the app cannot prevent it. | As above. |
+| Browser back or forward | As above. | As above. |
 | Reload, or the tab closed | Each queue reloads from the league. The team-request filter goes back to Pending. | Unsent notes are gone. A sent write may have landed; the reloaded list says which. |
 | Network lost mid-request | The membership queue shows its red failure panel. The contact list shows "Loading…" then nothing. The team-request list shows a spinner. | The write fails and the queue's generic red toast appears. Nothing is queued for later. |
 | The request fails or times out | As above. | As above. Membership and contact rows stay in place; the team-request dialog stays open with its notes. |

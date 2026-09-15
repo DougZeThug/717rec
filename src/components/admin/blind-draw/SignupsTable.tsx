@@ -9,7 +9,7 @@ export const SIGNUPS_CELL = 'px-2 sm:px-4 py-2';
 
 /**
  * The frame for the blind-draw signups list: the border, the table, and the
- * four headings. Callers supply only the rows.
+ * five headings. Callers supply only the rows.
  *
  * The real list and its loading skeleton used to write this header out
  * separately, character for character — so a column added to one silently did
@@ -17,11 +17,11 @@ export const SIGNUPS_CELL = 'px-2 sm:px-4 py-2';
  * standing in for. React Doctor flagged the pair as a duplicated JSX subtree.
  *
  * It stays a plain `<table>` rather than `ResponsiveTable`: three visible
- * columns on a phone (the date folds under the name) already read fine, and a
+ * columns on a phone (the night folds under the name) already read fine, and a
  * card per signup would be more chrome for less information. See
  * `src/docs/TABLE_PATTERNS.md`.
  */
-/** The four headings, kept out of the table body so neither tree nests deeply. */
+/** The five headings, kept out of the table body so neither tree nests deeply. */
 const SignupsTableHeader: React.FC = () => (
   <thead className="bg-muted/50">
     <tr>
@@ -30,6 +30,11 @@ const SignupsTableHeader: React.FC = () => (
       </th>
       <th scope="col" className={HEADER_CELL}>
         Name
+      </th>
+      {/* Which night the signup is for. The one column an admin needs to tell
+          tonight's draw from next week's, and the list had no way to show it. */}
+      <th scope="col" className={cn(HEADER_CELL, 'hidden sm:table-cell')}>
+        Night
       </th>
       <th scope="col" className={cn(HEADER_CELL, 'hidden sm:table-cell')}>
         Signed Up

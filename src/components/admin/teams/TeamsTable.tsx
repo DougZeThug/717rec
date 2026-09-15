@@ -18,7 +18,13 @@ type DivisionOption = { id: string; name: string };
 
 export type TeamItemActionApi = {
   onEdit: (team: Team) => void;
-  onDivisionChange: (teamId: string, value: string) => void;
+  /**
+   * Returns a promise where the change is a write, so the prompt that asked
+   * about it can stay up until it lands. The Selects here do not wait on it —
+   * they are controlled from server data and `isUpdatingTeam` already disables
+   * them — but `ManageTeamsPane` does.
+   */
+  onDivisionChange: (teamId: string, value: string) => void | Promise<void>;
   isUpdatingTeam: (teamId: string) => boolean;
 };
 

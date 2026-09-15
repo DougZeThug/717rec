@@ -29,6 +29,9 @@ const SignupsListSkeleton: React.FC = () => (
           <ShimmerSkeleton className="h-4 w-24" />
         </td>
         <td className={`${SIGNUPS_CELL} hidden sm:table-cell`}>
+          <ShimmerSkeleton className="h-4 w-24" />
+        </td>
+        <td className={`${SIGNUPS_CELL} hidden sm:table-cell`}>
           <ShimmerSkeleton className="h-4 w-28" />
         </td>
         <td className={`${SIGNUPS_CELL} text-right`}>

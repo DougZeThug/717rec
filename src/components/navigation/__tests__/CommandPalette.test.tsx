@@ -2,9 +2,10 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CommandPalette from '@/components/navigation/CommandPalette';
+import { clearUnsavedWork, registerUnsavedWork } from '@/utils/unsavedChanges';
 
 // Polyfill ResizeObserver for jsdom (cmdk needs it).
 globalThis.ResizeObserver =
@@ -143,5 +144,55 @@ describe('CommandPalette', () => {
     await user.keyboard('{Meta>}k{/Meta}');
 
     expect(await screen.findByText('Go to Home')).toBeInTheDocument();
+  });
+});
+
+/**
+ * The palette is in the header of every page, the admin console included, and
+ * every entry in it is a jump to another page. Nothing asked first.
+ */
+describe('CommandPalette with unsaved work on screen', () => {
+  let confirmSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    clearUnsavedWork();
+    confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    registerUnsavedWork({ isDirty: () => true, message: 'Unsaved scores' });
+  });
+
+  afterEach(() => {
+    confirmSpy.mockRestore();
+    clearUnsavedWork();
+  });
+
+  it('asks before a jump throws it away', async () => {
+    const user = await openPalette();
+
+    await user.click(await screen.findByText('View Standings'));
+
+    expect(confirmSpy).toHaveBeenCalledWith('Unsaved scores');
+    expect(navigateMock).toHaveBeenCalledWith('/stats');
+  });
+
+  // Asked before the palette closes, not after: a refused jump should leave it
+  // exactly as it was, not shut as though something had happened.
+  it('goes nowhere and stays open when the admin says no', async () => {
+    confirmSpy.mockReturnValue(false);
+    const user = await openPalette();
+
+    await user.click(await screen.findByText('View Standings'));
+
+    expect(navigateMock).not.toHaveBeenCalled();
+    expect(screen.getByText('View Standings')).toBeInTheDocument();
+  });
+
+  it('never asks while there is nothing to lose', async () => {
+    clearUnsavedWork();
+    const user = await openPalette();
+
+    await user.click(await screen.findByText('View Standings'));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(navigateMock).toHaveBeenCalledWith('/stats');
   });
 });

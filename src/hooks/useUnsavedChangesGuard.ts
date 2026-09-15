@@ -15,15 +15,19 @@ interface UnsavedChangesGuard {
 /**
  * Warn before unsaved work is lost.
  *
- * Covers two ways out: choosing another admin section, which the console shell
- * asks about before it navigates, and leaving the site, which the browser asks
- * about. Call `confirmDiscard` for a third — a Cancel button the component owns.
+ * Registering here is all a screen has to do. Three things then ask on its
+ * behalf, each covering a way out the others cannot reach:
  *
- * It does **not** cover the browser's Back and Forward buttons. Blocking those
- * needs a react-router data router, and this app builds its routes the
- * declarative way; converting it would touch every route in the app. Back has
- * always lost this work, so nothing is worse than before, but it is worth
- * knowing. See UX audit A-07.
+ * - **A click** — a header link, the logo, a menu item, a phone tab, the search
+ *   palette, an admin section switch. Asked about in the click handler, by
+ *   `confirmLeavingClick` in `utils/unsavedChanges`, so a refusal can leave the
+ *   screen and its menus exactly as they were.
+ * - **Back and Forward** — no click to hang a handler on, so `UnsavedWorkBlocker`
+ *   catches them at the router instead. See UX audit A-07.
+ * - **Leaving the site**, by typing an address, reloading or closing the tab —
+ *   the `beforeunload` listener below, which raises the browser's own warning.
+ *
+ * Call `confirmDiscard` for a fourth: a Cancel button the component owns.
  *
  * Takes a plain boolean rather than a form state, because none of the screens
  * that need it use react-hook-form.

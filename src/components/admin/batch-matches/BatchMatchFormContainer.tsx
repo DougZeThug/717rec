@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useToast } from '@/hooks/useToast';
@@ -11,7 +12,7 @@ import { MatchPairsSection } from './MatchPairsSection';
 import { useBatchMatchForm } from './useBatchMatchForm';
 
 const BatchMatchFormContainer = () => {
-  const { data: teams, isLoading } = useTeamsQuery();
+  const { data: teams, isLoading, error, refetch } = useTeamsQuery();
   const { toast } = useToast();
   const [isAutoAssigning, setIsAutoAssigning] = React.useState(false);
   const [showAutoSchedule, setShowAutoSchedule] = React.useState(false);
@@ -46,6 +47,22 @@ const BatchMatchFormContainer = () => {
 
   if (isLoading) {
     return <LoadingState message="Loading teams data..." size="md" />;
+  }
+
+  // Without this the form drew itself with empty team pickers and said nothing,
+  // which reads exactly like a league with no teams in it.
+  // `!teams`, not just `error`: a background refetch that fails after a good
+  // load leaves the rows in place and sets the error alongside them. Blanking a
+  // working screen for that would be worse than the failure. Same distinction
+  // `useTimeslots` draws with `hasData`.
+  if (error && !teams) {
+    return (
+      <ErrorDisplay
+        variant="card"
+        error="We couldn't load the teams. Please try again."
+        onRetry={() => refetch()}
+      />
+    );
   }
 
   return (

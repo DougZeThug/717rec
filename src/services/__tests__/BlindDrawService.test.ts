@@ -134,14 +134,14 @@ describe('BlindDrawService.fetchBlindDrawSignups', () => {
   });
 
   it('applies eventDate filter when provided', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        order: () => ({
-          eq: () => Promise.resolve({ data: [makeSignup()], error: null }),
-        }),
-      }),
-    });
+    // Asserting the column and the value, not just the row count: the old
+    // version of this test passed whether or not a filter was applied at all.
+    const eq = vi.fn().mockResolvedValue({ data: [makeSignup()], error: null });
+    mockFrom.mockReturnValue({ select: () => ({ order: () => ({ eq }) }) });
+
     const result = await BlindDrawService.fetchBlindDrawSignups('2026-04-17');
+
+    expect(eq).toHaveBeenCalledWith('event_date', '2026-04-17');
     expect(result).toHaveLength(1);
   });
 
@@ -210,17 +210,43 @@ describe('BlindDrawService.deleteSignup', () => {
 describe('BlindDrawService.clearSignups', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('resolves on success', async () => {
-    mockFrom.mockReturnValue({
-      delete: () => ({ neq: () => Promise.resolve({ error: null }) }),
-    });
+  /** A delete chain offering both filters, so the service picks one. */
+  const wireDelete = (result: { error: unknown } = { error: null }) => {
+    const eq = vi.fn().mockResolvedValue(result);
+    const neq = vi.fn().mockResolvedValue(result);
+    mockFrom.mockReturnValue({ delete: () => ({ eq, neq }) });
+    return { eq, neq };
+  };
+
+  // The whole point of the date argument: an unscoped clear took next week's
+  // signups along with tonight's.
+  it('removes one night when given a date, and only that night', async () => {
+    const { eq, neq } = wireDelete();
+
+    await expect(BlindDrawService.clearSignups('2026-04-17')).resolves.toBeUndefined();
+
+    expect(eq).toHaveBeenCalledWith('event_date', '2026-04-17');
+    expect(neq).not.toHaveBeenCalled();
+  });
+
+  it('removes every night when given no date', async () => {
+    const { eq, neq } = wireDelete();
+
     await expect(BlindDrawService.clearSignups()).resolves.toBeUndefined();
+
+    // PostgREST refuses a delete with no filter at all; the nil uuid is how it
+    // is told "every row".
+    expect(neq).toHaveBeenCalledWith('id', '00000000-0000-0000-0000-000000000000');
+    expect(eq).not.toHaveBeenCalled();
   });
 
   it('throws DatabaseError on error', async () => {
-    mockFrom.mockReturnValue({
-      delete: () => ({ neq: () => Promise.resolve({ error: pgError() }) }),
-    });
+    wireDelete({ error: pgError() });
     await expect(BlindDrawService.clearSignups()).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when one night fails', async () => {
+    wireDelete({ error: pgError() });
+    await expect(BlindDrawService.clearSignups('2026-04-17')).rejects.toThrow(DatabaseError);
   });
 });

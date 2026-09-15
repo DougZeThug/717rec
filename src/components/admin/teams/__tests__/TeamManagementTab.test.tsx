@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -168,6 +168,95 @@ describe('TeamManagementTab', () => {
     expect(mockUpdateTeam).not.toHaveBeenCalled();
     // The Select is controlled from server data, so the trigger still reads East.
     expect(getComboboxByText('East')).toBeInTheDocument();
+  });
+
+  // The prompt used to close the instant it was confirmed, so the pending state
+  // it was wired for had no render to appear in — and the modal overlay went
+  // with it, leaving Edit reachable on the same row mid-write.
+  it('keeps the prompt up, showing "Changing...", until the write lands', async () => {
+    let settleUpdate: (() => void) | undefined;
+    let writeInFlight: Promise<void> | undefined;
+    mockUpdateTeam.mockImplementation(() => {
+      writeInFlight = new Promise<void>((resolve) => {
+        settleUpdate = resolve;
+      });
+      return writeInFlight;
+    });
+
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    await user.click(getComboboxByText('East'));
+    await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
+    await user.click(await screen.findByRole('button', { name: /change division/i }));
+
+    await waitFor(() => expect(mockUpdateTeam).toHaveBeenCalled());
+
+    expect(screen.getByText("Change this team's division?")).toBeInTheDocument();
+    expect(await screen.findByText('Changing...')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+
+    // Let the write land inside `act`, so the close it triggers is a render
+    // React has already processed by the time the assertion below looks.
+    await act(async () => {
+      settleUpdate?.();
+      await writeInFlight;
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText("Change this team's division?")).not.toBeInTheDocument()
+    );
+  });
+
+  it('closes the prompt even when the write fails', async () => {
+    mockUpdateTeam.mockRejectedValue(new Error('nope'));
+
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    await user.click(getComboboxByText('East'));
+    await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
+    await user.click(await screen.findByRole('button', { name: /change division/i }));
+
+    await waitFor(() =>
+      expect(screen.queryByText("Change this team's division?")).not.toBeInTheDocument()
+    );
+  });
+
+  // A failed fetch leaves isLoading false with no data, so an isLoading-only
+  // guard fell through to an empty table under "0 Total Teams" — which reads as
+  // a league with no teams rather than a list that failed to arrive.
+  it('says so when the teams cannot be loaded, instead of showing none', async () => {
+    const refetch = vi.fn();
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+      refetch,
+    });
+    const user = userEvent.setup();
+    render(<TeamManagementTab />);
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "We couldn't load the teams. Please try again."
+    );
+    expect(screen.queryByPlaceholderText(/search teams/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
+  it('keeps the table when a refetch fails but the teams are already loaded', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: teams,
+      isLoading: false,
+      error: new Error('refetch failed'),
+      refetch: vi.fn(),
+    });
+    render(<TeamManagementTab />);
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/search teams/i)).toBeInTheDocument();
   });
 
   it('opens and closes edit dialog', async () => {

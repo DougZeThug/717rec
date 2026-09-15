@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES } from '@/styles/icon-system';
+import { confirmLeavingClick } from '@/utils/unsavedChanges';
 
 const BottomNav = React.memo(() => {
   const location = useLocation();
@@ -68,6 +69,10 @@ const BottomNav = React.memo(() => {
             to={item.path}
             label={item.label}
             icon={item.icon}
+            // This bar is pinned to the bottom of every admin screen on a
+            // phone, which is where scores get typed. One stray tap used to
+            // take the lot.
+            onClick={confirmLeavingClick}
             className={cn(
               'flex-1 px-2 py-1.5 text-sm',
               'flex flex-col items-center justify-center',

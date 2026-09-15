@@ -47,6 +47,17 @@ export const useTimeslotQuery = (date: Date | null) => {
      * with placeholder data present the query is no longer pending.
      */
     isPlaceholderData: query.isPlaceholderData,
+    /**
+     * True once a fetch for this date has actually returned rows — even an
+     * empty set. False while nothing has arrived, which includes a **failed**
+     * first load: the query settles with `data` undefined, so neither
+     * `isLoading` nor `isPlaceholderData` is true any more and the two of them
+     * together cannot tell "empty night" from "never loaded".
+     *
+     * A refetch that fails after a good load keeps the rows it already had, so
+     * this stays true and the screen stays usable.
+     */
+    hasData: query.data !== undefined,
     error: query.error?.message || null,
   };
 };

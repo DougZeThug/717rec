@@ -7,6 +7,7 @@ import TimeslotList from '@/components/timeslots/TimeslotList';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useTimeslotPrefill } from '@/hooks/timeslots/useTimeslotPrefill';
@@ -18,6 +19,35 @@ import { errorLog } from '@/utils/logger';
 import { buildMovePlan, describeBlock } from '@/utils/timeslotMove';
 
 import TimeslotMoveCard from './TimeslotMoveCard';
+
+/**
+ * The assignment column, which is a booking form or one of two stand-ins.
+ *
+ * Its own component so the three states are three plain returns, and so
+ * `TimeslotsTab` does not carry their branches on top of everything else it
+ * already decides. React Doctor flags that function for complexity otherwise.
+ */
+const AssignmentColumn = ({
+  isLoading,
+  hasFailed,
+  onRetry,
+  children,
+}: {
+  isLoading: boolean;
+  /** The team list never arrived. A failed *refresh* is not this. */
+  hasFailed: boolean;
+  onRetry: () => void;
+  /** The booking form. One element, so it can be returned as it is. */
+  children: React.ReactElement;
+}) => {
+  if (isLoading) return <p>Loading teams...</p>;
+  // Only this column needs the team list. The current timeslots beside it still
+  // read fine, so the failure stays local rather than blanking the whole tab.
+  if (hasFailed) {
+    return <ErrorDisplay error="We couldn't load the teams. Please try again." onRetry={onRetry} />;
+  }
+  return children;
+};
 
 const TimeslotsTab = () => {
   const { toast } = useToast();
@@ -35,7 +65,16 @@ const TimeslotsTab = () => {
     if (prefill.date) setSelectedDate(prefill.date);
   }
 
-  const { data: teams = [], isLoading: isLoadingTeams } = useTeamsQuery();
+  const {
+    data: loadedTeams,
+    isLoading: isLoadingTeams,
+    error: teamsError,
+    refetch: refetchTeams,
+  } = useTeamsQuery();
+  const teams = loadedTeams ?? [];
+  // A refetch that fails after a good load keeps the rows and sets the error
+  // beside them; only a load that never landed leaves nothing to work with.
+  const teamsNeverLoaded = loadedTeams === undefined;
 
   /** One team by name, several by count — an admin books both ways. */
   const describeTeams = (teamIds: string[]): string => {
@@ -261,9 +300,11 @@ const TimeslotsTab = () => {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
-            {isLoadingTeams ? (
-              <p>Loading teams...</p>
-            ) : (
+            <AssignmentColumn
+              isLoading={isLoadingTeams}
+              hasFailed={Boolean(teamsError) && teamsNeverLoaded}
+              onRetry={() => refetchTeams()}
+            >
               <TimeslotAssignment
                 selectedDate={selectedDate}
                 teams={teams}
@@ -273,7 +314,7 @@ const TimeslotsTab = () => {
                 onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
                 isSubmitting={isSubmitting}
               />
-            )}
+            </AssignmentColumn>
           </div>
 
           <div>

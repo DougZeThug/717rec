@@ -153,6 +153,12 @@ fields — In, On, Off — and a Thrower list holding that game's players plus
 
 11 is not a possible round score, which is why it is missing from the list.
 
+**Emptying all three bag fields clears the stored breakdown**, rather than
+leaving the old numbers behind. That is how a breakdown recorded by mistake is
+taken off a round: blank all three and save. It used to save without complaint
+and change nothing, and correcting the score at the same time failed outright,
+because the old breakdown no longer matched the new score.
+
 The dialog loads the round's stored values when it opens and **does not reload
 them if the round changes underneath**, so a half-finished correction is not
 wiped by a background refresh.
@@ -245,7 +251,7 @@ in a single press. See [`site-settings.md`](site-settings.md).
 | --- | --- | --- |
 | Escape, or a Cancel button | Nothing to cancel. "Clear selection" — "Back to list" on a phone — empties the right-hand panel. It appears at the top of the panel only while a match is selected. | The edit-round dialog **asks first** when a field has been changed; the other two close straight away. Nothing is written either way, and neither can stop a save already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | Switching dashboard section **asks first** while the edit-round dialog holds changes, then loses them. A save already sent still lands; the admin never sees the toast. |
-| Browser back or forward | As above, and the app cannot prevent it. | As above. |
+| Browser back or forward | As above. | **Asks first** now, the same question a section switch asks; see [`the-admin-dashboard.md`](the-admin-dashboard.md). |
 | Reload, or the tab closed | The panel returns with no match selected. | An unsaved edit is gone. A sent write may have landed; the round list after reloading says which. |
 | Network lost mid-request | The list fails with "Failed to load matches." | The write fails and its red toast carries the reason. Nothing is queued and the dialog stays open with the input intact. |
 | The request fails or times out | As above. | As above. The admin can press Save again without retyping. |
@@ -284,7 +290,7 @@ real message.
 outside all ask "This round has changes that are not saved. Close and lose them?"
 once a field has been changed. Saving closes without asking, and a fresh copy of
 the same round arriving from the server does not count as a change. The other two
-dialogs hold nothing to lose. Browser Back is not guarded anywhere; see
+dialogs hold nothing to lose. Browser Back asks the same question; see
 [`the-admin-dashboard.md`](the-admin-dashboard.md).
 
 **Optimistic updates and rollback.** None. Every write waits.

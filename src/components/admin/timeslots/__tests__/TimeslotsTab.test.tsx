@@ -101,6 +101,41 @@ describe('TimeslotsTab', () => {
     moveTeamBooking.mockResolvedValue('moved');
   });
 
+  it('keeps the assignment form when a refetch fails but the teams are loaded', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: [{ id: TEAM_ID, name: '3 Amigos' }],
+      isLoading: false,
+      error: new Error('refetch failed'),
+      refetch: vi.fn(),
+    });
+    renderTab();
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  // The two columns load separately. A failed team list must say so where the
+  // assignment form would be, and must not take the timeslot list with it.
+  it('says so in the assignment column when the teams cannot be loaded', async () => {
+    const refetch = vi.fn();
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+      refetch,
+    });
+    const user = userEvent.setup();
+    renderTab();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      "We couldn't load the teams. Please try again."
+    );
+    // The night's own rows are a separate query and still read fine.
+    expect(screen.getByText('Current Timeslots')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalled();
+  });
+
   afterEach(() => {
     vi.useRealTimers();
   });

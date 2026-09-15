@@ -2,7 +2,15 @@ import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@ta
 import { domAnimation, LazyMotion, MotionConfig } from 'framer-motion';
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router';
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Navigate,
+  Outlet,
+  Route,
+  RouterProvider,
+  useLocation,
+} from 'react-router';
 
 import { LoadingState } from '@/components/ui/loading-state';
 import { Toaster } from '@/components/ui/toaster';
@@ -25,6 +33,7 @@ import Footer from './components/layout/Footer';
 import Navbar from './components/layout/Navbar';
 import { OfflineBanner } from './components/layout/OfflineBanner';
 import AppNavigation from './components/navigation/AppNavigation';
+import { UnsavedWorkBlocker } from './components/navigation/UnsavedWorkBlocker';
 import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import PageTransition from './components/transitions/PageTransition';
 
@@ -76,8 +85,20 @@ const queryClient = new QueryClient({
   }),
 });
 
-/** Renders the authenticated application shell, route content, and route-level side effects. */
-const AppContent = () => {
+/**
+ * The shell every page renders inside: the header, the transition wrapper, the
+ * phone tab bar and the footer, with the matched page in the `<Outlet />`.
+ *
+ * It is the router's one layout route rather than a component wrapped around
+ * `<Routes>`, because a data router is what makes `useBlocker` available — and
+ * that is the only thing that can stop the browser's Back button throwing away
+ * unsaved work. See `UnsavedWorkBlocker` below.
+ *
+ * `AuthProvider` sits here rather than above the router: the router is built
+ * once, outside React, so it cannot read context from a component above it.
+ * Nothing in `AuthProvider` touches the router, so the move is a no-op.
+ */
+const AppLayout = () => {
   const location = useLocation();
   const navigationStartRef = useLazyRef(() => performance.now());
   const mainRef = useRef<HTMLElement>(null);
@@ -106,255 +127,284 @@ const AppContent = () => {
   }, []);
 
   return (
-    <NavigationProvider>
-      <RouteAnnouncer />
-      <ScrollToTop />
-      <div className="flex flex-col min-h-screen overflow-x-hidden">
-        <Navbar />
-        {/* Under the header and in normal flow, never sticky: the header is
+    <AuthProvider>
+      <NavigationProvider>
+        <RouteAnnouncer />
+        <ScrollToTop />
+        <UnsavedWorkBlocker />
+        <div className="flex flex-col min-h-screen overflow-x-hidden">
+          <Navbar />
+          {/* Under the header and in normal flow, never sticky: the header is
             already `sticky top-0 z-50`, so a second sticky bar slides beneath
             it. See the same note on the admin phone menu. */}
-        <OfflineBanner />
-        <PageTransition>
-          <main
-            ref={mainRef}
-            id="main-content"
-            tabIndex={-1}
-            className="flex-grow focus:outline-none"
-          >
-            {/* Above the Suspense, not inside a route.
+          <OfflineBanner />
+          <PageTransition>
+            <main
+              ref={mainRef}
+              id="main-content"
+              tabIndex={-1}
+              className="flex-grow focus:outline-none"
+            >
+              {/* Above the Suspense, not inside a route.
                 A page whose code fails to download rejects the lazy import, and
                 React re-throws that from the Suspense boundary's own position —
                 so the per-route boundaries below are not in its path and the
                 app-level one catches it instead, taking the header with it.
                 That was the dead end in UX audit X-12. A boundary here keeps
                 the header and hands a failed download to ChunkLoadRecovery. */}
-            <RouteErrorBoundary routeName="this page">
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center min-h-[60vh] py-8">
-                    <LoadingState message="Loading page..." size="lg" />
-                  </div>
-                }
-              >
-                <Routes location={location}>
-                  <Route
-                    path="/"
-                    element={
-                      <RouteErrorBoundary routeName="Home">
-                        <Index />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/teams"
-                    element={
-                      <RouteErrorBoundary routeName="Teams">
-                        <TeamsPage />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/teams/:teamId"
-                    element={
-                      <RouteErrorBoundary routeName="Team Details">
-                        <TeamDetails />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/schedule"
-                    element={
-                      <RouteErrorBoundary routeName="Schedule">
-                        <Schedule />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/stats"
-                    element={
-                      <RouteErrorBoundary routeName="Standings">
-                        <Stats />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/playoffs"
-                    element={
-                      <RouteErrorBoundary routeName="Playoffs">
-                        <Playoffs />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  {import.meta.env.DEV && (
-                    <Route
-                      path="/playoffs/e2e-bracket-proof"
-                      element={
-                        <RouteErrorBoundary routeName="Playoff Bracket E2E Proof">
-                          <PlayoffBracketE2EProof />
-                        </RouteErrorBoundary>
-                      }
-                    />
-                  )}
-                  <Route
-                    path="/history"
-                    element={
-                      <RouteErrorBoundary routeName="History">
-                        <History />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  {/* This was a page nothing linked to, duplicating a section
-                    that lives inside the admin console. The guard stays so a
-                    signed-out visitor still lands on /auth, not /admin.
-                    `/admin/notifications` needs no redirect of its own: it is
-                    now the real address of the Notifications section. */}
-                  <Route
-                    path="/timeslots"
-                    element={
-                      <ProtectedAdminRoute>
-                        <Navigate to="/admin/timeslots" replace />
-                      </ProtectedAdminRoute>
-                    }
-                  />
-                  {/* Bare /admin reopens the last section; /admin/:section is the
-                    shareable address of one. Both render the same page. */}
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedAdminRoute>
-                        <RouteErrorBoundary routeName="Admin Dashboard">
-                          <AdminDashboard />
-                        </RouteErrorBoundary>
-                      </ProtectedAdminRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/:section"
-                    element={
-                      <ProtectedAdminRoute>
-                        <RouteErrorBoundary routeName="Admin Dashboard">
-                          <AdminDashboard />
-                        </RouteErrorBoundary>
-                      </ProtectedAdminRoute>
-                    }
-                  />
-                  <Route
-                    path="/auth"
-                    element={
-                      <RouteErrorBoundary routeName="Sign In">
-                        <Auth />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/forgot-password"
-                    element={
-                      <RouteErrorBoundary routeName="Forgot Password">
-                        <ForgotPassword />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/reset-password"
-                    element={
-                      <RouteErrorBoundary routeName="Reset Password">
-                        <ResetPassword />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/setup-profile"
-                    element={
-                      <RouteErrorBoundary routeName="Profile Setup">
-                        <ProfileSetup />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/message-board"
-                    element={
-                      <RouteErrorBoundary routeName="Message Board">
-                        <MessageBoard />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/my-team"
-                    element={
-                      <RouteErrorBoundary routeName="My Team">
-                        <MyTeam />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/help"
-                    element={
-                      <RouteErrorBoundary routeName="Help">
-                        <Help />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/contact"
-                    element={
-                      <RouteErrorBoundary routeName="Contact">
-                        <Contact />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/compare"
-                    element={
-                      <RouteErrorBoundary routeName="Compare">
-                        <Compare />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/insights"
-                    element={
-                      <RouteErrorBoundary routeName="Insights">
-                        <Insights />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/matches/:matchId/live"
-                    element={
-                      <RouteErrorBoundary routeName="Live Scoring">
-                        <LiveScoring />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="/oauth/consent"
-                    element={
-                      <RouteErrorBoundary routeName="OAuth Consent">
-                        <OAuthConsent />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                  <Route
-                    path="*"
-                    element={
-                      <RouteErrorBoundary routeName="Page Not Found">
-                        <NotFound />
-                      </RouteErrorBoundary>
-                    }
-                  />
-                </Routes>
-                <RouteFocusManager mainRef={mainRef} />
-              </Suspense>
-            </RouteErrorBoundary>
-          </main>
-        </PageTransition>
-        <AppNavigation />
-        <Footer />
-      </div>
-    </NavigationProvider>
+              <RouteErrorBoundary routeName="this page">
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center min-h-[60vh] py-8">
+                      <LoadingState message="Loading page..." size="lg" />
+                    </div>
+                  }
+                >
+                  <Outlet />
+                  <RouteFocusManager mainRef={mainRef} />
+                </Suspense>
+              </RouteErrorBoundary>
+            </main>
+          </PageTransition>
+          <AppNavigation />
+          <Footer />
+        </div>
+      </NavigationProvider>
+    </AuthProvider>
   );
 };
+
+/**
+ * Every page, inside the one layout route.
+ *
+ * Kept as JSX through `createRoutesFromElements` rather than rewritten as route
+ * objects. Two tests read this file as text and pick the paths out of the route
+ * attributes with a regex — `routeReachability.test.ts` and `routeName.test.ts`
+ * — and object routes would leave both matching nothing. (Which is also why no
+ * comment in this file may spell one of those attributes out: the regex cannot
+ * tell prose from markup, and a made-up path in a comment becomes a made-up
+ * route.) The DEV-only route below likewise stays a plain `&&`, because React
+ * Router skips a `false` child.
+ */
+const appRoutes = (
+  <Route element={<AppLayout />}>
+    <Route
+      path="/"
+      element={
+        <RouteErrorBoundary routeName="Home">
+          <Index />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/teams"
+      element={
+        <RouteErrorBoundary routeName="Teams">
+          <TeamsPage />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/teams/:teamId"
+      element={
+        <RouteErrorBoundary routeName="Team Details">
+          <TeamDetails />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/schedule"
+      element={
+        <RouteErrorBoundary routeName="Schedule">
+          <Schedule />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/stats"
+      element={
+        <RouteErrorBoundary routeName="Standings">
+          <Stats />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/playoffs"
+      element={
+        <RouteErrorBoundary routeName="Playoffs">
+          <Playoffs />
+        </RouteErrorBoundary>
+      }
+    />
+    {import.meta.env.DEV && (
+      <Route
+        path="/playoffs/e2e-bracket-proof"
+        element={
+          <RouteErrorBoundary routeName="Playoff Bracket E2E Proof">
+            <PlayoffBracketE2EProof />
+          </RouteErrorBoundary>
+        }
+      />
+    )}
+    <Route
+      path="/history"
+      element={
+        <RouteErrorBoundary routeName="History">
+          <History />
+        </RouteErrorBoundary>
+      }
+    />
+    {/* This was a page nothing linked to, duplicating a section
+    that lives inside the admin console. The guard stays so a
+    signed-out visitor still lands on /auth, not /admin.
+    `/admin/notifications` needs no redirect of its own: it is
+    now the real address of the Notifications section. */}
+    <Route
+      path="/timeslots"
+      element={
+        <ProtectedAdminRoute>
+          <Navigate to="/admin/timeslots" replace />
+        </ProtectedAdminRoute>
+      }
+    />
+    {/* Bare /admin reopens the last section; /admin/:section is the
+    shareable address of one. Both render the same page. */}
+    <Route
+      path="/admin"
+      element={
+        <ProtectedAdminRoute>
+          <RouteErrorBoundary routeName="Admin Dashboard">
+            <AdminDashboard />
+          </RouteErrorBoundary>
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/admin/:section"
+      element={
+        <ProtectedAdminRoute>
+          <RouteErrorBoundary routeName="Admin Dashboard">
+            <AdminDashboard />
+          </RouteErrorBoundary>
+        </ProtectedAdminRoute>
+      }
+    />
+    <Route
+      path="/auth"
+      element={
+        <RouteErrorBoundary routeName="Sign In">
+          <Auth />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/forgot-password"
+      element={
+        <RouteErrorBoundary routeName="Forgot Password">
+          <ForgotPassword />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/reset-password"
+      element={
+        <RouteErrorBoundary routeName="Reset Password">
+          <ResetPassword />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/setup-profile"
+      element={
+        <RouteErrorBoundary routeName="Profile Setup">
+          <ProfileSetup />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/message-board"
+      element={
+        <RouteErrorBoundary routeName="Message Board">
+          <MessageBoard />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/my-team"
+      element={
+        <RouteErrorBoundary routeName="My Team">
+          <MyTeam />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/help"
+      element={
+        <RouteErrorBoundary routeName="Help">
+          <Help />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/contact"
+      element={
+        <RouteErrorBoundary routeName="Contact">
+          <Contact />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/compare"
+      element={
+        <RouteErrorBoundary routeName="Compare">
+          <Compare />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/insights"
+      element={
+        <RouteErrorBoundary routeName="Insights">
+          <Insights />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/matches/:matchId/live"
+      element={
+        <RouteErrorBoundary routeName="Live Scoring">
+          <LiveScoring />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/oauth/consent"
+      element={
+        <RouteErrorBoundary routeName="OAuth Consent">
+          <OAuthConsent />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="*"
+      element={
+        <RouteErrorBoundary routeName="Page Not Found">
+          <NotFound />
+        </RouteErrorBoundary>
+      }
+    />
+  </Route>
+);
+
+/**
+ * Built per `<App />` rather than once at module scope.
+ *
+ * A data router reads the address when it is created. `admin-gating.test.tsx`
+ * renders the app four times, seeding a different address each time, so one
+ * shared router would answer every case with the first one's address.
+ * Production mounts `<App />` once, so there is no difference there.
+ */
+const createAppRouter = () => createBrowserRouter(createRoutesFromElements(appRoutes));
 
 /**
  * framer-motion setup.
@@ -370,8 +420,10 @@ const MotionProviders = ({ children }: { children: React.ReactNode }) => (
   </LazyMotion>
 );
 
-/** Provides top-level app providers and the browser router. */
+/** Provides top-level app providers and the router. */
 const App = () => {
+  const router = useLazyRef(createAppRouter).current;
+
   return (
     <ErrorBoundary>
       <HelmetProvider>
@@ -379,11 +431,7 @@ const App = () => {
           <MotionProviders>
             <TooltipProvider>
               <Toaster />
-              <BrowserRouter>
-                <AuthProvider>
-                  <AppContent />
-                </AuthProvider>
-              </BrowserRouter>
+              <RouterProvider router={router} />
             </TooltipProvider>
           </MotionProviders>
         </QueryClientProvider>

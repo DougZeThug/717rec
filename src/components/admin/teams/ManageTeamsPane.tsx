@@ -99,10 +99,18 @@ const ManageTeamsPane = ({
   const targetName = pendingChange?.value === 'unassigned' ? 'Unassigned' : (target?.name ?? '');
   const hidesTeam = target?.display_division === 'Hidden';
 
-  const handleConfirm = () => {
+  // Held open until the write lands, so the prompt's `isPending` below has a
+  // render to be true in and can show "Changing...". Clearing it straight after
+  // starting the write took the modal overlay away while the update was still
+  // in flight, leaving Edit reachable on the same row — a second write that
+  // could commit last and undo the division change.
+  const handleConfirm = async () => {
     if (!pendingChange) return;
-    actions.onDivisionChange(pendingChange.teamId, pendingChange.value);
-    setPendingChange(null);
+    try {
+      await actions.onDivisionChange(pendingChange.teamId, pendingChange.value);
+    } finally {
+      setPendingChange(null);
+    }
   };
 
   return (

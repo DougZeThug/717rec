@@ -2,6 +2,7 @@ import { AlertCircle, CheckCircle, Image, Search, XCircle } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import {
@@ -20,7 +21,7 @@ type FilterStatus = 'all' | LogoStatus;
 type SortOption = 'name' | 'status';
 
 const BulkLogoUpdateTab: React.FC = () => {
-  const { data: teams, isLoading, refetch } = useTeamsQuery({ includeHidden: true });
+  const { data: teams, isLoading, error, refetch } = useTeamsQuery({ includeHidden: true });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [sortBy, setSortBy] = useState<SortOption>('status');
@@ -76,8 +77,24 @@ const BulkLogoUpdateTab: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full size-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
       </div>
+    );
+  }
+
+  // Without this the tab drew an empty logo list under four zeroed counts,
+  // which reads as "every logo is already sorted".
+  // `!teams`, not just `error`: a background refetch that fails after a good
+  // load leaves the rows in place and sets the error alongside them. Blanking a
+  // working screen for that would be worse than the failure. Same distinction
+  // `useTimeslots` draws with `hasData`.
+  if (error && !teams) {
+    return (
+      <ErrorDisplay
+        variant="card"
+        error="We couldn't load the teams. Please try again."
+        onRetry={() => refetch()}
+      />
     );
   }
 

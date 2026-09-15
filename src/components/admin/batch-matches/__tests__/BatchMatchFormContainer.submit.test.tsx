@@ -18,9 +18,20 @@ const testTeams = [
   { id: 'team-f', name: 'Foxtrot', imageUrl: '' },
 ];
 
+const mockRefetchTeams = vi.hoisted(() => vi.fn());
+
+// Reassigned per test so the loading and error branches can be reached; the
+// default below is what every other test in this file expects.
+let teamsQuery: {
+  data: typeof testTeams | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: typeof mockRefetchTeams;
+};
+
 // --- Mocks (must be declared before importing the component under test) ---
 vi.mock('@/hooks/teams', () => ({
-  useTeamsQuery: () => ({ data: testTeams, isLoading: false }),
+  useTeamsQuery: () => teamsQuery,
 }));
 
 vi.mock('@/services/matches/MatchWriteService', async (importOriginal) => {
@@ -104,6 +115,12 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    teamsQuery = {
+      data: testTeams,
+      isLoading: false,
+      error: null,
+      refetch: mockRefetchTeams,
+    };
     mockFetchActiveSeason.mockResolvedValue('season-1');
     mockBatchCreateMatches.mockResolvedValue([{ id: 'match-1' }]);
   });
@@ -283,5 +300,71 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
     // Form NOT reset: the chosen team is still shown on the first combobox.
     const [stillTeam1] = screen.getAllByRole('combobox');
     expect(within(stillTeam1).getByText('Alpha')).toBeInTheDocument();
+  });
+  /**
+   * A failed teams fetch leaves `isLoading` false and `data` undefined, so an
+   * `isLoading`-only guard fell straight through to the form and drew it with
+   * empty team pickers — indistinguishable from a league with no teams. No
+   * global handler covers this: the QueryClient only records a metric.
+   */
+  describe('when the teams cannot be loaded', () => {
+    it('says so instead of drawing a form with empty team pickers', () => {
+      teamsQuery = {
+        data: undefined,
+        isLoading: false,
+        error: new Error('network down'),
+        refetch: mockRefetchTeams,
+      };
+      renderContainer();
+
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        "We couldn't load the teams. Please try again."
+      );
+      expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /create matches/i })).not.toBeInTheDocument();
+    });
+
+    it('offers a retry that asks again', async () => {
+      teamsQuery = {
+        data: undefined,
+        isLoading: false,
+        error: new Error('network down'),
+        refetch: mockRefetchTeams,
+      };
+      const user = userEvent.setup();
+      renderContainer();
+
+      await user.click(screen.getByRole('button', { name: /try again/i }));
+
+      expect(mockRefetchTeams).toHaveBeenCalled();
+    });
+
+    // A refetch that fails after a good load keeps the rows and sets the error
+    // beside them. Blanking a working form for that is worse than the failure.
+    it('keeps the form when a refetch fails but the teams are already loaded', () => {
+      teamsQuery = {
+        data: testTeams,
+        isLoading: false,
+        error: new Error('refetch failed'),
+        refetch: mockRefetchTeams,
+      };
+      renderContainer();
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.getAllByRole('combobox').length).toBeGreaterThan(0);
+    });
+
+    it('shows the spinner, not the error, while the first fetch is still running', () => {
+      teamsQuery = {
+        data: undefined,
+        isLoading: true,
+        error: null,
+        refetch: mockRefetchTeams,
+      };
+      renderContainer();
+
+      expect(screen.getByText(/loading teams data/i)).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
   });
 });

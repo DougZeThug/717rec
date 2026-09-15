@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
 import {
   Select,
@@ -27,7 +28,7 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
   selectedDate,
   onTeamsAssigned,
 }) => {
-  const { data: teams, isLoading } = useTeamsQuery();
+  const { data: teams, isLoading, error, refetch } = useTeamsQuery();
   const { toast } = useToast();
   const [selectedTimeBlock, setSelectedTimeBlock] = useState<string>('');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
@@ -109,6 +110,22 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
 
   if (isLoading) {
     return <LoadingState message="Loading teams..." size="sm" />;
+  }
+
+  // Without this the panel drew an empty checkbox list with an Assign button
+  // above it, and nothing said the team list had failed to arrive.
+  // `!teams`, not just `error`: a background refetch that fails after a good
+  // load leaves the rows in place and sets the error alongside them. Blanking a
+  // working screen for that would be worse than the failure. Same distinction
+  // `useTimeslots` draws with `hasData`.
+  if (error && !teams) {
+    return (
+      <ErrorDisplay
+        variant="card"
+        error="We couldn't load the teams. Please try again."
+        onRetry={() => refetch()}
+      />
+    );
   }
 
   return (

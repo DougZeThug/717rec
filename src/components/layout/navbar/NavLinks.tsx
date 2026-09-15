@@ -11,12 +11,14 @@ import {
   Users,
 } from 'lucide-react';
 import React, { useCallback, useMemo } from 'react';
-import { NavLink } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
+import { isAdminConsolePath } from '@/utils/adminPath';
 import { prefetchRoute } from '@/utils/routePrefetch';
+import { confirmLeavingClick } from '@/utils/unsavedChanges';
 
 interface NavLinksProps {
   isMobile?: boolean;
@@ -25,6 +27,7 @@ interface NavLinksProps {
 
 const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLinkClick }) => {
   const { isAdminAccessGranted, isLoading: adminCheckLoading } = useAdminAccess();
+  const { pathname } = useLocation();
   const activeClass = 'bg-white/20 text-white';
   // px-3, not px-4: the row holds nine links, three account controls, the search
   // button and — for an admin — Admin, inside a container that stops growing at
@@ -34,9 +37,23 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
     : 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3';
 
   // Memoize handler to prevent recreating on each render
-  const handleLinkClick = useCallback(() => {
-    onLinkClick?.();
-  }, [onLinkClick]);
+  const handleLinkClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      // Inside the console, Admin has nowhere to go: `/admin` reopens the
+      // section already on screen, and the redirect unmounts it on the way,
+      // taking any unsaved work with it. See `isAdminConsolePath`.
+      if (href === '/admin' && isAdminConsolePath(pathname)) {
+        event.preventDefault();
+        return;
+      }
+      // Every other link really does leave. The console shares this header with
+      // the public pages, so these were the quickest way to lose unsaved work
+      // without being asked. Returning early keeps the phone menu open too.
+      if (!confirmLeavingClick(event)) return;
+      onLinkClick?.();
+    },
+    [onLinkClick, pathname]
+  );
 
   // Memoize navItems to prevent recreating on each render
   const navItems = useMemo(() => {
@@ -70,7 +87,7 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
         <NavLink
           key={item.label}
           to={item.href}
-          onClick={handleLinkClick}
+          onClick={(event) => handleLinkClick(event, item.href)}
           onMouseEnter={() => prefetchRoute(item.href)}
           onFocus={() => prefetchRoute(item.href)}
           onTouchStart={() => prefetchRoute(item.href)}

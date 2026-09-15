@@ -91,11 +91,19 @@ export const BlindDrawService = {
     if (error) handleDatabaseError(error, 'Failed to delete blind draw signup');
   },
 
-  clearSignups: async (): Promise<void> => {
-    const { error } = await supabase
-      .from('blind_draw_signups')
-      .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+  /**
+   * Remove one night's signups, or every night's when no date is given.
+   *
+   * Scoped the same way `fetchBlindDrawSignups` above is, because the two have
+   * to agree: the admin list shows every night at once, so an unscoped clear
+   * took next week's signups along with tonight's. The nil-uuid filter is how
+   * PostgREST is told "every row" — it refuses a delete with no filter at all.
+   */
+  clearSignups: async (eventDate?: string): Promise<void> => {
+    const remove = supabase.from('blind_draw_signups').delete();
+    const { error } = await (eventDate
+      ? remove.eq('event_date', eventDate)
+      : remove.neq('id', '00000000-0000-0000-0000-000000000000'));
     if (error) handleDatabaseError(error, 'Failed to clear blind draw signups');
   },
 };

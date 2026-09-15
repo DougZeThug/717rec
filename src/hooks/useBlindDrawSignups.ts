@@ -74,7 +74,8 @@ export const useDeleteBlindDrawSignup = () => {
   });
 };
 
-// Clear all signups for a date (admin only)
+// Clear signups (admin only). Takes the night to clear, or nothing to clear
+// every night — see BlindDrawService.clearSignups.
 export const useClearBlindDrawSignups = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();

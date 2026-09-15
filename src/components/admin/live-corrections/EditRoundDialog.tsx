@@ -23,6 +23,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import type { UpdateRoundPatch } from '@/services/liveScoring/AdminCorrectionsService';
 import { validateBreakdown } from '@/utils/liveScoring/bagBreakdown';
 import { isValidRoundScore } from '@/utils/liveScoring/scoring';
+import type { BagBreakdown } from '@/utils/liveScoring/types';
 
 type MatchRoundRow = Tables<'match_rounds'>;
 type GamePlayerRow = Tables<'game_players'>;
@@ -64,6 +65,23 @@ const toSide = (
 });
 
 const NULL_THROWER = '__none__';
+
+/**
+ * The breakdown a side's three bag boxes describe.
+ *
+ * All three filled is a breakdown. All three blank is `null`, which tells the
+ * service to clear one already stored — leaving the key off the patch instead
+ * left the old numbers in place, so a cleared breakdown never cleared. There is
+ * no third case: validation refuses a half-filled set before Save is offered.
+ */
+const bagsFromSide = (side: SideState): BagBreakdown | null => {
+  if (side.bagsIn === '' || side.bagsOn === '' || side.bagsOff === '') return null;
+  return {
+    bagsIn: Number(side.bagsIn),
+    bagsOn: Number(side.bagsOn),
+    bagsOff: Number(side.bagsOff),
+  };
+};
 
 /** Both sides of a round as the form holds them. */
 const sidesFromRound = (round: MatchRoundRow) => ({
@@ -195,21 +213,9 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
         side1.throwerId === '' || side1.throwerId === NULL_THROWER ? null : side1.throwerId,
       team2ThrowerId:
         side2.throwerId === '' || side2.throwerId === NULL_THROWER ? null : side2.throwerId,
+      team1Bags: bagsFromSide(side1),
+      team2Bags: bagsFromSide(side2),
     };
-    if (side1.bagsIn !== '' && side1.bagsOn !== '' && side1.bagsOff !== '') {
-      patch.team1Bags = {
-        bagsIn: Number(side1.bagsIn),
-        bagsOn: Number(side1.bagsOn),
-        bagsOff: Number(side1.bagsOff),
-      };
-    }
-    if (side2.bagsIn !== '' && side2.bagsOn !== '' && side2.bagsOff !== '') {
-      patch.team2Bags = {
-        bagsIn: Number(side2.bagsIn),
-        bagsOn: Number(side2.bagsOn),
-        bagsOff: Number(side2.bagsOff),
-      };
-    }
     await onSubmit(patch);
     // Saved values are the baseline now, so the close that follows never asks.
     setLoadedSides({ side1, side2 });

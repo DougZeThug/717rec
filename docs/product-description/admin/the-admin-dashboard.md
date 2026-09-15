@@ -19,9 +19,9 @@ is named here and pointed at one.
 
 ## The simple case
 
-An admin opens the user menu and picks "Admin Panel". The screen shows a spinner
-and "Checking access...", then the heading **Admin Dashboard** fades in over
-about a third of a second.
+An admin, not already in the console, opens the user menu and picks "Admin
+Panel". The screen shows a spinner and "Checking access...", then the heading
+**Admin Dashboard** fades in over about a third of a second.
 
 On the left is a bordered panel headed "Admin Menu", with a search box and
 twenty-one entries. The centre holds one section — **Timeslots** the first time, and
@@ -165,7 +165,7 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. The shell has no Cancel. | No effect on the shell. Whether Escape cancels anything is up to the open section. |
 | In-app navigation away, or switching tab within the page | The open section is remembered. Coming back reopens it. | Switching section discards whatever the old section held in memory, **after asking** where the section reports unsaved work. Auto Schedule also survives regardless, because it writes its working state to the browser. |
-| Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | Same, and **nothing the old section held is kept**. Back cannot be interrupted to ask first; see the *Unsaved changes* note below. |
+| Browser back or forward | Steps between the sections visited, because each has its own address. Back from the first one leaves the console. | **Asks first**, the same question a menu press asks. Saying no keeps the section and the work; saying yes loses whatever the old section held. Back out of the console entirely raises the browser's own warning instead. |
 | Reload, or the tab closed | A reload returns to the same section. Closing the tab forgets it, and the next visit opens Timeslots. | A reload loses everything the open section held, except Auto Schedule's working state. |
 | Network lost mid-request | The request-count badge stops updating and keeps showing its last value. | The shell keeps working because it is already loaded. **A section not yet opened cannot load at all** and shows its loading panel indefinitely. |
 | The request fails or times out | The badge silently keeps its old number. There is no error state for it. | Handled by the section, not the shell. |
@@ -192,16 +192,41 @@ Quick Access, or from a League Night quick action — puts up "You have unsaved
 changes. Leave and lose them?" first. Saying no keeps the section and the work.
 Leaving the site, reloading, or closing the tab raises the browser's own warning.
 
-**Three ways out are not covered, and cannot be cheaply:**
+**The site chrome asks too.** The console shares its header, its footer and —
+on a phone — its bottom tab bar with every public page, so all of those sit
+around an unsaved section. Every one of them that navigates now asks first: the
+nine header links, the logo, all four user-menu items, **Logout**, the four
+phone tabs, and every jump in the search palette. They used to take the work
+with them without a word, which made the phone tab bar the easiest way to lose
+a night's scores.
 
-- **Browser Back and Forward.** The app is told the address has already changed,
-  so there is nothing left to stop. Back has always lost this work; it is only
-  more reachable now that sections have addresses.
-- **A typed or pasted address**, for the same reason.
-- **Links outside the console** — the site header, the logo, the user menu.
+**Browser Back and Forward ask too, now.** They were the last way out that did
+not. There is no click to interrupt, so the app catches the press itself and
+puts up the same question; saying no leaves the address and the work where they
+were. Pressing Back repeatedly is safe — a refusal leaves the history intact,
+and the next press asks again.
 
-Saying no keeps the section on screen, and on a phone the menu stays up rather
-than closing as though something had happened.
+**One press behaves differently, and correctly**: Back onto the page you were on
+*before* the app loaded. That leaves the site altogether, so it raises the
+browser's own warning instead of ours. The footer's "Contact us" is the same
+case — a plain link that loads a fresh page.
+
+**A typed or pasted address** was listed here as uncovered. That was wrong: it
+unloads the page, so the browser has always warned about it.
+
+Saying no keeps the section on screen, and nothing that was only a menu closes
+either — the phone menu stays up, the user menu stays up, and the search palette
+stays open, rather than shutting as though something had happened.
+
+**The two links back into the console are the exception, and they no longer lose
+anything.** "Admin" in the site header and "Admin Panel" in the user menu both
+point at a bare `/admin`, which reopens the remembered section — from inside the
+console, the section already on screen. The round trip used to rebuild that
+section from scratch and throw its unsaved work away, while looking to the admin
+as though the click had done nothing. Both links now do nothing for real when
+the console is already open: no navigation, no prompt, nothing lost. From
+anywhere else they open the console as before. On a phone the menu stays up, for
+the same reason as above.
 
 Which sections take part is listed in each section's own document.
 

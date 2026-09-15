@@ -27,6 +27,7 @@ import {
 import { useTeamsQuery } from '@/hooks/teams';
 import { cn } from '@/lib/utils';
 import { toTeamSlug } from '@/utils/teamSlug';
+import { confirmDiscardUnsavedWork } from '@/utils/unsavedChanges';
 
 interface CommandPaletteProps {
   open?: boolean;
@@ -72,6 +73,9 @@ const CommandPalette: React.FC<CommandPaletteProps> = ({ open: controlledOpen, o
 
   const handleSelect = useCallback(
     (path: string) => {
+      // Asked before the palette closes, not after: a refused jump should leave
+      // the palette exactly as it was, not shut it as though something happened.
+      if (!confirmDiscardUnsavedWork()) return;
       setOpen(false);
       navigate(path);
     },

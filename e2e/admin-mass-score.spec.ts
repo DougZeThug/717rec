@@ -192,6 +192,48 @@ test.describe('admin mass score submission workflow', () => {
     await expect(page).toHaveURL(/\/admin\/divisions$/);
   });
 
+  // The same work, the one way out that never asked. Back has no click to hang
+  // a guard on, so the router catches it — see `UnsavedWorkBlocker`.
+  test('asks before the browser Back button loses an unsaved score', async ({ page }) => {
+    // Reached from inside the app, not by a second `goto`. A fresh document
+    // load builds a fresh router, and a router cannot undo a history entry it
+    // never created — the press would leave the page and raise the browser's
+    // own warning instead, which is a different guard.
+    await page.goto('/admin/divisions');
+    await page
+      .getByRole('navigation', { name: 'Admin sections' })
+      .getByRole('button', { name: 'Scores' })
+      .click();
+
+    await expect(page).toHaveURL(/\/admin\/scores$/);
+    await expect(page.getByRole('heading', { name: 'Mass Score Entry' })).toBeVisible({
+      timeout: 15000,
+    });
+    await page.getByTestId('score-button-2\u20130').click();
+    await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
+
+    let asked = '';
+    page.once('dialog', async (dialog) => {
+      asked = dialog.message();
+      await dialog.dismiss();
+    });
+
+    // `page.goBack()` waits for a navigation to land, and a refused one never
+    // does — it would time out on the very behaviour under test. Press the
+    // button without waiting and assert on what follows instead.
+    await page.evaluate(() => window.history.back());
+
+    await expect.poll(() => asked).toMatch(/not submitted/i);
+    await expect(page).toHaveURL(/\/admin\/scores$/);
+    await expect(page.getByRole('button', { name: 'Submit (1) Changes' })).toBeEnabled();
+
+    // Accepting does go back, and the score goes with it.
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.evaluate(() => window.history.back());
+
+    await expect(page).toHaveURL(/\/admin\/divisions$/);
+  });
+
   test('blocks an invalid completed mass score before writing match updates', async ({ page }) => {
     const resultSubmissions: unknown[] = [];
     page.on('request', (request) => {

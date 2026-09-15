@@ -163,9 +163,16 @@ removing every back-to-back row that team has on that date — so removing the
 6:00 PM half also removes 6:30 PM, and removing one quarter of a double header
 removes all four rows.
 
+**The two columns fail separately.** If the team list will not load, the
+assignment column says "We couldn't load the teams. Please try again." with a
+Retry button, and the current timeslots beside it still read normally. Booking
+needs the team list; reading the night does not. A refresh that fails *after* a
+good load leaves the form where it is, because the teams it holds are still
+usable.
+
 **Removal waits for the night, like the move card.** Changing the date keeps the
-previous night's rows on screen while the new ones load, and a removal goes by
-row id. For that moment every trash button is greyed out, and a confirmation
+previous night's rows on screen while the new ones load, and a load that fails
+leaves nothing to go by at all; a removal goes by row id. For that moment every trash button is greyed out, and a confirmation
 already open has its Remove button greyed out too. Otherwise one quick press
 would clear a booking on the night before — and for a back-to-back row it would
 take that team's whole pair on that night with it.
@@ -215,6 +222,14 @@ every game it removes.
 rows on screen while the new ones load, so the card is not offered until the
 list really is the chosen night's. Otherwise one quick press could clear a
 booking on the night before.
+
+**It waits for a night that fails to load, too.** An empty column means one of
+two things — the night really is free, or its rows never arrived — and only the
+first is safe to act on. A failed load withholds the card and greys the trash
+buttons, exactly as a load in progress does. The red banner above the columns
+says the load failed. Before this, a failed load read as an empty night, and the
+card offered to book a team that already had a slot that night without clearing
+it, leaving the team booked twice.
 
 **Not now** puts the card away without writing anything. So does making the
 change. Either way the night stays on screen and the instruction leaves the
@@ -277,7 +292,7 @@ the player's side.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. Neither screen has a Cancel button for the assignment form. | Escape closes the date popover or the removal confirmation. It does not clear the selection and does not abort a request already sent. |
 | In-app navigation away, or switching tab within the page | Nothing is lost. | **The ticked teams, the chosen block, and the date are all lost with no warning.** An assignment already sent still lands. |
-| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away, and the app cannot prevent it. Coming back gives the next league night and an empty selection. |
+| Browser back or forward | Steps to the previously opened section, or out of the dashboard from the first one. | Same as navigating away. Coming back gives the next league night and an empty selection. |
 | Reload, or the tab closed | Returns to the next league night. | Everything selected is lost. A sent write still lands, and its rows appear on the reloaded list. |
 | Network lost mid-request | Nothing to lose. | The write fails and a generic red toast appears. Nothing is queued. The selection is **not** cleared, so the admin can press again. |
 | The request fails or times out | Cannot happen. | The selection stays and the button comes back from "Booking…". The message is generic, so any refusal reads the same as a lost connection. |

@@ -394,6 +394,21 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
 - **A-07 · Unsaved work is lost on any section switch — High (inferred, code; partially observed).** No route blocker exists; `AutoScheduleTab.tsx:75-88` is the only `beforeunload` and it ignores generated-but-unsaved schedules (`index.ts:185-189`); Mass Score Entry keeps local edits (`useScoreEntryData.ts:68`) but switching sections discards them silently; the hero-card form replaces the list with no guard (`HeroCardsTab.tsx:33-35`); `ScoreSubmissionModal` resets on backdrop tap. *Recommend:* one `useUnsavedChangesGuard(dirty)` hook (beforeunload + `window.confirm` in `AdminSidebar.handleTabChange`) wired to Mass Score Entry, Auto Schedule, Hero form, Edit Round and Blind Draw settings. *Effort:* M. *Accept:* switching sections with unsaved scores asks first.
   - **Done (W3).** `useUnsavedChangesGuard(isDirty, message)` (`src/hooks/useUnsavedChangesGuard.ts`) registers with a small module-level registry (`src/utils/unsavedChanges.ts`) and adds the `beforeunload` listener. The console shell checks the registry inside `handleTabChange`, the one function every section switch already passes through, so the menu, the phone drawer, Quick Access and every `switchAdminTab` caller are covered by one line. All five screens are wired, plus `confirmDiscard()` for the two that close in place.
   - **Correction to the finding's premise.** It reads as though one hook guards *navigation*. It cannot: `useBlocker` needs a react-router **data** router and this app uses `<BrowserRouter>` + `<Routes>`, so **browser Back and Forward, a typed address, and links outside the console are not guarded** and cannot be without converting all 25 routes. The accurate claim, and the one the docs make, is: switching admin section asks first, and leaving the site asks first. Back has always lost this work — W1 only makes it easier to reach.
+  - **Back and Forward are guarded now, and the premise above is retired.** The
+    correction was right that `useBlocker` needs a data router; it was wrong that
+    getting one "would touch every route in the app". `createRoutesFromElements`
+    takes the existing `<Route>` JSX unchanged, so the conversion moved the
+    wrapper and nothing else — the full suite reported the same 651 files and
+    5535 tests before and after. `UnsavedWorkBlocker`
+    (`src/components/navigation/UnsavedWorkBlocker.tsx`) then catches POP
+    navigations only, so it never doubles up with the click guards below. Proven
+    in a real browser: `e2e/admin-mass-score.spec.ts` presses Back with a typed
+    score and asserts both answers. **The typed-address half of the correction
+    was also wrong** — typing an address unloads the document, so `beforeunload`
+    has always covered it. What genuinely remains: Back onto a page from before
+    the app loaded, which the router cannot undo and `beforeunload` covers
+    instead.
+  - **Links outside the console are guarded now.** The premise above is still right about what a *router-level* blocker would take, but it turns out one is not needed for them: the chrome's links are ordinary click handlers, and `confirmLeavingClick` (`src/utils/unsavedChanges.ts`) cancels the click. Wired to the nine header links and the phone hamburger, the logo, all four user-menu items, Logout (an in-app jump to `/`, so `beforeunload` never fired), the four phone tabs, and the search palette. The phone tab bar was the worst of them: pinned to the bottom of every admin screen, on the device scores are typed on. **Back, Forward and a typed address are still out of reach** and still need the data router.
   - **Auto Schedule's dirty test was too narrow, and is wider now.** `hasUnsavedEdits` was only true in edit mode. A successful save clears the persisted copy but leaves `generatedMatches` in state, so "a schedule exists" could not stand in for "unsaved": the save itself is tracked instead (`hasUnsavedWork`), and generating or applying marks the work unsaved again.
   - **The hero form and the edit-round dialog compare against a baseline, not their props.** The round dialog deliberately does not reload while a realtime refetch hands it a fresh object for the round being edited; comparing against the prop would have made an untouched form claim it had work.
 - **A-08 · Help tab is inert and misdirects — Medium.** `help/GettingStartedTab.tsx:163-182` prints raw ids ("batch-matches") as badges, "Run Playoffs" targets Match Creation, 11 of 21 sections undocumented (observed: `admin/tab-help--m390.jpg`). *Recommend:* make each step a button calling `switchAdminTab`, show labels, fix step 6, list every section. *Effort:* S.
@@ -414,6 +429,18 @@ Format per finding: **ID · title — priority** · where/who · what happens (r
   - **Breakpoint half done (L3).** The Teams pane switches to cards at `md:` now, the same width as `useIsMobile()`, the admin shell and every other table, so the 640–767 px band where the pane disagreed with itself is gone. `ManageTeamsPane` still renders both children and hides one with CSS; `display:none` keeps the hidden one out of the accessibility tree, so there is no duplicate content. **The other three halves of this finding are untouched:** no team delete, "Hero" vs "Hero Cards", and the emoji logo-status values.
 - **A-16 · League Night: header says "Everything here is read-only" above a "Repair now" button; quick actions cover 2 of ~9 league-night jobs; SQL editor link one tap away — Medium.** (`admin/tab-league-night-status--m390.jpg`; `LeagueNightStatusTab.tsx:130-132,256-292`). *Recommend:* add Timeslots, Match Creation, Notifications, Blind Draw and Playoffs to quick actions; move the developer links under a "Developer" disclosure; fix the header copy. *Effort:* S.
 - **A-17 · Blind Draw "Clear All" has no pending state; Themes toggle disables every switch while one saves; both toast without descriptions — Low.** `BlindDrawSignupsTab.tsx:166-171`, `ThemeManagementTab.tsx:80,26-37`. *Effort:* S.
+  - **Clear All half done.** It is the shared `ConfirmDialog` now, so the prompt
+    holds itself open while the wipe runs, disables both of its buttons, swaps
+    the label to a spinner and "Clearing...", and greys the trigger behind it.
+    It closes on success only — a failure leaves it up to retry, rather than
+    handing the admin a toast that fades and a list that still shows everyone.
+    The old inline dialog auto-closed on click, because `AlertDialogAction`
+    does that by default and nothing called `e.preventDefault()`; the mutation
+    ran fire-and-forget and `clearSignups.isPending` was never read. The
+    sibling Remove dialog had been fixed in 8fac81c48 without this one being
+    retrofitted. **The other two halves are untouched:** the Themes toggle
+    still disables every switch while one saves, and both still toast without
+    descriptions.
 - **A-18 · Match Creation: validation says "Please fill in all match details" with no row highlighted, the toast is titled "Notification Error", courts are numbered per row across the night, timeslot list includes 10:00 PM which the scheduler never produces — Medium.** *Observed:* empty submit → toast "Notification Error — Please fill in all match details" (`admin/batch-create-empty--m390.jpg`). *Code:* `useBatchMatchForm.ts:77-112,142`, `MatchPairsList.tsx:28-40` vs `constants.ts:101-103`. *Effort:* S.
   - **Fixed (Q26).** Note on the toast title: "Notification Error" is not a string in the codebase. `ToastProvider` passes no `label`, so Radix's default announcement label "Notification" was being read out in front of our title, `'Error'`. The titles are specific now ("Missing details", "Pick a date", "Matches created"); the shared default label is untouched, because changing it would move the announcement for all 81 `title: 'Error'` toasts across 39 files.
 - **A-19 · Power Score Review / Sandbox address the admin as a developer** ("run the Lovable prompt from the pull request…", "copy-paste into the Supabase SQL editor") — Low. `PowerMigrationReviewTab.tsx:63-83`, `PowerScoreSandboxTab.tsx:63-68`. Review's status RPC is admin-only; it showed its error state under the harness (`admin/tab-power-migration--m390.jpg`), which itself reads well.
@@ -481,7 +508,7 @@ Effort: S = under half a day, M = 1–3 days, L = a week or more. Items referenc
 |---|---|---|
 | W1 ✅ | URL-addressable admin sections (`/admin/:section`) + mobile menu that follows the active section | A-01, X-06 |
 | W2 ✅ | Mobile admin menu as a drawer behind a "Sections" button (not sticky — see A-01/X-06 notes); Quick Access stays visible | X-06 |
-| W3 ✅ | Unsaved-changes guard hook wired to Mass Score Entry, Auto Schedule, Hero form, Edit Round, Blind Draw (Back is not guarded — see A-07 notes) | A-07 |
+| W3 ✅ | Unsaved-changes guard hook wired to Mass Score Entry, Auto Schedule, Hero form, Edit Round, Blind Draw. Every way out now asks: section switches, the site chrome, Back and Forward, and leaving the site — see A-07 notes | A-07 |
 | W4 ✅ | URL state for Schedule date/search, Standings view, team-page section; Home "my match" deep link | X-14, SC-04, T-03 |
 | W5 ✅ | Offline banner + chunk-load recovery (the boundary had to move above `Suspense` — see X-12 notes) | X-12 |
 | W6 ✅ | Live scoring offline queue (held in memory, taps kept on the phone — see LS-03 notes) | LS-03 |
