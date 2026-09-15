@@ -237,7 +237,7 @@ describe('TimeslotsTab', () => {
     expect(toast).not.toHaveBeenCalled();
   });
 
-  it('lets the list offer removal once the rows are the chosen night\'s', () => {
+  it("lets the list offer removal once the rows are the chosen night's", () => {
     renderTab();
 
     expect(screen.getByText('canDelete:true')).toBeInTheDocument();

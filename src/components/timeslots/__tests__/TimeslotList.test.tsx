@@ -100,7 +100,7 @@ describe('TimeslotList', () => {
   // The rows on screen belong to the night before until the newly chosen one
   // loads, and removal goes by row id, so nothing may be removed until the list
   // really is the chosen night's.
-  it('offers no removal while the rows are not the chosen night\'s', () => {
+  it("offers no removal while the rows are not the chosen night's", () => {
     const timeslots: TeamTimeslot[] = [
       makeTimeslot({ id: 'ts-late', timeslot: '8:00 PM', team_id: 't2' }),
       makeTimeslot({ id: 'ts-early', timeslot: '5:00 PM', team_id: 'ghost' }),
