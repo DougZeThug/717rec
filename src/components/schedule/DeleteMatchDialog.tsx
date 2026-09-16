@@ -25,8 +25,14 @@ const DeleteMatchDialog: React.FC<DeleteMatchDialogProps> = ({
   onConfirm,
   isDeleting = false,
 }) => {
+  // Passing onClose straight to onOpenChange let Escape and the overlay dismiss
+  // the dialog mid-delete, which the disabled Cancel button already blocks.
+  const handleOpenChange = (next: boolean) => {
+    if (!next && !isDeleting) onClose();
+  };
+
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -38,7 +44,13 @@ const DeleteMatchDialog: React.FC<DeleteMatchDialogProps> = ({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
+            onClick={(e) => {
+              // AlertDialogAction closes the dialog by default. Block that so the
+              // "Deleting..." state is visible and a failure leaves the dialog
+              // open to retry, matching ConfirmDialog and SeasonActivationDialog.
+              e.preventDefault();
+              onConfirm();
+            }}
             className="bg-destructive hover:bg-destructive/90"
             disabled={isDeleting}
           >

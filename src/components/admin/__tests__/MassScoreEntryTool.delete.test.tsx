@@ -143,6 +143,7 @@ describe('MassScoreEntryTool delete flow', () => {
     expect(mockRemoveMatch).toHaveBeenCalledExactlyOnceWith('m1');
     expect(mockInvalidateAllDataQueries).toHaveBeenCalledTimes(1);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match deleted' }));
+    await waitFor(() => expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument());
   });
 
   it('on RPC failure: shows destructive toast, does not remove row or invalidate caches', async () => {
@@ -160,5 +161,9 @@ describe('MassScoreEntryTool delete flow', () => {
     );
     expect(mockRemoveMatch).not.toHaveBeenCalled();
     expect(mockInvalidateAllDataQueries).not.toHaveBeenCalled();
+
+    // The dialog used to close in `finally`, so a failed delete left the admin
+    // with only a toast and no prompt to retry from.
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
   });
 });
