@@ -61,7 +61,9 @@ type BracketWithDivisionRow = Pick<
   | 'uses_brackets_manager'
   | 'bracket_data'
 > & {
-  divisions: BracketDivisionRow;
+  // Nullable like the overview row: brackets.division_id is nullable, so the
+  // join is a left join and a bracket can legitimately arrive without one.
+  divisions: BracketDivisionRow | null;
 };
 
 // Helper to normalize bracket state - handles both legacy and current DB values
@@ -163,6 +165,11 @@ export const fetchBracketInfo = async (bracketId: string): Promise<BracketInfoRo
  * Used by useBracketData hook (step 1)
  *
  * maybeSingle for the reason given on fetchBracketInfo above.
+ *
+ * The division is left-joined, not inner-joined: division_id is nullable, and an
+ * inner join returned no row at all for those brackets, so a deep link to one
+ * failed as "not found" while the brackets list still showed it. Callers already
+ * handle a null division and fall back to "Unknown".
  */
 export const fetchBracketWithDivision = async (
   bracketId: string
@@ -177,7 +184,7 @@ export const fetchBracketWithDivision = async (
       state,
       division_id,
       season_id,
-      divisions!inner(display_division, name),
+      divisions(display_division, name),
       challonge_tournament_id,
       uses_brackets_manager,
       bracket_data

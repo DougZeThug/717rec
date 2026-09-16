@@ -149,6 +149,29 @@ describe('BracketInfoService', () => {
     expect(result.season_id).toBe('s-past');
   });
 
+  // Ten brackets seeded by the baseline migration carry no division at all, and
+  // the column is nullable, so any bracket can lose one. An inner join drops
+  // those rows, and a deep link to one died on "Bracket ... not found" - even
+  // though the brackets list, which left-joins, had just listed it.
+  it('left-joins the division so a bracket without one still opens', async () => {
+    const select = vi.fn().mockReturnValue({
+      eq: () => ({
+        maybeSingle: () =>
+          Promise.resolve({
+            data: { ...makeBracket(), division_id: null, divisions: null },
+            error: null,
+          }),
+      }),
+    });
+    mockFrom.mockReturnValue({ select });
+
+    const result = await fetchBracketWithDivision('b-no-division');
+
+    expect(select.mock.calls[0][0]).not.toContain('!inner');
+    expect(result.divisions).toBeNull();
+    expect(result.division_id).toBeNull();
+  });
+
   it('throws DatabaseError when bracket with division query fails', async () => {
     mockFrom.mockReturnValue({
       select: () => ({
