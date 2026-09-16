@@ -68,6 +68,26 @@ export const useAuth = () => {
     let isCancelled = false; // Track if effect is cleaned up or session changed
     let currentUserId: string | null = null; // Track which user's profile we're fetching
 
+    /**
+     * Timers this effect has started and not yet run, so the cleanup below can
+     * cancel them.
+     *
+     * Both callbacks already check `isCancelled` and do nothing once the effect
+     * is torn down, so nothing was leaking state. What was left was a timer
+     * still scheduled against a discarded effect — flagged by React Doctor as
+     * `effect-needs-cleanup`. The deferred profile fetch starts one on every
+     * auth event, so ids are dropped as they fire rather than accumulating for
+     * as long as the session lasts.
+     */
+    const pendingTimers = new Set<ReturnType<typeof setTimeout>>();
+    const defer = (run: () => unknown, ms: number) => {
+      const id = setTimeout(() => {
+        pendingTimers.delete(id);
+        run();
+      }, ms);
+      pendingTimers.add(id);
+    };
+
     // Set up auth state listener
     const {
       data: { subscription },
@@ -105,11 +125,11 @@ export const useAuth = () => {
         // TOKEN_REFRESHED and INITIAL_SESSION.
         setProfile(keepProfileOnlyFor(fetchUserId));
 
-        // Set loading state BEFORE setTimeout to prevent race condition
+        // Set loading state BEFORE deferring to prevent race condition
         setIsProfileLoading(true);
 
-        // Use setTimeout to prevent Supabase auth deadlocks
-        setTimeout(async () => {
+        // Deferred to prevent Supabase auth deadlocks
+        defer(async () => {
           // Skip if effect was cleaned up or user changed since this fetch started
           if (isCancelled || currentUserId !== fetchUserId) {
             authLog('Skipping stale profile fetch for user:', fetchUserId);
@@ -248,7 +268,7 @@ export const useAuth = () => {
         if (retryCount < maxRetries && !isCancelled) {
           retryCount++;
           authLog(`Retrying session check in 1s (attempt ${retryCount + 1}/${maxRetries + 1})`);
-          setTimeout(() => {
+          defer(() => {
             // Check cancellation before retrying
             if (!isCancelled) {
               initializeAuth();
@@ -271,6 +291,8 @@ export const useAuth = () => {
     return () => {
       isCancelled = true;
       subscription.unsubscribe();
+      pendingTimers.forEach(clearTimeout);
+      pendingTimers.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- auth session bootstrap, must run once on mount
   }, []);
