@@ -152,6 +152,7 @@ entry's *Corrected on review* note.
 | B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
 | B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
 | B-43 | Three links in a message are counted as six and refused as spam | medium | help | **fixed** | — |
+| B-46 | A failed division-weights read empties the career rankings silently | medium | stats, teams | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
 | B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
 | B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
@@ -2045,6 +2046,54 @@ finding read a superseded migration.
   is what the join screen and `/my-team` need to show it; only the message
   board's own stamp reads `is_approved`. The generic toast on every other failed
   post is B-12.
+
+### B-46: A failed division-weights read empties the career rankings silently
+
+- **Where the user meets it:** anyone on the team report card, the GPA
+  leaderboard, the league percentile table, the match prediction, or the career
+  rankings table, while the `divisions` read is failing.
+- **What happens / what was expected:** every screen reads as though the league
+  has no teams at all — no grades, no rankings, no error and no **Try Again**.
+  Expected: a read that failed is reported as a failure.
+- **Reproduce:** 1. Make the `divisions` table read fail. 2. Load
+  `/teams/:id` (report card) or the career rankings on a cold cache.
+- **Why (from the code):** `computeAllTeamsTotals` wrapped each team's
+  computation in a `try/catch` that logged the error and dropped that team from
+  the returned Map. `useCareerRankings` treats a missing entry as "no data for
+  this team" and skips it, so the query function still returned — successfully —
+  a shorter list. With the division-weights read failing, the list is not
+  shorter but **empty**: `calculateCareerPowerScore` awaits
+  `fetchDivisionWeightsByName()` on every team even in batch mode, and that
+  fetch is memoised behind one shared promise, so a single failure rejects for
+  every team at once. React Query recorded the request as a success with
+  `error: null`.
+- **Severity:** `medium`. Nothing is corrupted and it clears when the read
+  recovers, but the whole league's statistics read as absent rather than
+  unavailable, and two of the five consumers do not read `error` at all.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** `computeAllTeamsTotals` now counts what it attempted:
+  if it attempted at least one team and computed none, it re-throws instead of
+  returning an empty Map. A single team failing among others still drops just
+  that team — it has data the rest do not, and one bad row is not an outage.
+
+  This is the same rule as B-36's follow-up, one layer down: *a failed fetch is
+  not an empty one.* B-36 closed it for the prerequisite team and match lists;
+  the compute layer underneath was never covered and re-created the same shape.
+  The report card and the GPA leaderboard already have a failure message with a
+  **Try Again** button wired to this error, so both start working with no change
+  of their own.
+
+  Five tests, one of which fails against the unfixed code with "promise resolved
+  Map{} instead of rejecting". The other four hold the line the other way: a
+  single failing team, no teams asked for, and a bulk fetch that returned
+  nothing must all still resolve.
+
+  *Left alone, deliberately:* `useCareerRankingsWithHidden` is a near-copy of
+  `useCareerRankings` carrying the same skip. The throw above fixes its compute
+  failure too, but it still lacks the prerequisite-error fold that
+  `useCareerRankings` gained in B-36, and the duplication itself is a separate
+  pre-existing question.
 
 ### B-43: Three links in a message are counted as six and refused as spam
 
