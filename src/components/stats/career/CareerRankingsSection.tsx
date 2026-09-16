@@ -67,9 +67,7 @@ const CareerRankingsSection: React.FC = () => {
   // disabled until the team list arrives, so the failure reported here is often
   // the team list's own — see the fold in useCareerRankings.
   if (error) {
-    // No `void`: the hook's refetch is a retry action that resolves with
-    // nothing, so there is no promise here worth discarding.
-    return <CareerRankingsError onRetry={() => void refetch()} />;
+    return <CareerRankingsError onRetry={() => refetch()} />;
   }
 
   return (
