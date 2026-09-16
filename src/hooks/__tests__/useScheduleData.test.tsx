@@ -96,6 +96,38 @@ describe('useScheduleData ordering with unscheduled matches', () => {
     expect(result.current.completedMatches.map((m) => m.id)).toEqual(['recent', 'old', 'undated']);
   });
 
+  it('returns empty lists when the season has no matches at all', async () => {
+    mockFetchScheduleMatches.mockResolvedValue([]);
+
+    const { result } = renderScheduleData();
+
+    await waitFor(() => expect(result.current.matchesLoading).toBe(false));
+
+    expect(result.current.matchesData).toEqual([]);
+    expect(result.current.upcomingMatches).toEqual([]);
+    expect(result.current.completedMatches).toEqual([]);
+  });
+
+  // A match can arrive mid-write with one side not joined yet. Showing a row
+  // with a blank opponent is worse than leaving it out until it is whole.
+  it('drops a match that is missing one side of the fixture', async () => {
+    mockFetchScheduleMatches.mockResolvedValue([
+      match({ id: 'whole', date: '2026-12-01T00:00:00.000Z', iscompleted: false }),
+      match({
+        id: 'half',
+        date: '2026-12-02T00:00:00.000Z',
+        iscompleted: false,
+        team2: null,
+      }),
+    ]);
+
+    const { result } = renderScheduleData();
+
+    await waitFor(() => expect(result.current.matchesLoading).toBe(false));
+
+    expect(result.current.upcomingMatches.map((m) => m.id)).toEqual(['whole']);
+  });
+
   // Two undated matches gave Infinity - Infinity, which is NaN. A comparator
   // must return a number, so keep their order instead.
   it('keeps the order of two undated upcoming matches', async () => {

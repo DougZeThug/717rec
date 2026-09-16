@@ -46,7 +46,7 @@ describe('AuthForm password recovery link', () => {
 describe('AuthForm invalid email', () => {
   it('still reaches onSubmit so the app can show its own message', async () => {
     const user = userEvent.setup();
-    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const onSubmit = vi.fn();
     renderForm('login', onSubmit);
 
     await user.type(screen.getByLabelText('Email'), 'sam');
@@ -58,7 +58,7 @@ describe('AuthForm invalid email', () => {
 
   it('does the same on the sign-up tab', async () => {
     const user = userEvent.setup();
-    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const onSubmit = vi.fn();
     renderForm('signup', onSubmit);
 
     await user.type(screen.getByLabelText('Email'), 'sam');
