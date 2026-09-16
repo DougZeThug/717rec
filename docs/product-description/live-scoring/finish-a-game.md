@@ -233,4 +233,7 @@ not move until the match result is saved.
 - Assumption: leaving a game won-but-not-ended indefinitely is intended. Nothing
   cleans it up, and the state survives reloads by design.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the End Game gate and the
+confirmation's behaviour while open, both changed after that commit — see
+B-48 in
+[`bug-triage.md`](../bug-triage.md#b-48-a-won-game-can-be-ended-on-a-round-that-is-still-on-its-way).
