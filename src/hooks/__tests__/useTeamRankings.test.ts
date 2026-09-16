@@ -35,6 +35,7 @@ import { usePreviousRankings } from '@/hooks/rankings/usePreviousRankings';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
 import { saveRankingsToStorage } from '@/utils/rankingUtils';
+import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 const makeTeam = (id: string, powerScore: number | null = 80, overrides: Partial<Team> = {}) =>
   ({
@@ -141,6 +142,124 @@ describe('useTeamRankings', () => {
       'cheesers',
       'smooth',
     ]);
+  });
+
+  // This hook's default order is a second, hand-rolled copy of sortRankings'
+  // tiebreaker chain, so the same cases have to hold in both places. Only the
+  // division step was pinned here before; a regression in the rest would have
+  // misordered the standings silently.
+  it('ties rows the table prints the same, even across a .x5 boundary', async () => {
+    // Both print "41.6". The old Math.round rounding made the first 41.7,
+    // which skipped the tiebreakers and put Recreational above Competitive.
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [
+        makeTeam('rec', 41.65, {
+          name: 'Alpha',
+          divisionName: 'Recreational',
+          win_percentage: 0.9,
+        }),
+        makeTeam('comp', 41.6, {
+          name: 'Zulu',
+          divisionName: 'Competitive',
+          win_percentage: 0.1,
+        }),
+      ],
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useTeamRankings());
+    await waitFor(() => expect(result.current.rankings.length).toBe(2));
+
+    expect(result.current.rankings.map((r) => r.teamId)).toEqual(['comp', 'rec']);
+  });
+
+  it('breaks a displayed tie by win percentage, then by name', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [
+        makeTeam('zulu', 70, {
+          name: 'Zulu',
+          divisionName: 'Competitive',
+          win_percentage: 0.5,
+        }),
+        makeTeam('alpha', 70, {
+          name: 'Alpha',
+          divisionName: 'Competitive',
+          win_percentage: 0.5,
+        }),
+        makeTeam('winner', 70, {
+          name: 'Winner',
+          divisionName: 'Competitive',
+          win_percentage: 0.8,
+        }),
+      ],
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useTeamRankings());
+    await waitFor(() => expect(result.current.rankings.length).toBe(3));
+
+    // Same division and same displayed score, so win % leads; the two teams
+    // level on win % fall through to the name.
+    expect(result.current.rankings.map((r) => r.teamId)).toEqual(['winner', 'alpha', 'zulu']);
+  });
+
+  it('orders teams with no power score by division, then win percentage, then name', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [
+        makeTeam('rec', null, {
+          name: 'Aardvark',
+          divisionName: 'Recreational',
+          win_percentage: 0.9,
+        }),
+        makeTeam('comp-bravo', null, {
+          name: 'Bravo',
+          divisionName: 'Competitive',
+          win_percentage: 0.5,
+        }),
+        makeTeam('comp-alpha', null, {
+          name: 'Alpha',
+          divisionName: 'Competitive',
+          win_percentage: 0.5,
+        }),
+        makeTeam('comp-winner', null, {
+          name: 'Zulu',
+          divisionName: 'Competitive',
+          win_percentage: 0.8,
+        }),
+      ],
+      isLoading: false,
+    });
+
+    const { result } = renderHook(() => useTeamRankings());
+    await waitFor(() => expect(result.current.rankings.length).toBe(4));
+
+    // Competitive before Recreational despite the Recreational team holding
+    // the best record; within Competitive, win % then name.
+    expect(result.current.rankings.map((r) => r.teamId)).toEqual([
+      'comp-winner',
+      'comp-alpha',
+      'comp-bravo',
+      'rec',
+    ]);
+  });
+
+  it('falls back to an empty table when the calculation throws', async () => {
+    // Anything throwing inside the build — here the streak helper — must leave
+    // the table empty and stop loading rather than render half a ranking.
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [makeTeam('boom-1', 90), makeTeam('boom-2', 80)],
+      isLoading: false,
+    });
+    // Once, not a lasting implementation: clearAllMocks resets calls but keeps
+    // implementations, so a permanent throw here would leak into later tests.
+    (calculateStreak as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+      throw new Error('streak blew up');
+    });
+
+    const { result } = renderHook(() => useTeamRankings());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.rankings).toEqual([]);
   });
 
   it('never persists snapshots as a side effect of rendering (pure read)', async () => {

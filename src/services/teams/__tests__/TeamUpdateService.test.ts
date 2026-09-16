@@ -25,9 +25,17 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
-import { updateTeamApi } from '../TeamUpdateService';
+import { updateTeamApi, updateTeamNameAndImage } from '../TeamUpdateService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const pgError = (msg = 'query failed', code = '42P01') => ({
+  message: msg,
+  code,
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
+});
 
 const makeTeamData = (overrides = {}) => ({
   name: 'Updated Team',
@@ -68,7 +76,7 @@ const setupFullSuccess = () => {
       return {
         select: () => ({
           eq: () => ({
-            single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+            maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
           }),
         }),
       };
@@ -79,7 +87,7 @@ const setupFullSuccess = () => {
       return {
         select: () => ({
           eq: () => ({
-            single: () =>
+            maybeSingle: () =>
               Promise.resolve({ data: { id: 'div-1', name: 'Division A' }, error: null }),
           }),
         }),
@@ -170,7 +178,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
             }),
           }),
         };
@@ -180,7 +188,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () =>
+              maybeSingle: () =>
                 Promise.resolve({ data: { id: 'div-1', name: 'Division A' }, error: null }),
             }),
           }),
@@ -238,7 +246,34 @@ describe('updateTeamApi', () => {
     mockFrom.mockImplementation(() => ({
       select: () => ({
         eq: () => ({
-          single: () => Promise.resolve({ data: null, error: null }),
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+        }),
+      }),
+    }));
+
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(NotFoundError);
+  });
+
+  // The regression guard for the .single() bug: PostgREST answers a zero-row
+  // .single() with a PGRST116 *error*, never with { data: null, error: null }.
+  // Under .single() that error reached handleDatabaseError first and the
+  // NotFoundError below it was unreachable.
+  it('throws NotFoundError, not DatabaseError, when the team row is gone (PGRST116)', async () => {
+    mockFrom.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          single: () =>
+            Promise.resolve({
+              data: null,
+              error: {
+                message: 'JSON object requested, multiple (or no) rows returned',
+                code: 'PGRST116',
+                details: 'Results contain 0 rows',
+                hint: null,
+                name: 'PostgrestError',
+              },
+            }),
         }),
       }),
     }));
@@ -250,7 +285,7 @@ describe('updateTeamApi', () => {
     mockFrom.mockImplementation(() => ({
       select: () => ({
         eq: () => ({
-          single: () =>
+          maybeSingle: () =>
             Promise.resolve({
               data: null,
               error: {
@@ -278,7 +313,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
             }),
           }),
         };
@@ -289,7 +324,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: null, error: null }),
+              maybeSingle: () => Promise.resolve({ data: null, error: null }),
             }),
           }),
         };
@@ -299,6 +334,113 @@ describe('updateTeamApi', () => {
     });
 
     await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(NotFoundError);
+  });
+
+  it('throws DatabaseError when the division check itself fails', async () => {
+    let callCount = 0;
+    mockFrom.mockImplementation((table: string) => {
+      callCount++;
+      if (table === 'teams' && callCount === 1) {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === 'divisions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: pgError('boom') }),
+            }),
+          }),
+        };
+      }
+      return {};
+    });
+
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when the team update itself fails', async () => {
+    setupFullSuccess();
+    let callCount = 0;
+    mockFrom.mockImplementation((table: string) => {
+      callCount++;
+      if (table === 'teams' && callCount === 1) {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === 'divisions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({ data: { id: 'div-1', name: 'Division A' }, error: null }),
+            }),
+          }),
+        };
+      }
+      if (table === 'teams') {
+        return {
+          update: () => ({
+            eq: () => ({
+              select: () => ({
+                single: () => Promise.resolve({ data: null, error: pgError('write refused') }),
+              }),
+            }),
+          }),
+        };
+      }
+      return {};
+    });
+
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when the active season lookup fails', async () => {
+    setupFullSuccess();
+    const base = mockFrom.getMockImplementation();
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () => Promise.resolve({ data: null, error: pgError('no seasons') }),
+            }),
+          }),
+        };
+      }
+      return base ? base(table) : {};
+    });
+
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when writing the season stats division name fails', async () => {
+    setupFullSuccess();
+    const base = mockFrom.getMockImplementation();
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'team_season_stats') {
+        return {
+          update: () => ({
+            eq: () => ({
+              eq: () => Promise.resolve({ data: null, error: pgError('stats locked') }),
+            }),
+          }),
+        };
+      }
+      return base ? base(table) : {};
+    });
+
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
   });
 
   it('skips division check when division_id is null', async () => {
@@ -312,7 +454,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
             }),
           }),
         };
@@ -392,5 +534,54 @@ describe('updateTeamApi', () => {
     );
     expect(result.wins).toBe(0);
     expect(result.losses).toBe(0);
+  });
+});
+
+// ─── updateTeamNameAndImage ──────────────────────────────────────────────────
+
+describe('updateTeamNameAndImage', () => {
+  const TEAM_ID = '77777777-7777-4777-8777-777777777777';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('writes the name and image and resolves', async () => {
+    const updates: Record<string, unknown>[] = [];
+    mockFrom.mockImplementation(() => ({
+      update: (payload: Record<string, unknown>) => {
+        updates.push(payload);
+        return { eq: () => Promise.resolve({ error: null }) };
+      },
+    }));
+
+    await expect(
+      updateTeamNameAndImage(TEAM_ID, 'Renamed', 'https://img.example.com/a.png')
+    ).resolves.toBeUndefined();
+
+    expect(mockFrom).toHaveBeenCalledWith('teams');
+    expect(updates).toEqual([{ name: 'Renamed', image_url: 'https://img.example.com/a.png' }]);
+  });
+
+  it('passes a null image through rather than dropping the field', async () => {
+    const updates: Record<string, unknown>[] = [];
+    mockFrom.mockImplementation(() => ({
+      update: (payload: Record<string, unknown>) => {
+        updates.push(payload);
+        return { eq: () => Promise.resolve({ error: null }) };
+      },
+    }));
+
+    await updateTeamNameAndImage(TEAM_ID, 'Renamed', null);
+
+    expect(updates).toEqual([{ name: 'Renamed', image_url: null }]);
+  });
+
+  it('throws DatabaseError when the write fails', async () => {
+    mockFrom.mockImplementation(() => ({
+      update: () => ({ eq: () => Promise.resolve({ error: pgError('write refused') }) }),
+    }));
+
+    await expect(updateTeamNameAndImage(TEAM_ID, 'Renamed', null)).rejects.toThrow(DatabaseError);
   });
 });

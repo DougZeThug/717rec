@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError, NotFoundError } from '@/types/errors';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 
 /**
  * Service for managing teams in the hidden division
@@ -51,21 +51,24 @@ export const getHiddenDivisionId = async (): Promise<string | null> => {
  */
 export const hideTeam = async (teamId: string): Promise<HideTeamResult> => {
   // Get the team's current division
+  // maybeSingle(), not single(): single() reports "no rows" as a PGRST116
+  // *error*, so a deleted team would leave here as a DatabaseError and
+  // ensureFound could never run.
   const { data: team, error: teamError } = await supabase
     .from('teams')
     .select('division_id, name')
     .eq('id', teamId)
-    .single();
+    .maybeSingle();
 
   if (teamError) handleDatabaseError(teamError, 'Failed to fetch team');
-  if (!team) throw new NotFoundError('Team', teamId);
+  const foundTeam = ensureFound(team, 'Team', teamId);
 
   // Get hidden division ID
   const hiddenDivisionId = await getHiddenDivisionId();
   if (!hiddenDivisionId) throw new NotFoundError('Hidden division');
 
   // Check if team is already hidden
-  if (team.division_id === hiddenDivisionId) {
+  if (foundTeam.division_id === hiddenDivisionId) {
     throw new BusinessLogicError('Team is already hidden');
   }
 
@@ -81,8 +84,8 @@ export const hideTeam = async (teamId: string): Promise<HideTeamResult> => {
 
   return {
     success: true,
-    message: `Team "${team.name}" has been hidden`,
-    originalDivisionId: team.division_id ?? undefined,
+    message: `Team "${foundTeam.name}" has been hidden`,
+    originalDivisionId: foundTeam.division_id ?? undefined,
   };
 };
 
@@ -102,20 +105,20 @@ export const unhideTeam = async (
     .from('teams')
     .select('division_id, name')
     .eq('id', teamId)
-    .single();
+    .maybeSingle();
 
   if (teamError) handleDatabaseError(teamError, 'Failed to fetch team');
-  if (!team) throw new NotFoundError('Team', teamId);
+  const foundTeam = ensureFound(team, 'Team', teamId);
 
   // Verify the target division exists
   const { data: division, error: divisionError } = await supabase
     .from('divisions')
     .select('id, name')
     .eq('id', targetDivisionId)
-    .single();
+    .maybeSingle();
 
   if (divisionError) handleDatabaseError(divisionError, 'Failed to fetch target division');
-  if (!division) throw new NotFoundError('Division', targetDivisionId);
+  const foundDivision = ensureFound(division, 'Division', targetDivisionId);
 
   // Move team to target division
   const { error: updateError } = await supabase
@@ -129,7 +132,7 @@ export const unhideTeam = async (
 
   return {
     success: true,
-    message: `Team "${team.name}" has been restored to ${division.name}`,
+    message: `Team "${foundTeam.name}" has been restored to ${foundDivision.name}`,
   };
 };
 

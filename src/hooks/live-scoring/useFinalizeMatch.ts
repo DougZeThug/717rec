@@ -82,17 +82,25 @@ export function useFinalizeMatch(matchId: string) {
    */
   const reopenAndRefinalize = useMutation({
     mutationFn: async () => {
-      await FinalizeService.reopenLiveMatch(matchId);
+      // reopenLiveMatch returns false when there was nothing to reverse — the
+      // match was already open. Keep that answer: the failure message below
+      // claims the old result was reversed, and saying so when nothing moved
+      // sends the admin looking for a standings change that never happened.
+      const reversed = await FinalizeService.reopenLiveMatch(matchId);
       try {
         return await FinalizeService.finalizeLiveMatch(matchId);
       } catch (error) {
-        // Reopening succeeded or finalize would never have been reached, so the
-        // match is open with no result now. Say so rather than reporting a bare
-        // failure: the league's records have moved and the admin has work left.
+        // Either way the match is open with no result now. Say which, rather
+        // than reporting a bare failure: the admin has work left, and needs to
+        // know whether the league's records moved.
         throw new BusinessLogicError(
-          `The old result was reversed, but the new one could not be saved: ${getUIErrorMessage(
-            error
-          )} The match is open now — fix the games, then save the result again.`
+          reversed
+            ? `The old result was reversed, but the new one could not be saved: ${getUIErrorMessage(
+                error
+              )} The match is open now — fix the games, then save the result again.`
+            : `The match was already open, and the result could not be saved: ${getUIErrorMessage(
+                error
+              )} Nothing was reversed — fix the games, then save the result again.`
         );
       }
     },

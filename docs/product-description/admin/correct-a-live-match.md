@@ -211,6 +211,18 @@ match is open now — fix the games, then save the result again." Nothing is
 hidden and nothing claims success. If the *reopen* itself is refused, nothing was
 touched and the message does not suggest otherwise.
 
+**If there was nothing to reverse** — the match was already open — the message
+says that instead: "The match was already open, and the result could not be
+saved: *reason* Nothing was reversed — fix the games, then save the result
+again." The two cases are never worded the same way, because an admin told the
+records moved will go looking for a standings change that did not happen.
+
+**A match that ended in a tie reopens like any other.** A tie is stored as
+completed with no winner, so it shows the amber warning and offers the button.
+Reopening one clears the completion and the confirmed-tie stamp and leaves the
+games in place. It moves no team records, because marking a tie already took
+the win and the loss away — there is nothing left to reverse.
+
 **Reopening alone** is still the admin-only "Reopen match (admin)" button at the
 foot of the live review screen, and it is owned by
 [`live-scoring/finish-the-match.md`](../live-scoring/finish-the-match.md). It

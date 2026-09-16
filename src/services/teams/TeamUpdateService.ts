@@ -1,7 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Team } from '@/types';
-import { NotFoundError } from '@/types/errors';
-import { handleDatabaseError } from '@/utils/errorHandler';
+import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
 import { assertNonEmptyString, assertValidUuid } from '@/utils/validation';
 
@@ -17,7 +16,7 @@ export const updateTeamNameAndImage = async (
   const { error } = await supabase
     .from('teams')
     .update({
-      name: name,
+      name,
       image_url: imageUrl,
     })
     .eq('id', teamId);
@@ -36,20 +35,20 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
 
   teamLog('Updating team:', teamId);
 
-  // Validate the team exists before attempting an update
+  // Validate the team exists before attempting an update. maybeSingle(), not
+  // single(): single() reports "no rows" as a PGRST116 *error*, so the miss
+  // would leave here as a DatabaseError and ensureFound could never run.
   const { data: teamExists, error: checkError } = await supabase
     .from('teams')
     .select('id')
     .eq('id', teamId)
-    .single();
+    .maybeSingle();
 
   if (checkError) {
     handleDatabaseError(checkError, 'Failed to check if team exists');
   }
 
-  if (!teamExists) {
-    throw new NotFoundError('Team', teamId);
-  }
+  ensureFound(teamExists, 'Team', teamId);
 
   let divisionName: string | null = null;
 
@@ -60,17 +59,13 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
       .from('divisions')
       .select('id, name')
       .eq('id', teamData.division_id)
-      .single();
+      .maybeSingle();
 
     if (divCheckError) {
       handleDatabaseError(divCheckError, 'Failed to check if division exists');
     }
 
-    if (!divisionExists) {
-      throw new NotFoundError('Division', teamData.division_id);
-    }
-
-    divisionName = divisionExists.name;
+    divisionName = ensureFound(divisionExists, 'Division', teamData.division_id).name;
   }
 
   // Update the team

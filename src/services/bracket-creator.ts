@@ -4,6 +4,7 @@ import type { BracketRecord } from '@/types/bracketRecord';
 import { BusinessLogicError } from '@/types/errors';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
+import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
 
 export interface BracketCreationOptions {
   name: string;
@@ -14,14 +15,6 @@ export interface BracketCreationOptions {
   grandFinalType?: 'simple' | 'double';
   seasonId?: string | null;
 }
-
-// Round to 1 decimal place to match the displayed power score the user sees in
-// the standings UI. Sorting on the displayed value (instead of the raw value)
-// keeps bracket seeding consistent with 'useTeamRankings'.
-const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
-  if (powerScore === null || powerScore === undefined) return null;
-  return Math.round(powerScore * 10) / 10;
-};
 
 export async function createBracket(options: BracketCreationOptions): Promise<BracketRecord> {
   const { name, format, divisionId, teams, onProgress, grandFinalType, seasonId } = options;

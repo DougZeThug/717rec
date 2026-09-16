@@ -29,7 +29,14 @@ export interface OddScheduleArgs {
 
 /**
  * Pick Bye2 for S2: a team different from Bye1 that can also play Bye1.
- * Tries progressive relaxation, then falls back to any eligible team.
+ * Tries progressive relaxation, then one last pass at full relaxation.
+ *
+ * Returns null when no team can legally play Bye1. There used to be two more
+ * fallbacks here that returned a team without asking canPlay: the first could
+ * hand back an opponent Bye1 had already played tonight, which constraints.ts
+ * says must NEVER be relaxed, and the second could hand back Bye1 itself and
+ * put the same team on both sides of a match. A missing S3 is the honest
+ * answer; the caller skips the match rather than scheduling an illegal one.
  */
 function selectBye2(
   bye1: Team,
@@ -39,7 +46,7 @@ function selectBye2(
   tonightPairs: Set<string>,
   maxTierGap: number,
   relaxationLevel: RelaxationLevel
-): Team {
+): Team | null {
   const exclude = new Set([bye1.id]);
   // One bye-selection attempt per team in the pool; the loop variable is unused
   // because each attempt re-picks via the growing 'exclude' set, not by index.
@@ -59,13 +66,16 @@ function selectBye2(
     exclude.add(candidate.id);
   }
 
-  // Emergency fallback with full relaxation
-  const fallback =
-    sortedTeams.find(
-      (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
-    ) ??
-    sortedTeams.find((t) => t.id !== bye1.id) ??
-    sortedTeams[0];
+  // Emergency fallback: full relaxation, but still a real constraint check.
+  const fallback = sortedTeams.find(
+    (t) => t.id !== bye1.id && canPlay(bye1, t, playedSet, tonightPairs, maxTierGap, 3)
+  );
+
+  if (!fallback) {
+    warnLog(`No legal Bye2 for ${bye1.name} at full relaxation`);
+    return null;
+  }
+
   warnLog(`Could not find ideal Bye2, using fallback: ${fallback.name}`);
   return fallback;
 }
@@ -135,7 +145,10 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     maxTierGap,
     relaxationLevel
   );
-  scheduleLog(`Selected Bye2: ${bye2.name} (sits out ${slot2})`);
+  // Resting breaks no constraint, so S2 still needs someone to sit out even
+  // when Bye1 has no legal S3 opponent. Only the S3 match is impossible.
+  let s2Bye = bye2 ?? sortedTeams.find((t) => t.id !== bye1.id);
+  scheduleLog(`Selected Bye2: ${s2Bye?.name ?? 'none'} (sits out ${slot2})`);
 
   // Generate S2 pairings (excluding Bye2)
   let s2Matches = generateSlotPairings(
@@ -145,7 +158,7 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     tonightPairs,
     teamMatchCounts,
     maxTierGap,
-    bye2.id,
+    s2Bye?.id,
     newPairs,
     relaxationLevel,
     perTeamRematchAllowed
@@ -198,6 +211,7 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
       maxTierGap,
       relaxationLevel
     );
+    s2Bye = bye2 ?? sortedTeams.find((t) => t.id !== bye1.id);
 
     s1Matches = generateSlotPairings(
       sortedTeams,
@@ -228,7 +242,7 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
       tonightPairs,
       teamMatchCounts,
       maxTierGap,
-      bye2.id,
+      s2Bye?.id,
       newPairs,
       relaxationLevel,
       perTeamRematchAllowed
@@ -249,7 +263,10 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     diagnostics.repairAttempted = true;
 
     const s1TeamIds = new Set([bye1.id, ...s1Matches.flatMap((m) => [m.teamAId, m.teamBId])]);
-    const s2TeamIds = new Set([bye2.id, ...s2Matches.flatMap((m) => [m.teamAId, m.teamBId])]);
+    const s2TeamIds = new Set([
+      ...(s2Bye ? [s2Bye.id] : []),
+      ...s2Matches.flatMap((m) => [m.teamAId, m.teamBId]),
+    ]);
 
     const unmatchedInS1 = sortedTeams.filter((t) => !s1TeamIds.has(t.id));
     const unmatchedInS2 = sortedTeams.filter((t) => !s2TeamIds.has(t.id));
@@ -285,27 +302,40 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
     }
   }
 
-  // Generate S3 match: Bye1 vs Bye2
+  // Generate S3 match: Bye1 vs Bye2.
+  //
+  // Skipped when no legal Bye2 exists. Both byes then play one match tonight
+  // instead of two, which is worse than a full schedule but better than the
+  // alternative the old fallback produced: a rematch of a pair that had
+  // already met tonight, or a team facing itself.
   const slot3Name = thirdSlot || 'S3';
-  const s3Match: ScheduledMatch = {
-    slot: slot3Name,
-    teamAId: bye1.id,
-    teamBId: bye2.id,
-    teamAName: bye1.name,
-    teamBName: bye2.name,
-    divisionA: bye1.divisionName || 'Unknown',
-    divisionB: bye2.divisionName || 'Unknown',
-    tierA: getTier(bye1),
-    tierB: getTier(bye2),
-  };
+  const s3Matches: ScheduledMatch[] = [];
 
-  const s3PairKey = pairKey(bye1.id, bye2.id);
-  tonightPairs.add(s3PairKey);
-  newPairs.add(s3PairKey);
-  teamMatchCounts.set(bye1.id, (teamMatchCounts.get(bye1.id) || 0) + 1);
-  teamMatchCounts.set(bye2.id, (teamMatchCounts.get(bye2.id) || 0) + 1);
+  if (bye2) {
+    s3Matches.push({
+      slot: slot3Name,
+      teamAId: bye1.id,
+      teamBId: bye2.id,
+      teamAName: bye1.name,
+      teamBName: bye2.name,
+      divisionA: bye1.divisionName || 'Unknown',
+      divisionB: bye2.divisionName || 'Unknown',
+      tierA: getTier(bye1),
+      tierB: getTier(bye2),
+    });
 
-  const allMatches = [...s1Matches, ...s2Matches, s3Match];
+    const s3PairKey = pairKey(bye1.id, bye2.id);
+    tonightPairs.add(s3PairKey);
+    newPairs.add(s3PairKey);
+    teamMatchCounts.set(bye1.id, (teamMatchCounts.get(bye1.id) || 0) + 1);
+    teamMatchCounts.set(bye2.id, (teamMatchCounts.get(bye2.id) || 0) + 1);
+  } else {
+    warnLog(
+      `Skipping ${slot3Name}: no opponent for ${bye1.name} that it has not already played tonight`
+    );
+  }
+
+  const allMatches = [...s1Matches, ...s2Matches, ...s3Matches];
 
   // Validation
   const matchCountsArray = Array.from(teamMatchCounts.values());
@@ -316,10 +346,15 @@ export function scheduleOdd(args: OddScheduleArgs): ScheduledMatch[] {
   }
 
   scheduleLog(
-    `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, 1 in ${slot3Name})${diagnostics.relaxationApplied > 0 ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]` : ''}`
+    `Generated ${allMatches.length} matches (${s1Matches.length} in ${slot1}, ${s2Matches.length} in ${slot2}, ${s3Matches.length} in ${slot3Name})${diagnostics.relaxationApplied > 0 ? ` [relaxation: ${diagnostics.constraintsRelaxed.join(', ')}]` : ''}`
   );
-  scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
-  scheduleLog(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
+  if (bye2) {
+    scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} + ${slot3Name}`);
+    scheduleLog(`Bye2 (${bye2.name}) plays in ${slot1} + ${slot3Name}`);
+  } else {
+    scheduleLog(`Bye1 (${bye1.name}) plays in ${slot2} only`);
+    if (s2Bye) scheduleLog(`${s2Bye.name} sits out ${slot2} and plays in ${slot1} only`);
+  }
 
   return allMatches;
 }

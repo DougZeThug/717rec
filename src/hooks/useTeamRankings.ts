@@ -3,13 +3,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Match, Ranking, Team } from '@/types';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { debugLog, errorLog } from '@/utils/logger';
+import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
 import { updateRankChanges } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
-
-const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
-  if (powerScore === null || powerScore === undefined) return null;
-  return Math.round(powerScore * 10) / 10;
-};
 
 import { usePreviousRankings } from './rankings/usePreviousRankings';
 import { useRankingsData } from './rankings/useRankingsData';

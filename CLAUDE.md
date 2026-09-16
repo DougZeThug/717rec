@@ -47,8 +47,11 @@ export const ExampleService = {
       .from('items')
       .select('id, name, season_id, created_at')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
+    // maybeSingle(), not single(): single() reports "no rows" as a PGRST116
+    // error, so ensureFound would never see the null and the caller would get
+    // a DatabaseError instead of a NotFoundError.
     if (error) handleDatabaseError(error, 'Failed to fetch item');
     return ensureFound(data, 'Item', id);
   },

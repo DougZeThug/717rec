@@ -44,31 +44,39 @@ export function useScoreSubmissions() {
     refetchOnMount: 'always',
   });
 
-  /** Optimistically drop the row from the queue and remember where it sat. */
+  /** Optimistically drop the row from the queue and keep a copy of it. */
   const removeOptimistically = async (submissionId: string) => {
     pendingModerationsRef.current += 1;
     await queryClient.cancelQueries({ queryKey: scoreSubmissionKeys.all });
     const previous = queryClient.getQueryData<ScoreSubmission[]>(scoreSubmissionKeys.all);
-    const removedIndex = previous?.findIndex((sub) => sub.id === submissionId) ?? -1;
-    const removedSubmission = removedIndex >= 0 ? previous?.[removedIndex] : undefined;
+    const removedSubmission = previous?.find((sub) => sub.id === submissionId);
     queryClient.setQueryData<ScoreSubmission[]>(scoreSubmissionKeys.all, (curr = []) =>
       curr.filter((sub) => sub.id !== submissionId)
     );
-    return { removedIndex, removedSubmission };
+    return { removedSubmission };
   };
 
-  /** Put a row back in the queue after a failed moderation. */
-  const restoreOptimistic = (context?: {
-    removedIndex: number;
-    removedSubmission?: ScoreSubmission;
-  }) => {
+  /**
+   * Put a row back in the queue after a failed moderation.
+   *
+   * By date, not by the position it held when it left. An index captured at
+   * removal time goes stale the moment a second moderation removes another row,
+   * because every position after it shifts — so restoring two failed decisions
+   * could drop a card ahead of a newer one and break the newest-first order the
+   * list promises. fetchScoreSubmissions orders by created_at desc, so
+   * rebuilding that order needs no index at all.
+   */
+  const restoreOptimistic = (context?: { removedSubmission?: ScoreSubmission }) => {
     if (!context?.removedSubmission) return;
     const removedSubmission = context.removedSubmission;
-    const restoreIndex = context.removedIndex >= 0 ? context.removedIndex : 0;
     queryClient.setQueryData<ScoreSubmission[]>(scoreSubmissionKeys.all, (curr = []) => {
       if (curr.some((sub) => sub.id === removedSubmission.id)) return curr;
       const next = [...curr];
-      next.splice(Math.min(restoreIndex, next.length), 0, removedSubmission);
+      // created_at is a non-null ISO string, so a plain string compare gives
+      // the same order as a date compare. Strictly-less-than keeps a row with
+      // an identical stamp behind the ones already there, which is stable.
+      const insertAt = next.findIndex((sub) => sub.created_at < removedSubmission.created_at);
+      next.splice(insertAt >= 0 ? insertAt : next.length, 0, removedSubmission);
       return next;
     });
   };

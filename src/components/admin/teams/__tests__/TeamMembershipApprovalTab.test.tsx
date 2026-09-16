@@ -60,7 +60,7 @@ const defaultHookState = {
   isError: false,
   error: null,
   approveMembership: mockApproveMembership,
-  processingId: null,
+  processingIds: new Set<string>(),
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
@@ -237,11 +237,11 @@ describe('TeamMembershipApprovalTab', () => {
     expect(mockApproveMembership).not.toHaveBeenCalled();
   });
 
-  it('disables Approve button when processingId matches the membership', () => {
+  it('disables Approve button while that row is saving', () => {
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,
       pendingMemberships: [makeMembership('mem-99')],
-      processingId: 'mem-99',
+      processingIds: new Set(['mem-99']),
     });
 
     render(<TeamMembershipApprovalTab />);
@@ -252,11 +252,11 @@ describe('TeamMembershipApprovalTab', () => {
     expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('disables Reject button when processingId matches the membership', () => {
+  it('disables Reject button while that row is saving', () => {
     mockUsePendingMemberships.mockReturnValue({
       ...defaultHookState,
       pendingMemberships: [makeMembership('mem-99')],
-      processingId: 'mem-99',
+      processingIds: new Set(['mem-99']),
     });
 
     render(<TeamMembershipApprovalTab />);
