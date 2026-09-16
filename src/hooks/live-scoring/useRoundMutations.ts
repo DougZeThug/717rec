@@ -93,10 +93,18 @@ export function useRoundMutations(matchId: string) {
           rounds: [...previous.rounds, optimisticRound(matchId, input, user?.id)],
         });
       }
-      return { previous };
     },
-    onError: (error, _input, context) => {
-      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
+    onError: (error, input) => {
+      // Only this round's own row comes out, and out of the log as it stands
+      // now. Restoring the snapshot this save took on the way in would also
+      // take away every round filed after it — rounds that are still waiting
+      // for the signal, and that the notice above still counts as waiting.
+      const optimisticId = `optimistic-${input.gameId}-${input.roundNumber}`;
+      queryClient.setQueryData<LiveMatchBundle>(queryKey, (current) =>
+        current
+          ? { ...current, rounds: current.rounds.filter((round) => round.id !== optimisticId) }
+          : current
+      );
       if (error instanceof DuplicateRoundError) {
         toast({
           title: 'Round already recorded',
@@ -110,7 +118,26 @@ export function useRoundMutations(matchId: string) {
         });
       }
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+    onSettled: (_data, _error, input) => {
+      // A refetch returns only what the server has saved, so it would take a
+      // round that is still waiting out of the log. Whichever save settles
+      // last refreshes for all of them.
+      //
+      // This save is still `pending` while its own `onSettled` runs, so it has
+      // to be left out of the count or it would always see itself waiting. A
+      // round is only ever saved once for a game, which is what makes the game
+      // and the round number enough to name it.
+      const stillWaiting = queryClient
+        .getMutationCache()
+        .findAll({ mutationKey: liveScoringKeys.submitRound(matchId), status: 'pending' })
+        .filter((mutation) => {
+          const held = mutation.state.variables as SubmitRoundInput | undefined;
+          return !(held?.gameId === input.gameId && held.roundNumber === input.roundNumber);
+        });
+
+      if (stillWaiting.length > 0) return;
+      queryClient.invalidateQueries({ queryKey });
+    },
   });
 
   const undoLastRound = useMutation({
