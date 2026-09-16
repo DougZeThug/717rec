@@ -149,6 +149,7 @@ entry's *Corrected on review* note.
 | B-36 | Two grades on the team report card are not real measurements | medium | stats | **fixed** | — |
 | B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
 | B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
+| B-43 | Three links in a message are counted as six and refused as spam | medium | help | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
 | B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
 | B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
@@ -1942,6 +1943,52 @@ finding read a superseded migration.
   is what the join screen and `/my-team` need to show it; only the message
   board's own stamp reads `is_approved`. The generic toast on every other failed
   post is B-12.
+
+### B-43: Three links in a message are counted as six and refused as spam
+
+- **Where the user meets it:** anyone writing to the league through `/contact`
+  or the support form whose message quotes three or more ordinary web links.
+- **What happens / what was expected:** the message is refused with the generic
+  "please try again" toast and never reaches the league. Expected, per
+  [`help/contact-the-league.md`](help/contact-the-league.md): only **more than
+  five links** is refused as spam.
+- **Reproduce:** 1. Open `/contact`. 2. Write a message quoting three links that
+  each begin `https://www.` — a video, an event page, a map. 3. Send.
+- **Why (from the code):** `countUrls` matched
+  `/https?:\/\/|www\./gi` — an alternation between the two ways a link can
+  start. Inside a single `https://www.example.com` both alternatives match, once
+  for the scheme and again for the host prefix, so each such link scored **two**.
+  Three scored six and tripped `> 5`. The check runs before the ticket is stored
+  and before any email is sent, so nothing is kept and nothing is delivered. The
+  sender cannot tell a spam refusal from a transient one — the app collapses
+  every failure into one sentence advising a retry — and retrying identical text
+  can never succeed.
+- **Severity:** `medium`. No data is corrupted, but a legitimate report is lost
+  with no way for either side to find out.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** The pattern now consumes the rest of each link
+  (`/(?:https?:\/\/|www\.)\S+/gi`), so the `www.` of a scheme-prefixed link is
+  part of the match its scheme already started. A link with no scheme still
+  counts: a suggested fix of `/https?:\/\/(?:www\.)?\S+/gi` was rejected because
+  it stops counting bare `www.example.com` links **at all**, which would let six
+  of them past the limit — the opposite mistake. Counts checked at every
+  boundary: three scheme-plus-`www.` links now score 3 (was 6), six still score
+  6 and are still refused, and six bare `www.` links still score 6.
+
+  *The same bug was in two functions.* `send-support-email` and
+  `submit-contact-request` each carried their own byte-identical copy. The
+  duplication is what let one bug be two, so `countUrls` and the limit now live
+  in `supabase/functions/_shared/spam.ts` and both functions import them. This
+  goes further than B-15, where the same copy-per-function drift was found in
+  the CORS lists and the league chose the smaller change; here the shared file
+  is the fix rather than an extra, because the defect was in the duplicated
+  logic itself.
+
+  Nothing tested `countUrls` before — `grep` found the two definitions, the two
+  call sites and no test. There are now five unit tests on the shared helper and
+  two end-to-end cases on the support function, one for three links passing and
+  one for six still being refused.
 
 ---
 

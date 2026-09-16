@@ -235,6 +235,60 @@ Deno.test({
   },
 });
 
+// Three links is well under the documented limit of five. Each used to score
+// two, so a message quoting three videos was refused as spam and no retry of
+// the same text could ever get through.
+Deno.test({
+  name: 'three scheme-plus-www links are not refused as spam',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch();
+    try {
+      const res = await handleRequest(
+        makeReq({
+          ...validPayload,
+          message: [
+            'Here is the evidence:',
+            'https://www.youtube.com/watch?v=abc',
+            'https://www.facebook.com/events/99',
+            'https://www.google.com/maps/place/Some+Field',
+          ].join('\n'),
+        })
+      );
+      assertEquals(res.status, 200);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'more than five links is still refused as spam',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch();
+    try {
+      const res = await handleRequest(
+        makeReq({
+          ...validPayload,
+          message: Array.from({ length: 6 }, (_, i) => `https://www.spam${i}.test`).join(' '),
+        })
+      );
+      assertEquals(res.status, 400);
+      const body = await res.json();
+      assertEquals(body.error, 'Message contains too many links');
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
 Deno.test({
   name: 'rate limit exceeded returns 429',
   sanitizeOps: false,
