@@ -213,6 +213,25 @@ everywhere, and the rule catches a real class of bug. The job is advisory
 (`blocking` defaults to `none`), so it never blocks a merge; the only thing this
 costs is the time it takes to re-investigate, which is what this note is for.
 
+**"1 new issue vs `main`" often means "new to the diff", not "new in the code".**
+The scan runs with `scope: changed`, so it only looks at files a pull request
+touches. A finding that has sat in a file for months appears the first time any
+PR edits that file, labelled as new. Before rewriting anything, measure it —
+the checker runs locally, and comparing the file before and after takes a
+minute:
+
+```bash
+npx react-doctor@0.9.14 --no-supply-chain --json \
+  --json-out /tmp/after.json src/path/to/File.tsx
+git show origin/main:src/path/to/File.tsx > /tmp/before.tsx   # then swap it in and repeat
+```
+
+This has already happened twice. The `effect-needs-cleanup` report above is one.
+The other was `no-high-complexity-react-function` on
+`CareerRankingsSection.tsx`, reported as new when that file was consolidated —
+measured at cyclomatic 22 / cognitive 21 both before and after the change, so
+the edit had added none of it.
+
 ### 5b. One-time setup (Doug, ~10 minutes, all in web UIs)
 
 **Lovable side:**
