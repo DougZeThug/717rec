@@ -137,7 +137,7 @@ describe('useAuthForm', () => {
     expect(result.current.isSubmitting).toBe(false);
   });
 
-  it('shows destructive toast when native Google sign-in returns success:false', async () => {
+  it('raises no toast of its own when native Google sign-in fails, so only signInWithGoogleNative speaks', async () => {
     mockSignInWithGoogleNative.mockResolvedValueOnce({
       success: false,
       error: { message: 'Native login failed' },
@@ -149,13 +149,9 @@ describe('useAuthForm', () => {
       await result.current.handleNativeGoogleSignIn();
     });
 
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: 'Login Failed',
-        description: 'Native login failed',
-        variant: 'destructive',
-      })
-    );
+    // signInWithGoogleNative already raised one through handleAuthError. A
+    // second here stacked the same failure under a different title.
+    expect(mockToast).not.toHaveBeenCalled();
     expect(result.current.isSubmitting).toBe(false);
   });
 

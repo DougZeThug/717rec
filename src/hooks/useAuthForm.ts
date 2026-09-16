@@ -116,13 +116,11 @@ export const useAuthForm = () => {
       setIsSubmitting(true);
       const { success, error } = await signInWithGoogleNative();
 
+      // signInWithGoogleNative raises the only toast on failure, through
+      // handleAuthError, which also records the message as authError. A second
+      // toast here said the same thing in different words, stacked under it.
       if (!success) {
         authLog('Native Google login error:', error);
-        toast({
-          title: 'Login Failed',
-          description: error?.message || 'Google login failed. Please try again.',
-          variant: 'destructive',
-        });
       }
     } catch (error) {
       errorLog('Exception during native Google login:', error);
