@@ -219,7 +219,7 @@ const TeamCareerSection = ({
 /** Sections a link may name, matching the ids on the page. */
 const LINKABLE_SECTIONS = ['performance', 'stats', 'h2h', 'matches', 'career'];
 
-const TeamDetails = () => {
+const TeamDetailsPage = () => {
   const { teamId: teamParam } = useParams<{ teamId: string }>();
   const { teamId, isResolving } = useResolveTeamSlug(teamParam);
   const navigate = useNavigate();
@@ -413,6 +413,18 @@ const TeamDetails = () => {
       </div>
     </>
   );
+};
+
+/**
+ * Moving from one team's page to another is a fresh arrival, so nothing the
+ * reader left behind on the previous team should follow them. The page reads
+ * the section a link named once at mount (UX audit T-03) and each section seeds
+ * its own open state once, so without a key the router would hand the next team
+ * the last team's open sections. Keying on the address restarts the page.
+ */
+const TeamDetails = () => {
+  const { teamId: teamParam } = useParams<{ teamId: string }>();
+  return <TeamDetailsPage key={teamParam} />;
 };
 
 export default TeamDetails;
