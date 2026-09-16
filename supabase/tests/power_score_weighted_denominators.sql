@@ -171,7 +171,7 @@ BEGIN
 
   -- 7. The exclusion is one-directional. A Hidden team still gets a rating of
   --    its own from the opponents IT played, because admin surfaces
-  --    (useCareerRankingsWithHidden, the power-migration comparison) fetch
+  --    (the career rankings table, the power-migration comparison) fetch
   --    Hidden teams on purpose and expect a number. Keeping them out of public
   --    listings is a read-layer concern, handled in the MCP tools.
   SELECT power_score INTO v_power_h FROM public.v_team_details WHERE team_id = v_team_h;

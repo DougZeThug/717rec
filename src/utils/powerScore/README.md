@@ -124,9 +124,9 @@ Only the three weighted terms filter.
 Keeping Hidden teams out of public listings is a separate, read-layer concern:
 the frontend skips them in `src/utils/teamGrouping.ts` and the MCP
 `get_standings` / `list_teams` tools skip them via `isHiddenDivision()`. A
-Hidden team still gets a rating of its own, because
-`useCareerRankingsWithHidden` and the admin power-migration comparison fetch
-them deliberately and expect a number.
+Hidden team still gets a rating of its own, because the career rankings table
+(`useCareerRankings({ includeHidden: true })`) and the admin power-migration
+comparison fetch them deliberately and expect a number.
 
 ### Archived seasons are frozen
 

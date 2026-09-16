@@ -5,8 +5,9 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
-import { useCareerRankingsWithHidden } from '@/hooks/useCareerRankingsWithHidden';
+import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -20,9 +21,17 @@ const CareerRankingsSection: React.FC = () => {
   const { resolvedTheme } = useTheme();
   const { isWinterTheme } = useSeasonalThemeBase();
   const isLight = !isWinterTheme && resolvedTheme === 'light';
-  const { data: careerRankings, isLoading, error } = useCareerRankingsWithHidden();
+  const {
+    data: careerRankings,
+    isLoading,
+    error,
+    refetch,
+  } = useCareerRankings({ includeHidden: true });
   const [isOpen, setIsOpen] = React.useState(false);
 
+  // A failed fetch is not a league with no history. The rankings query stays
+  // disabled until the team list arrives, so the failure reported here is often
+  // the team list's own — see the fold in useCareerRankings.
   if (error) {
     return (
       <Card className="mb-4">
@@ -31,8 +40,18 @@ const CareerRankingsSection: React.FC = () => {
             <Trophy className="size-5" />
             Career Statistics
           </CardTitle>
-          <CardDescription>Error loading career statistics: {error.message}</CardDescription>
         </CardHeader>
+        <CardContent>
+          <ErrorDisplay
+            variant="inline"
+            error="We couldn't load career statistics. Please try again."
+            onRetry={() => {
+              // No `void`: the hook's refetch is a retry action that resolves
+              // with nothing, so there is no promise here worth discarding.
+              refetch();
+            }}
+          />
+        </CardContent>
       </Card>
     );
   }

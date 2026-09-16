@@ -12,7 +12,11 @@ vi.mock('@tanstack/react-query', () => ({
   useQuery: (options: unknown) => mockUseQuery(options),
 }));
 
-vi.mock('./career/computeAllTeamsTotals', () => ({
+// A guard, not a fixture: useQuery is mocked above, so the query function
+// never runs. This keeps the real module — and the Supabase client it imports —
+// out of the file. The path must be the alias; a relative one resolves against
+// this test's own directory and silently matches nothing.
+vi.mock('@/hooks/career/computeAllTeamsTotals', () => ({
   computeAllTeamsTotals: vi.fn(),
 }));
 
@@ -147,6 +151,24 @@ describe('useCareerRankings', () => {
     // The failure is still visible, on the field the UI reads.
     expect(result.current.error).toBeInstanceOf(Error);
     expect(result.current.isError).toBe(true);
+  });
+
+  // The hidden-inclusive view used to be a separate hook with its own key, and
+  // the two recomputed the same thing from the same team list. Now that they
+  // share this hook, includeHidden is the only thing keeping the public and
+  // admin results apart in the cache — dropping it from the key would serve one
+  // view's rankings to the other.
+  it('keys the hidden-inclusive rankings apart from the public ones', () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: [{ id: 't1' }],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    renderHook(() => useCareerRankings({ includeHidden: true }));
+
+    expect(mockUseQuery.mock.calls[0][0].queryKey).toEqual(['careerRankings', ['t1'], true]);
   });
 
   it('exposes only the fields its consumers use', () => {

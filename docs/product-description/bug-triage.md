@@ -153,6 +153,7 @@ entry's *Corrected on review* note.
 | B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
 | B-43 | Three links in a message are counted as six and refused as spam | medium | help | **fixed** | — |
 | B-46 | A failed division-weights read empties the career rankings silently | medium | stats, teams | **fixed** | — |
+| B-49 | A failed team list empties the career rankings table | medium | stats | **fixed** | — |
 | B-48 | A won game can be ended on a round that is still on its way | medium | live-scoring | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
 | B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
@@ -2097,11 +2098,78 @@ finding read a superseded migration.
   single failing team, no teams asked for, and a bulk fetch that returned
   nothing must all still resolve.
 
-  *Left alone, deliberately:* `useCareerRankingsWithHidden` is a near-copy of
-  `useCareerRankings` carrying the same skip. The throw above fixes its compute
-  failure too, but it still lacks the prerequisite-error fold that
-  `useCareerRankings` gained in B-36, and the duplication itself is a separate
-  pre-existing question.
+  *Left alone at the time:* `useCareerRankingsWithHidden` was a near-copy of
+  `useCareerRankings` carrying the same skip. The throw above fixed its compute
+  failure too, but it still lacked the prerequisite-error fold that
+  `useCareerRankings` gained in B-36. **Now closed — see
+  [B-49](#b-49-a-failed-team-list-empties-the-career-rankings-table), which
+  removed the copy rather than porting the fold into it.**
+
+### B-49: A failed team list empties the career rankings table
+
+- **Where the user meets it:** the career rankings table on the stats page,
+  whenever the team list behind it fails to load.
+- **What happens / what was expected:** the section reads as a league that has
+  never played — and, if opened while the team list is still loading, says so
+  before anything has had a chance to fail. Expected: a failure is reported as
+  a failure, with a way to try again.
+- **Reproduce:** 1. Make the team list request fail. 2. Open `/stats` and expand
+  *Career Statistics*.
+- **Why (from the code):** the section read `useCareerRankingsWithHidden`, a
+  near-copy of `useCareerRankings` that never received the fold added in B-36.
+  The rankings query stays disabled until the team list arrives, so it cannot
+  report the team fetch's own failure: `error` stayed null and `data` stayed
+  undefined, which the section rendered as "No career statistics available."
+  This is the same rule as B-36 and B-46 — *a failed fetch is not an empty one*
+  — one file over.
+- **A second fault on the same line:** the copy returned the bare rankings
+  `isLoading`. A disabled query is pending but not fetching, so that flag was
+  `false` for the whole time the team list was in flight. Expanding the section
+  during that window showed the empty-state message rather than the spinner.
+- **Severity:** `medium`. Nothing is corrupted and it clears when the read
+  recovers, but the whole league's career table reads as absent rather than
+  unavailable, with no way to retry.
+- **Decision needed:** `fix`.
+- **Raised by:** left open in B-46, above.
+- **Status:** **fixed**, by deleting the copy rather than porting the fold.
+
+  The two hooks differed by a single optional field, `divisionName`, read only
+  by the CSV export — and they used **different cache keys**, so they were two
+  entries running `computeAllTeamsTotals` (~9 batched queries) over the same,
+  already-deduped team list. Porting the fold would have left that, plus two
+  copies of a forty-line fold to keep in step. The field moved onto
+  `useCareerRankings`, the copy is gone, and the section now calls
+  `useCareerRankings({ includeHidden: true })` — which is the key the report
+  card and the GPA leaderboard already use, so the change **collapses** a cache
+  entry rather than adding one. Both invalidation sites match by prefix, so
+  neither needed touching.
+
+  Checked before relying on it: `includeHidden` only filters which teams come
+  back, and `divisionname` is selected by every team query, so the CSV cannot
+  start emitting blank divisions.
+
+  The error is now rendered with the same `ErrorDisplay` card and **Try again**
+  that the report card and the GPA leaderboard already use for this failure, so
+  the three screens behave alike. That also replaces a raw database message on
+  screen with copy meant for a reader.
+
+  Five tests on the section, which had none; four fail against the unfixed
+  code. The obvious test would have been the wrong one: mocking the rankings
+  hook proves nothing, because before the change the section imported a
+  *different* hook, so the mock would not apply and the test would fail merely
+  because an import line moved. They mock the team query one level down instead,
+  against a real query client, so the same setup drives the old code and the
+  new. A sixth test, in the hook's own suite, pins the rankings query key so a
+  later tidy-up cannot collide the public and hidden-inclusive entries again.
+
+  *One guard covers a risk this change created rather than fixed.* Moving
+  `divisionName` onto the shared hook puts it in front of four consumers that
+  never read it, where it looks removable — and the CSV export declares it
+  optional, so dropping it would empty the Division column with no type error
+  and nothing failing. The fifth section test walks that whole path, hook to
+  downloaded file. It was checked by deleting the field: typecheck still passes
+  and only that test fails, with `expected '' to be 'Premier'`. Two smaller
+  tests cover the export helper itself, which had none.
 
 ### B-48: A won game can be ended on a round that is still on its way
 
