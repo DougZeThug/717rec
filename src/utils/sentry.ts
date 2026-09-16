@@ -10,6 +10,21 @@ const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || '';
 
 let isInitialized = false;
 
+/**
+ * Lazily add replay + browser tracing integrations to reduce initial bundle impact
+ */
+const addLazyIntegrations = () => {
+  try {
+    const client = Sentry.getClient();
+    if (client) {
+      client.addIntegration(Sentry.replayIntegration());
+      client.addIntegration(Sentry.browserTracingIntegration());
+    }
+  } catch {
+    // Silently fail - these integrations are non-critical
+  }
+};
+
 export const initSentry = () => {
   // Prevent multiple initializations (HMR can cause this)
   if (isInitialized) {
@@ -207,21 +222,6 @@ const scrubSensitiveQueryParams = (event: Sentry.ErrorEvent): void => {
   }
   if (typeof req.query_string === 'string') {
     req.query_string = scrubQueryString(req.query_string);
-  }
-};
-
-/**
- * Lazily add replay + browser tracing integrations to reduce initial bundle impact
- */
-const addLazyIntegrations = () => {
-  try {
-    const client = Sentry.getClient();
-    if (client) {
-      client.addIntegration(Sentry.replayIntegration());
-      client.addIntegration(Sentry.browserTracingIntegration());
-    }
-  } catch {
-    // Silently fail - these integrations are non-critical
   }
 };
 
