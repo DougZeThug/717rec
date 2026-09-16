@@ -1,26 +1,60 @@
-import { ChevronDown, Download, Trophy } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
-import { exportCareerStatsToCSV } from '@/utils/exportUtils';
+import type { CareerRanking } from '@/types/career';
 
+import { careerCardClasses, type CareerCardTheme, careerContentClasses } from './careerCardStyles';
+import { CareerRankingsHeader } from './CareerRankingsHeader';
 import CareerRankingsTable from './CareerRankingsTable';
+
+/** The card shown in place of the whole section when the fetch failed. */
+const CareerRankingsError: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
+  <Card className="mb-4">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        <Trophy className="size-5" />
+        Career Statistics
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <ErrorDisplay
+        variant="inline"
+        error="We couldn't load career statistics. Please try again."
+        onRetry={onRetry}
+      />
+    </CardContent>
+  </Card>
+);
+
+/** Loading, the table, or the line that says there is nothing yet. */
+const CareerRankingsBody: React.FC<{
+  isLoading: boolean;
+  rankings: CareerRanking[] | undefined;
+}> = ({ isLoading, rankings }) => {
+  if (isLoading) return <LoadingState variant="section" message="Loading career stats..." />;
+  if (rankings && rankings.length > 0) return <CareerRankingsTable rankings={rankings} />;
+  return (
+    <div className="text-center py-12 text-muted-foreground">No career statistics available.</div>
+  );
+};
 
 const CareerRankingsSection: React.FC = () => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
   const { isWinterTheme } = useSeasonalThemeBase();
-  const isLight = !isWinterTheme && resolvedTheme === 'light';
+  const theme: CareerCardTheme = {
+    isWinterTheme,
+    isLight: !isWinterTheme && resolvedTheme === 'light',
+  };
   const {
     data: careerRankings,
     isLoading,
@@ -33,27 +67,9 @@ const CareerRankingsSection: React.FC = () => {
   // disabled until the team list arrives, so the failure reported here is often
   // the team list's own — see the fold in useCareerRankings.
   if (error) {
-    return (
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="size-5" />
-            Career Statistics
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ErrorDisplay
-            variant="inline"
-            error="We couldn't load career statistics. Please try again."
-            onRetry={() => {
-              // No `void`: the hook's refetch is a retry action that resolves
-              // with nothing, so there is no promise here worth discarding.
-              refetch();
-            }}
-          />
-        </CardContent>
-      </Card>
-    );
+    // No `void`: the hook's refetch is a retry action that resolves with
+    // nothing, so there is no promise here worth discarding.
+    return <CareerRankingsError onRetry={() => void refetch()} />;
   }
 
   return (
@@ -61,103 +77,20 @@ const CareerRankingsSection: React.FC = () => {
       <Card
         className={cn(
           'border-t-2',
-          isWinterTheme
-            ? 'border-frost-border/50 bg-[hsl(var(--card))]'
-            : 'border-blue-300 dark:border-blue-700/80',
           'shadow-lg hover:shadow-xl transition-shadow duration-300',
-          isLight ? gradients.card.blueOrange : ''
+          careerCardClasses(theme)
         )}
       >
-        {/* Header is a plain container; only the chevron is the toggle button.
-            The header can't be the trigger because it contains a focusable
-            control (the Export button) — nesting focusable content in a
-            button-role element violates axe no-focusable-content. */}
-        <CardHeader
-          className={cn(
-            isMobile ? 'py-2.5 px-3' : 'py-4',
-            isWinterTheme
-              ? 'bg-[hsl(var(--card))]'
-              : isLight
-                ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
-                : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
-            isWinterTheme
-              ? 'border-b border-frost-border/30'
-              : 'border-b border-blue-100 dark:border-blue-900/30',
-            'rounded-t-lg transition-colors'
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Trophy className={cn('text-amber-500', isMobile ? 'size-4' : 'size-5')} />
-              <div>
-                <CardTitle
-                  className={cn(
-                    'font-bebas uppercase tracking-wide',
-                    isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                    'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400',
-                    'heading-winter'
-                  )}
-                  style={{ letterSpacing: '0.5px' }}
-                >
-                  Career Statistics
-                </CardTitle>
-                {!isMobile && (
-                  <CardDescription className="font-inter">
-                    Historical performance across all seasons and playoffs
-                  </CardDescription>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {isOpen && careerRankings && careerRankings.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    exportCareerStatsToCSV(careerRankings);
-                  }}
-                  className={cn(
-                    'h-8 px-3 gap-2',
-                    isWinterTheme
-                      ? 'border-frost-border/50 hover:bg-frost-primary/10'
-                      : 'border-muted-foreground/30 hover:bg-muted'
-                  )}
-                  title="Export to CSV"
-                >
-                  <Download className="size-4" />
-                  <span className="sr-only sm:not-sr-only">Export</span>
-                </Button>
-              )}
-              <CollapsibleTrigger
-                aria-label={isOpen ? 'Collapse career statistics' : 'Expand career statistics'}
-                className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <ChevronDown
-                  className={cn('size-5 transition-transform', isOpen && 'rotate-180')}
-                  aria-hidden="true"
-                />
-              </CollapsibleTrigger>
-            </div>
-          </div>
-        </CardHeader>
+        <CareerRankingsHeader
+          theme={theme}
+          isMobile={isMobile}
+          isOpen={isOpen}
+          rankings={careerRankings}
+        />
 
         <CollapsibleContent>
-          <CardContent
-            className={cn(
-              'p-2 sm:p-4',
-              isWinterTheme ? 'bg-[hsl(var(--card))]' : 'bg-gradient-to-br from-muted to-card'
-            )}
-          >
-            {isLoading ? (
-              <LoadingState variant="section" message="Loading career stats..." />
-            ) : careerRankings && careerRankings.length > 0 ? (
-              <CareerRankingsTable rankings={careerRankings} />
-            ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                No career statistics available.
-              </div>
-            )}
+          <CardContent className={cn('p-2 sm:p-4', careerContentClasses(theme))}>
+            <CareerRankingsBody isLoading={isLoading} rankings={careerRankings} />
           </CardContent>
         </CollapsibleContent>
       </Card>

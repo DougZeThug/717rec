@@ -227,10 +227,18 @@ git show origin/main:src/path/to/File.tsx > /tmp/before.tsx   # then swap it in 
 ```
 
 This has already happened twice. The `effect-needs-cleanup` report above is one.
+
 The other was `no-high-complexity-react-function` on
 `CareerRankingsSection.tsx`, reported as new when that file was consolidated —
 measured at cyclomatic 22 / cognitive 21 both before and after the change, so
-the edit had added none of it.
+the edit had added none of it. **Measuring is for deciding whether you broke it,
+not for deciding whether to fix it.** That one was pre-existing and got fixed
+anyway: the theme ternaries moved to `career/careerCardStyles.ts` and the header
+to `career/CareerRankingsHeader.tsx`, which cleared the finding and took the
+file from 168 lines to 101. Two earlier cards had already been through the same
+split — `fullRankingsStyles.ts` with `StandingsCardHeader.tsx`, and the private
+helpers in `AllTeamsCareerPowerScoreChart.tsx` — so when this rule fires on a
+themed card, that is the move, and there are three worked examples of it.
 
 ### 5b. One-time setup (Doug, ~10 minutes, all in web UIs)
 

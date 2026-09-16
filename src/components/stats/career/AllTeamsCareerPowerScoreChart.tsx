@@ -22,9 +22,16 @@ import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
-import { gradients } from '@/styles/design-system';
 import { getTeamColor } from '@/utils/colors/teamColors';
 import { toTeamSlug } from '@/utils/teamSlug';
+
+import {
+  careerCardClasses,
+  type CareerCardTheme,
+  careerHeaderClasses,
+  careerHeaderPadding,
+  careerTitleClasses,
+} from './careerCardStyles';
 
 const transformDataForChart = (teamsData?: TeamCareerData[]) => {
   if (!teamsData) return [];
@@ -105,37 +112,6 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   );
 };
 
-interface ChartTheme {
-  isWinterTheme: boolean;
-  isLight: boolean;
-}
-
-/**
- * The card's three-way theme choice, out of the render.
- *
- * These were nested ternaries inside `cn()` calls, which is most of what made
- * this component's control flow hard to follow. Same split as
- * `fullRankingsStyles.ts`.
- */
-const chartCardClasses = ({ isWinterTheme, isLight }: ChartTheme): string[] => [
-  isWinterTheme
-    ? 'border-frost-border/50 bg-[hsl(var(--card))]'
-    : 'border-blue-300 dark:border-blue-700/80',
-  isLight ? gradients.card.blueOrange : '',
-];
-
-const chartHeaderClasses = ({ isWinterTheme, isLight }: ChartTheme): string[] => {
-  if (isWinterTheme) {
-    return ['bg-[hsl(var(--card))]', 'border-b border-frost-border/30'];
-  }
-  return [
-    isLight
-      ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
-      : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
-    'border-b border-blue-100 dark:border-blue-900/30',
-  ];
-};
-
 /** The card shown while the seasons are still loading. */
 const ChartSkeleton: React.FC = () => (
   <Card className="mb-4">
@@ -185,7 +161,7 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
 
   const chartData = useMemo(() => transformDataForChart(teamsData), [teamsData]);
   const isLight = !isWinterTheme && resolvedTheme === 'light';
-  const theme: ChartTheme = { isWinterTheme, isLight };
+  const theme: CareerCardTheme = { isWinterTheme, isLight };
 
   const teamOptions = useMemo(
     () =>
@@ -212,26 +188,21 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
         className={cn(
           'border-t-2',
           'shadow-lg hover:shadow-xl transition-shadow duration-300',
-          chartCardClasses(theme)
+          careerCardClasses(theme)
         )}
       >
         <CollapsibleTrigger className="w-full">
           <CardHeader
             className={cn(
-              isMobile ? 'py-2.5 px-3' : 'py-4',
-              chartHeaderClasses(theme),
+              careerHeaderPadding(isMobile),
+              careerHeaderClasses(theme),
               'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
             )}
           >
             <div className="flex items-center justify-between">
               <div className="text-left">
                 <CardTitle
-                  className={cn(
-                    'font-bebas uppercase tracking-wide',
-                    isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                    'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400',
-                    'heading-winter'
-                  )}
+                  className={cn(careerTitleClasses(isMobile))}
                   style={{ letterSpacing: '0.5px' }}
                 >
                   Career Power Score Trends
