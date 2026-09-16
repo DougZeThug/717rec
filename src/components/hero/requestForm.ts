@@ -49,12 +49,19 @@ const orNothing = (value: string): string | undefined => value || undefined;
 export const buildRequestPayload = (values: RequestFormValues, teamName?: string) => {
   if (isRequestIncomplete(values) || !values.type) return null;
 
+  // Only a time change has timeslots. The picker stays on screen beside the
+  // form, so a reader can fill one in and then choose a bye instead; the
+  // timeslot fields go away but keep what was typed. Reading them here would
+  // store times on a bye and show an admin "Current: 6:00 PM" beside a request
+  // that asks for no match at all.
+  const isTimeChange = values.type === 'TIME_CHANGE';
+
   return {
     team_id: values.teamId,
     request_type: values.type,
     match_date: orNothing(values.matchDate),
-    current_timeslot: orNothing(values.currentTimeslot),
-    requested_timeslot: orNothing(values.requestedTimeslot),
+    current_timeslot: isTimeChange ? orNothing(values.currentTimeslot) : undefined,
+    requested_timeslot: isTimeChange ? orNothing(values.requestedTimeslot) : undefined,
     reason: orNothing(values.reason),
     submitted_by_name: teamName,
   };
