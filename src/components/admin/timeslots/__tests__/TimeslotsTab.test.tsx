@@ -75,7 +75,8 @@ vi.mock('@/components/ui/calendar', () => ({
 
 vi.mock('@/components/ui/popover', () => ({
   Popover: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  PopoverTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  // `asChild` in the real one, so the button inside is what renders.
+  PopoverTrigger: ({ children }: { children: React.ReactNode }) => children,
   PopoverContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 

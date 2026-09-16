@@ -41,6 +41,9 @@ const seedBundle = (): LiveMatchBundle =>
     gamePlayers: [],
   }) as unknown as LiveMatchBundle;
 
+/** A save that never settles, standing in for one still waiting to be sent. */
+const neverSettles = () => new Promise<never>(() => undefined);
+
 const submitInput = (overrides: Partial<SubmitRoundInput> = {}): SubmitRoundInput => ({
   gameId: 'game-1',
   roundNumber: 1,
@@ -258,7 +261,7 @@ describe('submitRound with no signal', () => {
       () => ({
         live: useQuery({
           queryKey,
-          queryFn: async () => ({ ...seedBundle(), rounds: serverRounds() }),
+          queryFn: () => Promise.resolve({ ...seedBundle(), rounds: serverRounds() }),
         }),
         rounds: useRoundMutations('match-1'),
       }),
@@ -286,10 +289,7 @@ describe('submitRound with no signal', () => {
 
     onlineManager.setOnline(false);
     mockInsertRound.mockImplementation((input: { roundNumber: number }) =>
-      input.roundNumber === 1
-        ? Promise.reject(new Error('boom'))
-        : // Round two never settles, so it is still waiting to be sent.
-          new Promise(() => {})
+      input.roundNumber === 1 ? Promise.reject(new Error('boom')) : neverSettles()
     );
 
     act(() => result.current.rounds.submitRound.mutate(submitInput({ roundNumber: 1 })));
@@ -315,7 +315,7 @@ describe('submitRound with no signal', () => {
 
     onlineManager.setOnline(false);
     mockInsertRound.mockImplementation((input: { roundNumber: number }) => {
-      if (input.roundNumber !== 1) return new Promise(() => {});
+      if (input.roundNumber !== 1) return neverSettles();
       saved.push({
         id: 'round-1',
         game_id: 'game-1',

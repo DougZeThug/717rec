@@ -135,8 +135,10 @@ export function useRoundMutations(matchId: string) {
           return !(held?.gameId === input.gameId && held.roundNumber === input.roundNumber);
         });
 
+      // Returned, not dropped, so the save settles only once the log is back
+      // from the server — which is how this behaved before the guard above.
       if (stillWaiting.length > 0) return;
-      queryClient.invalidateQueries({ queryKey });
+      return queryClient.invalidateQueries({ queryKey });
     },
   });
 
