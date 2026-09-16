@@ -70,6 +70,21 @@ describe('AdminSectionList', () => {
     expect(sectionButton('Live Corrections')).toBeVisible();
   });
 
+  // A-01 again, for a move inside one group. The follow-the-section check keyed
+  // on the group, so going from Timeslots to Match Creation — both under
+  // Scheduling — did not count as a change, and a group the admin had closed by
+  // hand stayed closed with the open section hidden inside it.
+  it('reopens a closed group when the section changes inside it', async () => {
+    const { rerender } = renderList('timeslots');
+
+    await userEvent.click(within(menu()).getByRole('button', { name: /Scheduling/ }));
+    noSectionButton('Timeslots');
+
+    rerender(<AdminSectionList activeTab="batch-matches" onTabChange={onTabChange} />);
+
+    expect(sectionButton('Match Creation')).toHaveAttribute('aria-current', 'page');
+  });
+
   it('lets the admin close the group holding the section on screen', async () => {
     renderList('scores');
 
