@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 
 import type { useGameFlow } from '@/hooks/live-scoring/useGameFlow';
 import type { LiveGameDerived } from '@/hooks/live-scoring/useLiveMatch';
-import { usePausedRoundCount } from '@/hooks/live-scoring/usePausedRoundCount';
+import {
+  usePausedRoundCount,
+  useUnsettledRoundCount,
+} from '@/hooks/live-scoring/usePausedRoundCount';
 import type { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from '@/hooks/useToast';
@@ -90,6 +93,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
 
   const isOnline = useOnlineStatus();
   const pausedRounds = usePausedRoundCount(matchId);
+  const unsettledRounds = useUnsettledRoundCount(matchId);
 
   /**
    * A round held for a missing connection stays `isPending` for as long as the
@@ -121,7 +125,13 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
       description: `Round ${game.nextRoundNumber} is now next, so your tapped scores were cleared.`,
     });
 
-  const endGameBlockedReason = endGameBlocker(isOnline, submitRound.isPending || pausedRounds > 0);
+  // Every round save still in the cache, not just this component's latest one:
+  // a round parked offline and now resuming is in neither `isPending` nor
+  // `pausedRounds`, and that is the gap the game could be ended through.
+  const endGameBlockedReason = endGameBlocker(
+    isOnline,
+    submitRound.isPending || unsettledRounds > 0
+  );
 
   const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
   const gameWon = game.pendingWinnerSide !== null;

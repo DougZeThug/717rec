@@ -23,3 +23,25 @@ export const usePausedRoundCount = (matchId: string): number => {
 
   return paused.filter(Boolean).length;
 };
+
+/**
+ * How many round saves have not settled yet — parked ones and ones on their way.
+ *
+ * The count above answers "what is waiting for a signal", which is what the
+ * sync notice needs. Deciding whether a won game is safe to end needs the wider
+ * question, because a round that is *sending* can still be refused and take the
+ * winning score back with it.
+ *
+ * `submitRound.isPending` does not answer it. That reports the most recent save
+ * only, so a round parked offline and now resuming — while a later save has
+ * already settled — shows as neither pending nor paused, and the End Game
+ * button was enabled in that gap. The round log already reads the whole
+ * mutation cache for the same reason (see useRoundMutations' onSettled).
+ */
+export const useUnsettledRoundCount = (matchId: string): number =>
+  useMutationState({
+    filters: { mutationKey: liveScoringKeys.submitRound(matchId), status: 'pending' },
+    // A constant, so the array is stable between renders and an unrelated cache
+    // change does not re-render the panel.
+    select: () => true,
+  }).length;

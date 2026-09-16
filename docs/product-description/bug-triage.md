@@ -153,6 +153,7 @@ entry's *Corrected on review* note.
 | B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
 | B-43 | Three links in a message are counted as six and refused as spam | medium | help | **fixed** | — |
 | B-46 | A failed division-weights read empties the career rankings silently | medium | stats, teams | **fixed** | — |
+| B-48 | A won game can be ended on a round that is still on its way | medium | live-scoring | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
 | B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
 | B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
@@ -2101,6 +2102,56 @@ finding read a superseded migration.
   failure too, but it still lacks the prerequisite-error fold that
   `useCareerRankings` gained in B-36, and the duplication itself is a separate
   pre-existing question.
+
+### B-48: A won game can be ended on a round that is still on its way
+
+- **Where the user meets it:** a scorer at a venue with a patchy signal, ending
+  a game the last round just won.
+- **What happens / what was expected:** the totals on the banner fold in every
+  optimistic round, including ones not yet filed. Ending the game writes them as
+  the final score and the winner. If the round behind them is then refused, the
+  `games` row disagrees with the rounds that actually exist — and finalising the
+  match counts wins from `games` alone, so a wrong result can reach the
+  standings and the badges.
+- **Reproduce:** 1. File the winning round with no signal, so it parks. 2. Let
+  the signal come back. 3. Press *End Game* while the parked round is resuming.
+- **Severity:** `medium`. Narrow to reach, but what it writes is not
+  recoverable from the app.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **the reported defect was already fixed; two real holes beside it
+  were not, and now are.**
+
+  *The report as filed no longer applies.* It quotes a `LiveMatchView.tsx`
+  render block whose only guard was `confirmGameComplete.isPending`. That code
+  moved into `ActiveGamePanel.tsx`, which already computes a blocked reason from
+  the round-save state, disables the trigger on it, refuses again in the confirm
+  handler, and has a test for it. Nothing there needed changing.
+
+  **What was still wrong, 1: the gate missed a save that was not the latest
+  one.** It read `submitRound.isPending`, which reports only the most recent
+  save, alongside a count of rounds **parked** for a missing signal. A round
+  parked offline and now *sending* is in neither, so the button was enabled in
+  that gap — which is precisely the sequence the existing test's own comment
+  describes ("reconnecting flips the signal back on … while the round it held is
+  still on its way"). That test passed only because its mock made the resuming
+  round the latest one. `useUnsettledRoundCount` now counts every unsettled save
+  in the mutation cache, which is what the round log already did.
+
+  **What was still wrong, 2: confirming in an open dialog could do nothing,
+  silently.** The dialog has no `open` prop, so it stays mounted and clickable
+  across a change in the blocked reason — the signal drops, or a save starts,
+  after it was opened. Radix closes the dialog on its action whatever the
+  handler does, so the caller's re-check turned the press into a silent no-op:
+  the dialog vanished, nothing was written, and nothing was said. The scorer had
+  every reason to believe the game had ended. The action is now disabled on the
+  same reason, with that reason shown inside the dialog.
+
+  Three tests, two of which fail against the unfixed code. The first seeds the
+  mutation cache directly rather than flipping the mocked `isPending` — that
+  flag is the very signal that was insufficient, and it cannot express a save
+  that is not the component's most recent one. The third is the guard the other
+  way: with nothing in flight the game still ends, with the right totals.
 
 ### B-43: Three links in a message are counted as six and refused as spam
 

@@ -73,9 +73,24 @@ export const GameWonBanner: React.FC<GameWonBannerProps> = ({
               after this.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {/*
+            The dialog is uncontrolled, so it stays open across a change in
+            blockedReason — the signal drops, or a parked round starts sending,
+            after it was opened. The trigger being disabled does not help then:
+            Radix closes the dialog on this action whatever the caller does with
+            the click, so an ungated confirm looked exactly like ending the
+            game and did nothing at all. Say why instead.
+          */}
+          {blockedReason && (
+            <p className="text-xs font-medium text-muted-foreground" role="status">
+              {blockedReason}
+            </p>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Keep scoring</AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirm}>End game</AlertDialogAction>
+            <AlertDialogAction onClick={onConfirm} disabled={blockedReason !== null}>
+              End game
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
