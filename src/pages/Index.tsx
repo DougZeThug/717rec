@@ -22,12 +22,29 @@ import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
 import { useTeams } from '@/hooks/useTeams';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 import { useWeeklyRecap } from '@/hooks/useWeeklyRecap';
+import type { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
+import type { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 // Lazy load components that use framer-motion to defer vendor-motion chunk and improve TTI
 const HeroCard = lazy(() => import('@/components/hero/HeroCard'));
 const ParticipationHeroCard = lazy(() => import('@/components/hero/ParticipationHeroCard'));
 const ContactCard = lazy(() => import('@/components/home/ContactCard'));
 const TopTeams = lazy(() => import('@/components/home/TopTeams'));
+
+/**
+ * Whether the Weekly Recap has anything to draw. hasData counts upsets and hot
+ * streaks only — the recap service never sees the power-score trends, which
+ * arrive from their own hook — so a movers-only week has to be asked about
+ * separately or the whole card is dropped and the movers fetched for it thrown
+ * away. Must match WeeklyRecapCard's own empty check, which is why both call
+ * hasVisibleMovers.
+ */
+const hasRecapToShow = (
+  recap: WeeklyRecapData | undefined,
+  risers: WeeklyPowerScoreTrend[],
+  faller?: WeeklyPowerScoreTrend
+): recap is WeeklyRecapData =>
+  Boolean(recap && (recap.hasData || hasVisibleMovers(risers, faller)));
 
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
@@ -133,13 +150,7 @@ const Index: React.FC = () => {
           {/* Weekly Recap — upsets, streaks, movers */}
           {recapLoading || trendLoading ? (
             <WeeklyRecapSkeleton />
-          ) : recapData && (recapData.hasData || hasVisibleMovers(recapRisers, recapFaller)) ? (
-            // hasData counts upsets and hot streaks only — the recap service
-            // never sees the power-score trends, which arrive from their own
-            // hook — so a movers-only week has to be asked about separately or
-            // the whole card is dropped and the movers fetched for it thrown
-            // away. This has to match WeeklyRecapCard's own empty check, which
-            // is why both call hasVisibleMovers.
+          ) : hasRecapToShow(recapData, recapRisers, recapFaller) ? (
             <PageTransition animation="fadeIn" delay="medium">
               <WeeklyRecapCard data={recapData} risers={recapRisers} faller={recapFaller} />
             </PageTransition>
