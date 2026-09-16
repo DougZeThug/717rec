@@ -213,6 +213,34 @@ describe('CareerRankingsSection', () => {
     expect(await screen.findByText('No career statistics available.')).toBeInTheDocument();
   });
 
+  /**
+   * The hook skips a team it has no computed totals for, with a warning.
+   *
+   * That branch cannot be reached from useCareerRankings' own test file, which
+   * mocks useQuery wholesale so the query function never runs — deliberately,
+   * to keep the Supabase client out of it. Here the query client is real, so
+   * the function does run and the skip is reachable.
+   */
+  it('leaves out a team it has no career totals for, rather than showing zeroes', async () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: [
+        { id: 't1', name: 'Baggers', divisionName: 'Premier' },
+        { id: 't2', name: 'Ghosts', divisionName: 'Premier' },
+      ],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    // Totals came back for one of the two.
+    mockComputeAllTeamsTotals.mockResolvedValue(new Map([['t1', totals()]]));
+
+    renderSection();
+    await userEvent.click(screen.getByRole('button', { name: /expand career statistics/i }));
+
+    expect(await screen.findByText('Baggers')).toBeInTheDocument();
+    expect(screen.queryByText('Ghosts')).not.toBeInTheDocument();
+  });
+
   // The header's two screen sizes. The split moved this gate into
   // CareerRankingsHeader, and nothing rendered the phone side of it.
   const SUBTITLE = 'Historical performance across all seasons and playoffs';
