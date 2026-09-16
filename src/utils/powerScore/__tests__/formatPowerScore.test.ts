@@ -36,8 +36,12 @@ describe('formatPowerScore', () => {
 
 describe('getDisplayedPowerScore', () => {
   it('passes null and undefined straight through', () => {
+    // Named rather than passed inline: an inline `undefined` for an optional
+    // parameter reads as redundant to static analysis, but the undefined path
+    // is exactly what this case covers.
+    const absent: number | undefined = undefined;
     expect(getDisplayedPowerScore(null)).toBeNull();
-    expect(getDisplayedPowerScore(undefined)).toBeNull();
+    expect(getDisplayedPowerScore(absent)).toBeNull();
   });
 
   // The whole point of this helper: sorting must agree with what the table

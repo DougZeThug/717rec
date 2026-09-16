@@ -96,12 +96,12 @@ describe('usePendingMemberships', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     act(() => {
-      void result.current.approveMembership('mem-a', true);
+      result.current.approveMembership('mem-a', true).catch(() => undefined);
     });
     await waitFor(() => expect(result.current.processingIds.has('mem-a')).toBe(true));
 
     act(() => {
-      void result.current.approveMembership('mem-b', true);
+      result.current.approveMembership('mem-b', true).catch(() => undefined);
     });
     await waitFor(() => expect(result.current.processingIds.has('mem-b')).toBe(true));
 

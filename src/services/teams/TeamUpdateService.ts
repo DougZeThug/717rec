@@ -16,7 +16,7 @@ export const updateTeamNameAndImage = async (
   const { error } = await supabase
     .from('teams')
     .update({
-      name: name,
+      name,
       image_url: imageUrl,
     })
     .eq('id', teamId);

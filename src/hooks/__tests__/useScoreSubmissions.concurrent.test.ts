@@ -151,7 +151,7 @@ describe('useScoreSubmissions — overlapping failed moderations', () => {
     const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    await act(async () => {
+    act(() => {
       result.current.handleRejectSubmission('sub-b');
     });
 
