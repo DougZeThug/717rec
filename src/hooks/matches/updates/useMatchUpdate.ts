@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
 import { useToast } from '@/hooks/useToast';
+import type { MatchNonResultUpdate } from '@/services/matches/MatchWriteService';
 import {
   reopenMatchResult,
   resubmitMatchResult,
@@ -134,11 +135,16 @@ export const useMatchUpdate = ({
       // non-result fields (date/location/teams) up front.
       const isResultEdit = !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
 
-      const updatePayload = {
+      // A caller that says nothing about the location is not asking for it to
+      // be cleared. Auto Schedule and Batch Match Creation write a court onto
+      // every match they make, and the edit form has no court control at all —
+      // so sending '' for it turned every edit, even one that only moved the
+      // date, into a court wipe. The key is left out rather than sent empty.
+      const updatePayload: MatchNonResultUpdate = {
         team1_id: matchData.team1Id,
         team2_id: matchData.team2Id,
         date: matchData.date,
-        location: matchData.location || '',
+        ...(matchData.location === undefined ? {} : { location: matchData.location }),
       };
 
       // Update only the match's non-result fields. Result fields are changed

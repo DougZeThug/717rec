@@ -92,7 +92,6 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
       team1Id: values.team1Id,
       team2Id: values.team2Id,
       date: dateWithTime.toISOString(),
-      location: '', // Setting to empty string for legacy compatibility
       iscompleted: values.isCompleted,
       team1Score: values.isCompleted ? values.team1Score : undefined,
       team2Score: values.isCompleted ? values.team2Score : undefined,

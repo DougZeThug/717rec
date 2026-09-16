@@ -42,8 +42,15 @@ interface ScheduleUrlState {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   /**
-   * True when the address named a usable date. The page uses this to leave its
-   * own "pick a sensible night" guess alone: a date in a link is a chosen date.
+   * True when the address named a usable date **at mount**. The page uses this
+   * to leave its own "pick a sensible night" guess alone: a date in a link is a
+   * chosen date.
+   *
+   * Deliberately not recomputed per render. The writer below always writes a
+   * `date`, so a live reading would be true on the second commit of every
+   * visit — including a bare `/schedule` — and the page's one-shot auto-pick
+   * would never run (UX audit SC-01). It is therefore stale after a
+   * same-route navigation, which is the lesser of the two wrongs.
    */
   hadDateInUrl: boolean;
   /**
@@ -69,12 +76,11 @@ interface ScheduleUrlState {
  * why Home's "my match" row could only point at a bare `/schedule`. See UX audit
  * SC-04 and X-14.
  *
- * `useCompareUrlState` needs a guard against writing before it has read, because
- * its teams arrive after mount. This one does not: every value is seeded from
- * the address in the state initialisers, so the first write back is already what
- * came in. Every write replaces the current history entry rather than adding
- * one, so typing in the search box does not fill the Back button with a step per
- * keystroke.
+ * The address is read into state at mount and again whenever it changes, and
+ * written back whenever the screen changes — the same read-and-write pairing
+ * `useCompareUrlState` uses. Every write replaces the current history entry
+ * rather than adding one, so typing in the search box does not fill the Back
+ * button with a step per keystroke.
  *
  * The division and "my team" chips (UX audit SC-02) live here too rather than in
  * a hook of their own: this effect rebuilds the whole query string from what is
@@ -108,6 +114,43 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
     setTeam('all');
   }, []);
 
+  // Read the address back into state whenever it changes under us.
+  //
+  // Without this the hook was write-only after mount, so pressing "Schedule" in
+  // the nav while already on a filtered week did nothing — the writer below
+  // rebuilt the query string from stale state and put it straight back — and
+  // Back and Forward between two `/schedule` entries were undone the same way.
+  //
+  // A parameter that is absent resets to its default rather than being left
+  // alone. That is what makes a bare `/schedule` a reset: the nav links, the
+  // bottom bar and the command palette all point at one.
+  //
+  // The date is compared by value. `parseDayKey` and `toLocalMidnight` both
+  // allocate a fresh Date every call, so comparing by identity would set state
+  // on every pass, write the address, come back here and do it again — a loop
+  // that ends in a hung test rather than a clean failure.
+  useEffect(() => {
+    const incomingDate = parseDayKey(searchParams.get('date')) ?? toLocalMidnight(defaultDate());
+    const incomingSearch = searchParams.get('q') ?? '';
+    const incomingDivision = parseDivision(searchParams.get('division'));
+    const incomingTeam = searchParams.get('team') === 'mine' ? 'mine' : 'all';
+
+    // Syncing state from the address is what this effect is for. Each setter
+    // returns the current value unchanged when it already matches, so a pass
+    // that has nothing to apply schedules no render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelectedDateState((current) =>
+      current.getTime() === incomingDate.getTime() ? current : incomingDate
+    );
+    setSearchTerm((current) => (current === incomingSearch ? current : incomingSearch));
+    setDivision((current) => (current === incomingDivision ? current : incomingDivision));
+    setTeam((current) => (current === incomingTeam ? current : incomingTeam));
+    // `defaultDate` is deliberately not a dependency: callers pass an inline
+    // lambda, which would run this on every render of a hook that re-renders
+    // per keystroke.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   // Keep the address in step with what is on screen. The date is always
   // written, even when the visit did not name one, so the night being looked at
   // can always be linked to or reloaded.
@@ -127,10 +170,14 @@ export const useScheduleUrlState = (defaultDate: () => Date): ScheduleUrlState =
 
     if (next.toString() === searchParams.toString()) return;
     setSearchParams(next, { replace: true });
-    // searchParams is deliberately not a dependency: this effect writes it, and
-    // reacting to its own write would loop.
+    // Neither `searchParams` nor `setSearchParams` is a dependency. This effect
+    // writes `searchParams`, so reacting to its own write would loop — and
+    // `setSearchParams` is memoised on `searchParams`, so its identity changes
+    // on every navigation. Leaving it in made a navigation re-run this effect
+    // in the same pass the reader above ran, before that reader's state landed,
+    // and write the stale values back over the address just navigated to.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate, searchTerm, division, team, setSearchParams]);
+  }, [selectedDate, searchTerm, division, team]);
 
   return {
     selectedDate,

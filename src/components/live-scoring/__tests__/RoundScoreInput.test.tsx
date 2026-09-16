@@ -351,6 +351,50 @@ describe('RoundScoreInput', () => {
       expect(onSelectionDiscarded).not.toHaveBeenCalled();
     });
 
+    // The round a scorer queues is kept for a reload, and the round number
+    // moves on the moment it queues — so they are tapping the next round while
+    // the last one is still held. One slot per game meant that first tap wrote
+    // over the held round's only copy, and a tab that then died took the round
+    // with it.
+    it('keeps a queued round while the next round is being tapped', async () => {
+      onSubmit.mockResolvedValue('queued');
+      const { rerender } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+      await tapScore('Baggers', 4);
+
+      expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(9);
+      expect(loadRoundDraft('game-1', 4)?.team1.score).toBe(4);
+    });
+
+    // The whole point of keeping it: the tab dies, and the round comes back.
+    it('hands a queued round back after a reload that finds the round unrecorded', async () => {
+      onSubmit.mockResolvedValue('queued');
+      const { rerender, unmount } = renderInput();
+
+      await tapScore('Baggers', 9);
+      await tapScore('Tossers', 0);
+      await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+
+      rerender(inputElement({ roundNumber: 4, roundKey: 'game-1:4' }));
+      await tapScore('Baggers', 4);
+      unmount();
+
+      // The held save never reached the league, so the server still puts the
+      // scorer on round 3 — with their taps, not an empty grid.
+      renderInput();
+      expect(within(grid('Baggers')).getByRole('button', { name: '9' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+    });
+
     // The signal comes back, the held round is sent, and the league refuses it.
     // The optimistic round rolls back, so the number the scorer is on comes
     // back to the round they filed. Their grids were emptied when it queued, so

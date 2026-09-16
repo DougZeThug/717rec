@@ -84,15 +84,32 @@ export interface TeamNight {
   rowIds: string[];
 }
 
+/**
+ * The columns `readTeamNight` actually reads.
+ *
+ * Widened from `TeamTimeslot` so rows straight off the database — where the
+ * generated types make these nullable — can be read without a transform.
+ */
+export interface TeamNightRow {
+  id: string;
+  team_id: string | null;
+  timeslot: string | null;
+  is_back_to_back: boolean | null;
+  match_sequence: number | null;
+}
+
 /** What the team holds on this night, read off the night's rows. */
-export const readTeamNight = (timeslots: TeamTimeslot[], teamId: string): TeamNight => {
+export const readTeamNight = (timeslots: TeamNightRow[], teamId: string): TeamNight => {
   const night: TeamNight = { blocks: [], hasBye: false, looseTimes: [], rowIds: [] };
 
   for (const row of timeslots) {
     if (row.team_id !== teamId) continue;
     night.rowIds.push(row.id);
 
-    if (row.timeslot === BYE_SLOT) {
+    if (row.timeslot === null) {
+      // A row with no time is not a booking anybody can read off the screen.
+      continue;
+    } else if (row.timeslot === BYE_SLOT) {
       night.hasBye = true;
     } else if (row.is_back_to_back) {
       // A block writes two rows and marks the first of them, so counting the
@@ -124,6 +141,15 @@ export interface MovePlan {
   /** What the team holds now, for the sentence on screen. */
   night: TeamNight;
 }
+
+/**
+ * How many separate bookings the team holds that night.
+ *
+ * A block is two rows but one booking, which is why this counts blocks rather
+ * than rows. More than one means the team is double-booked.
+ */
+export const countHoldings = (night: TeamNight): number =>
+  night.blocks.length + night.looseTimes.length + (night.hasBye ? 1 : 0);
 
 /** Whether a plan can be carried out by pressing one button. */
 export const isActionable = (plan: MovePlan): boolean =>

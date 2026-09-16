@@ -41,6 +41,7 @@ vi.mock('@/services/timeslots/TimeslotService', () => ({
     batchAssignDoubleHeaders: vi.fn(),
     batchAssignBackToBackTimeslots: vi.fn(),
     deleteTimeslotsByIds: vi.fn(),
+    fetchWeekTimeslotsByTeam: vi.fn(),
   },
 }));
 
@@ -454,6 +455,23 @@ describe('useTimeslotMutation', () => {
   });
 });
 
+/** A row as `fetchWeekTimeslotsByTeam` returns it. */
+const nightRow = (over: { id: string; timeslot: string; match_sequence: number }) => ({
+  team_id: 'team-1',
+  match_date: '2026-03-14',
+  created_at: null,
+  is_back_to_back: true,
+  is_double_header: false,
+  pair_slot: null,
+  ...over,
+});
+
+/** The two rows one booked block writes. */
+const blockRows = (start: string, second: string, idPrefix: string) => [
+  nightRow({ id: `${idPrefix}-1`, timeslot: start, match_sequence: 1 }),
+  nightRow({ id: `${idPrefix}-2`, timeslot: second, match_sequence: 2 }),
+];
+
 // ─── moveTeamBooking ──────────────────────────────────────────────────────────
 
 describe('useTimeslotMutation.moveTeamBooking', () => {
@@ -463,6 +481,10 @@ describe('useTimeslotMutation.moveTeamBooking', () => {
     vi.mocked(TimeslotService.batchAssignBackToBackTimeslots).mockResolvedValue([]);
     vi.mocked(TimeslotService.deleteTimeslotsByIds).mockResolvedValue();
     vi.mocked(ByeWeekService.assignByeWeek).mockResolvedValue(sampleSlot('bye-1'));
+    // The night as it stands after a move that cleared properly: one block.
+    vi.mocked(TimeslotService.fetchWeekTimeslotsByTeam).mockResolvedValue(
+      blockRows('7:00 PM', '7:30 PM', 'new')
+    );
   });
 
   // The whole point of the order. Clearing first would leave the team with no
@@ -493,6 +515,78 @@ describe('useTimeslotMutation.moveTeamBooking', () => {
       'MidEarly'
     );
     expect(TimeslotService.deleteTimeslotsByIds).toHaveBeenCalledWith(['ts-1']);
+  });
+
+  // The gap the two-write move leaves open: `removeIds` comes from a cache that
+  // polls once a minute, so a second admin booking this team inside that window
+  // leaves rows the delete never aimed at. The delete resolves either way, so
+  // without reading the night back the move reported success over a team booked
+  // into two blocks for the same night.
+  it('reports a repair when the team is left in two blocks', async () => {
+    vi.mocked(TimeslotService.fetchWeekTimeslotsByTeam).mockResolvedValue([
+      ...blockRows('7:00 PM', '7:30 PM', 'new'),
+      // Booked by somebody else after this admin's list was last fetched.
+      ...blockRows('8:00 PM', '8:30 PM', 'other'),
+    ]);
+
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(outcome).toBe('booked-not-cleared');
+    expect(toast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Booked, but the old time is still there',
+        variant: 'destructive',
+      })
+    );
+  });
+
+  it('reads the night back for the team and the night that moved', async () => {
+    const { result } = renderHook(() => useTimeslotMutation());
+    await act(async () => {
+      await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(TimeslotService.fetchWeekTimeslotsByTeam).toHaveBeenCalledWith(
+      'team-1',
+      '2026-03-14',
+      '2026-03-14'
+    );
+  });
+
+  it('says the move worked when the team is left in one block', async () => {
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(outcome).toBe('moved');
+    expect(toast).not.toHaveBeenCalled();
+  });
+
+  it('does not cry wolf when the check itself fails', async () => {
+    // Both writes reported success and only the read failed, so there is
+    // nothing known to repair. A false repair toast would teach admins to
+    // ignore the real one.
+    vi.mocked(TimeslotService.fetchWeekTimeslotsByTeam).mockRejectedValue(
+      new Error('Failed to fetch')
+    );
+
+    const { result } = renderHook(() => useTimeslotMutation());
+
+    let outcome: string | undefined;
+    await act(async () => {
+      outcome = await result.current.moveTeamBooking(TEST_DATE, 'team-1', '7:00 PM', ['ts-1']);
+    });
+
+    expect(outcome).toBe('moved');
+    expect(toast).not.toHaveBeenCalled();
   });
 
   it('leaves the old rows alone when the booking fails', async () => {
