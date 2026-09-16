@@ -24,10 +24,14 @@ import { errorLog } from '@/utils/logger';
 
 const TeamMembershipApprovalTab: React.FC = () => {
   const { toast } = useToast();
-  const { pendingMemberships, isLoading, isError, error, approveMembership, processingId } =
+  const { pendingMemberships, isLoading, isError, error, approveMembership, processingIds } =
     usePendingMemberships();
 
   const handleApproval = async (membershipId: string, approved: boolean) => {
+    // The buttons are disabled while a row is saving, but a dialog that is
+    // already open can still fire, so refuse a second action on the same row.
+    if (processingIds.has(membershipId)) return;
+
     try {
       await approveMembership(membershipId, approved);
 
@@ -147,11 +151,11 @@ const TeamMembershipApprovalTab: React.FC = () => {
                 <div className="flex gap-2">
                   <Button
                     onClick={() => handleApproval(membership.id, true)}
-                    disabled={processingId === membership.id}
+                    disabled={processingIds.has(membership.id)}
                     className="bg-green-600 hover:bg-green-700"
                     size="sm"
                   >
-                    {processingId === membership.id ? (
+                    {processingIds.has(membership.id) ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
                       <>
@@ -167,7 +171,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                         variant="outline"
                         size="sm"
                         className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        disabled={processingId === membership.id}
+                        disabled={processingIds.has(membership.id)}
                       >
                         <XCircle className="size-4 mr-1" />
                         Reject
@@ -185,6 +189,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleApproval(membership.id, false)}
+                          disabled={processingIds.has(membership.id)}
                           className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
                           Reject Request

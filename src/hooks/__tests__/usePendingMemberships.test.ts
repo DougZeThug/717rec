@@ -78,4 +78,48 @@ describe('usePendingMemberships', () => {
 
     expect(updateMembershipApproval).toHaveBeenCalledWith('m1', true);
   });
+
+  // The regression guard for the per-row lock. useMutation reports only the
+  // newest call, so the old processingId dropped row A the instant row B
+  // started — A's spinner vanished and its buttons re-enabled while A was
+  // still saving.
+  it('keeps every in-flight row locked, not just the newest one', async () => {
+    (fetchPendingMembershipsForAdmin as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+    let finishA!: () => void;
+    let finishB!: () => void;
+    (updateMembershipApproval as ReturnType<typeof vi.fn>)
+      .mockImplementationOnce(() => new Promise<void>((res) => (finishA = res)))
+      .mockImplementationOnce(() => new Promise<void>((res) => (finishB = res)));
+
+    const { result } = renderHook(() => usePendingMemberships(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    act(() => {
+      void result.current.approveMembership('mem-a', true);
+    });
+    await waitFor(() => expect(result.current.processingIds.has('mem-a')).toBe(true));
+
+    act(() => {
+      void result.current.approveMembership('mem-b', true);
+    });
+    await waitFor(() => expect(result.current.processingIds.has('mem-b')).toBe(true));
+
+    // A has not resolved, so it must still be locked.
+    expect(result.current.processingIds.has('mem-a')).toBe(true);
+    expect(result.current.processingIds.size).toBe(2);
+
+    await act(async () => {
+      finishA();
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(result.current.processingIds.has('mem-a')).toBe(false));
+    expect(result.current.processingIds.has('mem-b')).toBe(true);
+
+    await act(async () => {
+      finishB();
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(result.current.processingIds.size).toBe(0));
+  });
 });
