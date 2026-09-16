@@ -198,4 +198,65 @@ describe('scheduleOdd', () => {
     );
     expectNoTeamDoubleBookedPerSlot(matches, ['S1', 'S2', 'S3']);
   });
+
+  // constraints.ts: "NEVER relax session rematches - teams can't play twice in
+  // same session." The old emergency fallback picked an opponent without
+  // asking canPlay at all, so it could break exactly that rule.
+  it('skips the third match rather than repeat a pair already played tonight', () => {
+    const teams = ['a', 'b', 'c'].map((id) => makeTeam(id));
+    const matchCounts = new Map(teams.map((t) => [t.id, 0]));
+
+    // 'last' picks Team c as Bye1. Block both of its possible opponents, so no
+    // legal Bye2 exists at any relaxation level. forbiddenPairs matters as well
+    // as tonightPairs because the retry loop clears and re-seeds from it.
+    const blocked = new Set([pairKey('c', 'a'), pairKey('c', 'b')]);
+
+    const matches = scheduleOdd({
+      teams,
+      sortedTeams: teams,
+      slot1: 'S1',
+      slot2: 'S2',
+      thirdSlot: 'S3',
+      playedSet: new Set(),
+      tonightPairs: new Set(blocked),
+      newPairs: new Set(),
+      teamMatchCounts: matchCounts,
+      forbiddenPairs: blocked,
+      maxTierGap: 1,
+      byeStrategy: 'last',
+      relaxationLevel: 0,
+      perTeamRematchAllowed: new Set(),
+      diagnostics: makeDiagnostics(),
+    });
+
+    expectForbiddenPairsAbsent(matches, blocked);
+    expect(matches.some((m) => m.slot === 'S3')).toBe(false);
+  });
+
+  it('never puts the same team on both sides of the third match', () => {
+    const teams = [makeTeam('a')];
+    const matchCounts = new Map(teams.map((t) => [t.id, 0]));
+
+    // One team cannot play anyone. The old fallback ended at sortedTeams[0],
+    // which is Bye1 itself, and built an S3 match of Team a versus Team a.
+    const matches = scheduleOdd({
+      teams,
+      sortedTeams: teams,
+      slot1: 'S1',
+      slot2: 'S2',
+      thirdSlot: 'S3',
+      playedSet: new Set(),
+      tonightPairs: new Set(),
+      newPairs: new Set(),
+      teamMatchCounts: matchCounts,
+      maxTierGap: 1,
+      byeStrategy: 'last',
+      relaxationLevel: 0,
+      perTeamRematchAllowed: new Set(),
+      diagnostics: makeDiagnostics(),
+    });
+
+    expect(matches.every((m) => m.teamAId !== m.teamBId)).toBe(true);
+    expect(matches.some((m) => m.slot === 'S3')).toBe(false);
+  });
 });
