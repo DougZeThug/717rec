@@ -130,4 +130,32 @@ describe('buildSeasonWeightPreview', () => {
     expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Yankee', 'Xray']);
     expect(preview[0].rows[0].baselineRank).toBe(1);
   });
+
+  // The regression guard for the win-percentage denominator. Every other
+  // fixture here has wins + losses === matches_played, so the old
+  // wins / (wins + losses) and the correct wins / matches_played agree and the
+  // bug stays invisible. These two are chosen so the formulas disagree on the
+  // WINNER, not just the numbers.
+  it('counts a winner-less match in the denominator, as /standings does', () => {
+    const pair = [team('x', 'Xray', 'Competitive'), team('y', 'Yankee', 'Competitive')];
+    const nearTied = [
+      // 7 wins, 0 losses, 3 matches that completed with no winner.
+      //   correct: 7 / 10 = 0.700   old: 7 / 7 = 1.000
+      { ...component('x', 0.8, 0.9, 0.7027), matches_played: 10, wins: 7, losses: 0 },
+      // No winner-less matches, so both formulas agree on this one.
+      //   correct: 8 / 10 = 0.800   old: 8 / 10 = 0.800
+      { ...component('y', 0.8, 0.9, 0.7), matches_played: 10, wins: 8, losses: 2 },
+    ];
+    const preview = buildSeasonWeightPreview({
+      teams: pair,
+      components: nearTied,
+      baseline,
+      candidate,
+    });
+
+    // Both scores round to 83.0, so win percentage decides. Yankee's 0.800
+    // beats Xray's 0.700. The old formula handed Xray a perfect 1.000 and put
+    // it first, disagreeing with the /standings order this preview mirrors.
+    expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Yankee', 'Xray']);
+  });
 });
