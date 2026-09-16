@@ -68,8 +68,9 @@ const teams = [
   { id: 't2', name: 'Bravo' },
 ];
 
-const renderDialog = () => {
-  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const renderDialog = (
+  queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+) => {
   return render(
     <MemoryRouter>
       <QueryClientProvider client={queryClient}>
@@ -122,6 +123,41 @@ describe('BracketCreationDialog delayed navigation', () => {
 
     unmount();
     await wait(1200);
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  // The other window: the reader leaves while the cache refresh is still
+  // running, so the timer is created after the dialog has already gone and
+  // there is nothing left to cancel it.
+  it('does not schedule the jump when they leave during the refresh', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    // Hold the refresh open so the unmount lands inside it.
+    let releaseRefresh!: () => void;
+    const refreshHeld = new Promise<void>((resolve) => {
+      releaseRefresh = resolve;
+    });
+    let refreshStarted!: () => void;
+    const refreshReached = new Promise<void>((resolve) => {
+      refreshStarted = resolve;
+    });
+    queryClient.refetchQueries = vi.fn(() => {
+      refreshStarted();
+      return refreshHeld;
+    }) as unknown as typeof queryClient.refetchQueries;
+
+    const user = userEvent.setup();
+    const { unmount } = renderDialog(queryClient);
+
+    await user.click(screen.getByRole('button', { name: 'Create Bracket' }));
+    await refreshReached;
+
+    unmount();
+    await act(async () => {
+      releaseRefresh();
+      await wait(1200);
+    });
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });
