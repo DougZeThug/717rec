@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { TeamTimeslot } from '@/types/timeslots';
 import {
   buildMovePlan,
+  countHoldings,
   describeBlock,
   describeMovePlan,
   isActionable,
@@ -152,6 +153,60 @@ describe('readTeamNight', () => {
     );
 
     expect(night.rowIds).toEqual(['a-1', 'a-2']);
+  });
+
+  it('counts a row with no time as no booking, but still as a row to clear', () => {
+    // The column is nullable, so a row straight off the database can carry no
+    // time at all. It is nothing anybody can read off the screen, but a move
+    // still has to clear it.
+    const night = readTeamNight(
+      [row({ id: 'empty-1', timeslot: null as unknown as string, is_back_to_back: false })],
+      'team-1'
+    );
+
+    expect(night.blocks).toEqual([]);
+    expect(night.looseTimes).toEqual([]);
+    expect(night.hasBye).toBe(false);
+    expect(night.rowIds).toEqual(['empty-1']);
+  });
+});
+
+describe('countHoldings', () => {
+  it('counts one block as one booking, not two rows', () => {
+    expect(countHoldings(readTeamNight(block('6:00 PM', '6:30 PM'), 'team-1'))).toBe(1);
+  });
+
+  it('counts a bye as one', () => {
+    expect(countHoldings(readTeamNight([byeRow()], 'team-1'))).toBe(1);
+  });
+
+  it('counts a team booked into two blocks as two', () => {
+    const night = readTeamNight(
+      [
+        ...block('6:00 PM', '6:30 PM', 'team-1', 'a'),
+        ...block('8:00 PM', '8:30 PM', 'team-1', 'b'),
+      ],
+      'team-1'
+    );
+
+    expect(countHoldings(night)).toBe(2);
+  });
+
+  it('counts a loose time, and a bye held alongside a block', () => {
+    const night = readTeamNight(
+      [
+        ...block('6:00 PM', '6:30 PM', 'team-1', 'a'),
+        row({ id: 'loose-1', timeslot: '9:30 PM', is_back_to_back: false }),
+        byeRow('team-1', 'bye-1'),
+      ],
+      'team-1'
+    );
+
+    expect(countHoldings(night)).toBe(3);
+  });
+
+  it('counts nothing for a team with no rows', () => {
+    expect(countHoldings(readTeamNight([], 'team-1'))).toBe(0);
   });
 });
 
