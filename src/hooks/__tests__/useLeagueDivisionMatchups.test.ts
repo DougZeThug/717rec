@@ -91,4 +91,18 @@ describe('computeDivisionMatchups', () => {
     });
     expect(result.every((r) => r.winsA === 0 && r.winsB === 0)).toBe(true);
   });
+
+  // A season archived with two Cuspers brackets stores "Cuspers 1"/"Cuspers 2".
+  // Those teams still played, so their matches belong on this card.
+  it('counts matches against a Cuspers team from a numbered bracket', () => {
+    const result = computeDivisionMatchups({
+      matches: [{ winner_id: 'c1', loser_id: 'k1', season_id: 's1' }],
+      archivedMatches: [],
+      teamSeasonDivisions: [tsd('c1', 's1', 'Competitive'), tsd('k1', 's1', 'Cuspers 1')],
+    });
+
+    const row = result.find((r) => r.tierA === 'competitive' && r.tierB === 'intermediate');
+    expect(row?.winsA).toBe(1);
+    expect(row?.winsB).toBe(0);
+  });
 });

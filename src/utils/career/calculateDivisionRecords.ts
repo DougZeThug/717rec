@@ -26,7 +26,7 @@ export const categorizeDivision = (divisionName: string | null): DivisionTier | 
   // Exclude hidden divisions from tier categorization
   if (name.includes('hidden')) return null;
   if (name.includes('competitive')) return 'competitive';
-  if (name.includes('intermediate') || name === 'cuspers') return 'intermediate';
+  if (name.includes('intermediate') || name.includes('cuspers')) return 'intermediate';
   if (name.includes('recreational')) return 'recreational';
   return null;
 };
