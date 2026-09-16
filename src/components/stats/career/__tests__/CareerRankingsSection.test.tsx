@@ -30,7 +30,8 @@ vi.mock('@/hooks/career/computeAllTeamsTotals', () => ({
   computeAllTeamsTotals: (teams: unknown) => mockComputeAllTeamsTotals(teams),
 }));
 
-vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => false }));
+const mockIsMobile = vi.fn(() => false);
+vi.mock('@/hooks/useMobile', () => ({ useIsMobile: () => mockIsMobile() }));
 vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalThemeBase: () => ({ isWinterTheme: false }),
   useSeasonalTheme: () => ({ isWinterTheme: false }),
@@ -59,6 +60,15 @@ const teamsFailed = (refetch = vi.fn().mockResolvedValue({ error: new Error('sti
     isLoading: false,
     error: new Error('teams down'),
     refetch,
+  });
+
+/** The team list is still in flight, so the rankings query cannot run yet. */
+const teamsLoading = () =>
+  mockUseTeamsQuery.mockReturnValue({
+    data: undefined,
+    isLoading: true,
+    error: null,
+    refetch: vi.fn(),
   });
 
 /** Career totals for one team, enough for the hook to build a ranking row. */
@@ -99,6 +109,9 @@ const captureDownloadedCsv = () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // clearAllMocks drops call history but keeps implementations, so this has to
+  // be set back by hand or the phone test below leaks into whatever runs next.
+  mockIsMobile.mockReturnValue(false);
 });
 
 describe('CareerRankingsSection', () => {
@@ -140,12 +153,7 @@ describe('CareerRankingsSection', () => {
   // stayed false for the whole time the team list was in flight — and anyone
   // who expanded the section in that window was told there was nothing to show.
   it('shows the spinner, not the no-data message, while the team list is still arriving', async () => {
-    mockUseTeamsQuery.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-      refetch: vi.fn(),
-    });
+    teamsLoading();
 
     renderSection();
     await userEvent.click(screen.getByRole('button', { name: /expand career statistics/i }));
@@ -179,5 +187,52 @@ describe('CareerRankingsSection', () => {
     const [header, row] = (await readCsv()).split('\n');
     expect(header.split(',')[2]).toBe('Division');
     expect(row.split(',')[2]).toBe('Premier');
+  });
+
+  /**
+   * The counterpart to the tests above.
+   *
+   * "No career statistics available." is the line this bug showed at the wrong
+   * moment, so three of those assert it is absent. None of them showed it is
+   * still there when the league genuinely has no history — so deleting the
+   * branch outright would have left every one of them green. This is the case
+   * the message exists for.
+   */
+  it('still says so when the league really has no history', async () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: [],
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    mockComputeAllTeamsTotals.mockResolvedValue(new Map());
+
+    renderSection();
+    await userEvent.click(screen.getByRole('button', { name: /expand career statistics/i }));
+
+    expect(await screen.findByText('No career statistics available.')).toBeInTheDocument();
+  });
+
+  // The header's two screen sizes. The split moved this gate into
+  // CareerRankingsHeader, and nothing rendered the phone side of it.
+  const SUBTITLE = 'Historical performance across all seasons and playoffs';
+
+  it('explains the card with a subtitle on a wide screen', () => {
+    teamsLoading();
+
+    renderSection();
+
+    expect(screen.getByText(SUBTITLE)).toBeInTheDocument();
+  });
+
+  it('drops that subtitle on a phone, where the header row has no room for it', () => {
+    mockIsMobile.mockReturnValue(true);
+    teamsLoading();
+
+    renderSection();
+
+    expect(screen.queryByText(SUBTITLE)).not.toBeInTheDocument();
+    // The heading itself stays — only the line under it goes.
+    expect(screen.getByText('Career Statistics')).toBeInTheDocument();
   });
 });
