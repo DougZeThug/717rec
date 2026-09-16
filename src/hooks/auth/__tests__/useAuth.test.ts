@@ -357,6 +357,38 @@ describe('useAuth', () => {
     expect(profileLoadFailedState).toBe(true);
   });
 
+  // Unmounting must cancel the timer the auth event scheduled, not merely leave
+  // it to fire into a guard.
+  //
+  // The guard makes the callback harmless either way, so "fetchProfile was not
+  // called" cannot tell a cancelled timer from a guarded one. The pending timer
+  // count can: it drops to zero only if the cleanup really cancelled it. This
+  // is also the evidence behind the reply on the pull request about React
+  // Doctor's effect-needs-cleanup report, which has survived every form the
+  // cleanup has been written in.
+  it('cancels the timer it scheduled when the effect is torn down', async () => {
+    vi.useFakeTimers();
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    fetchProfileSpy.mockImplementation((userId: string) =>
+      Promise.resolve({ id: userId, is_admin: false } as unknown as UserProfile)
+    );
+
+    const { unmount } = renderHook(() => useAuth());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The deferred profile fetch is scheduled but has not run.
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('user-a'));
+    });
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+    unmount();
+
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   // The same rule on the bootstrap path, which runs on a cold load rather than
   // on an auth event and has its own failure branch.
   it("does not keep a previous user's profile when the bootstrap read fails", async () => {
