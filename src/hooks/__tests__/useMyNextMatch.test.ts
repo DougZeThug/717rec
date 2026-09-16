@@ -47,6 +47,7 @@ describe('useMyNextMatch', () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue({ user: mockUser });
     (useTeamMembership as ReturnType<typeof vi.fn>).mockReturnValue({
       membership: mockMembership,
+      isFetching: false,
       isLoading: false,
     });
     (useTeamMatches as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -64,10 +65,13 @@ describe('useMyNextMatch', () => {
     expect(result.current.matches).toEqual([]);
   });
 
-  it('returns isLoading=true while membership is loading', () => {
+  it('returns isLoading=true while the membership query is still fetching', () => {
+    // isFetching is the query; isLoading is the join/leave mutation flag and is
+    // false on a first load, which is why the skeleton used to be skipped.
     (useTeamMembership as ReturnType<typeof vi.fn>).mockReturnValue({
       membership: null,
-      isLoading: true,
+      isFetching: true,
+      isLoading: false,
     });
     const { result } = renderHook(() => useMyNextMatch());
     expect(result.current.isLoading).toBe(true);
@@ -76,6 +80,7 @@ describe('useMyNextMatch', () => {
   it('returns hasTeamMembership=false when membership is unapproved', () => {
     (useTeamMembership as ReturnType<typeof vi.fn>).mockReturnValue({
       membership: { ...mockMembership, is_approved: false },
+      isFetching: false,
       isLoading: false,
     });
     const { result } = renderHook(() => useMyNextMatch());

@@ -23,19 +23,11 @@ export function usePendingMatches() {
     refetch,
   } = useQuery<Match[]>({
     queryKey: ['matches', 'pending'],
+    // Raised once by the QueryCache onError in App.tsx. In this catch it ran
+    // again on every react-query retry, so one failed load raised two.
+    meta: { errorToast: 'Failed to load pending matches' },
     queryFn: async () => {
-      let data;
-      try {
-        data = await fetchPendingMatches();
-      } catch (error) {
-        errorLog('Error fetching pending matches:', error);
-        toast({
-          title: 'Error',
-          description: getUIErrorMessage(error, 'Failed to load pending matches'),
-          variant: 'destructive',
-        });
-        throw error;
-      }
+      const data = await fetchPendingMatches();
 
       return transformDatabaseMatches(data, { normalizeDate: false });
     },
@@ -45,19 +37,9 @@ export function usePendingMatches() {
   // Fetch teams
   const { data: teams = {} } = useQuery<Record<string, Team>>({
     queryKey: ['teams', 'map'],
+    meta: { errorToast: 'Failed to load teams' },
     queryFn: async () => {
-      let data;
-      try {
-        data = await fetchTeamsMap();
-      } catch (error) {
-        errorLog('Error fetching teams:', error);
-        toast({
-          title: 'Error',
-          description: getUIErrorMessage(error, 'Failed to load teams'),
-          variant: 'destructive',
-        });
-        throw error;
-      }
+      const data = await fetchTeamsMap();
 
       const teamsMap: Record<string, Team> = {};
       data?.forEach((team) => {

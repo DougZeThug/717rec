@@ -36,6 +36,33 @@ describe('DeleteMatchDialog', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
 
+  it('stays open when Delete is clicked, so the deleting state is visible', () => {
+    const onClose = vi.fn();
+    render(<DeleteMatchDialog isOpen onClose={onClose} onConfirm={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+    // AlertDialogAction closes the dialog by default. Without preventDefault the
+    // "Deleting..." branch only ever showed during the exit animation, and a
+    // failed delete left the admin with no prompt to retry from.
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
+  });
+
+  it('ignores Escape while deleting, and honours it otherwise', () => {
+    const onClose = vi.fn();
+    const { rerender } = render(
+      <DeleteMatchDialog isOpen onClose={onClose} onConfirm={vi.fn()} isDeleting />
+    );
+
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onClose).not.toHaveBeenCalled();
+
+    rerender(<DeleteMatchDialog isOpen onClose={onClose} onConfirm={vi.fn()} />);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it('fires onClose when Cancel is clicked', () => {
     const onClose = vi.fn();
     render(<DeleteMatchDialog isOpen onClose={onClose} onConfirm={vi.fn()} />);

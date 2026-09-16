@@ -91,7 +91,10 @@ describe('useMatchDelete', () => {
     expect(mockDeleteMatchWithStatsReversal).toHaveBeenCalledWith('match-a');
     expect(setMatches).toHaveBeenCalledWith([matchB]);
     expect(setDeleteMatchId).toHaveBeenCalledWith(null);
-    expect(mockToast).toHaveBeenCalledWith(
+    // Success is not an error: the toast falls back to the default variant.
+    // Only the catch branch below is styled destructive.
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match Deleted' }));
+    expect(mockToast).not.toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Match Deleted', variant: 'destructive' })
     );
     expect(mockInvalidateAllDataQueries).toHaveBeenCalledTimes(1);

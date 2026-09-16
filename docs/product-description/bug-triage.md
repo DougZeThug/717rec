@@ -12,18 +12,28 @@ Nothing here has been filed as an issue.
 ## Summary
 
 The 58 documents raised roughly 190 suspected defects and open questions. After
-merging by root cause they come to **42 entries**: 13 high, 23 medium, and 6 low.
-Two of the 42 were **not raised as defects by any document**. B-40, a `high`, was
-found while checking B-20. B-41, a `medium`, was recorded in
-`home/the-home-page.md` as an open question and could not be reached until
+merging by root cause the original pass came to 42 entries. The list has grown
+since, as later readings found defects the documents never raised, and now holds
+**53 entries**: 14 high, 26 medium, 12 low, and B-06, which carries no severity
+because it was cleared as not a defect. Several were **not raised as
+defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
+`medium`, was recorded in `home/the-home-page.md` as an open question and could
+not be reached until
 [B-31](#b-31-two-dead-features-are-visible-in-the-interface) added the control
-that switches its feature on; it was fixed in that same change.
+that switches its feature on; it was fixed in that same change. B-49 to B-52 came
+out of code readings rather than screens.
 
-**All six `low` entries are now closed.** Five were fixed; B-26 was put to the
-league as a product call and left as it is, documented rather than changed. Two
-of the five — B-27 and B-30 — carried claims that had gone stale between the
-reading and the fix, and both are corrected in place. B-41 was fixed in the same
-change that made it reachable.
+*The counts in this paragraph had gone stale.* They still read "42 entries: 13
+high, 23 medium, and 6 low" long after the list had grown past them, and are
+corrected here by counting the **Severity** line on each entry. Two things make a
+count by eye come out wrong: B-06 has no severity line at all, and B-41 sits
+under the `## Low` heading while being marked `medium`.
+
+**All twelve `low` entries are now closed.** Eleven were fixed; B-26 was put to
+the league as a product call and left as it is, documented rather than changed.
+Three — B-27, B-30 and B-53 — carried claims that had gone stale or were recorded
+as open questions between the reading and the fix, and all three are corrected in
+place. B-41 was fixed in the same change that made it reachable.
 
 Two clusters account for most of the high ones.
 
@@ -2277,6 +2287,12 @@ finding read a superseded migration.
   which is why it only ever appeared to a user who was signed in — the worst
   possible audience for "check your email".
 
+  *The sweep missed one.* It covered the *success* pairs and left the **failure**
+  path in the same file: `handleNativeGoogleSignIn` still raised a second toast
+  over the one `signInWithGoogleNative` had already raised. Only the Capacitor
+  build can reach it, which is why no web test caught it. Fixed separately as
+  [B-49](#b-49-a-failed-native-google-login-raises-two-red-toasts).
+
 ### B-28: Message timestamps show a clock time with no date
 
 - A message posted three weeks ago reads "3:42 PM" (`src/components/home/utils.ts:16`,
@@ -2558,6 +2574,134 @@ finding read a superseded migration.
   successful reopen is silent" and FIX-23 that it "announces nothing at all" —
   both left behind by B-17's own change, which rewrote only FIX-08.
 
+### B-49: A failed native Google login raises two red toasts
+
+- `signInWithGoogleNative` reports its own failure through `handleAuthError`
+  (`src/hooks/auth/utils/authErrorHandler.ts:18`), which raises a destructive
+  toast and records the message as `authError`. It then *returns*
+  `{ success: false }` rather than throwing, so `handleNativeGoogleSignIn`
+  (`src/hooks/useAuthForm.ts`) saw `!success` and raised a second one. Two red
+  toasts, same message, two different titles, one press.
+- **Severity:** `low`. The login still fails honestly; it is reported twice.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document. Only the Capacitor
+  Android/iOS build renders the button that reaches this path — it is gated by
+  `isNative` (`src/components/auth/SocialAuthButtons.tsx:48`) and
+  `loginWithGoogleNative` refuses off-device — so no web session and no web test
+  could ever have seen it.
+- **Status:** **fixed.** The outer toast is gone and the inner one survives, the
+  same rule [B-27](#b-27-several-actions-raise-two-success-toasts) applied to the
+  sibling handlers in this file. The test that asserted the duplicate now asserts
+  no toast at all, matching the sign-up convention test beside it.
+
+  **This is B-27's missed tail.** That sweep covered the *success* pairs and the
+  sign-up message; this is the same defect on a *failure* path, in a handler
+  B-27 edited but did not finish.
+
+### B-50: A failed load of pending matches raises a toast per attempt
+
+- `usePendingScoresMatches` and `usePendingMatches` each raised their failure
+  toast inside `queryFn`'s `catch` and then rethrew. `queryFn` is the unit
+  react-query retries, and `src/App.tsx` sets `retry: 1`, so one failed load
+  raised **two** identical red toasts. `usePendingMatches` held the pattern
+  twice — a matches read and a teams read — so a full outage raised four.
+- Worse than the duplicate: a first attempt that failed before a retry that
+  **succeeded** still raised one. The list was on screen and the user was told
+  it had failed.
+- **Severity:** `low`. Error path only, but the home page is the landing page and
+  `staleTime: 0` plus refetch-on-focus re-raises it on every return to the tab.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** The toast now comes from the QueryCache
+  (`src/utils/queryErrorToast.ts`, wired in `App.tsx`), which runs **once per
+  query failure after retries are exhausted**. Queries opt in with
+  `meta.errorToast`, which supplies the fallback wording only — the server's own
+  message still wins through `getUIErrorMessage`.
+
+  **The obvious fix was the wrong one.** A `useEffect` keyed on the query error,
+  as `useScoreSubmissions` does, fires once per *mounted consumer* — and
+  `usePendingScoresMatches` is mounted three times on the home page, by `Index`,
+  `PendingScoresCard` and `ScoreSubmissionModal`. On a background-refetch failure
+  that keeps the card on screen it would have raised two or three toasts, no
+  better than the bug. The QueryCache is the one place the count cannot multiply.
+
+### B-51: A successful match deletion is announced in red
+
+- `src/hooks/matches/updates/useMatchDelete.ts` raised its **success** toast with
+  `variant: 'destructive'`. The toast component has two variants, `default` and
+  `destructive`, and `destructive` is the error style
+  (`src/components/ui/toast.tsx:28-36`) — so a match that deleted cleanly looked
+  exactly like the failure toast four lines below it, and only the words told the
+  two apart.
+- It was the one success toast in the app using that variant. The same delete in
+  `MassScoreEntryTool` already used the default, as does every other
+  delete-success toast and every irreversible season action.
+- **Severity:** `low`. Cosmetic; the deletion itself was correct.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** The variant is dropped, so the toast falls back to
+  `default`. The test asserted the destructive variant on the success path and so
+  pinned the bug in place; it now asserts the title and that the success toast is
+  *not* destructive. The error-path assertions are unchanged.
+
+  Most likely the original author read "deleting a match is destructive" as
+  "use the destructive variant". The two are unrelated: the variant names a
+  colour, not a consequence.
+
+### B-52: The delete confirmation closes before the delete has run
+
+- Radix's `AlertDialogAction` is a Close button: it closes on click unless the
+  handler calls `preventDefault`. `src/components/schedule/DeleteMatchDialog.tsx`
+  passed `onConfirm` straight through, so the dialog began closing the moment
+  Delete was pressed. The `isDeleting` spinner, the "Deleting..." label and the
+  disabled Cancel the component already carried were dead code — on screen only
+  for the ~200 ms exit animation.
+- A delete that then failed had no dialog left to retry from, only a red toast.
+  `MassScoreEntryTool` compounded it by closing in `finally`, so failure
+  dismissed the prompt even once the dialog stopped closing itself.
+- Escape and the overlay could also dismiss the dialog mid-delete, although the
+  Cancel button beside them was disabled for exactly that reason.
+- **Severity:** `low`. The delete is atomic and completes either way; what is
+  lost is the progress indicator and the retry.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** `preventDefault` before `onConfirm`, `onOpenChange`
+  guarded on `isDeleting`, and `MassScoreEntryTool` closes on success only —
+  mirroring `useMatchDelete`, which already did. All three match the house
+  pattern in `src/components/ui/ConfirmDialog.tsx` and
+  `SeasonActivationDialog.tsx`, whose comment gives this exact reason.
+
+  Both consumers were checked; neither can be left stuck open. Three tests now
+  cover behaviour that could not run before: that the dialog stays open on
+  confirm, that Escape is ignored while deleting and honoured otherwise, and that
+  a failed delete leaves the prompt on screen.
+
+### B-53: My Next Match shows no skeleton on a first load
+
+- `useTeamMembership` exposes two different busy flags: `isLoading`, a plain
+  `useState` true only while a join or leave is in flight, and `isFetching`,
+  react-query's fetch flag. `src/hooks/useMyNextMatch.ts` read `isLoading`. No
+  join or leave has happened on a first load, so it stayed `false` for the whole
+  membership fetch, `Index` skipped `<MyNextMatchSkeleton />` and fell through to
+  `null`. The area was blank, then the card appeared — the page jumping twice.
+- It bites only when the membership query actually fetches: a hard load, a first
+  visit, or after its five-minute `staleTime` expires. In-app navigation inside
+  that window is served from cache and looks correct.
+- **Severity:** `low`. Cosmetic; no data is wrong and nothing is lost.
+- **Decision needed:** `fix`.
+- **Raised by:** [`home/your-next-match.md`](home/your-next-match.md#open-questions-and-verification),
+  which recorded it as an open question ending "may be worth treating as a bug
+  rather than documenting". It is now treated as one.
+- **Status:** **fixed.** `useMyNextMatch` reads `isFetching`. It was the only one
+  of ten consumers with this: `useCanScoreMatch`, `ParticipationHeroCard` and
+  `TeamMembershipSection` already used `isFetching` for the fetch.
+
+  All three mocks in the hook's test supplied only `isLoading`, so switching the
+  hook would have handed it `undefined`. They now supply both, and the loading
+  test sets `isFetching: true` with `isLoading: false` — so it fails if the hook
+  ever goes back to the mutation flag. `verification/home-and-teams.md` NEXT-38
+  is retagged from "suspected bug" to fixed.
+
 ---
 
 ## Note: what the two DeepSource checks actually measure
@@ -2580,14 +2724,36 @@ They are on the pull request page and they set `mergeable_state` to `unstable`,
 but they are not required checks. That is easy to miss when reading CI through
 the API, and it cost a round here.
 
-**`DeepSource: JavaScript` is normally red on this repo, and the league merges
-through it.** Treat it as feedback, not as your branch's failure:
+**`DeepSource: JavaScript` was normally red on this repo, and the league merged
+through it.** That was the reading at the time:
 
 | PR | DeepSource: JavaScript | DeepSource: Test coverage | merged |
 | --- | --- | --- | --- |
 | #1311 | failure | failure | yes |
 | #1312 | failure | failure | yes |
 | #1315 | failure | **success** | — |
+
+*No longer true, and the difference matters.* **#1470**, merged into `main` on
+2026-09-16, carried `DeepSource: JavaScript — Analysis passed`. The backlog that
+kept this status red has been worked off, so **a red JavaScript status is now
+your branch's to fix**, not a standing condition to merge through. Measured on
+#1474: green on the base and on that branch's first five commits, then red on
+the sixth, which added a new test file.
+
+**Read the finding; do not infer it.** On #1474 the red was assumed to be
+JS-0117, because the same commit added two regex literals and this note named
+JS-0117 as a known cause. It was not. Replacing both regexes changed nothing,
+and the actual finding was a single **JS-0116**, "Found `async` function without
+any `await` expressions" — `queryFn: async () => null`, a throwaway in a test
+helper for a query that is built and never run. One round was spent on the wrong
+hypothesis.
+
+**Where the finding is legible**, since this is the part that makes guessing
+tempting: not in the `checks` API, and not as an inline review comment either —
+DeepSource's summary comment says "you can see the individual issues we found as
+inline review comments" and on #1474 it posted none. The issue list is on the run
+page the commit status links to, `app.deepsource.com/gh/…/run/<id>/javascript/`.
+Open that before changing any code.
 
 **Coverage, on the other hand, tracks the branch's own new lines, and can be
 made green.** Measured on #1315, where nothing changed between the first two
@@ -2634,6 +2800,17 @@ repo-wide style question, not a defect in the change under review. None of the
 patterns involved use unicode escapes or astral characters — em-dashes and
 middots are single code units — so the flag changes no behaviour. Adding it to
 one branch's files makes those files the odd ones out and fixes nothing.
+
+*That last sentence assumed the status was red regardless, which it no longer
+is — but the advice still holds.* #1474 tested it directly: two new
+`name: /…/i` regexes in a Testing Library query were replaced with exact strings
+and the JavaScript status stayed red, because JS-0117 was never what it was
+reporting. So a branch adding a regex does **not**, on this evidence, turn the
+status red on its own, and the existing 223 need nothing done to them.
+
+The replacement was kept anyway, on its own merits rather than DeepSource's:
+`name: 'Cancel'` is more precise than `name: /cancel/i` and is what the sibling
+`DeleteMatchDialog.test.tsx` already uses for the same button.
 
 Two options: sweep all 231 in one change so the rule means something, or accept
 that it tracks the repo's existing style rather than the branch under review.

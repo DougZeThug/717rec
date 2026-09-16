@@ -89,6 +89,10 @@ const MassScoreEntryTool: React.FC = () => {
       removeMatch(deleteMatchId);
       toast({ title: 'Match deleted', description: 'The match has been removed successfully.' });
       invalidateAllDataQueries(queryClient);
+
+      // Close on success only. Closing in finally dismissed the dialog on a
+      // failure too, so the admin lost the prompt they would retry from.
+      setDeleteMatchId(null);
     } catch (error) {
       errorLog('Failed to delete match:', error);
       toast({
@@ -98,7 +102,6 @@ const MassScoreEntryTool: React.FC = () => {
       });
     } finally {
       setIsDeleting(false);
-      setDeleteMatchId(null);
     }
   };
 

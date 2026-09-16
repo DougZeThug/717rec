@@ -48,7 +48,9 @@ export const getMatchDateKey = (match: Match): string | null => {
  */
 export const useMyNextMatch = (): MyNextMatchResult => {
   const { user } = useAuth();
-  const { membership, isLoading: membershipLoading } = useTeamMembership();
+  // isFetching is the membership *query*; useTeamMembership's isLoading is a
+  // join/leave mutation flag and is false throughout the first fetch.
+  const { membership, isFetching: membershipLoading } = useTeamMembership();
 
   // Use lightweight team-specific hook instead of loading all matches
   const myTeamId = membership?.team_id;
