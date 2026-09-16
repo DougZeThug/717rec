@@ -4,18 +4,13 @@ import { useSearchParams } from 'react-router';
 import type { Team } from '@/types';
 
 /**
- * Resolve one side's incoming id against the loaded teams, returning the team
- * to select or null when nothing needs to change (no id, the same team already
- * chosen, or an id that matches no visible team).
+ * Resolve one side's incoming id against the loaded teams. A missing id, or one
+ * that matches no visible team, means an empty side rather than "leave this one
+ * alone": the address is what the page shows, so taking a team out of the
+ * address has to take it off the page.
  */
-const resolveTeamFromParam = (
-  teams: Team[],
-  paramId: string | null,
-  current: Team | null
-): Team | null => {
-  if (!paramId || paramId === current?.id) return null;
-  return teams.find((team) => team.id === paramId) ?? null;
-};
+const findTeam = (teams: Team[], paramId: string | null): Team | null =>
+  paramId ? (teams.find((team) => team.id === paramId) ?? null) : null;
 
 interface CompareUrlState {
   team1: Team | null;
@@ -50,12 +45,16 @@ export const useCompareUrlState = (teams: Team[] | undefined): CompareUrlState =
     // nothing (a hidden or deleted team), or the sync below stays blocked.
     hasAppliedUrlParams.current = true;
 
-    const incoming1 = resolveTeamFromParam(teams, searchParams.get('team1'), team1);
-    const incoming2 = resolveTeamFromParam(teams, searchParams.get('team2'), team2);
+    const incoming1 = findTeam(teams, searchParams.get('team1'));
+    const incoming2 = findTeam(teams, searchParams.get('team2'));
 
+    // Comparing ids rather than setting unconditionally keeps this off the
+    // user's own dropdown picks: when the address is only catching up with a
+    // selection they just made, there is nothing left to apply.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
-    if (incoming1) setTeam1(incoming1);
-    if (incoming2) setTeam2(incoming2);
+    if (incoming1?.id !== team1?.id) setTeam1(incoming1);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
+    if (incoming2?.id !== team2?.id) setTeam2(incoming2);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- applying the URL to state; team1/team2 deps would fight the user's own edits
   }, [teams, searchParams]);
 
