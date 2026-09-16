@@ -357,6 +357,23 @@ describe('useAuth', () => {
     expect(profileLoadFailedState).toBe(true);
   });
 
+  // The same rule on the bootstrap path, which runs on a cold load rather than
+  // on an auth event and has its own failure branch.
+  it("does not keep a previous user's profile when the bootstrap read fails", async () => {
+    mockGetAuthSession.mockResolvedValue({
+      data: { session: makeSession('user-b') },
+      error: null,
+    });
+    fetchProfileSpy.mockRejectedValue(new Error('profile failed'));
+
+    profileState = { id: 'admin-a', is_admin: true } as unknown as UserProfile;
+
+    renderHook(() => useAuth());
+
+    await waitFor(() => expect(profileLoadFailedState).toBe(true));
+    expect(profileState).toBeNull();
+  });
+
   // The other half of the rule: a read that fails for the user whose profile we
   // already hold must not throw that profile away. A reload fetches twice, and
   // one failing is not a reason to hide the dashboard behind the retry card.

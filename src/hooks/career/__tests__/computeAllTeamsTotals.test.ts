@@ -40,10 +40,47 @@ const team = (id: string): Team =>
     losses: null,
   }) as unknown as Team;
 
+/**
+ * A team with real history behind it: two seasons, a title in one and a runner-up
+ * in the other. Fuller than it strictly needs to be so the happy-path test walks
+ * the championship, runner-up and playoff-finish branches rather than stopping at
+ * the empty-array short circuits.
+ */
+const seasonStatsFor = (id: string) => [
+  {
+    team_id: id,
+    season_id: 'season-1',
+    champion: true,
+    runner_up: false,
+    playoff_rank: 1,
+    sos: 0.5,
+    division_name: 'Premier',
+    power_score: 0.7,
+    career_power_score: 0.68,
+    match_wins: 8,
+    match_losses: 2,
+    seasons: { name: 'Spring 2025' },
+  },
+  {
+    team_id: id,
+    season_id: 'season-2',
+    champion: false,
+    runner_up: true,
+    playoff_rank: 2,
+    sos: 0.45,
+    division_name: 'Premier',
+    power_score: 0.6,
+    career_power_score: 0.59,
+    match_wins: 6,
+    match_losses: 4,
+    seasons: { name: 'Autumn 2025' },
+  },
+];
+
 const bulkFor = (id: string): BulkTeamCareerData =>
   ({
     teamData: { id, name: `Team ${id}` },
-    seasonStats: [],
+    seasonStats: seasonStatsFor(id),
     currentMatches: [],
     archivedMatches: [],
     playoffMatches: [],
@@ -53,7 +90,13 @@ const bulkFor = (id: string): BulkTeamCareerData =>
     bracketSeasonMap: {},
     teamDivisionWeight: 0.85,
     currentSeasonId: null,
-    seasonPowerScores: [],
+    seasonPowerScores: seasonStatsFor(id).map((s) => ({
+      power_score: s.power_score,
+      career_power_score: s.career_power_score,
+      match_wins: s.match_wins,
+      match_losses: s.match_losses,
+      season_id: s.season_id,
+    })),
   }) as unknown as BulkTeamCareerData;
 
 const bulkMapFor = (ids: string[]) => new Map(ids.map((id) => [id, bulkFor(id)]));
@@ -61,7 +104,8 @@ const bulkMapFor = (ids: string[]) => new Map(ids.map((id) => [id, bulkFor(id)])
 describe('computeAllTeamsTotals', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFetchDivisionWeightsByName.mockResolvedValue({});
+    // A Map, as the real cache returns — keyed by normalised division name.
+    mockFetchDivisionWeightsByName.mockResolvedValue(new Map([['premier', 1]]));
   });
 
   it('returns totals for every team when the division weights load', async () => {
@@ -70,6 +114,12 @@ describe('computeAllTeamsTotals', () => {
     const result = await computeAllTeamsTotals([team('t1'), team('t2')]);
 
     expect([...result.keys()].sort()).toEqual(['t1', 't2']);
+    // Folded from the season history, not just an empty shell.
+    const t1 = result.get('t1');
+    expect(t1?.championships).toBe(1);
+    expect(t1?.runner_ups).toBe(1);
+    expect(t1?.playoff_finishes.map((f) => f.rank)).toEqual([1, 2]);
+    expect(t1?.playoff_finishes[0].season_name).toBe('Spring 2025');
   });
 
   // The defect. The division-weights read is memoised behind one shared
@@ -93,7 +143,7 @@ describe('computeAllTeamsTotals', () => {
     mockFetchAllTeamsCareerData.mockResolvedValue(bulkMapFor(['t1', 't2']));
     mockFetchDivisionWeightsByName
       .mockRejectedValueOnce(new Error('divisions unavailable'))
-      .mockResolvedValue({});
+      .mockResolvedValue(new Map([['premier', 1]]));
 
     const result = await computeAllTeamsTotals([team('t1'), team('t2')]);
 

@@ -901,9 +901,15 @@ describe('LiveMatchView — a won game and an unsettled round', () => {
   const startNeverSettlingRoundSave = () => {
     const mutation = queryClient.getMutationCache().build(queryClient, {
       mutationKey: liveScoringKeys.submitRound('match-1'),
-      mutationFn: () => new Promise<void>(() => undefined),
+      // Carries the variables a real round save would. Nothing reads them —
+      // the gate counts saves by key and status — but a mutation that takes
+      // none has no argument to start it with.
+      mutationFn: (_input: { gameId: string; roundNumber: number }) =>
+        new Promise<void>(() => undefined),
     });
-    void mutation.execute(undefined);
+    // Starts it and leaves it pending: the mutationFn never settles. Nothing
+    // to await — staying unfinished is the point.
+    mutation.execute({ gameId: 'game-1', roundNumber: 3 });
   };
 
   afterEach(() => {
@@ -924,7 +930,7 @@ describe('LiveMatchView — a won game and an unsettled round', () => {
   // pausedRounds only counts parked ones, so a round that was parked offline
   // and is now on its way is in neither — and the totals it could still take
   // back were writable as a final score.
-  it('will not end the game while an earlier round save is still on its way', async () => {
+  it('will not end the game while an earlier round save is still on its way', () => {
     startNeverSettlingRoundSave();
     // Not this component's latest mutation, and not parked: both of the old
     // signals read "nothing in flight".

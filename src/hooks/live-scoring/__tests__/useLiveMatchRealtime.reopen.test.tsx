@@ -82,6 +82,17 @@ const fireGameEcho = () => {
   });
 };
 
+/**
+ * Delivers the live change `times` over and lets the handler's own follow-up
+ * work — it invalidates the match — settle before the assertions run.
+ */
+const deliverGameEcho = async (times = 1) => {
+  await act(async () => {
+    for (let i = 0; i < times; i++) fireGameEcho();
+    await Promise.resolve();
+  });
+};
+
 // All three hooks share one query client, exactly as the live-scoring screen
 // does: the realtime subscription is mounted by the page, the match query and
 // the mutations by the view beneath it.
@@ -117,7 +128,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
   it('tells the scorer even when their own refetch beat the live change back', async () => {
     mockFetchBundle.mockResolvedValueOnce(bundleWith('completed'));
     mockFetchBundle.mockResolvedValue(bundleWith('in_progress'));
-    mockReopenGame.mockResolvedValue(undefined);
+    mockReopenGame.mockImplementation(() => Promise.resolve());
 
     const { result } = renderScreen();
 
@@ -131,9 +142,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
     // is what used to make the check below fail and say nothing.
     await waitFor(() => expect(result.current.match.bundle?.games[0].status).toBe('in_progress'));
 
-    await act(async () => {
-      fireGameEcho();
-    });
+    await deliverGameEcho();
 
     expect(mockToast).toHaveBeenCalledTimes(1);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Game 2 reopened' }));
@@ -142,7 +151,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
   // The other ordering, which always worked — and must not start raising two.
   it('tells the scorer exactly once when the live change arrives first', async () => {
     mockFetchBundle.mockResolvedValue(bundleWith('completed'));
-    mockReopenGame.mockResolvedValue(undefined);
+    mockReopenGame.mockImplementation(() => Promise.resolve());
 
     const { result } = renderScreen();
 
@@ -161,7 +170,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
   it('does not repeat the notice on a later change to the same game', async () => {
     mockFetchBundle.mockResolvedValueOnce(bundleWith('completed'));
     mockFetchBundle.mockResolvedValue(bundleWith('in_progress'));
-    mockReopenGame.mockResolvedValue(undefined);
+    mockReopenGame.mockImplementation(() => Promise.resolve());
 
     const { result } = renderScreen();
 
@@ -171,10 +180,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
     });
     await waitFor(() => expect(result.current.match.bundle?.games[0].status).toBe('in_progress'));
 
-    await act(async () => {
-      fireGameEcho();
-      fireGameEcho();
-    });
+    await deliverGameEcho(2);
 
     expect(mockToast).toHaveBeenCalledTimes(1);
   });
@@ -199,9 +205,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
 
     mockToast.mockClear(); // the failure raises its own "Could not reopen game"
 
-    await act(async () => {
-      fireGameEcho();
-    });
+    await deliverGameEcho();
 
     expect(mockToast).not.toHaveBeenCalledWith(
       expect.objectContaining({ title: 'Game 2 reopened' })
@@ -219,9 +223,7 @@ describe('reopening a game announces itself to the scorer who did it', () => {
     });
     expect(result.current).toBeDefined();
 
-    await act(async () => {
-      fireGameEcho();
-    });
+    await deliverGameEcho();
 
     // Its own cache says the game was already in progress, so this is a game
     // merely carrying on, not a reopen.
