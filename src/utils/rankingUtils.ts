@@ -1,6 +1,7 @@
 import { Ranking } from '@/types';
 import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { errorLog, warnLog } from '@/utils/logger';
+import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
 
 /**
  * Every column the rankings table can be sorted by.
@@ -20,11 +21,6 @@ export type RankingSortField =
   | 'gameWinPercentage'
   | 'streak'
   | 'teamName';
-
-const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
-  if (powerScore === null || powerScore === undefined) return null;
-  return Math.round(powerScore * 10) / 10;
-};
 
 /**
  * A streak reads `W3` or `L2` (see `calculateStreak`). Sorting needs a signed

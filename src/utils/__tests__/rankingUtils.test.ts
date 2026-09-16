@@ -216,5 +216,47 @@ describe('sortRankings', () => {
       const sorted = sortRankings(teams, 'powerScore', 'desc');
       expect(sorted.map((r) => r.teamName)).toEqual(['Alpha', 'Zebra']);
     });
+
+    // The regression guard for the rounding bug: the standings print a power
+    // score with toFixed(1), so 41.65 shows as "41.6". Sorting used to round
+    // with Math.round(x * 10) / 10, which gives 41.7 for the same number — so
+    // two rows the table showed as tied were sorted as if they differed, and
+    // the division tiebreaker never ran.
+    it('ties rows the table prints the same, even across a .x5 boundary', () => {
+      // Both print "41.6". Math.round would have made the first one 41.7.
+      expect((41.65).toFixed(1)).toBe('41.6');
+      expect((41.6).toFixed(1)).toBe('41.6');
+
+      const teams: Ranking[] = [
+        makeRanking({
+          teamId: 'rec',
+          teamName: 'Alpha',
+          powerScore: 41.65,
+          divisionName: 'Recreational',
+          winPercentage: 0.9,
+        }),
+        makeRanking({
+          teamId: 'comp',
+          teamName: 'Zebra',
+          powerScore: 41.6,
+          divisionName: 'Competitive',
+          winPercentage: 0.1,
+        }),
+      ];
+
+      const sorted = sortRankings(teams, 'powerScore', 'desc');
+      // Tied as shown, so division decides: Competitive outranks Recreational.
+      expect(sorted.map((r) => r.teamId)).toEqual(['comp', 'rec']);
+    });
+
+    it('still orders by score when the printed scores differ', () => {
+      const teams: Ranking[] = [
+        makeRanking({ teamId: 'low', powerScore: 41.6, divisionName: 'Competitive' }),
+        makeRanking({ teamId: 'high', powerScore: 41.74, divisionName: 'Recreational' }),
+      ];
+
+      const sorted = sortRankings(teams, 'powerScore', 'desc');
+      expect(sorted.map((r) => r.teamId)).toEqual(['high', 'low']);
+    });
   });
 });
