@@ -252,4 +252,31 @@ describe('reopenAndRefinalize', () => {
     expect(toastArg.title).toBe('Could not re-save the result');
     expect(toastArg.description).not.toContain('The old result was reversed');
   });
+
+  // reopen_live_match answers false when there was nothing to reverse. Saying
+  // "the old result was reversed" then sends the admin looking for a standings
+  // change that never happened.
+  it('does not claim a reversal when reopening reversed nothing', async () => {
+    mockReopenLiveMatch.mockResolvedValue(false);
+    mockFinalizeLiveMatch.mockRejectedValue(
+      new Error('Match is not decided yet (game wins: 1 - 1)')
+    );
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopenAndRefinalize.mutateAsync().catch(() => undefined);
+    });
+
+    const [[toastArg]] = mockToast.mock.calls;
+    expect(toastArg).toMatchObject({
+      title: 'Could not re-save the result',
+      variant: 'destructive',
+    });
+    expect(toastArg.description).not.toContain('The old result was reversed');
+    expect(toastArg.description).toContain('Nothing was reversed');
+    expect(toastArg.description).toContain('The match was already open');
+  });
 });
