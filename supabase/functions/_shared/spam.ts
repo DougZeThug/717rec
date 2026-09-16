@@ -5,21 +5,29 @@
 /**
  * How many links a message contains.
  *
- * Each link is counted once. The earlier version alternated between the two
- * ways a link can start — `/https?:\/\/|www\./gi` — which matched twice inside
- * a single `https://www.example.com`: once for the scheme and again for the
- * host prefix. Three ordinary links scored six and tripped a limit documented
- * as five, so a sender quoting three videos was refused as a spammer with only
- * the generic "please try again" toast to go on, and retrying the same text
- * could never work.
+ * Counts where each link *starts*, rather than trying to consume the whole of
+ * it. Two ways to start are recognised — a scheme, or a bare `www.` host — and
+ * a `www.` directly after a scheme belongs to that scheme rather than opening a
+ * link of its own.
  *
- * Consuming the rest of the link with `\S+` is what fixes it: the `www.` of a
- * scheme-prefixed link is now part of the match the scheme already started.
- * Bare `www.example.com` links, which carry no scheme, still count — dropping
- * them would let six of them past the limit.
+ * That last part is the fix for the original defect. The first version was a
+ * plain alternation, `/https?:\/\/|www\./gi`, which matched twice inside a
+ * single `https://www.example.com`: once for the scheme and again for the host.
+ * Three ordinary links scored six and tripped a limit documented as five, so a
+ * sender quoting three videos was refused as a spammer with only the generic
+ * "please try again" toast to go on, and retrying the same text never worked.
+ *
+ * Counting starts is also why the body is not consumed with something like
+ * `\S+`. A greedy tail runs through any punctuation between two links, so
+ * `https://a.test,https://b.test` reads as one link and a sender could put any
+ * number of them past the limit by leaving out the spaces. Matching only the
+ * opening of each link cannot run them together.
+ *
+ * Bare `www.example.com` links still count. Dropping them would be the opposite
+ * mistake — six of them would score zero.
  */
 export function countUrls(text: string): number {
-  const matches = text.match(/(?:https?:\/\/|www\.)\S+/gi);
+  const matches = text.match(/https?:\/\/(?:www\.)?|www\./gi);
   return matches ? matches.length : 0;
 }
 

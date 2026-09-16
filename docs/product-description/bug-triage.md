@@ -2176,14 +2176,26 @@ finding read a superseded migration.
   with no way for either side to find out.
 - **Decision needed:** `fix`.
 - **Raised by:** reported directly, not by a feature document.
-- **Status:** **fixed.** The pattern now consumes the rest of each link
-  (`/(?:https?:\/\/|www\.)\S+/gi`), so the `www.` of a scheme-prefixed link is
-  part of the match its scheme already started. A link with no scheme still
-  counts: a suggested fix of `/https?:\/\/(?:www\.)?\S+/gi` was rejected because
-  it stops counting bare `www.example.com` links **at all**, which would let six
-  of them past the limit — the opposite mistake. Counts checked at every
-  boundary: three scheme-plus-`www.` links now score 3 (was 6), six still score
-  6 and are still refused, and six bare `www.` links still score 6.
+- **Status:** **fixed.** The pattern now counts where each link *starts*
+  (`/https?:\/\/(?:www\.)?|www\./gi`), with a `www.` directly after a scheme
+  belonging to that scheme rather than opening a link of its own. A link with no
+  scheme still counts: a suggested fix of `/https?:\/\/(?:www\.)?\S+/gi` was
+  rejected because it stops counting bare `www.example.com` links **at all**,
+  which would let six of them past the limit — the opposite mistake. Counts
+  checked at every boundary: three scheme-plus-`www.` links now score 3 (was 6),
+  six still score 6 and are still refused, and six bare `www.` links still
+  score 6.
+
+  *Corrected in review.* The first version of this fix consumed the rest of each
+  link with `\S+`, and that was worse than the bug it fixed. A greedy tail runs
+  straight through the punctuation between two links, so
+  `https://a.test,https://b.test` read as **one** link and a sender could have
+  put any number of them past the limit simply by leaving out the spaces —
+  where the original, over-counting pattern would at least have refused them.
+  Raised by the Codex reviewer on the pull request. Counting only the opening of
+  each link cannot run them together, and six links joined by commas now score 6
+  in all three forms. Two tests cover it, and both fail against the first
+  version.
 
   *The same bug was in two functions.* `send-support-email` and
   `submit-contact-request` each carried their own byte-identical copy. The

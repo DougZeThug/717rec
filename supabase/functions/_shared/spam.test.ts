@@ -38,6 +38,29 @@ Deno.test('countUrls still blocks a genuine link flood', () => {
   assertEquals(countUrls(six) > MAX_URLS_PER_MESSAGE, true);
 });
 
+// Links run together with punctuation and no spaces. Counting whole links with
+// a greedy tail read all of these as one, which would have let a sender put any
+// number of them past the limit; counting where each link starts cannot.
+Deno.test('countUrls counts links that are joined by punctuation', () => {
+  assertEquals(countUrls('https://a.test,https://b.test'), 2);
+  assertEquals(countUrls('www.a.com,www.b.com'), 2);
+  assertEquals(countUrls('https://www.a.com,https://www.b.com'), 2);
+});
+
+Deno.test('countUrls blocks a flood that leaves out the spaces', () => {
+  const forms = [
+    (i: number) => `https://spam${i}.test`,
+    (i: number) => `www.spam${i}.test`,
+    (i: number) => `https://www.spam${i}.test`,
+  ];
+
+  for (const form of forms) {
+    const six = Array.from({ length: 6 }, (_, i) => form(i)).join(',');
+    assertEquals(countUrls(six), 6);
+    assertEquals(countUrls(six) > MAX_URLS_PER_MESSAGE, true);
+  }
+});
+
 Deno.test('countUrls counts nothing in a message with no links', () => {
   assertEquals(countUrls('My score was wrong on match 12. Can someone check it?'), 0);
   assertEquals(countUrls(''), 0);
