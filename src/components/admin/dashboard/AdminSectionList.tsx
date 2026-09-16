@@ -47,14 +47,19 @@ const AdminSectionList: React.FC<AdminSectionListProps> = ({
   // closing the open section's group by hand still works — nothing reopens it
   // until the section changes again.
   //
+  // Watched on the section rather than its group. A move between two sections
+  // of one group is still a move — Timeslots to Match Creation, both under
+  // Scheduling — and left a group the admin had closed by hand closed, with the
+  // section now on screen hidden inside it and nothing marked anywhere.
+  //
   // Adjusted during render rather than in an effect, which is what React
   // prescribes for state that follows a prop: an effect would paint the old
   // group open for a frame first. React re-runs this render before touching the
   // screen, so nothing flashes.
   // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
-  const [lastActiveGroupId, setLastActiveGroupId] = useState(activeGroupId);
-  if (activeGroupId !== lastActiveGroupId) {
-    setLastActiveGroupId(activeGroupId);
+  const [lastActiveTab, setLastActiveTab] = useState(activeTab);
+  if (activeTab !== lastActiveTab) {
+    setLastActiveTab(activeTab);
     if (activeGroupId && !openGroups.has(activeGroupId)) {
       setOpenGroups(new Set(openGroups).add(activeGroupId));
     }

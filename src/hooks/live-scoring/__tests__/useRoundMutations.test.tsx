@@ -1,4 +1,4 @@
-import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { onlineManager, QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -40,6 +40,9 @@ const seedBundle = (): LiveMatchBundle =>
     rounds: [],
     gamePlayers: [],
   }) as unknown as LiveMatchBundle;
+
+/** A save that never settles, standing in for one still waiting to be sent. */
+const neverSettles = () => new Promise<never>(() => undefined);
 
 const submitInput = (overrides: Partial<SubmitRoundInput> = {}): SubmitRoundInput => ({
   gameId: 'game-1',
@@ -245,6 +248,93 @@ describe('submitRound with no signal', () => {
     expect(mockInsertRound).toHaveBeenCalledWith(
       expect.objectContaining({ gameId: 'game-1', roundNumber: 1, enteredByUserId: 'user-1' })
     );
+  });
+
+  /**
+   * The hook plus a live reader of the same query, so an invalidate really does
+   * refetch. Without an observer the query is inactive and nothing would be
+   * fetched, which is the whole of the second case below.
+   */
+  const renderWithLiveReader = (serverRounds: () => LiveMatchBundle['rounds']) => {
+    const wrapper = createWrapper();
+    return renderHook(
+      () => ({
+        live: useQuery({
+          queryKey,
+          queryFn: () => Promise.resolve({ ...seedBundle(), rounds: serverRounds() }),
+        }),
+        rounds: useRoundMutations('match-1'),
+      }),
+      { wrapper }
+    );
+  };
+
+  const heldRound = (roundNumber: number) =>
+    queryClient
+      .getQueryData<LiveMatchBundle>(queryKey)
+      ?.rounds.find((round) => round.round_number === roundNumber);
+
+  const pendingSaves = () =>
+    queryClient
+      .getMutationCache()
+      .findAll({ mutationKey: liveScoringKeys.submitRound('match-1'), status: 'pending' });
+
+  // Both cases below are the same fault: the handlers were written for one
+  // round in flight, and a scorer can now file several while the signal is
+  // gone. A round filed into the log has to stay there until its own save
+  // settles, or it reads as lost at exactly the moment the scorer is checking.
+  it('keeps a held round in the log when an earlier one is refused', async () => {
+    const { result } = renderWithLiveReader(() => []);
+    await waitFor(() => expect(result.current.live.isSuccess).toBe(true));
+
+    onlineManager.setOnline(false);
+    mockInsertRound.mockImplementation((input: { roundNumber: number }) =>
+      input.roundNumber === 1 ? Promise.reject(new Error('boom')) : neverSettles()
+    );
+
+    act(() => result.current.rounds.submitRound.mutate(submitInput({ roundNumber: 1 })));
+    act(() => result.current.rounds.submitRound.mutate(submitInput({ roundNumber: 2 })));
+    await waitFor(() => expect(pendingSaves()).toHaveLength(2));
+
+    act(() => onlineManager.setOnline(true));
+    await waitFor(() =>
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Could not save round' })
+      )
+    );
+
+    expect(heldRound(1)).toBeUndefined();
+    expect(heldRound(2)?.id).toBe('optimistic-game-1-2');
+    expect(pendingSaves()).toHaveLength(1);
+  });
+
+  it('keeps a held round in the log when an earlier one is saved', async () => {
+    const saved: LiveMatchBundle['rounds'] = [];
+    const { result } = renderWithLiveReader(() => saved);
+    await waitFor(() => expect(result.current.live.isSuccess).toBe(true));
+
+    onlineManager.setOnline(false);
+    mockInsertRound.mockImplementation((input: { roundNumber: number }) => {
+      if (input.roundNumber !== 1) return neverSettles();
+      saved.push({
+        id: 'round-1',
+        game_id: 'game-1',
+        round_number: 1,
+      } as LiveMatchBundle['rounds'][number]);
+      return Promise.resolve({ id: 'round-1' });
+    });
+
+    act(() => result.current.rounds.submitRound.mutate(submitInput({ roundNumber: 1 })));
+    act(() => result.current.rounds.submitRound.mutate(submitInput({ roundNumber: 2 })));
+    await waitFor(() => expect(pendingSaves()).toHaveLength(2));
+
+    act(() => onlineManager.setOnline(true));
+    await waitFor(() => expect(mockInsertRound).toHaveBeenCalledTimes(2));
+
+    // The server has no round two yet, so a refetch here would take it out of
+    // the log while the notice above still says it is waiting to send.
+    await waitFor(() => expect(heldRound(2)?.id).toBe('optimistic-game-1-2'));
+    expect(pendingSaves()).toHaveLength(1);
   });
 
   it('can hold more than one round at a time', async () => {

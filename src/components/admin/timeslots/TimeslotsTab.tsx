@@ -56,12 +56,24 @@ const TimeslotsTab = () => {
   // A night named in the address wins, because something asked for it.
   const [selectedDate, setSelectedDate] = useState<Date>(() => prefill.date ?? nextThursday());
 
-  // A second approval can arrive while this section is already open, naming a
-  // different night. Following it during render rather than in an effect keeps
-  // the calendar and the card from disagreeing for a frame.
-  const [openedNight, setOpenedNight] = useState<string | null>(prefill.dateKey);
-  if (prefill.dateKey && prefill.dateKey !== openedNight) {
-    setOpenedNight(prefill.dateKey);
+  // A second approval can arrive while this section is already open, because
+  // the dashboard navigates for one even when Timeslots is the section already
+  // showing. Following it during render rather than in an effect keeps the
+  // calendar and the card from disagreeing for a frame.
+  //
+  // Everything the address carries tells one instruction from the next. The
+  // night alone is not enough: a second approval naming a night this section
+  // has already opened is still a new instruction, and has to bring the
+  // calendar back to it. Keyed on the night, it did nothing instead, and the
+  // move was then made against whatever night the admin had since chosen.
+  //
+  // Keyed on the whole instruction, an instruction still sitting in the address
+  // never moves the calendar twice, so an admin whose move was refused can pick
+  // another night and press again.
+  const instructionKey = `${prefill.dateKey}|${prefill.teamId}|${prefill.slot}|${prefill.askedFor}`;
+  const [followedInstruction, setFollowedInstruction] = useState(instructionKey);
+  if (instructionKey !== followedInstruction) {
+    setFollowedInstruction(instructionKey);
     if (prefill.date) setSelectedDate(prefill.date);
   }
 

@@ -875,6 +875,32 @@ describe('Schedule page', () => {
       expect(asKey(selectedDate())).toBe('2026-09-03');
     });
 
+    // The same rule as the matches read, which this effect already follows: an
+    // empty list from a failed read is not a night with no slots posted. Read
+    // as one on league night, it opened the page on last week — the wrong
+    // night, and a blank one, on the evening the slots were there to be seen.
+    it('leaves the guess alone when the timeslots read failed, and picks after a retry', () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0)); // Thursday 10 September 2026
+      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      mockUseTimeslotDates.mockReturnValue({
+        timeslotDates: [],
+        isLoading: false,
+        error: 'boom',
+      });
+
+      const { rerender } = renderPage();
+
+      // Tonight, which is the guess, rather than last Thursday.
+      expect(asKey(selectedDate())).toBe('2026-09-10');
+
+      // ...and once the read succeeds, an empty list really does mean empty.
+      mockUseTimeslotDates.mockReturnValue({ timeslotDates: [], isLoading: false, error: null });
+      rerender(scheduleTree());
+
+      expect(asKey(selectedDate())).toBe('2026-09-03');
+    });
+
     // SC-05: useScheduleData rebuilds its arrays on every render. An effect that
     // depended on them while setting state would loop forever.
     it('settles instead of re-rendering forever', () => {

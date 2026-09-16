@@ -42,6 +42,36 @@ const setup = () => {
   return { result, invalidateSpy };
 };
 
+// Activating changes which season the league counts as current, so every power
+// score, ranking and standing read from it is now the wrong season's. Only the
+// season list was being refreshed, so the projected seeds on the playoffs page
+// showed the previous season's numbers under the new season's heading.
+describe('useSeasonMutations.activateSeason', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('invalidates the full set of related query keys on success', async () => {
+    vi.mocked(SeasonService.activateSeason).mockResolvedValue({
+      id: 's-1',
+    } as Awaited<ReturnType<typeof SeasonService.activateSeason>>);
+    const { result, invalidateSpy } = setup();
+
+    await result.current.activateSeason.mutateAsync('s-1');
+
+    await waitFor(() => {
+      for (const key of INVALIDATED_KEYS) {
+        expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: key });
+      }
+    });
+    expect(vi.mocked(SeasonService.activateSeason).mock.calls[0][0]).toBe('s-1');
+  });
+
+  it('surfaces service errors so callers can toast', async () => {
+    vi.mocked(SeasonService.activateSeason).mockRejectedValue(new Error('boom'));
+    const { result } = setup();
+    await expect(result.current.activateSeason.mutateAsync('s-1')).rejects.toThrow('boom');
+  });
+});
+
 describe('useSeasonMutations.activateSeasonWithPartialArchive', () => {
   beforeEach(() => vi.clearAllMocks());
 

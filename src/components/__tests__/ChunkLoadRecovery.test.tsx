@@ -127,5 +127,24 @@ describe('ChunkLoadRecovery', () => {
       expect(reload).not.toHaveBeenCalled();
       vi.restoreAllMocks();
     });
+
+    // Some browsers let a page read storage and refuse to write it — Safari
+    // does this in a private window. Reading worked, so nothing looked wrong,
+    // and the note was never kept: every reload arrived to find no record of
+    // the last one and asked for another.
+    it('does not reload when the browser will not keep the note', () => {
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('QuotaExceededError');
+      });
+
+      render(<ChunkLoadRecovery />);
+
+      expect(reload).not.toHaveBeenCalled();
+      expect(sessionStorage.getItem('chunkReloadAt')).toBeNull();
+      // Saying it is loading the page again would be untrue, and there would be
+      // nothing left to press.
+      expect(screen.getByText(/did not help/i)).toBeInTheDocument();
+      vi.restoreAllMocks();
+    });
   });
 });

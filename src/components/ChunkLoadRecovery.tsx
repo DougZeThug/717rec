@@ -16,15 +16,38 @@ const RELOAD_MARKER = 'chunkReloadAt';
  */
 const LOOP_WINDOW_MS = 30_000;
 
-/** Whether this document is here because a reload we asked for did not work. */
-const reloadedRecently = (): boolean => {
+/** Written and removed again, only to find out whether storage takes a write. */
+const PROBE_MARKER = 'chunkReloadProbe';
+
+/**
+ * Whether this document may load itself again, once.
+ *
+ * Three things have to hold, and all of them are storage questions.
+ *
+ * It must not already be here because of a reload we asked for — that is a
+ * loop, not a new problem. A browser that refuses to *read* cannot tell those
+ * apart. And a browser that refuses to *write* cannot keep the record that
+ * stops the **next** document asking for another reload: some browsers read
+ * happily and refuse to write, so the refusal is invisible until the tab is
+ * already reloading over and over. A write is therefore proved here, before a
+ * reload is promised, rather than attempted afterwards and shrugged off.
+ *
+ * Any of the three failing leaves the reader with the panel and the button,
+ * which is the safe end of this.
+ */
+const canReloadItself = (): boolean => {
   try {
     const at = Number(sessionStorage.getItem(RELOAD_MARKER));
-    return Number.isFinite(at) && at > 0 && Date.now() - at < LOOP_WINDOW_MS;
-  } catch (error) {
-    // A browser that refuses storage cannot loop-check; better to not reload.
-    warnLog('Could not read the page-reload marker:', error);
+    if (Number.isFinite(at) && at > 0 && Date.now() - at < LOOP_WINDOW_MS) return false;
+
+    // The marker itself is written at reload time, so a tab that never reloads
+    // leaves nothing behind for the next one to trip over.
+    sessionStorage.setItem(PROBE_MARKER, '1');
+    sessionStorage.removeItem(PROBE_MARKER);
     return true;
+  } catch (error) {
+    warnLog('Could not use the page-reload marker:', error);
+    return false;
   }
 };
 
@@ -32,6 +55,9 @@ const markReloaded = (): void => {
   try {
     sessionStorage.setItem(RELOAD_MARKER, String(Date.now()));
   } catch (error) {
+    // Already proved to work above, so this is a browser that changed its mind
+    // mid-visit. Nothing useful is left to do but reload and let the next
+    // document decide for itself.
     warnLog('Could not record the page reload:', error);
   }
 };
@@ -62,21 +88,21 @@ const markReloaded = (): void => {
  * a file that is genuinely gone — a deploy that removed it, a CDN that keeps
  * failing — would reload, fail, reload, forever. The marker lives in session
  * storage instead, and after that one attempt the reader gets the panel and
- * the button rather than another silent reload.
+ * the button rather than another silent reload. A browser that will not keep
+ * the marker gets the panel straight away, for the same reason.
  */
 export const ChunkLoadRecovery: React.FC = () => {
   const isOnline = useOnlineStatus();
   // Read once: this must not change under the effect between renders.
-  const [alreadyTried] = useState(reloadedRecently);
+  const [canRetryItself] = useState(canReloadItself);
   const hasReloaded = useRef(false);
-  const canRetryItself = !alreadyTried;
 
   useEffect(() => {
-    if (!isOnline || alreadyTried || hasReloaded.current) return;
+    if (!isOnline || !canRetryItself || hasReloaded.current) return;
     hasReloaded.current = true;
     markReloaded();
     window.location.reload();
-  }, [isOnline, alreadyTried]);
+  }, [isOnline, canRetryItself]);
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
