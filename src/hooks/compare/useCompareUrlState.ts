@@ -46,7 +46,14 @@ export const useCompareUrlState = (teams: Team[] | undefined): CompareUrlState =
     hasAppliedUrlParams.current = true;
 
     const incoming1 = findTeam(teams, searchParams.get('team1'));
-    const incoming2 = findTeam(teams, searchParams.get('team2'));
+    const resolved2 = findTeam(teams, searchParams.get('team2'));
+
+    // The dropdowns each leave out whatever the other has chosen, so the same
+    // team cannot be put on both sides through the UI. A hand-written address
+    // naming one team twice is the only way in, and it compares a team with
+    // itself: keep the left side, drop the right, and let the sync below
+    // rewrite the address to match.
+    const incoming2 = resolved2?.id === incoming1?.id ? null : resolved2;
 
     // Comparing ids rather than setting unconditionally keeps this off the
     // user's own dropdown picks: when the address is only catching up with a

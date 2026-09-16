@@ -359,6 +359,26 @@ describe('Compare', () => {
     });
   });
 
+  it('refuses an address that names the same team on both sides', async () => {
+    vi.mocked(useTeamsQuery).mockReturnValue({
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>);
+
+    // A team is never its own opponent, so the head-to-head read comes back
+    // empty and the page would otherwise call that a "first meeting".
+    renderCompare('/compare?team1=team-a&team2=team-a');
+
+    const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
+    const team2Trigger = screen.getByRole('combobox', { name: 'Team 2' });
+    await waitFor(() => {
+      expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+    });
+
+    expect(within(team2Trigger).queryByText('Alpha Aces')).not.toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-a');
+  });
+
   it('swaps which team is on which side, and rewrites the URL to match', async () => {
     const user = userEvent.setup();
     vi.mocked(useTeamsQuery).mockReturnValue({
