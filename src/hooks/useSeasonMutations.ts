@@ -17,10 +17,10 @@ interface ArchiveSeasonData {
   id: string;
 }
 
-// Season-wide operations (archive / partial-archive / finalize) touch matches,
-// team stats, rankings, standings, playoff brackets and career data, so every
-// related cache is invalidated. Shared here so the four broad mutations stay in
-// sync instead of repeating the same list.
+// Season-wide operations (activate / archive / partial-archive / finalize)
+// touch matches, team stats, rankings, standings, playoff brackets and career
+// data, so every related cache is invalidated. Shared here so the five broad
+// mutations stay in sync instead of repeating the same list.
 const SEASON_WIDE_QUERY_KEYS = [
   'seasons',
   'matches',
@@ -62,10 +62,15 @@ export const useSeasonMutations = () => {
     },
   });
 
+  // Activating changes which season the league counts as current, and every
+  // power score, ranking and standing is derived from that. Refreshing only the
+  // season list left the rest holding the previous season's numbers for as long
+  // as they stayed fresh — the playoffs page showed them as the new season's
+  // projected seeds.
   const activateSeason = useMutation({
     mutationFn: SeasonService.activateSeason,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['seasons'] });
+      batchInvalidateQueries(queryClient, SEASON_WIDE_QUERY_KEYS);
     },
   });
 
