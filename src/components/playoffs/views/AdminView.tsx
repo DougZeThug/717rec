@@ -104,7 +104,11 @@ const AdminView: React.FC<AdminViewProps> = ({
         <TeamDivisionTable
           divisions={data.availableDivisions}
           teams={data.teams}
-          isLoading={data.isLoading}
+          // data.isLoading covers brackets, divisions and the admin check, but
+          // not the teams query that fills this table. Using it here means an
+          // empty `teams` reads as "no teams exist" while they are still on the
+          // way. This is the one place the teams query's own flag belongs.
+          isLoading={data.teamsLoading}
         />
       </TabsContent>
     </Tabs>
