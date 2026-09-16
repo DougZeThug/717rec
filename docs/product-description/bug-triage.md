@@ -159,6 +159,7 @@ entry's *Corrected on review* note.
 | B-29 | Results are distinguished by colour alone in two places | low | schedule, teams | **fixed** | — |
 | B-30 | Small copy and labelling slips | low | several | **fixed** | — |
 | B-31 | Two dead features are visible in the interface | low | admin | **fixed** | — |
+| B-47 | The scorer who reopens a game is sometimes the only one not told | low | live-scoring | **fixed** | — |
 
 ---
 
@@ -1128,6 +1129,12 @@ finding read a superseded migration.
 
   Not fixed, and still open: there is no record of *who* reopened a game. The
   notice says a scorer did it, not which one.
+
+  *Did not hold in practice.* "The person acting sees it once" was the point of
+  raising the notice from the live connection, and it was not what happened: the
+  same mutation's refetch can overwrite the status the check reads, leaving the
+  actor told nothing. See
+  [B-47](#b-47-the-scorer-who-reopens-a-game-is-sometimes-the-only-one-not-told).
 
 ### B-18: Rejecting a membership deletes the row, so the person is never told
 
@@ -2429,6 +2436,64 @@ finding read a superseded migration.
   longer offers a team that is not the caller's, but hiding a control is not the
   same as refusing a write, and the row-level policy on `season_participation`
   was not read. That is worth checking before the first season is opened.
+
+### B-47: The scorer who reopens a game is sometimes the only one not told
+
+- **Where the user meets it:** the scorer who presses *Reopen game*. Their own
+  screen changes and says nothing about why.
+- **What happens / what was expected:** the other scorer always sees "Game N
+  reopened"; the one who pressed the button sees it sometimes. Expected, and
+  what B-17's fix set out to deliver: both screens, once each.
+- **Reproduce:** 1. Reopen a game with two devices watching. 2. Watch the
+  device that pressed the button. 3. Repeat on a slow connection, where its own
+  refresh is more likely to land before the live update.
+- **Why (from the code):** the notice is raised by `useLiveMatchRealtime`
+  rather than by the mutation, deliberately — every subscriber is told once,
+  including whoever acted, which is why the reopen raises no success message of
+  its own (a second would have destroyed the first, which is B-27). It tells a
+  reopen from a game merely starting by asking the cache whether that game
+  *was* completed. But `reopenGame` also refetches the match on settle, and
+  that refetch can land before the live change comes back — so the cache
+  already reads `in_progress`, the check fails, and the actor gets **no**
+  notice at all. Which signal wins is a matter of timing.
+- **Severity:** `low`. Nothing is lost or written wrongly, and the bystander
+  B-17 was raised to protect is always told. What is missed is the explanation
+  for a screen that moved under the person who moved it — which is the whole
+  thing B-17 asked for, and the reason the reopen has no message of its own to
+  fall back on.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** `reopenGame` now leaves a note of the game it is
+  reopening before the write, while the old status is still known, and the live
+  handler claims that note — so a screen whose refetch won the race still has
+  something to go on. The note is claimed **whichever** signal arrives first,
+  not only when the cache check fails: taking it either way is what keeps the
+  count at one, because there is then nothing left for a later change to fire.
+  A reopen that failed drops its note rather than leaving it to be picked up.
+
+  `payload.old.status` would say the previous status outright and settle this
+  without a note, but `postgres_changes` only carries the old row with
+  `REPLICA IDENTITY FULL` on `games`, which the original fix already recorded
+  as the reason for reading the cache instead. That trade was left as it is.
+
+  The notes are kept in a `WeakMap` against the query client, which is the only
+  thing `useGameFlow` and `useLiveMatchRealtime` share — they are siblings with
+  no props path between them. Per-client rather than module-wide so a second tab
+  cannot read the first one's notes; weak so a discarded client is not held
+  alive. The query cache was the obvious alternative and was not used: it would
+  have made the notice depend on `gcTime` not collecting the entry inside the
+  window.
+
+  Five tests, driving the real sequence — mutation, refetch, then the live
+  change — rather than seeding the cache by hand, which is why the existing
+  suite could not see this. Two fail against the unfixed code with "expected to
+  be called 1 times, but got 0 times". The rest hold the count at one: the
+  other ordering, a second change to the same game, a reopen that failed, and a
+  screen that never reopened anything.
+
+  *Docs corrected with it.* `verification/live-scoring.md` FIX-12 still said "a
+  successful reopen is silent" and FIX-23 that it "announces nothing at all" —
+  both left behind by B-17's own change, which rewrote only FIX-08.
 
 ---
 

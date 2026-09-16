@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from '@/hooks/useToast';
+import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { LiveMatchService } from '@/services/liveScoring/LiveMatchService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
 import { liveScoringKeys } from './liveScoringKeys';
+import { forgetReopen, noteReopen } from './reopenNotes';
 
 export interface StartGameInput {
   gameNumber: number;
@@ -70,8 +72,21 @@ export function useGameFlow(matchId: string) {
   });
 
   const reopenGame = useMutation({
+    // Note the reopen while the old status is still known, so the live
+    // connection can announce it even if onSettled's refetch gets there first
+    // and overwrites the status it would otherwise have checked. See
+    // reopenNotes.ts.
+    onMutate: (gameId: string) => {
+      const bundle = queryClient.getQueryData<LiveMatchBundle>(queryKey);
+      const game = bundle?.games.find((g) => g.id === gameId);
+      if (game?.status === 'completed') noteReopen(queryClient, matchId, gameId);
+    },
     mutationFn: (gameId: string) => LiveMatchService.reopenGame(gameId),
-    onError: onError('Could not reopen game'),
+    onError: (error: unknown, gameId: string) => {
+      // Nothing was reopened, so there is nothing to announce.
+      forgetReopen(queryClient, matchId, gameId);
+      onError('Could not reopen game')(error);
+    },
     onSettled: invalidate,
   });
 

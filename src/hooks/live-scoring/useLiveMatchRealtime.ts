@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 
 import { liveScoringKeys } from './liveScoringKeys';
+import { claimReopen } from './reopenNotes';
 
 interface RoundInsertPayload {
   game_id?: string;
@@ -67,12 +68,19 @@ export function useLiveMatchRealtime(matchId?: string) {
     // A game that was completed and is now in progress has been reopened. The
     // previous status comes from the cache rather than payload.old, which
     // postgres_changes only carries with REPLICA IDENTITY FULL.
+    //
+    // The cache answers correctly for every scorer but the one who pressed
+    // Reopen: their own refetch can overwrite the status before this arrives.
+    // A note taken before that write covers them — claimed here whichever
+    // signal won the race, so the notice is raised exactly once either way.
+    // See reopenNotes.ts.
     const onGameChange = (row: GameRowPayload) => {
       if (row.status === 'in_progress' && row.id) {
         const bundle = queryClient.getQueryData<LiveMatchBundle>(queryKey);
         const cached = bundle?.games.find((g) => g.id === row.id);
-        if (cached?.status === 'completed') {
-          const gameNumber = row.game_number ?? cached.game_number;
+        const reopenedHere = claimReopen(queryClient, matchId, row.id);
+        if (cached?.status === 'completed' || reopenedHere) {
+          const gameNumber = row.game_number ?? cached?.game_number;
           toast({
             title: `Game ${gameNumber} reopened`,
             description: 'A scorer reopened it to correct a score. It is in progress again.',

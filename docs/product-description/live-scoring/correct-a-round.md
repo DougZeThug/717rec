@@ -218,9 +218,17 @@ side effects; see [`finish-the-match.md`](finish-the-match.md).
   friction and the trace: it asks first, and both screens are told. Restricting
   it to an admin, as reopening the *match* is, was the alternative and was not
   taken. See [`bug-triage.md`](../bug-triage.md) B-17.
+- **Settled: the person who pressed the button is told too, every time.** The
+  notice is raised by the live connection, so it reaches every screen watching
+  the match at once. That left the scorer who did it depending on a race they
+  could lose: their own screen refreshes as soon as the write lands, and when
+  that refresh arrived first the notice was skipped and they were told nothing.
+  The reopen now leaves a note of what the game looked like beforehand, claimed
+  once, so the count is one whichever signal wins. See
+  [`bug-triage.md`](../bug-triage.md) B-47.
 - Still worth checking with two devices: that the notice really does reach the
-  other scorer's screen, and that the person who pressed the button sees it
-  exactly once.
+  other scorer's screen. Both orderings are covered by tests, but neither has
+  been watched on two real phones.
 - Not confirmed by hand: whether undoing a round that has already been undone by
   the other scorer produces a message, or passes silently.
 - Not confirmed by hand: how the round history looks mid-undo, given the removal
