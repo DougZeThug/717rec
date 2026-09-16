@@ -192,8 +192,10 @@ from next to last, or vanishing is never announced.
   "YOUR NEXT MATCHES"; one gives the singular.
 - **A postponed or cancelled match is meant to be filtered out and is not.** See
   [Open questions](#open-questions-and-verification).
-- **The skeleton is rarely seen.** See
-  [Open questions](#open-questions-and-verification).
+- **The skeleton used to be skipped on a first load.** Fixed — see
+  [B-53](../bug-triage.md#b-53-my-next-match-shows-no-skeleton-on-a-first-load).
+  The card now shows its skeleton while the membership is being fetched, so the
+  area goes skeleton, then card, rather than blank, then card.
 
 ## Open questions and verification
 
@@ -203,16 +205,14 @@ from next to last, or vanishing is never announced.
   always true. If the league marks a match postponed by some other means, it will
   still be offered here as the next match to play. **May be worth treating as a
   bug rather than documenting.**
-- **The card's loading skeleton is skipped on a first load.** The card asks the
-  membership for the wrong "busy" signal — the one that means "a join or leave
-  request is in flight" rather than "we are still fetching your membership" — so
-  while the membership is being fetched the card believes it has finished and
-  draws nothing. The skeleton then appears once the matches start loading. The
-  visible result is that the card is absent, then a skeleton, then the card, and
-  the page jumps twice. **May be worth treating as a bug rather than
-  documenting.**
-- Not confirmed by hand: how long the gap is in practice between the page
-  settling and the card appearing.
+- **Resolved: the card's loading skeleton was skipped on a first load.** It was
+  treated as a bug, not documented — see
+  [B-53](../bug-triage.md#b-53-my-next-match-shows-no-skeleton-on-a-first-load).
+  The card asked the membership for the wrong "busy" signal: the one that means
+  "a join or leave request is in flight" rather than "we are still fetching your
+  membership". On a first load no join or leave has happened, so the card
+  believed the membership had finished and drew nothing. It now reads the fetch
+  signal, and the skeleton covers the wait.
 - Not confirmed by hand: what the card shows for a user with two membership rows.
   The membership read expects at most one and appears to fail rather than choose,
   which would remove the card silently.
