@@ -1,16 +1,19 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
 import AuthForm from '../AuthForm';
 
-const renderForm = (type: 'login' | 'signup') =>
+type AuthFormProps = React.ComponentProps<typeof AuthForm>;
+
+const renderForm = (type: 'login' | 'signup', onSubmit: AuthFormProps['onSubmit'] = vi.fn()) =>
   render(
     <MemoryRouter>
       <AuthForm
         type={type}
-        onSubmit={vi.fn()}
+        onSubmit={onSubmit}
         isSubmitting={false}
         emailError={null}
         passwordError={null}
@@ -33,5 +36,35 @@ describe('AuthForm password recovery link', () => {
     renderForm('signup');
 
     expect(screen.queryByRole('link', { name: 'Forgot password?' })).not.toBeInTheDocument();
+  });
+});
+
+// SIGNIN-28: a malformed address has to be refused by the app's own message under
+// the Email field. The input is type="email", so without noValidate the browser
+// cancels the submit first and onSubmit never runs - the Zod check in useAuthForm
+// never gets to set emailError, and the reader sees a browser bubble instead.
+describe('AuthForm invalid email', () => {
+  it('still reaches onSubmit so the app can show its own message', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    renderForm('login', onSubmit);
+
+    await user.type(screen.getByLabelText('Email'), 'sam');
+    await user.type(screen.getByLabelText('Password'), 'sixchr');
+    await user.click(screen.getByRole('button', { name: 'Login' }));
+
+    expect(onSubmit).toHaveBeenCalledWith('sam', 'sixchr');
+  });
+
+  it('does the same on the sign-up tab', async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    renderForm('signup', onSubmit);
+
+    await user.type(screen.getByLabelText('Email'), 'sam');
+    await user.type(screen.getByLabelText('Password'), 'sixchr');
+    await user.click(screen.getByRole('button', { name: 'Create account' }));
+
+    expect(onSubmit).toHaveBeenCalledWith('sam', 'sixchr');
   });
 });
