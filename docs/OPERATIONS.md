@@ -190,6 +190,29 @@ its fourteen icons, into every visitor's download.
 
 **Caveat on `DeepSource coverage`:** the thresholds themselves are checked locally on the runner, but the last step uploads to deepsource.com. If DeepSource has an outage, this job goes red and blocks merging even though nothing is wrong with the code. If that ever blocks something urgent: Settings → Branches → edit the rule → temporarily untick just that check, merge, then re-tick it.
 
+**On `React Doctor` and the auth effect.** This job reports
+`effect-needs-cleanup` against `src/hooks/auth/index.ts` on every pull request
+that touches the file. **The report is wrong, and it has been checked.** That
+effect starts one timer and one subscription, and its cleanup cancels both. The
+proof is a test — `src/hooks/auth/__tests__/useAuth.test.ts`, "cancels the timer
+it scheduled when the effect is torn down" — which asserts on the *pending timer
+count* after unmount. That is the only assertion that separates a cancelled
+timer from one merely left to fire into a guard: both callbacks check
+`isCancelled` and do nothing either way, so "the callback did not run" would
+pass in both cases. Remove the cancel and the test fails with
+`expected 1 to be +0`.
+
+The report survived four commits during PR #1469, including three correct forms
+of the cleanup — tracking the timers, naming the id in a plain loop, and adding
+the test. Do not rewrite that cleanup again to satisfy it.
+
+**Do not switch the rule off to silence this.** The action takes no input that
+disables a rule or excludes a path, and react-doctor's own `doctor.config.ts`
+sets which rules run for the whole project — so the only available "off" is
+everywhere, and the rule catches a real class of bug. The job is advisory
+(`blocking` defaults to `none`), so it never blocks a merge; the only thing this
+costs is the time it takes to re-investigate, which is what this note is for.
+
 ### 5b. One-time setup (Doug, ~10 minutes, all in web UIs)
 
 **Lovable side:**
