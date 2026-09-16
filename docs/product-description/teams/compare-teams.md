@@ -170,8 +170,12 @@ alone, with nothing else marking it.
 - **A link naming a hidden team silently loses it.** The address is rewritten
   without it and the page asks the user to choose that side again.
 - **A link naming a team that no longer exists behaves the same way.**
-- **A team cannot be un-chosen.** The dropdowns have no empty entry, so the only
-  way back to a blank page is to edit the address by hand.
+- **A team cannot be un-chosen from the dropdowns.** They have no empty entry, so
+  the way back to a blank page is to edit the address by hand: taking a team out
+  of the address takes it off the page, and clearing the query empties both sides.
+- **A link naming the same team on both sides keeps only the left one.** The page
+  never compares a team with itself; the address is rewritten with the duplicate
+  dropped.
 - **The head-to-head block says "First Meeting" for two different reasons**: the
   teams really have never played, and the record could not be read. Both draw the
   same card.

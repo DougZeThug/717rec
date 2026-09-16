@@ -60,7 +60,6 @@ export const useCompareUrlState = (teams: Team[] | undefined): CompareUrlState =
     // selection they just made, there is nothing left to apply.
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     if (incoming1?.id !== team1?.id) setTeam1(incoming1);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync state from incoming props/derived values
     if (incoming2?.id !== team2?.id) setTeam2(incoming2);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- applying the URL to state; team1/team2 deps would fight the user's own edits
   }, [teams, searchParams]);

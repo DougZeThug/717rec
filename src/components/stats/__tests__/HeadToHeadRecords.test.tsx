@@ -113,7 +113,9 @@ describe('HeadToHeadRecords', () => {
     });
     await user.click(opponentButton);
 
-    expect(navigate).toHaveBeenCalledWith('/teams/bandits');
+    // By id, not by name: team names are not unique and toTeamSlug is lossy, so
+    // a name-built address can resolve to a different team than the one pressed.
+    expect(navigate).toHaveBeenCalledWith('/teams/opp-b');
   });
 
   it('says which column it is sorted by, and only that one', async () => {
