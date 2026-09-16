@@ -222,4 +222,8 @@ from next to last, or vanishing is never announced.
   side effect, based on the heading and icon changing to match. Nothing in the
   code says why.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
+[B-53](../bug-triage.md#b-53-my-next-match-shows-no-skeleton-on-a-first-load) (the
+card now reads the membership fetch, so its skeleton is shown on a first load).
+Those passages were written from the change and its tests, not from a fresh pass
+over the running app.

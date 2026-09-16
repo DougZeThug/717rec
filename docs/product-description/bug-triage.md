@@ -14,7 +14,8 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
-**53 entries**: 14 high, 26 medium, and 13 low. Several were **not raised as
+**53 entries**: 14 high, 26 medium, 12 low, and B-06, which carries no severity
+because it was cleared as not a defect. Several were **not raised as
 defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
 `medium`, was recorded in `home/the-home-page.md` as an open question and could
 not be reached until
@@ -24,9 +25,11 @@ out of code readings rather than screens.
 
 *The counts in this paragraph had gone stale.* They still read "42 entries: 13
 high, 23 medium, and 6 low" long after the list had grown past them, and are
-corrected here to the real figures.
+corrected here by counting the **Severity** line on each entry. Two things make a
+count by eye come out wrong: B-06 has no severity line at all, and B-41 sits
+under the `## Low` heading while being marked `medium`.
 
-**All thirteen `low` entries are now closed.** Twelve were fixed; B-26 was put to
+**All twelve `low` entries are now closed.** Eleven were fixed; B-26 was put to
 the league as a product call and left as it is, documented rather than changed.
 Three — B-27, B-30 and B-53 — carried claims that had gone stale or were recorded
 as open questions between the reading and the fix, and all three are corrected in
