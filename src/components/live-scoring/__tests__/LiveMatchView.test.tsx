@@ -90,6 +90,7 @@ vi.mock('@/hooks/live-scoring/useTeamPlayers', () => ({
   }),
 }));
 
+import { liveScoringKeys } from '@/hooks/live-scoring/liveScoringKeys';
 import { deriveLiveMatch } from '@/hooks/live-scoring/useLiveMatch';
 import type { LiveMatchBundle } from '@/services/liveScoring/LiveMatchService';
 import { expectNoAxeViolations } from '@/test/a11y';
@@ -884,5 +885,96 @@ describe('completed match', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Reopen match' }));
 
     expect(mockReopen.mutate).toHaveBeenCalled();
+  });
+});
+
+// ─── Ending a won game while a round is still unsettled ───────────────────────
+
+describe('LiveMatchView — a won game and an unsettled round', () => {
+  /**
+   * Puts a round save in the mutation cache that never settles, as a save
+   * parked offline and now resuming looks. Deliberately not done by flipping
+   * `mockSubmitRound.isPending`: that is exactly the signal the panel used to
+   * rely on, and it cannot express a save that is *not* this component's most
+   * recent one.
+   */
+  const startNeverSettlingRoundSave = () => {
+    const mutation = queryClient.getMutationCache().build(queryClient, {
+      mutationKey: liveScoringKeys.submitRound('match-1'),
+      // Carries the variables a real round save would. Nothing reads them —
+      // the gate counts saves by key and status — but a mutation that takes
+      // none has no argument to start it with.
+      mutationFn: (_input: { gameId: string; roundNumber: number }) =>
+        new Promise<void>(() => undefined),
+    });
+    // Starts it and leaves it pending: the mutationFn never settles. Nothing
+    // to await — staying unfinished is the point.
+    mutation.execute({ gameId: 'game-1', roundNumber: 3 });
+  };
+
+  afterEach(() => {
+    queryClient.getMutationCache().clear();
+  });
+
+  const wonBundle = () =>
+    makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 12, team2_score: 0, net_points: 12, winner_team: 1 }),
+        round({ round_number: 2, team1_score: 9, team2_score: 0, net_points: 9, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+
+  // The gap. submitRound.isPending reports only the latest save, and
+  // pausedRounds only counts parked ones, so a round that was parked offline
+  // and is now on its way is in neither — and the totals it could still take
+  // back were writable as a final score.
+  it('will not end the game while an earlier round save is still on its way', () => {
+    startNeverSettlingRoundSave();
+    // Not this component's latest mutation, and not parked: both of the old
+    // signals read "nothing in flight".
+    expect(mockSubmitRound.isPending).toBe(false);
+    expect(mockSubmitRound.isPaused).toBe(false);
+
+    renderView(wonBundle());
+
+    expect(screen.getByText(/waiting for the last round to be filed/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /end game 1/i })).toBeDisabled();
+    expect(mockConfirmGameComplete.mutate).not.toHaveBeenCalled();
+  });
+
+  // The dialog has no `open` prop, so it stays mounted across a change in the
+  // blocked reason. Radix closes it on this action whatever the caller does
+  // with the click, so an ungated confirm looked exactly like ending the game
+  // and wrote nothing at all.
+  it('refuses in the open dialog, visibly, when a round starts saving', async () => {
+    renderView(wonBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: /end game 1/i }));
+    const confirm = await screen.findByRole('button', { name: 'End game' });
+    expect(confirm).toBeEnabled();
+
+    // The signal drops while the dialog is open.
+    onlineManager.setOnline(false);
+
+    await waitFor(() => expect(confirm).toBeDisabled());
+    expect(screen.getAllByText(/waiting for a signal/i).length).toBeGreaterThan(0);
+
+    await userEvent.click(confirm);
+    expect(mockConfirmGameComplete.mutate).not.toHaveBeenCalled();
+  });
+
+  it('still ends the game once nothing is in flight', async () => {
+    renderView(wonBundle());
+
+    await userEvent.click(screen.getByRole('button', { name: /end game 1/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'End game' }));
+
+    expect(mockConfirmGameComplete.mutate).toHaveBeenCalledWith({
+      gameId: 'game-1',
+      winnerTeamId: 'team-1',
+      finalTotals: { team1: 21, team2: 0 },
+    });
   });
 });

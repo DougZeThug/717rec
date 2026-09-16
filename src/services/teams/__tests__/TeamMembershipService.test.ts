@@ -338,6 +338,43 @@ describe('updateMembershipApproval', () => {
     expect(patch.is_approved).toBe(false);
   });
 
+  // Each branch used to write only its own half and leave the other half
+  // behind. An approved row still stamped rejected_at is read as "no team"
+  // everywhere (useTeamMembership), hides Leave Team, and is filtered out of
+  // the admin queue — so nobody could repair it from the app.
+  it('clears the refusal stamps when a request is approved', async () => {
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    const updateFn = vi.fn((_patch: Record<string, unknown>) => ({
+      eq: () => ({ select: () => Promise.resolve({ data: [{ id: 'mem-1' }], error: null }) }),
+    }));
+    mockFrom.mockReturnValue({ update: updateFn });
+
+    await updateMembershipApproval('mem-1', true);
+
+    const patch = updateFn.mock.calls[0][0];
+    expect(patch.is_approved).toBe(true);
+    expect(patch.rejected_at).toBeNull();
+    expect(patch.rejected_by).toBeNull();
+  });
+
+  // The mirror of the above. A refused row that still names an approver fails
+  // the RLS check on the member's own re-request, which pins approved_by and
+  // approved_at to NULL.
+  it('clears the approval stamps when a request is refused', async () => {
+    mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+    const updateFn = vi.fn((_patch: Record<string, unknown>) => ({
+      eq: () => ({ select: () => Promise.resolve({ data: [{ id: 'mem-1' }], error: null }) }),
+    }));
+    mockFrom.mockReturnValue({ update: updateFn, delete: vi.fn() });
+
+    await updateMembershipApproval('mem-1', false);
+
+    const patch = updateFn.mock.calls[0][0];
+    expect(patch.is_approved).toBe(false);
+    expect(patch.approved_at).toBeNull();
+    expect(patch.approved_by).toBeNull();
+  });
+
   it('throws when the approval update affects no rows (RLS blocked)', async () => {
     mockAuth.getUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
     mockFrom.mockReturnValue({

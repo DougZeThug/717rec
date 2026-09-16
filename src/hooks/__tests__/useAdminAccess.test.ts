@@ -20,9 +20,18 @@ vi.mock('@/utils/logger', () => ({
 
 import { useAuth } from '@/contexts/auth-context';
 
+const USER_ID = 'user-1';
+
+/**
+ * A profile row. The id is what ties it to a user: admin access is only granted
+ * from a profile belonging to whoever is signed in, so the id has to be part of
+ * every fixture rather than an afterthought.
+ */
+const profileFor = (isAdmin: boolean, id: string = USER_ID) => ({ id, is_admin: isAdmin });
+
 const makeAuth = (overrides: Record<string, unknown> = {}) => ({
-  user: { id: 'user-1', email: 'user@example.com' },
-  profile: { is_admin: false },
+  user: { id: USER_ID, email: 'user@example.com' },
+  profile: profileFor(false),
   authInitialized: true,
   isProfileLoading: false,
   profileLoadFailed: false,
@@ -36,18 +45,14 @@ describe('useAdminAccess', () => {
   });
 
   it('grants access when profile.is_admin=true and auth is initialized', () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ profile: { is_admin: true } })
-    );
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth({ profile: profileFor(true) }));
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isAdminAccessGranted).toBe(true);
     expect(result.current.isLoading).toBe(false);
   });
 
   it('denies access when profile.is_admin=false', () => {
-    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ profile: { is_admin: false } })
-    );
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(makeAuth({ profile: profileFor(false) }));
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isAdminAccessGranted).toBe(false);
   });
@@ -67,7 +72,7 @@ describe('useAdminAccess', () => {
     // One can succeed and the other fail, leaving the flag set next to a good
     // profile — that must not hide the dashboard behind the retry card.
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ profile: { is_admin: true }, profileLoadFailed: true })
+      makeAuth({ profile: profileFor(true), profileLoadFailed: true })
     );
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.accessCheckFailed).toBe(false);
@@ -76,7 +81,7 @@ describe('useAdminAccess', () => {
 
   it('does not report accessCheckFailed when the profile simply says not admin', () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ profile: { is_admin: false }, profileLoadFailed: false })
+      makeAuth({ profile: profileFor(false), profileLoadFailed: false })
     );
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.accessCheckFailed).toBe(false);
@@ -88,6 +93,31 @@ describe('useAdminAccess', () => {
     );
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.accessCheckFailed).toBe(false);
+  });
+
+  // The defect this file's id fixtures exist for. The profile used to be
+  // cleared only on sign-out, so signing in as somebody else left the previous
+  // person's profile in memory — and an admin one there granted admin to
+  // whoever came next.
+  it('denies access when the held profile belongs to a different user', () => {
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeAuth({ profile: profileFor(true, 'someone-else') })
+    );
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.isAdminAccessGranted).toBe(false);
+  });
+
+  // The stable end state: this user's profile never loaded, and the one still
+  // in memory is the previous user's. We cannot answer the admin question, so
+  // it has to read as a failed check and show the retry card — not fall through
+  // to "granted" on the strength of somebody else's row.
+  it("reports accessCheckFailed when only another user's profile is held", () => {
+    (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
+      makeAuth({ profile: profileFor(true, 'someone-else'), profileLoadFailed: true })
+    );
+    const { result } = renderHook(() => useAdminAccess());
+    expect(result.current.accessCheckFailed).toBe(true);
+    expect(result.current.isAdminAccessGranted).toBe(false);
   });
 
   it('exposes refreshProfile as the retry action', () => {
@@ -105,7 +135,7 @@ describe('useAdminAccess', () => {
 
   it('denies access when user is null', () => {
     (useAuth as ReturnType<typeof vi.fn>).mockReturnValue(
-      makeAuth({ user: null, profile: { is_admin: true } })
+      makeAuth({ user: null, profile: profileFor(true) })
     );
     const { result } = renderHook(() => useAdminAccess());
     expect(result.current.isAdminAccessGranted).toBe(false);

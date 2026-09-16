@@ -82,6 +82,12 @@ confirmation states the final score and what comes next, so a scorer who has los
 track knows whether this is the last game or not — though it says "the next game
 (or the match result)" rather than deciding between them.
 
+The confirmation stays open if the signal drops, or a round starts being filed,
+while it is up. Its "End game" button greys out and the reason appears in the
+dialog, the same line as on the banner. It used to stay pressable and quietly do
+nothing — the dialog closed and no game was ended. See
+[`bug-triage.md`](../bug-triage.md) B-48.
+
 ### Submit
 
 Pressing "End game" writes the game as completed, with its winner and its final
@@ -169,6 +175,12 @@ limitation: the totals sent are the totals on screen, and those fold in any
 round still held for the same missing signal. Held for later and sent on
 reconnect, they could file a finished game — and a match winner — that the
 rounds actually recorded do not agree with.
+
+**Every unfiled round counts, not just the last one.** More than one save can be
+in flight at a time — a round parked offline resumes while a later one has
+already been filed — and the button waits for all of them. It used to read only
+the most recent save, which left a gap while an earlier one was still resuming.
+See [`bug-triage.md`](../bug-triage.md) B-48.
 
 **Toasts and notifications.** Failure only. A successful end says nothing; the
 screen changing is the confirmation.

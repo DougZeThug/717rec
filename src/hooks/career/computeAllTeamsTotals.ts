@@ -16,8 +16,12 @@ import { BulkTeamCareerData, fetchAllTeamsCareerData } from './useCareerData';
 
 /**
  * Computes TeamTotals for a single team from pre-fetched bulk data.
- * All calculation functions are pure (no DB access).
- * The only async call is calculateCareerPowerScore, which receives pre-fetched data.
+ *
+ * Every calculation here is pure except one: calculateCareerPowerScore. The
+ * pre-fetched data saves it two queries, but it still reads the live division
+ * weights, so it can throw — and it throws for every team at once, because they
+ * all await the same memoised fetch. computeAllTeamsTotals below is where that
+ * matters.
  */
 export async function computeTotalsFromBulkData(
   teamId: string,
@@ -180,12 +184,17 @@ export const computeAllTeamsTotals = async (teams: Team[]): Promise<Map<string, 
     });
   }
 
-  // Compute totals for each team (all pure computation, no DB access)
+  // Compute totals for each team. Mostly arithmetic on the bulk data above,
+  // but not purely: the career power score reads the live division weights,
+  // which is a database call and can throw.
   const results = new Map<string, TeamTotals>();
+  let attempted = 0;
+  let lastError: unknown = null;
   const promises = teamIds.map(async (teamId) => {
     const data = bulkData.get(teamId);
     if (!data) return;
 
+    attempted++;
     try {
       const totals = await computeTotalsFromBulkData(
         teamId,
@@ -195,9 +204,21 @@ export const computeAllTeamsTotals = async (teams: Team[]): Promise<Map<string, 
       results.set(teamId, totals);
     } catch (error) {
       errorLog(`Error computing career totals for team ${teamId}:`, error);
+      lastError = error;
     }
   });
 
   await Promise.all(promises);
+
+  // One team dropping out is ordinary — it has data the others do not. Every
+  // team dropping out is not: that is the division-weights read failing, and
+  // the shared promise behind it rejects for all of them at once. Swallowing
+  // it handed useCareerRankings an empty Map, which it reported as a league
+  // with no teams: no error, no Try Again, and the query recorded as a success.
+  // A failed fetch is not an empty one — the same rule as B-36, one layer down.
+  if (attempted > 0 && results.size === 0) {
+    throw lastError;
+  }
+
   return results;
 };

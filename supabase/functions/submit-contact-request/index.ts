@@ -9,6 +9,7 @@ import {
   hashIp,
 } from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
+import { countUrls, MAX_URLS_PER_MESSAGE } from '../_shared/spam.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
 
@@ -71,11 +72,6 @@ const RATE_LIMIT_WINDOW_SECONDS = 10 * 60;
 const RATE_LIMIT_MAX = 5;
 const ENDPOINT_KEY = 'submit-contact-request';
 
-function countUrls(text: string): number {
-  const matches = text.match(/https?:\/\/|www\./gi);
-  return matches ? matches.length : 0;
-}
-
 function jsonResponse(body: unknown, status: number, cors: Record<string, string>): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -133,7 +129,7 @@ async function handleRequest(req: Request): Promise<Response> {
   if (payload.website && payload.website.trim().length > 0) {
     return jsonResponse({ success: true }, 200, corsHeaders);
   }
-  if (countUrls(payload.message) > 5) {
+  if (countUrls(payload.message) > MAX_URLS_PER_MESSAGE) {
     return jsonResponse({ error: 'Message contains too many links' }, 400, corsHeaders);
   }
 

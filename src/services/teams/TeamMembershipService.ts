@@ -215,6 +215,13 @@ export const updateMembershipApproval = async (
         is_approved: false,
         rejected_at: new Date().toISOString(),
         rejected_by: (await supabase.auth.getUser()).data.user?.id ?? null,
+        // Clear the other state's stamps. A refused row that still names an
+        // approver is not just untidy history: the member's own re-request is
+        // written under an RLS check that pins approved_by and approved_at to
+        // NULL, so leaving them set would refuse it. joinTeamMembership clears
+        // both sides for the same reason.
+        approved_at: null,
+        approved_by: null,
       })
       .eq('id', membershipId)
       .select('id');
@@ -228,8 +235,21 @@ export const updateMembershipApproval = async (
     return;
   }
 
-  const updateData: { is_approved: boolean; approved_at?: string; approved_by?: string } = {
+  const updateData: {
+    is_approved: boolean;
+    approved_at?: string;
+    approved_by?: string;
+    rejected_at: null;
+    rejected_by: null;
+  } = {
     is_approved: approved,
+    // Clear the other state's stamps. rejected_at is what the whole app reads
+    // as "this person has no team", so an approved row that is still stamped
+    // refused takes every team ability away, hides Leave Team, and drops out of
+    // the admin queue that filters on rejected_at — leaving nobody able to
+    // repair it from the app. Approving is the only way back out of refused.
+    rejected_at: null,
+    rejected_by: null,
   };
 
   updateData.approved_at = new Date().toISOString();

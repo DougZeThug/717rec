@@ -129,6 +129,8 @@ entry's *Corrected on review* note.
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
 | B-40 | Deleting or archiving a live-scored match fails on a foreign key | high | admin | **fixed** | — |
+| B-44 | Approving a refused request leaves it refused, locking the member out | high | admin, teams | **fixed** | — |
+| B-45 | A profile left behind by the previous user can grant admin | high | foundations | **fixed** | — |
 | B-11 | Four destructive admin actions have no confirmation | medium | admin | **fixed** | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
@@ -149,12 +151,16 @@ entry's *Corrected on review* note.
 | B-36 | Two grades on the team report card are not real measurements | medium | stats | **fixed** | — |
 | B-38 | The head-to-head dialog shows the wrong W/L badge on half of every team's matches | medium | history, stats | **fixed** | — |
 | B-41 | The "Confirm your team" card has no sign-in check and lists hidden teams | medium | home | **fixed** | — |
+| B-43 | Three links in a message are counted as six and refused as spam | medium | help | **fixed** | — |
+| B-46 | A failed division-weights read empties the career rankings silently | medium | stats, teams | **fixed** | — |
+| B-48 | A won game can be ended on a round that is still on its way | medium | live-scoring | **fixed** | — |
 | B-26 | Session replay records one visit in ten with no notice | low | cross-cutting | **documented** | — |
 | B-27 | Several actions raise two success toasts | low | admin, teams | **fixed** | — |
 | B-28 | Message timestamps show a clock time with no date | low | message-board | **fixed** | — |
 | B-29 | Results are distinguished by colour alone in two places | low | schedule, teams | **fixed** | — |
 | B-30 | Small copy and labelling slips | low | several | **fixed** | — |
 | B-31 | Two dead features are visible in the interface | low | admin | **fixed** | — |
+| B-47 | The scorer who reopens a game is sometimes the only one not told | low | live-scoring | **fixed** | — |
 
 ---
 
@@ -529,6 +535,66 @@ finding read a superseded migration.
   rather than absent.
 - **Raised by:** [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
+- **See also:** [B-45](#b-45-a-profile-left-behind-by-the-previous-user-can-grant-admin),
+  the opposite error on the same decision — this one made a failed read read as
+  "not an admin"; that one let a leftover profile read as "yes, an admin".
+
+### B-45: A profile left behind by the previous user can grant admin
+
+- **Where the user meets it:** an ordinary member who signs in on a device or
+  browser profile where an admin was signed in before, and whose own profile
+  read then fails.
+- **What happens / what was expected:** they are shown the admin interface.
+  Expected: admin is decided from **their** profile, and a profile that cannot
+  be read shows the "could not check" retry card.
+- **Reproduce:** 1. Sign in as an admin. 2. Without signing out, sign in as a
+  non-admin in the same browser. 3. Make the second profile read fail. 4. Open
+  `/admin`.
+- **Why (from the code):** `useAdminAccess` computed
+  `authInitialized && Boolean(user) && profile?.is_admin === true` — it never
+  checked that the profile it was reading **belonged to** `user`. The profile
+  was dropped only when a session ended (`src/hooks/auth/index.ts`), so signing
+  in as somebody else left the previous profile in place, and neither the
+  listener's nor the bootstrap's failure branch cleared it.
+- **Why it was more than a flicker:** `accessCheckFailed` required `!profile`.
+  A leftover profile is not null, so the retry card was skipped and
+  `ProtectedAdminRoute` fell straight through to its "granted" branch. Once the
+  new user's read had failed, that was a **stable** state, not a brief window:
+  `refreshProfile` — the retry action — also kept the old profile on failure.
+- **How far it goes:** the server is not fooled. Every admin policy resolves
+  admin-ness from the signed-in token through `current_user_is_admin()`, so the
+  writes and admin reads behind that interface are still refused. What is
+  exposed is the admin interface itself and admin-only client content. It is a
+  real authorisation-on-stale-data defect and the only one on the client —
+  `src/lib/mcp/tools/_supabase.ts` re-reads `is_admin` from the database keyed
+  to the caller and is correct.
+- **Severity:** `high`. An authorisation decision made from the wrong person's
+  record, reachable without any deliberate act by the user.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed**, in two halves. `useAdminAccess` now requires
+  `profile.id === user.id` before granting, and counts a profile belonging to
+  anyone else as a failed check rather than an answer, so the retry card is
+  shown. The profile id was already fetched (`ProfileService` selects it), so
+  no query changed. Separately, the auth hook stops *keeping* a foreign
+  profile: one `keepProfileOnlyFor` updater is applied when a different user
+  signs in, in both failure branches, and in `refreshProfile`.
+
+  *Checked for the obvious regression.* An admin must not be bounced to the home
+  page on an ordinary token refresh. `ProtectedAdminRoute` shows its spinner
+  whenever `isLoading`, which is `!authInitialized || isProfileLoading`, and the
+  user-change path sets `isProfileLoading` before it fetches — so the gap where
+  the profile is cleared is covered by the spinner, never by the redirect. For
+  the same user nothing is cleared at all. The change only ever tightens.
+
+  Six tests. Four fail against the unfixed code: two on the hook (a foreign
+  profile grants nothing; a foreign profile plus a failed read reports the
+  failure) and two on the auth hook (the held profile is dropped when a
+  different user signs in, and is not kept when the new user's read fails). The
+  other two are non-regression guards — a failed read for the *same* user keeps
+  that user's profile, which is what B-08's fix depends on. Every profile
+  fixture in `useAdminAccess.test.ts` now carries an id, because a fixture
+  without one could not express the bug.
 
 ### B-09: There is no way to resolve a tie
 
@@ -690,6 +756,46 @@ finding read a superseded migration.
   third-place badge is awarded there, by decision rather than omission.
 - **Raised by:** [`stats/badges.md`](stats/badges.md#open-questions-and-verification),
   [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification).
+
+### B-44: Approving a refused request leaves it refused, locking the member out
+
+- **Where the user meets it:** a member whose join request was refused and then
+  approved. Their account keeps behaving as though they have no team, and
+  nothing in the app can put it right.
+- **What happens / what was expected:** the row ends up approved **and** still
+  stamped refused. Expected: a membership is pending, approved, or refused —
+  never two at once.
+- **Reproduce:** 1. Refuse a join request in *Member Approvals*. 2. Approve that
+  same row. 3. Sign in as that member.
+- **Why (from the code):** `updateMembershipApproval`
+  (`src/services/teams/TeamMembershipService.ts`) had two branches and each wrote
+  only its own half. Approve set `is_approved/approved_at/approved_by` and left
+  `rejected_at` where it was; refuse set `is_approved/rejected_at/rejected_by`
+  and left `approved_at` where it was. `joinTeamMembership` in the same file has
+  always cleared both sides, so the two disagreed.
+- **Why the member cannot recover:** `rejected_at` is the single thing the rest
+  of the app reads as "this person has no team"
+  (`src/hooks/useTeamMembership.ts:123`), so a non-null value removes every team
+  ability and shows the red *Request declined* card. *Leave Team* is hidden in
+  that state (`TeamMembershipSection.tsx:37`), so they cannot start over. Both
+  admin queue reads filter on `.is('rejected_at', null)`
+  (`TeamMembershipService.ts:128,148`), so no admin sees the row to fix it. And
+  the RLS policy on `team_memberships` only lets a member update their own row
+  while `is_approved = false`, so they cannot clear it themselves. A direct
+  database edit is the only way back.
+- **Severity:** `high`. A member is permanently locked out of their team by an
+  ordinary admin action, with no route back through the product.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** Each branch now clears the other's two stamps, which is
+  what `joinTeamMembership` already did. The refuse side matters for a second
+  reason: the member's own re-request is written under an RLS check that pins
+  `approved_by` and `approved_at` to NULL, so a refused row still naming an
+  approver would have its re-request refused.
+
+  Two tests, one per branch, asserting the cleared fields. Both were checked
+  against the unfixed code first and failed there with `expected undefined to be
+  null` — the fields were simply absent from the patch.
 
 ---
 
@@ -1024,6 +1130,12 @@ finding read a superseded migration.
 
   Not fixed, and still open: there is no record of *who* reopened a game. The
   notice says a scorer did it, not which one.
+
+  *Did not hold in practice.* "The person acting sees it once" was the point of
+  raising the notice from the live connection, and it was not what happened: the
+  same mutation's refetch can overwrite the status the check reads, leaving the
+  actor told nothing. See
+  [B-47](#b-47-the-scorer-who-reopens-a-game-is-sometimes-the-only-one-not-told).
 
 ### B-18: Rejecting a membership deletes the row, so the person is never told
 
@@ -1943,6 +2055,162 @@ finding read a superseded migration.
   board's own stamp reads `is_approved`. The generic toast on every other failed
   post is B-12.
 
+### B-46: A failed division-weights read empties the career rankings silently
+
+- **Where the user meets it:** anyone on the team report card, the GPA
+  leaderboard, the league percentile table, the match prediction, or the career
+  rankings table, while the `divisions` read is failing.
+- **What happens / what was expected:** every screen reads as though the league
+  has no teams at all — no grades, no rankings, no error and no **Try Again**.
+  Expected: a read that failed is reported as a failure.
+- **Reproduce:** 1. Make the `divisions` table read fail. 2. Load
+  `/teams/:id` (report card) or the career rankings on a cold cache.
+- **Why (from the code):** `computeAllTeamsTotals` wrapped each team's
+  computation in a `try/catch` that logged the error and dropped that team from
+  the returned Map. `useCareerRankings` treats a missing entry as "no data for
+  this team" and skips it, so the query function still returned — successfully —
+  a shorter list. With the division-weights read failing, the list is not
+  shorter but **empty**: `calculateCareerPowerScore` awaits
+  `fetchDivisionWeightsByName()` on every team even in batch mode, and that
+  fetch is memoised behind one shared promise, so a single failure rejects for
+  every team at once. React Query recorded the request as a success with
+  `error: null`.
+- **Severity:** `medium`. Nothing is corrupted and it clears when the read
+  recovers, but the whole league's statistics read as absent rather than
+  unavailable, and two of the five consumers do not read `error` at all.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** `computeAllTeamsTotals` now counts what it attempted:
+  if it attempted at least one team and computed none, it re-throws instead of
+  returning an empty Map. A single team failing among others still drops just
+  that team — it has data the rest do not, and one bad row is not an outage.
+
+  This is the same rule as B-36's follow-up, one layer down: *a failed fetch is
+  not an empty one.* B-36 closed it for the prerequisite team and match lists;
+  the compute layer underneath was never covered and re-created the same shape.
+  The report card and the GPA leaderboard already have a failure message with a
+  **Try Again** button wired to this error, so both start working with no change
+  of their own.
+
+  Five tests, one of which fails against the unfixed code with "promise resolved
+  Map{} instead of rejecting". The other four hold the line the other way: a
+  single failing team, no teams asked for, and a bulk fetch that returned
+  nothing must all still resolve.
+
+  *Left alone, deliberately:* `useCareerRankingsWithHidden` is a near-copy of
+  `useCareerRankings` carrying the same skip. The throw above fixes its compute
+  failure too, but it still lacks the prerequisite-error fold that
+  `useCareerRankings` gained in B-36, and the duplication itself is a separate
+  pre-existing question.
+
+### B-48: A won game can be ended on a round that is still on its way
+
+- **Where the user meets it:** a scorer at a venue with a patchy signal, ending
+  a game the last round just won.
+- **What happens / what was expected:** the totals on the banner fold in every
+  optimistic round, including ones not yet filed. Ending the game writes them as
+  the final score and the winner. If the round behind them is then refused, the
+  `games` row disagrees with the rounds that actually exist — and finalising the
+  match counts wins from `games` alone, so a wrong result can reach the
+  standings and the badges.
+- **Reproduce:** 1. File the winning round with no signal, so it parks. 2. Let
+  the signal come back. 3. Press *End Game* while the parked round is resuming.
+- **Severity:** `medium`. Narrow to reach, but what it writes is not
+  recoverable from the app.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **the reported defect was already fixed; two real holes beside it
+  were not, and now are.**
+
+  *The report as filed no longer applies.* It quotes a `LiveMatchView.tsx`
+  render block whose only guard was `confirmGameComplete.isPending`. That code
+  moved into `ActiveGamePanel.tsx`, which already computes a blocked reason from
+  the round-save state, disables the trigger on it, refuses again in the confirm
+  handler, and has a test for it. Nothing there needed changing.
+
+  **What was still wrong, 1: the gate missed a save that was not the latest
+  one.** It read `submitRound.isPending`, which reports only the most recent
+  save, alongside a count of rounds **parked** for a missing signal. A round
+  parked offline and now *sending* is in neither, so the button was enabled in
+  that gap — which is precisely the sequence the existing test's own comment
+  describes ("reconnecting flips the signal back on … while the round it held is
+  still on its way"). That test passed only because its mock made the resuming
+  round the latest one. `useUnsettledRoundCount` now counts every unsettled save
+  in the mutation cache, which is what the round log already did.
+
+  **What was still wrong, 2: confirming in an open dialog could do nothing,
+  silently.** The dialog has no `open` prop, so it stays mounted and clickable
+  across a change in the blocked reason — the signal drops, or a save starts,
+  after it was opened. Radix closes the dialog on its action whatever the
+  handler does, so the caller's re-check turned the press into a silent no-op:
+  the dialog vanished, nothing was written, and nothing was said. The scorer had
+  every reason to believe the game had ended. The action is now disabled on the
+  same reason, with that reason shown inside the dialog.
+
+  Three tests, two of which fail against the unfixed code. The first seeds the
+  mutation cache directly rather than flipping the mocked `isPending` — that
+  flag is the very signal that was insufficient, and it cannot express a save
+  that is not the component's most recent one. The third is the guard the other
+  way: with nothing in flight the game still ends, with the right totals.
+
+### B-43: Three links in a message are counted as six and refused as spam
+
+- **Where the user meets it:** anyone writing to the league through `/contact`
+  or the support form whose message quotes three or more ordinary web links.
+- **What happens / what was expected:** the message is refused with the generic
+  "please try again" toast and never reaches the league. Expected, per
+  [`help/contact-the-league.md`](help/contact-the-league.md): only **more than
+  five links** is refused as spam.
+- **Reproduce:** 1. Open `/contact`. 2. Write a message quoting three links that
+  each begin `https://www.` — a video, an event page, a map. 3. Send.
+- **Why (from the code):** `countUrls` matched
+  `/https?:\/\/|www\./gi` — an alternation between the two ways a link can
+  start. Inside a single `https://www.example.com` both alternatives match, once
+  for the scheme and again for the host prefix, so each such link scored **two**.
+  Three scored six and tripped `> 5`. The check runs before the ticket is stored
+  and before any email is sent, so nothing is kept and nothing is delivered. The
+  sender cannot tell a spam refusal from a transient one — the app collapses
+  every failure into one sentence advising a retry — and retrying identical text
+  can never succeed.
+- **Severity:** `medium`. No data is corrupted, but a legitimate report is lost
+  with no way for either side to find out.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** The pattern now counts where each link *starts*
+  (`/https?:\/\/(?:www\.)?|www\./gi`), with a `www.` directly after a scheme
+  belonging to that scheme rather than opening a link of its own. A link with no
+  scheme still counts: a suggested fix of `/https?:\/\/(?:www\.)?\S+/gi` was
+  rejected because it stops counting bare `www.example.com` links **at all**,
+  which would let six of them past the limit — the opposite mistake. Counts
+  checked at every boundary: three scheme-plus-`www.` links now score 3 (was 6),
+  six still score 6 and are still refused, and six bare `www.` links still
+  score 6.
+
+  *Corrected in review.* The first version of this fix consumed the rest of each
+  link with `\S+`, and that was worse than the bug it fixed. A greedy tail runs
+  straight through the punctuation between two links, so
+  `https://a.test,https://b.test` read as **one** link and a sender could have
+  put any number of them past the limit simply by leaving out the spaces —
+  where the original, over-counting pattern would at least have refused them.
+  Raised by the Codex reviewer on the pull request. Counting only the opening of
+  each link cannot run them together, and six links joined by commas now score 6
+  in all three forms. Two tests cover it, and both fail against the first
+  version.
+
+  *The same bug was in two functions.* `send-support-email` and
+  `submit-contact-request` each carried their own byte-identical copy. The
+  duplication is what let one bug be two, so `countUrls` and the limit now live
+  in `supabase/functions/_shared/spam.ts` and both functions import them. This
+  goes further than B-15, where the same copy-per-function drift was found in
+  the CORS lists and the league chose the smaller change; here the shared file
+  is the fix rather than an extra, because the defect was in the duplicated
+  logic itself.
+
+  Nothing tested `countUrls` before — `grep` found the two definitions, the two
+  call sites and no test. There are now five unit tests on the shared helper and
+  two end-to-end cases on the support function, one for three links passing and
+  one for six still being refused.
+
 ---
 
 ## Low
@@ -2231,6 +2499,64 @@ finding read a superseded migration.
   longer offers a team that is not the caller's, but hiding a control is not the
   same as refusing a write, and the row-level policy on `season_participation`
   was not read. That is worth checking before the first season is opened.
+
+### B-47: The scorer who reopens a game is sometimes the only one not told
+
+- **Where the user meets it:** the scorer who presses *Reopen game*. Their own
+  screen changes and says nothing about why.
+- **What happens / what was expected:** the other scorer always sees "Game N
+  reopened"; the one who pressed the button sees it sometimes. Expected, and
+  what B-17's fix set out to deliver: both screens, once each.
+- **Reproduce:** 1. Reopen a game with two devices watching. 2. Watch the
+  device that pressed the button. 3. Repeat on a slow connection, where its own
+  refresh is more likely to land before the live update.
+- **Why (from the code):** the notice is raised by `useLiveMatchRealtime`
+  rather than by the mutation, deliberately — every subscriber is told once,
+  including whoever acted, which is why the reopen raises no success message of
+  its own (a second would have destroyed the first, which is B-27). It tells a
+  reopen from a game merely starting by asking the cache whether that game
+  *was* completed. But `reopenGame` also refetches the match on settle, and
+  that refetch can land before the live change comes back — so the cache
+  already reads `in_progress`, the check fails, and the actor gets **no**
+  notice at all. Which signal wins is a matter of timing.
+- **Severity:** `low`. Nothing is lost or written wrongly, and the bystander
+  B-17 was raised to protect is always told. What is missed is the explanation
+  for a screen that moved under the person who moved it — which is the whole
+  thing B-17 asked for, and the reason the reopen has no message of its own to
+  fall back on.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** `reopenGame` now leaves a note of the game it is
+  reopening before the write, while the old status is still known, and the live
+  handler claims that note — so a screen whose refetch won the race still has
+  something to go on. The note is claimed **whichever** signal arrives first,
+  not only when the cache check fails: taking it either way is what keeps the
+  count at one, because there is then nothing left for a later change to fire.
+  A reopen that failed drops its note rather than leaving it to be picked up.
+
+  `payload.old.status` would say the previous status outright and settle this
+  without a note, but `postgres_changes` only carries the old row with
+  `REPLICA IDENTITY FULL` on `games`, which the original fix already recorded
+  as the reason for reading the cache instead. That trade was left as it is.
+
+  The notes are kept in a `WeakMap` against the query client, which is the only
+  thing `useGameFlow` and `useLiveMatchRealtime` share — they are siblings with
+  no props path between them. Per-client rather than module-wide so a second tab
+  cannot read the first one's notes; weak so a discarded client is not held
+  alive. The query cache was the obvious alternative and was not used: it would
+  have made the notice depend on `gcTime` not collecting the entry inside the
+  window.
+
+  Five tests, driving the real sequence — mutation, refetch, then the live
+  change — rather than seeding the cache by hand, which is why the existing
+  suite could not see this. Two fail against the unfixed code with "expected to
+  be called 1 times, but got 0 times". The rest hold the count at one: the
+  other ordering, a second change to the same game, a reopen that failed, and a
+  screen that never reopened anything.
+
+  *Docs corrected with it.* `verification/live-scoring.md` FIX-12 still said "a
+  successful reopen is silent" and FIX-23 that it "announces nothing at all" —
+  both left behind by B-17's own change, which rewrote only FIX-08.
 
 ---
 
