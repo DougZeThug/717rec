@@ -167,11 +167,14 @@ export function transformDatabaseMatch(
 ): Match {
   const { normalizeDate = true, context } = options;
 
-  // Handle date - use normalizeDateWithTime if enabled, otherwise fallback
+  // Handle date - use normalizeDateWithTime if enabled, otherwise pass it through.
+  // A missing date stays missing: matches.date is nullable, and an unscheduled
+  // match is not a match played when its row was typed in. created_at is still
+  // reported below under its own name.
   const date =
     normalizeDate && match.date
       ? normalizeDateWithTime(match.date, context || `transformDatabaseMatch(${match.id})`)
-      : match.date || match.created_at || undefined;
+      : match.date || undefined;
 
   return {
     id: match.id,
