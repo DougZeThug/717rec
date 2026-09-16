@@ -24,6 +24,14 @@ describe('categorizeDivision', () => {
     expect(categorizeDivision('Cuspers')).toBe('intermediate');
   });
 
+  // A season with two Cuspers brackets is archived as "Cuspers 1"/"Cuspers 2",
+  // the same way Intermediate is already numbered.
+  it('categorizes Cuspers divisions that carry a bracket number', () => {
+    expect(categorizeDivision('Cuspers 1')).toBe('intermediate');
+    expect(categorizeDivision('Cuspers 2')).toBe('intermediate');
+    expect(categorizeDivision('Intermediate 1')).toBe('intermediate');
+  });
+
   it('categorizes recreational divisions', () => {
     expect(categorizeDivision('Recreational')).toBe('recreational');
     expect(categorizeDivision('recreational low')).toBe('recreational');

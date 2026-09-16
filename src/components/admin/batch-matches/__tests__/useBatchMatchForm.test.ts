@@ -195,6 +195,28 @@ describe('useBatchMatchForm', () => {
     expect(mockBatchCreateMatches).not.toHaveBeenCalled();
   });
 
+  // Every row has its own delete button, including the last one, so the list can
+  // be emptied. The form then says "No match pairs added yet" while the Create
+  // Matches button stays live.
+  it('handleSubmit returns false when every match pair has been removed', async () => {
+    const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
+
+    act(() => {
+      result.current.removeMatchPair(result.current.matchPairs[0].id);
+    });
+    expect(result.current.matchPairs).toHaveLength(0);
+
+    let submitResult!: boolean;
+    await act(async () => {
+      submitResult = await result.current.handleSubmit();
+    });
+
+    expect(submitResult).toBe(false);
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+    expect(mockFetchActiveSeason).not.toHaveBeenCalled();
+    expect(mockBatchCreateMatches).not.toHaveBeenCalled();
+  });
+
   it('handleSubmit returns false and shows destructive toast when pair has missing fields', async () => {
     const { result } = renderHook(() => useBatchMatchForm([]), { wrapper: createWrapper() });
     // Initial pair has null team1Id / team2Id / timeslot

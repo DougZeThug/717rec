@@ -71,6 +71,34 @@ describe('buildRequestPayload', () => {
   it('builds nothing from a form that cannot be sent', () => {
     expect(buildRequestPayload(values({ requestedTimeslot: '' }), '3 Amigos')).toBeNull();
   });
+
+  // The type picker stays on screen beside the form, so a reader can fill in a
+  // time change and then choose a bye instead. The timeslot fields disappear but
+  // keep what was typed, and a bye has no timeslot to report.
+  it('leaves the timeslots off a bye, even after a time change was filled in', () => {
+    const payload = buildRequestPayload(values({ type: 'BYE_REQUEST' }), '3 Amigos');
+
+    expect(payload?.request_type).toBe('BYE_REQUEST');
+    expect(payload?.current_timeslot).toBeUndefined();
+    expect(payload?.requested_timeslot).toBeUndefined();
+  });
+
+  it('leaves them off a cancellation too', () => {
+    const payload = buildRequestPayload(
+      values({ type: 'EMERGENCY_CANCEL', reason: 'Snowed in' }),
+      '3 Amigos'
+    );
+
+    expect(payload?.current_timeslot).toBeUndefined();
+    expect(payload?.requested_timeslot).toBeUndefined();
+  });
+
+  it('still reports both timeslots on a time change', () => {
+    const payload = buildRequestPayload(values(), '3 Amigos');
+
+    expect(payload?.current_timeslot).toBe('6:00 PM');
+    expect(payload?.requested_timeslot).toBe('7:00 PM');
+  });
 });
 
 describe('field labels', () => {

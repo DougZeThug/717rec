@@ -49,6 +49,12 @@ describe('team season stat calculations', () => {
     expect(categorizeDivision(null)).toBeNull();
   });
 
+  // Archived seasons with two Cuspers brackets store "Cuspers 1"/"Cuspers 2".
+  it('categorizes Cuspers divisions that carry a bracket number', () => {
+    expect(categorizeDivision('Cuspers 1')).toBe('intermediate');
+    expect(categorizeDivision('Cuspers 2')).toBe('intermediate');
+  });
+
   it('calculates power score trend from recent seasons versus older seasons', () => {
     expect(
       calculatePowerScoreTrend([

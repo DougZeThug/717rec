@@ -25,7 +25,7 @@ export const categorizeDivision = (divisionName: string | null): DivisionTier | 
   if (!divisionName) return null;
   const name = divisionName.toLowerCase();
   if (name.includes('competitive') || name.includes('hidden')) return 'competitive';
-  if (name.includes('intermediate') || name === 'cuspers') return 'intermediate';
+  if (name.includes('intermediate') || name.includes('cuspers')) return 'intermediate';
   if (name.includes('recreational')) return 'recreational';
   return null;
 };

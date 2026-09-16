@@ -36,7 +36,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
   const loadingText = type === 'login' ? 'Logging in...' : 'Creating account...';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+    <form onSubmit={handleSubmit} className="space-y-4 mt-4" noValidate>
       {authError && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="size-4" />

@@ -59,7 +59,9 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
       ? {
           team1Id: match.team1Id,
           team2Id: match.team2Id,
-          date: new Date(match.date ?? ''),
+          // An unscheduled match has no date to edit; new Date('') is an
+          // Invalid Date, so fall back the way create mode does.
+          date: match.date ? new Date(match.date) : new Date(),
           timeSlot:
             match.timeSlot || (match.date ? getTimeSlotFromDate(new Date(match.date)) : null),
           isCompleted: isMatchCompleted(match),

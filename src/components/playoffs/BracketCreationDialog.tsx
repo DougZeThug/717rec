@@ -46,6 +46,29 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  // The jump to the new bracket is deliberately a second late, which is long
+  // enough for the reader to leave the playoffs page first. navigate() still
+  // works after this dialog is gone, so an unwatched timer would drag them back
+  // from wherever they went.
+  //
+  // There are two windows to close, and cancelling on the way out only covers
+  // one. If the reader leaves while the cache refresh is still running, this
+  // cleanup runs before the timer exists, then the refresh finishes and sets
+  // one that nothing is left to cancel. So record that we have gone as well.
+  const navigationTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMounted = React.useRef(true);
+
+  React.useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (navigationTimer.current) {
+        clearTimeout(navigationTimer.current);
+        navigationTimer.current = null;
+      }
+    };
+  }, []);
+
   const createBracketMutation = useMutation({
     mutationFn: createBracket,
     onSuccess: (bracket) => {
@@ -182,9 +205,11 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
         // No toast here: it would land on top of "Bracket Created Successfully"
         // a moment after it appears, and the dialog navigates away 1s later.
-        setTimeout(() => {
-          navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
-        }, 1000);
+        if (isMounted.current) {
+          navigationTimer.current = setTimeout(() => {
+            navigate(`/playoffs?division=${bracket.division_id}&bracket=${bracket.id}`);
+          }, 1000);
+        }
       } catch (refreshError) {
         errorLog('Data refresh failed:', refreshError);
         toast({

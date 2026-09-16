@@ -67,17 +67,21 @@ export const useScheduleData = () => {
   const upcomingMatches = matchesData?.filter((match) => !isMatchCompleted(match)) || [];
   const completedMatches = matchesData?.filter(isMatchCompleted) || [];
 
-  // Sort upcoming matches by date (closest first)
+  // Sort upcoming matches by date (closest first), unscheduled ones last.
+  // Both undated gives Infinity - Infinity, which is NaN, and a comparator has
+  // to return a number - so say they are equal and keep the order they came in.
   upcomingMatches.sort((a, b) => {
     const dateA = a.date ? new Date(a.date).getTime() : Infinity;
     const dateB = b.date ? new Date(b.date).getTime() : Infinity;
+    if (dateA === dateB) return 0;
     return dateA - dateB;
   });
 
-  // Sort completed matches by date (most recent first)
+  // Sort completed matches by date (most recent first), unscheduled ones last.
   completedMatches.sort((a, b) => {
-    const dateA = a.date ? new Date(a.date).getTime() : 0;
-    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    const dateA = a.date ? new Date(a.date).getTime() : -Infinity;
+    const dateB = b.date ? new Date(b.date).getTime() : -Infinity;
+    if (dateA === dateB) return 0;
     return dateB - dateA;
   });
 
