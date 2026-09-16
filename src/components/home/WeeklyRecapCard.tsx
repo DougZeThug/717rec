@@ -7,7 +7,7 @@ import { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
 import WeeklyRecapHeader from './WeeklyRecapHeader';
-import { isVisibleMover } from './weeklyRecapMovers';
+import { hasVisibleMovers } from './weeklyRecapMovers';
 import MoversSection from './WeeklyRecapMoversSection';
 import StreaksSection from './WeeklyRecapStreaksSection';
 import UpsetsSection from './WeeklyRecapUpsetsSection';
@@ -24,9 +24,7 @@ const WeeklyRecapCard: React.FC<WeeklyRecapCardProps> = ({ data, risers, faller 
   const hasStreaks = data.hotStreaks.length > 0;
   // Must match the filtering inside MoversSection, or the dividers and the
   // whole-card empty check disagree with what actually renders.
-  const hasMovers =
-    risers.some((trend) => trend.delta > 0 && isVisibleMover(trend)) ||
-    Boolean(faller && faller.delta < 0 && isVisibleMover(faller));
+  const hasMovers = hasVisibleMovers(risers, faller);
   if (!hasUpsets && !hasStreaks && !hasMovers) return null;
 
   return (

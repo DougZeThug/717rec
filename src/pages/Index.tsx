@@ -9,6 +9,7 @@ import PendingScoresCard from '@/components/home/PendingScoresCard';
 import TeamOfTheWeekCard from '@/components/home/TeamOfTheWeekCard';
 import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
 import WeeklyRecapCard from '@/components/home/WeeklyRecapCard';
+import { hasVisibleMovers } from '@/components/home/weeklyRecapMovers';
 import WeeklyRecapSkeleton from '@/components/home/WeeklyRecapSkeleton';
 import PageLayout from '@/components/layout/PageLayout';
 import SeoHead from '@/components/seo/SeoHead';
@@ -42,6 +43,9 @@ const Index: React.FC = () => {
   const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
   const topGainer = trendData?.trends?.[0];
   const hasTeamOfWeek = !trendLoading && topGainer && topGainer.delta > 0;
+  // The top riser is Team of the Week's, so the recap starts at the second.
+  const recapRisers = trendData?.trends?.slice(1) ?? [];
+  const recapFaller = fallerData?.trends?.[0];
   const showParticipationCard = !!confirmationSeason;
 
   // Top teams by power score
@@ -127,15 +131,17 @@ const Index: React.FC = () => {
           ) : null}
 
           {/* Weekly Recap — upsets, streaks, movers */}
-          {recapLoading ? (
+          {recapLoading || trendLoading ? (
             <WeeklyRecapSkeleton />
-          ) : recapData?.hasData ? (
+          ) : recapData && (recapData.hasData || hasVisibleMovers(recapRisers, recapFaller)) ? (
+            // hasData counts upsets and hot streaks only — the recap service
+            // never sees the power-score trends, which arrive from their own
+            // hook — so a movers-only week has to be asked about separately or
+            // the whole card is dropped and the movers fetched for it thrown
+            // away. This has to match WeeklyRecapCard's own empty check, which
+            // is why both call hasVisibleMovers.
             <PageTransition animation="fadeIn" delay="medium">
-              <WeeklyRecapCard
-                data={recapData}
-                risers={trendData?.trends?.slice(1) ?? []}
-                faller={fallerData?.trends?.[0]}
-              />
+              <WeeklyRecapCard data={recapData} risers={recapRisers} faller={recapFaller} />
             </PageTransition>
           ) : null}
 
