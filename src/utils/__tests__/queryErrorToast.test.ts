@@ -19,7 +19,13 @@ vi.mock('@/utils/sentry', () => ({
 const makeQuery = (meta?: Record<string, unknown>) => {
   const cache = new QueryCache();
   const client = new QueryClient({ queryCache: cache });
-  cache.build(client, { queryKey: ['widgets', 'list'], queryFn: async () => null, meta });
+  // Promise.resolve rather than an async arrow: this query is only built to be
+  // handed to handleQueryError, never run, so the arrow had no await in it.
+  cache.build(client, {
+    queryKey: ['widgets', 'list'],
+    queryFn: () => Promise.resolve(null),
+    meta,
+  });
   return cache.getAll()[0];
 };
 

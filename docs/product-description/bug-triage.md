@@ -2738,8 +2738,22 @@ through it.** That was the reading at the time:
 kept this status red has been worked off, so **a red JavaScript status is now
 your branch's to fix**, not a standing condition to merge through. Measured on
 #1474: green on the base and on that branch's first five commits, then red on
-the sixth — a commit whose only new JavaScript was two regex literals in one
-test file.
+the sixth, which added a new test file.
+
+**Read the finding; do not infer it.** On #1474 the red was assumed to be
+JS-0117, because the same commit added two regex literals and this note named
+JS-0117 as a known cause. It was not. Replacing both regexes changed nothing,
+and the actual finding was a single **JS-0116**, "Found `async` function without
+any `await` expressions" — `queryFn: async () => null`, a throwaway in a test
+helper for a query that is built and never run. One round was spent on the wrong
+hypothesis.
+
+**Where the finding is legible**, since this is the part that makes guessing
+tempting: not in the `checks` API, and not as an inline review comment either —
+DeepSource's summary comment says "you can see the individual issues we found as
+inline review comments" and on #1474 it posted none. The issue list is on the run
+page the commit status links to, `app.deepsource.com/gh/…/run/<id>/javascript/`.
+Open that before changing any code.
 
 **Coverage, on the other hand, tracks the branch's own new lines, and can be
 made green.** Measured on #1315, where nothing changed between the first two
@@ -2787,14 +2801,16 @@ patterns involved use unicode escapes or astral characters — em-dashes and
 middots are single code units — so the flag changes no behaviour. Adding it to
 one branch's files makes those files the odd ones out and fixes nothing.
 
-*That last sentence assumed the status was red regardless. It is not any more.*
-A **new** regex a branch adds does turn the status red on its own, so the
-existing 223 can stay as they are while a branch simply avoids adding a 232nd.
-On #1474 the fix was not `/u` at all: the two new regexes were
-`name: /delete match/i` and `name: /cancel/i` in a Testing Library query, and an
-exact string — `name: 'Cancel'` — is both more precise and what the sibling
-`DeleteMatchDialog.test.tsx` already uses. Reach for the exact accessible name
-before reaching for the flag.
+*That last sentence assumed the status was red regardless, which it no longer
+is — but the advice still holds.* #1474 tested it directly: two new
+`name: /…/i` regexes in a Testing Library query were replaced with exact strings
+and the JavaScript status stayed red, because JS-0117 was never what it was
+reporting. So a branch adding a regex does **not**, on this evidence, turn the
+status red on its own, and the existing 223 need nothing done to them.
+
+The replacement was kept anyway, on its own merits rather than DeepSource's:
+`name: 'Cancel'` is more precise than `name: /cancel/i` and is what the sibling
+`DeleteMatchDialog.test.tsx` already uses for the same button.
 
 Two options: sweep all 231 in one change so the rule means something, or accept
 that it tracks the repo's existing style rather than the branch under review.
