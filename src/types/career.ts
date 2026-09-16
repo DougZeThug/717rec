@@ -5,7 +5,7 @@ export interface CareerRanking {
   teamName: string;
   logoUrl?: string | null;
   imageUrl?: string | null;
-  divisionName?: string | null; // Add division info to identify hidden teams
+  divisionName?: string | null; // Carried on every career row; the CSV export reads it
 
   // Career match stats
   careerMatchWins: number;

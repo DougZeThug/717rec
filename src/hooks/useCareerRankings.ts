@@ -54,6 +54,7 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
           teamName: team.name,
           logoUrl: team.logoUrl,
           imageUrl: team.imageUrl,
+          divisionName: team.divisionName,
 
           // Career match stats
           careerMatchWins: totals.career_match_wins,
@@ -111,9 +112,12 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
    * disagreeing with it: `isError` stayed false while `error` was set, and a
    * custom `refetch` handed back a stale result that reported no failure.
    *
-   * Returning only what callers use ends that. All four consumers take `data`,
-   * `isLoading`, `error` and `refetch`; anything else is now a type error
-   * rather than a field that quietly contradicts the others.
+   * Returning only what callers use ends that. Of its five consumers, three
+   * take `error` and `refetch` as well as `data` and `isLoading` — the report
+   * card, the GPA leaderboard and the career rankings table; `useLeaguePercentiles`
+   * and `useMatchPrediction` take only `data` and `isLoading`. Anything outside
+   * this shape is now a type error rather than a field that quietly
+   * contradicts the others.
    */
   return {
     data: query.data,
