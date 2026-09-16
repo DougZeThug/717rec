@@ -129,6 +129,7 @@ entry's *Corrected on review* note.
 | B-37 | Creating a season without archiving first left two active seasons | high | admin | **fixed** | — |
 | B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
 | B-40 | Deleting or archiving a live-scored match fails on a foreign key | high | admin | **fixed** | — |
+| B-44 | Approving a refused request leaves it refused, locking the member out | high | admin, teams | **fixed** | — |
 | B-11 | Four destructive admin actions have no confirmation | medium | admin | **fixed** | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
@@ -691,6 +692,46 @@ finding read a superseded migration.
   third-place badge is awarded there, by decision rather than omission.
 - **Raised by:** [`stats/badges.md`](stats/badges.md#open-questions-and-verification),
   [`admin/manage-seasons.md`](admin/manage-seasons.md#open-questions-and-verification).
+
+### B-44: Approving a refused request leaves it refused, locking the member out
+
+- **Where the user meets it:** a member whose join request was refused and then
+  approved. Their account keeps behaving as though they have no team, and
+  nothing in the app can put it right.
+- **What happens / what was expected:** the row ends up approved **and** still
+  stamped refused. Expected: a membership is pending, approved, or refused —
+  never two at once.
+- **Reproduce:** 1. Refuse a join request in *Member Approvals*. 2. Approve that
+  same row. 3. Sign in as that member.
+- **Why (from the code):** `updateMembershipApproval`
+  (`src/services/teams/TeamMembershipService.ts`) had two branches and each wrote
+  only its own half. Approve set `is_approved/approved_at/approved_by` and left
+  `rejected_at` where it was; refuse set `is_approved/rejected_at/rejected_by`
+  and left `approved_at` where it was. `joinTeamMembership` in the same file has
+  always cleared both sides, so the two disagreed.
+- **Why the member cannot recover:** `rejected_at` is the single thing the rest
+  of the app reads as "this person has no team"
+  (`src/hooks/useTeamMembership.ts:123`), so a non-null value removes every team
+  ability and shows the red *Request declined* card. *Leave Team* is hidden in
+  that state (`TeamMembershipSection.tsx:37`), so they cannot start over. Both
+  admin queue reads filter on `.is('rejected_at', null)`
+  (`TeamMembershipService.ts:128,148`), so no admin sees the row to fix it. And
+  the RLS policy on `team_memberships` only lets a member update their own row
+  while `is_approved = false`, so they cannot clear it themselves. A direct
+  database edit is the only way back.
+- **Severity:** `high`. A member is permanently locked out of their team by an
+  ordinary admin action, with no route back through the product.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed.** Each branch now clears the other's two stamps, which is
+  what `joinTeamMembership` already did. The refuse side matters for a second
+  reason: the member's own re-request is written under an RLS check that pins
+  `approved_by` and `approved_at` to NULL, so a refused row still naming an
+  approver would have its re-request refused.
+
+  Two tests, one per branch, asserting the cleared fields. Both were checked
+  against the unfixed code first and failed there with `expected undefined to be
+  null` — the fields were simply absent from the patch.
 
 ---
 
