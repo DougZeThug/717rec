@@ -68,7 +68,7 @@ const setupFullSuccess = () => {
       return {
         select: () => ({
           eq: () => ({
-            single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+            maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
           }),
         }),
       };
@@ -79,7 +79,7 @@ const setupFullSuccess = () => {
       return {
         select: () => ({
           eq: () => ({
-            single: () =>
+            maybeSingle: () =>
               Promise.resolve({ data: { id: 'div-1', name: 'Division A' }, error: null }),
           }),
         }),
@@ -170,7 +170,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
             }),
           }),
         };
@@ -180,7 +180,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () =>
+              maybeSingle: () =>
                 Promise.resolve({ data: { id: 'div-1', name: 'Division A' }, error: null }),
             }),
           }),
@@ -238,7 +238,34 @@ describe('updateTeamApi', () => {
     mockFrom.mockImplementation(() => ({
       select: () => ({
         eq: () => ({
-          single: () => Promise.resolve({ data: null, error: null }),
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+        }),
+      }),
+    }));
+
+    await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(NotFoundError);
+  });
+
+  // The regression guard for the .single() bug: PostgREST answers a zero-row
+  // .single() with a PGRST116 *error*, never with { data: null, error: null }.
+  // Under .single() that error reached handleDatabaseError first and the
+  // NotFoundError below it was unreachable.
+  it('throws NotFoundError, not DatabaseError, when the team row is gone (PGRST116)', async () => {
+    mockFrom.mockImplementation(() => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          single: () =>
+            Promise.resolve({
+              data: null,
+              error: {
+                message: 'JSON object requested, multiple (or no) rows returned',
+                code: 'PGRST116',
+                details: 'Results contain 0 rows',
+                hint: null,
+                name: 'PostgrestError',
+              },
+            }),
         }),
       }),
     }));
@@ -250,7 +277,7 @@ describe('updateTeamApi', () => {
     mockFrom.mockImplementation(() => ({
       select: () => ({
         eq: () => ({
-          single: () =>
+          maybeSingle: () =>
             Promise.resolve({
               data: null,
               error: {
@@ -278,7 +305,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
             }),
           }),
         };
@@ -289,7 +316,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: null, error: null }),
+              maybeSingle: () => Promise.resolve({ data: null, error: null }),
             }),
           }),
         };
@@ -312,7 +339,7 @@ describe('updateTeamApi', () => {
         return {
           select: () => ({
             eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
+              maybeSingle: () => Promise.resolve({ data: { id: 'team-abc' }, error: null }),
             }),
           }),
         };
