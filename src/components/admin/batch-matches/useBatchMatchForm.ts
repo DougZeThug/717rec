@@ -83,6 +83,20 @@ export const useBatchMatchForm = (_teams: Team[]) => {
       return false;
     }
 
+    // Every row can be deleted, the last one included, and the row checks below
+    // run per row. With no rows there is nothing to find fault with, so the form
+    // used to pass, ask for the active season and send an empty insert - then
+    // report "Created 0 matches" as a success.
+    if (matchPairs.length === 0) {
+      setRowErrors({});
+      toast({
+        title: 'No matches to create',
+        description: 'Add at least one match pair first.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     const errors: Record<string, string> = {};
     const teamRow = new Map<string, number>();
 
