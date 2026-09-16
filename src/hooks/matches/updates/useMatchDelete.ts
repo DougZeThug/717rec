@@ -50,7 +50,6 @@ export const useMatchDelete = ({
       toast({
         title: 'Match Deleted',
         description: 'Match has been successfully deleted.',
-        variant: 'destructive',
       });
 
       // Invalidate all queries to ensure data consistency
