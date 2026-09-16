@@ -9,7 +9,7 @@ import { getUIErrorMessage } from '@/utils/errorHandler';
 import { authLog, errorLog } from '@/utils/logger';
 
 import { useAuthMethods } from './useAuthMethods';
-import { useAuthProfile } from './useAuthProfile';
+import { keepProfileOnlyFor, useAuthProfile } from './useAuthProfile';
 import { handleAuthError as handleAuthErrorUtil } from './utils/authErrorHandler';
 
 /**
@@ -94,11 +94,19 @@ export const useAuth = () => {
         authLog(`Fetching profile for event: ${event}, user: ${currentSession.user.email}`);
         ensureThemeConsistency();
 
-        // Set loading state BEFORE setTimeout to prevent race condition
-        setIsProfileLoading(true);
-
         // Capture the user ID for this specific fetch operation
         const fetchUserId = currentSession.user.id;
+
+        // Drop a profile belonging to whoever was signed in before, now rather
+        // than when the new one arrives. `user` has already moved on two lines
+        // above, so holding the old profile across the fetch would answer the
+        // admin question about the wrong person. Keeps the profile untouched
+        // when the user has not changed, which is the ordinary case for
+        // TOKEN_REFRESHED and INITIAL_SESSION.
+        setProfile(keepProfileOnlyFor(fetchUserId));
+
+        // Set loading state BEFORE setTimeout to prevent race condition
+        setIsProfileLoading(true);
 
         // Use setTimeout to prevent Supabase auth deadlocks
         setTimeout(async () => {
@@ -132,6 +140,10 @@ export const useAuth = () => {
           } catch (error) {
             // Only show error if this fetch is still relevant
             if (!isCancelled && currentUserId === fetchUserId) {
+              // A failed read must leave nothing behind that answers for
+              // somebody else. With the profile gone, profileLoadFailed reads
+              // as "we could not check" and the retry card is shown.
+              setProfile(keepProfileOnlyFor(fetchUserId));
               // Record the failure so a dropped request is not mistaken for
               // "not an admin" (see useAdminAccess / ProtectedAdminRoute).
               setProfileLoadFailed(true);
@@ -209,6 +221,9 @@ export const useAuth = () => {
           } catch (profileError) {
             // Only log error if this fetch is still relevant
             if (!isCancelled && currentUserId === fetchUserId) {
+              // As in the listener above: never keep a profile that belongs to
+              // anyone but this user, least of all on a failed read.
+              setProfile(keepProfileOnlyFor(fetchUserId));
               // Record the failure so a dropped request is not mistaken for
               // "not an admin" (see useAdminAccess / ProtectedAdminRoute).
               setProfileLoadFailed(true);

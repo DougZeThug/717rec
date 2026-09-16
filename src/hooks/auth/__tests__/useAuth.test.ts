@@ -27,8 +27,12 @@ let unsubscribeSpy: ReturnType<typeof vi.fn>;
 
 let profileState: UserProfile | null;
 let isProfileLoadingState = false;
-const setProfileSpy = vi.fn((value: UserProfile | null) => {
-  profileState = value;
+// Mirrors useState's setter, which the hook now calls with an updater as well
+// as a plain value: keepProfileOnlyFor decides against whatever is held at the
+// moment React applies it.
+type ProfileUpdate = UserProfile | null | ((held: UserProfile | null) => UserProfile | null);
+const setProfileSpy = vi.fn((value: ProfileUpdate) => {
+  profileState = typeof value === 'function' ? value(profileState) : value;
 });
 const setIsProfileLoadingSpy = vi.fn((value: boolean) => {
   isProfileLoadingState = value;
@@ -54,7 +58,10 @@ vi.mock('@/hooks/auth/useAuthMethods', () => ({
   useAuthMethods: (...args: unknown[]) => mockUseAuthMethods(...args),
 }));
 
-vi.mock('@/hooks/auth/useAuthProfile', () => ({
+// Only the hook is stubbed. keepProfileOnlyFor stays real, because what the
+// hook does with it is exactly what these tests are checking.
+vi.mock('@/hooks/auth/useAuthProfile', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/hooks/auth/useAuthProfile')>()),
   useAuthProfile: (...args: unknown[]) => mockUseAuthProfile(...args),
 }));
 
@@ -294,6 +301,84 @@ describe('useAuth', () => {
     expect(fetchProfileSpy).toHaveBeenCalledWith('user-b');
     expect(setProfileSpy).toHaveBeenCalledWith({ username: 'user-b' });
     expect(setProfileSpy).not.toHaveBeenCalledWith({ username: 'user-a' });
+  });
+
+  // The profile used to be dropped only on sign-out, so signing in as somebody
+  // else left the previous person's profile in memory for as long as the new
+  // fetch took — and the admin decision is made from whatever is held.
+  it('drops the held profile as soon as a different user signs in', async () => {
+    vi.useFakeTimers();
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    fetchProfileSpy.mockImplementation((userId: string) =>
+      Promise.resolve({ id: userId, is_admin: false } as unknown as UserProfile)
+    );
+
+    renderHook(() => useAuth());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('admin-a'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    profileState = { id: 'admin-a', is_admin: true } as unknown as UserProfile;
+
+    // The fetch is deliberately not advanced: this is the window before user
+    // b's own profile arrives.
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('user-b'));
+    });
+
+    expect(profileState).toBeNull();
+  });
+
+  // The stable end state that made it more than a flicker: user b's profile
+  // read fails, so nothing replaces what is held. Anything left over answers
+  // the admin question for the wrong person.
+  it("does not keep a previous user's profile when the new user's read fails", async () => {
+    vi.useFakeTimers();
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    fetchProfileSpy.mockRejectedValue(new Error('profile failed'));
+
+    renderHook(() => useAuth());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    profileState = { id: 'admin-a', is_admin: true } as unknown as UserProfile;
+
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('user-b'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(profileState).toBeNull();
+    expect(profileLoadFailedState).toBe(true);
+  });
+
+  // The other half of the rule: a read that fails for the user whose profile we
+  // already hold must not throw that profile away. A reload fetches twice, and
+  // one failing is not a reason to hide the dashboard behind the retry card.
+  it('keeps the held profile when the failed read is for that same user', async () => {
+    vi.useFakeTimers();
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    fetchProfileSpy.mockRejectedValue(new Error('profile failed'));
+
+    renderHook(() => useAuth());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    const held = { id: 'user-b', is_admin: true } as unknown as UserProfile;
+    profileState = held;
+
+    await act(async () => {
+      await authStateCallback?.('TOKEN_REFRESHED', makeSession('user-b'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(profileState).toBe(held);
   });
 
   it('unsubscribes on cleanup and suppresses updates after unmount', async () => {

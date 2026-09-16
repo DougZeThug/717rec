@@ -162,6 +162,13 @@ could not load your profile. This is usually a connection problem, not a
 permissions problem." with a **Try again** button and a "Go home" link, and the
 user stays where they are.
 
+A profile belonging to **somebody else** counts as not loaded. Admin is read
+from the signed-in person's own profile and nobody else's, so one left behind by
+whoever used the browser before is discarded rather than answered from — see
+B-45. In practice this is invisible: signing in as a different person drops the
+previous profile straight away, and the wait for the new one is the same spinner
+as any other cold load.
+
 On every other route nothing is checked at all. The page renders, and the
 controls inside it decide for themselves what to draw. Admin controls appear the
 instant the profile does and never flicker, because admin is read from the loaded

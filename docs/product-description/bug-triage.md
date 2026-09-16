@@ -130,6 +130,7 @@ entry's *Corrected on review* note.
 | B-39 | The head-to-head details dialog never opened: its database function raised on every call | high | history, stats | **fixed** | — |
 | B-40 | Deleting or archiving a live-scored match fails on a foreign key | high | admin | **fixed** | — |
 | B-44 | Approving a refused request leaves it refused, locking the member out | high | admin, teams | **fixed** | — |
+| B-45 | A profile left behind by the previous user can grant admin | high | foundations | **fixed** | — |
 | B-11 | Four destructive admin actions have no confirmation | medium | admin | **fixed** | — |
 | B-12 | Failure messages discard the reason the server gave | medium | all | **fixed** | — |
 | B-13 | Only one toast is shown at a time, so paired messages are lost | medium | all | **fixed** | — |
@@ -531,6 +532,66 @@ finding read a superseded migration.
   rather than absent.
 - **Raised by:** [`foundations/accounts-and-roles.md`](foundations/accounts-and-roles.md#open-questions-and-verification),
   [`cross-cutting/permissions.md`](cross-cutting/permissions.md#open-questions-and-verification).
+- **See also:** [B-45](#b-45-a-profile-left-behind-by-the-previous-user-can-grant-admin),
+  the opposite error on the same decision — this one made a failed read read as
+  "not an admin"; that one let a leftover profile read as "yes, an admin".
+
+### B-45: A profile left behind by the previous user can grant admin
+
+- **Where the user meets it:** an ordinary member who signs in on a device or
+  browser profile where an admin was signed in before, and whose own profile
+  read then fails.
+- **What happens / what was expected:** they are shown the admin interface.
+  Expected: admin is decided from **their** profile, and a profile that cannot
+  be read shows the "could not check" retry card.
+- **Reproduce:** 1. Sign in as an admin. 2. Without signing out, sign in as a
+  non-admin in the same browser. 3. Make the second profile read fail. 4. Open
+  `/admin`.
+- **Why (from the code):** `useAdminAccess` computed
+  `authInitialized && Boolean(user) && profile?.is_admin === true` — it never
+  checked that the profile it was reading **belonged to** `user`. The profile
+  was dropped only when a session ended (`src/hooks/auth/index.ts`), so signing
+  in as somebody else left the previous profile in place, and neither the
+  listener's nor the bootstrap's failure branch cleared it.
+- **Why it was more than a flicker:** `accessCheckFailed` required `!profile`.
+  A leftover profile is not null, so the retry card was skipped and
+  `ProtectedAdminRoute` fell straight through to its "granted" branch. Once the
+  new user's read had failed, that was a **stable** state, not a brief window:
+  `refreshProfile` — the retry action — also kept the old profile on failure.
+- **How far it goes:** the server is not fooled. Every admin policy resolves
+  admin-ness from the signed-in token through `current_user_is_admin()`, so the
+  writes and admin reads behind that interface are still refused. What is
+  exposed is the admin interface itself and admin-only client content. It is a
+  real authorisation-on-stale-data defect and the only one on the client —
+  `src/lib/mcp/tools/_supabase.ts` re-reads `is_admin` from the database keyed
+  to the caller and is correct.
+- **Severity:** `high`. An authorisation decision made from the wrong person's
+  record, reachable without any deliberate act by the user.
+- **Decision needed:** `fix`.
+- **Raised by:** reported directly, not by a feature document.
+- **Status:** **fixed**, in two halves. `useAdminAccess` now requires
+  `profile.id === user.id` before granting, and counts a profile belonging to
+  anyone else as a failed check rather than an answer, so the retry card is
+  shown. The profile id was already fetched (`ProfileService` selects it), so
+  no query changed. Separately, the auth hook stops *keeping* a foreign
+  profile: one `keepProfileOnlyFor` updater is applied when a different user
+  signs in, in both failure branches, and in `refreshProfile`.
+
+  *Checked for the obvious regression.* An admin must not be bounced to the home
+  page on an ordinary token refresh. `ProtectedAdminRoute` shows its spinner
+  whenever `isLoading`, which is `!authInitialized || isProfileLoading`, and the
+  user-change path sets `isProfileLoading` before it fetches — so the gap where
+  the profile is cleared is covered by the spinner, never by the redirect. For
+  the same user nothing is cleared at all. The change only ever tightens.
+
+  Six tests. Four fail against the unfixed code: two on the hook (a foreign
+  profile grants nothing; a foreign profile plus a failed read reports the
+  failure) and two on the auth hook (the held profile is dropped when a
+  different user signs in, and is not kept when the new user's read fails). The
+  other two are non-regression guards — a failed read for the *same* user keeps
+  that user's profile, which is what B-08's fix depends on. Every profile
+  fixture in `useAdminAccess.test.ts` now carries an id, because a fixture
+  without one could not express the bug.
 
 ### B-09: There is no way to resolve a tie
 

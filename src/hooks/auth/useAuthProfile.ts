@@ -48,6 +48,25 @@ const profileSetupNextQuery = (): string => {
 };
 
 /**
+ * A `setProfile` updater that keeps the held profile only while it belongs to
+ * `userId`, and drops it otherwise.
+ *
+ * The profile is what the app answers "is this person an admin?" from, so one
+ * left behind by whoever was signed in before is not merely out of date — it
+ * answers the question about the wrong person. The profile used to be cleared
+ * only on sign-out, so signing in as somebody else, or failing to read their
+ * profile, left the previous one in place.
+ *
+ * Written as an updater rather than a plain comparison so the decision is made
+ * against whatever is actually held at the moment React applies it, which the
+ * callers cannot see from inside an async fetch.
+ */
+export const keepProfileOnlyFor =
+  (userId: string | null) =>
+  (held: UserProfile | null): UserProfile | null =>
+    held && userId && held.id === userId ? held : null;
+
+/**
  * Hook for managing user profile state and operations
  */
 export const useAuthProfile = (user: User | null, navigate: NavigateFunction) => {
@@ -108,6 +127,10 @@ export const useAuthProfile = (user: User | null, navigate: NavigateFunction) =>
     } catch (error) {
       errorLog('Failed to refresh profile:', error);
       if (currentUserIdRef.current !== fetchUserId) return;
+      // Never leave somebody else's profile behind on a failed read: this is
+      // the "Try again" action behind a failed access check, so holding the
+      // previous user's profile here would keep answering for them.
+      setProfile(keepProfileOnlyFor(fetchUserId));
       setProfileLoadFailed(true);
     } finally {
       if (currentUserIdRef.current === fetchUserId) setIsProfileLoading(false);

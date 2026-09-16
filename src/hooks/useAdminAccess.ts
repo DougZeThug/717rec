@@ -16,18 +16,27 @@ export const useAdminAccess = () => {
   const { user, profile, authInitialized, isProfileLoading, profileLoadFailed, refreshProfile } =
     useAuth();
 
-  // Derive admin access synchronously to avoid race conditions with effects/state.
-  const isAdminAccessGranted = authInitialized && Boolean(user) && profile?.is_admin === true;
+  // A profile only answers for the person it belongs to. Holding one is not
+  // enough: signing in as somebody else, or failing to read their profile, used
+  // to leave the previous person's profile in memory, and an admin profile left
+  // there granted admin to whoever came next. The auth hook now drops a foreign
+  // profile, and this is the matching check at the point the decision is made.
+  const profileMatchesUser = Boolean(user) && profile?.id === user?.id;
 
-  // A failed profile read leaves `profile` null, which is NOT the same as a
-  // profile that says is_admin: false. Callers must be able to tell them apart
-  // so a dropped request never reads as "you are not an admin".
+  // Derive admin access synchronously to avoid race conditions with effects/state.
+  const isAdminAccessGranted = authInitialized && profileMatchesUser && profile?.is_admin === true;
+
+  // A failed profile read leaves us without this user's profile, which is NOT
+  // the same as a profile that says is_admin: false. Callers must be able to
+  // tell them apart so a dropped request never reads as "you are not an admin".
   //
-  // `!profile` matters: on a reload the bootstrap and the INITIAL_SESSION
-  // listener both fetch, so one can succeed while the other fails and leaves
-  // the flag set. If a usable profile did load, we can answer the admin
-  // question and there is nothing to report as failed.
-  const accessCheckFailed = authInitialized && Boolean(user) && profileLoadFailed && !profile;
+  // `!profileMatchesUser` matters: on a reload the bootstrap and the
+  // INITIAL_SESSION listener both fetch, so one can succeed while the other
+  // fails and leaves the flag set. If this user's own profile did load, we can
+  // answer the admin question and there is nothing to report as failed. A
+  // profile belonging to anyone else cannot answer it, so it counts as failed.
+  const accessCheckFailed =
+    authInitialized && Boolean(user) && profileLoadFailed && !profileMatchesUser;
 
   // Log state changes for debugging (dev-only via logger)
   useEffect(() => {
