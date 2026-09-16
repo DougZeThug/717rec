@@ -100,7 +100,11 @@ const Schedule = () => {
   // Nights whose timeslots are posted, even when no match row exists yet. On
   // league night the slots go up before any match is created, so the strip and
   // the auto-pick below must know about them or the page opens on last week.
-  const { timeslotDates, isLoading: timeslotDatesLoading } = useTimeslotDates();
+  const {
+    timeslotDates,
+    isLoading: timeslotDatesLoading,
+    error: timeslotDatesError,
+  } = useTimeslotDates();
 
   // Every night the page knows about: matches or posted timeslots.
   const scheduleDates = useMemo(() => {
@@ -185,8 +189,11 @@ const Schedule = () => {
   useEffect(() => {
     if (hasAutoPickedDate.current || matchesLoading || timeslotDatesLoading) return;
     // A failed read is not an empty season: leave the guess alone and let a
-    // successful retry make the choice.
+    // successful retry make the choice. The same holds for the posted slots —
+    // an empty list from a read that failed is not a night with nothing on it,
+    // and taken as one on league night it opened the page on last week.
     if (matchesError) return;
+    if (timeslotDatesError) return;
     hasAutoPickedDate.current = true;
 
     // A night with posted timeslots is a real night, even with no match rows.
@@ -217,7 +224,14 @@ const Schedule = () => {
       setSelectedDate(fallback);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot, guarded by hasAutoPickedDate
-  }, [matchesLoading, timeslotDatesLoading, matchesError, matchNights, timeslotNights]);
+  }, [
+    matchesLoading,
+    timeslotDatesLoading,
+    matchesError,
+    timeslotDatesError,
+    matchNights,
+    timeslotNights,
+  ]);
 
   const { groupedTimeslots, isLoading: timeslotsLoading } = useMatchTimeslots(selectedDate);
 
