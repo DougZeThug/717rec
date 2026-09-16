@@ -135,10 +135,12 @@ export function useRoundMutations(matchId: string) {
           return !(held?.gameId === input.gameId && held.roundNumber === input.roundNumber);
         });
 
-      // Returned, not dropped, so the save settles only once the log is back
-      // from the server — which is how this behaved before the guard above.
-      if (stillWaiting.length > 0) return;
-      return queryClient.invalidateQueries({ queryKey });
+      // Returned rather than dropped, so a save is not finished until the log
+      // is back from the server: the round it filed is off the screen the
+      // moment its row is dropped, and a scorer must not be able to file the
+      // same round again into a log that has not caught up. One return, so
+      // both paths leave this the same way.
+      return stillWaiting.length > 0 ? undefined : queryClient.invalidateQueries({ queryKey });
     },
   });
 
