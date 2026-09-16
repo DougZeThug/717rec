@@ -34,19 +34,14 @@ export function usePendingScoresMatches() {
     refetch,
   } = useQuery<PendingMatch[]>({
     queryKey: ['matches', 'pending-scores'],
+    // The failure toast is raised once by the QueryCache onError in App.tsx.
+    // It used to sit in this catch, which react-query re-runs on every retry,
+    // so one failed load raised two — and a retry that succeeded still raised
+    // one. This hook is also mounted three times on the home page, so a hook
+    // effect would toast once per mount.
+    meta: { errorToast: 'Failed to load pending matches' },
     queryFn: async () => {
-      let data;
-      try {
-        data = await fetchPendingScoresMatches();
-      } catch (error) {
-        errorLog('Error fetching pending matches:', error);
-        toast({
-          title: 'Error',
-          description: getUIErrorMessage(error, 'Failed to load pending matches'),
-          variant: 'destructive',
-        });
-        throw error;
-      }
+      const data = await fetchPendingScoresMatches();
 
       return data.map((match) => ({
         id: match.id || '',
