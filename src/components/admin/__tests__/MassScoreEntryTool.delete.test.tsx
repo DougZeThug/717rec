@@ -150,8 +150,8 @@ describe('MassScoreEntryTool delete flow', () => {
     const user = userEvent.setup();
     renderTool();
 
-    await user.click(screen.getByRole('button', { name: /delete match/i }));
-    await user.click(await screen.findByRole('button', { name: /cancel/i }));
+    await user.click(screen.getByRole('button', { name: 'delete match' }));
+    await user.click(await screen.findByRole('button', { name: 'Cancel' }));
 
     await waitFor(() => expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument());
     expect(mockDeleteMatchWithStatsReversal).not.toHaveBeenCalled();

@@ -2724,14 +2724,22 @@ They are on the pull request page and they set `mergeable_state` to `unstable`,
 but they are not required checks. That is easy to miss when reading CI through
 the API, and it cost a round here.
 
-**`DeepSource: JavaScript` is normally red on this repo, and the league merges
-through it.** Treat it as feedback, not as your branch's failure:
+**`DeepSource: JavaScript` was normally red on this repo, and the league merged
+through it.** That was the reading at the time:
 
 | PR | DeepSource: JavaScript | DeepSource: Test coverage | merged |
 | --- | --- | --- | --- |
 | #1311 | failure | failure | yes |
 | #1312 | failure | failure | yes |
 | #1315 | failure | **success** | — |
+
+*No longer true, and the difference matters.* **#1470**, merged into `main` on
+2026-09-16, carried `DeepSource: JavaScript — Analysis passed`. The backlog that
+kept this status red has been worked off, so **a red JavaScript status is now
+your branch's to fix**, not a standing condition to merge through. Measured on
+#1474: green on the base and on that branch's first five commits, then red on
+the sixth — a commit whose only new JavaScript was two regex literals in one
+test file.
 
 **Coverage, on the other hand, tracks the branch's own new lines, and can be
 made green.** Measured on #1315, where nothing changed between the first two
@@ -2778,6 +2786,15 @@ repo-wide style question, not a defect in the change under review. None of the
 patterns involved use unicode escapes or astral characters — em-dashes and
 middots are single code units — so the flag changes no behaviour. Adding it to
 one branch's files makes those files the odd ones out and fixes nothing.
+
+*That last sentence assumed the status was red regardless. It is not any more.*
+A **new** regex a branch adds does turn the status red on its own, so the
+existing 223 can stay as they are while a branch simply avoids adding a 232nd.
+On #1474 the fix was not `/u` at all: the two new regexes were
+`name: /delete match/i` and `name: /cancel/i` in a Testing Library query, and an
+exact string — `name: 'Cancel'` — is both more precise and what the sibling
+`DeleteMatchDialog.test.tsx` already uses. Reach for the exact accessible name
+before reaching for the flag.
 
 Two options: sweep all 231 in one change so the rule means something, or accept
 that it tracks the repo's existing style rather than the branch under review.
