@@ -21,7 +21,7 @@ import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { errorLog, routeLog } from '@/utils/logger';
-import { notifyQueryError } from '@/utils/queryErrorToast';
+import { handleQueryError } from '@/utils/queryErrorToast';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
@@ -72,12 +72,7 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
-  queryCache: new QueryCache({
-    onError: (error, query) => {
-      metrics.count('query_error', 1, { type: 'query' });
-      notifyQueryError(error, query);
-    },
-  }),
+  queryCache: new QueryCache({ onError: handleQueryError }),
   mutationCache: new MutationCache({
     onError: (error, _vars, _ctx, mutation) => {
       metrics.count('mutation_error', 1, { type: 'mutation' });

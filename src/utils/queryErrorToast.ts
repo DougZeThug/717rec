@@ -1,11 +1,11 @@
-import type { Query } from '@tanstack/react-query';
-
 import { toast } from '@/hooks/useToast';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
+import { metrics } from '@/utils/sentry';
 
 /**
- * Raise one failure toast for a query that opted in with `meta.errorToast`.
+ * What the app does when any query fails: count it, and — for a query that
+ * opted in with `meta.errorToast` — tell the user once.
  *
  * Wired into the QueryCache in `App.tsx`, so it runs **once per query failure,
  * after retries are exhausted**. The two obvious alternatives both misfire: a
@@ -14,13 +14,21 @@ import { errorLog } from '@/utils/logger';
  * mounted consumer, and `usePendingScoresMatches` alone is mounted three times
  * on the home page.
  *
- * `meta.errorToast` is the fallback wording. The server's own message wins when
- * there is one, via `getUIErrorMessage`.
+ * `meta.errorToast` is the lead-in phrase. `getUIErrorMessage` appends the
+ * reason when the error carries one a user can act on — a ValidationError, a
+ * NotFoundError, a recognised Postgres code — and otherwise uses the phrase on
+ * its own with "Please try again.", rather than showing raw database internals.
  */
-export const notifyQueryError = (
+export const handleQueryError = (
   error: unknown,
-  query: Query<unknown, unknown, unknown, readonly unknown[]>
+  // Structural, not `Query<...>`: the two differ only in how they parameterise
+  // the error type, and QueryCache.onError hands over a `Query<unknown, unknown>`
+  // while QueryCache.getAll() gives a `Query<unknown, Error>`. This is every
+  // field the handler reads, and both shapes satisfy it.
+  query: { meta?: Record<string, unknown>; queryKey: readonly unknown[] }
 ) => {
+  metrics.count('query_error', 1, { type: 'query' });
+
   const fallback = query.meta?.errorToast;
   if (typeof fallback !== 'string') return;
 

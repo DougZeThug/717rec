@@ -146,6 +146,18 @@ describe('MassScoreEntryTool delete flow', () => {
     await waitFor(() => expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument());
   });
 
+  it('closes the dialog and deletes nothing when the admin cancels', async () => {
+    const user = userEvent.setup();
+    renderTool();
+
+    await user.click(screen.getByRole('button', { name: /delete match/i }));
+    await user.click(await screen.findByRole('button', { name: /cancel/i }));
+
+    await waitFor(() => expect(screen.queryByText('Are you sure?')).not.toBeInTheDocument());
+    expect(mockDeleteMatchWithStatsReversal).not.toHaveBeenCalled();
+    expect(mockRemoveMatch).not.toHaveBeenCalled();
+  });
+
   it('on RPC failure: shows destructive toast, does not remove row or invalidate caches', async () => {
     mockDeleteMatchWithStatsReversal.mockRejectedValue(new Error('rpc boom'));
     const user = userEvent.setup();

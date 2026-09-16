@@ -4,7 +4,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
-import { notifyQueryError } from '@/utils/queryErrorToast';
+import { handleQueryError } from '@/utils/queryErrorToast';
 
 // One stable spy at module scope. A `() => ({ toast: vi.fn() })` factory mints a
 // new function per render, which makes call counts unassertable.
@@ -30,7 +30,7 @@ vi.mock('@/services/matches/MatchWriteService', () => ({
 const createWrapper = (retry: number | boolean) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry, retryDelay: 0, gcTime: 0 } },
-    queryCache: new QueryCache({ onError: notifyQueryError }),
+    queryCache: new QueryCache({ onError: handleQueryError }),
   });
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
