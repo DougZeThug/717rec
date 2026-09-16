@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { format } from 'date-fns';
 import React from 'react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useNavigate } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TimeslotsTab from '../TimeslotsTab';
@@ -62,7 +63,21 @@ vi.mock('@/components/timeslots/TimeslotList', () => ({
   ),
 }));
 
-vi.mock('@/components/ui/calendar', () => ({ Calendar: () => <div>calendar</div> }));
+// The calendar stands in for the real one so a test can move the night the way
+// an admin does. The popover around it is flattened at the same time: Radix
+// needs pointer-capture support jsdom does not have, and the point here is the
+// date change, not the popover.
+vi.mock('@/components/ui/calendar', () => ({
+  Calendar: ({ onSelect }: { onSelect: (date: Date) => void }) => (
+    <button onClick={() => onSelect(new Date(2026, 8, 24, 12))}>pick-another-night</button>
+  ),
+}));
+
+vi.mock('@/components/ui/popover', () => ({
+  Popover: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  PopoverTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  PopoverContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
 
 /**
  * The section reads the night, the team and the block another admin section
@@ -516,5 +531,111 @@ describe('TimeslotsTab, opened by an approved request', () => {
     );
 
     expect(screen.getByText(/"as early as possible"/)).toBeInTheDocument();
+  });
+});
+
+// ── A second approval, arriving while this section is already open ───────────
+
+/**
+ * Stands in for the "Open Timeslots" button on an approval's toast.
+ *
+ * That button changes the address while this section stays on screen, because
+ * the dashboard navigates even when Timeslots is already the open section. The
+ * section is never rebuilt, so whatever it remembers about the last
+ * instruction is still there when the next one lands.
+ */
+const ApprovalToast = ({ to }: { to: string }) => {
+  const navigate = useNavigate();
+  return <button onClick={() => navigate(to)}>open-timeslots</button>;
+};
+
+const renderTabWithApproval = (entry: string, secondApproval: string) =>
+  render(
+    <MemoryRouter initialEntries={[entry]}>
+      <ApprovalToast to={secondApproval} />
+      <TimeslotsTab />
+    </MemoryRouter>
+  );
+
+describe('TimeslotsTab, when the admin has looked at another night', () => {
+  /** A second team, so the second approval is a different instruction. */
+  const OTHER_TEAM_ID = '8c2d4f61-0a93-4e77-9b15-2d6e3f0a9c44';
+
+  const FIRST = `/admin/timeslots?date=2026-09-17&team=${TEAM_ID}&slot=7%3A00+PM`;
+  const SECOND = `/admin/timeslots?date=2026-09-17&team=${OTHER_TEAM_ID}&slot=8%3A00+PM`;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUseTeamsQuery.mockReturnValue({
+      data: [
+        { id: TEAM_ID, name: '3 Amigos' },
+        { id: OTHER_TEAM_ID, name: 'Bag Ladies' },
+      ],
+      isLoading: false,
+    });
+    mockUseTimeslots.mockReturnValue({
+      timeslots: blockRows('6:00 PM', '6:30 PM', OTHER_TEAM_ID),
+      isLoading: false,
+      isNightLoaded: true,
+      addTimeslot,
+      deleteTimeslot,
+      batchAssignTimeslots,
+      batchAssignDoubleHeaders,
+      assignByeWeek,
+      batchAssignByeWeeks,
+      removeByeWeek,
+      moveTeamBooking,
+    });
+    moveTeamBooking.mockResolvedValue('moved');
+  });
+
+  /** The night the move was actually made against. */
+  const bookedNight = () => format(moveTeamBooking.mock.calls[0][0] as Date, 'yyyy-MM-dd');
+
+  // The night alone used to decide whether an instruction was worth following,
+  // so a second approval naming a night this section had already opened did
+  // nothing — and the move was made against whatever night the admin had since
+  // put on screen.
+  it('books the night the second approval names, not the one left on screen', async () => {
+    const user = userEvent.setup();
+    renderTabWithApproval(FIRST, SECOND);
+
+    await user.click(screen.getByRole('button', { name: 'pick-another-night' }));
+    expect(screen.getByRole('button', { name: /September 24th, 2026/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'open-timeslots' }));
+    expect(screen.getByRole('button', { name: /September 17th, 2026/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Move them' }));
+
+    await waitFor(() => expect(moveTeamBooking).toHaveBeenCalled());
+    expect(bookedNight()).toBe('2026-09-17');
+  });
+
+  it('does the same after the first card was put away', async () => {
+    const user = userEvent.setup();
+    renderTabWithApproval(FIRST, SECOND);
+
+    await user.click(screen.getByRole('button', { name: 'Not now' }));
+    await user.click(screen.getByRole('button', { name: 'pick-another-night' }));
+
+    await user.click(screen.getByRole('button', { name: 'open-timeslots' }));
+    await user.click(screen.getByRole('button', { name: 'Move them' }));
+
+    await waitFor(() => expect(moveTeamBooking).toHaveBeenCalled());
+    expect(bookedNight()).toBe('2026-09-17');
+  });
+
+  // A refused move leaves the card up so the admin can pick a different night
+  // and press again. The instruction is still in the address the whole time, so
+  // it must not keep pulling the calendar back to the night it names.
+  it('leaves the night alone while the same instruction is still in the address', async () => {
+    const user = userEvent.setup();
+    renderTabWithApproval(SECOND, SECOND);
+
+    await user.click(screen.getByRole('button', { name: 'pick-another-night' }));
+
+    expect(screen.getByRole('button', { name: /September 24th, 2026/ })).toBeInTheDocument();
+    expect(screen.getByText('Move Bag Ladies')).toBeInTheDocument();
   });
 });
