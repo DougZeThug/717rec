@@ -4,6 +4,8 @@
  */
 import * as Sentry from '@sentry/react';
 
+import { runAfterDelayWhenIdle } from '@/utils/deferWork';
+
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || '';
 
 let isInitialized = false;
@@ -126,22 +128,18 @@ export const initSentry = () => {
     },
   });
 
-  // Lazily add replay integration well after page becomes interactive
-  // This defers ~40KB of JS until well after TTI window
+  // Add the session replay recorder and browser tracing well after the page is
+  // interactive. They are the expensive half: roughly 40KB of JS, a
+  // document-wide MutationObserver and a set of input listeners, none of which
+  // the first paint should pay for.
+  //
+  // This used to pass the delay as requestIdleCallback's `timeout`, which is a
+  // deadline rather than a delay, so the recorder installed at the first idle
+  // gap — about a second in. Twelve seconds, then the next idle moment, lands
+  // it twelve to fifteen seconds in, which is what
+  // docs/product-description/cross-cutting/what-the-league-sees.md describes.
   if (import.meta.env.PROD) {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(
-        () => {
-          addLazyIntegrations();
-        },
-        { timeout: 15000 }
-      );
-    } else {
-      // Fallback for browsers without requestIdleCallback
-      setTimeout(() => {
-        addLazyIntegrations();
-      }, 12000);
-    }
+    runAfterDelayWhenIdle(addLazyIntegrations, 12000);
   }
 };
 

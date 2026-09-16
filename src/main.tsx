@@ -10,8 +10,14 @@ import { initSentry } from './utils/sentry';
 // regardless of the browser, so an app opened with no signal would not know.
 initOnlineStatus();
 
-// Defer Sentry initialization well beyond TTI window to avoid forced reflow during critical rendering
-// Error tracking is non-critical for initial page render - delay 8+ seconds
+// Install the error hooks at the first idle moment, and within eight seconds
+// whatever happens, so they never compete with the first paint. Note that
+// requestIdleCallback's `timeout` is a deadline, not a delay: this runs early
+// on a normal load, which is deliberate here. initSentry is the cheap half — it
+// registers the hooks with `integrations: []` — and a crash in the first
+// seconds is exactly the one worth reporting, so it must not be slept through.
+// The expensive half, the session replay recorder, is deferred separately
+// inside initSentry.
 if ('requestIdleCallback' in window) {
   requestIdleCallback(() => initSentry(), { timeout: 8000 });
 } else {

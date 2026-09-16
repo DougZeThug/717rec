@@ -262,25 +262,44 @@ describe('sentry utils', () => {
       });
     });
 
-    it('schedules lazy integrations via requestIdleCallback in PROD', async () => {
+    it('waits twelve seconds before installing the lazy integrations in PROD', async () => {
       const addIntegration = vi.fn();
       getClientMock.mockReturnValue({ addIntegration });
+
+      const { initSentry } = await importSentryModule({ prod: true });
+
+      // Fake timers replace requestIdleCallback too, so the spy goes on after
+      // them or it is the one that gets replaced.
+      vi.useFakeTimers();
       const requestIdleCallbackMock = vi.fn((cb: IdleRequestCallback) => {
         cb({ didTimeout: false, timeRemaining: () => 0 } as IdleDeadline);
         return 1;
       });
       runtimeGlobal.requestIdleCallback = requestIdleCallbackMock;
 
-      const { initSentry } = await importSentryModule({ prod: true });
-      initSentry();
+      try {
+        initSentry();
 
-      expect(requestIdleCallbackMock).toHaveBeenCalled();
-      expect(addIntegration).toHaveBeenCalledTimes(2);
-      expect(replayIntegrationMock).toHaveBeenCalledTimes(1);
-      expect(browserTracingIntegrationMock).toHaveBeenCalledTimes(1);
+        // This used to pass the wait as requestIdleCallback's `timeout`, which
+        // is a deadline rather than a delay, so the recorder installed at the
+        // first idle gap — about a second in — instead of twelve seconds in.
+        vi.advanceTimersByTime(11999);
+        expect(requestIdleCallbackMock).not.toHaveBeenCalled();
+        expect(addIntegration).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(1);
+        expect(requestIdleCallbackMock).toHaveBeenCalledWith(expect.any(Function), {
+          timeout: 3000,
+        });
+        expect(addIntegration).toHaveBeenCalledTimes(2);
+        expect(replayIntegrationMock).toHaveBeenCalledTimes(1);
+        expect(browserTracingIntegrationMock).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
-    it('schedules lazy integrations via setTimeout fallback in PROD without requestIdleCallback', async () => {
+    it('still installs the lazy integrations in PROD without requestIdleCallback', async () => {
       const addIntegration = vi.fn();
       getClientMock.mockReturnValue({ addIntegration });
       delete (runtimeWindow as { requestIdleCallback?: RequestIdleCallbackFn }).requestIdleCallback;
