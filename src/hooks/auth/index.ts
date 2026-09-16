@@ -291,7 +291,12 @@ export const useAuth = () => {
     return () => {
       isCancelled = true;
       subscription.unsubscribe();
-      pendingTimers.forEach(clearTimeout);
+      // Written as a plain loop with the id named, rather than
+      // `pendingTimers.forEach(clearTimeout)`, so the cancel is visible to a
+      // reader — and to a static checker — at the point it happens.
+      for (const timerId of pendingTimers) {
+        clearTimeout(timerId);
+      }
       pendingTimers.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- auth session bootstrap, must run once on mount
