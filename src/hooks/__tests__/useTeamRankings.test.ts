@@ -35,6 +35,7 @@ import { usePreviousRankings } from '@/hooks/rankings/usePreviousRankings';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
 import { saveRankingsToStorage } from '@/utils/rankingUtils';
+import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 const makeTeam = (id: string, powerScore: number | null = 80, overrides: Partial<Team> = {}) =>
   ({
@@ -240,6 +241,25 @@ describe('useTeamRankings', () => {
       'comp-bravo',
       'rec',
     ]);
+  });
+
+  it('falls back to an empty table when the calculation throws', async () => {
+    // Anything throwing inside the build — here the streak helper — must leave
+    // the table empty and stop loading rather than render half a ranking.
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [makeTeam('boom-1', 90), makeTeam('boom-2', 80)],
+      isLoading: false,
+    });
+    // Once, not a lasting implementation: clearAllMocks resets calls but keeps
+    // implementations, so a permanent throw here would leak into later tests.
+    (calculateStreak as ReturnType<typeof vi.fn>).mockImplementationOnce(() => {
+      throw new Error('streak blew up');
+    });
+
+    const { result } = renderHook(() => useTeamRankings());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.rankings).toEqual([]);
   });
 
   it('never persists snapshots as a side effect of rendering (pure read)', async () => {

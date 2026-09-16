@@ -259,4 +259,55 @@ describe('scheduleOdd', () => {
     expect(matches.every((m) => m.teamAId !== m.teamBId)).toBe(true);
     expect(matches.some((m) => m.slot === 'S3')).toBe(false);
   });
+
+  // The repair pass is the last safety net, and it had never been exercised.
+  // Two teams are boxed out of S1 entirely, so the slot comes up short and the
+  // pass runs — it must still refuse the pairs it is not allowed to make.
+  it('runs the repair pass on a short slot without creating a forbidden pair', () => {
+    const teams = ['a', 'b', 'c', 'd', 'e'].map((id) => makeTeam(id));
+    const matchCounts = new Map(teams.map((t) => [t.id, 0]));
+
+    // c and d can play nobody in the S1 pool, and not each other. 'last' makes
+    // e the S1 bye, so S1 can only produce a-b and is one match short.
+    const blocked = new Set([
+      pairKey('c', 'd'),
+      pairKey('c', 'a'),
+      pairKey('c', 'b'),
+      pairKey('d', 'a'),
+      pairKey('d', 'b'),
+    ]);
+    const diagnostics = makeDiagnostics();
+
+    const matches = scheduleOdd({
+      teams,
+      sortedTeams: teams,
+      slot1: 'S1',
+      slot2: 'S2',
+      thirdSlot: 'S3',
+      playedSet: new Set(),
+      tonightPairs: new Set(blocked),
+      newPairs: new Set(),
+      teamMatchCounts: matchCounts,
+      forbiddenPairs: blocked,
+      maxTierGap: 1,
+      byeStrategy: 'last',
+      relaxationLevel: 0,
+      perTeamRematchAllowed: new Set(),
+      diagnostics,
+    });
+
+    // The slot was short, so the safety net ran.
+    expect(diagnostics.repairAttempted).toBe(true);
+
+    // And it did not buy completeness by breaking a rule.
+    expectForbiddenPairsAbsent(matches, blocked);
+    expect(matches.every((m) => m.teamAId !== m.teamBId)).toBe(true);
+    expectNoTeamDoubleBookedPerSlot(matches);
+
+    // c and d had no legal opponent in S1, so they are left out of it rather
+    // than forced into a pair the constraints refuse.
+    const s1 = matches.filter((m) => m.slot === 'S1');
+    expect(s1.flatMap((m) => [m.teamAId, m.teamBId])).not.toContain('c');
+    expect(s1.flatMap((m) => [m.teamAId, m.teamBId])).not.toContain('d');
+  });
 });

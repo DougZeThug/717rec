@@ -139,6 +139,25 @@ describe('reopen', () => {
 
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Nothing to reopen' }));
   });
+
+  it('reports a refused reopen without touching the caches', async () => {
+    // reopen_live_match is admin-only, so a non-admin gets an exception rather
+    // than a false. Nothing moved, so nothing is refreshed.
+    mockReopenLiveMatch.mockRejectedValue(new Error('Admin access required'));
+
+    const { result } = renderHook(() => useFinalizeMatch('match-1'), {
+      wrapper: createWrapper(),
+    });
+
+    await act(async () => {
+      await result.current.reopen.mutateAsync().catch(() => undefined);
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Could not reopen match', variant: 'destructive' })
+    );
+    expect(mockInvalidateMatchRelatedQueries).not.toHaveBeenCalled();
+  });
 });
 
 describe('reopenAndRefinalize', () => {
