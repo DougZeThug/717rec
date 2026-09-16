@@ -103,6 +103,46 @@ describe('roundDraftStorage', () => {
 describe('pruneRoundDrafts', () => {
   beforeEach(() => localStorage.clear());
 
+  it('hands back a draft the release landed on top of, before collecting it', () => {
+    // A scorer mid-round when the release ships reloads into a build that
+    // reads a different key. Their taps are still under the old one, still
+    // for this game and this round, and still fresh — dropping them is the
+    // exact loss the copy exists to prevent.
+    localStorage.setItem(
+      'liveRoundDraft:v1:game-1',
+      JSON.stringify({
+        v: 1,
+        gameId: 'game-1',
+        roundNumber: 3,
+        savedAt: Date.now(),
+        team1: { score: 6, bagsIn: 2 },
+        team2: { score: 0, bagsIn: null },
+      })
+    );
+
+    expect(loadRoundDraft('game-1', 3)).toEqual(draft);
+    // And it is moved across, so the next read does not depend on the old key.
+    expect(localStorage.getItem('liveRoundDraft:v1:game-1')).toBeNull();
+    expect(loadRoundDraft('game-1', 3)?.team1.score).toBe(6);
+  });
+
+  it('does not offer a pre-release draft for a round that has moved on', () => {
+    localStorage.setItem(
+      'liveRoundDraft:v1:game-1',
+      JSON.stringify({
+        v: 1,
+        gameId: 'game-1',
+        roundNumber: 3,
+        savedAt: Date.now(),
+        team1: { score: 6, bagsIn: 2 },
+        team2: { score: 0, bagsIn: null },
+      })
+    );
+
+    expect(loadRoundDraft('game-1', 4)).toBeNull();
+    expect(localStorage.getItem('liveRoundDraft:v1:game-1')).toBeNull();
+  });
+
   it('collects keys left by the one-slot-per-game scheme', () => {
     localStorage.setItem('liveRoundDraft:v1:game-1', JSON.stringify({ v: 1, gameId: 'game-1' }));
     saveRoundDraft(draft);

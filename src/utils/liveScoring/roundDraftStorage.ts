@@ -5,7 +5,7 @@ import type { SideSelection } from './types';
 
 const STORAGE_PREFIX = 'liveRoundDraft:v2:';
 
-/** Keys written before drafts were kept per round. Always garbage now. */
+/** Keys written before drafts were kept per round: one slot for a whole game. */
 const LEGACY_PREFIX = 'liveRoundDraft:v1:';
 
 /** After this long a draft is last week's match, not this round. */
@@ -41,11 +41,11 @@ const isPersistedSide = (v: unknown): v is PersistedRoundDraft['team1'] => {
   return scoreOk && bagsOk;
 };
 
-const isPersistedRoundDraft = (v: unknown): v is PersistedRoundDraft => {
+/** Everything but the version, which is all the two shapes differ by. */
+const hasDraftFields = (v: unknown): v is Omit<PersistedRoundDraft, 'v'> => {
   if (typeof v !== 'object' || v === null) return false;
   const draft = v as Record<string, unknown>;
   return (
-    draft.v === 2 &&
     typeof draft.gameId === 'string' &&
     typeof draft.roundNumber === 'number' &&
     typeof draft.savedAt === 'number' &&
@@ -53,6 +53,13 @@ const isPersistedRoundDraft = (v: unknown): v is PersistedRoundDraft => {
     isPersistedSide(draft.team2)
   );
 };
+
+const isPersistedRoundDraft = (v: unknown): v is PersistedRoundDraft =>
+  hasDraftFields(v) && (v as { v?: unknown }).v === 2;
+
+/** A draft written by a build from before drafts were kept per round. */
+const isLegacyRoundDraft = (v: unknown): v is Omit<PersistedRoundDraft, 'v'> =>
+  hasDraftFields(v) && (v as { v?: unknown }).v === 1;
 
 /**
  * One slot per round, not one per game.
@@ -64,6 +71,8 @@ const isPersistedRoundDraft = (v: unknown): v is PersistedRoundDraft => {
  * round's first tap wrote over the held round's only copy.
  */
 const keyFor = (gameId: string, roundNumber: number) => `${STORAGE_PREFIX}${gameId}:${roundNumber}`;
+
+const legacyKeyFor = (gameId: string) => `${LEGACY_PREFIX}${gameId}`;
 
 const toSelection = (side: PersistedRoundDraft['team1']): SideSelection => ({
   score: side.score,
@@ -123,6 +132,30 @@ export const pruneRoundDrafts = (skipKey?: string): void => {
 };
 
 /**
+ * The draft a build from before per-round keys left behind, if it is this round.
+ *
+ * A scorer mid-round when the release lands reloads into a build that reads a
+ * different key, and their taps are still under the old one. Read it on the way
+ * past and move it across rather than letting the sweep take it: losing a round
+ * to a deploy is the exact loss the copy exists to prevent.
+ */
+const claimLegacyDraft = (gameId: string, roundNumber: number): PersistedRoundDraft | null => {
+  const result = parseStoredJson(localStorage.getItem(legacyKeyFor(gameId)), isLegacyRoundDraft);
+  if (!result.ok) return null;
+
+  const draft = result.value;
+  // Stale, another game's, or a round that has moved on: not this scorer's work
+  // any more. Left in place for the sweep.
+  if (Date.now() - draft.savedAt > MAX_AGE_MS) return null;
+  if (draft.gameId !== gameId || draft.roundNumber !== roundNumber) return null;
+
+  const migrated: PersistedRoundDraft = { ...draft, v: 2 };
+  localStorage.setItem(keyFor(gameId, roundNumber), JSON.stringify(migrated));
+  localStorage.removeItem(legacyKeyFor(gameId));
+  return migrated;
+};
+
+/**
  * The tapped round for this game, if one was left behind and it is still the
  * round being played.
  *
@@ -143,8 +176,18 @@ export const loadRoundDraft = (gameId: string, roundNumber: number): RoundDraft 
       if (result.error !== 'missing') {
         warnLog('Discarding an unreadable live-scoring round draft:', result.error);
         clearRoundDraft(gameId, roundNumber);
+        return null;
       }
-      return null;
+      // Nothing under the new key yet. A build before this one may still have
+      // left this round under the old one.
+      const migrated = claimLegacyDraft(gameId, roundNumber);
+      if (!migrated) return null;
+      return {
+        gameId: migrated.gameId,
+        roundNumber: migrated.roundNumber,
+        team1: toSelection(migrated.team1),
+        team2: toSelection(migrated.team2),
+      };
     }
 
     const draft = result.value;
