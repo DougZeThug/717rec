@@ -128,13 +128,12 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
   // Every round save still in the cache, not just this component's latest one:
   // a round parked offline and now resuming is in neither `isPending` nor
   // `pausedRounds`, and that is the gap the game could be ended through.
-  const endGameBlockedReason = endGameBlocker(
-    isOnline,
-    submitRound.isPending || unsettledRounds > 0
-  );
+  const roundSaveUnsettled = submitRound.isPending || unsettledRounds > 0;
+  const endGameBlockedReason = endGameBlocker(isOnline, roundSaveUnsettled);
 
   /**
-   * Why Undo is unavailable: the same two conditions that block ending a game.
+   * Why Undo is unavailable: the same two conditions that block ending a game,
+   * read off the same answer so the two cannot drift apart.
    *
    * An undo names a game and a round number, not a row this scorer wrote. Fired
    * against a round that has not been filed yet, it deletes whatever is at that
@@ -146,7 +145,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
    * `isSavingRound` exists to prevent; only Undo is unsafe while a round is
    * held, and only Undo is gated on it.
    */
-  const undoBlocked = !isOnline || submitRound.isPending || unsettledRounds > 0;
+  const undoBlocked = endGameBlockedReason !== null;
 
   const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
   const gameWon = game.pendingWinnerSide !== null;
