@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { useToast } from '@/hooks/useToast';
-import { DualBlockConfig, PairedTimeBlockTeamsMap, TimeBlockTeamsMap } from '@/types/autoSchedule';
+import { TimeBlockTeamsMap } from '@/types/autoSchedule';
 import { normalizeScheduleDate, validateScheduleDate } from '@/utils/autoSchedule/dateUtils';
 import { validateBackToBackPairAssignments } from '@/utils/autoSchedule/edgeCaseUtils';
 import { getAllBackToBackTeams } from '@/utils/autoSchedule/teamLoaderUtils';
@@ -24,7 +24,6 @@ export const useTeamOperations = () => {
   const [originalTimeBlockTeams, setOriginalTimeBlockTeams] = useState<TimeBlockTeamsMap>(
     () => persistedState.current?.originalTimeBlockTeams || {}
   );
-  const [pairedTimeBlockTeams, setPairedTimeBlockTeams] = useState<PairedTimeBlockTeamsMap>({});
   // The date timeBlockTeams was loaded for. Team lists come from date-specific
   // timeslot rows, so pairing must refuse to run once the selected date moves on.
   const [teamsLoadedDate, setTeamsLoadedDate] = useState<Date | null>(() =>
@@ -65,8 +64,7 @@ export const useTeamOperations = () => {
   const handleLoadTeams = useCallback(
     async (
       date: Date | null,
-      dualBlockMode = false,
-      dualBlockConfig: DualBlockConfig = {}
+      dualBlockMode = false
     ): Promise<TimeBlockTeamsMap> => {
       if (!date) {
         errorLog('No date provided to handleLoadTeams');
@@ -148,21 +146,11 @@ export const useTeamOperations = () => {
         setOriginalTimeBlockTeams(backToBackTeams); // Store original loaded teams
         setTeamsLoadedDate(date); // Remember which date these teams belong to
 
-        // If dual block mode is enabled, create paired blocks structure
-        if (dualBlockMode) {
-          const pairedBlocks = createPairedBlocksFromBackToBack(backToBackTeams, dualBlockConfig);
-          setPairedTimeBlockTeams(pairedBlocks);
-          scheduleLog('Created paired time blocks from back-to-back data:', pairedBlocks);
-        } else {
-          setPairedTimeBlockTeams({});
-        }
-
         return backToBackTeams;
       } catch (error) {
         errorLog('Error loading back-to-back teams for date:', error);
         setTimeBlockTeams({});
         setOriginalTimeBlockTeams({});
-        setPairedTimeBlockTeams({});
         setTeamsLoadedDate(null);
         // Clear persisted team data to prevent stale state on reload
         saveAutoScheduleState({
@@ -205,37 +193,11 @@ export const useTeamOperations = () => {
     isLoading,
     timeBlockTeams,
     originalTimeBlockTeams,
-    pairedTimeBlockTeams,
     teamBlockMap,
     teamsLoadedDate,
     setTimeBlockTeams,
-    setPairedTimeBlockTeams,
     handleLoadTeams,
     getTeamCountStatus,
   };
 };
 
-/**
- * Helper function to create paired blocks structure from back-to-back data
- */
-function createPairedBlocksFromBackToBack(
-  backToBackTeams: TimeBlockTeamsMap,
-  dualBlockConfig: DualBlockConfig
-): PairedTimeBlockTeamsMap {
-  const primaryBlock = dualBlockConfig.primaryBlock || 'Early';
-  const secondaryBlock = dualBlockConfig.secondaryBlock || 'Late';
-
-  const primaryTeams = backToBackTeams[primaryBlock] || [];
-  const secondaryTeams = backToBackTeams[secondaryBlock] || [];
-
-  const pairKey = `${primaryBlock}-${secondaryBlock}`;
-
-  return {
-    [pairKey]: {
-      primaryBlock,
-      secondaryBlock,
-      primaryTeams,
-      secondaryTeams,
-    },
-  };
-}
