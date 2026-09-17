@@ -57,6 +57,40 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
   const rollbackTimeoutsRef = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const snapshotsRef = useRef(new Map<string, CachedMatchSnapshot>());
 
+  /**
+   * How many saves for each match have not settled yet.
+   *
+   * Keying by match id was not enough on its own: the same match can be saved
+   * twice over. The editor closes before the network call is awaited, so the
+   * admin can reopen that match and save it again while the first save is still
+   * out. Two things went wrong when they did.
+   *
+   * The second save re-read the cache to snapshot it — but the first save had
+   * already written its optimistic score there, so the snapshot recorded a
+   * number that was never persisted, and a rollback restored that instead of
+   * the real one. And the first save to resolve deleted the snapshot outright,
+   * which disarmed the second save's rollback, its timeout and the unmount
+   * cleanup, while its failure still raised "Update Failed" — telling the admin
+   * it had failed while the bracket kept showing the score it had not written.
+   *
+   * So: only the first save of a run snapshots, and only the last to settle
+   * releases it.
+   */
+  const inFlightRef = useRef(new Map<string, number>());
+
+  const retainInFlight = useCallback((matchId: string) => {
+    const next = (inFlightRef.current.get(matchId) ?? 0) + 1;
+    inFlightRef.current.set(matchId, next);
+    return next;
+  }, []);
+
+  const releaseInFlight = useCallback((matchId: string) => {
+    const next = (inFlightRef.current.get(matchId) ?? 1) - 1;
+    if (next <= 0) inFlightRef.current.delete(matchId);
+    else inFlightRef.current.set(matchId, next);
+    return Math.max(0, next);
+  }, []);
+
   const clearRollbackTimeout = useCallback((matchId: string) => {
     const timeout = rollbackTimeoutsRef.current.get(matchId);
     if (timeout) {
@@ -69,6 +103,11 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
   // setTimeout callback inside applyOptimisticUpdate can reference it).
   const rollback = useCallback(
     (matchId: string) => {
+      // Above the early return on purpose: a match that was never in the cache
+      // has no snapshot, and leaving its count standing would stop the next save
+      // for it taking one.
+      inFlightRef.current.delete(matchId);
+
       const snapshot = snapshotsRef.current.get(matchId);
       if (!snapshot) return;
 
@@ -176,22 +215,27 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         winnerId,
       });
 
-      // Save snapshot for rollback. Drop any stale entry first: if this match is not
-      // in the cache we must end up with NO snapshot for it, never a leftover one
-      // that a later rollback would restore onto the wrong match.
-      snapshotsRef.current.delete(matchId);
-      const currentData = queryClient.getQueryData<BracketCacheData>(['bracket-data', bracketId]);
-      if (currentData?.matches) {
-        const currentMatch = currentData.matches.find((m) => matchIdMatches(m.id, matchId));
-        if (currentMatch) {
-          snapshotsRef.current.set(matchId, {
-            matchId,
-            bracketId,
-            team1Score: currentMatch.opponent1_score ?? currentMatch.team1Score ?? null,
-            team2Score: currentMatch.opponent2_score ?? currentMatch.team2Score ?? null,
-            winnerId: currentMatch.winner_id ?? currentMatch.winnerId ?? null,
-            status: currentMatch.status ?? 'pending',
-          });
+      // Save snapshot for rollback, but only for the first save of a run: every
+      // save after it reads a cache this hook has already written, so it would
+      // record an optimistic score as the value to go back to.
+      if (retainInFlight(matchId) === 1) {
+        // Drop any stale entry first: if this match is not in the cache we must
+        // end up with NO snapshot for it, never a leftover one that a later
+        // rollback would restore onto the wrong match.
+        snapshotsRef.current.delete(matchId);
+        const currentData = queryClient.getQueryData<BracketCacheData>(['bracket-data', bracketId]);
+        if (currentData?.matches) {
+          const currentMatch = currentData.matches.find((m) => matchIdMatches(m.id, matchId));
+          if (currentMatch) {
+            snapshotsRef.current.set(matchId, {
+              matchId,
+              bracketId,
+              team1Score: currentMatch.opponent1_score ?? currentMatch.team1Score ?? null,
+              team2Score: currentMatch.opponent2_score ?? currentMatch.team2Score ?? null,
+              winnerId: currentMatch.winner_id ?? currentMatch.winnerId ?? null,
+              status: currentMatch.status ?? 'pending',
+            });
+          }
         }
       }
 
@@ -248,17 +292,22 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         }, 15000)
       ); // 15 second timeout
     },
-    [bracketId, queryClient, toast, rollback, clearRollbackTimeout]
+    [bracketId, queryClient, toast, rollback, clearRollbackTimeout, retainInFlight]
   );
 
   // Clear timeout on success
   const onSuccess = useCallback(
     (matchId: string) => {
+      // Another save for this match is still out, and it is relying on both the
+      // snapshot and the timer. Disarming them here is what used to strand a
+      // later failure at its optimistic score.
+      if (releaseInFlight(matchId) > 0) return;
+
       clearRollbackTimeout(matchId);
       snapshotsRef.current.delete(matchId);
       scoreLog('Optimistic score update confirmed', { matchId });
     },
-    [clearRollbackTimeout]
+    [clearRollbackTimeout, releaseInFlight]
   );
 
   // Handle error - rollback and notify
@@ -266,6 +315,10 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
     (error: Error, matchId: string) => {
       clearRollbackTimeout(matchId);
       errorLog('Score update failed, rolling back', error);
+      // Ends the run for this match whatever else is still out: rollback puts
+      // the cache back to the last confirmed score and invalidates, so a save
+      // still in flight is corrected by its own refetch rather than by a
+      // snapshot taken before it.
       rollback(matchId);
       toast({
         title: 'Update Failed',
