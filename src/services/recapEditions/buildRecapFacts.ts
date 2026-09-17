@@ -1,5 +1,4 @@
 import type { WeekPairTrends } from '@/services/rankings/weeklyTrendsForWeek';
-import { pickTeamOfTheWeek } from '@/services/rankings/weeklyTrendsForWeek';
 import type { WeeklyRecapData } from '@/services/weeklyRecap/types';
 import type {
   RecapDivisionFact,
@@ -9,6 +8,7 @@ import type {
 } from '@/types/recapEdition';
 import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
 import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
+import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
 
 /**
  * Turns the week's readings into the frozen object an edition stores.

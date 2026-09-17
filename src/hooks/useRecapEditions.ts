@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from '@/hooks/useToast';
-import { fetchRecapFacts } from '@/services/recapEditions/fetchRecapFacts';
 import type { SaveVersionInput } from '@/services/recapEditions/RecapEditionService';
 import { RecapEditionService } from '@/services/recapEditions/RecapEditionService';
 import { getUIErrorMessage } from '@/utils/errorHandler';
@@ -52,8 +51,13 @@ export const useRecapEditionsForSeason = (seasonId?: string) =>
  */
 export const useGenerateRecapFacts = () =>
   useMutation({
-    mutationFn: ({ seasonId, weekNumber }: { seasonId: string; weekNumber: number }) =>
-      fetchRecapFacts(seasonId, weekNumber),
+    mutationFn: async ({ seasonId, weekNumber }: { seasonId: string; weekNumber: number }) => {
+      // Imported on demand. Statically this reaches WeeklyRecapService, the
+      // prediction model and the career pipeline, none of which anyone waiting
+      // for the admin console to paint needs until they press Generate.
+      const { fetchRecapFacts } = await import('@/services/recapEditions/fetchRecapFacts');
+      return fetchRecapFacts(seasonId, weekNumber);
+    },
     onError: (error) => {
       toast({
         title: 'Could not build the recap',

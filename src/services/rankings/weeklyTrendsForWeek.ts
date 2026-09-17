@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
 
 /**
  * Week-over-week power score movement for one EXPLICIT season week.
@@ -173,16 +174,4 @@ export async function fetchPowerScoreTrendsForWeek(
   return { trends, currentWeek: weekNumber, previousWeek, basis };
 }
 
-/**
- * Team of the Week for a set of trends.
- *
- * The rule the home page has always applied, in one place now so a saved
- * edition and the live card cannot pick different teams: the biggest riser,
- * and only if it actually rose.
- */
-export const pickTeamOfTheWeek = (
-  trends: WeeklyPowerScoreTrend[]
-): WeeklyPowerScoreTrend | null => {
-  const topRiser = [...trends].sort((a, b) => b.delta - a.delta)[0];
-  return topRiser && topRiser.delta > 0 ? topRiser : null;
-};
+export { pickTeamOfTheWeek };

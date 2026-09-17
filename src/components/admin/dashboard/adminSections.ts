@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   ListChecks,
   Mail,
+  Newspaper,
   Palette,
   Scale,
   Shuffle,
@@ -57,6 +58,9 @@ const OpponentHistoryTab = lazy(
   () => import('@/components/admin/opponent-history/OpponentHistoryTab')
 );
 const MassScoresTab = lazy(() => import('@/components/admin/scores/MassScoresTab'));
+const WeeklyContentPackTab = lazy(
+  () => import('@/components/admin/weekly-content/WeeklyContentPackTab')
+);
 const NotificationsTab = lazy(() => import('@/components/admin/notifications/NotificationsTab'));
 const SeasonManagementTab = lazy(() => import('@/components/admin/seasons/SeasonManagementTab'));
 const SeasonParticipationTab = lazy(
@@ -106,6 +110,12 @@ export const ADMIN_SECTIONS: AdminSection[] = [
     label: 'Live Corrections',
     icon: Wrench,
     Component: LiveCorrectionsSection,
+  },
+  {
+    id: 'weekly-content',
+    label: 'Weekly Content Pack',
+    icon: Newspaper,
+    Component: WeeklyContentPackTab,
   },
   { id: 'seasons', label: 'Season', icon: Calendar, Component: SeasonManagementTab },
   {
@@ -179,7 +189,15 @@ export const ADMIN_SECTION_GROUPS: AdminSectionGroup[] = [
     id: 'settings',
     label: 'Settings & Content',
     icon: LayoutGrid,
-    sections: ['seasons', 'hero-cards', 'themes', 'blind-draw', 'notifications', 'help'],
+    sections: [
+      'seasons',
+      'weekly-content',
+      'hero-cards',
+      'themes',
+      'blind-draw',
+      'notifications',
+      'help',
+    ],
   },
   {
     id: 'operations',

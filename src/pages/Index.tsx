@@ -22,9 +22,9 @@ import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
 import { useTeams } from '@/hooks/useTeams';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 import { useWeeklyRecap } from '@/hooks/useWeeklyRecap';
-import { pickTeamOfTheWeek } from '@/services/rankings/weeklyTrendsForWeek';
 import type { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import type { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
+import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
 
 // Lazy load components that use framer-motion to defer vendor-motion chunk and improve TTI
 const HeroCard = lazy(() => import('@/components/hero/HeroCard'));

@@ -34,6 +34,12 @@ export default defineConfig(({ mode }) => ({
           'vendor-supabase': ['@supabase/supabase-js'],
           // Separate Sentry into its own chunk so it doesn't block main bundle
           'vendor-sentry': ['@sentry/react'],
+          // Only ever reached through a dynamic import in the admin recap
+          // exporter, so naming it here does not make it eager - it just stops
+          // Rollup calling the chunk `index-*.js` after the package's own entry
+          // file. The size-limit "Main entry" check globs `dist/assets/index-*.js`
+          // and would otherwise count this lazy chunk as part of first paint.
+          'vendor-html-to-image': ['html-to-image'],
           // NOTE: recharts is intentionally NOT pinned to a manualChunk. The chart
           // components are lazy-loaded via React.lazy, so Rollup keeps recharts in
           // on-demand chunks. Forcing it into a named manualChunk turns it into a
