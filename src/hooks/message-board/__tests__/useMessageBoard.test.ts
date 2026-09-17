@@ -277,6 +277,26 @@ describe('useMessageBoard', () => {
     expect(result.current.hasMore).toBe(true);
   });
 
+  // The other half of the same handler: an edit that still matches the filter
+  // replaces the message where it sits, rather than removing it.
+  it('shows an edit in place when the message still matches the filter', async () => {
+    mockFetchMessages.mockResolvedValue([baseMessage]);
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      realtimeHandlers.onMessageUpdated?.({ ...baseMessage, content: 'hello, edited' });
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(result.current.messages).toHaveLength(1));
+    expect(result.current.messages[0]).toMatchObject({
+      id: 'm1',
+      content: 'hello, edited',
+    });
+  });
+
   // Re-categorising can empty the list just as deletes can: the message is
   // still there, it just no longer matches the filter. Same dead end, so the
   // same reload.
