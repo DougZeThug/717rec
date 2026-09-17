@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from '@/hooks/useToast';
+import type { CaptionTone } from '@/services/recapEditions/CaptionService';
 import type { SaveVersionInput } from '@/services/recapEditions/RecapEditionService';
 import { RecapEditionService } from '@/services/recapEditions/RecapEditionService';
+import type { RecapFactsV1 } from '@/types/recapEdition';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const LATEST_PUBLISHED_KEY = ['recap-edition', 'latest-published'] as const;
@@ -64,6 +66,29 @@ export const useGenerateRecapFacts = () =>
         description: getUIErrorMessage(error, 'Failed to build the recap'),
         variant: 'destructive',
       });
+    },
+  });
+
+/**
+ * Ask the edge function for a caption draft.
+ *
+ * A mutation with no toast of its own: the screen handles the outcomes, because
+ * "not configured" and "it broke" need different words and a fallback caption
+ * is written either way.
+ */
+export const useGenerateCaption = () =>
+  useMutation({
+    mutationFn: async ({
+      facts,
+      commissionerNote,
+      tone,
+    }: {
+      facts: RecapFactsV1;
+      commissionerNote: string;
+      tone?: CaptionTone;
+    }) => {
+      const { generateCaption } = await import('@/services/recapEditions/CaptionService');
+      return generateCaption(facts, commissionerNote, tone);
     },
   });
 

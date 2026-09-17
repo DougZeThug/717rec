@@ -1,4 +1,4 @@
-import { Copy, Download, Loader2, Newspaper, Sparkles } from 'lucide-react';
+import { Copy, Download, Loader2, Newspaper, Sparkles, Wand2 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import AdminSectionWrapper from '@/components/admin/AdminSectionWrapper';
@@ -62,6 +62,26 @@ const WeeklyContentPackTab: React.FC = () => {
     if (!chosenSeasonId || !Number.isFinite(week) || week < 1) return;
     await pack.generateFor(chosenSeasonId, week);
   }, [chosenSeasonId, pack, weekNumber]);
+
+  const handleGenerateCaption = useCallback(async () => {
+    const outcome = await pack.generateCaption();
+
+    if (outcome === 'unconfigured') {
+      toast({
+        title: 'AI captions are not set up',
+        description:
+          'Add ANTHROPIC_API_KEY to the Supabase edge function secrets. Until then, write the caption yourself — everything else in the pack works.',
+        variant: 'destructive',
+      });
+    } else if (outcome === 'failed') {
+      toast({
+        title: 'Could not write the caption',
+        description:
+          'The caption in the box is the plain one built from the results. Try again, or edit it as it is.',
+        variant: 'destructive',
+      });
+    }
+  }, [pack, toast]);
 
   const handleCopyCaption = useCallback(async () => {
     try {
@@ -210,11 +230,30 @@ const WeeklyContentPackTab: React.FC = () => {
                       }
                     }}
                     rows={10}
-                    placeholder="Write the post, or generate a draft once captions are wired up."
+                    placeholder="Write the post, or press Write it for me."
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {pack.draft.captionSource === 'ai' && 'Written by AI. Edit freely.'}
+                    {pack.draft.captionSource === 'ai_edited' && 'AI draft, edited by you.'}
+                    {pack.draft.captionSource === 'fallback' &&
+                      'Built from the results. Press Write it for me for something with more personality.'}
+                    {pack.draft.captionSource === 'manual' && 'Your own words.'}
+                  </p>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={handleGenerateCaption}
+                    disabled={pack.isGeneratingCaption}
+                  >
+                    {pack.isGeneratingCaption ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Wand2 className="size-4" />
+                    )}
+                    Write it for me
+                  </Button>
                   <Button
                     variant="outline"
                     onClick={handleCopyCaption}

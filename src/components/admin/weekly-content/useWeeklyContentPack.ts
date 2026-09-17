@@ -1,14 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import {
+  useGenerateCaption,
   useGenerateRecapFacts,
   usePublishRecapEdition,
   useSaveRecapVersion,
 } from '@/hooks/useRecapEditions';
 import { canPublishFacts } from '@/services/recapEditions/buildRecapFacts';
+import { CaptionUnconfiguredError } from '@/services/recapEditions/CaptionService';
 import type { CaptionSource } from '@/services/recapEditions/RecapEditionService';
 import { RecapEditionService } from '@/services/recapEditions/RecapEditionService';
 import type { RecapFactsV1 } from '@/types/recapEdition';
+
+import { buildFallbackCaption } from './fallbackCaption';
 
 export interface PackDraft {
   headline: string;
@@ -57,6 +61,7 @@ export const useWeeklyContentPack = () => {
   const [isPublishing, setIsPublishing] = useState(false);
 
   const generate = useGenerateRecapFacts();
+  const captionRequest = useGenerateCaption();
   const saveVersion = useSaveRecapVersion();
   const publishEdition = usePublishRecapEdition();
 
@@ -75,8 +80,11 @@ export const useWeeklyContentPack = () => {
       setFacts(next);
       setDraft((current) => ({
         ...current,
-        // Only fill a headline the admin has not written one for.
+        // Only fill fields the admin has not written for themselves, so
+        // regenerating after a score correction never discards their words.
         headline: current.headline.trim() === '' ? defaultHeadline(next) : current.headline,
+        caption: current.caption.trim() === '' ? buildFallbackCaption(next) : current.caption,
+        captionSource: current.caption.trim() === '' ? 'fallback' : current.captionSource,
       }));
       return next;
     },
@@ -129,6 +137,33 @@ export const useWeeklyContentPack = () => {
     [publishEdition, save]
   );
 
+  /**
+   * Replace the caption with an AI draft.
+   *
+   * Returns what happened rather than toasting, because "not set up" and "it
+   * failed" need different words on screen. Either way the fallback caption is
+   * still in the box, so the pack is never blocked on this.
+   */
+  const generateCaption = useCallback(async (): Promise<'ok' | 'unconfigured' | 'failed'> => {
+    if (!facts) return 'failed';
+
+    try {
+      const result = await captionRequest.mutateAsync({
+        facts,
+        commissionerNote: draft.commissionerNote,
+      });
+      setDraft((current) => ({
+        ...current,
+        caption: result.caption,
+        captionSource: 'ai',
+        captionModel: result.model,
+      }));
+      return 'ok';
+    } catch (error) {
+      return error instanceof CaptionUnconfiguredError ? 'unconfigured' : 'failed';
+    }
+  }, [captionRequest, draft.commissionerNote, facts]);
+
   const reset = useCallback(() => {
     setFacts(null);
     setDraft(emptyDraft);
@@ -146,6 +181,8 @@ export const useWeeklyContentPack = () => {
     isSaving: saveVersion.isPending,
     publish,
     isPublishing,
+    generateCaption,
+    isGeneratingCaption: captionRequest.isPending,
     canPublish: facts !== null && canPublishFacts(facts),
     reset,
   };
