@@ -102,9 +102,17 @@ export const useBracketsViewerRenderer = ({
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const lastFingerprintRef = useRef<string | null>(null);
 
+  // Forget the last fingerprint whenever the container can be replaced under
+  // us. BracketsViewerComponent keys the container on `${bracket.id}-${refreshKey}`,
+  // so both parts belong here: a change to either mounts a fresh, empty node,
+  // and a fingerprint held over from the old one would skip the render and
+  // leave that node blank. Two different brackets really can share a
+  // fingerprint — the legacy transform numbers matches locally per bracket, so
+  // two brackets of the same size at the same stage produce identical ids,
+  // scores and statuses, and the fingerprint carries no bracket identity.
   useEffect(() => {
     lastFingerprintRef.current = null;
-  }, [refreshKey]);
+  }, [refreshKey, bracket?.id]);
 
   useEffect(() => {
     if (!isScriptReady || !containerRef.current || !bracket?.id) {
