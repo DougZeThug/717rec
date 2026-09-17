@@ -27,6 +27,19 @@ const EMPTY_MATCH_REACTIONS: MatchReaction[] = [];
 const optimisticRemovalKey = (reactionMatchId: string, userId: string, emoji: string) =>
   `${reactionMatchId}:${userId}:${emoji}`;
 
+/** The stand-in row shown while an insert is still on its way. */
+const makeOptimisticReaction = (
+  reactionMatchId: string,
+  userId: string,
+  emoji: string
+): MatchReaction => ({
+  id: `optimistic-${userId}-${emoji}`,
+  match_id: reactionMatchId,
+  user_id: userId,
+  emoji,
+  created_at: new Date().toISOString(),
+});
+
 /** Build sorted reaction counts for display, marking whether the current user reacted. */
 const countReactions = (reactions: MatchReaction[], userId?: string): ReactionCount[] => {
   const counts: ReactionCount[] = [];
@@ -63,10 +76,19 @@ export const useMatchReactions = (matchId: string) => {
   const realtimeDeletesRef = useRef<Set<string>>(new Set());
   const pendingOptimisticRemovalsRef = useRef<Set<string>>(new Set());
   const mutationChainsRef = useRef<Map<string, Promise<void>>>(new Map());
+  // What onMutate decided, keyed by emoji. mutationFn runs straight after
+  // onMutate and must act on that decision: the `reactions` array it closes over
+  // is from the last render, which can still hold a row the cache has let go of.
+  const toggleTargetsRef = useRef<Map<string, MatchReaction | null>>(new Map());
 
   useEffect(() => {
     realtimeInsertsRef.current.clear();
     realtimeDeletesRef.current.clear();
+    // This one was missed before: it is keyed by match, but a hook instance
+    // returning to a match it had already toggled carried a live cancellation
+    // straight into the next tap.
+    pendingOptimisticRemovalsRef.current.clear();
+    toggleTargetsRef.current.clear();
   }, [matchId]);
 
   const reactionsQuery = useQuery({
@@ -197,7 +219,15 @@ export const useMatchReactions = (matchId: string) => {
   const mutation = useMutation({
     mutationFn: async (emoji: string) => {
       if (!currentUserId) throw new Error('User is required to toggle a reaction');
-      const existing = reactions.find((r) => r.user_id === currentUserId && r.emoji === emoji);
+      // The direction onMutate settled on, from the live cache, rather than the
+      // `reactions` array captured at the last render. The two could disagree --
+      // a realtime row landing between the render and the tap was enough -- and
+      // then this sent a delete for a row onMutate had just added optimistically.
+      const existing = toggleTargetsRef.current.get(emoji) ?? null;
+      // An optimistic id names no row the server has, so it can never be
+      // deleted. toggleReaction catches that case before queueing; if one ever
+      // slipped through, an insert for this emoji is already on its way.
+      if (existing?.id.startsWith('optimistic-')) return;
       if (existing) {
         await MatchReactionsService.deleteReaction(existing.id, currentUserId);
         return;
@@ -240,24 +270,29 @@ export const useMatchReactions = (matchId: string) => {
     onMutate: async (emoji) => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<MatchReaction[]>(queryKey);
+      // Decide here, from the live cache, and record it unconditionally --
+      // including "nothing to remove" -- so mutationFn acts on this decision and
+      // never re-derives its own from a stale render.
+      const existing = currentUserId
+        ? ((previous ?? []).find((r) => r.user_id === currentUserId && r.emoji === emoji) ?? null)
+        : null;
+      toggleTargetsRef.current.set(emoji, existing);
       queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) => {
         if (!currentUserId) return curr;
-        const existing = curr.find((r) => r.user_id === currentUserId && r.emoji === emoji);
         if (existing) return curr.filter((r) => r.id !== existing.id);
-        return [
-          ...curr,
-          {
-            id: `optimistic-${currentUserId}-${emoji}`,
-            match_id: matchId,
-            user_id: currentUserId,
-            emoji,
-            created_at: new Date().toISOString(),
-          },
-        ];
+        return [...curr, makeOptimisticReaction(matchId, currentUserId, emoji)];
       });
       return { previous };
     },
-    onError: (err, _emoji, context) => {
+    onError: (err, emoji, context) => {
+      // The insert never landed, so nothing is on its way any more. A pending
+      // cancellation left behind here would make the next tap restore a row the
+      // server has never heard of, and swallow the tap that asked for it.
+      if (currentUserId) {
+        pendingOptimisticRemovalsRef.current.delete(
+          optimisticRemovalKey(matchId, currentUserId, emoji)
+        );
+      }
       if (context) queryClient.setQueryData(queryKey, context.previous ?? []);
       queryClient
         .invalidateQueries({ queryKey, refetchType: 'active' })
@@ -288,15 +323,33 @@ export const useMatchReactions = (matchId: string) => {
       return;
     }
     if (!emoji) return;
-    pendingOptimisticRemovalsRef.current.delete(optimisticRemovalKey(matchId, user.id, emoji));
-    const existingOptimisticReaction = reactions.find(
+    const removalKey = optimisticRemovalKey(matchId, user.id, emoji);
+
+    // Asking back for a reaction whose cancellation is still pending: the first
+    // tap's insert is already on its way, so put the row back and stop here.
+    // Queueing a second mutation instead let it decide its own direction later,
+    // by which time the realtime row for the first tap had landed -- so it read
+    // "it's on" and deleted the very row the reader had just asked to keep.
+    if (pendingOptimisticRemovalsRef.current.delete(removalKey)) {
+      queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
+        curr.some((reaction) => reaction.user_id === user.id && reaction.emoji === emoji)
+          ? curr
+          : [...curr, makeOptimisticReaction(matchId, user.id, emoji)]
+      );
+      return;
+    }
+
+    // Read the cache rather than the render closure: taps land faster than
+    // React re-renders for the one before them.
+    const current = queryClient.getQueryData<MatchReaction[]>(queryKey) ?? EMPTY_MATCH_REACTIONS;
+    const existingOptimisticReaction = current.find(
       (reaction) =>
         reaction.id.startsWith('optimistic-') &&
         reaction.user_id === user.id &&
         reaction.emoji === emoji
     );
     if (existingOptimisticReaction) {
-      pendingOptimisticRemovalsRef.current.add(optimisticRemovalKey(matchId, user.id, emoji));
+      pendingOptimisticRemovalsRef.current.add(removalKey);
       queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
         curr.filter((reaction) => reaction.id !== existingOptimisticReaction.id)
       );
