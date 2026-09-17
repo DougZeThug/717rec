@@ -303,7 +303,7 @@ describe('useOptimisticScoreMutation', () => {
       expect(scoresById()).toEqual({ '99': 5 });
     });
 
-    it('lets the second save roll back after the first has been confirmed', () => {
+    it('rolls back to the confirmed first save, not past it, when the second fails', () => {
       seedAtFive();
       const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
         wrapper: createWrapper(),
@@ -317,9 +317,11 @@ describe('useOptimisticScoreMutation', () => {
         result.current.onError(new Error('Save failed'), MATCH_ID);
       });
 
-      // Confirming the first used to delete the snapshot, so this rollback was a
-      // no-op and the bracket kept showing 8 while the admin was told it failed.
-      expect(scoresById()).toEqual({ '99': 5 });
+      // 2 is what the league now holds: the first save landed. Going back to the
+      // pre-save 5 would undo a write that succeeded, and the invalidation that
+      // would eventually correct it cannot run offline. Confirming the first
+      // save used to delete the snapshot outright, leaving the unwritten 8.
+      expect(scoresById()).toEqual({ '99': 2 });
     });
 
     it('leaves the second save timeout armed after the first is confirmed', () => {
@@ -346,7 +348,8 @@ describe('useOptimisticScoreMutation', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'Update Timeout', variant: 'destructive' })
       );
-      expect(scoresById()).toEqual({ '99': 5 });
+      // Back to the confirmed first save, for the same reason as above.
+      expect(scoresById()).toEqual({ '99': 2 });
     });
 
     it('rolls back to the real score when the page goes away mid-run', () => {

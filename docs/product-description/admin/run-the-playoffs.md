@@ -261,13 +261,14 @@ new score before the write has landed, which is what
 [`the-playoffs-page.md`](../playoffs/the-playoffs-page.md) points here for.
 
 If that write fails, or takes more than 15 seconds, the bracket goes back to the
-last score the league actually holds and a red toast says so. It goes back to the
-*last confirmed* score even when the same match was saved twice in a row before
-either write landed — the score to return to is taken once, when the first save
-starts, and kept until every save for that match has settled. Leaving the page
-mid-save does the same rather than leaving an unwritten score on screen, which
-matters because bracket data is held for five minutes and is not re-read on
-arrival.
+last score the league actually holds and a red toast says so. That is true even
+when the same match was saved twice in a row before either write landed: the
+score to go back to is taken once, when the first save starts, and it moves
+forward as each save comes back successful — so a second save failing after the
+first succeeded returns to what the first one wrote, not to what was on screen
+before either started. Leaving the page mid-save does the same rather than
+leaving an unwritten score behind, which matters because bracket data is held for
+five minutes and is not re-read on arrival.
 
 **Realtime.** The matches inside an open bracket update live. Nothing else on
 any of these three screens does.

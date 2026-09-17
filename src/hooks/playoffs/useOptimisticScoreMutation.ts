@@ -78,6 +78,24 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
    */
   const inFlightRef = useRef(new Map<string, number>());
 
+  /**
+   * What each in-flight save wrote, oldest first, per match.
+   *
+   * The baseline a rollback returns to is "the last value the league confirmed",
+   * and that moves: once an earlier save of the same match comes back successful
+   * its optimistic values ARE the confirmed ones, so a later save failing must
+   * go back to those, not to what was on screen before either started. Without
+   * this, a failure after a success put a superseded score back and leaned on
+   * the invalidation to correct it — which it cannot do offline, or if the
+   * refetch also fails.
+   *
+   * Consumed oldest-first: `onSuccess` carries only a match id, so which save
+   * confirmed cannot be told apart. Saves for one match are issued in order, so
+   * oldest-first is right whenever they also land in order, and the invalidation
+   * in `rollback` is still there for when they do not.
+   */
+  const pendingWritesRef = useRef(new Map<string, CachedMatchSnapshot[]>());
+
   const retainInFlight = useCallback((matchId: string) => {
     const next = (inFlightRef.current.get(matchId) ?? 0) + 1;
     inFlightRef.current.set(matchId, next);
@@ -90,6 +108,28 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
     else inFlightRef.current.set(matchId, next);
     return Math.max(0, next);
   }, []);
+
+  /** This match as the cache currently holds it, or null when it holds no such match. */
+  const readMatchSnapshot = useCallback(
+    (matchId: string, forBracketId: string): CachedMatchSnapshot | null => {
+      const currentData = queryClient.getQueryData<BracketCacheData>([
+        'bracket-data',
+        forBracketId,
+      ]);
+      const currentMatch = currentData?.matches?.find((m) => matchIdMatches(m.id, matchId));
+      if (!currentMatch) return null;
+
+      return {
+        matchId,
+        bracketId: forBracketId,
+        team1Score: currentMatch.opponent1_score ?? currentMatch.team1Score ?? null,
+        team2Score: currentMatch.opponent2_score ?? currentMatch.team2Score ?? null,
+        winnerId: currentMatch.winner_id ?? currentMatch.winnerId ?? null,
+        status: currentMatch.status ?? 'pending',
+      };
+    },
+    [queryClient]
+  );
 
   const clearRollbackTimeout = useCallback((matchId: string) => {
     const timeout = rollbackTimeoutsRef.current.get(matchId);
@@ -107,6 +147,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
       // has no snapshot, and leaving its count standing would stop the next save
       // for it taking one.
       inFlightRef.current.delete(matchId);
+      pendingWritesRef.current.delete(matchId);
 
       const snapshot = snapshotsRef.current.get(matchId);
       if (!snapshot) return;
@@ -223,20 +264,8 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         // end up with NO snapshot for it, never a leftover one that a later
         // rollback would restore onto the wrong match.
         snapshotsRef.current.delete(matchId);
-        const currentData = queryClient.getQueryData<BracketCacheData>(['bracket-data', bracketId]);
-        if (currentData?.matches) {
-          const currentMatch = currentData.matches.find((m) => matchIdMatches(m.id, matchId));
-          if (currentMatch) {
-            snapshotsRef.current.set(matchId, {
-              matchId,
-              bracketId,
-              team1Score: currentMatch.opponent1_score ?? currentMatch.team1Score ?? null,
-              team2Score: currentMatch.opponent2_score ?? currentMatch.team2Score ?? null,
-              winnerId: currentMatch.winner_id ?? currentMatch.winnerId ?? null,
-              status: currentMatch.status ?? 'pending',
-            });
-          }
-        }
+        const before = readMatchSnapshot(matchId, bracketId);
+        if (before) snapshotsRef.current.set(matchId, before);
       }
 
       // Update cache optimistically
@@ -275,6 +304,16 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         };
       });
 
+      // What this save put on screen. If it comes back successful while another
+      // save for the same match is still out, this becomes the value that one
+      // rolls back to — by then it is what the league holds.
+      const written = readMatchSnapshot(matchId, bracketId);
+      if (written) {
+        const queue = pendingWritesRef.current.get(matchId);
+        if (queue) queue.push(written);
+        else pendingWritesRef.current.set(matchId, [written]);
+      }
+
       // Set rollback timeout — replaces only THIS match's pending timer, so a second
       // save no longer leaves the first save with no timeout protection.
       clearRollbackTimeout(matchId);
@@ -292,19 +331,36 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
         }, 15000)
       ); // 15 second timeout
     },
-    [bracketId, queryClient, toast, rollback, clearRollbackTimeout, retainInFlight]
+    [
+      bracketId,
+      queryClient,
+      toast,
+      rollback,
+      clearRollbackTimeout,
+      retainInFlight,
+      readMatchSnapshot,
+    ]
   );
 
   // Clear timeout on success
   const onSuccess = useCallback(
     (matchId: string) => {
+      const confirmed = pendingWritesRef.current.get(matchId)?.shift() ?? null;
+
       // Another save for this match is still out, and it is relying on both the
       // snapshot and the timer. Disarming them here is what used to strand a
-      // later failure at its optimistic score.
-      if (releaseInFlight(matchId) > 0) return;
+      // later failure at its optimistic score. What does change is the value it
+      // would roll back to: this save has landed, so what it wrote is now what
+      // the league holds, and going back any further would undo a write that
+      // succeeded.
+      if (releaseInFlight(matchId) > 0) {
+        if (confirmed) snapshotsRef.current.set(matchId, confirmed);
+        return;
+      }
 
       clearRollbackTimeout(matchId);
       snapshotsRef.current.delete(matchId);
+      pendingWritesRef.current.delete(matchId);
       scoreLog('Optimistic score update confirmed', { matchId });
     },
     [clearRollbackTimeout, releaseInFlight]
