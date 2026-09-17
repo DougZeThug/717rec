@@ -206,7 +206,7 @@ var get_schedule_default = defineTool2({
     ).eq("season_id", seasonId).limit(limit);
     if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
     if (scope === "upcoming")
-      query = query.eq("iscompleted", false).order("date", { ascending: true });
+      query = query.not("iscompleted", "is", true).order("date", { ascending: true });
     else if (scope === "recent")
       query = query.eq("iscompleted", true).order("date", { ascending: false });
     else query = query.order("date", { ascending: false });
