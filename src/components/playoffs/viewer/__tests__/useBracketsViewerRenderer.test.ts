@@ -416,6 +416,30 @@ describe('useBracketsViewerRenderer', () => {
       expect(bracketLog).toHaveBeenCalledWith('No-op: identical fingerprint, skipping render');
     });
 
+    it('stays initialised through a no-op re-render, so no spinner appears', async () => {
+      const transformed = makeResult();
+      mockedAdapter.transformFromSql.mockResolvedValue(transformed);
+      const { result, rerender } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      // A debounced realtime refetch hands back a new bracket object carrying
+      // the same match data, at an unchanged refreshKey. The effect re-runs, so
+      // its cleanup clears isInitialized — and the no-op path used to return
+      // before restoring it, leaving "Loading bracket..." under a drawn bracket.
+      rerender({ bracket: makeBracket() });
+      await flushAsync();
+
+      expect(bracketLog).toHaveBeenCalledWith('No-op: identical fingerprint, skipping render');
+      expect(result.current.isInitialized).toBe(true);
+
+      // It never recovered on its own either: every later no-op stayed stuck.
+      rerender({ bracket: makeBracket() });
+      await flushAsync();
+
+      expect(result.current.isInitialized).toBe(true);
+      expect(renderMock).toHaveBeenCalledTimes(1);
+    });
+
     it('re-renders when a previously TBD final receives its finalists (late-round regression)', async () => {
       const tbdFinal = makeResult();
       const populatedFinal = makeResult({

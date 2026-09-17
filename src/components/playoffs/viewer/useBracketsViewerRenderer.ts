@@ -176,6 +176,17 @@ export const useBracketsViewerRenderer = ({
         const fp = fingerprint(matchRows as unknown as FingerprintMatch[]);
         if (lastFingerprintRef.current === fp) {
           bracketLog('No-op: identical fingerprint, skipping render');
+          // The bracket already drawn is still correct and is never cleared on
+          // this path, so the viewer is still initialised. Without this, the
+          // cleanup's setIsInitialized(false) sticks — the effect re-runs on a
+          // new `bracket` object identity, and a refetch that returns the same
+          // match data lands here before ever reaching setIsInitialized(true).
+          // The reader is then left with a "Loading bracket..." spinner under a
+          // working bracket until the next refreshKey change or a navigation.
+          if (!cancelled) {
+            setIsInitialized(true);
+            setError(null);
+          }
           return;
         }
         lastFingerprintRef.current = fp;
