@@ -50,8 +50,12 @@ stateDiagram-v2
 
 **Undo** appears whenever the current game has at least one round and the user
 may score. It is a small outlined button, right-aligned, reading "Undo last
-round". It is dead when there is nothing to undo and while a save or an undo is
-in flight.
+round". It is dead when there is nothing to undo, while a save or an undo is in
+flight, **with no signal**, and **while any round tapped on this screen is still
+waiting to be filed**. The sync notice above it says which of the last two it
+is. An undo names a game and a round number rather than a row this scorer wrote,
+so one sent before its round is filed would remove whatever is at that slot —
+possibly the other scorer's round.
 
 It stays available **after the game has been won but before it is ended**, which
 is deliberate: the win banner says so in as many words — "Wrong score? Undo the

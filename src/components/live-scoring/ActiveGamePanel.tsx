@@ -133,6 +133,21 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
     submitRound.isPending || unsettledRounds > 0
   );
 
+  /**
+   * Why Undo is unavailable: the same two conditions that block ending a game.
+   *
+   * An undo names a game and a round number, not a row this scorer wrote. Fired
+   * against a round that has not been filed yet, it deletes whatever is at that
+   * slot instead — which can be the other scorer's round. So it waits for a
+   * signal, and for every round tapped on this screen to be filed.
+   *
+   * This is narrower than `isSavingRound` on purpose. Reading a held round as
+   * "saving" would freeze the grids and the save button too, which is what
+   * `isSavingRound` exists to prevent; only Undo is unsafe while a round is
+   * held, and only Undo is gated on it.
+   */
+  const undoBlocked = !isOnline || submitRound.isPending || unsettledRounds > 0;
+
   const lastRound = game.rounds.length > 0 ? game.rounds[game.rounds.length - 1] : null;
   const gameWon = game.pendingWinnerSide !== null;
   const pendingWinnerName = game.pendingWinnerSide === 1 ? team1Name : team2Name;
@@ -262,7 +277,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
 
       {canScore && (
         <LiveScoringControls
-          canUndo={lastRound !== null && !isSavingRound}
+          canUndo={lastRound !== null && !undoBlocked}
           isUndoing={undoLastRound.isPending}
           lastRoundLabel={undoLabel}
           onUndo={() =>
