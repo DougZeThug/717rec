@@ -94,9 +94,19 @@ each. Its fields are ordinary inputs that are saved with an explicit Save.
 ### While editing
 
 The hero card form requires a card name and a headline; the browser refuses to
-submit without them. Nothing else is checked. The raw settings text in Advanced
-Settings is parsed on every keystroke to build the preview, and text that is not
-valid is treated as empty rather than reported.
+submit without them. "Extra Data (JSON)" in Advanced Settings is parsed on every
+keystroke to build the preview, and how a bad value is treated depends on what is
+wrong with it:
+
+- **Text that is not valid JSON is treated as empty** and nothing is reported.
+  Half-typed JSON is the normal state of the box, so complaining about it would
+  mean complaining constantly.
+- **Valid JSON of the wrong shape is reported**, under the box, in as many words
+  — "buy_in must be a string", say. This only applies to a Champions or Event
+  card, which are the two that expect particular fields. **Save is dead** until
+  it is fixed, and the extra editor for that card type is replaced by a line
+  saying where to fix it, rather than editing against an empty object and
+  quietly dropping the rest of what was typed.
 
 The live preview shows placeholder text — "Card Headline" — until a headline is
 typed, so an empty form still previews as a card.
@@ -116,7 +126,9 @@ home page for every visitor.
 **The hero card form** writes on Create Card or Save Changes. On success a toast
 says the card was created or updated and the form closes back to the table. On
 failure a toast carries the server's own message and **the form stays open with
-everything in it**.
+everything in it**. A card whose Extra Data is valid JSON of the wrong shape
+never gets that far: the button is dead, and Advanced Settings opens by itself if
+the press is somehow reached, so the reason is on screen.
 
 **Duplicate** copies a card immediately, with **no confirmation**. The copy takes
 the original's name with " (Copy)" appended, its slug with "-copy" appended, and

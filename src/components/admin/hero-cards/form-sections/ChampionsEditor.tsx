@@ -12,12 +12,33 @@ import {
 } from '@/components/ui/select';
 import { useDivisions } from '@/hooks/useDivisions';
 import { HeroCardService } from '@/services/HeroCardService';
-import { parseHeroCardMetadata, parseMetadata } from '@/utils/parseMetadata';
+import { tryParseHeroCardMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
-export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
+/**
+ * Shown in place of the editor while the "Extra Data (JSON)" box will not parse.
+ *
+ * Not an empty editor with a `{}` fallback: every control in here writes its
+ * change back as `{ ...metadata, <key>: ... }`, so editing against `{}` would
+ * erase whatever else the admin had typed in that box. Refusing to edit until
+ * the box parses is the only safe answer.
+ */
+const MetadataBlockedNotice: React.FC<{ error: string }> = ({ error }) => (
+  <div className="bg-card rounded-lg border p-4">
+    <p className="text-sm text-destructive">{error}.</p>
+    <p className="mt-1 text-xs text-muted-foreground">
+      Fix &quot;Extra Data (JSON)&quot; under Advanced Settings to edit this section.
+    </p>
+  </div>
+);
+
+export const ChampionsEditor: React.FC<FormSectionProps> = ({
+  formData,
+  onChange,
+  metadataError = null,
+}) => {
   const { divisions } = useDivisions();
 
   // Get unique visible display divisions ordered by weight
@@ -59,7 +80,12 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
     const currentFormData = formDataRef.current;
     if (currentFormData.card_type !== 'champions' || visibleDivisions.length === 0) return;
     const validNames = new Set(visibleDivisions.map((d) => d.display_division));
-    const currentMeta = parseHeroCardMetadata(parseMetadata(currentFormData.metadata), 'champions');
+    // Bails rather than falling back: this writes the metadata back, and doing
+    // that from an empty object would quietly wipe the admin's typed JSON with
+    // nothing pressed.
+    const parsed = tryParseHeroCardMetadata(currentFormData.metadata, 'champions');
+    if (!parsed.ok) return;
+    const currentMeta = parsed.metadata;
     const currentChampions = currentMeta.champions || {};
     const staleKeys = Object.keys(currentChampions).filter((k) => !validNames.has(k));
     if (staleKeys.length > 0) {
@@ -71,8 +97,12 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({ formData, onChange
   }, [visibleDivisions]);
 
   if (formData.card_type !== 'champions') return null;
+  if (metadataError) return <MetadataBlockedNotice error={metadataError} />;
 
-  const metadata = parseHeroCardMetadata(parseMetadata(formData.metadata), 'champions');
+  const parsed = tryParseHeroCardMetadata(formData.metadata, 'champions');
+  if (!parsed.ok) return <MetadataBlockedNotice error={parsed.error} />;
+
+  const metadata = parsed.metadata;
   const champions = metadata.champions || {};
 
   const updateChampion = (divisionName: string, teamId: string) => {

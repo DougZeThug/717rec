@@ -190,4 +190,76 @@ describe('HeroCardForm unsaved changes', () => {
     expect(confirmSpy).not.toHaveBeenCalled();
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  // The box is parsed on every keystroke, and for a champions or event card that
+  // check refuses a bad shape. It used to do so by throwing, out of render, so
+  // one wrong character unmounted the whole admin dashboard.
+  describe('extra data that will not parse', () => {
+    // Idempotent: the trigger toggles, so clicking it again would close the
+    // section the next typeMetadata call needs open.
+    const openAdvanced = async () => {
+      const alreadyOpen = screen.queryByLabelText('Extra Data (JSON)');
+      if (alreadyOpen) return alreadyOpen;
+      await userEvent.click(screen.getByRole('button', { name: /advanced settings/i }));
+      return screen.getByLabelText('Extra Data (JSON)');
+    };
+
+    const typeMetadata = async (value: string) => {
+      const box = await openAdvanced();
+      await userEvent.clear(box);
+      await userEvent.type(box, value.replace(/[{[]/g, '$&$&'));
+      return box;
+    };
+
+    it('stays on screen and says what is wrong', async () => {
+      renderForm(<HeroCardForm card={makeCard({ card_type: 'event' })} onClose={vi.fn()} />);
+
+      await typeMetadata('{"buy_in": 20}');
+
+      // Still mounted: before this fix the throw escaped render and the route
+      // boundary took the whole admin dashboard down.
+      expect(screen.getByRole('heading', { name: 'Edit Hero Card' })).toBeInTheDocument();
+      expect(screen.getByLabelText('Extra Data (JSON)')).toHaveAccessibleDescription(
+        /buy_in must be a string/i
+      );
+    });
+
+    it('will not save the card while it is wrong', async () => {
+      const onClose = vi.fn();
+      renderForm(<HeroCardForm card={makeCard({ card_type: 'event' })} onClose={onClose} />);
+
+      await typeMetadata('{"buy_in": 20}');
+
+      expect(screen.getByRole('button', { name: 'Save Changes' })).toBeDisabled();
+      await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+      expect(mocks.updateCard).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('saves what was typed once it is fixed, not an empty object', async () => {
+      renderForm(<HeroCardForm card={makeCard({ card_type: 'event' })} onClose={vi.fn()} />);
+
+      await typeMetadata('{"buy_in": 20}');
+      await typeMetadata('{"buy_in": "20"}');
+
+      expect(screen.queryByText(/buy_in must be a string/i)).not.toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Save Changes' }));
+
+      await waitFor(() => expect(mocks.updateCard).toHaveBeenCalledTimes(1));
+      expect(mocks.updateCard).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: { buy_in: '20' } })
+      );
+    });
+
+    it('refuses to edit the winners rather than editing against an empty object', async () => {
+      renderForm(<HeroCardForm card={makeCard({ card_type: 'event' })} onClose={vi.fn()} />);
+
+      await typeMetadata('{"buy_in": 20, "payouts": "50/30/20"}');
+
+      // Editing here writes { ...metadata, past_winners }, so an empty-object
+      // fallback would drop the payouts line the admin also typed.
+      expect(screen.queryByRole('button', { name: /add week/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/fix "extra data \(json\)"/i)).toBeInTheDocument();
+    });
+  });
 });
