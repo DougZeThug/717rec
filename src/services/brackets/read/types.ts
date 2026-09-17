@@ -20,6 +20,15 @@ export interface BracketManagerMatchWithStage {
     number: number;
     settings: unknown;
   } | null;
+  /**
+   * The round row behind `round_id`. `round_id` is a global counter, so only
+   * `round.number` is the round's place in its bracket — 1-based, and starting
+   * again for the winners, the losers and the grand final.
+   */
+  round: {
+    id: number;
+    number: number;
+  } | null;
 }
 
 export interface LegacyPlayoffMatchWithGames {

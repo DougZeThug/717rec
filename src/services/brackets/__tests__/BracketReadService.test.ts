@@ -390,12 +390,12 @@ describe('fetchPlayoffTeams', () => {
 describe('fetchBmMatchWithStage', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('returns match data on success', async () => {
+  it('returns match data with its round row on success', async () => {
     const row = {
       id: 1,
       stage_id: 10,
       group_id: 1,
-      round_id: 1,
+      round_id: 1296,
       number: 1,
       status: 'pending',
       opponent1_id: 1,
@@ -413,12 +413,21 @@ describe('fetchBmMatchWithStage', () => {
         number: 1,
         settings: {},
       },
+      round: { id: 1296, number: 2 },
     };
+    let selected = '';
     mockFrom.mockReturnValue({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) }),
+      select: (columns: string) => {
+        selected = columns;
+        return { eq: () => ({ single: () => Promise.resolve({ data: row, error: null }) }) };
+      },
     });
     const result = await fetchBmMatchWithStage(1);
-    expect(result).toMatchObject({ id: 1 });
+    expect(result).toMatchObject({ id: 1, round: { id: 1296, number: 2 } });
+    // round_id carries two foreign keys to round (fk_match_round and
+    // match_round_id_fkey), so an unnamed embed is ambiguous and PostgREST
+    // refuses it. The hint is the fix, not decoration.
+    expect(selected).toContain('round:round!fk_match_round(id, number)');
   });
 
   it('throws DatabaseError on error', async () => {

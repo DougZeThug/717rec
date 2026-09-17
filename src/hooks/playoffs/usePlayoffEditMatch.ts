@@ -99,7 +99,7 @@ export const usePlayoffEditMatch = () => {
           const playoffMatch: PlayoffMatch = {
             id: matchData.id.toString(),
             bracket_id: bracketId,
-            round: matchData.round_id || 1,
+            round: matchData.round?.number ?? 1,
             position: matchData.number || 1,
             team1Id: matchData.opponent1_id?.toString(),
             team2Id: matchData.opponent2_id?.toString(),

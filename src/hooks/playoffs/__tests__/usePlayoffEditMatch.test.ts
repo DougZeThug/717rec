@@ -61,7 +61,8 @@ const mockBmMatch = {
   opponent2_id: 20,
   opponent1_score: 0,
   opponent2_score: 0,
-  round_id: 1,
+  round_id: 1295,
+  round: { id: 1295, number: 1 },
   number: 1,
   child_count: 3,
   status: 2,
@@ -113,6 +114,39 @@ describe('usePlayoffEditMatch', () => {
       expect(fetchBmMatchWithStage).toHaveBeenCalledWith(42);
       expect(result.current.editingMatch).not.toBeNull();
       expect(result.current.editingMatch?.id).toBe('42');
+      expect(result.current.editingMatch?.round).toBe(1);
+    });
+
+    it('shows the round number from the round row, not the round id', async () => {
+      // Regression: the score editor header read "winners Round 1296", because
+      // round_id is a counter shared by every bracket rather than a round number.
+      (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...mockBmMatch,
+        round_id: 1296,
+        round: { id: 1296, number: 2 },
+      });
+      const { result } = renderHook(() => usePlayoffEditMatch(), { wrapper: createWrapper() });
+
+      await act(async () => {
+        await result.current.handleEditMatch('42');
+      });
+
+      expect(result.current.editingMatch?.round).toBe(2);
+    });
+
+    it('falls back to round 1 when the match has no round row', async () => {
+      // The same default the sync_match_to_playoff_matches trigger writes.
+      (fetchBmMatchWithStage as ReturnType<typeof vi.fn>).mockResolvedValue({
+        ...mockBmMatch,
+        round: null,
+      });
+      const { result } = renderHook(() => usePlayoffEditMatch(), { wrapper: createWrapper() });
+
+      await act(async () => {
+        await result.current.handleEditMatch('42');
+      });
+
+      expect(result.current.editingMatch?.round).toBe(1);
     });
 
     it('shows Match Locked toast when opponents are missing', async () => {
