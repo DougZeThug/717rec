@@ -1,11 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
-
 import { useTimeslotMutation } from './useTimeslotMutation';
 import { useTimeslotQuery } from './useTimeslotQuery';
 
 export const useTimeslots = (date: Date) => {
-  const queryClient = useQueryClient();
   const { timeslots, groupedTimeslots, isLoading, isPlaceholderData, hasData, error } =
     useTimeslotQuery(date);
   const {
@@ -19,12 +15,6 @@ export const useTimeslots = (date: Date) => {
     removeByeWeek,
     moveTeamBooking,
   } = useTimeslotMutation();
-
-  // Function to refresh timeslots data (useful after bye week operations)
-  const refreshTimeslots = () => {
-    const formattedDate = format(date, 'yyyy-MM-dd');
-    queryClient.invalidateQueries({ queryKey: ['timeslots', formattedDate] });
-  };
 
   // External API remains consistent with previous implementation
   return {
@@ -53,6 +43,5 @@ export const useTimeslots = (date: Date) => {
     batchAssignByeWeeks,
     removeByeWeek,
     moveTeamBooking,
-    refreshTimeslots,
   };
 };
