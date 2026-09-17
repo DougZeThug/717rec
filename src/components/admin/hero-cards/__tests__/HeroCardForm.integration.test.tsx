@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -249,6 +249,25 @@ describe('HeroCardForm unsaved changes', () => {
       expect(mocks.updateCard).toHaveBeenCalledWith(
         expect.objectContaining({ metadata: { buy_in: '20' } })
       );
+    });
+
+    // Enter in a single-line field submits the form directly, which never goes
+    // near the disabled Save button — so the handler has to refuse as well.
+    it('refuses a submit that never touches the Save button', async () => {
+      const onClose = vi.fn();
+      renderForm(<HeroCardForm card={makeCard({ card_type: 'event' })} onClose={onClose} />);
+
+      const box = await typeMetadata('{"buy_in": 20}');
+      const form = box.closest('form');
+      expect(form).not.toBeNull();
+
+      fireEvent.submit(form as HTMLFormElement);
+
+      expect(mocks.updateCard).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+      // Advanced Settings is collapsed by default, so the refusal opens it to
+      // put the reason on screen. It is already open here, and stays open.
+      expect(screen.getByLabelText('Extra Data (JSON)')).toBeInTheDocument();
     });
 
     it('refuses to edit the winners rather than editing against an empty object', async () => {

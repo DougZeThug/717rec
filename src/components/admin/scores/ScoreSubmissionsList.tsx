@@ -95,14 +95,11 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
   }
 
   const confirmReject = () => {
-    // Reads the derived row, not the id: a report that has gone leaves this
-    // null, and the press must then do nothing at all.
-    if (!pendingReject) {
-      setPendingRejectId(null);
-      return;
-    }
-    onReject(pendingReject.id);
+    // Reads the derived row, not the id. A report that has left the queue leaves
+    // this null and closes the box on the same render, so the press has nothing
+    // to reject — closing first says that without a branch nothing can reach.
     setPendingRejectId(null);
+    if (pendingReject) onReject(pendingReject.id);
   };
 
   return (
