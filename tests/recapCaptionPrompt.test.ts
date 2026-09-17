@@ -10,14 +10,17 @@ const facts: CaptionFacts = {
   seasonName: 'Fall 2026',
   weekNumber: 6,
   upsets: [
-    { winnerName: 'Bag Chasers', loserName: 'Corn Stars', matchResult: '2–1', winnerProbability: 0.18 },
+    {
+      winnerName: 'Bag Chasers',
+      loserName: 'Corn Stars',
+      matchResult: '2–1',
+      winnerProbability: 0.18,
+    },
   ],
   hotStreaks: [{ teamName: 'Toss Bosses', streakCount: 4, division: 'Competitive' }],
   teamOfTheWeek: { teamName: 'Rising Sacks', delta: 4.2 },
   risers: [{ teamName: 'Late Bloomers', delta: 2.1 }],
-  divisionLeaders: [
-    { divisionName: 'Competitive', teamName: 'Corn Stars', wins: 7, losses: 1 },
-  ],
+  divisionLeaders: [{ divisionName: 'Competitive', teamName: 'Corn Stars', wins: 7, losses: 1 }],
 };
 
 describe('CAPTION_SYSTEM_PROMPT', () => {
@@ -83,8 +86,6 @@ describe('buildCaptionUserMessage', () => {
   });
 
   it('names the season and week it is writing about', () => {
-    expect(buildCaptionUserMessage(facts, undefined, 'straight')).toContain(
-      'Fall 2026, week 6'
-    );
+    expect(buildCaptionUserMessage(facts, undefined, 'straight')).toContain('Fall 2026, week 6');
   });
 });

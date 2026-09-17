@@ -1,10 +1,10 @@
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.71.0';
 import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
+import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.71.0';
 
 import { requireAdmin } from '../_shared/auth.ts';
 import { checkRateLimit as defaultCheckRateLimit } from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
-import { PayloadSchema, type CaptionPayload } from './payload.ts';
+import { type CaptionPayload, PayloadSchema } from './payload.ts';
 import { buildCaptionUserMessage, CAPTION_SYSTEM_PROMPT } from './prompt.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
@@ -113,11 +113,7 @@ serve(async (req: Request) => {
       messages: [
         {
           role: 'user',
-          content: buildCaptionUserMessage(
-            payload.facts,
-            payload.commissionerNote,
-            payload.tone
-          ),
+          content: buildCaptionUserMessage(payload.facts, payload.commissionerNote, payload.tone),
         },
       ],
     });

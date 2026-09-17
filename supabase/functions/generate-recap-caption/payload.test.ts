@@ -18,9 +18,7 @@ const validFacts = {
   hotStreaks: [{ teamName: 'Toss Bosses', streakCount: 4, division: 'Competitive' }],
   teamOfTheWeek: { teamName: 'Rising Sacks', delta: 4.2 },
   risers: [{ teamName: 'Late Bloomers', delta: 2.1 }],
-  divisionLeaders: [
-    { divisionName: 'Competitive', teamName: 'Corn Stars', wins: 7, losses: 1 },
-  ],
+  divisionLeaders: [{ divisionName: 'Competitive', teamName: 'Corn Stars', wins: 7, losses: 1 }],
 };
 
 Deno.test('accepts a well-formed payload and defaults the tone', () => {
@@ -41,9 +39,7 @@ Deno.test('rejects unknown keys inside the facts', () => {
 });
 
 Deno.test('rejects a commissioner note longer than the cap', () => {
-  assertThrows(() =>
-    PayloadSchema.parse({ facts: validFacts, commissionerNote: 'x'.repeat(501) })
-  );
+  assertThrows(() => PayloadSchema.parse({ facts: validFacts, commissionerNote: 'x'.repeat(501) }));
 });
 
 Deno.test('rejects a probability outside 0..1', () => {
