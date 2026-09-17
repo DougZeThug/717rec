@@ -38,8 +38,15 @@ export const fetchPlayoffMatches = async (bracketId: string): Promise<PlayoffMat
 };
 
 /**
- * Fetch a brackets-manager match with its stage data
+ * Fetch a brackets-manager match with its stage and round data
  * Used by usePlayoffEditMatch hook (integer matchId path)
+ *
+ * The round row is embedded because `round_id` is a global counter — the round
+ * number the editor shows is `round.number`. The `!fk_match_round` hint is
+ * required, not decoration: `match.round_id` carries two foreign keys to
+ * `round` (fk_match_round and match_round_id_fkey), and PostgREST refuses an
+ * embed it cannot resolve to one of them. That is why the stage embed beside it
+ * names fk_match_stage too.
  */
 export const fetchBmMatchWithStage = async (
   matchId: number
@@ -47,7 +54,7 @@ export const fetchBmMatchWithStage = async (
   const { data, error } = await supabase
     .from('match')
     .select(
-      'id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, child_count, stage:stage!fk_match_stage(id, name, type, tournament_id, number, settings)'
+      'id, stage_id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result, child_count, stage:stage!fk_match_stage(id, name, type, tournament_id, number, settings), round:round!fk_match_round(id, number)'
     )
     .eq('id', matchId)
     .single();

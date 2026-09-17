@@ -34,7 +34,10 @@ export default defineTool({
          team2:teams!matches_team2_id_fkey(id, name, division:divisions(name))`
       )
       .eq('season_id', seasonId)
-      .eq('iscompleted', false)
+      // `iscompleted` is nullable, so exclude only `true`. A match created from
+      // the single-match admin form never sets the column, and `= false` drops
+      // those NULL rows — the live Schedule page keeps them in its upcoming tab.
+      .not('iscompleted', 'is', true)
       .or(`team1_id.eq.${mem.team_id},team2_id.eq.${mem.team_id}`)
       .order('date', { ascending: true })
       .limit(limit);

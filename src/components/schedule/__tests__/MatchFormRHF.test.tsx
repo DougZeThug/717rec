@@ -172,6 +172,35 @@ describe('MatchFormRHF (edit mode)', () => {
     });
   });
 
+  it('refuses to complete a match on equal scores instead of reporting success', async () => {
+    // The completion used to evaporate: no writer can store completed-with-no-
+    // winner, so the save wrote the date and the teams and still said
+    // "Match Updated".
+    const onSubmit = vi.fn();
+    render(<MatchFormRHF match={upcoming} teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('switch'));
+    await waitFor(() => expect(screen.getAllByRole('spinbutton')).toHaveLength(2));
+
+    fireEvent.change(screen.getByLabelText(/alpha score/i), { target: { value: '15' } });
+    fireEvent.change(screen.getByLabelText(/beta score/i), { target: { value: '15' } });
+    fireEvent.click(screen.getByRole('button', { name: /update match/i }));
+
+    expect(await screen.findByText(/a completed match needs a winner/i)).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('still saves an equal score while the match stays open', async () => {
+    // The guard is about completion, not about the numbers on their own.
+    const onSubmit = vi.fn();
+    render(<MatchFormRHF match={upcoming} teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /update match/i }));
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0]).toMatchObject({ iscompleted: false });
+  });
+
   it('treats a cleared score box as no score rather than zero', async () => {
     const onSubmit = vi.fn();
     render(<MatchFormRHF match={upcoming} teams={teams} onSubmit={onSubmit} onCancel={vi.fn()} />);

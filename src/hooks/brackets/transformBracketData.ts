@@ -30,6 +30,12 @@ interface RawGroup {
   stage_id: number;
 }
 
+interface RawRound {
+  id: number;
+  group_id: number;
+  number: number;
+}
+
 interface TeamDetail {
   id: string;
   name: string;
@@ -71,6 +77,7 @@ interface TransformBracketsManagerDataInput {
   stageId: number;
   participants: RawParticipant[];
   groups: RawGroup[];
+  rounds: RawRound[];
   matches: RawMatch[];
   teamDetails: TeamDetail[];
 }
@@ -84,6 +91,7 @@ export const transformBracketsManagerData = ({
   stageId,
   participants,
   groups,
+  rounds,
   matches,
   teamDetails,
 }: TransformBracketsManagerDataInput): SimpleBracketData => {
@@ -93,6 +101,16 @@ export const transformBracketsManagerData = ({
     groupIdToNumberMap.set(group.id, group.number);
   });
   bracketLog('Groups mapped:', groupIdToNumberMap.size);
+
+  // round.id is a global counter that never resets; round.number is the round's
+  // place inside its own half of the bracket, and restarts at 1 for the winners,
+  // the losers and the grand final. A match points at the id, so the number a
+  // reader expects has to be looked up rather than derived from round_id.
+  const roundNumberById = new Map<number, number>();
+  rounds.forEach((round) => {
+    roundNumberById.set(round.id, round.number);
+  });
+  bracketLog('Rounds mapped:', roundNumberById.size);
 
   // Resolve participants to teams by team_id (rename-safe): participant id →
   // team_id, then team_id → canonical team detail. Names are display-only and
@@ -128,7 +146,7 @@ export const transformBracketsManagerData = ({
 
     return {
       id: `match-${match.id}`,
-      round: match.round_id + 1,
+      round: roundNumberById.get(match.round_id) ?? 1,
       position: match.number,
       team1Id: team1?.id || null,
       team2Id: team2?.id || null,

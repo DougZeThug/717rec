@@ -29,7 +29,8 @@ interface CompletedGameLine {
   gameNumber: number;
   team1Total: number;
   team2Total: number;
-  winnerName: string;
+  /** Null when the game records no winner. Never guess a side in its place. */
+  winnerName: string | null;
 }
 
 interface DerivedGame {
@@ -37,10 +38,19 @@ interface DerivedGame {
   totals: { team1: number; team2: number };
 }
 
-/** One line per finished game, for the "save the official result" summary. */
+/**
+ * One line per finished game, for the "save the official result" summary.
+ *
+ * A finished game can carry no winner: the live-scoring migration marked legacy
+ * game rows on completed matches as completed without filling winner_team_id,
+ * and winner_team_id is ON DELETE SET NULL, so removing a team empties it on
+ * games already played. Those games belong to neither side, which is how
+ * finalize_live_match counts them, so the line says so rather than picking one.
+ */
 export const buildGameLines = (
   games: DerivedGame[],
   team1Id: string | null,
+  team2Id: string | null,
   team1Name: string,
   team2Name: string
 ): CompletedGameLine[] =>
@@ -50,7 +60,14 @@ export const buildGameLines = (
         gameNumber: g.game.game_number,
         team1Total: g.totals.team1,
         team2Total: g.totals.team2,
-        winnerName: g.game.winner_team_id === team1Id ? team1Name : team2Name,
+        winnerName: resolveOfficialWinnerName(
+          g.game.winner_team_id,
+          team1Id,
+          team2Id,
+          team1Name,
+          team2Name,
+          null
+        ),
       });
     }
     return lines;

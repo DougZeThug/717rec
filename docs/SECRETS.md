@@ -11,13 +11,29 @@ Rule of thumb: if the key name starts with `VITE_`, it ends up in the public JS 
 
 ## Env vars used
 
-| Variable | Purpose | Public? |
-|---|---|---|
-| `VITE_SUPABASE_URL` | Supabase project URL | Yes (ships in client bundle) |
+| Variable                        | Purpose                         | Public?                      |
+| ------------------------------- | ------------------------------- | ---------------------------- |
+| `VITE_SUPABASE_URL`             | Supabase project URL            | Yes (ships in client bundle) |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | Supabase anon key, gated by RLS | Yes (ships in client bundle) |
-| `VITE_SUPABASE_PROJECT_ID` | Supabase project ref | Yes |
+| `VITE_SUPABASE_PROJECT_ID`      | Supabase project ref            | Yes                          |
 
 All three are **publishable** — safe to expose in the browser. Access control is enforced server-side via Row Level Security.
+
+### Edge function names for the same values
+
+The MCP edge functions run outside the client bundle, so they read unprefixed
+names. They are the same publishable values, under different keys:
+
+| Variable                    | Purpose                                                                                                                                                                                                                | Public? |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `SUPABASE_URL`              | Project URL; falls back to `VITE_SUPABASE_URL`                                                                                                                                                                         | Yes     |
+| `SUPABASE_PUBLISHABLE_KEY`  | Anon key; falls back to `VITE_SUPABASE_PUBLISHABLE_KEY`                                                                                                                                                                | Yes     |
+| `SUPABASE_PUBLISHABLE_KEYS` | Optional JSON map of named anon keys, e.g. `{"default":"eyJ…"}`. Read only by the **public** MCP server, and only when `SUPABASE_PUBLISHABLE_KEY` is unset. The `default` entry wins; any non-empty value is accepted. | Yes     |
+| `SUPABASE_ANON_KEY`         | Legacy name, used only when none of the above are set                                                                                                                                                                  | Yes     |
+
+Set one of them, not several. A stale `SUPABASE_ANON_KEY` left beside a newer
+value is the failure worth avoiding: it is the last resort, so it takes over
+whenever the ones above it resolve to nothing.
 
 ## Where they come from
 
@@ -40,6 +56,7 @@ Service-role keys and DB passwords must **never** appear in client code or `.env
 ## Rotation
 
 ### Anon / publishable key
+
 Only needed if the project is migrated, the key format changes, or you suspect Supabase compromise (rare — the key is public by design).
 
 1. Supabase Dashboard → Project Settings → API → reset the anon key.
@@ -48,6 +65,7 @@ Only needed if the project is migrated, the key format changes, or you suspect S
 4. Redeploy.
 
 ### Service-role key
+
 Rotate immediately if ever exposed.
 
 1. Supabase Dashboard → Project Settings → API → reset service role key.

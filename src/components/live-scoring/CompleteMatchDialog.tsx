@@ -19,7 +19,8 @@ export interface GameLine {
   gameNumber: number;
   team1Total: number;
   team2Total: number;
-  winnerName: string;
+  /** Null when the game records no winner — shown as a dash, never as a team. */
+  winnerName: string | null;
 }
 
 interface CompleteMatchDialogProps {
@@ -68,7 +69,7 @@ export const CompleteMatchDialog: React.FC<CompleteMatchDialogProps> = ({
                       Game {line.gameNumber}: {team1Name} {line.team1Total}–{line.team2Total}{' '}
                       {team2Name}
                     </span>
-                    <span className="font-medium">{line.winnerName}</span>
+                    <span className="font-medium">{line.winnerName ?? '—'}</span>
                   </li>
                 ))}
               </ul>

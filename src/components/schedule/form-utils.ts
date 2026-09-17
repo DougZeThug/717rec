@@ -1,5 +1,8 @@
+import type { Match } from '@/types';
 import { timezoneLog } from '@/utils/logger';
 import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezone';
+
+import type { MatchFormValues } from './types';
 
 /**
  * Format a date object for use in an HTML date input
@@ -55,8 +58,11 @@ export const getTimeSlotFromDate = (date: Date): string | null => {
 
 /**
  * Calculate winner and loser IDs based on team scores
+ *
+ * Internal to this module: buildMatchSubmission below is the only caller, and
+ * the form sends its payload through that.
  */
-export const determineMatchOutcome = (
+const determineMatchOutcome = (
   isCompleted: boolean,
   team1Id: string,
   team2Id: string,
@@ -74,4 +80,53 @@ export const determineMatchOutcome = (
   }
 
   return { winnerId: null, loserId: null };
+};
+
+/**
+ * Why these values cannot be saved, or null when they can.
+ *
+ * Equal scores give determineMatchOutcome no winner, and nothing downstream can
+ * store a completed match without one: the result writers are atomic RPCs gated
+ * on a winner and a loser, and the plain update excludes iscompleted by type. A
+ * save used to write the date and the teams, drop the completion without a
+ * word, and still report success.
+ *
+ * The wording stays on what the admin can do. The unresolved-matches queue only
+ * confirms a tie that already exists, so sending them there would be a dead
+ * end: nothing in the app can put a match into that state.
+ */
+export const describeUnsavableMatch = (values: MatchFormValues): string | null => {
+  if (values.isCompleted && values.team1Score === values.team2Score) {
+    return 'A completed match needs a winner. Change a score, or leave the match open.';
+  }
+  return null;
+};
+
+/**
+ * Turn the form's values into the payload the create and update paths take.
+ *
+ * Scores and the winner ride along only on a completed match, so reopening one
+ * clears them rather than leaving a stale result behind.
+ */
+export const buildMatchSubmission = (values: MatchFormValues): Omit<Match, 'id'> => {
+  const dateWithTime = createDateWithTime(values.date, values.timeSlot);
+  const { winnerId, loserId } = determineMatchOutcome(
+    values.isCompleted,
+    values.team1Id,
+    values.team2Id,
+    values.team1Score,
+    values.team2Score
+  );
+
+  return {
+    team1Id: values.team1Id,
+    team2Id: values.team2Id,
+    date: dateWithTime.toISOString(),
+    iscompleted: values.isCompleted,
+    team1Score: values.isCompleted ? values.team1Score : undefined,
+    team2Score: values.isCompleted ? values.team2Score : undefined,
+    winnerId: winnerId ?? undefined,
+    loserId: loserId ?? undefined,
+    timeSlot: values.timeSlot,
+  };
 };

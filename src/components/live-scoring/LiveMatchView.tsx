@@ -63,7 +63,13 @@ export const LiveMatchView: React.FC<LiveMatchViewProps> = ({
     winnerName
   );
 
-  const gameLines = buildGameLines(derived.games, match.team1_id, team1Name, team2Name);
+  const gameLines = buildGameLines(
+    derived.games,
+    match.team1_id,
+    match.team2_id,
+    team1Name,
+    team2Name
+  );
 
   return (
     <div className="space-y-3">

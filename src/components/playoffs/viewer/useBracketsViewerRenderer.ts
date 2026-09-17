@@ -102,9 +102,17 @@ export const useBracketsViewerRenderer = ({
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const lastFingerprintRef = useRef<string | null>(null);
 
+  // Forget the last fingerprint whenever the container can be replaced under
+  // us. BracketsViewerComponent keys the container on `${bracket.id}-${refreshKey}`,
+  // so both parts belong here: a change to either mounts a fresh, empty node,
+  // and a fingerprint held over from the old one would skip the render and
+  // leave that node blank. Two different brackets really can share a
+  // fingerprint — the legacy transform numbers matches locally per bracket, so
+  // two brackets of the same size at the same stage produce identical ids,
+  // scores and statuses, and the fingerprint carries no bracket identity.
   useEffect(() => {
     lastFingerprintRef.current = null;
-  }, [refreshKey]);
+  }, [refreshKey, bracket?.id]);
 
   useEffect(() => {
     if (!isScriptReady || !containerRef.current || !bracket?.id) {
@@ -176,6 +184,17 @@ export const useBracketsViewerRenderer = ({
         const fp = fingerprint(matchRows as unknown as FingerprintMatch[]);
         if (lastFingerprintRef.current === fp) {
           bracketLog('No-op: identical fingerprint, skipping render');
+          // The bracket already drawn is still correct and is never cleared on
+          // this path, so the viewer is still initialised. Without this, the
+          // cleanup's setIsInitialized(false) sticks — the effect re-runs on a
+          // new `bracket` object identity, and a refetch that returns the same
+          // match data lands here before ever reaching setIsInitialized(true).
+          // The reader is then left with a "Loading bracket..." spinner under a
+          // working bracket until the next refreshKey change or a navigation.
+          if (!cancelled) {
+            setIsInitialized(true);
+            setError(null);
+          }
           return;
         }
         lastFingerprintRef.current = fp;

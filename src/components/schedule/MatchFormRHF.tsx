@@ -24,8 +24,8 @@ import { Switch } from '@/components/ui/switch';
 import { isMatchCompleted } from '@/utils/matchStatus';
 
 import {
-  createDateWithTime,
-  determineMatchOutcome,
+  buildMatchSubmission,
+  describeUnsavableMatch,
   getTimeSlotFromDate,
   parseDateFromInput,
 } from './form-utils';
@@ -78,29 +78,13 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
   });
 
   const handleSubmitForm = (values: MatchFormValues) => {
-    // Create date with selected time
-    const dateWithTime = createDateWithTime(values.date, values.timeSlot);
+    const unsavable = describeUnsavableMatch(values);
+    if (unsavable) {
+      form.setError('team2Score', { type: 'manual', message: unsavable });
+      return;
+    }
 
-    // Determine winner and loser
-    const { winnerId, loserId } = determineMatchOutcome(
-      values.isCompleted,
-      values.team1Id,
-      values.team2Id,
-      values.team1Score,
-      values.team2Score
-    );
-
-    onSubmit({
-      team1Id: values.team1Id,
-      team2Id: values.team2Id,
-      date: dateWithTime.toISOString(),
-      iscompleted: values.isCompleted,
-      team1Score: values.isCompleted ? values.team1Score : undefined,
-      team2Score: values.isCompleted ? values.team2Score : undefined,
-      winnerId: winnerId ?? undefined,
-      loserId: loserId ?? undefined,
-      timeSlot: values.timeSlot, // This is now valid with our updated Match type
-    });
+    onSubmit(buildMatchSubmission(values));
   };
 
   const isCompleted = useWatch({ control: form.control, name: 'isCompleted' });

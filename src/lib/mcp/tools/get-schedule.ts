@@ -32,8 +32,12 @@ export default defineTool({
       .limit(limit);
 
     if (teamId) query = query.or(`team1_id.eq.${teamId},team2_id.eq.${teamId}`);
+    // `iscompleted` is nullable, so exclude only `true`. A match created from the
+    // single-match admin form never sets the column, and `= false` drops those
+    // NULL rows — the live Schedule page keeps them in its upcoming tab, which
+    // is the behaviour to match.
     if (scope === 'upcoming')
-      query = query.eq('iscompleted', false).order('date', { ascending: true });
+      query = query.not('iscompleted', 'is', true).order('date', { ascending: true });
     else if (scope === 'recent')
       query = query.eq('iscompleted', true).order('date', { ascending: false });
     else query = query.order('date', { ascending: false });

@@ -124,4 +124,38 @@ describe('CompleteMatchDialog', () => {
       'This match already has an official result.'
     );
   });
+
+  it('shows a dash for a finished game that records no winner', async () => {
+    // A legacy game row on a completed match carries no winner. The summary
+    // used to print the opposing team's name here, inventing a win directly
+    // above the button that writes the official result.
+    render(
+      <CompleteMatchDialog
+        team1Name="Baggers"
+        team2Name="Tossers"
+        winnerName="Baggers"
+        gameWins={{ team1: 2, team2: 0 }}
+        gameLines={[
+          { gameNumber: 1, team1Total: 21, team2Total: 18, winnerName: 'Baggers' },
+          { gameNumber: 2, team1Total: 0, team2Total: 0, winnerName: null },
+        ]}
+        isFinalizing={false}
+        onConfirm={vi.fn()}
+      />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /save official result/i }));
+
+    const gameTwo = (await screen.findByText(/Game 2:/)).closest('li');
+    expect(gameTwo).not.toBeNull();
+
+    // The winner sits in the row's second span; the first holds the score line,
+    // which names both teams legitimately.
+    const winnerCell = gameTwo?.querySelector('span.font-medium');
+    expect(winnerCell).toHaveTextContent('—');
+
+    // Game 1 still names its real winner, so the dash is not a blanket change.
+    const gameOne = screen.getByText(/Game 1:/).closest('li');
+    expect(gameOne?.querySelector('span.font-medium')).toHaveTextContent('Baggers');
+  });
 });

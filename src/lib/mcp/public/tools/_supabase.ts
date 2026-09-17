@@ -35,8 +35,13 @@ function publishableKey(): string {
       const parsed: unknown = JSON.parse(keyset);
       if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
         const keys = parsed as Record<string, unknown>;
+        // Any non-empty value, matching the direct and legacy branches above
+        // and below. An earlier prefix test accepted only `sb_publishable_`
+        // keys, which this project does not use: its publishable key is the
+        // legacy signed JWT, so the keyset was skipped and a stale
+        // SUPABASE_ANON_KEY kept authenticating every public read instead.
         const key = [keys.default, ...Object.values(keys)]
-          .find((v): v is string => typeof v === 'string' && v.trim().startsWith('sb_publishable_'))
+          .find((v): v is string => typeof v === 'string' && v.trim() !== '')
           ?.trim();
         if (key) return key;
       }
