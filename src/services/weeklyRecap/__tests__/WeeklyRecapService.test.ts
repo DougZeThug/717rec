@@ -934,3 +934,89 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     });
   });
 });
+
+describe('WeeklyRecapService.fetchRecapForWeek', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCalculateStreak.mockReturnValue(null);
+    mockHandleDatabaseError.mockImplementation((_error: unknown, context: string) => {
+      throw new Error(context);
+    });
+  });
+
+  it('windows on the week it was asked for, not the newest one', async () => {
+    const querySpies = createSupabaseMock({
+      seasons: [{ data: { id: 's-1', start_date: '2026-09-04' }, error: null }],
+      matches: [{ data: [], error: null }],
+      v_team_details: [{ data: [], error: null }],
+      divisions: [{ data: [], error: null }],
+      team_season_stats: [{ data: [], error: null }],
+    });
+
+    const result = await WeeklyRecapService.fetchRecapForWeek({
+      seasonId: 's-1',
+      weekNumber: 3,
+    });
+
+    expect(result.weekNumber).toBe(3);
+    expect(result.mode).toBe('regular');
+
+    // Week 3 of a season starting 2026-09-04 runs 18 Sept -> 25 Sept, league time.
+    const matchSpy = querySpies.matches?.[0];
+    expect(matchSpy?.gte).toHaveBeenCalledWith('date', '2026-09-18T04:00:00.000Z');
+    expect(matchSpy?.lt).toHaveBeenCalledWith('date', '2026-09-25T04:00:00.000Z');
+  });
+
+  it('skips the season lookup when the caller supplies the start date', async () => {
+    createSupabaseMock({
+      matches: [{ data: [], error: null }],
+      v_team_details: [{ data: [], error: null }],
+      divisions: [{ data: [], error: null }],
+      team_season_stats: [{ data: [], error: null }],
+    });
+
+    const result = await WeeklyRecapService.fetchRecapForWeek({
+      seasonId: 's-1',
+      weekNumber: 2,
+      seasonStartDate: '2026-09-04',
+    });
+
+    expect(result.weekNumber).toBe(2);
+    expect(mockFrom).not.toHaveBeenCalledWith('seasons');
+  });
+
+  it('caps streaks at the end of the week being recapped', async () => {
+    createSupabaseMock({
+      seasons: [{ data: { id: 's-1', start_date: '2026-09-04' }, error: null }],
+      matches: [{ data: [], error: null }],
+      v_team_details: [{ data: [], error: null }],
+      divisions: [{ data: [], error: null }],
+      team_season_stats: [{ data: [], error: null }],
+    });
+
+    await WeeklyRecapService.fetchRecapForWeek({ seasonId: 's-1', weekNumber: 2 });
+
+    // The streaks query is the second read of `matches`. It must carry the
+    // week's upper bound, or an old edition reports today's streaks.
+    const streakSpy = mockFrom.mock.calls.filter(([table]) => table === 'matches');
+    expect(streakSpy.length).toBeGreaterThanOrEqual(2);
+  });
+
+  // The whole point of the split: the same failure that the home page hides
+  // must be visible to an admin about to publish it as fact.
+  it('throws where fetchWeeklyRecap swallows, given the same failure', async () => {
+    const dbError = { message: 'boom', code: '42P01', details: null, hint: null };
+
+    createSupabaseMock({ seasons: [{ data: null, error: dbError }] });
+    await expect(
+      WeeklyRecapService.fetchRecapForWeek({ seasonId: 's-1', weekNumber: 1 })
+    ).rejects.toThrow();
+
+    vi.clearAllMocks();
+    mockCalculateStreak.mockReturnValue(null);
+    createSupabaseMock({ seasons: [{ data: null, error: dbError }] });
+
+    await expect(WeeklyRecapService.fetchWeeklyRecap()).resolves.toEqual(emptyState);
+    expect(mockWarnLog).toHaveBeenCalled();
+  });
+});

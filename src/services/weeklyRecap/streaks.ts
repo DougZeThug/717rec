@@ -9,16 +9,30 @@ import { MIN_STREAK_COUNT, type TeamStreakInfo } from './types';
 
 export async function fetchHotStreaks(
   seasonId: string,
-  playoffMatches: SeasonPlayoffMatch[] = []
+  playoffMatches: SeasonPlayoffMatch[] = [],
+  /**
+   * Exclusive upper bound on match date. A frozen edition of an earlier week
+   * must report the streaks that stood at the end of THAT week, not today's —
+   * otherwise a week 3 recap generated in week 8 carries week 8 streaks.
+   * Omit for the live "current streaks" reading the home page wants.
+   */
+  asOf?: Date
 ): Promise<TeamStreakInfo[]> {
   // Get all completed regular-season matches for the season
-  const { data: allMatches, error: matchError } = await supabase
+  let matchQuery = supabase
     .from('matches')
     .select('id, team1_id, team2_id, winner_id, loser_id, date, iscompleted, round_number')
     .eq('season_id', seasonId)
     .eq('iscompleted', true)
-    .is('bracket_id', null)
-    .order('date', { ascending: true });
+    .is('bracket_id', null);
+
+  if (asOf) {
+    matchQuery = matchQuery.lt('date', asOf.toISOString());
+  }
+
+  const { data: allMatches, error: matchError } = await matchQuery.order('date', {
+    ascending: true,
+  });
 
   if (matchError) {
     handleDatabaseError(matchError, 'Failed to fetch matches for streak calculation');
