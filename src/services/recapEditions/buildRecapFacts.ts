@@ -1,0 +1,187 @@
+import type { WeekPairTrends } from '@/services/rankings/weeklyTrendsForWeek';
+import { pickTeamOfTheWeek } from '@/services/rankings/weeklyTrendsForWeek';
+import type { WeeklyRecapData } from '@/services/weeklyRecap/types';
+import type {
+  RecapDivisionFact,
+  RecapFactsV1,
+  RecapMoverFact,
+  RecapStandingsRow,
+} from '@/types/recapEdition';
+import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
+import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
+
+/**
+ * Turns the week's readings into the frozen object an edition stores.
+ *
+ * Pure on purpose: every rule that decides what a published recap SAYS lives
+ * here, with no database access, so it can be tested directly and cannot drift
+ * between the preview and the published page.
+ */
+
+/** A per-week row from power_score_snapshots, joined to its team's display info. */
+export interface SnapshotStandingsInput {
+  teamId: string;
+  teamName: string;
+  logoUrl: string | null;
+  divisionId: string | null;
+  divisionName: string | null;
+  wins: number | null;
+  losses: number | null;
+  gameWins: number | null;
+  gameLosses: number | null;
+  powerScore: number | null;
+}
+
+export interface BuildRecapFactsInput {
+  seasonId: string;
+  seasonName: string;
+  seasonSlug: string;
+  weekNumber: number;
+  weekStart: Date;
+  weekEnd: Date;
+  recap: WeeklyRecapData;
+  trends: WeekPairTrends;
+  standings: SnapshotStandingsInput[];
+  unresolvedMatchCount: number;
+  /** Injected so a rebuild in a test is deterministic. */
+  generatedAt?: Date;
+}
+
+const toMoverFact = (
+  trend: WeekPairTrends['trends'][number] | null | undefined
+): RecapMoverFact | null =>
+  trend
+    ? {
+        teamId: trend.teamId,
+        teamName: trend.teamName,
+        // null, never undefined: JSONB drops undefined and the renderer would
+        // then see a missing key instead of "this team has no logo".
+        logoUrl: trend.logoUrl ?? null,
+        division: trend.division,
+        currentScore: trend.currentScore,
+        previousScore: trend.previousScore,
+        delta: trend.delta,
+      }
+    : null;
+
+/**
+ * Order inside a division, matching what /stats shows: the power score as
+ * DISPLAYED (one decimal) descending, unrated teams last, then win percentage,
+ * then name. Division tier is not a tiebreaker here because a division's
+ * standings are all in the same division.
+ */
+const compareStandings = (a: SnapshotStandingsInput, b: SnapshotStandingsInput): number => {
+  const aScore = getDisplayedPowerScore(a.powerScore);
+  const bScore = getDisplayedPowerScore(b.powerScore);
+
+  if (aScore === null && bScore !== null) return 1;
+  if (bScore === null && aScore !== null) return -1;
+  if (aScore !== null && bScore !== null && aScore !== bScore) return bScore - aScore;
+
+  const aPlayed = (a.wins ?? 0) + (a.losses ?? 0);
+  const bPlayed = (b.wins ?? 0) + (b.losses ?? 0);
+  const aPct = aPlayed > 0 ? (a.wins ?? 0) / aPlayed : 0;
+  const bPct = bPlayed > 0 ? (b.wins ?? 0) / bPlayed : 0;
+  if (aPct !== bPct) return bPct - aPct;
+
+  return (a.teamName || '').localeCompare(b.teamName || '');
+};
+
+const buildDivisions = (
+  standings: SnapshotStandingsInput[],
+  deltaByTeam: Map<string, number>
+): RecapDivisionFact[] => {
+  const byDivision = new Map<string, SnapshotStandingsInput[]>();
+
+  for (const row of standings) {
+    // A row with no division cannot be placed in a division graphic.
+    if (!row.divisionId) continue;
+    const bucket = byDivision.get(row.divisionId);
+    if (bucket) bucket.push(row);
+    else byDivision.set(row.divisionId, [row]);
+  }
+
+  return [...byDivision.entries()]
+    .map(([divisionId, rows]) => {
+      const sorted = [...rows].sort(compareStandings);
+      const standingsRows: RecapStandingsRow[] = sorted.map((row, index) => ({
+        rank: index + 1,
+        teamId: row.teamId,
+        teamName: row.teamName,
+        logoUrl: row.logoUrl ?? null,
+        wins: row.wins ?? 0,
+        losses: row.losses ?? 0,
+        gameWins: row.gameWins ?? 0,
+        gameLosses: row.gameLosses ?? 0,
+        powerScore: row.powerScore ?? null,
+        delta: deltaByTeam.get(row.teamId) ?? null,
+      }));
+
+      return {
+        divisionId,
+        divisionName: sorted[0]?.divisionName ?? 'Division',
+        standings: standingsRows,
+      };
+    })
+    .sort((a, b) => a.divisionName.localeCompare(b.divisionName));
+};
+
+export const buildRecapFacts = ({
+  seasonId,
+  seasonName,
+  seasonSlug,
+  weekNumber,
+  weekStart,
+  weekEnd,
+  recap,
+  trends,
+  standings,
+  unresolvedMatchCount,
+  generatedAt = new Date(),
+}: BuildRecapFactsInput): RecapFactsV1 => {
+  const teamOfTheWeek = pickTeamOfTheWeek(trends.trends);
+  const deltaByTeam = new Map(trends.trends.map((t) => [t.teamId, t.delta]));
+
+  const risers = trends.trends
+    .filter((t) => t.delta > 0 && t.teamId !== teamOfTheWeek?.teamId)
+    .sort((a, b) => b.delta - a.delta)
+    .slice(0, 2);
+
+  const faller = trends.trends.filter((t) => t.delta < 0).sort((a, b) => a.delta - b.delta)[0];
+
+  return {
+    factsSchemaVersion: RECAP_FACTS_SCHEMA_VERSION,
+    seasonId,
+    seasonName,
+    seasonSlug,
+    weekNumber,
+    weekStartIso: weekStart.toISOString(),
+    weekEndIso: weekEnd.toISOString(),
+    upsets: recap.upsets,
+    hotStreaks: recap.hotStreaks,
+    movers: {
+      basis: trends.basis,
+      currentWeek: trends.currentWeek,
+      previousWeek: trends.previousWeek,
+      risers: risers.map(toMoverFact).filter((m): m is RecapMoverFact => m !== null),
+      faller: toMoverFact(faller),
+    },
+    teamOfTheWeek: toMoverFact(teamOfTheWeek),
+    divisions: buildDivisions(standings, deltaByTeam),
+    unresolvedMatchCount,
+    generatedAt: generatedAt.toISOString(),
+  };
+};
+
+/**
+ * Whether there is enough in these facts to be worth publishing. An edition
+ * with nothing in it reads as a broken page rather than a quiet week, and a
+ * missing snapshot means the numbers cannot be trusted at all.
+ */
+export const canPublishFacts = (facts: RecapFactsV1): boolean =>
+  facts.movers.basis !== 'missing' &&
+  (facts.upsets.length > 0 ||
+    facts.hotStreaks.length > 0 ||
+    facts.movers.risers.length > 0 ||
+    facts.teamOfTheWeek !== null ||
+    facts.divisions.length > 0);
