@@ -118,3 +118,7 @@ export const topicNeedsEmail = (topic: ContactTopicDefinition): boolean =>
 /** The longest message each inbox accepts, matching its edge function. */
 export const messageLimitFor = (topic: ContactTopicDefinition): number =>
   topic.channel === 'support' ? 5000 : 2000;
+
+/** The longest name each inbox accepts, matching its edge function. */
+export const nameLimitFor = (topic: ContactTopicDefinition): number =>
+  topic.channel === 'support' ? 100 : 120;

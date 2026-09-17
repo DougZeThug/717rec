@@ -4,16 +4,18 @@ import {
   CONTACT_TOPICS,
   findContactTopic,
   messageLimitFor,
+  nameLimitFor,
   topicNeedsEmail,
 } from '@/services/contact/contactTopics';
 
 /**
  * The one message form's rules (UX audit H-02).
  *
- * Three of them depend on the topic, which is why they are refinements rather
+ * Four of them depend on the topic, which is why they are refinements rather
  * than field rules: a team name is only required for joining the league, the
  * support inbox emails back so it needs a real address where the league inbox
- * takes a phone number, and the two inboxes accept different message lengths.
+ * takes a phone number, and the two inboxes accept different name and message
+ * lengths.
  */
 export const contactFormSchema = z
   .object({
@@ -52,6 +54,19 @@ export const contactFormSchema = z
         code: 'custom',
         path: ['message'],
         message: `Please keep the message under ${limit} characters`,
+      });
+    }
+
+    // The support inbox stops at 100 where the league inbox takes 120. Without
+    // this the form let a name through that its own inbox then refused, and the
+    // refusal came back as a bare "Invalid request" with no field named — a
+    // dead end the user could not act on.
+    const nameLimit = nameLimitFor(topic);
+    if (values.name.length > nameLimit) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['name'],
+        message: `Please keep the name under ${nameLimit} characters`,
       });
     }
   });

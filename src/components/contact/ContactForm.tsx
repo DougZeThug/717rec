@@ -11,6 +11,7 @@ import {
   DEFAULT_CONTACT_TOPIC,
   findContactTopic,
   messageLimitFor,
+  nameLimitFor,
 } from '@/services/contact/contactTopics';
 
 import { ContactTopicField } from './ContactTopicField';
@@ -85,7 +86,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
           value={name}
           onChange={setName}
           locked={nameLocked}
-          maxLength={120}
+          maxLength={nameLimitFor(topic)}
           placeholder="Jane Doe"
           error={errors.name}
         />

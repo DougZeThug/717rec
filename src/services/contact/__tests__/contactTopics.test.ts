@@ -5,6 +5,7 @@ import {
   CONTACT_TOPICS,
   findContactTopic,
   messageLimitFor,
+  nameLimitFor,
   topicNeedsEmail,
 } from '../contactTopics';
 
@@ -67,6 +68,13 @@ describe('contactTopics', () => {
   it('uses each inbox own message limit', () => {
     expect(messageLimitFor(topic('bug'))).toBe(5000);
     expect(messageLimitFor(topic('timeslot'))).toBe(2000);
+  });
+
+  // These are the edge functions' own numbers: send-support-email caps the name
+  // at 100, submit-contact-request at 120.
+  it('uses each inbox own name limit', () => {
+    expect(nameLimitFor(topic('bug'))).toBe(100);
+    expect(nameLimitFor(topic('timeslot'))).toBe(120);
   });
 
   describe('findContactTopic', () => {

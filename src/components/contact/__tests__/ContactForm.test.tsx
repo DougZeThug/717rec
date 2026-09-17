@@ -155,6 +155,35 @@ describe('ContactForm', () => {
     await waitFor(() => expect(mockSubmit).toHaveBeenCalled());
   });
 
+  // The input caps typing at the chosen inbox's limit, but the topic can change
+  // after the name is typed — so the rule has to be checked on submit too.
+  it('will not send a name longer than the support inbox accepts', async () => {
+    const longName = 'C'.repeat(110);
+    renderForm();
+
+    // Typed under the league cap of 120, then re-aimed at the support inbox.
+    await userEvent.type(screen.getByLabelText(/^name/i), longName);
+    await pickTopic('Report a bug');
+    await userEvent.type(screen.getByLabelText(/^email$/i), 'captain@example.com');
+    await fillMessage('The bracket page will not open on my phone.');
+    await userEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    expect(await screen.findByText(/keep the name under 100 characters/i)).toBeInTheDocument();
+    expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('takes the same name for league business, which accepts 120', async () => {
+    renderForm();
+    await pickTopic('Timeslot request');
+
+    await userEvent.type(screen.getByLabelText(/^name/i), 'C'.repeat(110));
+    await userEvent.type(screen.getByLabelText(/contact/i), '717-555-1234');
+    await fillMessage();
+    await userEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    await waitFor(() => expect(mockSubmit).toHaveBeenCalled());
+  });
+
   it('sends the topic that was picked, so it reaches the right inbox', async () => {
     renderForm();
     await pickTopic('Report a bug');
