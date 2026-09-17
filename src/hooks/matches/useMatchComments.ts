@@ -169,7 +169,11 @@ export const useMatchComments = (matchId: string) => {
         );
       }
       errorLog('Error removing comment:', err);
-      toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: getUIErrorMessage(err, 'Failed to delete comment'),
+        variant: 'destructive',
+      });
     },
     onSettled: (_data, _error, commentId) => {
       pendingCommentDeletesRef.current.delete(commentId);
