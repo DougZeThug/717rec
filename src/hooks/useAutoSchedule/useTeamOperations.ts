@@ -62,10 +62,7 @@ export const useTeamOperations = () => {
    * Now always loads teams as back-to-back pairs
    */
   const handleLoadTeams = useCallback(
-    async (
-      date: Date | null,
-      dualBlockMode = false
-    ): Promise<TimeBlockTeamsMap> => {
+    async (date: Date | null, dualBlockMode = false): Promise<TimeBlockTeamsMap> => {
       if (!date) {
         errorLog('No date provided to handleLoadTeams');
         return {};
@@ -200,4 +197,3 @@ export const useTeamOperations = () => {
     getTeamCountStatus,
   };
 };
-
