@@ -15,6 +15,7 @@ const mockUseTeamRankings = vi.fn();
 const mockStickyNav = vi.fn();
 const mockTeamHeader = vi.fn();
 const mockAdvancedStatsSection = vi.fn();
+const mockSeoHead = vi.fn();
 
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
@@ -37,6 +38,15 @@ vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: (...args: unknown[]) => mockUseTeamRankings(...args),
 }));
 
+// SeoHead side-effects into document.head and renders nothing into the body,
+// so a recorder that returns null is behaviourally identical here and lets the
+// canonical address be asserted without waiting on Helmet's flush.
+vi.mock('@/components/seo/SeoHead', () => ({
+  default: (props: Record<string, unknown>) => {
+    mockSeoHead(props);
+    return null;
+  },
+}));
 vi.mock('@/components/ui/skeleton', () => ({ Skeleton: () => <div>Loading team details...</div> }));
 vi.mock('@/components/teams/TeamDetailsStickyNav', () => ({
   default: () => {
@@ -234,6 +244,35 @@ describe('TeamDetails page', () => {
 
       expect(scrollIntoView).not.toHaveBeenCalled();
       expect(sectionNamed('Stats & Report Card')).toHaveAttribute('data-open', 'false');
+    });
+  });
+
+  // A team answers at two addresses. Echoing back whichever one the visitor
+  // arrived at had the same page declare itself the original twice over, so a
+  // search engine saw two pages where there is one.
+  describe('the address it declares as its own', () => {
+    const canonicalOf = () =>
+      (mockSeoHead.mock.calls.at(-1)?.[0] as { path: string } | undefined)?.path;
+
+    it('is the readable name when reached by the readable name', () => {
+      renderPage('/teams/falcons');
+
+      expect(canonicalOf()).toBe('/teams/falcons');
+    });
+
+    it('is still the readable name when reached by the row id', () => {
+      renderPage('/teams/4f1a2b3c-0000-4000-8000-000000000001');
+
+      expect(canonicalOf()).toBe('/teams/falcons');
+    });
+
+    it('sends the same address into the structured data', () => {
+      renderPage('/teams/4f1a2b3c-0000-4000-8000-000000000001');
+
+      const props = mockSeoHead.mock.calls.at(-1)?.[0] as {
+        jsonLd: { url: string };
+      };
+      expect(props.jsonLd.url).toBe('https://717rec.app/teams/falcons');
     });
   });
 });

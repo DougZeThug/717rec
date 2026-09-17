@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Team } from '@/types';
-import { buildTeamSeo, toPercent } from '@/utils/teamDetailsUtils/teamSeoUtils';
+import {
+  buildTeamSeo,
+  toPercent,
+  toTeamCanonicalPath,
+} from '@/utils/teamDetailsUtils/teamSeoUtils';
 
 const makeTeam = (overrides: Partial<Team> = {}): Team =>
   ({
@@ -23,6 +27,16 @@ describe('toPercent', () => {
 
   it.each([[undefined], [null], [0], [Number.NaN]])('treats %s as zero', (value) => {
     expect(toPercent(value as number | null | undefined)).toBe(0);
+  });
+});
+
+describe('toTeamCanonicalPath', () => {
+  it('builds the readable address from the team name', () => {
+    expect(toTeamCanonicalPath('Bag Boys')).toBe('/teams/bag-boys');
+  });
+
+  it('strips the punctuation a url cannot carry', () => {
+    expect(toTeamCanonicalPath("Baggin' & Braggin'")).toBe('/teams/baggin-braggin');
   });
 });
 

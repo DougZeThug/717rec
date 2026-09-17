@@ -1,4 +1,5 @@
 import type { Team } from '@/types';
+import { toTeamSlug } from '@/utils/teamSlug';
 
 const SITE_ORIGIN = 'https://717rec.app';
 
@@ -12,6 +13,17 @@ const pickLogo = (team: Pick<Team, 'logoUrl' | 'imageUrl'>): string | undefined 
   if (isAbsoluteUrl(team.imageUrl)) return team.imageUrl;
   return undefined;
 };
+
+/**
+ * The one address a team page declares as its own.
+ *
+ * A team answers at two addresses -- the readable name and the row id -- and
+ * the page used to echo back whichever one the visitor arrived at, so the same
+ * team told search engines it was two different pages, each the original.
+ * Derive it from the team instead of from the address bar. Both addresses keep
+ * working; only the signal changes.
+ */
+export const toTeamCanonicalPath = (teamName: string): string => `/teams/${toTeamSlug(teamName)}`;
 
 /** Turn a 0–1 fraction into a percentage, treating a missing value as zero. */
 export const toPercent = (fraction?: number | null): number => (fraction ? fraction * 100 : 0);
