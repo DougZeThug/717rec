@@ -35,14 +35,14 @@ describe('publishable key resolution for the public MCP server', () => {
     vi.clearAllMocks();
     for (const name of [...KEY_VARS, 'SUPABASE_URL']) {
       saved[name] = process.env[name];
-      delete process.env[name];
+      Reflect.deleteProperty(process.env, name);
     }
     process.env.SUPABASE_URL = 'https://example.supabase.co';
   });
 
   afterEach(() => {
     for (const [name, value] of Object.entries(saved)) {
-      if (value === undefined) delete process.env[name];
+      if (value === undefined) Reflect.deleteProperty(process.env, name);
       else process.env[name] = value;
     }
   });
