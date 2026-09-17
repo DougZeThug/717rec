@@ -30,7 +30,6 @@ import type { HeadToHeadRecord } from '@/types/headToHead';
 import { exportHeadToHeadToCSV } from '@/utils/exportUtils';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 import { getRivalryType, rivalryBadgeConfig } from '@/utils/teamDetailsUtils/rivalryUtils';
-import { toTeamSlug } from '@/utils/teamSlug';
 
 import H2HMobileCard from './H2HMobileCard';
 import { OpponentHistoryModal } from './OpponentHistoryModal';
@@ -166,15 +165,12 @@ const LastPlayedCell: React.FC<{ lastPlayedAt: string | null }> = ({ lastPlayedA
 
 const H2HTableRow: React.FC<{
   record: HeadToHeadRecord;
-  onOpponentClick: (opponentId: string, opponentName: string) => void;
+  onOpponentClick: (opponentId: string) => void;
   onViewDetails: (opponent: { id: string; name: string }) => void;
 }> = ({ record, onOpponentClick, onViewDetails }) => (
   <TableRow>
     <TableCell>
-      <OpponentButton
-        record={record}
-        onClick={() => onOpponentClick(record.opponent_id, record.opponent_name)}
-      />
+      <OpponentButton record={record} onClick={() => onOpponentClick(record.opponent_id)} />
     </TableCell>
     <TableCell className="text-center">
       <WinLossCell record={record} />
@@ -253,8 +249,13 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
     }
   };
 
-  const handleTeamClick = (opponentId: string, opponentName: string) => {
-    navigate(`/teams/${toTeamSlug(opponentName)}`);
+  // Go by the opponent's id rather than their name. toTeamSlug is lossy — it
+  // strips apostrophes and ampersands — and teams.name carries no unique
+  // constraint, so two teams can reduce to the same address. useResolveTeamSlug
+  // then takes the first match from an alphabetically ordered list, which need
+  // not be the opponent that was pressed. The id is already in hand here.
+  const handleTeamClick = (opponentId: string) => {
+    navigate(`/teams/${opponentId}`);
   };
 
   const content = (() => {

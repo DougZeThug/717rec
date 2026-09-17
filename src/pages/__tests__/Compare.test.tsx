@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { MemoryRouter, useLocation } from 'react-router';
+import { Link, MemoryRouter, useLocation } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useTeamsQuery } from '@/hooks/teams';
@@ -293,6 +293,90 @@ describe('Compare', () => {
         expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-a');
       });
     });
+  });
+
+  // The URL->state sync used to be additive only: a missing id meant "no
+  // change", so it could select a team but never clear one. The state->URL sync
+  // then wrote the still-selected team straight back, undoing the edit.
+  describe('taking a team out of the address', () => {
+    const loadedTeams = {
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>;
+
+    /** Same-route navigation to a /compare URL carrying fewer teams. */
+    const compareTreeWithNav = (url: string, to: string) =>
+      render(
+        <MemoryRouter initialEntries={[url]}>
+          <QueryClientProvider
+            client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
+          >
+            <Compare />
+            <Link to={to}>Narrow the address</Link>
+            <LocationProbe />
+          </QueryClientProvider>
+        </MemoryRouter>
+      );
+
+    it('clears the second team and leaves it out of the address', async () => {
+      const user = userEvent.setup();
+      vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
+
+      compareTreeWithNav('/compare?team1=team-a&team2=team-b', '/compare?team1=team-a');
+
+      const team2Trigger = screen.getByRole('combobox', { name: 'Team 2' });
+      await waitFor(() => {
+        expect(within(team2Trigger).getByText('Bravo Bombers')).toBeInTheDocument();
+      });
+
+      // This is the ⌘K palette's "Compare Teams" shape too: same route, fewer
+      // teams than are currently selected.
+      await user.click(screen.getByRole('link', { name: 'Narrow the address' }));
+
+      await waitFor(() => {
+        expect(within(team2Trigger).queryByText('Bravo Bombers')).not.toBeInTheDocument();
+      });
+      expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-a');
+    });
+
+    it('empties both sides when the address names no team at all', async () => {
+      const user = userEvent.setup();
+      vi.mocked(useTeamsQuery).mockReturnValue(loadedTeams);
+
+      compareTreeWithNav('/compare?team1=team-a&team2=team-b', '/compare');
+
+      const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
+      await waitFor(() => {
+        expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('link', { name: 'Narrow the address' }));
+
+      await waitFor(() => {
+        expect(within(team1Trigger).queryByText('Alpha Aces')).not.toBeInTheDocument();
+      });
+      expect(screen.getByTestId('location')).toHaveTextContent('/compare');
+    });
+  });
+
+  it('refuses an address that names the same team on both sides', async () => {
+    vi.mocked(useTeamsQuery).mockReturnValue({
+      data: [TEAM_A, TEAM_B],
+      isLoading: false,
+    } as ReturnType<typeof useTeamsQuery>);
+
+    // A team is never its own opponent, so the head-to-head read comes back
+    // empty and the page would otherwise call that a "first meeting".
+    renderCompare('/compare?team1=team-a&team2=team-a');
+
+    const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
+    const team2Trigger = screen.getByRole('combobox', { name: 'Team 2' });
+    await waitFor(() => {
+      expect(within(team1Trigger).getByText('Alpha Aces')).toBeInTheDocument();
+    });
+
+    expect(within(team2Trigger).queryByText('Alpha Aces')).not.toBeInTheDocument();
+    expect(screen.getByTestId('location')).toHaveTextContent('/compare?team1=team-a');
   });
 
   it('swaps which team is on which side, and rewrites the URL to match', async () => {

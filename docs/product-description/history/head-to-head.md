@@ -215,9 +215,11 @@ notification results from anything on this surface.
   the winner's games and can leave the winner on zero. Match wins and losses are
   correct; the game record beside them is not. **May be worth treating as a bug
   rather than documenting.**
-- **Pressing an opponent's name navigates by name, not by identity.** The link is
-  built from the opponent's name, so a team that has been renamed, or two teams
-  with names that reduce to the same address, will not land where expected.
+- **Pressing an opponent's name goes to that opponent by identity.** The address
+  it opens is the opponent's id rather than their name, so a team that has been
+  renamed, or two teams whose names reduce to the same address, still land on the
+  team that was pressed. The address bar shows the id rather than the readable
+  name on this one route, as it already does from the home page team cards.
 - **An opponent never played is not "0-0", it is absent.** Only meetings that
   happened produce a row. On a match card the same absence is shown as "First
   meeting", which is the only place the app says so out loud.

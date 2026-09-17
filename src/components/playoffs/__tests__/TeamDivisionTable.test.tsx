@@ -45,6 +45,26 @@ describe('TeamDivisionTable', () => {
     );
   });
 
+  it('gives the division count a pill that is not the colour of the tab strip', () => {
+    render(
+      <TeamDivisionTable
+        divisions={['Competitive', 'Recreational']}
+        teams={[competitive, recreational]}
+        isLoading={false}
+      />,
+      { wrapper: MemoryRouter }
+    );
+
+    // TabsList is painted bg-muted and an unselected trigger adds no fill, so a
+    // bg-muted pill would be the same colour as the strip behind it.
+    const tab = screen.getByRole('tab', { name: /competitive/i });
+    const pill = tab.querySelector('span');
+
+    expect(pill).toHaveTextContent('1');
+    expect(pill).not.toHaveClass('bg-muted');
+    expect(pill).toHaveClass('bg-background', 'border', 'border-border');
+  });
+
   it('falls back to the "All Teams" tab when the selected division disappears', async () => {
     const user = userEvent.setup();
     const { rerender } = render(

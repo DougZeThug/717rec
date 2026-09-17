@@ -142,4 +142,58 @@ describe('Index page', () => {
     renderPage();
     expect(screen.getByText('Weekly Recap')).toBeInTheDocument();
   });
+
+  // hasData counts upsets and hot streaks only, so a week whose only news is a
+  // power-score mover used to lose the whole card — and the movers fetched for
+  // it — even though WeeklyRecapCard renders a movers-only week quite happily.
+  describe('a week with movers but no upsets or streaks', () => {
+    const mover = (teamId: string, delta: number) => ({
+      teamId,
+      teamName: `Team ${teamId}`,
+      division: 'Competitive',
+      logoUrl: undefined,
+      currentScore: 53.8,
+      previousScore: 53.8 - delta,
+      delta,
+      percentChange: 0,
+      currentWeek: 7,
+      previousWeek: 6,
+    });
+
+    /** The page asks for risers ('up') and the single faller ('down') separately. */
+    const withTrends = (up: ReturnType<typeof mover>[], down: ReturnType<typeof mover>[]) => {
+      mockUseWeeklyPowerScoreTrends.mockImplementation((direction: string) => ({
+        data: { trends: direction === 'down' ? down : up, latestWeek: 5 },
+        isLoading: false,
+      }));
+    };
+
+    it('still shows the recap when a riser below Team of the Week clears the threshold', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
+      // trends[0] is Team of the Week's; the recap starts at the second.
+      withTrends([mover('a', 2.1), mover('b', 0.6)], []);
+
+      renderPage();
+
+      expect(screen.getByText('Weekly Recap')).toBeInTheDocument();
+    });
+
+    it('still shows the recap when only the faller clears the threshold', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
+      withTrends([mover('a', 2.1)], [mover('z', -0.8)]);
+
+      renderPage();
+
+      expect(screen.getByText('Weekly Recap')).toBeInTheDocument();
+    });
+
+    it('leaves the recap out when every mover would round to zero', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
+      withTrends([mover('a', 2.1), mover('b', 0.02)], [mover('z', -0.01)]);
+
+      renderPage();
+
+      expect(screen.queryByText('Weekly Recap')).not.toBeInTheDocument();
+    });
+  });
 });

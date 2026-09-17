@@ -104,7 +104,11 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
             <TabsTrigger key={division} value={division} className="capitalize">
               {division === 'all' ? 'All Teams' : division}
               {division !== 'all' && (
-                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-full">
+                // The tab strip is already bg-muted and an unselected trigger adds no
+                // fill of its own, so a bg-muted pill vanishes into it. bg-background
+                // carries the shape while the tab is unselected; once it is selected
+                // the trigger turns bg-background too, and the border carries it.
+                <span className="ml-1 text-xs bg-background border border-border px-1.5 py-0.5 rounded-full">
                   {division === 'Unassigned'
                     ? teamsByDivision['Unassigned']?.length || 0
                     : teamsByDivision[division]?.length || 0}
