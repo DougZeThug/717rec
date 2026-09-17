@@ -175,8 +175,9 @@ stored against what the rounds say — "recorded as won by Corn Stars, but its
 games give it to Sweat Bandits" — plus a count of any beyond ten. Five kinds are
 found, and each match shows the worst one it has: a recorded winner the games do
 not support, stored game wins that do not match, a completed game whose winner
-its rounds contradict, a completed game whose stored score its rounds contradict,
-and a completed game left with no rounds at all. Games still in progress are
+its rounds contradict — including one recorded as won on totals that decide
+nobody — a completed game whose stored score its rounds contradict, and a
+completed game left with no rounds at all. Games still in progress are
 skipped, because reopening one leaves its old totals in place on purpose.
 Archived seasons are excluded for the same reason as the card above, and with no
 active season it says so rather than reporting all clear. Each row links to the

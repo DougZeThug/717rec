@@ -161,6 +161,37 @@ describe('MatchResultDriftService.fetchMatchResultDrift', () => {
     expect(row.derived).toContain('Corn Stars');
   });
 
+  it('reports a game recorded as won on totals that decide nobody', async () => {
+    // Four rounds fold to 12-0 — short of 21, so the rounds decide nobody. An
+    // admin set the winner by hand anyway, and setGameWinner stores the fold as
+    // the score, so the stale-score check below stays quiet and this is the only
+    // finding there is.
+    mockQueries(
+      // No recorded result, so only the game-level check can fire.
+      [matchRow({ winner_id: null, iscompleted: false })],
+      [gameRow({ team1_score: 12, team2_score: 0 })],
+      cleanRounds('g-1').slice(0, 4)
+    );
+
+    const [row] = await MatchResultDriftService.fetchMatchResultDrift(SEASON_ID);
+
+    expect(row.kind).toBe('game-winner');
+    expect(row.recorded).toContain('Sweat Bandits');
+    expect(row.derived).toContain('nobody');
+  });
+
+  it('stays quiet on a game with no winner whose rounds decide nobody', async () => {
+    // Nothing recorded and nothing derived is not a disagreement. Without this
+    // the check above would report every game that is merely unfinished.
+    mockQueries(
+      [matchRow({ winner_id: null, iscompleted: false })],
+      [gameRow({ winner_team_id: null, team1_score: 12, team2_score: 0 })],
+      cleanRounds('g-1').slice(0, 4)
+    );
+
+    await expect(MatchResultDriftService.fetchMatchResultDrift(SEASON_ID)).resolves.toEqual([]);
+  });
+
   it('reports a completed game whose stored score its rounds contradict', async () => {
     // One round was deleted, so the rounds now fold to 18-0, not the stored 21-0.
     mockQueries(
