@@ -22,6 +22,7 @@ import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
 import { useTeams } from '@/hooks/useTeams';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
 import { useWeeklyRecap } from '@/hooks/useWeeklyRecap';
+import { pickTeamOfTheWeek } from '@/services/rankings/weeklyTrendsForWeek';
 import type { WeeklyRecapData } from '@/services/weeklyRecap/WeeklyRecapService';
 import type { WeeklyPowerScoreTrend } from '@/types/powerScoreSnapshot';
 
@@ -58,10 +59,12 @@ const Index: React.FC = () => {
   const isMobile = useIsMobile();
 
   const hasPendingScores = !pendingScoresLoading && pendingMatches.length > 0;
-  const topGainer = trendData?.trends?.[0];
-  const hasTeamOfWeek = !trendLoading && topGainer && topGainer.delta > 0;
+  // One shared rule, so a saved recap edition and this card cannot name
+  // different teams. See services/rankings/weeklyTrendsForWeek.
+  const topGainer = pickTeamOfTheWeek(trendData?.trends ?? []);
+  const hasTeamOfWeek = !trendLoading && topGainer !== null;
   // The top riser is Team of the Week's, so the recap starts at the second.
-  const recapRisers = trendData?.trends?.slice(1) ?? [];
+  const recapRisers = (trendData?.trends ?? []).filter((t) => t.teamId !== topGainer?.teamId);
   const recapFaller = fallerData?.trends?.[0];
   const showParticipationCard = !!confirmationSeason;
 
