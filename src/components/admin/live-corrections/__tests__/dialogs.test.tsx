@@ -366,6 +366,51 @@ describe('live correction dialogs', () => {
 
     expect(onConfirm).toHaveBeenCalledWith('team-b');
   });
+
+  // The rounds are allowed to disagree with the winner an admin picks — that is
+  // how a real-world result gets corrected. Saying so before the press is not.
+  const winnerDialog = (
+    totals: { team1: number; team2: number },
+    onConfirm = vi.fn().mockImplementation(() => Promise.resolve())
+  ) => (
+    <ChangeGameWinnerDialog
+      open
+      onOpenChange={vi.fn()}
+      gameNumber={1}
+      team1={{ id: 'team-a', name: 'Team A' }}
+      team2={{ id: 'team-b', name: 'Team B' }}
+      currentWinnerId="team-a"
+      totals={totals}
+      onConfirm={onConfirm}
+      isSubmitting={false}
+    />
+  );
+
+  it('warns when the rounds decide nobody, and still allows the change', async () => {
+    const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+
+    render(winnerDialog({ team1: 12, team2: 8 }, onConfirm));
+
+    expect(screen.getByRole('status')).toHaveTextContent(/do not decide this game/i);
+    expect(screen.getByRole('status')).toHaveTextContent(/reached 21 with a lead of 2/i);
+
+    await user.click(screen.getByRole('button', { name: 'Set winner' }));
+
+    expect(onConfirm).toHaveBeenCalledWith('team-a');
+  });
+
+  it('warns when the rounds give the game to the other side', () => {
+    render(winnerDialog({ team1: 18, team2: 21 }));
+
+    expect(screen.getByRole('status')).toHaveTextContent('The rounds give this game to Team B.');
+  });
+
+  it('says nothing when the rounds agree with the winner chosen', () => {
+    render(winnerDialog({ team1: 21, team2: 18 }));
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
 });
 
 // UX audit A-07: Cancel, Escape and a tap on the backdrop all threw a typed
