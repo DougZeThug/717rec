@@ -25,6 +25,36 @@ vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
   calculateStreak: (...args: unknown[]) => mockCalculateStreak(...args),
 }));
 
+// Upset detection runs the real predictMatch model, the same one the schedule
+// page uses. Its three data sources are stubbed so the test drives the model
+// with known inputs rather than re-testing the career pipeline.
+vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
+  fetchDivisionWeights: () => Promise.resolve(new Map([['d-visible', 0.85]])),
+}));
+
+vi.mock('@/services/TeamCareerStatsService', () => ({
+  fetchBatchHeadToHead: () => Promise.resolve(new Map()),
+}));
+
+vi.mock('@/hooks/career/computeAllTeamsTotals', () => ({
+  computeAllTeamsTotals: (teams: Array<{ id: string; career_power_score: number | null }>) =>
+    Promise.resolve(
+      new Map(
+        teams.map((team) => [
+          team.id,
+          {
+            career_power_score: team.career_power_score ?? 0,
+            career_sos: 0.5,
+            career_match_wins: team.career_power_score && team.career_power_score > 50 ? 9 : 1,
+            career_match_losses: team.career_power_score && team.career_power_score > 50 ? 1 : 9,
+          },
+        ])
+      )
+    ),
+}));
+
+import { UPSET_THRESHOLD } from '@/utils/predictions';
+
 import { WeeklyRecapService } from '../WeeklyRecapService';
 
 type QueryResult = { data: unknown; error: unknown };
@@ -353,25 +383,173 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       v_team_details: [
         {
           data: [
-            { team_id: 't-a', name: 'A', image_url: null, logo_url: 'a.png', division_id: 'd-1' },
-            { team_id: 't-b', name: 'B', image_url: null, logo_url: 'b.png', division_id: 'd-1' },
-            { team_id: 't-c', name: 'C', image_url: null, logo_url: 'c.png', division_id: 'd-2' },
-            { team_id: 't-d', name: 'D', image_url: null, logo_url: 'd.png', division_id: 'd-2' },
-            { team_id: 't-e', name: 'E', image_url: null, logo_url: 'e.png', division_id: 'd-1' },
-            { team_id: 't-f', name: 'F', image_url: null, logo_url: 'f.png', division_id: 'd-1' },
-            { team_id: 't-g', name: 'G', image_url: null, logo_url: 'g.png', division_id: 'd-2' },
-            { team_id: 't-h', name: 'H', image_url: null, logo_url: 'h.png', division_id: 'd-2' },
-            { team_id: 't-i', name: 'I', image_url: null, logo_url: 'i.png', division_id: 'd-1' },
-            { team_id: 't-j', name: 'J', image_url: null, logo_url: 'j.png', division_id: 'd-1' },
-            { team_id: 't-k', name: 'K', image_url: null, logo_url: 'k.png', division_id: 'd-1' },
-            { team_id: 't-m', name: 'M', image_url: null, logo_url: 'm.png', division_id: 'd-1' },
-            { team_id: 't-n', name: 'N', image_url: null, logo_url: 'n.png', division_id: 'd-1' },
+            {
+              team_id: 't-a',
+              name: 'A',
+              image_url: null,
+              logo_url: 'a.png',
+              division_id: 'd-1',
+              power_score: 20.0,
+              sos: 0.42,
+              career_power_score: 20.0,
+              wins: 2,
+              losses: 8,
+            },
+            {
+              team_id: 't-b',
+              name: 'B',
+              image_url: null,
+              logo_url: 'b.png',
+              division_id: 'd-1',
+              power_score: 80.0,
+              sos: 0.78,
+              career_power_score: 80.0,
+              wins: 8,
+              losses: 2,
+            },
+            {
+              team_id: 't-c',
+              name: 'C',
+              image_url: null,
+              logo_url: 'c.png',
+              division_id: 'd-2',
+              power_score: 30.0,
+              sos: 0.48,
+              career_power_score: 30.0,
+              wins: 3,
+              losses: 7,
+            },
+            {
+              team_id: 't-d',
+              name: 'D',
+              image_url: null,
+              logo_url: 'd.png',
+              division_id: 'd-2',
+              power_score: 75.0,
+              sos: 0.75,
+              career_power_score: 75.0,
+              wins: 8,
+              losses: 2,
+            },
+            {
+              team_id: 't-e',
+              name: 'E',
+              image_url: null,
+              logo_url: 'e.png',
+              division_id: 'd-1',
+              power_score: 40.0,
+              sos: 0.54,
+              career_power_score: 40.0,
+              wins: 4,
+              losses: 6,
+            },
+            {
+              team_id: 't-f',
+              name: 'F',
+              image_url: null,
+              logo_url: 'f.png',
+              division_id: 'd-1',
+              power_score: 60.0,
+              sos: 0.66,
+              career_power_score: 60.0,
+              wins: 6,
+              losses: 4,
+            },
+            {
+              team_id: 't-g',
+              name: 'G',
+              image_url: null,
+              logo_url: 'g.png',
+              division_id: 'd-2',
+              power_score: 10.0,
+              sos: 0.36,
+              career_power_score: 10.0,
+              wins: 1,
+              losses: 9,
+            },
+            {
+              team_id: 't-h',
+              name: 'H',
+              image_url: null,
+              logo_url: 'h.png',
+              division_id: 'd-2',
+              power_score: 50.0,
+              sos: 0.6,
+              career_power_score: 50.0,
+              wins: 5,
+              losses: 5,
+            },
+            {
+              team_id: 't-i',
+              name: 'I',
+              image_url: null,
+              logo_url: 'i.png',
+              division_id: 'd-1',
+              power_score: 90.0,
+              sos: 0.84,
+              career_power_score: 90.0,
+              wins: 9,
+              losses: 1,
+            },
+            {
+              team_id: 't-j',
+              name: 'J',
+              image_url: null,
+              logo_url: 'j.png',
+              division_id: 'd-1',
+              power_score: 40.0,
+              sos: 0.54,
+              career_power_score: 40.0,
+              wins: 4,
+              losses: 6,
+            },
+            {
+              team_id: 't-k',
+              name: 'K',
+              image_url: null,
+              logo_url: 'k.png',
+              division_id: 'd-1',
+              power_score: 20.0,
+              sos: 0.42,
+              career_power_score: 20.0,
+              wins: 2,
+              losses: 8,
+            },
+            {
+              team_id: 't-m',
+              name: 'M',
+              image_url: null,
+              logo_url: 'm.png',
+              division_id: 'd-1',
+              power_score: 80.0,
+              sos: 0.78,
+              career_power_score: 80.0,
+              wins: 8,
+              losses: 2,
+            },
+            {
+              team_id: 't-n',
+              name: 'N',
+              image_url: null,
+              logo_url: 'n.png',
+              division_id: 'd-1',
+              power_score: 70.0,
+              sos: 0.72,
+              career_power_score: 70.0,
+              wins: 7,
+              losses: 3,
+            },
             {
               team_id: 't-hid-w',
               name: 'Hidden Winner',
               image_url: null,
               logo_url: 'hw.png',
               division_id: 'd-hidden',
+              power_score: 5.0,
+              sos: 0.33,
+              career_power_score: 5.0,
+              wins: 0,
+              losses: 10,
             },
             {
               team_id: 't-hid-l',
@@ -379,6 +557,11 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
               image_url: null,
               logo_url: 'hl.png',
               division_id: 'd-hidden',
+              power_score: 95.0,
+              sos: 0.87,
+              career_power_score: 95.0,
+              wins: 10,
+              losses: 0,
             },
           ],
           error: null,
@@ -453,28 +636,6 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
           error: null,
         },
       ],
-      team_season_stats: [
-        {
-          data: [
-            { team_id: 't-a', power_score: 0.2 },
-            { team_id: 't-b', power_score: 0.8 },
-            { team_id: 't-c', power_score: 0.3 },
-            { team_id: 't-d', power_score: 0.75 },
-            { team_id: 't-e', power_score: 0.4 },
-            { team_id: 't-f', power_score: 0.6 },
-            { team_id: 't-g', power_score: 0.1 },
-            { team_id: 't-h', power_score: 0.5 },
-            { team_id: 't-i', power_score: 0.9 },
-            { team_id: 't-j', power_score: 0.4 },
-            { team_id: 't-k', power_score: 0.2 },
-            { team_id: 't-l', power_score: 0.8 },
-            { team_id: 't-n', power_score: 0.7 },
-            { team_id: 't-hid-w', power_score: 0.05 },
-            { team_id: 't-hid-l', power_score: 0.95 },
-          ],
-          error: null,
-        },
-      ],
       // Queried once by _fetchUpsets and once by _fetchHotStreaks
       divisions: [
         { data: [{ id: 'd-1' }, { id: 'd-2' }], error: null },
@@ -501,11 +662,17 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(result.weekNumber).toBe(3);
 
     expect(result.upsets).toHaveLength(3);
-    // t-hid-w has the biggest gap (90) but is in a hidden division, so it is dropped
+    // t-hid-w faced the longest odds of all but is in a hidden division, so it
+    // is dropped. The rest are ordered by the winner's modelled chance, longest
+    // odds first, and capped at three.
     expect(result.upsets.map((u) => u.winnerId)).toEqual(['t-a', 't-c', 't-g']);
-    expect(result.upsets.map((u) => u.powerScoreGap)).toEqual([60, 45, 40]);
-    expect(result.upsets[0].matchResult).toBe('2–0');
-    expect(result.upsets[1].matchResult).toBe('2–1');
+    expect(result.upsets.map((u) => u.winnerProbability)).toEqual(
+      [...result.upsets.map((u) => u.winnerProbability)].sort((a, b) => a - b)
+    );
+    for (const upset of result.upsets) {
+      expect(upset.winnerProbability).toBeLessThanOrEqual(UPSET_THRESHOLD);
+    }
+    expect(result.upsets.map((u) => u.matchResult)).toContain('2–0');
 
     expect(result.hotStreaks).toHaveLength(5);
     expect(result.hotStreaks.map((h) => h.teamId)).toEqual([
@@ -552,8 +719,30 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       v_team_details: [
         {
           data: [
-            { team_id: 'a', name: 'A', logo_url: 'a.png', image_url: null, division_id: 'd-1' },
-            { team_id: 'b', name: 'B', logo_url: 'b.png', image_url: null, division_id: 'd-1' },
+            {
+              team_id: 'a',
+              name: 'A',
+              logo_url: 'a.png',
+              image_url: null,
+              division_id: 'd-1',
+              power_score: 20,
+              sos: 0.4,
+              career_power_score: 18,
+              wins: 1,
+              losses: 9,
+            },
+            {
+              team_id: 'b',
+              name: 'B',
+              logo_url: 'b.png',
+              image_url: null,
+              division_id: 'd-1',
+              power_score: 92,
+              sos: 0.9,
+              career_power_score: 92,
+              wins: 9,
+              losses: 1,
+            },
           ],
           error: null,
         },
@@ -627,8 +816,30 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
       v_team_details: [
         {
           data: [
-            { team_id: 'a', name: 'A', logo_url: 'a.png', image_url: null, division_id: 'd-1' },
-            { team_id: 'b', name: 'B', logo_url: 'b.png', image_url: null, division_id: 'd-1' },
+            {
+              team_id: 'a',
+              name: 'A',
+              logo_url: 'a.png',
+              image_url: null,
+              division_id: 'd-1',
+              power_score: 20,
+              sos: 0.4,
+              career_power_score: 18,
+              wins: 1,
+              losses: 9,
+            },
+            {
+              team_id: 'b',
+              name: 'B',
+              logo_url: 'b.png',
+              image_url: null,
+              division_id: 'd-1',
+              power_score: 92,
+              sos: 0.9,
+              career_power_score: 92,
+              wins: 9,
+              losses: 1,
+            },
           ],
           error: { message: 'team details for upsets failed' },
         },
@@ -654,15 +865,6 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
           error: { message: 'team details for streaks failed' },
         },
       ],
-      team_season_stats: [
-        {
-          data: [
-            { team_id: 'a', power_score: 0.2 },
-            { team_id: 'b', power_score: 0.9 },
-          ],
-          error: { message: 'career stats failed' },
-        },
-      ],
       // Queried once by _fetchUpsets and once by _fetchHotStreaks
       divisions: [
         { data: [{ id: 'd-1' }], error: null },
@@ -678,7 +880,7 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(result.hotStreaks).toHaveLength(1);
     expect(result.hasData).toBe(true);
 
-    expect(mockHandleDatabaseError).toHaveBeenCalledTimes(5);
+    expect(mockHandleDatabaseError).toHaveBeenCalledTimes(4);
     expect(mockHandleDatabaseError).toHaveBeenCalledWith(
       { message: 'upset matches query failed' },
       'Failed to fetch matches for upset detection'
@@ -686,10 +888,6 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
     expect(mockHandleDatabaseError).toHaveBeenCalledWith(
       { message: 'team details for upsets failed' },
       'Failed to fetch team details for upset detection'
-    );
-    expect(mockHandleDatabaseError).toHaveBeenCalledWith(
-      { message: 'career stats failed' },
-      'Failed to fetch career stats for upset detection'
     );
     expect(mockHandleDatabaseError).toHaveBeenCalledWith(
       { message: 'hot streak matches query failed' },
@@ -802,6 +1000,11 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
                 image_url: null,
                 logo_url: null,
                 division_id: 'd-visible',
+                power_score: 22,
+                sos: 0.4,
+                career_power_score: 20,
+                wins: 1,
+                losses: 9,
               },
               {
                 team_id: 't-favorite',
@@ -809,16 +1012,12 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
                 image_url: null,
                 logo_url: null,
                 division_id: 'd-visible',
+                power_score: 88,
+                sos: 0.9,
+                career_power_score: 90,
+                wins: 9,
+                losses: 1,
               },
-            ],
-            error: null,
-          },
-        ],
-        team_season_stats: [
-          {
-            data: [
-              { team_id: 't-underdog', power_score: 0.48 },
-              { team_id: 't-favorite', power_score: 0.75 },
             ],
             error: null,
           },
@@ -835,7 +1034,10 @@ describe('WeeklyRecapService.fetchWeeklyRecap', () => {
         matchResult: '2–1',
         weekNumber: null,
       });
-      expect(result.upsets[0].powerScoreGap).toBeCloseTo(27, 5);
+      // Qualified by the model, not by a power-score gap: the winner's modelled
+      // chance must sit at or below the schedule page's UPSET_THRESHOLD.
+      expect(result.upsets[0].winnerProbability).toBeLessThanOrEqual(UPSET_THRESHOLD);
+      expect(result.upsets[0].powerScoreGap).toBeCloseTo(66, 5);
       expect(result.hasData).toBe(true);
     });
 

@@ -1,8 +1,15 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { SeasonPlayoffMatch } from '@/services/brackets/read/PlayoffSeasonMatchService';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import { isUpset, predictMatch } from '@/utils/predictions';
 
 import type { WeeklyUpset } from './types';
+import {
+  fetchUpsetPredictionInputs,
+  h2hKey,
+  type PredictionTeamRow,
+  toHeadToHeadStats,
+} from './upsetPrediction';
 
 /**
  * The minimum a match needs for upset detection, so regular-season rows and
@@ -77,17 +84,15 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
     (id): id is string => id !== null
   );
 
-  // Fetch team info (name/logo/division), career stats, and visible divisions in parallel
-  const [teamDetailsResult, careerStatsResult, visibleDivisionsResult] = await Promise.all([
+  // Fetch team info (name/logo/division plus the model's inputs) and visible
+  // divisions in parallel
+  const [teamDetailsResult, visibleDivisionsResult] = await Promise.all([
     supabase
       .from('v_team_details')
-      .select('team_id, name, logo_url, image_url, division_id')
+      .select(
+        'team_id, name, logo_url, image_url, division_id, power_score, sos, career_power_score, wins, losses'
+      )
       .in('team_id', teamIds),
-    supabase
-      .from('team_season_stats')
-      .select('team_id, power_score')
-      .in('team_id', teamIds)
-      .not('power_score', 'is', null),
     // Hidden divisions are excluded from the frontend, same rule fetchHotStreaks applies
     supabase.from('divisions').select('id').neq('display_division', 'Hidden'),
   ]);
@@ -98,12 +103,6 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
       'Failed to fetch team details for upset detection'
     );
   }
-  if (careerStatsResult.error) {
-    handleDatabaseError(
-      careerStatsResult.error,
-      'Failed to fetch career stats for upset detection'
-    );
-  }
   // Must surface: an empty visible-division set silently filters out every upset
   if (visibleDivisionsResult.error) {
     handleDatabaseError(
@@ -112,43 +111,57 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
     );
   }
 
-  if (!teamDetailsResult.data || !careerStatsResult.data) return [];
-
-  // Build career power score map: average all seasons per team (0-1 → 0-100)
-  const careerScoreAccum = new Map<string, { sum: number; count: number }>();
-  for (const row of careerStatsResult.data) {
-    const entry = careerScoreAccum.get(row.team_id) ?? { sum: 0, count: 0 };
-    entry.sum += row.power_score ?? 0;
-    entry.count += 1;
-    careerScoreAccum.set(row.team_id, entry);
-  }
-  const careerScoreMap = new Map(
-    [...careerScoreAccum.entries()].map(([teamId, { sum, count }]) => [teamId, (sum / count) * 100])
-  );
+  if (!teamDetailsResult.data) return [];
 
   const teamInfoMap = new Map(teamDetailsResult.data.map((t) => [t.team_id, t]));
   const visibleDivisionIds = new Set(visibleDivisionsResult.data?.map((d) => d.id) ?? []);
   const isVisible = (divisionId: string | null | undefined): boolean =>
     divisionId != null && visibleDivisionIds.has(divisionId);
 
+  // Everything predictMatch needs, fetched once for the whole week rather than
+  // per match. Same sources useMatchPrediction reads on the schedule page.
+  const pairs = candidates
+    .filter((m): m is UpsetCandidate & { team1Id: string; team2Id: string } =>
+      Boolean(m.team1Id && m.team2Id)
+    )
+    .map((m) => ({ team1: m.team1Id, team2: m.team2Id }));
+
+  const { teamStats, divisionWeights, headToHead } = await fetchUpsetPredictionInputs(
+    teamDetailsResult.data as PredictionTeamRow[],
+    pairs
+  );
+
   // Build a single upset record for a match, or null if it doesn't qualify.
   // Extracted so the surrounding fetch/aggregation stays low-complexity.
   const buildUpset = (match: UpsetCandidate): WeeklyUpset | null => {
-    if (!match.winnerId || !match.loserId) return null;
+    if (!match.winnerId || !match.loserId || !match.team1Id || !match.team2Id) return null;
     const winnerInfo = teamInfoMap.get(match.winnerId);
     const loserInfo = teamInfoMap.get(match.loserId);
     if (!winnerInfo || !loserInfo) return null;
     // Skip matches involving a team an admin has moved to a hidden division
     if (!isVisible(winnerInfo.division_id) || !isVisible(loserInfo.division_id)) return null;
 
-    const winnerScore = careerScoreMap.get(match.winnerId) ?? 0;
-    const loserScore = careerScoreMap.get(match.loserId) ?? 0;
-    // Skip if either team has no career history to compare
-    if (winnerScore === 0 || loserScore === 0) return null;
+    const team1Stats = teamStats.get(match.team1Id);
+    const team2Stats = teamStats.get(match.team2Id);
+    if (!team1Stats || !team2Stats) return null;
 
-    const gap = loserScore - winnerScore;
-    // Only count as upset if winner had lower career power score
-    if (gap <= 0) return null;
+    const prediction = predictMatch(
+      team1Stats,
+      team2Stats,
+      divisionWeights,
+      teamInfoMap.get(match.team1Id)?.name ?? '',
+      teamInfoMap.get(match.team2Id)?.name ?? '',
+      toHeadToHeadStats(headToHead.get(h2hKey(match.team1Id, match.team2Id)))
+    );
+
+    const winnerProbability =
+      match.winnerId === match.team1Id ? prediction.probA : prediction.probB;
+
+    // The same threshold and the same model the schedule's UpsetTag applies.
+    if (!isUpset(winnerProbability)) return null;
+
+    const winnerScore = winnerInfo.power_score ?? 0;
+    const loserScore = loserInfo.power_score ?? 0;
 
     // Build score string like "21–15"
     const isWinnerTeam1 = match.winnerId === match.team1Id;
@@ -166,7 +179,8 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
       loserName: loserInfo.name ?? '',
       loserLogoUrl: loserInfo.image_url ?? loserInfo.logo_url ?? undefined,
       loserPowerScore: loserScore,
-      powerScoreGap: gap,
+      powerScoreGap: loserScore - winnerScore,
+      winnerProbability,
       matchResult,
       weekNumber,
     };
@@ -174,6 +188,6 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
 
   const upsets = candidates.map(buildUpset).filter((u): u is WeeklyUpset => u !== null);
 
-  // Sort by biggest gap first, return top 2
-  return upsets.sort((a, b) => b.powerScoreGap - a.powerScoreGap).slice(0, 3);
+  // Longest odds first, and keep the top three.
+  return upsets.sort((a, b) => a.winnerProbability - b.winnerProbability).slice(0, 3);
 }
