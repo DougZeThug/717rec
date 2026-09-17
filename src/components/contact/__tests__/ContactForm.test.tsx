@@ -323,5 +323,45 @@ describe('ContactForm', () => {
       const teamInput = screen.getByLabelText(/proposed team name/i) as HTMLInputElement;
       expect(teamInput.readOnly).toBe(false);
     });
+
+    // The proposed name answers one question only. Carried into the next topic
+    // it stood in for the member's real team, unlocked and with the Verified
+    // badge gone, because teamLocked needs team === verifiedTeam.
+    it('gives their verified team back when they leave the join-the-league topic', async () => {
+      mockUser = { email: 'captain@example.com' };
+      mockProfile = { full_name: 'Casey Captain' };
+      mockMembership = { team: { name: 'Rail Riders' } };
+      renderForm('/contact?type=join_league');
+
+      await userEvent.clear(screen.getByLabelText(/proposed team name/i));
+      await userEvent.type(screen.getByLabelText(/proposed team name/i), 'Bag Boys');
+      expect((screen.getByLabelText(/proposed team name/i) as HTMLInputElement).value).toBe(
+        'Bag Boys'
+      );
+
+      await pickTopic('General question');
+
+      const teamInput = screen.getByLabelText(/^team name/i) as HTMLInputElement;
+      expect(teamInput.value).toBe('Rail Riders');
+      expect(teamInput.readOnly).toBe(true);
+
+      const teamLabel = screen.getByText('Team name').closest('label');
+      expect(within(teamLabel as HTMLElement).getByText('Verified')).toBeInTheDocument();
+    });
+
+    // A support topic drops the team box. It only stayed up because the leaked
+    // draft made Boolean(team) true for a member who has no team at all.
+    it('drops the team box on a support topic when they have no team', async () => {
+      mockUser = { email: 'newcomer@example.com' };
+      mockProfile = { full_name: 'Nina Newcomer' };
+      mockMembership = null;
+      renderForm('/contact?type=join_league');
+
+      await userEvent.type(screen.getByLabelText(/proposed team name/i), 'Bag Boys');
+
+      await pickTopic('Report a bug');
+
+      expect(screen.queryByLabelText(/team name/i)).not.toBeInTheDocument();
+    });
   });
 });
