@@ -299,6 +299,54 @@ describe('useMatchReactions', () => {
     await togglePromise;
   });
 
+  // Tapping on then straight off again defers the removal until the insert has
+  // landed. The deferred removal tombstones the new row before deleting it, and
+  // a tombstone left behind by a failed delete hid a row that is still in the
+  // table. This hook's queryFn never clears realtimeDeletesRef, so it stayed
+  // hidden on every refetch: no reaction for this reader, one for everyone else.
+  it('keeps a reaction that a failed clean-up left in the table', async () => {
+    mockUser.current = { id: 'user-1' };
+    let resolveInsert!: () => void;
+    mockInsertReaction.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveInsert = resolve;
+        })
+    );
+    mockDeleteReaction.mockRejectedValue(new Error('delete refused'));
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tapping off while the insert is in flight only marks the optimistic row
+    // for removal; nothing is sent.
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The insert lands, the deferred clean-up delete fails, and the row stays.
+    mockFetchReactions.mockResolvedValue([reaction('real-1', 'user-1', '🔥')]);
+    await act(async () => {
+      resolveInsert();
+      await firstTap;
+    });
+
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+    expect(result.current.reactions[0].id).toBe('real-1');
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Error',
+      description: 'Failed to remove reaction. Please try again.',
+      variant: 'destructive',
+    });
+  });
+
   it('does not send optimistic ids to delete when a pending reaction is toggled off', async () => {
     mockUser.current = { id: 'user-1' };
     let resolveInsert!: () => void;

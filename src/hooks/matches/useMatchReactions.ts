@@ -205,13 +205,35 @@ export const useMatchReactions = (matchId: string) => {
       await MatchReactionsService.insertReaction(matchId, currentUserId, emoji);
       const removalKey = optimisticRemovalKey(matchId, currentUserId, emoji);
       if (pendingOptimisticRemovalsRef.current.delete(removalKey)) {
-        const savedReaction = (await MatchReactionsService.fetchReactions(matchId)).find(
-          (reaction) => reaction.user_id === currentUserId && reaction.emoji === emoji
-        );
-        if (savedReaction) {
-          realtimeInsertsRef.current.delete(savedReaction.id);
-          realtimeDeletesRef.current.add(savedReaction.id);
-          await MatchReactionsService.deleteReaction(savedReaction.id, currentUserId);
+        let tombstonedId: string | null = null;
+        try {
+          const savedReaction = (await MatchReactionsService.fetchReactions(matchId)).find(
+            (reaction) => reaction.user_id === currentUserId && reaction.emoji === emoji
+          );
+          if (savedReaction) {
+            realtimeInsertsRef.current.delete(savedReaction.id);
+            realtimeDeletesRef.current.add(savedReaction.id);
+            tombstonedId = savedReaction.id;
+            await MatchReactionsService.deleteReaction(savedReaction.id, currentUserId);
+          }
+        } catch (err) {
+          // The clean-up failed, so the row is still in the table. A tombstone
+          // left behind would hide it, and this hook's queryFn never clears
+          // realtimeDeletesRef, so it would hide it on every refetch for the
+          // life of the hook -- the reader sees no reaction while everyone else
+          // sees theirs. Drop the tombstone and let onSettled's refetch show
+          // the truth.
+          //
+          // Do not rethrow: the insert succeeded, so onError's rollback and its
+          // "failed to update" would be the wrong story. The removal is what
+          // failed, and the toast below says so.
+          if (tombstonedId) realtimeDeletesRef.current.delete(tombstonedId);
+          errorLog('Error removing delayed optimistic match reaction:', err);
+          toast({
+            title: 'Error',
+            description: getUIErrorMessage(err, 'Failed to remove reaction'),
+            variant: 'destructive',
+          });
         }
       }
     },

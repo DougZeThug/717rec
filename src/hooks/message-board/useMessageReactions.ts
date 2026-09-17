@@ -241,19 +241,41 @@ export const useMessageReactions = (messageId: string) => {
       if (pendingOptimisticRemovalsRef.current.delete(removalKey)) {
         // Tombstone the inserted row BEFORE any further await so a realtime
         // INSERT arriving in the async gap cannot resurrect the reaction.
-        if (insertedId) {
-          realtimeInsertsRef.current.delete(insertedId);
-          realtimeDeletesRef.current.add(insertedId);
-        }
-        const savedReaction = insertedId
-          ? { id: insertedId }
-          : (await MessageReactionsService.fetchReactions(messageId)).find(
-              (reaction) => reaction.user_id === currentUserId && reaction.emoji === emoji
-            );
-        if (savedReaction) {
-          realtimeInsertsRef.current.delete(savedReaction.id);
-          realtimeDeletesRef.current.add(savedReaction.id);
-          await MessageReactionsService.removeReaction(savedReaction.id, currentUserId);
+        let tombstonedId: string | null = null;
+        try {
+          if (insertedId) {
+            realtimeInsertsRef.current.delete(insertedId);
+            realtimeDeletesRef.current.add(insertedId);
+            tombstonedId = insertedId;
+          }
+          const savedReaction = insertedId
+            ? { id: insertedId }
+            : (await MessageReactionsService.fetchReactions(messageId)).find(
+                (reaction) => reaction.user_id === currentUserId && reaction.emoji === emoji
+              );
+          if (savedReaction) {
+            realtimeInsertsRef.current.delete(savedReaction.id);
+            realtimeDeletesRef.current.add(savedReaction.id);
+            tombstonedId = savedReaction.id;
+            await MessageReactionsService.removeReaction(savedReaction.id, currentUserId);
+          }
+        } catch (err) {
+          // The clean-up failed, so the row is still in the table. A tombstone
+          // left behind would make the next refetch hide it, and the reader
+          // would see no reaction while everyone else sees theirs. Drop the
+          // tombstone and let onSettled's refetch show the truth.
+          //
+          // Do not rethrow: the add succeeded, so onError's "failed to add"
+          // would be the wrong story. The removal is what failed, and the toast
+          // below says so. The realtime INSERT handler compensates the same way
+          // for the same failure.
+          if (tombstonedId) realtimeDeletesRef.current.delete(tombstonedId);
+          errorLog('Error removing delayed optimistic message reaction:', err);
+          toast({
+            title: 'Error',
+            description: getUIErrorMessage(err, 'Failed to remove reaction'),
+            variant: 'destructive',
+          });
         }
       }
     },
