@@ -35,6 +35,17 @@ Set one of them, not several. A stale `SUPABASE_ANON_KEY` left beside a newer
 value is the failure worth avoiding: it is the last resort, so it takes over
 whenever the ones above it resolve to nothing.
 
+### Third-party keys used by edge functions
+
+These are **server-only**. None of them may ever appear in a `VITE_*` variable
+or any frontend `.env` file — a `VITE_` prefix ships the value to every visitor.
+
+| Variable              | Used by                                        | What breaks without it                                                                                                                                                                                             | Public? |
+| --------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| `ANTHROPIC_API_KEY`   | `generate-recap-caption`                       | AI recap captions only. The function fails closed with **503** and `code: caption_unconfigured`; the Weekly Content Pack still generates, previews, exports and publishes, and the caption can be written by hand. | **No**  |
+| `RESEND_API_KEY`      | `send-support-email`, `submit-contact-request` | Admin email alerts. Messages are still stored and still appear in the Contact Inbox.                                                                                                                               | **No**  |
+| `CRON_WEBHOOK_SECRET` | `capture-power-snapshots`                      | The weekly snapshot job. The function returns 500 when unset, so Movers, Team of the Week and recap standings stop updating.                                                                                       | **No**  |
+
 ## Where they come from
 
 - **Lovable preview & published app**: auto-injected at build time from the connected Supabase / Lovable Cloud project. No `.env` file needed.
