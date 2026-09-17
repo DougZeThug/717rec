@@ -12,9 +12,11 @@ const mockUseResolveTeamSlug = vi.fn();
 const mockUseTeamDetails = vi.fn();
 const mockUseTeamMatches = vi.fn();
 const mockUseTeamRankings = vi.fn();
+const mockUseTeamsQuery = vi.fn();
 const mockStickyNav = vi.fn();
 const mockTeamHeader = vi.fn();
 const mockAdvancedStatsSection = vi.fn();
+const mockSeoHead = vi.fn();
 
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
@@ -36,7 +38,19 @@ vi.mock('@/hooks/useTeamMatches', () => ({
 vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: (...args: unknown[]) => mockUseTeamRankings(...args),
 }));
+vi.mock('@/hooks/teams', () => ({
+  useTeamsQuery: (...args: unknown[]) => mockUseTeamsQuery(...args),
+}));
 
+// SeoHead side-effects into document.head and renders nothing into the body,
+// so a recorder that returns null is behaviourally identical here and lets the
+// canonical address be asserted without waiting on Helmet's flush.
+vi.mock('@/components/seo/SeoHead', () => ({
+  default: (props: Record<string, unknown>) => {
+    mockSeoHead(props);
+    return null;
+  },
+}));
 vi.mock('@/components/ui/skeleton', () => ({ Skeleton: () => <div>Loading team details...</div> }));
 vi.mock('@/components/teams/TeamDetailsStickyNav', () => ({
   default: () => {
@@ -139,6 +153,9 @@ describe('TeamDetails page', () => {
     });
     mockUseTeamMatches.mockReturnValue({ pastMatches: [{ id: 'm1' }], isLoadingMatches: false });
     mockUseTeamRankings.mockReturnValue({ rankings: [{ teamId: 't-1', rankChange: 1 }] });
+    // The canonical address is only the readable one when that address leads
+    // back to this team, so the list has to hold it.
+    mockUseTeamsQuery.mockReturnValue({ data: [{ id: 't-1', name: 'Falcons' }] });
   });
 
   it('passes route param into slug resolver and renders success module wiring', () => {
@@ -234,6 +251,52 @@ describe('TeamDetails page', () => {
 
       expect(scrollIntoView).not.toHaveBeenCalled();
       expect(sectionNamed('Stats & Report Card')).toHaveAttribute('data-open', 'false');
+    });
+  });
+
+  // A team answers at two addresses. Echoing back whichever one the visitor
+  // arrived at had the same page declare itself the original twice over, so a
+  // search engine saw two pages where there is one.
+  describe('the address it declares as its own', () => {
+    const canonicalOf = () =>
+      (mockSeoHead.mock.calls.at(-1)?.[0] as { path: string } | undefined)?.path;
+
+    it('is the readable name when reached by the readable name', () => {
+      renderPage('/teams/falcons');
+
+      expect(canonicalOf()).toBe('/teams/falcons');
+    });
+
+    it('is still the readable name when reached by the row id', () => {
+      renderPage('/teams/4f1a2b3c-0000-4000-8000-000000000001');
+
+      expect(canonicalOf()).toBe('/teams/falcons');
+    });
+
+    // teams.name has no unique constraint. The readable address reaches
+    // whichever team useResolveTeamSlug finds first, so the other one must not
+    // claim it: it would publish a canonical pointing at a rival's page and be
+    // dropped from the index as a copy of it.
+    it('is the row id when another team owns that readable address', () => {
+      mockUseTeamsQuery.mockReturnValue({
+        data: [
+          { id: 't-0', name: 'Falcons' },
+          { id: 't-1', name: 'Falcons' },
+        ],
+      });
+
+      renderPage('/teams/falcons');
+
+      expect(canonicalOf()).toBe('/teams/t-1');
+    });
+
+    it('sends the same address into the structured data', () => {
+      renderPage('/teams/4f1a2b3c-0000-4000-8000-000000000001');
+
+      const props = mockSeoHead.mock.calls.at(-1)?.[0] as {
+        jsonLd: { url: string };
+      };
+      expect(props.jsonLd.url).toBe('https://717rec.app/teams/falcons');
     });
   });
 });

@@ -214,4 +214,27 @@ describe('useMatchComments', () => {
     expect(deleteResult).toBe(false);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Error' }));
   });
+
+  // The two branches of onError toast on the same error and were meant to read
+  // the same. The common one -- the rollback path a delete failure actually
+  // takes -- kept a fixed sentence when the rest of the file was migrated, so
+  // the reason the server gave was thrown away on the path users meet.
+  it('says why deleting a comment failed rather than only that it failed', async () => {
+    mockUser.current = { id: 'user-1' };
+    mockFetchComments.mockResolvedValue([comment]);
+    mockDeleteComment.mockRejectedValue(new ValidationError('That comment is already gone.'));
+
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.comments).toHaveLength(1));
+
+    await act(async () => {
+      await result.current.deleteComment('comment-1');
+    });
+
+    expect(mockToast).toHaveBeenCalledWith({
+      title: 'Error',
+      description: 'Failed to delete comment: That comment is already gone.',
+      variant: 'destructive',
+    });
+  });
 });

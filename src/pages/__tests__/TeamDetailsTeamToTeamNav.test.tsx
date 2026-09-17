@@ -14,6 +14,7 @@ const mockUseResolveTeamSlug = vi.fn();
 const mockUseTeamDetails = vi.fn();
 const mockUseTeamMatches = vi.fn();
 const mockUseTeamRankings = vi.fn();
+const mockUseTeamsQuery = vi.fn();
 
 vi.mock('@/hooks/useResolveTeamSlug', () => ({
   useResolveTeamSlug: (...args: unknown[]) => mockUseResolveTeamSlug(...args),
@@ -26,6 +27,9 @@ vi.mock('@/hooks/useTeamMatches', () => ({
 }));
 vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: (...args: unknown[]) => mockUseTeamRankings(...args),
+}));
+vi.mock('@/hooks/teams', () => ({
+  useTeamsQuery: (...args: unknown[]) => mockUseTeamsQuery(...args),
 }));
 
 vi.mock('@/components/ui/skeleton', () => ({ Skeleton: () => <div>Loading team details...</div> }));
@@ -122,6 +126,14 @@ describe('TeamDetails team-to-team in-app navigation', () => {
     }));
     mockUseTeamMatches.mockReturnValue({ pastMatches: [{ id: 'm1' }], isLoadingMatches: false });
     mockUseTeamRankings.mockReturnValue({ rankings: [{ teamId: 't-1', rankChange: 1 }] });
+    // The canonical address is only the readable one when that address leads
+    // back to this team, so the list has to hold it.
+    mockUseTeamsQuery.mockReturnValue({
+      data: [
+        { id: 't-1', name: 'Falcons' },
+        { id: 't-2', name: 'Eagles' },
+      ],
+    });
   });
 
   it('does not keep a deep-linked section open after navigating to a different team in-app', async () => {

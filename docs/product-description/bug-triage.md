@@ -880,6 +880,11 @@ finding read a superseded migration.
   back to the caller's phrase. Edge-function responses are unwrapped at the
   service layer so their wording survives. Roughly fifty hardcoded handlers were
   migrated; pre-flight validation guards were left alone.
+- **One site was missed, and is migrated now.** `useMatchComments`' delete
+  handler toasts from two branches on the same error. The rarer one — a realtime
+  delete already confirmed — was migrated; the shared fall-through, which is the
+  path an ordinary delete failure takes, kept the fixed sentence "Failed to
+  delete comment". It reads the reason like the rest now.
 - **Followed up after review — the first cut was too blunt.** Making
   `DatabaseError` mean "may contain raw Postgres text" was right for the ~330
   errors `handleDatabaseError` builds, but it also swallowed messages written

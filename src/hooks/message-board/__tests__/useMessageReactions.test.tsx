@@ -135,6 +135,53 @@ describe('useMessageReactions', () => {
       variant: 'destructive',
     });
   });
+  // Tapping on then straight off again defers the removal until the insert has
+  // landed. The deferred removal tombstones the new row before deleting it, and
+  // a tombstone left behind by a failed delete made the next refetch hide a row
+  // that is still in the table: no reaction for the reader, one for everybody
+  // else.
+  it('keeps a reaction that a failed clean-up left in the table', async () => {
+    let resolveAdd!: (id: string) => void;
+    mocks.add.mockImplementation(
+      () =>
+        new Promise<string>((resolve) => {
+          resolveAdd = resolve;
+        })
+    );
+    mocks.remove.mockRejectedValue(new BusinessLogicError('That reaction is already gone.'));
+    mocks.fetch.mockResolvedValue([]);
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMessageReactions('m1'), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.addReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tapping off while the insert is in flight only marks the optimistic row
+    // for removal; nothing is sent.
+    await act(async () => {
+      await result.current.addReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The insert lands, the deferred clean-up delete fails, and the row stays.
+    mocks.fetch.mockResolvedValue([reaction('server-id', 'u1', '🔥')]);
+    await act(async () => {
+      resolveAdd('server-id');
+      await firstTap;
+    });
+
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+    expect(result.current.reactions[0].id).toBe('server-id');
+    expect(mocks.toast).toHaveBeenCalledWith({
+      title: 'Error',
+      description: 'Failed to remove reaction: That reaction is already gone.',
+      variant: 'destructive',
+    });
+  });
   it('says why removing a reaction failed rather than only that it failed', async () => {
     mocks.remove.mockRejectedValue(new BusinessLogicError('That reaction is already gone.'));
     mocks.fetch.mockResolvedValue([reaction('r1', 'u1')]);

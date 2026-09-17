@@ -19,6 +19,7 @@ import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useTeamsQuery } from '@/hooks/teams';
 import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { useResolveTeamSlug } from '@/hooks/useResolveTeamSlug';
 import { useTeamDetails } from '@/hooks/useTeamDetails';
@@ -27,7 +28,11 @@ import { useTeamRankings } from '@/hooks/useTeamRankings';
 import { teamLog } from '@/utils/logger';
 import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
-import { buildTeamSeo, toPercent } from '@/utils/teamDetailsUtils/teamSeoUtils';
+import {
+  buildTeamSeo,
+  toPercent,
+  toTeamCanonicalPath,
+} from '@/utils/teamDetailsUtils/teamSeoUtils';
 
 // Recharts-backed components — lazy-loaded so the recharts vendor chunk
 // only downloads when the user opens these collapsible sections.
@@ -237,6 +242,11 @@ const TeamDetailsPage = () => {
   const { team, isLoading } = useTeamDetails(teamId);
   const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
+  // The same options useResolveTeamSlug passes, deliberately: same cache key, so
+  // arriving by the readable name costs nothing extra, and the same array in the
+  // same order, so the canonical below cannot disagree with where that address
+  // actually leads.
+  const { data: allTeams } = useTeamsQuery({ includeHidden: true });
 
   const { teamRank, teamRanking, totalTeams } = getTeamRankInfo(rankings, teamId);
 
@@ -307,15 +317,18 @@ const TeamDetailsPage = () => {
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
-  const teamPath = `/teams/${teamParam ?? teamId ?? ''}`;
-  const seo = buildTeamSeo(team, teamPath);
+  // Built from the team, not from teamParam: the visitor may have arrived at
+  // either the readable name or the row id, and echoing that back had each form
+  // of the same page declare itself the original.
+  const canonicalPath = toTeamCanonicalPath(team, allTeams);
+  const seo = buildTeamSeo(team, canonicalPath);
 
   return (
     <>
       <SeoHead
         title={`${team.name} | 717REC Cornhole League`}
         description={seo.description}
-        path={teamPath}
+        path={canonicalPath}
         jsonLd={seo.jsonLd}
       />
       <TeamDetailsStickyNav />
