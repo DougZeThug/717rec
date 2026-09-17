@@ -115,10 +115,11 @@ exist but they are only checked when the button is pressed. A user can type a
 one-letter name and an address with no `@` in it and see no complaint at all
 until they try to send.
 
-Three of the rules depend on the topic: a team name is required only for Join the
+Four of the rules depend on the topic: a team name is required only for Join the
 league, a real email address is required only for the topics answered by email,
-and the message length allowed differs between the two mailboxes (2,000
-characters for a league request, 5,000 for a support message).
+the message length allowed differs between the two mailboxes (2,000 characters
+for a league request, 5,000 for a support message), and the name length allowed
+differs as well (100 characters on a support topic, 120 on the rest).
 
 Nothing is captured or snapshotted at this point, because there is nothing to
 restore to. The form has no discard, no reset, and no undo.
