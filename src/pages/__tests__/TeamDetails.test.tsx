@@ -12,6 +12,7 @@ const mockUseResolveTeamSlug = vi.fn();
 const mockUseTeamDetails = vi.fn();
 const mockUseTeamMatches = vi.fn();
 const mockUseTeamRankings = vi.fn();
+const mockUseTeamsQuery = vi.fn();
 const mockStickyNav = vi.fn();
 const mockTeamHeader = vi.fn();
 const mockAdvancedStatsSection = vi.fn();
@@ -36,6 +37,9 @@ vi.mock('@/hooks/useTeamMatches', () => ({
 }));
 vi.mock('@/hooks/useTeamRankings', () => ({
   useTeamRankings: (...args: unknown[]) => mockUseTeamRankings(...args),
+}));
+vi.mock('@/hooks/teams', () => ({
+  useTeamsQuery: (...args: unknown[]) => mockUseTeamsQuery(...args),
 }));
 
 // SeoHead side-effects into document.head and renders nothing into the body,
@@ -149,6 +153,9 @@ describe('TeamDetails page', () => {
     });
     mockUseTeamMatches.mockReturnValue({ pastMatches: [{ id: 'm1' }], isLoadingMatches: false });
     mockUseTeamRankings.mockReturnValue({ rankings: [{ teamId: 't-1', rankChange: 1 }] });
+    // The canonical address is only the readable one when that address leads
+    // back to this team, so the list has to hold it.
+    mockUseTeamsQuery.mockReturnValue({ data: [{ id: 't-1', name: 'Falcons' }] });
   });
 
   it('passes route param into slug resolver and renders success module wiring', () => {
@@ -264,6 +271,23 @@ describe('TeamDetails page', () => {
       renderPage('/teams/4f1a2b3c-0000-4000-8000-000000000001');
 
       expect(canonicalOf()).toBe('/teams/falcons');
+    });
+
+    // teams.name has no unique constraint. The readable address reaches
+    // whichever team useResolveTeamSlug finds first, so the other one must not
+    // claim it: it would publish a canonical pointing at a rival's page and be
+    // dropped from the index as a copy of it.
+    it('is the row id when another team owns that readable address', () => {
+      mockUseTeamsQuery.mockReturnValue({
+        data: [
+          { id: 't-0', name: 'Falcons' },
+          { id: 't-1', name: 'Falcons' },
+        ],
+      });
+
+      renderPage('/teams/falcons');
+
+      expect(canonicalOf()).toBe('/teams/t-1');
     });
 
     it('sends the same address into the structured data', () => {
