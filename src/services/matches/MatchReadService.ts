@@ -28,4 +28,4 @@ export {
   fetchScoreSubmissions,
 } from './MatchQueryService';
 export { fetchMatchesForAdmin, fetchScheduleMatches } from './MatchScheduleAdminService';
-export { fetchTeamMatchesData, fetchTeamsByIds, fetchTeamsMap } from './MatchTeamLookupService';
+export { fetchTeamMatchesData, fetchTeamsMap } from './MatchTeamLookupService';
