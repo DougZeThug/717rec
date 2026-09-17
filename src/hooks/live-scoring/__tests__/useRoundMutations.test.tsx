@@ -207,6 +207,55 @@ describe('undoLastRound', () => {
   });
 });
 
+// A save held with no signal is recoverable; a delete held and replayed later
+// is not — it names a game and a round number, and that slot can hold somebody
+// else's round by the time it lands.
+describe('undoLastRound with no signal', () => {
+  it('fails instead of parking', async () => {
+    onlineManager.setOnline(false);
+    mockDeleteLastRound.mockRejectedValue(new Error('offline'));
+    const wrapper = createWrapper();
+    const seeded = seedBundle();
+    seeded.rounds = [{ game_id: 'game-1', round_number: 1 } as LiveMatchBundle['rounds'][number]];
+    queryClient.setQueryData(queryKey, seeded);
+
+    const { result } = renderHook(() => useRoundMutations('match-1'), { wrapper });
+
+    await act(async () => {
+      await result.current.undoLastRound
+        .mutateAsync({ gameId: 'game-1', roundNumber: 1 })
+        .catch(() => undefined);
+    });
+
+    // Sent and refused, not held: a held mutation never reaches the service and
+    // never settles, so neither of these would hold.
+    expect(result.current.undoLastRound.isPaused).toBe(false);
+    expect(mockDeleteLastRound).toHaveBeenCalledWith('game-1', 1);
+    expect(queryClient.getQueryData<LiveMatchBundle>(queryKey)?.rounds).toHaveLength(1);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Could not undo round', variant: 'destructive' })
+    );
+  });
+
+  it('sends nothing later when the connection returns', async () => {
+    onlineManager.setOnline(false);
+    mockDeleteLastRound.mockRejectedValue(new Error('offline'));
+    const { result } = renderHook(() => useRoundMutations('match-1'), { wrapper: createWrapper() });
+
+    await act(async () => {
+      await result.current.undoLastRound
+        .mutateAsync({ gameId: 'game-1', roundNumber: 1 })
+        .catch(() => undefined);
+    });
+    expect(mockDeleteLastRound).toHaveBeenCalledTimes(1);
+
+    act(() => onlineManager.setOnline(true));
+
+    // The undo is settled, so reconnecting must not replay it.
+    await waitFor(() => expect(mockDeleteLastRound).toHaveBeenCalledTimes(1));
+  });
+});
+
 describe('submitRound with no signal', () => {
   it('parks the round instead of failing it', async () => {
     onlineManager.setOnline(false);

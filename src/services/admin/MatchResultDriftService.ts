@@ -140,7 +140,23 @@ const findingsFor = (match: MatchRow, games: GameRow[], rounds: RoundRow[]): Fin
     const storedSide = sideOf(game.winner_team_id, match);
     const derivedSide = checkGameWinner(totals.team1, totals.team2);
 
-    if (derivedSide !== null && storedSide !== derivedSide) {
+    // Whether the stored score has fallen behind the rounds, which decides how a
+    // winner the rounds no longer support is reported.
+    const scoreIsStale = game.team1_score !== totals.team1 || game.team2_score !== totals.team2;
+
+    // `derivedSide` is null when the rounds decide nobody — under the target, or
+    // at the target by a single point. That is still a disagreement when a winner
+    // is recorded, and the match level already treats null the same way, so it is
+    // not guarded away here. `setGameWinner` is the way in: it writes a winner
+    // without checking that the totals decide one, and writes the fold as the
+    // score, so the stale-score check below stays quiet as well.
+    //
+    // The one case left out is a stale score: deleting a round from a finished
+    // game leaves the old totals in place on purpose, so the shrunken rounds stop
+    // deciding anybody. That is the stale score reported below, not a wrong
+    // winner, and reporting both would bury it — `game-winner` outranks
+    // `game-score`.
+    if (storedSide !== derivedSide && (derivedSide !== null || !scoreIsStale)) {
       findings.push({
         kind: 'game-winner',
         recorded: `game ${game.game_number} won by ${sideName(storedSide, team1Name, team2Name, 'nobody')}`,
@@ -148,7 +164,7 @@ const findingsFor = (match: MatchRow, games: GameRow[], rounds: RoundRow[]): Fin
       });
     }
 
-    if (game.team1_score !== totals.team1 || game.team2_score !== totals.team2) {
+    if (scoreIsStale) {
       findings.push({
         kind: 'game-score',
         recorded: `game ${game.game_number} stored ${game.team1_score ?? 0}–${game.team2_score ?? 0}`,

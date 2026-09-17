@@ -176,6 +176,15 @@ description says what it does and does not reach: "This changes the game only. O
 a finalized match, finish with 'Reopen & re-save result' so the official result
 follows."
 
+**An amber warning appears while the rounds do not support the team selected**,
+and follows the selection as it changes. It reads either "The rounds give this
+game to *the other team*" or, when the rounds reach no winner at all, "The rounds
+do not decide this game. No side has reached 21 with a lead of 2." It then says
+the change is still allowed and that League Night Status will list the match
+under "Matches that disagree with their rounds" until the two agree. **It does
+not block Set winner** — setting the winner first and fixing the rounds after is
+a real way to work.
+
 ### Submit
 
 None of the three writes is optimistic. Each waits, the button reads "Saving…"
@@ -358,7 +367,10 @@ two disagree until someone re-saves — which the admin dashboard now lists and
 - **An archived season is read-only.** Its rounds are visible and unchangeable,
   in the panel and in the service beneath it.
 - **Changing a game winner rewrites the game's stored score** to the totals the
-  rounds produce, which may not be what the recorded result assumed.
+  rounds produce, which may not be what the recorded result assumed. Because it
+  writes those totals, a winner the rounds do not support leaves no stored-score
+  disagreement behind it — only the winner itself disagrees, which the amber
+  warning says before the press and the dashboard card reports after it.
 - **Only live-scored matches appear.** A match resulted in bulk has no rounds to
   correct, so the only correction available is re-scoring or deleting it.
 - **Changing the season clears the night and the selection**, because both

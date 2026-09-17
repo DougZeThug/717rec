@@ -8,7 +8,7 @@ vi.mock('@/utils/logger', () => ({
 
 import { ValidationError } from '@/types/errors';
 
-import { parseHeroCardMetadata, parseMetadata } from '../parseMetadata';
+import { parseHeroCardMetadata, parseMetadata, tryParseHeroCardMetadata } from '../parseMetadata';
 
 describe('parseMetadata', () => {
   beforeEach(() => {
@@ -67,5 +67,34 @@ describe('parseHeroCardMetadata', () => {
     expect(() => parseHeroCardMetadata({ past_winners: [{ week: '1' }] }, 'event')).toThrow(
       ValidationError
     );
+  });
+});
+
+// The admin form re-parses its JSON box on every keystroke, so it needs the same
+// check as an answer rather than a throw.
+describe('tryParseHeroCardMetadata', () => {
+  it('reads good metadata out of the raw string', () => {
+    expect(tryParseHeroCardMetadata('{"champions":{"East":"team-1"}}', 'champions')).toEqual({
+      ok: true,
+      metadata: { champions: { East: 'team-1' } },
+    });
+  });
+
+  it('reports a bad shape rather than throwing', () => {
+    const result = tryParseHeroCardMetadata('{"champions":{"East":42}}', 'champions');
+    expect(result.ok).toBe(false);
+    expect(result).toHaveProperty('error', expect.stringContaining('champions must be a map'));
+  });
+
+  it('reports each bad event field rather than throwing', () => {
+    const result = tryParseHeroCardMetadata('{"buy_in":20}', 'event');
+    expect(result.ok).toBe(false);
+    expect(result).toHaveProperty('error', expect.stringContaining('buy_in must be a string'));
+  });
+
+  // parseMetadata already forgives this, and must keep doing so: half-typed JSON
+  // is the normal state of the box, not something to complain about.
+  it('treats unparseable JSON as empty, not as an error', () => {
+    expect(tryParseHeroCardMetadata('{"buy_in":', 'event')).toEqual({ ok: true, metadata: {} });
   });
 });

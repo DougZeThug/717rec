@@ -5,17 +5,42 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EventWeekWinners } from '@/types/heroCard';
-import { parseHeroCardMetadata, parseMetadata } from '@/utils/parseMetadata';
+import { tryParseHeroCardMetadata } from '@/utils/parseMetadata';
 
 import { SectionHeader } from './SectionHeader';
 import { FormSectionProps } from './types';
 
 const placeLabels = ['🥇 1st', '🥈 2nd', '🥉 3rd'];
 
-export const EventWinnersEditor: React.FC<FormSectionProps> = ({ formData, onChange }) => {
-  if (formData.card_type !== 'event') return null;
+/**
+ * Shown in place of the editor while the "Extra Data (JSON)" box will not parse.
+ *
+ * Not an empty editor with a `{}` fallback: every control in here writes its
+ * change back as `{ ...metadata, <key>: ... }`, so editing against `{}` would
+ * erase whatever else the admin had typed in that box. Refusing to edit until
+ * the box parses is the only safe answer.
+ */
+const MetadataBlockedNotice: React.FC<{ error: string }> = ({ error }) => (
+  <div className="bg-card rounded-lg border p-4">
+    <p className="text-sm text-destructive">{error}.</p>
+    <p className="mt-1 text-xs text-muted-foreground">
+      Fix &quot;Extra Data (JSON)&quot; under Advanced Settings to edit this section.
+    </p>
+  </div>
+);
 
-  const metadata = parseHeroCardMetadata(parseMetadata(formData.metadata), 'event');
+export const EventWinnersEditor: React.FC<FormSectionProps> = ({
+  formData,
+  onChange,
+  metadataError = null,
+}) => {
+  if (formData.card_type !== 'event') return null;
+  if (metadataError) return <MetadataBlockedNotice error={metadataError} />;
+
+  const parsed = tryParseHeroCardMetadata(formData.metadata, 'event');
+  if (!parsed.ok) return <MetadataBlockedNotice error={parsed.error} />;
+
+  const metadata = parsed.metadata;
   const pastWinners: EventWeekWinners[] = metadata.past_winners || [];
 
   const updateWinners = (updated: EventWeekWinners[]) => {

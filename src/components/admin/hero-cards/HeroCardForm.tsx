@@ -1,11 +1,17 @@
 import { ArrowLeft } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { useHeroCardMutations } from '@/hooks/useHeroCards';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
-import { HeroCard, HeroCardFormData, HeroCardTargetType, HeroCardType } from '@/types/heroCard';
-import { parseHeroCardMetadata, parseMetadata } from '@/utils/parseMetadata';
+import {
+  HeroCard,
+  HeroCardFormData,
+  HeroCardMetadata,
+  HeroCardTargetType,
+  HeroCardType,
+} from '@/types/heroCard';
+import { tryParseHeroCardMetadata } from '@/utils/parseMetadata';
 
 import {
   AdvancedSettingsSection,
@@ -68,8 +74,19 @@ const buildFormData = (card: HeroCard | null): HeroCardFormData =>
       }
     : defaultFormData;
 
-/** What the live preview shows: the typed values, with placeholders for blanks. */
-const buildPreviewCard = (card: HeroCard | null, formData: HeroCardFormData): HeroCard => ({
+/**
+ * What the live preview shows: the typed values, with placeholders for blanks.
+ *
+ * `metadata` is passed in rather than parsed here. This runs on every render,
+ * including the one after each keystroke in the "Extra Data (JSON)" box, and
+ * parsing that box can fail — a throw in here escapes render and takes the whole
+ * admin dashboard down with it.
+ */
+const buildPreviewCard = (
+  card: HeroCard | null,
+  formData: HeroCardFormData,
+  metadata: HeroCardMetadata
+): HeroCard => ({
   id: card?.id || 'preview',
   slug: formData.slug || 'preview',
   title: formData.title || 'Card Headline',
@@ -87,7 +104,7 @@ const buildPreviewCard = (card: HeroCard | null, formData: HeroCardFormData): He
   target_type: formData.target_type,
   target_id: formData.target_id || null,
   card_type: formData.card_type,
-  metadata: parseHeroCardMetadata(parseMetadata(formData.metadata), formData.card_type),
+  metadata,
   created_at: card?.created_at || new Date().toISOString(),
   updated_at: new Date().toISOString(),
 });
@@ -99,6 +116,14 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   const [initialFormData] = useState<HeroCardFormData>(() => buildFormData(card));
   const [formData, setFormData] = useState<HeroCardFormData>(initialFormData);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  // Parsed once for the whole form: the preview, both metadata editors and the
+  // save all need the same answer, and none of them may throw for it.
+  const metadataResult = useMemo(
+    () => tryParseHeroCardMetadata(formData.metadata, formData.card_type),
+    [formData.metadata, formData.card_type]
+  );
+  const metadataError = metadataResult.ok ? null : metadataResult.error;
 
   // Closing the form throws the work away — the list replaces it and nothing is
   // kept. `isSaving` stops the guard firing on the close that follows a save.
@@ -120,7 +145,14 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const metadata = parseHeroCardMetadata(parseMetadata(formData.metadata), formData.card_type);
+    if (!metadataResult.ok) {
+      // Refused rather than saved as an empty object: writing {} here would drop
+      // whatever the card already held. Open the section so the message under
+      // the box is on screen, since it is collapsed by default.
+      setAdvancedOpen(true);
+      return;
+    }
+    const metadata = metadataResult.metadata;
 
     const payload = {
       slug: formData.slug,
@@ -159,7 +191,13 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
     onClose();
   };
 
-  const previewCard = buildPreviewCard(card, formData);
+  // A card whose extra data is wrong still previews, on the last shape that
+  // parsed — an empty one. The message under the box is what says why.
+  const previewCard = buildPreviewCard(
+    card,
+    formData,
+    metadataResult.ok ? metadataResult.metadata : {}
+  );
 
   return (
     <div className="space-y-6">
@@ -180,14 +218,23 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
             <DesignAppearanceSection formData={formData} onChange={handleChange} />
             <TargetingDisplaySection formData={formData} onChange={handleChange} />
             {formData.card_type === 'champions' && (
-              <ChampionsEditor formData={formData} onChange={handleChange} />
+              <ChampionsEditor
+                formData={formData}
+                onChange={handleChange}
+                metadataError={metadataError}
+              />
             )}
             {formData.card_type === 'event' && (
-              <EventWinnersEditor formData={formData} onChange={handleChange} />
+              <EventWinnersEditor
+                formData={formData}
+                onChange={handleChange}
+                metadataError={metadataError}
+              />
             )}
             <AdvancedSettingsSection
               formData={formData}
               onChange={handleChange}
+              metadataError={metadataError}
               isOpen={advancedOpen}
               onOpenChange={setAdvancedOpen}
             />
@@ -200,6 +247,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
         <FormActions
           isSubmitting={isCreating || isUpdating}
           isEditing={!!card}
+          disabled={metadataError !== null}
           onCancel={handleClose}
         />
       </form>

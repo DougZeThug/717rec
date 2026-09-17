@@ -1269,6 +1269,17 @@ finding read a superseded migration.
   stored score its rounds contradict, and a completed game with no rounds left.
   Each row names what is stored against what the rounds say.
 
+  **The third kind first missed the case it was most needed for.** It only fired
+  when the rounds decided somebody *else*, so a game whose rounds decide nobody —
+  under 21, or at 21 by a single point — went unreported however its winner was
+  recorded. `setGameWinner` is the way into that state and it also writes the
+  fold as the game's score, so the fourth kind stayed quiet too and the match
+  level counted the recorded winner as a real game win: the card said "all clear"
+  on all three checks. The kind now reports a stored winner the rounds do not
+  give the game to, nobody included. A stale score is still reported as a stale
+  score: deleting a round from a finished game leaves the old totals in place on
+  purpose, and naming that a wrong winner would outrank and bury it.
+
   **Written in TypeScript, not as a view.** `v_counter_drift` was the other
   precedent, but `rules.ts` says *"Change game rules only here"*, and a view
   would hard-code first-to-21-win-by-2 a second time and drift silently. The

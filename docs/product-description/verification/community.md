@@ -242,9 +242,10 @@ ignore test messages:
 - "Send Another Message" returning to a blank form rather than the previous one.
 - That the success panel is not a route, and a reload after success returns to an
   empty form with no evidence the message was sent.
-- The server's own rules: a name over 100 characters, a message over 5000, an
-  address over 255, more than five links, and five messages in ten minutes. All
-  four produce the same generic toast, and confirming any of them means sending.
+- The server's own rules that the form does not also check: an address over 255,
+  more than five links, and five messages in ten minutes. All three produce the
+  same generic toast, and confirming any of them means sending. The name and the
+  message are capped in the form now, so both are checkable without sending.
 - That the honeypot discards silently while still showing the success panel —
   CONTACT-22 checks only whether a filler writes into the field.
 - That two tabs, or a retry after a failure, can deliver the same message twice.

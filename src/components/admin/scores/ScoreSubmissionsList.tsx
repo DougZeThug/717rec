@@ -1,5 +1,5 @@
 import { AlertTriangle, Clock } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -55,8 +55,33 @@ const matchLabel = (submission: ScoreSubmission): string => {
 };
 
 const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmissionsListProps) => {
-  const [pendingReject, setPendingReject] = useState<ScoreSubmission | null>(null);
+  /**
+   * The id of the report the confirmation is open for, not the report itself.
+   *
+   * The queue is refetched on mount and on every window focus, and two admins
+   * can work it at once. A copy of the row held here goes stale the moment
+   * either happens: the card leaves the list while the confirmation stays open
+   * naming it, and pressing "Reject report" then fires at a report this admin's
+   * own screen has already dropped.
+   *
+   * Holding the id and reading the row back out of `submissions` keeps the two
+   * in step without an effect: the dialog is opened by the derived row, so a
+   * report that has left the queue closes it on the same render that drops the
+   * card. The id can outlive the row — the empty-state return below sits above
+   * the dialog and unmounts it — but it only ever reopens the confirmation for a
+   * report that is in the queue and still waiting, which is a confirmation that
+   * is true.
+   */
+  const [pendingRejectId, setPendingRejectId] = useState<string | null>(null);
   const groups = useMemo(() => groupByMatch(submissions), [submissions]);
+  const pendingReject = pendingRejectId
+    ? (submissions.find((submission) => submission.id === pendingRejectId) ?? null)
+    : null;
+
+  const openRejectFor = useCallback(
+    (submission: ScoreSubmission) => setPendingRejectId(submission.id),
+    []
+  );
 
   if (submissions.length === 0) {
     return (
@@ -70,9 +95,11 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
   }
 
   const confirmReject = () => {
-    if (!pendingReject) return;
-    onReject(pendingReject.id);
-    setPendingReject(null);
+    // Reads the derived row, not the id. A report that has left the queue leaves
+    // this null and closes the box on the same render, so the press has nothing
+    // to reject — closing first says that without a branch nothing can reach.
+    setPendingRejectId(null);
+    if (pendingReject) onReject(pendingReject.id);
   };
 
   return (
@@ -100,7 +127,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
               key={submission.id}
               submission={submission}
               onApprove={onApprove}
-              onReject={setPendingReject}
+              onReject={openRejectFor}
             />
           ))}
         </div>
@@ -108,7 +135,7 @@ const ScoreSubmissionsList = ({ submissions, onApprove, onReject }: ScoreSubmiss
 
       <ConfirmDialog
         open={pendingReject !== null}
-        onOpenChange={() => setPendingReject(null)}
+        onOpenChange={() => setPendingRejectId(null)}
         title="Reject this score report?"
         description={
           <>

@@ -254,8 +254,21 @@ not been saved asks before another admin section is opened, and raises the
 browser's warning on leaving the site. Nothing else here is. The create form, the
 seeding order, and an unsaved Challonge row are all lost on close.
 
-**Optimistic updates and rollback.** None. Every write waits. A failed creation
-tries to delete its own half-made bracket row.
+**Optimistic updates and rollback.** Creating, seeding and deleting a bracket all
+wait; a failed creation tries to delete its own half-made bracket row. **Saving a
+match score does not wait.** The editor closes at once and the bracket shows the
+new score before the write has landed, which is what
+[`the-playoffs-page.md`](../playoffs/the-playoffs-page.md) points here for.
+
+If that write fails, or takes more than 15 seconds, the bracket goes back to the
+last score the league actually holds and a red toast says so. That is true even
+when the same match was saved twice in a row before either write landed: the
+score to go back to is taken once, when the first save starts, and it moves
+forward as each save comes back successful — so a second save failing after the
+first succeeded returns to what the first one wrote, not to what was on screen
+before either started. Leaving the page mid-save does the same rather than
+leaving an unwritten score behind, which matters because bracket data is held for
+five minutes and is not re-read on arrival.
 
 **Realtime.** The matches inside an open bracket update live. Nothing else on
 any of these three screens does.

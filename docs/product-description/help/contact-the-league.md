@@ -135,7 +135,8 @@ shows a message under each failing field and sends nothing:
 
 | Field | Rule | Message shown |
 | --- | --- | --- |
-| Name | at least 2 characters | "Name must be at least 2 characters" |
+| Name | at least 2 characters | "Please give a name of at least 2 characters" |
+| Name | at most 100 characters on a support topic, 120 on the rest | "Please keep the name under *N* characters" |
 | Email | must look like an email address | "Please enter a valid email address" |
 | Subject | must be chosen | "Please select a subject" |
 | Message | at least 10 characters | "Message must be at least 10 characters" |
@@ -272,11 +273,17 @@ analytics event carrying the chosen subject — never the name, address, or mess
 ## Edge cases
 
 - **A message that passes the app's rules can still be refused by the league.**
-  The app asks for a name of at least 2 characters and a message of at least 10.
-  The league additionally refuses a name over 100 characters, a message over
-  5000, or an address over 255. Nothing in the form says so, and going over shows
-  the generic "please try again" toast, which will never succeed no matter how
-  often it is pressed.
+  The app asks for a name of at least 2 characters and a message of at least 10,
+  and it caps the name and the message at whatever the chosen inbox accepts, so
+  neither can reach the league too long any more. An address over 255 characters
+  still can: nothing in the form checks it, and going over shows the generic
+  "please try again" toast, which will never succeed no matter how often it is
+  pressed.
+- **A signed-in member cannot shorten a name the form refuses.** The Name field
+  is filled from the profile and locked when the two match, and a locked field
+  cannot be typed in. A stored name over 100 characters therefore shows the
+  length message on a support topic with no way to act on it. Changing the name
+  on the profile page is the way out.
 - **A message with more than five links is refused** as spam, again with the
   generic toast and no explanation.
 - **Five messages in ten minutes is the limit** from one address. The sixth is

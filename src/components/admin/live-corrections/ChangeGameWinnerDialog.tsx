@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { DEFAULT_GAME_RULES } from '@/utils/liveScoring/rules';
+import { checkGameWinner } from '@/utils/liveScoring/winnerDetection';
 
 export interface ChangeGameWinnerDialogProps {
   open: boolean;
@@ -48,6 +51,20 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
     if (open) setWinnerId(currentWinnerId ?? team1.id);
   }, [open, currentWinnerId, team1.id]);
 
+  /**
+   * Whether the rounds underneath support the winner being chosen.
+   *
+   * Setting a winner the rounds do not give the game to is allowed on purpose —
+   * an admin correcting a real-world result often sets the winner first and
+   * fixes the rounds after. It is not refused here. But nothing used to say the
+   * two now disagree, and the same press also rewrites the game's score to these
+   * totals, which is what keeps the stale-score check quiet afterwards. Saying
+   * so before the press is the whole of this warning.
+   */
+  const chosenSide = winnerId === team2.id ? 2 : 1;
+  const roundsGiveItTo = checkGameWinner(totals.team1, totals.team2);
+  const roundsDisagree = roundsGiveItTo !== chosenSide;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -72,6 +89,23 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
             </SelectContent>
           </Select>
         </div>
+
+        {roundsDisagree && (
+          <div
+            role="status"
+            className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+          >
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <span>
+              {roundsGiveItTo === null
+                ? `The rounds do not decide this game. No side has reached ${DEFAULT_GAME_RULES.targetScore} with a lead of ${DEFAULT_GAME_RULES.winBy}.`
+                : `The rounds give this game to ${roundsGiveItTo === 1 ? team1.name : team2.name}.`}{' '}
+              You can still set this winner. League Night Status will list the match under
+              &quot;Matches that disagree with their rounds&quot; until the rounds and the result
+              agree.
+            </span>
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>

@@ -17,6 +17,7 @@ interface AdvancedSettingsSectionProps extends FormSectionProps {
 export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = ({
   formData,
   onChange,
+  metadataError = null,
   isOpen,
   onOpenChange,
 }) => {
@@ -94,7 +95,14 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
               placeholder="{}"
               rows={4}
               className="font-mono text-xs"
+              aria-invalid={metadataError ? true : undefined}
+              aria-describedby={metadataError ? 'metadata-error' : undefined}
             />
+            {metadataError && (
+              <p id="metadata-error" className="mt-1 text-sm text-destructive">
+                {metadataError}. The card cannot be saved until this is fixed.
+              </p>
+            )}
           </div>
         </div>
       </CollapsibleContent>

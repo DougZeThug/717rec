@@ -387,8 +387,14 @@ describe('in-game state', () => {
       const grids = screen.getAllByRole('group');
       expect(gridButton(grids[0], '7')).toBeEnabled();
       expect(gridButton(grids[1], '7')).toBeEnabled();
-      expect(screen.getByRole('button', { name: /undo/i })).toBeEnabled();
       expect(screen.getByRole('button', { name: /save round/i })).toHaveTextContent('Save Round');
+
+      // Undo is the one exception, and used to be enabled here. A held round has
+      // not reached the league, so an undo naming that game and round number
+      // would remove whatever is at the slot instead — which can be the other
+      // scorer's round. Entering the next round, which is what this test is
+      // about, is unaffected.
+      expect(screen.getByRole('button', { name: /undo/i })).toBeDisabled();
     });
 
     it('keeps the tapped round on the phone so a reload hands it back', async () => {
@@ -679,6 +685,48 @@ describe('in-game state', () => {
 
     await userEvent.click(endGame);
     expect(mockConfirmGameComplete.mutate).not.toHaveBeenCalled();
+  });
+
+  // An undo names a game and a round number, not a row this scorer wrote. Sent
+  // against a round that is not filed yet, it removes whatever is at that slot
+  // — which can be the other scorer's round. So it waits, like ending a game.
+  const oneRound = () =>
+    makeBundle({
+      games: [game()],
+      rounds: [
+        round({ round_number: 1, team1_score: 3, team2_score: 0, net_points: 3, winner_team: 1 }),
+      ],
+      gamePlayers: gamePlayers('game-1'),
+    });
+
+  const undoButton = () => screen.getByRole('button', { name: /undo last round/i });
+
+  it('will not undo a round with no signal', async () => {
+    onlineManager.setOnline(false);
+    renderView(oneRound());
+
+    expect(undoButton()).toBeDisabled();
+
+    await userEvent.click(undoButton());
+    expect(mockUndoLastRound.mutate).not.toHaveBeenCalled();
+  });
+
+  it('will not undo while a round is still waiting to be filed', async () => {
+    // A round held for a missing signal, now resuming: on its way, not parked.
+    mockSubmitRound.isPending = true;
+    mockSubmitRound.isPaused = false;
+    renderView(oneRound());
+
+    expect(undoButton()).toBeDisabled();
+
+    await userEvent.click(undoButton());
+    expect(mockUndoLastRound.mutate).not.toHaveBeenCalled();
+  });
+
+  it('undoes normally with a signal and nothing in flight', () => {
+    renderView(oneRound());
+
+    expect(undoButton()).toBeEnabled();
   });
 });
 

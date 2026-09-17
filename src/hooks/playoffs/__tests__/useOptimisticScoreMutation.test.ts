@@ -266,6 +266,130 @@ describe('useOptimisticScoreMutation', () => {
   });
 
   /**
+   * The same match, twice over. The editor closes before the network call is
+   * awaited, so the admin can reopen that match and save it again while the
+   * first save is still out. Per-match keying is not enough on its own: the
+   * second save reads a cache the first has already written, and the first to
+   * resolve must not disarm the second's rollback.
+   */
+  describe('re-saving the same match', () => {
+    const seedAtFive = () =>
+      queryClient.setQueryData(['bracket-data', BRACKET_ID], {
+        matches: [makeBmMatch({ opponent1_score: 5 })],
+      });
+
+    const applyTwice = (result: { current: ReturnType<typeof useOptimisticScoreMutation> }) => {
+      act(() => {
+        result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
+      });
+      act(() => {
+        result.current.applyOptimisticUpdate(MATCH_ID, 8, 1, 8, 1, 'team-a', 'team-b');
+      });
+    };
+
+    it('rolls back to the score before the first save, not to the first save', () => {
+      seedAtFive();
+      const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+        wrapper: createWrapper(),
+      });
+
+      applyTwice(result);
+      act(() => {
+        result.current.onError(new Error('Save failed'), MATCH_ID);
+      });
+
+      // 5 is the only score that was ever persisted. 2 was the first save's
+      // optimistic value, which the second save used to snapshot over it.
+      expect(scoresById()).toEqual({ '99': 5 });
+    });
+
+    it('rolls back to the confirmed first save, not past it, when the second fails', () => {
+      seedAtFive();
+      const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+        wrapper: createWrapper(),
+      });
+
+      applyTwice(result);
+      act(() => {
+        result.current.onSuccess(MATCH_ID);
+      });
+      act(() => {
+        result.current.onError(new Error('Save failed'), MATCH_ID);
+      });
+
+      // 2 is what the league now holds: the first save landed. Going back to the
+      // pre-save 5 would undo a write that succeeded, and the invalidation that
+      // would eventually correct it cannot run offline. Confirming the first
+      // save used to delete the snapshot outright, leaving the unwritten 8.
+      expect(scoresById()).toEqual({ '99': 2 });
+    });
+
+    it('leaves the second save timeout armed after the first is confirmed', () => {
+      vi.useFakeTimers();
+      // gcTime Infinity, as the sibling timeout test does: rollback invalidates,
+      // and an invalidated query with no observers is collected at once under
+      // the default gcTime of 0, leaving nothing to read back.
+      queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+      });
+      seedAtFive();
+      const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+        wrapper: createWrapper(),
+      });
+
+      applyTwice(result);
+      act(() => {
+        result.current.onSuccess(MATCH_ID);
+      });
+      act(() => {
+        vi.advanceTimersByTime(15000);
+      });
+
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Update Timeout', variant: 'destructive' })
+      );
+      // Back to the confirmed first save, for the same reason as above.
+      expect(scoresById()).toEqual({ '99': 2 });
+    });
+
+    it('rolls back to the real score when the page goes away mid-run', () => {
+      seedAtFive();
+      const { result, unmount } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+        wrapper: createWrapper(),
+      });
+
+      applyTwice(result);
+      unmount();
+
+      expect(scoresById()).toEqual({ '99': 5 });
+    });
+
+    it('snapshots afresh once a run has fully settled', () => {
+      seedAtFive();
+      const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+        wrapper: createWrapper(),
+      });
+
+      act(() => {
+        result.current.applyOptimisticUpdate(MATCH_ID, 2, 1, 2, 1, 'team-a', 'team-b');
+      });
+      act(() => {
+        result.current.onSuccess(MATCH_ID);
+      });
+
+      // A new run: 2 is persisted now, so that is what a rollback goes back to.
+      act(() => {
+        result.current.applyOptimisticUpdate(MATCH_ID, 8, 1, 8, 1, 'team-a', 'team-b');
+      });
+      act(() => {
+        result.current.onError(new Error('Save failed'), MATCH_ID);
+      });
+
+      expect(scoresById()).toEqual({ '99': 2 });
+    });
+  });
+
+  /**
    * Saves overlap in practice: handleSaveMatchScore closes the editor before
    * awaiting the network call, so an admin can start saving a second match while
    * the first is still in flight. Rollback state must therefore be per-match — a

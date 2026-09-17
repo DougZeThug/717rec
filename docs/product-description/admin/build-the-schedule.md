@@ -143,7 +143,9 @@ database" and **the working state is cleared**, so the screen goes back to empty
 
 On failure both raise a red toast carrying the server's reason. Nothing is
 partially rolled back: the write is one insert, so it either all lands or none of
-it does.
+it does. **The screen is put back as it was found**, so a failed save leaves any
+hand edits, the applied draft and the quality figures exactly where they were and
+the save can simply be tried again.
 
 **Neither tool checks whether these matches already exist.** Pressing Save twice
 creates every match twice.

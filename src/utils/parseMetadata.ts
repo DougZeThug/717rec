@@ -101,3 +101,34 @@ export function parseHeroCardMetadata(input: unknown, cardType: HeroCardType): H
       return input;
   }
 }
+
+export type HeroCardMetadataResult<T extends HeroCardType = HeroCardType> =
+  { ok: true; metadata: HeroCardMetadataByType[T] } | { ok: false; error: string };
+
+/**
+ * The same check as an answer rather than a throw, for callers that must not.
+ *
+ * `parseMetadata` forgives bad JSON syntax, but `parseHeroCardMetadata` throws
+ * on a bad *shape* — a number where a string belongs, say. The admin hero card
+ * form re-parses the "Extra Data (JSON)" box on every keystroke, so a value
+ * half-way to being typed reaches this constantly. A throw there is not a
+ * message the admin can read: it escapes render, the route boundary catches it,
+ * and the whole admin dashboard unmounts with the unsaved card inside it.
+ *
+ * Callers reading a row already in the database keep using the throwing version:
+ * bad metadata there is a real fault, not something a person is mid-way through
+ * typing.
+ */
+export function tryParseHeroCardMetadata<T extends HeroCardType>(
+  raw: string,
+  cardType: T
+): HeroCardMetadataResult<T> {
+  try {
+    return { ok: true, metadata: parseHeroCardMetadata(parseMetadata(raw), cardType) };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof ValidationError ? error.message : 'Invalid hero card metadata',
+    };
+  }
+}

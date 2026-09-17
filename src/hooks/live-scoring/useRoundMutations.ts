@@ -145,6 +145,16 @@ export function useRoundMutations(matchId: string) {
   });
 
   const undoLastRound = useMutation({
+    // Not held for a missing signal, unlike a round save. A held delete names a
+    // game and a round number and nothing else — RoundService.deleteLastRound
+    // filters on those two, and the RLS policy checks only that the round is
+    // the game's last — so by the time the signal returns, that slot can hold
+    // the other scorer's round, and the replay removes it.
+    //
+    // Same reasoning as confirmGameComplete in useGameFlow: a save held and
+    // sent late is recoverable, a delete sent late against somebody else's work
+    // is not. Failing now puts the round back on screen with the reason.
+    networkMode: 'always',
     mutationFn: (input: UndoRoundInput) =>
       RoundService.deleteLastRound(input.gameId, input.roundNumber),
     onMutate: async (input) => {
