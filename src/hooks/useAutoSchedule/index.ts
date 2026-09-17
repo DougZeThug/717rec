@@ -172,6 +172,22 @@ export function useAutoSchedule() {
    * matches. Convert the live pairings instead. See UX audit A-06.
    */
   const saveGeneratedSchedule = async () => {
+    // Taken before applying, restored if the write does not land.
+    //
+    // `applySchedule` was written for "Export to Match Form", and its contract
+    // includes overwriting the editable copy and dropping out of edit mode. Done
+    // here it happens before the write is even attempted, so a save that then
+    // failed left an admin's hand edits gone with nothing written in their
+    // place — and silently, because `hasUnsavedEdits` reads false outside edit
+    // mode, so neither the banner nor the leave guard said a word.
+    //
+    // The sibling `saveSchedule` below gates its own re-baseline on `saved` for
+    // the same reason. This is that, in the other direction.
+    const previousEditable = editableMatches;
+    const previousGenerated = generatedMatches;
+    const previousMetrics = matchQualityMetrics;
+    const previousEditMode = isEditMode;
+
     const applied = applySchedule();
 
     if (!applied || applied.length === 0) {
@@ -180,7 +196,22 @@ export function useAutoSchedule() {
       return false;
     }
 
-    return await saveMatches(applied, selectedDate, dualMatchMode, activeSeason?.id);
+    const saved = await saveMatches(applied, selectedDate, dualMatchMode, activeSeason?.id);
+
+    if (!saved) {
+      // saveMatches has raised its own red toast. Put the screen back as it was
+      // found, so the work is still there to try again with.
+      //
+      // `isScheduleSaved` is deliberately left false. Applying set it false, and
+      // leaving it there keeps `hasUnsavedWork` true and the leave guard armed,
+      // which is the safe direction after a failed write.
+      setEditableMatches(previousEditable);
+      setGeneratedMatches(previousGenerated);
+      setMatchQualityMetrics(previousMetrics);
+      setIsEditMode(previousEditMode);
+    }
+
+    return saved;
   };
 
   const saveSchedule = async () => {

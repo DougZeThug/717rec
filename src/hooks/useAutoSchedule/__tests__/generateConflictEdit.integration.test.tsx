@@ -381,6 +381,59 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
     expect(savedMatches).toHaveLength(1);
   });
 
+  // The preview save converts the pairings on screen, and converting overwrites
+  // the editable copy. Doing that before the write is attempted meant a failed
+  // write threw the admin's hand edits away with nothing written in their place.
+  describe('when the preview save fails', () => {
+    const editThenLeaveEditMode = async () => {
+      const result = await renderReadyToEdit();
+
+      const matchToEdit = result.current.editableMatches[1];
+      act(() => {
+        result.current.updateMatchTeam(matchToEdit.id, 'team1', 'team-a');
+      });
+      await waitFor(() => {
+        expect(result.current.editableMatches[1].team1Id).toBe('team-a');
+      });
+
+      // The preview Save only renders outside edit mode, so this is the path.
+      act(() => {
+        result.current.setIsEditMode(false);
+      });
+
+      return result;
+    };
+
+    it('keeps the hand edits when the write does not land', async () => {
+      mockSaveMatches.mockResolvedValue(false);
+      const result = await editThenLeaveEditMode();
+
+      let saved: boolean | undefined;
+      await act(async () => {
+        saved = await result.current.handleSaveGeneratedSchedule();
+      });
+
+      expect(saved).toBe(false);
+      expect(mockSaveMatches).toHaveBeenCalledTimes(1);
+      // The edit is still there to try again with.
+      expect(result.current.editableMatches[1].team1Id).toBe('team-a');
+    });
+
+    it('re-baselines as before when the write does land', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await editThenLeaveEditMode();
+
+      await act(async () => {
+        await result.current.handleSaveGeneratedSchedule();
+      });
+
+      // What was written is the converted pairings, so the editable copy is
+      // re-baselined onto them — the edit is gone because it was saved over,
+      // which is the existing contract and must not change.
+      expect(result.current.editableMatches[1].team1Id).toBe('team-c');
+    });
+  });
+
   it('refuses to save when there are no pairings to convert', async () => {
     vi.mocked(getAllBackToBackTeams).mockResolvedValue(LOADED_TEAMS);
     mockSaveMatches.mockResolvedValue(true);
