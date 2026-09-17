@@ -73,12 +73,10 @@ describe('buildTeamSeo', () => {
         name: 'Bag Boys',
         sport: 'Cornhole',
         url: 'https://717rec.app/teams/bag-boys',
-        memberOf: {
-          '@type': 'SportsOrganization',
-          name: '717REC',
-          url: 'https://717rec.app/',
-        },
-        subOrganization: 'East',
+        memberOf: [
+          { '@type': 'SportsOrganization', name: '717REC', url: 'https://717rec.app/' },
+          { '@type': 'SportsOrganization', name: 'East' },
+        ],
         athlete: [
           { '@type': 'Person', name: 'Alex' },
           { '@type': 'Person', name: 'Sam' },
@@ -106,12 +104,19 @@ describe('buildTeamSeo', () => {
       expect(jsonLd).not.toHaveProperty('logo');
     });
 
-    it.each([
-      ['division', 'subOrganization', { divisionName: null }],
-      ['roster', 'athlete', { players: [] }],
-    ])('omits %s when there is none', (_label, key, overrides) => {
-      const { jsonLd } = buildTeamSeo(makeTeam(overrides as Partial<Team>), '/teams/x');
-      expect(jsonLd).not.toHaveProperty(key as string);
+    it('omits roster when there is none', () => {
+      const { jsonLd } = buildTeamSeo(makeTeam({ players: [] }), '/teams/x');
+      expect(jsonLd).not.toHaveProperty('athlete');
+    });
+
+    // The division is a second organisation the team belongs to, not a child of
+    // it, so with no division the list holds the league alone.
+    it('lists only the league when the team has no division', () => {
+      const { jsonLd } = buildTeamSeo(makeTeam({ divisionName: null }), '/teams/x');
+      expect(jsonLd.memberOf).toEqual([
+        { '@type': 'SportsOrganization', name: '717REC', url: 'https://717rec.app/' },
+      ]);
+      expect(jsonLd).not.toHaveProperty('subOrganization');
     });
   });
 });

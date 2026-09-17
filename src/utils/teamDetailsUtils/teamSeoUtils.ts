@@ -55,13 +55,19 @@ export const buildTeamSeo = (team: Team, teamPath: string): TeamSeo => {
     name: team.name,
     sport: 'Cornhole',
     url,
-    memberOf: {
-      '@type': 'SportsOrganization',
-      name: '717REC',
-      url: `${SITE_ORIGIN}/`,
-    },
+    // The division belongs beside the league, not under the team. It used to be
+    // published as `subOrganization`, which says the team owns the division --
+    // the reverse of the truth -- and as a bare string, where Schema.org wants
+    // an Organization node.
+    memberOf: [
+      {
+        '@type': 'SportsOrganization',
+        name: '717REC',
+        url: `${SITE_ORIGIN}/`,
+      },
+      ...(team.divisionName ? [{ '@type': 'SportsOrganization', name: team.divisionName }] : []),
+    ],
     ...(logo ? { logo } : {}),
-    ...(team.divisionName ? { subOrganization: team.divisionName } : {}),
     ...(hasRoster
       ? { athlete: (team.players ?? []).map((name) => ({ '@type': 'Person', name })) }
       : {}),
