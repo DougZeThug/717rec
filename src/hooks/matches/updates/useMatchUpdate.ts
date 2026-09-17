@@ -112,6 +112,24 @@ export const useMatchUpdate = ({
   const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
     if (!editingMatch || isUpdatingRef.current) return false;
 
+    // No writer below can complete a match without a winner: the result path is
+    // an atomic RPC gated on a winner and a loser, and the plain update excludes
+    // iscompleted by type. Such a payload used to save the non-result fields and
+    // report success while the completion went nowhere. The edit form rejects it
+    // with a field error; refuse it here too, so another caller cannot reopen
+    // the silent path.
+    if (matchData.iscompleted && !(matchData.winnerId && matchData.loserId)) {
+      errorLog('Refusing a completed match with no winner', {
+        matchId: editingMatch.id,
+      });
+      toast({
+        title: 'Cannot complete this match',
+        description: 'A completed match needs a winner. Record a decisive score first.',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     isUpdatingRef.current = true;
     setIsUpdating(true);
     // Snapshot for rollback if the atomic RPC in applyStatChanges fails after

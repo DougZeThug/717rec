@@ -78,6 +78,23 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
   });
 
   const handleSubmitForm = (values: MatchFormValues) => {
+    // A completed match needs a winner, and equal scores give none. Nothing
+    // downstream can store that combination: the result writers are atomic RPCs
+    // gated on a winner and a loser, and the plain update excludes iscompleted
+    // by type. So it used to save the date and the teams, drop the completion
+    // without a word, and still report "Match Updated". Refuse it here instead.
+    //
+    // The wording stays on what the admin can do. The unresolved-matches queue
+    // only confirms a tie that already exists, so sending them there would be a
+    // dead end: nothing in the app can put a match into that state.
+    if (values.isCompleted && values.team1Score === values.team2Score) {
+      form.setError('team2Score', {
+        type: 'manual',
+        message: 'A completed match needs a winner. Change a score, or leave the match open.',
+      });
+      return;
+    }
+
     // Create date with selected time
     const dateWithTime = createDateWithTime(values.date, values.timeSlot);
 

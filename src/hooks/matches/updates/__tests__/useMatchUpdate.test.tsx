@@ -126,6 +126,42 @@ describe('useMatchUpdate — Case 1 regression', () => {
 
     expect(mockReopenMatchResult).not.toHaveBeenCalled();
   });
+
+  it('refuses a completed match with no winner instead of dropping the completion', async () => {
+    // No writer here can store this: the result RPCs need a winner and a loser,
+    // and the plain update excludes iscompleted by type. It used to write the
+    // non-result fields and return success, so the completion vanished quietly.
+    const { result } = renderHook(
+      () =>
+        useMatchUpdate({
+          matches: [completedMatch],
+          setMatches: vi.fn(),
+          editingMatch: completedMatch,
+          setEditingMatch: vi.fn(),
+        }),
+      { wrapper }
+    );
+
+    let outcome: boolean | undefined;
+    await act(async () => {
+      outcome = await result.current.handleUpdateMatch(
+        {
+          ...completedMatch,
+          iscompleted: true,
+          team1Score: 15,
+          team2Score: 15,
+          winnerId: undefined,
+          loserId: undefined,
+        } as unknown as Omit<Match, 'id'>,
+        [] as Team[]
+      );
+    });
+
+    expect(outcome).toBe(false);
+    expect(mockUpdateMatch).not.toHaveBeenCalled();
+    expect(mockResubmitMatchResult).not.toHaveBeenCalled();
+    expect(mockReopenMatchResult).not.toHaveBeenCalled();
+  });
 });
 
 describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
