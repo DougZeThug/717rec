@@ -5,7 +5,9 @@ import {
   useGenerateRecapFacts,
   usePublishRecapEdition,
   useSaveRecapVersion,
+  useUnpublishRecapEdition,
 } from '@/hooks/useRecapEditions';
+import type { Tables } from '@/integrations/supabase/types';
 import { canPublishFacts } from '@/services/recapEditions/buildRecapFacts';
 import { CaptionUnconfiguredError } from '@/services/recapEditions/CaptionService';
 import type { CaptionSource } from '@/services/recapEditions/RecapEditionService';
@@ -13,6 +15,8 @@ import { RecapEditionService } from '@/services/recapEditions/RecapEditionServic
 import type { RecapFactsV1 } from '@/types/recapEdition';
 
 import { buildFallbackCaption } from './fallbackCaption';
+
+type EditionRow = Tables<'recap_editions'>;
 
 export interface PackDraft {
   headline: string;
@@ -56,6 +60,8 @@ const defaultHeadline = (facts: RecapFactsV1): string => {
  */
 export const useWeeklyContentPack = () => {
   const [facts, setFacts] = useState<RecapFactsV1 | null>(null);
+  /** The edition already on file for this week, if any. */
+  const [existingEdition, setExistingEdition] = useState<EditionRow | null>(null);
   const [draft, setDraft] = useState<PackDraft>(emptyDraft);
   const [savedDraft, setSavedDraft] = useState<PackDraft>(emptyDraft);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -64,6 +70,7 @@ export const useWeeklyContentPack = () => {
   const captionRequest = useGenerateCaption();
   const saveVersion = useSaveRecapVersion();
   const publishEdition = usePublishRecapEdition();
+  const unpublishEdition = useUnpublishRecapEdition();
 
   const isDirty = useMemo(
     () => JSON.stringify(draft) !== JSON.stringify(savedDraft),
@@ -76,8 +83,12 @@ export const useWeeklyContentPack = () => {
 
   const generateFor = useCallback(
     async (seasonId: string, weekNumber: number) => {
-      const next = await generate.mutateAsync({ seasonId, weekNumber });
+      const [next, edition] = await Promise.all([
+        generate.mutateAsync({ seasonId, weekNumber }),
+        RecapEditionService.fetchEditionForWeek(seasonId, weekNumber),
+      ]);
       setFacts(next);
+      setExistingEdition(edition);
       setDraft((current) => ({
         ...current,
         // Only fill fields the admin has not written for themselves, so
@@ -115,6 +126,7 @@ export const useWeeklyContentPack = () => {
       });
 
       setSavedDraft(draft);
+      setExistingEdition(edition);
       return { editionId: edition.id, versionId: version.id };
     },
     [draft, facts, saveVersion]
@@ -126,10 +138,11 @@ export const useWeeklyContentPack = () => {
       try {
         const saved = await save(correctionNote);
         if (!saved) return;
-        await publishEdition.mutateAsync({
+        const published = await publishEdition.mutateAsync({
           editionId: saved.editionId,
           versionId: saved.versionId,
         });
+        setExistingEdition(published);
       } finally {
         setIsPublishing(false);
       }
@@ -164,14 +177,32 @@ export const useWeeklyContentPack = () => {
     }
   }, [captionRequest, draft.commissionerNote, facts]);
 
+  /**
+   * Take a published edition back off the site.
+   *
+   * The home page falls back to its live recap card, so this is the rollback
+   * when something published turns out to be wrong and there is no time to fix
+   * it properly. Every version stays on file.
+   */
+  const unpublish = useCallback(async () => {
+    if (!existingEdition) return;
+    const updated = await unpublishEdition.mutateAsync(existingEdition.id);
+    setExistingEdition(updated);
+  }, [existingEdition, unpublishEdition]);
+
   const reset = useCallback(() => {
     setFacts(null);
+    setExistingEdition(null);
     setDraft(emptyDraft);
     setSavedDraft(emptyDraft);
   }, []);
 
   return {
     facts,
+    existingEdition,
+    /** Publishing over a live edition is a correction, and is worded as one. */
+    isCorrection: existingEdition?.status === 'published',
+    publicPath: facts ? `/recap/${facts.seasonSlug}/week-${facts.weekNumber}` : null,
     draft,
     setField,
     isDirty,
@@ -183,6 +214,8 @@ export const useWeeklyContentPack = () => {
     isPublishing,
     generateCaption,
     isGeneratingCaption: captionRequest.isPending,
+    unpublish,
+    isUnpublishing: unpublishEdition.isPending,
     canPublish: facts !== null && canPublishFacts(facts),
     reset,
   };

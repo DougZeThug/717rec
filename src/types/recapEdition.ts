@@ -48,7 +48,7 @@ export interface RecapDivisionFact {
   standings: RecapStandingsRow[];
 }
 
-export interface RecapMoversFact {
+interface RecapMoversFact {
   /** How the comparison was reached. See services/rankings/weeklyTrendsForWeek. */
   basis: TrendBasis;
   currentWeek: number;

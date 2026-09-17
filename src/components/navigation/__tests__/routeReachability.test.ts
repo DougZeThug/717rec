@@ -33,6 +33,7 @@ describe('every route is reachable from a menu', () => {
   // Reached by doing something rather than by choosing it from a list.
   const reachedInContext: Record<string, string> = {
     '/teams/:teamId': 'a team name on the teams list, a standings row or a match card',
+    '/recap/:seasonSlug/:week': 'the Weekly Recap block on the home page, and shared links',
     '/matches/:matchId/live': 'a match card on the schedule or the home page',
     '/admin/:section': 'the admin console menu, once /admin is open',
     '/auth': 'the Login button in the header',

@@ -22,7 +22,7 @@ import { buildRecapFacts } from './buildRecapFacts';
  */
 
 /** A season slug is derived from the name the same way team slugs are. */
-export const toSeasonSlug = (seasonName: string): string => toTeamSlug(seasonName);
+const toSeasonSlug = (seasonName: string): string => toTeamSlug(seasonName);
 
 const fetchWeekStandings = async (
   seasonId: string,

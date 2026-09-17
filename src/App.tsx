@@ -46,6 +46,7 @@ const Index = lazy(() => import('./pages/Index'));
 const Help = lazy(() => import('./pages/Help'));
 const TeamsPage = lazy(() => import('./pages/TeamsPage'));
 const TeamDetails = lazy(() => import('./pages/TeamDetails'));
+const RecapEdition = lazy(() => import('./pages/RecapEdition'));
 const Schedule = lazy(() => import('./pages/Schedule'));
 const Stats = lazy(() => import('./pages/Stats'));
 const Playoffs = lazy(() => import('./pages/Playoffs'));
@@ -213,6 +214,19 @@ const appRoutes = (
       element={
         <RouteErrorBoundary routeName="Team Details">
           <TeamDetails />
+        </RouteErrorBoundary>
+      }
+    />
+    {/*
+      Registered as a whole segment, not `/recap/:seasonSlug/week-:n`. React
+      Router dynamic segments cannot be partial, so that form matches nothing.
+      The page parses `week-6` itself; the public address is unchanged.
+    */}
+    <Route
+      path="/recap/:seasonSlug/:week"
+      element={
+        <RouteErrorBoundary routeName="Weekly Recap">
+          <RecapEdition />
         </RouteErrorBoundary>
       }
     />

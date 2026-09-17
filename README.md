@@ -65,12 +65,27 @@ manual QA expectations, and the coverage hang triage playbook.
 
 Four GitHub Actions workflows live in `.github/workflows/`:
 
-| Workflow | File | What it runs |
-| --- | --- | --- |
-| CI | `ci.yml` | `quality`: lint, typecheck, full test suite, knip dead-code check. `deepsource-coverage`: generate LCOV coverage, enforce thresholds, report to DeepSource. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse (error-level assertions). `react-doctor`: React best-practice scan. (No `e2e-real-backend` job today — the live-backend spec runs locally only; see [`docs/E2E_REAL_BACKEND.md`](docs/E2E_REAL_BACKEND.md).) |
-| Security | `security.yml` | `audit`: npm audit. `committed-env-files`: fails if local `.env` files are tracked. `gitleaks`: secret scan on PRs, pushes to main, and a weekly cron. |
-| Supabase CI | `supabase-ci.yml` | `db-lint`: `supabase db lint`. `db-apply-and-smoke`: apply migrations + SQL smoke tests. `edge-function-tests`: edge-function Deno tests. |
-| Summarize new issues | `summary.yml` | Posts an AI-generated summary comment on newly opened GitHub issues. |
+| Workflow             | File              | What it runs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI                   | `ci.yml`          | `quality`: lint, typecheck, full test suite, knip dead-code check. `deepsource-coverage`: generate LCOV coverage, enforce thresholds, report to DeepSource. `build-size`: production build + bundle-size budgets. `browser`: Playwright smoke tests, blocking axe a11y scan, Lighthouse (error-level assertions). `react-doctor`: React best-practice scan. (No `e2e-real-backend` job today — the live-backend spec runs locally only; see [`docs/E2E_REAL_BACKEND.md`](docs/E2E_REAL_BACKEND.md).) |
+| Security             | `security.yml`    | `audit`: npm audit. `committed-env-files`: fails if local `.env` files are tracked. `gitleaks`: secret scan on PRs, pushes to main, and a weekly cron.                                                                                                                                                                                                                                                                                                                                               |
+| Supabase CI          | `supabase-ci.yml` | `db-lint`: `supabase db lint`. `db-apply-and-smoke`: apply migrations + SQL smoke tests. `edge-function-tests`: edge-function Deno tests.                                                                                                                                                                                                                                                                                                                                                            |
+| Summarize new issues | `summary.yml`     | Posts an AI-generated summary comment on newly opened GitHub issues.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+
+### Bundle-size budgets
+
+`.size-limit.json` holds two, both enforced by the `build-size` job:
+
+- **Main entry (index)** — 155 KB gzipped. This is the first-paint guard, and
+  the one that matters for visitors. Note that the glob also catches any lazy
+  chunk Rollup happens to name `index-*.js` after its package's own entry file,
+  which is why `vite.config.ts` gives `html-to-image` an explicit
+  `vendor-html-to-image` chunk name.
+- **All JS chunks** — 1250 KB gzipped. This counts _every_ chunk, including
+  admin-only lazy ones no visitor ever downloads, so it grows whenever the admin
+  console does. Raised from 1200 KB when the Weekly Content Pack landed (an
+  admin section, a public recap page and `html-to-image`, ~23 KB gzipped, none
+  of it on the first-paint path).
 
 Lighthouse assertions (`lighthouserc.json`) are error-level and fail the
 `browser` job when breached: performance ≥ 0.25, accessibility ≥ 0.90,
@@ -95,12 +110,12 @@ Domains ([guide](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step
 
 ## Documentation map
 
-| Doc | What's in it |
-| --- | --- |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Stack, project structure, routing, data flow, service-layer rules |
-| [`TESTING.md`](TESTING.md) | Test commands, coverage baseline and thresholds, E2E setup, manual QA checklists |
-| [`CLAUDE.md`](CLAUDE.md) | Working agreements for AI agents (and humans): architecture rules, service template, test-running notes |
-| [`docs/PRODUCTION_SETTINGS.md`](docs/PRODUCTION_SETTINGS.md) | Checked baseline of every out-of-repo dashboard setting (expected value + last-verified date): auth, backups, API/RLS, edge secrets, cron, hosting |
-| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | League-night incident playbook, recovery + standings reconciliation, and the merge gate |
-| [`docs/product-description/`](docs/product-description/) | What the app does **for the user**, feature by feature: 58 prose documents on one skeleton, hand-verification checklists, and a triaged list of suspected defects. Start at its [README](docs/product-description/README.md) |
-| [`docs/`](docs/) | Deep dives: secrets handling, release runbook, Supabase CI, RLS notes, bracket schema, past audits |
+| Doc                                                          | What's in it                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md)                         | Stack, project structure, routing, data flow, service-layer rules                                                                                                                                                            |
+| [`TESTING.md`](TESTING.md)                                   | Test commands, coverage baseline and thresholds, E2E setup, manual QA checklists                                                                                                                                             |
+| [`CLAUDE.md`](CLAUDE.md)                                     | Working agreements for AI agents (and humans): architecture rules, service template, test-running notes                                                                                                                      |
+| [`docs/PRODUCTION_SETTINGS.md`](docs/PRODUCTION_SETTINGS.md) | Checked baseline of every out-of-repo dashboard setting (expected value + last-verified date): auth, backups, API/RLS, edge secrets, cron, hosting                                                                           |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md)                   | League-night incident playbook, recovery + standings reconciliation, and the merge gate                                                                                                                                      |
+| [`docs/product-description/`](docs/product-description/)     | What the app does **for the user**, feature by feature: 58 prose documents on one skeleton, hand-verification checklists, and a triaged list of suspected defects. Start at its [README](docs/product-description/README.md) |
+| [`docs/`](docs/)                                             | Deep dives: secrets handling, release runbook, Supabase CI, RLS notes, bracket schema, past audits                                                                                                                           |

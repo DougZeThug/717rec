@@ -8,7 +8,7 @@
   {
     "name": "All JS chunks (gzip)",
     "path": "dist/assets/*.js",
-    "limit": "1200 KB",
+    "limit": "1250 KB",
     "gzip": true
   }
 ]

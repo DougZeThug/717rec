@@ -88,8 +88,3 @@ export const getFontEmbedCss = (): Promise<string> => {
   cached ??= buildFontEmbedCss();
   return cached;
 };
-
-/** Test seam. */
-export const resetFontEmbedCache = (): void => {
-  cached = null;
-};

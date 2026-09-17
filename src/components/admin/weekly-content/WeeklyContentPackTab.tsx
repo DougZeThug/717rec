@@ -24,6 +24,7 @@ import { useGraphicExport } from './export/useGraphicExport';
 import PackExportSurface from './PackExportSurface';
 import PackPreview from './PackPreview';
 import PackWarnings from './PackWarnings';
+import PublishCard from './PublishCard';
 import { useGraphicNodes } from './useGraphicNodes';
 import { useWeeklyContentPack } from './useWeeklyContentPack';
 
@@ -273,6 +274,22 @@ const WeeklyContentPackTab: React.FC = () => {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {pack.facts && (
+            <PublishCard
+              isCorrection={pack.isCorrection}
+              isPublished={pack.existingEdition?.status === 'published'}
+              publicPath={pack.publicPath}
+              canPublish={pack.canPublish}
+              isDirty={pack.isDirty}
+              isSaving={pack.isSaving}
+              isPublishing={pack.isPublishing}
+              onSave={() => void pack.save()}
+              onPublish={(note) => void pack.publish(note)}
+              onUnpublish={() => void pack.unpublish()}
+              isUnpublishing={pack.isUnpublishing}
+            />
           )}
         </div>
 

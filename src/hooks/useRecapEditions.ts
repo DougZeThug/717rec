@@ -34,16 +34,6 @@ export const useRecapEditionBySlug = (seasonSlug?: string, weekNumber?: number) 
     staleTime: 1000 * 60 * 10,
   });
 
-/** Every edition for a season, for the admin picker. Admin-only by RLS. */
-export const useRecapEditionsForSeason = (seasonId?: string) =>
-  useQuery({
-    queryKey: ['recap-editions', seasonId],
-    queryFn: () =>
-      seasonId ? RecapEditionService.fetchEditionsForSeason(seasonId) : Promise.resolve([]),
-    enabled: Boolean(seasonId),
-    staleTime: 1000 * 60 * 5,
-  });
-
 /**
  * Build a draft's facts for one week.
  *

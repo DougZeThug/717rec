@@ -6,6 +6,7 @@ import LeagueHistoryBar from '@/components/home/LeagueHistoryBar';
 import MyMatchesSection from '@/components/home/MyMatchesSection';
 import MyNextMatchSkeleton from '@/components/home/MyNextMatchSkeleton';
 import PendingScoresCard from '@/components/home/PendingScoresCard';
+import PublishedRecapCard from '@/components/home/PublishedRecapCard';
 import TeamOfTheWeekCard from '@/components/home/TeamOfTheWeekCard';
 import TeamOfTheWeekSkeleton from '@/components/home/TeamOfTheWeekSkeleton';
 import WeeklyRecapCard from '@/components/home/WeeklyRecapCard';
@@ -18,6 +19,7 @@ import { useHeroCards } from '@/hooks/useHeroCards';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useMyNextMatch } from '@/hooks/useMyNextMatch';
 import { usePendingScoresMatches } from '@/hooks/usePendingScoresMatches';
+import { usePublishedRecapEdition } from '@/hooks/useRecapEditions';
 import { useConfirmationSeason } from '@/hooks/useSeasonParticipation';
 import { useTeams } from '@/hooks/useTeams';
 import { useWeeklyPowerScoreTrends } from '@/hooks/useWeeklyPowerScoreTrends';
@@ -54,6 +56,7 @@ const Index: React.FC = () => {
   const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 3);
   const { data: fallerData } = useWeeklyPowerScoreTrends('down', 1);
   const { data: recapData, isLoading: recapLoading } = useWeeklyRecap();
+  const { data: publishedRecap, isLoading: publishedRecapLoading } = usePublishedRecapEdition();
   const { data: confirmationSeason } = useConfirmationSeason();
   const myNextMatch = useMyNextMatch();
   const isMobile = useIsMobile();
@@ -150,9 +153,18 @@ const Index: React.FC = () => {
             </PageTransition>
           ) : null}
 
-          {/* Weekly Recap — upsets, streaks, movers */}
-          {recapLoading || trendLoading ? (
+          {/*
+            Weekly Recap. A published edition wins when there is one, because it
+            is what the league chose to say about the week. With none, this
+            falls back to exactly the live card it always showed — which is also
+            the rollback path if an edition is unpublished.
+          */}
+          {recapLoading || trendLoading || publishedRecapLoading ? (
             <WeeklyRecapSkeleton />
+          ) : publishedRecap ? (
+            <PageTransition animation="fadeIn" delay="medium">
+              <PublishedRecapCard edition={publishedRecap} />
+            </PageTransition>
           ) : hasRecapToShow(recapData, recapRisers, recapFaller) ? (
             <PageTransition animation="fadeIn" delay="medium">
               <WeeklyRecapCard data={recapData} risers={recapRisers} faller={recapFaller} />

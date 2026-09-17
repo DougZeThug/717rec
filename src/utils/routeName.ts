@@ -35,6 +35,7 @@ const PREFIX_ROUTE_NAMES: Array<{ prefix: string; name: string }> = [
   // Every admin section is its own address now, so without this the announcer
   // would read out "Page Not Found" on each switch inside the console.
   { prefix: '/admin/', name: 'Admin Dashboard' },
+  { prefix: '/recap/', name: 'Weekly Recap' },
 ];
 
 /**
