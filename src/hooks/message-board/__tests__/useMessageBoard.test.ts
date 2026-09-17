@@ -208,6 +208,7 @@ describe('useMessageBoard', () => {
           created_at: `2026-04-20T10:0${i}:00.000Z`,
         }))
       );
+      await Promise.resolve();
     });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -236,6 +237,7 @@ describe('useMessageBoard', () => {
 
     await act(async () => {
       rejectFetch(new Error('network down'));
+      await Promise.resolve();
     });
 
     await waitFor(() => expect(result.current.error).toBe('Failed to load messages'));
@@ -265,9 +267,56 @@ describe('useMessageBoard', () => {
 
     await act(async () => {
       firstPage.forEach((message) => realtimeHandlers.onMessageDeleted?.(message));
+      await Promise.resolve();
     });
 
     // Newest first, so the reloaded page arrives in reverse of how it was built.
+    await waitFor(() =>
+      expect(result.current.messages.map((m) => m.id)).toEqual(olderPage.map((m) => m.id).reverse())
+    );
+    expect(result.current.hasMore).toBe(true);
+  });
+
+  // Re-categorising can empty the list just as deletes can: the message is
+  // still there, it just no longer matches the filter. Same dead end, so the
+  // same reload.
+  it('reloads the board when an edit categorises the last message away', async () => {
+    const firstPage = Array.from({ length: 10 }, (_, i) => ({
+      ...baseMessage,
+      id: `m${i}`,
+      created_at: `2026-04-20T10:0${i}:00.000Z`,
+    }));
+    mockFetchMessages.mockResolvedValue(firstPage);
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // A category has to be filtered on for re-categorising to exclude anything;
+    // the default filter takes every category.
+    act(() => {
+      result.current.setFilter({ category: 'General' });
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.hasMore).toBe(true);
+
+    const olderPage = Array.from({ length: 10 }, (_, i) => ({
+      ...baseMessage,
+      id: `older-${i}`,
+      created_at: `2026-04-19T10:0${i}:00.000Z`,
+    }));
+    mockFetchMessages.mockResolvedValue(olderPage);
+
+    // Every loaded message moves to a category the active filter excludes.
+    await act(async () => {
+      firstPage.forEach((message) =>
+        realtimeHandlers.onMessageUpdated?.({ ...message, category: 'Question' })
+      );
+      await Promise.resolve();
+    });
+
     await waitFor(() =>
       expect(result.current.messages.map((m) => m.id)).toEqual(olderPage.map((m) => m.id).reverse())
     );
