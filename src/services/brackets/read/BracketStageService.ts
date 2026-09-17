@@ -48,11 +48,16 @@ export const fetchStageIdByTournament = async (bracketId: string): Promise<numbe
 };
 
 /**
- * Fetch groups and matches for a stage concurrently
+ * Fetch groups, matches and rounds for a stage concurrently
  * Used by useBracketData hook (step 3)
+ *
+ * The rounds come along because `match.round_id` is a foreign key to the
+ * `round` table's global, ever-climbing primary key. The round number a reader
+ * expects to see is `round.number`, which restarts at 1 in each group, so the
+ * caller has to join the two.
  */
 export const fetchGroupsAndMatches = async (stageId: number) => {
-  const [groupsResult, matchesResult] = await Promise.all([
+  const [groupsResult, matchesResult, roundsResult] = await Promise.all([
     supabase.from('group').select('id, number, stage_id').eq('stage_id', stageId),
     supabase
       .from('match')
@@ -60,6 +65,7 @@ export const fetchGroupsAndMatches = async (stageId: number) => {
         'id, group_id, round_id, number, status, opponent1_id, opponent1_score, opponent1_result, opponent2_id, opponent2_score, opponent2_result'
       )
       .eq('stage_id', stageId),
+    supabase.from('round').select('id, group_id, number').eq('stage_id', stageId),
   ]);
 
   if (groupsResult.error) {
@@ -68,9 +74,13 @@ export const fetchGroupsAndMatches = async (stageId: number) => {
   if (matchesResult.error) {
     handleDatabaseError(matchesResult.error, 'Failed to fetch bracket matches');
   }
+  if (roundsResult.error) {
+    handleDatabaseError(roundsResult.error, 'Failed to fetch bracket rounds');
+  }
 
   return {
     groups: groupsResult.data ?? [],
     matches: matchesResult.data ?? [],
+    rounds: roundsResult.data ?? [],
   };
 };

@@ -16,6 +16,7 @@ const baseInput = {
   stageId: 7,
   participants: [],
   groups: [],
+  rounds: [],
   matches: [],
   teamDetails: [],
 };
@@ -68,6 +69,10 @@ describe('transformBracketsManagerData', () => {
         { id: 2, name: 'Bravo', position: 2, team_id: 't-2', tournament_id: 'b-1' },
       ],
       groups: [{ id: 10, number: 1, stage_id: 7 }],
+      rounds: [
+        { id: 1295, group_id: 10, number: 1 },
+        { id: 1296, group_id: 10, number: 2 },
+      ],
       matches: [
         {
           id: 100,
@@ -79,7 +84,7 @@ describe('transformBracketsManagerData', () => {
           opponent2_score: 15,
           status: 4,
           group_id: 10,
-          round_id: 0,
+          round_id: 1296,
           number: 1,
         },
       ],
@@ -96,8 +101,9 @@ describe('transformBracketsManagerData', () => {
     expect(match.winnerId).toBe('t-1');
     expect(match.team1Score).toBe(21);
     expect(match.team2Score).toBe(15);
-    // round_id is zero-based in storage and one-based on screen.
-    expect(match.round).toBe(1);
+    // round_id points at the round table's global id; the number on screen is
+    // that row's `number`.
+    expect(match.round).toBe(2);
     expect(match.status).toBe('completed');
     expect(match.matchType).toBe('winners');
 
@@ -145,5 +151,68 @@ describe('transformBracketsManagerData', () => {
     });
 
     expect(result.participants?.[0]).toMatchObject({ team_id: '', name: 'Unlinked Team' });
+  });
+
+  describe('the round number', () => {
+    // round.id is a global counter shared by every bracket in the database, so a
+    // real bracket's ids look like 1295/1296, not 0/1. round.number is the value
+    // a reader should see, and it restarts at 1 in each half of the bracket.
+    const rounds = [
+      { id: 1295, group_id: 10, number: 1 },
+      { id: 1296, group_id: 10, number: 2 },
+      { id: 1300, group_id: 20, number: 1 },
+    ];
+
+    const matchIn = (groupId: number, roundId: number) => ({
+      id: 200,
+      opponent1_id: null,
+      opponent2_id: null,
+      opponent1_result: null,
+      opponent2_result: null,
+      opponent1_score: null,
+      opponent2_score: null,
+      status: 2,
+      group_id: groupId,
+      round_id: roundId,
+      number: 1,
+    });
+
+    it('comes from the round table, not from round_id', () => {
+      const result = transformBracketsManagerData({
+        ...baseInput,
+        groups: [{ id: 10, number: 1, stage_id: 7 }],
+        rounds,
+        matches: [matchIn(10, 1296)],
+      });
+
+      // Deriving it from the id gave 1297 here.
+      expect(result.matches[0].round).toBe(2);
+    });
+
+    it('restarts at 1 in the losers bracket', () => {
+      const result = transformBracketsManagerData({
+        ...baseInput,
+        groups: [{ id: 20, number: 2, stage_id: 7 }],
+        rounds,
+        matches: [matchIn(20, 1300)],
+      });
+
+      const [match] = result.matches;
+      expect(match.matchType).toBe('losers');
+      // A higher id than either winners round, but still round 1 in its own half.
+      expect(match.round).toBe(1);
+    });
+
+    it('falls back to 1 when the round row is missing', () => {
+      const result = transformBracketsManagerData({
+        ...baseInput,
+        groups: [{ id: 10, number: 1, stage_id: 7 }],
+        rounds,
+        matches: [matchIn(10, 9999)],
+      });
+
+      // The same fallback the sync_match_to_playoff_matches trigger uses.
+      expect(result.matches[0].round).toBe(1);
+    });
   });
 });

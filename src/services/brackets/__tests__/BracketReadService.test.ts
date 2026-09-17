@@ -643,32 +643,57 @@ describe('fetchStageIdByTournament', () => {
 describe('fetchGroupsAndMatches', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('returns groups and matches on success', async () => {
+  type TableResult = { data: unknown; error: unknown };
+
+  /**
+   * One answer per table, so a newly added table cannot fall into another
+   * table's branch. The earlier two-way ternary fed match rows to every table
+   * that was not `group`.
+   */
+  const stageTables = (overrides: Record<string, TableResult> = {}) => {
+    const selected: Record<string, string> = {};
+    const responses: Record<string, TableResult> = {
+      group: { data: [{ id: 1, number: 1, stage_id: 10 }], error: null },
+      match: { data: [{ id: 1, group_id: 1, round_id: 1296 }], error: null },
+      round: { data: [{ id: 1296, group_id: 1, number: 2 }], error: null },
+      ...overrides,
+    };
+
     mockFrom.mockImplementation((table: string) => ({
-      select: () => ({
-        eq: () =>
-          Promise.resolve({
-            data:
-              table === 'group' ? [{ id: 1, number: 1, stage_id: 10 }] : [{ id: 1, group_id: 1 }],
-            error: null,
-          }),
-      }),
+      select: (columns: string) => {
+        selected[table] = columns;
+        return { eq: () => Promise.resolve(responses[table]) };
+      },
     }));
+
+    return selected;
+  };
+
+  it('returns groups, matches and rounds on success', async () => {
+    const selected = stageTables();
+
     const result = await fetchGroupsAndMatches(10);
+
     expect(result.groups).toHaveLength(1);
     expect(result.matches).toHaveLength(1);
+    // The round rows are what turn match.round_id — a global serial — into the
+    // round number a reader sees. Fetching matches without them was the bug.
+    expect(result.rounds).toEqual([{ id: 1296, group_id: 1, number: 2 }]);
+    expect(selected.round).toBe('id, group_id, number');
   });
 
   it('throws DatabaseError when groups query fails', async () => {
-    mockFrom.mockImplementation((table: string) => ({
-      select: () => ({
-        eq: () =>
-          Promise.resolve({
-            data: null,
-            error: table === 'group' ? pgError() : null,
-          }),
-      }),
-    }));
+    stageTables({ group: { data: null, error: pgError() } });
+    await expect(fetchGroupsAndMatches(10)).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when matches query fails', async () => {
+    stageTables({ match: { data: null, error: pgError() } });
+    await expect(fetchGroupsAndMatches(10)).rejects.toThrow(DatabaseError);
+  });
+
+  it('throws DatabaseError when rounds query fails', async () => {
+    stageTables({ round: { data: null, error: pgError() } });
     await expect(fetchGroupsAndMatches(10)).rejects.toThrow(DatabaseError);
   });
 });

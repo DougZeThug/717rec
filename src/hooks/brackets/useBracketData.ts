@@ -35,6 +35,7 @@ export interface SimpleBracketData {
   uses_brackets_manager?: boolean;
   matches: Array<{
     id: string;
+    /** The round's place inside its half of the bracket (`round.number`), not `round_id`. */
     round: number;
     position: number;
     team1Id: string | null;
@@ -142,7 +143,7 @@ export const useBracketData = (bracketId: string | null) => {
         // Step 3: Fetch groups and matches concurrently
         updateProgress('matches');
         bracketLog('Parallel Batch 2 - Fetching groups and matches');
-        const { groups, matches } = await fetchGroupsAndMatches(stage.id);
+        const { groups, matches, rounds } = await fetchGroupsAndMatches(stage.id);
 
         bracketLog('Raw matches fetched:', matches?.length || 0);
 
@@ -172,6 +173,7 @@ export const useBracketData = (bracketId: string | null) => {
             tournament_id: p.tournament_id,
           })),
           groups: groups || [],
+          rounds: rounds || [],
           matches: matches || [],
           teamDetails: (teamDetails || []).map((t) => ({
             id: t.id,

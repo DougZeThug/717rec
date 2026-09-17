@@ -66,10 +66,10 @@ Represents a round within a group (e.g., "Quarterfinals", "Semifinals").
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier |
+| `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier. A single serial shared by every bracket in the database, so it only ever climbs — **never** the round number |
 | `group_id` | integer | NOT NULL, FK → group(id) | Reference to parent group |
 | `stage_id` | integer | NOT NULL, FK → stage(id) | Denormalized reference to stage for performance |
-| `number` | integer | NOT NULL | Round number in sequence |
+| `number` | integer | NOT NULL | The round's 1-based place **within its group**. Restarts at 1 for the winners bracket, the losers bracket and the grand final. This is the round number to show a reader |
 | `name` | text | NULL | Optional round name |
 
 **Indexes:**
@@ -93,7 +93,7 @@ Represents an individual match between two opponents.
 | `id` | integer | PRIMARY KEY, AUTO INCREMENT | Unique identifier |
 | `stage_id` | integer | NOT NULL, FK → stage(id) | Reference to stage |
 | `group_id` | integer | NOT NULL, FK → group(id) | Reference to group |
-| `round_id` | integer | NOT NULL, FK → round(id) | Reference to round |
+| `round_id` | integer | NOT NULL, FK → round(id) | Reference to round. This is `round.id` (a global serial), not the round number — join to `round` and read `round.number` |
 | `number` | integer | NOT NULL | Match number within round |
 | `status` | integer | NOT NULL, DEFAULT 1 | brackets-manager status (0=Locked, 1=Waiting, 2=Ready, 3=Running, 4=Completed, 5=Archived) |
 | `opponent1_id` | integer | NULL | First opponent (participant ID; NULL for TBD/BYE — see `opponent1_result`) |
