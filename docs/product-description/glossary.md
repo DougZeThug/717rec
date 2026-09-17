@@ -25,7 +25,7 @@ state the first time.
 **Season.** A named run of the league from a start date to an end date, with its
 own teams, schedule, standings, and playoffs. Almost every number in the app is
 scoped to one season: a team's record, its power score, and its badges all mean
-"in this season". *Career* numbers are the exception. See
+"in this season". _Career_ numbers are the exception. See
 [`foundations/seasons.md`](foundations/seasons.md).
 
 **The active season.** The one season marked active. There is at most one at a
@@ -60,7 +60,7 @@ playoffs in progress; finalising closes it out later.
 
 **Team.** The unit that plays matches. A team has a name, a division, a roster,
 a record, and a power score. Teams belong to a season; a team that plays across
-several seasons keeps its identity, which is what makes *career* numbers
+several seasons keeps its identity, which is what makes _career_ numbers
 possible.
 
 **Player.** A person on a team's roster. In the data a player is a row that may
@@ -80,7 +80,7 @@ Requesting one is described in
 [`getting-started/join-a-team.md`](getting-started/join-a-team.md).
 
 **Division.** A competitive tier — Recreational, Intermediate, Competitive, and
-Hidden. A division carries a *division weight* used in power score, and that
+Hidden. A division carries a _division weight_ used in power score, and that
 weight is versioned: a match is rated against the division an opponent was in on
 the date of the match, not the division they are in now.
 
@@ -177,8 +177,8 @@ submission carries who sent it, which team they were on, a message, and a status
 It is a request, not the result itself.
 
 **Pending.** Waiting on a decision. Used in two distinct places and they must not
-be confused: a *pending score submission* is waiting for review, and a *pending
-match* is a match completed without a winner — a tie — waiting for an admin to
+be confused: a _pending score submission_ is waiting for review, and a _pending
+match_ is a match completed without a winner — a tie — waiting for an admin to
 resolve it.
 
 **Approved / rejected.** The two outcomes of reviewing a score submission.
@@ -197,8 +197,8 @@ it writes the winner, the game wins, and the statistics. Before finalising, a
 live match is editable; after, it is not, except by an admin correction.
 
 **Score report.** The name the screens use for a score submission. The dialog is
-headed "Report Match Score" and the button says "Report". Use *score submission*
-for the record and *score report* when quoting what the user sees.
+headed "Report Match Score" and the button says "Report". Use _score submission_
+for the record and _score report_ when quoting what the user sees.
 
 **Match with no result.** A match not marked completed. This is a third thing,
 distinct from a pending score submission and from a pending match, and it is what
@@ -250,7 +250,7 @@ hand; they appear on team pages. See [`stats/badges.md`](stats/badges.md).
 **Head to head.** One team's record against one other team, across matches they
 have both played.
 
-**Sweep.** A match won 2–0. **Sweep rate** is sweeps as a share of *all* matches
+**Sweep.** A match won 2–0. **Sweep rate** is sweeps as a share of _all_ matches
 played, not of matches won.
 
 **Clutch record.** A team's wins and losses in matches that went to a deciding
@@ -282,11 +282,28 @@ derived from the win percentage each time it is shown, not stored.
 
 **Playoff rank.** A team's finishing position within its division for a season,
 stored on the season's standings and shown as the Rank column in history.
-Distinct from *seed*, which is a starting position in a bracket.
+Distinct from _seed_, which is a starting position in a bracket.
 
 **Season recap.** The expandable part of a season's card in history, holding that
 season's final standings split by division. Closed until opened, and not
-linkable.
+linkable. Not the same thing as a _recap edition_.
+
+**Recap edition.** One week's published recap, at its own permanent address
+(`/recap/<season>/week-<n>`). An edition is **frozen**: it stores the facts it
+was built from and renders only those, so re-opening an old one shows what was
+true that week rather than today's numbers. Built in Admin → Weekly Content
+Pack.
+
+**Correction.** Publishing a recap edition again after it is already live.
+It adds a new _version_ and moves the edition to point at it; the version that
+was live is kept, not overwritten. The page then says "Published <date>,
+corrected <date>".
+
+**Upset.** A completed match the winner was not expected to win — their modelled
+chance was 30% or less, from the prediction model that mixes career record,
+current season and head-to-head. The same rule everywhere it appears: the tag on
+a match card, and the recap. It is worked out from today's figures, so it is
+"unlikely on what we know now" rather than a bet anyone could have placed.
 
 **Counter drift.** A team whose stored win and loss counters disagree with its
 completed-match history. An admin can recompute every team's counters from the
@@ -343,7 +360,7 @@ described in [`playoffs/blind-draw-signup.md`](playoffs/blind-draw-signup.md).
 **Challonge fallback.** A stored copy of a bracket from the external Challonge
 service, shown when the app's own bracket is unavailable. It is read-only.
 
-**Bracket state.** One of *pending*, *in progress*, or *completed*. Seeding and
+**Bracket state.** One of _pending_, _in progress_, or _completed_. Seeding and
 rearranging are possible only while a bracket is pending; **a single entered
 result moves it to in progress permanently**, and there is no way back.
 
@@ -363,7 +380,7 @@ withdraw one**, and nothing says so.
 **Bye (in a bracket).** A slot no team will ever occupy. The bracket engine
 rounds the team count up to the next power of two and fills the gap with byes,
 which go to the top seeds; a team facing one advances without playing. A bye
-reads "BYE" and never changes, unlike a *flow hint*, which names the match that
+reads "BYE" and never changes, unlike a _flow hint_, which names the match that
 will fill the slot. **The current engine uses byes rather than play-ins.**
 
 **Flow hint.** The text written into an empty bracket slot to say what will fill
@@ -404,7 +421,7 @@ It exists only for a signed-in account; a visitor gets a sign-in bar instead.
 
 **Reaction.** An emoji a signed-in user attaches to a message. Reactions appear
 as chips with a count. A user has at most one of each emoji per message, and
-pressing the chip toggles it. Reactions on a *match* are a separate feature,
+pressing the chip toggles it. Reactions on a _match_ are a separate feature,
 stored separately.
 
 **Hero card.** A card on the public home page, written by an admin, with a
@@ -424,7 +441,7 @@ that inbox. The two are separate channels and nothing in either says so.
 and team on the request came from their account rather than being typed.
 
 **Support ticket.** The stored copy of a message sent through the form at
-`/contact`. Distinct from a *contact request*, which is a different record from a
+`/contact`. Distinct from a _contact request_, which is a different record from a
 different form on the home page.
 
 **Team request.** A team's formal ask for a schedule change: a time change, a
@@ -458,7 +475,7 @@ visit in which an error occurs. Nothing in the app mentions this to the user.
 
 **Loading.** The app is waiting for data it has not got yet and is showing a
 placeholder — usually a skeleton in the shape of the content. Distinct from
-*empty*.
+_empty_.
 
 **Empty.** The data arrived and there is none. An empty schedule and a loading
 schedule look different and mean different things; conflating them is a bug.
@@ -473,7 +490,7 @@ until the next successful save or an explicit discard. Reverting every field by
 hand does not necessarily clear it.
 
 **Saved.** Written to the database and acknowledged. Until the acknowledgement,
-what the user sees may be *optimistic*.
+what the user sees may be _optimistic_.
 
 **Optimistic.** Shown as though it succeeded before the server has said so. If
 the request then fails, the display is rolled back and a toast explains. Which
@@ -589,6 +606,6 @@ and it stays until an admin deletes it. See
 **Push notification.** **Not implemented.** Nothing in the product delivers
 anything to a device outside the browser: no push, no SMS, and no email except
 the one the contact form sends to the league. Where these documents say
-"notification" without qualification they mean an *admin notification* in the
+"notification" without qualification they mean an _admin notification_ in the
 bell. See
 [`cross-cutting/what-the-league-sees.md`](cross-cutting/what-the-league-sees.md).

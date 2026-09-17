@@ -25,8 +25,15 @@ structure, routing, data flow, and the service-layer rules.
 
 Requires Node.js 20+ and npm. Day-to-day development and CI are npm-based —
 `npm ci` installs from `package-lock.json`, and `.npmrc` sets
-`legacy-peer-deps=true`. Do not use pnpm or yarn. One additional lockfile is
-tracked on purpose: `deno.lock` (Supabase edge functions).
+`legacy-peer-deps=true`. Do not use pnpm or yarn.
+
+Two further lockfiles are tracked on purpose:
+
+- `deno.lock` — Supabase edge functions.
+- `bun.lock` — **the hosted deploy build runs `bun install --frozen-lockfile`.**
+  Adding or removing a dependency must update this too, or the deploy fails with
+  "lockfile had changes, but lockfile is frozen" even though every local check
+  passes. After `npm install <pkg>`, run `bun install --lockfile-only`.
 
 ```sh
 git clone <repo-url>
