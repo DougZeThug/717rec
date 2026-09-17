@@ -99,7 +99,6 @@ const queryClient = new QueryClient({
  */
 const AppLayout = () => {
   const location = useLocation();
-  const navigationStartRef = useLazyRef(() => performance.now());
   const mainRef = useRef<HTMLElement>(null);
 
   // First-party pageview beacon (fires per route change, PWA-safe)
@@ -108,17 +107,23 @@ const AppLayout = () => {
   // Alias to a local to avoid the 'location.*' mutable-global heuristic.
   const pathname = location.pathname;
 
-  // Log every route change, track page views, and emit Sentry metrics
+  // Log every route change, track page views, and count the view in Sentry.
+  //
+  // There is deliberately no timing here. A `page_load_time` distribution used
+  // to sit beside the counter, measuring from a timestamp that was only reset
+  // after the metric had already been sent -- so each sample was how long the
+  // reader had spent on the page they just left, labelled with the page they
+  // had just arrived at. Nothing read it, and it could not have measured a page
+  // load anyway: this effect belongs to the layout route, above the Suspense
+  // boundary, and every page is lazy, so it runs before the page's code has
+  // even been fetched. A wrong number that looks authoritative is worse than no
+  // number, so it was removed rather than reordered.
   useEffect(() => {
     routeLog(`Navigating to: ${pathname}`);
     trackPageView(pathname);
 
-    // Sentry metrics
     metrics.count('page_view', 1, { route: pathname });
-    const loadTime = performance.now() - navigationStartRef.current;
-    metrics.distribution('page_load_time', loadTime, { route: pathname });
-    navigationStartRef.current = performance.now();
-  }, [pathname, navigationStartRef]);
+  }, [pathname]);
 
   // Preload core routes after initial render
   useEffect(() => {
