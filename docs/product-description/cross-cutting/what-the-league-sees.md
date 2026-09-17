@@ -43,7 +43,7 @@ is emailed, and nothing tells the other team.
 | --- | --- | --- |
 | A Google Analytics pageview | The path and the page's title | Published build only. Nothing is sent from a development build; it prints to the console instead |
 | A pageview to the league's own counter | The path, and a coarse device class: iOS, Android, other mobile, desktop, or unknown | Published build only |
-| A route counter and a page-load timing | The route name | Published build only |
+| A route counter | The route name | Published build only |
 
 The league's own counter deliberately avoids identifying anybody. It stores no
 address and no user agent. It stores a 16-character fingerprint made from the
@@ -139,7 +139,7 @@ stateDiagram-v2
     route_change --> sent : published build
     sent --> counted : the league's counter stores path + device class
     sent --> counted_ga : Google Analytics stores path + title
-    sent --> counted_metrics : a route counter and a load timing
+    sent --> counted_metrics : a route counter
     counted --> dropped : more than 60 in a minute from one address
     counted --> [*] : readable by an admin, per day
     sent --> lost : the request fails (swallowed, never retried, never reported)
