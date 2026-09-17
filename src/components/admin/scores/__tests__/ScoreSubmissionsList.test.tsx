@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { ScoreSubmission } from '@/hooks/useScoreSubmissions';
@@ -82,6 +82,69 @@ describe('ScoreSubmissionsList', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onReject).not.toHaveBeenCalled();
+  });
+
+  // The queue refetches on mount and on window focus, and two admins can work it
+  // at once, so the open confirmation has to follow the list it was opened from.
+  describe('when the queue is refetched under an open confirmation', () => {
+    const second = {
+      ...submission,
+      id: 'submission-2',
+      submitter_name: 'Sam',
+    } satisfies ScoreSubmission;
+
+    const openRejectOn = (onReject: (submissionId: string) => void, rows: ScoreSubmission[]) => {
+      const view = render(
+        <ScoreSubmissionsList submissions={rows} onApprove={vi.fn()} onReject={onReject} />
+      );
+      fireEvent.click(screen.getAllByRole('button', { name: /^reject$/i })[0]);
+      expect(screen.getByText('Reject this score report?')).toBeInTheDocument();
+      return view;
+    };
+
+    it('closes itself when its report leaves the queue', () => {
+      const onReject = vi.fn();
+      const { rerender } = openRejectOn(onReject, [submission, second]);
+
+      // Another admin decided submission-1; the next fetch comes back without it.
+      rerender(
+        <ScoreSubmissionsList submissions={[second]} onApprove={vi.fn()} onReject={onReject} />
+      );
+
+      expect(screen.queryByText('Reject this score report?')).not.toBeInTheDocument();
+      expect(onReject).not.toHaveBeenCalled();
+    });
+
+    it('follows the report when its details change', () => {
+      const onReject = vi.fn();
+      const { rerender } = openRejectOn(onReject, [submission]);
+      // Scoped to the confirmation: the name is on the card underneath it too.
+      expect(within(screen.getByRole('alertdialog')).getByText('Pat')).toBeInTheDocument();
+
+      rerender(
+        <ScoreSubmissionsList
+          submissions={[{ ...submission, submitter_name: 'Patricia' }]}
+          onApprove={vi.fn()}
+          onReject={onReject}
+        />
+      );
+
+      expect(within(screen.getByRole('alertdialog')).getByText('Patricia')).toBeInTheDocument();
+    });
+
+    it('does not come back when the queue empties and refills with other reports', () => {
+      const onReject = vi.fn();
+      const { rerender } = openRejectOn(onReject, [submission]);
+
+      const props = { onApprove: vi.fn(), onReject };
+      rerender(<ScoreSubmissionsList submissions={[]} {...props} />);
+      expect(screen.getByText('No score reports waiting for approval.')).toBeInTheDocument();
+
+      rerender(<ScoreSubmissionsList submissions={[second]} {...props} />);
+
+      expect(screen.queryByText('Reject this score report?')).not.toBeInTheDocument();
+      expect(onReject).not.toHaveBeenCalled();
+    });
   });
 
   // A-10: two people reporting the same match rendered as unrelated cards, so an
