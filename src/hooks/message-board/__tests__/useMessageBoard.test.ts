@@ -176,6 +176,104 @@ describe('useMessageBoard', () => {
     );
   });
 
+  // A realtime message can land before the first fetch has filled the cache.
+  // The optimistic page written there is gone now, so this guards what it used
+  // to do for us: the message still arrives, held in the realtime buffer that
+  // the fetch merges, and the fetch's own answer on pagination stands.
+  it('does not lose a realtime message that beats the first fetch', async () => {
+    let resolveFetch!: (messages: Message[]) => void;
+    mockFetchMessages.mockImplementation(
+      () =>
+        new Promise<Message[]>((resolve) => {
+          resolveFetch = resolve;
+        })
+    );
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(mockFetchMessages).toHaveBeenCalled());
+
+    act(() => {
+      realtimeHandlers.onMessageInserted?.({
+        ...baseMessage,
+        id: 'realtime-first',
+        created_at: '2026-04-21T10:00:00.000Z',
+      });
+    });
+
+    await act(async () => {
+      resolveFetch(
+        Array.from({ length: 10 }, (_, i) => ({
+          ...baseMessage,
+          id: `m${i}`,
+          created_at: `2026-04-20T10:0${i}:00.000Z`,
+        }))
+      );
+    });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.hasMore).toBe(true);
+    expect(result.current.messages.some((m) => m.id === 'realtime-first')).toBe(true);
+  });
+
+  // The same race with a failing first load. The optimistic page also cleared
+  // the error, so a board that had failed to load looked like a board holding
+  // one message and nothing more.
+  it('still reports a failed first load when a realtime message beats it', async () => {
+    let rejectFetch!: (err: Error) => void;
+    mockFetchMessages.mockImplementation(
+      () =>
+        new Promise<Message[]>((_resolve, reject) => {
+          rejectFetch = reject;
+        })
+    );
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(mockFetchMessages).toHaveBeenCalled());
+
+    act(() => {
+      realtimeHandlers.onMessageInserted?.({ ...baseMessage, id: 'realtime-first' });
+    });
+
+    await act(async () => {
+      rejectFetch(new Error('network down'));
+    });
+
+    await waitFor(() => expect(result.current.error).toBe('Failed to load messages'));
+  });
+
+  // Deleting every message on screen leaves no cursor to ask for older ones
+  // with, so the board used to settle into an empty state while the server
+  // still held more. Reload the first page instead.
+  it('reloads the board when deletes empty a list the server has more of', async () => {
+    const firstPage = Array.from({ length: 10 }, (_, i) => ({
+      ...baseMessage,
+      id: `m${i}`,
+      created_at: `2026-04-20T10:0${i}:00.000Z`,
+    }));
+    mockFetchMessages.mockResolvedValue(firstPage);
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.hasMore).toBe(true);
+
+    const olderPage = Array.from({ length: 10 }, (_, i) => ({
+      ...baseMessage,
+      id: `older-${i}`,
+      created_at: `2026-04-19T10:0${i}:00.000Z`,
+    }));
+    mockFetchMessages.mockResolvedValue(olderPage);
+
+    await act(async () => {
+      firstPage.forEach((message) => realtimeHandlers.onMessageDeleted?.(message));
+    });
+
+    // Newest first, so the reloaded page arrives in reverse of how it was built.
+    await waitFor(() =>
+      expect(result.current.messages.map((m) => m.id)).toEqual(olderPage.map((m) => m.id).reverse())
+    );
+    expect(result.current.hasMore).toBe(true);
+  });
+
   it('preserves load-more availability after realtime cache rewrites', async () => {
     mockFetchMessages.mockResolvedValue(
       Array.from({ length: 10 }, (_, i) => ({
