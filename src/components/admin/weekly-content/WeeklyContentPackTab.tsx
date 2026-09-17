@@ -49,7 +49,7 @@ const WeeklyContentPackTab: React.FC = () => {
 
   const pack = useWeeklyContentPack();
   const { summaryRef, setDivisionRef, buildRequests } = useGraphicNodes(pack.facts);
-  const { exportAll, isExporting } = useGraphicExport();
+  const { capture, exportAll, isExporting } = useGraphicExport();
 
   useUnsavedChangesGuard(
     pack.isDirty,
@@ -97,11 +97,14 @@ const WeeklyContentPackTab: React.FC = () => {
     }
   }, [pack.draft.caption, toast]);
 
-  const handleDownload = useCallback(async () => {
-    if (!pack.facts) return;
+  /**
+   * Inline every logo, then mount the full-size copies off screen and wait a
+   * frame. Doing it in this order means a capture never races a network fetch
+   * or an unpainted node.
+   */
+  const mountExportSurface = useCallback(async () => {
+    if (!pack.facts) return false;
 
-    // Inline every logo first, then mount the full-size copies. Doing it in this
-    // order means the capture never races a network fetch.
     const logoUrls = [
       ...pack.facts.divisions.flatMap((d) => d.standings.map((r) => r.logoUrl)),
       ...pack.facts.upsets.map((u) => u.winnerLogoUrl ?? null),
@@ -112,9 +115,12 @@ const WeeklyContentPackTab: React.FC = () => {
     const resolver = await buildLogoResolver(logoUrls);
     setResolveLogo(() => resolver);
     setIsExportMounted(true);
-
-    // Let React paint the off-screen copies before measuring them.
     await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
+    return true;
+  }, [pack.facts]);
+
+  const handleDownload = useCallback(async () => {
+    if (!(await mountExportSurface())) return;
 
     const { exported, failed } = await exportAll(buildRequests());
     setIsExportMounted(false);
@@ -128,7 +134,24 @@ const WeeklyContentPackTab: React.FC = () => {
     } else {
       toast({ title: `Downloaded ${exported} graphic${exported === 1 ? '' : 's'}` });
     }
-  }, [buildRequests, exportAll, pack.facts, toast]);
+  }, [buildRequests, exportAll, mountExportSurface, toast]);
+
+  /**
+   * The summary graphic, for the shared-link preview.
+   *
+   * Best-effort: a published recap people can read matters more than a
+   * thumbnail, so a failure here returns null and publishing carries on.
+   */
+  const captureSummaryGraphic = useCallback(async (): Promise<string | null> => {
+    if (!(await mountExportSurface())) return null;
+    try {
+      return summaryRef.current ? await capture(summaryRef.current) : null;
+    } catch {
+      return null;
+    } finally {
+      setIsExportMounted(false);
+    }
+  }, [capture, mountExportSurface, summaryRef]);
 
   return (
     <AdminSectionWrapper title="Weekly Content Pack" icon={Newspaper}>
@@ -286,7 +309,7 @@ const WeeklyContentPackTab: React.FC = () => {
               isSaving={pack.isSaving}
               isPublishing={pack.isPublishing}
               onSave={() => void pack.save()}
-              onPublish={(note) => void pack.publish(note)}
+              onPublish={(note) => void pack.publish(note, captureSummaryGraphic)}
               onUnpublish={() => void pack.unpublish()}
               isUnpublishing={pack.isUnpublishing}
             />

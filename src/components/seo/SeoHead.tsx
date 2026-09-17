@@ -30,6 +30,9 @@ const SeoHead: React.FC<SeoHeadProps> = ({
   const rawImage = image ?? DEFAULT_IMAGE;
   const imageUrl = rawImage.startsWith('http') ? rawImage : `${BASE_URL}${rawImage}`;
   const ldArray = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+  // A page that supplies its own artwork gets the big preview; the default
+  // league logo does not deserve one.
+  const twitterCard = image ? 'summary_large_image' : 'summary';
 
   return (
     <Helmet>
@@ -42,7 +45,7 @@ const SeoHead: React.FC<SeoHeadProps> = ({
       <meta property="og:type" content={type} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:image:alt" content={title} />
-      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={imageUrl} />

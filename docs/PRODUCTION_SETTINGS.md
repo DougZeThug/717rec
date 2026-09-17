@@ -182,6 +182,22 @@ The in-app **Admin → League Night Status** tab shows the last snapshot's age a
 flags it if it's older than 8 days — a fast way to notice this job silently
 stopped without opening the SQL editor.
 
+### 5a. Cloudflare worker: recap link previews
+
+| Setting                    | Where                                           | Expected                             | Why                                                                                                                                                                   | Last verified |
+| -------------------------- | ----------------------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `717rec-og-recap` worker   | Cloudflare dashboard → Workers                  | Deployed, route `717rec.app/recap/*` | Gives a shared recap link that week's graphic as its preview image. 717rec is client-rendered, so social crawlers never run the JavaScript that would set `og:image`. | _needs DW_    |
+| `SUPABASE_ANON_KEY` secret | `npx wrangler secret put` in `workers/og-recap` | Present                              | The publishable key. Only published editions are readable with it.                                                                                                    | _needs DW_    |
+
+**This does not ship with a normal release.** Production deploys go through
+Lovable Publish; this worker is deployed by hand from `workers/og-recap`
+(`npx wrangler deploy`). See that directory's README for the deploy, the check
+and the rollback.
+
+It fails open — any error returns the origin response untouched — so the recap
+page keeps working whether or not the worker is deployed. Without it, links
+preview with the generic league logo.
+
 ---
 
 ## 6. Hosting & DNS
@@ -219,6 +235,7 @@ Do this once when adopting this doc, then re-check quarterly (see §9). Fill in 
 - [ ] **§3** API: exposed schemas = `public` (+ `graphql_public`) only; RLS spot-check query returns zero rows.
 - [ ] **§4** Edge Functions → Secrets: `CRON_WEBHOOK_SECRET`, `RESEND_API_KEY`, and `PAGEVIEW_SALT` present, plus `ANTHROPIC_API_KEY` if AI recap captions are in use (record **presence** only, never values).
 - [ ] **§5** SQL editor: `SELECT jobname, schedule FROM cron.job;` shows the `capture-power-snapshots` job at the expected cadence.
+- [ ] **§5a** Cloudflare: `717rec-og-recap` worker deployed on `717rec.app/recap/*`, and `curl -A 'facebookexternalhit/1.1' <a recap URL> | grep og:image` shows the week's graphic (optional — link previews only).
 - [ ] **§6** Hosting: custom domain live, HTTPS enforced (visit `http://717rec.app` → it should redirect to `https://`).
 
 Nothing here changes code. If a step surfaces a surprise, open an issue rather than

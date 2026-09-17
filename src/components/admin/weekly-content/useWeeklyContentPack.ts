@@ -13,6 +13,8 @@ import { CaptionUnconfiguredError } from '@/services/recapEditions/CaptionServic
 import type { CaptionSource } from '@/services/recapEditions/RecapEditionService';
 import { RecapEditionService } from '@/services/recapEditions/RecapEditionService';
 import type { RecapFactsV1 } from '@/types/recapEdition';
+import { uploadRecapGraphic } from '@/utils/imageUpload';
+import { warnLog } from '@/utils/logger';
 
 import { buildFallbackCaption } from './fallbackCaption';
 
@@ -104,7 +106,7 @@ export const useWeeklyContentPack = () => {
 
   /** Save a draft version, returning the version id so publish can point at it. */
   const save = useCallback(
-    async (correctionNote?: string) => {
+    async (correctionNote?: string, graphicUrl?: string | null) => {
       if (!facts) return null;
 
       const edition = await RecapEditionService.ensureEdition({
@@ -123,6 +125,7 @@ export const useWeeklyContentPack = () => {
         captionModel: draft.captionModel,
         commissionerNote: draft.commissionerNote.trim() || null,
         correctionNote: correctionNote ?? null,
+        graphicUrl: graphicUrl ?? null,
       });
 
       setSavedDraft(draft);
@@ -132,11 +135,32 @@ export const useWeeklyContentPack = () => {
     [draft, facts, saveVersion]
   );
 
+  /**
+   * Publish, optionally with the summary graphic captured for the link preview.
+   *
+   * The upload is best-effort. A published recap that people can read matters
+   * more than a thumbnail on a shared link, so a Storage failure is reported
+   * and the publish carries on.
+   */
   const publish = useCallback(
-    async (correctionNote?: string) => {
+    async (correctionNote?: string, captureGraphic?: () => Promise<string | null>) => {
       setIsPublishing(true);
       try {
-        const saved = await save(correctionNote);
+        // Uploaded BEFORE the version is written, because versions are
+        // append-only: graphic_url has to be known at insert time.
+        let graphicUrl: string | null = null;
+        if (captureGraphic && facts) {
+          try {
+            const dataUrl = await captureGraphic();
+            if (dataUrl) {
+              graphicUrl = await uploadRecapGraphic(dataUrl, facts.seasonSlug, facts.weekNumber);
+            }
+          } catch (error) {
+            warnLog('Recap publish: the link-preview graphic could not be stored', error);
+          }
+        }
+
+        const saved = await save(correctionNote, graphicUrl);
         if (!saved) return;
         const published = await publishEdition.mutateAsync({
           editionId: saved.editionId,
@@ -147,7 +171,7 @@ export const useWeeklyContentPack = () => {
         setIsPublishing(false);
       }
     },
-    [publishEdition, save]
+    [facts, publishEdition, save]
   );
 
   /**
