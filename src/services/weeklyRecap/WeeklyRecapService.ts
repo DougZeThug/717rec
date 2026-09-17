@@ -1,11 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCompletedPlayoffMatchesForSeason } from '@/services/brackets/read/PlayoffSeasonMatchService';
 import { warnLog } from '@/utils/logger';
-import { getLeagueCalendarDate, getLeagueMidnightUtc } from '@/utils/timezone';
 
 import { fetchHotStreaks } from './streaks';
 import type { RecapMode, WeeklyRecapData } from './types';
 import { fetchUpsets } from './upsets';
+import { deriveWeekNumber, getWeekWindow } from './weekWindow';
 
 export type { RecapMode, TeamStreakInfo, WeeklyRecapData, WeeklyUpset } from './types';
 
@@ -36,11 +36,7 @@ export const WeeklyRecapService = {
       }
 
       const seasonId = activeSeason.id;
-      // start_date is a calendar date in league time; tolerate an ISO timestamp form.
-      const [seasonYear, seasonMonth, seasonDay] = activeSeason.start_date
-        .slice(0, 10)
-        .split('-')
-        .map(Number);
+      const seasonStartDate = activeSeason.start_date;
 
       // 2. Once the season's bracket has produced a result, the recap describes the
       // playoffs rather than a calendar week. This is the only reliable signal:
@@ -86,24 +82,10 @@ export const WeeklyRecapService = {
         return { ...emptyRecap(mode), hotStreaks, hasData: hotStreaks.length > 0 };
       }
 
-      // 4. Calculate the week number using league-time (EST/EDT) calendar days.
-      // Evening matches are stored as next-day UTC, so raw UTC arithmetic would
-      // push them into the following week and drop earlier same-day matches.
-      const latest = getLeagueCalendarDate(new Date(latestMatchRow.date));
-      const diffDays = Math.floor(
-        (Date.UTC(latest.year, latest.month - 1, latest.day) -
-          Date.UTC(seasonYear, seasonMonth - 1, seasonDay)) /
-          (1000 * 60 * 60 * 24)
-      );
-      const weekNumber = Math.max(1, Math.floor(diffDays / 7) + 1);
-
-      // 5. Compute the date window for this week as UTC instants of league midnight
-      const weekStart = getLeagueMidnightUtc(
-        seasonYear,
-        seasonMonth,
-        seasonDay + (weekNumber - 1) * 7
-      );
-      const weekEnd = getLeagueMidnightUtc(seasonYear, seasonMonth, seasonDay + weekNumber * 7);
+      // 4. Work out which season week that match belongs to, and the UTC window
+      // covering it. Both are league-time aware — see ./weekWindow.
+      const weekNumber = deriveWeekNumber(seasonStartDate, new Date(latestMatchRow.date));
+      const { weekStart, weekEnd } = getWeekWindow(seasonStartDate, weekNumber);
 
       // 6. Fetch upsets and hot streaks in parallel
       const [upsetsResult, matchHistoryResult] = await Promise.all([
