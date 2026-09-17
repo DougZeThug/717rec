@@ -269,8 +269,9 @@ database as well as in the browser.
 for one season stays on the home page into the next until somebody hides it.
 
 **Validation and error display.** Two required fields on the hero card form,
-enforced by the browser. One guard on themes. Nothing else is checked. Malformed
-advanced settings text is silently treated as empty.
+enforced by the browser. One guard on themes. The Extra Data shape is also
+checked on Champions and Event cards; see [While editing](#while-editing) for
+what is reported. Otherwise nothing else is checked.
 
 **Unsaved changes.** The hero card form is guarded: pressing Back or Cancel with
 a field changed asks "This hero card is not saved. Leave and lose the changes?"
@@ -322,8 +323,8 @@ immediately. Repairing counters rewrites the standings everybody reads.
 - **The last theme cannot be disabled**, but nothing stops an admin disabling
   every theme except one nobody uses.
 - **A hero card with a headline and nothing else is publishable.**
-- **Advanced settings text that is not valid is discarded silently**, taking a
-  Champions or Event card's contents with it.
+- **Advanced settings text that is not valid JSON is discarded silently**, taking
+  a Champions or Event card's contents with it.
 - **League Night's tiles reload the whole app.** Work in progress in another
   section is lost without warning.
 - **The traffic chart's empty state blames the release**, saying the beacon
