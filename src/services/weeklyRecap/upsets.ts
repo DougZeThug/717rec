@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { SeasonPlayoffMatch } from '@/services/brackets/read/PlayoffSeasonMatchService';
 import { handleDatabaseError } from '@/utils/errorHandler';
+import type { TeamStats } from '@/utils/predictions';
 import { isUpset, predictMatch } from '@/utils/predictions';
 
 import type { WeeklyUpset } from './types';
@@ -131,20 +132,30 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
     pairs
   );
 
-  // Build a single upset record for a match, or null if it doesn't qualify.
-  // Extracted so the surrounding fetch/aggregation stays low-complexity.
-  const buildUpset = (match: UpsetCandidate): WeeklyUpset | null => {
+  /** The pair of teams, or null when the match cannot be judged at all. */
+  const resolvePair = (match: UpsetCandidate) => {
     if (!match.winnerId || !match.loserId || !match.team1Id || !match.team2Id) return null;
+
     const winnerInfo = teamInfoMap.get(match.winnerId);
     const loserInfo = teamInfoMap.get(match.loserId);
     if (!winnerInfo || !loserInfo) return null;
-    // Skip matches involving a team an admin has moved to a hidden division
+
+    // Skip matches involving a team an admin has moved to a hidden division.
     if (!isVisible(winnerInfo.division_id) || !isVisible(loserInfo.division_id)) return null;
 
     const team1Stats = teamStats.get(match.team1Id);
     const team2Stats = teamStats.get(match.team2Id);
     if (!team1Stats || !team2Stats) return null;
 
+    return { winnerInfo, loserInfo, team1Stats, team2Stats };
+  };
+
+  /** The winner's modelled chance, by the same model the schedule page uses. */
+  const winnerChance = (
+    match: UpsetCandidate & { team1Id: string; team2Id: string; winnerId: string },
+    team1Stats: TeamStats,
+    team2Stats: TeamStats
+  ): number => {
     const prediction = predictMatch(
       team1Stats,
       team2Stats,
@@ -154,8 +165,31 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
       toHeadToHeadStats(headToHead.get(h2hKey(match.team1Id, match.team2Id)))
     );
 
-    const winnerProbability =
-      match.winnerId === match.team1Id ? prediction.probA : prediction.probB;
+    return match.winnerId === match.team1Id ? prediction.probA : prediction.probB;
+  };
+
+  /** e.g. "2–1", from the winner's point of view. */
+  const formatResult = (match: UpsetCandidate): string => {
+    const isWinnerTeam1 = match.winnerId === match.team1Id;
+    const winnerGameWins = isWinnerTeam1 ? match.team1GameWins : match.team2GameWins;
+    const loserGameWins = isWinnerTeam1 ? match.team2GameWins : match.team1GameWins;
+
+    return winnerGameWins != null && loserGameWins != null
+      ? `${winnerGameWins}–${loserGameWins}`
+      : '';
+  };
+
+  // Build a single upset record for a match, or null if it doesn't qualify.
+  const buildUpset = (match: UpsetCandidate): WeeklyUpset | null => {
+    const pair = resolvePair(match);
+    if (!pair) return null;
+
+    const { winnerInfo, loserInfo, team1Stats, team2Stats } = pair;
+    const winnerProbability = winnerChance(
+      match as UpsetCandidate & { team1Id: string; team2Id: string; winnerId: string },
+      team1Stats,
+      team2Stats
+    );
 
     // The same threshold and the same model the schedule's UpsetTag applies.
     if (!isUpset(winnerProbability)) return null;
@@ -163,25 +197,18 @@ export async function fetchUpsets(seasonId: string, source: UpsetSource): Promis
     const winnerScore = winnerInfo.power_score ?? 0;
     const loserScore = loserInfo.power_score ?? 0;
 
-    // Build score string like "21–15"
-    const isWinnerTeam1 = match.winnerId === match.team1Id;
-    const winnerGameWins = isWinnerTeam1 ? match.team1GameWins : match.team2GameWins;
-    const loserGameWins = isWinnerTeam1 ? match.team2GameWins : match.team1GameWins;
-    const matchResult =
-      winnerGameWins != null && loserGameWins != null ? `${winnerGameWins}–${loserGameWins}` : '';
-
     return {
-      winnerId: match.winnerId,
+      winnerId: match.winnerId as string,
       winnerName: winnerInfo.name ?? '',
       winnerLogoUrl: winnerInfo.image_url ?? winnerInfo.logo_url ?? undefined,
       winnerPowerScore: winnerScore,
-      loserId: match.loserId,
+      loserId: match.loserId as string,
       loserName: loserInfo.name ?? '',
       loserLogoUrl: loserInfo.image_url ?? loserInfo.logo_url ?? undefined,
       loserPowerScore: loserScore,
       powerScoreGap: loserScore - winnerScore,
       winnerProbability,
-      matchResult,
+      matchResult: formatResult(match),
       weekNumber,
     };
   };

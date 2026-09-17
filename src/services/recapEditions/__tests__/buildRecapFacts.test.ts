@@ -97,6 +97,9 @@ describe('buildRecapFacts', () => {
     walk(facts, 'facts');
 
     expect(seen).toEqual([]);
+    // Deliberately JSON, not structuredClone: this asserts the facts survive the
+    // round trip through JSONB unchanged. structuredClone would preserve values
+    // JSONB drops, which is exactly the bug this guards against.
     expect(JSON.parse(JSON.stringify(facts))).toEqual(facts);
   });
 

@@ -69,7 +69,7 @@ describe('RecapSummaryGraphic', () => {
   it('states the odds that made a result an upset', () => {
     render(<RecapSummaryGraphic facts={facts({ upsets: [upset] })} headline="" />);
 
-    expect(screen.getByText(/beat Corn Stars 2–1 · 18% shot/)).toBeInTheDocument();
+    expect(screen.getByText(/beat Corn Stars 2–1 · 18% shot/u)).toBeInTheDocument();
   });
 
   it('shows all three stories when the week had all three', () => {

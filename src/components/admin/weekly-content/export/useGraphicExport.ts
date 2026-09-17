@@ -30,8 +30,13 @@ export const useGraphicExport = () => {
   const [isExporting, setIsExporting] = useState(false);
 
   const capture = useCallback(async (node: HTMLElement): Promise<string> => {
-    const { toPng } = await import('html-to-image');
-    const [fontEmbedCSS] = await Promise.all([getFontEmbedCss(), document.fonts.ready]);
+    // None of these three depend on each other, so they run together rather
+    // than making the admin wait for them in turn.
+    const [{ toPng }, fontEmbedCSS] = await Promise.all([
+      import('html-to-image'),
+      getFontEmbedCss(),
+      document.fonts.ready,
+    ]);
     await awaitImagesDecoded(node);
 
     return toPng(node, {

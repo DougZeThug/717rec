@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import React from 'react';
 import { Link, useParams } from 'react-router';
 
+import DivisionStandingsTable from '@/components/recap/DivisionStandingsTable';
 import SeoHead from '@/components/seo/SeoHead';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -107,37 +108,7 @@ const RecapEdition: React.FC = () => {
       )}
 
       {facts.divisions.map((division) => (
-        <section key={division.divisionId} className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">{division.divisionName}</h2>
-          <Card>
-            <CardContent className="pt-6">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-muted-foreground text-left">
-                    <th className="pb-2 w-8">#</th>
-                    <th className="pb-2">Team</th>
-                    <th className="pb-2 text-right">W–L</th>
-                    <th className="pb-2 text-right">Power</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {division.standings.map((row) => (
-                    <tr key={row.teamId} className="border-t border-border">
-                      <td className="py-2 tabular-nums text-muted-foreground">{row.rank}</td>
-                      <td className="py-2">{row.teamName}</td>
-                      <td className="py-2 text-right tabular-nums">
-                        {row.wins}–{row.losses}
-                      </td>
-                      <td className="py-2 text-right tabular-nums">
-                        {row.powerScore === null ? '—' : row.powerScore.toFixed(1)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        </section>
+        <DivisionStandingsTable key={division.divisionId} division={division} />
       ))}
 
       <p className="text-xs text-muted-foreground">

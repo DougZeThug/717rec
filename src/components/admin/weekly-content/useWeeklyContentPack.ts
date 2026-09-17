@@ -83,25 +83,65 @@ export const useWeeklyContentPack = () => {
     setDraft((current) => ({ ...current, [field]: value }));
   }, []);
 
+  /** The text a fresh draft starts with, from this week's facts alone. */
+  const startingDraft = (next: RecapFactsV1): PackDraft => ({
+    ...emptyDraft,
+    headline: defaultHeadline(next),
+    caption: buildFallbackCaption(next),
+    captionSource: 'fallback',
+  });
+
   const generateFor = useCallback(
     async (seasonId: string, weekNumber: number) => {
       const [next, edition] = await Promise.all([
         generate.mutateAsync({ seasonId, weekNumber }),
         RecapEditionService.fetchEditionForWeek(seasonId, weekNumber),
       ]);
+
+      // A draft saved earlier has to come back, or Save draft would do nothing
+      // that survives closing the tab.
+      const savedVersion = edition
+        ? await RecapEditionService.fetchLatestVersion(edition.id)
+        : null;
+
+      const isSameWeek = facts?.seasonId === seasonId && facts?.weekNumber === weekNumber;
+
       setFacts(next);
       setExistingEdition(edition);
-      setDraft((current) => ({
-        ...current,
-        // Only fill fields the admin has not written for themselves, so
-        // regenerating after a score correction never discards their words.
-        headline: current.headline.trim() === '' ? defaultHeadline(next) : current.headline,
-        caption: current.caption.trim() === '' ? buildFallbackCaption(next) : current.caption,
-        captionSource: current.caption.trim() === '' ? 'fallback' : current.captionSource,
-      }));
+
+      if (isSameWeek) {
+        // Re-generating the week already on screen, usually after fixing a
+        // score. Keep whatever has been typed and fill only what is empty.
+        setDraft((current) => ({
+          ...current,
+          headline: current.headline.trim() === '' ? defaultHeadline(next) : current.headline,
+          caption: current.caption.trim() === '' ? buildFallbackCaption(next) : current.caption,
+          captionSource: current.caption.trim() === '' ? 'fallback' : current.captionSource,
+        }));
+        return next;
+      }
+
+      // A different week. Its own saved draft if there is one, otherwise a
+      // fresh start — carrying week 6's headline onto week 7's graphic would
+      // publish a story about the wrong week.
+      const loaded: PackDraft = savedVersion
+        ? {
+            headline: savedVersion.headline,
+            caption: savedVersion.caption,
+            commissionerNote: savedVersion.commissioner_note ?? '',
+            captionSource: savedVersion.caption_source as CaptionSource,
+            captionModel: savedVersion.caption_model,
+          }
+        : startingDraft(next);
+
+      setDraft(loaded);
+      // A restored draft matches what is on file, so it starts clean. A fresh
+      // one does not — nothing has been saved for this week yet.
+      setSavedDraft(savedVersion ? loaded : emptyDraft);
+
       return next;
     },
-    [generate]
+    [facts?.seasonId, facts?.weekNumber, generate]
   );
 
   /** Save a draft version, returning the version id so publish can point at it. */

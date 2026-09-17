@@ -1,19 +1,8 @@
-import { Copy, Download, Loader2, Newspaper, Sparkles, Wand2 } from 'lucide-react';
+import { Newspaper } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 
 import AdminSectionWrapper from '@/components/admin/AdminSectionWrapper';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
 import { useSeasons } from '@/hooks/useSeasons';
 import { useToast } from '@/hooks/useToast';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
@@ -21,17 +10,24 @@ import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import type { LogoResolver } from './export/inlineImages';
 import { buildLogoResolver } from './export/inlineImages';
 import { useGraphicExport } from './export/useGraphicExport';
+import PackEditorCard from './PackEditorCard';
 import PackExportSurface from './PackExportSurface';
 import PackPreview from './PackPreview';
 import PackWarnings from './PackWarnings';
 import PublishCard from './PublishCard';
 import { useGraphicNodes } from './useGraphicNodes';
 import { useWeeklyContentPack } from './useWeeklyContentPack';
-
-/** Weeks to offer. A season never runs longer than this in practice. */
-const WEEK_OPTIONS = Array.from({ length: 24 }, (_, i) => i + 1);
+import WeekPickerCard from './WeekPickerCard';
 
 const identityResolver: LogoResolver = (url) => url;
+
+/**
+ * The mutations behind these actions report their own failures with a toast, so
+ * a rejection here has already been surfaced to the admin.
+ */
+const fireAndForget = (promise: Promise<unknown>): void => {
+  promise.catch(() => undefined);
+};
 
 const WeeklyContentPackTab: React.FC = () => {
   const { data: seasons } = useSeasons();
@@ -58,10 +54,10 @@ const WeeklyContentPackTab: React.FC = () => {
 
   const chosenSeasonId = seasonId || activeSeasonId;
 
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = useCallback(() => {
     const week = Number(weekNumber);
     if (!chosenSeasonId || !Number.isFinite(week) || week < 1) return;
-    await pack.generateFor(chosenSeasonId, week);
+    fireAndForget(pack.generateFor(chosenSeasonId, week));
   }, [chosenSeasonId, pack, weekNumber]);
 
   const handleGenerateCaption = useCallback(async () => {
@@ -157,146 +153,28 @@ const WeeklyContentPackTab: React.FC = () => {
     <AdminSectionWrapper title="Weekly Content Pack" icon={Newspaper}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Choose a week</CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="recap-season">Season</Label>
-                <Select value={chosenSeasonId} onValueChange={setSeasonId}>
-                  <SelectTrigger id="recap-season">
-                    <SelectValue placeholder="Pick a season" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(seasons ?? []).map((season) => (
-                      <SelectItem key={season.id} value={season.id}>
-                        {season.name}
-                        {season.is_active ? ' (active)' : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="recap-week">Week</Label>
-                <Select value={weekNumber} onValueChange={setWeekNumber}>
-                  <SelectTrigger id="recap-week">
-                    <SelectValue placeholder="Pick a week" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WEEK_OPTIONS.map((week) => (
-                      <SelectItem key={week} value={String(week)}>
-                        Week {week}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button
-                onClick={handleGenerate}
-                disabled={!chosenSeasonId || !weekNumber || pack.isGenerating}
-              >
-                {pack.isGenerating ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Sparkles className="size-4" />
-                )}
-                Generate draft
-              </Button>
-            </CardContent>
-          </Card>
+          <WeekPickerCard
+            seasons={seasons ?? []}
+            seasonId={chosenSeasonId}
+            weekNumber={weekNumber}
+            isGenerating={pack.isGenerating}
+            onSeasonChange={setSeasonId}
+            onWeekChange={setWeekNumber}
+            onGenerate={handleGenerate}
+          />
 
           {pack.facts && <PackWarnings facts={pack.facts} />}
 
           {pack.facts && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Edit the pack</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="recap-headline">Headline</Label>
-                  <Input
-                    id="recap-headline"
-                    value={pack.draft.headline}
-                    onChange={(e) => pack.setField('headline', e.target.value)}
-                    maxLength={90}
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="recap-note">Commissioner&apos;s note</Label>
-                  <Textarea
-                    id="recap-note"
-                    value={pack.draft.commissionerNote}
-                    onChange={(e) => pack.setField('commissionerNote', e.target.value)}
-                    rows={3}
-                    maxLength={500}
-                    placeholder="Anything the database cannot know — who finally beat their brother, the outfit, the trash talk."
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Used to colour the caption. Nothing here changes the results.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <Label htmlFor="recap-caption">Caption</Label>
-                  <Textarea
-                    id="recap-caption"
-                    value={pack.draft.caption}
-                    onChange={(e) => {
-                      pack.setField('caption', e.target.value);
-                      if (pack.draft.captionSource === 'ai') {
-                        pack.setField('captionSource', 'ai_edited');
-                      }
-                    }}
-                    rows={10}
-                    placeholder="Write the post, or press Write it for me."
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {pack.draft.captionSource === 'ai' && 'Written by AI. Edit freely.'}
-                    {pack.draft.captionSource === 'ai_edited' && 'AI draft, edited by you.'}
-                    {pack.draft.captionSource === 'fallback' &&
-                      'Built from the results. Press Write it for me for something with more personality.'}
-                    {pack.draft.captionSource === 'manual' && 'Your own words.'}
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={handleGenerateCaption}
-                    disabled={pack.isGeneratingCaption}
-                  >
-                    {pack.isGeneratingCaption ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Wand2 className="size-4" />
-                    )}
-                    Write it for me
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleCopyCaption}
-                    disabled={pack.draft.caption.trim() === ''}
-                  >
-                    <Copy className="size-4" />
-                    Copy caption
-                  </Button>
-                  <Button variant="outline" onClick={handleDownload} disabled={isExporting}>
-                    {isExporting ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Download className="size-4" />
-                    )}
-                    Download graphics
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <PackEditorCard
+              draft={pack.draft}
+              isGeneratingCaption={pack.isGeneratingCaption}
+              isExporting={isExporting}
+              onFieldChange={pack.setField}
+              onGenerateCaption={() => fireAndForget(handleGenerateCaption())}
+              onCopyCaption={() => fireAndForget(handleCopyCaption())}
+              onDownload={() => fireAndForget(handleDownload())}
+            />
           )}
 
           {pack.facts && (
@@ -308,9 +186,9 @@ const WeeklyContentPackTab: React.FC = () => {
               isDirty={pack.isDirty}
               isSaving={pack.isSaving}
               isPublishing={pack.isPublishing}
-              onSave={() => void pack.save()}
-              onPublish={(note) => void pack.publish(note, captureSummaryGraphic)}
-              onUnpublish={() => void pack.unpublish()}
+              onSave={() => fireAndForget(pack.save())}
+              onPublish={(note) => fireAndForget(pack.publish(note, captureSummaryGraphic))}
+              onUnpublish={() => fireAndForget(pack.unpublish())}
               isUnpublishing={pack.isUnpublishing}
             />
           )}

@@ -245,6 +245,11 @@ const RECAP_BUCKET = 'recap-graphics';
 
 const dataUrlToBlob = async (dataUrl: string): Promise<Blob> => {
   const response = await fetch(dataUrl);
+  // fetch resolves rather than rejecting on a non-OK status, so without this an
+  // error body would be uploaded as if it were the graphic.
+  if (!response.ok) {
+    throw new Error(`Could not read the rendered graphic (${response.status})`);
+  }
   return response.blob();
 };
 

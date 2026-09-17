@@ -40,6 +40,10 @@ export const useRecapEditionBySlug = (seasonSlug?: string, weekNumber?: number) 
  * A mutation rather than a query because generating is an explicit act — an
  * admin presses Generate — and re-running it on a refetch would silently swap
  * the numbers under a draft they are part-way through editing.
+ *
+ * It writes nothing, so there is no cache to invalidate on success. A linter
+ * that flags every mutation without invalidateQueries is reading the shape, not
+ * the effect.
  */
 export const useGenerateRecapFacts = () =>
   useMutation({
@@ -88,7 +92,7 @@ export const useSaveRecapVersion = () => {
   return useMutation({
     mutationFn: (input: SaveVersionInput) => RecapEditionService.saveVersion(input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
+      queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
       toast({ title: 'Draft saved' });
     },
     onError: (error) => {
@@ -108,8 +112,8 @@ export const usePublishRecapEdition = () => {
     mutationFn: ({ editionId, versionId }: { editionId: string; versionId: string }) =>
       RecapEditionService.publish(editionId, versionId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
-      void queryClient.invalidateQueries({ queryKey: LATEST_PUBLISHED_KEY });
+      queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
+      queryClient.invalidateQueries({ queryKey: LATEST_PUBLISHED_KEY });
       toast({ title: 'Recap published' });
     },
     onError: (error) => {
@@ -128,8 +132,8 @@ export const useUnpublishRecapEdition = () => {
   return useMutation({
     mutationFn: (editionId: string) => RecapEditionService.unpublish(editionId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
-      void queryClient.invalidateQueries({ queryKey: LATEST_PUBLISHED_KEY });
+      queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
+      queryClient.invalidateQueries({ queryKey: LATEST_PUBLISHED_KEY });
       toast({ title: 'Recap unpublished' });
     },
     onError: (error) => {

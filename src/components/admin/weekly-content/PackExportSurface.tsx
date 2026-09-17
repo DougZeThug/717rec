@@ -15,6 +15,23 @@ interface PackExportSurfaceProps {
   setDivisionRef: (divisionId: string) => (node: HTMLDivElement | null) => void;
 }
 
+/** Small wrapper so each division can own a ref without breaking hook rules. */
+const DivisionExportNode: React.FC<{
+  divisionId: string;
+  setDivisionRef: (divisionId: string) => (node: HTMLDivElement | null) => void;
+  children: React.ReactNode;
+}> = ({ divisionId, setDivisionRef, children }) => {
+  const ref = React.useRef<HTMLDivElement | null>(null);
+  const assign = setDivisionRef(divisionId);
+
+  React.useEffect(() => {
+    assign(ref.current);
+    return () => assign(null);
+  }, [assign]);
+
+  return <OffscreenGraphic innerRef={ref}>{children}</OffscreenGraphic>;
+};
+
 /**
  * The full-size copies that get captured.
  *
@@ -49,22 +66,5 @@ const PackExportSurface: React.FC<PackExportSurfaceProps> = ({
     ))}
   </>
 );
-
-/** Small wrapper so each division can own a ref without breaking hook rules. */
-const DivisionExportNode: React.FC<{
-  divisionId: string;
-  setDivisionRef: (divisionId: string) => (node: HTMLDivElement | null) => void;
-  children: React.ReactNode;
-}> = ({ divisionId, setDivisionRef, children }) => {
-  const ref = React.useRef<HTMLDivElement | null>(null);
-  const assign = setDivisionRef(divisionId);
-
-  React.useEffect(() => {
-    assign(ref.current);
-    return () => assign(null);
-  }, [assign]);
-
-  return <OffscreenGraphic innerRef={ref}>{children}</OffscreenGraphic>;
-};
 
 export default PackExportSurface;

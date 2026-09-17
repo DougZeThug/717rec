@@ -109,7 +109,7 @@ class HeadRewriter {
       `<meta property="og:title" content="${escapeHtml(title)}">`,
       `<meta property="og:description" content="${escapeHtml(description)}">`,
       `<meta property="og:url" content="${escapeHtml(this.pageUrl)}">`,
-      `<meta property="og:type" content="article">`,
+      '<meta property="og:type" content="article">',
       `<meta name="twitter:title" content="${escapeHtml(title)}">`,
       `<meta name="twitter:description" content="${escapeHtml(description)}">`,
     ];
@@ -117,9 +117,9 @@ class HeadRewriter {
     if (this.preview.graphicUrl) {
       tags.push(
         `<meta property="og:image" content="${escapeHtml(this.preview.graphicUrl)}">`,
-        `<meta property="og:image:width" content="1080">`,
-        `<meta property="og:image:height" content="1350">`,
-        `<meta name="twitter:card" content="summary_large_image">`,
+        '<meta property="og:image:width" content="1080">',
+        '<meta property="og:image:height" content="1350">',
+        '<meta name="twitter:card" content="summary_large_image">',
         `<meta name="twitter:image" content="${escapeHtml(this.preview.graphicUrl)}">`
       );
     }
