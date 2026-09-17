@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { anonClient } from '../_supabase';
+import { anonClient, getActiveSeasonId } from '../_supabase';
 
 // publishableKey is private, so the key it picked is read off the createClient
 // call. Only the constructor is stubbed; the whole resolution order runs.
@@ -111,5 +111,44 @@ describe('publishable key resolution for the public MCP server', () => {
     expect(() => anonClient()).toThrow(
       /SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEYS, or SUPABASE_ANON_KEY is required/
     );
+  });
+});
+
+/**
+ * Every public MCP tool starts by resolving the active season through this, so
+ * a season lookup that fails quietly would empty every answer they give.
+ */
+describe('getActiveSeasonId', () => {
+  const clientReturning = (result: { data: unknown; error: unknown }) => {
+    const builder = {
+      select: () => builder,
+      eq: () => builder,
+      maybeSingle: () => Promise.resolve(result),
+    };
+    return { from: () => builder } as unknown as Parameters<typeof getActiveSeasonId>[0];
+  };
+
+  it('returns the id of the active season', async () => {
+    const result = await getActiveSeasonId(
+      clientReturning({ data: { id: 'season-1' }, error: null })
+    );
+
+    expect(result).toEqual({ data: 'season-1', error: null });
+  });
+
+  it('passes the database message back rather than swallowing it', async () => {
+    const result = await getActiveSeasonId(
+      clientReturning({ data: null, error: { message: 'seasons unavailable' } })
+    );
+
+    expect(result).toEqual({ data: null, error: 'seasons unavailable' });
+  });
+
+  it('reports no season rather than an error when none is active', async () => {
+    // maybeSingle gives null for no rows, which is a league between seasons --
+    // not a failure. The tools turn this into an empty answer.
+    const result = await getActiveSeasonId(clientReturning({ data: null, error: null }));
+
+    expect(result).toEqual({ data: null, error: null });
   });
 });
