@@ -35,10 +35,14 @@ const buildMessagePages = (messages: Message[], hasMore?: boolean): MessagePages
       toMessagePage(messages.slice(index, index + PAGE_SIZE), isLastPage ? hasMore : true)
     );
   }
+  // An empty list still has to say whether the server holds older messages.
+  // Hardcoding false here threw the caller's answer away, so a board that had
+  // simply been emptied by deletes reported itself complete.
+  const built = pages.length > 0 ? pages : [toMessagePage([], hasMore ?? false)];
   return {
-    pages: pages.length > 0 ? pages : [toMessagePage([], false)],
-    pageParams: pages.map((_, index) =>
-      index === 0 ? undefined : pages[index - 1]?.at(-1)?.created_at
+    pages: built,
+    pageParams: built.map((_, index) =>
+      index === 0 ? undefined : built[index - 1]?.at(-1)?.created_at
     ),
   };
 };
@@ -234,6 +238,21 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     }
   };
 
+  /**
+   * A rewrite that empties the visible list cannot page any further: the cursor
+   * for "older than" would have to come from a message that is no longer there.
+   * When the server still holds older ones, reload the first page rather than
+   * leave an empty board standing as though that were the whole story.
+   */
+  const reloadIfEmptied = useCallback(() => {
+    const current = queryClient.getQueryData<MessagePages>(queryKey);
+    if (!current || current.pages.flat().length > 0) return;
+    if (!current.pages.at(-1)?.hasMore) return;
+    queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {
+      errorLog('Error reloading the message board after it emptied:', err);
+    });
+  }, [queryClient, queryKey]);
+
   // Delete message function
   const deleteMessage = async (messageId: string) => {
     try {
@@ -249,6 +268,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
             )
           : curr
       );
+      reloadIfEmptied();
     } catch (err) {
       errorLog('Error deleting message:', err);
       // Error is already handled in the API function
@@ -284,7 +304,12 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         realtimeMessagesRef.current.set(newMessage.id, newMessage);
         pruneRealtimeBuffers();
         queryClient.setQueryData<MessagePages>(queryKey, (curr) => {
-          if (!curr) return buildMessagePages([newMessage]);
+          // Nothing fetched yet. The fetch in flight already merges
+          // realtimeMessagesRef, and it is the only thing that knows whether the
+          // server holds older messages -- a one-message page written here said
+          // it does not, and cleared the error state along with it, so a failed
+          // first load looked like a board with one message and nothing more.
+          if (!curr) return curr;
           const flattened = [
             newMessage,
             ...curr.pages.flat().filter((message) => message.id !== newMessage.id),
@@ -325,8 +350,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
             : flattened;
         return buildMessagePages(nextMessages, curr.pages.at(-1)?.hasMore);
       });
+      reloadIfEmptied();
     },
-    [queryKey, messageMatchesFilters, queryClient, pruneRealtimeBuffers]
+    [queryKey, messageMatchesFilters, queryClient, pruneRealtimeBuffers, reloadIfEmptied]
   );
 
   // Memoized callback for message deleted
@@ -343,8 +369,9 @@ export const useMessageBoard = (): UseMessageBoardResult => {
             )
           : curr
       );
+      reloadIfEmptied();
     },
-    [queryClient, pruneRealtimeBuffers]
+    [queryClient, pruneRealtimeBuffers, reloadIfEmptied]
   );
 
   // Set up real-time subscription with memoized callbacks

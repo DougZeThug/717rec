@@ -47,6 +47,18 @@ export const useVerifiedIdentity = ({
   const [teamDraft, setTeam] = useState<string | null>(null);
   const [contactDraft, setContact] = useState<string | null>(null);
 
+  // Leaving "Join the league" throws the proposed name away. It only ever
+  // answered that one question, and keeping it would sit in the Team box on
+  // every topic after it -- editable, unbadged -- in place of the member's real
+  // team, and would make the box appear on a support topic for a member who has
+  // no team at all. Adjusting state during render is React's own pattern for
+  // reacting to a changed prop; an effect would paint the stale value first.
+  const [wasNewTeamAllowed, setWasNewTeamAllowed] = useState(allowNewTeamName);
+  if (wasNewTeamAllowed !== allowNewTeamName) {
+    setWasNewTeamAllowed(allowNewTeamName);
+    if (!allowNewTeamName) setTeam(null);
+  }
+
   // The name comes from the profiles row, which every member has, whichever
   // way they signed up. `user_metadata` is only filled in by Google sign-in,
   // so reading it put an email-and-password member's address in the Name box —

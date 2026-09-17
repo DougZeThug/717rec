@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Team } from '@/types';
-import { buildTeamSeo, toPercent } from '@/utils/teamDetailsUtils/teamSeoUtils';
+import {
+  buildTeamSeo,
+  toPercent,
+  toTeamCanonicalPath,
+} from '@/utils/teamDetailsUtils/teamSeoUtils';
 
 const makeTeam = (overrides: Partial<Team> = {}): Team =>
   ({
@@ -23,6 +27,62 @@ describe('toPercent', () => {
 
   it.each([[undefined], [null], [0], [Number.NaN]])('treats %s as zero', (value) => {
     expect(toPercent(value as number | null | undefined)).toBe(0);
+  });
+});
+
+describe('toTeamCanonicalPath', () => {
+  const bagBoys = { id: 'team-1', name: 'Bag Boys' };
+
+  it('builds the readable address from the team name', () => {
+    expect(toTeamCanonicalPath(bagBoys, [bagBoys])).toBe('/teams/bag-boys');
+  });
+
+  it('strips the punctuation a url cannot carry', () => {
+    const braggin = { id: 'team-2', name: "Baggin' & Braggin'" };
+    expect(toTeamCanonicalPath(braggin, [braggin])).toBe('/teams/baggin-braggin');
+  });
+
+  // teams.name has no unique constraint, and toTeamSlug is lossy on top of
+  // that, so two teams can reduce to one address. It reaches whichever one
+  // useResolveTeamSlug finds first; the other must not claim it, or it would
+  // publish a canonical pointing at somebody else's page.
+  it('gives the readable address to the team that address reaches', () => {
+    const first = { id: 'team-1', name: 'Bag Boys' };
+    const second = { id: 'team-2', name: 'Bag Boys' };
+    const all = [first, second];
+
+    expect(toTeamCanonicalPath(first, all)).toBe('/teams/bag-boys');
+    expect(toTeamCanonicalPath(second, all)).toBe('/teams/team-2');
+    expect(toTeamCanonicalPath(first, all)).not.toBe(toTeamCanonicalPath(second, all));
+  });
+
+  it('does the same for names that only collide once slugified', () => {
+    const first = { id: 'team-1', name: "Baggin' & Braggin'" };
+    const second = { id: 'team-2', name: 'Baggin Braggin' };
+    const all = [first, second];
+
+    expect(toTeamCanonicalPath(first, all)).toBe('/teams/baggin-braggin');
+    expect(toTeamCanonicalPath(second, all)).toBe('/teams/team-2');
+  });
+
+  // "It leads here" is not a claim you can make before you can see the others.
+  it.each([
+    ['the list has not loaded', undefined],
+    ['the list is null', null],
+  ])('falls back to the row id while %s', (_label, all) => {
+    expect(toTeamCanonicalPath(bagBoys, all as null | undefined)).toBe('/teams/team-1');
+  });
+
+  // Would otherwise emit "/teams/", which is the teams list, not this team.
+  it('falls back to the row id when the name reduces to nothing', () => {
+    const punctuation = { id: 'team-3', name: "'&'" };
+    expect(toTeamCanonicalPath(punctuation, [punctuation])).toBe('/teams/team-3');
+  });
+
+  it('falls back to the row id when the team is missing from the list', () => {
+    expect(toTeamCanonicalPath(bagBoys, [{ id: 'other', name: 'Rail Riders' }])).toBe(
+      '/teams/team-1'
+    );
   });
 });
 
@@ -59,12 +119,10 @@ describe('buildTeamSeo', () => {
         name: 'Bag Boys',
         sport: 'Cornhole',
         url: 'https://717rec.app/teams/bag-boys',
-        memberOf: {
-          '@type': 'SportsOrganization',
-          name: '717REC',
-          url: 'https://717rec.app/',
-        },
-        subOrganization: 'East',
+        memberOf: [
+          { '@type': 'SportsOrganization', name: '717REC', url: 'https://717rec.app/' },
+          { '@type': 'SportsOrganization', name: 'East' },
+        ],
         athlete: [
           { '@type': 'Person', name: 'Alex' },
           { '@type': 'Person', name: 'Sam' },
@@ -92,12 +150,19 @@ describe('buildTeamSeo', () => {
       expect(jsonLd).not.toHaveProperty('logo');
     });
 
-    it.each([
-      ['division', 'subOrganization', { divisionName: null }],
-      ['roster', 'athlete', { players: [] }],
-    ])('omits %s when there is none', (_label, key, overrides) => {
-      const { jsonLd } = buildTeamSeo(makeTeam(overrides as Partial<Team>), '/teams/x');
-      expect(jsonLd).not.toHaveProperty(key as string);
+    it('omits roster when there is none', () => {
+      const { jsonLd } = buildTeamSeo(makeTeam({ players: [] }), '/teams/x');
+      expect(jsonLd).not.toHaveProperty('athlete');
+    });
+
+    // The division is a second organisation the team belongs to, not a child of
+    // it, so with no division the list holds the league alone.
+    it('lists only the league when the team has no division', () => {
+      const { jsonLd } = buildTeamSeo(makeTeam({ divisionName: null }), '/teams/x');
+      expect(jsonLd.memberOf).toEqual([
+        { '@type': 'SportsOrganization', name: '717REC', url: 'https://717rec.app/' },
+      ]);
+      expect(jsonLd).not.toHaveProperty('subOrganization');
     });
   });
 });

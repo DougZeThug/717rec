@@ -28,14 +28,19 @@ const EXACT_ROUTE_NAMES: Record<string, string> = {
   '/oauth/consent': 'Authorize App',
 };
 
-// Prefix matches for dynamic routes, checked after exact matches.
-const PREFIX_ROUTE_NAMES: Array<{ prefix: string; name: string }> = [
-  { prefix: '/teams/', name: 'Team Details' },
-  { prefix: '/matches/', name: 'Live Scoring' },
+// Dynamic routes, matched on shape rather than on a leading string. A bare
+// prefix cannot tell a real address from one the router sends to the catch-all,
+// so "/matches/123" — two segments where the route has three — used to be
+// announced as "Live Scoring" while the screen read "Page Not Found".
+const DYNAMIC_ROUTE_NAMES: Array<{ pattern: RegExp; name: string }> = [
+  { pattern: /^\/teams\/[^/]+$/, name: 'Team Details' },
+  { pattern: /^\/matches\/[^/]+\/live$/, name: 'Live Scoring' },
   // Every admin section is its own address now, so without this the announcer
   // would read out "Page Not Found" on each switch inside the console.
-  { prefix: '/admin/', name: 'Admin Dashboard' },
-  { prefix: '/recap/', name: 'Weekly Recap' },
+  { pattern: /^\/admin\/[^/]+$/, name: 'Admin Dashboard' },
+  // Matched on shape for the same reason: /recap/fall-2026/banana goes to the
+  // catch-all, so announcing it as "Weekly Recap" would contradict the screen.
+  { pattern: /^\/recap\/[^/]+\/week-\d{1,2}$/, name: 'Weekly Recap' },
 ];
 
 /**
@@ -50,8 +55,10 @@ export const getRouteName = (pathname: string): string => {
   const exact = EXACT_ROUTE_NAMES[normalized];
   if (exact) return exact;
 
-  const prefixMatch = PREFIX_ROUTE_NAMES.find(({ prefix }) => pathname.startsWith(prefix));
-  if (prefixMatch) return prefixMatch.name;
+  // Match the normalized path, not the raw one: "/matches/" would otherwise
+  // still look like the start of a live-scoring address.
+  const dynamicMatch = DYNAMIC_ROUTE_NAMES.find(({ pattern }) => pattern.test(normalized));
+  if (dynamicMatch) return dynamicMatch.name;
 
   return 'Page Not Found';
 };
