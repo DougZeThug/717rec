@@ -3,6 +3,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router';
 
 import DivisionStandingsTable from '@/components/recap/DivisionStandingsTable';
+import PowerRankingsTable from '@/components/recap/PowerRankingsTable';
 import SeoHead from '@/components/seo/SeoHead';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -106,6 +107,16 @@ const RecapEdition: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/*
+        Above the division tables: the rankings cover every team, so a reader
+        finds theirs here whichever division it is in. Editions published before
+        power rankings existed simply have no powerRankings and show nothing.
+      */}
+      <PowerRankingsTable
+        teams={facts.powerRankings ?? []}
+        blurbs={(version.blurbs as Record<string, string> | null) ?? {}}
+      />
 
       {facts.divisions.map((division) => (
         <DivisionStandingsTable key={division.divisionId} division={division} />
