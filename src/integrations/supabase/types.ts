@@ -3328,6 +3328,117 @@ export type Database = {
         }
         Relationships: []
       }
+      recap_edition_versions: {
+        Row: {
+          caption: string | null
+          caption_source: string
+          created_at: string
+          created_by: string | null
+          edition_id: string
+          facts: Json
+          graphic_url: string | null
+          headline: string | null
+          id: string
+          version: number
+        }
+        Insert: {
+          caption?: string | null
+          caption_source?: string
+          created_at?: string
+          created_by?: string | null
+          edition_id: string
+          facts: Json
+          graphic_url?: string | null
+          headline?: string | null
+          id?: string
+          version: number
+        }
+        Update: {
+          caption?: string | null
+          caption_source?: string
+          created_at?: string
+          created_by?: string | null
+          edition_id?: string
+          facts?: Json
+          graphic_url?: string | null
+          headline?: string | null
+          id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recap_edition_versions_edition_id_fkey"
+            columns: ["edition_id"]
+            isOneToOne: false
+            referencedRelation: "recap_editions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recap_editions: {
+        Row: {
+          created_at: string
+          first_published_at: string | null
+          id: string
+          published_at: string | null
+          published_version_id: string | null
+          season_id: string
+          season_name: string
+          season_slug: string
+          status: string
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          created_at?: string
+          first_published_at?: string | null
+          id?: string
+          published_at?: string | null
+          published_version_id?: string | null
+          season_id: string
+          season_name: string
+          season_slug: string
+          status?: string
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          created_at?: string
+          first_published_at?: string | null
+          id?: string
+          published_at?: string | null
+          published_version_id?: string | null
+          season_id?: string
+          season_name?: string
+          season_slug?: string
+          status?: string
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recap_editions_published_version_fkey"
+            columns: ["published_version_id"]
+            isOneToOne: false
+            referencedRelation: "recap_edition_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recap_editions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recap_editions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
+          },
+        ]
+      }
       round: {
         Row: {
           group_id: number
