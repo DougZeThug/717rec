@@ -20,6 +20,10 @@ import {
 export interface GradePopulations {
   powerScores: number[];
   winPcts: number[];
+  /**
+   * Only the teams with a recorded strength of schedule, so this list can be
+   * shorter than powerScores — see `GradeableSeasonTeam`.
+   */
   sos: number[];
   gameWinPcts: number[];
   sweepRates: number[];
@@ -42,8 +46,16 @@ export interface GradePopulations {
  */
 export type GradeableSeasonTeam = Pick<
   Ranking,
-  'teamId' | 'powerScore' | 'winPercentage' | 'sos' | 'gameWinPercentage'
->;
+  'teamId' | 'powerScore' | 'winPercentage' | 'gameWinPercentage'
+> & {
+  /**
+   * `null` when no strength of schedule was recorded. Live standings always
+   * carry one (`useTeamRankings` defaults it), but a week's snapshot row can
+   * leave it empty, and 0.5 is a placeholder rather than a schedule the team
+   * faced — the same reason `isGradeable` exists.
+   */
+  sos: number | null;
+};
 
 /**
  * Whether a team can be graded at all.
@@ -113,9 +125,14 @@ export const collectSeasonPopulations = (
     // Safe to assert: isGradeable above has ruled out null and undefined.
     populations.powerScores.push(team.powerScore as number);
     populations.winPcts.push(team.winPercentage);
-    populations.sos.push(team.sos);
     populations.gameWinPcts.push(team.gameWinPercentage);
     populations.sweepRates.push(stats.sweepRate);
+
+    // Left out rather than defaulted, for the same reason as clutchRates
+    // below. Live standings never hit this; a week snapshot can.
+    if (team.sos !== null) {
+      populations.sos.push(team.sos);
+    }
 
     if (stats.game3Matches > 0) {
       populations.clutchRates.push(stats.clutchWinPct);

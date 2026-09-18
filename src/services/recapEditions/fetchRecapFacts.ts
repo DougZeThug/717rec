@@ -30,7 +30,9 @@ const fetchWeekStandings = async (
 ): Promise<SnapshotStandingsInput[]> => {
   const { data: snapshots, error } = await supabase
     .from('power_score_snapshots')
-    .select('team_id, division_id, power_score, match_wins, match_losses, game_wins, game_losses')
+    .select(
+      'team_id, division_id, power_score, sos, match_wins, match_losses, game_wins, game_losses'
+    )
     .eq('season_id', seasonId)
     .eq('week_number', weekNumber);
 
@@ -79,6 +81,7 @@ const fetchWeekStandings = async (
         gameWins: s.game_wins,
         gameLosses: s.game_losses,
         powerScore: s.power_score,
+        sos: s.sos,
       };
     });
 };

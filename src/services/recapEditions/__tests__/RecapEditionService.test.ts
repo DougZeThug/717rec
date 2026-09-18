@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
+
 const { mockFrom } = vi.hoisted(() => ({ mockFrom: vi.fn() }));
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -94,7 +96,7 @@ describe('RecapEditionService', () => {
       // A read-then-write MAX(version) + 1 here would race two admins; the
       // BEFORE INSERT trigger owns it instead.
       expect(sent).not.toHaveProperty('version');
-      expect(sent.facts_schema_version).toBe(1);
+      expect(sent.facts_schema_version).toBe(RECAP_FACTS_SCHEMA_VERSION);
       expect(sent.caption_source).toBe('manual');
     });
 

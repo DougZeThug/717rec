@@ -7,8 +7,10 @@ import type {
   RecapStandingsRow,
 } from '@/types/recapEdition';
 import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
-import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
 import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
+
+import type { SnapshotStandingsInput } from './standingsOrder';
+import { compareStandings } from './standingsOrder';
 
 /**
  * Turns the week's readings into the frozen object an edition stores.
@@ -18,19 +20,7 @@ import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
  * between the preview and the published page.
  */
 
-/** A per-week row from power_score_snapshots, joined to its team's display info. */
-export interface SnapshotStandingsInput {
-  teamId: string;
-  teamName: string;
-  logoUrl: string | null;
-  divisionId: string | null;
-  divisionName: string | null;
-  wins: number | null;
-  losses: number | null;
-  gameWins: number | null;
-  gameLosses: number | null;
-  powerScore: number | null;
-}
+export type { SnapshotStandingsInput };
 
 export interface BuildRecapFactsInput {
   seasonId: string;
@@ -63,29 +53,6 @@ const toMoverFact = (
         delta: trend.delta,
       }
     : null;
-
-/**
- * Order inside a division, matching what /stats shows: the power score as
- * DISPLAYED (one decimal) descending, unrated teams last, then win percentage,
- * then name. Division tier is not a tiebreaker here because a division's
- * standings are all in the same division.
- */
-const compareStandings = (a: SnapshotStandingsInput, b: SnapshotStandingsInput): number => {
-  const aScore = getDisplayedPowerScore(a.powerScore);
-  const bScore = getDisplayedPowerScore(b.powerScore);
-
-  if (aScore === null && bScore !== null) return 1;
-  if (bScore === null && aScore !== null) return -1;
-  if (aScore !== null && bScore !== null && aScore !== bScore) return bScore - aScore;
-
-  const aPlayed = (a.wins ?? 0) + (a.losses ?? 0);
-  const bPlayed = (b.wins ?? 0) + (b.losses ?? 0);
-  const aPct = aPlayed > 0 ? (a.wins ?? 0) / aPlayed : 0;
-  const bPct = bPlayed > 0 ? (b.wins ?? 0) / bPlayed : 0;
-  if (aPct !== bPct) return bPct - aPct;
-
-  return (a.teamName || '').localeCompare(b.teamName || '');
-};
 
 const buildDivisions = (
   standings: SnapshotStandingsInput[],

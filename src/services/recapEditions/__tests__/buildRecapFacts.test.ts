@@ -48,6 +48,7 @@ const standingsRow = (
   losses: 3,
   gameWins: 12,
   gameLosses: 9,
+  sos: 0.5,
   powerScore: 60,
   ...overrides,
 });
@@ -72,7 +73,7 @@ describe('buildRecapFacts', () => {
   it('stamps the schema version and the window it read', () => {
     const facts = build();
 
-    expect(facts.factsSchemaVersion).toBe(1);
+    expect(facts.factsSchemaVersion).toBe(2);
     expect(facts.weekStartIso).toBe('2026-10-09T04:00:00.000Z');
     expect(facts.weekEndIso).toBe('2026-10-16T04:00:00.000Z');
     expect(facts.generatedAt).toBe('2026-10-16T12:00:00.000Z');
