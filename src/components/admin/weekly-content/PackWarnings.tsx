@@ -38,6 +38,25 @@ const PackWarnings: React.FC<{ facts: RecapFactsV1 }> = ({ facts }) => {
     });
   }
 
+  // Distinct from the 'baseline' case above, which is about movers. This is
+  // about the rankings, which still publish — only the arrows are missing.
+  const rankings = facts.powerRankings ?? [];
+  const withoutMovement = rankings.filter((team) => team.previousRank === null).length;
+
+  if (rankings.length > 0 && withoutMovement === rankings.length) {
+    warnings.push({
+      blocking: false,
+      title: 'The power rankings will show no movement',
+      body: 'There is no earlier week to compare against, so every team shows a dash instead of an arrow. The ranks and grades are still correct.',
+    });
+  } else if (withoutMovement > 0) {
+    warnings.push({
+      blocking: false,
+      title: `${withoutMovement} team${withoutMovement === 1 ? '' : 's'} joined the rankings this week`,
+      body: "They were not in the previous week's snapshot, so they show a dash instead of a movement arrow rather than a climb from nowhere.",
+    });
+  }
+
   if (facts.unresolvedMatchCount > 0) {
     warnings.push({
       blocking: false,

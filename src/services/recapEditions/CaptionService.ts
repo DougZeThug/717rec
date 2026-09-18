@@ -9,6 +9,12 @@ export interface CaptionResult {
   model: string;
 }
 
+export interface BlurbsResult {
+  /** One line per team, keyed by team id. */
+  blurbs: Record<string, string>;
+  model: string;
+}
+
 /**
  * Raised when ANTHROPIC_API_KEY is not set on the project.
  *
@@ -92,4 +98,72 @@ export const generateCaption = async (
   }
 
   return { caption: result.caption, model: result.model ?? 'unknown' };
+};
+
+/**
+ * Only the fields a blurb can honestly be written from.
+ *
+ * No logos, and deliberately no opponents or per-game detail: the writer must
+ * not be able to say a team beat somebody, because the facts do not record who
+ * played whom. The team id goes because the reply is keyed by it — the function
+ * drops any id it did not send, so a reply cannot introduce a team.
+ */
+const toRankingsFacts = (facts: RecapFactsV1) => ({
+  seasonName: facts.seasonName,
+  weekNumber: facts.weekNumber,
+  teams: (facts.powerRankings ?? []).slice(0, 40).map((team) => ({
+    teamId: team.teamId,
+    teamName: team.teamName,
+    division: team.division,
+    rank: team.rank,
+    previousRank: team.previousRank,
+    grade: team.grade,
+    wins: team.wins,
+    losses: team.losses,
+    powerScore: team.powerScore,
+    delta: team.delta,
+  })),
+});
+
+/**
+ * Write one line about every team in the week's power rankings.
+ *
+ * One call for the whole league, not one per team: the lines compare teams to
+ * each other, so the writer needs the whole table in front of it.
+ */
+export const generateBlurbs = async (
+  facts: RecapFactsV1,
+  commissionerNote: string,
+  tone: CaptionTone = 'straight'
+): Promise<BlurbsResult> => {
+  const payload = toRankingsFacts(facts);
+  if (payload.teams.length === 0) {
+    throw new Error('There are no ranked teams to write about for this week.');
+  }
+
+  const { data, error } = await supabase.functions.invoke('generate-recap-caption', {
+    body: {
+      kind: 'rankings',
+      facts: payload,
+      commissionerNote: commissionerNote.trim() || undefined,
+      tone,
+    },
+  });
+
+  if (error) {
+    // Same 503 as the caption: the key is missing for both, and the screen says
+    // "not set up" rather than "something went wrong".
+    const response = (error as { context?: Response }).context;
+    if (response?.status === 503) {
+      throw new CaptionUnconfiguredError();
+    }
+    await throwEdgeFunctionError(error, 'Failed to write the team blurbs');
+  }
+
+  const result = data as Partial<BlurbsResult> | null;
+  if (!result?.blurbs || Object.keys(result.blurbs).length === 0) {
+    throw new Error('The blurbs came back empty. Try again.');
+  }
+
+  return { blurbs: result.blurbs, model: result.model ?? 'unknown' };
 };

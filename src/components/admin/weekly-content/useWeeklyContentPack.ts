@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import {
+  useGenerateBlurbs,
   useGenerateCaption,
   useGenerateRecapFacts,
   usePublishRecapEdition,
@@ -10,6 +11,7 @@ import {
 import type { Tables } from '@/integrations/supabase/types';
 import { canPublishFacts } from '@/services/recapEditions/buildRecapFacts';
 import { CaptionUnconfiguredError } from '@/services/recapEditions/CaptionService';
+import { buildFallbackBlurbs } from '@/services/recapEditions/fallbackBlurbs';
 import type { CaptionSource } from '@/services/recapEditions/RecapEditionService';
 import { RecapEditionService } from '@/services/recapEditions/RecapEditionService';
 import type { RecapFactsV1 } from '@/types/recapEdition';
@@ -26,6 +28,9 @@ export interface PackDraft {
   commissionerNote: string;
   captionSource: CaptionSource;
   captionModel: string | null;
+  /** One power ranking line per team, keyed by team id. */
+  blurbs: Record<string, string>;
+  blurbsSource: CaptionSource;
 }
 
 const emptyDraft: PackDraft = {
@@ -34,6 +39,26 @@ const emptyDraft: PackDraft = {
   commissionerNote: '',
   captionSource: 'manual',
   captionModel: null,
+  blurbs: {},
+  blurbsSource: 'manual',
+};
+
+/**
+ * Written blurbs win; teams with nothing written get the fallback line.
+ *
+ * Used when re-generating the week already on screen, so fixing a score does
+ * not throw away twenty-six typed lines — and a team that has only just
+ * appeared in the rankings still gets something.
+ */
+const fillMissingBlurbs = (
+  current: Record<string, string>,
+  facts: RecapFactsV1
+): Record<string, string> => {
+  const filled = { ...buildFallbackBlurbs(facts.powerRankings ?? []) };
+  for (const [teamId, blurb] of Object.entries(current)) {
+    if (blurb.trim() !== '') filled[teamId] = blurb;
+  }
+  return filled;
 };
 
 /**
@@ -70,6 +95,7 @@ export const useWeeklyContentPack = () => {
 
   const generate = useGenerateRecapFacts();
   const captionRequest = useGenerateCaption();
+  const blurbsRequest = useGenerateBlurbs();
   const saveVersion = useSaveRecapVersion();
   const publishEdition = usePublishRecapEdition();
   const unpublishEdition = useUnpublishRecapEdition();
@@ -89,6 +115,8 @@ export const useWeeklyContentPack = () => {
     headline: defaultHeadline(next),
     caption: buildFallbackCaption(next),
     captionSource: 'fallback',
+    blurbs: buildFallbackBlurbs(next.powerRankings ?? []),
+    blurbsSource: 'fallback',
   });
 
   const generateFor = useCallback(
@@ -117,6 +145,7 @@ export const useWeeklyContentPack = () => {
           headline: current.headline.trim() === '' ? defaultHeadline(next) : current.headline,
           caption: current.caption.trim() === '' ? buildFallbackCaption(next) : current.caption,
           captionSource: current.caption.trim() === '' ? 'fallback' : current.captionSource,
+          blurbs: fillMissingBlurbs(current.blurbs, next),
         }));
         return next;
       }
@@ -131,6 +160,10 @@ export const useWeeklyContentPack = () => {
             commissionerNote: savedVersion.commissioner_note ?? '',
             captionSource: savedVersion.caption_source as CaptionSource,
             captionModel: savedVersion.caption_model,
+            // Restored too, or switching away and back would silently lose
+            // twenty-six written lines.
+            blurbs: (savedVersion.blurbs as Record<string, string> | null) ?? {},
+            blurbsSource: savedVersion.blurbs_source as CaptionSource,
           }
         : startingDraft(next);
 
@@ -163,6 +196,8 @@ export const useWeeklyContentPack = () => {
         caption: draft.caption,
         captionSource: draft.captionSource,
         captionModel: draft.captionModel,
+        blurbs: draft.blurbs,
+        blurbsSource: draft.blurbsSource,
         commissionerNote: draft.commissionerNote.trim() || null,
         correctionNote: correctionNote ?? null,
         graphicUrl: graphicUrl ?? null,
@@ -241,6 +276,47 @@ export const useWeeklyContentPack = () => {
     }
   }, [captionRequest, draft.commissionerNote, facts]);
 
+  /** Edit one team's power ranking line. */
+  const setBlurb = useCallback((teamId: string, blurb: string) => {
+    setDraft((current) => ({
+      ...current,
+      blurbs: { ...current.blurbs, [teamId]: blurb },
+      // An AI line the admin has rewritten is no longer purely AI, and an old
+      // edition should say so.
+      blurbsSource: current.blurbsSource === 'ai' ? 'ai_edited' : current.blurbsSource,
+    }));
+  }, []);
+
+  /**
+   * Replace every team's line with an AI draft.
+   *
+   * Reports what happened rather than toasting, for the same reason as the
+   * caption: "not set up" and "it failed" need different words. Either way the
+   * fallback lines stay in the boxes, so the pack is never blocked on this.
+   */
+  const generateBlurbs = useCallback(async (): Promise<'ok' | 'unconfigured' | 'failed'> => {
+    if (!facts) return 'failed';
+
+    try {
+      const result = await blurbsRequest.mutateAsync({
+        facts,
+        commissionerNote: draft.commissionerNote,
+      });
+      setDraft((current) => ({
+        ...current,
+        // Merged over the fallbacks, not swapped for them: the function drops
+        // any team it could not write about, and a blank line under a team on
+        // the graphic is worse than the plain one it already had.
+        blurbs: { ...current.blurbs, ...result.blurbs },
+        blurbsSource: 'ai',
+        captionModel: current.captionModel ?? result.model,
+      }));
+      return 'ok';
+    } catch (error) {
+      return error instanceof CaptionUnconfiguredError ? 'unconfigured' : 'failed';
+    }
+  }, [blurbsRequest, draft.commissionerNote, facts]);
+
   /**
    * Take a published edition back off the site.
    *
@@ -278,6 +354,11 @@ export const useWeeklyContentPack = () => {
     isPublishing,
     generateCaption,
     isGeneratingCaption: captionRequest.isPending,
+    setBlurb,
+    generateBlurbs,
+    isGeneratingBlurbs: blurbsRequest.isPending,
+    /** Every team in the week's rankings, in rank order. */
+    rankings: facts?.powerRankings ?? [],
     unpublish,
     isUnpublishing: unpublishEdition.isPending,
     canPublish: facts !== null && canPublishFacts(facts),

@@ -86,6 +86,28 @@ export const useGenerateCaption = () =>
     },
   });
 
+/**
+ * Write one line about every team in the week's power rankings.
+ *
+ * Lazily imported like the caption, so the admin-only caption service stays out
+ * of the bundle every visitor downloads.
+ */
+export const useGenerateBlurbs = () =>
+  useMutation({
+    mutationFn: async ({
+      facts,
+      commissionerNote,
+      tone,
+    }: {
+      facts: RecapFactsV1;
+      commissionerNote: string;
+      tone?: CaptionTone;
+    }) => {
+      const { generateBlurbs } = await import('@/services/recapEditions/CaptionService');
+      return generateBlurbs(facts, commissionerNote, tone);
+    },
+  });
+
 export const useSaveRecapVersion = () => {
   const queryClient = useQueryClient();
 

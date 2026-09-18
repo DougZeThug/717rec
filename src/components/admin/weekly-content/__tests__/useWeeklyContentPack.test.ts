@@ -18,6 +18,7 @@ const {
 vi.mock('@/hooks/useRecapEditions', () => ({
   useGenerateRecapFacts: () => ({ mutateAsync: mockGenerateMutateAsync, isPending: false }),
   useGenerateCaption: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useGenerateBlurbs: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useSaveRecapVersion: () => ({ mutateAsync: mockSaveMutateAsync, isPending: false }),
   usePublishRecapEdition: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUnpublishRecapEdition: () => ({ mutateAsync: vi.fn(), isPending: false }),
@@ -36,7 +37,11 @@ vi.mock('@/utils/logger', () => ({ warnLog: vi.fn(), errorLog: vi.fn(), dbLog: v
 
 import { useWeeklyContentPack } from '../useWeeklyContentPack';
 
-const facts = (weekNumber: number, winnerName: string): RecapFactsV1 => ({
+const facts = (
+  weekNumber: number,
+  winnerName: string,
+  teamIds: string[] = ['t-1']
+): RecapFactsV1 => ({
   factsSchemaVersion: 1,
   seasonId: 's-1',
   seasonName: 'Fall 2026',
@@ -68,6 +73,21 @@ const facts = (weekNumber: number, winnerName: string): RecapFactsV1 => ({
   },
   teamOfTheWeek: null,
   divisions: [],
+  powerRankings: teamIds.map((teamId, index) => ({
+    rank: index + 1,
+    previousRank: index + 2,
+    teamId,
+    teamName: index === 0 ? winnerName : `Team ${teamId}`,
+    logoUrl: null,
+    division: 'Competitive',
+    grade: 'A' as const,
+    gpa: 3.8,
+    categories: [],
+    wins: 6,
+    losses: 2,
+    powerScore: 72.4 - index,
+    delta: 2.1,
+  })),
   unresolvedMatchCount: 0,
   generatedAt: '2026-10-16T12:00:00.000Z',
 });
@@ -205,5 +225,140 @@ describe('useWeeklyContentPack', () => {
 
     expect(result.current.isCorrection).toBe(true);
     expect(result.current.publicPath).toBe('/recap/fall-2026/week-6');
+  });
+
+  describe('power ranking blurbs', () => {
+    it('starts every team off with a line built from the results', async () => {
+      mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+      const { result } = renderHook(() => useWeeklyContentPack());
+
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+
+      expect(result.current.draft.blurbs['t-1']).toContain('Up 1 to 1st');
+      expect(result.current.draft.blurbsSource).toBe('fallback');
+      expect(result.current.rankings).toHaveLength(1);
+    });
+
+    // The same bug the headline already had: switching weeks must not carry
+    // twenty-six written lines onto the wrong week's graphic.
+    it('does not carry one week’s blurbs onto another week', async () => {
+      mockGenerateMutateAsync.mockResolvedValueOnce(facts(6, 'Bag Chasers'));
+      const { result } = renderHook(() => useWeeklyContentPack());
+
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+      act(() => {
+        result.current.setBlurb('t-1', 'Finally beat their brother.');
+      });
+      expect(result.current.draft.blurbs['t-1']).toBe('Finally beat their brother.');
+
+      mockGenerateMutateAsync.mockResolvedValueOnce(facts(7, 'Toss Bosses'));
+      await act(async () => {
+        await result.current.generateFor('s-1', 7);
+      });
+
+      expect(result.current.draft.blurbs['t-1']).not.toBe('Finally beat their brother.');
+    });
+
+    it('keeps written blurbs, and fills in a team that has just appeared', async () => {
+      mockGenerateMutateAsync.mockResolvedValueOnce(facts(6, 'Bag Chasers', ['t-1']));
+      const { result } = renderHook(() => useWeeklyContentPack());
+
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+      act(() => {
+        result.current.setBlurb('t-1', 'Finally beat their brother.');
+      });
+
+      // Re-generating the same week, now with a second team in the rankings —
+      // a late score entered for a team that had none before. The typed line
+      // must survive, and the newcomer must not be left with a blank line
+      // under it on the graphic.
+      mockGenerateMutateAsync.mockResolvedValueOnce(facts(6, 'Bag Chasers', ['t-1', 't-2']));
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+
+      expect(result.current.draft.blurbs['t-1']).toBe('Finally beat their brother.');
+      expect(result.current.draft.blurbs['t-2']).toBeTruthy();
+      expect(result.current.draft.blurbs['t-2']).toContain('on the season');
+    });
+
+    it('restores blurbs saved earlier for a week', async () => {
+      mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+      mockFetchEditionForWeek.mockResolvedValue({ id: 'e-1', status: 'draft' });
+      mockFetchLatestVersion.mockResolvedValue({
+        headline: 'Saved headline',
+        caption: 'Saved caption',
+        caption_source: 'manual',
+        caption_model: null,
+        commissioner_note: null,
+        blurbs: { 't-1': 'Saved line about this team.' },
+        blurbs_source: 'ai_edited',
+      });
+
+      const { result } = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+
+      expect(result.current.draft.blurbs['t-1']).toBe('Saved line about this team.');
+      expect(result.current.draft.blurbsSource).toBe('ai_edited');
+      // A restored draft matches what is on file, so it starts clean.
+      expect(result.current.isDirty).toBe(false);
+    });
+
+    it('marks an edited AI blurb as edited, so an old edition says so', async () => {
+      mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+      mockFetchEditionForWeek.mockResolvedValue({ id: 'e-1', status: 'draft' });
+      mockFetchLatestVersion.mockResolvedValue({
+        headline: 'h',
+        caption: 'c',
+        caption_source: 'ai',
+        caption_model: 'claude',
+        commissioner_note: null,
+        blurbs: { 't-1': 'An AI line.' },
+        blurbs_source: 'ai',
+      });
+
+      const { result } = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+      act(() => {
+        result.current.setBlurb('t-1', 'My own words.');
+      });
+
+      expect(result.current.draft.blurbsSource).toBe('ai_edited');
+      expect(result.current.isDirty).toBe(true);
+    });
+
+    it('sends the blurbs when the draft is saved', async () => {
+      mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+      mockSaveMutateAsync.mockResolvedValue({ id: 'v-1' });
+      const { RecapEditionService } = await import('@/services/recapEditions/RecapEditionService');
+      vi.mocked(RecapEditionService.ensureEdition).mockResolvedValue({
+        id: 'e-1',
+      } as never);
+
+      const { result } = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        await result.current.generateFor('s-1', 6);
+      });
+      act(() => {
+        result.current.setBlurb('t-1', 'One good line.');
+      });
+      await act(async () => {
+        await result.current.save();
+      });
+
+      expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ blurbs: expect.objectContaining({ 't-1': 'One good line.' }) })
+      );
+    });
   });
 });

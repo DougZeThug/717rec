@@ -1,6 +1,8 @@
 import React from 'react';
 
 import DivisionStandingsGraphic from '@/components/recap/graphics/DivisionStandingsGraphic';
+import { paginateRankings } from '@/components/recap/graphics/powerRankingPages';
+import PowerRankingsGraphic from '@/components/recap/graphics/PowerRankingsGraphic';
 import RecapSummaryGraphic from '@/components/recap/graphics/RecapSummaryGraphic';
 import type { RecapFactsV1 } from '@/types/recapEdition';
 
@@ -11,18 +13,24 @@ interface PackExportSurfaceProps {
   facts: RecapFactsV1;
   headline: string;
   resolveLogo: LogoResolver;
+  blurbs: Record<string, string>;
   summaryRef: React.MutableRefObject<HTMLDivElement | null>;
   setDivisionRef: (divisionId: string) => (node: HTMLDivElement | null) => void;
+  setRankingRef: (page: number) => (node: HTMLDivElement | null) => void;
 }
 
-/** Small wrapper so each division can own a ref without breaking hook rules. */
-const DivisionExportNode: React.FC<{
-  divisionId: string;
-  setDivisionRef: (divisionId: string) => (node: HTMLDivElement | null) => void;
+/** Small wrapper so each graphic can own a ref without breaking hook rules. */
+const KeyedExportNode = <K,>({
+  nodeKey,
+  setRef,
+  children,
+}: {
+  nodeKey: K;
+  setRef: (key: K) => (node: HTMLDivElement | null) => void;
   children: React.ReactNode;
-}> = ({ divisionId, setDivisionRef, children }) => {
+}) => {
   const ref = React.useRef<HTMLDivElement | null>(null);
-  const assign = setDivisionRef(divisionId);
+  const assign = setRef(nodeKey);
 
   React.useEffect(() => {
     assign(ref.current);
@@ -41,20 +49,34 @@ const DivisionExportNode: React.FC<{
 const PackExportSurface: React.FC<PackExportSurfaceProps> = ({
   facts,
   headline,
+  blurbs,
   resolveLogo,
   summaryRef,
   setDivisionRef,
+  setRankingRef,
 }) => (
   <>
     <OffscreenGraphic innerRef={summaryRef}>
       <RecapSummaryGraphic facts={facts} headline={headline} resolveLogo={resolveLogo} />
     </OffscreenGraphic>
 
+    {paginateRankings(facts.powerRankings ?? []).map((page) => (
+      <KeyedExportNode key={page.page} nodeKey={page.page} setRef={setRankingRef}>
+        <PowerRankingsGraphic
+          page={page}
+          seasonName={facts.seasonName}
+          weekNumber={facts.weekNumber}
+          blurbs={blurbs}
+          resolveLogo={resolveLogo}
+        />
+      </KeyedExportNode>
+    ))}
+
     {facts.divisions.map((division) => (
-      <DivisionExportNode
+      <KeyedExportNode
         key={division.divisionId}
-        divisionId={division.divisionId}
-        setDivisionRef={setDivisionRef}
+        nodeKey={division.divisionId}
+        setRef={setDivisionRef}
       >
         <DivisionStandingsGraphic
           division={division}
@@ -62,7 +84,7 @@ const PackExportSurface: React.FC<PackExportSurfaceProps> = ({
           weekNumber={facts.weekNumber}
           resolveLogo={resolveLogo}
         />
-      </DivisionExportNode>
+      </KeyedExportNode>
     ))}
   </>
 );

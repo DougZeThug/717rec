@@ -7,6 +7,7 @@ import { useSeasons } from '@/hooks/useSeasons';
 import { useToast } from '@/hooks/useToast';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
+import BlurbEditorCard from './BlurbEditorCard';
 import type { LogoResolver } from './export/inlineImages';
 import { buildLogoResolver } from './export/inlineImages';
 import { useGraphicExport } from './export/useGraphicExport';
@@ -44,7 +45,7 @@ const WeeklyContentPackTab: React.FC = () => {
   const [isExportMounted, setIsExportMounted] = useState(false);
 
   const pack = useWeeklyContentPack();
-  const { summaryRef, setDivisionRef, buildRequests } = useGraphicNodes(pack.facts);
+  const { summaryRef, setDivisionRef, setRankingRef, buildRequests } = useGraphicNodes(pack.facts);
   const { capture, exportAll, isExporting } = useGraphicExport();
 
   useUnsavedChangesGuard(
@@ -80,6 +81,26 @@ const WeeklyContentPackTab: React.FC = () => {
     }
   }, [pack, toast]);
 
+  const handleGenerateBlurbs = useCallback(async () => {
+    const outcome = await pack.generateBlurbs();
+
+    if (outcome === 'unconfigured') {
+      toast({
+        title: 'AI blurbs are not set up',
+        description:
+          'Add ANTHROPIC_API_KEY to the Supabase edge function secrets. Until then the plain lines built from the results are used, and you can edit any of them.',
+        variant: 'destructive',
+      });
+    } else if (outcome === 'failed') {
+      toast({
+        title: 'Could not write the blurbs',
+        description:
+          'The lines in the boxes are the plain ones built from the results. Try again, or edit them as they are.',
+        variant: 'destructive',
+      });
+    }
+  }, [pack, toast]);
+
   const handleCopyCaption = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(pack.draft.caption);
@@ -103,6 +124,8 @@ const WeeklyContentPackTab: React.FC = () => {
 
     const logoUrls = [
       ...pack.facts.divisions.flatMap((d) => d.standings.map((r) => r.logoUrl)),
+      // The rankings carry every team, including any not in a division table.
+      ...(pack.facts.powerRankings ?? []).map((t) => t.logoUrl),
       ...pack.facts.upsets.map((u) => u.winnerLogoUrl ?? null),
       ...pack.facts.hotStreaks.map((s) => s.logoUrl ?? null),
       pack.facts.teamOfTheWeek?.logoUrl ?? null,
@@ -178,6 +201,17 @@ const WeeklyContentPackTab: React.FC = () => {
           )}
 
           {pack.facts && (
+            <BlurbEditorCard
+              rankings={pack.rankings}
+              blurbs={pack.draft.blurbs}
+              blurbsSource={pack.draft.blurbsSource}
+              isGeneratingBlurbs={pack.isGeneratingBlurbs}
+              onBlurbChange={pack.setBlurb}
+              onGenerateBlurbs={() => fireAndForget(handleGenerateBlurbs())}
+            />
+          )}
+
+          {pack.facts && (
             <PublishCard
               isCorrection={pack.isCorrection}
               isPublished={pack.existingEdition?.status === 'published'}
@@ -196,7 +230,11 @@ const WeeklyContentPackTab: React.FC = () => {
 
         <div className="lg:sticky lg:top-4 lg:self-start">
           {pack.facts ? (
-            <PackPreview facts={pack.facts} headline={pack.draft.headline} />
+            <PackPreview
+              facts={pack.facts}
+              headline={pack.draft.headline}
+              blurbs={pack.draft.blurbs}
+            />
           ) : (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -211,9 +249,11 @@ const WeeklyContentPackTab: React.FC = () => {
         <PackExportSurface
           facts={pack.facts}
           headline={pack.draft.headline}
+          blurbs={pack.draft.blurbs}
           resolveLogo={resolveLogo}
           summaryRef={summaryRef}
           setDivisionRef={setDivisionRef}
+          setRankingRef={setRankingRef}
         />
       )}
     </AdminSectionWrapper>
