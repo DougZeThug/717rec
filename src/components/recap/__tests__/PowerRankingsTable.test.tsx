@@ -60,7 +60,7 @@ describe('PowerRankingsTable', () => {
     render(<PowerRankingsTable teams={[team({ previousRank: null })]} />);
 
     expect(screen.getByTitle('No previous week to compare with')).toBeInTheDocument();
-    expect(screen.queryByText(/[▲▼]/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/[▲▼]/u)).not.toBeInTheDocument();
   });
 
   it('shows a dash rather than a letter for an unrated team', () => {

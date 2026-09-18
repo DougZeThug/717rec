@@ -25,6 +25,27 @@ export interface SnapshotStandingsInput {
 }
 
 /**
+ * Matches won as a percentage of matches played, 0-100, or 0 for a team that
+ * has played none.
+ *
+ * The scale does not have to match the live standings' own win percentage:
+ * every grade is a percentile, and a percentile does not change when every
+ * value is scaled by the same factor.
+ */
+export const winPercentage = (row: Pick<SnapshotStandingsInput, 'wins' | 'losses'>): number => {
+  const played = (row.wins ?? 0) + (row.losses ?? 0);
+  return played > 0 ? ((row.wins ?? 0) / played) * 100 : 0;
+};
+
+/** Games won as a percentage of games played, 0-100. */
+export const gameWinPercentage = (
+  row: Pick<SnapshotStandingsInput, 'gameWins' | 'gameLosses'>
+): number => {
+  const played = (row.gameWins ?? 0) + (row.gameLosses ?? 0);
+  return played > 0 ? ((row.gameWins ?? 0) / played) * 100 : 0;
+};
+
+/**
  * Order matching what /stats shows: the power score as DISPLAYED (one decimal)
  * descending, unrated teams last, then win percentage, then name.
  *
@@ -45,25 +66,4 @@ export const compareStandings = (a: SnapshotStandingsInput, b: SnapshotStandings
   if (aPct !== bPct) return bPct - aPct;
 
   return (a.teamName || '').localeCompare(b.teamName || '');
-};
-
-/**
- * Matches won as a percentage of matches played, 0-100, or 0 for a team that
- * has played none.
- *
- * The scale does not have to match the live standings' own win percentage:
- * every grade is a percentile, and a percentile does not change when every
- * value is scaled by the same factor.
- */
-export const winPercentage = (row: Pick<SnapshotStandingsInput, 'wins' | 'losses'>): number => {
-  const played = (row.wins ?? 0) + (row.losses ?? 0);
-  return played > 0 ? ((row.wins ?? 0) / played) * 100 : 0;
-};
-
-/** Games won as a percentage of games played, 0-100. */
-export const gameWinPercentage = (
-  row: Pick<SnapshotStandingsInput, 'gameWins' | 'gameLosses'>
-): number => {
-  const played = (row.gameWins ?? 0) + (row.gameLosses ?? 0);
-  return played > 0 ? ((row.gameWins ?? 0) / played) * 100 : 0;
 };

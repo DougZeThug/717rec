@@ -54,6 +54,39 @@ const Movement: React.FC<{ team: RecapTeamGrade }> = ({ team }) => {
   );
 };
 
+/** One team's row. Extracted so the table markup stays readable. */
+const PowerRankingRow: React.FC<{ team: RecapTeamGrade; blurb?: string }> = ({ team, blurb }) => {
+  const line = blurb?.trim() ?? '';
+
+  return (
+    <tr className="border-t border-border align-top">
+      <td className="py-2 tabular-nums text-muted-foreground">{team.rank}</td>
+      <td className="py-2 tabular-nums text-xs">
+        <Movement team={team} />
+      </td>
+      <td className="py-2">
+        <div className="font-medium">{team.teamName}</div>
+        <div className="text-xs text-muted-foreground">{team.division}</div>
+        {line !== '' && <p className="text-xs mt-1 max-w-prose">{line}</p>}
+      </td>
+      <td
+        className={`py-2 text-center font-semibold ${
+          team.grade ? getGradeColor(team.grade) : 'text-muted-foreground'
+        }`}
+      >
+        {/* A team with no rating gets a dash, never a letter it has not earned. */}
+        {team.grade ?? '—'}
+      </td>
+      <td className="py-2 text-right tabular-nums">
+        {team.wins}–{team.losses}
+      </td>
+      <td className="py-2 text-right tabular-nums">
+        {team.powerScore === null ? '—' : team.powerScore.toFixed(1)}
+      </td>
+    </tr>
+  );
+};
+
 /**
  * The whole league, ranked, on the public recap page.
  *
@@ -89,37 +122,9 @@ const PowerRankingsTable: React.FC<PowerRankingsTableProps> = ({ teams, blurbs =
               </tr>
             </thead>
             <tbody>
-              {teams.map((team) => {
-                const blurb = blurbs[team.teamId]?.trim() ?? '';
-
-                return (
-                  <tr key={team.teamId} className="border-t border-border align-top">
-                    <td className="py-2 tabular-nums text-muted-foreground">{team.rank}</td>
-                    <td className="py-2 tabular-nums text-xs">
-                      <Movement team={team} />
-                    </td>
-                    <td className="py-2">
-                      <div className="font-medium">{team.teamName}</div>
-                      <div className="text-xs text-muted-foreground">{team.division}</div>
-                      {blurb !== '' && <p className="text-xs mt-1 max-w-prose">{blurb}</p>}
-                    </td>
-                    <td
-                      className={`py-2 text-center font-semibold ${
-                        team.grade ? getGradeColor(team.grade) : 'text-muted-foreground'
-                      }`}
-                    >
-                      {/* A team with no rating gets a dash, never a letter it has not earned. */}
-                      {team.grade ?? '—'}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {team.wins}–{team.losses}
-                    </td>
-                    <td className="py-2 text-right tabular-nums">
-                      {team.powerScore === null ? '—' : team.powerScore.toFixed(1)}
-                    </td>
-                  </tr>
-                );
-              })}
+              {teams.map((team) => (
+                <PowerRankingRow key={team.teamId} team={team} blurb={blurbs[team.teamId]} />
+              ))}
             </tbody>
           </table>
         </CardContent>

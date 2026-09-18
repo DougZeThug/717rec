@@ -63,7 +63,7 @@ describe('PowerRankingsGraphic', () => {
     renderPage([team({ previousRank: null })]);
 
     expect(screen.getByText('—')).toBeInTheDocument();
-    expect(screen.queryByText(/[▲▼]/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/[▲▼]/u)).not.toBeInTheDocument();
   });
 
   it('shows a dash instead of a letter for an unrated team', () => {

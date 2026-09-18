@@ -1,7 +1,21 @@
 import React from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
-import type { RecapDivisionFact } from '@/types/recapEdition';
+import type { RecapDivisionFact, RecapStandingsRow } from '@/types/recapEdition';
+
+/** One team's row. Extracted so the table markup stays readable. */
+const StandingsRow: React.FC<{ row: RecapStandingsRow }> = ({ row }) => (
+  <tr className="border-t border-border">
+    <td className="py-2 tabular-nums text-muted-foreground">{row.rank}</td>
+    <td className="py-2">{row.teamName}</td>
+    <td className="py-2 text-right tabular-nums">
+      {row.wins}–{row.losses}
+    </td>
+    <td className="py-2 text-right tabular-nums">
+      {row.powerScore === null ? '—' : row.powerScore.toFixed(1)}
+    </td>
+  </tr>
+);
 
 /**
  * One division's table on the public recap page.
@@ -24,16 +38,7 @@ const DivisionStandingsTable: React.FC<{ division: RecapDivisionFact }> = ({ div
           </thead>
           <tbody>
             {division.standings.map((row) => (
-              <tr key={row.teamId} className="border-t border-border">
-                <td className="py-2 tabular-nums text-muted-foreground">{row.rank}</td>
-                <td className="py-2">{row.teamName}</td>
-                <td className="py-2 text-right tabular-nums">
-                  {row.wins}–{row.losses}
-                </td>
-                <td className="py-2 text-right tabular-nums">
-                  {row.powerScore === null ? '—' : row.powerScore.toFixed(1)}
-                </td>
-              </tr>
+              <StandingsRow key={row.teamId} row={row} />
             ))}
           </tbody>
         </table>

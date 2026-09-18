@@ -35,10 +35,12 @@ describe('buildLogoResolver', () => {
   });
 
   it('inlines each logo as a data URL', async () => {
-    globalThis.fetch = vi.fn(async () => ({
-      ok: true,
-      blob: async () => blobWith('data:image/png;base64,AAA'),
-    })) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        blob: () => Promise.resolve(blobWith('data:image/png;base64,AAA')),
+      })
+    ) as unknown as typeof fetch;
 
     const resolve = await buildLogoResolver(['https://cdn.example/a.png']);
 
@@ -48,10 +50,12 @@ describe('buildLogoResolver', () => {
   // The cache is the real hazard: a plain <img> elsewhere in the app stores a
   // response with no CORS headers, and reusing it taints the canvas.
   it('bypasses the HTTP cache, which may hold a header-less response', async () => {
-    const fetchSpy = vi.fn(async () => ({
-      ok: true,
-      blob: async () => blobWith('data:image/png;base64,AAA'),
-    }));
+    const fetchSpy = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        blob: () => Promise.resolve(blobWith('data:image/png;base64,AAA')),
+      })
+    );
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await buildLogoResolver(['https://cdn.example/a.png']);
@@ -63,10 +67,12 @@ describe('buildLogoResolver', () => {
   });
 
   it('fetches a repeated logo only once', async () => {
-    const fetchSpy = vi.fn(async () => ({
-      ok: true,
-      blob: async () => blobWith('data:image/png;base64,AAA'),
-    }));
+    const fetchSpy = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        blob: () => Promise.resolve(blobWith('data:image/png;base64,AAA')),
+      })
+    );
     globalThis.fetch = fetchSpy as unknown as typeof fetch;
 
     await buildLogoResolver([
@@ -80,9 +86,9 @@ describe('buildLogoResolver', () => {
 
   // One bad logo draws that team's initials; it must not fail the whole pack.
   it('resolves a failed logo to null instead of throwing', async () => {
-    globalThis.fetch = vi.fn(async () => {
-      throw new Error('network down');
-    }) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(() =>
+      Promise.reject(new Error('network down'))
+    ) as unknown as typeof fetch;
 
     const resolve = await buildLogoResolver(['https://cdn.example/a.png']);
 
@@ -90,7 +96,7 @@ describe('buildLogoResolver', () => {
   });
 
   it('resolves a non-OK response to null', async () => {
-    globalThis.fetch = vi.fn(async () => ({ ok: false })) as unknown as typeof fetch;
+    globalThis.fetch = vi.fn(() => Promise.resolve({ ok: false })) as unknown as typeof fetch;
 
     const resolve = await buildLogoResolver(['https://cdn.example/missing.png']);
 
