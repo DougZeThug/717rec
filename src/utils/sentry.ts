@@ -47,16 +47,16 @@ export const scrubUrl = (url: string): string => {
   try {
     // Handle relative URLs by giving them a dummy base
     const hasProtocol = /^https?:\/\//i.test(url);
-    const u = new URL(url, hasProtocol ? undefined : 'http://_');
+    const parsed = new URL(url, hasProtocol ? undefined : 'http://_');
     let mutated = false;
-    for (const key of Array.from(u.searchParams.keys())) {
+    for (const key of Array.from(parsed.searchParams.keys())) {
       if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
-        u.searchParams.set(key, '[Filtered]');
+        parsed.searchParams.set(key, '[Filtered]');
         mutated = true;
       }
     }
     if (!mutated) return url;
-    return hasProtocol ? u.toString() : `${u.pathname}${u.search}${u.hash}`;
+    return hasProtocol ? parsed.toString() : `${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch {
     return url;
   }
