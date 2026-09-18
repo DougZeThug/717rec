@@ -4,6 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import type { RecapTeamGrade } from '@/types/recapEdition';
 import { getGradeColor } from '@/utils/reportCardUtils';
 
+/** Hoisted so the default is one object, not a new one every render. */
+const NO_BLURBS: Record<string, string> = {};
+
 interface PowerRankingsTableProps {
   teams: RecapTeamGrade[];
   /** One line per team, keyed by team id, as written for the edition. */
@@ -61,7 +64,7 @@ const Movement: React.FC<{ team: RecapTeamGrade }> = ({ team }) => {
  * Unlike the graphic, there is no row limit and no one-line clamp here: the
  * full blurb is shown.
  */
-const PowerRankingsTable: React.FC<PowerRankingsTableProps> = ({ teams, blurbs = {} }) => {
+const PowerRankingsTable: React.FC<PowerRankingsTableProps> = ({ teams, blurbs = NO_BLURBS }) => {
   if (teams.length === 0) return null;
 
   return (

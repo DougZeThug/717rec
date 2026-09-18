@@ -69,6 +69,9 @@ export const useGenerateRecapFacts = () =>
  * A mutation with no toast of its own: the screen handles the outcomes, because
  * "not configured" and "it broke" need different words and a fallback caption
  * is written either way.
+ *
+ * It writes nothing to the database, so there is no cache to invalidate. The
+ * text it returns goes into the draft the admin is editing.
  */
 export const useGenerateCaption = () =>
   useMutation({
@@ -91,6 +94,8 @@ export const useGenerateCaption = () =>
  *
  * Lazily imported like the caption, so the admin-only caption service stays out
  * of the bundle every visitor downloads.
+ *
+ * Writes nothing to the database, so there is no cache to invalidate either.
  */
 export const useGenerateBlurbs = () =>
   useMutation({

@@ -7,6 +7,9 @@ import PowerRankingsGraphic from '@/components/recap/graphics/PowerRankingsGraph
 import RecapSummaryGraphic from '@/components/recap/graphics/RecapSummaryGraphic';
 import type { RecapFactsV1 } from '@/types/recapEdition';
 
+/** Hoisted so the default is one object, not a new one every render. */
+const NO_BLURBS: Record<string, string> = {};
+
 interface PackPreviewProps {
   facts: RecapFactsV1;
   headline: string;
@@ -25,7 +28,7 @@ interface PackPreviewProps {
 const PackPreview: React.FC<PackPreviewProps> = ({
   facts,
   headline,
-  blurbs = {},
+  blurbs = NO_BLURBS,
   scale = 0.36,
 }) => (
   <div className="flex flex-col gap-6">

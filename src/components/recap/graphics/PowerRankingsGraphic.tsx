@@ -9,6 +9,9 @@ import { RANKING_ROW } from './powerRankingPages';
 import RecapGraphicFrame from './RecapGraphicFrame';
 import { recapColors, recapFonts } from './recapGraphicTokens';
 
+/** Hoisted so the default is one object, not a new one every render. */
+const NO_BLURBS: Record<string, string> = {};
+
 interface PowerRankingsGraphicProps {
   page: RankingPage;
   seasonName: string;
@@ -43,7 +46,7 @@ const PowerRankingsGraphic: React.FC<PowerRankingsGraphicProps> = ({
   page,
   seasonName,
   weekNumber,
-  blurbs = {},
+  blurbs = NO_BLURBS,
   resolveLogo = (url) => url,
 }) => (
   <RecapGraphicFrame

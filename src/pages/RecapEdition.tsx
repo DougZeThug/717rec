@@ -40,6 +40,16 @@ const formatDate = (iso: string | null): string =>
       })
     : '';
 
+/**
+ * The version's blurbs map. Stored as jsonb, so it arrives typed as Json and
+ * needs naming here rather than casting inline at the call site. One shared
+ * empty object, not a fresh one per render.
+ */
+const NO_BLURBS: Record<string, string> = {};
+
+const readBlurbs = (blurbs: unknown): Record<string, string> =>
+  (blurbs as Record<string, string> | null) ?? NO_BLURBS;
+
 const RecapEdition: React.FC = () => {
   const { seasonSlug, week } = useParams<{ seasonSlug: string; week: string }>();
   const weekNumber = parseWeekSegment(week);
@@ -113,10 +123,7 @@ const RecapEdition: React.FC = () => {
         finds theirs here whichever division it is in. Editions published before
         power rankings existed simply have no powerRankings and show nothing.
       */}
-      <PowerRankingsTable
-        teams={facts.powerRankings ?? []}
-        blurbs={(version.blurbs as Record<string, string> | null) ?? {}}
-      />
+      <PowerRankingsTable teams={facts.powerRankings ?? []} blurbs={readBlurbs(version.blurbs)} />
 
       {facts.divisions.map((division) => (
         <DivisionStandingsTable key={division.divisionId} division={division} />
