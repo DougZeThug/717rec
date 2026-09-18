@@ -3,30 +3,19 @@ import { useMemo } from 'react';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
-import { calculatePercentile } from '@/utils/percentileUtils';
 import {
   collectCareerPopulations,
   collectSeasonPopulations,
   isCareerGradeable,
   isGradeable,
 } from '@/utils/reportCardPopulations';
-import { calculateGPA, calculateGrade, LetterGrade } from '@/utils/reportCardUtils';
+import { calculateGPA, GRADE_WEIGHTS, gradeAgainst, LetterGrade } from '@/utils/reportCardUtils';
 import {
   calculateLeagueMatchStats,
   EMPTY_LEAGUE_MATCH_STATS,
 } from '@/utils/teamDetailsUtils/leagueMatchStats';
 
-import { GRADE_WEIGHTS, ReportCardMode } from './useTeamReportCard';
-
-/**
- * A grade for a value ranked against the league, or `null` when there is
- * nothing to measure. `calculateGPA` leaves a null out of the average rather
- * than counting it as a fail.
- */
-const gradeAgainst = (value: number | null, population: number[]): LetterGrade | null => {
-  if (value === null || population.length === 0) return null;
-  return calculateGrade(calculatePercentile(value, population, true).percentile);
-};
+import { ReportCardMode } from './useTeamReportCard';
 
 export interface LeaderboardEntry {
   teamId: string;

@@ -2,6 +2,7 @@
  * Report Card grade calculation utilities
  * Converts percentile rankings into letter grades for team evaluation
  */
+import { calculatePercentile } from '@/utils/percentileUtils';
 
 export type LetterGrade = 'A+' | 'A' | 'A-' | 'B+' | 'B' | 'B-' | 'C+' | 'C' | 'C-' | 'D' | 'F';
 
@@ -116,3 +117,53 @@ export function calculateGPA(grades: { grade: LetterGrade | null; weight: number
   const weightedTotal = measured.reduce((sum, g) => sum + GRADE_GPA[g.grade] * g.weight, 0);
   return Math.round((weightedTotal / totalWeight) * 100) / 100;
 }
+
+/**
+ * The six categories and the weight each carries in the GPA.
+ *
+ * Lives here rather than in a hook so services can read it too: the weekly
+ * recap grades a frozen week through the same rules
+ * (`services/recapEditions/gradeTeamsForWeek.ts`). `useTeamReportCard`
+ * re-exports it so its existing importers are unaffected.
+ *
+ * One copy on purpose. The card, the leaderboard and the weekly rankings all
+ * show grades for the same teams, so a second copy of these numbers is a way
+ * for them to disagree — which is what B-36 already was, for the populations.
+ */
+export const GRADE_WEIGHTS = {
+  overall: 3,
+  consistency: 2,
+  games: 1.5,
+  offense: 1,
+  clutch: 1,
+  schedule: 1,
+} as const;
+
+/**
+ * Build one graded category from a value ranked against a population.
+ *
+ * `null` means the category cannot be measured for this team — a team with no
+ * deciding third game has no clutch rate — and the card shows a dash rather
+ * than a letter. An empty population means the same: there is nothing to rank
+ * against, so there is no grade to give.
+ */
+export const gradeCategoryAgainst = (
+  label: string,
+  description: string,
+  value: number | null,
+  population: number[]
+): GradeCategory => {
+  if (value === null || population.length === 0) {
+    return { label, grade: null, percentile: null, description };
+  }
+  const { percentile } = calculatePercentile(value, population, true);
+  return { label, grade: calculateGrade(percentile), percentile, description };
+};
+
+/**
+ * Just the letter, for callers with no card to label — the GPA leaderboard and
+ * the weekly rankings. Defined through `gradeCategoryAgainst` so the two can
+ * never grade the same value differently.
+ */
+export const gradeAgainst = (value: number | null, population: number[]): LetterGrade | null =>
+  gradeCategoryAgainst('', '', value, population).grade;

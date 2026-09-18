@@ -33,6 +33,19 @@ export interface GradePopulations {
 }
 
 /**
+ * The only fields `collectSeasonPopulations` reads off a standings row.
+ *
+ * Narrower than `Ranking` on purpose: the weekly recap grades rows read from
+ * `power_score_snapshots`, which have no head-to-head map and no close-match
+ * count. Asking for the full `Ranking` would have meant faking those two,
+ * inventing data to satisfy a type.
+ */
+export type GradeableSeasonTeam = Pick<
+  Ranking,
+  'teamId' | 'powerScore' | 'winPercentage' | 'sos' | 'gameWinPercentage'
+>;
+
+/**
  * Whether a team can be graded at all.
  *
  * A team with no power score has **no rating**, not a rating of zero — the
@@ -87,7 +100,7 @@ const emptyPopulations = (): GradePopulations => ({
  * duplicated in both report card hooks.
  */
 export const collectSeasonPopulations = (
-  rankings: readonly Ranking[],
+  rankings: readonly GradeableSeasonTeam[],
   matchStats: Map<string, LeagueTeamMatchStats>
 ): GradePopulations => {
   const populations = emptyPopulations();
