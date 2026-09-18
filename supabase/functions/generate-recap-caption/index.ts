@@ -4,8 +4,21 @@ import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.71.0';
 import { requireAdmin } from '../_shared/auth.ts';
 import { checkRateLimit as defaultCheckRateLimit } from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
-import { type CaptionPayload, PayloadSchema } from './payload.ts';
-import { buildCaptionUserMessage, CAPTION_SYSTEM_PROMPT } from './prompt.ts';
+import {
+  BlurbReplySchema,
+  type CaptionPayload,
+  extractJsonArray,
+  keepKnownTeams,
+  PayloadSchema,
+  type RankingsPayload,
+  RankingsPayloadSchema,
+} from './payload.ts';
+import {
+  buildCaptionUserMessage,
+  buildRankingsUserMessage,
+  CAPTION_SYSTEM_PROMPT,
+  RANKINGS_SYSTEM_PROMPT,
+} from './prompt.ts';
 
 type RateLimitFn = typeof defaultCheckRateLimit;
 
@@ -53,6 +66,14 @@ function jsonResponse(cors: Record<string, string>, status: number, body: unknow
  */
 const MODEL = 'claude-opus-5';
 const MAX_TOKENS = 4000;
+/**
+ * Twenty-six one-sentence blurbs are only ~700 tokens of output, but thinking
+ * tokens count against the same cap on this model and a whole-league
+ * comparison is more to think about than one caption. Billing is on tokens
+ * actually used, so the headroom costs nothing and a truncated reply costs a
+ * whole regeneration.
+ */
+const RANKINGS_MAX_TOKENS = 16000;
 
 serve(async (req: Request) => {
   const cors = buildCorsHeaders(req);
@@ -83,9 +104,17 @@ serve(async (req: Request) => {
     return jsonResponse(cors, 429, { error: 'Daily caption limit reached.' });
   }
 
-  let payload: CaptionPayload;
+  // One function, two jobs: a week's caption and the whole league's power
+  // ranking blurbs. They share this admin check, these rate limits, the model
+  // config and the error handling, so a second function would be a copy of all
+  // of it. `kind` defaults to 'caption' so existing callers are unaffected.
+  let payload: CaptionPayload | RankingsPayload;
   try {
-    payload = PayloadSchema.parse(await req.json());
+    const body = await req.json();
+    payload =
+      (body as { kind?: string })?.kind === 'rankings'
+        ? RankingsPayloadSchema.parse(body)
+        : PayloadSchema.parse(body);
   } catch {
     return jsonResponse(cors, 400, { error: 'Invalid request' });
   }
@@ -100,44 +129,83 @@ serve(async (req: Request) => {
     });
   }
 
+  // Built here, where `payload.kind` still narrows the union — a boolean flag
+  // read further down would leave payload.facts as the union and the wrong
+  // message builder would typecheck.
+  const request =
+    payload.kind === 'rankings'
+      ? {
+          maxTokens: RANKINGS_MAX_TOKENS,
+          system: RANKINGS_SYSTEM_PROMPT,
+          content: buildRankingsUserMessage(payload.facts, payload.commissionerNote, payload.tone),
+        }
+      : {
+          maxTokens: MAX_TOKENS,
+          system: CAPTION_SYSTEM_PROMPT,
+          content: buildCaptionUserMessage(payload.facts, payload.commissionerNote, payload.tone),
+        };
+  const isRankings = payload.kind === 'rankings';
+
   try {
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
       model: MODEL,
-      max_tokens: MAX_TOKENS,
+      max_tokens: request.maxTokens,
       // A caption is a simple task. Do NOT disable thinking on this model —
       // with it off, tool-call text and <thinking> tags can leak into the reply.
       output_config: { effort: 'low' },
-      system: CAPTION_SYSTEM_PROMPT,
-      messages: [
-        {
-          role: 'user',
-          content: buildCaptionUserMessage(payload.facts, payload.commissionerNote, payload.tone),
-        },
-      ],
+      system: request.system,
+      messages: [{ role: 'user', content: request.content }],
     });
 
     // Check why it stopped before reading the text. A caption cut off at the
     // token cap must never be shipped as if it were finished.
     if (response.stop_reason === 'max_tokens') {
       return jsonResponse(cors, 502, {
-        error: 'The caption came back unfinished. Try again.',
-        code: 'caption_truncated',
+        error: isRankings
+          ? 'The blurbs came back unfinished. Try again.'
+          : 'The caption came back unfinished. Try again.',
+        code: isRankings ? 'blurbs_truncated' : 'caption_truncated',
       });
     }
     if (response.stop_reason === 'refusal') {
       return jsonResponse(cors, 502, {
-        error: 'The caption could not be generated for this week.',
-        code: 'caption_refused',
+        error: isRankings
+          ? 'The blurbs could not be generated for this week.'
+          : 'The caption could not be generated for this week.',
+        code: isRankings ? 'blurbs_refused' : 'caption_refused',
       });
     }
 
-    const caption = response.content
+    const text = response.content
       .filter((block): block is { type: 'text'; text: string } => block.type === 'text')
       .map((block) => block.text)
       .join('\n')
       .trim();
+
+    if (payload.kind === 'rankings') {
+      const parsed = BlurbReplySchema.safeParse(extractJsonArray(text));
+      if (!parsed.success) {
+        return jsonResponse(cors, 502, {
+          error: 'The blurbs came back in a shape we could not read. Try again.',
+          code: 'blurbs_unreadable',
+        });
+      }
+
+      // Only teams that were actually sent, so a reply cannot introduce one.
+      const blurbs = keepKnownTeams(parsed.data, payload.facts.teams);
+      if (Object.keys(blurbs).length === 0) {
+        return jsonResponse(cors, 502, {
+          error: 'The blurbs came back empty. Try again.',
+          code: 'blurbs_empty',
+        });
+      }
+
+      return jsonResponse(cors, 200, { blurbs, model: MODEL });
+    }
+
+    const caption = text;
 
     if (caption === '') {
       return jsonResponse(cors, 502, {
