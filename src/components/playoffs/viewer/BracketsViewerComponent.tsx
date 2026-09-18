@@ -80,9 +80,18 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
         return;
       }
 
-      // Handle legacy playoff_matches brackets
-      // eslint-disable-next-line react-hooks/immutability -- stable ref is returned by the renderer hook below and read only from this click handler.
+      // Handle legacy playoff_matches brackets.
+      //
+      // getPlayoffMatchIdRef comes from useBracketsViewerRenderer below, and that
+      // hook takes this handler as an argument — so the handler must be written
+      // first, which makes the two reads below forward references. They are safe:
+      // this body only runs on a click, long after the hook has bound the name.
+      // Swapping the two statements throws on the first render.
+      // skipcq: JS-0357 -- the forward reference is required; see the note above.
+      // eslint-disable-next-line react-hooks/immutability, @typescript-eslint/no-use-before-define -- stable ref is returned by the renderer hook below and read only from this click handler.
       if (getPlayoffMatchIdRef.current) {
+        // skipcq: JS-0357 -- as above.
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- as above.
         const playoffMatchId = getPlayoffMatchIdRef.current(Number(match.id));
         if (playoffMatchId) {
           bracketLog('Calling onMatchClick with playoff match ID:', playoffMatchId);

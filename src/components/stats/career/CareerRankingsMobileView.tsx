@@ -33,146 +33,6 @@ const gameWinPercentageColorClass = (pct: number) => {
   return 'text-red-600 dark:text-red-500';
 };
 
-const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
-  rankings,
-  sortOptions,
-  onSortChange,
-}) => {
-  const { isWinterTheme } = useSeasonalTheme();
-  const [detailedView, setDetailedView] = useState(() => {
-    const saved = localStorage.getItem('careerRankingsDetailedView');
-    return saved ? saved === 'true' : false;
-  });
-
-  const toggleViewMode = (value: string) => {
-    if (!value) return;
-    const isDetailed = value === 'detailed';
-    setDetailedView(isDetailed);
-    localStorage.setItem('careerRankingsDetailedView', String(isDetailed));
-  };
-
-  const sortableFields = useMemo(
-    () => [
-      {
-        id: 'careerPowerScore',
-        label: (
-          <>
-            <Bolt size={16} className="inline-block mr-1" />
-            Power
-          </>
-        ),
-      },
-      { id: 'careerWinPercentage', label: 'Win %' },
-      {
-        id: 'careerSos',
-        label: (
-          <>
-            <Scale size={15} className="inline-block mr-1" />
-            SOS
-          </>
-        ),
-      },
-      { id: 'championships', label: '🏆 Titles' },
-    ],
-    []
-  );
-
-  return (
-    <div className="font-inter">
-      {/* Controls row: Compact/Detailed toggle */}
-      <div className="mb-2 flex items-center justify-end">
-        <ToggleGroup
-          type="single"
-          value={detailedView ? 'detailed' : 'compact'}
-          onValueChange={toggleViewMode}
-          className="border border-border rounded-lg p-0.5"
-        >
-          <ToggleGroupItem
-            value="compact"
-            className={cn(
-              'text-xs px-2.5 py-1 rounded-md transition-all',
-              !detailedView
-                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
-                : 'text-muted-foreground hover:bg-accent'
-            )}
-          >
-            Compact
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value="detailed"
-            className={cn(
-              'text-xs px-2.5 py-1 rounded-md transition-all',
-              detailedView
-                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
-                : 'text-muted-foreground hover:bg-accent'
-            )}
-          >
-            Detailed
-          </ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-
-      {/* Sort pills - only visible in detailed view */}
-      {detailedView && (
-        <div className="mb-2">
-          <div className="overflow-x-auto pb-1.5 touch-pan-x -mx-1 px-1">
-            <div className="flex space-x-2">
-              {sortableFields.map((field) => (
-                <Button
-                  key={field.id}
-                  variant={sortOptions.field === field.id ? 'blueOrange' : 'outline'}
-                  size="sm"
-                  onClick={() => onSortChange(field.id)}
-                  className={cn(
-                    'rounded-lg py-2 px-3 text-xs font-medium transition-all whitespace-nowrap min-h-[36px]',
-                    isWinterTheme &&
-                      (sortOptions.field === field.id
-                        ? 'btn-winter-primary'
-                        : 'btn-winter-secondary'),
-                    !isWinterTheme &&
-                      sortOptions.field !== field.id &&
-                      'bg-card hover:bg-accent/50 text-foreground border-border'
-                  )}
-                >
-                  {field.label}
-                  {sortOptions.field === field.id &&
-                    (sortOptions.direction === 'asc' ? (
-                      <ArrowUp className="ml-1 size-3" />
-                    ) : (
-                      <ArrowDown className="ml-1 size-3" />
-                    ))}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Rankings list */}
-      <div className="space-y-1.5">
-        {rankings.map((ranking, index) =>
-          detailedView ? (
-            <CareerDetailedCard
-              key={ranking.teamId}
-              ranking={ranking}
-              rank={index + 1}
-              formatPercentage={formatPercentage}
-              gameWinPercentageColorClass={gameWinPercentageColorClass}
-            />
-          ) : (
-            <CareerCompactCard
-              key={ranking.teamId}
-              ranking={ranking}
-              rank={index + 1}
-              formatPercentage={formatPercentage}
-            />
-          )
-        )}
-      </div>
-    </div>
-  );
-};
-
 // Compact card - mirrors standings compact design
 const CareerCompactCard: React.FC<{
   ranking: CareerRanking;
@@ -351,6 +211,146 @@ const CareerDetailedCard: React.FC<{
         </div>
       </div>
     </EntityCard>
+  );
+};
+
+const CareerRankingsMobileView: React.FC<CareerRankingsMobileViewProps> = ({
+  rankings,
+  sortOptions,
+  onSortChange,
+}) => {
+  const { isWinterTheme } = useSeasonalTheme();
+  const [detailedView, setDetailedView] = useState(() => {
+    const saved = localStorage.getItem('careerRankingsDetailedView');
+    return saved ? saved === 'true' : false;
+  });
+
+  const toggleViewMode = (value: string) => {
+    if (!value) return;
+    const isDetailed = value === 'detailed';
+    setDetailedView(isDetailed);
+    localStorage.setItem('careerRankingsDetailedView', String(isDetailed));
+  };
+
+  const sortableFields = useMemo(
+    () => [
+      {
+        id: 'careerPowerScore',
+        label: (
+          <>
+            <Bolt size={16} className="inline-block mr-1" />
+            Power
+          </>
+        ),
+      },
+      { id: 'careerWinPercentage', label: 'Win %' },
+      {
+        id: 'careerSos',
+        label: (
+          <>
+            <Scale size={15} className="inline-block mr-1" />
+            SOS
+          </>
+        ),
+      },
+      { id: 'championships', label: '🏆 Titles' },
+    ],
+    []
+  );
+
+  return (
+    <div className="font-inter">
+      {/* Controls row: Compact/Detailed toggle */}
+      <div className="mb-2 flex items-center justify-end">
+        <ToggleGroup
+          type="single"
+          value={detailedView ? 'detailed' : 'compact'}
+          onValueChange={toggleViewMode}
+          className="border border-border rounded-lg p-0.5"
+        >
+          <ToggleGroupItem
+            value="compact"
+            className={cn(
+              'text-xs px-2.5 py-1 rounded-md transition-all',
+              !detailedView
+                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
+                : 'text-muted-foreground hover:bg-accent'
+            )}
+          >
+            Compact
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="detailed"
+            className={cn(
+              'text-xs px-2.5 py-1 rounded-md transition-all',
+              detailedView
+                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
+                : 'text-muted-foreground hover:bg-accent'
+            )}
+          >
+            Detailed
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
+
+      {/* Sort pills - only visible in detailed view */}
+      {detailedView && (
+        <div className="mb-2">
+          <div className="overflow-x-auto pb-1.5 touch-pan-x -mx-1 px-1">
+            <div className="flex space-x-2">
+              {sortableFields.map((field) => (
+                <Button
+                  key={field.id}
+                  variant={sortOptions.field === field.id ? 'blueOrange' : 'outline'}
+                  size="sm"
+                  onClick={() => onSortChange(field.id)}
+                  className={cn(
+                    'rounded-lg py-2 px-3 text-xs font-medium transition-all whitespace-nowrap min-h-[36px]',
+                    isWinterTheme &&
+                      (sortOptions.field === field.id
+                        ? 'btn-winter-primary'
+                        : 'btn-winter-secondary'),
+                    !isWinterTheme &&
+                      sortOptions.field !== field.id &&
+                      'bg-card hover:bg-accent/50 text-foreground border-border'
+                  )}
+                >
+                  {field.label}
+                  {sortOptions.field === field.id &&
+                    (sortOptions.direction === 'asc' ? (
+                      <ArrowUp className="ml-1 size-3" />
+                    ) : (
+                      <ArrowDown className="ml-1 size-3" />
+                    ))}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rankings list */}
+      <div className="space-y-1.5">
+        {rankings.map((ranking, index) =>
+          detailedView ? (
+            <CareerDetailedCard
+              key={ranking.teamId}
+              ranking={ranking}
+              rank={index + 1}
+              formatPercentage={formatPercentage}
+              gameWinPercentageColorClass={gameWinPercentageColorClass}
+            />
+          ) : (
+            <CareerCompactCard
+              key={ranking.teamId}
+              ranking={ranking}
+              rank={index + 1}
+              formatPercentage={formatPercentage}
+            />
+          )
+        )}
+      </div>
+    </div>
   );
 };
 

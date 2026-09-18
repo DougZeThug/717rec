@@ -27,115 +27,6 @@ interface ByeMatchEditorProps {
   status?: number;
 }
 
-export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
-  byeWinner,
-  hasOpponent1,
-  opponent1Score,
-  opponent2Score,
-  setOpponent1Score,
-  setOpponent2Score,
-  byeEligible,
-  isSaving,
-  isTogglingStatus,
-  onSave,
-  onClose,
-  onToggleByeStatus,
-  onSwapTeams,
-  status,
-}) => {
-  return (
-    <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-      <DialogHeader>
-        <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
-      </DialogHeader>
-
-      <MatchStatusBadge status={byeEligible?.currentStatus ?? status} />
-
-      <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
-        <div className="text-center py-2 sm:py-4">
-          <p className="text-lg sm:text-xl font-semibold px-2">{byeWinner.name} wins by walkover</p>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-2">Opponent: BYE</p>
-        </div>
-
-        {/* BYE Status Toggle Control - Admin Only */}
-        {byeEligible?.canToggle && (
-          <ByeStatusControl
-            byeEligible={byeEligible}
-            isTogglingStatus={isTogglingStatus}
-            onToggleByeStatus={onToggleByeStatus}
-          />
-        )}
-
-        {/* Winner Score */}
-        <div className="space-y-2">
-          <Label htmlFor="winner-score" className="text-sm">
-            {byeWinner.name} Score (Games Won)
-          </Label>
-          <Input
-            id="winner-score"
-            type="number"
-            min="0"
-            value={hasOpponent1 ? opponent1Score : opponent2Score}
-            onChange={(e) => {
-              const score = Math.max(0, parseInt(e.target.value) || 0);
-              if (hasOpponent1) {
-                setOpponent1Score(score);
-                setOpponent2Score(0);
-              } else {
-                setOpponent2Score(score);
-                setOpponent1Score(0);
-              }
-            }}
-            disabled={byeEligible != null && byeEligible.currentStatus !== 2}
-            className="w-full"
-          />
-          {byeEligible && byeEligible.currentStatus !== 2 && (
-            <p className="text-xs text-destructive">
-              Match is {byeEligible.statusName}. Use the status toggle above to unlock.
-            </p>
-          )}
-          <p className="text-xs text-muted-foreground">
-            Enter the number of games won (typically 2 for Best of 3)
-          </p>
-        </div>
-      </div>
-
-      {onSwapTeams && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onSwapTeams}
-          disabled={isSaving || isTogglingStatus}
-          className="w-full sm:w-auto sm:self-start"
-          title="Move the team into a different losers-bracket match in this round"
-        >
-          <Shuffle className="mr-1 size-4" />
-          Move team to another match
-        </Button>
-      )}
-
-      <div className="flex flex-col sm:flex-row justify-end gap-2">
-        <Button
-          variant="outline"
-          onClick={onClose}
-          disabled={isSaving}
-          className="w-full sm:w-auto"
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={onSave}
-          disabled={isSaving || (byeEligible != null && byeEligible.currentStatus !== 2)}
-          className="w-full sm:w-auto"
-        >
-          {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
-          Award Win
-        </Button>
-      </div>
-    </DialogContent>
-  );
-};
-
 /** Status toggle buttons for BYE matches. */
 const ByeStatusControl: React.FC<{
   byeEligible: ByeEligibility;
@@ -250,5 +141,114 @@ const ByeStatusControl: React.FC<{
         )}
       </div>
     </div>
+  );
+};
+
+export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
+  byeWinner,
+  hasOpponent1,
+  opponent1Score,
+  opponent2Score,
+  setOpponent1Score,
+  setOpponent2Score,
+  byeEligible,
+  isSaving,
+  isTogglingStatus,
+  onSave,
+  onClose,
+  onToggleByeStatus,
+  onSwapTeams,
+  status,
+}) => {
+  return (
+    <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
+      </DialogHeader>
+
+      <MatchStatusBadge status={byeEligible?.currentStatus ?? status} />
+
+      <div className="space-y-4 sm:space-y-6 py-2 sm:py-4">
+        <div className="text-center py-2 sm:py-4">
+          <p className="text-lg sm:text-xl font-semibold px-2">{byeWinner.name} wins by walkover</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-2">Opponent: BYE</p>
+        </div>
+
+        {/* BYE Status Toggle Control - Admin Only */}
+        {byeEligible?.canToggle && (
+          <ByeStatusControl
+            byeEligible={byeEligible}
+            isTogglingStatus={isTogglingStatus}
+            onToggleByeStatus={onToggleByeStatus}
+          />
+        )}
+
+        {/* Winner Score */}
+        <div className="space-y-2">
+          <Label htmlFor="winner-score" className="text-sm">
+            {byeWinner.name} Score (Games Won)
+          </Label>
+          <Input
+            id="winner-score"
+            type="number"
+            min="0"
+            value={hasOpponent1 ? opponent1Score : opponent2Score}
+            onChange={(e) => {
+              const score = Math.max(0, parseInt(e.target.value) || 0);
+              if (hasOpponent1) {
+                setOpponent1Score(score);
+                setOpponent2Score(0);
+              } else {
+                setOpponent2Score(score);
+                setOpponent1Score(0);
+              }
+            }}
+            disabled={byeEligible != null && byeEligible.currentStatus !== 2}
+            className="w-full"
+          />
+          {byeEligible && byeEligible.currentStatus !== 2 && (
+            <p className="text-xs text-destructive">
+              Match is {byeEligible.statusName}. Use the status toggle above to unlock.
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Enter the number of games won (typically 2 for Best of 3)
+          </p>
+        </div>
+      </div>
+
+      {onSwapTeams && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onSwapTeams}
+          disabled={isSaving || isTogglingStatus}
+          className="w-full sm:w-auto sm:self-start"
+          title="Move the team into a different losers-bracket match in this round"
+        >
+          <Shuffle className="mr-1 size-4" />
+          Move team to another match
+        </Button>
+      )}
+
+      <div className="flex flex-col sm:flex-row justify-end gap-2">
+        <Button
+          variant="outline"
+          onClick={onClose}
+          disabled={isSaving}
+          className="w-full sm:w-auto"
+        >
+          Cancel
+        </Button>
+        <Button
+          onClick={onSave}
+          disabled={isSaving || (byeEligible != null && byeEligible.currentStatus !== 2)}
+          className="w-full sm:w-auto"
+        >
+          {isSaving && <Loader2 className="mr-2 size-4 animate-spin" />}
+          Award Win
+        </Button>
+      </div>
+    </DialogContent>
   );
 };

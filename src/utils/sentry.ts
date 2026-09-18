@@ -24,6 +24,72 @@ const addLazyIntegrations = () => {
     // Silently fail - these integrations are non-critical
   }
 };
+/**
+ * Known sensitive query-string params to scrub from URLs in Sentry events.
+ */
+const SENSITIVE_QUERY_PARAMS = [
+  'token',
+  'access_token',
+  'refresh_token',
+  'id_token',
+  'apikey',
+  'api_key',
+  'key',
+  'secret',
+  'password',
+  'email',
+  'code',
+];
+
+const SENSITIVE_QUERY_PARAMS_LOWER = new Set(SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase()));
+
+export const scrubUrl = (url: string): string => {
+  try {
+    // Handle relative URLs by giving them a dummy base
+    const hasProtocol = /^https?:\/\//i.test(url);
+    const u = new URL(url, hasProtocol ? undefined : 'http://_');
+    let mutated = false;
+    for (const key of Array.from(u.searchParams.keys())) {
+      if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
+        u.searchParams.set(key, '[Filtered]');
+        mutated = true;
+      }
+    }
+    if (!mutated) return url;
+    return hasProtocol ? u.toString() : `${u.pathname}${u.search}${u.hash}`;
+  } catch {
+    return url;
+  }
+};
+
+export const scrubQueryString = (qs: string): string => {
+  try {
+    const params = new URLSearchParams(qs.startsWith('?') ? qs.slice(1) : qs);
+    let mutated = false;
+    for (const key of Array.from(params.keys())) {
+      if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
+        params.set(key, '[Filtered]');
+        mutated = true;
+      }
+    }
+    if (!mutated) return qs;
+    const result = params.toString();
+    return qs.startsWith('?') ? `?${result}` : result;
+  } catch {
+    return qs;
+  }
+};
+
+const scrubSensitiveQueryParams = (event: Sentry.ErrorEvent): void => {
+  const req = event.request;
+  if (!req) return;
+  if (typeof req.url === 'string') {
+    req.url = scrubUrl(req.url);
+  }
+  if (typeof req.query_string === 'string') {
+    req.query_string = scrubQueryString(req.query_string);
+  }
+};
 
 export const initSentry = () => {
   // Prevent multiple initializations (HMR can cause this)
@@ -155,73 +221,6 @@ export const initSentry = () => {
   // docs/product-description/cross-cutting/what-the-league-sees.md describes.
   if (import.meta.env.PROD) {
     runAfterDelayWhenIdle(addLazyIntegrations, 12000);
-  }
-};
-
-/**
- * Known sensitive query-string params to scrub from URLs in Sentry events.
- */
-const SENSITIVE_QUERY_PARAMS = [
-  'token',
-  'access_token',
-  'refresh_token',
-  'id_token',
-  'apikey',
-  'api_key',
-  'key',
-  'secret',
-  'password',
-  'email',
-  'code',
-];
-
-const SENSITIVE_QUERY_PARAMS_LOWER = new Set(SENSITIVE_QUERY_PARAMS.map((p) => p.toLowerCase()));
-
-export const scrubUrl = (url: string): string => {
-  try {
-    // Handle relative URLs by giving them a dummy base
-    const hasProtocol = /^https?:\/\//i.test(url);
-    const u = new URL(url, hasProtocol ? undefined : 'http://_');
-    let mutated = false;
-    for (const key of Array.from(u.searchParams.keys())) {
-      if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
-        u.searchParams.set(key, '[Filtered]');
-        mutated = true;
-      }
-    }
-    if (!mutated) return url;
-    return hasProtocol ? u.toString() : `${u.pathname}${u.search}${u.hash}`;
-  } catch {
-    return url;
-  }
-};
-
-export const scrubQueryString = (qs: string): string => {
-  try {
-    const params = new URLSearchParams(qs.startsWith('?') ? qs.slice(1) : qs);
-    let mutated = false;
-    for (const key of Array.from(params.keys())) {
-      if (SENSITIVE_QUERY_PARAMS_LOWER.has(key.toLowerCase())) {
-        params.set(key, '[Filtered]');
-        mutated = true;
-      }
-    }
-    if (!mutated) return qs;
-    const result = params.toString();
-    return qs.startsWith('?') ? `?${result}` : result;
-  } catch {
-    return qs;
-  }
-};
-
-const scrubSensitiveQueryParams = (event: Sentry.ErrorEvent): void => {
-  const req = event.request;
-  if (!req) return;
-  if (typeof req.url === 'string') {
-    req.url = scrubUrl(req.url);
-  }
-  if (typeof req.query_string === 'string') {
-    req.query_string = scrubQueryString(req.query_string);
   }
 };
 

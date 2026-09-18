@@ -47,6 +47,13 @@ const BodyField: React.FC<{ value: string; onChange: (value: string) => void }> 
   </div>
 );
 
+const ExpiryHint: React.FC = () => (
+  <p className="text-xs text-muted-foreground">
+    Leave this empty to keep the notification until it is deleted. After this time it is tagged
+    EXPIRED.
+  </p>
+);
+
 /** The expiry control and its explanation, split out to keep the form shallow. */
 const ExpiryField: React.FC<{ value: string; onChange: (value: string) => void }> = ({
   value,
@@ -66,11 +73,10 @@ const ExpiryField: React.FC<{ value: string; onChange: (value: string) => void }
   </div>
 );
 
-const ExpiryHint: React.FC = () => (
-  <p className="text-xs text-muted-foreground">
-    Leave this empty to keep the notification until it is deleted. After this time it is tagged
-    EXPIRED.
-  </p>
+const CancelButton: React.FC<{ onCancel: () => void }> = ({ onCancel }) => (
+  <Button type="button" variant="ghost" onClick={onCancel}>
+    Cancel
+  </Button>
 );
 
 const FormActions: React.FC<{
@@ -84,12 +90,6 @@ const FormActions: React.FC<{
     </Button>
     {isEditing && <CancelButton onCancel={onCancel} />}
   </div>
-);
-
-const CancelButton: React.FC<{ onCancel: () => void }> = ({ onCancel }) => (
-  <Button type="button" variant="ghost" onClick={onCancel}>
-    Cancel
-  </Button>
 );
 
 interface NotificationFormProps {

@@ -8,6 +8,12 @@ import {
   type FormattedNotificationDate,
 } from '@/utils/formatNotificationDate';
 
+const ExpiredTag: React.FC = () => (
+  <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
+    Expired
+  </span>
+);
+
 /** Title and posted time. Its own component so neither block nests deeply. */
 const NotificationHeading: React.FC<{
   title: string;
@@ -28,12 +34,6 @@ const NotificationHeading: React.FC<{
       {posted.relative && <span>{posted.relative}</span>}
     </time>
   </div>
-);
-
-const ExpiredTag: React.FC = () => (
-  <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
-    Expired
-  </span>
 );
 
 /** The Edit and bin pair. Split out to keep the row itself shallow. */
