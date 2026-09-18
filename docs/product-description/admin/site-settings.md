@@ -220,7 +220,7 @@ longer a mis-tap next to Mass score entry.
 ## Help
 
 The Help section is a fixed page and cannot be changed from the app. It holds a
-six-step setup workflow, a reference list describing **all twenty-one** of the
+six-step setup workflow, a reference list describing **all twenty-two** of the
 dashboard's sections, and four tips.
 
 Every entry is a control, not a label. Pressing a workflow step or a section

@@ -11,6 +11,7 @@ const mockUsePendingScoresMatches = vi.fn();
 const mockUseHeroCards = vi.fn();
 const mockUseWeeklyPowerScoreTrends = vi.fn();
 const mockUseWeeklyRecap = vi.fn();
+const mockUsePublishedRecapEdition = vi.fn();
 const mockUseConfirmationSeason = vi.fn();
 const mockUseMyNextMatch = vi.fn();
 const mockUseIsMobile = vi.fn();
@@ -24,6 +25,9 @@ vi.mock('@/hooks/useWeeklyPowerScoreTrends', () => ({
   useWeeklyPowerScoreTrends: (...args: unknown[]) => mockUseWeeklyPowerScoreTrends(...args),
 }));
 vi.mock('@/hooks/useWeeklyRecap', () => ({ useWeeklyRecap: () => mockUseWeeklyRecap() }));
+vi.mock('@/hooks/useRecapEditions', () => ({
+  usePublishedRecapEdition: () => mockUsePublishedRecapEdition(),
+}));
 vi.mock('@/hooks/useSeasonParticipation', () => ({
   useConfirmationSeason: () => mockUseConfirmationSeason(),
 }));
@@ -88,6 +92,8 @@ describe('Index page', () => {
       isLoading: false,
     });
     mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
+    // Default: nothing published, so the page shows the live recap card.
+    mockUsePublishedRecapEdition.mockReturnValue({ data: null, isLoading: false });
     mockUseConfirmationSeason.mockReturnValue({ data: null });
     mockUseMyNextMatch.mockReturnValue({
       isLoading: false,
@@ -172,6 +178,38 @@ describe('Index page', () => {
       mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
       // trends[0] is Team of the Week's; the recap starts at the second.
       withTrends([mover('a', 2.1), mover('b', 0.6)], []);
+
+      renderPage();
+
+      expect(screen.getByText('Weekly Recap')).toBeInTheDocument();
+    });
+
+    it('shows the published edition instead of the live card when one exists', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: true }, isLoading: false });
+      withTrends([mover('a', 2.1)], []);
+      mockUsePublishedRecapEdition.mockReturnValue({
+        data: {
+          edition: { id: 'e-1', status: 'published' },
+          version: { id: 'v-1', headline: 'Corn Stars stay top', caption: 'Week 6 recap.' },
+          facts: { seasonSlug: 'fall-2026', weekNumber: 6 },
+        },
+        isLoading: false,
+      });
+
+      renderPage();
+
+      expect(screen.getByText('Corn Stars stay top')).toBeInTheDocument();
+      expect(screen.getByText('Read the full recap')).toBeInTheDocument();
+      // The live card must not also be drawn — one recap on the page, not two.
+      expect(screen.queryByText('Weekly Recap')).not.toBeInTheDocument();
+    });
+
+    // This fallback is the rollback path: unpublishing an edition has to give
+    // the page its old behaviour back, not an empty space.
+    it('falls back to the live card when nothing is published', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: true }, isLoading: false });
+      withTrends([mover('a', 2.1)], []);
+      mockUsePublishedRecapEdition.mockReturnValue({ data: null, isLoading: false });
 
       renderPage();
 

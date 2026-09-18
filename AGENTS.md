@@ -1,6 +1,18 @@
 # Agent Instructions (Codex, Claude Code, etc.)
 
-This repo uses **npm**. It does **not** use pnpm, yarn, or bun.
+Development and CI use **npm**. Never use pnpm or yarn.
+
+**But the hosted deploy build runs `bun install --frozen-lockfile`**, against the
+tracked `bun.lock`. So adding or removing a dependency means updating **both**
+lockfiles, or the deploy fails with "lockfile had changes, but lockfile is
+frozen" while every local check still passes:
+
+```bash
+npm install <pkg>          # updates package.json + package-lock.json
+bun install --lockfile-only # updates bun.lock to match — do not skip this
+```
+
+Run every other command with npm.
 
 ## Communication style
 
@@ -12,7 +24,10 @@ This repo uses **npm**. It does **not** use pnpm, yarn, or bun.
 ## Package manager
 
 - Use `npm install` / `npm ci`.
-- Never use `pnpm`, `yarn`, or `bun` — they are not installed and the lockfiles aren't compatible.
+- Never use `pnpm` or `yarn`.
+- Never run a plain `bun install` — it would write `node_modules` from bun's
+  resolution instead of npm's. `bun install --lockfile-only` only refreshes the
+  lockfile, which is all the deploy needs.
 
 ## Running tests
 

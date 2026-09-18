@@ -10,6 +10,7 @@ import {
   LayoutGrid,
   ListChecks,
   Mail,
+  Newspaper,
   Palette,
   Scale,
   Shuffle,
@@ -79,6 +80,13 @@ export const adminSectionGuide: AdminSectionGuideEntry[] = [
     label: 'Live Corrections',
     icon: Wrench,
     description: 'Fix a round, a game winner, or a result from a live-scored match.',
+  },
+  {
+    id: 'weekly-content',
+    label: 'Weekly Content Pack',
+    icon: Newspaper,
+    description:
+      "Turn a week's results into a recap graphic, division standings images and a caption you can post.",
   },
   {
     id: 'seasons',

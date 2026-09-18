@@ -44,8 +44,8 @@ experience, not the implementation.
   only when the mechanism changes what the user would expect.
 - Use sentence case for headings.
 - Name the vocabulary consistently. The [glossary](glossary.md) is the source of
-  truth for terms like *season*, *division*, *match*, *game*, *round*, *power
-  score*, *pending*, and *blind draw*.
+  truth for terms like _season_, _division_, _match_, _game_, _round_, _power
+  score_, _pending_, and _blind draw_.
 - Every document ends with the commit of this repo it was verified against and a
   list of open questions.
 - When a behaviour is surprising, say so and say why it is that way if the reason
@@ -75,7 +75,7 @@ and nothing is skipped.
    through.
 4. **Modifiers.** A table of the variant axis — the user's role, the record's
    state, the viewport, and the keys the form honours — and what each does when
-   set at arrival and when changed *during* editing.
+   set at arrival and when changed _during_ editing.
 5. **Cancel and interrupt.** The same checklist in every document:
    - Escape, or a Cancel button
    - In-app navigation away, or switching tab within the page
@@ -273,6 +273,7 @@ admin/
   handle-requests.md             membership requests and contact requests
   run-the-playoffs.md            creating brackets, blind draw, the Challonge fallback
   send-notifications.md          the notifications admin page
+  weekly-content-pack.md         turning a week's results into a postable pack
   site-settings.md               theme, hero cards, help content, and ops health
 
 cross-cutting/
@@ -287,69 +288,70 @@ cross-cutting/
 
 Status is one of `not started`, `drafted`, or `verified`.
 
-| Document | Status |
-| --- | --- |
-| glossary.md | drafted |
-| bug-triage.md | drafted |
+| Document                                  | Status  |
+| ----------------------------------------- | ------- |
+| glossary.md                               | drafted |
+| bug-triage.md                             | drafted |
 | verification/ (9 checklists, 1,863 items) | drafted |
-| foundations/seasons.md | drafted |
-| foundations/accounts-and-roles.md | drafted |
-| foundations/league-objects.md | drafted |
-| foundations/navigation.md | drafted |
-| foundations/saving-and-freshness.md | drafted |
-| foundations/messages-to-the-user.md | drafted |
-| getting-started/sign-in-and-sign-up.md | drafted |
-| getting-started/set-up-your-profile.md | drafted |
-| getting-started/join-a-team.md | drafted |
-| getting-started/authorize-an-app.md | drafted |
-| home/the-home-page.md | drafted |
-| home/your-next-match.md | drafted |
-| teams/browse-teams.md | drafted |
-| teams/team-details.md | drafted |
-| teams/my-team.md | drafted |
-| teams/compare-teams.md | drafted |
-| schedule/the-schedule-page.md | drafted |
-| schedule/a-match-card.md | drafted |
-| schedule/timeslot-preferences.md | drafted |
-| scores/submit-a-score.md | drafted |
-| scores/confirm-or-dispute-a-score.md | drafted |
-| scores/pending-scores.md | drafted |
-| live-scoring/start-a-live-match.md | drafted |
-| live-scoring/set-up-a-game.md | drafted |
-| live-scoring/enter-a-round.md | drafted |
-| live-scoring/correct-a-round.md | drafted |
-| live-scoring/finish-a-game.md | drafted |
-| live-scoring/finish-the-match.md | drafted |
-| playoffs/the-playoffs-page.md | drafted |
-| playoffs/read-a-bracket.md | drafted |
-| playoffs/blind-draw-signup.md | drafted |
-| stats/standings-and-rankings.md | drafted |
-| stats/power-score.md | drafted |
-| stats/team-and-player-stats.md | drafted |
-| stats/insights.md | drafted |
-| stats/badges.md | drafted |
-| history/past-seasons.md | drafted |
-| history/head-to-head.md | drafted |
-| message-board/read-the-board.md | drafted |
-| message-board/post-and-reply.md | drafted |
-| help/the-help-page.md | drafted |
-| help/contact-the-league.md | drafted |
-| admin/the-admin-dashboard.md | drafted |
-| admin/manage-seasons.md | drafted |
-| admin/manage-teams-and-divisions.md | drafted |
-| admin/build-the-schedule.md | drafted |
-| admin/manage-timeslots.md | drafted |
-| admin/enter-scores-in-bulk.md | drafted |
-| admin/correct-a-live-match.md | drafted |
-| admin/handle-requests.md | drafted |
-| admin/run-the-playoffs.md | drafted |
-| admin/send-notifications.md | drafted |
-| admin/site-settings.md | drafted |
-| cross-cutting/permissions.md | drafted |
-| cross-cutting/errors-and-offline.md | drafted |
-| cross-cutting/on-a-phone.md | drafted |
-| cross-cutting/accessibility.md | drafted |
-| cross-cutting/what-the-league-sees.md | drafted |
+| foundations/seasons.md                    | drafted |
+| foundations/accounts-and-roles.md         | drafted |
+| foundations/league-objects.md             | drafted |
+| foundations/navigation.md                 | drafted |
+| foundations/saving-and-freshness.md       | drafted |
+| foundations/messages-to-the-user.md       | drafted |
+| getting-started/sign-in-and-sign-up.md    | drafted |
+| getting-started/set-up-your-profile.md    | drafted |
+| getting-started/join-a-team.md            | drafted |
+| getting-started/authorize-an-app.md       | drafted |
+| home/the-home-page.md                     | drafted |
+| home/your-next-match.md                   | drafted |
+| teams/browse-teams.md                     | drafted |
+| teams/team-details.md                     | drafted |
+| teams/my-team.md                          | drafted |
+| teams/compare-teams.md                    | drafted |
+| schedule/the-schedule-page.md             | drafted |
+| schedule/a-match-card.md                  | drafted |
+| schedule/timeslot-preferences.md          | drafted |
+| scores/submit-a-score.md                  | drafted |
+| scores/confirm-or-dispute-a-score.md      | drafted |
+| scores/pending-scores.md                  | drafted |
+| live-scoring/start-a-live-match.md        | drafted |
+| live-scoring/set-up-a-game.md             | drafted |
+| live-scoring/enter-a-round.md             | drafted |
+| live-scoring/correct-a-round.md           | drafted |
+| live-scoring/finish-a-game.md             | drafted |
+| live-scoring/finish-the-match.md          | drafted |
+| playoffs/the-playoffs-page.md             | drafted |
+| playoffs/read-a-bracket.md                | drafted |
+| playoffs/blind-draw-signup.md             | drafted |
+| stats/standings-and-rankings.md           | drafted |
+| stats/power-score.md                      | drafted |
+| stats/team-and-player-stats.md            | drafted |
+| stats/insights.md                         | drafted |
+| stats/badges.md                           | drafted |
+| history/past-seasons.md                   | drafted |
+| history/head-to-head.md                   | drafted |
+| message-board/read-the-board.md           | drafted |
+| message-board/post-and-reply.md           | drafted |
+| help/the-help-page.md                     | drafted |
+| help/contact-the-league.md                | drafted |
+| admin/the-admin-dashboard.md              | drafted |
+| admin/manage-seasons.md                   | drafted |
+| admin/manage-teams-and-divisions.md       | drafted |
+| admin/build-the-schedule.md               | drafted |
+| admin/manage-timeslots.md                 | drafted |
+| admin/enter-scores-in-bulk.md             | drafted |
+| admin/correct-a-live-match.md             | drafted |
+| admin/handle-requests.md                  | drafted |
+| admin/run-the-playoffs.md                 | drafted |
+| admin/send-notifications.md               | drafted |
+| admin/site-settings.md                    | drafted |
+| admin/weekly-content-pack.md              | drafted |
+| cross-cutting/permissions.md              | drafted |
+| cross-cutting/errors-and-offline.md       | drafted |
+| cross-cutting/on-a-phone.md               | drafted |
+| cross-cutting/accessibility.md            | drafted |
+| cross-cutting/what-the-league-sees.md     | drafted |
 
 ## Reference
 

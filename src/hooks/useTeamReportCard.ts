@@ -3,14 +3,18 @@ import { useMemo } from 'react';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useCareerRankings } from '@/hooks/useCareerRankings';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
-import { calculatePercentile } from '@/utils/percentileUtils';
 import {
   collectCareerPopulations,
   collectSeasonPopulations,
   isCareerGradeable,
   isGradeable,
 } from '@/utils/reportCardPopulations';
-import { calculateGPA, calculateGrade, GradeCategory, TeamGrades } from '@/utils/reportCardUtils';
+import {
+  calculateGPA,
+  GRADE_WEIGHTS,
+  gradeCategoryAgainst as gradeAgainst,
+  TeamGrades,
+} from '@/utils/reportCardUtils';
 import {
   calculateLeagueMatchStats,
   EMPTY_LEAGUE_MATCH_STATS,
@@ -18,42 +22,9 @@ import {
 
 export type ReportCardMode = 'season' | 'career';
 
-/**
- * Build one graded category from a value ranked against the league.
- *
- * `null` means the category cannot be measured for this team; the card shows a
- * dash rather than a letter. See B-36 in
- * `docs/product-description/bug-triage.md`.
- */
-const gradeAgainst = (
-  label: string,
-  description: string,
-  value: number | null,
-  population: number[]
-): GradeCategory => {
-  if (value === null || population.length === 0) {
-    return { label, grade: null, percentile: null, description };
-  }
-  const { percentile } = calculatePercentile(value, population, true);
-  return { label, grade: calculateGrade(percentile), percentile, description };
-};
-
-/**
- * The six categories and the weight each carries in the GPA.
- *
- * Shared with the GPA leaderboard (`useAllTeamReportCards`) rather than written
- * out again there. The card and the leaderboard show the same team's GPA, so a
- * second copy of these numbers is a way for the two to disagree — which is what
- * B-36 already was, for the populations.
- */
-export const GRADE_WEIGHTS = {
-  overall: 3,
-  consistency: 2,
-  games: 1.5,
-  offense: 1,
-  clutch: 1,
-  schedule: 1,
-} as const;
+// The weights and the grading helper live in `@/utils/reportCardUtils`, a leaf
+// the services can import too — the weekly recap grades a frozen week through
+// the same rules.
 
 const buildGrades = (categories: Omit<TeamGrades, 'gpa'>): TeamGrades => ({
   ...categories,

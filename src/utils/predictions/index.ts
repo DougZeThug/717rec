@@ -11,4 +11,4 @@ export type {
   PredictionResult,
   TeamStats,
 } from './predictMatch';
-export { formatBreakdown, isUpset, predictMatch } from './predictMatch';
+export { formatBreakdown, isUpset, predictMatch, UPSET_THRESHOLD } from './predictMatch';

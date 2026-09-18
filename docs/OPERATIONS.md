@@ -3,7 +3,8 @@
 Audience: Doug at 9pm on a Tuesday. Plain language. If something in here is out of date, fix it before you close the laptop.
 
 Companion docs:
-- [`PRODUCTION_SETTINGS.md`](PRODUCTION_SETTINGS.md) — the checked baseline of every dashboard setting (expected value + last-verified date). This doc is the *actions*; that one is the *settings*.
+
+- [`PRODUCTION_SETTINGS.md`](PRODUCTION_SETTINGS.md) — the checked baseline of every dashboard setting (expected value + last-verified date). This doc is the _actions_; that one is the _settings_.
 - [`SECRETS.md`](SECRETS.md) — which env vars exist and how to rotate them.
 - [`RELEASE_AND_DEPLOYMENT.md`](RELEASE_AND_DEPLOYMENT.md) — version bumps, publish steps, rollback.
 - [`E2E_REAL_BACKEND.md`](E2E_REAL_BACKEND.md) — real-backend end-to-end tests.
@@ -159,16 +160,16 @@ Goal: **no commit lands on `main` unless CI has passed on that exact code.** Eve
 
 Branch protection matches checks by their **exact job name**. These are the current names from `.github/workflows/ci.yml` and `.github/workflows/supabase-ci.yml`:
 
-| Check name (exact) | What it runs | Required? |
-|---|---|---|
-| `Quality and tests` | lint, typecheck, the full unit/integration test suite, knip dead-code scan | **Yes** |
-| `DeepSource coverage` | full test run with coverage **thresholds** (fails if coverage drops below the floors in `vitest.config.ts`), then uploads to DeepSource | **Yes** |
-| `Build and bundle size` | production build + bundle size budgets (`.size-limit.json`) | **Yes** |
-| `Browser smoke, a11y, and Lighthouse` | Playwright smoke tests, axe accessibility scan, Lighthouse | **Yes** |
-| `React Doctor` | third-party advisory scan | No — advisory |
-| `E2E (real Supabase)` | real-backend e2e — **not currently defined in `ci.yml`**; the spec (`e2e/real-backend.spec.ts`) runs locally only. Re-adding the job is tracked in the PR-03 brief | No — n/a until PR-03 re-adds the job |
-| `supabase db lint`, `Apply migrations + SQL smoke tests`, `Edge function Deno tests` | database CI — runs only when `supabase/**` changes | No — must stay advisory: the workflow is path-filtered, so requiring any of these would freeze every non-database PR on "Expected — waiting for status" |
-| `npm audit`, `Gitleaks`, `No committed local env files` | security workflow — runs only when dependency/security-related files change | No — must stay advisory (also path-filtered, same freeze risk) |
+| Check name (exact)                                                                   | What it runs                                                                                                                                                       | Required?                                                                                                                                               |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Quality and tests`                                                                  | lint, typecheck, the full unit/integration test suite, knip dead-code scan                                                                                         | **Yes**                                                                                                                                                 |
+| `DeepSource coverage`                                                                | full test run with coverage **thresholds** (fails if coverage drops below the floors in `vitest.config.ts`), then uploads to DeepSource                            | **Yes**                                                                                                                                                 |
+| `Build and bundle size`                                                              | production build + bundle size budgets (`.size-limit.json`)                                                                                                        | **Yes**                                                                                                                                                 |
+| `Browser smoke, a11y, and Lighthouse`                                                | Playwright smoke tests, axe accessibility scan, Lighthouse                                                                                                         | **Yes**                                                                                                                                                 |
+| `React Doctor`                                                                       | third-party advisory scan                                                                                                                                          | No — advisory                                                                                                                                           |
+| `E2E (real Supabase)`                                                                | real-backend e2e — **not currently defined in `ci.yml`**; the spec (`e2e/real-backend.spec.ts`) runs locally only. Re-adding the job is tracked in the PR-03 brief | No — n/a until PR-03 re-adds the job                                                                                                                    |
+| `supabase db lint`, `Apply migrations + SQL smoke tests`, `Edge function Deno tests` | database CI — runs only when `supabase/**` changes                                                                                                                 | No — must stay advisory: the workflow is path-filtered, so requiring any of these would freeze every non-database PR on "Expected — waiting for status" |
+| `npm audit`, `Gitleaks`, `No committed local env files`                              | security workflow — runs only when dependency/security-related files change                                                                                        | No — must stay advisory (also path-filtered, same freeze risk)                                                                                          |
 
 **On the main-entry budget.** `.size-limit.json` caps the eagerly-loaded entry
 chunk. It sat at 150 kB while the branch built at 149.99 kB — ten bytes of
@@ -195,8 +196,8 @@ its fourteen icons, into every visitor's download.
 that touches the file. **The report is wrong, and it has been checked.** That
 effect starts one timer and one subscription, and its cleanup cancels both. The
 proof is a test — `src/hooks/auth/__tests__/useAuth.test.ts`, "cancels the timer
-it scheduled when the effect is torn down" — which asserts on the *pending timer
-count* after unmount. That is the only assertion that separates a cancelled
+it scheduled when the effect is torn down" — which asserts on the _pending timer
+count_ after unmount. That is the only assertion that separates a cancelled
 timer from one merely left to fire into a guard: both callbacks check
 `isCancelled` and do nothing either way, so "the callback did not run" would
 pass in both cases. Remove the cancel and the test fails with
@@ -271,12 +272,12 @@ The Supabase workflow keeps its `supabase/**` path filter — that's fine, becau
 - [ ] Fix the test, push again → button unlocks once checks go green.
 - [ ] Try a direct `git push origin main` with a trivial commit → GitHub rejects it.
 - [ ] Make a small Lovable edit → it appears as a PR from `lovable/edits`, **not** a commit on `main`.
-- [ ] A week later: `git log --oneline -10 main` shows only commits that came through a PR — each one either starts with "Merge pull request #…" or ends with a PR number like `(#1060)` (squash merges). Bot-authored commits are fine *if* they carry a PR number; what must not appear is a commit with no PR behind it.
+- [ ] A week later: `git log --oneline -10 main` shows only commits that came through a PR — each one either starts with "Merge pull request #…" or ends with a PR number like `(#1060)` (squash merges). Bot-authored commits are fine _if_ they carry a PR number; what must not appear is a commit with no PR behind it.
 
 ### 5e. Known limits, fallback, rollback
 
 - **Lighthouse is still warn-only** inside the Browser check until PR-03 lands — a Lighthouse score drop alone won't block a merge yet. Failing tests, build, bundle budgets, smoke, and axe all hard-block already.
-- **If Lovable can't commit to a branch** (Option B in the PR-02 brief): note that the 5b rule as written would hard-block Lovable — it rejects *all* direct pushes to `main`, so the bot's edits would fail outright rather than sneak through. Running Option B means deliberately punching a hole for the bot: set the protection up as a repository **ruleset** instead of a classic rule, with the Lovable app on the ruleset's bypass list (a classic rule can't exempt one app from required status checks). Then add a fast-repair routine (open an issue or fix PR within the hour whenever `main` goes red). That is a stop-gap, not a gate — record here that the gate is not fully in force, and revisit when Lovable ships branch support.
+- **If Lovable can't commit to a branch** (Option B in the PR-02 brief): note that the 5b rule as written would hard-block Lovable — it rejects _all_ direct pushes to `main`, so the bot's edits would fail outright rather than sneak through. Running Option B means deliberately punching a hole for the bot: set the protection up as a repository **ruleset** instead of a classic rule, with the Lovable app on the ruleset's bypass list (a classic rule can't exempt one app from required status checks). Then add a fast-repair routine (open an issue or fix PR within the hour whenever `main` goes red). That is a stop-gap, not a gate — record here that the gate is not fully in force, and revisit when Lovable ships branch support.
 - **Rollback:** delete the branch protection rule (Settings → Branches) and revert the docs/workflow commit. Nothing in the product changes either way.
 
 ---
@@ -284,7 +285,7 @@ The Supabase workflow keeps its `supabase/**` path filter — that's fine, becau
 ## 6. Applying database migrations to production
 
 New files in `supabase/migrations/` do **not** reach the live database on
-their own. Only schema changes made *through Lovable* are applied by
+their own. Only schema changes made _through Lovable_ are applied by
 Lovable; the database CI job ("Apply migrations + SQL smoke tests", see
 `docs/SUPABASE_CI.md`) replays migrations in a throwaway container to check
 they run — it never touches the real project.
@@ -360,7 +361,7 @@ in the admin panel under **Operations → Power Score Review**:
   uses, so it shows the site as of the backup date. Teams created since are
   flagged "New since backup"; backup rows of deleted teams are ignored. The
   comparison is shown while the new formula is applied; in the reverted state
-  the live site *is* the old formula, so the tab explains that instead of
+  the live site _is_ the old formula, so the tab explains that instead of
   showing an old-vs-old table.
 - **Revert / Re-apply** — one click each, behind a confirmation dialog.
   Revert does **not** copy backup rows back: it restores the old view
@@ -388,7 +389,7 @@ Caveats:
 `division_name` for a season once `seasons.is_archived` is true. This closes the
 defect where changing a team's division — or re-weighting a division — silently
 rewrote finished seasons, because the rating used to resolve every opponent
-through their *current* division.
+through their _current_ division.
 
 Consequences to know:
 
@@ -442,11 +443,12 @@ preview any mix safely: nothing changes until you press **Save & rescore**.
    NOTICE: power score weight sandbox installed: weights 40/45/15, NNN season rows
    ```
 
-   Prefer Lovable? Ask it, verbatim: *"Apply the SQL migration file
+   Prefer Lovable? Ask it, verbatim: _"Apply the SQL migration file
    `supabase/migrations/20260820120000_power_score_weight_sandbox.sql` from
    the GitHub repo to the project database, then regenerate the Supabase
-   types."* That also refreshes `src/integrations/supabase/types.ts`, which
+   types."_ That also refreshes `src/integrations/supabase/types.ts`, which
    otherwise lags harmlessly (compile-time only).
+
 3. Verify, still in the SQL editor — all three:
    - `SELECT * FROM get_power_score_weights();` → one row, `40 / 45 / 15`
    - `SELECT power_score_100(1, 1, 1);` → `100`
@@ -518,3 +520,62 @@ gap should be 25 or more. Before this migration it did not have to be.
 which restores the previous function body, then re-run the badge recheck block
 at the foot of the newer migration. Note that this puts the badge back on a
 number that disagrees with the screen.
+
+## 6d. Publishing a weekly content pack
+
+Plain-language runbook for **Admin → Weekly Content Pack**. Full behaviour:
+[`docs/product-description/admin/weekly-content-pack.md`](product-description/admin/weekly-content-pack.md).
+
+### The normal week
+
+1. Open **Admin → Weekly Content Pack**.
+2. Pick the season and the week that just finished. Press **Generate draft**.
+3. **Read the warnings.** They are specific on purpose:
+   - _No power score snapshot for week N_ — publishing is blocked. The weekly
+     snapshot job did not run. Run the `capture-power-snapshots` edge function,
+     then generate again.
+   - _Compared against week M_ — a snapshot is missing, so the movement covers
+     more than one week. Fine to publish; the page says which week it used.
+   - _N matches still have no result_ — enter the missing scores first if you
+     want the recap to be complete.
+   - _The power rankings will show no movement_ — there is no earlier week to
+     compare against, so every team shows a dash instead of an arrow. Fine to
+     publish; the ranks and grades are still correct.
+   - _N teams joined the rankings this week_ — they were not in last week's
+     snapshot, so they show a dash rather than a climb from nowhere.
+4. Rewrite the headline. Add a Commissioner's note — the database knows who won,
+   not who finally beat their brother.
+5. **Write it for me** for a livelier caption, then edit it. The line under the
+   box says where the current text came from.
+6. In **Power rankings**, press **Write blurbs for me** to fill every team's
+   line in one go, then edit any of them. Every team starts with a plain line
+   built from its own results, so this step is optional.
+7. **Download graphics**, post them, **Publish**.
+
+### Fixing a published recap
+
+Generate the same week again, correct what is wrong, and press **Publish
+correction** with a short note. The version that was live is kept — the
+database has no UPDATE or DELETE on versions at all — and the public page shows
+"Published <date>, corrected <date>".
+
+If it needs to come down instead, press **Unpublish**. The home page goes back
+to its live recap card and nothing is deleted.
+
+### When something is wrong
+
+| Symptom                                     | Cause                                                      | Fix                                                                                                            |
+| ------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Publish is greyed out                       | No snapshot for that week, or nothing happened that week   | Run `capture-power-snapshots`, then generate again                                                             |
+| "AI captions are not set up"                | `ANTHROPIC_API_KEY` is not set                             | Add it in Supabase → Edge Functions → Secrets, or write the caption by hand                                    |
+| "AI blurbs are not set up"                  | The same key is not set                                    | As above. The plain lines built from the results are used until then, and you can edit any of them             |
+| A team's blurb is missing after generating  | The writer skipped it, or named a team that does not exist | Unknown teams are dropped on purpose. That team keeps whatever line it had; write one yourself                 |
+| A downloaded PNG has the wrong fonts        | The font files did not load                                | Reload the page and download again                                                                             |
+| A team's logo is missing from a graphic     | The image could not be fetched                             | The graphic draws that team's initials instead; check the logo in Admin → Teams                                |
+| A shared link previews with the league logo | The `og-recap` worker is not deployed                      | See [`workers/og-recap/README.md`](../workers/og-recap/README.md). Optional — everything else works without it |
+
+### What is frozen, and why it matters
+
+A published edition stores the numbers it was built from. A later score
+correction does **not** change what was published — that is the point. If a
+published recap is wrong, publish a correction; do not expect it to fix itself.

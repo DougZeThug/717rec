@@ -230,3 +230,55 @@ export const uploadTeamImage = async (file: File, teamId?: string) => {
     throw error;
   }
 };
+
+// ─── Recap graphics ───────────────────────────────────────────────────────────
+
+/**
+ * Uploads a published recap's summary graphic.
+ *
+ * The graphic is downloaded and posted by hand; this copy exists only so a
+ * shared /recap/... link has an og:image. A social crawler never runs the app's
+ * JavaScript, so nothing the page sets in the browser reaches it — the worker in
+ * workers/og-recap/ reads this URL instead.
+ */
+const RECAP_BUCKET = 'recap-graphics';
+
+const dataUrlToBlob = async (dataUrl: string): Promise<Blob> => {
+  const response = await fetch(dataUrl);
+  // fetch resolves rather than rejecting on a non-OK status, so without this an
+  // error body would be uploaded as if it were the graphic.
+  if (!response.ok) {
+    throw new Error(`Could not read the rendered graphic (${response.status})`);
+  }
+  return response.blob();
+};
+
+/**
+ * Upload and return the public URL.
+ *
+ * The name carries a fresh uuid rather than the version id, because the upload
+ * has to happen BEFORE the version row is inserted: recap_edition_versions is
+ * append-only, with no UPDATE grant, so `graphic_url` has to be known at insert
+ * time. A correction therefore gets its own file and never overwrites the
+ * graphic an already-shared link points at.
+ */
+export const uploadRecapGraphic = async (
+  dataUrl: string,
+  seasonSlug: string,
+  weekNumber: number
+): Promise<string> => {
+  const path = `${seasonSlug}/week-${weekNumber}-${uuidv4()}.png`;
+  const blob = await dataUrlToBlob(dataUrl);
+
+  const { error } = await supabase.storage.from(RECAP_BUCKET).upload(path, blob, {
+    cacheControl: '3600',
+    upsert: false,
+    contentType: 'image/png',
+  });
+
+  if (error) {
+    throw new Error(`Could not upload the recap graphic: ${error.message}`);
+  }
+
+  return supabase.storage.from(RECAP_BUCKET).getPublicUrl(path).data.publicUrl;
+};

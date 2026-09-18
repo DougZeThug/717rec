@@ -1,13 +1,37 @@
 import { supabase } from '@/integrations/supabase/client';
 import { fetchCompletedPlayoffMatchesForSeason } from '@/services/brackets/read/PlayoffSeasonMatchService';
+import { handleDatabaseError } from '@/utils/errorHandler';
 import { warnLog } from '@/utils/logger';
-import { getLeagueCalendarDate, getLeagueMidnightUtc } from '@/utils/timezone';
 
 import { fetchHotStreaks } from './streaks';
 import type { RecapMode, WeeklyRecapData } from './types';
 import { fetchUpsets } from './upsets';
+import { deriveWeekNumber, getWeekWindow } from './weekWindow';
 
 export type { RecapMode, TeamStreakInfo, WeeklyRecapData, WeeklyUpset } from './types';
+
+type PlayoffMatches = Awaited<ReturnType<typeof fetchCompletedPlayoffMatchesForSeason>>;
+
+export interface WeeklyRecapRequest {
+  seasonId: string;
+  /** Counting from 1. See ./weekWindow for how a week is defined. */
+  weekNumber: number;
+  /**
+   * seasons.start_date, when the caller already has it. Supplying it saves a
+   * query — resolveCurrentWeek always does.
+   */
+  seasonStartDate?: string;
+}
+
+export interface CurrentWeekResolution {
+  seasonId: string;
+  seasonStartDate: string;
+  /** null when the season has no completed regular-season match, or in playoffs. */
+  weekNumber: number | null;
+  mode: RecapMode;
+  /** Already fetched during resolution; passed on so nobody re-queries. */
+  playoffMatches: PlayoffMatches;
+}
 
 const emptyRecap = (mode: RecapMode = 'regular'): WeeklyRecapData => ({
   weekNumber: null,
@@ -17,109 +41,168 @@ const emptyRecap = (mode: RecapMode = 'regular'): WeeklyRecapData => ({
   hasData: false,
 });
 
+const fetchActiveSeasonForRecap = async (): Promise<{
+  id: string;
+  start_date: string;
+} | null> => {
+  const { data, error } = await supabase
+    .from('seasons')
+    .select('id, start_date')
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (error) handleDatabaseError(error, 'Failed to fetch the active season for the recap');
+  return data ?? null;
+};
+
 /**
- * Fetches auto-generated weekly recap data: upsets and hot streaks.
- * Swallows errors and returns empty state on failure to avoid breaking the homepage.
+ * The recap for the whole playoff bracket. Playoff games carry no date, so there
+ * is no week to window on.
  */
+const fetchPlayoffRecap = async (
+  seasonId: string,
+  playoffMatches: PlayoffMatches
+): Promise<WeeklyRecapData> => {
+  const [upsets, hotStreaks] = await Promise.all([
+    fetchUpsets(seasonId, { mode: 'playoffs', matches: playoffMatches }),
+    fetchHotStreaks(seasonId, playoffMatches),
+  ]);
+
+  return {
+    weekNumber: null,
+    mode: 'playoffs',
+    upsets,
+    hotStreaks,
+    hasData: upsets.length > 0 || hotStreaks.length > 0,
+  };
+};
+
 export const WeeklyRecapService = {
-  fetchWeeklyRecap: async (): Promise<WeeklyRecapData> => {
-    try {
-      // 1. Get active season with start_date
-      const { data: activeSeason } = await supabase
+  /**
+   * Which week the active season is currently on, and whether the recap should
+   * describe a calendar week or the playoff bracket.
+   *
+   * Throws. Callers that must not break on failure use fetchWeeklyRecap.
+   */
+  resolveCurrentWeek: async (): Promise<CurrentWeekResolution | null> => {
+    const activeSeason = await fetchActiveSeasonForRecap();
+    if (!activeSeason) return null;
+
+    // Once the season's bracket has produced a result, the recap describes the
+    // playoffs rather than a calendar week. This is the only reliable signal:
+    // seasons.playoffs_active is cleared by finalize_playoffs and is set on the
+    // outgoing season during a partial archive, and a bracket that is mid-run has
+    // not reached state 'completed' yet.
+    const playoffMatches = await fetchCompletedPlayoffMatchesForSeason(activeSeason.id);
+
+    if (playoffMatches.length > 0) {
+      return {
+        seasonId: activeSeason.id,
+        seasonStartDate: activeSeason.start_date,
+        weekNumber: null,
+        mode: 'playoffs',
+        playoffMatches,
+      };
+    }
+
+    const { data: latestMatchRow, error } = await supabase
+      .from('matches')
+      .select('date')
+      .eq('season_id', activeSeason.id)
+      .eq('iscompleted', true)
+      .is('bracket_id', null)
+      .not('winner_id', 'is', null)
+      .not('date', 'is', null)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) handleDatabaseError(error, 'Failed to find the latest completed match');
+
+    return {
+      seasonId: activeSeason.id,
+      seasonStartDate: activeSeason.start_date,
+      weekNumber: latestMatchRow?.date
+        ? deriveWeekNumber(activeSeason.start_date, new Date(latestMatchRow.date))
+        : null,
+      mode: 'regular',
+      playoffMatches,
+    };
+  },
+
+  /**
+   * The recap for one explicit season week.
+   *
+   * THROWS on any failure. An admin building a publishable edition must see the
+   * error — a swallowed one looks exactly like a quiet week, and would be
+   * published as fact.
+   */
+  fetchRecapForWeek: async ({
+    seasonId,
+    weekNumber,
+    seasonStartDate,
+  }: WeeklyRecapRequest): Promise<WeeklyRecapData> => {
+    let startDate = seasonStartDate;
+
+    if (startDate === undefined) {
+      const { data: season, error } = await supabase
         .from('seasons')
         .select('id, start_date')
-        .eq('is_active', true)
+        .eq('id', seasonId)
         .maybeSingle();
 
-      if (!activeSeason) {
-        return emptyRecap();
+      if (error) handleDatabaseError(error, 'Failed to fetch the season for the recap');
+      if (!season) return emptyRecap();
+      startDate = season.start_date;
+    }
+
+    const { weekStart, weekEnd } = getWeekWindow(startDate, weekNumber);
+
+    // Streaks run season-to-date rather than week-only, but they stop at the end
+    // of the week being recapped. Without that bound, an edition of week 3 built
+    // in week 8 would report week 8 streaks under a week 3 headline.
+    const [upsets, hotStreaks] = await Promise.all([
+      fetchUpsets(seasonId, { mode: 'regular', weekStart, weekEnd, weekNumber }),
+      fetchHotStreaks(seasonId, [], weekEnd),
+    ]);
+
+    return {
+      weekNumber,
+      mode: 'regular',
+      upsets,
+      hotStreaks,
+      hasData: upsets.length > 0 || hotStreaks.length > 0,
+    };
+  },
+
+  /**
+   * The recap for wherever the active season currently is.
+   *
+   * Swallows errors and returns an empty recap so a failure degrades to a
+   * missing home-page card rather than a broken page. That is right for the home
+   * page and wrong everywhere else — new callers should use fetchRecapForWeek,
+   * which throws.
+   */
+  fetchWeeklyRecap: async (): Promise<WeeklyRecapData> => {
+    try {
+      const current = await WeeklyRecapService.resolveCurrentWeek();
+      if (!current) return emptyRecap();
+
+      if (current.mode === 'playoffs') {
+        return await fetchPlayoffRecap(current.seasonId, current.playoffMatches);
       }
 
-      const seasonId = activeSeason.id;
-      // start_date is a calendar date in league time; tolerate an ISO timestamp form.
-      const [seasonYear, seasonMonth, seasonDay] = activeSeason.start_date
-        .slice(0, 10)
-        .split('-')
-        .map(Number);
-
-      // 2. Once the season's bracket has produced a result, the recap describes the
-      // playoffs rather than a calendar week. This is the only reliable signal:
-      // seasons.playoffs_active is cleared by finalize_playoffs and is set on the
-      // outgoing season during a partial archive, and a bracket that is mid-run has
-      // not reached state 'completed' yet.
-      const playoffMatches = await fetchCompletedPlayoffMatchesForSeason(seasonId);
-      const mode: RecapMode = playoffMatches.length > 0 ? 'playoffs' : 'regular';
-
-      if (mode === 'playoffs') {
-        // Playoff games carry no date, so there is no week to window on — the whole
-        // bracket is the recap.
-        const [upsets, hotStreaks] = await Promise.all([
-          fetchUpsets(seasonId, { mode: 'playoffs', matches: playoffMatches }),
-          fetchHotStreaks(seasonId, playoffMatches),
-        ]);
-
-        return {
-          weekNumber: null,
-          mode,
-          upsets,
-          hotStreaks,
-          hasData: upsets.length > 0 || hotStreaks.length > 0,
-        };
+      if (current.weekNumber === null) {
+        // No completed matches with dates — still report hot streaks.
+        const hotStreaks = await fetchHotStreaks(current.seasonId, current.playoffMatches);
+        return { ...emptyRecap(), hotStreaks, hasData: hotStreaks.length > 0 };
       }
 
-      // 3. Find the most recent match date from completed regular-season matches
-      const { data: latestMatchRow } = await supabase
-        .from('matches')
-        .select('date')
-        .eq('season_id', seasonId)
-        .eq('iscompleted', true)
-        .is('bracket_id', null)
-        .not('winner_id', 'is', null)
-        .not('date', 'is', null)
-        .order('date', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (!latestMatchRow?.date) {
-        // No completed matches with dates — still fetch hot streaks
-        const hotStreaks = await fetchHotStreaks(seasonId, playoffMatches);
-        return { ...emptyRecap(mode), hotStreaks, hasData: hotStreaks.length > 0 };
-      }
-
-      // 4. Calculate the week number using league-time (EST/EDT) calendar days.
-      // Evening matches are stored as next-day UTC, so raw UTC arithmetic would
-      // push them into the following week and drop earlier same-day matches.
-      const latest = getLeagueCalendarDate(new Date(latestMatchRow.date));
-      const diffDays = Math.floor(
-        (Date.UTC(latest.year, latest.month - 1, latest.day) -
-          Date.UTC(seasonYear, seasonMonth - 1, seasonDay)) /
-          (1000 * 60 * 60 * 24)
-      );
-      const weekNumber = Math.max(1, Math.floor(diffDays / 7) + 1);
-
-      // 5. Compute the date window for this week as UTC instants of league midnight
-      const weekStart = getLeagueMidnightUtc(
-        seasonYear,
-        seasonMonth,
-        seasonDay + (weekNumber - 1) * 7
-      );
-      const weekEnd = getLeagueMidnightUtc(seasonYear, seasonMonth, seasonDay + weekNumber * 7);
-
-      // 6. Fetch upsets and hot streaks in parallel
-      const [upsetsResult, matchHistoryResult] = await Promise.all([
-        fetchUpsets(seasonId, { mode: 'regular', weekStart, weekEnd, weekNumber }),
-        fetchHotStreaks(seasonId, playoffMatches),
-      ]);
-
-      const hasData = upsetsResult.length > 0 || matchHistoryResult.length > 0;
-
-      return {
-        weekNumber,
-        mode,
-        upsets: upsetsResult,
-        hotStreaks: matchHistoryResult,
-        hasData,
-      };
+      return await WeeklyRecapService.fetchRecapForWeek({
+        seasonId: current.seasonId,
+        seasonStartDate: current.seasonStartDate,
+        weekNumber: current.weekNumber,
+      });
     } catch (err) {
       warnLog('WeeklyRecapService: failed to fetch weekly recap', err);
       return emptyRecap();

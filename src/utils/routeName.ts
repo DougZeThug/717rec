@@ -38,6 +38,9 @@ const DYNAMIC_ROUTE_NAMES: Array<{ pattern: RegExp; name: string }> = [
   // Every admin section is its own address now, so without this the announcer
   // would read out "Page Not Found" on each switch inside the console.
   { pattern: /^\/admin\/[^/]+$/, name: 'Admin Dashboard' },
+  // Matched on shape for the same reason: /recap/fall-2026/banana goes to the
+  // catch-all, so announcing it as "Weekly Recap" would contradict the screen.
+  { pattern: /^\/recap\/[^/]+\/week-\d{1,2}$/, name: 'Weekly Recap' },
 ];
 
 /**

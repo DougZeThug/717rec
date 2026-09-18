@@ -53,6 +53,18 @@ Current production deploy path is Lovable Publish.
    - Authentication works.
    - Core season/match workflows load without console errors.
 
+### Deployed separately
+
+Two things do **not** go out with Lovable Publish and have to be applied by
+hand:
+
+- **Supabase migrations** — pasted into the SQL editor, oldest first. See
+  [`docs/OPERATIONS.md`](OPERATIONS.md).
+- **The `og-recap` Cloudflare worker** — `npx wrangler deploy` from
+  `workers/og-recap`, only when that worker changes. It gives shared recap
+  links their preview image and fails open, so the site is fine without it. See
+  [`workers/og-recap/README.md`](../workers/og-recap/README.md).
+
 ## Rollback procedure
 
 Use the fastest safe option for incident mitigation.

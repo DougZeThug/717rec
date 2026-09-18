@@ -22,7 +22,7 @@ interface AdminSectionListProps {
 }
 
 /**
- * The searchable, grouped list of all twenty-one sections.
+ * The searchable, grouped list of all twenty-two sections.
  *
  * Split out of `AdminMobileNav` when the phone menu moved into a drawer: the
  * nav is now a small bar and this is what the drawer holds.

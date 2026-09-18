@@ -34,6 +34,7 @@ src/
 ## Routing
 
 **Public Routes**:
+
 - `/` - Home dashboard
 - `/teams` - Team listings
 - `/teams/:id` - Team details
@@ -42,8 +43,12 @@ src/
 - `/playoffs` - Tournament brackets
 - `/compare` - Team comparison
 - `/message-board` - Community board
+- `/recap/:seasonSlug/:week` - One published weekly recap edition, e.g.
+  `/recap/fall-2026/week-6`. Registered as a whole segment because React Router
+  segments cannot be partial; the page parses the `week-6` form itself.
 
 **Protected Routes**:
+
 - `/my-team` - User's team management
 - `/admin` - Admin dashboard; redirects to the last section opened (admin-only)
 - `/admin/:section` - One admin section, e.g. `/admin/scores` (admin-only)
@@ -63,23 +68,55 @@ Components → Hooks → Services → Supabase → PostgreSQL
 4. **Supabase** - Database, auth, realtime subscriptions
 
 **Example**: Displaying teams
+
 ```
 TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.from('v_team_details')
 ```
+
+### Pure decision modules
+
+Some services split the reading from the deciding, so the rules that decide what
+gets published can be tested directly and cannot drift between a preview and a
+published page. The weekly recap is the clearest case:
+
+- `services/recapEditions/fetchRecapFacts.ts` - the only part that touches the
+  database
+- `services/recapEditions/buildRecapFacts.ts` - assembles the frozen facts
+- `services/recapEditions/gradeTeamsForWeek.ts` - ranks the league and grades
+  every team for one week
+- `services/recapEditions/standingsOrder.ts` - the one standings sort both of
+  the above use
+- `services/recapEditions/fallbackBlurbs.ts` - the line written about each team
+  when no AI blurb is generated
+
+`gradeTeamsForWeek` deliberately reuses the team page's own grading utilities -
+`utils/reportCardUtils.ts` and `utils/reportCardPopulations.ts` - pointed at a
+week's snapshot instead of today's standings, so a weekly grade and a team page
+grade cannot use different rules. They do use different populations, which is
+documented in `docs/product-description/stats/team-and-player-stats.md`.
 
 ## Supabase Integration
 
 **Location**: `src/integrations/supabase/`
 
 **Key Tables**:
+
 - `teams`, `matches`, `profiles`, `divisions`
 - `brackets`, `team_timeslots`, `team_memberships`
 - `seasons`, `hero_cards`, `messages`
+- `power_score_snapshots` - the only place a week number is stored
+- `recap_editions`, `recap_edition_versions` - published weekly recaps. Versions
+  are append-only (no UPDATE or DELETE grant), so a correction adds a version
+  rather than rewriting one. A version holds the frozen `facts` (what the
+  database said) separately from the editorial text - `headline`, `caption` and
+  the per-team `blurbs` map (what the league chose to say) - so regenerating
+  the facts cannot erase written text.
 
 > The generated file `src/integrations/supabase/types.ts` is the source of truth
 > for the full table list. Update this section when tables are added or renamed.
 
 **Features**:
+
 - Email + Google OAuth authentication
 - Row Level Security (RLS) policies
 - Database views for optimized queries (e.g., `v_team_details`)
@@ -91,6 +128,7 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 ## Where to Change UI
 
 **Base Components** (`src/components/ui/`):
+
 - Buttons, inputs, cards, dialogs, tables, etc.
 - `ResponsiveTable` renders a table above `md` and a stack of cards below it —
   see `src/docs/TABLE_PATTERNS.md`. `ResponsiveDialog` does the same for modals.
@@ -98,6 +136,7 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 - Modify these to change app-wide styling
 
 **Feature Components** (by domain):
+
 - Teams: `src/components/teams/`
 - Matches: `src/components/matches/`
 - Admin: `src/components/admin/`
@@ -105,11 +144,13 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 - Playoffs: `src/components/playoffs/`
 
 **Layout**:
+
 - Navigation: `src/components/layout/Navbar.tsx` (header shell), `src/components/layout/navbar/NavLinks.tsx` (the link list, shared by the header row and the phone menu), `src/components/navigation/BottomNav.tsx` (phone tabs), `src/components/navigation/CommandPalette.tsx` (⌘K)
 - Page wrapper: `src/components/layout/PageLayout.tsx`
 - Footer: `src/components/layout/Footer.tsx`
 
 **Styling**:
+
 - Global styles: `src/styles/`
 - Tailwind config: `tailwind.config.ts`
 - Theme tokens: `src/styles/theme.css` and `src/styles/themes/`
@@ -210,25 +251,30 @@ Compare (/compare)
 ## Common Tasks
 
 **Add a new page**:
+
 1. Create component in `src/pages/`
 2. Add route in `src/App.tsx`
 3. Add to the nav link list in `src/components/layout/navbar/NavLinks.tsx`, or to `src/components/navigation/CommandPalette.tsx` if it is a secondary page. `src/components/navigation/__tests__/routeReachability.test.ts` fails if a new route reaches no menu at all. Add it to `src/utils/routePrefetch.ts` too, or hover-prefetch silently does nothing for it.
 
 **Fetch new data**:
+
 1. Create service in `src/services/` (Supabase query)
 2. Create hook in `src/hooks/` (wrap with TanStack Query)
 3. Use hook in component
 
 **Add UI component**:
+
 1. For base components: `src/components/ui/`
 2. For feature components: `src/components/{feature}/`
 
 **Modify database**:
+
 1. Create migration in `supabase/migrations/`
 2. Run migration to update schema
 3. Regenerate types: types will auto-update in `src/integrations/supabase/types.ts`
 
 **Add admin feature**:
+
 1. Component in `src/components/admin/`
 2. Route in `src/App.tsx` with `ProtectedAdminRoute`
 3. Service + hook for data

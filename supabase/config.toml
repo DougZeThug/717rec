@@ -34,6 +34,10 @@ verify_jwt = false
 [functions.pageview]
 verify_jwt = false
 
+# Auth is done in-band by requireAdmin(), same as the other functions here.
+[functions.generate-recap-caption]
+verify_jwt = false
+
 [functions.mcp]
 verify_jwt = false
 

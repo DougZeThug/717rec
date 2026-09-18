@@ -8,7 +8,7 @@ middle **and changes the address**: every section has one, such as
 `/admin/scores`, so a section can be linked, bookmarked and stepped back
 through.
 
-The dashboard holds **twenty-one sections**. They range from a whole scheduling tool
+The dashboard holds **twenty-two sections**. They range from a whole scheduling tool
 to a single switch. Nothing groups them by importance on a wide screen, and there
 is no landing view — arriving takes the admin straight into whichever section
 they last used.
@@ -24,13 +24,13 @@ Panel". The screen shows a spinner and "Checking access...", then the heading
 **Admin Dashboard** fades in over about a third of a second.
 
 On the left is a bordered panel headed "Admin Menu", with a search box and
-twenty-one entries. The centre holds one section — **Timeslots** the first time, and
+twenty-two entries. The centre holds one section — **Timeslots** the first time, and
 after that whichever section was open last. On a phone the panel is replaced by a
 **Sections** button that opens the same list as a drawer.
 
 The admin types "sea" into the search box. The list shrinks to **Season**. They
 press it, the middle of the page shows Season Management, and the left column
-goes back to twenty-one entries as soon as the search box is cleared.
+goes back to twenty-two entries as soon as the search box is cleared.
 
 They navigate to `/schedule` to check something, come back to `/admin`, and
 Season Management is still the section on screen.
@@ -117,7 +117,7 @@ changes** below.
 
 The shell never submits anything. Every write on `/admin` belongs to a section.
 
-## The twenty-one sections
+## The twenty-two sections
 
 In menu order, with the document that owns each:
 
@@ -130,6 +130,7 @@ In menu order, with the document that owns each:
 | Scores | Mass score entry — [`enter-scores-in-bulk.md`](enter-scores-in-bulk.md) |
 | Live Corrections | Fix a match already scored — [`correct-a-live-match.md`](correct-a-live-match.md) |
 | Season | Create, activate, edit, archive, finalise — [`manage-seasons.md`](manage-seasons.md) |
+| Weekly Content Pack | Turn a week's results into a graphic, standings images and a caption — [`weekly-content-pack.md`](weekly-content-pack.md) |
 | Participation | Who has said they are playing — [`manage-seasons.md`](manage-seasons.md) |
 | Requests | Team requests, with the count badge — [`handle-requests.md`](handle-requests.md) |
 | Contact Inbox | Messages from the contact form — [`handle-requests.md`](handle-requests.md) |
@@ -178,7 +179,7 @@ it used to be a page of its own. `/timeslots` was one too, and redirects to
 
 **Permissions and roles.** The whole page is behind the admin gate described in
 [`../foundations/accounts-and-roles.md`](../foundations/accounts-and-roles.md#how-pages-are-gated).
-There are no partial admins, so every admin sees all twenty-one sections.
+There are no partial admins, so every admin sees all twenty-two sections.
 
 **Season scoping.** The shell is not season-scoped. Most sections silently mean
 the active season; see [`../foundations/seasons.md`](../foundations/seasons.md).

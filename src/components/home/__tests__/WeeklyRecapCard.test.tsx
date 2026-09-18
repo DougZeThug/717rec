@@ -28,6 +28,7 @@ describe('WeeklyRecapCard', () => {
           loserLogoUrl: undefined,
           loserPowerScore: 80,
           powerScoreGap: 2.4,
+          winnerProbability: 0.22,
           matchResult: '2-1',
           weekNumber: 7,
         },

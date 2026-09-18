@@ -11,6 +11,14 @@ import { toTeamSlug } from '@/utils/teamSlug';
 import MobileSectionShell from './WeeklyRecapMobileSectionShell';
 import { UpsetRowProps } from './weeklyRecapTypes';
 
+/**
+ * The winner's modelled chance, as a whole percentage. This is the number that
+ * makes the match an upset, so it is the number worth showing — the power-score
+ * gap shown before was not what qualified it.
+ */
+const formatOdds = (winnerProbability: number): string =>
+  `${Math.round(winnerProbability * 100)}% shot`;
+
 function UpsetRow({ upset, winter }: UpsetRowProps) {
   return (
     <div className="flex flex-col gap-1">
@@ -60,7 +68,7 @@ function UpsetRow({ upset, winter }: UpsetRowProps) {
           className="text-xs border-yellow-500/40 text-yellow-600 dark:text-yellow-400 gap-1"
         >
           <Zap size={10} className="fill-yellow-500/50" />
-          Upset +{upset.powerScoreGap.toFixed(1)}
+          Upset · {formatOdds(upset.winnerProbability)}
         </Badge>
       </div>
     </div>
@@ -112,7 +120,7 @@ function UpsetMobileContent({ upset, winter }: UpsetRowProps) {
           <span className="text-xs font-bold tabular-nums">{upset.matchResult}</span>
         )}
         <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
-          +{upset.powerScoreGap.toFixed(1)} Upset
+          {formatOdds(upset.winnerProbability)}
         </span>
       </div>
     </div>

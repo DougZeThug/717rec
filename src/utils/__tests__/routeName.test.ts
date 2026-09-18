@@ -54,7 +54,14 @@ describe('getRouteName', () => {
 
     // A dynamic route is checked as a real address a user could be on. Skipping
     // them hid /matches/:matchId/live, which had no name at all.
-    const sample = (path: string) => path.replace(/:[^/]+/g, 'sample-id');
+    //
+    // Most segments accept anything, so a placeholder stands in. A few have a
+    // shape the route name matches on, and those need a realistic sample —
+    // otherwise the only way to pass would be to loosen the name matching until
+    // it labelled addresses that actually render Page Not Found.
+    const segmentSamples: Record<string, string> = { ':week': 'week-6' };
+    const sample = (path: string) =>
+      path.replace(/:[^/]+/g, (segment) => segmentSamples[segment] ?? 'sample-id');
 
     const unnamed = declared.filter((path) => getRouteName(sample(path)) === 'Page Not Found');
     expect(unnamed).toEqual([]);

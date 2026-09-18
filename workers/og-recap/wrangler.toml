@@ -1,0 +1,24 @@
+# OG tag injector for published recap pages.
+#
+# This is a SEPARATE deploy from the app. 717rec ships through Lovable Publish
+# (docs/RELEASE_AND_DEPLOYMENT.md), and the repo's root wrangler.toml is not
+# used by any script or CI job. This worker is deployed by hand with
+# `npx wrangler deploy` from this directory and bound to a route on the
+# Cloudflare zone. See docs/PRODUCTION_SETTINGS.md.
+
+name = "717rec-og-recap"
+main = "src/index.ts"
+compatibility_date = "2026-01-14"
+
+# Only recap pages pass through here. Everything else on the zone is untouched.
+routes = [{ pattern = "717rec.app/recap/*", zone_name = "717rec.app" }]
+
+[vars]
+# The app's own origin. Requests are proxied straight back to it.
+ORIGIN = "https://717rec.app"
+SUPABASE_URL = "https://wcitdamvochthvxvtxyb.supabase.co"
+
+# SUPABASE_ANON_KEY is set as a secret, not here:
+#   npx wrangler secret put SUPABASE_ANON_KEY
+# It is the publishable key, so it is not sensitive, but keeping it out of the
+# repo means rotating it does not need a commit.
