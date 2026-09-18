@@ -1,11 +1,12 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ComponentProps } from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
 import PublishCard from '../PublishCard';
 
-const renderCard = (props: Partial<React.ComponentProps<typeof PublishCard>> = {}) => {
+const renderCard = (props: Partial<ComponentProps<typeof PublishCard>> = {}) => {
   const onSave = vi.fn();
   const onPublish = vi.fn();
   const onUnpublish = vi.fn();

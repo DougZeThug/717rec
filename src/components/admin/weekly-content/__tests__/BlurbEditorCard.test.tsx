@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { RecapTeamGrade } from '@/types/recapEdition';
@@ -23,7 +24,7 @@ const team = (overrides: Partial<RecapTeamGrade> = {}): RecapTeamGrade => ({
   ...overrides,
 });
 
-const renderCard = (props: Partial<React.ComponentProps<typeof BlurbEditorCard>> = {}) => {
+const renderCard = (props: Partial<ComponentProps<typeof BlurbEditorCard>> = {}) => {
   const onBlurbChange = vi.fn();
   const onGenerateBlurbs = vi.fn();
 

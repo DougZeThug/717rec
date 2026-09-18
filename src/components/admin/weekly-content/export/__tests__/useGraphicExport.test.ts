@@ -84,7 +84,7 @@ describe('useGraphicExport', () => {
   it('exports every graphic and reports the count', async () => {
     const { result } = renderHook(() => useGraphicExport());
 
-    let outcome!: { exported: number; failed: string[] };
+    let outcome: { exported: number; failed: string[] } | undefined;
     await act(async () => {
       outcome = await result.current.exportAll([request('a'), request('b')]);
     });
@@ -100,7 +100,7 @@ describe('useGraphicExport', () => {
 
     const { result } = renderHook(() => useGraphicExport());
 
-    let outcome!: { exported: number; failed: string[] };
+    let outcome: { exported: number; failed: string[] } | undefined;
     await act(async () => {
       outcome = await result.current.exportAll([
         request('recap'),
@@ -110,8 +110,8 @@ describe('useGraphicExport', () => {
     });
 
     // One bad graphic must not cost the admin the whole pack.
-    expect(outcome.exported).toBe(2);
-    expect(outcome.failed).toEqual(['rankings-1']);
+    expect(outcome?.exported).toBe(2);
+    expect(outcome?.failed).toEqual(['rankings-1']);
   });
 
   it('clears the exporting flag even when every graphic fails', async () => {
@@ -128,7 +128,7 @@ describe('useGraphicExport', () => {
   it('does nothing for an empty pack', async () => {
     const { result } = renderHook(() => useGraphicExport());
 
-    let outcome!: { exported: number; failed: string[] };
+    let outcome: { exported: number; failed: string[] } | undefined;
     await act(async () => {
       outcome = await result.current.exportAll([]);
     });
