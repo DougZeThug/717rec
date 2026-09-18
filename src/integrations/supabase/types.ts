@@ -3330,58 +3330,40 @@ export type Database = {
       }
       recap_edition_versions: {
         Row: {
-          blurbs: Json
-          blurbs_source: string
-          caption: string
-          caption_model: string | null
+          caption: string | null
           caption_source: string
-          commissioner_note: string | null
-          correction_note: string | null
           created_at: string
           created_by: string | null
           edition_id: string
           facts: Json
-          facts_schema_version: number
           graphic_url: string | null
-          headline: string
+          headline: string | null
           id: string
-          version: number | null
+          version: number
         }
         Insert: {
-          blurbs?: Json
-          blurbs_source?: string
-          caption?: string
-          caption_model?: string | null
+          caption?: string | null
           caption_source?: string
-          commissioner_note?: string | null
-          correction_note?: string | null
           created_at?: string
           created_by?: string | null
           edition_id: string
           facts: Json
-          facts_schema_version?: number
           graphic_url?: string | null
-          headline?: string
+          headline?: string | null
           id?: string
-          version?: number | null
+          version: number
         }
         Update: {
-          blurbs?: Json
-          blurbs_source?: string
-          caption?: string
-          caption_model?: string | null
+          caption?: string | null
           caption_source?: string
-          commissioner_note?: string | null
-          correction_note?: string | null
           created_at?: string
           created_by?: string | null
           edition_id?: string
           facts?: Json
-          facts_schema_version?: number
           graphic_url?: string | null
-          headline?: string
+          headline?: string | null
           id?: string
-          version?: number | null
+          version?: number
         }
         Relationships: [
           {
@@ -3396,11 +3378,9 @@ export type Database = {
       recap_editions: {
         Row: {
           created_at: string
-          created_by: string | null
           first_published_at: string | null
           id: string
           published_at: string | null
-          published_by: string | null
           published_version_id: string | null
           season_id: string
           season_name: string
@@ -3411,11 +3391,9 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
           first_published_at?: string | null
           id?: string
           published_at?: string | null
-          published_by?: string | null
           published_version_id?: string | null
           season_id: string
           season_name: string
@@ -3426,11 +3404,9 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by?: string | null
           first_published_at?: string | null
           id?: string
           published_at?: string | null
-          published_by?: string | null
           published_version_id?: string | null
           season_id?: string
           season_name?: string
@@ -3453,6 +3429,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "seasons"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recap_editions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["season_id"]
           },
         ]
       }
