@@ -187,12 +187,12 @@ export const initSentry = () => {
 
       // For captureMessage events (no originalException), only filter if it looks like a bare network error
       if (!error && event.message) {
-        const m = event.message;
+        const message = event.message;
         if (
-          m === 'Failed to fetch' ||
-          m === 'Load failed' ||
-          m === 'NetworkError' ||
-          m === 'Network request failed'
+          message === 'Failed to fetch' ||
+          message === 'Load failed' ||
+          message === 'NetworkError' ||
+          message === 'Network request failed'
         ) {
           return null;
         }
