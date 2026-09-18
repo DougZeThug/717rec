@@ -128,14 +128,12 @@ describe('sentry utils', () => {
       // to throw to prove the reporter degrades quietly instead of taking the
       // whole beforeSend hook down with it.
       const RealURLSearchParams = globalThis.URLSearchParams;
-      vi.stubGlobal(
-        'URLSearchParams',
-        class {
-          constructor() {
-            throw new TypeError('boom');
-          }
-        }
-      );
+      // A plain function, not a class: `new` runs the body either way, and a
+      // class whose only member is a constructor is just a function spelt long.
+      function ThrowingURLSearchParams(): never {
+        throw new TypeError('boom');
+      }
+      vi.stubGlobal('URLSearchParams', ThrowingURLSearchParams);
 
       try {
         expect(scrubQueryString('token=abc')).toBe('token=abc');
