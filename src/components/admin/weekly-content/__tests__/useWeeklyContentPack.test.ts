@@ -9,12 +9,14 @@ const {
   mockFetchLatestVersion,
   mockSaveMutateAsync,
   mockBlurbsMutateAsync,
+  mockPublishMutateAsync,
 } = vi.hoisted(() => ({
   mockGenerateMutateAsync: vi.fn(),
   mockFetchEditionForWeek: vi.fn(),
   mockFetchLatestVersion: vi.fn(),
   mockSaveMutateAsync: vi.fn(),
   mockBlurbsMutateAsync: vi.fn(),
+  mockPublishMutateAsync: vi.fn(),
 }));
 
 vi.mock('@/hooks/useRecapEditions', () => ({
@@ -22,7 +24,7 @@ vi.mock('@/hooks/useRecapEditions', () => ({
   useGenerateCaption: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useGenerateBlurbs: () => ({ mutateAsync: mockBlurbsMutateAsync, isPending: false }),
   useSaveRecapVersion: () => ({ mutateAsync: mockSaveMutateAsync, isPending: false }),
-  usePublishRecapEdition: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  usePublishRecapEdition: () => ({ mutateAsync: mockPublishMutateAsync, isPending: false }),
   useUnpublishRecapEdition: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }));
 
@@ -434,6 +436,125 @@ describe('useWeeklyContentPack', () => {
         expect(await result.current.generateBlurbs()).toBe('failed');
       });
       expect(mockBlurbsMutateAsync).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('publishing', () => {
+    const readyToPublish = async () => {
+      mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+      mockSaveMutateAsync.mockResolvedValue({ id: 'v-1' });
+      mockPublishMutateAsync.mockResolvedValue({ id: 'e-1', status: 'published' });
+
+      const { RecapEditionService } = await import('@/services/recapEditions/RecapEditionService');
+      vi.mocked(RecapEditionService.ensureEdition).mockResolvedValue({ id: 'e-1' } as never);
+
+      const hook = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        await hook.result.current.generateFor('s-1', 6);
+      });
+      return hook;
+    };
+
+    it('uploads the graphic BEFORE writing the version, and stores its URL', async () => {
+      const { result } = await readyToPublish();
+
+      // Set after readyToPublish, which primes these mocks itself.
+      const { uploadRecapGraphic } = await import('@/utils/imageUpload');
+      const order: string[] = [];
+      vi.mocked(uploadRecapGraphic).mockImplementation(() => {
+        order.push('upload');
+        return Promise.resolve('https://cdn.example/recap.png');
+      });
+      mockSaveMutateAsync.mockImplementation(() => {
+        order.push('save');
+        return Promise.resolve({ id: 'v-1' });
+      });
+
+      await act(async () => {
+        await result.current.publish(undefined, () => Promise.resolve('data:image/png;base64,AAA'));
+      });
+
+      // Versions are append-only, so graphic_url has to be known at insert time.
+      expect(order).toEqual(['upload', 'save']);
+      expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ graphicUrl: 'https://cdn.example/recap.png' })
+      );
+    });
+
+    it('still publishes when the graphic cannot be stored', async () => {
+      const { result } = await readyToPublish();
+
+      const { uploadRecapGraphic } = await import('@/utils/imageUpload');
+      vi.mocked(uploadRecapGraphic).mockRejectedValue(new Error('storage down'));
+
+      await act(async () => {
+        await result.current.publish(undefined, () => Promise.resolve('data:image/png;base64,AAA'));
+      });
+
+      // A readable recap matters more than a thumbnail on a shared link, so the
+      // upload is best-effort and the publish carries on without a URL.
+      expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ graphicUrl: null })
+      );
+      expect(mockPublishMutateAsync).toHaveBeenCalledWith({
+        editionId: 'e-1',
+        versionId: 'v-1',
+      });
+    });
+
+    it('publishes without a graphic at all when none was captured', async () => {
+      const { result } = await readyToPublish();
+      await act(async () => {
+        await result.current.publish();
+      });
+
+      expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ graphicUrl: null })
+      );
+      expect(mockPublishMutateAsync).toHaveBeenCalled();
+    });
+
+    it('carries a correction note onto the new version', async () => {
+      const { result } = await readyToPublish();
+      await act(async () => {
+        await result.current.publish('Week 6 score was entered wrong.');
+      });
+
+      expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({ correctionNote: 'Week 6 score was entered wrong.' })
+      );
+    });
+
+    it('does nothing at all before a week has been generated', async () => {
+      const { result } = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        await result.current.publish();
+      });
+
+      expect(mockSaveMutateAsync).not.toHaveBeenCalled();
+      expect(mockPublishMutateAsync).not.toHaveBeenCalled();
+    });
+
+    it('clears the publishing flag even when publishing throws', async () => {
+      const { result } = await readyToPublish();
+      mockPublishMutateAsync.mockRejectedValue(new Error('boom'));
+
+      await act(async () => {
+        await expect(result.current.publish()).rejects.toThrow();
+      });
+
+      // Left true, the Publish button would stay disabled until a reload.
+      expect(result.current.isPublishing).toBe(false);
+    });
+
+    it('marks the edition published, so the screen offers Unpublish', async () => {
+      const { result } = await readyToPublish();
+      await act(async () => {
+        await result.current.publish();
+      });
+
+      expect(result.current.existingEdition).toMatchObject({ status: 'published' });
+      expect(result.current.isCorrection).toBe(true);
     });
   });
 });

@@ -9,7 +9,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 vi.mock('@/utils/logger', () => ({ errorLog: vi.fn(), warnLog: vi.fn(), dbLog: vi.fn() }));
 
-import { CaptionUnconfiguredError, generateBlurbs } from '../CaptionService';
+import { CaptionUnconfiguredError, generateBlurbs, generateCaption } from '../CaptionService';
 
 const team = (overrides: Partial<RecapTeamGrade> = {}): RecapTeamGrade => ({
   rank: 1,
@@ -145,5 +145,143 @@ describe('generateBlurbs', () => {
   it('refuses an empty reply rather than wiping the lines already there', async () => {
     mockInvoke.mockResolvedValueOnce({ data: { blurbs: {}, model: 'm' }, error: null });
     await expect(generateBlurbs(facts([team()]), '')).rejects.toThrow(/came back empty/i);
+  });
+});
+
+describe('generateCaption', () => {
+  const week = (overrides: Partial<RecapFactsV1> = {}): RecapFactsV1 => ({
+    ...facts([]),
+    upsets: [
+      {
+        winnerId: 'w',
+        winnerName: 'Bag Chasers',
+        winnerLogoUrl: 'https://cdn.example/w.png',
+        winnerPowerScore: 40,
+        loserId: 'l',
+        loserName: 'Corn Stars',
+        loserPowerScore: 80,
+        powerScoreGap: 40,
+        winnerProbability: 0.18,
+        matchResult: '2-1',
+        weekNumber: 6,
+      },
+    ] as never,
+    hotStreaks: [
+      { teamId: 't', teamName: 'Toss Bosses', streakCount: 4, division: 'Competitive' },
+    ] as never,
+    teamOfTheWeek: {
+      teamId: 't-1',
+      teamName: 'Bag Chasers',
+      logoUrl: 'https://cdn.example/w.png',
+      division: 'Competitive',
+      currentScore: 72,
+      previousScore: 68,
+      delta: 4,
+    },
+    divisions: [
+      {
+        divisionId: 'd-1',
+        divisionName: 'Competitive',
+        standings: [
+          {
+            rank: 1,
+            teamId: 'a',
+            teamName: 'Leaders',
+            logoUrl: null,
+            wins: 8,
+            losses: 1,
+            gameWins: 17,
+            gameLosses: 4,
+            powerScore: 80,
+            delta: 1,
+          },
+          {
+            rank: 2,
+            teamId: 'b',
+            teamName: 'Runners Up',
+            logoUrl: null,
+            wins: 7,
+            losses: 2,
+            gameWins: 15,
+            gameLosses: 6,
+            powerScore: 75,
+            delta: 0,
+          },
+        ],
+      },
+    ],
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    // The other describe clears in its own beforeEach; without this, sentBody()
+    // reads the call left over from the rankings tests.
+    vi.clearAllMocks();
+    mockInvoke.mockResolvedValue({
+      data: { caption: 'A caption.', model: 'claude-opus-5' },
+      error: null,
+    });
+  });
+
+  it('asks for a caption, not the rankings mode', async () => {
+    await generateCaption(week(), '');
+    expect(sentBody().kind).toBeUndefined();
+    expect(sentBody().tone).toBe('straight');
+  });
+
+  it('sends names and numbers, and strips the ids and logos', async () => {
+    await generateCaption(week(), '');
+
+    const sent = sentBody().facts;
+    expect(sent.upsets[0]).toEqual({
+      winnerName: 'Bag Chasers',
+      loserName: 'Corn Stars',
+      matchResult: '2-1',
+      winnerProbability: 0.18,
+    });
+    // The writer has no use for ids or logo URLs, so they are not sent.
+    expect(JSON.stringify(sent)).not.toContain('cdn.example');
+    expect(JSON.stringify(sent)).not.toContain('winnerId');
+  });
+
+  it('names only each division leader, not the whole table', async () => {
+    await generateCaption(week(), '');
+
+    expect(sentBody().facts.divisionLeaders).toEqual([
+      { divisionName: 'Competitive', teamName: 'Leaders', wins: 8, losses: 1 },
+    ]);
+  });
+
+  it('omits a division that has nobody in it', async () => {
+    await generateCaption(
+      week({ divisions: [{ divisionId: 'd-2', divisionName: 'Empty', standings: [] }] }),
+      ''
+    );
+
+    expect(sentBody().facts.divisionLeaders).toEqual([]);
+  });
+
+  it('passes the tone through', async () => {
+    await generateCaption(week(), '', 'playful');
+    expect(sentBody().tone).toBe('playful');
+  });
+
+  it('returns the caption and the model that wrote it', async () => {
+    const result = await generateCaption(week(), '');
+    expect(result).toEqual({ caption: 'A caption.', model: 'claude-opus-5' });
+  });
+
+  it('tells "not set up" apart from "it broke"', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: null,
+      error: Object.assign(new Error('failed'), { context: { status: 503 } }),
+    });
+
+    await expect(generateCaption(week(), '')).rejects.toBeInstanceOf(CaptionUnconfiguredError);
+  });
+
+  it('refuses an empty caption rather than publishing a blank one', async () => {
+    mockInvoke.mockResolvedValueOnce({ data: { caption: '', model: 'm' }, error: null });
+    await expect(generateCaption(week(), '')).rejects.toThrow(/came back empty/i);
   });
 });
