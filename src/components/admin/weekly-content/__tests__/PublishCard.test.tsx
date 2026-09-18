@@ -41,7 +41,10 @@ describe('PublishCard', () => {
     expect(screen.getByRole('heading', { name: 'Publish' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Publish' }));
 
-    expect(onPublish).toHaveBeenCalledWith(undefined);
+    // Called with one argument that is undefined — not called with none.
+    // `toHaveBeenCalledWith()` would assert the latter and fail.
+    expect(onPublish).toHaveBeenCalledOnce();
+    expect(onPublish.mock.calls[0][0]).toBeUndefined();
   });
 
   it('asks what changed when publishing over a live edition', async () => {
@@ -65,7 +68,10 @@ describe('PublishCard', () => {
     await user.type(screen.getByLabelText('What changed?'), '   ');
     await user.click(screen.getByRole('button', { name: 'Publish correction' }));
 
-    expect(onPublish).toHaveBeenCalledWith(undefined);
+    // Called with one argument that is undefined — not called with none.
+    // `toHaveBeenCalledWith()` would assert the latter and fail.
+    expect(onPublish).toHaveBeenCalledOnce();
+    expect(onPublish.mock.calls[0][0]).toBeUndefined();
   });
 
   it('links to the live page once published, and offers to take it down', async () => {

@@ -26,7 +26,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockToPng.mockResolvedValue('data:image/png;base64,AAA');
   mockGetFontEmbedCss.mockResolvedValue('@font-face{}');
-  mockAwaitImagesDecoded.mockResolvedValue(undefined);
+  mockAwaitImagesDecoded.mockReturnValue(Promise.resolve());
   Object.defineProperty(document, 'fonts', {
     configurable: true,
     value: { ready: Promise.resolve() },
@@ -68,7 +68,7 @@ describe('useGraphicExport', () => {
     expect(mockAwaitImagesDecoded).toHaveBeenCalled();
   });
 
-  it('names each download after its request', async () => {
+  it('names each download after its request', () => {
     const { result } = renderHook(() => useGraphicExport());
     const link = document.createElement('a');
     const createElement = vi.spyOn(document, 'createElement').mockReturnValue(link);

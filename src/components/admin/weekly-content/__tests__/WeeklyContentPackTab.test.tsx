@@ -118,7 +118,7 @@ beforeEach(() => {
   mockPack.mockReturnValue(pack());
   mockExportAll.mockResolvedValue({ exported: 3, failed: [] });
   mockBuildLogoResolver.mockResolvedValue((url: string | null) => url);
-  setClipboard(vi.fn().mockResolvedValue(undefined));
+  setClipboard(vi.fn(() => Promise.resolve()));
 });
 
 describe('WeeklyContentPackTab', () => {
