@@ -8,7 +8,9 @@ import type {
 } from '@/types/recapEdition';
 import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
 import { pickTeamOfTheWeek } from '@/utils/powerScore/pickTeamOfTheWeek';
+import type { LeagueTeamMatchStats } from '@/utils/teamDetailsUtils/leagueMatchStats';
 
+import { gradeTeamsForWeek } from './gradeTeamsForWeek';
 import type { SnapshotStandingsInput } from './standingsOrder';
 import { compareStandings } from './standingsOrder';
 
@@ -32,6 +34,10 @@ export interface BuildRecapFactsInput {
   recap: WeeklyRecapData;
   trends: WeekPairTrends;
   standings: SnapshotStandingsInput[];
+  /** The previous week's rows, for rank movement. null when there is no week to compare. */
+  previousStandings?: SnapshotStandingsInput[] | null;
+  /** Sweep and clutch per team, from matches up to the end of the week. */
+  matchStats?: Map<string, LeagueTeamMatchStats>;
   unresolvedMatchCount: number;
   /** Injected so a rebuild in a test is deterministic. */
   generatedAt?: Date;
@@ -103,6 +109,8 @@ export const buildRecapFacts = ({
   recap,
   trends,
   standings,
+  previousStandings = null,
+  matchStats = new Map(),
   unresolvedMatchCount,
   generatedAt = new Date(),
 }: BuildRecapFactsInput): RecapFactsV1 => {
@@ -135,6 +143,12 @@ export const buildRecapFacts = ({
     },
     teamOfTheWeek: toMoverFact(teamOfTheWeek),
     divisions: buildDivisions(standings, deltaByTeam),
+    powerRankings: gradeTeamsForWeek({
+      teams: standings,
+      matchStats,
+      previousTeams: previousStandings,
+      deltaByTeam,
+    }),
     unresolvedMatchCount,
     generatedAt: generatedAt.toISOString(),
   };

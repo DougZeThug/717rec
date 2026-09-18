@@ -224,4 +224,41 @@ describe('canPublishFacts', () => {
 
     expect(canPublishFacts(facts)).toBe(true);
   });
+
+  describe('power rankings', () => {
+    it('ranks every team in the week, across divisions', () => {
+      const facts = build({
+        standings: [
+          standingsRow('comp-a', { powerScore: 70 }),
+          standingsRow('rec-a', {
+            powerScore: 85,
+            divisionId: 'd-2',
+            divisionName: 'Recreational',
+          }),
+          standingsRow('comp-b', { powerScore: 80 }),
+        ],
+      });
+
+      expect(facts.powerRankings?.map((t) => t.teamId)).toEqual(['rec-a', 'comp-b', 'comp-a']);
+      // The division tables still group by division; the rankings do not.
+      expect(facts.divisions).toHaveLength(2);
+    });
+
+    it('carries no undefined, which JSONB would drop', () => {
+      const facts = build({
+        standings: [standingsRow('a', { logoUrl: null, powerScore: null, sos: null })],
+      });
+
+      expect(JSON.stringify(facts.powerRankings)).not.toContain('undefined');
+      expect(facts.powerRankings?.[0].logoUrl).toBeNull();
+    });
+
+    it('shows no rank movement when there is no previous week', () => {
+      const facts = build({
+        standings: [standingsRow('a'), standingsRow('b', { powerScore: 50 })],
+      });
+
+      expect(facts.powerRankings?.every((t) => t.previousRank === null)).toBe(true);
+    });
+  });
 });

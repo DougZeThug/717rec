@@ -2,8 +2,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { fetchPowerScoreTrendsForWeek } from '@/services/rankings/weeklyTrendsForWeek';
 import { WeeklyRecapService } from '@/services/weeklyRecap/WeeklyRecapService';
 import { getWeekWindow } from '@/services/weeklyRecap/weekWindow';
+import type { Match } from '@/types';
 import type { RecapFactsV1 } from '@/types/recapEdition';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
+import type { LeagueTeamMatchStats } from '@/utils/teamDetailsUtils/leagueMatchStats';
+import { calculateLeagueMatchStats } from '@/utils/teamDetailsUtils/leagueMatchStats';
 import { toTeamSlug } from '@/utils/teamSlug';
 
 import type { SnapshotStandingsInput } from './buildRecapFacts';
@@ -87,6 +90,47 @@ const fetchWeekStandings = async (
 };
 
 /**
+ * Sweep rate and clutch record for every team, from every completed match up to
+ * the END of the week being graded.
+ *
+ * The upper bound is the whole point. Without it a week 3 edition would be
+ * graded on week 8 form — the same trap `fetchHotStreaks` already takes an
+ * `asOf` to avoid.
+ */
+const fetchWeekMatchStats = async (
+  seasonId: string,
+  weekEnd: Date
+): Promise<Map<string, LeagueTeamMatchStats>> => {
+  const { data, error } = await supabase
+    .from('matches')
+    .select(
+      'id, team1_id, team2_id, winner_id, loser_id, team1_game_wins, team2_game_wins, iscompleted'
+    )
+    .eq('season_id', seasonId)
+    .eq('iscompleted', true)
+    .is('bracket_id', null)
+    .lt('date', weekEnd.toISOString());
+
+  if (error) handleDatabaseError(error, 'Failed to fetch matches for the weekly grades');
+
+  const matches = (data ?? []).map(
+    (m) =>
+      ({
+        id: m.id,
+        team1Id: m.team1_id,
+        team2Id: m.team2_id,
+        winnerId: m.winner_id,
+        loserId: m.loser_id,
+        team1_game_wins: m.team1_game_wins,
+        team2_game_wins: m.team2_game_wins,
+        iscompleted: m.iscompleted,
+      }) as Match
+  );
+
+  return calculateLeagueMatchStats(matches);
+};
+
+/**
  * How many matches in the week still have no result. Shown before publishing so
  * a half-scored night is not announced as a finished one.
  */
@@ -123,7 +167,7 @@ export const fetchRecapFacts = async (
 
   const { weekStart, weekEnd } = getWeekWindow(found.start_date, weekNumber);
 
-  const [recap, trends, standings, unresolvedMatchCount] = await Promise.all([
+  const [recap, trends, standings, unresolvedMatchCount, matchStats] = await Promise.all([
     WeeklyRecapService.fetchRecapForWeek({
       seasonId,
       weekNumber,
@@ -132,7 +176,15 @@ export const fetchRecapFacts = async (
     fetchPowerScoreTrendsForWeek(seasonId, weekNumber),
     fetchWeekStandings(seasonId, weekNumber),
     countUnresolvedMatches(seasonId, weekStart, weekEnd),
+    fetchWeekMatchStats(seasonId, weekEnd),
   ]);
+
+  // Rank movement needs the week the power scores were actually compared
+  // against, which is not always weekNumber - 1: a week with no snapshot makes
+  // that `basis: 'gap'` and `previousWeek` names the week really used. Null
+  // means there is nothing earlier to compare with, and no arrows are shown.
+  const previousStandings =
+    trends.previousWeek === null ? null : await fetchWeekStandings(seasonId, trends.previousWeek);
 
   return buildRecapFacts({
     seasonId,
@@ -144,6 +196,8 @@ export const fetchRecapFacts = async (
     recap,
     trends,
     standings,
+    previousStandings,
+    matchStats,
     unresolvedMatchCount,
   });
 };
