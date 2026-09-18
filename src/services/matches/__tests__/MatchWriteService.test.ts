@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError, NotFoundError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError, NotFoundError } from '@/types/errors';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
@@ -30,8 +30,6 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Import after mocks
-import { BusinessLogicError } from '@/types/errors';
-
 import {
   batchCreateMatches,
   confirmMatchTie,
