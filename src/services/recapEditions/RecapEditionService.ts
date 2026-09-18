@@ -15,9 +15,6 @@ const VERSION_COLUMNS =
 
 export type CaptionSource = 'ai' | 'ai_edited' | 'manual' | 'fallback';
 
-/** Power ranking blurbs, keyed by team id. */
-export type RecapBlurbs = Record<string, string>;
-
 export interface RecapEditionWithVersion {
   edition: EditionRow;
   version: VersionRow;
@@ -32,7 +29,7 @@ export interface SaveVersionInput {
   captionSource: CaptionSource;
   captionModel?: string | null;
   /** Keyed by team id, so a team leaving the rankings cannot shift the rest. */
-  blurbs?: RecapBlurbs;
+  blurbs?: Record<string, string>;
   blurbsSource?: CaptionSource;
   commissionerNote?: string | null;
   correctionNote?: string | null;

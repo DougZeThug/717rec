@@ -159,6 +159,29 @@ Its Clutch card shows a dash rather than a letter, and the GPA is worked out fro
 the other five — the missing grade neither helps nor hurts. This is the same rule
 points per round follows in the player section.
 
+### The same grades in a published week
+
+A published weekly recap carries a **power ranking**: the same six categories,
+the same A+ to F bands and the same weights, computed for every team in the
+league at once. See
+[`admin/weekly-content-pack.md`](../admin/weekly-content-pack.md).
+
+One thing differs, and it is worth knowing before somebody reports it as a bug.
+**The populations are not the same.** This page ranks a team against the league
+as it is today. A weekly grade ranks it against the league as it was in that
+week's snapshot, and freezes the result. So a team can read B+ here and B- in
+last month's recap without either being wrong — they are answers to different
+questions, asked at different times. A later score correction moves this page's
+grade and deliberately leaves the published one alone.
+
+The rules above all still apply there: an unrated team is left out of the
+comparison, a team with no deciding third game gets a dash for Clutch that drops
+out of its GPA, and the headline letter is the Overall grade. The one difference
+is that an unrated team still appears in the ranking, at the bottom with a dash
+instead of a letter, rather than being left out of the list altogether — a post
+called "power rankings" that silently omits a team reads worse than one that
+says it has no rating yet.
+
 ## Player numbers
 
 Player statistics come from rounds, which exist only for matches scored live. A

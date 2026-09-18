@@ -538,11 +538,19 @@ Plain-language runbook for **Admin → Weekly Content Pack**. Full behaviour:
      more than one week. Fine to publish; the page says which week it used.
    - _N matches still have no result_ — enter the missing scores first if you
      want the recap to be complete.
+   - _The power rankings will show no movement_ — there is no earlier week to
+     compare against, so every team shows a dash instead of an arrow. Fine to
+     publish; the ranks and grades are still correct.
+   - _N teams joined the rankings this week_ — they were not in last week's
+     snapshot, so they show a dash rather than a climb from nowhere.
 4. Rewrite the headline. Add a Commissioner's note — the database knows who won,
    not who finally beat their brother.
 5. **Write it for me** for a livelier caption, then edit it. The line under the
    box says where the current text came from.
-6. **Download graphics**, post them, **Publish**.
+6. In **Power rankings**, press **Write blurbs for me** to fill every team's
+   line in one go, then edit any of them. Every team starts with a plain line
+   built from its own results, so this step is optional.
+7. **Download graphics**, post them, **Publish**.
 
 ### Fixing a published recap
 
@@ -556,13 +564,15 @@ to its live recap card and nothing is deleted.
 
 ### When something is wrong
 
-| Symptom                                     | Cause                                                    | Fix                                                                                                            |
-| ------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Publish is greyed out                       | No snapshot for that week, or nothing happened that week | Run `capture-power-snapshots`, then generate again                                                             |
-| "AI captions are not set up"                | `ANTHROPIC_API_KEY` is not set                           | Add it in Supabase → Edge Functions → Secrets, or write the caption by hand                                    |
-| A downloaded PNG has the wrong fonts        | The font files did not load                              | Reload the page and download again                                                                             |
-| A team's logo is missing from a graphic     | The image could not be fetched                           | The graphic draws that team's initials instead; check the logo in Admin → Teams                                |
-| A shared link previews with the league logo | The `og-recap` worker is not deployed                    | See [`workers/og-recap/README.md`](../workers/og-recap/README.md). Optional — everything else works without it |
+| Symptom                                     | Cause                                                      | Fix                                                                                                            |
+| ------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Publish is greyed out                       | No snapshot for that week, or nothing happened that week   | Run `capture-power-snapshots`, then generate again                                                             |
+| "AI captions are not set up"                | `ANTHROPIC_API_KEY` is not set                             | Add it in Supabase → Edge Functions → Secrets, or write the caption by hand                                    |
+| "AI blurbs are not set up"                  | The same key is not set                                    | As above. The plain lines built from the results are used until then, and you can edit any of them             |
+| A team's blurb is missing after generating  | The writer skipped it, or named a team that does not exist | Unknown teams are dropped on purpose. That team keeps whatever line it had; write one yourself                 |
+| A downloaded PNG has the wrong fonts        | The font files did not load                                | Reload the page and download again                                                                             |
+| A team's logo is missing from a graphic     | The image could not be fetched                             | The graphic draws that team's initials instead; check the logo in Admin → Teams                                |
+| A shared link previews with the league logo | The `og-recap` worker is not deployed                      | See [`workers/og-recap/README.md`](../workers/og-recap/README.md). Optional — everything else works without it |
 
 ### What is frozen, and why it matters
 

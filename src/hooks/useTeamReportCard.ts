@@ -22,10 +22,9 @@ import {
 
 export type ReportCardMode = 'season' | 'career';
 
-// The weights and the grading helper now live in `@/utils/reportCardUtils`, a
-// leaf the services can import too — the weekly recap grades a frozen week
-// through the same rules. Re-exported so existing importers are unaffected.
-export { GRADE_WEIGHTS };
+// The weights and the grading helper live in `@/utils/reportCardUtils`, a leaf
+// the services can import too — the weekly recap grades a frozen week through
+// the same rules.
 
 const buildGrades = (categories: Omit<TeamGrades, 'gpa'>): TeamGrades => ({
   ...categories,

@@ -73,6 +73,28 @@ Components → Hooks → Services → Supabase → PostgreSQL
 TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.from('v_team_details')
 ```
 
+### Pure decision modules
+
+Some services split the reading from the deciding, so the rules that decide what
+gets published can be tested directly and cannot drift between a preview and a
+published page. The weekly recap is the clearest case:
+
+- `services/recapEditions/fetchRecapFacts.ts` - the only part that touches the
+  database
+- `services/recapEditions/buildRecapFacts.ts` - assembles the frozen facts
+- `services/recapEditions/gradeTeamsForWeek.ts` - ranks the league and grades
+  every team for one week
+- `services/recapEditions/standingsOrder.ts` - the one standings sort both of
+  the above use
+- `services/recapEditions/fallbackBlurbs.ts` - the line written about each team
+  when no AI blurb is generated
+
+`gradeTeamsForWeek` deliberately reuses the team page's own grading utilities -
+`utils/reportCardUtils.ts` and `utils/reportCardPopulations.ts` - pointed at a
+week's snapshot instead of today's standings, so a weekly grade and a team page
+grade cannot use different rules. They do use different populations, which is
+documented in `docs/product-description/stats/team-and-player-stats.md`.
+
 ## Supabase Integration
 
 **Location**: `src/integrations/supabase/`
@@ -85,7 +107,10 @@ TeamsPage → useTeamsQuery() → TeamFetchService.fetchTeams() → supabase.fro
 - `power_score_snapshots` - the only place a week number is stored
 - `recap_editions`, `recap_edition_versions` - published weekly recaps. Versions
   are append-only (no UPDATE or DELETE grant), so a correction adds a version
-  rather than rewriting one.
+  rather than rewriting one. A version holds the frozen `facts` (what the
+  database said) separately from the editorial text - `headline`, `caption` and
+  the per-team `blurbs` map (what the league chose to say) - so regenerating
+  the facts cannot erase written text.
 
 > The generated file `src/integrations/supabase/types.ts` is the source of truth
 > for the full table list. Update this section when tables are added or renamed.

@@ -268,6 +268,30 @@ Offense, Clutch, Schedule — each from a percentile against the league, plus a
 weighted average. Available for a season and for a career, graded against
 different populations, so the two are not comparable.
 
+**Power ranking.** Every team in the league ordered 1 to N **across all
+divisions**, as published in a week's recap edition. Ordered the same way the
+standings are — displayed power score, then win rate, then name — so an
+Intermediate team can outrank a Competitive one. Distinct from the standings,
+which are ordered within a division.
+
+**Weekly grade.** A team's report card letter for one published week, computed
+from that week's snapshot rather than from today's table. Same scale, same six
+categories and same weights as the report card, so a weekly grade and a team
+page grade are read the same way — but they are ranked against different
+populations (the league as it was that week, against the league as it is now),
+so they can disagree by a notch. Frozen with the edition: a later score
+correction does not move a published grade.
+
+**Rank movement.** Places gained or lost between two weeks' power rankings,
+shown as an arrow. Counted in places, not power score, so a team can gain power
+and still fall when the rest of the league gained more. Blank when there is no
+comparable earlier week.
+
+**Blurb.** The one line written about a team in a published power ranking.
+Editorial text, not a computed number: it is stored with the headline and
+caption rather than with the frozen facts, so regenerating a week cannot erase
+it.
+
 **Parity index.** A 0–100 number describing how even the league is: 100 minus
 four times the spread of power score, floored at 0. Labelled Very High down to
 Very Low.

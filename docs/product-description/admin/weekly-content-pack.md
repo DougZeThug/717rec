@@ -3,9 +3,10 @@
 ## Summary
 
 **Admin → Weekly Content Pack** (`/admin/weekly-content`) turns one week's
-verified results into something postable: a recap graphic, one standings graphic
-per division, and a caption. Publishing also puts the recap on its own public
-page and swaps the home page's Weekly Recap block over to it.
+verified results into something postable: a recap graphic, a set of power
+ranking graphics covering every team, one standings graphic per division, and a
+caption. Publishing also puts the recap on its own public page and swaps the
+home page's Weekly Recap block over to it.
 
 The important idea is that a published recap is a **saved edition**, not a live
 view. It stores the numbers it was built from. Re-opening a week 3 recap in week
@@ -18,13 +19,15 @@ An admin opens the section after league night. They pick the active season and
 the week that just finished, and press **Generate draft**.
 
 The right-hand column fills with the whole pack, stacked in the order it would
-be posted: the wrap graphic first, then Competitive, Intermediate and
-Recreational standings. The left column holds a headline the app has filled in,
-an empty Commissioner's note, and a caption built from the results.
+be posted: the wrap graphic first, then the power rankings, then Competitive,
+Intermediate and Recreational standings. The left column holds a headline the
+app has filled in, an empty Commissioner's note, a caption built from the
+results, and one editable line per team.
 
 They rewrite the headline, add a line about who finally beat their brother,
-press **Write it for me** to get a livelier caption, tidy it, then **Download
-graphics** and **Publish**.
+press **Write it for me** to get a livelier caption, press **Write blurbs for
+me** to fill in every team's line, tidy both, then **Download graphics** and
+**Publish**.
 
 ## The interaction, event by event
 
@@ -93,11 +96,49 @@ describe individual throws or comebacks, which the league does not record.
 If it is not set up, the screen says so and names what is missing. If it fails,
 the plain caption stays in the box. Either way nothing is blocked.
 
+### Power rankings
+
+Every team in the league, ranked 1 to N **across all divisions** — an
+Intermediate team can sit above a Competitive one, and that crossing is the
+point. Each row carries a letter grade, a movement arrow, the season record,
+the power score and one line of comment.
+
+**The grade** is the same A+ to F scale as the team page report card, from the
+same six categories and the same weights (Overall, Consistency, Games, Offense,
+Clutch, Schedule). It is computed against **that week's snapshot**, so it is
+frozen with the edition. The team page ranks against the league as it is today,
+so the two can disagree by a notch — both are right about different moments.
+
+**The arrow** counts places gained or lost against the previous week, not power
+score movement. A team can gain power and still fall, because the rest of the
+league gained more. A team with no week to compare against — the first week, or
+one that has only just appeared — shows a dash, never an invented climb.
+
+A team with no power score yet is listed last with a dash instead of a letter.
+It is not dropped, and it is not counted in anyone else's grade.
+
+**Write blurbs for me** fills every line in one request, not one per team: the
+lines compare teams to each other, so the writer needs the whole table. It is
+told the same rules as the caption, plus three of its own — never say a team
+beat, lost to, or played a particular opponent (the facts list standings, not
+fixtures), never describe a move it cannot see, and never award a grade to an
+unrated team. Any team the reply names that was not sent is discarded.
+
+Every team starts with a plain line built from its own numbers, so this step is
+optional and nothing is ever blank.
+
 ### Download graphics
 
 Saves each graphic as a PNG at 1080×1350, named
-`717rec-fall-2026-week-6-recap.png` and
+`717rec-fall-2026-week-6-recap.png`,
+`717rec-fall-2026-week-6-rankings-1.png` and
 `717rec-fall-2026-week-6-standings-competitive.png`.
+
+Twenty-six teams do not fit one image, so the rankings are split into pages of
+at most nine, spread evenly — 26 teams post as three images of 9, 9 and 8
+rather than 9, 9, 8 with a stub. On the graphic each blurb is clamped to one
+line, because the row height is fixed; the full text always shows on the
+edition's web page.
 
 What downloads is exactly what the preview shows — the same component at the
 same size, shrunk on screen only.

@@ -1,4 +1,8 @@
-import type { RecapGradeCategory, RecapTeamGrade } from '@/types/recapEdition';
+import type {
+  RecapGradeCategory,
+  RecapGradeCategoryKey,
+  RecapTeamGrade,
+} from '@/types/recapEdition';
 import type { GradeableSeasonTeam } from '@/utils/reportCardPopulations';
 import { collectSeasonPopulations, isGradeable } from '@/utils/reportCardPopulations';
 import {
@@ -44,7 +48,7 @@ export interface GradeTeamsForWeekInput {
 }
 
 /** The label and description each category carries into the rendered card. */
-const CATEGORY_LABELS: Record<RecapGradeCategory['key'], string> = {
+const CATEGORY_LABELS: Record<RecapGradeCategoryKey, string> = {
   overall: 'Overall',
   consistency: 'Consistency',
   games: 'Games',
@@ -90,7 +94,7 @@ export const gradeTeamsForWeek = ({
     const gradeable = isGradeable(row);
 
     const category = (
-      key: RecapGradeCategory['key'],
+      key: RecapGradeCategoryKey,
       value: number | null,
       population: number[]
     ): RecapGradeCategory => {
@@ -124,7 +128,7 @@ export const gradeTeamsForWeek = ({
     ];
 
     const byKey = new Map(categories.map((c) => [c.key, c.grade] as const));
-    const weightOf = (key: RecapGradeCategory['key']): number => GRADE_WEIGHTS[key];
+    const weightOf = (key: RecapGradeCategoryKey): number => GRADE_WEIGHTS[key];
 
     return {
       rank: index + 1,
