@@ -37,7 +37,10 @@ const snapshotRow = (teamId: string, week: number) => ({
 
 /** Results per table, in the order that table is queried. */
 const setupSupabase = (queued: Record<string, unknown[]>) => {
-  const remaining: Record<string, unknown[]> = JSON.parse(JSON.stringify(queued));
+  // Cloned so each query shifts from its own copy and a test can be re-run.
+  // A genuine deep clone, unlike the JSON round trip in buildRecapFacts.test,
+  // where surviving serialisation IS the assertion.
+  const remaining: Record<string, unknown[]> = structuredClone(queued);
 
   mockFrom.mockImplementation((table: string) => {
     const call: Call = { table, filters: [] };
