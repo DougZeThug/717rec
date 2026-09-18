@@ -79,6 +79,14 @@ describe('sentry utils', () => {
       const { scrubUrl } = await importSentryModule();
       expect(scrubUrl('/path?token=abc')).toContain('token=%5BFiltered%5D');
     });
+
+    it('returns the original string when the URL cannot be parsed', async () => {
+      const { scrubUrl } = await importSentryModule();
+      // A bare '[' starts an IPv6 host the URL parser cannot finish. The scrub
+      // runs inside beforeSend, so it has to hand back the input rather than
+      // throw and lose the event.
+      expect(scrubUrl('http://[')).toBe('http://[');
+    });
   });
 
   describe('scrubQueryString', () => {
@@ -112,6 +120,26 @@ describe('sentry utils', () => {
     it('leaves non-sensitive params untouched', async () => {
       const { scrubQueryString } = await importSentryModule();
       expect(scrubQueryString('page=2')).toBe('page=2');
+    });
+
+    it('returns the original string when the query string cannot be parsed', async () => {
+      const { scrubQueryString } = await importSentryModule();
+      // URLSearchParams accepts any string, so the guard is defensive. Force it
+      // to throw to prove the reporter degrades quietly instead of taking the
+      // whole beforeSend hook down with it.
+      const RealURLSearchParams = globalThis.URLSearchParams;
+      // A plain function, not a class: `new` runs the body either way, and a
+      // class whose only member is a constructor is just a function spelt long.
+      function ThrowingURLSearchParams(): never {
+        throw new TypeError('boom');
+      }
+      vi.stubGlobal('URLSearchParams', ThrowingURLSearchParams);
+
+      try {
+        expect(scrubQueryString('token=abc')).toBe('token=abc');
+      } finally {
+        vi.stubGlobal('URLSearchParams', RealURLSearchParams);
+      }
     });
   });
 

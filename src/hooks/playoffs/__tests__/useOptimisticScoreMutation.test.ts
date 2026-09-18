@@ -41,6 +41,8 @@ const makeOtherBmMatch = (overrides = {}) => ({
   ...overrides,
 });
 
+let queryClient: QueryClient;
+
 const scoresById = () => {
   const data = queryClient.getQueryData<{
     matches: { id: number; opponent1_score: number | null }[];
@@ -59,8 +61,6 @@ const makeLegacyMatch = (overrides = {}) => ({
   status: 'pending',
   ...overrides,
 });
-
-let queryClient: QueryClient;
 
 const createWrapper = () => {
   return ({ children }: { children: React.ReactNode }) =>

@@ -3,6 +3,16 @@ import { TeamPairing } from '@/types/autoSchedule';
 import { DualBlockValidationResult } from './types';
 
 /**
+ * Helper function to find a team by ID in pairings
+ */
+const findTeamById = (teamId: string, pairings: TeamPairing[]) => {
+  return (
+    pairings.find((p) => p.team1.id === teamId)?.team1 ||
+    pairings.find((p) => p.team2.id === teamId)?.team2
+  );
+};
+
+/**
  * Validate dual block schedule for issues like overbooking and duplicate opponents
  *
  * @param primaryBlockPairings - Pairings from the first block
@@ -63,14 +73,4 @@ export const validateDualBlockSchedule = (
   }
 
   return result;
-};
-
-/**
- * Helper function to find a team by ID in pairings
- */
-const findTeamById = (teamId: string, pairings: TeamPairing[]) => {
-  return (
-    pairings.find((p) => p.team1.id === teamId)?.team1 ||
-    pairings.find((p) => p.team2.id === teamId)?.team2
-  );
 };

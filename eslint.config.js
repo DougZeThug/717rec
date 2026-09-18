@@ -123,6 +123,24 @@ export default tseslint.config(
       // Every switch needs a default — for finite unions use
       // assertNever() from @/utils/assertNever so TS catches new members too.
       'default-case': 'error',
+
+      // Define a name before you use it, so the file reads top to bottom.
+      // `functions: false` keeps hoisted `function foo() {}` declarations
+      // legal — a module may lead with its entry point and put the helpers
+      // below. This mirrors DeepSource JS-0357, so lint and DeepSource agree.
+      // See CONTRIBUTING.md → Component Guidelines → File Structure.
+      '@typescript-eslint/no-use-before-define': [
+        'error',
+        {
+          functions: false,
+          classes: true,
+          variables: true,
+          enums: true,
+          typedefs: true,
+          ignoreTypeReferences: true,
+          allowNamedExports: false,
+        },
+      ],
     },
   },
   // Allowed exceptions to the Supabase client import restriction:

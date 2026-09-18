@@ -31,6 +31,22 @@ const AllTeamsCareerPowerScoreChart = lazy(() =>
  */
 const LOADING_HEADING = <h1 className="sr-only">Standings</h1>;
 
+const NoTeamsAvailable = () => (
+  <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-sm font-inter">
+    <CardHeader>
+      <CardTitle className="font-bold">No Teams Available</CardTitle>
+      <CardDescription>
+        There are no teams in the selected division or no teams have been added yet.
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <p className="text-muted-foreground font-inter">
+        Try selecting a different division or add teams to view statistics.
+      </p>
+    </CardContent>
+  </Card>
+);
+
 interface StatsContainerProps {
   matches: Match[];
   isLoadingMatches: boolean;
@@ -100,21 +116,5 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
     </WinterSection>
   );
 };
-
-const NoTeamsAvailable = () => (
-  <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-sm font-inter">
-    <CardHeader>
-      <CardTitle className="font-bold">No Teams Available</CardTitle>
-      <CardDescription>
-        There are no teams in the selected division or no teams have been added yet.
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <p className="text-muted-foreground font-inter">
-        Try selecting a different division or add teams to view statistics.
-      </p>
-    </CardContent>
-  </Card>
-);
 
 export default StatsContainer;

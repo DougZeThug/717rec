@@ -40,7 +40,10 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
   let hasConnectedOnce = false;
   let disposed = false;
 
-  const connect = (): void => {
+  // connect() and scheduleReconnect() call each other, so these are
+  // declarations rather than arrow consts: hoisting lets either one come
+  // first without a forward reference.
+  function connect(): void {
     if (disposed) return;
 
     const channel = build();
@@ -75,9 +78,9 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
         scheduleReconnect();
       }
     });
-  };
+  }
 
-  const scheduleReconnect = (): void => {
+  function scheduleReconnect(): void {
     if (disposed || retryTimer) return;
 
     const exp = Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * 2 ** attempt);
@@ -96,7 +99,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
       }
       connect();
     }, delay);
-  };
+  }
 
   connect();
 

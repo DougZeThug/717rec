@@ -7,60 +7,6 @@ import {
   useChallongeFallbackConfig,
 } from '@/hooks/useChallongeFallback';
 
-export const ChallongeFallback: React.FC = () => {
-  const { data: config } = useChallongeFallbackConfig();
-  const { data: brackets } = useChallongeFallbackBrackets();
-  const [allExpanded, setAllExpanded] = useState(false);
-
-  if (!brackets || brackets.length === 0) return null;
-
-  const toggleAll = () => {
-    setAllExpanded(!allExpanded);
-    // Force all brackets to update their state
-    const event = new CustomEvent('toggleAllBrackets', { detail: !allExpanded });
-    window.dispatchEvent(event);
-  };
-
-  return (
-    <section className="space-y-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            {config?.header_title ?? 'Playoffs'}
-          </h2>
-          {config?.header_subtitle && (
-            <p className="text-muted-foreground">{config.header_subtitle}</p>
-          )}
-        </div>
-        <Button variant="outline" size="sm" onClick={toggleAll} className="flex items-center gap-2">
-          {allExpanded ? (
-            <>
-              <Minimize className="size-4" />
-              Collapse All
-            </>
-          ) : (
-            <>
-              <Expand className="size-4" />
-              Expand All
-            </>
-          )}
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4">
-        {brackets.map(({ id, slug, title }) => (
-          <ChallongeEmbedWithToggle
-            key={id}
-            slug={slug}
-            title={title}
-            forceExpanded={allExpanded}
-          />
-        ))}
-      </div>
-    </section>
-  );
-};
-
 // Wrapper component to handle the expand all functionality
 const ChallongeEmbedWithToggle: React.FC<{
   slug: string;
@@ -126,5 +72,59 @@ const ChallongeEmbedWithToggle: React.FC<{
         </div>
       )}
     </div>
+  );
+};
+
+export const ChallongeFallback: React.FC = () => {
+  const { data: config } = useChallongeFallbackConfig();
+  const { data: brackets } = useChallongeFallbackBrackets();
+  const [allExpanded, setAllExpanded] = useState(false);
+
+  if (!brackets || brackets.length === 0) return null;
+
+  const toggleAll = () => {
+    setAllExpanded(!allExpanded);
+    // Force all brackets to update their state
+    const event = new CustomEvent('toggleAllBrackets', { detail: !allExpanded });
+    window.dispatchEvent(event);
+  };
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            {config?.header_title ?? 'Playoffs'}
+          </h2>
+          {config?.header_subtitle && (
+            <p className="text-muted-foreground">{config.header_subtitle}</p>
+          )}
+        </div>
+        <Button variant="outline" size="sm" onClick={toggleAll} className="flex items-center gap-2">
+          {allExpanded ? (
+            <>
+              <Minimize className="size-4" />
+              Collapse All
+            </>
+          ) : (
+            <>
+              <Expand className="size-4" />
+              Expand All
+            </>
+          )}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {brackets.map(({ id, slug, title }) => (
+          <ChallongeEmbedWithToggle
+            key={id}
+            slug={slug}
+            title={title}
+            forceExpanded={allExpanded}
+          />
+        ))}
+      </div>
+    </section>
   );
 };

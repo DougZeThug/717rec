@@ -53,11 +53,6 @@ export const getDivisionHeaderClass = (division: string): string => {
   return cn('bg-gradient-to-br from-muted to-card', 'border-b-2 border-border');
 };
 
-// Division text color classes
-export const getDivisionTextClass = (division: string): string =>
-  getDivisionSoftClasses(division).text;
-
-// Division badge color classes (for small badges/chips)
 /**
  * Softer, theme-friendly division styling.
  * Same hue identity as the standard tier colors, but desaturated so large
@@ -136,6 +131,11 @@ export const getDivisionSoftClasses = (
   return NEUTRAL_SOFT;
 };
 
+// Division text color classes
+export const getDivisionTextClass = (division: string): string =>
+  getDivisionSoftClasses(division).text;
+
+// Division badge color classes (for small badges/chips)
 export const getDivisionBadgeColor = (division: string): string => {
   const divisionNameLower = division.toLowerCase();
 

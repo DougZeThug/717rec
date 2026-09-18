@@ -4,6 +4,33 @@ import { calculateOverallQualityScore } from './qualityScoreUtils';
 import { DualMatchMetrics, TeamMatchCount } from './types';
 
 /**
+ * Helper function to process a pairing and update team match counts
+ */
+const processBlockPairing = (
+  pairing: TeamPairing,
+  teamMatchCounts: Record<string, TeamMatchCount>,
+  blockId: string
+) => {
+  const team1Id = pairing.team1.id;
+  const team2Id = pairing.team2.id;
+
+  if (!teamMatchCounts[team1Id]) {
+    teamMatchCounts[team1Id] = { matchCount: 0, opponents: [], blocks: new Set<string>() };
+  }
+  if (!teamMatchCounts[team2Id]) {
+    teamMatchCounts[team2Id] = { matchCount: 0, opponents: [], blocks: new Set<string>() };
+  }
+
+  teamMatchCounts[team1Id].matchCount++;
+  teamMatchCounts[team1Id].opponents.push(team2Id);
+  teamMatchCounts[team1Id].blocks.add(blockId);
+
+  teamMatchCounts[team2Id].matchCount++;
+  teamMatchCounts[team2Id].opponents.push(team1Id);
+  teamMatchCounts[team2Id].blocks.add(blockId);
+};
+
+/**
  * Calculate metrics for dual / multi-block pairings.
  *
  * Accepts either:
@@ -115,30 +142,3 @@ export function calculateDualBlockMetrics(
     blockBalanceScore,
   };
 }
-
-/**
- * Helper function to process a pairing and update team match counts
- */
-const processBlockPairing = (
-  pairing: TeamPairing,
-  teamMatchCounts: Record<string, TeamMatchCount>,
-  blockId: string
-) => {
-  const team1Id = pairing.team1.id;
-  const team2Id = pairing.team2.id;
-
-  if (!teamMatchCounts[team1Id]) {
-    teamMatchCounts[team1Id] = { matchCount: 0, opponents: [], blocks: new Set<string>() };
-  }
-  if (!teamMatchCounts[team2Id]) {
-    teamMatchCounts[team2Id] = { matchCount: 0, opponents: [], blocks: new Set<string>() };
-  }
-
-  teamMatchCounts[team1Id].matchCount++;
-  teamMatchCounts[team1Id].opponents.push(team2Id);
-  teamMatchCounts[team1Id].blocks.add(blockId);
-
-  teamMatchCounts[team2Id].matchCount++;
-  teamMatchCounts[team2Id].opponents.push(team1Id);
-  teamMatchCounts[team2Id].blocks.add(blockId);
-};

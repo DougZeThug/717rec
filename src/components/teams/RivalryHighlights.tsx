@@ -9,6 +9,56 @@ import { cn } from '@/lib/utils';
 import { classifyRivalries, type RivalryResults } from '@/utils/teamDetailsUtils/rivalryUtils';
 import { toTeamSlug } from '@/utils/teamSlug';
 
+interface RivalryCardProps {
+  label: string;
+  sublabel: string;
+  opponentName: string;
+  opponentImageUrl?: string;
+  opponentId: string;
+  icon: React.ReactNode;
+  borderColor: string;
+  bgColor: string;
+  onClick: () => void;
+}
+
+const RivalryCard: React.FC<RivalryCardProps> = ({
+  label,
+  sublabel,
+  opponentName,
+  opponentImageUrl,
+  opponentId,
+  icon,
+  borderColor,
+  bgColor,
+  onClick,
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      'flex items-center gap-3 p-3 rounded-lg border transition-colors text-left w-full',
+      'hover:bg-muted/50',
+      borderColor,
+      bgColor
+    )}
+  >
+    <TeamLogo
+      imageUrl={opponentImageUrl || ''}
+      teamName={opponentName}
+      teamId={opponentId}
+      size="sm"
+    />
+    <div className="min-w-0 flex-1">
+      <div className="flex items-center gap-1.5">
+        {icon}
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      </div>
+      <div className="font-medium text-sm truncate">{opponentName}</div>
+      <div className="text-xs text-muted-foreground">{sublabel}</div>
+    </div>
+  </button>
+);
+
 interface RivalryHighlightsProps {
   teamId: string;
   standalone?: boolean;
@@ -101,55 +151,5 @@ const RivalryHighlights: React.FC<RivalryHighlightsProps> = ({ teamId, standalon
     </CollapsibleSection>
   );
 };
-
-interface RivalryCardProps {
-  label: string;
-  sublabel: string;
-  opponentName: string;
-  opponentImageUrl?: string;
-  opponentId: string;
-  icon: React.ReactNode;
-  borderColor: string;
-  bgColor: string;
-  onClick: () => void;
-}
-
-const RivalryCard: React.FC<RivalryCardProps> = ({
-  label,
-  sublabel,
-  opponentName,
-  opponentImageUrl,
-  opponentId,
-  icon,
-  borderColor,
-  bgColor,
-  onClick,
-}) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={cn(
-      'flex items-center gap-3 p-3 rounded-lg border transition-colors text-left w-full',
-      'hover:bg-muted/50',
-      borderColor,
-      bgColor
-    )}
-  >
-    <TeamLogo
-      imageUrl={opponentImageUrl || ''}
-      teamName={opponentName}
-      teamId={opponentId}
-      size="sm"
-    />
-    <div className="min-w-0 flex-1">
-      <div className="flex items-center gap-1.5">
-        {icon}
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      </div>
-      <div className="font-medium text-sm truncate">{opponentName}</div>
-      <div className="text-xs text-muted-foreground">{sublabel}</div>
-    </div>
-  </button>
-);
 
 export default React.memo(RivalryHighlights);

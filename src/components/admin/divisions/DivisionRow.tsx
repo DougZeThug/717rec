@@ -41,6 +41,47 @@ const normalizeDisplay = (value: string | null | undefined): DisplayDivision => 
   return 'Recreational';
 };
 
+interface DeleteConfirmProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  name: string;
+  onConfirm: () => void;
+  pending: boolean;
+}
+
+const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
+  open,
+  onOpenChange,
+  name,
+  onConfirm,
+  pending,
+}) => (
+  <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Delete division &quot;{name}&quot;?</AlertDialogTitle>
+        <AlertDialogDescription>
+          This cannot be undone. Divisions currently assigned to any team or bracket cannot be
+          deleted.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={(e) => {
+            e.preventDefault();
+            onConfirm();
+          }}
+          disabled={pending}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          {pending ? 'Deleting…' : 'Delete'}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 interface Props {
   division: DivisionItem;
   layout: 'row' | 'card';
@@ -277,46 +318,5 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
     </>
   );
 };
-
-interface DeleteConfirmProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  name: string;
-  onConfirm: () => void;
-  pending: boolean;
-}
-
-const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
-  open,
-  onOpenChange,
-  name,
-  onConfirm,
-  pending,
-}) => (
-  <AlertDialog open={open} onOpenChange={onOpenChange}>
-    <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Delete division &quot;{name}&quot;?</AlertDialogTitle>
-        <AlertDialogDescription>
-          This cannot be undone. Divisions currently assigned to any team or bracket cannot be
-          deleted.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
-        <AlertDialogAction
-          onClick={(e) => {
-            e.preventDefault();
-            onConfirm();
-          }}
-          disabled={pending}
-          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-        >
-          {pending ? 'Deleting…' : 'Delete'}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
-);
 
 export default DivisionRow;

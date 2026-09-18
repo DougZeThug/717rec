@@ -17,40 +17,6 @@ import { buildPlayerTeamMap, computeMatchRecap } from '@/utils/liveScoring/match
 
 import { MatchRecapSummary } from './MatchRecapSummary';
 
-interface MatchRecapDialogProps {
-  matchId: string;
-  team1Name: string;
-  team2Name: string;
-  trigger: React.ReactNode;
-}
-
-export const MatchRecapDialog: React.FC<MatchRecapDialogProps> = ({
-  matchId,
-  team1Name,
-  team2Name,
-  trigger,
-}) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ClipboardList className="size-4 text-primary" aria-hidden />
-            Match Recap
-          </DialogTitle>
-          <DialogDescription>
-            {team1Name} vs {team2Name}
-          </DialogDescription>
-        </DialogHeader>
-        {open && <RecapBody matchId={matchId} />}
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
   const { bundle, derived, isLoading, error } = useLiveMatch(matchId);
   const team1Players = useTeamPlayers(bundle?.match.team1_id ?? undefined);
@@ -124,5 +90,39 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
         <ExternalLink className="size-3.5" aria-hidden />
       </Link>
     </div>
+  );
+};
+
+interface MatchRecapDialogProps {
+  matchId: string;
+  team1Name: string;
+  team2Name: string;
+  trigger: React.ReactNode;
+}
+
+export const MatchRecapDialog: React.FC<MatchRecapDialogProps> = ({
+  matchId,
+  team1Name,
+  team2Name,
+  trigger,
+}) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ClipboardList className="size-4 text-primary" aria-hidden />
+            Match Recap
+          </DialogTitle>
+          <DialogDescription>
+            {team1Name} vs {team2Name}
+          </DialogDescription>
+        </DialogHeader>
+        {open && <RecapBody matchId={matchId} />}
+      </DialogContent>
+    </Dialog>
   );
 };

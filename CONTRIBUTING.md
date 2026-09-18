@@ -194,6 +194,19 @@ export const MyComponent: React.FC<MyComponentProps> = ({ title, onAction }) => 
 };
 ```
 
+A local helper — a sub-component, a lookup table, a small `const` function —
+goes **above** the component that uses it, not at the bottom of the file.
+`npm run lint` enforces this
+(`@typescript-eslint/no-use-before-define` in `eslint.config.js`), and it
+mirrors DeepSource's JS-0357 so the two agree.
+
+A hoisted `function` declaration is exempt, so a module may still lead with its
+entry point and put its helpers below. That is also the way out of mutual
+recursion, where neither `const` can be written first — see
+`src/hooks/realtime/subscribeWithRetry.ts`. When a forward reference is
+genuinely unavoidable, disable the rule on the line and say why, and add a
+matching `// skipcq: JS-0357` for DeepSource.
+
 ### Styling
 
 - Use Tailwind CSS with semantic tokens from the design system
