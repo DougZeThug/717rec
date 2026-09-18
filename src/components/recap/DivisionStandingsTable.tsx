@@ -17,6 +17,25 @@ const StandingsRow: React.FC<{ row: RecapStandingsRow }> = ({ row }) => (
   </tr>
 );
 
+/** The table itself, so the card wrapping it does not deepen its markup. */
+const StandingsGrid: React.FC<{ standings: RecapStandingsRow[] }> = ({ standings }) => (
+  <table className="w-full text-sm">
+    <thead>
+      <tr className="text-muted-foreground text-left">
+        <th className="pb-2 w-8">#</th>
+        <th className="pb-2">Team</th>
+        <th className="pb-2 text-right">W–L</th>
+        <th className="pb-2 text-right">Power</th>
+      </tr>
+    </thead>
+    <tbody>
+      {standings.map((row) => (
+        <StandingsRow key={row.teamId} row={row} />
+      ))}
+    </tbody>
+  </table>
+);
+
 /**
  * One division's table on the public recap page.
  *
@@ -27,21 +46,7 @@ const DivisionStandingsTable: React.FC<{ division: RecapDivisionFact }> = ({ div
     <h2 className="text-xl font-semibold mb-2">{division.divisionName}</h2>
     <Card>
       <CardContent className="pt-6">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-muted-foreground text-left">
-              <th className="pb-2 w-8">#</th>
-              <th className="pb-2">Team</th>
-              <th className="pb-2 text-right">W–L</th>
-              <th className="pb-2 text-right">Power</th>
-            </tr>
-          </thead>
-          <tbody>
-            {division.standings.map((row) => (
-              <StandingsRow key={row.teamId} row={row} />
-            ))}
-          </tbody>
-        </table>
+        <StandingsGrid standings={division.standings} />
       </CardContent>
     </Card>
   </section>

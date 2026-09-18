@@ -87,6 +87,32 @@ const PowerRankingRow: React.FC<{ team: RecapTeamGrade; blurb?: string }> = ({ t
   );
 };
 
+/** The table itself, so the card wrapping it does not deepen its markup. */
+const RankingsGrid: React.FC<PowerRankingsTableProps> = ({ teams, blurbs = NO_BLURBS }) => (
+  <table className="w-full text-sm">
+    <caption className="sr-only">
+      Every team in the league, ranked across all divisions for this week
+    </caption>
+    <thead>
+      <tr className="text-muted-foreground text-left">
+        <th className="pb-2 w-8">#</th>
+        <th className="pb-2 w-10" aria-label="Movement since last week">
+          +/-
+        </th>
+        <th className="pb-2">Team</th>
+        <th className="pb-2 w-10 text-center">Grade</th>
+        <th className="pb-2 text-right">W–L</th>
+        <th className="pb-2 text-right">Power</th>
+      </tr>
+    </thead>
+    <tbody>
+      {teams.map((team) => (
+        <PowerRankingRow key={team.teamId} team={team} blurb={blurbs[team.teamId]} />
+      ))}
+    </tbody>
+  </table>
+);
+
 /**
  * The whole league, ranked, on the public recap page.
  *
@@ -105,28 +131,7 @@ const PowerRankingsTable: React.FC<PowerRankingsTableProps> = ({ teams, blurbs =
       <h2 className="text-xl font-semibold mb-2">Power rankings</h2>
       <Card>
         <CardContent className="pt-6">
-          <table className="w-full text-sm">
-            <caption className="sr-only">
-              Every team in the league, ranked across all divisions for this week
-            </caption>
-            <thead>
-              <tr className="text-muted-foreground text-left">
-                <th className="pb-2 w-8">#</th>
-                <th className="pb-2 w-10" aria-label="Movement since last week">
-                  +/-
-                </th>
-                <th className="pb-2">Team</th>
-                <th className="pb-2 w-10 text-center">Grade</th>
-                <th className="pb-2 text-right">W–L</th>
-                <th className="pb-2 text-right">Power</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teams.map((team) => (
-                <PowerRankingRow key={team.teamId} team={team} blurb={blurbs[team.teamId]} />
-              ))}
-            </tbody>
-          </table>
+          <RankingsGrid teams={teams} blurbs={blurbs} />
         </CardContent>
       </Card>
     </section>

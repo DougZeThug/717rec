@@ -45,6 +45,35 @@ const movementClass = (team: RecapTeamGrade): string => {
   return 'text-muted-foreground';
 };
 
+/** One team's line, with the numbers that explain it alongside. */
+const BlurbRow: React.FC<{
+  team: RecapTeamGrade;
+  blurb: string;
+  onChange: (blurb: string) => void;
+}> = ({ team, blurb, onChange }) => (
+  <div className="flex flex-col gap-1.5 py-2.5">
+    <div className="flex items-center gap-2 text-sm">
+      <span className="w-7 shrink-0 text-right font-semibold tabular-nums">{team.rank}</span>
+      <span className={`w-9 shrink-0 text-xs tabular-nums ${movementClass(team)}`}>
+        {movementLabel(team)}
+      </span>
+      <span className="min-w-0 flex-1 truncate font-medium">{team.teamName}</span>
+      <span className="w-8 shrink-0 text-center text-xs font-semibold">{team.grade ?? '—'}</span>
+      <span className="w-12 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+        {team.wins}–{team.losses}
+      </span>
+    </div>
+    <Input
+      aria-label={`Blurb for ${team.teamName}`}
+      value={blurb}
+      onChange={(e) => onChange(e.target.value)}
+      maxLength={BLURB_MAX_LENGTH}
+      className="h-8 text-sm"
+      placeholder="One line about this team."
+    />
+  </div>
+);
+
 /**
  * One line per team, in rank order.
  *
@@ -82,31 +111,12 @@ const BlurbEditorCard: React.FC<BlurbEditorCardProps> = ({
 
         <div className="flex flex-col divide-y">
           {rankings.map((team) => (
-            <div key={team.teamId} className="flex flex-col gap-1.5 py-2.5">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="w-7 shrink-0 text-right font-semibold tabular-nums">
-                  {team.rank}
-                </span>
-                <span className={`w-9 shrink-0 text-xs tabular-nums ${movementClass(team)}`}>
-                  {movementLabel(team)}
-                </span>
-                <span className="min-w-0 flex-1 truncate font-medium">{team.teamName}</span>
-                <span className="w-8 shrink-0 text-center text-xs font-semibold">
-                  {team.grade ?? '—'}
-                </span>
-                <span className="w-12 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
-                  {team.wins}–{team.losses}
-                </span>
-              </div>
-              <Input
-                aria-label={`Blurb for ${team.teamName}`}
-                value={blurbs[team.teamId] ?? ''}
-                onChange={(e) => onBlurbChange(team.teamId, e.target.value)}
-                maxLength={BLURB_MAX_LENGTH}
-                className="h-8 text-sm"
-                placeholder="One line about this team."
-              />
-            </div>
+            <BlurbRow
+              key={team.teamId}
+              team={team}
+              blurb={blurbs[team.teamId] ?? ''}
+              onChange={(blurb) => onBlurbChange(team.teamId, blurb)}
+            />
           ))}
         </div>
       </CardContent>
