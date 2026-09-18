@@ -3330,6 +3330,8 @@ export type Database = {
       }
       recap_edition_versions: {
         Row: {
+          blurbs: Json
+          blurbs_source: string
           caption: string | null
           caption_source: string
           created_at: string
@@ -3342,6 +3344,8 @@ export type Database = {
           version: number
         }
         Insert: {
+          blurbs?: Json
+          blurbs_source?: string
           caption?: string | null
           caption_source?: string
           created_at?: string
@@ -3354,6 +3358,8 @@ export type Database = {
           version: number
         }
         Update: {
+          blurbs?: Json
+          blurbs_source?: string
           caption?: string | null
           caption_source?: string
           created_at?: string
