@@ -90,6 +90,27 @@ BEGIN
     WHEN unique_violation THEN NULL;
   END;
 
+  -- 7. Blurbs are a map keyed by team id, never an array. A list would shift
+  --    every blurb onto the wrong team the moment one team leaves the rankings.
+  BEGIN
+    INSERT INTO public.recap_edition_versions (edition_id, facts, blurbs)
+    VALUES (v_edition_id, '{}'::jsonb, '[]'::jsonb);
+    RAISE EXCEPTION 'an array was accepted as the blurbs map';
+  EXCEPTION
+    WHEN check_violation THEN NULL;
+  END;
+
+  -- 8. Blurbs record how they were produced, using the same vocabulary as the
+  --    caption, so an admin reviewing an old edition can tell written text from
+  --    generated text.
+  BEGIN
+    INSERT INTO public.recap_edition_versions (edition_id, facts, blurbs_source)
+    VALUES (v_edition_id, '{}'::jsonb, 'wishful');
+    RAISE EXCEPTION 'an unknown blurbs_source was accepted';
+  EXCEPTION
+    WHEN check_violation THEN NULL;
+  END;
+
   RAISE NOTICE 'recap_editions: OK';
 END $$;
 

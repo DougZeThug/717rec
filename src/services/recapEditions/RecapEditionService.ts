@@ -11,9 +11,12 @@ const EDITION_COLUMNS =
   'id, season_id, week_number, season_slug, season_name, status, published_version_id, first_published_at, published_at, published_by, created_at, created_by, updated_at';
 
 const VERSION_COLUMNS =
-  'id, edition_id, version, facts, facts_schema_version, headline, caption, caption_source, caption_model, commissioner_note, correction_note, graphic_url, created_at, created_by';
+  'id, edition_id, version, facts, facts_schema_version, headline, caption, caption_source, caption_model, blurbs, blurbs_source, commissioner_note, correction_note, graphic_url, created_at, created_by';
 
 export type CaptionSource = 'ai' | 'ai_edited' | 'manual' | 'fallback';
+
+/** Power ranking blurbs, keyed by team id. */
+export type RecapBlurbs = Record<string, string>;
 
 export interface RecapEditionWithVersion {
   edition: EditionRow;
@@ -28,6 +31,9 @@ export interface SaveVersionInput {
   caption: string;
   captionSource: CaptionSource;
   captionModel?: string | null;
+  /** Keyed by team id, so a team leaving the rankings cannot shift the rest. */
+  blurbs?: RecapBlurbs;
+  blurbsSource?: CaptionSource;
   commissionerNote?: string | null;
   correctionNote?: string | null;
   graphicUrl?: string | null;
@@ -113,6 +119,8 @@ export const RecapEditionService = {
         caption: input.caption,
         caption_source: input.captionSource,
         caption_model: input.captionModel ?? null,
+        blurbs: (input.blurbs ?? {}) as unknown as Tables<'recap_edition_versions'>['blurbs'],
+        blurbs_source: input.blurbsSource ?? 'manual',
         commissioner_note: input.commissionerNote ?? null,
         correction_note: input.correctionNote ?? null,
         graphic_url: input.graphicUrl ?? null,
