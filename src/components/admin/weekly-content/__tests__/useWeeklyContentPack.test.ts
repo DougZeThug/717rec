@@ -8,17 +8,19 @@ const {
   mockFetchEditionForWeek,
   mockFetchLatestVersion,
   mockSaveMutateAsync,
+  mockBlurbsMutateAsync,
 } = vi.hoisted(() => ({
   mockGenerateMutateAsync: vi.fn(),
   mockFetchEditionForWeek: vi.fn(),
   mockFetchLatestVersion: vi.fn(),
   mockSaveMutateAsync: vi.fn(),
+  mockBlurbsMutateAsync: vi.fn(),
 }));
 
 vi.mock('@/hooks/useRecapEditions', () => ({
   useGenerateRecapFacts: () => ({ mutateAsync: mockGenerateMutateAsync, isPending: false }),
   useGenerateCaption: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useGenerateBlurbs: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useGenerateBlurbs: () => ({ mutateAsync: mockBlurbsMutateAsync, isPending: false }),
   useSaveRecapVersion: () => ({ mutateAsync: mockSaveMutateAsync, isPending: false }),
   usePublishRecapEdition: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUnpublishRecapEdition: () => ({ mutateAsync: vi.fn(), isPending: false }),
@@ -359,6 +361,79 @@ describe('useWeeklyContentPack', () => {
       expect(mockSaveMutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({ blurbs: expect.objectContaining({ 't-1': 'One good line.' }) })
       );
+    });
+  });
+
+  describe('writing blurbs with AI', () => {
+    const generateWeek = async () => {
+      mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers', ['t-1', 't-2']));
+      const hook = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        await hook.result.current.generateFor('s-1', 6);
+      });
+      return hook;
+    };
+
+    it('replaces the plain lines and records that AI wrote them', async () => {
+      mockBlurbsMutateAsync.mockResolvedValue({
+        blurbs: { 't-1': 'Unbeaten and not close.', 't-2': 'Quietly climbing.' },
+        model: 'claude-opus-5',
+      });
+
+      const { result } = await generateWeek();
+      await act(async () => {
+        expect(await result.current.generateBlurbs()).toBe('ok');
+      });
+
+      expect(result.current.draft.blurbs['t-1']).toBe('Unbeaten and not close.');
+      expect(result.current.draft.blurbsSource).toBe('ai');
+    });
+
+    it('keeps the plain line for a team the writer skipped', async () => {
+      mockBlurbsMutateAsync.mockResolvedValue({
+        blurbs: { 't-1': 'Only this one came back.' },
+        model: 'claude-opus-5',
+      });
+
+      const { result } = await generateWeek();
+      const before = result.current.draft.blurbs['t-2'];
+      await act(async () => {
+        await result.current.generateBlurbs();
+      });
+
+      // Merged over the fallbacks, not swapped for them: a blank line under a
+      // team on the graphic is worse than the plain one it already had.
+      expect(result.current.draft.blurbs['t-1']).toBe('Only this one came back.');
+      expect(result.current.draft.blurbs['t-2']).toBe(before);
+    });
+
+    it('reports "not set up" separately from "it broke"', async () => {
+      const { CaptionUnconfiguredError } = await import('@/services/recapEditions/CaptionService');
+
+      const { result } = await generateWeek();
+      const before = { ...result.current.draft.blurbs };
+
+      mockBlurbsMutateAsync.mockRejectedValueOnce(new CaptionUnconfiguredError());
+      await act(async () => {
+        expect(await result.current.generateBlurbs()).toBe('unconfigured');
+      });
+
+      mockBlurbsMutateAsync.mockRejectedValueOnce(new Error('502'));
+      await act(async () => {
+        expect(await result.current.generateBlurbs()).toBe('failed');
+      });
+
+      // Either way the plain lines are still in the boxes, so nothing is blocked.
+      expect(result.current.draft.blurbs).toEqual(before);
+      expect(result.current.draft.blurbsSource).toBe('fallback');
+    });
+
+    it('cannot run before a week has been generated', async () => {
+      const { result } = renderHook(() => useWeeklyContentPack());
+      await act(async () => {
+        expect(await result.current.generateBlurbs()).toBe('failed');
+      });
+      expect(mockBlurbsMutateAsync).not.toHaveBeenCalled();
     });
   });
 });
