@@ -92,6 +92,12 @@ the other side's list, so a team cannot play itself.
 The moment edit mode holds anything different from what was generated, the screen
 counts it as **unsaved edits** and shows a Reset and a Save Matches button.
 
+Removing *every* match is a special case: Save Matches refuses it and says "No
+Matches to Save". Saving only ever creates matches — it never deletes any — so an
+empty edit cannot clear a night that is already in the database. The screen stays
+in edit mode with Reset still offered, because what is on screen genuinely still
+differs from what is saved.
+
 A schedule that has been generated and never saved is treated as unsaved work
 too, edited or not. Either way, leaving the site raises the browser's warning and
 choosing another admin section asks "This schedule is not saved yet. Leave and
@@ -272,6 +278,9 @@ notification is sent to any team.
   either tool.
 - **A generated match removed in edit mode is gone from the proposal**, and Reset
   is the only way back.
+- **Removing every match and saving no longer writes the original schedule back.**
+  It used to fall back to the pre-edit set and report "Saved N matches"; it now
+  refuses with "No Matches to Save".
 
 ## Open questions and verification
 
