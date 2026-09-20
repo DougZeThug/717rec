@@ -56,10 +56,32 @@ function reset() {
 // record, the email is a best-effort alert on top of it.
 const originalFetch = globalThis.fetch;
 let lastResendBody: Record<string, unknown> | null = null;
-function stubFetch(opts: { insertOk?: boolean; resendOk?: boolean } = {}) {
+let lastInsertBody: Record<string, unknown> | null = null;
+
+/** A signed-in member, as the three verification lookups should see them. */
+interface VerifiedUserStub {
+  userId: string;
+  fullName?: string | null;
+  teamId?: string | null;
+  teamName?: string | null;
+}
+
+function stubFetch(
+  opts: { insertOk?: boolean; resendOk?: boolean; user?: VerifiedUserStub | null } = {}
+) {
   const insertOk = opts.insertOk ?? true;
   const resendOk = opts.resendOk ?? true;
+  const user = opts.user ?? null;
   lastResendBody = null;
+  lastInsertBody = null;
+  const json = (body: unknown, status = 200) =>
+    Promise.resolve(
+      new Response(JSON.stringify(body), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    );
+
   globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
     const url = typeof input === 'string' ? input : input.toString();
     if (url.includes('api.resend.com')) {
@@ -72,7 +94,37 @@ function stubFetch(opts: { insertOk?: boolean; resendOk?: boolean } = {}) {
           : new Response('resend unavailable', { status: 500 })
       );
     }
+    // auth.getUser(jwt) -> GET /auth/v1/user; the body IS the user object.
+    // 401 with no stubbed user, which getUser reports as "no user", not a throw.
+    if (url.includes('/auth/v1/user')) {
+      return user
+        ? json({ id: user.userId, aud: 'authenticated', email: 'member@example.com' })
+        : json({ message: 'invalid claim' }, 401);
+    }
+    // .maybeSingle() on a GET returns an ARRAY; postgrest-js unwraps [0].
+    if (url.includes('/rest/v1/profiles')) {
+      return json(
+        user ? [{ id: user.userId, username: null, full_name: user.fullName ?? null }] : []
+      );
+    }
+    if (url.includes('/rest/v1/team_memberships')) {
+      return json(
+        user?.teamId
+          ? [
+              {
+                team_id: user.teamId,
+                is_approved: true,
+                team: { id: user.teamId, name: user.teamName },
+              },
+            ]
+          : []
+      );
+    }
     if (url.includes('/rest/v1/contact_requests')) {
+      if (typeof init?.body === 'string') {
+        const parsed = JSON.parse(init.body);
+        lastInsertBody = (Array.isArray(parsed) ? parsed[0] : parsed) as Record<string, unknown>;
+      }
       return Promise.resolve(
         insertOk
           ? new Response('', { status: 201 })
@@ -82,6 +134,15 @@ function stubFetch(opts: { insertOk?: boolean; resendOk?: boolean } = {}) {
     return Promise.resolve(new Response('{}', { status: 200 }));
   }) as typeof fetch;
 }
+
+/** A member of "Old Timers" who is signed in and approved. */
+const MEMBER: VerifiedUserStub = {
+  userId: 'user-1',
+  fullName: 'Mary Member',
+  teamId: 'team-1',
+  teamName: 'Old Timers',
+};
+const SIGNED_IN = { headers: { Authorization: 'Bearer test-token' } };
 function restoreFetch() {
   globalThis.fetch = originalFetch;
 }
@@ -410,5 +471,166 @@ Deno.test({
   fn: async () => {
     const res = await handleRequest(makePreflight('https://not-the-league.example'));
     assertEquals(res.headers.get('access-control-allow-origin'), null);
+  },
+});
+
+// "Join the league" asks the member for a PROPOSED team name — ContactForm
+// unlocks the box and labels it so. The server used to overwrite it with the
+// team they are already approved for, so the proposal never reached the row or
+// the admin email, and the league read the request as coming from the old team.
+Deno.test({
+  name: 'join_league keeps the team name the member proposed',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch({ user: MEMBER });
+    try {
+      const res = await handleRequest(
+        makeReq(
+          {
+            request_type: 'join_league',
+            submitter_name: 'Typed Name',
+            submitter_team: 'Bag Boys',
+            submitter_contact: 'mary@example.com',
+            message: 'We would like to join next season.',
+          },
+          SIGNED_IN
+        )
+      );
+      assertEquals(res.status, 200);
+      assertExists(lastInsertBody);
+      assertEquals(lastInsertBody?.submitter_team, 'Bag Boys');
+      // The name override is identity and still applies.
+      assertEquals(lastInsertBody?.submitter_name, 'Mary Member');
+      assertEquals(lastInsertBody?.is_verified, true);
+      // team_id records who wrote in, not what they propose.
+      assertEquals(lastInsertBody?.team_id, 'team-1');
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'a topic other than join_league still gets the verified team',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch({ user: MEMBER });
+    try {
+      const res = await handleRequest(
+        makeReq(
+          {
+            request_type: 'general',
+            submitter_name: 'Typed Name',
+            submitter_team: 'Something Else',
+            submitter_contact: 'mary@example.com',
+            message: 'A general question about the season.',
+          },
+          SIGNED_IN
+        )
+      );
+      assertEquals(res.status, 200);
+      assertEquals(lastInsertBody?.submitter_team, 'Old Timers');
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+Deno.test({
+  name: 'a signed-out join_league proposal is stored as typed',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch();
+    try {
+      const res = await handleRequest(
+        makeReq({
+          request_type: 'join_league',
+          submitter_name: 'Nina Newcomer',
+          submitter_team: 'Bag Boys',
+          submitter_contact: 'nina@example.com',
+          message: 'How do we sign up?',
+        })
+      );
+      assertEquals(res.status, 200);
+      assertEquals(lastInsertBody?.submitter_team, 'Bag Boys');
+      assertEquals(lastInsertBody?.is_verified, false);
+      assertEquals(lastInsertBody?.team_id, null);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+// Proves the override is gone rather than merely reordered: with it in place
+// the cleared box fell back to the member's current team.
+Deno.test({
+  name: 'a member who clears the proposed team stores no team name',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    stubFetch({ user: MEMBER });
+    try {
+      const res = await handleRequest(
+        makeReq(
+          {
+            request_type: 'join_league',
+            submitter_name: 'Typed Name',
+            submitter_contact: 'mary@example.com',
+            message: 'Not sure of the name yet.',
+          },
+          SIGNED_IN
+        )
+      );
+      assertEquals(res.status, 200);
+      assertEquals(lastInsertBody?.submitter_team, null);
+    } finally {
+      restoreFetch();
+      reset();
+    }
+  },
+});
+
+// The email reads the row that was just built, so the proposal has to reach the
+// inbox too — that is where the league actually sees the request.
+Deno.test({
+  name: 'the admin email carries the proposed team, not the current one',
+  sanitizeOps: false,
+  sanitizeResources: false,
+  fn: async () => {
+    allowAll();
+    Deno.env.set('RESEND_API_KEY', 'test-resend-key');
+    stubFetch({ user: MEMBER });
+    try {
+      await handleRequest(
+        makeReq(
+          {
+            request_type: 'join_league',
+            submitter_name: 'Typed Name',
+            submitter_team: 'Bag Boys',
+            submitter_contact: 'mary@example.com',
+            message: 'We would like to join next season.',
+          },
+          SIGNED_IN
+        )
+      );
+      assertExists(lastResendBody);
+      const html = lastResendBody?.html as string;
+      assertStringIncludes(html, 'Bag Boys');
+      assertEquals(html.includes('Old Timers'), false);
+    } finally {
+      Deno.env.delete('RESEND_API_KEY');
+      restoreFetch();
+      reset();
+    }
   },
 });
