@@ -61,4 +61,31 @@ test.describe('offline', () => {
     });
     await expect(page).toHaveURL(/\/stats$/);
   });
+
+  test('a page that did download still opens after one that did not', async ({ page, context }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await context.setOffline(true);
+
+    // Stats is deliberately not preloaded (routePrefetch only takes Teams,
+    // Schedule and History), so its code is not here and this fails.
+    await page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Standings' })
+      .click();
+    await expect(page.getByRole('heading', { name: /did not download/i })).toBeVisible();
+
+    // Schedule IS preloaded, so its code is already in the document. The
+    // boundary that caught the failure sits above <Suspense> and never
+    // unmounts: it used to keep the recovery panel up for the rest of the
+    // visit, so the URL moved and the screen did not. Stay offline throughout —
+    // going back online would reload the document and hide the fault.
+    await page
+      .getByRole('navigation', { name: 'Primary' })
+      .getByRole('link', { name: 'Schedule' })
+      .click();
+
+    await expect(page).toHaveURL(/\/schedule$/);
+    await expect(page.getByRole('heading', { name: /did not download/i })).toBeHidden();
+  });
 });

@@ -1,5 +1,6 @@
 import { onlineManager } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -109,5 +110,92 @@ describe('RouteErrorBoundary', () => {
     );
 
     expect(mockCaptureError).not.toHaveBeenCalled();
+  });
+
+  // The app-level boundary sits above <Suspense> in AppLayout and never
+  // unmounts. Without resetKey one page that failed to download latched the
+  // recovery panel on for the rest of the visit: every link changed the URL
+  // and left the same panel on screen until the reader reloaded by hand.
+  it('clears the recovery panel when the reader moves to another page', () => {
+    onlineManager.setOnline(false);
+
+    const { rerender } = render(
+      <RouteErrorBoundary routeName="this page" resetKey="/stats">
+        <Bomb message={CHUNK_FAILURE} />
+      </RouteErrorBoundary>
+    );
+
+    expect(screen.getByRole('heading', { name: /did not download/i })).toBeInTheDocument();
+
+    // The next page's code did arrive, so the boundary must render it.
+    rerender(
+      <RouteErrorBoundary routeName="this page" resetKey="/schedule">
+        <p>Schedule</p>
+      </RouteErrorBoundary>
+    );
+
+    expect(screen.getByText('Schedule')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /did not download/i })).toBeNull();
+  });
+
+  // Measured, not assumed: React Router renders route elements without a key,
+  // so a per-route boundary is the same element type at the same position after
+  // navigation and React keeps the instance. These latched too.
+  it('clears a per-route boundary when the route behind it changes', () => {
+    const { rerender } = render(
+      <RouteErrorBoundary routeName="Standings">
+        <Bomb message="Cannot read properties of undefined" />
+      </RouteErrorBoundary>
+    );
+
+    expect(screen.getByRole('heading', { name: /failed to load standings/i })).toBeInTheDocument();
+
+    rerender(
+      <RouteErrorBoundary routeName="Teams">
+        <p>Teams</p>
+      </RouteErrorBoundary>
+    );
+
+    expect(screen.getByText('Teams')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /failed to load/i })).toBeNull();
+  });
+
+  it('keeps the error on screen while the reader stays on the same page', () => {
+    const { rerender } = render(
+      <RouteErrorBoundary routeName="Standings" resetKey="/stats">
+        <Bomb message="Cannot read properties of undefined" />
+      </RouteErrorBoundary>
+    );
+
+    // An unrelated re-render must not quietly swallow a real crash.
+    rerender(
+      <RouteErrorBoundary routeName="Standings" resetKey="/stats">
+        <p>Standings</p>
+      </RouteErrorBoundary>
+    );
+
+    expect(screen.getByRole('heading', { name: /failed to load standings/i })).toBeInTheDocument();
+    expect(screen.queryByText('Standings')).toBeNull();
+  });
+
+  it('renders the page again when Try Again is pressed and the retry succeeds', async () => {
+    let shouldThrow = true;
+    const Flaky = () => {
+      if (shouldThrow) throw new Error('transient');
+      return <p>Standings</p>;
+    };
+
+    render(
+      <RouteErrorBoundary routeName="Standings">
+        <Flaky />
+      </RouteErrorBoundary>
+    );
+
+    expect(screen.getByRole('heading', { name: /failed to load standings/i })).toBeInTheDocument();
+
+    shouldThrow = false;
+    await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+    expect(screen.getByText('Standings')).toBeInTheDocument();
   });
 });

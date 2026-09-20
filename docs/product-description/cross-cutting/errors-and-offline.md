@@ -281,8 +281,8 @@ failures are reported with a stack trace. See
   the document. The app loads the document again on reconnect instead. What is
   still not confirmed by hand is whether the installed home-screen app's cached
   shell answers that reload while the signal is only partly back.
-- Not confirmed by hand: whether "Try Again" on the route error screen recovers
-  or re-throws immediately.
+- "Try Again" on the route error screen recovers when the page renders on the
+  second attempt, and re-throws when it does not. Covered by a test.
 - Assumption: the toast stays about five seconds. That is the component library's
   default and no override was found.
 

@@ -157,7 +157,11 @@ const AppLayout = () => {
                 app-level one catches it instead, taking the header with it.
                 That was the dead end in UX audit X-12. A boundary here keeps
                 the header and hands a failed download to ChunkLoadRecovery. */}
-              <RouteErrorBoundary routeName="this page">
+              {/* resetKey: this instance never unmounts, so without it one
+                failed download latched the recovery panel on for the whole
+                visit. Not `key`, which would remount Suspense and the whole
+                page subtree on every navigation to fix a state that is rare. */}
+              <RouteErrorBoundary routeName="this page" resetKey={pathname}>
                 <Suspense
                   fallback={
                     <div className="flex items-center justify-center min-h-[60vh] py-8">

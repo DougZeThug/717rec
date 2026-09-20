@@ -14,6 +14,13 @@ import { ChunkLoadRecovery } from './ChunkLoadRecovery';
 interface Props {
   children: ReactNode;
   routeName: string;
+  /**
+   * Change this to clear a caught error. The app-level boundary in AppLayout
+   * passes the pathname: it sits above <Suspense> and never unmounts, so one
+   * page that failed to download used to leave the recovery panel on screen
+   * for every later page too — links changed the URL and nothing else.
+   */
+  resetKey?: string;
 }
 
 interface State {
@@ -40,6 +47,24 @@ export class RouteErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
       routeName: this.props.routeName,
     });
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    // Guarded on hasError so this is not a setState on every render. Moving to
+    // another page is a fresh attempt: the code for it may well be here.
+    //
+    // routeName counts as well as resetKey. The per-route boundaries look like
+    // they remount on navigation, but React Router renders route elements with
+    // no key, so two of these at the same position are the same element type
+    // and React keeps the instance — measured, not assumed. They latch exactly
+    // like the app-level one did, and routeName already differs per route, so
+    // it resets them without threading a prop through all 25.
+    if (
+      this.state.hasError &&
+      (prevProps.resetKey !== this.props.resetKey || prevProps.routeName !== this.props.routeName)
+    ) {
+      this.setState({ hasError: false, error: null });
+    }
   }
 
   handleRetry = () => {
