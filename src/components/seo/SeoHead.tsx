@@ -1,6 +1,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
+import { BASE_URL, DEFAULT_IMAGE } from './seoDefaults';
+
 interface SeoHeadProps {
   title: string;
   description: string;
@@ -10,9 +12,6 @@ interface SeoHeadProps {
   image?: string;
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
-
-const BASE_URL = 'https://717rec.app';
-const DEFAULT_IMAGE = '/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png';
 
 /**
  * Per-route SEO head tags. Sets title, description, canonical, and OG/Twitter

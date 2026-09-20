@@ -18,6 +18,13 @@ Sits on `717rec.app/recap/*` only.
   title, its caption as the description, and its stored graphic as `og:image`
   with a `summary_large_image` card.
 
+An edition may be published with no graphic — the publish captures one
+best-effort and carries on without it. Those fall back to the league logo with a
+plain `summary` card, the same as the page a reader sees. The worker strips the
+shell's own `og:*`/`twitter:*` tags before writing its own, so it always writes a
+full set: leaving the image out entirely left the crawler worse off than an
+untouched page.
+
 It reads published editions through PostgREST with the publishable key, so the
 same RLS policy that protects the public page protects this — a draft cannot
 leak through it.
