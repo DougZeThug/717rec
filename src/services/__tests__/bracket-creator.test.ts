@@ -146,6 +146,85 @@ describe('createBracket — seeding order', () => {
     expect(seededTeams().map((t) => t.seed)).toEqual([1, 2]);
   });
 
+  // The collision: `team.seed || index + 1` numbered the sorted positions, and
+  // the sort puts every manual pick first — so the team landing where a manual
+  // seed's number already was got that number too. With A,B,C,D in power order
+  // and C set to 2, the seeds came out C=2, A=2, B=3, D=4: seed 1 never issued,
+  // and brackets-manager (which seeds by array position) paired C vs D and
+  // A vs B instead of A vs D and C vs B.
+  it('gives an auto-seeded team the lowest seed no manual pick claimed', async () => {
+    installSupabase({
+      fullTeamData: [
+        { team_id: 'a', name: 'A', power_score: 90, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 80, win_percentage: 0.5 },
+        { team_id: 'c', name: 'C', power_score: 70, win_percentage: 0.5 },
+        { team_id: 'd', name: 'D', power_score: 60, win_percentage: 0.5 },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+        { id: 'c', name: 'C', seed: 2 },
+        { id: 'd', name: 'D' },
+      ],
+    });
+
+    const seeds = seededTeams().map((t) => t.seed);
+    expect(seededTeams().map((t) => t.id)).toEqual(['a', 'c', 'b', 'd']);
+    expect(seeds).toEqual([1, 2, 3, 4]);
+    expect(new Set(seeds).size).toBe(seeds.length);
+  });
+
+  it('keeps a manual seed larger than the team count and fills 1..N around it', async () => {
+    installSupabase({
+      fullTeamData: [
+        { team_id: 'a', name: 'A', power_score: 90, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 80, win_percentage: 0.5 },
+        { team_id: 'c', name: 'C', power_score: 70, win_percentage: 0.5 },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+        { id: 'c', name: 'C', seed: 9 },
+      ],
+    });
+
+    expect(seededTeams().map((t) => t.id)).toEqual(['a', 'b', 'c']);
+    expect(seededTeams().map((t) => t.seed)).toEqual([1, 2, 9]);
+  });
+
+  // Two hand-typed seeds that match are kept as typed, exactly as the form
+  // preview's assignMixedSeeds does. Renumbering what an admin entered is a
+  // product decision; what must never happen is an *automatic* seed landing on
+  // a number a person claimed.
+  it('keeps two identical manual seeds, and never auto-assigns onto one', async () => {
+    installSupabase({
+      fullTeamData: [
+        { team_id: 'a', name: 'A', power_score: 90, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 80, win_percentage: 0.5 },
+        { team_id: 'c', name: 'C', power_score: 70, win_percentage: 0.5 },
+        { team_id: 'd', name: 'D', power_score: 60, win_percentage: 0.5 },
+      ],
+    });
+    await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'a', name: 'A', seed: 2 },
+        { id: 'b', name: 'B', seed: 2 },
+        { id: 'c', name: 'C' },
+        { id: 'd', name: 'D' },
+      ],
+    });
+
+    expect(seededTeams().map((t) => t.seed)).toEqual([1, 2, 2, 3]);
+    expect(seededTeams().map((t) => t.id)).toEqual(['c', 'a', 'b', 'd']);
+  });
+
   it('sorts unseeded teams by power score descending', async () => {
     installSupabase({
       fullTeamData: [
@@ -331,6 +410,31 @@ describe('createBracket — persistence', () => {
     expect(bracket.participants).toEqual([
       { teamId: 'b', name: 'B', seed: 1 },
       { teamId: 'a', name: 'A', seed: 2 },
+    ]);
+  });
+
+  it('returns participants in seed order when a manual seed is mixed in', async () => {
+    installSupabase({
+      fullTeamData: [
+        { team_id: 'a', name: 'A', power_score: 90, win_percentage: 0.5 },
+        { team_id: 'b', name: 'B', power_score: 80, win_percentage: 0.5 },
+        { team_id: 'c', name: 'C', power_score: 70, win_percentage: 0.5 },
+      ],
+    });
+    const bracket = await createBracket({
+      ...baseOptions,
+      teams: [
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+        { id: 'c', name: 'C', seed: 2 },
+      ],
+    });
+
+    // The order the bracket is actually built in, not "manual picks first".
+    expect(bracket.participants).toEqual([
+      { teamId: 'a', name: 'A', seed: 1 },
+      { teamId: 'c', name: 'C', seed: 2 },
+      { teamId: 'b', name: 'B', seed: 3 },
     ]);
   });
 

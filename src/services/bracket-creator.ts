@@ -39,6 +39,18 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
       warnLog('Failed to fetch team details for seeding, using provided order:', teamError);
     }
 
+    // Seeds an admin picked by hand are already spoken for. Auto-assignment used
+    // to number the sorted positions 1..N, so it handed an unseeded team a
+    // number a manual pick was already holding: two teams on one seed, and one
+    // seed never issued. brackets-manager seeds by array position, so the tie
+    // was broken by input order and the manually-seeded team quietly moved.
+    const claimedSeeds = new Set(
+      teams
+        .map((team) => team.seed)
+        .filter((seed): seed is number => typeof seed === 'number' && seed > 0)
+    );
+    let nextAutoSeed = 1;
+
     // Sort teams by ranking (same logic as useTeamRankings) and assign seeds
     const sortedTeams = teams
       .map((team) => {
@@ -99,16 +111,29 @@ export async function createBracket(options: BracketCreationOptions): Promise<Br
         if (aWinPct !== bWinPct) return bWinPct - aWinPct;
         return a.name.localeCompare(b.name);
       })
-      .map((team, index) => {
-        // Use manual seed if provided, otherwise auto-assign based on sorted position
-        const finalSeed = team.seed || index + 1;
+      .map((team) => {
+        // A manual seed is kept exactly as typed. Everyone else takes the
+        // lowest seed nobody claimed, in the sorted order above.
+        let finalSeed: number;
+        if (team.seed) {
+          finalSeed = team.seed;
+        } else {
+          while (claimedSeeds.has(nextAutoSeed)) nextAutoSeed += 1;
+          finalSeed = nextAutoSeed;
+          nextAutoSeed += 1;
+        }
 
         return {
           id: team.id,
           name: team.name,
           seed: finalSeed,
         };
-      });
+      })
+      // Right numbers, wrong order: the sort above puts every manual seed
+      // first, so an auto-seeded 1 sits behind a manual 2. BracketCreationService
+      // re-sorts by seed anyway, so this cannot change the bracket — it makes
+      // the `participants` list this function returns agree with what is built.
+      .sort((a, b) => a.seed - b.seed);
 
     onProgress?.('Creating bracket record...');
 
