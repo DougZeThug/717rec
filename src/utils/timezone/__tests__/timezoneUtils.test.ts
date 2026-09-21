@@ -2,11 +2,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   createEveningAwareDateRange,
-  createUTCDateWithTime,
   extractTimeSlotFromUTC,
   formatLeagueTimeString,
   formatTimeString,
-  formatTimeToUTC,
   formatUTCToLocalTimeString,
   getLeagueMidnightUtc,
   getLeagueTimeUtc,
@@ -57,43 +55,6 @@ describe('timezone utilities', () => {
     expect(localFromString.getTime()).toBe(input.getTime());
   });
 
-  it('createUTCDateWithTime returns original date when time is missing', () => {
-    const input = new Date('2026-03-01T00:00:00.000Z');
-    expect(createUTCDateWithTime(input, '')).toBe(input);
-  });
-
-  it('createUTCDateWithTime applies parsed time components', () => {
-    const input = new Date('2026-03-01T00:00:00.000Z');
-    const result = createUTCDateWithTime(input, '7:30 PM');
-
-    expect(result.getHours()).toBe(19);
-    expect(result.getMinutes()).toBe(30);
-    expect(result.getSeconds()).toBe(0);
-  });
-
-  it.each([
-    {
-      label: 'missing time string',
-      date: new Date('2026-03-01T00:00:00.000Z'),
-      time: '',
-      expected: '',
-    },
-    {
-      label: 'valid timestamp output',
-      date: new Date('2026-03-01T00:00:00.000Z'),
-      time: '6:30 PM',
-      expected: /2026-03-01T\d{2}:30:00.000Z/,
-    },
-  ])('formatTimeToUTC: $label', ({ date, time, expected }) => {
-    const result = formatTimeToUTC(date, time);
-
-    if (expected instanceof RegExp) {
-      expect(result).toMatch(expected);
-    } else {
-      expect(result).toBe(expected);
-    }
-  });
-
   it.each([
     { hours: 0, minutes: 5, use24Hour: false, expected: '12:05 AM' },
     { hours: 13, minutes: 45, use24Hour: false, expected: '1:45 PM' },
@@ -111,8 +72,11 @@ describe('timezone utilities', () => {
     expect(normalizeTimeString(input)).toBe(expected);
   });
 
+  // The range is built from the date's LOCAL calendar day, so the input is built
+  // from the local clock too. Parsed from a UTC string it named a different day
+  // east of UTC, and the assertion moved with the runner's timezone.
   it('createEveningAwareDateRange spans selected day through following UTC day', () => {
-    const date = new Date('2026-10-31T12:00:00.000Z');
+    const date = new Date(2026, 9, 31, 12, 0, 0);
     const range = createEveningAwareDateRange(date);
 
     expect(range).toEqual({

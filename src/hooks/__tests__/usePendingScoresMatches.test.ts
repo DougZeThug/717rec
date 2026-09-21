@@ -120,7 +120,7 @@ describe('usePendingScoresMatches', () => {
     };
 
     it('resolves true when the report is accepted', async () => {
-      mockCreateScoreSubmission.mockResolvedValue(undefined);
+      mockCreateScoreSubmission.mockImplementation(() => Promise.resolve());
       const { result } = renderSubmit();
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 

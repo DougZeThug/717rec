@@ -5,6 +5,30 @@ import { DateRange } from './types';
 
 const LEAGUE_TIME_ZONE = 'America/New_York';
 
+// Intl formatters are expensive to build and these two take constant options, so
+// they are built once here rather than on every call. Flagged by React Doctor
+// (js-hoist-intl) on formatLeagueTimeString below.
+
+/** League-time wall clock of an instant, as parts, 24-hour. */
+const LEAGUE_CLOCK_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: LEAGUE_TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+/** Full league-time breakdown of an instant, used to measure the UTC offset. */
+const LEAGUE_OFFSET_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: LEAGUE_TIME_ZONE,
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  hour12: false,
+});
+
 /**
  * Return the calendar date (year/month/day) of an instant as seen in league
  * time (America/New_York). Use this whenever "which day did this match happen"
@@ -45,18 +69,7 @@ export const getLeagueTimeUtc = (
   const naive = Date.UTC(year, month - 1, day, hours, minutes, 0);
   // Compute the offset of league time at that instant (e.g. +4h in EDT).
   // Use formatToParts to avoid re-parsing toLocaleString output in the runtime's local TZ.
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: LEAGUE_TIME_ZONE,
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: false,
-  });
-
-  const parts = formatter.formatToParts(new Date(naive));
+  const parts = LEAGUE_OFFSET_FORMATTER.formatToParts(new Date(naive));
   const getPart = (type: string): number => {
     const value = parts.find((part) => part.type === type)?.value;
     return value ? Number(value) : 0;
@@ -97,12 +110,7 @@ export const getLeagueMidnightUtc = (year: number, month: number, day: number): 
  */
 export const formatLeagueTimeString = (date: Date): string => {
   try {
-    const parts = new Intl.DateTimeFormat('en-US', {
-      timeZone: LEAGUE_TIME_ZONE,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).formatToParts(date);
+    const parts = LEAGUE_CLOCK_FORMATTER.formatToParts(date);
 
     const read = (type: string): number =>
       Number(parts.find((part) => part.type === type)?.value ?? NaN);

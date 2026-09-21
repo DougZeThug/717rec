@@ -55,8 +55,9 @@ describe('PendingMatchesSection', () => {
       ],
       teams,
       isLoading: false,
-      handleApproveResult: vi.fn().mockResolvedValue(undefined),
-      handleMarkAsTie: vi.fn().mockResolvedValue(undefined),
+      // Must resolve, not just return: the section chains .catch on both.
+      handleApproveResult: vi.fn(() => Promise.resolve()),
+      handleMarkAsTie: vi.fn(() => Promise.resolve()),
       resolvingMatchIds: new Set<string>(),
     });
   });

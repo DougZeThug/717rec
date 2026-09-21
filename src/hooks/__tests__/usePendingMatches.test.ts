@@ -134,8 +134,20 @@ describe('usePendingMatches', () => {
   // hook has to name them. Nothing used to, which let an admin ask for a winner
   // and a tie on one match before either write landed.
   describe('the matches a write is in flight for', () => {
-    /** A mock whose promise the test releases by hand. */
-    const deferred = <T>() => {
+    /**
+     * A mock whose promise the test releases by hand. Two helpers rather than one
+     * generic: `deferred<void>()` types the release function's own parameter as
+     * `void`, which is not a valid parameter type.
+     */
+    const deferredVoid = () => {
+      let release!: () => void;
+      const promise = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return { promise, release };
+    };
+
+    const deferredValue = <T>() => {
       let release!: (value: T) => void;
       const promise = new Promise<T>((resolve) => {
         release = resolve;
@@ -144,7 +156,7 @@ describe('usePendingMatches', () => {
     };
 
     it('names a match while its tie is being confirmed, and only then', async () => {
-      const tie = deferred<void>();
+      const tie = deferredVoid();
       vi.mocked(confirmMatchTie).mockReturnValue(tie.promise);
 
       const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
@@ -153,30 +165,32 @@ describe('usePendingMatches', () => {
       expect([...result.current.resolvingMatchIds]).toEqual([]);
 
       act(() => {
-        void result.current.handleMarkAsTie('match-1');
+        result.current.handleMarkAsTie('match-1').catch(() => undefined);
       });
       await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual(['match-1']));
 
       await act(async () => {
         tie.release();
+        await tie.promise;
       });
       await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
     });
 
     it('names a match while its winner is being approved', async () => {
-      const approve = deferred<boolean>();
+      const approve = deferredValue<boolean>();
       vi.mocked(approveMatchResult).mockReturnValue(approve.promise);
 
       const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
       act(() => {
-        void result.current.handleApproveResult(mockMatch, 1);
+        result.current.handleApproveResult(mockMatch, 1).catch(() => undefined);
       });
       await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual(['match-1']));
 
       await act(async () => {
         approve.release(true);
+        await approve.promise;
       });
       await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
     });
@@ -185,8 +199,8 @@ describe('usePendingMatches', () => {
     // took the slot and unlocked the first while it was still running, so the
     // admin could go back and ask for a contradictory result on it.
     it('keeps naming the first match when a second write starts on another', async () => {
-      const tie = deferred<void>();
-      const approve = deferred<boolean>();
+      const tie = deferredVoid();
+      const approve = deferredValue<boolean>();
       vi.mocked(confirmMatchTie).mockReturnValue(tie.promise);
       vi.mocked(approveMatchResult).mockReturnValue(approve.promise);
 
@@ -195,13 +209,15 @@ describe('usePendingMatches', () => {
 
       // A tie on match-1 starts...
       act(() => {
-        void result.current.handleMarkAsTie('match-1');
+        result.current.handleMarkAsTie('match-1').catch(() => undefined);
       });
       await waitFor(() => expect(result.current.resolvingMatchIds.has('match-1')).toBe(true));
 
       // ...and an approval on match-2 starts before it finishes.
       act(() => {
-        void result.current.handleApproveResult({ ...mockMatch, id: 'match-2' }, 1);
+        result.current
+          .handleApproveResult({ ...mockMatch, id: 'match-2' }, 1)
+          .catch(() => undefined);
       });
       await waitFor(() => expect(result.current.resolvingMatchIds.has('match-2')).toBe(true));
 
@@ -212,12 +228,14 @@ describe('usePendingMatches', () => {
       // Each clears on its own settle, not the other's.
       await act(async () => {
         approve.release(true);
+        await approve.promise;
       });
       await waitFor(() => expect(result.current.resolvingMatchIds.has('match-2')).toBe(false));
       expect(result.current.resolvingMatchIds.has('match-1')).toBe(true);
 
       await act(async () => {
         tie.release();
+        await tie.promise;
       });
       await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
     });
