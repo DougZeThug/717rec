@@ -75,7 +75,7 @@ const MAX_TOKENS = 4000;
  */
 const RANKINGS_MAX_TOKENS = 16000;
 
-serve(async (req: Request) => {
+async function handleRequest(req: Request): Promise<Response> {
   const cors = buildCorsHeaders(req);
 
   if (req.method === 'OPTIONS') {
@@ -222,5 +222,16 @@ serve(async (req: Request) => {
       error: 'The caption service did not answer. Try again.',
       code: 'caption_failed',
     });
+  }
+}
+
+export { handleRequest };
+
+serve(async (req: Request) => {
+  try {
+    return await handleRequest(req);
+  } catch (error) {
+    console.error('[RecapCaption] Error:', error);
+    return jsonResponse(buildCorsHeaders(req), 500, { error: 'Failed to process request' });
   }
 });
