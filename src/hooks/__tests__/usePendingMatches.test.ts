@@ -130,6 +130,57 @@ describe('usePendingMatches', () => {
     expect(confirmMatchTie).toHaveBeenCalledWith('match-1');
   });
 
+  // The list locks the actions of the match being written, so the hook has to
+  // say which match that is. Nothing used to, which let an admin ask for a
+  // winner and a tie on one match before either write landed.
+  describe('the match a write is in flight for', () => {
+    it('is named while a tie is being confirmed, and only then', async () => {
+      let releaseTie: () => void = () => undefined;
+      vi.mocked(confirmMatchTie).mockReturnValue(
+        new Promise<void>((resolve) => {
+          releaseTie = resolve;
+        })
+      );
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.resolvingMatchId).toBeNull();
+
+      act(() => {
+        void result.current.handleMarkAsTie('match-1');
+      });
+      await waitFor(() => expect(result.current.resolvingMatchId).toBe('match-1'));
+
+      await act(async () => {
+        releaseTie();
+      });
+      await waitFor(() => expect(result.current.resolvingMatchId).toBeNull());
+    });
+
+    it('is named while a winner is being approved', async () => {
+      let releaseApprove: () => void = () => undefined;
+      vi.mocked(approveMatchResult).mockReturnValue(
+        new Promise<boolean>((resolve) => {
+          releaseApprove = () => resolve(true);
+        })
+      );
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      act(() => {
+        void result.current.handleApproveResult(mockMatch, 1);
+      });
+      await waitFor(() => expect(result.current.resolvingMatchId).toBe('match-1'));
+
+      await act(async () => {
+        releaseApprove();
+      });
+      await waitFor(() => expect(result.current.resolvingMatchId).toBeNull());
+    });
+  });
+
   it('should invalidate head-to-head and opponent-history queries after approval', async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },

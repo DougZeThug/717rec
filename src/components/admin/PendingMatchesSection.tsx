@@ -17,6 +17,7 @@ const PendingMatchesSection = () => {
     isLoading: isLoadingMatches,
     handleApproveResult,
     handleMarkAsTie,
+    resolvingMatchId,
   } = usePendingMatches();
 
   // The submission the admin is entering a result for, if any.
@@ -67,6 +68,7 @@ const PendingMatchesSection = () => {
             teams={teams}
             onApproveWinner={approveWinner}
             onMarkTie={markTie}
+            resolvingMatchId={resolvingMatchId}
           />
         </section>
       )}

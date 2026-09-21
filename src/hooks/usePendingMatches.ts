@@ -137,6 +137,16 @@ export function usePendingMatches() {
     }));
   };
 
+  // The match a write is in flight for, so the list can lock that match's own
+  // actions. Without it an admin could send "team 1 won" and "it was a tie" for
+  // one match before either landed; confirmMatchTie refuses the second write,
+  // but the admin should not be able to ask for it in the first place.
+  const resolvingMatchId = approveMutation.isPending
+    ? (approveMutation.variables?.match.id ?? null)
+    : tieMutation.isPending
+      ? (tieMutation.variables ?? null)
+      : null;
+
   return {
     matches,
     teams,
@@ -146,6 +156,7 @@ export function usePendingMatches() {
     toggleItem,
     handleApproveResult,
     handleMarkAsTie,
+    resolvingMatchId,
     refetch,
   };
 }
