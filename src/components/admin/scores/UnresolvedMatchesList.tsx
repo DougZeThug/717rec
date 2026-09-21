@@ -12,8 +12,8 @@ interface UnresolvedMatchesListProps {
   onApproveWinner: (match: Match, winner: 1 | 2) => void;
   onMarkTie: (matchId: string) => void;
   disabled?: boolean;
-  /** The match whose result is being written, whose own actions are locked. */
-  resolvingMatchId?: string | null;
+  /** Every match whose result is being written; their own actions are locked. */
+  resolvingMatchIds?: ReadonlySet<string>;
 }
 
 /**
@@ -25,7 +25,8 @@ interface UnresolvedMatchesListProps {
  *
  * A match being written locks its own three actions and no others, so the admin
  * cannot send "team 1 won" and "it was a tie" for the same match while still
- * clearing the rest of the queue.
+ * clearing the rest of the queue. It is a set rather than one id because several
+ * matches can be mid-write at once, and a single id would unlock the earlier one.
  */
 const UnresolvedMatchesList = ({
   matches,
@@ -33,7 +34,7 @@ const UnresolvedMatchesList = ({
   onApproveWinner,
   onMarkTie,
   disabled = false,
-  resolvingMatchId = null,
+  resolvingMatchIds,
 }: UnresolvedMatchesListProps) => {
   return (
     <div className="space-y-4">
@@ -42,7 +43,7 @@ const UnresolvedMatchesList = ({
         const team2Name = teams[match.team2Id]?.name || 'Team 2';
         const team1GameWins = match.team1_game_wins ?? 0;
         const team2GameWins = match.team2_game_wins ?? 0;
-        const locked = disabled || resolvingMatchId === match.id;
+        const locked = disabled || Boolean(resolvingMatchIds?.has(match.id));
 
         return (
           <Card key={match.id}>

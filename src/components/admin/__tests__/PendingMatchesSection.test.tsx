@@ -57,7 +57,7 @@ describe('PendingMatchesSection', () => {
       isLoading: false,
       handleApproveResult: vi.fn().mockResolvedValue(undefined),
       handleMarkAsTie: vi.fn().mockResolvedValue(undefined),
-      resolvingMatchId: null,
+      resolvingMatchIds: new Set<string>(),
     });
   });
 
@@ -70,10 +70,10 @@ describe('PendingMatchesSection', () => {
 
   // The defect this covers: the list has always accepted a lock, and this
   // section never passed one, so both writes could be asked for at once.
-  it('passes the in-flight match through, so its actions lock', () => {
+  it('passes the in-flight matches through, so their actions lock', () => {
     mockUsePendingMatches.mockReturnValue({
       ...mockUsePendingMatches(),
-      resolvingMatchId: 'match-1',
+      resolvingMatchIds: new Set(['match-1']),
     });
 
     render(<PendingMatchesSection />);

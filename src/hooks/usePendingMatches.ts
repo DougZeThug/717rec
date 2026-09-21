@@ -69,6 +69,24 @@ export function usePendingMatches() {
     staleTime: 0,
   });
 
+  // Every match with a result write in flight, so the list can lock exactly
+  // those matches' actions. A single id is not enough: with one, a second write
+  // on another match takes the slot and unlocks the first while it is still
+  // running, which is how an admin could still ask for a winner and a tie on the
+  // same match. react-query's own `variables` has the same flaw — it reports
+  // only the latest call — so the set is kept here instead.
+  const [resolvingMatchIds, setResolvingMatchIds] = useState<ReadonlySet<string>>(new Set());
+
+  const beginResolving = (matchId: string) =>
+    setResolvingMatchIds((prev) => new Set(prev).add(matchId));
+
+  const endResolving = (matchId: string) =>
+    setResolvingMatchIds((prev) => {
+      const next = new Set(prev);
+      next.delete(matchId);
+      return next;
+    });
+
   // Mutation for approving match results — atomic & idempotent via RPC
   const approveMutation = useMutation({
     mutationFn: async ({ match, winnerTeamIndex }: { match: Match; winnerTeamIndex: 1 | 2 }) => {
@@ -81,6 +99,8 @@ export function usePendingMatches() {
 
       await approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
     },
+    onMutate: ({ match }) => beginResolving(match.id),
+    onSettled: (_data, _error, { match }) => endResolving(match.id),
     onSuccess: async () => {
       toast({
         title: 'Result Approved',
@@ -105,6 +125,8 @@ export function usePendingMatches() {
     mutationFn: async (matchId: string) => {
       await confirmMatchTie(matchId);
     },
+    onMutate: (matchId) => beginResolving(matchId),
+    onSettled: (_data, _error, matchId) => endResolving(matchId),
     onSuccess: async () => {
       toast({
         title: 'Tie Confirmed',
@@ -137,16 +159,6 @@ export function usePendingMatches() {
     }));
   };
 
-  // The match a write is in flight for, so the list can lock that match's own
-  // actions. Without it an admin could send "team 1 won" and "it was a tie" for
-  // one match before either landed; confirmMatchTie refuses the second write,
-  // but the admin should not be able to ask for it in the first place.
-  const resolvingMatchId = approveMutation.isPending
-    ? (approveMutation.variables?.match.id ?? null)
-    : tieMutation.isPending
-      ? (tieMutation.variables ?? null)
-      : null;
-
   return {
     matches,
     teams,
@@ -156,7 +168,7 @@ export function usePendingMatches() {
     toggleItem,
     handleApproveResult,
     handleMarkAsTie,
-    resolvingMatchId,
+    resolvingMatchIds,
     refetch,
   };
 }

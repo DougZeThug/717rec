@@ -95,7 +95,11 @@ describe('UnresolvedMatchesList', () => {
     };
 
     it('locks that match’s three actions', () => {
-      renderList({ matches: [match, second], teams: moreTeams, resolvingMatchId: 'match-1' });
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set(['match-1']),
+      });
 
       expect(screen.getByRole('button', { name: /Owls won/ })).toBeDisabled();
       expect(screen.getByRole('button', { name: /Hawks won/ })).toBeDisabled();
@@ -103,7 +107,11 @@ describe('UnresolvedMatchesList', () => {
     });
 
     it('leaves every other match pressable', () => {
-      renderList({ matches: [match, second], teams: moreTeams, resolvingMatchId: 'match-1' });
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set(['match-1']),
+      });
 
       expect(screen.getByRole('button', { name: /Kites won/ })).toBeEnabled();
       expect(screen.getByRole('button', { name: /Terns won/ })).toBeEnabled();
@@ -111,9 +119,25 @@ describe('UnresolvedMatchesList', () => {
     });
 
     it('locks nothing when no write is in flight', () => {
-      renderList({ matches: [match, second], teams: moreTeams, resolvingMatchId: null });
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set<string>(),
+      });
 
       screen.getAllByRole('button').forEach((button) => expect(button).toBeEnabled());
+    });
+
+    // Two matches can be mid-write at once. A single id would unlock whichever
+    // started first, which is the hole a review caught.
+    it('locks every match that is mid-write, not just one', () => {
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set(['match-1', 'match-2']),
+      });
+
+      screen.getAllByRole('button').forEach((button) => expect(button).toBeDisabled());
     });
   });
 });
