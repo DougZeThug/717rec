@@ -34,17 +34,41 @@ const loadBracketsViewerScript = (): Promise<void> => {
 };
 
 /**
+ * Backoff before each automatic retry of a failed load. The length of this list
+ * is the retry budget: once it is spent the hook stops using timers and waits
+ * for the browser to report it is back online, which is what an outage longer
+ * than the backoff actually needs.
+ */
+const RETRY_DELAYS_MS = [2000, 4000, 8000];
+
+/**
  * Hook that loads the brackets-viewer library and CSS.
  * Returns { isReady, error } indicating when the viewer library is available.
  */
 export const useBracketsViewerScript = () => {
   const [isReady, setIsReady] = useState(!!window.bracketsViewer);
   const [error, setError] = useState<string | null>(null);
+  // Bumping this re-runs the load effect below. A failed load leaves `isReady`
+  // false and changes nothing else, so without this the effect's dependencies
+  // never changed, it never ran again, and the reader was stuck on the error
+  // until they reloaded the page. Both retry triggers work by bumping it.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (isReady) return;
+    if (isReady) return undefined;
 
     let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** Leave the message up, but line up another go at it. */
+    const failAndRetry = (message: string) => {
+      setError(message);
+      const delay = RETRY_DELAYS_MS[attempt];
+      // undefined once the budget is spent: stop the timers and leave it to the
+      // 'online' listener below.
+      if (delay === undefined) return;
+      retryTimer = setTimeout(() => setAttempt((n) => n + 1), delay);
+    };
 
     const load = async () => {
       try {
@@ -53,16 +77,17 @@ export const useBracketsViewerScript = () => {
         if (cancelled) return;
 
         if (!window.bracketsViewer) {
-          setError('brackets-viewer library not loaded');
           errorLog('brackets-viewer is not available on window object');
+          failAndRetry('brackets-viewer library not loaded');
           return;
         }
 
         setIsReady(true);
+        setError(null);
       } catch (err) {
         if (cancelled) return;
         errorLog('Failed to load brackets-viewer resources:', err);
-        setError('Failed to load bracket viewer library');
+        failAndRetry('Failed to load bracket viewer library');
       }
     };
 
@@ -70,7 +95,19 @@ export const useBracketsViewerScript = () => {
 
     return () => {
       cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
     };
+  }, [isReady, attempt]);
+
+  // A dropped connection is the usual reason the chunk never arrived, and an
+  // outage easily outlasts the backoff above. Try again the moment the browser
+  // says it is back, however much of the budget is already spent.
+  useEffect(() => {
+    if (isReady) return undefined;
+
+    const retryNow = () => setAttempt((n) => n + 1);
+    window.addEventListener('online', retryNow);
+    return () => window.removeEventListener('online', retryNow);
   }, [isReady]);
 
   return { isReady, error };
