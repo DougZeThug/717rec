@@ -7,7 +7,14 @@ import { RecapEditionService } from '@/services/recapEditions/RecapEditionServic
 import type { RecapFactsV1 } from '@/types/recapEdition';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
-const LATEST_PUBLISHED_KEY = ['recap-edition', 'latest-published'] as const;
+/**
+ * Every recap-edition read hangs off this prefix, so invalidating it refreshes
+ * the home page card and the public per-week page together. They used to be
+ * refreshed under 'recap-editions' -- plural -- which matched no query in the
+ * repo, so an unpublished recap stayed readable for its whole staleTime.
+ */
+const RECAP_EDITION_KEY = ['recap-edition'] as const;
+const LATEST_PUBLISHED_KEY = [...RECAP_EDITION_KEY, 'latest-published'] as const;
 
 /**
  * The newest published edition, for the home page.
@@ -25,7 +32,7 @@ export const usePublishedRecapEdition = () =>
 /** One published edition by its public address. */
 export const useRecapEditionBySlug = (seasonSlug?: string, weekNumber?: number) =>
   useQuery({
-    queryKey: ['recap-edition', seasonSlug, weekNumber],
+    queryKey: [...RECAP_EDITION_KEY, seasonSlug, weekNumber],
     queryFn: () =>
       seasonSlug && typeof weekNumber === 'number'
         ? RecapEditionService.fetchPublishedBySlug(seasonSlug, weekNumber)
@@ -119,7 +126,7 @@ export const useSaveRecapVersion = () => {
   return useMutation({
     mutationFn: (input: SaveVersionInput) => RecapEditionService.saveVersion(input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
+      queryClient.invalidateQueries({ queryKey: RECAP_EDITION_KEY });
       toast({ title: 'Draft saved' });
     },
     onError: (error) => {
@@ -139,8 +146,7 @@ export const usePublishRecapEdition = () => {
     mutationFn: ({ editionId, versionId }: { editionId: string; versionId: string }) =>
       RecapEditionService.publish(editionId, versionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
-      queryClient.invalidateQueries({ queryKey: LATEST_PUBLISHED_KEY });
+      queryClient.invalidateQueries({ queryKey: RECAP_EDITION_KEY });
       toast({ title: 'Recap published' });
     },
     onError: (error) => {
@@ -159,8 +165,7 @@ export const useUnpublishRecapEdition = () => {
   return useMutation({
     mutationFn: (editionId: string) => RecapEditionService.unpublish(editionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recap-editions'] });
-      queryClient.invalidateQueries({ queryKey: LATEST_PUBLISHED_KEY });
+      queryClient.invalidateQueries({ queryKey: RECAP_EDITION_KEY });
       toast({ title: 'Recap unpublished' });
     },
     onError: (error) => {
