@@ -160,6 +160,11 @@ export const useBracketsViewerRenderer = ({
           stageRows.length === 0
         ) {
           warnLog('Skipping render: matches or stages not ready');
+          // "Not ready yet" is not a failure, so any error left over from an
+          // earlier attempt has to go. Without this the reader keeps an error
+          // message over an empty bracket with no spinner under it, because
+          // this path never reaches setError(null) below.
+          if (!cancelled) setError(null);
           return;
         }
 
@@ -197,7 +202,6 @@ export const useBracketsViewerRenderer = ({
           }
           return;
         }
-        lastFingerprintRef.current = fp;
 
         if (cancelled) return;
 
@@ -297,9 +301,19 @@ export const useBracketsViewerRenderer = ({
           runDecorations(container);
         } catch (renderError) {
           errorLog('brackets-viewer.render() threw an error:', renderError);
+          // A superseded run must not re-set an error a later run already
+          // cleared. The outer catch has always guarded this; this one did not.
+          if (cancelled) return;
           setError('Failed to render bracket visualization');
           return;
         }
+
+        // Only now does the drawn DOM match `fp`. Recording it earlier meant a
+        // failed draw was remembered as if it had worked, so the next attempt
+        // with the same data took the no-op path above and left the container
+        // empty. The two bails between the fingerprint check and here (a
+        // cancelled run, a missing container) drew nothing either.
+        lastFingerprintRef.current = fp;
 
         // Post-render cleanup
         cleanupTimer = setTimeout(() => {

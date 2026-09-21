@@ -574,6 +574,31 @@ describe('useBracketsViewerRenderer', () => {
       );
     });
 
+    // A draw that threw left nothing on screen, so it must not be remembered as
+    // the drawing that is up. It used to be: the fingerprint was recorded before
+    // the draw was attempted, so the retry below took the "nothing changed" path
+    // and the reader kept an empty bracket.
+    it('draws again after a failed draw rather than trusting it', async () => {
+      renderMock.mockImplementation(() => {
+        throw new Error('viewer exploded');
+      });
+      const { result, rerender } = renderRenderer({ bracket: makeBracket() });
+
+      await waitFor(() =>
+        expect(result.current.error).toBe('Failed to render bracket visualization')
+      );
+      expect(renderMock).toHaveBeenCalledTimes(1);
+
+      // Same data and same refreshKey — only the bracket object identity
+      // changes, so the fingerprint reset effect does not fire.
+      renderMock.mockImplementation(() => undefined);
+      rerender({ bracket: makeBracket() });
+
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+      expect(renderMock).toHaveBeenCalledTimes(2);
+      expect(result.current.error).toBeNull();
+    });
+
     it('warns (but proceeds) when opponent identity tags are missing', async () => {
       const { result } = renderRenderer({ bracket: makeBracket() });
       await waitFor(() => expect(result.current.isInitialized).toBe(true));
