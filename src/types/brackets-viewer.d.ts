@@ -13,7 +13,10 @@ import type {
 declare global {
   interface Window {
     bracketsViewer: {
-      render: (data: BracketsViewerData, config?: BracketsViewerConfig) => void;
+      // Promise<void>, matching the library's own `main.d.ts`. Typing this as
+      // `void` hid the fact that a rejected render escapes a synchronous
+      // try/catch, so a failed draw was recorded as a successful one.
+      render: (data: BracketsViewerData, config?: BracketsViewerConfig) => Promise<void>;
       setParticipantImages: (images: { participantId: number; imageUrl: string }[]) => void;
     };
   }

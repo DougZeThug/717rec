@@ -42,6 +42,72 @@ const fingerprint = (matches: FingerprintMatch[]): string => {
   return `${matches.length}:${ids}:${slots}`;
 };
 
+type ViewerMatchRow = ViewerDataWithMapping['data']['matches'][number];
+type ViewerParticipantRow = ViewerDataWithMapping['data']['participants'][number];
+type RenderableBracket = PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
+
+/**
+ * Pick the transform that matches where this bracket keeps its data: the SQL
+ * tables, a JSONB blob, or the legacy playoff_matches shape.
+ *
+ * Not `async`, deliberately: only the SQL path is asynchronous, so the keyword
+ * would buy nothing and leave a function with no `await` in it. The other two
+ * are wrapped instead, so every caller gets the same promise either way.
+ */
+const transformForViewer = (bracket: RenderableBracket): Promise<ViewerDataWithMapping> => {
+  if (bracket.uses_brackets_manager) {
+    return BracketsViewerAdapter.transformFromSql(bracket.id);
+  }
+  if (bracket.bracket_data) {
+    return Promise.resolve(
+      BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id)
+    );
+  }
+  return Promise.resolve(BracketsViewerAdapter.transform(bracket, [], bracket.participants));
+};
+
+/** Hand the viewer the team logos, if this build of it takes them. */
+const applyParticipantImages = (participants: ViewerParticipantRow[]) => {
+  if (!window.bracketsViewer.setParticipantImages) return;
+
+  const participantImages = participants
+    .filter((p) => p.image)
+    .map((p) => ({ participantId: p.id, imageUrl: p.image ?? '' }));
+
+  if (participantImages.length === 0) return;
+
+  bracketLog(`Setting ${participantImages.length} participant images`);
+  window.bracketsViewer.setParticipantImages(participantImages);
+};
+
+/**
+ * Whether the transform produced enough to draw. Deliberately takes `unknown`:
+ * the point of the check is that a transform can hand back a shape the types
+ * promise but the data does not keep.
+ */
+const hasRenderableData = (matchRows: unknown, stageRows: unknown): boolean =>
+  Array.isArray(matchRows) &&
+  matchRows.length > 0 &&
+  Array.isArray(stageRows) &&
+  stageRows.length > 0;
+
+/** Opponent slots that know which match fed them. */
+const countSourcedSlots = (matchRows: ViewerMatchRow[]): number =>
+  matchRows.reduce(
+    (n, x) => n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0),
+    0
+  );
+
+/** Populated opponent slots that lost their identity symbols in transit. */
+const countUntaggedOpponents = (matchRows: ViewerMatchRow[]): number =>
+  matchRows.filter((match) => {
+    const need1 = Boolean(match.opponent1);
+    const need2 = Boolean(match.opponent2);
+    const bad1 = match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
+    const bad2 = match.opponent2 && Object.getOwnPropertySymbols(match.opponent2).length === 0;
+    return (need1 && bad1) || (need2 && bad2);
+  }).length;
+
 /** Custom round name formatter for brackets-viewer. */
 const customRoundName = (info: BracketsViewerCustomRoundInfo): string => {
   const { groupType, roundNumber, roundCount } = info;
@@ -77,7 +143,7 @@ const hideUuidNodes = (container: HTMLElement) => {
 };
 
 interface UseBracketsViewerRendererOptions {
-  bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
+  bracket: RenderableBracket;
   containerRef: React.RefObject<HTMLDivElement | null>;
   containerId: string;
   isScriptReady: boolean;
@@ -134,16 +200,7 @@ export const useBracketsViewerRenderer = ({
           hasBracketData: Boolean(bracket.bracket_data),
         });
 
-        // Determine which transformation method to use
-        let result: ViewerDataWithMapping;
-
-        if (bracket.uses_brackets_manager) {
-          result = await BracketsViewerAdapter.transformFromSql(bracket.id);
-        } else if (bracket.bracket_data) {
-          result = BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id);
-        } else {
-          result = BracketsViewerAdapter.transform(bracket, [], bracket.participants);
-        }
+        const result = await transformForViewer(bracket);
 
         if (cancelled) return;
 
@@ -153,23 +210,19 @@ export const useBracketsViewerRenderer = ({
         const matchRows = result.data.matches;
         const stageRows = result.data.stages;
 
-        if (
-          !Array.isArray(matchRows) ||
-          matchRows.length === 0 ||
-          !Array.isArray(stageRows) ||
-          stageRows.length === 0
-        ) {
+        if (!hasRenderableData(matchRows, stageRows)) {
           warnLog('Skipping render: matches or stages not ready');
+          // "Not ready yet" is not a failure, so any error left over from an
+          // earlier attempt has to go. Without this the reader keeps an error
+          // message over an empty bracket with no spinner under it, because
+          // this path never reaches setError(null) below.
+          if (!cancelled) setError(null);
           return;
         }
 
         // Validate source coverage (avoid premature render)
         const totalSlots = matchRows.length * 2;
-        const sourcedCount = matchRows.reduce(
-          (n, x) =>
-            n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0),
-          0
-        );
+        const sourcedCount = countSourcedSlots(matchRows);
         const sourcePct = totalSlots ? sourcedCount / totalSlots : 0;
 
         if (sourcePct < 0.6) {
@@ -197,7 +250,6 @@ export const useBracketsViewerRenderer = ({
           }
           return;
         }
-        lastFingerprintRef.current = fp;
 
         if (cancelled) return;
 
@@ -209,19 +261,7 @@ export const useBracketsViewerRenderer = ({
         }
 
         // Set participant images (required by brackets-viewer API)
-        if (window.bracketsViewer.setParticipantImages) {
-          const participantImages = result.data.participants
-            .filter((p) => p.image)
-            .map((p) => ({
-              participantId: p.id,
-              imageUrl: p.image ?? '',
-            }));
-
-          if (participantImages.length > 0) {
-            bracketLog(`Setting ${participantImages.length} participant images`);
-            window.bracketsViewer.setParticipantImages(participantImages);
-          }
-        }
+        applyParticipantImages(result.data.participants);
 
         // Prepare data for brackets-viewer (INCLUDE groups/rounds for connector rendering)
         const viewerData = {
@@ -254,15 +294,7 @@ export const useBracketsViewerRenderer = ({
         };
 
         // Check if symbol tags survived (object identity validation)
-        const tagsMissing = viewerData.matches.filter((match) => {
-          const need1 = Boolean(match.opponent1);
-          const need2 = Boolean(match.opponent2);
-          const bad1 =
-            match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
-          const bad2 =
-            match.opponent2 && Object.getOwnPropertySymbols(match.opponent2).length === 0;
-          return (need1 && bad1) || (need2 && bad2);
-        }).length;
+        const tagsMissing = countUntaggedOpponents(viewerData.matches);
 
         if (tagsMissing > 0) {
           warnLog('Identity tags missing - proceeding anyway', { tagsMissing });
@@ -277,7 +309,12 @@ export const useBracketsViewerRenderer = ({
         });
 
         try {
-          window.bracketsViewer.render(
+          // Awaited: render() returns a promise, so without this a rejection
+          // escapes the catch below and the code carries on to record the
+          // fingerprint and report success for a draw that never landed. It
+          // also means the DOM is in place before the decorations run, rather
+          // than leaving that to the delayed pass further down.
+          await window.bracketsViewer.render(
             viewerData as unknown as Parameters<typeof window.bracketsViewer.render>[0],
             {
               selector: `#${containerId}`,
@@ -292,14 +329,30 @@ export const useBracketsViewerRenderer = ({
             }
           );
 
+          // Awaiting above added a suspension point, so the component can have
+          // gone away while the bracket was drawing. Everything below this
+          // decorates the DOM or sets state, and none of it belongs to a run
+          // that has been superseded.
+          if (cancelled) return;
+
           bracketLog('brackets-viewer.render() completed successfully');
           window.dispatchEvent(new Event('resize'));
           runDecorations(container);
         } catch (renderError) {
           errorLog('brackets-viewer.render() threw an error:', renderError);
+          // A superseded run must not re-set an error a later run already
+          // cleared. The outer catch has always guarded this; this one did not.
+          if (cancelled) return;
           setError('Failed to render bracket visualization');
           return;
         }
+
+        // Only now does the drawn DOM match `fp`. Recording it earlier meant a
+        // failed draw was remembered as if it had worked, so the next attempt
+        // with the same data took the no-op path above and left the container
+        // empty. The two bails between the fingerprint check and here (a
+        // cancelled run, a missing container) drew nothing either.
+        lastFingerprintRef.current = fp;
 
         // Post-render cleanup
         cleanupTimer = setTimeout(() => {
@@ -313,8 +366,9 @@ export const useBracketsViewerRenderer = ({
           }
 
           hideUuidNodes(el);
-          // render() is async and unawaited — if its DOM landed after the
-          // immediate decoration pass, this delayed pass picks it up.
+          // render() is awaited now, so the immediate pass already had the DOM.
+          // This one stays as belt and braces for anything the viewer settles
+          // after its promise resolves.
           runDecorations(el);
         }, 1000);
 

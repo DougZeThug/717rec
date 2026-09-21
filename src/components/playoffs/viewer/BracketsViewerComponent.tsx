@@ -180,18 +180,13 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
     );
   }
 
+  // Deliberately NOT an early return. An error-only branch would unmount the
+  // container below, and useBracketsViewerRenderer's opening guard bails while
+  // containerRef.current is null — so the render that clears the error could
+  // never run, and the error stuck until the whole component unmounted. The
+  // message is laid over the container instead, which stays mounted and keeps
+  // its real geometry, so the next refresh redraws and clears the error itself.
   const error = scriptError || renderError;
-
-  if (error) {
-    return (
-      <div className="text-center p-8">
-        <p className="text-lg text-destructive">Error loading bracket: {error}</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          Please ensure brackets-viewer is properly installed and loaded.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -224,8 +219,27 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
               transformOrigin: 'top left',
             }}
           />
+          {/*
+            Covers the container rather than replacing it — see the note above
+            the `error` declaration. The wrapper is already position: relative,
+            so this needs no extra element and changes no layout.
+          */}
+          {error && (
+            <div
+              role="alert"
+              className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background text-center p-8"
+            >
+              <p className="text-lg text-destructive">Error loading bracket: {error}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Please ensure brackets-viewer is properly installed and loaded.
+              </p>
+            </div>
+          )}
         </div>
-        {!isInitialized && <LoadingState variant="section" message="Loading bracket..." />}
+        {/* Not under the error cover: it would announce "Loading" over the alert. */}
+        {!isInitialized && !error && (
+          <LoadingState variant="section" message="Loading bracket..." />
+        )}
       </div>
 
       {/*

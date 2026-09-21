@@ -176,6 +176,26 @@ describe('BracketsViewerComponent', () => {
       render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
       expect(screen.getByText(/Error loading bracket/)).toBeInTheDocument();
     });
+
+    // The message used to replace the whole viewer, which unmounted the element
+    // the bracket draws into. The renderer hook bails while that element is
+    // missing, so the render that would have cleared the error never ran and
+    // the reader was stuck on the message until they left the page.
+    it('keeps the bracket container mounted underneath the error', () => {
+      mockRenderError = 'Render failed';
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+
+      expect(screen.getByText(/Error loading bracket/)).toBeInTheDocument();
+      expect(document.getElementById('brackets-viewer-container')).not.toBeNull();
+    });
+
+    it('does not talk over the error with a loading message', () => {
+      mockRenderError = 'Render failed';
+      mockIsInitialized = false;
+      render(<BracketsViewerComponent bracket={makeBracket()} teams={teams} />);
+
+      expect(screen.queryByTestId('loading-state')).not.toBeInTheDocument();
+    });
   });
 
   describe('valid bracket rendering', () => {

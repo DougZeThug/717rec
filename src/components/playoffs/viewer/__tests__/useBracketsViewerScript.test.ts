@@ -187,4 +187,97 @@ describe('useBracketsViewerScript', () => {
     expect(result.current.isReady).toBe(false);
     expect(result.current.error).toBeNull();
   });
+
+  // Losing signal mid-page is the usual reason the chunk never arrives. The
+  // hook used to give up for good, so the bracket stayed broken until the
+  // reader reloaded the page by hand.
+  describe('recovering from a failed load without a page reload', () => {
+    it('tries again on its own after a failed chunk load', async () => {
+      vi.useFakeTimers();
+      try {
+        mocks.viewerBundleEvaluation.mockRejectedValueOnce(new Error('offline'));
+        const useBracketsViewerScript = await importHook();
+        const { result } = renderHook(() => useBracketsViewerScript());
+
+        await vi.waitFor(() =>
+          expect(result.current.error).toBe('Failed to load bracket viewer library')
+        );
+
+        // The chunk is reachable again by the time the backoff elapses.
+        mocks.viewerBundleEvaluation.mockImplementation(() => {
+          windowWithViewer.bracketsViewer = fakeViewer();
+          return Promise.resolve({});
+        });
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(2000);
+        });
+
+        expect(result.current.isReady).toBe(true);
+        expect(result.current.error).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('tries again the moment the browser says it is back online', async () => {
+      mocks.viewerBundleEvaluation.mockRejectedValueOnce(new Error('offline'));
+      const useBracketsViewerScript = await importHook();
+      const { result } = renderHook(() => useBracketsViewerScript());
+
+      await waitFor(() =>
+        expect(result.current.error).toBe('Failed to load bracket viewer library')
+      );
+
+      mocks.viewerBundleEvaluation.mockImplementation(() => {
+        windowWithViewer.bracketsViewer = fakeViewer();
+        return Promise.resolve({});
+      });
+
+      // Sync callback: dispatching the event is not itself awaitable, and act
+      // flushes the state update and the effect it re-runs before returning.
+      // The load that effect starts is what the waitFor below is for.
+      act(() => {
+        window.dispatchEvent(new Event('online'));
+      });
+
+      await waitFor(() => expect(result.current.isReady).toBe(true));
+      expect(result.current.error).toBeNull();
+    });
+
+    it('gives up on the timers rather than retrying forever', async () => {
+      vi.useFakeTimers();
+      try {
+        mocks.viewerBundleEvaluation.mockRejectedValue(new Error('still offline'));
+        const useBracketsViewerScript = await importHook();
+        const { result } = renderHook(() => useBracketsViewerScript());
+
+        const advance = async () => {
+          await act(async () => {
+            await vi.advanceTimersByTimeAsync(30_000);
+          });
+          return mocks.viewerBundleEvaluation.mock.calls.length;
+        };
+
+        // Each retry is scheduled from inside an async effect, so they do not
+        // all chain within a single advance. Ten rounds is far more than the
+        // three-step backoff needs.
+        let calls = 0;
+        let previous = 0;
+        for (let round = 0; round < 10; round++) {
+          previous = calls;
+          calls = await advance();
+        }
+
+        expect(calls).toBeGreaterThan(1); // it did retry
+        // ...and then stopped. No timer loop draining the battery of a phone
+        // left open on the bleachers.
+        expect(calls).toBe(previous);
+        expect(result.current.isReady).toBe(false);
+        expect(result.current.error).toBe('Failed to load bracket viewer library');
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
 });
