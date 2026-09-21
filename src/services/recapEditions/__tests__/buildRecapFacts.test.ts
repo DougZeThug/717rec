@@ -153,7 +153,10 @@ describe('buildRecapFacts', () => {
     expect(competitive.standings.map((r) => r.rank)).toEqual([1, 2, 3, 4]);
   });
 
-  it('breaks a displayed-score tie on win percentage, then name', () => {
+  // Within a division the tier tiebreaker is a no-op, because every row in the
+  // table shares a division, so the record decides. Across divisions the tier
+  // comes first; see standingsOrder.test.ts.
+  it('breaks a displayed-score tie within a division on win percentage, then name', () => {
     const facts = build({
       standings: [
         // Both display as 60.0 at one decimal.

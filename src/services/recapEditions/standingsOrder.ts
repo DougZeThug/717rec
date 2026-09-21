@@ -1,3 +1,4 @@
+import { getTierFromDivision } from '@/utils/autoSchedule/blossom/tierUtils';
 import { getDisplayedPowerScore } from '@/utils/powerScore/formatPowerScore';
 
 /**
@@ -47,11 +48,18 @@ export const gameWinPercentage = (
 
 /**
  * Order matching what /stats shows: the power score as DISPLAYED (one decimal)
- * descending, unrated teams last, then win percentage, then name.
+ * descending, unrated teams last, then the same tiebreakers /stats uses —
+ * division tier, then win percentage, then name.
  *
- * Division is deliberately not a tiebreaker. Within a division table every row
- * shares one anyway, and across the league the whole point of the power
- * rankings is that an Intermediate team can outrank a Competitive one.
+ * The tier step only ever fires on a tie, which is why it does not stop an
+ * Intermediate team outranking a Competitive one on the score itself. Inside a
+ * division table it is a no-op, because every row there shares a division; it
+ * earns its place in the league-wide rankings, where two teams from different
+ * divisions can show the same score. Leaving it out put a Recreational team
+ * above a tied Competitive team in a published recap while /stats, ordering the
+ * same week, put them the other way round.
+ *
+ * Keep in step with `sortRankings` in `@/utils/rankingUtils`.
  */
 export const compareStandings = (a: SnapshotStandingsInput, b: SnapshotStandingsInput): number => {
   const aScore = getDisplayedPowerScore(a.powerScore);
@@ -60,6 +68,11 @@ export const compareStandings = (a: SnapshotStandingsInput, b: SnapshotStandings
   if (aScore === null && bScore !== null) return 1;
   if (bScore === null && aScore !== null) return -1;
   if (aScore !== null && bScore !== null && aScore !== bScore) return bScore - aScore;
+
+  // Competitive = 1, Intermediate = 2, Recreational = 3, so lower ranks first.
+  const aTier = getTierFromDivision(a.divisionName);
+  const bTier = getTierFromDivision(b.divisionName);
+  if (aTier !== bTier) return aTier - bTier;
 
   const aPct = winPercentage(a);
   const bPct = winPercentage(b);

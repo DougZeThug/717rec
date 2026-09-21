@@ -59,6 +59,30 @@ describe('gradeTeamsForWeek', () => {
     expect(result[0].division).toBe('Recreational');
   });
 
+  // The rankings are the one place a cross-division tie can happen, and the
+  // recap used to answer it differently from /stats: it put the better record
+  // first where /stats puts the stronger division first.
+  it('breaks a tie across divisions on the division, like /stats does', () => {
+    const result = gradeTeamsForWeek({
+      teams: [
+        row('rec-a', {
+          powerScore: 60,
+          divisionId: 'd-rec',
+          divisionName: 'Recreational',
+          wins: 7,
+          losses: 1,
+        }),
+        row('comp-a', { powerScore: 60, wins: 2, losses: 6 }),
+      ],
+      matchStats: statsFor(['rec-a', 'comp-a']),
+      previousTeams: null,
+      deltaByTeam: new Map(),
+    });
+
+    expect(result.map((t) => t.teamId)).toEqual(['comp-a', 'rec-a']);
+    expect(result.map((t) => t.rank)).toEqual([1, 2]);
+  });
+
   it('lists an unrated team last with no grade, rather than dropping it', () => {
     const result = gradeTeamsForWeek({
       teams: [
