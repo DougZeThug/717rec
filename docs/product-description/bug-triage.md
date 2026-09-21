@@ -2908,10 +2908,10 @@ finding read a superseded migration.
   `===`, so the plural filter matched nothing and all three calls did nothing.
 - The home page card was covered anyway, by a second explicit invalidation of
   its exact key. The public per-week page was not, so it kept serving its cache
-  for its full ten-minute `staleTime`.
+  for its full `staleTime`.
 - It shows on the documented rollback: an admin unpublishes a wrong recap, opens
-  `/recap/<season>/week-<n>` to check, and is served their own ten-minute cache
-  of the recap they just took down — so the takedown looks as though it failed.
+  `/recap/<season>/week-<n>` to check, and is served their own cached copy of
+  the recap they just took down — so the takedown looks as though it failed.
   A fresh fetch correctly returns nothing and the page renders Not Found; the
   defect is the window in between.
 - The plural key had matched one query when it was written, an admin list that
@@ -2923,7 +2923,7 @@ finding read a superseded migration.
   browser that ran the mutation, so this defect, and its fix, reach the admin's
   own session and nothing else. A *viewer* holding the page open is a separate
   and still-open problem, now recorded as
-  [B-61](#b-61-an-unpublished-recap-stays-on-a-viewers-screen-for-up-to-ten-minutes).
+  [B-61](#b-61-an-unpublished-recap-stayed-on-a-viewers-screen-indefinitely).
 - **Severity:** `low`. One admin's own session shows a stale page and
   self-corrects. Nothing is written wrongly, and no visitor is affected either
   way.
@@ -3006,21 +3006,25 @@ finding read a superseded migration.
   asserts it is still null after blurbs are generated on a fresh draft.
 
 
-### B-61: An unpublished recap stays on a viewer's screen for up to ten minutes
+### B-61: An unpublished recap stayed on a viewer's screen indefinitely
 
 - Taking a recap down is a server-side change to one row. Nothing tells a
-  browser that already holds the page. `useRecapEditionBySlug` has
-  `staleTime: 1000 * 60 * 10`, the public recap page has no realtime channel and
-  no `refetchInterval`, and `foundations/saving-and-freshness.md` and
+  browser that already holds the page. `useRecapEditionBySlug` had
+  `staleTime: 1000 * 60 * 10` and no `refetchInterval`, the public recap page
+  opens no realtime channel, and `foundations/saving-and-freshness.md` and
   `admin/weekly-content-pack.md` both record that this feature has no realtime
   by design.
-- So a visitor reading `/recap/<season>/week-<n>` when the league unpublishes it
-  keeps reading it. React Query will not refetch a query it still considers
-  fresh, so even a tab switch or a remount inside that window is served from
-  cache. Ten minutes is the floor, not the ceiling: the clock only starts at the
-  last fetch.
-- The same is true of a correction. A viewer holding the page sees the withdrawn
-  version, not the corrected one, for the same window.
+- **`staleTime` schedules nothing.** It only marks data stale so that the *next*
+  trigger refetches it. The triggers available here are a window refocus, a
+  remount and a reconnect — all of which require the reader to do something. A
+  reader who leaves `/recap/<season>/week-<n>` open and simply reads fires none
+  of them, so the recap the league took down stayed on their screen **until they
+  next touched the tab**. There was no upper bound.
+- The same was true of a correction. A viewer holding the page saw the withdrawn
+  version rather than the corrected one, for as long as they sat there.
+- Anyone arriving fresh has always been fine: the query filters on
+  `status = 'published'`, so a first load returns nothing and the page renders
+  Not Found.
 - This is **not** the same defect as
   [B-57](#b-57-publishing-a-recap-never-refreshed-its-public-page), though B-57
   originally described it. B-57 was a cache key that matched nothing, and it
@@ -3028,30 +3032,42 @@ finding read a superseded migration.
   B-57 fixed, because no invalidation in one browser can reach another.
 - **Severity:** `medium`. Content the league has deliberately taken down stays
   readable by the public after the admin has been told it is down.
-- **Decision needed:** `product call`. Three ways to close it, and they trade
-  off against each other:
-  1. **Accept it.** Takedowns are rare and the content was published on purpose
-     a moment ago. Costs nothing, changes nothing.
-  2. **Shorten `staleTime`.** Narrows the window to whatever is chosen, at the
-     cost of more reads of a page that almost never changes. Does not close it.
-  3. **Subscribe the page to `recap_editions`.** Closes it properly, and is the
-     only option that makes a takedown immediate — but it puts realtime on a
-     page whose specification says it has none, so the specification would have
-     to change with it.
+- **Corrected on review.** The first version of this entry said "for up to ten
+  minutes", and was put to the league on that basis. That was wrong, for the
+  very reason the defect existed: ten minutes is when the data becomes *eligible*
+  to refetch, not when it refetches. The entry also offered "shorten `staleTime`"
+  as one of three ways to close it. **That was never a real option** — a shorter
+  window still schedules nothing, so it would have changed how soon a refetch
+  *could* happen without causing one. Caught by Codex reviewing
+  [#1529](https://github.com/DougZeThug/717rec/pull/1529), which is also where
+  the real fix landed.
+- **Decision needed:** `product call`. With the behaviour stated correctly, two
+  ways to close it:
+  1. **Poll the page.** A `refetchInterval` is the one thing that fires without
+     the reader doing anything, so it is the only option short of realtime that
+     puts a ceiling on the exposure.
+  2. **Subscribe the page to `recap_editions`.** Makes a takedown immediate, but
+     puts realtime on a page whose specification says it has none, so the
+     specification changes with it.
 - **Raised by:** Codex, reviewing
   [#1528](https://github.com/DougZeThug/717rec/pull/1528). Not raised by any
   feature document, and not found by the reading that produced B-54 to B-60.
-- **Status:** **documented, 2026-09-21.** The league was offered the three
-  options above and chose the first: accept the window. No code changed. A
-  takedown is rare, the recap was published deliberately minutes earlier, and
-  neither of the other two was worth its cost — shortening `staleTime` would
-  have bought a narrower window it still could not close, and realtime would
-  have contradicted a specification that records this page as having none.
+- **Status:** **fixed.** The league chose the poll. `useRecapEditionBySlug` now
+  carries `refetchInterval: 1000 * 60 * 5`, with `staleTime` brought down to the
+  same five minutes so the two agree — polling every five while claiming
+  freshness for ten would have been incoherent, and with a poll running the
+  longer window bought nothing. The shape matches `useDailyTraffic`, the repo's
+  only other polling query.
 
-  The behaviour is real and stays as it is: for up to ten minutes after an
-  unpublish, a visitor already holding `/recap/<season>/week-<n>` keeps reading
-  it. Anyone arriving fresh gets Not Found immediately.
+  A takedown now reaches an open tab within about five minutes instead of never.
+  The test that covers it advances fake timers with nothing else happening — no
+  click, no focus, no navigation — and fails if the second fetch does not come,
+  so it cannot pass on a page that only refetches when touched.
 
+  **Still true, and deliberately not changed here:** the home page's recap card
+  (`usePublishedRecapEdition`) has the same shape and no interval. It is a
+  milder case — the card links to a page that correctly shows Not Found on
+  arrival — and it was left out so the fix stayed the size of the finding.
 
 ---
 

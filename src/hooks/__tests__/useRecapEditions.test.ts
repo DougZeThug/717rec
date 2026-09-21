@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -99,6 +99,29 @@ describe('useRecapEditionBySlug', () => {
     expect(mockService.fetchPublishedBySlug).not.toHaveBeenCalled();
     for (const r of [noWeek, noSlug, neither]) {
       expect(r.current.fetchStatus).toBe('idle');
+    }
+  });
+
+  // B-61. staleTime schedules nothing -- it only marks the data stale so the
+  // next trigger refetches. A reader sitting on this page fires no trigger, so
+  // a recap the league unpublished used to stay on their screen indefinitely.
+  // The interval is the only thing that bounds it, so it is what gets tested.
+  it('refetches on its own while the reader just sits there', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      mockService.fetchPublishedBySlug.mockResolvedValue({ edition: { id: 'e-6' } });
+
+      renderHook(() => useRecapEditionBySlug('fall-2026', 6), { wrapper });
+      await waitFor(() => expect(mockService.fetchPublishedBySlug).toHaveBeenCalledTimes(1));
+
+      // Nothing is clicked, focused or navigated. Only time passes.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000 * 60 * 5 + 1000);
+      });
+
+      await waitFor(() => expect(mockService.fetchPublishedBySlug).toHaveBeenCalledTimes(2));
+    } finally {
+      vi.useRealTimers();
     }
   });
 
