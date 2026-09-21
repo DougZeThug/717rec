@@ -45,19 +45,6 @@ export const HeroCardService = {
     return (data ?? []).map((row) => HeroCardService.parseHeroCardRow(row as HeroCard));
   },
 
-  fetchHeroCardById: async (id: string | null): Promise<HeroCard | null> => {
-    // Returns null when no data exists yet (not an error) — caller renders an empty state.
-    if (!id) return null;
-    const { data, error } = await supabase
-      .from('hero_cards')
-      .select(HERO_CARD_SELECT)
-      .eq('id', id)
-      .single();
-
-    if (error) handleDatabaseError(error, 'Failed to fetch hero card');
-    return HeroCardService.parseHeroCardRow(data as HeroCard);
-  },
-
   createHeroCard: async (formData: Omit<HeroCard, 'id' | 'created_at' | 'updated_at'>) => {
     const payload = { ...formData, metadata: formData.metadata as unknown as Json };
     const { data, error } = await supabase.from('hero_cards').insert([payload]).select().single();
