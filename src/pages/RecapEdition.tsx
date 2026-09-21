@@ -79,7 +79,7 @@ const RecapEdition: React.FC = () => {
     <div className="container mx-auto px-4 py-8 max-w-3xl">
       <SeoHead
         title={`717REC — ${facts.seasonName} Week ${facts.weekNumber} Recap`}
-        description={version.caption.slice(0, 155) || `Week ${facts.weekNumber} results.`}
+        description={(version.caption ?? '').slice(0, 155) || `Week ${facts.weekNumber} results.`}
         path={`/recap/${facts.seasonSlug}/week-${facts.weekNumber}`}
         type="article"
         image={version.graphic_url ?? undefined}

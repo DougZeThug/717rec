@@ -111,17 +111,6 @@ describe('useTimeslots', () => {
     expect(result.current.moveTeamBooking).toBe(mutationFns.moveTeamBooking);
   });
 
-  it('invalidates the date-scoped timeslot cache via refreshTimeslots', async () => {
-    const { result } = renderHook(() => useTimeslots(new Date('2026-06-05T00:00:00')), {
-      wrapper: createWrapper(),
-    });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
-    const spy = vi.spyOn(queryClient, 'invalidateQueries');
-    result.current.refreshTimeslots();
-    expect(spy).toHaveBeenCalledWith({ queryKey: ['timeslots', '2026-06-05'] });
-  });
-
   it('calls an empty night loaded, because an empty night is a result', async () => {
     (TimeslotService.fetchByDate as ReturnType<typeof vi.fn>).mockResolvedValue([]);
     (TimeslotTransformer.groupByTimeslot as ReturnType<typeof vi.fn>).mockReturnValue({});

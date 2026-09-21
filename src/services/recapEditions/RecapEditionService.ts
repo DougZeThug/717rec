@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 import type { RecapFactsV1 } from '@/types/recapEdition';
 import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
@@ -106,22 +106,26 @@ export const RecapEditionService = {
    * race two admins saving at once.
    */
   saveVersion: async (input: SaveVersionInput): Promise<VersionRow> => {
+    // `version` is omitted on purpose; the trigger sets it, so the generated
+    // Insert type (which marks it required) is cast away here.
+    const payload = {
+      edition_id: input.editionId,
+      facts: input.facts as unknown as Tables<'recap_edition_versions'>['facts'],
+      facts_schema_version: RECAP_FACTS_SCHEMA_VERSION,
+      headline: input.headline,
+      caption: input.caption,
+      caption_source: input.captionSource,
+      caption_model: input.captionModel ?? null,
+      blurbs: (input.blurbs ?? {}) as unknown as Tables<'recap_edition_versions'>['blurbs'],
+      blurbs_source: input.blurbsSource ?? 'manual',
+      commissioner_note: input.commissionerNote ?? null,
+      correction_note: input.correctionNote ?? null,
+      graphic_url: input.graphicUrl ?? null,
+    };
+
     const { data, error } = await supabase
       .from('recap_edition_versions')
-      .insert({
-        edition_id: input.editionId,
-        facts: input.facts as unknown as Tables<'recap_edition_versions'>['facts'],
-        facts_schema_version: RECAP_FACTS_SCHEMA_VERSION,
-        headline: input.headline,
-        caption: input.caption,
-        caption_source: input.captionSource,
-        caption_model: input.captionModel ?? null,
-        blurbs: (input.blurbs ?? {}) as unknown as Tables<'recap_edition_versions'>['blurbs'],
-        blurbs_source: input.blurbsSource ?? 'manual',
-        commissioner_note: input.commissionerNote ?? null,
-        correction_note: input.correctionNote ?? null,
-        graphic_url: input.graphicUrl ?? null,
-      })
+      .insert(payload as unknown as TablesInsert<'recap_edition_versions'>)
       .select(VERSION_COLUMNS)
       .maybeSingle();
 

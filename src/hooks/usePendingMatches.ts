@@ -11,7 +11,6 @@ import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export function usePendingMatches() {
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -152,20 +151,11 @@ export function usePendingMatches() {
     await tieMutation.mutateAsync(matchId);
   };
 
-  const toggleItem = (id: string) => {
-    setOpenItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   return {
     matches,
     teams,
     isLoading,
     error: queryError?.message ?? null,
-    openItems,
-    toggleItem,
     handleApproveResult,
     handleMarkAsTie,
     resolvingMatchIds,

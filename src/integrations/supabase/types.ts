@@ -3332,7 +3332,7 @@ export type Database = {
         Row: {
           blurbs: Json
           blurbs_source: string
-          caption: string
+          caption: string | null
           caption_model: string | null
           caption_source: string
           commissioner_note: string | null
@@ -3343,14 +3343,14 @@ export type Database = {
           facts: Json
           facts_schema_version: number
           graphic_url: string | null
-          headline: string
+          headline: string | null
           id: string
-          version: number | null
+          version: number
         }
         Insert: {
           blurbs?: Json
           blurbs_source?: string
-          caption?: string
+          caption?: string | null
           caption_model?: string | null
           caption_source?: string
           commissioner_note?: string | null
@@ -3361,14 +3361,14 @@ export type Database = {
           facts: Json
           facts_schema_version?: number
           graphic_url?: string | null
-          headline?: string
+          headline?: string | null
           id?: string
-          version?: number | null
+          version: number
         }
         Update: {
           blurbs?: Json
           blurbs_source?: string
-          caption?: string
+          caption?: string | null
           caption_model?: string | null
           caption_source?: string
           commissioner_note?: string | null
@@ -3379,9 +3379,9 @@ export type Database = {
           facts?: Json
           facts_schema_version?: number
           graphic_url?: string | null
-          headline?: string
+          headline?: string | null
           id?: string
-          version?: number | null
+          version?: number
         }
         Relationships: [
           {
