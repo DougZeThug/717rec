@@ -718,11 +718,50 @@ describe('Schedule page', () => {
         date.getDate()
       ).padStart(2, '0')}`;
 
+    /**
+     * A night the page can read. A bare day key is a night that was played;
+     * `played: false` is one still to come, and a `status` calls it off.
+     */
+    type Night = string | { date: string; played?: boolean; status?: 'postponed' | 'canceled' };
+
+    /**
+     * Stock both the rows the page reads its nights from and the day set built
+     * from them, so the two cannot disagree the way a hand-written pair can.
+     * The auto-pick reads matchesData, not the day set, because a day set says
+     * only that a night has a match — not whether it was ever played.
+     */
+    const onNights = (nights: Night[], overrides: Record<string, unknown> = {}) => {
+      const rows = nights.map((night, i) => {
+        const spec: Exclude<Night, string> = typeof night === 'string' ? { date: night } : night;
+        const calledOff = spec.status !== undefined;
+        return {
+          id: `m${i}`,
+          date: spec.date,
+          iscompleted: !calledOff && (spec.played ?? true),
+          status: spec.status ?? null,
+        };
+      });
+
+      mockUseScheduleData.mockReturnValue({
+        ...baseScheduleData,
+        matchesData: rows,
+        // Sorted the way useScheduleData sorts them: soonest and most recent first.
+        upcomingMatches: rows
+          .filter((row) => !row.iscompleted)
+          .sort((a, b) => a.date.localeCompare(b.date)),
+        completedMatches: rows
+          .filter((row) => row.iscompleted)
+          .sort((a, b) => b.date.localeCompare(a.date)),
+        ...overrides,
+      });
+      mockUseMatchDates.mockReturnValue(new Set(rows.map((row) => row.date)));
+    };
+
     it('falls back to the last night played when the upcoming Thursday is empty', () => {
       // Friday Sep 4. The guess is Thu Sep 10; the last night played is Thu Sep 3.
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+      onNights(['2026-08-27', '2026-09-03']);
 
       renderPage();
 
@@ -737,7 +776,7 @@ describe('Schedule page', () => {
       // scheduled is Sep 17.
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03', '2026-09-17']));
+      onNights(['2026-09-03', { date: '2026-09-17', played: false }]);
 
       renderPage();
 
@@ -747,7 +786,7 @@ describe('Schedule page', () => {
     it('stays on tonight when tonight has matches', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03', '2026-09-10']));
+      onNights(['2026-09-03', { date: '2026-09-10', played: false }]);
 
       renderPage();
 
@@ -759,7 +798,7 @@ describe('Schedule page', () => {
     it('stays on tonight when only tonight timeslots are posted', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      onNights(['2026-09-03']);
       mockUseTimeslotDates.mockReturnValue({
         timeslotDates: ['2026-09-10', '2026-09-03'],
         isLoading: false,
@@ -776,7 +815,7 @@ describe('Schedule page', () => {
       // Saturday Sep 12. Slots posted for Sep 10, no matches at all.
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 12, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set());
+      onNights([]);
       mockUseTimeslotDates.mockReturnValue({
         timeslotDates: ['2026-09-10', '2026-09-03'],
         isLoading: false,
@@ -791,7 +830,7 @@ describe('Schedule page', () => {
     it('keeps the upcoming Thursday when it does have matches', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03', '2026-09-10']));
+      onNights(['2026-09-03', { date: '2026-09-10', played: false }]);
 
       renderPage();
 
@@ -803,7 +842,7 @@ describe('Schedule page', () => {
     it('opens on the night the address names', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+      onNights(['2026-08-27', '2026-09-03']);
 
       renderPage('/schedule?date=2026-08-27');
 
@@ -813,7 +852,7 @@ describe('Schedule page', () => {
     it('keeps an empty night the address names rather than correcting it', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+      onNights(['2026-08-27', '2026-09-03']);
 
       // Nothing is on that night, but it was asked for by name.
       renderPage('/schedule?date=2026-09-17');
@@ -824,7 +863,7 @@ describe('Schedule page', () => {
     it('still corrects the guess when the address names no night', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-08-27', '2026-09-03']));
+      onNights(['2026-08-27', '2026-09-03']);
 
       renderPage('/schedule?q=amigos');
 
@@ -834,7 +873,10 @@ describe('Schedule page', () => {
     it('uses the next scheduled night before a season has been played', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 4, 1, 9, 0, 0));
-      mockUseMatchDates.mockReturnValue(new Set(['2026-06-18', '2026-06-25']));
+      onNights([
+        { date: '2026-06-18', played: false },
+        { date: '2026-06-25', played: false },
+      ]);
 
       renderPage();
 
@@ -844,8 +886,7 @@ describe('Schedule page', () => {
     it('leaves the date alone while the matches are still loading', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseScheduleData.mockReturnValue({ ...baseScheduleData, matchesLoading: true });
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      onNights(['2026-09-03'], { matchesLoading: true });
 
       renderPage();
 
@@ -856,12 +897,7 @@ describe('Schedule page', () => {
     it('leaves the guess alone when the read failed, and picks after a retry', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
-      mockUseScheduleData.mockReturnValue({
-        ...baseScheduleData,
-        matchesError: true,
-        matchesErrorMessage: 'boom',
-      });
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      onNights(['2026-09-03'], { matchesError: true, matchesErrorMessage: 'boom' });
 
       const { rerender } = renderPage();
 
@@ -869,7 +905,7 @@ describe('Schedule page', () => {
       expect(asKey(selectedDate())).toBe('2026-09-10');
 
       // ...and a successful retry still gets to choose.
-      mockUseScheduleData.mockReturnValue(baseScheduleData);
+      onNights(['2026-09-03']);
       rerender(scheduleTree());
 
       expect(asKey(selectedDate())).toBe('2026-09-03');
@@ -882,7 +918,7 @@ describe('Schedule page', () => {
     it('leaves the guess alone when the timeslots read failed, and picks after a retry', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0)); // Thursday 10 September 2026
-      mockUseMatchDates.mockReturnValue(new Set(['2026-09-03']));
+      onNights(['2026-09-03']);
       mockUseTimeslotDates.mockReturnValue({
         timeslotDates: [],
         isLoading: false,
@@ -901,13 +937,82 @@ describe('Schedule page', () => {
       expect(asKey(selectedDate())).toBe('2026-09-03');
     });
 
+    // The auto-pick used to read every night that had a match, called-off ones
+    // included, so a night whose matches were all canceled counted as a night
+    // played and as a night still to come. It is neither.
+    describe('a night whose matches were all called off', () => {
+      it('is not the last night played, the morning after', () => {
+        // Friday Sep 4. Thursday Sep 3 was called off; Aug 27 was played.
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+        onNights(['2026-08-27', { date: '2026-09-03', status: 'canceled' }]);
+
+        renderPage();
+
+        expect(asKey(selectedDate())).toBe('2026-08-27');
+      });
+
+      it('is not the next night scheduled, on a league night', () => {
+        // Thursday Sep 10, nothing on tonight. Sep 17 is called off, so the
+        // page falls back to the last night played rather than opening on it.
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 8, 10, 9, 0, 0));
+        onNights(['2026-09-03', { date: '2026-09-17', status: 'canceled' }]);
+
+        renderPage();
+
+        expect(asKey(selectedDate())).toBe('2026-09-03');
+      });
+
+      it('is skipped when it was postponed rather than canceled', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+        onNights(['2026-08-27', { date: '2026-09-03', status: 'postponed' }]);
+
+        renderPage();
+
+        expect(asKey(selectedDate())).toBe('2026-08-27');
+      });
+
+      // One called-off match does not call off the night.
+      it('still counts when one of its matches was played', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+        onNights(['2026-08-27', { date: '2026-09-03', status: 'canceled' }, '2026-09-03']);
+
+        renderPage();
+
+        expect(asKey(selectedDate())).toBe('2026-09-03');
+      });
+
+      // A night that was called off but whose slots were posted is still a real
+      // night, so the timeslot fallback may land there. That is the page saying
+      // "something was arranged here", not "this was played".
+      it('can still be reached through its posted timeslots', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 8, 12, 9, 0, 0));
+        onNights([{ date: '2026-09-10', status: 'canceled' }]);
+        mockUseTimeslotDates.mockReturnValue({
+          timeslotDates: ['2026-09-10'],
+          isLoading: false,
+          error: null,
+        });
+
+        renderPage();
+
+        expect(asKey(selectedDate())).toBe('2026-09-10');
+      });
+    });
+
     // SC-05: useScheduleData rebuilds its arrays on every render. An effect that
     // depended on them while setting state would loop forever.
     it('settles instead of re-rendering forever', () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date(2026, 8, 4, 9, 0, 0));
+      // The query data keeps one identity, as react-query's does.
+      const matchesData = [{ id: 'm0', date: '2026-09-03', iscompleted: true, status: null }];
       mockUseScheduleData.mockImplementation(() => ({
-        matchesData: [],
+        matchesData,
         matchesLoading: false,
         // Fresh array identities every call, as the real hook produces.
         upcomingMatches: [],

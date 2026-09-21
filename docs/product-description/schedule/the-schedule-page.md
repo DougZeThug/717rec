@@ -62,8 +62,10 @@ stateDiagram-v2
 
 ### Arrive
 
-The page fetches every match in the active season in one request, with both
-teams' details joined. Until it lands, the page shows a skeleton: two greyed date
+The page fetches every match in the active season, with both teams' details
+joined. It reads them a thousand at a time until a short page comes back, so a
+season larger than one response can hold is not quietly cut off. Until they land,
+the page shows a skeleton: two greyed date
 groups of card outlines under a **two**-tab bar reading "Upcoming Matches" and
 "Completed Matches". The real page has three tabs with shorter labels, so the tab
 bar visibly changes shape when the data arrives.

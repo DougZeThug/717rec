@@ -24,6 +24,7 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
+import { fetchTeamsMap } from '@/services/matches/MatchReadService';
 import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
 
 // Create a wrapper for React Query
@@ -128,6 +129,183 @@ describe('usePendingMatches', () => {
     });
 
     expect(confirmMatchTie).toHaveBeenCalledWith('match-1');
+  });
+
+  // The list locks the actions of whichever matches are being written, so the
+  // hook has to name them. Nothing used to, which let an admin ask for a winner
+  // and a tie on one match before either write landed.
+  describe('the matches a write is in flight for', () => {
+    /**
+     * A mock whose promise the test releases by hand. Two helpers rather than one
+     * generic: `deferred<void>()` types the release function's own parameter as
+     * `void`, which is not a valid parameter type.
+     */
+    const deferredVoid = () => {
+      let release!: () => void;
+      const promise = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return { promise, release };
+    };
+
+    const deferredValue = <T>() => {
+      let release!: (value: T) => void;
+      const promise = new Promise<T>((resolve) => {
+        release = resolve;
+      });
+      return { promise, release };
+    };
+
+    it('names a match while its tie is being confirmed, and only then', async () => {
+      const tie = deferredVoid();
+      vi.mocked(confirmMatchTie).mockReturnValue(tie.promise);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect([...result.current.resolvingMatchIds]).toEqual([]);
+
+      act(() => {
+        result.current.handleMarkAsTie('match-1').catch(() => undefined);
+      });
+      await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual(['match-1']));
+
+      await act(async () => {
+        tie.release();
+        await tie.promise;
+      });
+      await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
+    });
+
+    it('names a match while its winner is being approved', async () => {
+      const approve = deferredValue<boolean>();
+      vi.mocked(approveMatchResult).mockReturnValue(approve.promise);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      act(() => {
+        result.current.handleApproveResult(mockMatch, 1).catch(() => undefined);
+      });
+      await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual(['match-1']));
+
+      await act(async () => {
+        approve.release(true);
+        await approve.promise;
+      });
+      await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
+    });
+
+    // A review caught this: with a single id, a second write on another match
+    // took the slot and unlocked the first while it was still running, so the
+    // admin could go back and ask for a contradictory result on it.
+    it('keeps naming the first match when a second write starts on another', async () => {
+      const tie = deferredVoid();
+      const approve = deferredValue<boolean>();
+      vi.mocked(confirmMatchTie).mockReturnValue(tie.promise);
+      vi.mocked(approveMatchResult).mockReturnValue(approve.promise);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      // A tie on match-1 starts...
+      act(() => {
+        result.current.handleMarkAsTie('match-1').catch(() => undefined);
+      });
+      await waitFor(() => expect(result.current.resolvingMatchIds.has('match-1')).toBe(true));
+
+      // ...and an approval on match-2 starts before it finishes.
+      act(() => {
+        result.current
+          .handleApproveResult({ ...mockMatch, id: 'match-2' }, 1)
+          .catch(() => undefined);
+      });
+      await waitFor(() => expect(result.current.resolvingMatchIds.has('match-2')).toBe(true));
+
+      // match-1 must still be named: its tie write has not settled.
+      expect(result.current.resolvingMatchIds.has('match-1')).toBe(true);
+      expect([...result.current.resolvingMatchIds].sort()).toEqual(['match-1', 'match-2']);
+
+      // Each clears on its own settle, not the other's.
+      await act(async () => {
+        approve.release(true);
+        await approve.promise;
+      });
+      await waitFor(() => expect(result.current.resolvingMatchIds.has('match-2')).toBe(false));
+      expect(result.current.resolvingMatchIds.has('match-1')).toBe(true);
+
+      await act(async () => {
+        tie.release();
+        await tie.promise;
+      });
+      await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
+    });
+
+    it('stops naming a match whose write failed', async () => {
+      vi.mocked(confirmMatchTie).mockRejectedValue(new Error('refused'));
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.handleMarkAsTie('match-1').catch(() => undefined);
+      });
+
+      await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
+    });
+  });
+
+  // fetchTeamsMap was mocked to an empty list everywhere, so the loop that turns
+  // rows into the teams record -- including the row it has to skip -- never ran.
+  describe('the teams record the cards read names from', () => {
+    it('maps a row onto the shape the card wants', async () => {
+      vi.mocked(fetchTeamsMap).mockResolvedValue([
+        {
+          team_id: 'team-1',
+          name: 'Owls',
+          image_url: 'owls.png',
+          logo_url: null,
+          players: ['a', 'b'],
+          wins: 3,
+          losses: 1,
+          game_wins: 7,
+          game_losses: 4,
+          created_at: '2026-01-01',
+          division_id: 'div-1',
+          divisionname: 'Competitive',
+          sos: 0.62,
+          power_score: 71.5,
+          win_percentage: 75,
+          game_win_percentage: 63.6,
+        },
+      ] as unknown as Awaited<ReturnType<typeof fetchTeamsMap>>);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.teams['team-1']).toBeDefined());
+      expect(result.current.teams['team-1']).toMatchObject({
+        id: 'team-1',
+        name: 'Owls',
+        // image_url wins over logo_url for both.
+        logoUrl: 'owls.png',
+        imageUrl: 'owls.png',
+        divisionName: 'Competitive',
+        wins: 3,
+        losses: 1,
+      });
+    });
+
+    it('skips a row with no team id rather than keying on undefined', async () => {
+      vi.mocked(fetchTeamsMap).mockResolvedValue([
+        { team_id: null, name: 'Nameless' },
+        { team_id: 'team-2', name: 'Hawks' },
+      ] as unknown as Awaited<ReturnType<typeof fetchTeamsMap>>);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.teams['team-2']).toBeDefined());
+      expect(Object.keys(result.current.teams)).toEqual(['team-2']);
+    });
   });
 
   it('should invalidate head-to-head and opponent-history queries after approval', async () => {

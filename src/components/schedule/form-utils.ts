@@ -1,6 +1,11 @@
 import type { Match } from '@/types';
 import { timezoneLog } from '@/utils/logger';
-import { createUTCDateWithTime, formatUTCToLocalTimeString } from '@/utils/timezone';
+import {
+  formatLeagueTimeString,
+  getLeagueCalendarDate,
+  getLeagueTimeUtc,
+  parseTimeString,
+} from '@/utils/timezone';
 
 import type { MatchFormValues } from './types';
 
@@ -21,7 +26,17 @@ export const parseDateFromInput = (dateString: string): Date => {
 };
 
 /**
- * Create a date with the selected time slot, properly converted to UTC for storage
+ * Combine a chosen night with a league time slot into the UTC instant to store.
+ *
+ * The convention every caller keeps: the Date passed in carries the intended
+ * LEAGUE calendar day in its local year/month/day, and its time of day is
+ * ignored. A time slot is a league wall-clock time, so the instant is built in
+ * league time.
+ *
+ * It used to be built with setHours on the *browser's* clock, which only agreed
+ * with the league for an admin sitting in Eastern. A Pacific admin saving a
+ * 7:30 PM match stored 10:30 PM league time, on the first save, with nothing
+ * anywhere reporting it.
  */
 export const createDateWithTime = (date: Date, timeSlot: string | null): Date => {
   if (!timeSlot) {
@@ -29,31 +44,52 @@ export const createDateWithTime = (date: Date, timeSlot: string | null): Date =>
     return date;
   }
 
-  timezoneLog('Creating date with time:', {
-    date: date.toString(),
-    timeSlot,
-    action: 'Converting to UTC for storage',
-  });
+  const { hours, minutes } = parseTimeString(timeSlot);
+  const utcDate = getLeagueTimeUtc(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+    hours,
+    minutes
+  );
 
-  // Use our fixed utility to handle time conversion properly
-  const utcDate = createUTCDateWithTime(date, timeSlot);
-
-  // Add extra validation logging
   timezoneLog('Time conversion complete:', {
+    leagueDay: formatDateForInput(date),
     originalTimeSlot: timeSlot,
     resultTime: utcDate.toISOString(),
-    utcHours: utcDate.getUTCHours(),
-    utcMinutes: utcDate.getUTCMinutes(),
   });
 
   return utcDate;
 };
 
 /**
- * Get time slot from a date object, converting from UTC to local time
+ * The league time slot a stored instant represents.
+ *
+ * League time, not the reader's: the slot is the one an admin picked from the
+ * form's list, and it has to read back as the same slot for an admin in any
+ * timezone or no button matches and the form looks broken.
  */
 export const getTimeSlotFromDate = (date: Date): string | null => {
-  return formatUTCToLocalTimeString(date);
+  return formatLeagueTimeString(date);
+};
+
+/**
+ * The form's date field for a match that is already stored.
+ *
+ * The field's convention is a local Date whose year/month/day are the LEAGUE
+ * calendar day, so a stored instant has to be read in league time first: an
+ * 8:30 PM Eastern match is stored on the next UTC day, and the form would
+ * otherwise open an admin east of the league on the night after the one being
+ * edited.
+ *
+ * An unreadable stored date falls back to today, the way create mode does.
+ */
+export const leagueDayFromStoredDate = (stored: string): Date => {
+  const instant = new Date(stored);
+  if (Number.isNaN(instant.getTime())) return new Date();
+
+  const { year, month, day } = getLeagueCalendarDate(instant);
+  return new Date(year, month - 1, day);
 };
 
 /**

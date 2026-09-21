@@ -281,6 +281,7 @@ export const approveMatchResult = async (
  * which is what removes it from the unresolved queue. Existing metadata keys
  * are merged, not replaced.
  * @throws {DatabaseError} When the read or the write fails
+ * @throws {BusinessLogicError} When the match has since been given a winner
  */
 export const confirmMatchTie = async (matchId: string): Promise<void> => {
   // Neither read needs the other, so they run at the same time.
@@ -296,15 +297,45 @@ export const confirmMatchTie = async (matchId: string): Promise<void> => {
 
   if (readError) handleDatabaseError(readError, 'Failed to load match metadata');
 
-  // updateMatch selects the row back, so a write blocked by RLS raises rather
-  // than silently succeeding.
-  await updateMatch(matchId, {
+  // Typed as MatchNonResultUpdate so this write still cannot reach a result
+  // column, the same guarantee updateMatch gave.
+  const metadataUpdate: MatchNonResultUpdate = {
     metadata: {
       ...asMetadataObject(current?.metadata),
       [TIE_CONFIRMED_AT]: new Date().toISOString(),
       [TIE_CONFIRMED_BY]: user?.id ?? null,
     },
-  });
+  };
+
+  // One guarded statement rather than the generic updateMatch. approve_match_result
+  // can decide this match between the read above and this write, and that RPC is
+  // itself gated on `winner_id IS NULL`; matching the predicate here makes the two
+  // mutually exclusive at the row level. Without it both "succeeded", and the league
+  // ended up counting a decisive win that the admin had been told was a tie.
+  //
+  // maybeSingle(), not single(): single() reports "no rows" as a PGRST116 *error*,
+  // indistinguishable from a real database failure, so a lost race would surface as
+  // "something went wrong" instead of what actually happened. Selecting the row back
+  // also means a write blocked by RLS raises rather than silently succeeding.
+  //
+  // Known limit: the metadata read-modify-write above can still lose a concurrent
+  // *metadata* write. Closing that needs `metadata || jsonb_build_object(...)`,
+  // which PostgREST cannot express in an update payload, so it belongs in SQL.
+  const { data: stamped, error: writeError } = await supabase
+    .from('matches')
+    .update(metadataUpdate)
+    .eq('id', matchId)
+    .is('winner_id', null)
+    .select('id')
+    .maybeSingle();
+
+  if (writeError) handleDatabaseError(writeError, 'Failed to confirm the tie');
+
+  if (!stamped) {
+    throw new BusinessLogicError(
+      'This match already has a winner, so it was not recorded as a tie. Refresh the list to see the result that was saved.'
+    );
+  }
 };
 
 /**

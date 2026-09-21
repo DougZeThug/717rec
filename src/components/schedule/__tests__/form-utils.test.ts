@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildMatchSubmission, describeUnsavableMatch } from '../form-utils';
+import {
+  buildMatchSubmission,
+  describeUnsavableMatch,
+  getTimeSlotFromDate,
+  leagueDayFromStoredDate,
+  parseDateFromInput,
+} from '../form-utils';
 import type { MatchFormValues } from '../types';
 
 const values = (overrides: Partial<MatchFormValues> = {}): MatchFormValues => ({
@@ -96,5 +102,92 @@ describe('buildMatchSubmission', () => {
 
     expect(payload.date).toEqual(expect.any(String));
     expect(Number.isNaN(Date.parse(payload.date as string))).toBe(false);
+  });
+});
+
+// The form used to build the stored instant with setHours on the browser's own
+// clock, so the answer depended on where the admin was sitting. Every case here
+// asserts an exact league instant, which is why they also pass under TZ=UTC,
+// TZ=America/Los_Angeles and TZ=Asia/Kolkata.
+describe('a night and a slot become one instant, in league time', () => {
+  const storedFor = (day: string, timeSlot: string) =>
+    buildMatchSubmission(values({ date: parseDateFromInput(day), timeSlot })).date;
+
+  it.each([
+    {
+      label: 'a summer evening (EDT)',
+      day: '2026-08-20',
+      slot: '7:00 PM',
+      iso: '2026-08-20T23:00:00.000Z',
+    },
+    {
+      label: 'a winter evening (EST)',
+      day: '2026-01-15',
+      slot: '6:30 PM',
+      iso: '2026-01-15T23:30:00.000Z',
+    },
+    {
+      label: 'a late slot, which lands on the next UTC day',
+      day: '2026-08-20',
+      slot: '8:30 PM',
+      iso: '2026-08-21T00:30:00.000Z',
+    },
+  ])('stores $label', ({ day, slot, iso }) => {
+    expect(storedFor(day, slot)).toBe(iso);
+  });
+
+  it('reads a stored instant back as the slot that was picked', () => {
+    expect(getTimeSlotFromDate(new Date('2026-08-20T23:00:00.000Z'))).toBe('7:00 PM');
+  });
+
+  it('opens the date field on the league night, not the UTC day', () => {
+    // 8:30 PM Eastern on the 20th is stored on the 21st in UTC. The field must
+    // still say the 20th, which is the night the league played.
+    const field = leagueDayFromStoredDate('2026-08-21T00:30:00.000Z');
+
+    expect(field.getFullYear()).toBe(2026);
+    expect(field.getMonth() + 1).toBe(8);
+    expect(field.getDate()).toBe(20);
+  });
+
+  it('falls back to a usable date when the stored one cannot be read', () => {
+    expect(Number.isNaN(leagueDayFromStoredDate('not a date').getTime())).toBe(false);
+  });
+
+  // The whole point: opening a stored match and saving it again without touching
+  // anything must not move it. This is the trip that used to shift the match by
+  // the admin's offset, a whole league day for an admin east of the league.
+  it('closes the trip: stored instant in, identical instant out', () => {
+    const stored = '2026-08-21T00:30:00.000Z';
+
+    const resaved = buildMatchSubmission(
+      values({
+        date: leagueDayFromStoredDate(stored),
+        timeSlot: getTimeSlotFromDate(new Date(stored)),
+      })
+    ).date;
+
+    expect(resaved).toBe(stored);
+  });
+
+  it('closes the trip across the winter offset too', () => {
+    const stored = '2026-01-15T23:30:00.000Z';
+
+    const resaved = buildMatchSubmission(
+      values({
+        date: leagueDayFromStoredDate(stored),
+        timeSlot: getTimeSlotFromDate(new Date(stored)),
+      })
+    ).date;
+
+    expect(resaved).toBe(stored);
+  });
+
+  it('leaves the date alone when no slot was picked', () => {
+    const day = parseDateFromInput('2026-08-20');
+
+    expect(buildMatchSubmission(values({ date: day, timeSlot: null })).date).toBe(
+      day.toISOString()
+    );
   });
 });

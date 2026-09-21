@@ -105,11 +105,18 @@ describe('MatchFormRHF (edit mode)', () => {
   // they make. This form has no court control, so an edit that only moves the
   // date must not have an opinion about the court — it used to send '' and
   // wipe it.
+  /**
+   * 7:00 PM league time, spelled as the stored instant. Written out rather than
+   * built from new Date(y, m, d, 19, 0), which is 7 PM on the *runner's* clock
+   * and is not a league slot anywhere but Eastern.
+   */
+  const LEAGUE_7PM = '2026-08-20T23:00:00.000Z';
+
   const upcoming = {
     id: 'match-1',
     team1Id: 'team-a',
     team2Id: 'team-b',
-    date: new Date(2026, 7, 20, 19, 0).toISOString(),
+    date: LEAGUE_7PM,
     location: 'Court 3',
     timeSlot: '7:00 PM',
     iscompleted: false,
@@ -136,6 +143,62 @@ describe('MatchFormRHF (edit mode)', () => {
     );
 
     expect(screen.getByRole('button', { name: '7:00 PM' })).toHaveClass('bg-cornhole-navy');
+  });
+
+  // The form used to read the stored instant on the browser's clock, so an admin
+  // outside Eastern saw no slot pressed and the wrong date, and re-picking a slot
+  // silently moved the match. These pin both halves in league terms.
+  describe('a match stored in league time', () => {
+    it('opens on the league night, not the UTC day', () => {
+      // 8:30 PM Eastern on the 20th is stored on the 21st in UTC.
+      render(
+        <MatchFormRHF
+          match={{ ...upcoming, date: '2026-08-21T00:30:00.000Z', timeSlot: undefined }}
+          teams={teams}
+          onSubmit={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByLabelText(/date/i)).toHaveValue('2026-08-20');
+      expect(screen.getByRole('button', { name: '8:30 PM' })).toHaveClass('bg-cornhole-navy');
+    });
+
+    it('saves an untouched match back as the very same instant', async () => {
+      const onSubmit = vi.fn();
+      render(
+        <MatchFormRHF
+          match={{ ...upcoming, date: '2026-08-21T00:30:00.000Z', timeSlot: undefined }}
+          teams={teams}
+          onSubmit={onSubmit}
+          onCancel={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: /update match/i }));
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit.mock.calls[0][0]).toMatchObject({ date: '2026-08-21T00:30:00.000Z' });
+    });
+
+    it('writes the league instant when a different slot is picked', async () => {
+      const onSubmit = vi.fn();
+      render(
+        <MatchFormRHF
+          match={{ ...upcoming, date: '2026-08-21T00:30:00.000Z', timeSlot: undefined }}
+          teams={teams}
+          onSubmit={onSubmit}
+          onCancel={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
+      fireEvent.click(screen.getByRole('button', { name: /update match/i }));
+
+      // Still the 20th in league time, now at 7 PM: 23:00Z, not a day later.
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit.mock.calls[0][0]).toMatchObject({ date: '2026-08-20T23:00:00.000Z' });
+    });
   });
 
   it('shows the score inputs only once the match is marked completed', async () => {
@@ -280,7 +343,7 @@ describe('MatchFormRHF (edit mode)', () => {
       id: 'match-1',
       team1Id: 'team-a',
       team2Id: 'team-b',
-      date: new Date(2026, 7, 20, 19, 0).toISOString(),
+      date: LEAGUE_7PM,
       location: 'Court 3',
       timeSlot: '7:00 PM',
       iscompleted: false,

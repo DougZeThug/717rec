@@ -1,8 +1,33 @@
-import { timezoneLog } from '@/utils/logger';
+import { errorLog, timezoneLog } from '@/utils/logger';
 
+import { formatTimeString } from './formatters';
 import { DateRange } from './types';
 
 const LEAGUE_TIME_ZONE = 'America/New_York';
+
+// Intl formatters are expensive to build and these two take constant options, so
+// they are built once here rather than on every call. Flagged by React Doctor
+// (js-hoist-intl) on formatLeagueTimeString below.
+
+/** League-time wall clock of an instant, as parts, 24-hour. */
+const LEAGUE_CLOCK_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: LEAGUE_TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+/** Full league-time breakdown of an instant, used to measure the UTC offset. */
+const LEAGUE_OFFSET_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  timeZone: LEAGUE_TIME_ZONE,
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+  hour12: false,
+});
 
 /**
  * Return the calendar date (year/month/day) of an instant as seen in league
@@ -25,26 +50,26 @@ export const getLeagueCalendarDate = (date: Date): { year: number; month: number
 };
 
 /**
- * Return the UTC instant of midnight (start of day) in league time for the
+ * Return the UTC instant for a league-time (America/New_York) wall clock on the
  * given calendar date. Month is 1-based; day values may overflow (e.g. day 40)
  * and roll into the next month, matching Date.UTC semantics.
+ *
+ * The offset is measured at the target instant rather than assumed, so the same
+ * 6:30 PM slot lands on 23:30Z in EST and on 22:30Z in EDT, and an 8:30 PM slot
+ * correctly rolls into the next UTC day. US transitions happen in the early
+ * hours UTC, never inside an evening slot's window, so one pass is exact.
  */
-export const getLeagueMidnightUtc = (year: number, month: number, day: number): Date => {
-  const naive = Date.UTC(year, month - 1, day, 0, 0, 0);
+export const getLeagueTimeUtc = (
+  year: number,
+  month: number,
+  day: number,
+  hours = 0,
+  minutes = 0
+): Date => {
+  const naive = Date.UTC(year, month - 1, day, hours, minutes, 0);
   // Compute the offset of league time at that instant (e.g. +4h in EDT).
   // Use formatToParts to avoid re-parsing toLocaleString output in the runtime's local TZ.
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: LEAGUE_TIME_ZONE,
-    year: 'numeric',
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    second: 'numeric',
-    hour12: false,
-  });
-
-  const parts = formatter.formatToParts(new Date(naive));
+  const parts = LEAGUE_OFFSET_FORMATTER.formatToParts(new Date(naive));
   const getPart = (type: string): number => {
     const value = parts.find((part) => part.type === type)?.value;
     return value ? Number(value) : 0;
@@ -60,6 +85,47 @@ export const getLeagueMidnightUtc = (year: number, month: number, day: number): 
   );
 
   return new Date(naive + (naive - localMs));
+};
+
+/**
+ * Return the UTC instant of midnight (start of day) in league time for the
+ * given calendar date.
+ */
+export const getLeagueMidnightUtc = (year: number, month: number, day: number): Date =>
+  getLeagueTimeUtc(year, month, day);
+
+/**
+ * Read an instant's league-time wall clock as a '7:30 PM' string — the shape the
+ * match form's slot buttons and the league's posted slots use.
+ *
+ * Deliberately separate from formatUTCToLocalTimeString, which reads the
+ * *viewer's* clock and which extractTimeSlotFromUTC depends on for schedule
+ * grouping. Only the admin match form uses this one, where the slot being edited
+ * is a league time by definition. Keeping them apart is what stops a form fix
+ * re-grouping the schedule for every reader outside Eastern.
+ *
+ * Built from formatToParts plus formatTimeString rather than from Intl's own
+ * 12-hour output: some ICU builds separate the time from AM/PM with U+202F, and
+ * that string would never equal the '7:30 PM' in the slot list.
+ */
+export const formatLeagueTimeString = (date: Date): string => {
+  try {
+    const parts = LEAGUE_CLOCK_FORMATTER.formatToParts(date);
+
+    const read = (type: string): number =>
+      Number(parts.find((part) => part.type === type)?.value ?? NaN);
+
+    // Some ICU builds report midnight as hour 24 under hour12: false.
+    const hours = read('hour') % 24;
+    const minutes = read('minute');
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return '';
+
+    return formatTimeString(hours, minutes);
+  } catch (error) {
+    // Same contract as formatUTCToLocalTimeString: an unusable date gives ''.
+    errorLog('Error formatting instant in league time:', error);
+    return '';
+  }
 };
 
 /**

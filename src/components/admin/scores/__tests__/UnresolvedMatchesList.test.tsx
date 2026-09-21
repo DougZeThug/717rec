@@ -82,4 +82,62 @@ describe('UnresolvedMatchesList', () => {
     renderList({ disabled: true });
     screen.getAllByRole('button').forEach((button) => expect(button).toBeDisabled());
   });
+
+  // One match being written must not stop the admin clearing the rest of the
+  // queue, but its own three actions have to go: approving a winner and
+  // confirming a tie for the same match are contradictory instructions.
+  describe('while one match is being written', () => {
+    const second = { ...match, id: 'match-2', team1Id: 'team-3', team2Id: 'team-4' } as Match;
+    const moreTeams = {
+      ...teams,
+      'team-3': { id: 'team-3', name: 'Kites' } as Team,
+      'team-4': { id: 'team-4', name: 'Terns' } as Team,
+    };
+
+    it('locks that match’s three actions', () => {
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set(['match-1']),
+      });
+
+      expect(screen.getByRole('button', { name: /Owls won/ })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /Hawks won/ })).toBeDisabled();
+      expect(screen.getAllByRole('button', { name: /It was a tie/ })[0]).toBeDisabled();
+    });
+
+    it('leaves every other match pressable', () => {
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set(['match-1']),
+      });
+
+      expect(screen.getByRole('button', { name: /Kites won/ })).toBeEnabled();
+      expect(screen.getByRole('button', { name: /Terns won/ })).toBeEnabled();
+      expect(screen.getAllByRole('button', { name: /It was a tie/ })[1]).toBeEnabled();
+    });
+
+    it('locks nothing when no write is in flight', () => {
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set<string>(),
+      });
+
+      screen.getAllByRole('button').forEach((button) => expect(button).toBeEnabled());
+    });
+
+    // Two matches can be mid-write at once. A single id would unlock whichever
+    // started first, which is the hole a review caught.
+    it('locks every match that is mid-write, not just one', () => {
+      renderList({
+        matches: [match, second],
+        teams: moreTeams,
+        resolvingMatchIds: new Set(['match-1', 'match-2']),
+      });
+
+      screen.getAllByRole('button').forEach((button) => expect(button).toBeDisabled());
+    });
+  });
 });
