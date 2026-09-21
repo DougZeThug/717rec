@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 import type { RecapFactsV1 } from '@/types/recapEdition';
 import { RECAP_FACTS_SCHEMA_VERSION } from '@/types/recapEdition';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
