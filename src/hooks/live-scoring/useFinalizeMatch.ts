@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { MATCH_RESULT_DRIFT_KEY } from '@/hooks/admin/useMatchResultDrift';
+import { UNSAVED_LIVE_MATCHES_KEY } from '@/hooks/admin/useUnsavedLiveMatches';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { toast } from '@/hooks/useToast';
 import { FinalizeService } from '@/services/liveScoring/FinalizeService';
@@ -19,10 +20,16 @@ export function useFinalizeMatch(matchId: string) {
   const refreshEverything = async () => {
     await invalidateMatchRelatedQueries(queryClient);
     await queryClient.invalidateQueries({ queryKey: liveScoringKeys.liveMatch(matchId) });
-    // Saving or reversing a result is exactly what clears a match off the
-    // dashboard's drift card, and invalidateMatchRelatedQueries touches nothing
-    // under ['admin'], so name that key here.
+    // Saving or reversing a result is exactly what moves a match on and off the
+    // dashboard's drift and unsaved-live cards, and invalidateMatchRelatedQueries
+    // touches nothing under ['admin'], so both keys are named here. The unsaved
+    // card holds its answer for a minute, so without this an admin who reopens a
+    // match and goes back to the dashboard is not told it needs saving again.
+    //
+    // Both are prefixes: react-query matches by prefix, so the season-suffixed
+    // keys are reached without knowing which season is active.
     await queryClient.invalidateQueries({ queryKey: MATCH_RESULT_DRIFT_KEY });
+    await queryClient.invalidateQueries({ queryKey: UNSAVED_LIVE_MATCHES_KEY });
   };
 
   const finalize = useMutation({

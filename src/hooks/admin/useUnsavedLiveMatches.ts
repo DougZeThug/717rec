@@ -13,12 +13,15 @@ import { UnsavedLiveMatchesService } from '@/services/admin/UnsavedLiveMatchesSe
  * `finalize_live_match` would add that old result to the current season's team
  * records — the very corruption this card exists to prevent.
  */
+/** Invalidate this after anything that can save or reverse a live match's result. */
+export const UNSAVED_LIVE_MATCHES_KEY = ['admin', 'unsaved-live-matches'] as const;
+
 export const useUnsavedLiveMatches = () => {
   const { data: activeSeason, isLoading: isSeasonLoading } = useActiveSeason();
   const seasonId = activeSeason?.id;
 
   const query = useQuery({
-    queryKey: ['admin', 'unsaved-live-matches', seasonId ?? ''],
+    queryKey: [...UNSAVED_LIVE_MATCHES_KEY, seasonId ?? ''],
     queryFn: () => {
       if (!seasonId) throw new Error('An active season is required');
       return UnsavedLiveMatchesService.fetchUnsavedLiveMatches(seasonId);

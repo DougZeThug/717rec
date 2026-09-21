@@ -42,6 +42,15 @@ const createWrapper = () => {
 const expectDriftRefreshed = () =>
   expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'match-result-drift'] });
 
+/**
+ * The dashboard's unsaved-live card, which it does not reach either. Saving takes
+ * a match off that list and reopening puts one back on it, and the card holds its
+ * answer for a minute, so it has to be named here too. Asserted as a literal, so
+ * a rename of the exported prefix cannot quietly stop matching the real key.
+ */
+const expectUnsavedRefreshed = () =>
+  expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'unsaved-live-matches'] });
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockInvalidateMatchRelatedQueries.mockResolvedValue(null);
@@ -70,6 +79,7 @@ describe('finalize', () => {
       expect.objectContaining({ title: 'Match result saved' })
     );
     expectDriftRefreshed();
+    expectUnsavedRefreshed();
   });
 
   it('reports an already-finalized match as informational, not an error', async () => {
@@ -124,6 +134,7 @@ describe('reopen', () => {
     expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match reopened' }));
     expectDriftRefreshed();
+    expectUnsavedRefreshed();
   });
 
   it('handles the idempotent nothing-to-reopen outcome', async () => {
@@ -189,6 +200,7 @@ describe('reopenAndRefinalize', () => {
     );
     expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
     expectDriftRefreshed();
+    expectUnsavedRefreshed();
   });
 
   it('reopens before it saves, so finalize_live_match is not a no-op', async () => {
