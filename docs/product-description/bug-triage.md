@@ -15,8 +15,7 @@ The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
 **62 entries**: 15 high, 30 medium, 16 low, and B-06, which carries no severity
-because it was cleared as not a defect. All but one are closed; B-61 is open,
-and is a product call rather than a defect to go and fix. Several were **not raised as
+because it was cleared as not a defect. All of them are now closed. Several were **not raised as
 defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
 `medium`, was recorded in `home/the-home-page.md` as an open question and could
 not be reached until
@@ -24,8 +23,9 @@ not be reached until
 that switches its feature on; it was fixed in that same change. B-49 to B-52 came
 out of code readings rather than screens, as did B-54 to B-60 — seven defects
 found by reading the code against these documents, all seven fixed in the change
-that recorded them. B-61 came out of the review of that change, and is the one
-entry still open.
+that recorded them. B-61 came out of the review of that change, and was closed
+as a product call: the league chose to accept the behaviour rather than change
+it.
 
 *The counts in this paragraph had gone stale.* They still read "42 entries: 13
 high, 23 medium, and 6 low" long after the list had grown past them, and are
@@ -2886,6 +2886,20 @@ finding read a superseded migration.
   brief honest "loading" in place of a wrong "loaded and empty". A test records
   every commit of the hook and fails if any of them is empty-and-not-loading.
 
+  **Cause removed afterwards.** Seeding the flag closed the gap but left it
+  there: the rankings were still derived in an effect, so the hook still had a
+  commit with the data in and nothing worked out, and still had to claim to be
+  loading to cover it. `useTeamRankings` now works them out during render with
+  `useMemo`, so the first commit already carries them. The seed is gone, the
+  flag is just `teamsLoading || matchesLoading`, and the test asserts the
+  stronger property: two rankings on the first commit, and exactly one commit.
+
+  That change also deleted the `rankings.length` effect dependency and the
+  `if (rankings.length > 0) setRankings([])` guard, which existed only to break
+  an infinite render loop the effect caused by depending on its own output
+  (`9cb0c40f`). A memo cannot depend on its own result, so the loop is now
+  impossible rather than guarded against.
+
 ### B-57: Publishing a recap never refreshed its public page
 
 - `usePublishRecapEdition`, `useUnpublishRecapEdition` and `useSaveRecapVersion`
@@ -3014,8 +3028,8 @@ finding read a superseded migration.
   B-57 fixed, because no invalidation in one browser can reach another.
 - **Severity:** `medium`. Content the league has deliberately taken down stays
   readable by the public after the admin has been told it is down.
-- **Decision needed:** **open — a product call.** Three ways to close it, and
-  they trade off against each other:
+- **Decision needed:** `product call`. Three ways to close it, and they trade
+  off against each other:
   1. **Accept it.** Takedowns are rare and the content was published on purpose
      a moment ago. Costs nothing, changes nothing.
   2. **Shorten `staleTime`.** Narrows the window to whatever is chosen, at the
@@ -3027,8 +3041,16 @@ finding read a superseded migration.
 - **Raised by:** Codex, reviewing
   [#1528](https://github.com/DougZeThug/717rec/pull/1528). Not raised by any
   feature document, and not found by the reading that produced B-54 to B-60.
-- **Status:** **open.** Recorded rather than fixed: which of the three it should
-  be is the league's call, not a code decision.
+- **Status:** **documented, 2026-09-21.** The league was offered the three
+  options above and chose the first: accept the window. No code changed. A
+  takedown is rare, the recap was published deliberately minutes earlier, and
+  neither of the other two was worth its cost — shortening `staleTime` would
+  have bought a narrower window it still could not close, and realtime would
+  have contradicted a specification that records this page as having none.
+
+  The behaviour is real and stays as it is: for up to ten minutes after an
+  unpublish, a visitor already holding `/recap/<season>/week-<n>` keeps reading
+  it. Anyone arriving fresh gets Not Found immediately.
 
 
 ---
