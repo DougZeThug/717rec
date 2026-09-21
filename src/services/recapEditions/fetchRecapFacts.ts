@@ -45,7 +45,7 @@ const fetchWeekStandings = async (
   const [teamDetailsResult, divisionsResult] = await Promise.all([
     supabase
       .from('v_team_details')
-      .select('team_id, name, logo_url, image_url')
+      .select('team_id, name, logo_url, image_url, division_id')
       .in(
         'team_id',
         snapshots.map((s) => s.team_id)
@@ -70,7 +70,15 @@ const fetchWeekStandings = async (
   );
 
   return snapshots
-    .filter((s) => s.division_id !== null && visibleDivisions.has(s.division_id))
+    .filter((s) => {
+      // Gate on the team's division TODAY, exactly as weeklyTrendsForWeek does.
+      // Reading it off the snapshot instead let a team moved to Hidden after
+      // the week ended keep its rank and grade here while the movers half of
+      // the same recap dropped it -- one frozen edition disagreeing with
+      // itself about who is in the league.
+      const current = teamsById.get(s.team_id)?.division_id;
+      return current != null && visibleDivisions.has(current);
+    })
     .map((s) => {
       const team = teamsById.get(s.team_id);
       return {

@@ -104,7 +104,12 @@ describe('fetchRecapFacts', () => {
       seasons: [season],
       power_score_snapshots: [{ data: [snapshotRow('t-1', 6)], error: null }],
       v_team_details: [
-        { data: [{ team_id: 't-1', name: 'A', logo_url: null, image_url: null }], error: null },
+        {
+          data: [
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
       ],
       divisions: [
         {
@@ -146,8 +151,18 @@ describe('fetchRecapFacts', () => {
         { data: [snapshotRow('t-1', 4)], error: null },
       ],
       v_team_details: [
-        { data: [{ team_id: 't-1', name: 'A', logo_url: null, image_url: null }], error: null },
-        { data: [{ team_id: 't-1', name: 'A', logo_url: null, image_url: null }], error: null },
+        {
+          data: [
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
+        {
+          data: [
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
       ],
       divisions: [
         {
@@ -187,7 +202,12 @@ describe('fetchRecapFacts', () => {
       seasons: [season],
       power_score_snapshots: [{ data: [snapshotRow('t-1', 1)], error: null }],
       v_team_details: [
-        { data: [{ team_id: 't-1', name: 'A', logo_url: null, image_url: null }], error: null },
+        {
+          data: [
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
       ],
       divisions: [
         {
@@ -205,6 +225,49 @@ describe('fetchRecapFacts', () => {
 
     expect(calls.filter((c) => c.table === 'power_score_snapshots')).toHaveLength(1);
     expect(facts.powerRankings?.every((t) => t.previousRank === null)).toBe(true);
+  });
+
+  // One visibility rule for the whole edition. weeklyTrendsForWeek gates on the
+  // team's division today, so a team moved to Hidden after the week ended used
+  // to keep its rank and grade in the standings while vanishing from movers --
+  // a published, frozen recap contradicting itself.
+  it('drops a team whose division is Hidden today, even if it was not then', async () => {
+    setupSupabase({
+      seasons: [season],
+      power_score_snapshots: [
+        { data: [snapshotRow('t-1', 6), snapshotRow('t-2', 6)], error: null },
+      ],
+      v_team_details: [
+        {
+          data: [
+            // t-1 still plays. t-2 has since been moved to the Hidden division,
+            // though its snapshot still records the division it played in.
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+            { team_id: 't-2', name: 'B', logo_url: null, image_url: null, division_id: 'd-hidden' },
+          ],
+          error: null,
+        },
+      ],
+      divisions: [
+        {
+          data: [
+            { id: 'd-1', name: 'Competitive', display_division: 'Competitive' },
+            { id: 'd-hidden', name: 'Hidden', display_division: 'Hidden' },
+          ],
+          error: null,
+        },
+      ],
+      matches: [
+        { count: 0, error: null },
+        { data: [], error: null },
+      ],
+    });
+
+    const facts = await fetchRecapFacts('s-1', 6);
+
+    const ranked = facts.powerRankings?.map((t) => t.teamId) ?? [];
+    expect(ranked).toContain('t-1');
+    expect(ranked).not.toContain('t-2');
   });
 
   it('asks the recap and the streaks for the same week it is building', async () => {
