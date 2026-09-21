@@ -86,11 +86,6 @@ Not checkable by hand:
 | NAV-11 | P3 | browser | "Home" on the route error screen is a full page load ([When a page fails](../foundations/navigation.md#when-a-page-fails)). | A page forced to fail. | 1. Reach the route error screen.<br>2. Press Home and watch the network. | The whole app reloads rather than navigating in place. | — |
 | NAV-12 | P2 | browser | The first Tab reaches a skip link ([Accessibility](../foundations/navigation.md#interactions-with-other-systems)). | Any page, fresh load. | 1. Press Tab once. | Focus is on "Skip to main content". **Confirmed 2026-08-25.** | pass |
 
-Not checkable by hand:
-
-- Whether "Try Again" on the route error screen recovers or re-throws. Needs a
-  reproducible render failure.
-
 ## foundations/saving-and-freshness.md
 
 | ID | P | Device | Claim | Setup | Steps | Expected | Result |

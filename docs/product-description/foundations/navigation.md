@@ -245,8 +245,8 @@ development build the analytics call does nothing.
   show to a visitor. They have no route guard.
 - Not confirmed by hand: whether the post-sign-in redirect returns the user to
   the guarded page they originally asked for.
-- Not confirmed by hand: whether "Try Again" on the route error screen actually
-  recovers, or re-throws immediately.
+- "Try Again" on the route error screen recovers when the page renders on the
+  second attempt, and re-throws when it does not. Covered by a test.
 - Not confirmed by hand: how long the loading spinner is visible in practice on a
   normal connection, and whether it flashes on fast ones.
 - Assumption: the three preloaded routes are teams, schedule, and history because
