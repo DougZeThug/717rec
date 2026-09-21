@@ -34,6 +34,7 @@ vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
 import { usePreviousRankings } from '@/hooks/rankings/usePreviousRankings';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
+import { errorLog } from '@/utils/logger';
 import { saveRankingsToStorage } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
@@ -104,7 +105,11 @@ describe('useTeamRankings', () => {
 
     // "Not loading, and nothing to show" is what draws the empty state.
     expect(commits.some((c) => c.count === 0 && !c.loading)).toBe(false);
-    expect(commits[0].loading).toBe(true);
+    // Stronger than the flag this used to check: the rankings are worked out
+    // during render, so they are there on the very first commit. There is no
+    // "loading" moment left to cover, and nothing to swap in afterwards.
+    expect(commits[0].count).toBe(2);
+    expect(commits).toHaveLength(1);
   });
 
   it('returns empty rankings when no teams', async () => {
@@ -285,6 +290,12 @@ describe('useTeamRankings', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.rankings).toEqual([]);
+
+    // Reported from an effect, not from inside the memo: errorLog reaches
+    // Sentry in production and React may re-run a memo factory, so logging
+    // there could send the same failure twice. Once, and only once.
+    await waitFor(() => expect(errorLog).toHaveBeenCalledTimes(1));
+    expect(errorLog).toHaveBeenCalledWith('Error calculating rankings:', expect.any(Error));
   });
 
   it('never persists snapshots as a side effect of rendering (pure read)', async () => {

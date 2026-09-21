@@ -38,7 +38,13 @@ export const useRecapEditionBySlug = (seasonSlug?: string, weekNumber?: number) 
         ? RecapEditionService.fetchPublishedBySlug(seasonSlug, weekNumber)
         : Promise.resolve(null),
     enabled: Boolean(seasonSlug) && typeof weekNumber === 'number',
-    staleTime: 1000 * 60 * 10,
+    // staleTime on its own schedules nothing: it only marks the data stale so
+    // the NEXT trigger refetches. A reader sitting on this page fires no
+    // trigger -- no refocus, no remount -- so a recap the league unpublished
+    // stayed on their screen indefinitely (B-61). The interval is what bounds
+    // it. Paired at the same five minutes as useDailyTraffic.
+    staleTime: 1000 * 60 * 5,
+    refetchInterval: 1000 * 60 * 5,
   });
 
 /**
