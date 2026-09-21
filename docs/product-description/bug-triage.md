@@ -14,8 +14,9 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
-**61 entries**: 15 high, 30 medium, 15 low, and B-06, which carries no severity
-because it was cleared as not a defect. Several were **not raised as
+**62 entries**: 15 high, 30 medium, 16 low, and B-06, which carries no severity
+because it was cleared as not a defect. All but one are closed; B-61 is open,
+and is a product call rather than a defect to go and fix. Several were **not raised as
 defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
 `medium`, was recorded in `home/the-home-page.md` as an open question and could
 not be reached until
@@ -23,7 +24,8 @@ not be reached until
 that switches its feature on; it was fixed in that same change. B-49 to B-52 came
 out of code readings rather than screens, as did B-54 to B-60 — seven defects
 found by reading the code against these documents, all seven fixed in the change
-that recorded them.
+that recorded them. B-61 came out of the review of that change, and is the one
+entry still open.
 
 *The counts in this paragraph had gone stale.* They still read "42 entries: 13
 high, 23 medium, and 6 low" long after the list had grown past them, and are
@@ -31,7 +33,7 @@ corrected here by counting the **Severity** line on each entry. Two things make 
 count by eye come out wrong: B-06 has no severity line at all, and B-41 sits
 under the `## Low` heading while being marked `medium`.
 
-**All fifteen `low` entries are now closed.** Fourteen were fixed; B-26 was put
+**All sixteen `low` entries are now closed.** Fifteen were fixed; B-26 was put
 to the league as a product call and left as it is, documented rather than
 changed.
 Three — B-27, B-30 and B-53 — carried claims that had gone stale or were recorded
@@ -2893,14 +2895,24 @@ finding read a superseded migration.
 - The home page card was covered anyway, by a second explicit invalidation of
   its exact key. The public per-week page was not, so it kept serving its cache
   for its full ten-minute `staleTime`.
-- That is worst on the documented rollback: an admin unpublishes a wrong recap,
-  and it stays readable at `/recap/<season>/week-<n>` for ten more minutes for
-  anyone who already had it open. A fresh fetch correctly returns nothing and
-  the page renders Not Found — the defect is the window in between.
+- It shows on the documented rollback: an admin unpublishes a wrong recap, opens
+  `/recap/<season>/week-<n>` to check, and is served their own ten-minute cache
+  of the recap they just took down — so the takedown looks as though it failed.
+  A fresh fetch correctly returns nothing and the page renders Not Found; the
+  defect is the window in between.
 - The plural key had matched one query when it was written, an admin list that
   has since been removed. It has matched nothing since.
-- **Severity:** `medium`. Content the league has deliberately taken down stays
-  on the public site for up to ten minutes.
+- **Scope corrected after review.** This entry first said the recap stayed
+  readable "for anyone who already had it open", and was rated `medium` on that
+  basis. That overstates it, and the same overstatement is in the commit
+  message. `invalidateQueries` only ever touches the `QueryClient` in the
+  browser that ran the mutation, so this defect, and its fix, reach the admin's
+  own session and nothing else. A *viewer* holding the page open is a separate
+  and still-open problem, now recorded as
+  [B-61](#b-61-an-unpublished-recap-stays-on-a-viewers-screen-for-up-to-ten-minutes).
+- **Severity:** `low`. One admin's own session shows a stale page and
+  self-corrects. Nothing is written wrongly, and no visitor is affected either
+  way.
 - **Decision needed:** `fix`.
 - **Raised by:** a code reading, not a feature document.
 - **Status:** **fixed.** One shared singular constant now covers both reads, so
@@ -2978,6 +2990,46 @@ finding read a superseded migration.
 - **Raised by:** a code reading, not a feature document.
 - **Status:** **fixed.** `generateBlurbs` leaves `captionModel` alone. A test
   asserts it is still null after blurbs are generated on a fresh draft.
+
+
+### B-61: An unpublished recap stays on a viewer's screen for up to ten minutes
+
+- Taking a recap down is a server-side change to one row. Nothing tells a
+  browser that already holds the page. `useRecapEditionBySlug` has
+  `staleTime: 1000 * 60 * 10`, the public recap page has no realtime channel and
+  no `refetchInterval`, and `foundations/saving-and-freshness.md` and
+  `admin/weekly-content-pack.md` both record that this feature has no realtime
+  by design.
+- So a visitor reading `/recap/<season>/week-<n>` when the league unpublishes it
+  keeps reading it. React Query will not refetch a query it still considers
+  fresh, so even a tab switch or a remount inside that window is served from
+  cache. Ten minutes is the floor, not the ceiling: the clock only starts at the
+  last fetch.
+- The same is true of a correction. A viewer holding the page sees the withdrawn
+  version, not the corrected one, for the same window.
+- This is **not** the same defect as
+  [B-57](#b-57-publishing-a-recap-never-refreshed-its-public-page), though B-57
+  originally described it. B-57 was a cache key that matched nothing, and it
+  only ever affected the admin's own browser. This one would still be here with
+  B-57 fixed, because no invalidation in one browser can reach another.
+- **Severity:** `medium`. Content the league has deliberately taken down stays
+  readable by the public after the admin has been told it is down.
+- **Decision needed:** **open — a product call.** Three ways to close it, and
+  they trade off against each other:
+  1. **Accept it.** Takedowns are rare and the content was published on purpose
+     a moment ago. Costs nothing, changes nothing.
+  2. **Shorten `staleTime`.** Narrows the window to whatever is chosen, at the
+     cost of more reads of a page that almost never changes. Does not close it.
+  3. **Subscribe the page to `recap_editions`.** Closes it properly, and is the
+     only option that makes a takedown immediate — but it puts realtime on a
+     page whose specification says it has none, so the specification would have
+     to change with it.
+- **Raised by:** Codex, reviewing
+  [#1528](https://github.com/DougZeThug/717rec/pull/1528). Not raised by any
+  feature document, and not found by the reading that produced B-54 to B-60.
+- **Status:** **open.** Recorded rather than fixed: which of the three it should
+  be is the league's call, not a code decision.
+
 
 ---
 
