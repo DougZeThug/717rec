@@ -145,54 +145,94 @@ describe('fetchMatchesForAdmin', () => {
 describe('fetchScheduleMatches', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  /** The active-season lookup every schedule fetch starts with. */
+  const seasonChain = (data: { id: string } | null = { id: 'season-1' }) => ({
+    select: () => ({ eq: () => ({ single: () => Promise.resolve({ data, error: null }) }) }),
+  });
+
+  /**
+   * The matches query: select → eq → order → order → range, where range resolves
+   * to the page. Each page after the first is empty, so the pagination loop
+   * always terminates even if the assertions are wrong.
+   */
+  const scheduleQueryChain = (
+    result: { data: unknown; error: unknown },
+    rangeCalls: Array<[number, number]> = []
+  ) => {
+    const chain: Record<string, (...args: unknown[]) => unknown> = {
+      select: () => chain,
+      eq: () => chain,
+      order: () => chain,
+      range: (...args: unknown[]) => {
+        const [from, to] = args as [number, number];
+        rangeCalls.push([from, to]);
+        return Promise.resolve(rangeCalls.length === 1 ? result : { data: [], error: null });
+      },
+    };
+    return chain;
+  };
+
+  const onSeason = (matches: ReturnType<typeof scheduleQueryChain>) =>
+    mockFrom.mockImplementation((table: string) => (table === 'seasons' ? seasonChain() : matches));
+
   it('returns schedule matches on success', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'seasons') {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
-            }),
-          }),
-        };
-      }
-      // matches
-      return {
-        select: () => ({
-          eq: () => ({ order: () => Promise.resolve({ data: [makeMatch()], error: null }) }),
-        }),
-      };
-    });
+    onSeason(scheduleQueryChain({ data: [makeMatch()], error: null }));
+
     const result = await fetchScheduleMatches();
+
     expect(result).toHaveLength(1);
   });
 
   it('returns empty array when no active season', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({ single: () => Promise.resolve({ data: null, error: null }) }),
-      }),
-    });
+    mockFrom.mockReturnValue(seasonChain(null));
+
     expect(await fetchScheduleMatches()).toEqual([]);
   });
 
   it('throws DatabaseError when matches query fails', async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'seasons') {
-        return {
-          select: () => ({
-            eq: () => ({
-              single: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
-            }),
-          }),
-        };
-      }
-      return {
-        select: () => ({
-          eq: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
-        }),
-      };
-    });
+    onSeason(scheduleQueryChain({ data: null, error: pgError() }));
+
     await expect(fetchScheduleMatches()).rejects.toThrow(DatabaseError);
+  });
+
+  // The defect: the query had no .range() at all, so PostgREST returned the
+  // first 1,000 rows with an HTTP 200 and the rest of the season vanished with
+  // nothing to show the reader that it had.
+  it('paginates past the 1,000-row cap until a short page is returned', async () => {
+    const rangeCalls: Array<[number, number]> = [];
+    const fullPage = Array.from({ length: 1000 }, (_, i) => makeMatch(`m-${i}`));
+    onSeason(scheduleQueryChain({ data: fullPage, error: null }, rangeCalls));
+    // The second page is the chain's own empty follow-up, which ends the loop.
+
+    const result = await fetchScheduleMatches();
+
+    expect(result).toHaveLength(1000);
+    expect(rangeCalls).toEqual([
+      [0, 999],
+      [1000, 1999],
+    ]);
+  });
+
+  // date is not a total order — many matches share one — and range pagination
+  // needs a unique sort or it can skip or repeat rows between pages.
+  it('orders by date and then id, so the pages are stable', async () => {
+    const orderCalls: unknown[][] = [];
+    const chain: Record<string, (...args: unknown[]) => unknown> = {
+      select: () => chain,
+      eq: () => chain,
+      order: (...args: unknown[]) => {
+        orderCalls.push(args);
+        return chain;
+      },
+      range: () => Promise.resolve({ data: [], error: null }),
+    };
+    mockFrom.mockImplementation((table: string) => (table === 'seasons' ? seasonChain() : chain));
+
+    await fetchScheduleMatches();
+
+    expect(orderCalls).toEqual([
+      ['date', { ascending: true }],
+      ['id', { ascending: true }],
+    ]);
   });
 });
