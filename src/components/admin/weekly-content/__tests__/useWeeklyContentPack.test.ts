@@ -391,6 +391,23 @@ describe('useWeeklyContentPack', () => {
       expect(result.current.draft.blurbsSource).toBe('ai');
     });
 
+    it('leaves the caption model alone, because it wrote no caption', async () => {
+      mockBlurbsMutateAsync.mockResolvedValue({
+        blurbs: { 't-1': 'Unbeaten and not close.' },
+        model: 'claude-opus-5',
+      });
+
+      const { result } = await generateWeek();
+      await act(async () => {
+        expect(await result.current.generateBlurbs()).toBe('ok');
+      });
+
+      // The caption is still the plain one built from the results, so recording
+      // a model against it would save a row that contradicts itself.
+      expect(result.current.draft.captionSource).toBe('fallback');
+      expect(result.current.draft.captionModel).toBe(null);
+    });
+
     it('keeps the plain line for a team the writer skipped', async () => {
       mockBlurbsMutateAsync.mockResolvedValue({
         blurbs: { 't-1': 'Only this one came back.' },

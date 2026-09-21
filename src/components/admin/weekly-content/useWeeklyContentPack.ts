@@ -309,7 +309,9 @@ export const useWeeklyContentPack = () => {
         // the graphic is worse than the plain one it already had.
         blurbs: { ...current.blurbs, ...result.blurbs },
         blurbsSource: 'ai',
-        captionModel: current.captionModel ?? result.model,
+        // captionModel belongs to the caption. Stamping the blurbs model into
+        // it saved rows reading caption_source 'fallback' with a caption_model
+        // set, which is a contradiction.
       }));
       return 'ok';
     } catch (error) {
