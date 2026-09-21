@@ -555,6 +555,43 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
       ).toBe(OTHER_BLOCK_TIME);
     });
 
+    // Removing every match in edit mode used to leave `editableMatches` empty,
+    // and the save picker fell through to the pre-edit `generatedMatches` — so
+    // Save wrote the night the admin had just cleared, and reported it as a
+    // success. `saveAutoScheduleMatches` only inserts, so an empty save can
+    // never mean "delete the night": it has to be refused.
+    it('refuses to save when the admin has removed every match in edit mode', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+
+      // One act() per removal: removeMatch closes over the editable list as it
+      // was rendered, so the second call has to read the re-rendered handler.
+      const [first, second] = result.current.editableMatches;
+      act(() => {
+        result.current.removeMatch(first.id);
+      });
+      act(() => {
+        result.current.removeMatch(second.id);
+      });
+
+      await waitFor(() => expect(result.current.editableMatches).toHaveLength(0));
+
+      let saved: boolean | undefined;
+      await act(async () => {
+        saved = await result.current.handleSaveSchedule();
+      });
+
+      expect(saved).toBe(false);
+      expect(mockSaveMatches).not.toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'No Matches to Save' })
+      );
+
+      // The screen still differs from the database, so the tab keeps offering
+      // Reset next to the refused Save rather than calling the night settled.
+      expect(result.current.hasUnsavedEdits).toBe(true);
+    });
+
     it('reports again after a saved schedule is applied afresh', async () => {
       mockSaveMatches.mockResolvedValue(true);
       const result = await renderReadyToEdit();

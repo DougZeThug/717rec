@@ -215,9 +215,13 @@ export function useAutoSchedule() {
   };
 
   const saveSchedule = async () => {
-    // Use editable matches if in edit mode, otherwise use generated matches
-    const matchesToSave =
-      isEditMode && editableMatches.length > 0 ? editableMatches : generatedMatches;
+    // In edit mode the editable copy IS the schedule, the empty case included.
+    // Guarding on `editableMatches.length > 0` fell back to `generatedMatches`
+    // when an admin removed every match, so Save wrote the pre-edit night back
+    // under a green "Saved N matches". `saveAutoScheduleMatches` only inserts —
+    // it never deletes — so an empty save cannot mean "clear the night"; it has
+    // to reach the guard below and be refused.
+    const matchesToSave = isEditMode ? editableMatches : generatedMatches;
 
     if (!matchesToSave || matchesToSave.length === 0) {
       toast({

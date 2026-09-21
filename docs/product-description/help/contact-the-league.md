@@ -228,7 +228,10 @@ is why the league's server carries its own rate limit and spam checks instead.
 even when the topic is a score correction. Whoever reads it has to work out from
 the text which match is meant. A league request does carry a team name, and for a
 signed-in member the league's server replaces it with the team they are actually
-approved for.
+approved for — except on **Join the league**. There the box is a proposal for a
+new team, so what the member types is what is stored and emailed. The row still
+records which team they belong to, out of sight; only the name they typed is
+shown to the league.
 
 **Validation and error display.** Field rules run only on submit, then per-field
 as the user corrects them. Errors appear under each field in the standard form

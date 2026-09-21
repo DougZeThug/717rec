@@ -156,6 +156,10 @@ buttons — Try Again, Go Back, and Home. In a development build the underlying
 error message is shown as well; in the published build it is not. "Home" is a
 full page load, not an in-app navigation, so it discards everything.
 
+Either error screen clears on the next in-app navigation. Moving to another page
+is a fresh attempt, so the new page renders normally — a single failure does not
+follow the reader around for the rest of the visit.
+
 **A URL that matches no route** gives the Page Not Found screen: "Oops! The page
 you are looking for does not exist or has been moved.", with Go Home and Go Back
 buttons. The attempted address is recorded in the log but not shown to the user.

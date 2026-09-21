@@ -39,3 +39,30 @@ export const handleQueryError = (
     variant: 'destructive',
   });
 };
+
+/**
+ * What the app does when any mutation fails: count it and log it, naming the
+ * mutation key when one is set.
+ *
+ * Wired into the MutationCache in `App.tsx`. Deliberately silent — unlike a
+ * query, a mutation is something the user asked for, so the code that started
+ * it owns telling them how it went. This is the backstop that makes sure a
+ * failure is never lost even when that code forgets.
+ */
+export const handleMutationError = (
+  error: unknown,
+  _variables: unknown,
+  _context: unknown,
+  // Structural, for the same reason as handleQueryError above: this is every
+  // field the handler reads, and MutationCache.onError's argument satisfies it.
+  // The two ignored parameters keep the shape MutationCache.onError expects, so
+  // this can be handed over directly the way handleQueryError is.
+  mutation: { options: { mutationKey?: readonly unknown[] } }
+) => {
+  metrics.count('mutation_error', 1, { type: 'mutation' });
+
+  const keyLabel = mutation.options.mutationKey
+    ? `: ${JSON.stringify(mutation.options.mutationKey)}`
+    : '';
+  errorLog(`Mutation failed${keyLabel}`, error);
+};

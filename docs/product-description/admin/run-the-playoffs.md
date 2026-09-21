@@ -28,7 +28,7 @@ card lists that division's projected seeds above the button — the same order t
 bracket will be built in, so the admin can see the seeding before creating it.
 On any other season the card reads "No brackets yet for this division" instead.
 
-The seeds are projected, not final: a team given a manual seed jumps the queue
+The seeds are projected, not final: a team given a manual seed keeps that seed
 when the bracket is created, and the admin chooses which teams go in.
 
 The dialog is "Create New Playoff Bracket": a title, a division, a format —
@@ -130,14 +130,18 @@ automatic, and warns about duplicate seeds.
 The Create button stays dead until there is a title, a division, and between two
 and thirty-two teams. Seeding is worked out at creation time, in this order:
 
-1. Any team with a **manual seed** goes first, in seed order.
-2. Everything else is ranked by **displayed power score** — rounded to one
+1. Any team with a **manual seed** keeps that number exactly as typed.
+2. Every other team is ranked by **displayed power score** — rounded to one
    decimal, so it matches the standings table — highest first.
 3. Then by division tier, higher first.
 4. Then by win percentage.
 5. Then by name.
+6. In that order, each of them takes the **lowest seed no manual pick claimed**.
 
-Teams with no power score sink to the bottom.
+Teams with no power score sink to the bottom. So with four teams ranked A, B, C,
+D and C given seed 2, the seeds are A=1, C=2, B=3, D=4 — the manual pick sits
+where the admin put it and nobody shares a seed with it. The bracket is then
+built in seed order.
 
 **Update Seeding**, on an existing bracket, is a different screen: a drag-to-
 reorder list with a live "First Round Matchup Preview" showing which seed meets

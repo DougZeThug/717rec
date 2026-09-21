@@ -14,21 +14,50 @@ import { ChunkLoadRecovery } from './ChunkLoadRecovery';
 interface Props {
   children: ReactNode;
   routeName: string;
+  /**
+   * Change this to clear a caught error. The app-level boundary in AppLayout
+   * passes the pathname: it sits above <Suspense> and never unmounts, so one
+   * page that failed to download used to leave the recovery panel on screen
+   * for every later page too — links changed the URL and nothing else.
+   */
+  resetKey?: string;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
+  /** The route this error belongs to, so a move to another one clears it. */
+  shownFor: string | null;
 }
+
+/**
+ * routeName as well as resetKey. The per-route boundaries look like they
+ * remount on navigation, but React Router renders route elements with no key,
+ * so two of these at the same position are the same element type and React
+ * keeps the instance — measured, not assumed. They latch exactly like the
+ * app-level one did, and routeName already differs per route, so it resets
+ * them without threading a prop through all 25 call sites.
+ */
+const routeSignature = (props: Props): string => `${props.routeName}\u0000${props.resetKey ?? ''}`;
 
 export class RouteErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, shownFor: routeSignature(props) };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
+  }
+
+  // Clearing here rather than in componentDidUpdate: this runs before the
+  // render, so the new page appears in one pass instead of the error screen
+  // flashing first and a setState then replacing it.
+  static getDerivedStateFromProps(props: Props, state: State): Partial<State> | null {
+    const signature = routeSignature(props);
+    if (signature === state.shownFor) return null;
+    // Moving to another page is a fresh attempt: its code may well be here.
+    return { shownFor: signature, hasError: false, error: null };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
