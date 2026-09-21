@@ -46,7 +46,7 @@ const RETRY_DELAYS_MS = [2000, 4000, 8000];
  * Returns { isReady, error } indicating when the viewer library is available.
  */
 export const useBracketsViewerScript = () => {
-  const [isReady, setIsReady] = useState(!!window.bracketsViewer);
+  const [isReady, setIsReady] = useState(Boolean(window.bracketsViewer));
   const [error, setError] = useState<string | null>(null);
   // Bumping this re-runs the load effect below. A failed load leaves `isReady`
   // false and changes nothing else, so without this the effect's dependencies

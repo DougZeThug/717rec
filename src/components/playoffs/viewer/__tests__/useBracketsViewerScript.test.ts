@@ -234,7 +234,10 @@ describe('useBracketsViewerScript', () => {
         return Promise.resolve({});
       });
 
-      await act(async () => {
+      // Sync callback: dispatching the event is not itself awaitable, and act
+      // flushes the state update and the effect it re-runs before returning.
+      // The load that effect starts is what the waitFor below is for.
+      act(() => {
         window.dispatchEvent(new Event('online'));
       });
 
