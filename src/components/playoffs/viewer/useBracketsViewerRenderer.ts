@@ -49,15 +49,21 @@ type RenderableBracket = PlayoffBracket & { bracket_data?: InMemoryDatabase['dat
 /**
  * Pick the transform that matches where this bracket keeps its data: the SQL
  * tables, a JSONB blob, or the legacy playoff_matches shape.
+ *
+ * Not `async`, deliberately: only the SQL path is asynchronous, so the keyword
+ * would buy nothing and leave a function with no `await` in it. The other two
+ * are wrapped instead, so every caller gets the same promise either way.
  */
-const transformForViewer = async (bracket: RenderableBracket): Promise<ViewerDataWithMapping> => {
+const transformForViewer = (bracket: RenderableBracket): Promise<ViewerDataWithMapping> => {
   if (bracket.uses_brackets_manager) {
     return BracketsViewerAdapter.transformFromSql(bracket.id);
   }
   if (bracket.bracket_data) {
-    return BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id);
+    return Promise.resolve(
+      BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id)
+    );
   }
-  return BracketsViewerAdapter.transform(bracket, [], bracket.participants);
+  return Promise.resolve(BracketsViewerAdapter.transform(bracket, [], bracket.participants));
 };
 
 /** Hand the viewer the team logos, if this build of it takes them. */
