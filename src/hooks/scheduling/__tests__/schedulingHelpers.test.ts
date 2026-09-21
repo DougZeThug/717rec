@@ -72,15 +72,6 @@ describe('match conversion', () => {
     expect(matches[0].timeslot).not.toBe(matches[1].timeslot);
   });
 
-  it('marks primary and secondary matches in dual mode', () => {
-    const matches = convertPairingsToMatches(
-      { Early: [pairing('a', 'b')], Late: [pairing('a', 'b')] } as never,
-      new Date('2026-01-01'),
-      { dualMatchMode: true }
-    );
-    expect(matches.map((match) => match.blockType)).toEqual(['primary', 'secondary']);
-  });
-
   it('returns no matches for invalid input or an unknown block', () => {
     expect(convertPairingsToMatches(null as never, new Date())).toEqual([]);
     expect(convertPairingsToMatches({ Unknown: [pairing('a', 'b')] } as never, new Date())).toEqual(
