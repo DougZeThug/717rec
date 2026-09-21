@@ -281,7 +281,12 @@ export const useBracketsViewerRenderer = ({
         });
 
         try {
-          window.bracketsViewer.render(
+          // Awaited: render() returns a promise, so without this a rejection
+          // escapes the catch below and the code carries on to record the
+          // fingerprint and report success for a draw that never landed. It
+          // also means the DOM is in place before the decorations run, rather
+          // than leaving that to the delayed pass further down.
+          await window.bracketsViewer.render(
             viewerData as unknown as Parameters<typeof window.bracketsViewer.render>[0],
             {
               selector: `#${containerId}`,
@@ -295,6 +300,12 @@ export const useBracketsViewerRenderer = ({
               customRoundName,
             }
           );
+
+          // Awaiting above added a suspension point, so the component can have
+          // gone away while the bracket was drawing. Everything below this
+          // decorates the DOM or sets state, and none of it belongs to a run
+          // that has been superseded.
+          if (cancelled) return;
 
           bracketLog('brackets-viewer.render() completed successfully');
           window.dispatchEvent(new Event('resize'));
@@ -327,8 +338,9 @@ export const useBracketsViewerRenderer = ({
           }
 
           hideUuidNodes(el);
-          // render() is async and unawaited — if its DOM landed after the
-          // immediate decoration pass, this delayed pass picks it up.
+          // render() is awaited now, so the immediate pass already had the DOM.
+          // This one stays as belt and braces for anything the viewer settles
+          // after its promise resolves.
           runDecorations(el);
         }, 1000);
 

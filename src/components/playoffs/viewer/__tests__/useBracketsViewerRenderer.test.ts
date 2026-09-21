@@ -574,6 +574,19 @@ describe('useBracketsViewerRenderer', () => {
       );
     });
 
+    // render() returns a promise. Left unawaited, a rejection sails past the
+    // synchronous catch and the code below it reports a success for a draw that
+    // never landed — fingerprint recorded, error cleared, spinner gone.
+    it('catches a render that rejects, not just one that throws', async () => {
+      renderMock.mockRejectedValue(new Error('viewer exploded later'));
+      const { result } = renderRenderer({ bracket: makeBracket() });
+
+      await waitFor(() =>
+        expect(result.current.error).toBe('Failed to render bracket visualization')
+      );
+      expect(result.current.isInitialized).toBe(false);
+    });
+
     // A draw that threw left nothing on screen, so it must not be remembered as
     // the drawing that is up. It used to be: the fingerprint was recorded before
     // the draw was attempted, so the retry below took the "nothing changed" path
