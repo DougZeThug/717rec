@@ -79,6 +79,25 @@ function jsonResponse(body: unknown, status: number, cors: Record<string, string
   });
 }
 
+/**
+ * Which team name the row should carry.
+ *
+ * "Join the league" is the one topic where the team box is a proposal for a NEW
+ * team: ContactForm unlocks it and labels it "Proposed team name". Overriding
+ * it with the member's current team threw that proposal away and told the
+ * league the new team was the old one, in the stored row and in the admin email
+ * alike. Every other topic keeps the override — that is what a verified row
+ * means. `||`, so a cleared box stores null rather than an empty string.
+ */
+function resolveSubmitterTeam(
+  requestType: string,
+  verifiedTeam: string | null,
+  submittedTeam: string | null | undefined
+): string | null {
+  if (requestType === 'join_league') return submittedTeam || null;
+  return verifiedTeam ?? submittedTeam ?? null;
+}
+
 async function handleRequest(req: Request): Promise<Response> {
   const corsHeaders = buildCorsHeaders(req);
 
@@ -174,21 +193,14 @@ async function handleRequest(req: Request): Promise<Response> {
     }
   }
 
-  // "Join the league" is the one topic where the team box is a proposal for a
-  // NEW team: ContactForm unlocks it and labels it "Proposed team name". The
-  // verified-team override threw that proposal away and told the league the new
-  // team was the member's current one, in the stored row and in the admin email
-  // alike. Every other topic keeps the override — that is what a verified row
-  // means. `||`, so a cleared box stores null rather than an empty string.
-  const submitterTeam =
-    payload.request_type === 'join_league'
-      ? payload.submitter_team || null
-      : (verifiedTeam ?? payload.submitter_team ?? null);
-
   const insertRow = {
     request_type: payload.request_type,
     submitter_name: verifiedName ?? payload.submitter_name,
-    submitter_team: submitterTeam,
+    submitter_team: resolveSubmitterTeam(
+      payload.request_type,
+      verifiedTeam,
+      payload.submitter_team
+    ),
     submitter_contact: payload.submitter_contact,
     players: payload.players ?? null,
     message: payload.message,
