@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
 
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
@@ -11,7 +10,6 @@ import { errorLog } from '@/utils/logger';
 import { transformDatabaseMatches } from '@/utils/matchTransformers';
 
 export function usePendingMatches() {
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -130,20 +128,11 @@ export function usePendingMatches() {
     await tieMutation.mutateAsync(matchId);
   };
 
-  const toggleItem = (id: string) => {
-    setOpenItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   return {
     matches,
     teams,
     isLoading,
     error: queryError?.message ?? null,
-    openItems,
-    toggleItem,
     handleApproveResult,
     handleMarkAsTie,
     refetch,
