@@ -11,7 +11,6 @@
 
 export type { SeasonOpponentData } from './MatchHistoryService';
 export {
-  checkTeamsEverPlayed,
   countTeamMatchesInSeason,
   fetchActiveSeasonIdStrict,
   fetchMatchPairsInSeason,
