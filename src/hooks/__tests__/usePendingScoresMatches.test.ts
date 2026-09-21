@@ -18,8 +18,9 @@ const mockFetchPendingScoresMatches = vi.fn();
 vi.mock('@/services/matches/MatchReadService', () => ({
   fetchPendingScoresMatches: (...args: unknown[]) => mockFetchPendingScoresMatches(...args),
 }));
+const mockCreateScoreSubmission = vi.fn();
 vi.mock('@/services/matches/MatchWriteService', () => ({
-  createScoreSubmission: vi.fn(),
+  createScoreSubmission: (...args: unknown[]) => mockCreateScoreSubmission(...args),
 }));
 
 /**
@@ -104,5 +105,45 @@ describe('usePendingScoresMatches', () => {
       location: 'Lane 3',
     });
     expect(mockToast).not.toHaveBeenCalled();
+  });
+
+  // submitScore is typed Promise<boolean> and ScoreSubmissionModal branches on
+  // `if (success)`. It used to await mutateAsync with no catch, so a failure
+  // rejected instead: the false branch was unreachable and the rejection escaped
+  // the form's submit handler as an unhandled promise rejection.
+  describe('submitScore', () => {
+    const submission = { submitter_name: 'Jane', submitter_team: 'Alpha', message: '2-1' };
+
+    const renderSubmit = () => {
+      mockFetchPendingScoresMatches.mockResolvedValue([]);
+      return renderHook(() => usePendingScoresMatches(), { wrapper: createWrapper(false) });
+    };
+
+    it('resolves true when the report is accepted', async () => {
+      mockCreateScoreSubmission.mockResolvedValue(undefined);
+      const { result } = renderSubmit();
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await expect(result.current.submitScore('m1', submission)).resolves.toBe(true);
+    });
+
+    it('resolves false when the report fails, rather than rejecting', async () => {
+      mockCreateScoreSubmission.mockRejectedValue(new Error('boom'));
+      const { result } = renderSubmit();
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await expect(result.current.submitScore('m1', submission)).resolves.toBe(false);
+    });
+
+    it('still tells the reader the report failed, exactly once', async () => {
+      mockCreateScoreSubmission.mockRejectedValue(new Error('boom'));
+      const { result } = renderSubmit();
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await result.current.submitScore('m1', submission);
+
+      const failures = mockToast.mock.calls.filter(([arg]) => arg?.variant === 'destructive');
+      expect(failures).toHaveLength(1);
+    });
   });
 });

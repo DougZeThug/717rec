@@ -92,9 +92,21 @@ export function usePendingScoresMatches() {
     },
   });
 
+  /**
+   * Whether the report was accepted. False, never a rejection: the modal decides
+   * whether to close on the answer, and mutateAsync rejects on failure, so
+   * without this catch the false branch was unreachable and the rejection
+   * escaped react-hook-form's submit handler as an unhandled promise rejection.
+   *
+   * No toast here — the mutation's onError already raises it.
+   */
   const submitScore = async (matchId: string, submission: ScoreSubmission): Promise<boolean> => {
-    await submitMutation.mutateAsync({ matchId, submission });
-    return true;
+    try {
+      await submitMutation.mutateAsync({ matchId, submission });
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   return {
