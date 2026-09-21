@@ -7,7 +7,7 @@ import type { MatchFormValues } from './types';
 /**
  * Format a date object for use in an HTML date input
  */
-export const formatDateForInput = (date: Date): string => {
+const formatDateForInput = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
