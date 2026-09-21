@@ -113,6 +113,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         signal
       );
       const hasMore = page.length === PAGE_SIZE;
+      // Newest first, so the last row is the oldest one the league returned.
+      const oldestReturned = page.at(-1)?.created_at ?? null;
       const byId = new Map(page.map((message) => [message.id, message]));
       realtimeDeletesRef.current.forEach((id) => {
         byId.delete(id);
@@ -123,7 +125,13 @@ export const useMessageBoard = (): UseMessageBoardResult => {
           byId.delete(id);
           return;
         }
-        if (!pageParam || byId.has(id)) byId.set(id, message);
+        // "Load more" asks for messages older than the last one in the list, so
+        // merging in a buffered message older than this page puts it at the
+        // tail, where it becomes that cursor and hides everything above it.
+        // Patching a row the page already returned is always safe.
+        const olderThanPage =
+          hasMore && oldestReturned !== null && (message.created_at ?? '') < oldestReturned;
+        if (byId.has(id) || (!pageParam && !olderThanPage)) byId.set(id, message);
       });
       const merged = Array.from(byId.values()).sort((a, b) =>
         (b.created_at ?? '').localeCompare(a.created_at ?? '')
@@ -132,7 +140,6 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       // older than the oldest message returned, no longer needs to be held in
       // the realtime buffer to survive the round-trip.
       const serverIds = new Set(page.map((m) => m.id));
-      const oldestReturned = page.at(-1)?.created_at ?? null;
       realtimeMessagesRef.current.forEach((message, id) => {
         if (serverIds.has(id)) {
           realtimeMessagesRef.current.delete(id);
@@ -339,11 +346,21 @@ export const useMessageBoard = (): UseMessageBoardResult => {
         if (!curr) return curr;
         const flattened = curr.pages.flat();
         const existsInList = flattened.some((msg) => msg.id === updatedMessage.id);
+        // Same cursor rule as the fetch above: a message older than the oldest
+        // on screen would sort to the tail and become the "older than" cursor,
+        // so the next page would start below it and skip the whole range in
+        // between. It waits in the realtime buffer instead -- the league
+        // filters by category, team and search too, so it comes back with the
+        // page that reaches it.
+        const wouldBecomeTheCursor =
+          Boolean(curr.pages.at(-1)?.hasMore) &&
+          flattened.length > 0 &&
+          (updatedMessage.created_at ?? '') < (flattened.at(-1)?.created_at ?? '');
         const nextMessages = existsInList
           ? matchesFilter
             ? flattened.map((msg) => (msg.id === updatedMessage.id ? updatedMessage : msg))
             : flattened.filter((msg) => msg.id !== updatedMessage.id)
-          : matchesFilter
+          : matchesFilter && !wouldBecomeTheCursor
             ? [updatedMessage, ...flattened].sort((a, b) =>
                 (b.created_at ?? '').localeCompare(a.created_at ?? '')
               )
