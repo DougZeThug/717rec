@@ -23,8 +23,8 @@ import { useTimeslotDates } from '@/hooks/useTimeslotDates';
 import { Match } from '@/types';
 import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 import { normalizeDate } from '@/utils/dateNormalization';
-import { scheduleLog } from '@/utils/logger';
-import { isMatchOpenForScoring } from '@/utils/matchStatus';
+import { errorLog, scheduleLog } from '@/utils/logger';
+import { isMatchCompleted, isMatchOpenForScoring } from '@/utils/matchStatus';
 
 // Get upcoming Thursday (or today if it's Thursday)
 const getUpcomingThursday = () => {
@@ -54,6 +54,32 @@ const getUpcomingThursday = () => {
 const dayKeyToDate = (key: string): Date => {
   const [year, month, day] = key.split('-').map(Number);
   return new Date(year, month - 1, day);
+};
+
+/**
+ * Every night holding a match the predicate accepts, oldest first.
+ *
+ * Takes the raw query data rather than the tab's lists, so the result is stable
+ * enough to feed an effect that sets state. Date parsing matches useMatchDates:
+ * a match whose date cannot be read is not a night the page can open on.
+ */
+const nightsMatching = (
+  matches: Match[] | undefined,
+  predicate: (match: Match) => boolean
+): Date[] => {
+  const keys = new Set<string>();
+
+  matches?.forEach((match) => {
+    if (!match.date || !predicate(match)) return;
+    try {
+      const date = typeof match.date === 'string' ? parseISO(match.date) : match.date;
+      keys.add(format(date, 'yyyy-MM-dd'));
+    } catch (e) {
+      errorLog('Failed to parse match date "%s":', match.date, e);
+    }
+  });
+
+  return [...keys].sort().map(dayKeyToDate);
 };
 
 const Schedule = () => {
@@ -115,10 +141,17 @@ const Schedule = () => {
 
   useScrollToLinkedMatch(matchesLoading);
 
-  // Every night that has a match, oldest first. Derived from matchDates, which
-  // memoizes over the stable query data — upcomingMatches/completedMatches are
-  // rebuilt on every render and must never feed an effect that sets state.
-  const matchNights = useMemo(() => Array.from(matchDates).sort().map(dayKeyToDate), [matchDates]);
+  // The nights the auto-pick below may land on, oldest first. matchDates holds
+  // every night with any match row, called-off ones included, so it cannot tell
+  // a night that was played from one that was called off — which is how the
+  // page used to open on a cancellation. Both are keyed on matchesData, the
+  // stable query data: upcomingMatches/completedMatches are rebuilt on every
+  // render and must never feed an effect that sets state.
+  const playedNights = useMemo(() => nightsMatching(matchesData, isMatchCompleted), [matchesData]);
+  const scheduledNights = useMemo(
+    () => nightsMatching(matchesData, isMatchOpenForScoring),
+    [matchesData]
+  );
 
   // Posted-timeslot nights, oldest first.
   const timeslotNights = useMemo(
@@ -201,10 +234,10 @@ const Schedule = () => {
 
     const today = new Date();
     const todayKey = format(today, 'yyyy-MM-dd');
-    const lastPlayed = [...matchNights]
+    const lastPlayed = [...playedNights]
       .reverse()
       .find((night) => format(night, 'yyyy-MM-dd') <= todayKey);
-    const nextNight = matchNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
+    const nextNight = scheduledNights.find((night) => format(night, 'yyyy-MM-dd') > todayKey);
     // The newest night whose timeslots are posted, today or earlier.
     const latestPostedNight = [...timeslotNights]
       .reverse()
@@ -229,7 +262,8 @@ const Schedule = () => {
     timeslotDatesLoading,
     matchesError,
     timeslotDatesError,
-    matchNights,
+    playedNights,
+    scheduledNights,
     timeslotNights,
   ]);
 
