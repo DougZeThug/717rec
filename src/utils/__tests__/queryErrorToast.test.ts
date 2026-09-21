@@ -1,8 +1,8 @@
-import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { NotFoundError } from '@/types/errors';
-import { handleQueryError } from '@/utils/queryErrorToast';
+import { handleMutationError, handleQueryError } from '@/utils/queryErrorToast';
 
 const mockToast = vi.fn();
 vi.mock('@/hooks/useToast', () => ({
@@ -13,6 +13,11 @@ vi.mock('@/hooks/useToast', () => ({
 const mockCount = vi.fn();
 vi.mock('@/utils/sentry', () => ({
   metrics: { count: (...args: unknown[]) => mockCount(...args) },
+}));
+
+const mockErrorLog = vi.fn();
+vi.mock('@/utils/logger', () => ({
+  errorLog: (...args: unknown[]) => mockErrorLog(...args),
 }));
 
 /** A real Query, so the handler is exercised against the shape it gets in App. */
@@ -82,6 +87,54 @@ describe('handleQueryError', () => {
     handleQueryError(new Error('boom'), makeQuery({ errorToast: 42 }));
 
     expect(mockCount).toHaveBeenCalledTimes(1);
+    expect(mockToast).not.toHaveBeenCalled();
+  });
+});
+
+/** A real Mutation, so the handler meets the shape MutationCache hands it. */
+const makeMutation = (mutationKey?: readonly unknown[]) => {
+  const cache = new MutationCache();
+  const client = new QueryClient({ mutationCache: cache });
+  return cache.build(client, { mutationKey, mutationFn: () => Promise.resolve(null) });
+};
+
+describe('handleMutationError', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('counts the failure and names the mutation in the log', () => {
+    handleMutationError(
+      new Error('boom'),
+      undefined,
+      undefined,
+      makeMutation(['scores', 'submit'])
+    );
+
+    expect(mockCount).toHaveBeenCalledWith('mutation_error', 1, { type: 'mutation' });
+    expect(mockErrorLog).toHaveBeenCalledWith(
+      'Mutation failed: ["scores","submit"]',
+      expect.any(Error)
+    );
+  });
+
+  it('still counts and logs a mutation that carries no key', () => {
+    handleMutationError(new Error('boom'), undefined, undefined, makeMutation());
+
+    expect(mockCount).toHaveBeenCalledTimes(1);
+    expect(mockErrorLog).toHaveBeenCalledWith('Mutation failed', expect.any(Error));
+  });
+
+  it('does not interrupt the user', () => {
+    handleMutationError(
+      new Error('boom'),
+      undefined,
+      undefined,
+      makeMutation(['scores', 'submit'])
+    );
+
+    // A mutation is something the user asked for, so the code that started it
+    // owns the message. This is only the backstop that records the failure.
     expect(mockToast).not.toHaveBeenCalled();
   });
 });

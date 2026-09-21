@@ -20,8 +20,8 @@ import { NavigationProvider } from '@/contexts/NavigationContext';
 import { useFirstPartyPageview } from '@/hooks/useFirstPartyPageview';
 import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
-import { errorLog, routeLog } from '@/utils/logger';
-import { handleQueryError } from '@/utils/queryErrorToast';
+import { routeLog } from '@/utils/logger';
+import { handleMutationError, handleQueryError } from '@/utils/queryErrorToast';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
@@ -74,15 +74,9 @@ const queryClient = new QueryClient({
     },
   },
   queryCache: new QueryCache({ onError: handleQueryError }),
-  mutationCache: new MutationCache({
-    onError: (error, _vars, _ctx, mutation) => {
-      metrics.count('mutation_error', 1, { type: 'mutation' });
-      const keyLabel = mutation.options.mutationKey
-        ? `: ${JSON.stringify(mutation.options.mutationKey)}`
-        : '';
-      errorLog(`Mutation failed${keyLabel}`, error);
-    },
-  }),
+  // Both handlers live in queryErrorToast.ts: inline here they could not be
+  // reached by a test without importing this module and every lazy page with it.
+  mutationCache: new MutationCache({ onError: handleMutationError }),
 });
 
 /**
