@@ -24,6 +24,7 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
+import { fetchTeamsMap } from '@/services/matches/MatchReadService';
 import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
 
 // Create a wrapper for React Query
@@ -251,6 +252,59 @@ describe('usePendingMatches', () => {
       });
 
       await waitFor(() => expect([...result.current.resolvingMatchIds]).toEqual([]));
+    });
+  });
+
+  // fetchTeamsMap was mocked to an empty list everywhere, so the loop that turns
+  // rows into the teams record -- including the row it has to skip -- never ran.
+  describe('the teams record the cards read names from', () => {
+    it('maps a row onto the shape the card wants', async () => {
+      vi.mocked(fetchTeamsMap).mockResolvedValue([
+        {
+          team_id: 'team-1',
+          name: 'Owls',
+          image_url: 'owls.png',
+          logo_url: null,
+          players: ['a', 'b'],
+          wins: 3,
+          losses: 1,
+          game_wins: 7,
+          game_losses: 4,
+          created_at: '2026-01-01',
+          division_id: 'div-1',
+          divisionname: 'Competitive',
+          sos: 0.62,
+          power_score: 71.5,
+          win_percentage: 75,
+          game_win_percentage: 63.6,
+        },
+      ] as unknown as Awaited<ReturnType<typeof fetchTeamsMap>>);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.teams['team-1']).toBeDefined());
+      expect(result.current.teams['team-1']).toMatchObject({
+        id: 'team-1',
+        name: 'Owls',
+        // image_url wins over logo_url for both.
+        logoUrl: 'owls.png',
+        imageUrl: 'owls.png',
+        divisionName: 'Competitive',
+        wins: 3,
+        losses: 1,
+      });
+    });
+
+    it('skips a row with no team id rather than keying on undefined', async () => {
+      vi.mocked(fetchTeamsMap).mockResolvedValue([
+        { team_id: null, name: 'Nameless' },
+        { team_id: 'team-2', name: 'Hawks' },
+      ] as unknown as Awaited<ReturnType<typeof fetchTeamsMap>>);
+
+      const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.teams['team-2']).toBeDefined());
+      expect(Object.keys(result.current.teams)).toEqual(['team-2']);
     });
   });
 

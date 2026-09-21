@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,6 +40,18 @@ const teams: Record<string, Team> = {
 };
 
 describe('PendingMatchesSection', () => {
+  /** What the hook hands the section. Handlers must RESOLVE, not just return:
+   *  the section chains .catch on both of them. */
+  const hookValue = (overrides: Record<string, unknown> = {}) => ({
+    matches: [unresolved('match-1', 'team-1', 'team-2'), unresolved('match-2', 'team-3', 'team-4')],
+    teams,
+    isLoading: false,
+    handleApproveResult: vi.fn(() => Promise.resolve()),
+    handleMarkAsTie: vi.fn(() => Promise.resolve()),
+    resolvingMatchIds: new Set<string>(),
+    ...overrides,
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseScoreSubmissions.mockReturnValue({
@@ -48,18 +61,7 @@ describe('PendingMatchesSection', () => {
       handleApproveSubmission: vi.fn(),
       handleRejectSubmission: vi.fn(),
     });
-    mockUsePendingMatches.mockReturnValue({
-      matches: [
-        unresolved('match-1', 'team-1', 'team-2'),
-        unresolved('match-2', 'team-3', 'team-4'),
-      ],
-      teams,
-      isLoading: false,
-      // Must resolve, not just return: the section chains .catch on both.
-      handleApproveResult: vi.fn(() => Promise.resolve()),
-      handleMarkAsTie: vi.fn(() => Promise.resolve()),
-      resolvingMatchIds: new Set<string>(),
-    });
+    mockUsePendingMatches.mockReturnValue(hookValue());
   });
 
   it('lists the matches that have no winner yet', () => {
@@ -72,10 +74,7 @@ describe('PendingMatchesSection', () => {
   // The defect this covers: the list has always accepted a lock, and this
   // section never passed one, so both writes could be asked for at once.
   it('passes the in-flight matches through, so their actions lock', () => {
-    mockUsePendingMatches.mockReturnValue({
-      ...mockUsePendingMatches(),
-      resolvingMatchIds: new Set(['match-1']),
-    });
+    mockUsePendingMatches.mockReturnValue(hookValue({ resolvingMatchIds: new Set(['match-1']) }));
 
     render(<PendingMatchesSection />);
 
@@ -91,8 +90,51 @@ describe('PendingMatchesSection', () => {
     screen.getAllByRole('button').forEach((button) => expect(button).toBeEnabled());
   });
 
+  // The two wrapper functions were never pressed, so their bodies -- which are
+  // what swallow the rejection -- went untested.
+  it('names the winning team the admin pressed', async () => {
+    const handleApproveResult = vi.fn(() => Promise.resolve());
+    mockUsePendingMatches.mockReturnValue(hookValue({ handleApproveResult }));
+    render(<PendingMatchesSection />);
+
+    await userEvent.click(screen.getByRole('button', { name: /Hawks won/ }));
+
+    expect(handleApproveResult).toHaveBeenCalledWith(expect.objectContaining({ id: 'match-1' }), 2);
+  });
+
+  it('confirms the tie the admin pressed', async () => {
+    const handleMarkAsTie = vi.fn(() => Promise.resolve());
+    mockUsePendingMatches.mockReturnValue(hookValue({ handleMarkAsTie }));
+    render(<PendingMatchesSection />);
+
+    await userEvent.click(screen.getAllByRole('button', { name: /It was a tie/ })[1]);
+
+    expect(handleMarkAsTie).toHaveBeenCalledWith('match-2');
+  });
+
+  // The hook already raises the toast, so the section swallows the rejection.
+  // Without that catch this would surface as an unhandled promise rejection.
+  it('swallows a failed write instead of leaving an unhandled rejection', async () => {
+    const onUnhandled = vi.fn();
+    process.on('unhandledRejection', onUnhandled);
+    mockUsePendingMatches.mockReturnValue(
+      hookValue({
+        handleApproveResult: vi.fn(() => Promise.reject(new Error('refused'))),
+        handleMarkAsTie: vi.fn(() => Promise.reject(new Error('refused'))),
+      })
+    );
+    render(<PendingMatchesSection />);
+
+    await userEvent.click(screen.getByRole('button', { name: /Owls won/ }));
+    await userEvent.click(screen.getAllByRole('button', { name: /It was a tie/ })[0]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    process.off('unhandledRejection', onUnhandled);
+    expect(onUnhandled).not.toHaveBeenCalled();
+  });
+
   it('shows a loading state until both reads land', () => {
-    mockUsePendingMatches.mockReturnValue({ ...mockUsePendingMatches(), isLoading: true });
+    mockUsePendingMatches.mockReturnValue(hookValue({ isLoading: true }));
 
     render(<PendingMatchesSection />);
 

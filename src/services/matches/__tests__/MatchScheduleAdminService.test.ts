@@ -146,8 +146,11 @@ describe('fetchScheduleMatches', () => {
   beforeEach(() => vi.clearAllMocks());
 
   /** The active-season lookup every schedule fetch starts with. */
-  const seasonChain = (data: { id: string } | null = { id: 'season-1' }) => ({
-    select: () => ({ eq: () => ({ single: () => Promise.resolve({ data, error: null }) }) }),
+  const seasonChain = (
+    data: { id: string } | null = { id: 'season-1' },
+    error: unknown = null
+  ) => ({
+    select: () => ({ eq: () => ({ single: () => Promise.resolve({ data, error }) }) }),
   });
 
   /**
@@ -191,6 +194,22 @@ describe('fetchScheduleMatches', () => {
 
   it('throws DatabaseError when matches query fails', async () => {
     onSeason(scheduleQueryChain({ data: null, error: pgError() }));
+
+    await expect(fetchScheduleMatches()).rejects.toThrow(DatabaseError);
+  });
+
+  // A season read that fails is not the same as a season that is not there, and
+  // only one of the two is an empty state. Neither branch was exercised: the
+  // no-active-season test returns a null row with no error, which lands on the
+  // guard below them both.
+  it('treats "no rows" from the season read as no active season', async () => {
+    mockFrom.mockReturnValue(seasonChain(null, { ...pgError(), code: 'PGRST116' }));
+
+    expect(await fetchScheduleMatches()).toEqual([]);
+  });
+
+  it('throws DatabaseError when the season read fails for any other reason', async () => {
+    mockFrom.mockReturnValue(seasonChain(null, pgError()));
 
     await expect(fetchScheduleMatches()).rejects.toThrow(DatabaseError);
   });
