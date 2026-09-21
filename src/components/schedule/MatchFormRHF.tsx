@@ -27,6 +27,7 @@ import {
   buildMatchSubmission,
   describeUnsavableMatch,
   getTimeSlotFromDate,
+  leagueDayFromStoredDate,
   parseDateFromInput,
 } from './form-utils';
 import { MatchFormProps, MatchFormValues } from './types';
@@ -59,9 +60,10 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
       ? {
           team1Id: match.team1Id,
           team2Id: match.team2Id,
-          // An unscheduled match has no date to edit; new Date('') is an
-          // Invalid Date, so fall back the way create mode does.
-          date: match.date ? new Date(match.date) : new Date(),
+          // An unscheduled match has no date to edit, and leagueDayFromStoredDate
+          // falls back to today the way create mode does. The field holds the
+          // LEAGUE night, not the browser's reading of the stored instant.
+          date: match.date ? leagueDayFromStoredDate(match.date) : new Date(),
           timeSlot:
             match.timeSlot || (match.date ? getTimeSlotFromDate(new Date(match.date)) : null),
           isCompleted: isMatchCompleted(match),

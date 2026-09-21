@@ -1,7 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 
-import { createDateWithTime } from '@/components/schedule/form-utils';
 import { useToast } from '@/hooks/useToast';
 import { createMatch } from '@/services/matches/MatchWriteService';
 import { Match, Team } from '@/types';
@@ -20,13 +19,12 @@ export const useMatchCreation = (matches: Match[], setMatches: (matches: Match[]
     isCreatingRef.current = true;
     setIsCreating(true);
     try {
-      // Ensure we have a valid date with proper time
-      let dateWithTime = new Date(matchData.date ?? '');
-
-      // If timeSlot is provided in the data, use it to set the time properly
-      if (matchData.timeSlot) {
-        dateWithTime = createDateWithTime(new Date(matchData.date ?? ''), matchData.timeSlot);
-      }
+      // buildMatchSubmission already turned the league slot into a UTC instant,
+      // and it is the only way a payload reaches here. Converting again would
+      // re-read that instant for its calendar day, which east or west of the
+      // league is a different day — the match would move a whole night. It only
+      // looked harmless while setHours re-derived the day from the instant itself.
+      const dateWithTime = new Date(matchData.date ?? '');
 
       // Create the match via service (active season is fetched internally)
       const data = await createMatch({

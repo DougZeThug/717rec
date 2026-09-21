@@ -178,11 +178,15 @@ describe('useAutoScheduleSave', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
   });
 
+  // A timeslot is a league wall-clock time, so the instant is built in league
+  // time. This used to read the hours back off the browser's clock, which only
+  // agreed with the league for a runner in Eastern; asserting the exact instant
+  // instead means the test says the same thing in every timezone.
   it('saves the match at the time its timeslot names, not midnight', async () => {
     const { result } = renderSaveHook();
 
     await act(async () => {
-      // Local, not UTC, so the assertion cannot roll over to another day.
+      // Local, not UTC, so the night the picker names cannot roll over.
       await result.current.saveMatches(
         [makeMatch({ timeslot: '6:30 PM' })],
         new Date('2026-07-01T12:00:00'),
@@ -192,10 +196,9 @@ describe('useAutoScheduleSave', () => {
     });
 
     const [inserted] = vi.mocked(saveAutoScheduleMatches).mock.calls[0][0];
-    const savedAt = new Date(inserted.date as string);
 
-    expect(savedAt.getHours()).toBe(18);
-    expect(savedAt.getMinutes()).toBe(30);
+    // 6:30 PM on 1 July 2026 is EDT, which is UTC-4.
+    expect(inserted.date).toBe('2026-07-01T22:30:00.000Z');
     expect(inserted.metadata).toEqual(expect.objectContaining({ timeslot: '6:30 PM' }));
   });
 
