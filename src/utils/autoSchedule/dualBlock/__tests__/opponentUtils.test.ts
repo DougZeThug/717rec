@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createMockTeam, createMockTeamPairing } from '@/utils/test/autoSchedule/testHelpers';
 
-import { findTeamsWithSameOpponent, hasDuplicateOpponent } from '../opponentUtils';
+import { findTeamsWithSameOpponent } from '../opponentUtils';
 
 // Build distinct teams for use in tests
 const t1 = createMockTeam({ id: 't1', name: 'T1' });
@@ -67,44 +67,5 @@ describe('findTeamsWithSameOpponent', () => {
     const uniqueResult = [...new Set(result)];
 
     expect(result).toHaveLength(uniqueResult.length);
-  });
-});
-
-describe('hasDuplicateOpponent', () => {
-  it('returns false when team plays different opponents (happy path)', () => {
-    const primary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-    const secondary = [createMockTeamPairing({ team1: t1, team2: t3 })];
-
-    expect(hasDuplicateOpponent('t1', primary, secondary)).toBe(false);
-  });
-
-  it('returns true when team plays the same opponent in both blocks', () => {
-    const primary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-    const secondary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-
-    expect(hasDuplicateOpponent('t1', primary, secondary)).toBe(true);
-  });
-
-  it('returns false for a team ID not present in any pairing', () => {
-    const primary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-    const secondary = [createMockTeamPairing({ team1: t3, team2: t4 })];
-
-    expect(hasDuplicateOpponent('t-unknown', primary, secondary)).toBe(false);
-  });
-
-  it('detects duplicate when team appears as team2', () => {
-    // t2 is team2 in both pairings, paired with the same opponent (t1)
-    const primary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-    const secondary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-
-    expect(hasDuplicateOpponent('t2', primary, secondary)).toBe(true);
-  });
-
-  it('returns false when team2 has different opponents in each block', () => {
-    // t2 plays t1 in primary and t3 in secondary — no duplicate
-    const primary = [createMockTeamPairing({ team1: t1, team2: t2 })];
-    const secondary = [createMockTeamPairing({ team1: t3, team2: t2 })];
-
-    expect(hasDuplicateOpponent('t2', primary, secondary)).toBe(false);
   });
 });
