@@ -155,8 +155,8 @@ export const useWeeklyContentPack = () => {
       // publish a story about the wrong week.
       const loaded: PackDraft = savedVersion
         ? {
-            headline: savedVersion.headline,
-            caption: savedVersion.caption,
+            headline: savedVersion.headline ?? '',
+            caption: savedVersion.caption ?? '',
             commissionerNote: savedVersion.commissioner_note ?? '',
             captionSource: savedVersion.caption_source as CaptionSource,
             captionModel: savedVersion.caption_model,

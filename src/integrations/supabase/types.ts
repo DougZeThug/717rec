@@ -3333,11 +3333,15 @@ export type Database = {
           blurbs: Json
           blurbs_source: string
           caption: string | null
+          caption_model: string | null
           caption_source: string
+          commissioner_note: string | null
+          correction_note: string | null
           created_at: string
           created_by: string | null
           edition_id: string
           facts: Json
+          facts_schema_version: number
           graphic_url: string | null
           headline: string | null
           id: string
@@ -3347,11 +3351,15 @@ export type Database = {
           blurbs?: Json
           blurbs_source?: string
           caption?: string | null
+          caption_model?: string | null
           caption_source?: string
+          commissioner_note?: string | null
+          correction_note?: string | null
           created_at?: string
           created_by?: string | null
           edition_id: string
           facts: Json
+          facts_schema_version?: number
           graphic_url?: string | null
           headline?: string | null
           id?: string
@@ -3361,11 +3369,15 @@ export type Database = {
           blurbs?: Json
           blurbs_source?: string
           caption?: string | null
+          caption_model?: string | null
           caption_source?: string
+          commissioner_note?: string | null
+          correction_note?: string | null
           created_at?: string
           created_by?: string | null
           edition_id?: string
           facts?: Json
+          facts_schema_version?: number
           graphic_url?: string | null
           headline?: string | null
           id?: string
@@ -3384,9 +3396,11 @@ export type Database = {
       recap_editions: {
         Row: {
           created_at: string
+          created_by: string | null
           first_published_at: string | null
           id: string
           published_at: string | null
+          published_by: string | null
           published_version_id: string | null
           season_id: string
           season_name: string
@@ -3397,9 +3411,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           first_published_at?: string | null
           id?: string
           published_at?: string | null
+          published_by?: string | null
           published_version_id?: string | null
           season_id: string
           season_name: string
@@ -3410,9 +3426,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           first_published_at?: string | null
           id?: string
           published_at?: string | null
+          published_by?: string | null
           published_version_id?: string | null
           season_id?: string
           season_name?: string
