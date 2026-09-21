@@ -22,12 +22,6 @@ export interface CompleteGameInput {
   finalTotals: { team1: number; team2: number };
 }
 
-export interface UpdateGamePlayersInput {
-  gameId: string;
-  teamId: string;
-  playerIds: string[];
-}
-
 export function useGameFlow(matchId: string) {
   const queryClient = useQueryClient();
   const queryKey = liveScoringKeys.liveMatch(matchId);
@@ -64,13 +58,6 @@ export function useGameFlow(matchId: string) {
     onSettled: invalidate,
   });
 
-  const updateGamePlayers = useMutation({
-    mutationFn: (input: UpdateGamePlayersInput) =>
-      LiveMatchService.setGamePlayers(input.gameId, input.teamId, input.playerIds),
-    onError: onError('Could not update players'),
-    onSettled: invalidate,
-  });
-
   const reopenGame = useMutation({
     // Note the reopen while the old status is still known, so the live
     // connection can announce it even if onSettled's refetch gets there first
@@ -90,5 +77,5 @@ export function useGameFlow(matchId: string) {
     onSettled: invalidate,
   });
 
-  return { startGame, confirmGameComplete, updateGamePlayers, reopenGame };
+  return { startGame, confirmGameComplete, reopenGame };
 }
