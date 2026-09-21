@@ -301,8 +301,32 @@ describe('confirmMatchTie', () => {
     mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
   });
 
-  /** Mock the read of current metadata, then the update, capturing the payload. */
-  const mockReadThenUpdate = (existing: unknown, captured: { payload?: MatchNonResultUpdate }) => {
+  /** A PostgrestError shape, the way this file's other write tests build one. */
+  const pgError = () => ({
+    message: 'update failed',
+    code: '42P01',
+    details: null,
+    hint: null,
+    name: 'PostgrestError',
+  });
+
+  interface Captured {
+    payload?: MatchNonResultUpdate;
+    /** The column and value the write was guarded on. */
+    guard?: [string, unknown];
+  }
+
+  /**
+   * Mock the read of current metadata, then the guarded update, capturing both
+   * the payload and the predicate. `stamped` is the row the update selects back:
+   * null is a write that matched nothing, i.e. a lost race.
+   */
+  const mockReadThenUpdate = (
+    existing: unknown,
+    captured: Captured,
+    stamped: { id: string } | null = { id: MATCH_ID },
+    writeError: unknown = null
+  ) => {
     let call = 0;
     mockFrom.mockImplementation(() => {
       call += 1;
@@ -320,9 +344,15 @@ describe('confirmMatchTie', () => {
           captured.payload = payload;
           return {
             eq: () => ({
-              select: () => ({
-                single: () => Promise.resolve({ data: { id: MATCH_ID }, error: null }),
-              }),
+              is: (column: string, value: unknown) => {
+                captured.guard = [column, value];
+                return {
+                  select: () => ({
+                    maybeSingle: () =>
+                      Promise.resolve({ data: writeError ? null : stamped, error: writeError }),
+                  }),
+                };
+              },
             }),
           };
         },
@@ -331,7 +361,7 @@ describe('confirmMatchTie', () => {
   };
 
   it('stamps the tie and records who confirmed it', async () => {
-    const captured: { payload?: MatchNonResultUpdate } = {};
+    const captured: Captured = {};
     mockReadThenUpdate(null, captured);
 
     await confirmMatchTie(MATCH_ID);
@@ -342,7 +372,7 @@ describe('confirmMatchTie', () => {
   });
 
   it('keeps metadata another feature already wrote', async () => {
-    const captured: { payload?: MatchNonResultUpdate } = {};
+    const captured: Captured = {};
     mockReadThenUpdate({ autoScheduled: true }, captured);
 
     await confirmMatchTie(MATCH_ID);
@@ -350,6 +380,45 @@ describe('confirmMatchTie', () => {
     const metadata = captured.payload?.metadata as Record<string, unknown>;
     expect(metadata.autoScheduled).toBe(true);
     expect(metadata.tie_confirmed_at).toEqual(expect.any(String));
+  });
+
+  // The defect: the write was a plain UPDATE by id, so approve_match_result
+  // could decide the match between the read and the write and both would
+  // "succeed" — leaving a decisive win wearing a tie stamp, which the league
+  // then counted as a win while the admin had been told it was a tie.
+  it('only writes while the match still has no winner', async () => {
+    const captured: Captured = {};
+    mockReadThenUpdate(null, captured);
+
+    await confirmMatchTie(MATCH_ID);
+
+    expect(captured.guard).toEqual(['winner_id', null]);
+  });
+
+  it('refuses the tie when a winner was recorded first', async () => {
+    const captured: Captured = {};
+    // The guarded update matched no row: something gave the match a winner.
+    mockReadThenUpdate(null, captured, null);
+
+    await expect(confirmMatchTie(MATCH_ID)).rejects.toThrow(BusinessLogicError);
+  });
+
+  it('tells the admin a winner was recorded, not that something went wrong', async () => {
+    const captured: Captured = {};
+    mockReadThenUpdate(null, captured, null);
+
+    const thrown = await confirmMatchTie(MATCH_ID).catch((error: unknown) => error);
+
+    expect(getUIErrorMessage(thrown, 'Failed to confirm the tie')).toContain(
+      'already has a winner'
+    );
+  });
+
+  it('throws DatabaseError when the write itself fails', async () => {
+    const captured: Captured = {};
+    mockReadThenUpdate(null, captured, null, pgError());
+
+    await expect(confirmMatchTie(MATCH_ID)).rejects.toThrow(DatabaseError);
   });
 
   it('throws DatabaseError when the match cannot be read', async () => {
