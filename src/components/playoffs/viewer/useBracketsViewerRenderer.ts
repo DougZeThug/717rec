@@ -42,6 +42,66 @@ const fingerprint = (matches: FingerprintMatch[]): string => {
   return `${matches.length}:${ids}:${slots}`;
 };
 
+type ViewerMatchRow = ViewerDataWithMapping['data']['matches'][number];
+type ViewerParticipantRow = ViewerDataWithMapping['data']['participants'][number];
+type RenderableBracket = PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
+
+/**
+ * Pick the transform that matches where this bracket keeps its data: the SQL
+ * tables, a JSONB blob, or the legacy playoff_matches shape.
+ */
+const transformForViewer = async (bracket: RenderableBracket): Promise<ViewerDataWithMapping> => {
+  if (bracket.uses_brackets_manager) {
+    return BracketsViewerAdapter.transformFromSql(bracket.id);
+  }
+  if (bracket.bracket_data) {
+    return BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id);
+  }
+  return BracketsViewerAdapter.transform(bracket, [], bracket.participants);
+};
+
+/** Hand the viewer the team logos, if this build of it takes them. */
+const applyParticipantImages = (participants: ViewerParticipantRow[]) => {
+  if (!window.bracketsViewer.setParticipantImages) return;
+
+  const participantImages = participants
+    .filter((p) => p.image)
+    .map((p) => ({ participantId: p.id, imageUrl: p.image ?? '' }));
+
+  if (participantImages.length === 0) return;
+
+  bracketLog(`Setting ${participantImages.length} participant images`);
+  window.bracketsViewer.setParticipantImages(participantImages);
+};
+
+/**
+ * Whether the transform produced enough to draw. Deliberately takes `unknown`:
+ * the point of the check is that a transform can hand back a shape the types
+ * promise but the data does not keep.
+ */
+const hasRenderableData = (matchRows: unknown, stageRows: unknown): boolean =>
+  Array.isArray(matchRows) &&
+  matchRows.length > 0 &&
+  Array.isArray(stageRows) &&
+  stageRows.length > 0;
+
+/** Opponent slots that know which match fed them. */
+const countSourcedSlots = (matchRows: ViewerMatchRow[]): number =>
+  matchRows.reduce(
+    (n, x) => n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0),
+    0
+  );
+
+/** Populated opponent slots that lost their identity symbols in transit. */
+const countUntaggedOpponents = (matchRows: ViewerMatchRow[]): number =>
+  matchRows.filter((match) => {
+    const need1 = Boolean(match.opponent1);
+    const need2 = Boolean(match.opponent2);
+    const bad1 = match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
+    const bad2 = match.opponent2 && Object.getOwnPropertySymbols(match.opponent2).length === 0;
+    return (need1 && bad1) || (need2 && bad2);
+  }).length;
+
 /** Custom round name formatter for brackets-viewer. */
 const customRoundName = (info: BracketsViewerCustomRoundInfo): string => {
   const { groupType, roundNumber, roundCount } = info;
@@ -77,7 +137,7 @@ const hideUuidNodes = (container: HTMLElement) => {
 };
 
 interface UseBracketsViewerRendererOptions {
-  bracket: PlayoffBracket & { bracket_data?: InMemoryDatabase['data'] };
+  bracket: RenderableBracket;
   containerRef: React.RefObject<HTMLDivElement | null>;
   containerId: string;
   isScriptReady: boolean;
@@ -134,16 +194,7 @@ export const useBracketsViewerRenderer = ({
           hasBracketData: Boolean(bracket.bracket_data),
         });
 
-        // Determine which transformation method to use
-        let result: ViewerDataWithMapping;
-
-        if (bracket.uses_brackets_manager) {
-          result = await BracketsViewerAdapter.transformFromSql(bracket.id);
-        } else if (bracket.bracket_data) {
-          result = BracketsViewerAdapter.transformFromJsonb(bracket.bracket_data, bracket.id);
-        } else {
-          result = BracketsViewerAdapter.transform(bracket, [], bracket.participants);
-        }
+        const result = await transformForViewer(bracket);
 
         if (cancelled) return;
 
@@ -153,12 +204,7 @@ export const useBracketsViewerRenderer = ({
         const matchRows = result.data.matches;
         const stageRows = result.data.stages;
 
-        if (
-          !Array.isArray(matchRows) ||
-          matchRows.length === 0 ||
-          !Array.isArray(stageRows) ||
-          stageRows.length === 0
-        ) {
+        if (!hasRenderableData(matchRows, stageRows)) {
           warnLog('Skipping render: matches or stages not ready');
           // "Not ready yet" is not a failure, so any error left over from an
           // earlier attempt has to go. Without this the reader keeps an error
@@ -170,11 +216,7 @@ export const useBracketsViewerRenderer = ({
 
         // Validate source coverage (avoid premature render)
         const totalSlots = matchRows.length * 2;
-        const sourcedCount = matchRows.reduce(
-          (n, x) =>
-            n + (x?.opponent1?.source_node_id ? 1 : 0) + (x?.opponent2?.source_node_id ? 1 : 0),
-          0
-        );
+        const sourcedCount = countSourcedSlots(matchRows);
         const sourcePct = totalSlots ? sourcedCount / totalSlots : 0;
 
         if (sourcePct < 0.6) {
@@ -213,19 +255,7 @@ export const useBracketsViewerRenderer = ({
         }
 
         // Set participant images (required by brackets-viewer API)
-        if (window.bracketsViewer.setParticipantImages) {
-          const participantImages = result.data.participants
-            .filter((p) => p.image)
-            .map((p) => ({
-              participantId: p.id,
-              imageUrl: p.image ?? '',
-            }));
-
-          if (participantImages.length > 0) {
-            bracketLog(`Setting ${participantImages.length} participant images`);
-            window.bracketsViewer.setParticipantImages(participantImages);
-          }
-        }
+        applyParticipantImages(result.data.participants);
 
         // Prepare data for brackets-viewer (INCLUDE groups/rounds for connector rendering)
         const viewerData = {
@@ -258,15 +288,7 @@ export const useBracketsViewerRenderer = ({
         };
 
         // Check if symbol tags survived (object identity validation)
-        const tagsMissing = viewerData.matches.filter((match) => {
-          const need1 = Boolean(match.opponent1);
-          const need2 = Boolean(match.opponent2);
-          const bad1 =
-            match.opponent1 && Object.getOwnPropertySymbols(match.opponent1).length === 0;
-          const bad2 =
-            match.opponent2 && Object.getOwnPropertySymbols(match.opponent2).length === 0;
-          return (need1 && bad1) || (need2 && bad2);
-        }).length;
+        const tagsMissing = countUntaggedOpponents(viewerData.matches);
 
         if (tagsMissing > 0) {
           warnLog('Identity tags missing - proceeding anyway', { tagsMissing });
