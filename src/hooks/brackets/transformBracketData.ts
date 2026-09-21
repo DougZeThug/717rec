@@ -72,6 +72,8 @@ interface TransformBracketsManagerDataInput {
     state: string | null;
     division_id?: string | null;
     season_id?: string | null;
+    /** The winning team, set once the bracket is decided. */
+    wb_champion_id?: string | null;
     divisions: { display_division: string; name: string } | null;
   };
   stageId: number;
@@ -189,6 +191,7 @@ export const transformBracketsManagerData = ({
     division: bracket.divisions?.display_division || bracket.divisions?.name || 'Unknown',
     divisionId: bracket.division_id ?? null,
     seasonId: bracket.season_id ?? null,
+    champion: bracket.wb_champion_id ?? null,
     uses_brackets_manager: true,
     matches: transformedMatches,
     teams: Array.from(teamLookup.values()),

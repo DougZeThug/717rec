@@ -60,6 +60,7 @@ type BracketWithDivisionRow = Pick<
   | 'challonge_tournament_id'
   | 'uses_brackets_manager'
   | 'bracket_data'
+  | 'wb_champion_id'
 > & {
   // Nullable like the overview row: brackets.division_id is nullable, so the
   // join is a left join and a bracket can legitimately arrive without one.
@@ -187,6 +188,7 @@ export const fetchBracketWithDivision = async (
       divisions(display_division, name),
       challonge_tournament_id,
       uses_brackets_manager,
+      wb_champion_id,
       bracket_data
     `
     )

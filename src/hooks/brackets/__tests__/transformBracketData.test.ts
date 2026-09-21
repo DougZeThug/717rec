@@ -61,6 +61,23 @@ describe('transformBracketsManagerData', () => {
     expect(result.seasonId).toBeNull();
   });
 
+  // Dropped here, the champion banner on a finished bracket has nothing to show
+  // and silently renders nothing.
+  it('carries the champion through, so the banner can name the winner', () => {
+    const result = transformBracketsManagerData({
+      ...baseInput,
+      bracket: { ...baseInput.bracket, wb_champion_id: 't-1' },
+    });
+
+    expect(result.champion).toBe('t-1');
+  });
+
+  it('reports an undecided bracket as having no champion', () => {
+    const result = transformBracketsManagerData(baseInput);
+
+    expect(result.champion).toBeNull();
+  });
+
   it('resolves teams by team_id, so a rename does not strand a match', () => {
     const result = transformBracketsManagerData({
       ...baseInput,

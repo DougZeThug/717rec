@@ -32,6 +32,8 @@ export interface SimpleBracketData {
   /** The season this bracket belongs to, so a link to it can select that season. */
   seasonId?: string | null;
   challonge_tournament_id?: number | null;
+  /** brackets.wb_champion_id — the winning team, once the bracket is decided. */
+  champion?: string | null;
   uses_brackets_manager?: boolean;
   matches: Array<{
     id: string;
