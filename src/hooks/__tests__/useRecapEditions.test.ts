@@ -116,36 +116,59 @@ describe('useRecapEditionBySlug', () => {
 });
 
 describe('the mutations that write', () => {
-  it('saving a draft refreshes the edition list', async () => {
+  it('saving a draft refreshes the recap caches', async () => {
     mockService.saveVersion.mockResolvedValue({ id: 'v-1' });
 
     const { result } = renderHook(() => useSaveRecapVersion(), { wrapper });
     await result.current.mutateAsync({ editionId: 'e-1' } as never);
 
-    expect(invalidated).toContainEqual(['recap-editions']);
+    expect(invalidated).toContainEqual(['recap-edition']);
     expect(mockToast).toHaveBeenCalledWith({ title: 'Draft saved' });
   });
 
-  it('publishing refreshes the edition list AND the home page card', async () => {
+  it('publishing refreshes the home page card and the per-week page', async () => {
     mockService.publish.mockResolvedValue({ id: 'e-1', status: 'published' });
 
     const { result } = renderHook(() => usePublishRecapEdition(), { wrapper });
     await result.current.mutateAsync({ editionId: 'e-1', versionId: 'v-1' });
 
-    // Both, or the home page keeps showing the previous week after publishing.
-    expect(invalidated).toContainEqual(['recap-editions']);
-    expect(invalidated).toContainEqual(['recap-edition', 'latest-published']);
+    // The prefix covers the home page card and the public per-week page, so
+    // one call refreshes both. Neither may be left showing the old edition.
+    expect(invalidated).toContainEqual(['recap-edition']);
   });
 
-  it('unpublishing refreshes both as well, so the home page reverts', async () => {
+  it('unpublishing refreshes them too, so the home page reverts', async () => {
     mockService.unpublish.mockResolvedValue({ id: 'e-1', status: 'unpublished' });
 
     const { result } = renderHook(() => useUnpublishRecapEdition(), { wrapper });
     await result.current.mutateAsync('e-1');
 
-    expect(invalidated).toContainEqual(['recap-editions']);
-    expect(invalidated).toContainEqual(['recap-edition', 'latest-published']);
+    expect(invalidated).toContainEqual(['recap-edition']);
     expect(mockToast).toHaveBeenCalledWith({ title: 'Recap unpublished' });
+  });
+
+  // The reason this matters: the key used to be 'recap-editions', plural,
+  // which matched nothing. An admin who unpublished a wrong recap left it
+  // readable at its public address for the whole 10-minute staleTime.
+  it('unpublishing really does refetch the public per-week page', async () => {
+    const liveClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const liveWrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(QueryClientProvider, { client: liveClient }, children);
+
+    mockService.fetchPublishedBySlug.mockResolvedValue({ edition: { id: 'e-6' } });
+    renderHook(() => useRecapEditionBySlug('fall-2026', 6), { wrapper: liveWrapper });
+    await waitFor(() => expect(mockService.fetchPublishedBySlug).toHaveBeenCalledTimes(1));
+
+    mockService.unpublish.mockResolvedValue({ id: 'e-6', status: 'unpublished' });
+    mockService.fetchPublishedBySlug.mockResolvedValue(null);
+
+    const { result } = renderHook(() => useUnpublishRecapEdition(), { wrapper: liveWrapper });
+    await result.current.mutateAsync('e-6');
+
+    // Asked again, and this time the answer is "nothing published here".
+    await waitFor(() => expect(mockService.fetchPublishedBySlug).toHaveBeenCalledTimes(2));
   });
 
   it('reports a failed publish without invalidating anything', async () => {

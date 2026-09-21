@@ -343,6 +343,85 @@ describe('useMessageBoard', () => {
     expect(result.current.hasMore).toBe(true);
   });
 
+  // An edit to a message the reader has not paged down to yet used to be
+  // spliced in below the oldest one on screen. It then became the cursor for
+  // "older than", so the next page started below it and every message in
+  // between was never asked for, and never seen.
+  const tenMessages = () =>
+    Array.from({ length: 10 }, (_, i) => ({
+      ...baseMessage,
+      id: `m${i}`,
+      created_at: `2026-04-20T10:0${i}:00.000Z`,
+    }));
+
+  /** Older than anything on screen, and it matches the empty filters. */
+  const ancientEdit: Message = {
+    ...baseMessage,
+    id: 'ancient',
+    content: 'edited long after the fact',
+    created_at: '2026-04-13T10:00:00.000Z',
+  };
+
+  it('keeps the load-more cursor when an edit arrives for an older message', async () => {
+    mockFetchMessages.mockResolvedValue(tenMessages());
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.hasMore).toBe(true);
+
+    await act(async () => {
+      realtimeHandlers.onMessageUpdated?.(ancientEdit);
+      await Promise.resolve();
+    });
+
+    // It waits in the realtime buffer for the page that reaches it, rather
+    // than sitting under a list it does not belong to the bottom of.
+    expect(result.current.messages.some((m) => m.id === 'ancient')).toBe(false);
+
+    mockFetchMessages.mockClear();
+    mockFetchMessages.mockResolvedValue([]);
+    await act(async () => {
+      await result.current.loadMoreMessages();
+    });
+
+    // m0 is the oldest the league returned, so it is still the cursor.
+    expect(mockFetchMessages).toHaveBeenCalledWith(
+      expect.objectContaining({ olderThan: '2026-04-20T10:00:00.000Z' }),
+      expect.any(AbortSignal)
+    );
+  });
+
+  // The same bug through the other door: a refetch of the first page merges
+  // the whole realtime buffer, and this query refetches on every mount and
+  // every time the tab regains focus.
+  it('keeps the load-more cursor when a refresh merges the realtime buffer', async () => {
+    mockFetchMessages.mockResolvedValue(tenMessages());
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      realtimeHandlers.onMessageUpdated?.(ancientEdit);
+      await Promise.resolve();
+    });
+    await act(async () => {
+      await result.current.refreshMessages();
+    });
+
+    expect(result.current.messages.some((m) => m.id === 'ancient')).toBe(false);
+
+    mockFetchMessages.mockClear();
+    mockFetchMessages.mockResolvedValue([]);
+    await act(async () => {
+      await result.current.loadMoreMessages();
+    });
+
+    expect(mockFetchMessages).toHaveBeenCalledWith(
+      expect.objectContaining({ olderThan: '2026-04-20T10:00:00.000Z' }),
+      expect.any(AbortSignal)
+    );
+  });
+
   it('preserves load-more availability after realtime cache rewrites', async () => {
     mockFetchMessages.mockResolvedValue(
       Array.from({ length: 10 }, (_, i) => ({

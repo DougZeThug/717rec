@@ -14,14 +14,18 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
-**53 entries**: 14 high, 26 medium, 12 low, and B-06, which carries no severity
-because it was cleared as not a defect. Several were **not raised as
+**62 entries**: 15 high, 30 medium, 16 low, and B-06, which carries no severity
+because it was cleared as not a defect. All but one are closed; B-61 is open,
+and is a product call rather than a defect to go and fix. Several were **not raised as
 defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
 `medium`, was recorded in `home/the-home-page.md` as an open question and could
 not be reached until
 [B-31](#b-31-two-dead-features-are-visible-in-the-interface) added the control
 that switches its feature on; it was fixed in that same change. B-49 to B-52 came
-out of code readings rather than screens.
+out of code readings rather than screens, as did B-54 to B-60 — seven defects
+found by reading the code against these documents, all seven fixed in the change
+that recorded them. B-61 came out of the review of that change, and is the one
+entry still open.
 
 *The counts in this paragraph had gone stale.* They still read "42 entries: 13
 high, 23 medium, and 6 low" long after the list had grown past them, and are
@@ -29,8 +33,9 @@ corrected here by counting the **Severity** line on each entry. Two things make 
 count by eye come out wrong: B-06 has no severity line at all, and B-41 sits
 under the `## Low` heading while being marked `medium`.
 
-**All twelve `low` entries are now closed.** Eleven were fixed; B-26 was put to
-the league as a product call and left as it is, documented rather than changed.
+**All sixteen `low` entries are now closed.** Fifteen were fixed; B-26 was put
+to the league as a product call and left as it is, documented rather than
+changed.
 Three — B-27, B-30 and B-53 — carried claims that had gone stale or were recorded
 as open questions between the reading and the fix, and all three are corrected in
 place. B-41 was fixed in the same change that made it reachable.
@@ -2785,6 +2790,246 @@ finding read a superseded migration.
   test sets `isFetching: true` with `isLoading: false` — so it fails if the hook
   ever goes back to the mutation flag. `verification/home-and-teams.md` NEXT-38
   is retagged from "suspected bug" to fixed.
+
+
+### B-54: The AI caption button failed on every press
+
+- `supabase/functions/generate-recap-caption/index.ts` called the shared
+  `checkRateLimit(client, options)` with four loose values instead —
+  `('generate-recap-caption', userId, 5, 60)`. The endpoint string landed in the
+  `client` slot, so the first thing the limiter did was `client.rpc(...)` on a
+  string. That threw, outside the function's `try`, so Deno answered a bare
+  **HTTP 500 with no CORS headers**.
+- A second fault sat underneath it. `checkRateLimit` answers with an object,
+  `{ allowed, error }`, and an object is never falsy — so `if (!accidentGuard)`
+  could not be true and both 429 replies were unreachable even once the call
+  itself was fixed. Neither the per-minute guard nor the daily spend cap applied.
+- Every sibling function — `submit-contact-request`, `submit-score-report`,
+  `send-support-email`, `pageview` — passes `(client, { endpoint, ipHash,
+  windowSeconds, maxHits })` and branches on `.allowed`. This one was the only
+  outlier, and it was wrong from its first commit.
+- Nothing caught it. `tsconfig` covers no project under `supabase/`, CI runs
+  `deno test` with `--no-check`, and the handler was written inside `serve()`,
+  so no test could call it. Run by hand, `deno check` reported both call sites
+  as "Expected 2 arguments, but got 4".
+- **Severity:** `high`. "Write it for me" and "Write blurbs for me" were dead
+  for every admin, for as long as the feature has existed.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** The limiter is called with `auth.ctx.serviceClient` —
+  which `requireAdmin` already built and nothing used — one options object, and
+  a branch on `.allowed`. An RPC error is logged and still denies, matching the
+  fail-closed contract in `rateLimit.ts`. The admin id is hashed before use as
+  the bucket key, because `rate_limit_events.ip_hash` only ever holds a digest;
+  bucketing is unchanged, since the same admin always hashes to the same value.
+
+  The handler was first lifted into an exported `handleRequest`, the way all
+  four siblings already do it, because nothing could test the function
+  otherwise. Seven tests now cover it. Two of them run the genuine
+  `checkRateLimit` against a stubbed RPC rather than the test seam — a seam
+  ignores its arguments, so it would have hidden exactly this bug — and both
+  reproduce `TypeError: client.rpc is not a function` against the old code.
+
+### B-55: The message board skipped a run of messages after a live edit
+
+- "Load more" asks for messages older than the last one in the list, so whatever
+  sits at the bottom of the list becomes the cursor. A realtime edit for an old
+  message the reader had not scrolled to yet was put into the list anyway,
+  sorted to the bottom, and became that cursor — so the next page started below
+  it and every message between the two was never asked for, and never seen.
+  Pressing "Load more" again paged further away from the gap, not back into it.
+- Two ways in, not one. `handleMessageUpdated` spliced the edit straight into
+  the cached pages; separately the fetch merged the whole realtime buffer into
+  page one whenever there was no cursor. The second is the commoner route: the
+  query sets `refetchOnMount: 'always'` and leaves `refetchOnWindowFocus` on, so
+  page one is refetched on every mount and every time the tab regains focus.
+- **Severity:** `medium`. Nothing is written wrongly and nothing is deleted, but
+  a contiguous run of real messages is missing from the board for that session
+  and there is no sign on screen that anything was skipped.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** Both paths now refuse a message older than the oldest
+  one already in the list, while there is still a cursor to protect. Newer ones
+  are unaffected, which is the ordinary case of a message edited into view.
+  Nothing is lost: the message stays in the realtime buffer, and
+  `fetchMessages` applies the category, team and search filters on the server,
+  so it comes back with the page that reaches it.
+
+  Deliberately **not** fixed by storing a server cursor per page. That would
+  skip the message pushed out by the hundred-message cap instead of re-fetching
+  it, which `message-board/read-the-board.md` describes as intended, and it
+  would leave the out-of-order message rendering above newer ones, because
+  `messages` is a bare `pages.flat()` with no re-sort.
+
+### B-56: Standings flashed "No Teams Available" over a full league
+
+- `useTeamRankings` derives its rankings in a `useEffect` but seeded
+  `isLoading` as `useState(false)`, so its first commit claimed to have finished
+  before anything had been derived.
+- On a warm mount — a return visit inside the five-minute `staleTime` — the
+  teams and matches queries answer straight from cache, so neither of those is
+  loading either. The hook reported `{ rankings: [], isLoading: false }` for a
+  populated league, and `StatsContainer` committed its "No Teams Available"
+  panel to the DOM before replacing it with the real table.
+- The early-return path for a genuinely empty league never set `isLoading`
+  either. That was harmless only because the seed was already `false`.
+- `stats/standings-and-rankings.md` says the page is a skeleton until all three
+  sources are back, never an empty state on the way there.
+- **Severity:** `low`. Cosmetic; no data is wrong and nothing is lost. Same
+  shape as [B-53](#b-53-my-next-match-shows-no-skeleton-on-a-first-load).
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** The seed is `true`, and the early return settles to
+  `false` so an empty league still resolves. Six other consumers read this flag
+  — `useLeagueInsights`, `useTeamReportCard`, `useAllTeamReportCards`,
+  `useProjectedSeeds`, `Stats.tsx` and `TeamDetails.tsx` — and all now get a
+  brief honest "loading" in place of a wrong "loaded and empty". A test records
+  every commit of the hook and fails if any of them is empty-and-not-loading.
+
+### B-57: Publishing a recap never refreshed its public page
+
+- `usePublishRecapEdition`, `useUnpublishRecapEdition` and `useSaveRecapVersion`
+  all invalidated `['recap-editions']` — plural. Every recap query is registered
+  under `['recap-edition']` — singular. React Query compares key elements with
+  `===`, so the plural filter matched nothing and all three calls did nothing.
+- The home page card was covered anyway, by a second explicit invalidation of
+  its exact key. The public per-week page was not, so it kept serving its cache
+  for its full ten-minute `staleTime`.
+- It shows on the documented rollback: an admin unpublishes a wrong recap, opens
+  `/recap/<season>/week-<n>` to check, and is served their own ten-minute cache
+  of the recap they just took down — so the takedown looks as though it failed.
+  A fresh fetch correctly returns nothing and the page renders Not Found; the
+  defect is the window in between.
+- The plural key had matched one query when it was written, an admin list that
+  has since been removed. It has matched nothing since.
+- **Scope corrected after review.** This entry first said the recap stayed
+  readable "for anyone who already had it open", and was rated `medium` on that
+  basis. That overstates it, and the same overstatement is in the commit
+  message. `invalidateQueries` only ever touches the `QueryClient` in the
+  browser that ran the mutation, so this defect, and its fix, reach the admin's
+  own session and nothing else. A *viewer* holding the page open is a separate
+  and still-open problem, now recorded as
+  [B-61](#b-61-an-unpublished-recap-stays-on-a-viewers-screen-for-up-to-ten-minutes).
+- **Severity:** `low`. One admin's own session shows a stale page and
+  self-corrects. Nothing is written wrongly, and no visitor is affected either
+  way.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** One shared singular constant now covers both reads, so
+  a single invalidation refreshes the home page card and the per-week page
+  together. Alongside the key assertions, a test drives a real query client
+  through publish → unpublish and fails if the per-week page is not refetched.
+
+### B-58: A hidden team appeared in half of an old recap
+
+- The two halves of a recap asked "is this team visible?" in two different ways.
+  `fetchWeekStandings` read the division stored in the snapshot;
+  `fetchPowerScoreTrendsForWeek` reads the team's division today. Both then
+  checked it against the same list of non-Hidden divisions.
+- Move a team to Hidden after a week has ended, then regenerate that week, and
+  the two disagree. The team appears in the standings and the power rankings
+  with a rank, a record and a grade, but is absent from the movers and Team of
+  the Week, and shows no movement arrow because its delta is null.
+- The result is then frozen into the published facts and served verbatim —
+  `RecapEdition.tsx` re-checks nothing.
+- The divergence was a choice, not a schema limit: `power_score_snapshots`
+  carries `division_id`, and `v_team_details` carries it too. Each half simply
+  picked a different one, and the two were never combined until the recap
+  service put them side by side.
+- **Severity:** `medium`. A published, permanent page contradicts itself about
+  who is in the league.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** One rule for the whole edition: standings now gate on
+  the team's current division too, matching `weeklyTrendsForWeek`. Hidden means
+  hidden, everywhere in the recap. The division **name** on each row still comes
+  from the snapshot, so an old recap keeps naming the division the team actually
+  played in that week.
+
+  The league was asked which way to settle it and chose to hide the team
+  everywhere, rather than keep it visible everywhere for historical fidelity.
+
+### B-59: A recap put back up after an unpublish was labelled "Corrected"
+
+- `RecapEditionService.publish` kept the original `first_published_at` and moved
+  `published_at` to now on **every** publish. The public page reads "those two
+  dates differ" as its proof that a correction happened.
+- So the documented rollback — Publish, Unpublish, Publish — printed "Published
+  16 October · Corrected 20 October". Nothing had been corrected, and no
+  correction note existed to show: the admin screen had correctly judged it a
+  plain Publish, because its own test is `status === 'published'` and after an
+  unpublish the status is `unpublished`. The two disagreed.
+- The state diagram in `admin/weekly-content-pack.md` already said only
+  `published → published` is a correction; `drafted`/`unpublished → published`
+  is a plain Publish.
+- **Severity:** `low`. The content is right; the line above it is not.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** `publish` reads the status as well and applies the same
+  rule the admin screen does. A publish over a live edition still keeps its
+  original date; a publish from draft or unpublished starts the clock again, so
+  both dates match and the page shows one date. The two existing tests supplied
+  no status, so both now say which state they are publishing from, and a third
+  covers the unpublish-then-republish cycle that nothing had exercised.
+
+### B-60: The blurbs model was saved as the caption's model
+
+- `generateBlurbs` in `useWeeklyContentPack` wrote the blurbs model into
+  `captionModel` whenever no caption model was set yet
+  (`captionModel: current.captionModel ?? result.model`). On a fresh draft that
+  saved a `recap_edition_versions` row reading `caption_source = 'fallback'`
+  alongside a non-null `caption_model` — a contradiction, since a fallback
+  caption is built from the results and no model wrote it.
+- `generateCaption` sets the field unconditionally, which is what makes it the
+  caption's field. The asymmetry between the two was the giveaway.
+- There is no `blurbsModel` field and no `blurbs_model` column, so the blurbs
+  model is simply not recorded anywhere. Adding one was left out of scope.
+- **Severity:** `low`. Nothing reads `caption_model` yet, so no screen is wrong.
+  The stored rows are.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** `generateBlurbs` leaves `captionModel` alone. A test
+  asserts it is still null after blurbs are generated on a fresh draft.
+
+
+### B-61: An unpublished recap stays on a viewer's screen for up to ten minutes
+
+- Taking a recap down is a server-side change to one row. Nothing tells a
+  browser that already holds the page. `useRecapEditionBySlug` has
+  `staleTime: 1000 * 60 * 10`, the public recap page has no realtime channel and
+  no `refetchInterval`, and `foundations/saving-and-freshness.md` and
+  `admin/weekly-content-pack.md` both record that this feature has no realtime
+  by design.
+- So a visitor reading `/recap/<season>/week-<n>` when the league unpublishes it
+  keeps reading it. React Query will not refetch a query it still considers
+  fresh, so even a tab switch or a remount inside that window is served from
+  cache. Ten minutes is the floor, not the ceiling: the clock only starts at the
+  last fetch.
+- The same is true of a correction. A viewer holding the page sees the withdrawn
+  version, not the corrected one, for the same window.
+- This is **not** the same defect as
+  [B-57](#b-57-publishing-a-recap-never-refreshed-its-public-page), though B-57
+  originally described it. B-57 was a cache key that matched nothing, and it
+  only ever affected the admin's own browser. This one would still be here with
+  B-57 fixed, because no invalidation in one browser can reach another.
+- **Severity:** `medium`. Content the league has deliberately taken down stays
+  readable by the public after the admin has been told it is down.
+- **Decision needed:** **open — a product call.** Three ways to close it, and
+  they trade off against each other:
+  1. **Accept it.** Takedowns are rare and the content was published on purpose
+     a moment ago. Costs nothing, changes nothing.
+  2. **Shorten `staleTime`.** Narrows the window to whatever is chosen, at the
+     cost of more reads of a page that almost never changes. Does not close it.
+  3. **Subscribe the page to `recap_editions`.** Closes it properly, and is the
+     only option that makes a takedown immediate — but it puts realtime on a
+     page whose specification says it has none, so the specification would have
+     to change with it.
+- **Raised by:** Codex, reviewing
+  [#1528](https://github.com/DougZeThug/717rec/pull/1528). Not raised by any
+  feature document, and not found by the reading that produced B-54 to B-60.
+- **Status:** **open.** Recorded rather than fixed: which of the three it should
+  be is the league's call, not a code decision.
+
 
 ---
 

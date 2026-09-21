@@ -156,12 +156,17 @@ export const RecapEditionService = {
   publish: async (editionId: string, versionId: string): Promise<EditionRow> => {
     const existing = await supabase
       .from('recap_editions')
-      .select('first_published_at')
+      .select('status, first_published_at')
       .eq('id', editionId)
       .maybeSingle();
 
     if (existing.error) handleDatabaseError(existing.error, 'Failed to read the recap edition');
 
+    // Only publishing over a LIVE edition is a correction. Coming back from
+    // unpublished is a plain publish, and the page reads two different dates as
+    // proof of a correction -- so keeping the old first_published_at there
+    // printed "Corrected" over a rollback nobody corrected anything in.
+    const isCorrection = existing.data?.status === 'published';
     const now = new Date().toISOString();
     const { data, error } = await supabase
       .from('recap_editions')
@@ -169,7 +174,7 @@ export const RecapEditionService = {
         status: 'published',
         published_version_id: versionId,
         published_at: now,
-        first_published_at: existing.data?.first_published_at ?? now,
+        first_published_at: isCorrection ? (existing.data?.first_published_at ?? now) : now,
       })
       .eq('id', editionId)
       .select(EDITION_COLUMNS)

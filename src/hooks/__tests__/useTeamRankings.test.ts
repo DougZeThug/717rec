@@ -82,6 +82,31 @@ describe('useTeamRankings', () => {
     expect(result.current.isLoading).toBe(true);
   });
 
+  // The warm mount: a return visit inside the 5-minute staleTime, where the
+  // teams and matches queries answer from cache. Rankings are still derived in
+  // an effect, so the first commit has none -- and reporting that as "loaded,
+  // and empty" made StatsContainer commit its no-teams panel over a full
+  // league, then swap it for the real table a moment later.
+  it('never reports a populated league as loaded and empty', async () => {
+    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
+      teams: [makeTeam('a', 90), makeTeam('b', 60)],
+      isLoading: false,
+    });
+
+    const commits: Array<{ count: number; loading: boolean }> = [];
+    const { result } = renderHook(() => {
+      const value = useTeamRankings();
+      commits.push({ count: value.rankings.length, loading: value.isLoading });
+      return value;
+    });
+
+    await waitFor(() => expect(result.current.rankings.length).toBe(2));
+
+    // "Not loading, and nothing to show" is what draws the empty state.
+    expect(commits.some((c) => c.count === 0 && !c.loading)).toBe(false);
+    expect(commits[0].loading).toBe(true);
+  });
+
   it('returns empty rankings when no teams', async () => {
     const { result } = renderHook(() => useTeamRankings());
     await waitFor(() => expect(result.current.isLoading).toBe(false));

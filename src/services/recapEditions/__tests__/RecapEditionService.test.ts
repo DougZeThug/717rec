@@ -119,7 +119,7 @@ describe('RecapEditionService', () => {
     it('sets first_published_at on the first publish', async () => {
       const payloads = createSupabaseMock({
         recap_editions: [
-          { data: { first_published_at: null }, error: null },
+          { data: { status: 'draft', first_published_at: null }, error: null },
           { data: editionRow({ status: 'published' }), error: null },
         ],
       });
@@ -135,7 +135,10 @@ describe('RecapEditionService', () => {
     it('leaves first_published_at alone on a correction', async () => {
       const payloads = createSupabaseMock({
         recap_editions: [
-          { data: { first_published_at: '2026-10-16T12:00:00.000Z' }, error: null },
+          {
+            data: { status: 'published', first_published_at: '2026-10-16T12:00:00.000Z' },
+            error: null,
+          },
           { data: editionRow({ status: 'published' }), error: null },
         ],
       });
@@ -147,6 +150,29 @@ describe('RecapEditionService', () => {
       // must not move.
       expect(sent.first_published_at).toBe('2026-10-16T12:00:00.000Z');
       expect(sent.published_at).not.toBe('2026-10-16T12:00:00.000Z');
+    });
+
+    // Publish, Unpublish, Publish is the documented rollback, and the admin
+    // screen calls that last step a plain Publish -- it never asks for a
+    // correction note. Keeping the old first_published_at made the public page
+    // print "Corrected <date>" with nothing behind it.
+    it('starts the clock again when the edition was unpublished, not corrected', async () => {
+      const payloads = createSupabaseMock({
+        recap_editions: [
+          {
+            data: { status: 'unpublished', first_published_at: '2026-10-16T12:00:00.000Z' },
+            error: null,
+          },
+          { data: editionRow({ status: 'published' }), error: null },
+        ],
+      });
+
+      await RecapEditionService.publish('e-1', 'v-2');
+
+      const sent = payloads.recap_editions[0] as Record<string, string | null>;
+      // Equal dates are what the page reads as "no correction".
+      expect(sent.first_published_at).toBe(sent.published_at);
+      expect(sent.first_published_at).not.toBe('2026-10-16T12:00:00.000Z');
     });
   });
 

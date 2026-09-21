@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std@0.190.0/http/server.ts';
 import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.71.0';
 
 import { requireAdmin } from '../_shared/auth.ts';
-import { checkRateLimit as defaultCheckRateLimit } from '../_shared/rateLimit.ts';
+import { checkRateLimit as defaultCheckRateLimit, hashIp } from '../_shared/rateLimit.ts';
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
 import {
   BlurbReplySchema,
@@ -75,7 +75,7 @@ const MAX_TOKENS = 4000;
  */
 const RANKINGS_MAX_TOKENS = 16000;
 
-serve(async (req: Request) => {
+async function handleRequest(req: Request): Promise<Response> {
   const cors = buildCorsHeaders(req);
 
   if (req.method === 'OPTIONS') {
@@ -90,17 +90,34 @@ serve(async (req: Request) => {
 
   // Keyed on the admin, not the IP: two admins in the same room share an IP,
   // and throttling one because the other generated a caption would be wrong.
-  const accidentGuard = await rateLimiterImpl('generate-recap-caption', auth.ctx.userId, 5, 60);
-  if (!accidentGuard) {
+  // Hashed all the same, because rate_limit_events.ip_hash only ever holds a
+  // digest -- see the header of _shared/rateLimit.ts.
+  const adminHash = await hashIp(auth.ctx.userId);
+
+  const accidentGuard = await rateLimiterImpl(auth.ctx.serviceClient, {
+    endpoint: 'generate-recap-caption',
+    ipHash: adminHash,
+    windowSeconds: 60,
+    maxHits: 5,
+  });
+  if (accidentGuard.error) {
+    // Fail closed (see rateLimit.ts): the RPC error also drives allowed=false.
+    console.warn('[RecapCaption] rate-limit RPC error (failing closed):', accidentGuard.error);
+  }
+  if (!accidentGuard.allowed) {
     return jsonResponse(cors, 429, { error: 'Too many requests. Wait a minute and try again.' });
   }
-  const spendCap = await rateLimiterImpl(
-    'generate-recap-caption-daily',
-    auth.ctx.userId,
-    100,
-    86400
-  );
-  if (!spendCap) {
+
+  const spendCap = await rateLimiterImpl(auth.ctx.serviceClient, {
+    endpoint: 'generate-recap-caption-daily',
+    ipHash: adminHash,
+    windowSeconds: 86400,
+    maxHits: 100,
+  });
+  if (spendCap.error) {
+    console.warn('[RecapCaption] daily rate-limit RPC error (failing closed):', spendCap.error);
+  }
+  if (!spendCap.allowed) {
     return jsonResponse(cors, 429, { error: 'Daily caption limit reached.' });
   }
 
@@ -222,5 +239,16 @@ serve(async (req: Request) => {
       error: 'The caption service did not answer. Try again.',
       code: 'caption_failed',
     });
+  }
+}
+
+export { handleRequest };
+
+serve(async (req: Request) => {
+  try {
+    return await handleRequest(req);
+  } catch (error) {
+    console.error('[RecapCaption] Error:', error);
+    return jsonResponse(buildCorsHeaders(req), 500, { error: 'Failed to process request' });
   }
 });

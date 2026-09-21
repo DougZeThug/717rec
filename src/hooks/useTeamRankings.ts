@@ -13,7 +13,11 @@ import { useTeams } from './useTeams';
 
 export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | undefined) => {
   const [rankings, setRankings] = useState<Ranking[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // Seeded true, not false: rankings are derived in an effect, so the first
+  // commit has none yet. On a warm mount the teams and matches queries answer
+  // from cache, so nothing else is loading either, and saying "finished, and
+  // empty" here made /stats draw its no-teams panel over a full league.
+  const [isLoading, setIsLoading] = useState(true);
   const { previousRankings, lastUpdated } = usePreviousRankings();
   const { latestMatches, matchesLoading, matchesError, refetchMatches } = useRankingsData();
   const { teams: latestTeams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
@@ -54,6 +58,9 @@ export const useTeamRankings = (teams?: Team[] | undefined, matches?: Match[] | 
         // creates a new array reference that triggers another render, causing an
         // infinite loop while latestTeams is also a new [] reference each render.
         if (rankings.length > 0) setRankings([]);
+        // A league that really has no teams is settled, not still working. Set
+        // to the same value React bails out of, so this cannot loop.
+        setIsLoading(false);
         return;
       }
 
