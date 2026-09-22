@@ -18,9 +18,9 @@ import UserMenu from '../UserMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-describe('UserMenu with setup no pointer events', () => {
+describe('UserMenu close before next', () => {
   it('test 1', async () => {
-    const u = userEvent.setup({ pointerEventsCheck: 0 });
+    const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
@@ -38,10 +38,12 @@ describe('UserMenu with setup no pointer events', () => {
 
     await u.click(screen.getByRole('button', { name: /user menu/i }));
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
+    await u.keyboard('{Escape}');
+    expect(screen.queryByRole('menuitem')).not.toBeInTheDocument();
   });
 
   it('test 2', async () => {
-    const u = userEvent.setup({ pointerEventsCheck: 0 });
+    const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
