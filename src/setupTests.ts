@@ -50,6 +50,13 @@ afterEach(() => {
   // unmounts the React tree, but a test that ends with an overlay still open
   // leaves those marks behind, and the next test's first click lands on them
   // instead of the element it targets. Clear them here.
+  document.body.style.removeProperty('pointer-events');
+  document.body.removeAttribute('data-scroll-locked');
+  for (const node of document.querySelectorAll(
+    '[data-radix-portal],[data-radix-popper-content-wrapper]'
+  )) {
+    node.remove();
+  }
 });
 
 // This makes "screen" available in tests and ensures proper React 18+ testing
