@@ -3420,6 +3420,36 @@ finding read a superseded migration.
   the contradiction rather than only the Compare half of it.
 
 
+### B-74: The head-to-head record does not refresh while the page is open
+
+- **Where the user meets it:** the Compare page, right after two teams have
+  played. The head-to-head block still shows the record from before the match.
+- **What happens / what was expected:** `useOpponentHistory` sets
+  `refetchOnMount: false` and `refetchOnWindowFocus: false`, a five-minute
+  stale time and a ten-minute cache time. Nothing refetches the record while
+  the page is open, and reopening the page within ten minutes shows the cached
+  value without asking the server. Only after ten minutes unobserved is the
+  entry dropped, so the next open fetches fresh. A match played minutes ago can
+  therefore be missing from the block, and stays missing for as long as the
+  page is left open.
+- Every other block on the page follows the app's normal freshness rules. This
+  one opts out of both of them.
+- **Severity:** none recorded. The tuning is deliberate and its comment says
+  why: "opponent history rarely changes". For a league that plays on one night
+  a week that is usually true.
+- **Decision needed:** **product call.** The league was asked and chose to
+  change nothing and record it.
+- **What changing it would mean:** dropping `refetchOnMount: false` would cost
+  one request each time the page is opened and would close the case that
+  matters — a reader opening Compare straight after a match. Leaving
+  `refetchOnWindowFocus: false` alone would keep tab-switching cheap. That is a
+  two-line change in `src/hooks/useHeadToHead.ts` if the league wants it.
+- **Raised by:** `teams/compare-teams.md`, under "Open questions", as "whether
+  that is intended is a product question".
+- **Status:** **documented.** No code changed. The document now gives the real
+  settings and what they mean, rather than only "a long time".
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

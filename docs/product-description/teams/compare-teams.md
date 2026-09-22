@@ -116,7 +116,7 @@ Nothing is submitted. This page only reads.
 | Network lost mid-request | The team list never arrives and the retry card appears. | The comparison stays on "Loading comparison..." with no error and no timeout. |
 | The request fails or times out | The read is retried once, then the retry card. | The numbers for one side fail and that side draws zeros rather than saying anything. |
 | The session expires | No effect. Everything here is public. | No effect. |
-| The same record changed in another tab, or by another user | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so it can be over ten minutes stale before it is fetched again. |
+| The same record changed in another tab, or by another user | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so an open page never refetches it at all and reopening within ten minutes reuses the cached record. See B-74. |
 | Browser autofill or a password manager writes into the form | No effect. There are no text fields. | No effect. |
 | The window loses focus | Nothing. | Returning refetches the team list and the career numbers if they are over five minutes old. The head-to-head block does not refetch. |
 
@@ -176,6 +176,16 @@ alone, with nothing else marking it.
 - **A link naming the same team on both sides keeps only the left one.** The page
   never compares a team with itself; the address is rewritten with the duplicate
   dropped.
+- **The head-to-head block is deliberately excluded from the app's normal
+  freshness rules.** `useOpponentHistory` sets `refetchOnMount: false` and
+  `refetchOnWindowFocus: false`, with a five-minute stale time and a ten-minute
+  cache time. So nothing refetches it while the page stays open, and reopening
+  the page inside ten minutes shows the cached record without asking the server
+  again. Only after ten minutes unobserved is the entry dropped and the next
+  open fetches fresh. A match played minutes ago can therefore be missing from
+  this block, and for as long as the page is left open. The tuning is
+  deliberate — the comment reads "opponent history rarely changes". Recorded as
+  B-74 and left as it is, a product call for the league.
 - **The head-to-head block says "First Meeting" only when the teams really have
   never played.** A read that fails draws a separate "Head-to-Head Unavailable"
   card saying the record could not be loaded and that this does not mean the
@@ -228,10 +238,6 @@ alone, with nothing else marking it.
   the shared page layout that adds that padding. `/teams/:teamId` has the same
   shape; see [`team-details.md`](team-details.md). **May be worth treating as a
   bug rather than documenting.**
-- **The head-to-head block is deliberately excluded from the app's normal
-  freshness rules**, refetching neither on opening the page nor on returning to
-  the tab. A recently played match can therefore be missing from it for a long
-  time. Whether that is intended is a product question.
 - Not confirmed by hand: whether the standings' compare control is discoverable.
   It only appears on hover on a desktop row.
 - Not confirmed by hand: what the percentile badges show for a league with very
