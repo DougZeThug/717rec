@@ -3181,6 +3181,43 @@ finding read a superseded migration.
   three more cover the card; all four hook tests fail against the old hook.
 
 
+### B-63: A link inside a link counted twice, so three archived pages were refused as spam
+
+- **Where the user meets it:** the Contact the League form and the support form,
+  sending a message that quotes an archived or redirecting link.
+- **What happens / what was expected:** the message is refused with a 400 and
+  the reason "Message contains too many links". Three Wayback snapshots counted
+  as six against a limit documented as five. The reason given is specific and
+  wrong — the message held three links — and retrying the same text always
+  failed. Nothing is stored before the check, so there is no record the message
+  was ever attempted.
+- `countUrls` matched only where a link *starts*, with nothing stopping it
+  matching part-way through a link it had already counted. A snapshot such as
+  `https://web.archive.org/web/20230101/https://www.example.com` carries two
+  further openings inside its own path; a redirect such as
+  `https://example.com/r?to=www.target.com` carries one.
+- **This is the second half of B-43.** That fix stopped `https://www.example.com`
+  counting twice by treating a `www.` after a scheme as part of it, and
+  deliberately rejected a greedy `\S+` tail because it ran together links
+  joined by a comma. Counting bare openings closed the scheme-plus-host case and
+  left the in-path case open.
+- **Severity:** `medium`. A legitimate message never reaches the league, and the
+  sender is told a reason that is untrue of their message.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** Each match now runs from a link's opening to the end of
+  that link, so an opening inside an already-counted link is swallowed rather
+  than scored. The body stops at whitespace, `,`, `;`, brackets and quotes,
+  which keeps punctuation-joined links apart — the case B-43's review raised
+  against a plain `\S+` tail. Four tests were added; the seven from B-43 keep
+  their expected values, and two of the four fail against the old counter, one
+  of them with exactly "expected 3, got 6".
+- **Verification note:** there is no `deno` binary in the agent container, so
+  these were run by transpiling the real `spam.ts` and `spam.test.ts` and
+  executing them under Node with an `assertEquals` shim. CI runs them properly
+  in `edge-function-tests`.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

@@ -5,29 +5,33 @@
 /**
  * How many links a message contains.
  *
- * Counts where each link *starts*, rather than trying to consume the whole of
- * it. Two ways to start are recognised — a scheme, or a bare `www.` host — and
- * a `www.` directly after a scheme belongs to that scheme rather than opening a
- * link of its own.
+ * Each match starts where a link starts — a scheme, or a bare `www.` host — and
+ * then runs to the end of that link. Consuming the body is what stops a second
+ * count *inside* a link that has already been counted. A Wayback snapshot like
+ * `https://web.archive.org/web/20230101/https://www.example.com` carries two
+ * more openings in its path, and a redirect like
+ * `https://example.com/r?to=www.target.com` carries one. Every one of them used
+ * to score.
  *
- * That last part is the fix for the original defect. The first version was a
- * plain alternation, `/https?:\/\/|www\./gi`, which matched twice inside a
- * single `https://www.example.com`: once for the scheme and again for the host.
- * Three ordinary links scored six and tripped a limit documented as five, so a
- * sender quoting three videos was refused as a spammer with only the generic
- * "please try again" toast to go on, and retrying the same text never worked.
+ * Three snapshots scored six against a limit documented as five, so a sender
+ * quoting three archived pages was refused as a spammer and told the message
+ * held too many links. It held three. Retrying the same text never worked.
  *
- * Counting starts is also why the body is not consumed with something like
- * `\S+`. A greedy tail runs through any punctuation between two links, so
- * `https://a.test,https://b.test` reads as one link and a sender could put any
- * number of them past the limit by leaving out the spaces. Matching only the
- * opening of each link cannot run them together.
+ * The body stops at whitespace, at `,` and `;`, and at brackets and quotes.
+ * That is the other half of the rule, and it is why the tail is not a plain
+ * `\S+`. A greedy tail runs straight through the punctuation between two links,
+ * so `https://a.test,https://b.test` reads as one link and a sender could put
+ * any number of them past the limit by leaving out the spaces. Excluding the
+ * separators keeps those apart while still swallowing a link's own path.
+ *
+ * A `www.` directly after a scheme needs no special case any more: the scheme
+ * matches first and the tail eats the host.
  *
  * Bare `www.example.com` links still count. Dropping them would be the opposite
  * mistake — six of them would score zero.
  */
 export function countUrls(text: string): number {
-  const matches = text.match(/https?:\/\/(?:www\.)?|www\./gi);
+  const matches = text.match(/(?:https?:\/\/|www\.)[^\s,;()[\]<>"']*/gi);
   return matches ? matches.length : 0;
 }
 

@@ -65,3 +65,39 @@ Deno.test('countUrls counts nothing in a message with no links', () => {
   assertEquals(countUrls('My score was wrong on match 12. Can someone check it?'), 0);
   assertEquals(countUrls(''), 0);
 });
+
+// A link whose path holds another link. The `www.` and the second `https://`
+// are part of the first link, not the start of a new one, but each used to be
+// counted as one. Three archived pages scored six and were refused as spam.
+Deno.test('countUrls counts a link inside a link only once', () => {
+  assertEquals(countUrls('https://web.archive.org/web/20230101000000/https://www.example.com'), 1);
+  assertEquals(countUrls('https://example.com/redirect?to=www.target.com'), 1);
+  assertEquals(countUrls('https://example.com/r/https://other.test'), 1);
+});
+
+Deno.test('countUrls lets three archived links through the spam limit', () => {
+  const message = [
+    'Here are the three pages I mentioned:',
+    'https://web.archive.org/web/20230101000000/https://www.example.com/one',
+    'https://web.archive.org/web/20230202000000/https://www.example.com/two',
+    'https://web.archive.org/web/20230303000000/https://www.example.com/three',
+  ].join('\n');
+
+  assertEquals(countUrls(message), 3);
+  assertEquals(countUrls(message) > MAX_URLS_PER_MESSAGE, false);
+});
+
+// The body stops at a bracket or a quote too, so links that are wrapped or
+// quoted rather than spaced still count separately.
+Deno.test('countUrls counts links that are wrapped or quoted', () => {
+  assertEquals(countUrls('(www.a.com)(www.b.com)'), 2);
+  assertEquals(countUrls('See <https://a.test> and <https://b.test>'), 2);
+  assertEquals(countUrls('"https://a.test","https://b.test"'), 2);
+});
+
+// Nothing has to precede a link for it to count. Anchoring the match to a
+// space or a comma would have missed these.
+Deno.test('countUrls counts a link that follows other text directly', () => {
+  assertEquals(countUrls('Visit:www.a.com'), 1);
+  assertEquals(countUrls('Check www.a.com. Then www.b.com.'), 2);
+});
