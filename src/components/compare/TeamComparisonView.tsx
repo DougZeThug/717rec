@@ -2,6 +2,7 @@ import { Medal, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { TeamComparisonSide } from '@/hooks/useTeamComparison';
 
 import { ComparisonStatRow } from './ComparisonStatRow';
@@ -126,7 +127,8 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
           value2={formatPct(t2?.career_sweep_rate || 0)}
           numericValue1={t1?.career_sweep_rate || 0}
           numericValue2={t2?.career_sweep_rate || 0}
-          showPercentiles={false}
+          percentile1={p1?.sweepRate}
+          percentile2={p2?.sweepRate}
         />
       </div>
 
@@ -142,16 +144,19 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
           value2={formatRecord(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
           numericValue1={winRate(t1?.career_playoff_wins || 0, t1?.career_playoff_losses || 0)}
           numericValue2={winRate(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
-          showPercentiles={false}
+          percentile1={p1?.playoffWinPercentage}
+          percentile2={p2?.playoffWinPercentage}
         />
 
         <div className="grid grid-cols-3 gap-2 py-3 border-b border-border/50">
           <div className="flex items-center gap-1">
             <Trophy className="size-4 text-yellow-500" />
             <span className="font-semibold">{t1?.championships || 0}</span>
+            {p1 && <PercentileFromResult result={p1.championships} statName="Championships" />}
           </div>
           <div className="text-center text-sm text-muted-foreground">Championships</div>
           <div className="flex items-center justify-end gap-1">
+            {p2 && <PercentileFromResult result={p2.championships} statName="Championships" />}
             <span className="font-semibold">{t2?.championships || 0}</span>
             <Trophy className="size-4 text-yellow-500" />
           </div>

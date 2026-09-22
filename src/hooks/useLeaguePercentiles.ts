@@ -10,6 +10,7 @@ export interface TeamPercentiles {
   gameWinPercentage: PercentileResult;
   powerScore: PercentileResult;
   sos: PercentileResult;
+  sweepRate: PercentileResult;
   championships: PercentileResult;
   playoffWinPercentage: PercentileResult;
 }
@@ -42,6 +43,7 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
     const gameWinPctValues = measured.map((r) => r.careerGameWinPercentage);
     const powerScoreValues = measured.map((r) => r.careerPowerScore);
     const sosValues = measured.map((r) => r.careerSos);
+    const sweepRateValues = measured.map((r) => r.careerSweepRate);
     const championshipValues = measured.map((r) => r.championships);
     // Playoffs have always been counted this way: a team with no playoff match
     // has no playoff rate to rank, so it is left out rather than counted as a 0.
@@ -60,6 +62,7 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
           gameWinPercentage: UNMEASURED,
           powerScore: UNMEASURED,
           sos: UNMEASURED,
+          sweepRate: UNMEASURED,
           championships: UNMEASURED,
           playoffWinPercentage: UNMEASURED,
         });
@@ -77,6 +80,7 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
         ),
         powerScore: calculatePercentile(ranking.careerPowerScore, powerScoreValues, true),
         sos: calculatePercentile(ranking.careerSos, sosValues, true), // Higher SOS = tougher opponents
+        sweepRate: calculatePercentile(ranking.careerSweepRate, sweepRateValues, true),
         championships: calculatePercentile(ranking.championships, championshipValues, true),
         playoffWinPercentage: hasPlayoffGames
           ? calculatePercentile(ranking.careerPlayoffWinPercentage, playoffWinPctValues, true)

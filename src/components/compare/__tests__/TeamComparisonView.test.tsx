@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { TeamComparisonView } from '@/components/compare/TeamComparisonView';
+import type { TeamPercentiles } from '@/hooks/useLeaguePercentiles';
 import type { TeamComparisonSide } from '@/hooks/useTeamComparison';
+import type { PercentileResult } from '@/utils/percentileUtils';
 
 beforeAll(() => {
   HTMLElement.prototype.setPointerCapture = vi.fn();
@@ -13,7 +15,29 @@ beforeAll(() => {
 
 type Record2 = { wins: number; losses: number };
 
+const UNMEASURED: PercentileResult = { value: 0, percentile: 0, rank: 0, total: 0 };
+
+const ranked = (rank: number): PercentileResult => ({
+  value: rank,
+  percentile: 90,
+  rank,
+  total: 12,
+});
+
+/** Distinct ranks per stat, so each badge can be told apart on screen. */
+const allRanked = (overrides: Partial<TeamPercentiles> = {}): TeamPercentiles => ({
+  winPercentage: ranked(1),
+  gameWinPercentage: ranked(2),
+  powerScore: ranked(3),
+  sos: ranked(4),
+  sweepRate: ranked(5),
+  championships: ranked(6),
+  playoffWinPercentage: ranked(7),
+  ...overrides,
+});
+
 interface SideOverrides {
+  percentiles?: TeamPercentiles | null;
   playoff?: Record2;
   competitive?: Record2;
   intermediate?: Record2;
@@ -28,7 +52,7 @@ const side = (name: string, o: SideOverrides = {}): TeamComparisonSide => {
     id: name,
     name,
     logoUrl: null,
-    percentiles: null,
+    percentiles: o.percentiles ?? null,
     winPct: 0,
     gameWinPct: 0,
     totals: {
@@ -121,5 +145,49 @@ describe('TeamComparisonView record rows', () => {
 
     expect(isMarkedAhead('1-1')).toBe(false);
     expect(isMarkedAhead('4-4')).toBe(false);
+  });
+});
+
+describe('TeamComparisonView percentile badges', () => {
+  // Sweep rate, the playoff record and the championship count each had a
+  // percentile worked out on every page load and shown on no screen at all.
+  it('badges the sweep rate, the playoff record and the championships', () => {
+    render(
+      <TeamComparisonView
+        team1={side('Alpha', { percentiles: allRanked() })}
+        team2={side('Beta')}
+        headToHead={null}
+      />
+    );
+
+    expect(screen.getByText('5th')).toBeInTheDocument();
+    expect(screen.getByText('7th')).toBeInTheDocument();
+    expect(screen.getByText('6th')).toBeInTheDocument();
+  });
+
+  // A team with no playoff match is not ranked on playoff win percentage. It
+  // gets no badge rather than the bottom one.
+  it('shows no playoff badge for a team that has never reached the playoffs', () => {
+    render(
+      <TeamComparisonView
+        team1={side('Alpha', {
+          percentiles: allRanked({ playoffWinPercentage: UNMEASURED }),
+        })}
+        team2={side('Beta')}
+        headToHead={null}
+      />
+    );
+
+    expect(screen.getByText('5th')).toBeInTheDocument();
+    expect(screen.queryByText('7th')).not.toBeInTheDocument();
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
+  });
+
+  it('shows no badges at all when the league percentiles are unavailable', () => {
+    render(<TeamComparisonView team1={side('Alpha')} team2={side('Beta')} headToHead={null} />);
+
+    expect(screen.queryByText('5th')).not.toBeInTheDocument();
+    expect(screen.queryByText('6th')).not.toBeInTheDocument();
+    expect(screen.queryByText('7th')).not.toBeInTheDocument();
   });
 });

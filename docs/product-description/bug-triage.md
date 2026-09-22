@@ -3123,6 +3123,37 @@ finding read a superseded migration.
   fail against the old component.
 
 
+### B-71: Two percentiles were worked out on every page load and shown on no screen
+
+- **Where the user meets it:** nowhere, which is the defect. `useLeaguePercentiles`
+  works out six stats for every team on every page that uses it. Only four were
+  ever rendered.
+- **What happens / what was expected:** `championships` and `playoffWinPercentage`
+  were read by no component. `playoffWinPercentage` even carried its own
+  population rule — teams with no playoff match are left out of the ranking
+  rather than counted as zero — and none of it reached a screen. Sweep rate, the
+  one career row with no percentile at all, had no badge either.
+- This also explains a claim in `teams/compare-teams.md` that could never have
+  been true: it said Compare gave a team with no playoff matches "a zero
+  percentile on playoff win percentage", but Compare rendered no playoff badge
+  at all. The doc described an intention, not the screen.
+- **Severity:** `low`. Wasted work, and four rows less informative than the data
+  behind them allowed.
+- **Decision needed:** `fix`. The league chose to show the badges rather than
+  delete the unused work.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** `TeamPercentiles` gained `sweepRate`, and Compare now
+  badges Sweep Rate, Playoff Record and Championships. A team with no playoff
+  match still gets no playoff badge, because `UNMEASURED` passes through
+  `PercentileFromResult` — see B-62.
+- **Worth knowing:** the championship badge is a *shared* rank. Ranking counts
+  every team that has played and most have won nothing, so they tie on one rank
+  and are drawn in the bottom colour. That is honest but noisy on a league where
+  few teams have won. If the league would rather rank championships only among
+  teams that have won any — the way playoff win percentage already works — that
+  is a one-line change to the population, and worth raising.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

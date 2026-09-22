@@ -191,11 +191,19 @@ alone, with nothing else marking it.
   measured, so it is given no rank rather than the bottom one. Until B-62 it drew
   a red "0%" pill on all four career rows, which read as worst in the league. The
   team page has always behaved this way; Compare now matches it.
-- **Sweep rate and the playoff and division records carry no percentile badge**;
-  the first four career rows do.
-- **A team with no playoff matches gets a zero percentile** on playoff win
-  percentage rather than no badge, which reads as "worst in the league" rather
-  than "has not been".
+- **Every career row and both playoff rows carry a percentile badge.** Win %,
+  Game Win %, Power Score, SOS, Sweep Rate, Playoff Record and Championships all
+  show one. The three division records do not: no percentile is worked out for
+  those. Before B-71 the sweep rate, the playoff record and the championship
+  count carried none either, although two of the three were being worked out on
+  every page load and shown nowhere.
+- **A team with no playoff matches carries no playoff badge.** It is left out of
+  the playoff ranking rather than counted as a zero, so it is given no rank
+  rather than the bottom one.
+- **The championship badge is a shared rank.** Ranking counts every team that has
+  played, and most have never won anything, so they all tie on the same rank and
+  are drawn in the bottom colour. "Tied last on championships" is true, but on a
+  league where few teams have won, it colours most of the page.
 - **A tie on any row leaves neither number highlighted.**
 - **The teams' initials are the fallback picture**, the first two letters of the
   name in capitals, so two teams starting with the same two letters look alike

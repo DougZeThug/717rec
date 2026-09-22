@@ -21,6 +21,7 @@ const careerTeam = (overrides: Partial<CareerRanking>): CareerRanking =>
     careerGameWinPercentage: 0.5,
     careerPowerScore: 50,
     careerSos: 0.5,
+    careerSweepRate: 0.2,
     championships: 0,
     careerPlayoffWins: 2,
     careerPlayoffLosses: 2,
@@ -38,6 +39,7 @@ const neverPlayed = (teamId: string) =>
     careerGameWinPercentage: 0,
     careerPowerScore: 0,
     careerSos: 0.5,
+    careerSweepRate: 0,
     careerPlayoffWins: 0,
     careerPlayoffLosses: 0,
     careerPlayoffWinPercentage: 0,
@@ -140,6 +142,35 @@ describe('useLeaguePercentiles', () => {
     });
     // Ranked on everything else, because it did play league matches.
     expect(noPlayoffs?.powerScore.total).toBe(2);
+  });
+
+  // Compare shows a sweep-rate badge, so the rate has to be ranked like the
+  // rest. It was the one career row with no percentile behind it.
+  it('ranks career sweep rate against the teams that have played', () => {
+    const league = [
+      careerTeam({ teamId: 'a', careerSweepRate: 0.9 }),
+      careerTeam({ teamId: 'b', careerSweepRate: 0.5 }),
+      careerTeam({ teamId: 'c', careerSweepRate: 0.1 }),
+    ];
+
+    expect(percentilesFor(league, 'a')?.sweepRate).toEqual({
+      value: 0.9,
+      percentile: 100,
+      rank: 1,
+      total: 3,
+    });
+    expect(percentilesFor(league, 'c')?.sweepRate.rank).toBe(3);
+  });
+
+  it('leaves sweep rate unmeasured for a team that has never played', () => {
+    const league = [careerTeam({ teamId: 'a' }), neverPlayed('new-team')];
+
+    expect(percentilesFor(league, 'new-team')?.sweepRate).toEqual({
+      value: 0,
+      percentile: 0,
+      rank: 0,
+      total: 0,
+    });
   });
 
   it('returns no percentiles at all before the career data arrives', () => {
