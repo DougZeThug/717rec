@@ -26,7 +26,7 @@ vi.mock('@/hooks/useAdminAccess', () => ({ useAdminAccess: () => mockUseAdminAcc
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-const UserMenuNoMemo: React.FC = () => {
+const UserMenuModalFalse: React.FC = () => {
   const { user, profile, signOut } = mockUseAuth();
   const { activeMembership: membership } = mockUseTeamMembership();
   const { isAdminAccessGranted } = mockUseAdminAccess();
@@ -51,7 +51,7 @@ const UserMenuNoMemo: React.FC = () => {
   }
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative text-base font-normal p-1" size="sm" aria-label="User menu">
           <User className="size-4 mr-1" />
@@ -103,7 +103,7 @@ const UserMenuNoMemo: React.FC = () => {
   );
 };
 
-describe('UserMenu no memo', () => {
+describe('UserMenu modal false', () => {
   it('test 1', async () => {
     const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
@@ -116,7 +116,7 @@ describe('UserMenu no memo', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <UserMenuNoMemo />
+        <UserMenuModalFalse />
         <LocationProbe />
       </MemoryRouter>
     );
@@ -137,7 +137,7 @@ describe('UserMenu no memo', () => {
 
     render(
       <MemoryRouter initialEntries={['/']}>
-        <UserMenuNoMemo />
+        <UserMenuModalFalse />
         <LocationProbe />
       </MemoryRouter>
     );
