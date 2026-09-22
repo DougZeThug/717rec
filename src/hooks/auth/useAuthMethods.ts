@@ -10,7 +10,9 @@ import {
   signUpWithEmail,
 } from '@/services/auth/AuthService';
 import { AuthResponse } from '@/types/auth';
-import { loginWithGoogleNative as nativeGoogleLogin } from '@/utils/nativeAuth';
+// NOTE: '@/utils/nativeAuth' is imported dynamically inside
+// signInWithGoogleNative so the Capacitor login plugin stays out of the
+// eagerly-loaded main bundle (it is only needed on native sign-in).
 
 import { HandleAuthErrorFn } from './utils/authErrorHandler';
 
@@ -153,7 +155,8 @@ export const useAuthMethods = (
     try {
       clearAuthError();
 
-      const result = await nativeGoogleLogin();
+      const { loginWithGoogleNative } = await import('@/utils/nativeAuth');
+      const result = await loginWithGoogleNative();
 
       if (result.success && result.user) {
         ensureThemeConsistency();

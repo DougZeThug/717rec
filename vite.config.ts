@@ -40,6 +40,10 @@ export default defineConfig(({ mode }) => ({
           // file. The size-limit "Main entry" check globs `dist/assets/index-*.js`
           // and would otherwise count this lazy chunk as part of first paint.
           'vendor-html-to-image': ['html-to-image'],
+          // Same trick for the native Google login plugin: it is only reached
+          // through a dynamic import in utils/nativeAuth.ts, so naming it keeps
+          // its chunk from being called `index-*.js` and miscounted as main.
+          'vendor-capgo-social-login': ['@capgo/capacitor-social-login'],
           // NOTE: recharts is intentionally NOT pinned to a manualChunk. The chart
           // components are lazy-loaded via React.lazy, so Rollup keeps recharts in
           // on-demand chunks. Forcing it into a named manualChunk turns it into a

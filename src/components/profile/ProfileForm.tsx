@@ -18,10 +18,10 @@ import { useAuth } from '@/contexts/auth-context';
 import { toast } from '@/hooks/useToast';
 import {
   checkUsernameAvailability,
-  type ProfileFormData,
-  profileSchema,
   updateProfile,
 } from '@/services/profile/ProfileService';
+
+import { type ProfileFormData, profileSchema } from './profileSchema';
 import { errorLog } from '@/utils/logger';
 
 interface ProfileFormProps {
