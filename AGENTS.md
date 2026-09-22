@@ -64,6 +64,19 @@ npm run typecheck
 npm run typecheck:full
 ```
 
+### Two TypeScript installs
+
+- `typescript` is pinned to **7.0.2** — the native compiler used by
+  `npm run typecheck` and by the editor.
+- `typescript-6` is an alias of **typescript@6.0.3**, used **only by ESLint**.
+  typescript-eslint still needs the JavaScript compiler API, which TypeScript 7
+  no longer ships.
+- The `lint` / `lint:fix` scripts load `tools/lint-typescript-6.cjs` with
+  `node --require`. That hook redirects `require('typescript')` inside the lint
+  process to `typescript-6`. Always lint through `npm run lint`; a bare
+  `npx eslint .` skips the hook and fails.
+- Bump both versions together.
+
 ## Coverage
 
 See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial fallback is `npm run test:coverage:serial`. For diagnosing a slow or stuck non-coverage run, use `npm run test:debug` (serial + verbose, 10-min cap).
