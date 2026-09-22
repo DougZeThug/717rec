@@ -187,8 +187,16 @@ alone, with nothing else marking it.
   that rate the same leave neither side marked. Until B-70 these four rows were
   compared on the wins alone, which marked 3-9 ahead of 2-0.
 - **Strength of schedule is compared as higher-is-better**, so the team that has
-  played the tougher opponents is marked as ahead on that row. Nothing says that
-  is what is meant.
+  played the tougher opponents is marked as ahead on that row, and its
+  percentile badge ranks the same way. **The app does not agree with itself
+  about this.** Four places treat a high SOS as good: the power score, where it
+  carries 45 of the 100 points and is described as "the term that rewards a hard
+  schedule"; the percentile badge; this row's winner; and the Insights
+  "Toughest Schedule" board, which presents it as an honour. One place treats it
+  as bad: `getSosColor` paints 0.75 and above red and an easy schedule green. On
+  the team page both opinions sit on the same line — a red number with a gold
+  badge beside it. Recorded as B-69 and left as it is, a product call for the
+  league.
 - **A team with no career match carries no percentile badge.** It has not been
   measured, so it is given no rank rather than the bottom one. Until B-62 it drew
   a red "0%" pill on all four career rows, which read as worst in the league. The

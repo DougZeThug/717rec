@@ -3377,6 +3377,49 @@ finding read a superseded migration.
   times".
 
 
+### B-69: Strength of schedule is read two opposite ways
+
+- **Where the user meets it:** the team page, most plainly. The career SOS
+  number is painted red, and a gold percentile badge sits immediately beside it
+  (`TeamTotals.tsx`). One says the team is doing badly on that measure, the
+  other says it is near the top of the league.
+- **What happens / what was expected:** the app has no single answer to whether
+  a hard schedule is good.
+
+  | Where | A high SOS is |
+  | --- | --- |
+  | Power score, 45 of 100 points (`stats/power-score.md`) | **Good** — "the term that rewards a hard schedule" |
+  | `useLeaguePercentiles` | **Good** — ranked higher-is-better |
+  | Compare's SOS row | **Good** — the tougher-schedule team is marked ahead |
+  | Insights "Toughest Schedule" (`stats/insights.md`) | **Good** — presented as an honour |
+  | `getSosColor` in `src/utils/colors.ts` | **Bad** — red at 0.75 and above, green when easy |
+
+- Four to one. `getSosColor` is the outlier, and it is defensible on its own
+  terms: it is a *difficulty* scale, not a quality one, and its comment says so
+  — "Higher SOS means tougher schedule (red), lower means easier (green)". The
+  problem is that the two sibling helpers in the same file,
+  `getPowerScoreColor` and `getSweepRateColor`, are quality scales, so the same
+  colours mean opposite things on one screen.
+- **Severity:** none recorded. This is not a defect in any one place; it is two
+  defensible readings that contradict each other.
+- **Decision needed:** **product call.** The league was asked and chose to
+  change nothing and record it, the way B-25 and B-26 are recorded.
+- **The two options, so this does not have to be worked out again:**
+  1. **Make the colour agree.** A high SOS goes green or gold, an easy one
+     neutral. One consistent story across the power score, the badge, Compare
+     and Insights. Touches `getSosColor` and the three components that use it —
+     `TeamTotals`, `StatBreakdown`, `TeamCardList` — plus their tests.
+  2. **Make SOS neutral.** Keep red-is-hard and instead drop the SOS percentile
+     badge and the Compare winner highlight, so SOS reports how hard the
+     schedule was and says nothing about how good the team is. Smaller diff, but
+     it contradicts the power score, which pays a team for a hard schedule.
+- **Raised by:** `teams/compare-teams.md`, which had it as "Nothing says that is
+  what is meant". That understated it — the app does say, in four places, and
+  then says the opposite in a fifth.
+- **Status:** **documented.** No code changed. `compare-teams.md` now describes
+  the contradiction rather than only the Compare half of it.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round
