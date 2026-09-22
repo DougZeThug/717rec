@@ -220,10 +220,12 @@ alone, with nothing else marking it.
 - **A team with no playoff matches carries no playoff badge.** It is left out of
   the playoff ranking rather than counted as a zero, so it is given no rank
   rather than the bottom one.
-- **The championship badge is a shared rank.** Ranking counts every team that has
-  played, and most have never won anything, so they all tie on the same rank and
-  are drawn in the bottom colour. "Tied last on championships" is true, but on a
-  league where few teams have won, it colours most of the page.
+- **The championship badge is only shown to teams that have won one**, and
+  ranks them against each other. A team with no title carries no badge, the same
+  way a team with no playoff match carries no playoff badge. Ranking the whole
+  league instead put every title-less team on one shared bottom rank drawn in
+  red, so an ordinary comparison showed two red pills reading "6th of 26" under
+  a count of 0.
 - **A tie on any row leaves neither number highlighted.**
 - **The teams' initials are the fallback picture**, the first two letters of the
   name in capitals, so two teams starting with the same two letters look alike

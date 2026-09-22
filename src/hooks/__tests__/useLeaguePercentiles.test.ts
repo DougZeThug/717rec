@@ -173,6 +173,37 @@ describe('useLeaguePercentiles', () => {
     });
   });
 
+  // Ranking every team on championships put the whole league on one shared
+  // bottom rank, so a team with no title drew a red badge reading "6th of 26"
+  // on most comparisons.
+  it('leaves championships unmeasured for a team that has never won one', () => {
+    const league = [
+      careerTeam({ teamId: 'a', championships: 2 }),
+      careerTeam({ teamId: 'b', championships: 1 }),
+      careerTeam({ teamId: 'c', championships: 0 }),
+      careerTeam({ teamId: 'd', championships: 0 }),
+    ];
+
+    expect(percentilesFor(league, 'c')?.championships).toEqual({
+      value: 0,
+      percentile: 0,
+      rank: 0,
+      total: 0,
+    });
+  });
+
+  it('ranks championships only against the teams that have won one', () => {
+    const league = [
+      careerTeam({ teamId: 'a', championships: 2 }),
+      careerTeam({ teamId: 'b', championships: 1 }),
+      careerTeam({ teamId: 'c', championships: 0 }),
+      careerTeam({ teamId: 'd', championships: 0 }),
+    ];
+
+    expect(percentilesFor(league, 'a')?.championships).toMatchObject({ rank: 1, total: 2 });
+    expect(percentilesFor(league, 'b')?.championships).toMatchObject({ rank: 2, total: 2 });
+  });
+
   it('returns no percentiles at all before the career data arrives', () => {
     mockUseCareerRankings.mockReturnValue({ data: undefined, isLoading: true });
     const { result } = renderHook(() => useLeaguePercentiles());

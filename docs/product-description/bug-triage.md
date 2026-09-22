@@ -3154,12 +3154,15 @@ finding read a superseded migration.
   badges Sweep Rate, Playoff Record and Championships. A team with no playoff
   match still gets no playoff badge, because `UNMEASURED` passes through
   `PercentileFromResult` — see B-62.
-- **Worth knowing:** the championship badge is a *shared* rank. Ranking counts
-  every team that has played and most have won nothing, so they tie on one rank
-  and are drawn in the bottom colour. That is honest but noisy on a league where
-  few teams have won. If the league would rather rank championships only among
-  teams that have won any — the way playoff win percentage already works — that
-  is a one-line change to the population, and worth raising.
+- **Corrected on review.** The first version ranked championships across every
+  team that had played. `calculatePercentile` gives `percentile` 0 when nobody
+  has fewer, and `rank` is a shared `above + 1`, so a title-less team drew a
+  **red** pill reading "6th of 26" — and since most teams have won nothing, that
+  was both sides of an ordinary comparison. It is the "reads as worst in the
+  league" failure B-62 exists to prevent, one row over, and it was new surface:
+  this percentile had never been rendered anywhere before. Championships are now
+  ranked only among teams that have won one, exactly as playoff win percentage
+  already works, so a team with no title carries no badge at all.
 
 
 ### B-73: A failed head-to-head read was reported as a first meeting
