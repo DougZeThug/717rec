@@ -1,8 +1,8 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockUseAuth = vi.hoisted(() => vi.fn());
 const mockUseTeamMembership = vi.hoisted(() => vi.fn());
@@ -18,15 +18,7 @@ import UserMenu from '../UserMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-afterEach(() => {
-  cleanup();
-  document.body.innerHTML = '';
-  document.body.removeAttribute('style');
-  document.documentElement.removeAttribute('style');
-  document.body.focus();
-});
-
-describe('UserMenu with aggressive cleanup', () => {
+describe('UserMenu double click test 2', () => {
   it('test 1', async () => {
     const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
@@ -48,7 +40,7 @@ describe('UserMenu with aggressive cleanup', () => {
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
   });
 
-  it('test 2', async () => {
+  it('test 2 double click', async () => {
     const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
@@ -65,6 +57,7 @@ describe('UserMenu with aggressive cleanup', () => {
       </MemoryRouter>
     );
 
+    await u.click(screen.getByRole('button', { name: /user menu/i }));
     await u.click(screen.getByRole('button', { name: /user menu/i }));
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
   });
