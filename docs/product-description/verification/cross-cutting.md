@@ -139,8 +139,6 @@ Not checkable by hand:
 - Whether a failed page-code download ever recovers on its own, and how long a
   user waits before giving up on the "Loading page..." spinner. Both need a
   connection that fails in one specific way for a long time.
-- Whether "Try Again" on the route error screen recovers or re-throws
-  immediately. Needs a reproducible render failure.
 - Whether a failure toast and the shared red error bar are actually
   announced, and whether a page moving from loading to an empty state says
   anything. The device list in [`README.md`](README.md) has no screen reader
