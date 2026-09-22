@@ -3154,6 +3154,33 @@ finding read a superseded migration.
   is a one-line change to the population, and worth raising.
 
 
+### B-73: A failed head-to-head read was reported as a first meeting
+
+- **Where the user meets it:** the Compare page, whenever the head-to-head read
+  fails — offline, a transient network error, or the database function raising.
+- **What happens / what was expected:** the page drew the "First Meeting" card:
+  a heading reading **First Meeting** over the sentence "These teams have never
+  played each other". Two teams with a twelve-match history were told, as a
+  fact, that they had never met. Nothing hinted a read had failed.
+- `useTeamComparison` destructured only `data` and `isLoading` from
+  `useOpponentHistory` and never read `error`. Its fallback branch therefore
+  fired on a failed read exactly as it did on an empty one, and its own comment
+  said so: "No history found = first meeting".
+- **Severity:** `medium`. A failure stated as a fact, on the one block of the
+  page a reader would look at first. The same class as B-46 and B-49, where a
+  failed read was presented as an empty league.
+- **Decision needed:** `fix`.
+- **Raised by:** `teams/compare-teams.md`, which carried it under "Open
+  questions" as "**may be worth treating as a bug rather than documenting**".
+- **Status:** **fixed.** The hook reads `error`, leaves `headToHead` null rather
+  than inventing a 0-0 record, and reports `headToHeadError`. Compare draws a
+  separate `HeadToHeadUnavailable` card that says the record could not be loaded
+  and that this does not mean the teams have never played. A genuine first
+  meeting is unchanged. Four tests in
+  `src/hooks/__tests__/useTeamComparison.headToHead.test.ts` cover the hook and
+  three more cover the card; all four hook tests fail against the old hook.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

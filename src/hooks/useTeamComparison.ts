@@ -47,6 +47,11 @@ export interface TeamComparisonData {
     lastPlayed: string | null;
     isFirstMeeting: boolean;
   } | null;
+  /**
+   * The record could not be read. Distinct from `headToHead` being null for a
+   * genuine first meeting -- a failed read used to be reported as one.
+   */
+  headToHeadError: boolean;
   isLoading: boolean;
 }
 
@@ -54,7 +59,11 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
   const { totals: totals1, isLoading: loading1 } = useTeamTotals(team1?.id ?? '');
   const { totals: totals2, isLoading: loading2 } = useTeamTotals(team2?.id ?? '');
   const { getTeamPercentiles, isLoading: loadingPercentiles } = useLeaguePercentiles();
-  const { data: h2hHistory, isLoading: loadingH2H } = useOpponentHistory(team1?.id, team2?.id);
+  const {
+    data: h2hHistory,
+    isLoading: loadingH2H,
+    error: h2hError,
+  } = useOpponentHistory(team1?.id, team2?.id);
   const comparisonData = useMemo((): TeamComparisonData => {
     const isLoading = loading1 || loading2 || loadingPercentiles || loadingH2H;
 
@@ -100,8 +109,9 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
         lastPlayed: summary.last_played_at,
         isFirstMeeting: summary.matches_played === 0,
       };
-    } else if (team1 && team2 && !loadingH2H) {
-      // No history found = first meeting
+    } else if (team1 && team2 && !loadingH2H && !h2hError) {
+      // No rows = first meeting. A failed read is not: it used to land here too,
+      // so two teams with a long history were told they had never played.
       headToHead = {
         team1Wins: 0,
         team2Wins: 0,
@@ -116,6 +126,7 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
       team1: buildTeamSide(team1, totals1 ?? null),
       team2: buildTeamSide(team2, totals2 ?? null),
       headToHead,
+      headToHeadError: Boolean(h2hError) && Boolean(team1) && Boolean(team2),
       isLoading,
     };
   }, [
@@ -126,6 +137,7 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
     getTeamPercentiles,
     loadingPercentiles,
     h2hHistory,
+    h2hError,
     loading1,
     loading2,
     loadingH2H,

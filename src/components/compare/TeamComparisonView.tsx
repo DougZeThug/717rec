@@ -6,7 +6,7 @@ import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { TeamComparisonSide } from '@/hooks/useTeamComparison';
 
 import { ComparisonStatRow } from './ComparisonStatRow';
-import { HeadToHeadSection } from './HeadToHeadSection';
+import { HeadToHeadSection, HeadToHeadUnavailable } from './HeadToHeadSection';
 
 interface TeamComparisonViewProps {
   team1: TeamComparisonSide;
@@ -19,6 +19,7 @@ interface TeamComparisonViewProps {
     lastPlayed: string | null;
     isFirstMeeting: boolean;
   } | null;
+  headToHeadError?: boolean;
 }
 
 const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }> = ({
@@ -61,6 +62,7 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
   team1,
   team2,
   headToHead,
+  headToHeadError = false,
 }) => {
   const t1 = team1.totals;
   const t2 = team2.totals;
@@ -246,7 +248,8 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
       </div>
 
       {/* Head-to-Head */}
-      {headToHead && (
+      {headToHeadError && <HeadToHeadUnavailable />}
+      {!headToHeadError && headToHead && (
         <HeadToHeadSection
           team1Name={team1.name}
           team2Name={team2.name}

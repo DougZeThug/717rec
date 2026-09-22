@@ -176,9 +176,11 @@ alone, with nothing else marking it.
 - **A link naming the same team on both sides keeps only the left one.** The page
   never compares a team with itself; the address is rewritten with the duplicate
   dropped.
-- **The head-to-head block says "First Meeting" for two different reasons**: the
-  teams really have never played, and the record could not be read. Both draw the
-  same card.
+- **The head-to-head block says "First Meeting" only when the teams really have
+  never played.** A read that fails draws a separate "Head-to-Head Unavailable"
+  card saying the record could not be loaded and that this does not mean the
+  teams have never played. Until B-73 both reasons drew the same card, so a
+  failed read told two teams with a long history that they had never met.
 - **Playoff Record and the three division records are compared on win
   percentage.** 2-0 in the playoffs is marked ahead of 3-9. A team with no games
   in a division tier rates 0 on that row, so it never wins it, and two records
@@ -218,9 +220,6 @@ alone, with nothing else marking it.
   the shared page layout that adds that padding. `/teams/:teamId` has the same
   shape; see [`team-details.md`](team-details.md). **May be worth treating as a
   bug rather than documenting.**
-- **A failed head-to-head read is presented as "First Meeting".** Telling two
-  teams they have never played when the read failed is misleading. **May be worth
-  treating as a bug rather than documenting.**
 - **The head-to-head block is deliberately excluded from the app's normal
   freshness rules**, refetching neither on opening the page nor on returning to
   the tab. A recently played match can therefore be missing from it for a long

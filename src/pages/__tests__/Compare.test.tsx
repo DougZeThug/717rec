@@ -52,6 +52,7 @@ const emptyComparison = {
   team1: null,
   team2: null,
   headToHead: null,
+  headToHeadError: false,
   isLoading: false,
 };
 
@@ -142,6 +143,7 @@ describe('Compare', () => {
       team1: buildSide(TEAM_A.id, TEAM_A.name),
       team2: null,
       headToHead: null,
+      headToHeadError: false,
       isLoading: false,
     });
 
@@ -161,6 +163,7 @@ describe('Compare', () => {
       team1: null,
       team2: null,
       headToHead: null,
+      headToHeadError: false,
       isLoading: true,
     });
 
@@ -187,6 +190,7 @@ describe('Compare', () => {
         lastPlayed: null,
         isFirstMeeting: false,
       },
+      headToHeadError: false,
       isLoading: false,
     });
 
@@ -252,6 +256,7 @@ describe('Compare', () => {
         team1: buildSide('team-a', 'Alpha Aces'),
         team2: buildSide('team-b', 'Bravo Bombers'),
         headToHead: null,
+        headToHeadError: false,
         isLoading: false,
       });
       rerender(compareTree('/compare?team1=team-a&team2=team-b'));
@@ -389,6 +394,7 @@ describe('Compare', () => {
       team1: buildSide('team-a', 'Alpha Aces'),
       team2: buildSide('team-b', 'Bravo Bombers'),
       headToHead: null,
+      headToHeadError: false,
       isLoading: false,
     });
 

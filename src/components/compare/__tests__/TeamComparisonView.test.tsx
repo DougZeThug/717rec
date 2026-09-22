@@ -191,3 +191,49 @@ describe('TeamComparisonView percentile badges', () => {
     expect(screen.queryByText('7th')).not.toBeInTheDocument();
   });
 });
+
+describe('TeamComparisonView head-to-head', () => {
+  const played = {
+    team1Wins: 7,
+    team2Wins: 5,
+    gameWins1: 20,
+    gameWins2: 18,
+    lastPlayed: null,
+    isFirstMeeting: false,
+  };
+
+  it('says First Meeting only when the teams really have not played', () => {
+    render(
+      <TeamComparisonView
+        team1={side('Alpha')}
+        team2={side('Beta')}
+        headToHead={{ ...played, team1Wins: 0, team2Wins: 0, isFirstMeeting: true }}
+      />
+    );
+
+    expect(screen.getByText('First Meeting')).toBeInTheDocument();
+  });
+
+  // "We could not read it" and "they have never played" are different claims.
+  // The page used to make the second when only the first was true.
+  it('says the record is unavailable rather than First Meeting when the read failed', () => {
+    render(
+      <TeamComparisonView
+        team1={side('Alpha')}
+        team2={side('Beta')}
+        headToHead={null}
+        headToHeadError
+      />
+    );
+
+    expect(screen.getByText('Head-to-Head Unavailable')).toBeInTheDocument();
+    expect(screen.queryByText('First Meeting')).not.toBeInTheDocument();
+  });
+
+  it('shows the record when there is one', () => {
+    render(<TeamComparisonView team1={side('Alpha')} team2={side('Beta')} headToHead={played} />);
+
+    expect(screen.getByText('Head-to-Head')).toBeInTheDocument();
+    expect(screen.queryByText('Head-to-Head Unavailable')).not.toBeInTheDocument();
+  });
+});
