@@ -18,9 +18,8 @@ import UserMenu from '../UserMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-describe('UserMenu with PointerEvent polyfill', () => {
+describe('UserMenu close menu in test 1', () => {
   it('test 1', async () => {
-    const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
@@ -36,12 +35,13 @@ describe('UserMenu with PointerEvent polyfill', () => {
       </MemoryRouter>
     );
 
-    await u.click(screen.getByRole('button', { name: /user menu/i }));
+    await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
+    // Close the menu before the test ends
+    await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
   });
 
   it('test 2', async () => {
-    const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
@@ -57,7 +57,7 @@ describe('UserMenu with PointerEvent polyfill', () => {
       </MemoryRouter>
     );
 
-    await u.click(screen.getByRole('button', { name: /user menu/i }));
+    await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
   });
 });
