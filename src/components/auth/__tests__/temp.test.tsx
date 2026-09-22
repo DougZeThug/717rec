@@ -6,21 +6,14 @@ import React, { useState } from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
-const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
-  ({ children, ...props }, ref) => (
-    <button ref={ref} {...props}>
-      {children}
-    </button>
-  )
-);
-Button.displayName = 'Button';
+import { Button } from '@/components/ui/button';
 
 const ControlledRadixMenu = React.memo(() => {
   const [open, setOpen] = useState(false);
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
       <DropdownMenu.Trigger asChild>
-        <Button aria-label="User menu">
+        <Button aria-label="User menu" variant="ghost" size="sm" className="relative text-base font-normal p-1">
           <User className="size-4 mr-1" />
           doug
         </Button>
@@ -37,7 +30,7 @@ ControlledRadixMenu.displayName = 'ControlledRadixMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-describe('memo controlled radix user-event', () => {
+describe('real button controlled radix user-event', () => {
   it('opens with default userEvent', async () => {
     render(
       <MemoryRouter initialEntries={['/']}>
