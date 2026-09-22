@@ -65,6 +65,7 @@ rule:
 | Team join requests, for an admin | every 30 seconds |
 | The league's operational health panel | every 30 and 60 seconds |
 | The daily traffic figures | every 5 minutes |
+| The published recap page, while a viewer holds it open | every 5 minutes |
 
 Each of these stops polling while the tab is hidden or the device is offline, and
 resumes on return. Nothing else in the app re-fetches on a timer.
