@@ -3503,10 +3503,14 @@ finding read a superseded migration.
   mocks. `knip` does not catch this shape: it checks exports, and these were
   properties on a returned object. This follows `0efbe8149`, which deleted an
   earlier dead `updateGamePlayers`.
-- **Known red check until the migration is applied.** `types.ts` is generated
-  from the live database and must not be hand-edited, so it does not yet know
-  the function and `npm run typecheck` fails on the call. That clears when the
-  types are regenerated, which is step 2 of the runbook.
+- **One cast to remove after the migration is applied.** `types.ts` is
+  generated from the live database and must not be hand-edited, and `Database`
+  is a type alias so it cannot be augmented from another file either. The call
+  therefore goes through a narrowed cast, `callStartGameWithRoster`, which keeps
+  the argument names checked and leaves only the function name unchecked —
+  PostgREST checks that at runtime and a wrong one returns `PGRST202`. Without
+  it CI would sit red for as long as the migration was unapplied. Step 4 of the
+  runbook is deleting it once the regenerated types carry the function.
 
 
 ## Note: what the two DeepSource checks actually measure
