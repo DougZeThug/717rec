@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
@@ -29,9 +29,7 @@ const renderMenu = (initialPath = '/') =>
   );
 
 const openMenu = async () => {
-  const trigger = screen.getByRole('button', { name: /user menu/i });
-  await fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: 'mouse' });
-  await fireEvent.click(trigger);
+  await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
 };
 
 /** Stable across renders, so a test can assert it was never reached. */
@@ -47,15 +45,6 @@ describe('UserMenu', () => {
     });
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false });
     mockUseTeamMembership.mockReturnValue({ activeMembership: null });
-  });
-
-  afterEach(async () => {
-    // Some tests read menu items without clicking them, leaving the dropdown
-    // open. Radix then hides the trigger behind aria-hidden and pointer-events
-    // guards that survive cleanup and block the next test's trigger click.
-    // Escape closes the menu while the component is still mounted so cleanup
-    // can remove a closed tree.
-    await userEvent.keyboard('{Escape}');
   });
 
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
