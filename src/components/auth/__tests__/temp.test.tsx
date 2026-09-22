@@ -18,8 +18,29 @@ import UserMenu from '../UserMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-describe('UserMenu with setup', () => {
-  it('opens with userEvent.setup', async () => {
+describe('UserMenu with setup multiple', () => {
+  it('test 1', async () => {
+    const u = userEvent.setup();
+    mockUseAuth.mockReturnValue({
+      user: { id: 'user-1' },
+      profile: { username: 'doug' },
+      signOut: vi.fn(),
+    });
+    mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false });
+    mockUseTeamMembership.mockReturnValue({ activeMembership: null });
+
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <UserMenu />
+        <LocationProbe />
+      </MemoryRouter>
+    );
+
+    await u.click(screen.getByRole('button', { name: /user menu/i }));
+    expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
+  });
+
+  it('test 2', async () => {
     const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
