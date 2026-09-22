@@ -3599,6 +3599,27 @@ through it.** That was the reading at the time:
 | #1312 | failure | failure | yes |
 | #1315 | failure | **success** | — |
 
+**Where to read the actual finding.** The status carries no detail, DeepSource
+posts no inline comment for it, and its PR summary comment says "see the
+individual issues we found as inline review comments" when there are none. The
+finding is only on the DeepSource run page — and that page **is publicly
+readable**, at the `target_url` on the commit status:
+
+```
+https://app.deepsource.com/gh/DougZeThug/717rec/run/<run-id>/javascript/
+```
+
+Get it from the commit-status API (`GET /repos/.../commits/<sha>/status`), not
+from the checks API, which never lists it. On #1531 that turned "Analysis
+failed: Blocking issues or failing metrics found" — with a grade-A report card
+and no comments anywhere — into one line: `JS-W1042` on a test file, redundant
+`undefined` in a call.
+
+**The fix for JS-W1042 is a suppression, not a code change.** Dropping the
+argument fails `npm run typecheck` with "Expected 1 arguments, but got 0"
+whenever the mock is typed. Five call sites already carry
+`// skipcq: JS-W1042` for exactly this; follow them.
+
 *No longer true, and the difference matters.* **#1470**, merged into `main` on
 2026-09-16, carried `DeepSource: JavaScript — Analysis passed`. The backlog that
 kept this status red has been worked off, so **a red JavaScript status is now
