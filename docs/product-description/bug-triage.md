@@ -3322,6 +3322,34 @@ finding read a superseded migration.
   this ordering; the fix restores what the page was always meant to do.
 
 
+### B-68: The same fast on-off-on tap could lose a match reaction too
+
+- **Where the user meets it:** a match card, tapping one emoji on, off and on
+  again faster than the first tap's insert comes back. B-66 on the message
+  board, in the other hook.
+- **What happens / what was expected:** the reaction ends up off after the
+  reader's last action was to turn it on. No error is shown.
+- `useMatchReactions` has the same shape as its sibling and the same gap:
+  `toggleReaction` serialises taps for an emoji through `mutationChainsRef`,
+  while the clean-up delete sent from the realtime INSERT handler went straight
+  out, outside that queue. `insertReaction` is an upsert on
+  `user_id,match_id,emoji`, so a later tap's insert reaching Postgres first
+  matched the row still sitting there and the trailing delete removed it.
+- A "tap on again" arriving *after* the realtime handler has run does not hit
+  the early return in `toggleReaction`, because the handler has already consumed
+  that pending-removal key. It falls through to the queue, which is what put the
+  two in flight together.
+- **Severity:** `medium`. Same as B-66: a user action is silently lost.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, while fixing B-66.
+- **Status:** **fixed.** The same patch as B-66, applied to the match hook. One
+  existing test needed re-ordering rather than changing: it asserted that the
+  clean-up deletes the real id and not the optimistic one, which still holds,
+  but the delete now waits for the in-flight insert, so the test has to let that
+  finish first. That wait is the point of the fix, not a side effect. The new
+  test fails against the old hook with "expected 1 times, but got 2 times".
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

@@ -542,13 +542,89 @@ describe('useMatchReactions', () => {
       insertHandler({ new: reaction('real-reaction', 'user-1', '🔥') });
     });
 
-    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-reaction', 'user-1'));
-    expect(result.current.reactions).toHaveLength(0);
-
+    // The clean-up delete is queued behind the insert that is still in flight,
+    // so let that finish before looking for it. Until B-68 it went straight
+    // out, which is what let it overtake a later tap's upsert.
     act(() => {
       resolveInsert();
     });
     await togglePromise;
+
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-reaction', 'user-1'));
+    expect(result.current.reactions).toHaveLength(0);
+  });
+
+  // Tap on, off, then on again, all before the first insert's row comes back.
+  // The realtime echo makes the hook send a clean-up delete for that row. That
+  // delete used to go out unqueued while the third tap's insert was queued, so
+  // both could be in flight together: insertReaction is an upsert, so it
+  // matched the row still sitting there and the delete then removed it. The
+  // reader's last tap was lost with no error.
+  it('queues the clean-up delete behind the taps for the same emoji', async () => {
+    mockUser.current = { id: 'user-1' };
+
+    // Once, not permanently: vi.clearAllMocks() resets calls but keeps
+    // implementations, so a held-open promise here would hang later tests.
+    let resolveFirstInsert!: () => void;
+    mockInsertReaction
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveFirstInsert = resolve;
+          })
+      )
+      .mockResolvedValueOnce(undefined);
+
+    let resolveDelete!: () => void;
+    mockDeleteReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        })
+    );
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tap off while the insert is still on its way: nothing is sent yet.
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The first tap's row arrives, so the hook must clean it up.
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('real-1', 'user-1', '🔥') });
+    });
+
+    // Tap on again, then let the first insert finish.
+    let thirdTap: Promise<void> | undefined;
+    act(() => {
+      thirdTap = result.current.toggleReaction('🔥');
+    });
+    await act(async () => {
+      resolveFirstInsert();
+      await firstTap;
+    });
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-1', 'user-1'));
+
+    // The delete is still in flight, so the third tap's insert must wait on it.
+    expect(mockInsertReaction).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveDelete();
+      await thirdTap;
+    });
+
+    expect(mockInsertReaction).toHaveBeenCalledTimes(2);
+    expect(mockDeleteReaction).toHaveBeenCalledTimes(1);
   });
 
   it('removes an existing reaction when the user toggles the same emoji', async () => {
