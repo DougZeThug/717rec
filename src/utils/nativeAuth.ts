@@ -1,8 +1,8 @@
 import { Capacitor } from '@capacitor/core';
+
 // @capgo/capacitor-social-login is imported dynamically inside
 // loginWithGoogleNative so the plugin (~100 kB of source) only downloads on
 // a native Google sign-in, not on every web page load.
-
 import { signInWithIdToken } from '@/services/auth/AuthService';
 import { NativeGoogleLoginResult } from '@/types/auth';
 import { authLog, errorLog } from '@/utils/logger';

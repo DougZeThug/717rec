@@ -10,10 +10,10 @@ import {
   signUpWithEmail,
 } from '@/services/auth/AuthService';
 import { AuthResponse } from '@/types/auth';
+
 // NOTE: '@/utils/nativeAuth' is imported dynamically inside
 // signInWithGoogleNative so the Capacitor login plugin stays out of the
 // eagerly-loaded main bundle (it is only needed on native sign-in).
-
 import { HandleAuthErrorFn } from './utils/authErrorHandler';
 
 const extractWeakPasswordReasons = (
