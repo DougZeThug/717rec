@@ -1,5 +1,10 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
+import {
+  getRealtimeTokenVersion,
+  hasRealtimeToken,
+  onRealtimeTokenChange,
+} from '@/hooks/realtime/realtimeAuthGate';
 import { supabase } from '@/integrations/supabase/client';
 import { errorLog, log } from '@/utils/logger';
 
