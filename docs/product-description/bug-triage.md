@@ -3530,6 +3530,21 @@ finding read a superseded migration.
   mocks. `knip` does not catch this shape: it checks exports, and these were
   properties on a returned object. This follows `0efbe8149`, which deleted an
   earlier dead `updateGamePlayers`.
+- **Corrected on review.** Two ordering faults in the first version of the
+  function. It checked `user_can_score_match` *before* taking the row lock,
+  and that helper requires the match to be unfinished — so a scorer could pass
+  the check while a finalize was in flight, block on the lock, and resume after
+  `iscompleted` had been set, inserting an in-progress game into a completed
+  match. The function is `SECURITY DEFINER`, so the "Scorers insert games" RLS
+  policy never runs to catch it, and a phantom in-progress game is the exact
+  state `20260708120000` had to clean up once already. `finalize_live_match`
+  gets this order right; the function now does too. Second, `PERFORM … FOR
+  UPDATE` sets `FOUND` and nothing read it, so a match id that does not exist
+  fell through to the insert and failed on `games_match_id_fkey` — a 23503 the
+  client describes as "this is still linked to other records". It now raises
+  `Match not found`, deliberately without the user-visible hint because the id
+  is internal. Both are covered by the SQL smoke test and the guards are pinned
+  in `user_visible_error_hints.sql`.
 - **One cast to remove after the migration is applied.** `types.ts` is
   generated from the live database and must not be hand-edited, and `Database`
   is a type alias so it cannot be augmented from another file either. The call

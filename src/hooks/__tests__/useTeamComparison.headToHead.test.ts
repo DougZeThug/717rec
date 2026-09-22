@@ -80,6 +80,31 @@ describe('useTeamComparison head-to-head', () => {
     });
   });
 
+  // A refetch that fails after a good first fetch leaves the record in `data`
+  // and sets `error`. Reporting the error then would replace a real 7-3 with
+  // "could not be loaded" -- one wrong claim swapped for another.
+  it('keeps showing a known record when a later refresh fails', () => {
+    mockUseOpponentHistory.mockReturnValue({
+      data: {
+        summary: {
+          wins: 7,
+          losses: 3,
+          game_wins: 20,
+          game_losses: 12,
+          last_played_at: '2026-05-01',
+          matches_played: 10,
+        },
+      },
+      isLoading: false,
+      error: new Error('refetch failed'),
+    });
+
+    const result = compare();
+
+    expect(result.headToHeadError).toBe(false);
+    expect(result.headToHead).toMatchObject({ team1Wins: 7, team2Wins: 3 });
+  });
+
   it('claims nothing while the read is still in flight', () => {
     mockUseOpponentHistory.mockReturnValue({ data: undefined, isLoading: true, error: null });
 

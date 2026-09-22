@@ -160,7 +160,23 @@ BEGIN
     RAISE EXCEPTION 'the refused call still created a game row';
   END IF;
 
-  -- Case 5: somebody who cannot score this match is refused.
+  -- Case 5: a match that does not exist is refused, rather than falling
+  -- through to the insert and failing on the foreign key. The lock and this
+  -- check run before authorization, so an admin hits it too.
+  BEGIN
+    PERFORM public.start_game_with_roster(
+      '00000000-0000-0000-0000-0000000000ff'::uuid, 1,
+      v_team1_id, ARRAY[v_p1], v_team2_id, ARRAY[v_p3]
+    );
+    v_refused := false;
+  EXCEPTION WHEN others THEN
+    v_refused := true;
+  END;
+  IF NOT v_refused THEN
+    RAISE EXCEPTION 'a match that does not exist was accepted';
+  END IF;
+
+  -- Case 6: somebody who cannot score this match is refused.
   PERFORM auth.set_test_claims(v_outsider_id);
   BEGIN
     PERFORM public.start_game_with_roster(

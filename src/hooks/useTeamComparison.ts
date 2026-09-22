@@ -126,7 +126,12 @@ export const useTeamComparison = (team1: Team | null, team2: Team | null): TeamC
       team1: buildTeamSide(team1, totals1 ?? null),
       team2: buildTeamSide(team2, totals2 ?? null),
       headToHead,
-      headToHeadError: Boolean(h2hError) && Boolean(team1) && Boolean(team2),
+      // Only when there is no record to show. TanStack Query keeps `data` and
+      // sets `error` when a *refetch* fails after a good first fetch, so
+      // reporting the error regardless would replace an already-rendered 7-3
+      // with "could not be loaded" on any failed background refresh --
+      // swapping one wrong claim for another. A known record wins.
+      headToHeadError: headToHead === null && Boolean(h2hError) && Boolean(team1) && Boolean(team2),
       isLoading,
     };
   }, [

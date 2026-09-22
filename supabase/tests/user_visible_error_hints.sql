@@ -63,6 +63,24 @@ BEGIN
 
   v_def := pg_get_functiondef('public.validate_membership_approval()'::regprocedure);
 
+  SELECT pg_get_functiondef(p.oid) INTO v_def
+  FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public' AND p.proname = 'start_game_with_roster';
+
+  IF v_def IS NULL THEN
+    RAISE EXCEPTION 'start_game_with_roster is missing';
+  END IF;
+  IF strpos(v_def, $q$'Not authorized to score this match' USING HINT = 'user-visible'$q$) = 0 THEN
+    RAISE EXCEPTION 'start_game_with_roster: authorization guard lost its user-visible hint';
+  END IF;
+  IF strpos(v_def, $q$'A team can have at most 2 players in a game'$q$) = 0 THEN
+    RAISE EXCEPTION 'start_game_with_roster: player-limit guard is missing';
+  END IF;
+  -- The match id is internal, so this one must NOT be user-visible.
+  IF strpos(v_def, $q$'Match not found: %', p_match_id USING HINT$q$) > 0 THEN
+    RAISE EXCEPTION 'start_game_with_roster: match-not-found leaked a user-visible hint';
+  END IF;
+
   IF strpos(v_def, $q$'Cannot approve own membership' USING HINT = 'user-visible'$q$) = 0 THEN
     RAISE EXCEPTION 'validate_membership_approval: self-approval guard lost its user-visible hint';
   END IF;

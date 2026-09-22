@@ -35,6 +35,25 @@ DECLARE
   v_game_id uuid;
   v_created boolean := true;
 BEGIN
+  -- Take the lock BEFORE reading anything from the match, the way
+  -- finalize_live_match does. user_can_score_match requires the match to be
+  -- unfinished, and checking that outside the lock leaves a window: a scorer
+  -- passes the check while a finalize is in flight, blocks here, the finalize
+  -- commits iscompleted, and the scorer then inserts an in-progress game into
+  -- a match that is now complete. This function is SECURITY DEFINER, so the
+  -- "Scorers insert games" RLS policy never runs to catch it. That phantom
+  -- in-progress game is the state 20260708120000 had to clean up once already.
+  PERFORM 1 FROM public.matches WHERE id = p_match_id FOR UPDATE;
+
+  -- PERFORM sets FOUND, and without this the function would fall through to
+  -- the insert and fail on games_match_id_fkey -- a 23503 that the client
+  -- describes as "this is still linked to other records", which says nothing
+  -- about a match that does not exist. Deliberately not user-visible: the id
+  -- is internal, the way finalize_live_match's own 'Match not found' is.
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Match not found: %', p_match_id;
+  END IF;
+
   IF NOT public.user_can_score_match(p_match_id) THEN
     RAISE EXCEPTION 'Not authorized to score this match' USING HINT = 'user-visible';
   END IF;
@@ -46,10 +65,6 @@ BEGIN
     RAISE EXCEPTION 'A team can have at most 2 players in a game'
       USING HINT = 'user-visible';
   END IF;
-
-  -- Serialize against a concurrent start of the same game, the way
-  -- finalize_live_match serializes against concurrent completion.
-  PERFORM 1 FROM public.matches WHERE id = p_match_id FOR UPDATE;
 
   INSERT INTO public.games (match_id, game_number)
   VALUES (p_match_id, p_game_number)
