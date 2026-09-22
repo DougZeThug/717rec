@@ -28,18 +28,15 @@ const renderMenu = (initialPath = '/') =>
     </MemoryRouter>
   );
 
-const openMenu = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('button', { name: /user menu/i }));
+const openMenu = async () => {
+  await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
 };
 
 /** Stable across renders, so a test can assert it was never reached. */
 const mockSignOut = vi.fn();
 
 describe('UserMenu', () => {
-  let user: ReturnType<typeof userEvent.setup>;
-
   beforeEach(() => {
-    user = userEvent.setup();
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
