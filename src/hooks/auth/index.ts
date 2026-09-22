@@ -2,6 +2,7 @@ import { Session, User } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
+import { publishRealtimeToken } from '@/hooks/realtime/realtimeAuthGate';
 import { useThemeConsistency } from '@/hooks/useThemeConsistency';
 import { toast } from '@/hooks/useToast';
 import { getAuthSession, onAuthStateChange } from '@/services/auth/AuthService';
@@ -100,6 +101,10 @@ export const useAuth = () => {
 
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+
+      // The realtime socket authenticates at join time, so every token change
+      // has to be handed over or channels keep joining with a stale token.
+      publishRealtimeToken(currentSession?.access_token ?? null);
 
       if (!currentSession) {
         authLog('No session, clearing profile');
@@ -221,6 +226,8 @@ export const useAuth = () => {
 
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+
+        publishRealtimeToken(currentSession?.access_token ?? null);
 
         if (currentSession?.user) {
           ensureThemeConsistency();
