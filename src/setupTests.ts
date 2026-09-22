@@ -71,6 +71,7 @@ globalThis.matchMedia =
 // https://github.com/radix-ui/primitives/issues/1207
 class MockPointerEvent extends MouseEvent {
   button: number;
+  buttons: number;
   ctrlKey: boolean;
   shiftKey: boolean;
   altKey: boolean;
@@ -82,6 +83,7 @@ class MockPointerEvent extends MouseEvent {
   constructor(type: string, props: PointerEventInit = {}) {
     super(type, props);
     this.button = props.button ?? 0;
+    this.buttons = props.buttons ?? (this.button === 0 ? 1 : 0);
     this.ctrlKey = props.ctrlKey ?? false;
     this.shiftKey = props.shiftKey ?? false;
     this.altKey = props.altKey ?? false;
@@ -94,6 +96,9 @@ class MockPointerEvent extends MouseEvent {
 
 // Cast through unknown because jsdom's global type lacks PointerEvent.
 (globalThis as unknown as { PointerEvent?: typeof MockPointerEvent }).PointerEvent = MockPointerEvent;
+if (typeof window !== 'undefined') {
+  (window as unknown as { PointerEvent?: typeof MockPointerEvent }).PointerEvent = MockPointerEvent;
+}
 
 // Mock DOM methods missing in jsdom for Radix UI compatibility
 for (const proto of [Element.prototype, HTMLElement.prototype]) {
