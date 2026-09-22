@@ -3350,6 +3350,33 @@ finding read a superseded migration.
   test fails against the old hook with "expected 1 times, but got 2 times".
 
 
+### B-72: A message reaction removal could queue under a key nothing else used
+
+- **Where the user meets it:** the message board, removing a reaction whose row
+  reached the page by realtime, or tapping faster than React re-renders.
+- **What happens / what was expected:** the removal and a tap on the same emoji
+  run at the same time instead of one after the other, which is the ordering
+  B-66 exists to guarantee. The same loss is possible: the tap's upsert matches
+  the row, the removal then deletes it.
+- `removeReaction` picked its queue key with
+  `reactions.find(...)?.emoji ?? reactionId`, reading the **render closure**. A
+  row the closure had not seen yet made that fall through to the reaction id,
+  and no `addReaction` ever keys by an id — they key by emoji — so the removal
+  serialised against nothing.
+- **Severity:** `low`. Narrower than B-66: it needs a caller holding a handler
+  from one render behind, or a row that arrived by realtime since.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, while fixing B-66.
+- **Status:** **fixed.** The key is read from the query cache first and falls
+  back to the render closure, the way `useMatchReactions.toggleReaction` already
+  reads the cache — its comment says "taps land faster than React re-renders
+  for the one before them". The `?? reactionId` fallback stays for a row that is
+  genuinely unknown; it is now rare rather than routine. The test uses a handler
+  captured one render early, which is what a fast tap is, and fails against the
+  old key with "expected not to be called at all, but actually been called 1
+  times".
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

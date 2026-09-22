@@ -335,7 +335,16 @@ export const useMessageReactions = (messageId: string) => {
   /** Remove the current user's reaction from this message. */
   const removeReaction = async (reactionId: string) => {
     if (!user) return;
-    const reaction = reactions.find((item) => item.id === reactionId);
+    // Read the cache, not the render closure. Taps land faster than React
+    // re-renders for the one before them, and a row that arrived by realtime
+    // may not be in `reactions` yet. Keyed by its id rather than its emoji, the
+    // removal queues against nothing -- no add ever uses an id as a key -- so a
+    // tap on the same emoji could run beside it. useMatchReactions reads the
+    // cache in toggleReaction for the same reason.
+    const current = queryClient.getQueryData<MessageReaction[]>(queryKey) ?? reactions;
+    const reaction = current.find((item) => item.id === reactionId);
+    // Still falls back to the id when the row is genuinely unknown. That is now
+    // rare rather than routine.
     const mutationKey = reaction?.emoji ?? reactionId;
     const previousMutation = mutationChainsRef.current.get(mutationKey) ?? Promise.resolve();
     const nextMutation = previousMutation
