@@ -45,6 +45,17 @@ const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }
 const formatRecord = (wins: number, losses: number) => `${wins}-${losses}`;
 const formatPct = (value: number) => `${value.toFixed(1)}%`;
 
+/**
+ * A record read as a rate, so a row showing "3-9" is judged as 3-9 rather than
+ * as 3. Ranking on the wins alone marked a 3-9 team ahead of a 2-0 one.
+ *
+ * A team with no games in the tier rates 0: it loses to any team with a win and
+ * ties another team with none. Not reusing `calculateWinPercentage` from
+ * rankingUtils on purpose -- that one logs on every call, and this runs eight
+ * times per render.
+ */
+const winRate = (wins: number, losses: number) => (wins + losses > 0 ? wins / (wins + losses) : 0);
+
 export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
   team1,
   team2,
@@ -129,8 +140,8 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
           label="Playoff Record"
           value1={formatRecord(t1?.career_playoff_wins || 0, t1?.career_playoff_losses || 0)}
           value2={formatRecord(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
-          numericValue1={t1?.career_playoff_wins || 0}
-          numericValue2={t2?.career_playoff_wins || 0}
+          numericValue1={winRate(t1?.career_playoff_wins || 0, t1?.career_playoff_losses || 0)}
+          numericValue2={winRate(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
           showPercentiles={false}
         />
 
@@ -175,8 +186,14 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
             t2?.division_records.competitive.wins || 0,
             t2?.division_records.competitive.losses || 0
           )}
-          numericValue1={t1?.division_records.competitive.wins || 0}
-          numericValue2={t2?.division_records.competitive.wins || 0}
+          numericValue1={winRate(
+            t1?.division_records.competitive.wins || 0,
+            t1?.division_records.competitive.losses || 0
+          )}
+          numericValue2={winRate(
+            t2?.division_records.competitive.wins || 0,
+            t2?.division_records.competitive.losses || 0
+          )}
           showPercentiles={false}
         />
 
@@ -190,8 +207,14 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
             t2?.division_records.intermediate.wins || 0,
             t2?.division_records.intermediate.losses || 0
           )}
-          numericValue1={t1?.division_records.intermediate.wins || 0}
-          numericValue2={t2?.division_records.intermediate.wins || 0}
+          numericValue1={winRate(
+            t1?.division_records.intermediate.wins || 0,
+            t1?.division_records.intermediate.losses || 0
+          )}
+          numericValue2={winRate(
+            t2?.division_records.intermediate.wins || 0,
+            t2?.division_records.intermediate.losses || 0
+          )}
           showPercentiles={false}
         />
 
@@ -205,8 +228,14 @@ export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
             t2?.division_records.recreational.wins || 0,
             t2?.division_records.recreational.losses || 0
           )}
-          numericValue1={t1?.division_records.recreational.wins || 0}
-          numericValue2={t2?.division_records.recreational.wins || 0}
+          numericValue1={winRate(
+            t1?.division_records.recreational.wins || 0,
+            t1?.division_records.recreational.losses || 0
+          )}
+          numericValue2={winRate(
+            t2?.division_records.recreational.wins || 0,
+            t2?.division_records.recreational.losses || 0
+          )}
           showPercentiles={false}
         />
       </div>

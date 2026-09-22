@@ -3098,6 +3098,31 @@ finding read a superseded migration.
   it; two of them fail against the old component.
 
 
+### B-70: Compare showed a record and judged it as a count, so 3-9 beat 2-0
+
+- **Where the user meets it:** the Compare page, on Playoff Record and on the
+  three "vs Division Tiers" rows.
+- **What happens / what was expected:** the row shows a record, for example
+  `3-9` against `2-0`, and highlights the better side in the primary colour.
+  It compared the **wins only**, so 3 beat 2 and the 3-9 team was marked ahead
+  of the 2-0 team. The displayed value and the compared value disagreed.
+- `TeamComparisonView` passed `numericValue1={t1?.career_playoff_wins || 0}`
+  and the same shape for each division tier. The losses were never read.
+- **Severity:** `medium`. Nothing stored is wrong, but the page states the
+  opposite of what its own numbers say, on four rows.
+- **Decision needed:** `fix`. The league chose win percentage over wins minus
+  losses.
+- **Raised by:** `teams/compare-teams.md`, which carried it under "Open
+  questions" as "**may be worth treating as a bug rather than documenting**".
+- **Status:** **fixed.** A local `winRate` helper rates each record and the four
+  rows compare on that. A team with no games in a tier rates 0, so it never wins
+  the row, and equal rates leave neither side marked. `calculateWinPercentage`
+  in `rankingUtils` was deliberately not reused: it logs on every call and this
+  runs eight times per render. Four tests in
+  `src/components/compare/__tests__/TeamComparisonView.test.tsx` cover it; three
+  fail against the old component.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

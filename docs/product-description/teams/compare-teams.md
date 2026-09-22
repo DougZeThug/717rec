@@ -179,10 +179,11 @@ alone, with nothing else marking it.
 - **The head-to-head block says "First Meeting" for two different reasons**: the
   teams really have never played, and the record could not be read. Both draw the
   same card.
-- **Playoff Record is compared on wins alone.** A team with 3-9 in the playoffs is
-  marked ahead of a team with 2-0.
-- **The three division records are compared on wins alone too**, with the same
-  effect.
+- **Playoff Record and the three division records are compared on win
+  percentage.** 2-0 in the playoffs is marked ahead of 3-9. A team with no games
+  in a division tier rates 0 on that row, so it never wins it, and two records
+  that rate the same leave neither side marked. Until B-70 these four rows were
+  compared on the wins alone, which marked 3-9 ahead of 2-0.
 - **Strength of schedule is compared as higher-is-better**, so the team that has
   played the tougher opponents is marked as ahead on that row. Nothing says that
   is what is meant.
@@ -205,9 +206,6 @@ alone, with nothing else marking it.
 
 ## Open questions and verification
 
-- **Playoff and division records are ranked by wins and ignore losses.** The row
-  reads as a record and is judged as a count. **May be worth treating as a bug
-  rather than documenting.**
 - **The page does not reserve space for the phone's bottom bar.** It does not use
   the shared page layout that adds that padding. `/teams/:teamId` has the same
   shape; see [`team-details.md`](team-details.md). **May be worth treating as a
