@@ -1,19 +1,10 @@
-import { z } from 'zod';
-
+// The zod schema itself lives in src/components/profile/profileSchema.ts,
+// next to the only form that runs it, so zod stays out of the main bundle.
+import type { ProfileFormData } from '@/components/profile/profileSchema';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from '@/types/user';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
-
-export const profileSchema = z.object({
-  username: z
-    .string()
-    .min(3, 'First name must be at least 3 characters')
-    .regex(/^[a-zA-Z0-9_]+$/, 'First name can only contain letters, numbers, and underscores'),
-  fullName: z.string().optional(),
-});
-
-export type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface UsernameAvailabilityResult {
   available: boolean | null;

@@ -1,6 +1,8 @@
 import { Capacitor } from '@capacitor/core';
-import { SocialLogin } from '@capgo/capacitor-social-login';
 
+// @capgo/capacitor-social-login is imported dynamically inside
+// loginWithGoogleNative so the plugin (~100 kB of source) only downloads on
+// a native Google sign-in, not on every web page load.
 import { signInWithIdToken } from '@/services/auth/AuthService';
 import { NativeGoogleLoginResult } from '@/types/auth';
 import { authLog, errorLog } from '@/utils/logger';
@@ -39,6 +41,7 @@ export const loginWithGoogleNative = async () => {
   try {
     // Use the Capgo SocialLogin plugin to sign in with Google
     // Need to provide an empty options object to satisfy TypeScript
+    const { SocialLogin } = await import('@capgo/capacitor-social-login');
     const response = await SocialLogin.login({
       provider: 'google',
       options: {}, // Empty options object to satisfy the type requirement
