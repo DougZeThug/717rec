@@ -74,6 +74,13 @@ export const useMatchReactions = (matchId: string) => {
   const queryKey = useMemo(() => matchInteractionKeys.reactions(matchId), [matchId]);
   const realtimeInsertsRef = useRef<Map<string, MatchReaction>>(new Map());
   const realtimeDeletesRef = useRef<Set<string>>(new Set());
+  // Rows whose delete has been issued and has not settled. realtimeDeletesRef
+  // holds rows the server has already removed, so it only has to bridge the one
+  // fetch that was in flight. These are different: until the delete commits the
+  // server still reports the row, so a second refetch landing in that window
+  // would put back a reaction the reader had turned off. Cleared when the
+  // delete settles, not per fetch.
+  const inFlightDeletesRef = useRef<Set<string>>(new Set());
   const pendingOptimisticRemovalsRef = useRef<Set<string>>(new Set());
   const mutationChainsRef = useRef<Map<string, Promise<void>>>(new Map());
   // What onMutate decided, keyed by emoji. mutationFn runs straight after
@@ -84,6 +91,7 @@ export const useMatchReactions = (matchId: string) => {
   useEffect(() => {
     realtimeInsertsRef.current.clear();
     realtimeDeletesRef.current.clear();
+    inFlightDeletesRef.current.clear();
     // This one was missed before: it is keyed by match, but a hook instance
     // returning to a match it had already toggled carried a live cancellation
     // straight into the next tap.
@@ -114,6 +122,9 @@ export const useMatchReactions = (matchId: string) => {
         byId.set(id, reaction);
       });
       realtimeDeletesRef.current.forEach((id) => {
+        byId.delete(id);
+      });
+      inFlightDeletesRef.current.forEach((id) => {
         byId.delete(id);
       });
       return Array.from(byId.values());
@@ -160,6 +171,7 @@ export const useMatchReactions = (matchId: string) => {
                   realtimeInsertsRef.current.delete(newReaction.id);
                   realtimeDeletesRef.current.add(newReaction.id);
                   if (currentUserId === newReaction.user_id) {
+                    inFlightDeletesRef.current.add(newReaction.id);
                     // Queue this clean-up with the taps for the same emoji. Sent
                     // straight out, it raced a later "tap on again": that tap's
                     // insert is queued, this delete was not, so both could be in
@@ -198,6 +210,9 @@ export const useMatchReactions = (matchId: string) => {
                           });
                         errorLog('Error removing delayed optimistic match reaction:', err);
                       })
+                      .finally(() => {
+                        inFlightDeletesRef.current.delete(newReaction.id);
+                      })
                       // Nothing awaits a stored link until the next tap on this
                       // emoji, which may never come, so a throw in the
                       // compensation above would surface as an unhandled
@@ -213,7 +228,10 @@ export const useMatchReactions = (matchId: string) => {
                 // The mutation raced ahead of this event and already marked the
                 // row for deletion. Putting it back would show the reader a
                 // reaction they have turned off. Wait for the DELETE event.
-                if (realtimeDeletesRef.current.has(newReaction.id)) {
+                if (
+                  realtimeDeletesRef.current.has(newReaction.id) ||
+                  inFlightDeletesRef.current.has(newReaction.id)
+                ) {
                   return;
                 }
                 realtimeDeletesRef.current.delete(newReaction.id);
@@ -291,6 +309,7 @@ export const useMatchReactions = (matchId: string) => {
           if (savedReaction) {
             realtimeInsertsRef.current.delete(savedReaction.id);
             realtimeDeletesRef.current.add(savedReaction.id);
+            inFlightDeletesRef.current.add(savedReaction.id);
             tombstonedId = savedReaction.id;
             await MatchReactionsService.deleteReaction(savedReaction.id, currentUserId);
           }
@@ -310,6 +329,11 @@ export const useMatchReactions = (matchId: string) => {
             description: getUIErrorMessage(err, 'Failed to remove reaction'),
             variant: 'destructive',
           });
+        } finally {
+          // Settled either way: the row is gone, or the catch above has just
+          // put it back. Holding it hidden past this point would hide a row
+          // that is still in the table.
+          if (tombstonedId) inFlightDeletesRef.current.delete(tombstonedId);
         }
       }
     },

@@ -340,6 +340,69 @@ describe('useMatchReactions', () => {
     expect(result.current.reactions).toHaveLength(1);
   });
 
+  // A tombstone that only bridges the one fetch already in flight is not
+  // enough for a delete that has been issued and has not committed: the server
+  // still reports the row, so a second refetch landing in that window put back
+  // a reaction the reader had turned off.
+  it('keeps a row hidden across more than one refetch while its delete is in flight', async () => {
+    mockUser.current = { id: 'user-1' };
+    const saved = reaction('saved-1', 'user-1', '🔥');
+
+    let resolveInsert!: () => void;
+    mockInsertReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveInsert = resolve;
+        })
+    );
+    let resolveDelete!: () => void;
+    mockDeleteReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        })
+    );
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tap off while the insert is still on its way: the removal is deferred.
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The row is in the table from here on, and the delete does not commit.
+    mockFetchReactions.mockResolvedValue([saved]);
+    act(() => {
+      resolveInsert();
+    });
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('saved-1', 'user-1'));
+
+    // Two refetches land inside that window.
+    for (let i = 0; i < 2; i += 1) {
+      act(() => {
+        subscribeOptions.current?.onReconnect?.(false);
+      });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
+
+    expect(result.current.reactions).toHaveLength(0);
+
+    await act(async () => {
+      resolveDelete();
+      await firstTap;
+    });
+  });
+
   it('blocks toggling a reaction when signed out', async () => {
     const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));

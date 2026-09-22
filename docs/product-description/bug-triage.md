@@ -3305,6 +3305,18 @@ finding read a superseded migration.
   handler guards the missing id. Four tests were added and three fail against
   the old hook; the two existing tests that pin the in-flight merge stay green,
   which is why the fix copies the tombstones rather than simply clearing them.
+- **Corrected on review.** The per-fetch clear was right for a row the server
+  has already removed, but wrong for a delete that has been *issued and has not
+  committed*: the server still reports that row, so a tombstone bridging only
+  the one fetch already in flight let a second refetch landing in that window
+  put the reaction back. Two of the three tombstone sites are of that kind — the
+  clean-up after an optimistic cancellation, and the deferred clean-up in
+  `mutationFn` — and queueing those deletes behind the taps (B-68) widened the
+  window further. Those two now use a separate `inFlightDeletesRef`, applied on
+  every fetch and cleared in a `finally` when the delete settles rather than per
+  fetch. The third site, the realtime DELETE handler, is a row the server has
+  already removed and still uses the one-fetch tombstone. Both hooks carry the
+  change, so they do not drift apart again.
 - **Note on the sibling:** `useMessageReactions` was given the per-fetch clear
   on 2026-07-15 and the match hook was not. Two comments in this repo asserting
   that the match queryFn never clears its buffers — one in the hook, one in its
