@@ -69,7 +69,6 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
     scheduleReconnect();
   });
 
-
   // connect() and scheduleReconnect() call each other, so these are
   // declarations rather than arrow consts: hoisting lets either one come
   // first without a forward reference.
@@ -106,10 +105,9 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
         // Record whether a token was available, so a repeat failure can be told
         // apart from a plain outage when reading the logs.
-        errorLog(
-          `[realtime:${label}] channel ${status} — attempt ${attempt + 1}/${MAX_ATTEMPTS}`,
-          { hasToken: hasRealtimeToken() }
-        );
+        errorLog(`[realtime:${label}] channel ${status} — attempt ${attempt + 1}/${MAX_ATTEMPTS}`, {
+          hasToken: hasRealtimeToken(),
+        });
         scheduleReconnect();
       }
     });
