@@ -51,23 +51,67 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
 
   let currentChannel: RealtimeChannel | null = null;
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let parkedTimer: ReturnType<typeof setInterval> | null = null;
   let attempt = 0;
   let hasConnectedOnce = false;
   let disposed = false;
   let parkedAtTokenVersion: number | null = null;
 
+  /**
+   * Leave the parked state and try again. A park must never be permanent: a
+   * phone losing signal or a backgrounded tab looks exactly like a bad token,
+   * and a spectator would be left on a frozen scoreboard until they reloaded.
+   */
+  function unpark(reason: string): void {
+    if (disposed || parkedAtTokenVersion === null) return;
+    log(`[realtime:${label}] ${reason} — resuming`);
+    parkedAtTokenVersion = null;
+    attempt = 0;
+    stopParkedWatch();
+    scheduleReconnect();
+  }
+
   // Woken by a token change while parked: a fresh token is the one thing that
   // can turn a rejected join into a working one.
   const unsubscribeToken = onRealtimeTokenChange(() => {
-    if (disposed) return;
     if (parkedAtTokenVersion === null) return;
     if (getRealtimeTokenVersion() === parkedAtTokenVersion) return;
-
-    log(`[realtime:${label}] new access token — resuming`);
-    parkedAtTokenVersion = null;
-    attempt = 0;
-    scheduleReconnect();
+    unpark('new access token');
   });
+
+  // Signed-out visitors never get a token change, so a park also ends on the
+  // signals that mark a likely-recovered network, plus a slow safety retry.
+  const onOnline = () => unpark('browser back online');
+  const onVisible = () => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      unpark('tab visible again');
+    }
+  };
+
+  function startParkedWatch(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', onOnline);
+      window.addEventListener('focus', onVisible);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisible);
+    }
+    parkedTimer = setInterval(() => unpark('periodic retry'), PARKED_RETRY_MS);
+  }
+
+  function stopParkedWatch(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('focus', onVisible);
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', onVisible);
+    }
+    if (parkedTimer) {
+      clearInterval(parkedTimer);
+      parkedTimer = null;
+    }
+  }
 
   // connect() and scheduleReconnect() call each other, so these are
   // declarations rather than arrow consts: hoisting lets either one come
