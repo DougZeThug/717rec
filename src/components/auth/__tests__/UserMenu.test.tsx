@@ -47,6 +47,14 @@ describe('UserMenu', () => {
     mockUseTeamMembership.mockReturnValue({ activeMembership: null });
   });
 
+  afterEach(() => {
+    // Radix dropdowns set pointer-events: none on body while open. Cleanup
+    // removes the rendered tree but can leave the body style behind, which
+    // blocks pointer events in the next test before it starts.
+    document.body.removeAttribute('data-scroll-locked');
+    document.body.style.removeProperty('pointer-events');
+  });
+
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
     mockUseTeamMembership.mockReturnValue({
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },
