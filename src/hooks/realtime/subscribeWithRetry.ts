@@ -36,6 +36,12 @@ const BASE_BACKOFF_MS = 1_000;
  * seconds.
  */
 const MAX_ATTEMPTS = 6;
+/**
+ * How long a parked channel waits before trying again on its own. Network
+ * recovery usually arrives sooner through the `online`/visibility signals; this
+ * is the backstop so a park can never be permanent.
+ */
+const PARKED_RETRY_MS = 60_000;
 
 /**
  * Subscribe to a Supabase realtime channel with automatic error/reconnect
