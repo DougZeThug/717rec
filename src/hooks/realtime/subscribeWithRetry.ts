@@ -203,6 +203,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
     dispose: () => {
       disposed = true;
       unsubscribeToken();
+      stopParkedWatch();
       if (retryTimer) {
         clearTimeout(retryTimer);
         retryTimer = null;
