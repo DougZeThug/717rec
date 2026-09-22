@@ -1132,7 +1132,7 @@ export type Database = {
           game_id: string
           id?: string
           match_id: string
-          net_points?: number | null
+          net_points?: never
           round_number: number
           team1_bags_in?: number | null
           team1_bags_off?: number | null
@@ -1144,7 +1144,7 @@ export type Database = {
           team2_bags_on?: number | null
           team2_score: number
           team2_thrower_id?: string | null
-          winner_team?: number | null
+          winner_team?: never
         }
         Update: {
           created_at?: string
@@ -1152,7 +1152,7 @@ export type Database = {
           game_id?: string
           id?: string
           match_id?: string
-          net_points?: number | null
+          net_points?: never
           round_number?: number
           team1_bags_in?: number | null
           team1_bags_off?: number | null
@@ -1164,7 +1164,7 @@ export type Database = {
           team2_bags_on?: number | null
           team2_score?: number
           team2_thrower_id?: string | null
-          winner_team?: number | null
+          winner_team?: never
         }
         Relationships: [
           {
@@ -2509,6 +2509,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "playoff_matches_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "match"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "playoff_matches_next_lose_match_id_fkey"
             columns: ["next_lose_match_id"]
             isOneToOne: false
@@ -3330,7 +3337,7 @@ export type Database = {
       }
       recap_edition_versions: {
         Row: {
-          blurbs: Json
+          blurbs: NonNullable<Json>
           blurbs_source: string
           caption: string | null
           caption_model: string | null
@@ -3340,7 +3347,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           edition_id: string
-          facts: Json
+          facts: NonNullable<Json>
           facts_schema_version: number
           graphic_url: string | null
           headline: string | null
@@ -3348,7 +3355,7 @@ export type Database = {
           version: number
         }
         Insert: {
-          blurbs?: Json
+          blurbs?: NonNullable<Json>
           blurbs_source?: string
           caption?: string | null
           caption_model?: string | null
@@ -3358,7 +3365,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           edition_id: string
-          facts: Json
+          facts: NonNullable<Json>
           facts_schema_version?: number
           graphic_url?: string | null
           headline?: string | null
@@ -3366,7 +3373,7 @@ export type Database = {
           version: number
         }
         Update: {
-          blurbs?: Json
+          blurbs?: NonNullable<Json>
           blurbs_source?: string
           caption?: string | null
           caption_model?: string | null
@@ -3376,7 +3383,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           edition_id?: string
-          facts?: Json
+          facts?: NonNullable<Json>
           facts_schema_version?: number
           graphic_url?: string | null
           headline?: string | null
@@ -6911,13 +6918,13 @@ export type Database = {
         }
       }
       admin_audit_coverage_drift: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           issue: string
         }[]
       }
       admin_get_pre_unification_season_stats: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           backed_up_at: string
           champion: boolean
@@ -6937,7 +6944,7 @@ export type Database = {
         }[]
       }
       admin_get_pre_unification_team_power: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           backed_up_at: string
           game_losses: number
@@ -6951,7 +6958,7 @@ export type Database = {
         }[]
       }
       admin_power_unification_status: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           backed_up_at: string
           backup_season_rows: number
@@ -6960,13 +6967,22 @@ export type Database = {
           status: string
         }[]
       }
-      admin_reapply_power_score_unification: { Args: never; Returns: string }
+      admin_reapply_power_score_unification: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       admin_recompute_season_power: {
         Args: { p_season_id: string }
         Returns: number
       }
-      admin_revert_power_score_unification: { Args: never; Returns: string }
-      admin_revert_power_score_weights: { Args: never; Returns: Json }
+      admin_revert_power_score_unification: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      admin_revert_power_score_weights: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       admin_set_power_score_weights: {
         Args: { p_game: number; p_note?: string; p_sos: number; p_win: number }
         Returns: Json
@@ -7058,8 +7074,14 @@ export type Database = {
         Args: { p_season_id: string; p_team_id: string }
         Returns: undefined
       }
-      current_standings_season_id: { Args: never; Returns: string }
-      current_user_is_admin: { Args: never; Returns: boolean }
+      current_standings_season_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      current_user_is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       delete_match_with_stats_reversal: {
         Args: { p_match_id: string }
         Returns: Json
@@ -7103,7 +7125,7 @@ export type Database = {
         }
       }
       get_all_team_badges: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           awarded_at: string
           badge_type: string
@@ -7173,7 +7195,7 @@ export type Database = {
         }[]
       }
       get_power_score_weights: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           applied_at: string
           game_weight: number
@@ -7300,10 +7322,19 @@ export type Database = {
         Args: { p_team1_id: string; p_team2_id: string }
         Returns: Json
       }
-      prune_team_season_stats_not_in_agg: { Args: never; Returns: number }
+      prune_team_season_stats_not_in_agg: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       recompute_kingslayer_badge: { Args: { p_team_id: string }; Returns: Json }
-      reconcile_team_counters: { Args: never; Returns: number }
-      recreate_power_view_dependents: { Args: never; Returns: undefined }
+      reconcile_team_counters: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      recreate_power_view_dependents: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       reopen_live_match: { Args: { p_match_id: string }; Returns: boolean }
       replace_playoff_games: {
         Args: { p_games: Json; p_match_id: string }
@@ -7338,12 +7369,15 @@ export type Database = {
       }
       rotate_season_badges: { Args: { p_season_id: string }; Returns: number }
       seasons_rls_drift: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           issue: string
         }[]
       }
-      snapshot_current_season: { Args: never; Returns: undefined }
+      snapshot_current_season: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       start_game_with_roster: {
         Args: {
           p_game_number: number
@@ -7356,7 +7390,7 @@ export type Database = {
         Returns: Json
       }
       update_team_stats:
-        | { Args: never; Returns: undefined }
+        | { Args: Record<PropertyKey, never>; Returns: undefined }
         | {
             Args: {
               p_loser_game_wins?: number
@@ -7411,11 +7445,7 @@ export type Database = {
         | "bully"
       match_type: "winners" | "losers" | "finals"
       playoff_match_type:
-        | "winners"
-        | "losers"
-        | "finals"
-        | "play-in"
-        | "play-in-2"
+        "winners" | "losers" | "finals" | "play-in" | "play-in-2"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -7458,8 +7488,7 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -7483,8 +7512,7 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -7508,8 +7536,7 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+    keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
