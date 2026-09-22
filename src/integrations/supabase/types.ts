@@ -7344,6 +7344,17 @@ export type Database = {
         }[]
       }
       snapshot_current_season: { Args: never; Returns: undefined }
+      start_game_with_roster: {
+        Args: {
+          p_game_number: number
+          p_match_id: string
+          p_team1_id: string
+          p_team1_player_ids: string[]
+          p_team2_id: string
+          p_team2_player_ids: string[]
+        }
+        Returns: Json
+      }
       update_team_stats:
         | { Args: never; Returns: undefined }
         | {
