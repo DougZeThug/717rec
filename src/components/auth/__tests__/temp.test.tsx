@@ -14,7 +14,7 @@ const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HT
 );
 Button.displayName = 'Button';
 
-const ControlledRadixMenu = () => {
+const ControlledRadixMenu = React.memo(() => {
   const [open, setOpen] = useState(false);
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>
@@ -31,9 +31,10 @@ const ControlledRadixMenu = () => {
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   );
-};
+});
+ControlledRadixMenu.displayName = 'ControlledRadixMenu';
 
-describe('controlled radix user-event', () => {
+describe('memo controlled radix user-event', () => {
   it('opens with default userEvent', async () => {
     render(<ControlledRadixMenu />);
     await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
