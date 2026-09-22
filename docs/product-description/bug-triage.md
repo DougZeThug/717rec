@@ -3233,6 +3233,18 @@ finding read a superseded migration.
   `?` is on the list, so a link inside another link's path is still swallowed by
   the link that owns it, which is the B-63 case itself. Three tests cover it;
   two fail against the blacklist version.
+- **Corrected again.** Naming the characters still was not enough on its own,
+  because the list has to contain `/`, `.`, `-` and `:` — links carry them — and
+  those join two links as well as a pipe does. Six joined on a hyphen read as
+  one. The body now also stops at a second link's opening *unless* it sits
+  straight after a `/` or an `=`, which is where a path or a query value puts
+  one. Measured: fourteen of the fifteen URL-legal joiners the review listed now
+  count link by link.
+- **One gap left, on purpose.** Links joined on `=` still read as one, because
+  `a=b` is where a URL legitimately carries another URL. Closing it would count
+  `?to=www.target.com` as two links — the false refusal this whole entry exists
+  to avoid. Under-counting a contrived evasion is the better of the two errors
+  here, and the spam limit is not the only signal these endpoints apply.
 - **A suggested fix that was not taken.** The review proposed stopping the body
   before every new scheme or bare `www.`. That reopens this entry: a Wayback
   snapshot's path *is* a new scheme, so it would score 2, and it also breaks

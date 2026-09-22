@@ -29,10 +29,23 @@
  * one link, and six of them scored 1 against a limit of 5. Every character not
  * on the blacklist was another way through.
  *
- * Naming the characters instead closes that, because a separator does not have
- * to be predicted: anything not in the list ends the link. A `/` or a `?` is in
- * the list, so a link inside another link's path is still swallowed by the link
- * that owns it.
+ * Naming the characters instead means no separator has to be predicted:
+ * anything not on the list ends the link. But the list has to contain `/`, `.`,
+ * `-`, `:` and the rest, because links carry them — and those can join two
+ * links just as well as a pipe can. `https://a.test-https://b.test` ran into
+ * one match again.
+ *
+ * So the body also stops at a second link's opening, unless that opening sits
+ * where a path or a query value would put one: straight after a `/` or an `=`.
+ * That is what keeps a Wayback snapshot and a `?to=` redirect counted once,
+ * which is the whole point of the rule, while a flood joined on any other
+ * character is counted link by link.
+ *
+ * The `=` case is the one gap left, and it is deliberate. `a=b` is where a URL
+ * legitimately carries another URL, so links joined on `=` still read as one.
+ * Closing it would mean counting `?to=www.target.com` as two links, which is
+ * the false refusal this whole function exists to avoid. Under-counting a
+ * contrived evasion is the better error of the two here.
  *
  * A `www.` directly after a scheme needs no special case any more: the scheme
  * matches first and the tail eats the host.
@@ -41,7 +54,9 @@
  * mistake — six of them would score zero.
  */
 export function countUrls(text: string): number {
-  const matches = text.match(/(?:https?:\/\/|www\.)[A-Za-z0-9._~:/?#@!$&*+=%-]*/gi);
+  const matches = text.match(
+    /(?:https?:\/\/|www\.)(?:(?!(?<![/=])(?:https?:\/\/|www\.))[A-Za-z0-9._~:/?#@!$&*+=%-])*/gi
+  );
   return matches ? matches.length : 0;
 }
 

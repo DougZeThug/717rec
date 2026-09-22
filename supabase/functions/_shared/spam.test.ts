@@ -127,3 +127,30 @@ Deno.test('countUrls keeps a link whole across its own punctuation', () => {
   assertEquals(countUrls('https://a.test/path-to/x_y~z?q=1&r=2#frag'), 1);
   assertEquals(countUrls('www.a-b.com/c+d%20e'), 1);
 });
+
+// A link's own characters can join two links as well as a pipe can, so naming
+// them was not enough on its own: six links joined on a hyphen read as one.
+// The body now also stops at a second link's opening, unless it sits where a
+// path would put one.
+Deno.test('countUrls counts links joined by a character a URL may carry', () => {
+  assertEquals(countUrls('https://a.test-https://b.test'), 2);
+  assertEquals(countUrls('https://a.test.https://b.test'), 2);
+  assertEquals(countUrls('https://a.test@www.b.test'), 2);
+});
+
+Deno.test('countUrls blocks a flood joined by a character a URL may carry', () => {
+  for (const joiner of ['-', '.', ':', '_', '~', '#', '&', '?', '@', '%', '+', '!', '*', '$']) {
+    const message = Array.from({ length: 6 }, (_, i) => `https://spam${i}.test`).join(joiner);
+    assertEquals(countUrls(message), 6);
+    assertEquals(countUrls(message) > MAX_URLS_PER_MESSAGE, true);
+  }
+});
+
+// The exception: a link after "/" or "=" is where a path or a query value
+// carries one, so it belongs to the link that owns it. These are the B-63
+// cases and they must keep counting once.
+Deno.test('countUrls still counts a link carried in a path or a query value', () => {
+  assertEquals(countUrls('https://web.archive.org/web/1/https://www.example.com'), 1);
+  assertEquals(countUrls('https://example.com/r?to=www.target.com'), 1);
+  assertEquals(countUrls('https://example.com/r?to=https://other.test'), 1);
+});
