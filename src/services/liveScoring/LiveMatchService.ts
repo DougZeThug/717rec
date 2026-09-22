@@ -66,6 +66,42 @@ export function handleLiveScoringError(error: PostgrestError, context: string): 
   handleDatabaseError(error, context);
 }
 
+interface StartGameWithRosterArgs {
+  p_match_id: string;
+  p_game_number: number;
+  p_team1_id: string;
+  p_team1_player_ids: string[];
+  p_team2_id: string;
+  p_team2_player_ids: string[];
+}
+
+/**
+ * Calls start_game_with_roster through a narrowed signature.
+ *
+ * `types.ts` is generated from the live database and must not be hand-edited,
+ * so it does not know this function until the migration is applied and the
+ * types are regenerated -- see the runbook in `docs/OPERATIONS.md`. Without
+ * this, `npm run typecheck` fails on a call that is perfectly valid at runtime
+ * and CI stays red for as long as the migration is unapplied.
+ *
+ * REMOVE THIS once the types carry the function: delete the cast and this
+ * interface and call `supabase.rpc('start_game_with_roster', { ... })`
+ * directly. It lives here rather than in a declaration-merging file because
+ * `Database` is a type alias, not an interface, so it cannot be augmented.
+ *
+ * The argument names are still checked, against the interface above. Only the
+ * function name goes unchecked, and PostgREST checks that at runtime -- a
+ * wrong one comes back as PGRST202, which handleLiveScoringError already maps
+ * to LiveScoringNotEnabledError.
+ */
+const callStartGameWithRoster = (args: StartGameWithRosterArgs) =>
+  (
+    supabase.rpc as unknown as (
+      fn: 'start_game_with_roster',
+      rpcArgs: StartGameWithRosterArgs
+    ) => Promise<{ data: unknown; error: PostgrestError | null }>
+  )('start_game_with_roster', args);
+
 export const LiveMatchService = {
   fetchLiveMatchBundle: async (matchId: string): Promise<LiveMatchBundle> => {
     const [matchResult, gamesResult, roundsResult] = await Promise.all([
@@ -174,31 +210,56 @@ export const LiveMatchService = {
     if (error) handleLiveScoringError(error, 'Failed to reopen game');
   },
 
-  /** Replace one side's player selection for a game (max 2 slots). */
-  setGamePlayers: async (gameId: string, teamId: string, playerIds: string[]): Promise<void> => {
-    if (playerIds.length > MAX_PLAYERS_PER_SIDE) {
+  /**
+   * Create the game and write both line-ups in one database transaction.
+   *
+   * Replaces a createGame plus two setGamePlayers calls that had nothing
+   * wrapping them: one failed line-up write left a committed in-progress game
+   * with only the other side rostered, and no rollback. Idempotent on
+   * (match_id, game_number), so a retry or a second scorer lands in the same
+   * game and replaces the line-ups rather than duplicating them.
+   */
+  startGameWithRoster: async (
+    matchId: string,
+    gameNumber: number,
+    team1Id: string,
+    team1PlayerIds: string[],
+    team2Id: string,
+    team2PlayerIds: string[]
+  ): Promise<LiveGameRow> => {
+    if (
+      team1PlayerIds.length > MAX_PLAYERS_PER_SIDE ||
+      team2PlayerIds.length > MAX_PLAYERS_PER_SIDE
+    ) {
       throw new ValidationError(
         `A team can select at most ${MAX_PLAYERS_PER_SIDE} players per game`
       );
     }
 
-    const { error: deleteError } = await supabase
-      .from('game_players')
-      .delete()
-      .eq('game_id', gameId)
-      .eq('team_id', teamId);
-    if (deleteError) handleLiveScoringError(deleteError, 'Failed to clear game players');
+    const { data, error } = await callStartGameWithRoster({
+      p_match_id: matchId,
+      p_game_number: gameNumber,
+      p_team1_id: team1Id,
+      p_team1_player_ids: team1PlayerIds,
+      p_team2_id: team2Id,
+      p_team2_player_ids: team2PlayerIds,
+    });
 
-    if (playerIds.length === 0) return;
+    if (error) handleLiveScoringError(error, 'Failed to start game');
 
-    const { error: insertError } = await supabase.from('game_players').insert(
-      playerIds.map((playerId, index) => ({
-        game_id: gameId,
-        team_id: teamId,
-        player_id: playerId,
-        slot: index + 1,
-      }))
-    );
-    if (insertError) handleLiveScoringError(insertError, 'Failed to save game players');
+    const result = (data ?? {}) as Record<string, unknown>;
+    const gameId = typeof result.game_id === 'string' ? result.game_id : null;
+    const startedGameId = ensureFound(gameId, 'Game');
+
+    // The caller needs the whole row and the function returns only the id, so
+    // read it back. The transaction has committed by this point.
+    const { data: game, error: fetchError } = await supabase
+      .from('games')
+      .select(GAME_COLUMNS)
+      .eq('id', startedGameId)
+      .maybeSingle();
+
+    if (fetchError) handleLiveScoringError(fetchError, 'Failed to load the started game');
+    return ensureFound(game, 'Game', startedGameId);
   },
 };

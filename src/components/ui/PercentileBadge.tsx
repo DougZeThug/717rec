@@ -28,8 +28,16 @@ const sizeStyles: Record<string, string> = {
   md: 'text-sm px-2.5 py-1',
 };
 
-/** Tier-colored pill showing rank or percentile; adds a tooltip when rank and total are given. */
-export const PercentileBadge: React.FC<PercentileBadgeProps> = ({
+/**
+ * Tier-colored pill showing rank or percentile; adds a tooltip when rank and
+ * total are given.
+ *
+ * Module-local on purpose. Called directly it will happily paint a team with
+ * nothing to measure a red "0%" pill, because rank 0 falls back to the
+ * percentile and tier 0 is the bottom colour. That is what B-62 was. Everything
+ * outside this file goes through PercentileFromResult, which holds the guard.
+ */
+const PercentileBadge: React.FC<PercentileBadgeProps> = ({
   percentile,
   rank,
   total,

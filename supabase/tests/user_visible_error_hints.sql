@@ -75,6 +75,21 @@ BEGIN
     RAISE EXCEPTION 'validate_membership_approval: internal message must stay unmarked';
   END IF;
 
+  v_def := pg_get_functiondef(
+    'public.start_game_with_roster(uuid,integer,uuid,uuid[],uuid,uuid[])'::regprocedure
+  );
+
+  IF strpos(v_def, $q$'Not authorized to score this match' USING HINT = 'user-visible'$q$) = 0 THEN
+    RAISE EXCEPTION 'start_game_with_roster: authorization guard lost its user-visible hint';
+  END IF;
+  IF strpos(v_def, $q$'A team can have at most 2 players in a game'$q$) = 0 THEN
+    RAISE EXCEPTION 'start_game_with_roster: player-limit guard is missing';
+  END IF;
+  -- The match id is internal, so this one must NOT be user-visible.
+  IF strpos(v_def, $q$'Match not found: %', p_match_id USING HINT$q$) > 0 THEN
+    RAISE EXCEPTION 'start_game_with_roster: match-not-found leaked a user-visible hint';
+  END IF;
+
   -- ── The mechanism itself: a hint survives to the client ────────────────────
 
   BEGIN

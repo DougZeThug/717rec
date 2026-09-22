@@ -14,8 +14,10 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
-**62 entries**: 15 high, 30 medium, 16 low, and B-06, which carries no severity
-because it was cleared as not a defect. All of them are now closed. Several were **not raised as
+**75 entries**: 16 high, 36 medium, 20 low, B-06, which carries no severity
+because it was cleared as not a defect, and B-69 and B-74, which carry none
+because each records two defensible readings in conflict rather than one thing
+being wrong. All of them are now closed. Several were **not raised as
 defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
 `medium`, was recorded in `home/the-home-page.md` as an open question and could
 not be reached until
@@ -25,15 +27,21 @@ out of code readings rather than screens, as did B-54 to B-60 — seven defects
 found by reading the code against these documents, all seven fixed in the change
 that recorded them. B-61 came out of the review of that change, and was closed
 as a product call: the league chose to accept the behaviour rather than change
-it.
+it. B-62 to B-74 came out of a pass over five filed bug reports: five of the
+thirteen are the reports themselves, and the other eight were found while
+reading the files those reports named. Eleven were fixed; B-69 and B-74 were put
+to the league and left as they are, documented.
 
-*The counts in this paragraph had gone stale.* They still read "42 entries: 13
-high, 23 medium, and 6 low" long after the list had grown past them, and are
-corrected here by counting the **Severity** line on each entry. Two things make a
-count by eye come out wrong: B-06 has no severity line at all, and B-41 sits
-under the `## Low` heading while being marked `medium`.
+*The counts in this paragraph go stale easily, and have twice.* They once read
+"42 entries: 13 high, 23 medium, and 6 low", then "62 entries: 15 high, 30
+medium, 16 low", long after the list had grown past each. They are recounted
+from the **Severity** line on each entry whenever entries are added. Three
+things make a count by eye come out wrong: B-06, B-69 and B-74 have no severity
+to count, and B-41 sits under the `## Low` heading while being marked `medium`.
+Entries from B-50 onwards are also not in the index table above, which stops at
+B-49.
 
-**All sixteen `low` entries are now closed.** Fifteen were fixed; B-26 was put
+**All twenty `low` entries are now closed.** Nineteen were fixed; B-26 was put
 to the league as a product call and left as it is, documented rather than
 changed.
 Three — B-27, B-30 and B-53 — carried claims that had gone stale or were recorded
@@ -3071,6 +3079,497 @@ finding read a superseded migration.
 
 ---
 
+### B-62: A team with nothing to measure was ranked worst in the league on Compare
+
+- **Where the user meets it:** the Compare page, with a team that has never
+  played a career match on either side.
+- **What happens / what was expected:** four rows of the Career Statistics block
+  — Win %, Game Win %, Power Score and Strength of Schedule — carried a red "0%"
+  percentile pill. Red is the bottom tier, so the team read as worst in the
+  league on every measure. It has not been measured at all.
+- `useLeaguePercentiles` says so plainly. A team that has never played is given
+  `{ value: 0, percentile: 0, rank: 0, total: 0 }`, under a comment reading "no
+  rank, not a rank of last".
+- The team page has always hidden that. It renders through
+  `PercentileFromResult`, which returns nothing when `total` is 0.
+  `ComparisonStatRow` called the raw `PercentileBadge` and so skipped the guard.
+  With `rank` at 0 the badge falls back to printing the percentile, and
+  `getPercentileTier(0)` is the red tier — hence "0%" in red.
+- **Severity:** `low`. No stored number is wrong. The badge is.
+- **Decision needed:** `fix`.
+- **Raised by:** `teams/compare-teams.md`, which had recorded it as a known gap
+  rather than as a defect.
+- **Status:** **fixed.** `ComparisonStatRow` now renders through
+  `PercentileFromResult`, so Compare and the team page agree. It also passes the
+  row label as `statName`, so the badge's tooltip names the stat it ranks. Five
+  tests in `src/components/compare/__tests__/ComparisonStatRow.test.tsx` cover
+  it; two of them fail against the old component.
+
+
+### B-70: Compare showed a record and judged it as a count, so 3-9 beat 2-0
+
+- **Where the user meets it:** the Compare page, on Playoff Record and on the
+  three "vs Division Tiers" rows.
+- **What happens / what was expected:** the row shows a record, for example
+  `3-9` against `2-0`, and highlights the better side in the primary colour.
+  It compared the **wins only**, so 3 beat 2 and the 3-9 team was marked ahead
+  of the 2-0 team. The displayed value and the compared value disagreed.
+- `TeamComparisonView` passed `numericValue1={t1?.career_playoff_wins || 0}`
+  and the same shape for each division tier. The losses were never read.
+- **Severity:** `medium`. Nothing stored is wrong, but the page states the
+  opposite of what its own numbers say, on four rows.
+- **Decision needed:** `fix`. The league chose win percentage over wins minus
+  losses.
+- **Raised by:** `teams/compare-teams.md`, which carried it under "Open
+  questions" as "**may be worth treating as a bug rather than documenting**".
+- **Status:** **fixed.** A local `winRate` helper rates each record and the four
+  rows compare on that. A team with no games in a tier rates 0, so it never wins
+  the row, and equal rates leave neither side marked. `calculateWinPercentage`
+  in `rankingUtils` was deliberately not reused: it logs on every call and this
+  runs eight times per render. Four tests in
+  `src/components/compare/__tests__/TeamComparisonView.test.tsx` cover it; three
+  fail against the old component.
+
+
+### B-71: Two percentiles were worked out on every page load and shown on no screen
+
+- **Where the user meets it:** nowhere, which is the defect. `useLeaguePercentiles`
+  works out six stats for every team on every page that uses it. Only four were
+  ever rendered.
+- **What happens / what was expected:** `championships` and `playoffWinPercentage`
+  were read by no component. `playoffWinPercentage` even carried its own
+  population rule — teams with no playoff match are left out of the ranking
+  rather than counted as zero — and none of it reached a screen. Sweep rate, the
+  one career row with no percentile at all, had no badge either.
+- This also explains a claim in `teams/compare-teams.md` that could never have
+  been true: it said Compare gave a team with no playoff matches "a zero
+  percentile on playoff win percentage", but Compare rendered no playoff badge
+  at all. The doc described an intention, not the screen.
+- **Severity:** `low`. Wasted work, and four rows less informative than the data
+  behind them allowed.
+- **Decision needed:** `fix`. The league chose to show the badges rather than
+  delete the unused work.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** `TeamPercentiles` gained `sweepRate`, and Compare now
+  badges Sweep Rate, Playoff Record and Championships. A team with no playoff
+  match still gets no playoff badge, because `UNMEASURED` passes through
+  `PercentileFromResult` — see B-62.
+- **Corrected on review.** The first version ranked championships across every
+  team that had played. `calculatePercentile` gives `percentile` 0 when nobody
+  has fewer, and `rank` is a shared `above + 1`, so a title-less team drew a
+  **red** pill reading "6th of 26" — and since most teams have won nothing, that
+  was both sides of an ordinary comparison. It is the "reads as worst in the
+  league" failure B-62 exists to prevent, one row over, and it was new surface:
+  this percentile had never been rendered anywhere before. Championships are now
+  ranked only among teams that have won one, exactly as playoff win percentage
+  already works, so a team with no title carries no badge at all.
+
+
+### B-73: A failed head-to-head read was reported as a first meeting
+
+- **Where the user meets it:** the Compare page, whenever the head-to-head read
+  fails — offline, a transient network error, or the database function raising.
+- **What happens / what was expected:** the page drew the "First Meeting" card:
+  a heading reading **First Meeting** over the sentence "These teams have never
+  played each other". Two teams with a twelve-match history were told, as a
+  fact, that they had never met. Nothing hinted a read had failed.
+- `useTeamComparison` destructured only `data` and `isLoading` from
+  `useOpponentHistory` and never read `error`. Its fallback branch therefore
+  fired on a failed read exactly as it did on an empty one, and its own comment
+  said so: "No history found = first meeting".
+- **Severity:** `medium`. A failure stated as a fact, on the one block of the
+  page a reader would look at first. The same class as B-46 and B-49, where a
+  failed read was presented as an empty league.
+- **Decision needed:** `fix`.
+- **Raised by:** `teams/compare-teams.md`, which carried it under "Open
+  questions" as "**may be worth treating as a bug rather than documenting**".
+- **Status:** **fixed.** The hook reads `error`, leaves `headToHead` null rather
+  than inventing a 0-0 record, and reports `headToHeadError`. Compare draws a
+  separate `HeadToHeadUnavailable` card that says the record could not be loaded
+  and that this does not mean the teams have never played. A genuine first
+  meeting is unchanged. Four tests in
+  `src/hooks/__tests__/useTeamComparison.headToHead.test.ts` cover the hook and
+  three more cover the card; all four hook tests fail against the old hook.
+
+
+### B-63: A link inside a link counted twice, so three archived pages were refused as spam
+
+- **Where the user meets it:** the Contact the League form and the support form,
+  sending a message that quotes an archived or redirecting link.
+- **What happens / what was expected:** the message is refused with a 400 and
+  the reason "Message contains too many links". Three Wayback snapshots counted
+  as six against a limit documented as five. The reason given is specific and
+  wrong — the message held three links — and retrying the same text always
+  failed. Nothing is stored before the check, so there is no record the message
+  was ever attempted.
+- `countUrls` matched only where a link *starts*, with nothing stopping it
+  matching part-way through a link it had already counted. A snapshot such as
+  `https://web.archive.org/web/20230101/https://www.example.com` carries two
+  further openings inside its own path; a redirect such as
+  `https://example.com/r?to=www.target.com` carries one.
+- **This is the second half of B-43.** That fix stopped `https://www.example.com`
+  counting twice by treating a `www.` after a scheme as part of it, and
+  deliberately rejected a greedy `\S+` tail because it ran together links
+  joined by a comma. Counting bare openings closed the scheme-plus-host case and
+  left the in-path case open.
+- **Severity:** `medium`. A legitimate message never reaches the league, and the
+  sender is told a reason that is untrue of their message.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** Each match now runs from a link's opening to the end of
+  that link, so an opening inside an already-counted link is swallowed rather
+  than scored. The body stops at whitespace, `,`, `;`, brackets and quotes,
+  which keeps punctuation-joined links apart — the case B-43's review raised
+  against a plain `\S+` tail. Four tests were added; the seven from B-43 keep
+  their expected values, and two of the four fail against the old counter, one
+  of them with exactly "expected 3, got 6".
+- **Corrected on review.** The first fix wrote the body as a blacklist —
+  anything except whitespace, a comma, a semicolon, a bracket or a quote — and
+  that had the same hole one character over. `https://a.test|https://b.test`
+  ran into a single match, so six links joined on a pipe scored 1 against a
+  limit of 5 and the flood went through. Every character left off the blacklist
+  was another way in. The body now names the characters a URL may contain, so
+  anything else ends the link and no separator has to be predicted. A `/` or a
+  `?` is on the list, so a link inside another link's path is still swallowed by
+  the link that owns it, which is the B-63 case itself. Three tests cover it;
+  two fail against the blacklist version.
+- **Corrected again.** Naming the characters still was not enough on its own,
+  because the list has to contain `/`, `.`, `-` and `:` — links carry them — and
+  those join two links as well as a pipe does. Six joined on a hyphen read as
+  one. The body now also stops at a second link's opening *unless* it sits
+  straight after a `/` or an `=`, which is where a path or a query value puts
+  one. Measured: fourteen of the fifteen URL-legal joiners the review listed now
+  count link by link.
+- **One gap left, on purpose.** Links joined on `=` still read as one, because
+  `a=b` is where a URL legitimately carries another URL. Closing it would count
+  `?to=www.target.com` as two links — the false refusal this whole entry exists
+  to avoid. Under-counting a contrived evasion is the better of the two errors
+  here, and the spam limit is not the only signal these endpoints apply.
+- **A suggested fix that was not taken.** The review proposed stopping the body
+  before every new scheme or bare `www.`. That reopens this entry: a Wayback
+  snapshot's path *is* a new scheme, so it would score 2, and it also breaks
+  B-43's original case — `https://www.example.com` would score 2 again. Checked
+  against all eighteen cases before deciding.
+- **Verification note:** there is no `deno` binary in the agent container, so
+  these were run by transpiling the real `spam.ts` and `spam.test.ts` and
+  executing them under Node with an `assertEquals` shim. CI runs them properly
+  in `edge-function-tests`.
+
+
+### B-64: A bracket in the model's closing sentence threw away a whole set of blurbs
+
+- **Where the user meets it:** an admin generating the per-team blurbs for a
+  power-rankings edition.
+- **What happens / what was expected:** the generation is refused with a 502
+  and the code `blurbs_unreadable`. The model had in fact returned a valid
+  array; it simply added a sentence after it that contained a bracket, such as
+  `I omitted teams [redacted].` The work is discarded and the admin has to run
+  it again.
+- `extractJsonArray` took the **last** `]` in the reply as the end of the
+  array. A bracket in the trailing sentence pushed that past the array, the
+  slice carried the prose with it, `JSON.parse` threw, and the helper returned
+  null. `BlurbReplySchema.safeParse(null)` then fails and the edge function
+  returns the 502.
+- The helper's own doc comment promised to tolerate "a code fence or a stray
+  sentence around it". It kept that promise only for sentences containing no
+  bracket.
+- **Severity:** `medium`. Nothing is corrupted, but usable output is thrown
+  away and the admin is told only that the reply could not be read.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** A new `endOfArray` helper walks the brackets from the
+  array's opening and ignores brackets inside JSON strings, so a blurb reading
+  `They went 3-0 [best in class].` cannot end the array early either. Each `[`
+  is tried in turn, which also fixes the same fault in the other direction: a
+  bracket in a sentence *before* the array — `Here is the list [see below]:` —
+  used to be taken as its opening. Seven tests were added; the five that existed
+  keep their expected values, and three of the seven fail against the old helper
+  by returning null.
+- **Verification note:** there is no `deno` binary in the agent container, so
+  these were run by transpiling the real helper and the real test bodies and
+  executing them under Node with an `assertEquals` shim. CI runs them properly
+  in `edge-function-tests`.
+
+
+### B-65: A reaction the reader had turned off kept coming back on a match card
+
+- **Where the user meets it:** a match card, after tapping a reaction on and
+  then off again, or after the connection drops and comes back.
+- **What happens / what was expected:** the reaction shows as still on. It
+  survives every refresh of the card, including a reconnect that reads an empty
+  table, and only goes away when the card is left and reopened. Everyone else
+  sees the reaction as off, because in the database it is.
+- `useMatchReactions` merges two reconciliation buffers over each freshly
+  fetched snapshot. The buffers were emptied only when `matchId` changed, so a
+  row put into the inserts buffer by one realtime event was re-applied on every
+  later refetch for the life of the hook. The hook's own comment said so, as a
+  known limitation rather than a defect.
+- Two smaller gaps in the same file made it worse. The INSERT handler cleared a
+  tombstone and put the row back even when the mutation had already marked it
+  deleted, and the DELETE handler read `payload.old.id` without checking it,
+  which puts `undefined` into both buffers when Supabase sends only the
+  replica-identity columns.
+- **Severity:** `low`. Nothing stored is wrong; one reader's card is.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** All three gaps are closed by porting what
+  `useMessageReactions` already does. The queryFn copies the tombstones, empties
+  both buffers, then fetches, so each refetch is authoritative while events
+  arriving during the fetch still win over the snapshot they postdate. The
+  INSERT handler returns early for a row already marked deleted, and the DELETE
+  handler guards the missing id. Four tests were added and three fail against
+  the old hook; the two existing tests that pin the in-flight merge stay green,
+  which is why the fix copies the tombstones rather than simply clearing them.
+- **Corrected on review.** The per-fetch clear was right for a row the server
+  has already removed, but wrong for a delete that has been *issued and has not
+  committed*: the server still reports that row, so a tombstone bridging only
+  the one fetch already in flight let a second refetch landing in that window
+  put the reaction back. Two of the three tombstone sites are of that kind — the
+  clean-up after an optimistic cancellation, and the deferred clean-up in
+  `mutationFn` — and queueing those deletes behind the taps (B-68) widened the
+  window further. Those two now use a separate `inFlightDeletesRef`, applied on
+  every fetch and cleared in a `finally` when the delete settles rather than per
+  fetch. The third site, the realtime DELETE handler, is a row the server has
+  already removed and still uses the one-fetch tombstone. Both hooks carry the
+  change, so they do not drift apart again.
+- **Note on the sibling:** `useMessageReactions` was given the per-fetch clear
+  on 2026-07-15 and the match hook was not. Two comments in this repo asserting
+  that the match queryFn never clears its buffers — one in the hook, one in its
+  test — were true when written and are corrected here.
+
+
+### B-66: A fast on-off-on tap on a message reaction could lose the last tap
+
+- **Where the user meets it:** the message board, tapping one emoji on, off and
+  on again faster than the first tap's insert comes back.
+- **What happens / what was expected:** the reaction ends up off. The reader's
+  last action was to turn it on, no error is shown, and the row is gone from the
+  database as well as the screen. Tapping again is the only way back.
+- `useMessageReactions` serialises taps for an emoji through
+  `mutationChainsRef`. The clean-up delete that the realtime INSERT handler
+  sends — when an echo for a reaction the reader has already toggled off arrives
+  — was sent straight out, outside that queue. A later "tap on again" *is*
+  queued, so the two could be in flight at once. When the upsert reached
+  Postgres first, its `ON CONFLICT DO UPDATE` matched the row still sitting
+  there, and the trailing delete then removed it.
+- **Severity:** `medium`. A user action is silently lost, and the trailing
+  delete reports success, so nothing anywhere records that it happened.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** The clean-up delete now joins the same per-emoji queue
+  as the taps, so a later upsert cannot start until it has finished. The handler
+  still does not await — it is a realtime callback — it only builds the link and
+  stores it. The existing compensation on failure is unchanged. Two `.catch`
+  wrappers frame it: a leading one so a predecessor's failure does not trigger
+  this clean-up's compensation, and a trailing one because nothing awaits a
+  stored link until the next tap, which may never come, so a throw inside the
+  compensation would otherwise surface as an unhandled rejection.
+- **What the test pins:** the call *order* is the same before and after
+  (add, remove, add); only the settlement order changes. The test therefore
+  holds the delete open and asserts the second upsert has not been sent. It
+  fails against the old hook with "expected 1 times, but got 2 times".
+- **No document changed.** `message-board/read-the-board.md` never described
+  this ordering; the fix restores what the page was always meant to do.
+
+
+### B-68: The same fast on-off-on tap could lose a match reaction too
+
+- **Where the user meets it:** a match card, tapping one emoji on, off and on
+  again faster than the first tap's insert comes back. B-66 on the message
+  board, in the other hook.
+- **What happens / what was expected:** the reaction ends up off after the
+  reader's last action was to turn it on. No error is shown.
+- `useMatchReactions` has the same shape as its sibling and the same gap:
+  `toggleReaction` serialises taps for an emoji through `mutationChainsRef`,
+  while the clean-up delete sent from the realtime INSERT handler went straight
+  out, outside that queue. `insertReaction` is an upsert on
+  `user_id,match_id,emoji`, so a later tap's insert reaching Postgres first
+  matched the row still sitting there and the trailing delete removed it.
+- A "tap on again" arriving *after* the realtime handler has run does not hit
+  the early return in `toggleReaction`, because the handler has already consumed
+  that pending-removal key. It falls through to the queue, which is what put the
+  two in flight together.
+- **Severity:** `medium`. Same as B-66: a user action is silently lost.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, while fixing B-66.
+- **Status:** **fixed.** The same patch as B-66, applied to the match hook. One
+  existing test needed re-ordering rather than changing: it asserted that the
+  clean-up deletes the real id and not the optimistic one, which still holds,
+  but the delete now waits for the in-flight insert, so the test has to let that
+  finish first. That wait is the point of the fix, not a side effect. The new
+  test fails against the old hook with "expected 1 times, but got 2 times".
+
+
+### B-72: A message reaction removal could queue under a key nothing else used
+
+- **Where the user meets it:** the message board, removing a reaction whose row
+  reached the page by realtime, or tapping faster than React re-renders.
+- **What happens / what was expected:** the removal and a tap on the same emoji
+  run at the same time instead of one after the other, which is the ordering
+  B-66 exists to guarantee. The same loss is possible: the tap's upsert matches
+  the row, the removal then deletes it.
+- `removeReaction` picked its queue key with
+  `reactions.find(...)?.emoji ?? reactionId`, reading the **render closure**. A
+  row the closure had not seen yet made that fall through to the reaction id,
+  and no `addReaction` ever keys by an id — they key by emoji — so the removal
+  serialised against nothing.
+- **Severity:** `low`. Narrower than B-66: it needs a caller holding a handler
+  from one render behind, or a row that arrived by realtime since.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, while fixing B-66.
+- **Status:** **fixed.** The key is read from the query cache first and falls
+  back to the render closure, the way `useMatchReactions.toggleReaction` already
+  reads the cache — its comment says "taps land faster than React re-renders
+  for the one before them". The `?? reactionId` fallback stays for a row that is
+  genuinely unknown; it is now rare rather than routine. The test uses a handler
+  captured one render early, which is what a fast tap is, and fails against the
+  old key with "expected not to be called at all, but actually been called 1
+  times".
+
+
+### B-69: Strength of schedule is read two opposite ways
+
+- **Where the user meets it:** the team page, most plainly. The career SOS
+  number is painted red, and a gold percentile badge sits immediately beside it
+  (`TeamTotals.tsx`). One says the team is doing badly on that measure, the
+  other says it is near the top of the league.
+- **What happens / what was expected:** the app has no single answer to whether
+  a hard schedule is good.
+
+  | Where | A high SOS is |
+  | --- | --- |
+  | Power score, 45 of 100 points (`stats/power-score.md`) | **Good** — "the term that rewards a hard schedule" |
+  | `useLeaguePercentiles` | **Good** — ranked higher-is-better |
+  | Compare's SOS row | **Good** — the tougher-schedule team is marked ahead |
+  | Insights "Toughest Schedule" (`stats/insights.md`) | **Good** — presented as an honour |
+  | `getSosColor` in `src/utils/colors.ts` | **Bad** — red at 0.75 and above, green when easy |
+
+- Four to one. `getSosColor` is the outlier, and it is defensible on its own
+  terms: it is a *difficulty* scale, not a quality one, and its comment says so
+  — "Higher SOS means tougher schedule (red), lower means easier (green)". The
+  problem is that the two sibling helpers in the same file,
+  `getPowerScoreColor` and `getSweepRateColor`, are quality scales, so the same
+  colours mean opposite things on one screen.
+- **Severity:** none recorded. This is not a defect in any one place; it is two
+  defensible readings that contradict each other.
+- **Decision needed:** **product call.** The league was asked and chose to
+  change nothing and record it, the way B-25 and B-26 are recorded.
+- **The two options, so this does not have to be worked out again:**
+  1. **Make the colour agree.** A high SOS goes green or gold, an easy one
+     neutral. One consistent story across the power score, the badge, Compare
+     and Insights. Touches `getSosColor` and the three components that use it —
+     `TeamTotals`, `StatBreakdown`, `TeamCardList` — plus their tests.
+  2. **Make SOS neutral.** Keep red-is-hard and instead drop the SOS percentile
+     badge and the Compare winner highlight, so SOS reports how hard the
+     schedule was and says nothing about how good the team is. Smaller diff, but
+     it contradicts the power score, which pays a team for a hard schedule.
+- **Raised by:** `teams/compare-teams.md`, which had it as "Nothing says that is
+  what is meant". That understated it — the app does say, in four places, and
+  then says the opposite in a fifth.
+- **Status:** **documented.** No code changed. `compare-teams.md` now describes
+  the contradiction rather than only the Compare half of it.
+
+
+### B-74: The head-to-head record does not refresh while the page is open
+
+- **Where the user meets it:** the Compare page, right after two teams have
+  played. The head-to-head block still shows the record from before the match.
+- **What happens / what was expected:** `useOpponentHistory` sets
+  `refetchOnMount: false` and `refetchOnWindowFocus: false`, a five-minute
+  stale time and a ten-minute cache time. Nothing refetches the record while
+  the page is open, and reopening the page within ten minutes shows the cached
+  value without asking the server. Only after ten minutes unobserved is the
+  entry dropped, so the next open fetches fresh. A match played minutes ago can
+  therefore be missing from the block, and stays missing for as long as the
+  page is left open.
+- Every other block on the page follows the app's normal freshness rules. This
+  one opts out of both of them.
+- **Severity:** none recorded. The tuning is deliberate and its comment says
+  why: "opponent history rarely changes". For a league that plays on one night
+  a week that is usually true.
+- **Decision needed:** **product call.** The league was asked and chose to
+  change nothing and record it.
+- **What changing it would mean:** dropping `refetchOnMount: false` would cost
+  one request each time the page is opened and would close the case that
+  matters — a reader opening Compare straight after a match. Leaving
+  `refetchOnWindowFocus: false` alone would keep tab-switching cheap. That is a
+  two-line change in `src/hooks/useHeadToHead.ts` if the league wants it.
+- **Raised by:** `teams/compare-teams.md`, under "Open questions", as "whether
+  that is intended is a product question".
+- **Status:** **documented.** No code changed. The document now gives the real
+  settings and what they mean, rather than only "a long time".
+
+
+### B-67: A game could start with only one team's players
+
+- **Where the user meets it:** a scorer taps **Start Game** on a live match and
+  one of the two line-up writes fails.
+- **What happens / what was expected:** the game starts anyway. The scorer lands
+  in the live panel with one side's thrower bar reading **"No players selected"**,
+  because `throwerOptions` maps an empty `game_players` list. The match is not
+  wedged — rounds still save and the game can still be completed — which is what
+  makes it quiet.
+- **What is lost.** Rounds for the un-rostered side save with
+  `team{N}_thrower_id` null, because `nextForSide` returns null on an empty
+  roster. `v_player_match_stats` drops null-thrower rounds, so those players get
+  no thrower rows. Worse, the `game_results` CTE in `v_player_season_stats`
+  joins `game_players` to count `game_wins` and `game_losses`, so they also lose
+  **game-level win/loss credit** for that game. Neither is recoverable from the
+  rounds afterwards.
+- `startGame` did three writes with nothing wrapping them: `createGame`, then
+  both `setGamePlayers` calls under `Promise.all`. `Promise.all` does not cancel
+  the sibling when one rejects, and `setGamePlayers` is itself a delete followed
+  by an insert. The `games` row defaults to `status = 'in_progress'` and was
+  already committed. `onError` only raised a toast; there was no rollback, and
+  none was possible from the client — `games` DELETE is admin-only under RLS, so
+  a non-admin scorer could not have undone it.
+- **Severity:** `high`. A data-integrity gap: player statistics are silently
+  lost for one game and cannot be rebuilt from what was recorded. No production
+  incident is known; the blast radius is one game, bounded in practice by the
+  scorer noticing the broken thrower picker.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed**, and **needs a manual step** — see the runbook in
+  `docs/OPERATIONS.md`. A new `start_game_with_roster` function creates the game
+  and both line-ups in one transaction, the way `finalize_live_match` already
+  handles the completion transition. It is `SECURITY DEFINER` with a pinned
+  `search_path`, authorises through the existing `user_can_score_match`, raises
+  its user-facing messages with `USING HINT = 'user-visible'`, and is idempotent
+  on `(match_id, game_number)` so a retry or a second scorer lands in the same
+  game and replaces the line-ups rather than duplicating them.
+- **Dead code removed with it.** `useGameFlow.updateGamePlayers` was returned by
+  the hook and called by no component — `LiveMatchView` destructures only
+  `startGame`, `confirmGameComplete` and `reopenGame`, and `ActiveGamePanel` has
+  no line-up editor. With `startGame` on the RPC, `LiveMatchService.setGamePlayers`
+  had no live caller either. Both are gone, along with their tests and two test
+  mocks. `knip` does not catch this shape: it checks exports, and these were
+  properties on a returned object. This follows `0efbe8149`, which deleted an
+  earlier dead `updateGamePlayers`.
+- **Corrected on review.** Two ordering faults in the first version of the
+  function. It checked `user_can_score_match` *before* taking the row lock,
+  and that helper requires the match to be unfinished — so a scorer could pass
+  the check while a finalize was in flight, block on the lock, and resume after
+  `iscompleted` had been set, inserting an in-progress game into a completed
+  match. The function is `SECURITY DEFINER`, so the "Scorers insert games" RLS
+  policy never runs to catch it, and a phantom in-progress game is the exact
+  state `20260708120000` had to clean up once already. `finalize_live_match`
+  gets this order right; the function now does too. Second, `PERFORM … FOR
+  UPDATE` sets `FOUND` and nothing read it, so a match id that does not exist
+  fell through to the insert and failed on `games_match_id_fkey` — a 23503 the
+  client describes as "this is still linked to other records". It now raises
+  `Match not found`, deliberately without the user-visible hint because the id
+  is internal. Both are covered by the SQL smoke test and the guards are pinned
+  in `user_visible_error_hints.sql`.
+- **One cast to remove after the migration is applied.** `types.ts` is
+  generated from the live database and must not be hand-edited, and `Database`
+  is a type alias so it cannot be augmented from another file either. The call
+  therefore goes through a narrowed cast, `callStartGameWithRoster`, which keeps
+  the argument names checked and leaves only the function name unchecked —
+  PostgREST checks that at runtime and a wrong one returns `PGRST202`. Without
+  it CI would sit red for as long as the migration was unapplied. Step 4 of the
+  runbook is deleting it once the regenerated types carry the function.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round
@@ -3099,6 +3598,27 @@ through it.** That was the reading at the time:
 | #1311 | failure | failure | yes |
 | #1312 | failure | failure | yes |
 | #1315 | failure | **success** | — |
+
+**Where to read the actual finding.** The status carries no detail, DeepSource
+posts no inline comment for it, and its PR summary comment says "see the
+individual issues we found as inline review comments" when there are none. The
+finding is only on the DeepSource run page — and that page **is publicly
+readable**, at the `target_url` on the commit status:
+
+```
+https://app.deepsource.com/gh/DougZeThug/717rec/run/<run-id>/javascript/
+```
+
+Get it from the commit-status API (`GET /repos/.../commits/<sha>/status`), not
+from the checks API, which never lists it. On #1531 that turned "Analysis
+failed: Blocking issues or failing metrics found" — with a grade-A report card
+and no comments anywhere — into one line: `JS-W1042` on a test file, redundant
+`undefined` in a call.
+
+**The fix for JS-W1042 is a suppression, not a code change.** Dropping the
+argument fails `npm run typecheck` with "Expected 1 arguments, but got 0"
+whenever the mock is typed. Five call sites already carry
+`// skipcq: JS-W1042` for exactly this; follow them.
 
 *No longer true, and the difference matters.* **#1470**, merged into `main` on
 2026-09-16, carried `DeepSource: JavaScript — Analysis passed`. The backlog that

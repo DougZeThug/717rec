@@ -3,16 +3,14 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockCreateGame = vi.fn();
-const mockSetGamePlayers = vi.fn();
+const mockStartGameWithRoster = vi.fn();
 const mockCompleteGame = vi.fn();
 const mockReopenGame = vi.fn();
 const mockToast = vi.hoisted(() => vi.fn());
 
 vi.mock('@/services/liveScoring/LiveMatchService', () => ({
   LiveMatchService: {
-    createGame: (...args: unknown[]) => mockCreateGame(...args),
-    setGamePlayers: (...args: unknown[]) => mockSetGamePlayers(...args),
+    startGameWithRoster: (...args: unknown[]) => mockStartGameWithRoster(...args),
     completeGame: (...args: unknown[]) => mockCompleteGame(...args),
     reopenGame: (...args: unknown[]) => mockReopenGame(...args),
   },
@@ -44,9 +42,11 @@ afterEach(() => {
 });
 
 describe('startGame', () => {
-  it('creates the game then assigns both sides players', async () => {
-    mockCreateGame.mockResolvedValue({ id: 'game-1' });
-    mockSetGamePlayers.mockResolvedValue(null);
+  // One call, not three. The game and both line-ups land together or not at
+  // all, so a failed line-up write can no longer leave a live game with one
+  // side rostered and the other empty.
+  it('starts the game and both line-ups in a single call', async () => {
+    mockStartGameWithRoster.mockResolvedValue({ id: 'game-1' });
 
     const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
 
@@ -60,13 +60,19 @@ describe('startGame', () => {
       });
     });
 
-    expect(mockCreateGame).toHaveBeenCalledWith('match-1', 2);
-    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-1', 'team-1', ['p1', 'p2']);
-    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-1', 'team-2', ['p3']);
+    expect(mockStartGameWithRoster).toHaveBeenCalledTimes(1);
+    expect(mockStartGameWithRoster).toHaveBeenCalledWith(
+      'match-1',
+      2,
+      'team-1',
+      ['p1', 'p2'],
+      'team-2',
+      ['p3']
+    );
   });
 
   it('toasts on failure', async () => {
-    mockCreateGame.mockRejectedValue(new Error('nope'));
+    mockStartGameWithRoster.mockRejectedValue(new Error('nope'));
 
     const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
 
@@ -147,8 +153,9 @@ describe('reopenGame', () => {
 
 describe('per-game lineup selection', () => {
   it('starts Game 2 with a different lineup than Game 1', async () => {
-    mockCreateGame.mockResolvedValueOnce({ id: 'game-1' }).mockResolvedValueOnce({ id: 'game-2' });
-    mockSetGamePlayers.mockResolvedValue(null);
+    mockStartGameWithRoster
+      .mockResolvedValueOnce({ id: 'game-1' })
+      .mockResolvedValueOnce({ id: 'game-2' });
 
     const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
 
@@ -173,41 +180,23 @@ describe('per-game lineup selection', () => {
       });
     });
 
-    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-1', 'team-1', ['p1', 'p2']);
-    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-2', 'team-1', ['p1', 'p5']);
-  });
-});
-
-describe('updateGamePlayers', () => {
-  it('updates the roster for one side of an in-progress game', async () => {
-    mockSetGamePlayers.mockResolvedValue(null);
-
-    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
-
-    await act(async () => {
-      await result.current.updateGamePlayers.mutateAsync({
-        gameId: 'game-3',
-        teamId: 'team-1',
-        playerIds: ['p7', 'p8'],
-      });
-    });
-
-    expect(mockSetGamePlayers).toHaveBeenCalledWith('game-3', 'team-1', ['p7', 'p8']);
-  });
-
-  it('toasts on failure', async () => {
-    mockSetGamePlayers.mockRejectedValue(new Error('nope'));
-
-    const { result } = renderHook(() => useGameFlow('match-1'), { wrapper: createWrapper() });
-
-    await act(async () => {
-      await result.current.updateGamePlayers
-        .mutateAsync({ gameId: 'game-3', teamId: 'team-1', playerIds: ['p7'] })
-        .catch(() => undefined);
-    });
-
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'Could not update players', variant: 'destructive' })
+    expect(mockStartGameWithRoster).toHaveBeenNthCalledWith(
+      1,
+      'match-1',
+      1,
+      'team-1',
+      ['p1', 'p2'],
+      'team-2',
+      ['p3', 'p4']
+    );
+    expect(mockStartGameWithRoster).toHaveBeenNthCalledWith(
+      2,
+      'match-1',
+      2,
+      'team-1',
+      ['p1', 'p5'],
+      'team-2',
+      ['p3', 'p4']
     );
   });
 });

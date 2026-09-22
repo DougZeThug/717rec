@@ -74,6 +74,13 @@ export const useMatchReactions = (matchId: string) => {
   const queryKey = useMemo(() => matchInteractionKeys.reactions(matchId), [matchId]);
   const realtimeInsertsRef = useRef<Map<string, MatchReaction>>(new Map());
   const realtimeDeletesRef = useRef<Set<string>>(new Set());
+  // Rows whose delete has been issued and has not settled. realtimeDeletesRef
+  // holds rows the server has already removed, so it only has to bridge the one
+  // fetch that was in flight. These are different: until the delete commits the
+  // server still reports the row, so a second refetch landing in that window
+  // would put back a reaction the reader had turned off. Cleared when the
+  // delete settles, not per fetch.
+  const inFlightDeletesRef = useRef<Set<string>>(new Set());
   const pendingOptimisticRemovalsRef = useRef<Set<string>>(new Set());
   const mutationChainsRef = useRef<Map<string, Promise<void>>>(new Map());
   // What onMutate decided, keyed by emoji. mutationFn runs straight after
@@ -84,6 +91,7 @@ export const useMatchReactions = (matchId: string) => {
   useEffect(() => {
     realtimeInsertsRef.current.clear();
     realtimeDeletesRef.current.clear();
+    inFlightDeletesRef.current.clear();
     // This one was missed before: it is keyed by match, but a hook instance
     // returning to a match it had already toggled carried a live cancellation
     // straight into the next tap.
@@ -94,12 +102,29 @@ export const useMatchReactions = (matchId: string) => {
   const reactionsQuery = useQuery({
     queryKey,
     queryFn: async () => {
+      // Copy the tombstones, then empty both buffers before the fetch starts.
+      // A removal that is still on its way must not come back in this result,
+      // and nothing may outlive this fetch: the buffers used to be cleared only
+      // when matchId changed, so one stale realtime row was re-applied on every
+      // later refetch -- including a reconnect refetch that read an empty
+      // table -- and a reaction the reader had turned off kept coming back.
+      // Events that land while the fetch is in flight refill the buffers and
+      // are merged below, so realtime still wins over a snapshot it postdates.
+      const pendingDeleteIds = new Set(realtimeDeletesRef.current);
+      realtimeInsertsRef.current.clear();
+      realtimeDeletesRef.current.clear();
       const fetched = await MatchReactionsService.fetchReactions(matchId);
       const byId = new Map(fetched.map((reaction) => [reaction.id, reaction]));
+      pendingDeleteIds.forEach((id) => {
+        byId.delete(id);
+      });
       realtimeInsertsRef.current.forEach((reaction, id) => {
         byId.set(id, reaction);
       });
       realtimeDeletesRef.current.forEach((id) => {
+        byId.delete(id);
+      });
+      inFlightDeletesRef.current.forEach((id) => {
         byId.delete(id);
       });
       return Array.from(byId.values());
@@ -146,8 +171,28 @@ export const useMatchReactions = (matchId: string) => {
                   realtimeInsertsRef.current.delete(newReaction.id);
                   realtimeDeletesRef.current.add(newReaction.id);
                   if (currentUserId === newReaction.user_id) {
-                    MatchReactionsService.deleteReaction(newReaction.id, currentUserId).catch(
-                      (err: unknown) => {
+                    inFlightDeletesRef.current.add(newReaction.id);
+                    // Queue this clean-up with the taps for the same emoji. Sent
+                    // straight out, it raced a later "tap on again": that tap's
+                    // insert is queued, this delete was not, so both could be in
+                    // flight together. insertReaction is an upsert, so when it
+                    // reached Postgres first it matched the row still sitting
+                    // there, and this delete then removed it -- losing the
+                    // reader's last tap with no error. Same fault, same fix, as
+                    // the message board.
+                    //
+                    // Do not await: this is a realtime callback. Build the link,
+                    // store it, and let the cache update below run now.
+                    const previousMutation =
+                      mutationChainsRef.current.get(newReaction.emoji) ?? Promise.resolve();
+                    const nextMutation = previousMutation
+                      // A predecessor's failure is not this clean-up's failure;
+                      // without this the compensation below would run for it.
+                      .catch(ignoreQueuedMutationError)
+                      .then(() =>
+                        MatchReactionsService.deleteReaction(newReaction.id, currentUserId)
+                      )
+                      .catch((err: unknown) => {
                         realtimeDeletesRef.current.delete(newReaction.id);
                         realtimeInsertsRef.current.set(newReaction.id, newReaction);
                         queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
@@ -164,12 +209,29 @@ export const useMatchReactions = (matchId: string) => {
                             );
                           });
                         errorLog('Error removing delayed optimistic match reaction:', err);
-                      }
-                    );
+                      })
+                      .finally(() => {
+                        inFlightDeletesRef.current.delete(newReaction.id);
+                      })
+                      // Nothing awaits a stored link until the next tap on this
+                      // emoji, which may never come, so a throw in the
+                      // compensation above would surface as an unhandled
+                      // rejection. Keep the stored promise one that settles.
+                      .catch(ignoreQueuedMutationError);
+                    mutationChainsRef.current.set(newReaction.emoji, nextMutation);
                   }
                   queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
                     curr.filter((reaction) => reaction.id !== newReaction.id)
                   );
+                  return;
+                }
+                // The mutation raced ahead of this event and already marked the
+                // row for deletion. Putting it back would show the reader a
+                // reaction they have turned off. Wait for the DELETE event.
+                if (
+                  realtimeDeletesRef.current.has(newReaction.id) ||
+                  inFlightDeletesRef.current.has(newReaction.id)
+                ) {
                   return;
                 }
                 realtimeDeletesRef.current.delete(newReaction.id);
@@ -198,8 +260,12 @@ export const useMatchReactions = (matchId: string) => {
               },
               (payload: { new: unknown; old: { id?: string } }) => {
                 const deletedReaction = payload.old as MatchReaction;
-                realtimeInsertsRef.current.delete(deletedReaction.id);
-                realtimeDeletesRef.current.add(deletedReaction.id);
+                // Supabase sends only the replica-identity columns, so `id` can
+                // be missing. Adding undefined to the buffers poisons them.
+                if (deletedReaction.id) {
+                  realtimeInsertsRef.current.delete(deletedReaction.id);
+                  realtimeDeletesRef.current.add(deletedReaction.id);
+                }
                 queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
                   curr.filter((r) => r.id !== deletedReaction.id)
                 );
@@ -243,16 +309,15 @@ export const useMatchReactions = (matchId: string) => {
           if (savedReaction) {
             realtimeInsertsRef.current.delete(savedReaction.id);
             realtimeDeletesRef.current.add(savedReaction.id);
+            inFlightDeletesRef.current.add(savedReaction.id);
             tombstonedId = savedReaction.id;
             await MatchReactionsService.deleteReaction(savedReaction.id, currentUserId);
           }
         } catch (err) {
           // The clean-up failed, so the row is still in the table. A tombstone
-          // left behind would hide it, and this hook's queryFn never clears
-          // realtimeDeletesRef, so it would hide it on every refetch for the
-          // life of the hook -- the reader sees no reaction while everyone else
-          // sees theirs. Drop the tombstone and let onSettled's refetch show
-          // the truth.
+          // left behind would make the next refetch hide it, and the reader
+          // would see no reaction while everyone else sees theirs. Drop the
+          // tombstone and let onSettled's refetch show the truth.
           //
           // Do not rethrow: the insert succeeded, so onError's rollback and its
           // "failed to update" would be the wrong story. The removal is what
@@ -264,6 +329,11 @@ export const useMatchReactions = (matchId: string) => {
             description: getUIErrorMessage(err, 'Failed to remove reaction'),
             variant: 'destructive',
           });
+        } finally {
+          // Settled either way: the row is gone, or the catch above has just
+          // put it back. Holding it hidden past this point would hide a row
+          // that is still in the table.
+          if (tombstonedId) inFlightDeletesRef.current.delete(tombstonedId);
         }
       }
     },

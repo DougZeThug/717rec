@@ -116,7 +116,7 @@ Nothing is submitted. This page only reads.
 | Network lost mid-request | The team list never arrives and the retry card appears. | The comparison stays on "Loading comparison..." with no error and no timeout. |
 | The request fails or times out | The read is retried once, then the retry card. | The numbers for one side fail and that side draws zeros rather than saying anything. |
 | The session expires | No effect. Everything here is public. | No effect. |
-| The same record changed in another tab, or by another user | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so it can be over ten minutes stale before it is fetched again. |
+| The same record changed in another tab, or by another user | No realtime. A result entered elsewhere does not reach an open comparison. | Same, and more so than elsewhere: the head-to-head block is deliberately told **not** to refetch when the page is opened or when the tab regains focus, so an open page never refetches it at all and reopening within ten minutes reuses the cached record. See B-74. |
 | Browser autofill or a password manager writes into the form | No effect. There are no text fields. | No effect. |
 | The window loses focus | Nothing. | Returning refetches the team list and the career numbers if they are over five minutes old. The head-to-head block does not refetch. |
 
@@ -176,21 +176,56 @@ alone, with nothing else marking it.
 - **A link naming the same team on both sides keeps only the left one.** The page
   never compares a team with itself; the address is rewritten with the duplicate
   dropped.
-- **The head-to-head block says "First Meeting" for two different reasons**: the
-  teams really have never played, and the record could not be read. Both draw the
-  same card.
-- **Playoff Record is compared on wins alone.** A team with 3-9 in the playoffs is
-  marked ahead of a team with 2-0.
-- **The three division records are compared on wins alone too**, with the same
-  effect.
+- **The head-to-head block is deliberately excluded from the app's normal
+  freshness rules.** `useOpponentHistory` sets `refetchOnMount: false` and
+  `refetchOnWindowFocus: false`, with a five-minute stale time and a ten-minute
+  cache time. So nothing refetches it while the page stays open, and reopening
+  the page inside ten minutes shows the cached record without asking the server
+  again. Only after ten minutes unobserved is the entry dropped and the next
+  open fetches fresh. A match played minutes ago can therefore be missing from
+  this block, and for as long as the page is left open. The tuning is
+  deliberate — the comment reads "opponent history rarely changes". Recorded as
+  B-74 and left as it is, a product call for the league.
+- **The head-to-head block says "First Meeting" only when the teams really have
+  never played.** A read that fails draws a separate "Head-to-Head Unavailable"
+  card saying the record could not be loaded and that this does not mean the
+  teams have never played. Until B-73 both reasons drew the same card, so a
+  failed read told two teams with a long history that they had never met.
+- **Playoff Record and the three division records are compared on win
+  percentage.** 2-0 in the playoffs is marked ahead of 3-9. A team with no games
+  in a division tier rates 0 on that row, so it never wins it, and two records
+  that rate the same leave neither side marked. Until B-70 these four rows were
+  compared on the wins alone, which marked 3-9 ahead of 2-0.
 - **Strength of schedule is compared as higher-is-better**, so the team that has
-  played the tougher opponents is marked as ahead on that row. Nothing says that
-  is what is meant.
-- **Sweep rate and the playoff and division records carry no percentile badge**;
-  the first four career rows do.
-- **A team with no playoff matches gets a zero percentile** on playoff win
-  percentage rather than no badge, which reads as "worst in the league" rather
-  than "has not been".
+  played the tougher opponents is marked as ahead on that row, and its
+  percentile badge ranks the same way. **The app does not agree with itself
+  about this.** Four places treat a high SOS as good: the power score, where it
+  carries 45 of the 100 points and is described as "the term that rewards a hard
+  schedule"; the percentile badge; this row's winner; and the Insights
+  "Toughest Schedule" board, which presents it as an honour. One place treats it
+  as bad: `getSosColor` paints 0.75 and above red and an easy schedule green. On
+  the team page both opinions sit on the same line — a red number with a gold
+  badge beside it. Recorded as B-69 and left as it is, a product call for the
+  league.
+- **A team with no career match carries no percentile badge.** It has not been
+  measured, so it is given no rank rather than the bottom one. Until B-62 it drew
+  a red "0%" pill on all four career rows, which read as worst in the league. The
+  team page has always behaved this way; Compare now matches it.
+- **Every career row and both playoff rows carry a percentile badge.** Win %,
+  Game Win %, Power Score, SOS, Sweep Rate, Playoff Record and Championships all
+  show one. The three division records do not: no percentile is worked out for
+  those. Before B-71 the sweep rate, the playoff record and the championship
+  count carried none either, although two of the three were being worked out on
+  every page load and shown nowhere.
+- **A team with no playoff matches carries no playoff badge.** It is left out of
+  the playoff ranking rather than counted as a zero, so it is given no rank
+  rather than the bottom one.
+- **The championship badge is only shown to teams that have won one**, and
+  ranks them against each other. A team with no title carries no badge, the same
+  way a team with no playoff match carries no playoff badge. Ranking the whole
+  league instead put every title-less team on one shared bottom rank drawn in
+  red, so an ordinary comparison showed two red pills reading "6th of 26" under
+  a count of 0.
 - **A tie on any row leaves neither number highlighted.**
 - **The teams' initials are the fallback picture**, the first two letters of the
   name in capitals, so two teams starting with the same two letters look alike
@@ -201,20 +236,10 @@ alone, with nothing else marking it.
 
 ## Open questions and verification
 
-- **Playoff and division records are ranked by wins and ignore losses.** The row
-  reads as a record and is judged as a count. **May be worth treating as a bug
-  rather than documenting.**
 - **The page does not reserve space for the phone's bottom bar.** It does not use
   the shared page layout that adds that padding. `/teams/:teamId` has the same
   shape; see [`team-details.md`](team-details.md). **May be worth treating as a
   bug rather than documenting.**
-- **A failed head-to-head read is presented as "First Meeting".** Telling two
-  teams they have never played when the read failed is misleading. **May be worth
-  treating as a bug rather than documenting.**
-- **The head-to-head block is deliberately excluded from the app's normal
-  freshness rules**, refetching neither on opening the page nor on returning to
-  the tab. A recently played match can therefore be missing from it for a long
-  time. Whether that is intended is a product question.
 - Not confirmed by hand: whether the standings' compare control is discoverable.
   It only appears on hover on a desktop row.
 - Not confirmed by hand: what the percentile badges show for a league with very

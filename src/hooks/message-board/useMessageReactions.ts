@@ -51,12 +51,20 @@ export const useMessageReactions = (messageId: string) => {
   const pendingOptimisticRemovalsRef = useRef<Set<string>>(new Set());
   const realtimeInsertsRef = useRef<Map<string, MessageReaction>>(new Map());
   const realtimeDeletesRef = useRef<Set<string>>(new Set());
+  // Rows whose delete has been issued and has not settled. realtimeDeletesRef
+  // holds rows the server has already removed, so it only has to bridge the one
+  // fetch that was in flight. These are different: until the delete commits the
+  // server still reports the row, so a second refetch landing in that window
+  // would put back a reaction the reader had turned off. Cleared when the
+  // delete settles, not per fetch.
+  const inFlightDeletesRef = useRef<Set<string>>(new Set());
   const mutationChainsRef = useRef<Map<string, Promise<void>>>(new Map());
 
   useEffect(() => {
     pendingOptimisticRemovalsRef.current.clear();
     realtimeInsertsRef.current.clear();
     realtimeDeletesRef.current.clear();
+    inFlightDeletesRef.current.clear();
   }, [messageId]);
 
   const reactionsQuery = useQuery({
@@ -79,6 +87,9 @@ export const useMessageReactions = (messageId: string) => {
         byId.set(id, reaction);
       });
       realtimeDeletesRef.current.forEach((id) => {
+        byId.delete(id);
+      });
+      inFlightDeletesRef.current.forEach((id) => {
         byId.delete(id);
       });
       return Array.from(byId.values());
@@ -123,8 +134,26 @@ export const useMessageReactions = (messageId: string) => {
                   realtimeInsertsRef.current.delete(newReaction.id);
                   realtimeDeletesRef.current.add(newReaction.id);
                   if (currentUserId === newReaction.user_id) {
-                    MessageReactionsService.removeReaction(newReaction.id, currentUserId).catch(
-                      (err: unknown) => {
+                    inFlightDeletesRef.current.add(newReaction.id);
+                    // Queue this clean-up with the taps for the same emoji. Sent
+                    // straight out, it raced a later "tap on again": that tap's
+                    // upsert is queued, this delete was not, so both could be in
+                    // flight together. When the upsert reached Postgres first it
+                    // matched the row still sitting there, and this delete then
+                    // removed it -- losing the reader's last tap with no error.
+                    //
+                    // Do not await: this is a realtime callback. Build the link,
+                    // store it, and let the cache update below run now.
+                    const previousMutation =
+                      mutationChainsRef.current.get(newReaction.emoji) ?? Promise.resolve();
+                    const nextMutation = previousMutation
+                      // A predecessor's failure is not this clean-up's failure;
+                      // without this the compensation below would run for it.
+                      .catch(ignoreQueuedMessageMutationError)
+                      .then(() =>
+                        MessageReactionsService.removeReaction(newReaction.id, currentUserId)
+                      )
+                      .catch((err: unknown) => {
                         realtimeDeletesRef.current.delete(newReaction.id);
                         realtimeInsertsRef.current.set(newReaction.id, newReaction);
                         queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
@@ -141,8 +170,16 @@ export const useMessageReactions = (messageId: string) => {
                             );
                           });
                         errorLog('Error removing delayed optimistic message reaction:', err);
-                      }
-                    );
+                      })
+                      .finally(() => {
+                        inFlightDeletesRef.current.delete(newReaction.id);
+                      })
+                      // Nothing awaits a stored link until the next tap on this
+                      // emoji, which may never come, so a throw in the
+                      // compensation above would surface as an unhandled
+                      // rejection. Keep the stored promise one that settles.
+                      .catch(ignoreQueuedMessageMutationError);
+                    mutationChainsRef.current.set(newReaction.emoji, nextMutation);
                   }
                   queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
                     curr.filter((reaction) => reaction.id !== newReaction.id)
@@ -152,7 +189,10 @@ export const useMessageReactions = (messageId: string) => {
                 // If the mutationFn already marked this reaction for deletion
                 // (raced ahead of the INSERT event), do not re-insert it into
                 // the cache. Wait for the DELETE event to reconcile state.
-                if (realtimeDeletesRef.current.has(newReaction.id)) {
+                if (
+                  realtimeDeletesRef.current.has(newReaction.id) ||
+                  inFlightDeletesRef.current.has(newReaction.id)
+                ) {
                   return;
                 }
                 realtimeDeletesRef.current.delete(newReaction.id);
@@ -246,6 +286,7 @@ export const useMessageReactions = (messageId: string) => {
           if (insertedId) {
             realtimeInsertsRef.current.delete(insertedId);
             realtimeDeletesRef.current.add(insertedId);
+            inFlightDeletesRef.current.add(insertedId);
             tombstonedId = insertedId;
           }
           const savedReaction = insertedId
@@ -256,6 +297,7 @@ export const useMessageReactions = (messageId: string) => {
           if (savedReaction) {
             realtimeInsertsRef.current.delete(savedReaction.id);
             realtimeDeletesRef.current.add(savedReaction.id);
+            inFlightDeletesRef.current.add(savedReaction.id);
             tombstonedId = savedReaction.id;
             await MessageReactionsService.removeReaction(savedReaction.id, currentUserId);
           }
@@ -276,6 +318,11 @@ export const useMessageReactions = (messageId: string) => {
             description: getUIErrorMessage(err, 'Failed to remove reaction'),
             variant: 'destructive',
           });
+        } finally {
+          // Settled either way: the row is gone, or the catch above has just
+          // put it back. Holding it hidden past this point would hide a row
+          // that is still in the table.
+          if (tombstonedId) inFlightDeletesRef.current.delete(tombstonedId);
         }
       }
     },
@@ -313,7 +360,16 @@ export const useMessageReactions = (messageId: string) => {
   /** Remove the current user's reaction from this message. */
   const removeReaction = async (reactionId: string) => {
     if (!user) return;
-    const reaction = reactions.find((item) => item.id === reactionId);
+    // Read the cache, not the render closure. Taps land faster than React
+    // re-renders for the one before them, and a row that arrived by realtime
+    // may not be in `reactions` yet. Keyed by its id rather than its emoji, the
+    // removal queues against nothing -- no add ever uses an id as a key -- so a
+    // tap on the same emoji could run beside it. useMatchReactions reads the
+    // cache in toggleReaction for the same reason.
+    const current = queryClient.getQueryData<MessageReaction[]>(queryKey) ?? reactions;
+    const reaction = current.find((item) => item.id === reactionId);
+    // Still falls back to the id when the row is genuinely unknown. That is now
+    // rare rather than routine.
     const mutationKey = reaction?.emoji ?? reactionId;
     const previousMutation = mutationChainsRef.current.get(mutationKey) ?? Promise.resolve();
     const nextMutation = previousMutation

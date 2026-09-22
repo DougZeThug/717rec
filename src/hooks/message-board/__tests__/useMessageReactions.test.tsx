@@ -198,3 +198,152 @@ describe('useMessageReactions', () => {
     });
   });
 });
+
+describe('useMessageReactions clean-up ordering', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.user = { id: 'u1' };
+    mocks.fetch.mockResolvedValue([]);
+    mocks.on.mockReturnThis();
+    mocks.channel.mockReturnValue({ on: mocks.on });
+    mocks.subscribe.mockReturnValue({ dispose: mocks.dispose });
+  });
+
+  // Tap on, off, then on again, all before the first insert's row comes back.
+  // The realtime INSERT for the first tap makes the hook send a compensating
+  // delete for that row. That delete used to go out unqueued while the third
+  // tap's upsert was queued, so both could be in flight together: the upsert
+  // matched the row still sitting there, the delete then removed it, and the
+  // reader's last tap was lost with no error.
+  it('queues the compensating delete behind the taps for the same emoji', async () => {
+    let resolveFirstAdd!: (id: string) => void;
+    mocks.add
+      .mockImplementationOnce(
+        () =>
+          new Promise<string>((resolve) => {
+            resolveFirstAdd = resolve;
+          })
+      )
+      .mockResolvedValue('server-2');
+
+    let resolveRemove!: () => void;
+    mocks.remove.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveRemove = resolve;
+        })
+    );
+
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMessageReactions('m1'), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    const options = mocks.subscribe.mock.calls[0][0];
+    options.build();
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.addReaction('👍');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tap off while the insert is still on its way: nothing is sent yet.
+    await act(async () => {
+      await result.current.addReaction('👍');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The first tap's row arrives. The hook must compensate with a delete.
+    act(() => {
+      mocks.on.mock.calls[0][2]({ new: reaction('server-1', 'u1'), old: {} });
+    });
+
+    // Tap on again, then let the first insert finish.
+    let thirdTap: Promise<void> | undefined;
+    act(() => {
+      thirdTap = result.current.addReaction('👍');
+    });
+    await act(async () => {
+      resolveFirstAdd('server-1');
+      await firstTap;
+    });
+    await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith('server-1', 'u1'));
+
+    // The delete is still in flight, so the third tap's upsert must wait on it.
+    expect(mocks.add).toHaveBeenCalledTimes(1);
+
+    mocks.fetch.mockResolvedValue([reaction('server-2', 'u1')]);
+    await act(async () => {
+      resolveRemove();
+      await thirdTap;
+    });
+
+    expect(mocks.add).toHaveBeenCalledTimes(2);
+    expect(mocks.remove).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useMessageReactions removal queue key', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.user = { id: 'u1' };
+    mocks.fetch.mockResolvedValue([]);
+    mocks.on.mockReturnThis();
+    mocks.channel.mockReturnValue({ on: mocks.on });
+    mocks.subscribe.mockReturnValue({ dispose: mocks.dispose });
+  });
+
+  // A caller holding a handler from one render behind -- which is what a fast
+  // tap is -- passed an id the render closure had never seen. The queue was
+  // then keyed by that id, and no add ever keys by an id, so the removal
+  // serialised against nothing and a tap on the same emoji ran beside it.
+  it('keys the removal by emoji even when the row reached the cache after the last render', async () => {
+    let resolveRemove!: () => void;
+    mocks.remove.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveRemove = resolve;
+        })
+    );
+    mocks.add.mockResolvedValue('server-2');
+
+    const { wrapper } = setup();
+    const { result } = renderHook(() => useMessageReactions('m1'), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    const options = mocks.subscribe.mock.calls[0][0];
+    options.build();
+
+    // A handler from the render before the row existed.
+    const staleApi = result.current;
+
+    act(() => {
+      mocks.on.mock.calls[0][2]({ new: reaction('server-1', 'u1'), old: {} });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    let removal: Promise<void> | undefined;
+    act(() => {
+      removal = staleApi.removeReaction('server-1');
+    });
+    await waitFor(() => expect(mocks.remove).toHaveBeenCalledWith('server-1', 'u1'));
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // Tap the same emoji back on while the removal is still in flight.
+    let tapOn: Promise<void> | undefined;
+    act(() => {
+      tapOn = result.current.addReaction('👍');
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(mocks.add).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveRemove();
+      await removal;
+      await tapOn;
+    });
+
+    expect(mocks.add).toHaveBeenCalledTimes(1);
+  });
+});

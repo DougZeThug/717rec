@@ -237,6 +237,172 @@ describe('useMatchReactions', () => {
     expect(result.current.reactions).toHaveLength(0);
   });
 
+  // A row that goes away while this client is offline sends no DELETE event, so
+  // nothing takes it out of the inserts buffer. The buffer was cleared only when
+  // matchId changed, so the phantom was re-applied on every later refetch --
+  // even one that read an empty table.
+  it('drops a realtime reaction the server no longer reports after a reconnect', async () => {
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('r1', 'user-2', '🔥') });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    mockFetchReactions.mockResolvedValue([]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+  });
+
+  // A tombstone only has to bridge the fetch that was already in flight. After
+  // that the server decides, or a row deleted once stays hidden for the life of
+  // the hook even after somebody reacts again.
+  it('stops applying a delete tombstone after one refetch has used it', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+    act(() => {
+      deleteHandler({ old: { id: 'r1' } });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // This refetch still hides r1: the tombstone was set before it began. The
+    // second row proves the fetch really landed.
+    mockFetchReactions.mockResolvedValueOnce([
+      reaction('r1', 'user-1', '🔥'),
+      reaction('r2', 'user-2', '👏'),
+    ]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+    await waitFor(() => expect(result.current.reactions.map((r) => r.id)).toEqual(['r2']));
+
+    // The next one must show what the server reports.
+    mockFetchReactions.mockResolvedValue([
+      reaction('r1', 'user-1', '🔥'),
+      reaction('r2', 'user-2', '👏'),
+    ]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+    await waitFor(() => expect(result.current.reactions.map((r) => r.id)).toEqual(['r1', 'r2']));
+  });
+
+  it('does not put back a row that is already marked deleted', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+
+    act(() => {
+      deleteHandler({ old: { id: 'r1' } });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // A delayed INSERT for the same row lands after it has gone.
+    act(() => {
+      insertHandler({ new: reaction('r1', 'user-1', '🔥') });
+    });
+    // The cache notifies on a scheduled task, so give it one before asserting.
+    // Without this the assertion reads the value from before the event and
+    // passes whether or not the row came back.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(result.current.reactions).toHaveLength(0);
+  });
+
+  // Supabase sends only the replica-identity columns, so `old` can arrive with
+  // no id. Guarding it keeps undefined out of the reconciliation buffers.
+  it('ignores a delete event that carries no id', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+    act(() => {
+      deleteHandler({ old: {} });
+    });
+
+    expect(result.current.reactions).toHaveLength(1);
+  });
+
+  // A tombstone that only bridges the one fetch already in flight is not
+  // enough for a delete that has been issued and has not committed: the server
+  // still reports the row, so a second refetch landing in that window put back
+  // a reaction the reader had turned off.
+  it('keeps a row hidden across more than one refetch while its delete is in flight', async () => {
+    mockUser.current = { id: 'user-1' };
+    const saved = reaction('saved-1', 'user-1', '🔥');
+
+    let resolveInsert!: () => void;
+    mockInsertReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveInsert = resolve;
+        })
+    );
+    let resolveDelete!: () => void;
+    mockDeleteReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        })
+    );
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tap off while the insert is still on its way: the removal is deferred.
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The row is in the table from here on, and the delete does not commit.
+    mockFetchReactions.mockResolvedValue([saved]);
+    act(() => {
+      resolveInsert();
+    });
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('saved-1', 'user-1'));
+
+    // Two refetches land inside that window.
+    for (let i = 0; i < 2; i += 1) {
+      act(() => {
+        subscribeOptions.current?.onReconnect?.(false);
+      });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
+
+    expect(result.current.reactions).toHaveLength(0);
+
+    await act(async () => {
+      resolveDelete();
+      await firstTap;
+    });
+  });
+
   it('blocks toggling a reaction when signed out', async () => {
     const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -358,9 +524,9 @@ describe('useMatchReactions', () => {
 
   // Tapping on then straight off again defers the removal until the insert has
   // landed. The deferred removal tombstones the new row before deleting it, and
-  // a tombstone left behind by a failed delete hid a row that is still in the
-  // table. This hook's queryFn never clears realtimeDeletesRef, so it stayed
-  // hidden on every refetch: no reaction for this reader, one for everyone else.
+  // a tombstone left behind by a failed delete made the next refetch hide a row
+  // that is still in the table: no reaction for this reader, one for everybody
+  // else.
   it('keeps a reaction that a failed clean-up left in the table', async () => {
     mockUser.current = { id: 'user-1' };
     let resolveInsert!: () => void;
@@ -439,13 +605,89 @@ describe('useMatchReactions', () => {
       insertHandler({ new: reaction('real-reaction', 'user-1', '🔥') });
     });
 
-    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-reaction', 'user-1'));
-    expect(result.current.reactions).toHaveLength(0);
-
+    // The clean-up delete is queued behind the insert that is still in flight,
+    // so let that finish before looking for it. Until B-68 it went straight
+    // out, which is what let it overtake a later tap's upsert.
     act(() => {
       resolveInsert();
     });
     await togglePromise;
+
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-reaction', 'user-1'));
+    expect(result.current.reactions).toHaveLength(0);
+  });
+
+  // Tap on, off, then on again, all before the first insert's row comes back.
+  // The realtime echo makes the hook send a clean-up delete for that row. That
+  // delete used to go out unqueued while the third tap's insert was queued, so
+  // both could be in flight together: insertReaction is an upsert, so it
+  // matched the row still sitting there and the delete then removed it. The
+  // reader's last tap was lost with no error.
+  it('queues the clean-up delete behind the taps for the same emoji', async () => {
+    mockUser.current = { id: 'user-1' };
+
+    // Once, not permanently: vi.clearAllMocks() resets calls but keeps
+    // implementations, so a held-open promise here would hang later tests.
+    let resolveFirstInsert!: () => void;
+    mockInsertReaction
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveFirstInsert = resolve;
+          })
+      )
+      .mockResolvedValueOnce(undefined); // skipcq: JS-W1042
+
+    let resolveDelete!: () => void;
+    mockDeleteReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        })
+    );
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tap off while the insert is still on its way: nothing is sent yet.
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The first tap's row arrives, so the hook must clean it up.
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('real-1', 'user-1', '🔥') });
+    });
+
+    // Tap on again, then let the first insert finish.
+    let thirdTap: Promise<void> | undefined;
+    act(() => {
+      thirdTap = result.current.toggleReaction('🔥');
+    });
+    await act(async () => {
+      resolveFirstInsert();
+      await firstTap;
+    });
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-1', 'user-1'));
+
+    // The delete is still in flight, so the third tap's insert must wait on it.
+    expect(mockInsertReaction).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      resolveDelete();
+      await thirdTap;
+    });
+
+    expect(mockInsertReaction).toHaveBeenCalledTimes(2);
+    expect(mockDeleteReaction).toHaveBeenCalledTimes(1);
   });
 
   it('removes an existing reaction when the user toggles the same emoji', async () => {

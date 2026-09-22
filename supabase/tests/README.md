@@ -123,6 +123,13 @@ so a non-zero exit code means drift was detected.
   `archive_season` completes on a season holding a live-scored finished match.
   Without the cascade both paths raised `23503`, so the admin Scores bin and
   season archiving both failed on any match that had been scored live.
+- `start_game_with_roster.sql` — asserts starting a game is all-or-nothing:
+  one call creates the game and both sides' `game_players`, a second call for
+  the same game number replaces the line-ups rather than duplicating them and
+  reports that it created nothing, a third player on a side is refused with no
+  game row left behind, a match that does not exist is refused rather than
+  falling through to a foreign-key error, and somebody who cannot score the
+  match is refused. Covers B-67.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

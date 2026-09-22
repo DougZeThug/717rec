@@ -308,6 +308,44 @@ exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
 applied, so every bracket-creation insert failed with PGRST204 "Could not
 find the 'opponent1_position' column of 'match'".
 
+> ### Applying `20260922120000_start_game_with_roster.sql` (B-67)
+>
+> **Do this before the change merges, not after.** The code calls a database
+> function that does not exist yet, so:
+>
+> - Until the migration is applied, tapping **Start Game** fails. It fails
+>   cleanly — `handleLiveScoringError` maps the missing-function code `PGRST202`
+>   to "live scoring is not enabled" — but it fails.
+> - `npm run typecheck` passes meanwhile, because the call goes through a
+>   narrowed cast in `LiveMatchService.ts` — the generated `types.ts` cannot be
+>   hand-edited and `Database` is a type alias, so it cannot be augmented
+>   either. **Step 2 below is what lets that cast be removed**, so do not skip
+>   it and leave the cast sitting there.
+>
+> 1. Open the Supabase dashboard → SQL Editor. Paste the **full** contents of
+>    `supabase/migrations/20260922120000_start_game_with_roster.sql` and Run.
+>    The file is `CREATE OR REPLACE`, so re-running it is safe.
+> 2. Regenerate the types. In Lovable, ask it verbatim: _"Apply the SQL migration file
+>    `supabase/migrations/20260922120000_start_game_with_roster.sql` from the
+>    GitHub repo to the project database, then regenerate the Supabase types."_
+> 3. Verify, in the SQL editor:
+>
+>    ```sql
+>    SELECT proname FROM pg_proc WHERE proname = 'start_game_with_roster';
+>    ```
+>
+>    One row. Then open a live match in the app and tap **Start Game**: both
+>    sides must show their players in the thrower bar. Neither may read
+>    "No players selected" — that empty state is the symptom B-67 was about.
+>
+> 4. Delete the `callStartGameWithRoster` cast in
+>    `src/services/liveScoring/LiveMatchService.ts` and call
+>    `supabase.rpc('start_game_with_roster', { ... })` directly. The comment on
+>    it says the same. `npm run typecheck` is the check that it worked.
+>
+> `supabase/tests/start_game_with_roster.sql` covers the invariants and runs in
+> the `db-apply-and-smoke` CI job.
+
 > **Applying the 2026-08 power-score rollout** (`20260811205000` –
 > `20260812140000`) has its own runbook, because it rewrites stored history and
 > ships a tested way back: **`docs/POWER_SCORE_ROLLOUT.md`**. Run the backup

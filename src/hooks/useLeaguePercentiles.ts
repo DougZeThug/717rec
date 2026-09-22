@@ -10,6 +10,7 @@ export interface TeamPercentiles {
   gameWinPercentage: PercentileResult;
   powerScore: PercentileResult;
   sos: PercentileResult;
+  sweepRate: PercentileResult;
   championships: PercentileResult;
   playoffWinPercentage: PercentileResult;
 }
@@ -42,7 +43,16 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
     const gameWinPctValues = measured.map((r) => r.careerGameWinPercentage);
     const powerScoreValues = measured.map((r) => r.careerPowerScore);
     const sosValues = measured.map((r) => r.careerSos);
-    const championshipValues = measured.map((r) => r.championships);
+    const sweepRateValues = measured.map((r) => r.careerSweepRate);
+    // Only the teams that have won something, the same rule playoff win
+    // percentage already uses below. Ranking every team put most of the league
+    // on one shared bottom rank: `percentile` is 0 when nobody has fewer, so a
+    // team with no title drew a red pill reading "6th of 26" on most
+    // comparisons. That is the "worst in the league" reading B-62 exists to
+    // prevent, one row over.
+    const championshipValues = measured
+      .filter((r) => r.championships > 0)
+      .map((r) => r.championships);
     // Playoffs have always been counted this way: a team with no playoff match
     // has no playoff rate to rank, so it is left out rather than counted as a 0.
     const playoffWinPctValues = measured
@@ -60,6 +70,7 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
           gameWinPercentage: UNMEASURED,
           powerScore: UNMEASURED,
           sos: UNMEASURED,
+          sweepRate: UNMEASURED,
           championships: UNMEASURED,
           playoffWinPercentage: UNMEASURED,
         });
@@ -77,7 +88,11 @@ export function useLeaguePercentiles(): LeaguePercentilesData {
         ),
         powerScore: calculatePercentile(ranking.careerPowerScore, powerScoreValues, true),
         sos: calculatePercentile(ranking.careerSos, sosValues, true), // Higher SOS = tougher opponents
-        championships: calculatePercentile(ranking.championships, championshipValues, true),
+        sweepRate: calculatePercentile(ranking.careerSweepRate, sweepRateValues, true),
+        championships:
+          ranking.championships > 0
+            ? calculatePercentile(ranking.championships, championshipValues, true)
+            : UNMEASURED,
         playoffWinPercentage: hasPlayoffGames
           ? calculatePercentile(ranking.careerPlayoffWinPercentage, playoffWinPctValues, true)
           : UNMEASURED,

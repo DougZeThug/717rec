@@ -2,10 +2,11 @@ import { Medal, Trophy } from 'lucide-react';
 import React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { TeamComparisonSide } from '@/hooks/useTeamComparison';
 
 import { ComparisonStatRow } from './ComparisonStatRow';
-import { HeadToHeadSection } from './HeadToHeadSection';
+import { HeadToHeadSection, HeadToHeadUnavailable } from './HeadToHeadSection';
 
 interface TeamComparisonViewProps {
   team1: TeamComparisonSide;
@@ -18,6 +19,7 @@ interface TeamComparisonViewProps {
     lastPlayed: string | null;
     isFirstMeeting: boolean;
   } | null;
+  headToHeadError?: boolean;
 }
 
 const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }> = ({
@@ -45,185 +47,207 @@ const TeamHeader: React.FC<{ team: TeamComparisonSide; align: 'left' | 'right' }
 const formatRecord = (wins: number, losses: number) => `${wins}-${losses}`;
 const formatPct = (value: number) => `${value.toFixed(1)}%`;
 
-export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
-  team1,
-  team2,
-  headToHead,
-}) => {
+/**
+ * A record read as a rate, so a row showing "3-9" is judged as 3-9 rather than
+ * as 3. Ranking on the wins alone marked a 3-9 team ahead of a 2-0 one.
+ *
+ * A team with no games in the tier rates 0: it loses to any team with a win and
+ * ties another team with none. Not reusing `calculateWinPercentage` from
+ * rankingUtils on purpose -- that one logs on every call, and this runs eight
+ * times per render.
+ */
+const winRate = (wins: number, losses: number) => (wins + losses > 0 ? wins / (wins + losses) : 0);
+
+/**
+ * The three cards are separate components so each one's branching stays its
+ * own. Together in TeamComparisonView they gave that single function a
+ * cyclomatic complexity in the fifties -- every `t1?.x || 0` is a branch and
+ * there are dozens -- which React Doctor flags. Nothing here is shared with
+ * anything outside this file, so they stay local to it.
+ */
+interface CardProps {
+  team1: TeamComparisonSide;
+  team2: TeamComparisonSide;
+}
+
+const CareerStatsCard: React.FC<CardProps> = ({ team1, team2 }) => {
   const t1 = team1.totals;
   const t2 = team2.totals;
   const p1 = team1.percentiles;
   const p2 = team2.percentiles;
 
   return (
-    <div className="space-y-6">
-      {/* Team Headers */}
-      <div className="grid grid-cols-2 gap-4 pb-4 border-b border-border">
-        <TeamHeader team={team1} align="left" />
-        <TeamHeader team={team2} align="right" />
-      </div>
+    <div className="rounded-lg border border-border bg-card p-4">
+      <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
+        Career Statistics
+      </h4>
 
-      {/* Core Stats */}
-      <div className="rounded-lg border border-border bg-card p-4">
-        <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
-          Career Statistics
-        </h4>
+      <ComparisonStatRow
+        label="Win %"
+        value1={formatPct(team1.winPct)}
+        value2={formatPct(team2.winPct)}
+        numericValue1={team1.winPct}
+        numericValue2={team2.winPct}
+        percentile1={p1?.winPercentage}
+        percentile2={p2?.winPercentage}
+      />
 
-        <ComparisonStatRow
-          label="Win %"
-          value1={formatPct(team1.winPct)}
-          value2={formatPct(team2.winPct)}
-          numericValue1={team1.winPct}
-          numericValue2={team2.winPct}
-          percentile1={p1?.winPercentage}
-          percentile2={p2?.winPercentage}
-        />
+      <ComparisonStatRow
+        label="Game Win %"
+        value1={formatPct(team1.gameWinPct)}
+        value2={formatPct(team2.gameWinPct)}
+        numericValue1={team1.gameWinPct}
+        numericValue2={team2.gameWinPct}
+        percentile1={p1?.gameWinPercentage}
+        percentile2={p2?.gameWinPercentage}
+      />
 
-        <ComparisonStatRow
-          label="Game Win %"
-          value1={formatPct(team1.gameWinPct)}
-          value2={formatPct(team2.gameWinPct)}
-          numericValue1={team1.gameWinPct}
-          numericValue2={team2.gameWinPct}
-          percentile1={p1?.gameWinPercentage}
-          percentile2={p2?.gameWinPercentage}
-        />
+      <ComparisonStatRow
+        label="Power Score"
+        value1={(t1?.career_power_score || 0).toFixed(1)}
+        value2={(t2?.career_power_score || 0).toFixed(1)}
+        numericValue1={t1?.career_power_score || 0}
+        numericValue2={t2?.career_power_score || 0}
+        percentile1={p1?.powerScore}
+        percentile2={p2?.powerScore}
+      />
 
-        <ComparisonStatRow
-          label="Power Score"
-          value1={(t1?.career_power_score || 0).toFixed(1)}
-          value2={(t2?.career_power_score || 0).toFixed(1)}
-          numericValue1={t1?.career_power_score || 0}
-          numericValue2={t2?.career_power_score || 0}
-          percentile1={p1?.powerScore}
-          percentile2={p2?.powerScore}
-        />
+      <ComparisonStatRow
+        label="SOS"
+        value1={(t1?.career_sos || 0).toFixed(3)}
+        value2={(t2?.career_sos || 0).toFixed(3)}
+        numericValue1={t1?.career_sos || 0}
+        numericValue2={t2?.career_sos || 0}
+        percentile1={p1?.sos}
+        percentile2={p2?.sos}
+      />
 
-        <ComparisonStatRow
-          label="SOS"
-          value1={(t1?.career_sos || 0).toFixed(3)}
-          value2={(t2?.career_sos || 0).toFixed(3)}
-          numericValue1={t1?.career_sos || 0}
-          numericValue2={t2?.career_sos || 0}
-          percentile1={p1?.sos}
-          percentile2={p2?.sos}
-        />
-
-        <ComparisonStatRow
-          label="Sweep Rate"
-          value1={formatPct(t1?.career_sweep_rate || 0)}
-          value2={formatPct(t2?.career_sweep_rate || 0)}
-          numericValue1={t1?.career_sweep_rate || 0}
-          numericValue2={t2?.career_sweep_rate || 0}
-          showPercentiles={false}
-        />
-      </div>
-
-      {/* Playoff Stats */}
-      <div className="rounded-lg border border-border bg-card p-4">
-        <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
-          Playoff Performance
-        </h4>
-
-        <ComparisonStatRow
-          label="Playoff Record"
-          value1={formatRecord(t1?.career_playoff_wins || 0, t1?.career_playoff_losses || 0)}
-          value2={formatRecord(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
-          numericValue1={t1?.career_playoff_wins || 0}
-          numericValue2={t2?.career_playoff_wins || 0}
-          showPercentiles={false}
-        />
-
-        <div className="grid grid-cols-3 gap-2 py-3 border-b border-border/50">
-          <div className="flex items-center gap-1">
-            <Trophy className="size-4 text-yellow-500" />
-            <span className="font-semibold">{t1?.championships || 0}</span>
-          </div>
-          <div className="text-center text-sm text-muted-foreground">Championships</div>
-          <div className="flex items-center justify-end gap-1">
-            <span className="font-semibold">{t2?.championships || 0}</span>
-            <Trophy className="size-4 text-yellow-500" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2 py-3">
-          <div className="flex items-center gap-1">
-            <Medal className="size-4 text-muted-foreground" />
-            <span className="font-semibold">{t1?.runner_ups || 0}</span>
-          </div>
-          <div className="text-center text-sm text-muted-foreground">Runner-ups</div>
-          <div className="flex items-center justify-end gap-1">
-            <span className="font-semibold">{t2?.runner_ups || 0}</span>
-            <Medal className="size-4 text-muted-foreground" />
-          </div>
-        </div>
-      </div>
-
-      {/* Division Records */}
-      <div className="rounded-lg border border-border bg-card p-4">
-        <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
-          vs Division Tiers
-        </h4>
-
-        <ComparisonStatRow
-          label="vs Competitive"
-          value1={formatRecord(
-            t1?.division_records.competitive.wins || 0,
-            t1?.division_records.competitive.losses || 0
-          )}
-          value2={formatRecord(
-            t2?.division_records.competitive.wins || 0,
-            t2?.division_records.competitive.losses || 0
-          )}
-          numericValue1={t1?.division_records.competitive.wins || 0}
-          numericValue2={t2?.division_records.competitive.wins || 0}
-          showPercentiles={false}
-        />
-
-        <ComparisonStatRow
-          label="vs Intermediate"
-          value1={formatRecord(
-            t1?.division_records.intermediate.wins || 0,
-            t1?.division_records.intermediate.losses || 0
-          )}
-          value2={formatRecord(
-            t2?.division_records.intermediate.wins || 0,
-            t2?.division_records.intermediate.losses || 0
-          )}
-          numericValue1={t1?.division_records.intermediate.wins || 0}
-          numericValue2={t2?.division_records.intermediate.wins || 0}
-          showPercentiles={false}
-        />
-
-        <ComparisonStatRow
-          label="vs Recreational"
-          value1={formatRecord(
-            t1?.division_records.recreational.wins || 0,
-            t1?.division_records.recreational.losses || 0
-          )}
-          value2={formatRecord(
-            t2?.division_records.recreational.wins || 0,
-            t2?.division_records.recreational.losses || 0
-          )}
-          numericValue1={t1?.division_records.recreational.wins || 0}
-          numericValue2={t2?.division_records.recreational.wins || 0}
-          showPercentiles={false}
-        />
-      </div>
-
-      {/* Head-to-Head */}
-      {headToHead && (
-        <HeadToHeadSection
-          team1Name={team1.name}
-          team2Name={team2.name}
-          team1Wins={headToHead.team1Wins}
-          team2Wins={headToHead.team2Wins}
-          gameWins1={headToHead.gameWins1}
-          gameWins2={headToHead.gameWins2}
-          lastPlayed={headToHead.lastPlayed}
-          isFirstMeeting={headToHead.isFirstMeeting}
-        />
-      )}
+      <ComparisonStatRow
+        label="Sweep Rate"
+        value1={formatPct(t1?.career_sweep_rate || 0)}
+        value2={formatPct(t2?.career_sweep_rate || 0)}
+        numericValue1={t1?.career_sweep_rate || 0}
+        numericValue2={t2?.career_sweep_rate || 0}
+        percentile1={p1?.sweepRate}
+        percentile2={p2?.sweepRate}
+      />
     </div>
   );
 };
+
+const PlayoffStatsCard: React.FC<CardProps> = ({ team1, team2 }) => {
+  const t1 = team1.totals;
+  const t2 = team2.totals;
+  const p1 = team1.percentiles;
+  const p2 = team2.percentiles;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
+        Playoff Performance
+      </h4>
+
+      <ComparisonStatRow
+        label="Playoff Record"
+        value1={formatRecord(t1?.career_playoff_wins || 0, t1?.career_playoff_losses || 0)}
+        value2={formatRecord(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
+        numericValue1={winRate(t1?.career_playoff_wins || 0, t1?.career_playoff_losses || 0)}
+        numericValue2={winRate(t2?.career_playoff_wins || 0, t2?.career_playoff_losses || 0)}
+        percentile1={p1?.playoffWinPercentage}
+        percentile2={p2?.playoffWinPercentage}
+      />
+
+      <div className="grid grid-cols-3 gap-2 py-3 border-b border-border/50">
+        <div className="flex items-center gap-1">
+          <Trophy className="size-4 text-yellow-500" />
+          <span className="font-semibold">{t1?.championships || 0}</span>
+          {p1 && <PercentileFromResult result={p1.championships} statName="Championships" />}
+        </div>
+        <div className="text-center text-sm text-muted-foreground">Championships</div>
+        <div className="flex items-center justify-end gap-1">
+          {p2 && <PercentileFromResult result={p2.championships} statName="Championships" />}
+          <span className="font-semibold">{t2?.championships || 0}</span>
+          <Trophy className="size-4 text-yellow-500" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 py-3">
+        <div className="flex items-center gap-1">
+          <Medal className="size-4 text-muted-foreground" />
+          <span className="font-semibold">{t1?.runner_ups || 0}</span>
+        </div>
+        <div className="text-center text-sm text-muted-foreground">Runner-ups</div>
+        <div className="flex items-center justify-end gap-1">
+          <span className="font-semibold">{t2?.runner_ups || 0}</span>
+          <Medal className="size-4 text-muted-foreground" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/** The three tiers are the same row three times, so they are written once. */
+const DIVISION_TIERS = [
+  { key: 'competitive', label: 'vs Competitive' },
+  { key: 'intermediate', label: 'vs Intermediate' },
+  { key: 'recreational', label: 'vs Recreational' },
+] as const;
+
+const DivisionRecordsCard: React.FC<CardProps> = ({ team1, team2 }) => (
+  <div className="rounded-lg border border-border bg-card p-4">
+    <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
+      vs Division Tiers
+    </h4>
+
+    {DIVISION_TIERS.map(({ key, label }) => {
+      const r1 = team1.totals?.division_records[key];
+      const r2 = team2.totals?.division_records[key];
+
+      return (
+        <ComparisonStatRow
+          key={key}
+          label={label}
+          value1={formatRecord(r1?.wins || 0, r1?.losses || 0)}
+          value2={formatRecord(r2?.wins || 0, r2?.losses || 0)}
+          numericValue1={winRate(r1?.wins || 0, r1?.losses || 0)}
+          numericValue2={winRate(r2?.wins || 0, r2?.losses || 0)}
+          showPercentiles={false}
+        />
+      );
+    })}
+  </div>
+);
+
+export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
+  team1,
+  team2,
+  headToHead,
+  headToHeadError = false,
+}) => (
+  <div className="space-y-6">
+    {/* Team Headers */}
+    <div className="grid grid-cols-2 gap-4 pb-4 border-b border-border">
+      <TeamHeader team={team1} align="left" />
+      <TeamHeader team={team2} align="right" />
+    </div>
+
+    <CareerStatsCard team1={team1} team2={team2} />
+    <PlayoffStatsCard team1={team1} team2={team2} />
+    <DivisionRecordsCard team1={team1} team2={team2} />
+
+    {/* Head-to-Head */}
+    {headToHeadError && <HeadToHeadUnavailable />}
+    {!headToHeadError && headToHead && (
+      <HeadToHeadSection
+        team1Name={team1.name}
+        team2Name={team2.name}
+        team1Wins={headToHead.team1Wins}
+        team2Wins={headToHead.team2Wins}
+        gameWins1={headToHead.gameWins1}
+        gameWins2={headToHead.gameWins2}
+        lastPlayed={headToHead.lastPlayed}
+        isFirstMeeting={headToHead.isFirstMeeting}
+      />
+    )}
+  </div>
+);

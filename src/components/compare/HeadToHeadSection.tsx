@@ -15,6 +15,22 @@ interface HeadToHeadSectionProps {
   isFirstMeeting: boolean;
 }
 
+/**
+ * Shown when the record could not be read. Deliberately separate from "First
+ * Meeting": one says the teams have never played, the other says we do not
+ * know. Telling a reader the first when the second is true is the defect this
+ * exists to prevent.
+ */
+export const HeadToHeadUnavailable: React.FC = () => (
+  <div className="rounded-lg border border-border bg-card p-6 text-center">
+    <Swords className="size-8 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
+    <h3 className="font-semibold text-lg mb-1">Head-to-Head Unavailable</h3>
+    <p className="text-sm text-muted-foreground">
+      This record could not be loaded. It does not mean the teams have never played.
+    </p>
+  </div>
+);
+
 export const HeadToHeadSection: React.FC<HeadToHeadSectionProps> = ({
   team1Name,
   team2Name,
