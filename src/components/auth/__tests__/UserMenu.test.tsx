@@ -28,8 +28,15 @@ const renderMenu = (initialPath = '/') =>
     </MemoryRouter>
   );
 
+// Opened with the keyboard on purpose. A mouse click opens the menu and then
+// Radix's own dismiss-on-outside-pointer handler closes it again in jsdom for
+// every test after the first one in this file, so a click can only ever test
+// the first case. Enter on the focused trigger is the same user action and is
+// stable across tests.
 const openMenu = async () => {
-  await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
+  const trigger = screen.getByRole('button', { name: /user menu/i });
+  trigger.focus();
+  await userEvent.keyboard('{Enter}');
 };
 
 /** Stable across renders, so a test can assert it was never reached. */
@@ -45,6 +52,15 @@ describe('UserMenu', () => {
     });
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false });
     mockUseTeamMembership.mockReturnValue({ activeMembership: null });
+  });
+
+  // Radix keeps the open menu's guards on <body> until it closes. Leaving a
+  // menu open makes the next test's first click land on that leftover state
+  // instead of the trigger, so close it before cleanup runs.
+  afterEach(async () => {
+    if (document.querySelector('[role="menu"]')) {
+      await userEvent.keyboard('{Escape}');
+    }
   });
 
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
