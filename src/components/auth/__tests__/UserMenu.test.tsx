@@ -52,7 +52,7 @@ describe('UserMenu', () => {
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },
     });
     renderMenu();
-    await openMenu(user);
+    await openMenu();
 
     // The team's public page has no Leave Team and no edit control, so a member
     // who is sent there cannot reach either.
@@ -62,7 +62,7 @@ describe('UserMenu', () => {
 
   it('offers Join a Team when there is no membership', async () => {
     renderMenu();
-    await openMenu(user);
+    await openMenu();
 
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
     expect(screen.queryByRole('menuitem', { name: /my team/i })).not.toBeInTheDocument();
@@ -85,7 +85,7 @@ describe('UserMenu', () => {
       activeMembership: null,
     });
     renderMenu();
-    await openMenu(user);
+    await openMenu();
 
     expect(screen.queryByRole('menuitem', { name: /my team/i })).not.toBeInTheDocument();
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
@@ -104,27 +104,27 @@ describe('UserMenu', () => {
 
     it('opens the console from outside it', async () => {
       renderMenu('/teams');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
 
       expect(screen.getByTestId('location')).toHaveTextContent('/admin');
     });
 
     it('goes nowhere when the console is already open', async () => {
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
 
       expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
     });
 
     it('goes nowhere from a bare /admin either', async () => {
       renderMenu('/admin');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
 
       expect(screen.getByTestId('location')).toHaveTextContent('/admin');
     });
@@ -151,9 +151,9 @@ describe('UserMenu', () => {
 
     it('asks before My Team throws it away', async () => {
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /join a team/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /join a team/i }));
 
       expect(confirmSpy).toHaveBeenCalledWith('Unsaved scores');
       expect(screen.getByTestId('location')).toHaveTextContent('/my-team');
@@ -162,9 +162,9 @@ describe('UserMenu', () => {
     it('stays put when the admin says no', async () => {
       confirmSpy.mockReturnValue(false);
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /join a team/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /join a team/i }));
 
       expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
     });
@@ -175,12 +175,12 @@ describe('UserMenu', () => {
     it('guards Edit Profile and Message Board too, and stays open', async () => {
       confirmSpy.mockReturnValue(false);
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /edit profile/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /edit profile/i }));
       expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
 
-      await user.click(await screen.findByRole('menuitem', { name: /message board/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /message board/i }));
       expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
     });
 
@@ -188,9 +188,9 @@ describe('UserMenu', () => {
     it('asks before Logout throws it away, and obeys no', async () => {
       confirmSpy.mockReturnValue(false);
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /logout/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /logout/i }));
 
       expect(confirmSpy).toHaveBeenCalledWith('Unsaved scores');
       expect(mockSignOut).not.toHaveBeenCalled();
@@ -198,9 +198,9 @@ describe('UserMenu', () => {
 
     it('signs out once the admin says to discard it', async () => {
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /logout/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /logout/i }));
 
       expect(mockSignOut).toHaveBeenCalled();
     });
@@ -208,9 +208,9 @@ describe('UserMenu', () => {
     it('does not ask for Admin Panel, which goes nowhere anyway', async () => {
       mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: true });
       renderMenu('/admin/scores');
-      await openMenu(user);
+      await openMenu();
 
-      await user.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /admin panel/i }));
 
       expect(confirmSpy).not.toHaveBeenCalled();
       expect(screen.getByTestId('location')).toHaveTextContent('/admin/scores');
