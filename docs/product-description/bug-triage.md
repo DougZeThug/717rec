@@ -3220,6 +3220,21 @@ finding read a superseded migration.
   against a plain `\S+` tail. Four tests were added; the seven from B-43 keep
   their expected values, and two of the four fail against the old counter, one
   of them with exactly "expected 3, got 6".
+- **Corrected on review.** The first fix wrote the body as a blacklist —
+  anything except whitespace, a comma, a semicolon, a bracket or a quote — and
+  that had the same hole one character over. `https://a.test|https://b.test`
+  ran into a single match, so six links joined on a pipe scored 1 against a
+  limit of 5 and the flood went through. Every character left off the blacklist
+  was another way in. The body now names the characters a URL may contain, so
+  anything else ends the link and no separator has to be predicted. A `/` or a
+  `?` is on the list, so a link inside another link's path is still swallowed by
+  the link that owns it, which is the B-63 case itself. Three tests cover it;
+  two fail against the blacklist version.
+- **A suggested fix that was not taken.** The review proposed stopping the body
+  before every new scheme or bare `www.`. That reopens this entry: a Wayback
+  snapshot's path *is* a new scheme, so it would score 2, and it also breaks
+  B-43's original case — `https://www.example.com` would score 2 again. Checked
+  against all eighteen cases before deciding.
 - **Verification note:** there is no `deno` binary in the agent container, so
   these were run by transpiling the real `spam.ts` and `spam.test.ts` and
   executing them under Node with an `assertEquals` shim. CI runs them properly

@@ -101,3 +101,29 @@ Deno.test('countUrls counts a link that follows other text directly', () => {
   assertEquals(countUrls('Visit:www.a.com'), 1);
   assertEquals(countUrls('Check www.a.com. Then www.b.com.'), 2);
 });
+
+// A blacklist body -- "anything except whitespace, a comma, a semicolon, a
+// bracket or a quote" -- had a hole one character over. Joining links on a
+// pipe ran them all into a single match, so six scored 1 against a limit of
+// five and the flood went through. Any character left off the blacklist was
+// another way in, which is why the body names what a URL may contain instead.
+Deno.test('countUrls counts links joined by a character that is not in a URL', () => {
+  assertEquals(countUrls('https://a.test|https://b.test'), 2);
+  assertEquals(countUrls('https://a.test\\https://b.test'), 2);
+  assertEquals(countUrls('https://a.test`https://b.test'), 2);
+});
+
+Deno.test('countUrls blocks a flood joined by a character that is not in a URL', () => {
+  for (const joiner of ['|', '\\', '`', '^', '{']) {
+    const message = Array.from({ length: 6 }, (_, i) => `https://spam${i}.test`).join(joiner);
+    assertEquals(countUrls(message), 6);
+    assertEquals(countUrls(message) > MAX_URLS_PER_MESSAGE, true);
+  }
+});
+
+// Characters a URL really does carry must not end it, or a long link would
+// count more than once.
+Deno.test('countUrls keeps a link whole across its own punctuation', () => {
+  assertEquals(countUrls('https://a.test/path-to/x_y~z?q=1&r=2#frag'), 1);
+  assertEquals(countUrls('www.a-b.com/c+d%20e'), 1);
+});

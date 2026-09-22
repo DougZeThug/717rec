@@ -17,12 +17,22 @@
  * quoting three archived pages was refused as a spammer and told the message
  * held too many links. It held three. Retrying the same text never worked.
  *
- * The body stops at whitespace, at `,` and `;`, and at brackets and quotes.
- * That is the other half of the rule, and it is why the tail is not a plain
- * `\S+`. A greedy tail runs straight through the punctuation between two links,
- * so `https://a.test,https://b.test` reads as one link and a sender could put
- * any number of them past the limit by leaving out the spaces. Excluding the
- * separators keeps those apart while still swallowing a link's own path.
+ * The body is a list of the characters a URL may contain, and it stops at
+ * anything else. That is the other half of the rule, and it is why the tail is
+ * not a plain `\S+` and not a blacklist either.
+ *
+ * A greedy `\S+` runs straight through the punctuation between two links, so
+ * `https://a.test,https://b.test` reads as one and a sender gets any number
+ * past the limit by leaving out the spaces. A blacklist -- "anything except
+ * whitespace, a comma, a semicolon, a bracket or a quote" -- has the same hole
+ * one character over: `https://a.test|https://b.test` joined on a pipe read as
+ * one link, and six of them scored 1 against a limit of 5. Every character not
+ * on the blacklist was another way through.
+ *
+ * Naming the characters instead closes that, because a separator does not have
+ * to be predicted: anything not in the list ends the link. A `/` or a `?` is in
+ * the list, so a link inside another link's path is still swallowed by the link
+ * that owns it.
  *
  * A `www.` directly after a scheme needs no special case any more: the scheme
  * matches first and the tail eats the host.
@@ -31,7 +41,7 @@
  * mistake — six of them would score zero.
  */
 export function countUrls(text: string): number {
-  const matches = text.match(/(?:https?:\/\/|www\.)[^\s,;()[\]<>"']*/gi);
+  const matches = text.match(/(?:https?:\/\/|www\.)[A-Za-z0-9._~:/?#@!$&*+=%-]*/gi);
   return matches ? matches.length : 0;
 }
 
