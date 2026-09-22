@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, TablesUpdate } from '@/integrations/supabase/types';
 import { BusinessLogicError, ValidationError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 import { validateBreakdown } from '@/utils/liveScoring/bagBreakdown';
@@ -121,7 +121,7 @@ export const AdminCorrectionsService = {
       throw new ValidationError('Team 2 bag breakdown does not match the round score');
     }
 
-    const update: Partial<MatchRoundRow> = {};
+    const update: TablesUpdate<'match_rounds'> = {};
     if (patch.team1Score !== undefined) update.team1_score = patch.team1Score;
     if (patch.team2Score !== undefined) update.team2_score = patch.team2Score;
     if (patch.team1ThrowerId !== undefined) update.team1_thrower_id = patch.team1ThrowerId;
