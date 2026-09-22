@@ -65,41 +65,6 @@ globalThis.matchMedia =
     } as MediaQueryList;
   };
 
-// jsdom doesn't implement PointerEvent, so @testing-library/dom falls back to
-// a plain Event without pointer/button/modifier fields that Radix UI expects.
-// Default to a left-button mouse interaction.
-// https://github.com/radix-ui/primitives/issues/1207
-class MockPointerEvent extends MouseEvent {
-  button: number;
-  buttons: number;
-  ctrlKey: boolean;
-  shiftKey: boolean;
-  altKey: boolean;
-  metaKey: boolean;
-  pointerId: number;
-  pointerType: string;
-  isPrimary: boolean;
-
-  constructor(type: string, props: PointerEventInit = {}) {
-    super(type, props);
-    this.button = props.button ?? 0;
-    this.buttons = props.buttons ?? (this.button === 0 ? 1 : 0);
-    this.ctrlKey = props.ctrlKey ?? false;
-    this.shiftKey = props.shiftKey ?? false;
-    this.altKey = props.altKey ?? false;
-    this.metaKey = props.metaKey ?? false;
-    this.pointerId = props.pointerId ?? 1;
-    this.pointerType = (props.pointerType as string) ?? 'mouse';
-    this.isPrimary = props.isPrimary ?? true;
-  }
-}
-
-// Cast through unknown because jsdom's global type lacks PointerEvent.
-(globalThis as unknown as { PointerEvent?: typeof MockPointerEvent }).PointerEvent = MockPointerEvent;
-if (typeof window !== 'undefined') {
-  (window as unknown as { PointerEvent?: typeof MockPointerEvent }).PointerEvent = MockPointerEvent;
-}
-
 // Mock DOM methods missing in jsdom for Radix UI compatibility
 for (const proto of [Element.prototype, HTMLElement.prototype]) {
   if (!proto.hasPointerCapture) {
