@@ -636,7 +636,7 @@ describe('useMatchReactions', () => {
             resolveFirstInsert = resolve;
           })
       )
-      .mockResolvedValueOnce(undefined);
+      .mockResolvedValueOnce(undefined); // skipcq: JS-W1042
 
     let resolveDelete!: () => void;
     mockDeleteReaction.mockImplementationOnce(
