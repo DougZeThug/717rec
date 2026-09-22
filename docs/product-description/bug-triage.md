@@ -14,8 +14,10 @@ Nothing here has been filed as an issue.
 The 58 documents raised roughly 190 suspected defects and open questions. After
 merging by root cause the original pass came to 42 entries. The list has grown
 since, as later readings found defects the documents never raised, and now holds
-**62 entries**: 15 high, 30 medium, 16 low, and B-06, which carries no severity
-because it was cleared as not a defect. All of them are now closed. Several were **not raised as
+**75 entries**: 16 high, 36 medium, 20 low, B-06, which carries no severity
+because it was cleared as not a defect, and B-69 and B-74, which carry none
+because each records two defensible readings in conflict rather than one thing
+being wrong. All of them are now closed. Several were **not raised as
 defects by any document**. B-40, a `high`, was found while checking B-20. B-41, a
 `medium`, was recorded in `home/the-home-page.md` as an open question and could
 not be reached until
@@ -25,15 +27,21 @@ out of code readings rather than screens, as did B-54 to B-60 — seven defects
 found by reading the code against these documents, all seven fixed in the change
 that recorded them. B-61 came out of the review of that change, and was closed
 as a product call: the league chose to accept the behaviour rather than change
-it.
+it. B-62 to B-74 came out of a pass over five filed bug reports: five of the
+thirteen are the reports themselves, and the other eight were found while
+reading the files those reports named. Eleven were fixed; B-69 and B-74 were put
+to the league and left as they are, documented.
 
-*The counts in this paragraph had gone stale.* They still read "42 entries: 13
-high, 23 medium, and 6 low" long after the list had grown past them, and are
-corrected here by counting the **Severity** line on each entry. Two things make a
-count by eye come out wrong: B-06 has no severity line at all, and B-41 sits
-under the `## Low` heading while being marked `medium`.
+*The counts in this paragraph go stale easily, and have twice.* They once read
+"42 entries: 13 high, 23 medium, and 6 low", then "62 entries: 15 high, 30
+medium, 16 low", long after the list had grown past each. They are recounted
+from the **Severity** line on each entry whenever entries are added. Three
+things make a count by eye come out wrong: B-06, B-69 and B-74 have no severity
+to count, and B-41 sits under the `## Low` heading while being marked `medium`.
+Entries from B-50 onwards are also not in the index table above, which stops at
+B-49.
 
-**All sixteen `low` entries are now closed.** Fifteen were fixed; B-26 was put
+**All twenty `low` entries are now closed.** Nineteen were fixed; B-26 was put
 to the league as a product call and left as it is, documented rather than
 changed.
 Three — B-27, B-30 and B-53 — carried claims that had gone stale or were recorded
