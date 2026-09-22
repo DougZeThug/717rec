@@ -11,9 +11,13 @@ import { getUIErrorMessage } from '@/utils/errorHandler';
 // ─── Supabase mock (liveDb wraps the same client module) ─────────────────────
 
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: (table: string) => mockFrom(table), rpc: vi.fn() },
+  supabase: {
+    from: (table: string) => mockFrom(table),
+    rpc: (fn: string, args: unknown) => mockRpc(fn, args),
+  },
 }));
 
 vi.mock('@/utils/logger', () => ({
@@ -245,54 +249,69 @@ describe('reopenGame', () => {
   });
 });
 
-// ─── setGamePlayers ───────────────────────────────────────────────────────────
+// ─── startGameWithRoster ─────────────────────────────────────────────────────
 
-describe('setGamePlayers', () => {
-  it('rejects more than 2 players per side', async () => {
+describe('startGameWithRoster', () => {
+  it('rejects more than 2 players per side before calling the database', async () => {
     await expect(
-      LiveMatchService.setGamePlayers('game-1', 'team-1', ['a', 'b', 'c'])
+      LiveMatchService.startGameWithRoster('match-1', 1, 'team-1', ['a', 'b', 'c'], 'team-2', [])
     ).rejects.toThrow(/at most 2/);
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('tells the scorer the limit rather than a generic failure', async () => {
     // A bare Error would be sanitised away; ValidationError is what carries the
     // wording to the toast in useGameFlow.
-    const thrown = await LiveMatchService.setGamePlayers('game-1', 'team-1', ['a', 'b', 'c']).catch(
-      (error) => error
-    );
+    const thrown = await LiveMatchService.startGameWithRoster(
+      'match-1',
+      1,
+      'team-1',
+      [],
+      'team-2',
+      ['a', 'b', 'c']
+    ).catch((error: unknown) => error);
 
     expect(thrown).toBeInstanceOf(ValidationError);
     expect(getUIErrorMessage(thrown)).toBe('A team can select at most 2 players per game');
   });
 
-  it('replaces the side selection with slotted rows', async () => {
-    const eq2 = vi.fn(() => Promise.resolve({ error: null }));
-    const eq1 = vi.fn(() => ({ eq: eq2 }));
-    const del = vi.fn(() => ({ eq: eq1 }));
-    const insert = vi.fn(() => Promise.resolve({ error: null }));
-    routeTables({ game_players: { delete: del, insert } });
+  it('sends both line-ups in one call and returns the game row', async () => {
+    mockRpc.mockResolvedValue({ data: { game_id: 'game-1', created: true }, error: null });
+    const maybeSingle = vi.fn(() => Promise.resolve({ data: { id: 'game-1' }, error: null }));
+    const eq = vi.fn(() => ({ maybeSingle }));
+    const select = vi.fn(() => ({ eq }));
+    routeTables({ games: { select } });
 
-    await LiveMatchService.setGamePlayers('game-1', 'team-1', ['p1', 'p2']);
+    const game = await LiveMatchService.startGameWithRoster(
+      'match-1',
+      2,
+      'team-1',
+      ['p1', 'p2'],
+      'team-2',
+      ['p3']
+    );
 
-    expect(eq1).toHaveBeenCalledWith('game_id', 'game-1');
-    expect(eq2).toHaveBeenCalledWith('team_id', 'team-1');
-    expect(insert).toHaveBeenCalledWith([
-      { game_id: 'game-1', team_id: 'team-1', player_id: 'p1', slot: 1 },
-      { game_id: 'game-1', team_id: 'team-1', player_id: 'p2', slot: 2 },
-    ]);
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledWith('start_game_with_roster', {
+      p_match_id: 'match-1',
+      p_game_number: 2,
+      p_team1_id: 'team-1',
+      p_team1_player_ids: ['p1', 'p2'],
+      p_team2_id: 'team-2',
+      p_team2_player_ids: ['p3'],
+    });
+    expect(eq).toHaveBeenCalledWith('id', 'game-1');
+    expect(game).toEqual({ id: 'game-1' });
   });
 
-  it('clears the selection without inserting when the list is empty', async () => {
-    const eq2 = vi.fn(() => Promise.resolve({ error: null }));
-    const eq1 = vi.fn(() => ({ eq: eq2 }));
-    const del = vi.fn(() => ({ eq: eq1 }));
-    const insert = vi.fn();
-    routeTables({ game_players: { delete: del, insert } });
+  it('raises when the database refuses the start', async () => {
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: { message: 'Not authorized to score this match', code: '42501' },
+    });
 
-    await LiveMatchService.setGamePlayers('game-1', 'team-1', []);
-
-    expect(del).toHaveBeenCalled();
-    expect(insert).not.toHaveBeenCalled();
+    await expect(
+      LiveMatchService.startGameWithRoster('match-1', 1, 'team-1', [], 'team-2', [])
+    ).rejects.toThrow();
   });
 });

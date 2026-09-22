@@ -3450,6 +3450,57 @@ finding read a superseded migration.
   settings and what they mean, rather than only "a long time".
 
 
+### B-67: A game could start with only one team's players
+
+- **Where the user meets it:** a scorer taps **Start Game** on a live match and
+  one of the two line-up writes fails.
+- **What happens / what was expected:** the game starts anyway. The scorer lands
+  in the live panel with one side's thrower bar reading **"No players selected"**,
+  because `throwerOptions` maps an empty `game_players` list. The match is not
+  wedged — rounds still save and the game can still be completed — which is what
+  makes it quiet.
+- **What is lost.** Rounds for the un-rostered side save with
+  `team{N}_thrower_id` null, because `nextForSide` returns null on an empty
+  roster. `v_player_match_stats` drops null-thrower rounds, so those players get
+  no thrower rows. Worse, the `game_results` CTE in `v_player_season_stats`
+  joins `game_players` to count `game_wins` and `game_losses`, so they also lose
+  **game-level win/loss credit** for that game. Neither is recoverable from the
+  rounds afterwards.
+- `startGame` did three writes with nothing wrapping them: `createGame`, then
+  both `setGamePlayers` calls under `Promise.all`. `Promise.all` does not cancel
+  the sibling when one rejects, and `setGamePlayers` is itself a delete followed
+  by an insert. The `games` row defaults to `status = 'in_progress'` and was
+  already committed. `onError` only raised a toast; there was no rollback, and
+  none was possible from the client — `games` DELETE is admin-only under RLS, so
+  a non-admin scorer could not have undone it.
+- **Severity:** `high`. A data-integrity gap: player statistics are silently
+  lost for one game and cannot be rebuilt from what was recorded. No production
+  incident is known; the blast radius is one game, bounded in practice by the
+  scorer noticing the broken thrower picker.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed**, and **needs a manual step** — see the runbook in
+  `docs/OPERATIONS.md`. A new `start_game_with_roster` function creates the game
+  and both line-ups in one transaction, the way `finalize_live_match` already
+  handles the completion transition. It is `SECURITY DEFINER` with a pinned
+  `search_path`, authorises through the existing `user_can_score_match`, raises
+  its user-facing messages with `USING HINT = 'user-visible'`, and is idempotent
+  on `(match_id, game_number)` so a retry or a second scorer lands in the same
+  game and replaces the line-ups rather than duplicating them.
+- **Dead code removed with it.** `useGameFlow.updateGamePlayers` was returned by
+  the hook and called by no component — `LiveMatchView` destructures only
+  `startGame`, `confirmGameComplete` and `reopenGame`, and `ActiveGamePanel` has
+  no line-up editor. With `startGame` on the RPC, `LiveMatchService.setGamePlayers`
+  had no live caller either. Both are gone, along with their tests and two test
+  mocks. `knip` does not catch this shape: it checks exports, and these were
+  properties on a returned object. This follows `0efbe8149`, which deleted an
+  earlier dead `updateGamePlayers`.
+- **Known red check until the migration is applied.** `types.ts` is generated
+  from the live database and must not be hand-edited, so it does not yet know
+  the function and `npm run typecheck` fails on the call. That clears when the
+  types are regenerated, which is step 2 of the runbook.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

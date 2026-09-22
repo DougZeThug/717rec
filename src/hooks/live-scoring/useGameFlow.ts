@@ -22,12 +22,6 @@ export interface CompleteGameInput {
   finalTotals: { team1: number; team2: number };
 }
 
-export interface UpdateGamePlayersInput {
-  gameId: string;
-  teamId: string;
-  playerIds: string[];
-}
-
 export function useGameFlow(matchId: string) {
   const queryClient = useQueryClient();
   const queryKey = liveScoringKeys.liveMatch(matchId);
@@ -38,14 +32,20 @@ export function useGameFlow(matchId: string) {
   };
 
   const startGame = useMutation({
-    mutationFn: async (input: StartGameInput) => {
-      const game = await LiveMatchService.createGame(matchId, input.gameNumber);
-      await Promise.all([
-        LiveMatchService.setGamePlayers(game.id, input.team1Id, input.team1PlayerIds),
-        LiveMatchService.setGamePlayers(game.id, input.team2Id, input.team2PlayerIds),
-      ]);
-      return game;
-    },
+    // One call, one transaction. This used to be createGame followed by both
+    // line-ups under Promise.all, with nothing wrapping the three writes:
+    // Promise.all does not cancel the sibling when one rejects, so a single
+    // failed line-up write left a committed in-progress game with one side
+    // rostered and the other empty, and onError only raised a toast.
+    mutationFn: (input: StartGameInput) =>
+      LiveMatchService.startGameWithRoster(
+        matchId,
+        input.gameNumber,
+        input.team1Id,
+        input.team1PlayerIds,
+        input.team2Id,
+        input.team2PlayerIds
+      ),
     onError: onError('Could not start game'),
     onSettled: invalidate,
   });
@@ -61,13 +61,6 @@ export function useGameFlow(matchId: string) {
     mutationFn: (input: CompleteGameInput) =>
       LiveMatchService.completeGame(input.gameId, input.winnerTeamId, input.finalTotals),
     onError: onError('Could not complete game'),
-    onSettled: invalidate,
-  });
-
-  const updateGamePlayers = useMutation({
-    mutationFn: (input: UpdateGamePlayersInput) =>
-      LiveMatchService.setGamePlayers(input.gameId, input.teamId, input.playerIds),
-    onError: onError('Could not update players'),
     onSettled: invalidate,
   });
 
@@ -90,5 +83,5 @@ export function useGameFlow(matchId: string) {
     onSettled: invalidate,
   });
 
-  return { startGame, confirmGameComplete, updateGamePlayers, reopenGame };
+  return { startGame, confirmGameComplete, reopenGame };
 }
