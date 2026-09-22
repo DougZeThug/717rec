@@ -28,8 +28,8 @@ const renderMenu = (initialPath = '/') =>
     </MemoryRouter>
   );
 
-const openMenu = async () => {
-  await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
+const openMenu = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole('button', { name: /user menu/i }));
 };
 
 /** Stable across renders, so a test can assert it was never reached. */
