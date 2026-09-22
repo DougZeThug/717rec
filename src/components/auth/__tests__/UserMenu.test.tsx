@@ -47,12 +47,13 @@ describe('UserMenu', () => {
     mockUseTeamMembership.mockReturnValue({ activeMembership: null });
   });
 
-  afterEach(() => {
-    // Radix dropdowns set pointer-events: none on body while open. Cleanup
-    // removes the rendered tree but can leave the body style behind, which
-    // blocks pointer events in the next test before it starts.
-    document.body.removeAttribute('data-scroll-locked');
-    document.body.style.removeProperty('pointer-events');
+  afterEach(async () => {
+    // Some tests read menu items without clicking them, leaving the dropdown
+    // open. Radix then hides the trigger behind aria-hidden and pointer-events
+    // guards that survive cleanup and block the next test's trigger click.
+    // Escape closes the menu while the component is still mounted so cleanup
+    // can remove a closed tree.
+    await userEvent.keyboard('{Escape}');
   });
 
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
