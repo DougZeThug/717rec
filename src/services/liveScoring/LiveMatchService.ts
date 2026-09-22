@@ -66,42 +66,6 @@ export function handleLiveScoringError(error: PostgrestError, context: string): 
   handleDatabaseError(error, context);
 }
 
-interface StartGameWithRosterArgs {
-  p_match_id: string;
-  p_game_number: number;
-  p_team1_id: string;
-  p_team1_player_ids: string[];
-  p_team2_id: string;
-  p_team2_player_ids: string[];
-}
-
-/**
- * Calls start_game_with_roster through a narrowed signature.
- *
- * `types.ts` is generated from the live database and must not be hand-edited,
- * so it does not know this function until the migration is applied and the
- * types are regenerated -- see the runbook in `docs/OPERATIONS.md`. Without
- * this, `npm run typecheck` fails on a call that is perfectly valid at runtime
- * and CI stays red for as long as the migration is unapplied.
- *
- * REMOVE THIS once the types carry the function: delete the cast and this
- * interface and call `supabase.rpc('start_game_with_roster', { ... })`
- * directly. It lives here rather than in a declaration-merging file because
- * `Database` is a type alias, not an interface, so it cannot be augmented.
- *
- * The argument names are still checked, against the interface above. Only the
- * function name goes unchecked, and PostgREST checks that at runtime -- a
- * wrong one comes back as PGRST202, which handleLiveScoringError already maps
- * to LiveScoringNotEnabledError.
- */
-const callStartGameWithRoster = (args: StartGameWithRosterArgs) =>
-  (
-    supabase.rpc as unknown as (
-      fn: 'start_game_with_roster',
-      rpcArgs: StartGameWithRosterArgs
-    ) => Promise<{ data: unknown; error: PostgrestError | null }>
-  )('start_game_with_roster', args);
-
 export const LiveMatchService = {
   fetchLiveMatchBundle: async (matchId: string): Promise<LiveMatchBundle> => {
     const [matchResult, gamesResult, roundsResult] = await Promise.all([
@@ -236,7 +200,7 @@ export const LiveMatchService = {
       );
     }
 
-    const { data, error } = await callStartGameWithRoster({
+    const { data, error } = await supabase.rpc('start_game_with_roster', {
       p_match_id: matchId,
       p_game_number: gameNumber,
       p_team1_id: team1Id,

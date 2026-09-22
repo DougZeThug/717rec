@@ -3560,14 +3560,15 @@ finding read a superseded migration.
   `Match not found`, deliberately without the user-visible hint because the id
   is internal. Both are covered by the SQL smoke test and the guards are pinned
   in `user_visible_error_hints.sql`.
-- **One cast to remove after the migration is applied.** `types.ts` is
-  generated from the live database and must not be hand-edited, and `Database`
-  is a type alias so it cannot be augmented from another file either. The call
-  therefore goes through a narrowed cast, `callStartGameWithRoster`, which keeps
-  the argument names checked and leaves only the function name unchecked —
-  PostgREST checks that at runtime and a wrong one returns `PGRST202`. Without
-  it CI would sit red for as long as the migration was unapplied. Step 4 of the
-  runbook is deleting it once the regenerated types carry the function.
+- **Applied, and the temporary cast is gone.** The migration went to production
+  on 2026-09-22 before the change merged, and the types were regenerated after.
+  While the two were out of step the call went through a narrowed cast,
+  `callStartGameWithRoster`, so CI stayed green without hand-editing the
+  generated `types.ts` — which must not be edited, and could not be augmented
+  either, because `Database` is a type alias rather than an interface.
+  `LiveMatchService` now calls `supabase.rpc('start_game_with_roster', …)`
+  directly, and `npm run typecheck` passing is the proof the regenerated types
+  carry the function with the argument names the service sends.
 
 
 ## Note: what the two DeepSource checks actually measure
