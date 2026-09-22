@@ -3253,6 +3253,41 @@ finding read a superseded migration.
   in `edge-function-tests`.
 
 
+### B-65: A reaction the reader had turned off kept coming back on a match card
+
+- **Where the user meets it:** a match card, after tapping a reaction on and
+  then off again, or after the connection drops and comes back.
+- **What happens / what was expected:** the reaction shows as still on. It
+  survives every refresh of the card, including a reconnect that reads an empty
+  table, and only goes away when the card is left and reopened. Everyone else
+  sees the reaction as off, because in the database it is.
+- `useMatchReactions` merges two reconciliation buffers over each freshly
+  fetched snapshot. The buffers were emptied only when `matchId` changed, so a
+  row put into the inserts buffer by one realtime event was re-applied on every
+  later refetch for the life of the hook. The hook's own comment said so, as a
+  known limitation rather than a defect.
+- Two smaller gaps in the same file made it worse. The INSERT handler cleared a
+  tombstone and put the row back even when the mutation had already marked it
+  deleted, and the DELETE handler read `payload.old.id` without checking it,
+  which puts `undefined` into both buffers when Supabase sends only the
+  replica-identity columns.
+- **Severity:** `low`. Nothing stored is wrong; one reader's card is.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** All three gaps are closed by porting what
+  `useMessageReactions` already does. The queryFn copies the tombstones, empties
+  both buffers, then fetches, so each refetch is authoritative while events
+  arriving during the fetch still win over the snapshot they postdate. The
+  INSERT handler returns early for a row already marked deleted, and the DELETE
+  handler guards the missing id. Four tests were added and three fail against
+  the old hook; the two existing tests that pin the in-flight merge stay green,
+  which is why the fix copies the tombstones rather than simply clearing them.
+- **Note on the sibling:** `useMessageReactions` was given the per-fetch clear
+  on 2026-07-15 and the match hook was not. Two comments in this repo asserting
+  that the match queryFn never clears its buffers — one in the hook, one in its
+  test — were true when written and are corrected here.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

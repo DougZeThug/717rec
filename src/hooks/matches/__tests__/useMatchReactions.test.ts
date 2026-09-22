@@ -237,6 +237,109 @@ describe('useMatchReactions', () => {
     expect(result.current.reactions).toHaveLength(0);
   });
 
+  // A row that goes away while this client is offline sends no DELETE event, so
+  // nothing takes it out of the inserts buffer. The buffer was cleared only when
+  // matchId changed, so the phantom was re-applied on every later refetch --
+  // even one that read an empty table.
+  it('drops a realtime reaction the server no longer reports after a reconnect', async () => {
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    act(() => {
+      insertHandler({ new: reaction('r1', 'user-2', '🔥') });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    mockFetchReactions.mockResolvedValue([]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+  });
+
+  // A tombstone only has to bridge the fetch that was already in flight. After
+  // that the server decides, or a row deleted once stays hidden for the life of
+  // the hook even after somebody reacts again.
+  it('stops applying a delete tombstone after one refetch has used it', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+    act(() => {
+      deleteHandler({ old: { id: 'r1' } });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // This refetch still hides r1: the tombstone was set before it began. The
+    // second row proves the fetch really landed.
+    mockFetchReactions.mockResolvedValueOnce([
+      reaction('r1', 'user-1', '🔥'),
+      reaction('r2', 'user-2', '👏'),
+    ]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+    await waitFor(() => expect(result.current.reactions.map((r) => r.id)).toEqual(['r2']));
+
+    // The next one must show what the server reports.
+    mockFetchReactions.mockResolvedValue([
+      reaction('r1', 'user-1', '🔥'),
+      reaction('r2', 'user-2', '👏'),
+    ]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+    await waitFor(() => expect(result.current.reactions.map((r) => r.id)).toEqual(['r1', 'r2']));
+  });
+
+  it('does not put back a row that is already marked deleted', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+
+    act(() => {
+      deleteHandler({ old: { id: 'r1' } });
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // A delayed INSERT for the same row lands after it has gone.
+    act(() => {
+      insertHandler({ new: reaction('r1', 'user-1', '🔥') });
+    });
+    // The cache notifies on a scheduled task, so give it one before asserting.
+    // Without this the assertion reads the value from before the event and
+    // passes whether or not the row came back.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(result.current.reactions).toHaveLength(0);
+  });
+
+  // Supabase sends only the replica-identity columns, so `old` can arrive with
+  // no id. Guarding it keeps undefined out of the reconciliation buffers.
+  it('ignores a delete event that carries no id', async () => {
+    mockFetchReactions.mockResolvedValueOnce([reaction('r1', 'user-1', '🔥')]);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(1));
+
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+    act(() => {
+      deleteHandler({ old: {} });
+    });
+
+    expect(result.current.reactions).toHaveLength(1);
+  });
+
   it('blocks toggling a reaction when signed out', async () => {
     const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -358,9 +461,9 @@ describe('useMatchReactions', () => {
 
   // Tapping on then straight off again defers the removal until the insert has
   // landed. The deferred removal tombstones the new row before deleting it, and
-  // a tombstone left behind by a failed delete hid a row that is still in the
-  // table. This hook's queryFn never clears realtimeDeletesRef, so it stayed
-  // hidden on every refetch: no reaction for this reader, one for everyone else.
+  // a tombstone left behind by a failed delete made the next refetch hide a row
+  // that is still in the table: no reaction for this reader, one for everybody
+  // else.
   it('keeps a reaction that a failed clean-up left in the table', async () => {
     mockUser.current = { id: 'user-1' };
     let resolveInsert!: () => void;
