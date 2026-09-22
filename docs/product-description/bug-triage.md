@@ -3288,6 +3288,40 @@ finding read a superseded migration.
   test — were true when written and are corrected here.
 
 
+### B-66: A fast on-off-on tap on a message reaction could lose the last tap
+
+- **Where the user meets it:** the message board, tapping one emoji on, off and
+  on again faster than the first tap's insert comes back.
+- **What happens / what was expected:** the reaction ends up off. The reader's
+  last action was to turn it on, no error is shown, and the row is gone from the
+  database as well as the screen. Tapping again is the only way back.
+- `useMessageReactions` serialises taps for an emoji through
+  `mutationChainsRef`. The clean-up delete that the realtime INSERT handler
+  sends — when an echo for a reaction the reader has already toggled off arrives
+  — was sent straight out, outside that queue. A later "tap on again" *is*
+  queued, so the two could be in flight at once. When the upsert reached
+  Postgres first, its `ON CONFLICT DO UPDATE` matched the row still sitting
+  there, and the trailing delete then removed it.
+- **Severity:** `medium`. A user action is silently lost, and the trailing
+  delete reports success, so nothing anywhere records that it happened.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** The clean-up delete now joins the same per-emoji queue
+  as the taps, so a later upsert cannot start until it has finished. The handler
+  still does not await — it is a realtime callback — it only builds the link and
+  stores it. The existing compensation on failure is unchanged. Two `.catch`
+  wrappers frame it: a leading one so a predecessor's failure does not trigger
+  this clean-up's compensation, and a trailing one because nothing awaits a
+  stored link until the next tap, which may never come, so a throw inside the
+  compensation would otherwise surface as an unhandled rejection.
+- **What the test pins:** the call *order* is the same before and after
+  (add, remove, add); only the settlement order changes. The test therefore
+  holds the delete open and asserts the second upsert has not been sent. It
+  fails against the old hook with "expected 1 times, but got 2 times".
+- **No document changed.** `message-board/read-the-board.md` never described
+  this ordering; the fix restores what the page was always meant to do.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

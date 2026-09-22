@@ -123,8 +123,25 @@ export const useMessageReactions = (messageId: string) => {
                   realtimeInsertsRef.current.delete(newReaction.id);
                   realtimeDeletesRef.current.add(newReaction.id);
                   if (currentUserId === newReaction.user_id) {
-                    MessageReactionsService.removeReaction(newReaction.id, currentUserId).catch(
-                      (err: unknown) => {
+                    // Queue this clean-up with the taps for the same emoji. Sent
+                    // straight out, it raced a later "tap on again": that tap's
+                    // upsert is queued, this delete was not, so both could be in
+                    // flight together. When the upsert reached Postgres first it
+                    // matched the row still sitting there, and this delete then
+                    // removed it -- losing the reader's last tap with no error.
+                    //
+                    // Do not await: this is a realtime callback. Build the link,
+                    // store it, and let the cache update below run now.
+                    const previousMutation =
+                      mutationChainsRef.current.get(newReaction.emoji) ?? Promise.resolve();
+                    const nextMutation = previousMutation
+                      // A predecessor's failure is not this clean-up's failure;
+                      // without this the compensation below would run for it.
+                      .catch(ignoreQueuedMessageMutationError)
+                      .then(() =>
+                        MessageReactionsService.removeReaction(newReaction.id, currentUserId)
+                      )
+                      .catch((err: unknown) => {
                         realtimeDeletesRef.current.delete(newReaction.id);
                         realtimeInsertsRef.current.set(newReaction.id, newReaction);
                         queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
@@ -141,8 +158,13 @@ export const useMessageReactions = (messageId: string) => {
                             );
                           });
                         errorLog('Error removing delayed optimistic message reaction:', err);
-                      }
-                    );
+                      })
+                      // Nothing awaits a stored link until the next tap on this
+                      // emoji, which may never come, so a throw in the
+                      // compensation above would surface as an unhandled
+                      // rejection. Keep the stored promise one that settles.
+                      .catch(ignoreQueuedMessageMutationError);
+                    mutationChainsRef.current.set(newReaction.emoji, nextMutation);
                   }
                   queryClient.setQueryData<MessageReaction[]>(queryKey, (curr = []) =>
                     curr.filter((reaction) => reaction.id !== newReaction.id)
