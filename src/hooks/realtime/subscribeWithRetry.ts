@@ -152,6 +152,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
   return {
     dispose: () => {
       disposed = true;
+      unsubscribeToken();
       if (retryTimer) {
         clearTimeout(retryTimer);
         retryTimer = null;
