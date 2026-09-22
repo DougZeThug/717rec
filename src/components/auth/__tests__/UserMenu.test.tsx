@@ -36,7 +36,10 @@ const openMenu = async (user: ReturnType<typeof userEvent.setup>) => {
 const mockSignOut = vi.fn();
 
 describe('UserMenu', () => {
+  let user: ReturnType<typeof userEvent.setup>;
+
   beforeEach(() => {
+    user = userEvent.setup();
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
