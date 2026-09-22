@@ -9,6 +9,8 @@ vi.mock('../TeamLogoCard', () => ({
   default: ({ team }: { team: { name: string } }) => <div>{team.name}</div>,
 }));
 
+import { openRadixTrigger } from '@/test/radix';
+
 import BulkLogoUpdateTab from '../BulkLogoUpdateTab';
 
 const teams = [
@@ -105,7 +107,7 @@ describe('BulkLogoUpdateTab', () => {
     // By Priority: missing logos first.
     expect(namesInOrder()).toEqual(['Bravo', 'Alpha']);
 
-    await user.click(screen.getByRole('combobox', { name: /sort teams/i }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: /sort teams/i }));
     await user.click(await screen.findByRole('option', { name: 'By Name' }));
 
     expect(namesInOrder()).toEqual(['Alpha', 'Bravo']);

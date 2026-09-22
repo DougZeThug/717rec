@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 const signups = [
   {
     id: 'signup-1',
@@ -132,7 +134,7 @@ describe('Blind Draw signups list', () => {
       const user = userEvent.setup();
       render(<BlindDrawSignupsTab />);
 
-      await user.click(screen.getByRole('combobox', { name: /night/i }));
+      await openRadixTrigger(screen.getByRole('combobox', { name: /night/i }));
       await user.click(await screen.findByRole('option', { name: 'Sep 4, 2026' }));
 
       const rows = screen.getAllByRole('row').slice(1);
@@ -154,13 +156,13 @@ describe('Blind Draw signups list', () => {
       const user = userEvent.setup();
       render(<BlindDrawSignupsTab />);
 
-      await user.click(screen.getByRole('combobox', { name: /night/i }));
+      await openRadixTrigger(screen.getByRole('combobox', { name: /night/i }));
       await user.click(await screen.findByRole('option', { name: 'Sep 11, 2026' }));
 
       expect(screen.getByText('Robin K.')).toBeInTheDocument();
       expect(screen.queryByText('Casey W.')).not.toBeInTheDocument();
 
-      await user.click(screen.getByRole('combobox', { name: /night/i }));
+      await openRadixTrigger(screen.getByRole('combobox', { name: /night/i }));
       await user.click(await screen.findByRole('option', { name: 'Sep 4, 2026' }));
 
       expect(screen.getByText('Casey W.')).toBeInTheDocument();
@@ -171,7 +173,7 @@ describe('Blind Draw signups list', () => {
       const user = userEvent.setup();
       render(<BlindDrawSignupsTab />);
 
-      await user.click(screen.getByRole('combobox', { name: /night/i }));
+      await openRadixTrigger(screen.getByRole('combobox', { name: /night/i }));
       await user.click(await screen.findByRole('option', { name: 'All nights' }));
 
       expect(screen.getAllByRole('row').slice(1)).toHaveLength(3);
@@ -184,7 +186,7 @@ describe('Blind Draw signups list', () => {
       const user = userEvent.setup();
       const { rerender } = render(<BlindDrawSignupsTab />);
 
-      await user.click(screen.getByRole('combobox', { name: /night/i }));
+      await openRadixTrigger(screen.getByRole('combobox', { name: /night/i }));
       await user.click(await screen.findByRole('option', { name: 'Sep 4, 2026' }));
       expect(screen.getByText('Casey W.')).toBeInTheDocument();
 

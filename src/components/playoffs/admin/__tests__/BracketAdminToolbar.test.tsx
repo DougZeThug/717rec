@@ -5,6 +5,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import BracketAdminToolbar from '@/components/playoffs/admin/BracketAdminToolbar';
+import { openRadixTrigger } from '@/test/radix';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 const recalculate = vi.fn();
@@ -137,7 +138,7 @@ describe('BracketAdminToolbar', () => {
   // rendering at a given width — they prove it exists, works, and obeys the
   // same conditions as the buttons. The width behaviour is checked by hand.
   const openPhoneMenu = async () => {
-    await userEvent.click(screen.getByRole('button', { name: /bracket actions/i }));
+    await openRadixTrigger(screen.getByRole('button', { name: /bracket actions/i }));
   };
 
   it('offers every action behind one button on a phone', async () => {

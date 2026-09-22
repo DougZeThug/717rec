@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 const mockUseTeamsQuery = vi.hoisted(() => vi.fn());
 const mockUpdateTeam = vi.fn();
 const mockCreateTeam = vi.fn();
@@ -117,7 +119,7 @@ describe('TeamManagementTab', () => {
     render(<TeamManagementTab />);
 
     await user.type(screen.getByPlaceholderText(/search teams/i), 'a');
-    await user.click(screen.getAllByRole('combobox')[0]);
+    await openRadixTrigger(screen.getAllByRole('combobox')[0]);
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
 
     expect(screen.getAllByText('Charlie').length).toBeGreaterThan(0);
@@ -129,7 +131,7 @@ describe('TeamManagementTab', () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);
 
-    await user.click(getComboboxByText('East'));
+    await openRadixTrigger(getComboboxByText('East'));
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
     await user.click(await screen.findByRole('button', { name: /change division/i }));
 
@@ -140,7 +142,7 @@ describe('TeamManagementTab', () => {
       );
     });
 
-    await user.click(getComboboxByText('West'));
+    await openRadixTrigger(getComboboxByText('West'));
     await user.click(screen.getAllByRole('option', { name: 'Unassigned' })[0]);
     await user.click(await screen.findByRole('button', { name: /change division/i }));
 
@@ -156,7 +158,7 @@ describe('TeamManagementTab', () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);
 
-    await user.click(getComboboxByText('East'));
+    await openRadixTrigger(getComboboxByText('East'));
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
 
     // The pick only opens the prompt.
@@ -186,7 +188,7 @@ describe('TeamManagementTab', () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);
 
-    await user.click(getComboboxByText('East'));
+    await openRadixTrigger(getComboboxByText('East'));
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
     await user.click(await screen.findByRole('button', { name: /change division/i }));
 
@@ -214,7 +216,7 @@ describe('TeamManagementTab', () => {
     const user = userEvent.setup();
     render(<TeamManagementTab />);
 
-    await user.click(getComboboxByText('East'));
+    await openRadixTrigger(getComboboxByText('East'));
     await user.click(screen.getAllByRole('option', { name: 'West' })[0]);
     await user.click(await screen.findByRole('button', { name: /change division/i }));
 

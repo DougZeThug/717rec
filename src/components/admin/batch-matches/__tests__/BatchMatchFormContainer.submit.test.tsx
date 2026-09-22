@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 // --- Shared spies (hoisted so vi.mock factories can reference them) ---
 const mockToast = vi.hoisted(() => vi.fn());
 const mockBatchCreateMatches = vi.hoisted(() => vi.fn());
@@ -101,7 +103,7 @@ const chooseOption = async (
   combobox: HTMLElement,
   optionName: string | RegExp
 ) => {
-  await user.click(combobox);
+  await openRadixTrigger(combobox);
   await user.click(await screen.findByRole('option', { name: optionName }));
 };
 

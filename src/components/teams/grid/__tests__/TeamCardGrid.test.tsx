@@ -4,6 +4,7 @@ import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
 import { Team } from '@/types';
 
 import { TeamCardGrid } from '../TeamCardGrid';
@@ -136,10 +137,9 @@ describe('TeamCardGrid', () => {
 
   describe('the actions menu', () => {
     it('offers only View Details to a visitor', async () => {
-      const user = userEvent.setup();
       renderCard({ onEdit: vi.fn(), onDelete: vi.fn() });
 
-      await user.click(screen.getByRole('button', { name: 'Open menu' }));
+      await openRadixTrigger(screen.getByRole('button', { name: 'Open menu' }));
 
       expect(await screen.findByRole('menuitem', { name: /View Details/ })).toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: /Edit/ })).not.toBeInTheDocument();
@@ -153,21 +153,20 @@ describe('TeamCardGrid', () => {
       isAdminAccessGranted = true;
       renderCard({ onEdit, onDelete });
 
-      await user.click(screen.getByRole('button', { name: 'Open menu' }));
+      await openRadixTrigger(screen.getByRole('button', { name: 'Open menu' }));
       await user.click(await screen.findByRole('menuitem', { name: /Edit/ }));
       expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ id: 't1' }));
 
-      await user.click(screen.getByRole('button', { name: 'Open menu' }));
+      await openRadixTrigger(screen.getByRole('button', { name: 'Open menu' }));
       await user.click(await screen.findByRole('menuitem', { name: /Delete/ }));
       expect(onDelete).toHaveBeenCalledWith('t1');
     });
 
     it('hides Edit from an admin when the page passed no edit handler', async () => {
-      const user = userEvent.setup();
       isAdminAccessGranted = true;
       renderCard({ onDelete: vi.fn() });
 
-      await user.click(screen.getByRole('button', { name: 'Open menu' }));
+      await openRadixTrigger(screen.getByRole('button', { name: 'Open menu' }));
 
       expect(await screen.findByRole('menuitem', { name: /Delete/ })).toBeInTheDocument();
       expect(screen.queryByRole('menuitem', { name: /Edit/ })).not.toBeInTheDocument();

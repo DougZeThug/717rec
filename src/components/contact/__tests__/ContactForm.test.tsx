@@ -4,6 +4,8 @@ import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 const mockSubmit = vi.fn();
 const mockToast = vi.hoisted(() => vi.fn());
 let mockUser: { email?: string; user_metadata?: { full_name?: string; name?: string } } | null =
@@ -44,8 +46,11 @@ const formElement = () => <ContactForm onSent={onSent} />;
 const renderForm = (path = '/contact') =>
   render(<MemoryRouter initialEntries={[path]}>{formElement()}</MemoryRouter>);
 
+const openTopics = () =>
+  openRadixTrigger(screen.getByRole('combobox', { name: /what is this about/i }));
+
 const pickTopic = async (label: string | RegExp) => {
-  await userEvent.click(screen.getByRole('combobox', { name: /what is this about/i }));
+  await openTopics();
   await userEvent.click(await screen.findByRole('option', { name: label }));
 };
 
@@ -68,7 +73,7 @@ describe('ContactForm', () => {
   it('asks what the message is about, in one list', async () => {
     renderForm();
 
-    await userEvent.click(screen.getByRole('combobox', { name: /what is this about/i }));
+    await openTopics();
 
     for (const label of [
       'Timeslot request',

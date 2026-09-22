@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 import LiveCorrectionsSection from '../LiveCorrectionsSection';
 
 // ─── Hook mocks ───────────────────────────────────────────────────────────────
@@ -140,7 +142,7 @@ describe('LiveCorrectionsSection', () => {
     expect(screen.getByText('Team A vs Team B')).toBeInTheDocument();
     expect(screen.queryByText('Team C vs Team D')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Night' }));
     await user.click(await screen.findByRole('option', { name: 'All nights' }));
 
     expect(screen.getByText('Team C vs Team D')).toBeInTheDocument();
@@ -156,9 +158,9 @@ describe('LiveCorrectionsSection', () => {
     });
     render(<LiveCorrectionsSection />);
 
-    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Night' }));
     await user.click(await screen.findByRole('option', { name: 'Jun 3, 2026' }));
-    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Night' }));
     await user.click(await screen.findByRole('option', { name: 'Jul 31, 2026' }));
 
     expect(screen.queryByText('No live-scored matches yet.')).not.toBeInTheDocument();
@@ -184,7 +186,7 @@ describe('LiveCorrectionsSection', () => {
     expect(screen.getByText('2 games · 9 rounds · final')).toBeInTheDocument();
 
     // A match with no date belongs to no night, so it needs the wider view.
-    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Night' }));
     await user.click(await screen.findByRole('option', { name: 'All nights' }));
 
     expect(screen.getByText('No date')).toBeInTheDocument();
@@ -244,7 +246,7 @@ describe('LiveCorrectionsSection', () => {
     setMatches({ data: matches });
     render(<LiveCorrectionsSection />);
 
-    await user.click(screen.getByRole('combobox', { name: 'Season' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Season' }));
     await user.click(await screen.findByRole('option', { name: /Winter 1/ }));
 
     expect(useAdminLiveScoredMatchesMock).toHaveBeenLastCalledWith('season-2');
@@ -253,11 +255,10 @@ describe('LiveCorrectionsSection', () => {
   // ─── B-20: archived seasons are listed, and said to be read-only ────────────
 
   it('marks an archived season in the picker without hiding it', async () => {
-    const user = userEvent.setup();
     setMatches({ data: matches });
     render(<LiveCorrectionsSection />);
 
-    await user.click(screen.getByRole('combobox', { name: 'Season' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Season' }));
 
     expect(
       await screen.findByRole('option', { name: 'Winter 1 (archived — read-only)' })
@@ -286,9 +287,9 @@ describe('LiveCorrectionsSection', () => {
 
     // The default is now the active season and one night, so both widenings are
     // needed before the two seasons appear side by side.
-    await user.click(screen.getByRole('combobox', { name: 'Season' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Season' }));
     await user.click(await screen.findByRole('option', { name: 'All seasons' }));
-    await user.click(screen.getByRole('combobox', { name: 'Night' }));
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Night' }));
     await user.click(await screen.findByRole('option', { name: 'All nights' }));
 
     expect(
