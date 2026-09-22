@@ -186,6 +186,10 @@ alone, with nothing else marking it.
 - **Strength of schedule is compared as higher-is-better**, so the team that has
   played the tougher opponents is marked as ahead on that row. Nothing says that
   is what is meant.
+- **A team with no career match carries no percentile badge.** It has not been
+  measured, so it is given no rank rather than the bottom one. Until B-62 it drew
+  a red "0%" pill on all four career rows, which read as worst in the league. The
+  team page has always behaved this way; Compare now matches it.
 - **Sweep rate and the playoff and division records carry no percentile badge**;
   the first four career rows do.
 - **A team with no playoff matches gets a zero percentile** on playoff win

@@ -3071,6 +3071,33 @@ finding read a superseded migration.
 
 ---
 
+### B-62: A team with nothing to measure was ranked worst in the league on Compare
+
+- **Where the user meets it:** the Compare page, with a team that has never
+  played a career match on either side.
+- **What happens / what was expected:** four rows of the Career Statistics block
+  — Win %, Game Win %, Power Score and Strength of Schedule — carried a red "0%"
+  percentile pill. Red is the bottom tier, so the team read as worst in the
+  league on every measure. It has not been measured at all.
+- `useLeaguePercentiles` says so plainly. A team that has never played is given
+  `{ value: 0, percentile: 0, rank: 0, total: 0 }`, under a comment reading "no
+  rank, not a rank of last".
+- The team page has always hidden that. It renders through
+  `PercentileFromResult`, which returns nothing when `total` is 0.
+  `ComparisonStatRow` called the raw `PercentileBadge` and so skipped the guard.
+  With `rank` at 0 the badge falls back to printing the percentile, and
+  `getPercentileTier(0)` is the red tier — hence "0%" in red.
+- **Severity:** `low`. No stored number is wrong. The badge is.
+- **Decision needed:** `fix`.
+- **Raised by:** `teams/compare-teams.md`, which had recorded it as a known gap
+  rather than as a defect.
+- **Status:** **fixed.** `ComparisonStatRow` now renders through
+  `PercentileFromResult`, so Compare and the team page agree. It also passes the
+  row label as `statName`, so the badge's tooltip names the stat it ranks. Five
+  tests in `src/components/compare/__tests__/ComparisonStatRow.test.tsx` cover
+  it; two of them fail against the old component.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { PercentileBadge } from '@/components/ui/PercentileBadge';
+import { PercentileFromResult } from '@/components/ui/PercentileBadge';
 import { cn } from '@/lib/utils';
 import { PercentileResult } from '@/utils/percentileUtils';
 
@@ -57,13 +57,12 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
           {value1}
           {suffix}
         </span>
+        {/* PercentileFromResult, not PercentileBadge: it hides the badge for a
+            team with nothing to measure. Called directly, the badge painted that
+            team a red "0%" pill, which reads as worst in the league rather than
+            not measured. The team page has always gone through this component. */}
         {showPercentiles && percentile1 && (
-          <PercentileBadge
-            percentile={percentile1.percentile}
-            rank={percentile1.rank}
-            total={percentile1.total}
-            size="xs"
-          />
+          <PercentileFromResult result={percentile1} size="xs" statName={label} />
         )}
       </div>
 
@@ -86,12 +85,7 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
           {suffix}
         </span>
         {showPercentiles && percentile2 && (
-          <PercentileBadge
-            percentile={percentile2.percentile}
-            rank={percentile2.rank}
-            total={percentile2.total}
-            size="xs"
-          />
+          <PercentileFromResult result={percentile2} size="xs" statName={label} />
         )}
       </div>
     </div>
