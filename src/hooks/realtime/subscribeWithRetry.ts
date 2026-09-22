@@ -104,14 +104,30 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
       }
 
       if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-        errorLog(`[realtime:${label}] channel ${status} — scheduling reconnect`);
+        // Record whether a token was available, so a repeat failure can be told
+        // apart from a plain outage when reading the logs.
+        errorLog(
+          `[realtime:${label}] channel ${status} — attempt ${attempt + 1}/${MAX_ATTEMPTS}`,
+          { hasToken: hasRealtimeToken() }
+        );
         scheduleReconnect();
       }
     });
   }
 
   function scheduleReconnect(): void {
-    if (disposed || retryTimer) return;
+    if (disposed || retryTimer || parkedAtTokenVersion !== null) return;
+
+    if (attempt >= MAX_ATTEMPTS) {
+      // Park instead of hammering the server. onRealtimeTokenChange above
+      // resumes as soon as a new access token arrives.
+      parkedAtTokenVersion = getRealtimeTokenVersion();
+      errorLog(`[realtime:${label}] gave up after ${MAX_ATTEMPTS} attempts — waiting for a token`);
+      const stale = currentChannel;
+      currentChannel = null;
+      if (stale) void supabase.removeChannel(stale);
+      return;
+    }
 
     const exp = Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * 2 ** attempt);
     const jitter = Math.random() * 0.3 * exp;
