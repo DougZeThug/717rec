@@ -3529,8 +3529,8 @@ finding read a superseded migration.
   scorer noticing the broken thrower picker.
 - **Decision needed:** `fix`.
 - **Raised by:** a code reading, not a feature document.
-- **Status:** **fixed**, and **needs a manual step** — see the runbook in
-  `docs/OPERATIONS.md`. A new `start_game_with_roster` function creates the game
+- **Status:** **fixed** — see the runbook in `docs/OPERATIONS.md`. A new
+  `start_game_with_roster` function creates the game
   and both line-ups in one transaction, the way `finalize_live_match` already
   handles the completion transition. It is `SECURITY DEFINER` with a pinned
   `search_path`, authorises through the existing `user_can_score_match`, raises
