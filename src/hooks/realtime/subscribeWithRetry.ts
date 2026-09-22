@@ -28,6 +28,14 @@ export interface SubscribeWithRetryOptions {
 
 const MAX_BACKOFF_MS = 30_000;
 const BASE_BACKOFF_MS = 1_000;
+/**
+ * How many failed attempts in a row are allowed before the channel parks.
+ * Six attempts span roughly a minute of backoff, which comfortably covers a
+ * Supabase realtime restart. Anything beyond that is usually a bad token, and
+ * retrying forever is what filled the logs with `MalformedJWT` every few
+ * seconds.
+ */
+const MAX_ATTEMPTS = 6;
 
 /**
  * Subscribe to a Supabase realtime channel with automatic error/reconnect
@@ -35,6 +43,8 @@ const BASE_BACKOFF_MS = 1_000;
  *
  * Handles CHANNEL_ERROR, TIMED_OUT, and CLOSED by tearing down the failed
  * channel and rebuilding it with exponential backoff (1s → 30s, jittered).
+ * After MAX_ATTEMPTS consecutive failures the channel parks and only
+ * reconnects when a new access token is published.
  */
 export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispose: () => void } {
   const { label, build, onReconnect, onStatus } = options;
@@ -44,6 +54,21 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
   let attempt = 0;
   let hasConnectedOnce = false;
   let disposed = false;
+  let parkedAtTokenVersion: number | null = null;
+
+  // Woken by a token change while parked: a fresh token is the one thing that
+  // can turn a rejected join into a working one.
+  const unsubscribeToken = onRealtimeTokenChange(() => {
+    if (disposed) return;
+    if (parkedAtTokenVersion === null) return;
+    if (getRealtimeTokenVersion() === parkedAtTokenVersion) return;
+
+    log(`[realtime:${label}] new access token — resuming`);
+    parkedAtTokenVersion = null;
+    attempt = 0;
+    scheduleReconnect();
+  });
+
 
   // connect() and scheduleReconnect() call each other, so these are
   // declarations rather than arrow consts: hoisting lets either one come
