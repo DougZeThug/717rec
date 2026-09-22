@@ -167,10 +167,12 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
     if (disposed || retryTimer || parkedAtTokenVersion !== null) return;
 
     if (attempt >= MAX_ATTEMPTS) {
-      // Park instead of hammering the server. onRealtimeTokenChange above
-      // resumes as soon as a new access token arrives.
+      // Park instead of hammering the server. A new access token, the network
+      // coming back, the tab becoming visible, or the slow backstop timer all
+      // resume it — a park is always temporary.
       parkedAtTokenVersion = getRealtimeTokenVersion();
-      errorLog(`[realtime:${label}] gave up after ${MAX_ATTEMPTS} attempts — waiting for a token`);
+      errorLog(`[realtime:${label}] paused after ${MAX_ATTEMPTS} attempts — will retry`);
+      startParkedWatch();
       const stale = currentChannel;
       currentChannel = null;
       if (stale) void supabase.removeChannel(stale);
