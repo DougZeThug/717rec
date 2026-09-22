@@ -18,9 +18,9 @@ import UserMenu from '../UserMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-describe('UserMenu with setup multiple', () => {
+describe('UserMenu with setup no pointer events', () => {
   it('test 1', async () => {
-    const u = userEvent.setup();
+    const u = userEvent.setup({ pointerEventsCheck: 0 });
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
@@ -41,7 +41,7 @@ describe('UserMenu with setup multiple', () => {
   });
 
   it('test 2', async () => {
-    const u = userEvent.setup();
+    const u = userEvent.setup({ pointerEventsCheck: 0 });
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
