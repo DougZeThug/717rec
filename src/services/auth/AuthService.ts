@@ -80,3 +80,16 @@ export const updatePassword = async (newPassword: string): Promise<void> => {
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) handleDatabaseError(toPgError(error), 'Failed to update your password');
 };
+
+/**
+ * Push an access token into the realtime socket.
+ *
+ * The socket authenticates once at join time, so a refreshed token has to be
+ * handed over explicitly. Without this, an expired token kept being replayed on
+ * every channel join and Supabase rejected it with `MalformedJWT`.
+ *
+ * Pass `null` on sign-out to fall back to the publishable key.
+ */
+export const setRealtimeAuth = (token: string | null): void => {
+  void supabase.realtime.setAuth(token ?? undefined);
+};
