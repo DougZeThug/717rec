@@ -36,6 +36,12 @@ const BASE_BACKOFF_MS = 1_000;
  * seconds.
  */
 const MAX_ATTEMPTS = 6;
+/**
+ * How long a parked channel waits before trying again on its own. Network
+ * recovery usually arrives sooner through the `online`/visibility signals; this
+ * is the backstop so a park can never be permanent.
+ */
+const PARKED_RETRY_MS = 60_000;
 
 /**
  * Subscribe to a Supabase realtime channel with automatic error/reconnect
@@ -51,23 +57,67 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
 
   let currentChannel: RealtimeChannel | null = null;
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  let parkedTimer: ReturnType<typeof setInterval> | null = null;
   let attempt = 0;
   let hasConnectedOnce = false;
   let disposed = false;
   let parkedAtTokenVersion: number | null = null;
 
+  /**
+   * Leave the parked state and try again. A park must never be permanent: a
+   * phone losing signal or a backgrounded tab looks exactly like a bad token,
+   * and a spectator would be left on a frozen scoreboard until they reloaded.
+   */
+  function unpark(reason: string): void {
+    if (disposed || parkedAtTokenVersion === null) return;
+    log(`[realtime:${label}] ${reason} — resuming`);
+    parkedAtTokenVersion = null;
+    attempt = 0;
+    stopParkedWatch();
+    scheduleReconnect();
+  }
+
   // Woken by a token change while parked: a fresh token is the one thing that
   // can turn a rejected join into a working one.
   const unsubscribeToken = onRealtimeTokenChange(() => {
-    if (disposed) return;
     if (parkedAtTokenVersion === null) return;
     if (getRealtimeTokenVersion() === parkedAtTokenVersion) return;
-
-    log(`[realtime:${label}] new access token — resuming`);
-    parkedAtTokenVersion = null;
-    attempt = 0;
-    scheduleReconnect();
+    unpark('new access token');
   });
+
+  // Signed-out visitors never get a token change, so a park also ends on the
+  // signals that mark a likely-recovered network, plus a slow safety retry.
+  const onOnline = () => unpark('browser back online');
+  const onVisible = () => {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      unpark('tab visible again');
+    }
+  };
+
+  function startParkedWatch(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', onOnline);
+      window.addEventListener('focus', onVisible);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisible);
+    }
+    parkedTimer = setInterval(() => unpark('periodic retry'), PARKED_RETRY_MS);
+  }
+
+  function stopParkedWatch(): void {
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('online', onOnline);
+      window.removeEventListener('focus', onVisible);
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', onVisible);
+    }
+    if (parkedTimer) {
+      clearInterval(parkedTimer);
+      parkedTimer = null;
+    }
+  }
 
   // connect() and scheduleReconnect() call each other, so these are
   // declarations rather than arrow consts: hoisting lets either one come
@@ -117,10 +167,12 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
     if (disposed || retryTimer || parkedAtTokenVersion !== null) return;
 
     if (attempt >= MAX_ATTEMPTS) {
-      // Park instead of hammering the server. onRealtimeTokenChange above
-      // resumes as soon as a new access token arrives.
+      // Park instead of hammering the server. A new access token, the network
+      // coming back, the tab becoming visible, or the slow backstop timer all
+      // resume it — a park is always temporary.
       parkedAtTokenVersion = getRealtimeTokenVersion();
-      errorLog(`[realtime:${label}] gave up after ${MAX_ATTEMPTS} attempts — waiting for a token`);
+      errorLog(`[realtime:${label}] paused after ${MAX_ATTEMPTS} attempts — will retry`);
+      startParkedWatch();
       const stale = currentChannel;
       currentChannel = null;
       if (stale) void supabase.removeChannel(stale);
@@ -151,6 +203,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
     dispose: () => {
       disposed = true;
       unsubscribeToken();
+      stopParkedWatch();
       if (retryTimer) {
         clearTimeout(retryTimer);
         retryTimer = null;

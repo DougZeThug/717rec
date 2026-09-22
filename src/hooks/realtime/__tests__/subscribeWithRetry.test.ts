@@ -43,28 +43,53 @@ describe('subscribeWithRetry', () => {
     vi.useRealTimers();
   });
 
-  it('stops retrying after the attempt cap and resumes on a new token', () => {
+  it('pauses after the attempt cap and resumes on a new token', () => {
     const build = vi.fn(buildChannel);
     const { dispose } = subscribeWithRetry({ label: 'test', build });
 
     expect(build).toHaveBeenCalledTimes(1);
 
-    // Six failures consume the cap; the seventh failure must not rebuild.
+    // Six failures consume the cap; the seventh parks the channel.
     for (let i = 0; i < 7; i += 1) failOnce();
     expect(build).toHaveBeenCalledTimes(7);
 
-    failOnce();
+    // A fresh access token wakes a parked channel.
+    publishRealtimeToken('new-token');
+    vi.advanceTimersByTime(60_000);
+    expect(build).toHaveBeenCalledTimes(8);
+
+    dispose();
+  });
+
+  it('resumes a parked channel on its own after the backstop delay', () => {
+    const build = vi.fn(buildChannel);
+    const { dispose } = subscribeWithRetry({ label: 'test', build });
+
+    for (let i = 0; i < 7; i += 1) failOnce();
     expect(build).toHaveBeenCalledTimes(7);
 
-    // A fresh access token is the only thing that wakes a parked channel.
-    publishRealtimeToken('new-token');
+    // No token change at all (signed-out visitor): the periodic retry must
+    // still bring live updates back without a page reload.
+    vi.advanceTimersByTime(60_000);
     vi.runOnlyPendingTimers();
     expect(build).toHaveBeenCalledTimes(8);
 
     dispose();
   });
 
-  it('ignores token changes after dispose', () => {
+  it('resumes a parked channel when the browser comes back online', () => {
+    const build = vi.fn(buildChannel);
+    const { dispose } = subscribeWithRetry({ label: 'test', build });
+
+    for (let i = 0; i < 7; i += 1) failOnce();
+    window.dispatchEvent(new Event('online'));
+    vi.runOnlyPendingTimers();
+    expect(build).toHaveBeenCalledTimes(8);
+
+    dispose();
+  });
+
+  it('ignores token changes and wake events after dispose', () => {
     const build = vi.fn(buildChannel);
     const { dispose } = subscribeWithRetry({ label: 'test', build });
 
@@ -72,7 +97,8 @@ describe('subscribeWithRetry', () => {
     dispose();
 
     publishRealtimeToken('another-token');
-    vi.runOnlyPendingTimers();
+    window.dispatchEvent(new Event('online'));
+    vi.advanceTimersByTime(120_000);
     expect(build).toHaveBeenCalledTimes(7);
   });
 });
