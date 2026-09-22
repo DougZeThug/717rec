@@ -108,6 +108,14 @@ export const ExampleService = {
   CI runs `npm run typecheck` (`.github/workflows/ci.yml`), so this is only a
   hazard when checking by hand.
 
+- **Two TypeScript installs.** `typescript` is 7.0.2 (native compiler, used by
+  `npm run typecheck`). `typescript-6` is an alias of typescript@6.0.3 used
+  **only by ESLint**, because typescript-eslint still needs the JavaScript
+  compiler API that TypeScript 7 dropped. The `lint` scripts preload
+  `tools/lint-typescript-6.cjs` via `node --require`, which redirects
+  `require('typescript')` to the alias. Lint with `npm run lint` — a bare
+  `npx eslint .` skips the hook and fails. Bump both versions together.
+
 - **Supabase env vars are not required for tests.** `src/setupTests.ts` injects
   safe placeholder values when `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY`
   are missing, so you do **not** need to prefix test commands with them in
