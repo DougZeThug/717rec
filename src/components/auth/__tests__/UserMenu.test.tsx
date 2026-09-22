@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockUseAuth = vi.hoisted(() => vi.fn());
 const mockUseTeamMembership = vi.hoisted(() => vi.fn());
@@ -29,7 +29,9 @@ const renderMenu = (initialPath = '/') =>
   );
 
 const openMenu = async () => {
-  await userEvent.click(screen.getByRole('button', { name: /user menu/i }));
+  const trigger = screen.getByRole('button', { name: /user menu/i });
+  await fireEvent.pointerDown(trigger, { button: 0, ctrlKey: false, pointerType: 'mouse' });
+  await fireEvent.click(trigger);
 };
 
 /** Stable across renders, so a test can assert it was never reached. */
