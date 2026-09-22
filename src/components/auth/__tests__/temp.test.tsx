@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { MemoryRouter, useLocation } from 'react-router';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 const mockUseAuth = vi.hoisted(() => vi.fn());
 const mockUseTeamMembership = vi.hoisted(() => vi.fn());
@@ -18,17 +18,8 @@ import UserMenu from '../UserMenu';
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-describe('UserMenu close by outside click', () => {
-  afterEach(async () => {
-    // Close any open Radix dropdown by clicking outside it before cleanup.
-    const body = document.body;
-    if (body.firstChild) {
-      await userEvent.click(body);
-    }
-  });
-
+describe('UserMenu with fireEvent', () => {
   it('test 1', async () => {
-    const u = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1' },
       profile: { username: 'doug' },
@@ -44,7 +35,7 @@ describe('UserMenu close by outside click', () => {
       </MemoryRouter>
     );
 
-    await u.click(screen.getByRole('button', { name: /user menu/i }));
+    fireEvent.click(screen.getByRole('button', { name: /user menu/i }));
     expect(await screen.findByRole('menuitem', { name: /join a team/i })).toBeInTheDocument();
   });
 
