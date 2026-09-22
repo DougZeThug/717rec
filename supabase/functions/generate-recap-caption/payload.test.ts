@@ -221,3 +221,44 @@ Deno.test('a commissioner note stays inside its own fence', () => {
 
   assertEquals(injection > noteStart && injection < noteEnd, true);
 });
+
+// The reply held a good array and one sentence after it. Taking the last `]`
+// in the reply dragged the slice into that sentence, JSON.parse threw, and the
+// whole generation was refused with 502 blurbs_unreadable.
+Deno.test('extractJsonArray reads an array when the stray sentence contains a bracket', () => {
+  const text = '[{"teamId":"a","blurb":"Hi."}]\nI omitted teams [redacted].';
+  assertEquals(extractJsonArray(text), [{ teamId: 'a', blurb: 'Hi.' }]);
+});
+
+Deno.test('extractJsonArray reads an array followed by bracketed references', () => {
+  const text = '[{"teamId":"a","blurb":"Hi."}] See notes [1] and [2].';
+  assertEquals(extractJsonArray(text), [{ teamId: 'a', blurb: 'Hi.' }]);
+});
+
+// A bracket before the array must not be taken as its opening either.
+Deno.test('extractJsonArray reads an array when the preamble contains a bracket', () => {
+  const text = 'Here is the list [see below]:\n[{"teamId":"a","blurb":"Hi."}]';
+  assertEquals(extractJsonArray(text), [{ teamId: 'a', blurb: 'Hi.' }]);
+});
+
+// Brackets inside a blurb belong to the string, so they cannot end the array.
+Deno.test('extractJsonArray keeps a bracket that is inside a blurb', () => {
+  const text = '[{"teamId":"a","blurb":"They went 3-0 [best in class]."}]';
+  assertEquals(extractJsonArray(text), [{ teamId: 'a', blurb: 'They went 3-0 [best in class].' }]);
+});
+
+Deno.test('extractJsonArray keeps a bracket after an escaped quote', () => {
+  const text = '[{"teamId":"a","blurb":"He said \\"go\\" [sic]."}]';
+  assertEquals(extractJsonArray(text), [{ teamId: 'a', blurb: 'He said "go" [sic].' }]);
+});
+
+Deno.test('extractJsonArray reads a nested array whole', () => {
+  assertEquals(extractJsonArray('[[1,2],[3,4]]'), [
+    [1, 2],
+    [3, 4],
+  ]);
+});
+
+Deno.test('extractJsonArray returns null for prose whose only brackets are not an array', () => {
+  assertEquals(extractJsonArray('Sorry [no data].'), null);
+});

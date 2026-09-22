@@ -3218,6 +3218,41 @@ finding read a superseded migration.
   in `edge-function-tests`.
 
 
+### B-64: A bracket in the model's closing sentence threw away a whole set of blurbs
+
+- **Where the user meets it:** an admin generating the per-team blurbs for a
+  power-rankings edition.
+- **What happens / what was expected:** the generation is refused with a 502
+  and the code `blurbs_unreadable`. The model had in fact returned a valid
+  array; it simply added a sentence after it that contained a bracket, such as
+  `I omitted teams [redacted].` The work is discarded and the admin has to run
+  it again.
+- `extractJsonArray` took the **last** `]` in the reply as the end of the
+  array. A bracket in the trailing sentence pushed that past the array, the
+  slice carried the prose with it, `JSON.parse` threw, and the helper returned
+  null. `BlurbReplySchema.safeParse(null)` then fails and the edge function
+  returns the 502.
+- The helper's own doc comment promised to tolerate "a code fence or a stray
+  sentence around it". It kept that promise only for sentences containing no
+  bracket.
+- **Severity:** `medium`. Nothing is corrupted, but usable output is thrown
+  away and the admin is told only that the reply could not be read.
+- **Decision needed:** `fix`.
+- **Raised by:** a code reading, not a feature document.
+- **Status:** **fixed.** A new `endOfArray` helper walks the brackets from the
+  array's opening and ignores brackets inside JSON strings, so a blurb reading
+  `They went 3-0 [best in class].` cannot end the array early either. Each `[`
+  is tried in turn, which also fixes the same fault in the other direction: a
+  bracket in a sentence *before* the array — `Here is the list [see below]:` —
+  used to be taken as its opening. Seven tests were added; the five that existed
+  keep their expected values, and three of the seven fail against the old helper
+  by returning null.
+- **Verification note:** there is no `deno` binary in the agent container, so
+  these were run by transpiling the real helper and the real test bodies and
+  executing them under Node with an `assertEquals` shim. CI runs them properly
+  in `edge-function-tests`.
+
+
 ## Note: what the two DeepSource checks actually measure
 
 Not a defect in the app — recorded so the next person does not spend a round

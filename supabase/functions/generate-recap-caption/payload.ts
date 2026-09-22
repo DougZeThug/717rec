@@ -154,8 +154,50 @@ export const keepKnownTeams = (
 };
 
 /**
+ * Index of the `]` that closes the array opening at `start`, or -1 when it
+ * never closes. Brackets inside a JSON string do not count, so a blurb reading
+ * `They went 3-0 [best in class].` cannot end the array early.
+ */
+const endOfArray = (text: string, start: number): number => {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let i = start; i < text.length; i += 1) {
+    const char = text[i];
+
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+
+    if (char === '"') inString = true;
+    else if (char === '[') depth += 1;
+    else if (char === ']') {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+
+  return -1;
+};
+
+/**
  * Pull the JSON array out of a reply, tolerating a code fence or a stray
  * sentence around it. Returns null when there is nothing parseable.
+ *
+ * The end of the array is found by matching brackets from its opening, not by
+ * taking the last `]` in the reply. A stray sentence that happens to contain a
+ * bracket — `I omitted teams [redacted].` — used to drag the slice past the
+ * array, so JSON.parse threw and a perfectly good set of blurbs was thrown
+ * away with a 502 blurbs_unreadable.
+ *
+ * Each `[` is tried in turn for the same reason in the other direction: a
+ * bracket in a sentence *before* the array — `Here is the list [see below]:` —
+ * would otherwise be taken as its opening. A `[` that does not parse is prose,
+ * so the search moves on to the next one.
  */
 export const extractJsonArray = (text: string): unknown => {
   const trimmed = text
@@ -164,13 +206,16 @@ export const extractJsonArray = (text: string): unknown => {
     .replace(/```$/, '')
     .trim();
 
-  const start = trimmed.indexOf('[');
-  const end = trimmed.lastIndexOf(']');
-  if (start === -1 || end === -1 || end < start) return null;
+  for (let start = trimmed.indexOf('['); start !== -1; start = trimmed.indexOf('[', start + 1)) {
+    const end = endOfArray(trimmed, start);
+    if (end === -1) continue;
 
-  try {
-    return JSON.parse(trimmed.slice(start, end + 1));
-  } catch {
-    return null;
+    try {
+      return JSON.parse(trimmed.slice(start, end + 1));
+    } catch {
+      // A bracket in prose rather than the array. Try the next one.
+    }
   }
+
+  return null;
 };
