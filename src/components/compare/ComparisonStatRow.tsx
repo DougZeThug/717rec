@@ -17,6 +17,20 @@ interface ComparisonStatRowProps {
   suffix?: string;
 }
 
+/** A row's value as a number, preferring the explicit numeric prop. */
+const toNumber = (numeric: number | undefined, value: string | number) =>
+  numeric ?? (typeof value === 'number' ? value : parseFloat(String(value)) || 0);
+
+/** Which side the row marks as ahead, or neither when the two are level. */
+const pickWinner = (
+  num1: number,
+  num2: number,
+  higherIsBetter: boolean
+): 'team1' | 'team2' | 'tie' => {
+  if (num1 === num2) return 'tie';
+  return (higherIsBetter ? num1 > num2 : num1 < num2) ? 'team1' : 'team2';
+};
+
 export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
   label,
   value1,
@@ -29,20 +43,11 @@ export const ComparisonStatRow: React.FC<ComparisonStatRowProps> = ({
   showPercentiles = true,
   suffix = '',
 }) => {
-  // Determine winner
-  const num1 =
-    numericValue1 ?? (typeof value1 === 'number' ? value1 : parseFloat(String(value1)) || 0);
-  const num2 =
-    numericValue2 ?? (typeof value2 === 'number' ? value2 : parseFloat(String(value2)) || 0);
-
-  let winner: 'team1' | 'team2' | 'tie' = 'tie';
-  if (num1 !== num2) {
-    if (higherIsBetter) {
-      winner = num1 > num2 ? 'team1' : 'team2';
-    } else {
-      winner = num1 < num2 ? 'team1' : 'team2';
-    }
-  }
+  const winner = pickWinner(
+    toNumber(numericValue1, value1),
+    toNumber(numericValue2, value2),
+    higherIsBetter
+  );
 
   return (
     <div className="grid grid-cols-3 gap-2 py-3 border-b border-border/50 last:border-0">

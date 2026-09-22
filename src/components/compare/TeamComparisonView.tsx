@@ -186,81 +186,37 @@ const PlayoffStatsCard: React.FC<CardProps> = ({ team1, team2 }) => {
   );
 };
 
-const DivisionRecordsCard: React.FC<CardProps> = ({ team1, team2 }) => {
-  const t1 = team1.totals;
-  const t2 = team2.totals;
+/** The three tiers are the same row three times, so they are written once. */
+const DIVISION_TIERS = [
+  { key: 'competitive', label: 'vs Competitive' },
+  { key: 'intermediate', label: 'vs Intermediate' },
+  { key: 'recreational', label: 'vs Recreational' },
+] as const;
 
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
-        vs Division Tiers
-      </h4>
+const DivisionRecordsCard: React.FC<CardProps> = ({ team1, team2 }) => (
+  <div className="rounded-lg border border-border bg-card p-4">
+    <h4 className="text-sm font-semibold text-muted-foreground mb-3 text-center uppercase tracking-wide">
+      vs Division Tiers
+    </h4>
 
-      <ComparisonStatRow
-        label="vs Competitive"
-        value1={formatRecord(
-          t1?.division_records.competitive.wins || 0,
-          t1?.division_records.competitive.losses || 0
-        )}
-        value2={formatRecord(
-          t2?.division_records.competitive.wins || 0,
-          t2?.division_records.competitive.losses || 0
-        )}
-        numericValue1={winRate(
-          t1?.division_records.competitive.wins || 0,
-          t1?.division_records.competitive.losses || 0
-        )}
-        numericValue2={winRate(
-          t2?.division_records.competitive.wins || 0,
-          t2?.division_records.competitive.losses || 0
-        )}
-        showPercentiles={false}
-      />
+    {DIVISION_TIERS.map(({ key, label }) => {
+      const r1 = team1.totals?.division_records[key];
+      const r2 = team2.totals?.division_records[key];
 
-      <ComparisonStatRow
-        label="vs Intermediate"
-        value1={formatRecord(
-          t1?.division_records.intermediate.wins || 0,
-          t1?.division_records.intermediate.losses || 0
-        )}
-        value2={formatRecord(
-          t2?.division_records.intermediate.wins || 0,
-          t2?.division_records.intermediate.losses || 0
-        )}
-        numericValue1={winRate(
-          t1?.division_records.intermediate.wins || 0,
-          t1?.division_records.intermediate.losses || 0
-        )}
-        numericValue2={winRate(
-          t2?.division_records.intermediate.wins || 0,
-          t2?.division_records.intermediate.losses || 0
-        )}
-        showPercentiles={false}
-      />
-
-      <ComparisonStatRow
-        label="vs Recreational"
-        value1={formatRecord(
-          t1?.division_records.recreational.wins || 0,
-          t1?.division_records.recreational.losses || 0
-        )}
-        value2={formatRecord(
-          t2?.division_records.recreational.wins || 0,
-          t2?.division_records.recreational.losses || 0
-        )}
-        numericValue1={winRate(
-          t1?.division_records.recreational.wins || 0,
-          t1?.division_records.recreational.losses || 0
-        )}
-        numericValue2={winRate(
-          t2?.division_records.recreational.wins || 0,
-          t2?.division_records.recreational.losses || 0
-        )}
-        showPercentiles={false}
-      />
-    </div>
-  );
-};
+      return (
+        <ComparisonStatRow
+          key={key}
+          label={label}
+          value1={formatRecord(r1?.wins || 0, r1?.losses || 0)}
+          value2={formatRecord(r2?.wins || 0, r2?.losses || 0)}
+          numericValue1={winRate(r1?.wins || 0, r1?.losses || 0)}
+          numericValue2={winRate(r2?.wins || 0, r2?.losses || 0)}
+          showPercentiles={false}
+        />
+      );
+    })}
+  </div>
+);
 
 export const TeamComparisonView: React.FC<TeamComparisonViewProps> = ({
   team1,
