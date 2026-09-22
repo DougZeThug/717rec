@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 // Two nights, so "clear the night on screen" and "clear every night" are
 // actually different outcomes.
 const NIGHT = '2026-09-04';
@@ -55,7 +57,7 @@ const openThePrompt = async (chooseNight = 'Sep 4, 2026') => {
   const user = userEvent.setup();
   const { rerender } = render(<BlindDrawSignupsTab />);
 
-  await user.click(screen.getByRole('combobox', { name: /night/i }));
+  await openRadixTrigger(screen.getByRole('combobox', { name: /night/i }));
   await user.click(await screen.findByRole('option', { name: chooseNight }));
 
   await user.click(screen.getByRole('button', { name: /^clear /i }));

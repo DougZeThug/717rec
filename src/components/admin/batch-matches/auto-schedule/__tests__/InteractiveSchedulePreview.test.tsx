@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
 import type { Team } from '@/types';
 import type { TimeBlockTeamsMap } from '@/types/autoSchedule';
 
@@ -264,7 +265,7 @@ describe('InteractiveSchedulePreview', () => {
   describe('moving teams between blocks', () => {
     const pickTargetBlock = async (user: ReturnType<typeof userEvent.setup>, target: string) => {
       const card = blockCard('6:00 PM');
-      await user.click(within(card).getByRole('combobox'));
+      await openRadixTrigger(within(card).getByRole('combobox'));
       await user.click(await screen.findByRole('option', { name: target }));
     };
 
@@ -288,7 +289,7 @@ describe('InteractiveSchedulePreview', () => {
       const { user } = setup();
 
       await selectTeam(user, 'Tigers');
-      await user.click(within(blockCard('6:00 PM')).getByRole('combobox'));
+      await openRadixTrigger(within(blockCard('6:00 PM')).getByRole('combobox'));
 
       expect(await screen.findByRole('option', { name: '7:00 PM' })).toBeInTheDocument();
       expect(screen.queryByRole('option', { name: '6:00 PM' })).not.toBeInTheDocument();

@@ -8,6 +8,8 @@ const mockToast = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/teams', () => ({ useTeamsQuery: () => mockUseTeamsQuery() }));
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: mockToast }) }));
 
+import { openRadixTrigger } from '@/test/radix';
+
 import ManualTeamAssignment from '../ManualTeamAssignment';
 
 const teams = [
@@ -28,7 +30,7 @@ const renderPanel = ({
 
 /** The checkboxes appear only once a block is chosen, so every flow starts here. */
 const chooseFirstBlock = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('combobox'));
+  await openRadixTrigger(screen.getByRole('combobox'));
   await user.click(await screen.findByRole('option', { name: /SuperUltraEarly Block/ }));
 };
 

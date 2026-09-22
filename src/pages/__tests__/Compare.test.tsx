@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useTeamsQuery } from '@/hooks/teams';
 import { type TeamComparisonSide, useTeamComparison } from '@/hooks/useTeamComparison';
 import Compare from '@/pages/Compare';
+import { openRadixTrigger } from '@/test/radix';
 import type { Team } from '@/types';
 
 vi.mock('react-helmet-async', () => ({
@@ -216,7 +217,7 @@ describe('Compare', () => {
     renderCompare('/compare');
 
     const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
-    await user.click(team1Trigger);
+    await openRadixTrigger(team1Trigger);
 
     const option = await screen.findByRole('option', { name: /Alpha Aces/ });
     await user.click(option);
@@ -291,7 +292,7 @@ describe('Compare', () => {
       renderCompare('/compare');
 
       const team1Trigger = screen.getByRole('combobox', { name: 'Team 1' });
-      await user.click(team1Trigger);
+      await openRadixTrigger(team1Trigger);
       await user.click(await screen.findByRole('option', { name: /Alpha Aces/ }));
 
       await waitFor(() => {
