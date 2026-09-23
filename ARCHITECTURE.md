@@ -155,8 +155,8 @@ documented in `docs/product-description/stats/team-and-player-stats.md`.
 - Tailwind config (v4, CSS-first): the `@theme` blocks in `src/index.css`.
   There is no `tailwind.config.ts`. The same file keeps a few v3 behaviours on
   purpose (unlayered Preflight and utilities, `hover:` on touch screens, the v3
-  `space-*` selector, and `src/styles/tailwind-v3-compat.css`); its comments
-  explain each one.
+  `space-*` selector, v3 `text-*` line heights, and
+  `src/styles/tailwind-v3-compat.css`); its comments explain each one.
 - Theme tokens: `src/styles/theme.css` and `src/styles/themes/`
   - All three themes (light, dark, winter) define the **same token names**, so
     `text-foreground`, `bg-card` and `border-border` are already correct in each

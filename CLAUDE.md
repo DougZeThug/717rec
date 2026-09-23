@@ -73,9 +73,10 @@ export const ExampleService = {
   `@layer`: unlayered CSS beats layered CSS, so every border colour, heading
   and animation tie would flip. Read the comment at the top of the file first.
 - Kept v3 behaviours (each has a comment in `src/index.css`): `hover:` also
-  fires on touch screens, `space-x-*`/`space-y-*` use the v3 selector, and
+  fires on touch screens, `space-x-*`/`space-y-*` use the v3 selector,
+  `text-*` sizes keep v3's fixed line heights, and
   `src/styles/tailwind-v3-compat.css` restores the gray-200 border, placeholder
-  colour and button pointer.
+  colour, button pointer and 1px table-cell padding.
 - Keep `bg-gradient-to-*` (not `bg-linear-to-*`): hero card presets save these
   class names in the database, and the winter theme matches them with
   `[class*="bg-gradient"]`.
