@@ -1,4 +1,5 @@
 import { mcpPlugin } from '@lovable.dev/mcp-js/stacks/supabase/vite';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react-swc';
 import { componentTagger } from 'lovable-tagger';
 import path from 'path';
@@ -54,6 +55,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    tailwindcss(),
     react(),
     mcpPlugin(),
     mcpPlugin({ mcpEntry: 'src/lib/mcp/public/index.ts', functionName: 'mcp-public' }),
