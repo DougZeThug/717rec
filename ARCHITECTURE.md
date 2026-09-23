@@ -6,7 +6,7 @@ A recreational league management system built with React, TypeScript, and Supaba
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Routing**: React Router v7 (client-side SPA)
-- **Styling**: Tailwind CSS + shadcn/ui components
+- **Styling**: Tailwind CSS v4 + shadcn/ui components
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
 - **State**: TanStack Query v5 (server state caching)
 - **Animation**: Framer Motion
@@ -152,7 +152,11 @@ documented in `docs/product-description/stats/team-and-player-stats.md`.
 **Styling**:
 
 - Global styles: `src/styles/`
-- Tailwind config: `tailwind.config.ts`
+- Tailwind config (v4, CSS-first): the `@theme` blocks in `src/index.css`.
+  There is no `tailwind.config.ts`. The same file keeps a few v3 behaviours on
+  purpose (unlayered Preflight and utilities, `hover:` on touch screens, the v3
+  `space-*` selector, and `src/styles/tailwind-v3-compat.css`); its comments
+  explain each one.
 - Theme tokens: `src/styles/theme.css` and `src/styles/themes/`
   - All three themes (light, dark, winter) define the **same token names**, so
     `text-foreground`, `bg-card` and `border-border` are already correct in each
