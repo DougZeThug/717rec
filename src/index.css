@@ -56,6 +56,18 @@
   /* TODO: Load Snowtop Caps font file if keeping this feature */
   --font-snowtop: Snowtop Caps, Bebas Neue, Arial, sans-serif;
 
+  /* v3 line heights for the text-* sizes. v4 uses ratios (text-xs is
+     1.333), which a child with a different font size inherits differently.
+     Lengths keep v3's inherited line heights, for example inside badges. */
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+
   --color-cornhole-wood: #9e7e5a;
   --color-cornhole-green: #2c5530;
   --color-cornhole-navy: #1e3a5f;
