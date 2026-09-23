@@ -278,7 +278,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           <TabsList className="w-full md:min-w-[340px] font-inter bg-secondary">
             <TabsTrigger
               value="timeslots"
-              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition-all"
+              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition"
             >
               <div className="flex items-center justify-center">
                 <Clock className="size-4 mr-1 shrink-0" />
@@ -287,7 +287,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
             </TabsTrigger>
             <TabsTrigger
               value="upcoming"
-              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition-all"
+              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition"
             >
               <div className="flex items-center justify-center">
                 <Calendar className="size-4 mr-1 shrink-0" />
@@ -296,7 +296,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
             </TabsTrigger>
             <TabsTrigger
               value="completed"
-              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition-all"
+              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition"
             >
               <div className="flex items-center justify-center">
                 <CheckCircle className="size-4 mr-1 shrink-0" />

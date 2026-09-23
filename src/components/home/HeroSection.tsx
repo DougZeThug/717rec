@@ -19,7 +19,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, icon, label, className }) => 
     to={to}
     className={cn(
       'flex items-center gap-2.5 px-4 py-3.5 rounded-xl font-semibold text-sm text-white',
-      'transition-all duration-200 active:scale-[0.97] shadow-xs',
+      'transition duration-200 active:scale-[0.97] shadow-xs',
       className
     )}
   >
@@ -132,7 +132,7 @@ const HeroSection = () => {
               {...{ fetchpriority: 'high' }}
               loading="eager"
               decoding="sync"
-              className="h-24 w-auto max-w-full transition-all duration-200 drop-shadow-xs"
+              className="h-24 w-auto max-w-full transition duration-200 drop-shadow-xs"
             />
           </div>
           {shouldApplyWinter ? (
