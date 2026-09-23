@@ -98,7 +98,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         />
 
         {/* Realtime indicator */}
-        <RealtimeIndicator enabled={!!realtimeEnabled && !!data.selectedBracketId} />
+        <RealtimeIndicator enabled={Boolean(realtimeEnabled) && Boolean(data.selectedBracketId)} />
       </div>
 
       {/* Mobile bottom bar */}
