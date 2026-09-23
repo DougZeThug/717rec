@@ -27,7 +27,7 @@ export const standingsHeaderClasses = ({ isWinterTheme, isLight }: StandingsThem
 export const standingsTitleClasses = ({ isWinterTheme }: StandingsTheme): string =>
   isWinterTheme
     ? 'text-[hsl(var(--foreground))]'
-    : 'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400';
+    : 'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400 dark:via-none';
 
 /**
  * The description under the standings title.

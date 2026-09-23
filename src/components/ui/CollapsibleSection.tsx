@@ -45,7 +45,7 @@ export const CollapsibleSection = ({
             <Icon className={cn('size-4 md:size-5', iconColor)} aria-hidden="true" />
             <h2
               id={headingId}
-              className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter"
+              className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter"
             >
               {title}
             </h2>
@@ -105,7 +105,7 @@ export const SectionHeader = ({
       <div>
         <div className="flex items-center gap-2">
           {Icon && <Icon className={cn('size-4 md:size-5', iconColor)} />}
-          <Heading className="text-2xl md:text-3xl font-bebas uppercase tracking-wide bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter">
+          <Heading className="text-2xl md:text-3xl font-bebas uppercase tracking-wide bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter">
             {title}
           </Heading>
           {shouldApplyWinterBase && WINTER_ICONS_ENABLED && (

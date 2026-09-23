@@ -127,7 +127,7 @@ const TeamCardStats: React.FC<{ team: Team; isWinterTheme: boolean }> = ({
           'rounded p-1.5',
           isWinterTheme
             ? 'bg-white/5 border border-frost-border/20'
-            : 'bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80'
+            : 'bg-gradient-to-br from-white via-blue-50/20 to-blue-50/40 dark:from-gray-800/90 dark:to-gray-900/80 dark:via-none'
         )}
       >
         <div className="text-xs text-muted-foreground uppercase">Record</div>
@@ -140,7 +140,7 @@ const TeamCardStats: React.FC<{ team: Team; isWinterTheme: boolean }> = ({
           'rounded p-1.5',
           isWinterTheme
             ? 'bg-white/5 border border-frost-border/20'
-            : 'bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80'
+            : 'bg-gradient-to-br from-white via-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/80 dark:via-none'
         )}
       >
         <div className="text-xs text-muted-foreground uppercase">Power</div>
@@ -181,13 +181,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
         </div>
       </Link>
 
-      <div
-        className={cn(
-          'flex flex-col grow',
-          isMobile ? 'p-1.5' : 'p-2 sm:p-3',
-          contentGradient
-        )}
-      >
+      <div className={cn('flex flex-col grow', isMobile ? 'p-1.5' : 'p-2 sm:p-3', contentGradient)}>
         <div className="flex justify-between items-start">
           <TeamCardTitle team={team} isMobile={isMobile} />
 

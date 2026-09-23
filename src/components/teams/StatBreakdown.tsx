@@ -98,7 +98,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
             <BarChart3 className="size-4 md:size-5 text-blue-500" aria-hidden="true" />
             <h2
               id="stats-heading"
-              className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent heading-winter"
+              className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter"
               style={{ letterSpacing: '0.5px' }}
             >
               Team Stats
@@ -211,7 +211,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                   <StatBlock
                     label="Win Percentage"
                     value={`${winPercentage}%`}
-                    gradient="bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
+                    gradient="bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70 dark:via-none"
                     icon={<Target size={18} className="text-purple-500" />}
                   />
                 </div>
