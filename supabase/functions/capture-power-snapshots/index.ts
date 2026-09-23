@@ -5,6 +5,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 import { SECURITY_HEADERS } from '../_shared/securityHeaders.ts';
+import { compareTeamsForRanking, type TeamDetailsRow } from './ranking.ts';
 
 const corsHeaders = {
   ...SECURITY_HEADERS,
@@ -22,46 +23,6 @@ interface TeamPowerScore {
   game_losses: number;
   division_id: string | null;
 }
-
-interface TeamDetailsRow {
-  team_id: string;
-  name: string | null;
-  divisionname: string | null;
-  win_percentage: number | null;
-  power_score: number | null;
-}
-
-// Mirrors getTierFromDivision in src/utils/autoSchedule/blossom/tierUtils.ts.
-const getTierFromDivision = (divisionName: string | null | undefined): number => {
-  if (!divisionName) return 2; // Default to intermediate
-  const lowerName = divisionName.toLowerCase();
-  if (lowerName.includes('competitive') || lowerName.includes('comp')) return 1;
-  if (lowerName.includes('recreational') || lowerName.includes('rec')) return 3;
-  return 2;
-};
-
-const getDisplayedPowerScore = (powerScore: number | null | undefined): number | null => {
-  if (powerScore === null || powerScore === undefined) return null;
-  return Math.round(powerScore * 10) / 10;
-};
-
-// Must stay in lockstep with the client sort in src/hooks/useTeamRankings.ts so
-// the stored baseline compares like-for-like with what the site displays:
-// 1-decimal power score desc, NULL scores last, then division tier, win %, name.
-const compareTeamsForRanking = (a: TeamDetailsRow, b: TeamDetailsRow): number => {
-  const aScore = getDisplayedPowerScore(a.power_score);
-  const bScore = getDisplayedPowerScore(b.power_score);
-  if (aScore === null && bScore !== null) return 1;
-  if (bScore === null && aScore !== null) return -1;
-  if (aScore !== null && bScore !== null && bScore !== aScore) return bScore - aScore;
-  const tierA = getTierFromDivision(a.divisionname);
-  const tierB = getTierFromDivision(b.divisionname);
-  if (tierA !== tierB) return tierA - tierB;
-  const winA = a.win_percentage ?? 0;
-  const winB = b.win_percentage ?? 0;
-  if (winA !== winB) return winB - winA;
-  return (a.name || '').localeCompare(b.name || '');
-};
 
 // Refresh the ranking_snapshots baseline that powers the site's trend arrows.
 // This write used to happen client-side whenever an admin merely *viewed* the
