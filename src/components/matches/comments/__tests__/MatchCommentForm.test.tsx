@@ -37,7 +37,7 @@ describe('MatchCommentForm', () => {
   });
 
   it('sends the typed comment and clears the box', async () => {
-    const onSubmit = vi.fn().mockResolvedValue(undefined);
+    const onSubmit = vi.fn(() => Promise.resolve());
     render(<MatchCommentForm onSubmit={onSubmit} />);
     const box = screen.getByRole('textbox', { name: 'Add a comment' });
 
