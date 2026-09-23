@@ -23,7 +23,7 @@ const BatchMatchFormActions = ({
       <Button
         onClick={onAutoAssign}
         variant="outline"
-        className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+        className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-xs active:scale-[0.98]"
         disabled={isAutoAssigning}
       >
         {isAutoAssigning ? (
@@ -43,7 +43,7 @@ const BatchMatchFormActions = ({
         <Button
           onClick={onAddMatch}
           variant="outline"
-          className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+          className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-xs active:scale-[0.98]"
         >
           <Plus className="mr-2 size-4" />
           Add Another Match
@@ -51,7 +51,7 @@ const BatchMatchFormActions = ({
         <Button
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-sm active:scale-[0.98]"
+          className="w-full transition-all duration-200 hover:bg-opacity-90 shadow-xs active:scale-[0.98]"
         >
           {isSubmitting ? (
             <>

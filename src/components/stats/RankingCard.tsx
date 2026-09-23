@@ -99,7 +99,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
             size="sm"
-            className="flex-shrink-0"
+            className="shrink-0"
           />
           <div className="min-w-0">
             <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
@@ -108,7 +108,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
             <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
           </div>
         </Link>
-        <span className="text-base font-bold tabular-nums text-foreground flex-shrink-0">
+        <span className="text-base font-bold tabular-nums text-foreground shrink-0">
           {ranking.wins}-{ranking.losses}
         </span>
       </div>
@@ -116,7 +116,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
       {/* Stats section: Power gauge left, 2x2 grid right */}
       <div className="flex items-center gap-3">
         {/* Power Score Gauge */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <PowerScoreGauge score={ranking.powerScore} size="md" showLabel />
         </div>
 

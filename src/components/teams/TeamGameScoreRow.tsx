@@ -94,7 +94,7 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
         {/* Game score - center */}
         <div
           className={cn(
-            'flex items-center justify-center px-2 flex-shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center',
+            'flex items-center justify-center px-2 shrink-0 whitespace-nowrap font-bold text-base md:text-lg min-w-[3ch] text-center',
             'font-mono'
           )}
         >

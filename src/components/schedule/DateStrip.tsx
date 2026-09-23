@@ -91,7 +91,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               onClick={() => onDateSelect(date)}
               className={cn(
                 'flex flex-col items-center px-3 py-1.5 rounded-xl min-w-[50px] transition-all duration-200',
-                'hover:bg-muted focus:outline-none focus:ring-2 focus:ring-primary/50',
+                'hover:bg-muted focus:outline-hidden focus:ring-2 focus:ring-primary/50',
                 isSelected &&
                   'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105',
                 isTodayDate && !isSelected && 'ring-1 ring-primary/60',

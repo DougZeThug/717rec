@@ -27,7 +27,7 @@ const MessageContent: React.FC<MessageContentProps> = ({ content, isEdited, upda
 
   return (
     <div className="text-sm mt-1">
-      <p className="whitespace-pre-wrap break-words">{formattedText}</p>
+      <p className="whitespace-pre-wrap wrap-break-word">{formattedText}</p>
 
       {isEdited && updatedAt && (
         <TooltipProvider>

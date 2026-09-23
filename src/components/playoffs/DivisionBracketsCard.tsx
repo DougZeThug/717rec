@@ -123,7 +123,7 @@ const DivisionBracketsCard: React.FC<DivisionBracketsCardProps> = ({
   return (
     <div
       className={cn(
-        'rounded-xl border-l-4 bg-card border border-border shadow-sm overflow-hidden',
+        'rounded-xl border-l-4 bg-card border border-border shadow-xs overflow-hidden',
         'active:scale-[0.99] transition-all duration-200',
         getDivisionBorderColor(division)
       )}

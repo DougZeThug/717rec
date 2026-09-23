@@ -67,7 +67,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
           isLight ? gradients.card.blueOrange : ''
         )}
       >
-        <CollapsibleTrigger className="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        <CollapsibleTrigger className="block w-full text-left focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
           {/* The whole chart header is the trigger and has no focusable descendants.
               Avoid `asChild` here so Radix Slot does not inspect the child ref,
               which can emit React's "ref is not a prop" warning on /stats. */}

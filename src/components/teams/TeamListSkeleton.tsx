@@ -21,7 +21,7 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
               <div className="w-full md:w-[150px] h-[150px] bg-muted/50 flex items-center justify-center">
                 <AvatarSkeleton size="lg" />
               </div>
-              <div className="flex flex-col flex-grow p-4 space-y-4">
+              <div className="flex flex-col grow p-4 space-y-4">
                 <div className="flex justify-between">
                   <ShimmerSkeleton variant="input" className="h-6 w-1/3" />
                   <ShimmerSkeleton variant="input" className="h-6 w-8" />
@@ -56,7 +56,7 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
       {skeletons.map((skKey) => (
         <Card key={skKey} className="overflow-hidden h-[220px] flex flex-col">
           <ShimmerSkeleton variant="card" className="h-24 w-full rounded-none" />
-          <div className="p-4 space-y-4 flex-grow">
+          <div className="p-4 space-y-4 grow">
             <div className="flex justify-between">
               <ShimmerSkeleton variant="input" className="h-5 w-2/3" />
               <ShimmerSkeleton variant="input" className="h-5 w-6" />

@@ -74,7 +74,7 @@ const HeaderActions: React.FC<{
     )}
     <CollapsibleTrigger
       aria-label={isOpen ? 'Collapse current standings' : 'Expand current standings'}
-      className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted/50 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       <ChevronDown
         className={cn(

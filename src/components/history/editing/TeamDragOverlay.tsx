@@ -35,7 +35,7 @@ const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
       {/* Rank Badge */}
       <div
         className={cn(
-          'flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold',
+          'flex items-center justify-center min-w-8 h-7 rounded-md text-sm font-bold',
           team.champion
             ? 'bg-yellow-500 text-white'
             : team.runner_up
@@ -55,7 +55,7 @@ const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
       {/* Team Info */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         {team.team_image_url || team.team_logo_url ? (
-          <div className="size-7 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <div className="size-7 rounded-full overflow-hidden bg-muted shrink-0">
             <img
               src={team.team_image_url || team.team_logo_url || ''}
               alt={`${team.team_name} logo`}
@@ -65,7 +65,7 @@ const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
             />
           </div>
         ) : (
-          <div className="size-7 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+          <div className="size-7 rounded-full bg-muted flex items-center justify-center shrink-0">
             <Users className="size-4 text-muted-foreground" />
           </div>
         )}

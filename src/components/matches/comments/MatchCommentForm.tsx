@@ -52,9 +52,9 @@ const MatchCommentForm: React.FC<MatchCommentFormProps> = ({
           aria-label="Add a comment"
           rows={1}
           className={cn(
-            'flex-1 py-2 px-3 resize-none outline-none bg-transparent',
+            'flex-1 py-2 px-3 resize-none outline-hidden bg-transparent',
             'text-sm text-foreground placeholder:text-muted-foreground',
-            'focus:outline-none focus:border-none focus:ring-0'
+            'focus:outline-hidden focus:border-none focus:ring-0'
           )}
           style={{ minHeight: '2.5rem', maxHeight: '8rem' }}
         />

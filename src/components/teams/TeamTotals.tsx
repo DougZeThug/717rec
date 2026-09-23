@@ -124,7 +124,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
             Career Record
           </span>
           <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center gap-2">
-            <Trophy size={16} className="text-emerald-500 flex-shrink-0" />
+            <Trophy size={16} className="text-emerald-500 shrink-0" />
             {totals.career_match_wins}-{totals.career_match_losses}
             {percentiles && (
               <PercentileFromResult result={percentiles.winPercentage} statName="Win %" />
@@ -179,7 +179,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           <div
             className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getPowerScoreColor(totals.career_power_score)}`}
           >
-            <Zap size={16} className="flex-shrink-0" />
+            <Zap size={16} className="shrink-0" />
             {totals.career_power_score.toFixed(1)}
             {percentiles && (
               <PercentileFromResult result={percentiles.powerScore} statName="Power Score" />
@@ -194,7 +194,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           <div
             className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getSweepRateColor(totals.career_sweep_rate)}`}
           >
-            <Wind size={16} className="flex-shrink-0" />
+            <Wind size={16} className="shrink-0" />
             {totals.career_sweep_rate.toFixed(1)}%
           </div>
           <span className="text-xs tabular-nums text-muted-foreground mt-1">
@@ -209,7 +209,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
               Career Clutch Win %
             </span>
             <div className="font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 text-purple-500">
-              <Swords size={16} className="flex-shrink-0" />
+              <Swords size={16} className="shrink-0" />
               {totals.career_clutch_win_pct.toFixed(1)}%
             </div>
             <span className="text-xs tabular-nums text-muted-foreground mt-1">
@@ -225,7 +225,7 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
           <div
             className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${totals.career_sos > 0 ? getSosColor(totals.career_sos) : 'text-muted-foreground'}`}
           >
-            <Scale size={16} className="flex-shrink-0" />
+            <Scale size={16} className="shrink-0" />
             {totals.career_match_wins + totals.career_match_losses > 0
               ? totals.career_sos.toFixed(3)
               : 'N/A'}

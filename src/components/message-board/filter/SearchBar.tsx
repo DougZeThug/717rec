@@ -47,7 +47,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         size="icon"
         onClick={onRefresh}
         disabled={isRefreshing}
-        className="flex-shrink-0"
+        className="shrink-0"
         aria-label="Refresh messages"
       >
         <RefreshCw className={cn('size-4', isRefreshing && 'animate-spin')} />

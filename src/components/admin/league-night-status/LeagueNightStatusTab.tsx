@@ -86,7 +86,7 @@ const QueueTile: React.FC<QueueTileProps> = ({ label, count, icon: Icon, onClick
     onClick={onClick}
     className={cn(
       'flex flex-col items-start gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors',
-      'hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'hover:bg-accent hover:text-accent-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring',
       count > 0 && 'border-primary/50'
     )}
     aria-label={`${label}: ${count} — open section`}

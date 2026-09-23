@@ -43,7 +43,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
       initial="hidden"
       animate="visible"
       variants={cardAnimations.stagger}
-      className={cn('p-4 rounded-xl border shadow-sm', gradientClass, className)}
+      className={cn('p-4 rounded-xl border shadow-xs', gradientClass, className)}
     >
       <div className="flex items-center gap-3">
         <div className={cn('flex items-center justify-center rounded-full size-10', iconBgColor)}>

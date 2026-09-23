@@ -159,7 +159,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
 
   const headerGradient = isWinterTheme
     ? 'bg-transparent'
-    : 'bg-gradient-to-br from-blue-500/[0.06] via-muted to-orange-500/[0.05]';
+    : 'bg-gradient-to-br from-blue-500/6 via-muted to-orange-500/5';
   const contentGradient = isWinterTheme ? 'bg-transparent' : 'bg-gradient-to-br from-muted to-card';
 
   return (
@@ -183,7 +183,7 @@ export const TeamCardGrid: React.FC<TeamCardGridProps> = ({ team, onDelete, onEd
 
       <div
         className={cn(
-          'flex flex-col flex-grow',
+          'flex flex-col grow',
           isMobile ? 'p-1.5' : 'p-2 sm:p-3',
           contentGradient
         )}

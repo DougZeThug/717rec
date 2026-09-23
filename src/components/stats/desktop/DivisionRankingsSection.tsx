@@ -114,7 +114,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
       </h2>
       <div
         className={cn(
-          'overflow-auto rounded-lg border shadow-sm',
+          'overflow-auto rounded-lg border shadow-xs',
           isWinterTheme
             ? 'border-frost-border/30 winter-card-surface'
             : 'border-blue-200/50 dark:border-blue-800/30 dark:bg-muted/50'

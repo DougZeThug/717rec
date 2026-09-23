@@ -192,7 +192,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
     <>
       <div
         ref={scrollerRef}
-        className="size-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className="size-full min-h-[350px] overflow-x-auto overflow-y-visible bg-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         role="region"
         // Focusable so the bracket can be scrolled with the arrow keys, which is
         // the only way to reach the later rounds without a pointer.

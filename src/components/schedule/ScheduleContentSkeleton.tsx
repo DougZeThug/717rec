@@ -15,19 +15,19 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
       <TabsList className="w-full md:min-w-[340px] font-inter bg-muted">
         <TabsTrigger
           value="upcoming"
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-background px-2 md:px-6"
+          className="flex-1 md:grow-0 data-[state=active]:bg-background px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
-            <Calendar className="size-4 mr-2 flex-shrink-0" />
+            <Calendar className="size-4 mr-2 shrink-0" />
             <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming Matches</span>
           </div>
         </TabsTrigger>
         <TabsTrigger
           value="completed"
-          className="flex-1 md:flex-grow-0 data-[state=active]:bg-background px-2 md:px-6"
+          className="flex-1 md:grow-0 data-[state=active]:bg-background px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
-            <CheckCircle className="size-4 mr-2 flex-shrink-0" />
+            <CheckCircle className="size-4 mr-2 shrink-0" />
             <span className="text-sm md:text-base md:whitespace-nowrap">Completed Matches</span>
           </div>
         </TabsTrigger>

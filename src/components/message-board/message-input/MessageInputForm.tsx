@@ -82,7 +82,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const isAdmin = isAdminAccessGranted;
 
   return (
-    <Card className={cn('border p-3 shadow-sm mt-3', animations.fadeInSlideUp)}>
+    <Card className={cn('border p-3 shadow-xs mt-3', animations.fadeInSlideUp)}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
           <Textarea

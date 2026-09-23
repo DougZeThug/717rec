@@ -97,10 +97,10 @@ const OpponentAvatar: React.FC<{ record: HeadToHeadRecord }> = ({ record }) =>
     <img
       src={record.opponent_image_url}
       alt={`${record.opponent_name} logo`}
-      className="size-8 rounded-sm object-cover flex-shrink-0"
+      className="size-8 rounded-sm object-cover shrink-0"
     />
   ) : (
-    <div className="size-8 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+    <div className="size-8 rounded-sm bg-muted flex items-center justify-center shrink-0">
       <span className="text-xs font-medium text-muted-foreground">
         {record.opponent_name.charAt(0).toUpperCase()}
       </span>
@@ -312,7 +312,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
                 setSortDirection(dir);
               }}
             >
-              <SelectTrigger className="w-[130px] flex-shrink-0">
+              <SelectTrigger className="w-[130px] shrink-0">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -327,7 +327,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
             variant="outline"
             size="sm"
             onClick={() => exportHeadToHeadToCSV(filteredRecords, teamName)}
-            className="flex-shrink-0"
+            className="shrink-0"
           >
             <Download className="size-4 mr-1" />
             <span className="hidden sm:inline">Export CSV</span>

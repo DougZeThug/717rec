@@ -53,7 +53,7 @@ const DivisionStrengthChart: React.FC<DivisionStrengthChartProps> = ({ divisions
   if (divisions.length === 0) return null;
 
   return (
-    <div className="border rounded-lg bg-card shadow-sm p-4">
+    <div className="border rounded-lg bg-card shadow-xs p-4">
       <h3 className="font-bebas text-lg tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 bg-clip-text text-transparent mb-4">
         Division Strength
       </h3>

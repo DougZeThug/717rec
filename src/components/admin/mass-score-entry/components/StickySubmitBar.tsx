@@ -35,8 +35,8 @@ const StickySubmitBar: React.FC<StickySubmitBarProps> = ({ children }) => {
         'fixed inset-x-0 z-30',
         // Clear the mobile tab bar, which only exists below `md`.
         'bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] md:bottom-0',
-        'border-t border-border bg-background/95 backdrop-blur',
-        'supports-[backdrop-filter]:bg-background/80',
+        'border-t border-border bg-background/95 backdrop-blur-sm',
+        'supports-backdrop-filter:bg-background/80',
         'px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:pb-3',
         'flex justify-end'
       )}

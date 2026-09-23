@@ -91,7 +91,7 @@ const sectionLabel = (tabId: string) =>
   adminSectionGuide.find((section) => section.id === tabId)?.label ?? tabId;
 
 const rowClasses =
-  'w-full rounded-md p-2 -m-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  'w-full rounded-md p-2 -m-2 text-left transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
 /** Title, target badge and description — the same body for a button or a link. */
 const StepBody: React.FC<{ item: WorkflowStep }> = ({ item }) => (
@@ -128,7 +128,7 @@ const GettingStartedTab: React.FC = () => {
           <ol className="space-y-4">
             {workflowSteps.map((item, index) => (
               <li key={item.step} className="flex items-start gap-4">
-                <div className="flex-shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-semibold text-primary">{item.step}</span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -147,7 +147,7 @@ const GettingStartedTab: React.FC = () => {
                   )}
                 </div>
                 {index < workflowSteps.length - 1 && (
-                  <ArrowRight className="size-4 text-muted-foreground/50 flex-shrink-0 mt-2" />
+                  <ArrowRight className="size-4 text-muted-foreground/50 shrink-0 mt-2" />
                 )}
               </li>
             ))}
@@ -166,7 +166,7 @@ const GettingStartedTab: React.FC = () => {
               <button
                 key={section.id}
                 type="button"
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 text-left transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 onClick={() => switchAdminTab(section.id)}
               >
                 <div className="p-2 rounded-md bg-background">
@@ -194,7 +194,7 @@ const GettingStartedTab: React.FC = () => {
           <ul className="space-y-2">
             {tips.map((tip) => (
               <li key={tip} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="size-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
                 {tip}
               </li>
             ))}

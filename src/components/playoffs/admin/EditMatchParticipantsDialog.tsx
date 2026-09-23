@@ -141,7 +141,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
           />
 
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
-            <AlertTriangle className="mt-0.5 size-4 flex-shrink-0" />
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <p>
               This updates only this match. Downstream matches will populate automatically as this
               match is played. If the swapped team also appears in another upcoming match, you may

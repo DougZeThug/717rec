@@ -38,7 +38,7 @@ const H2HCardDetails: React.FC<H2HCardDetailsProps> = ({ record, badge }) => (
       {badge && (
         <span
           className={cn(
-            'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap flex-shrink-0',
+            'text-xs font-semibold px-1.5 py-0.5 rounded border whitespace-nowrap shrink-0',
             badge.className
           )}
         >

@@ -20,7 +20,7 @@ export const UpsetTag: React.FC<UpsetTagProps> = ({ className }) => {
         'inline-flex items-center gap-1 px-2 py-0.5 rounded-full',
         'bg-gradient-to-r from-orange-500 to-red-500',
         'text-white text-[10px] font-bold uppercase tracking-wider',
-        'shadow-sm animate-pulse',
+        'shadow-xs animate-pulse',
         className
       )}
       title="The underdog won this match!"

@@ -33,7 +33,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
           'transition-all duration-100',
           // Interactive cards get pressed feedback and focus ring
           isInteractive &&
-            'cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+            'cursor-pointer hover:shadow-md active:scale-[0.98] active:shadow-xs focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
           // Winter theme: frosted card surface with frost edge
           applyWinter && 'winter-card-surface frost-edge relative',
           // Light mode gradient (skip when winter theme active)

@@ -42,7 +42,7 @@ const ChampionCardCompact = React.forwardRef<
       ref={ref}
       whileTap={{ scale: 0.97 }}
       className={cn(
-        'flex flex-col items-center backdrop-blur-sm rounded-xl p-3 w-[130px]',
+        'flex flex-col items-center backdrop-blur-xs rounded-xl p-3 w-[130px]',
         isWinter ? 'bg-amber-900/30' : 'bg-white/10'
       )}
     >
@@ -86,7 +86,7 @@ const ChampionCardCompact = React.forwardRef<
         </div>
         <div
           className={cn(
-            'absolute -top-1 -right-1 rounded-full p-0.5 backdrop-blur-sm',
+            'absolute -top-1 -right-1 rounded-full p-0.5 backdrop-blur-xs',
             isWinter ? 'bg-amber-500/40' : 'bg-white/30'
           )}
         >
@@ -125,7 +125,7 @@ const ChampionDisplay = React.forwardRef<
       <div className="relative">
         <div
           className={cn(
-            'ring-4 rounded-lg p-1 backdrop-blur-sm transition-transform duration-200 group-hover:scale-105',
+            'ring-4 rounded-lg p-1 backdrop-blur-xs transition-transform duration-200 group-hover:scale-105',
             isWinter ? 'ring-amber-400/40 bg-amber-900/30' : 'ring-white/40 bg-white/20'
           )}
         >
@@ -154,7 +154,7 @@ const ChampionDisplay = React.forwardRef<
         </div>
         <div
           className={cn(
-            'absolute -top-1 -right-1 rounded-full p-1 backdrop-blur-sm',
+            'absolute -top-1 -right-1 rounded-full p-1 backdrop-blur-xs',
             isWinter ? 'bg-amber-500/40' : 'bg-white/30'
           )}
         >
@@ -227,7 +227,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
         <div className="h-6 bg-white/20 rounded mb-4 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {['champ-1', 'champ-2', 'champ-3', 'champ-4'].map((k) => (
-            <div key={k} className="bg-white/10 backdrop-blur-sm rounded-xl p-3 md:p-4">
+            <div key={k} className="bg-white/10 backdrop-blur-xs rounded-xl p-3 md:p-4">
               <div className="h-3 bg-white/20 rounded w-24 mb-2" />
               <div className="flex items-center gap-3">
                 <div className="size-20 bg-white/20 rounded-lg" />
@@ -332,7 +332,7 @@ const ChampionsHeroCard: React.FC<ChampionsHeroCardProps> = ({ card }) => {
             <div
               key={divisionName}
               className={cn(
-                'backdrop-blur-sm rounded-xl p-3 md:p-4',
+                'backdrop-blur-xs rounded-xl p-3 md:p-4',
                 shouldApplyWinter ? 'bg-amber-900/30' : 'bg-white/10'
               )}
             >

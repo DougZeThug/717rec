@@ -21,5 +21,5 @@ export const listStyles = {
   },
 
   // Table container styles
-  tableContainer: 'overflow-auto rounded-lg border border-border shadow-sm',
+  tableContainer: 'overflow-auto rounded-lg border border-border shadow-xs',
 };

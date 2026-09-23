@@ -34,11 +34,11 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
   if (top3.length === 0) return null;
 
   return (
-    <Card className={cn('mb-3 border shadow-sm', isWinterTheme ? 'winter-card-surface' : '')}>
+    <Card className={cn('mb-3 border shadow-xs', isWinterTheme ? 'winter-card-surface' : '')}>
       <CardContent className="p-3">
         <div className="flex items-start gap-3">
           {/* Left: Title */}
-          <div className="flex flex-col flex-shrink-0 pt-1">
+          <div className="flex flex-col shrink-0 pt-1">
             <span className="text-sm font-semibold text-foreground leading-tight">League</span>
             <span className="text-sm font-semibold text-foreground leading-tight">Leaderboard</span>
             <span className="text-xs text-muted-foreground mt-0.5">{rankings.length} teams</span>

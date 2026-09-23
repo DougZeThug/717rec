@@ -45,7 +45,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams, error, onRetry }) => {
   }, [allBadges]);
 
   const sectionClasses = cn(
-    'py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-sm mb-4 mt-4',
+    'py-6 md:py-8 px-4 md:px-6 rounded-xl shadow-xs mb-4 mt-4',
     shouldApplyWinter
       ? 'winter-card-full winter-card-surface'
       : cn(

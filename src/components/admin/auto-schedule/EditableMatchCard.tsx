@@ -51,7 +51,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
 
   return (
     <div
-      className={`p-4 border rounded-lg bg-card shadow-sm ${
+      className={`p-4 border rounded-lg bg-card shadow-xs ${
         hasError
           ? 'border-destructive'
           : hasWarning

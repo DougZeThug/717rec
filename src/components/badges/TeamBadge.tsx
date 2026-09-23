@@ -110,7 +110,7 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
         'relative inline-flex items-center justify-center rounded-full',
         `bg-gradient-to-br ${config.gradient}`,
         sizeClasses[size],
-        'shadow-sm border-2 border-white',
+        'shadow-xs border-2 border-white',
         'transition-all duration-200',
         // Streak badges get subtle pulse
         isStreakBadge && 'animate-pulse [animation-duration:3s]',

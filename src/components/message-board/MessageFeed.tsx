@@ -108,7 +108,7 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
     }
 
     return (
-      <Card className={cn('mb-4 border shadow', gradients.card.subtle)}>
+      <Card className={cn('mb-4 border shadow-sm', gradients.card.subtle)}>
         <CardContent className="p-0">
           <ScrollArea className={cn('h-[calc(100dvh-250px)]', 'lg:h-[calc(100dvh-280px)]')}>
             <div className="space-y-2 p-3">

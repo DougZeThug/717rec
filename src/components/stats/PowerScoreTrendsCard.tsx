@@ -71,7 +71,7 @@ const PowerScoreTrendsCard: React.FC = () => {
     <AnimatedChartWrapper delay={0.2}>
       <Card
         className={cn(
-          'bg-card text-foreground border border-border rounded-xl shadow-sm',
+          'bg-card text-foreground border border-border rounded-xl shadow-xs',
           animations.fadeInSlideUp,
           'animation-delay-300'
         )}
@@ -147,7 +147,7 @@ const PowerScoreTrendsCard: React.FC = () => {
                   )}
                 >
                   {/* Rank */}
-                  <div className="flex-shrink-0 w-6 text-center">
+                  <div className="shrink-0 w-6 text-center">
                     <span className="text-sm font-semibold text-muted-foreground">{index + 1}</span>
                   </div>
 
@@ -158,7 +158,7 @@ const PowerScoreTrendsCard: React.FC = () => {
                       alt={trend.teamName}
                       loading="lazy"
                       decoding="async"
-                      className="size-8 rounded-full object-cover flex-shrink-0"
+                      className="size-8 rounded-full object-cover shrink-0"
                     />
                   )}
 
@@ -182,7 +182,7 @@ const PowerScoreTrendsCard: React.FC = () => {
                   </div>
 
                   {/* Delta */}
-                  <div className="text-right flex-shrink-0 min-w-[60px]">
+                  <div className="text-right shrink-0 min-w-[60px]">
                     <div className={cn('text-sm font-mono font-bold', getTrendColor(trend.delta))}>
                       {getTrendArrow(trend.delta)} {trend.delta >= 0 ? '+' : ''}
                       {trend.delta.toFixed(1)}

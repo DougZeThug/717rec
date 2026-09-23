@@ -32,7 +32,7 @@ const AllTeamsCareerPowerScoreChart = lazy(() =>
 const LOADING_HEADING = <h1 className="sr-only">Standings</h1>;
 
 const NoTeamsAvailable = () => (
-  <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-sm font-inter">
+  <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-xs font-inter">
     <CardHeader>
       <CardTitle className="font-bold">No Teams Available</CardTitle>
       <CardDescription>

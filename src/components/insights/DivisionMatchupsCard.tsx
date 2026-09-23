@@ -58,7 +58,7 @@ const DivisionMatchupsCard: React.FC = () => {
   const { data, isLoading } = useLeagueDivisionMatchups();
 
   return (
-    <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-sm">
+    <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-xs">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-bold">
           <Swords size={16} className="text-amber-500" />

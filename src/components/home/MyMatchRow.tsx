@@ -53,7 +53,7 @@ const TeamColumn = ({
         size="md"
         rounded
         className={cn(
-          'relative z-10 transition-all duration-300 !w-12 !h-12 !min-w-12 !min-h-12',
+          'relative z-10 transition-all duration-300 w-12! h-12! min-w-12! min-h-12!',
           ringClass
         )}
       />
@@ -198,7 +198,7 @@ const DesktopDateTime = ({
   formattedTime: string | null;
   styles: RowStyleFragments;
 }) => (
-  <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+  <div className="hidden md:flex items-center gap-2 shrink-0">
     <div className="flex flex-col items-end gap-0.5">
       <div className="flex items-center gap-1">
         <Calendar className={cn('size-3', styles.iconColor)} />
@@ -283,7 +283,7 @@ export const MatchRow: React.FC<MatchRowProps> = ({
           {/* Arrow only on mobile */}
           <ChevronRight
             className={cn(
-              'size-5 group-hover:translate-x-1 transition-all duration-200 md:hidden flex-shrink-0',
+              'size-5 group-hover:translate-x-1 transition-all duration-200 md:hidden shrink-0',
               rowStyles.chevronColor
             )}
           />

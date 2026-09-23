@@ -51,7 +51,7 @@ export const RankingTeamCell: React.FC<RankingTeamCellProps> = ({
           imageUrl={imageUrl || logoUrl}
           teamName={teamName}
           size="sm"
-          className="flex-shrink-0"
+          className="shrink-0"
         />
         <div className="flex flex-col min-w-0">
           <span

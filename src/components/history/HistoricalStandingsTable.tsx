@@ -85,13 +85,13 @@ const MobileTeamRow: React.FC<{
       >
         {/* Header row: badge + logo + name + record */}
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="size-4 text-yellow-500 flex-shrink-0" />}
-          {team.runner_up && <Medal className="size-4 text-muted-foreground flex-shrink-0" />}
+          {team.champion && <Crown className="size-4 text-yellow-500 shrink-0" />}
+          {team.runner_up && <Medal className="size-4 text-muted-foreground shrink-0" />}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
             size="sm"
-            className="flex-shrink-0"
+            className="shrink-0"
           />
           <span
             className={cn(
@@ -103,7 +103,7 @@ const MobileTeamRow: React.FC<{
           </span>
           <span
             className={cn(
-              'ml-auto font-bold text-sm tabular-nums flex-shrink-0',
+              'ml-auto font-bold text-sm tabular-nums shrink-0',
               isWinterTheme ? 'text-white' : 'text-foreground'
             )}
           >
@@ -198,7 +198,7 @@ const DesktopTeamRow: React.FC<{
     >
       <div
         className={cn(
-          'py-2 px-2 w-14 text-center flex-shrink-0 tabular-nums',
+          'py-2 px-2 w-14 text-center shrink-0 tabular-nums',
           isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
         )}
       >
@@ -206,13 +206,13 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="size-4 text-yellow-500 flex-shrink-0" />}
-          {team.runner_up && <Medal className="size-4 text-muted-foreground flex-shrink-0" />}
+          {team.champion && <Crown className="size-4 text-yellow-500 shrink-0" />}
+          {team.runner_up && <Medal className="size-4 text-muted-foreground shrink-0" />}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
             size="sm"
-            className="flex-shrink-0"
+            className="shrink-0"
           />
           <span
             className={cn('font-medium truncate', isWinterTheme ? 'text-white' : 'text-foreground')}
@@ -223,7 +223,7 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-semibold tabular-nums w-16 flex-shrink-0',
+          'py-2 px-2 text-center font-semibold tabular-nums w-16 shrink-0',
           isWinterTheme ? 'text-white' : 'text-foreground'
         )}
       >
@@ -231,7 +231,7 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0',
+          'py-2 px-2 text-center font-medium tabular-nums w-16 shrink-0',
           getWinPercentageColor(winPercentage)
         )}
       >
@@ -239,7 +239,7 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center tabular-nums w-16 flex-shrink-0',
+          'py-2 px-2 text-center tabular-nums w-16 shrink-0',
           isWinterTheme ? 'text-white/80' : 'text-muted-foreground'
         )}
       >
@@ -247,7 +247,7 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0',
+          'py-2 px-2 text-center font-medium tabular-nums w-16 shrink-0',
           getWinPercentageColor(gameWinPercentage)
         )}
       >
@@ -255,7 +255,7 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-medium tabular-nums w-14 flex-shrink-0',
+          'py-2 px-2 text-center font-medium tabular-nums w-14 shrink-0',
           getPowerScoreColor(team.power_score ? team.power_score * 100 : null)
         )}
       >
@@ -263,7 +263,7 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div
         className={cn(
-          'py-2 px-2 text-center font-medium tabular-nums w-16 flex-shrink-0',
+          'py-2 px-2 text-center font-medium tabular-nums w-16 shrink-0',
           getSosColor(team.sos)
         )}
       >
@@ -335,14 +335,14 @@ const HistoricalStandingsTable: React.FC<HistoricalStandingsTableProps> = ({ tea
           : 'border-b border-border text-muted-foreground bg-muted/30'
       )}
     >
-      <div className="py-2.5 px-2 w-14 text-center flex-shrink-0">Rank</div>
+      <div className="py-2.5 px-2 w-14 text-center shrink-0">Rank</div>
       <div className="py-2.5 px-2 flex-1 min-w-[120px]">Team</div>
-      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">W-L</div>
-      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">Win%</div>
-      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">Games</div>
-      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">Game%</div>
-      <div className="py-2.5 px-2 text-center w-14 flex-shrink-0">Power</div>
-      <div className="py-2.5 px-2 text-center w-16 flex-shrink-0">SOS</div>
+      <div className="py-2.5 px-2 text-center w-16 shrink-0">W-L</div>
+      <div className="py-2.5 px-2 text-center w-16 shrink-0">Win%</div>
+      <div className="py-2.5 px-2 text-center w-16 shrink-0">Games</div>
+      <div className="py-2.5 px-2 text-center w-16 shrink-0">Game%</div>
+      <div className="py-2.5 px-2 text-center w-14 shrink-0">Power</div>
+      <div className="py-2.5 px-2 text-center w-16 shrink-0">SOS</div>
     </div>
   );
 

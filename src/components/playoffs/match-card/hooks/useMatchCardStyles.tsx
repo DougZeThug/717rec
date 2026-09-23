@@ -41,7 +41,7 @@ export const useMatchCardStyles = (
     const cardClasses = cn(
       cardBaseClasses,
       isLight
-        ? 'border hover:border-gray-300 shadow-sm'
+        ? 'border hover:border-gray-300 shadow-xs'
         : 'border hover:border-gray-700 bg-gray-900/50 shadow-md',
       isPlayIn && 'border-l-4 border-l-teal-500',
       isResetMatch && 'border-l-4 border-l-amber-500',

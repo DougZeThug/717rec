@@ -59,7 +59,7 @@ export const TimeslotTeamGrid: React.FC<TimeslotTeamGridProps> = ({
                 <TeamLogo imageUrl={team.imageUrl || team.logoUrl} teamName={team.name} size="sm" />
                 {/* Two lines rather than an ellipsis: "Baggin' & Braggin'"
                           and "Baggin Rights" both read "Baggin…" cut short. */}
-                <span className="line-clamp-2 flex-1 break-words text-xs font-medium">
+                <span className="line-clamp-2 flex-1 wrap-break-word text-xs font-medium">
                   {team.name}
                 </span>
                 <div
@@ -79,7 +79,7 @@ export const TimeslotTeamGrid: React.FC<TimeslotTeamGridProps> = ({
     </ScrollArea>
 
     {selectedTeamIds.length > 0 && (
-      <div className="text-sm text-primary dark:!text-blue-200">
+      <div className="text-sm text-primary dark:text-blue-200!">
         {selectedTeamIds.length} team{selectedTeamIds.length !== 1 ? 's' : ''} selected
       </div>
     )}

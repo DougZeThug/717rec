@@ -76,7 +76,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
         </div>
 
         {/* Team Name */}
-        <h3 className="font-medium text-sm text-center line-clamp-2 min-h-[2.5rem]">{team.name}</h3>
+        <h3 className="font-medium text-sm text-center line-clamp-2 min-h-10">{team.name}</h3>
 
         {/* Status Badge */}
         <div className="flex items-center gap-1.5">

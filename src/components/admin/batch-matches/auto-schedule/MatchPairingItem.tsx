@@ -79,18 +79,18 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
         </TooltipProvider>
       </div>
 
-      <div className="grid grid-cols-[1fr,auto,1fr] gap-2 items-center min-w-0">
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center min-w-0">
         {/* Team 1 */}
         <div className="flex items-center gap-2 min-w-0 overflow-hidden">
           <TeamLogo
             imageUrl={pairing.team1.imageUrl || pairing.team1.logoUrl}
             teamName={pairing.team1.name}
-            className="size-6 flex-shrink-0"
+            className="size-6 shrink-0"
           />
           <span className="text-sm truncate font-medium">{pairing.team1.name}</span>
         </div>
 
-        <span className="text-xs px-2 font-medium flex-shrink-0">VS</span>
+        <span className="text-xs px-2 font-medium shrink-0">VS</span>
 
         {/* Team 2 */}
         <div className="flex items-center gap-2 justify-end min-w-0 overflow-hidden">
@@ -98,7 +98,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
           <TeamLogo
             imageUrl={pairing.team2.imageUrl || pairing.team2.logoUrl}
             teamName={pairing.team2.name}
-            className="size-6 flex-shrink-0"
+            className="size-6 shrink-0"
           />
         </div>
       </div>

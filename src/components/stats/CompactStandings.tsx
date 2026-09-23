@@ -32,11 +32,11 @@ const MOBILE_ROW_HEIGHT = 84;
 const getRankStyles = (index: number, isLight: boolean): string => {
   if (isLight) {
     if (index === 0)
-      return 'bg-gradient-to-r from-amber-100 to-amber-200/80 !font-bold text-gray-900 shadow-sm';
+      return 'bg-gradient-to-r from-amber-100 to-amber-200/80 font-bold! text-gray-900 shadow-xs';
     if (index === 1)
-      return 'bg-gradient-to-r from-slate-100 to-blue-100/70 !font-bold text-gray-900 shadow-sm';
+      return 'bg-gradient-to-r from-slate-100 to-blue-100/70 font-bold! text-gray-900 shadow-xs';
     if (index === 2)
-      return 'bg-gradient-to-r from-orange-100/90 to-orange-200/70 !font-bold text-gray-900 shadow-sm';
+      return 'bg-gradient-to-r from-orange-100/90 to-orange-200/70 font-bold! text-gray-900 shadow-xs';
     return 'bg-gray-50 text-gray-900';
   }
   if (index === 0) return 'bg-gradient-to-r from-amber-900/30 to-amber-800/20 font-bold text-white';
@@ -50,7 +50,7 @@ const getRankStyles = (index: number, isLight: boolean): string => {
 const RankBadge: React.FC<{ index: number; isLight: boolean }> = ({ index, isLight }) => (
   <div
     className={cn(
-      'size-7 flex items-center justify-center rounded-full font-mono flex-shrink-0 shadow-inner',
+      'size-7 flex items-center justify-center rounded-full font-mono shrink-0 shadow-inner',
       getRankStyles(index, isLight)
     )}
   >
@@ -62,7 +62,7 @@ const RankBadge: React.FC<{ index: number; isLight: boolean }> = ({ index, isLig
 const TeamIdentity: React.FC<{ team: Ranking }> = ({ team }) => (
   <div className="flex min-w-0 items-center space-x-2">
     {team.imageUrl && (
-      <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border flex-shrink-0">
+      <div className="size-8 flex items-center justify-center bg-muted rounded-md overflow-hidden border border-border shrink-0">
         <img
           src={team.imageUrl}
           alt={team.teamName}
@@ -122,7 +122,7 @@ const MobileStandingRow: React.FC<{
       getRowInteractionStyles(
         'flex items-center justify-between p-2 rounded-lg border cursor-pointer bg-card border-border'
       ),
-      index < 3 ? 'shadow-sm' : '',
+      index < 3 ? 'shadow-xs' : '',
       index === 0 ? 'border-amber-200 dark:border-amber-800/40' : '',
       index === 1 ? 'border-blue-200 dark:border-blue-800/40' : '',
       index === 2 ? 'border-orange-200 dark:border-orange-800/40' : ''
@@ -213,7 +213,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
     <div className="overflow-x-auto">
       <Table
         className={cn(
-          'bg-card border border-border rounded-xl shadow-sm',
+          'bg-card border border-border rounded-xl shadow-xs',
           'border-t-2 border-t-blue-300 dark:border-t-blue-700/70'
         )}
       >
@@ -256,7 +256,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 index === 1 ? 'border-l-4 border-blue-400 dark:border-blue-600' : '',
                 index === 2 ? 'border-l-4 border-orange-400 dark:border-orange-600' : '',
                 'hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5',
-                'focus:outline-none focus:ring-4 focus:ring-primary focus:ring-offset-2'
+                'focus:outline-hidden focus:ring-4 focus:ring-primary focus:ring-offset-2'
               )}
               onClick={() => handleTeamClick(team.teamName)}
               onKeyDown={(e) => handleRowKeyDown(e, team.teamName)}
@@ -269,7 +269,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
               <TableCell>
                 <div className="flex items-center space-x-3 min-w-0">
                   {team.imageUrl && (
-                    <div className="size-8 rounded-md overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border border-border">
+                    <div className="size-8 rounded-md overflow-hidden bg-muted flex items-center justify-center shrink-0 border border-border">
                       <img
                         src={team.imageUrl}
                         alt={team.teamName}

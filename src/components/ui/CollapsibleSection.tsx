@@ -39,7 +39,7 @@ export const CollapsibleSection = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
-      <div className={cn('border rounded-lg bg-card shadow-sm', className)}>
+      <div className={cn('border rounded-lg bg-card shadow-xs', className)}>
         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 active:bg-accent/70 transition-colors">
           <div className="flex items-center gap-2">
             <Icon className={cn('size-4 md:size-5', iconColor)} aria-hidden="true" />

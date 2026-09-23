@@ -67,7 +67,7 @@ const HeaderActions: React.FC<CareerRankingsHeaderProps> = ({ theme, isOpen, ran
     )}
     <CollapsibleTrigger
       aria-label={isOpen ? 'Collapse career statistics' : 'Expand career statistics'}
-      className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="inline-flex items-center justify-center rounded-md p-1 hover:bg-muted/50 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
     >
       <ChevronDown
         className={cn('size-5 transition-transform', isOpen && 'rotate-180')}

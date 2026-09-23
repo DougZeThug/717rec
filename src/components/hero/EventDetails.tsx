@@ -31,7 +31,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   shouldApplyWinter,
 }) => {
   const tileClasses = cn(
-    'flex flex-col items-center gap-0.5 backdrop-blur-sm rounded-lg p-2 md:p-3 border transition-all',
+    'flex flex-col items-center gap-0.5 backdrop-blur-xs rounded-lg p-2 md:p-3 border transition-all',
     shouldApplyWinter
       ? 'bg-gradient-to-br from-cyan-500/15 to-cyan-500/5 border-cyan-400/20 hover:border-cyan-400/40'
       : 'bg-gradient-to-br from-white/15 to-white/5 border-white/20 hover:border-white/40'

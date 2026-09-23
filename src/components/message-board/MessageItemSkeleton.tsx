@@ -12,7 +12,7 @@ interface MessageItemSkeletonProps {
 const MessageItemSkeleton: React.FC<MessageItemSkeletonProps> = ({ className }) => {
   return (
     <Card
-      className={cn('mb-2 overflow-hidden border shadow-sm', gradients.card.default, className)}
+      className={cn('mb-2 overflow-hidden border shadow-xs', gradients.card.default, className)}
     >
       <CardContent className="p-3">
         {/* Header: Avatar, username, team, time */}

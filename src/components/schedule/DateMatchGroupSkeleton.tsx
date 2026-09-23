@@ -21,7 +21,7 @@ const DateMatchGroupSkeleton: React.FC<DateMatchGroupSkeletonProps> = ({ matchCo
         className={cn(
           'flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t',
           isLight
-            ? 'bg-gray-50 text-gray-700 shadow-sm border-b border-gray-200'
+            ? 'bg-gray-50 text-gray-700 shadow-xs border-b border-gray-200'
             : 'bg-gray-800 text-white border-gray-700'
         )}
       >
