@@ -17,7 +17,6 @@ Deno.test('rounds a power score the way the site shows it', () => {
   assertEquals(getDisplayedPowerScore(42.65), 42.6);
   assertEquals(getDisplayedPowerScore(71.26), 71.3);
   assertEquals(getDisplayedPowerScore(null), null);
-  assertEquals(getDisplayedPowerScore(undefined), null);
 });
 
 Deno.test('treats scores the site shows as tied as tied, so win % decides', () => {

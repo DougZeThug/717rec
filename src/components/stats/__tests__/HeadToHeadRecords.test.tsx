@@ -194,7 +194,7 @@ describe('HeadToHeadRecords', () => {
   });
 
   it('keeps one row per opponent when two opponents share a name', () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     mockUseHeadToHead.mockReturnValue({ data: sameNameRecords, isLoading: false, error: null });
     renderRecords();
 
@@ -241,7 +241,7 @@ describe('HeadToHeadRecords', () => {
     });
 
     it('keeps one card per opponent when two opponents share a name', () => {
-      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       mockUseHeadToHead.mockReturnValue({ data: sameNameRecords, isLoading: false, error: null });
       renderRecords();
 
