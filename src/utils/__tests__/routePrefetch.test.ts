@@ -2,6 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { prefetchRoute, preloadCoreRoutes } from '../routePrefetch';
 
+// A stand-in for the home page. Loading the real one here, in the same worker
+// as Index.test.tsx, made the v8 coverage merge drop that file's hits on
+// Index.tsx. This test only checks that the prefetch starts and never throws.
+vi.mock('@/pages/Index', () => ({ default: () => null }));
+
 // Every route in the map, so the lazy import behind each one is exercised.
 const MAPPED_ROUTES = [
   '/',

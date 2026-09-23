@@ -22,6 +22,11 @@ const INVALIDATED_KEYS = [
   ['seasons'],
   ['matches'],
   ['teams'],
+  // Read through v_team_details or the active season, so they change when the
+  // active season does. Missing, they kept last season's numbers until stale.
+  ['team-power-scores'],
+  ['team-details'],
+  ['season-opponent-history'],
   ['rankings'],
   ['v_team_details'],
   ['teamStats'],

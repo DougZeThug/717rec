@@ -344,7 +344,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
           <div className="space-y-2">
             {filteredRecords.map((record) => (
               <H2HMobileCard
-                key={record.opponent_name}
+                key={record.opponent_id}
                 record={record}
                 onCardClick={handleCardClick}
               />
@@ -364,7 +364,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
             <TableBody>
               {filteredRecords.map((record) => (
                 <H2HTableRow
-                  key={record.opponent_name}
+                  key={record.opponent_id}
                   record={record}
                   onOpponentClick={handleTeamClick}
                   onViewDetails={setSelectedOpponent}

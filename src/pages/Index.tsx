@@ -54,7 +54,7 @@ const Index: React.FC = () => {
   const { matches: pendingMatches, isLoading: pendingScoresLoading } = usePendingScoresMatches();
   const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
   const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 3);
-  const { data: fallerData } = useWeeklyPowerScoreTrends('down', 1);
+  const { data: fallerData, isLoading: fallerLoading } = useWeeklyPowerScoreTrends('down', 1);
   const { data: recapData, isLoading: recapLoading } = useWeeklyRecap();
   const { data: publishedRecap, isLoading: publishedRecapLoading } = usePublishedRecapEdition();
   const { data: confirmationSeason } = useConfirmationSeason();
@@ -159,7 +159,7 @@ const Index: React.FC = () => {
             falls back to exactly the live card it always showed — which is also
             the rollback path if an edition is unpublished.
           */}
-          {recapLoading || trendLoading || publishedRecapLoading ? (
+          {recapLoading || trendLoading || fallerLoading || publishedRecapLoading ? (
             <WeeklyRecapSkeleton />
           ) : publishedRecap ? (
             <PageTransition animation="fadeIn" delay="medium">

@@ -39,7 +39,9 @@ vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 vi.mock('@/components/transitions/PageTransition', () => ({
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({ children, delay }: { children: React.ReactNode; delay?: string }) => (
+    <div data-delay={delay}>{children}</div>
+  ),
 }));
 vi.mock('@/components/home/HeroSection', () => ({ default: () => <p>Hero Section</p> }));
 vi.mock('@/components/hero/HeroCardSkeleton', () => ({
@@ -119,6 +121,20 @@ describe('Index page', () => {
     expect(await screen.findByText('Top Teams Loaded')).toBeInTheDocument();
     expect(await screen.findByText('Contact Card')).toBeInTheDocument();
     expect(screen.queryByText('My Matches')).not.toBeInTheDocument();
+  });
+
+  // After the default-state test on purpose: that test expects the lazy hero
+  // card still loading, and React.lazy stays resolved once a test loads it.
+  it('staggers the hero cards: short, then medium, then long for the rest', async () => {
+    mockUseHeroCards.mockReturnValue({
+      data: [{ id: 'h-1' }, { id: 'h-2' }, { id: 'h-3' }, { id: 'h-4' }],
+      isLoading: false,
+    });
+    renderPage();
+
+    const cards = await screen.findAllByText('Hero Card');
+    const delays = cards.map((card) => card.closest('[data-delay]')?.getAttribute('data-delay'));
+    expect(delays).toEqual(['short', 'medium', 'long', 'long']);
   });
 
   it('shows top-teams empty state when no teams are available', () => {
@@ -223,6 +239,22 @@ describe('Index page', () => {
       renderPage();
 
       expect(screen.getByText('Weekly Recap')).toBeInTheDocument();
+    });
+
+    // The faller can decide whether the card shows at all, so the skeleton has
+    // to wait for it too. Waiting on the risers alone let the block vanish while
+    // the faller was still loading, then pop back in once it arrived.
+    it('holds the skeleton while the faller is still loading', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
+      mockUseWeeklyPowerScoreTrends.mockImplementation((direction: string) =>
+        direction === 'down'
+          ? { data: undefined, isLoading: true }
+          : { data: { trends: [mover('a', 2.1)], latestWeek: 5 }, isLoading: false }
+      );
+
+      renderPage();
+
+      expect(screen.getByText('Loading recap...')).toBeInTheDocument();
     });
 
     it('leaves the recap out when every mover would round to zero', () => {

@@ -25,6 +25,12 @@ const SEASON_WIDE_QUERY_KEYS = [
   'seasons',
   'matches',
   'teams',
+  // Per-team reads scoped to the active season (v_team_details, or the active
+  // season looked up directly). A prefix match, so 'team-details' covers every
+  // ['team-details', teamId].
+  'team-power-scores',
+  'team-details',
+  'season-opponent-history',
   'rankings',
   'v_team_details',
   'teamStats',
