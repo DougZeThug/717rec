@@ -49,7 +49,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       exit={{ opacity: 0, y: -10 }}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
-        isDragging && 'z-50 shadow-lg ring-2 ring-primary/50 bg-card scale-[1.02]',
+        isDragging && 'z-50 shadow-lg ring-2 ring-primary/50 bg-card',
         isOver && !isDragging && 'border-primary/50 bg-primary/5',
         !disabled && 'hover:bg-muted/80 cursor-grab active:cursor-grabbing',
         disabled && 'bg-background cursor-default opacity-60',
