@@ -20,7 +20,10 @@ export const skeletonVariantClasses: Record<SkeletonVariant, string> = {
 export const skeletonBaseClass = cn(
   'relative overflow-hidden bg-muted',
   'before:absolute before:inset-0',
-  'before:-translate-x-full',
+  // `transform`, not `-translate-x-full`: in Tailwind v4 the translate class
+  // uses the separate `translate` property, which would add to the shimmer
+  // keyframes' transform instead of being replaced by it.
+  'before:[transform:translateX(-100%)]',
   'before:animate-[shimmer_2s_infinite]',
   'before:bg-gradient-to-r',
   'before:from-transparent before:via-foreground/5 before:to-transparent'
