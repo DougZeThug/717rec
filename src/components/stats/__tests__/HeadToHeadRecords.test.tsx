@@ -47,6 +47,15 @@ const records = [
   makeRecord({ opponent_id: 'opp-b', opponent_name: 'Bandits', wins: 5, win_pct: 90 }),
 ];
 
+// teams.name has no unique constraint, so two different opponents can share one.
+const sameNameRecords = [
+  makeRecord({ opponent_id: 'opp-x', opponent_name: 'Twins', wins: 1 }),
+  makeRecord({ opponent_id: 'opp-y', opponent_name: 'Twins', wins: 5 }),
+];
+
+const duplicateKeyWarnings = (spy: { mock: { calls: unknown[][] } }) =>
+  spy.mock.calls.filter((args) => String(args[0]).includes('two children with the same key'));
+
 describe('HeadToHeadRecords', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -184,6 +193,18 @@ describe('HeadToHeadRecords', () => {
     expect(lastPlayed).toHaveTextContent('-');
   });
 
+  it('keeps one row per opponent when two opponents share a name', () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockUseHeadToHead.mockReturnValue({ data: sameNameRecords, isLoading: false, error: null });
+    renderRecords();
+
+    // Keyed by name, React saw two rows with the same key and could reuse the
+    // wrong one on a re-render. The id is unique, so the rows stay apart.
+    expect(screen.getAllByRole('row').slice(1)).toHaveLength(2);
+    expect(duplicateKeyWarnings(errorSpy)).toHaveLength(0);
+    errorSpy.mockRestore();
+  });
+
   describe('on a phone', () => {
     beforeEach(() => {
       mockIsMobile = true;
@@ -217,6 +238,18 @@ describe('HeadToHeadRecords', () => {
 
       expect(screen.getByText('Aces')).toBeInTheDocument();
       expect(screen.queryByText('Bandits')).not.toBeInTheDocument();
+    });
+
+    it('keeps one card per opponent when two opponents share a name', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockUseHeadToHead.mockReturnValue({ data: sameNameRecords, isLoading: false, error: null });
+      renderRecords();
+
+      // A card's logo hides itself on a load error by writing to the DOM, so a
+      // card reused under a shared key could hide the other team's logo.
+      expect(screen.getAllByText('Twins')).toHaveLength(2);
+      expect(duplicateKeyWarnings(errorSpy)).toHaveLength(0);
+      errorSpy.mockRestore();
     });
   });
 });
