@@ -138,7 +138,7 @@ const HeroSection = () => {
           {shouldApplyWinter ? (
             <SnowtopText
               as="h1"
-              className="text-5xl lg:text-6xl uppercase tracking-wide font-normal mb-2 leading-tight"
+              className="text-5xl lg:text-6xl uppercase tracking-wide font-normal mb-2 leading-tight lg:leading-none"
             >
               <>
                 717Rec
@@ -146,7 +146,7 @@ const HeroSection = () => {
               </>
             </SnowtopText>
           ) : (
-            <h1 className="text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-2 leading-tight text-white">
+            <h1 className="text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-2 leading-tight lg:leading-none text-white">
               717Rec
               <span className="sr-only"> — Lancaster&apos;s Premier Cornhole League</span>
             </h1>
