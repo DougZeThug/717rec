@@ -225,6 +225,22 @@ describe('Index page', () => {
       expect(screen.getByText('Weekly Recap')).toBeInTheDocument();
     });
 
+    // The faller can decide whether the card shows at all, so the skeleton has
+    // to wait for it too. Waiting on the risers alone let the block vanish while
+    // the faller was still loading, then pop back in once it arrived.
+    it('holds the skeleton while the faller is still loading', () => {
+      mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
+      mockUseWeeklyPowerScoreTrends.mockImplementation((direction: string) =>
+        direction === 'down'
+          ? { data: undefined, isLoading: true }
+          : { data: { trends: [mover('a', 2.1)], latestWeek: 5 }, isLoading: false }
+      );
+
+      renderPage();
+
+      expect(screen.getByText('Loading recap...')).toBeInTheDocument();
+    });
+
     it('leaves the recap out when every mover would round to zero', () => {
       mockUseWeeklyRecap.mockReturnValue({ data: { hasData: false }, isLoading: false });
       withTrends([mover('a', 2.1), mover('b', 0.02)], [mover('z', -0.01)]);
