@@ -172,21 +172,6 @@ export class BracketManagerService {
   }
 
   /**
-   * Repair-only pass: normalize Losers Bracket Round 1 rows damaged in the
-   * legacy auto-repair era (duplicate participants, lone second-slot
-   * participants). Runs as part of repairBracket; kept public for targeted
-   * admin use and tests. Throws loudly on database failures.
-   *
-   * @param stageId - Stage ID in the brackets-manager database
-   *
-   * @example
-   * await bracketManagerService.normalizeLosersR1(stageId);
-   */
-  normalizeLosersR1(stageId: number): Promise<void> {
-    return this.normalizationService.normalizeLosersR1(stageId);
-  }
-
-  /**
    * Update the seeding of an existing bracket stage
    *
    * Gets stage ID, sorts teams by seed, calculates bracket size and BYEs needed,
