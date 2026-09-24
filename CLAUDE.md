@@ -84,6 +84,22 @@ export const ExampleService = {
   selectors: in v4 they also set `--tw-*` variables that change later `text-*`
   classes. Write plain CSS values instead (see `src/styles/typography.css`).
 
+## Vite 8
+
+- Vite 8 bundles with Rolldown. Named chunks are groups in
+  `build.rolldownOptions.output.codeSplitting` in `vite.config.ts`. Do not add
+  `rollupOptions` or `manualChunks`: Vite 8 dropped the object form.
+- A group only catches modules that are really bundled. If a package only
+  re-exports another one (`react-router-dom` re-exports `react-router`), name
+  the real package in the group's `test` too.
+- `build.target` is pinned to Vite 7's browser list on purpose, so iPhones on
+  iOS 16.0-16.3 still load the app. Do not remove it unless we decide to drop
+  those phones.
+- A dependency change updates **both** lock files:
+  `npx npm@12 install --package-lock-only` (npm 12 records the native binaries
+  for every platform, which the hosting build needs) and
+  `bun install --lockfile-only` (the deploy runs a frozen bun install).
+
 ## Docs Maintenance
 
 - Update docs **in the same PR as the behavior they describe.** If a PR renames
@@ -174,4 +190,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-09-23*
+*Last updated: 2026-09-24*

@@ -83,11 +83,14 @@ Four GitHub Actions workflows live in `.github/workflows/`:
 
 `.size-limit.json` holds two, both enforced by the `build-size` job:
 
-- **Main entry (index)** — 155 KB gzipped. This is the first-paint guard, and
-  the one that matters for visitors. Note that the glob also catches any lazy
-  chunk Rollup happens to name `index-*.js` after its package's own entry file,
-  which is why `vite.config.ts` gives `html-to-image` an explicit
-  `vendor-html-to-image` chunk name.
+- **Main entry (index)** — 155 KB gzipped. This guards the entry chunk's own
+  code, the part visitors download first. It is not the whole first paint: the
+  `vendor-*` chunks are not counted, and since Vite 8 the code the entry shares
+  with lazy pages sits in its own small chunks that `index.html` preloads
+  (about 290 KB gzipped in total at the Vite 8 upgrade). Note that the glob also
+  catches any lazy chunk Rolldown happens to name `index-*.js` after its
+  package's own entry file, which is why `vite.config.ts` gives `html-to-image`
+  its own `vendor-html-to-image` code-splitting group.
 - **All JS chunks** — 1250 KB gzipped. This counts _every_ chunk, including
   admin-only lazy ones no visitor ever downloads, so it grows whenever the admin
   console does. Raised from 1200 KB when the Weekly Content Pack landed (an
