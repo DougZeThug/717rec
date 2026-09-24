@@ -1,5 +1,3 @@
-import { BracketsManager } from 'brackets-manager';
-
 import { supabase } from '@/integrations/supabase/client';
 import { DatabaseError } from '@/types/errors';
 import { bracketLog, errorLog, failureLog, successLog, warnLog } from '@/utils/logger';
@@ -25,10 +23,7 @@ const MATCH_STATUS_COMPLETED = 4;
  * Service for calculating and managing bracket standings
  */
 export class BracketStandingsService {
-  constructor(
-    private storage: SupabaseSqlStorage,
-    private manager: BracketsManager
-  ) {}
+  constructor(private storage: SupabaseSqlStorage) {}
 
   /**
    * Calculate and store final standings for a completed bracket

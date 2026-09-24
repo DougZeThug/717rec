@@ -62,7 +62,7 @@ export class BracketManagerService {
     this.manager = new BracketsManager(this.storage, VERBOSE);
     this.normalizationService = new BracketNormalizationService(this.storage);
     this.adminService = new BracketAdminService(this.storage);
-    this.standingsService = new BracketStandingsService(this.storage, this.manager);
+    this.standingsService = new BracketStandingsService(this.storage);
     this.seedingService = new BracketSeedingService(this.storage, this.manager);
     this.creationService = new BracketCreationService(this.storage, this.manager);
     this.updateService = new BracketUpdateService(
