@@ -55,9 +55,7 @@ describe('BracketStandingsService', () => {
       }),
     };
 
-    const service = new BracketStandingsService(
-      mockStorage as BracketStandingsServiceArgs[0]
-    );
+    const service = new BracketStandingsService(mockStorage as BracketStandingsServiceArgs[0]);
     await service.calculateFinalStandings('bracket-123');
 
     // The completion pre-check must run against the LAST stage (highest

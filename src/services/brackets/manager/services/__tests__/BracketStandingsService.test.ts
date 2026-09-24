@@ -45,10 +45,7 @@ vi.mock('@/utils/logger', () => ({
   warnLog: vi.fn(),
 }));
 
-function makeService(opts: {
-  stages?: unknown;
-  participants?: unknown;
-}) {
+function makeService(opts: { stages?: unknown; participants?: unknown }) {
   const storage = {
     select: vi.fn().mockImplementation((table: string) => {
       if (table === 'stage') return Promise.resolve(opts.stages ?? [{ id: 10, number: 1 }]);
