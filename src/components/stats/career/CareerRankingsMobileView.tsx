@@ -43,7 +43,7 @@ const CareerCompactCard: React.FC<{
     <EntityCard className="ranking-card p-2.5" withGradient={false}>
       <div className="flex items-center gap-2">
         {/* Rank */}
-        <div className="flex flex-col items-center w-7 flex-shrink-0">
+        <div className="flex flex-col items-center w-7 shrink-0">
           <span className="text-sm font-bold tabular-nums text-foreground">{rank}</span>
         </div>
 
@@ -58,7 +58,7 @@ const CareerCompactCard: React.FC<{
             imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
             size="sm"
-            className="flex-shrink-0"
+            className="shrink-0"
           />
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
@@ -77,7 +77,7 @@ const CareerCompactCard: React.FC<{
 
         {/* Championship trophies */}
         {ranking.championships > 0 && (
-          <div className="flex-shrink-0 text-xs">
+          <div className="shrink-0 text-xs">
             <span>🏆</span>
             {ranking.championships > 1 && (
               <span className="text-amber-600 dark:text-amber-400 font-bold ml-0.5">
@@ -88,7 +88,7 @@ const CareerCompactCard: React.FC<{
         )}
 
         {/* Power score - right-aligned */}
-        <div className="flex flex-col items-end flex-shrink-0 w-16">
+        <div className="flex flex-col items-end shrink-0 w-16">
           <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
           <span
             className={cn(
@@ -147,7 +147,7 @@ const CareerDetailedCard: React.FC<{
             imageUrl={ranking.imageUrl || ranking.logoUrl}
             teamName={ranking.teamName}
             size="sm"
-            className="flex-shrink-0"
+            className="shrink-0"
           />
           <div className="min-w-0">
             <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
@@ -155,7 +155,7 @@ const CareerDetailedCard: React.FC<{
             </h3>
           </div>
         </Link>
-        <span className="text-base font-bold tabular-nums text-foreground flex-shrink-0">
+        <span className="text-base font-bold tabular-nums text-foreground shrink-0">
           {ranking.careerMatchWins}-{ranking.careerMatchLosses}
         </span>
       </div>
@@ -163,7 +163,7 @@ const CareerDetailedCard: React.FC<{
       {/* Stats section: Power gauge left, 2x2 grid right */}
       <div className="flex items-center gap-3">
         {/* Power Score Gauge */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <PowerScoreGauge score={ranking.careerPowerScore} size="md" showLabel />
         </div>
 

@@ -83,7 +83,7 @@ const SeasonAccordionHeader: React.FC<SeasonAccordionHeaderProps> = ({
       <div className="flex items-center gap-2 min-w-0">
         <h3
           className={cn(
-            'text-lg md:text-xl font-bebas uppercase tracking-wide leading-tight',
+            'text-lg md:text-xl font-bebas uppercase tracking-wide leading-tight md:leading-7',
             isWinterTheme ? 'text-white' : 'text-foreground'
           )}
         >

@@ -45,10 +45,12 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalThemeBase: () => ({ isWinterTheme: false }),
 }));
 
+const mockScrollTo = vi.hoisted(() => vi.fn());
+
 vi.mock('embla-carousel-react', () => ({
   default: () => [
     vi.fn(),
-    { on: vi.fn(), off: vi.fn(), selectedScrollSnap: () => 0, scrollTo: vi.fn() },
+    { on: vi.fn(), off: vi.fn(), selectedScrollSnap: () => 0, scrollTo: mockScrollTo },
   ],
 }));
 
@@ -193,6 +195,14 @@ describe('StatsCharts', () => {
     expect(screen.getByRole('button', { name: 'Win-Loss' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Power Score' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Trends' })).toBeInTheDocument();
+  });
+
+  it('scrolls the mobile carousel to the chart whose dot is tapped', async () => {
+    mockIsMobile = true;
+    await openCharts();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Trends' }));
+    expect(mockScrollTo).toHaveBeenCalledWith(2);
   });
 
   it('shows loading and weekly empty states from mocked trend hooks', async () => {

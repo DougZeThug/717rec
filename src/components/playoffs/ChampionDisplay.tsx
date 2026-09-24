@@ -62,7 +62,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
           className={cn(
             'flex items-center justify-center gap-3 p-4 rounded-lg',
             isLight
-              ? 'bg-white shadow-sm border border-amber-200'
+              ? 'bg-white shadow-xs border border-amber-200'
               : 'bg-gray-800/50 border border-amber-900/30'
           )}
         >

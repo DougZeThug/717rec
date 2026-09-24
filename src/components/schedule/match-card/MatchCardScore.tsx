@@ -30,7 +30,7 @@ export const MatchCardScore: React.FC<MatchCardScoreProps> = ({
       className={cn(
         'flex items-center gap-2 px-4 py-1.5 rounded-full',
         'bg-muted/80 dark:bg-muted/40',
-        'shadow-sm'
+        'shadow-xs'
       )}
     >
       <span className={scoreStyle(team1IsWinner, isAnimating)}>{team1Score}</span>

@@ -90,7 +90,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({
     <div className="flex items-start gap-3 rounded-md border border-border bg-card p-3">
       <div className="min-w-0 flex-1">
         <NotificationHeading title={notification.title} isExpired={isExpired} posted={posted} />
-        <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+        <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm text-muted-foreground">
           {notification.body}
         </p>
         {expires && (

@@ -70,7 +70,7 @@ export function ErrorDisplay({
       role="alert"
       aria-live="assertive"
     >
-      <AlertCircle className="size-4 flex-shrink-0" aria-hidden="true" />
+      <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
       <AlertDescription className="flex-1 flex items-center justify-between gap-2">
         <span>
           {context && <span className="font-medium">{context}: </span>}

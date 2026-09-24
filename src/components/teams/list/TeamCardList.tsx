@@ -37,7 +37,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
   return (
     <m.div
       className={cn(
-        'team-list-card border rounded-xl overflow-hidden h-full font-inter shadow-sm',
+        'team-list-card border rounded-xl overflow-hidden h-full font-inter shadow-xs',
         isWinterTheme
           ? 'winter-card-surface border-frost-border/30'
           : 'bg-card text-foreground border-border'
@@ -64,7 +64,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
           />
         </Link>
 
-        <div className="flex flex-col flex-grow p-5">
+        <div className="flex flex-col grow p-5">
           <div className="flex justify-between items-start mb-3">
             <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline">
               <h3

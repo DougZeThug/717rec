@@ -49,7 +49,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       exit={{ opacity: 0, y: -10 }}
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
-        isDragging && 'z-50 shadow-lg ring-2 ring-primary/50 bg-card scale-[1.02]',
+        isDragging && 'z-50 shadow-lg ring-2 ring-primary/50 bg-card',
         isOver && !isDragging && 'border-primary/50 bg-primary/5',
         !disabled && 'hover:bg-muted/80 cursor-grab active:cursor-grabbing',
         disabled && 'bg-background cursor-default opacity-60',
@@ -70,7 +70,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       {/* Seed Badge */}
       <div
         className={cn(
-          'flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold',
+          'flex items-center justify-center min-w-8 h-7 rounded-md text-sm font-bold',
           'bg-primary/10 text-primary'
         )}
       >
@@ -80,7 +80,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
       {/* Team Info */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         {logoUrl ? (
-          <div className="size-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <div className="size-6 rounded-full overflow-hidden bg-muted shrink-0">
             <img
               src={logoUrl}
               alt={`${name} logo`}
@@ -93,7 +93,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
             />
           </div>
         ) : (
-          <div className="size-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+          <div className="size-6 rounded-full bg-muted flex items-center justify-center shrink-0">
             <Users className="size-3.5 text-muted-foreground" />
           </div>
         )}
@@ -114,7 +114,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
             className={cn(
               'w-16 h-9 text-center text-sm font-semibold rounded-md border-2',
               'bg-background transition-all duration-150',
-              'focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary',
+              'focus:outline-hidden focus:ring-2 focus:ring-primary/50 focus:border-primary',
               'hover:border-primary/50',
               hasConflict &&
                 'border-destructive bg-destructive/10 focus:ring-destructive/50 focus:border-destructive'

@@ -32,7 +32,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
           view === 'division'
             ? isWinterTheme
               ? 'btn-winter-primary'
-              : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-sm'
+              : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
             : isWinterTheme
               ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
               : 'text-muted-foreground hover:bg-accent'
@@ -49,7 +49,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
           view === 'all'
             ? isWinterTheme
               ? 'btn-winter-primary'
-              : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-sm'
+              : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
             : isWinterTheme
               ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
               : 'text-muted-foreground hover:bg-accent'

@@ -21,7 +21,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           // Pressed state for solid buttons only (not ghost/outline in navbar)
           variant !== 'ghost' &&
             variant !== 'outline' &&
-            'active:scale-[0.97] hover:shadow-md active:shadow-sm',
+            'active:scale-[0.97] hover:shadow-md active:shadow-xs',
           // Subtle hover scale for primary button variants only
           (variant === 'default' ||
             variant === 'cornhole' ||

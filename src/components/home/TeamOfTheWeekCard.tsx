@@ -75,7 +75,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
         <Link to={`/teams/${toTeamSlug(trend.teamName)}`} className="group block">
           <div className="flex items-center gap-4 md:gap-6">
             {/* Team Logo with glow */}
-            <div className="relative flex-shrink-0">
+            <div className="relative shrink-0">
               <div
                 className={cn(
                   'absolute inset-0 rounded-xl blur-xl scale-150 opacity-0 group-hover:opacity-100 transition-opacity duration-300',
@@ -87,7 +87,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
                 teamName={trend.teamName}
                 size="md"
                 className={cn(
-                  'relative z-10 transition-all duration-300 !size-16 !min-w-16 !min-h-16 [&_img]:!size-16 [&_img]:!min-w-16 [&_img]:!min-h-16',
+                  'relative z-10 transition-all duration-300 size-16! min-w-16! min-h-16! [&_img]:size-16! [&_img]:min-w-16! [&_img]:min-h-16!',
                   shouldApplyWinter
                     ? 'ring-2 ring-cyan-400/30 group-hover:ring-cyan-400/50'
                     : 'ring-2 ring-amber-500/20 group-hover:ring-amber-500/40'

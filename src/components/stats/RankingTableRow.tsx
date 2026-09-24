@@ -56,7 +56,7 @@ const RankingTableRow: React.FC<RankingTableRowProps> = ({
       <td className="py-3 px-3">
         <div className="flex items-center gap-2">
           <span
-            className={cn('font-medium min-w-[3rem] whitespace-nowrap', textColor)}
+            className={cn('font-medium min-w-12 whitespace-nowrap', textColor)}
             aria-label={getRankAriaLabel(
               globalRank,
               divisionRank,

@@ -44,7 +44,7 @@ const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }
             {relative && <span className="text-muted-foreground">{relative}</span>}
           </time>
         </div>
-        <p className="mt-1 whitespace-pre-wrap break-words text-sm text-muted-foreground">
+        <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm text-muted-foreground">
           {notification.body}
         </p>
       </div>

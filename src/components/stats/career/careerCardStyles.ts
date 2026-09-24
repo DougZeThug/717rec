@@ -46,7 +46,7 @@ export const careerHeaderPadding = (isMobile: boolean): string =>
 export const careerTitleClasses = (isMobile: boolean): string[] => [
   'font-bebas uppercase tracking-wide',
   isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-  'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400',
+  'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400 dark:via-none',
   'heading-winter',
 ];
 

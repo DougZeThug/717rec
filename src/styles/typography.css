@@ -1,21 +1,56 @@
 
-/* Typography improvements */
+/* Typography improvements.
+   Plain CSS on purpose: in Tailwind v4, `@apply leading-*` also sets the
+   internal `--tw-leading` variable, which would change the line height of any
+   heading or paragraph that also has a `text-*` class. These values are what
+   Tailwind v3 printed for the old `@apply` lines.
+   Note: Preflight comes after this file and resets heading font-size and
+   font-weight to `inherit`, so only the letter-spacing and line-height here
+   take effect (as in v3). */
 h1, h2, h3, h4, h5, h6 {
-  @apply tracking-tight leading-tight;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
 }
 
 h1 {
-  @apply text-3xl font-bold md:text-4xl;
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
 }
 
 h2 {
-  @apply text-2xl font-semibold md:text-3xl;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  h2 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
 }
 
 h3 {
-  @apply text-xl font-semibold md:text-2xl;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  h3 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
 }
 
 p {
-  @apply leading-relaxed;
+  line-height: 1.625;
 }

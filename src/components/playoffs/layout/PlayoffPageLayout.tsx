@@ -98,11 +98,11 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
         />
 
         {/* Realtime indicator */}
-        <RealtimeIndicator enabled={!!realtimeEnabled && !!data.selectedBracketId} />
+        <RealtimeIndicator enabled={Boolean(realtimeEnabled) && Boolean(data.selectedBracketId)} />
       </div>
 
       {/* Mobile bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-sm border-t border-border px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
+      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-xs border-t border-border px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
         <SeasonSelector
           selectedSeasonId={data.selectedSeasonId}
           onSeasonChange={data.setSelectedSeasonId}

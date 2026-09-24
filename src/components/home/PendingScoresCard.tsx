@@ -50,7 +50,7 @@ const PendingScoresCard = () => {
                       <div className="w-20 h-4 bg-muted rounded" />
                     </div>
                   </div>
-                  <div className="flex-shrink-0 px-2">
+                  <div className="shrink-0 px-2">
                     <div className="w-6 h-3 bg-muted rounded" />
                   </div>
                   <div className="flex items-center gap-2 min-w-0">
@@ -131,7 +131,7 @@ const PendingScoresCard = () => {
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   {/* Team 1 */}
                   <div className="flex items-center gap-2 min-w-0">
-                    <div className="size-8 flex-shrink-0">
+                    <div className="size-8 shrink-0">
                       {match.team1_logo ? (
                         <img
                           src={match.team1_logo}
@@ -164,7 +164,7 @@ const PendingScoresCard = () => {
                   </div>
 
                   {/* VS */}
-                  <div className="flex-shrink-0 px-2">
+                  <div className="shrink-0 px-2">
                     <span
                       className={cn(
                         'text-xs font-medium',
@@ -187,7 +187,7 @@ const PendingScoresCard = () => {
                         {match.team2_name}
                       </p>
                     </div>
-                    <div className="size-8 flex-shrink-0">
+                    <div className="size-8 shrink-0">
                       {match.team2_logo ? (
                         <img
                           src={match.team2_logo}
@@ -211,7 +211,7 @@ const PendingScoresCard = () => {
                 </div>
 
                 {/* Match Info & Action */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <div
                     className={cn(
                       'text-xs text-right tabular-nums',

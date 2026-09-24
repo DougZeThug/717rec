@@ -20,7 +20,7 @@ const ContactCard: React.FC = () => (
     id="contact-panel"
     className={cn(
       'relative mt-6 overflow-hidden rounded-xl border border-border bg-card/60 px-4 py-6 md:px-8 md:py-8',
-      'shadow-sm'
+      'shadow-xs'
     )}
   >
     <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">

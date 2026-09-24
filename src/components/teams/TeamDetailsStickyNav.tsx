@@ -133,7 +133,7 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
         'fixed top-0 left-0 right-0 z-30',
         'bg-background/95 backdrop-blur-lg',
         'border-b border-border',
-        'shadow-sm',
+        'shadow-xs',
         className
       )}
     >
@@ -154,9 +154,9 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
                 className={cn(
                   'relative flex items-center gap-1.5 px-3 py-1.5 rounded-full',
                   'text-sm font-medium transition-all whitespace-nowrap',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                   isActive
-                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
                     : 'bg-muted text-foreground/70 hover:bg-muted/80 hover:text-foreground'
                 )}
               >

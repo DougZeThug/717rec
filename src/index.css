@@ -1,3 +1,18 @@
+/* Tailwind v4 entry.
+
+   Order matters here. Tailwind v3 printed everything into one unlayered
+   stylesheet, so the app's own files (imported first) lost ties to Preflight
+   and to utilities by source order. For example, Preflight's
+   `border-color: gray-200` beats `* { border-color: var(--border) }` in
+   base.css, and Preflight's `h1 { font-size: inherit }` beats the sizes in
+   typography.css.
+
+   A plain `@import 'tailwindcss'` puts Preflight and the utilities in native
+   `@layer`s, and unlayered CSS always beats layered CSS. That would flip every
+   one of those ties. So Preflight and the utilities are imported unlayered,
+   in the same order as v3. Only the theme variables sit in a layer. Do not
+   wrap the app's CSS in `@layer`, and do not switch to
+   `@import 'tailwindcss'` without a before/after visual check. */
 @import './styles/fonts.css';
 @import './styles/base.css';
 @import './styles/animations.css';
@@ -6,9 +21,323 @@
 @import './styles/utilities.css';
 @import './styles/themes/winter-homepage.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/theme.css' layer(theme) theme(inline);
+@import 'tailwindcss/preflight.css';
+@import './styles/tailwind-v3-compat.css';
+@import 'tailwindcss/utilities.css' source(none);
+
+/* Scan the same files Tailwind v3 scanned (`content` in the old config). */
+@source './**/*.{ts,tsx}';
+
+@plugin 'tailwindcss-animate';
+
+/* v3 `darkMode: ['class']`. */
+@custom-variant dark (&:is(.dark *));
+
+/* v4 applies `hover:` only on devices with a mouse. Keep the v3 behaviour, so
+   hover-only controls (for example the comment actions) still appear when a
+   phone user taps. */
+@custom-variant hover (&:hover);
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-inter: Inter, system-ui, sans-serif;
+  --font-mono: IBM Plex Mono, ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-oswald: Oswald, League Spartan, Bebas Neue, Arial, sans-serif;
+  --font-bebas: Bebas Neue, Arial, sans-serif;
+  /* TODO: Load Snowtop Caps font file if keeping this feature */
+  --font-snowtop: Snowtop Caps, Bebas Neue, Arial, sans-serif;
+
+  /* v3 line heights for the text-* sizes. v4 uses ratios (text-xs is
+     1.333), which a child with a different font size inherits differently.
+     Lengths keep v3's inherited line heights, for example inside badges. */
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+
+  --color-cornhole-wood: #9e7e5a;
+  --color-cornhole-green: #2c5530;
+  --color-cornhole-navy: #1e3a5f;
+  --color-cornhole-cream: #f9f5e7;
+
+  --color-division-competitive: #d97706;
+  --color-division-intermediate: #3b82f6;
+  --color-division-recreational: #10b981;
+
+  /* v3 default for a ring width class with no ring colour (blue-500 at 50%). */
+  --default-ring-color: color-mix(in oklab, var(--color-blue-500) 50%, transparent);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-fade-in-slide-up: fade-in-slide-up 0.4s ease-out forwards;
+  --animate-fade-in-slide-down: fade-in-slide-down 0.4s ease-out forwards;
+  --animate-entrance-left: entrance-left 0.4s ease-out forwards;
+  --animate-entrance-right: entrance-right 0.4s ease-out forwards;
+  --animate-soft-pulse: soft-pulse 2s infinite ease-in-out;
+  --animate-subtle-bounce: subtle-bounce 2s infinite ease-in-out;
+  --animate-page-enter: page-enter 0.2s ease-out;
+  --animate-page-exit: page-exit 0.15s ease-out;
+  --animate-success-flash: success-flash 0.4s ease-out;
+  --animate-press-feedback: press-feedback 0.15s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+      opacity: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+      opacity: 1;
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+      opacity: 1;
+    }
+    to {
+      height: 0;
+      opacity: 0;
+    }
+  }
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes fade-in-slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in-slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes entrance-left {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes entrance-right {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  @keyframes soft-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  @keyframes subtle-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-2px);
+    }
+  }
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes page-exit {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes success-flash {
+    0% {
+      background-color: transparent;
+    }
+    50% {
+      background-color: hsl(142 76% 36% / 0.15);
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  @keyframes press-feedback {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.97);
+    }
+  }
+}
+
+/* Tokens that read the app's CSS variables (styles/theme.css). `inline` makes
+   each utility use the `hsl(var(--x))` value directly, so `.dark` and
+   `.winter-frozen` can redefine `--x` on any element, as in v3. */
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+  /* Winter theme colours */
+  --color-frost-border: hsl(var(--frost-border, 199 60% 50%));
+  --color-frost-glow: hsl(var(--frost-glow, 199 89% 62%));
+}
+
+/* Radius scale. The values live in styles/theme.css (--radius-card, --radius-input,
+   --radius-pill). `reference` stops Tailwind from printing its own
+   `--radius-card: var(--radius-card)`, which would point at itself.
+   Bare `rounded` keeps Tailwind's 0.25rem, as in v3. */
+@theme inline reference {
+  --radius-card: var(--radius-card); /* 12px - cards, dialogs, alerts */
+  --radius-input: var(--radius-input); /* 10px - buttons, inputs, selects */
+  --radius-pill: var(--radius-pill); /* pills, badges */
+  /* Legacy (mapped to new system) */
+  --radius-lg: var(--radius-card);
+  --radius-md: var(--radius-input);
+  --radius-sm: calc(var(--radius-input) - 4px);
+}
+
+/* v3 container config: centred, 2rem padding, full width until 1400px.
+   v4's built-in container adds a max-width at every breakpoint, so reset it. */
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= 480px) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/* v3 `space-x-*` / `space-y-*`. v4 moved the gap to the bottom/end margin of
+   every child except the last, with zero specificity. That changes the gap
+   whenever a child has its own margin or the last child is hidden (for
+   example `hidden md:block`). These rules put back the v3 selector: the gap
+   goes on the top/start of every child after the first, and wins over the
+   child's own margin, as before. v4's own rule still gives the first child a
+   bottom/end gap; the first-child rules at the end of this file remove it. */
+@utility space-y-* {
+  & > :not([hidden]) ~ :not([hidden]) {
+    margin-top: calc(var(--spacing) * --value(number));
+    margin-top: --value([length]);
+    margin-bottom: 0;
+  }
+}
+
+@utility space-x-* {
+  & > :not([hidden]) ~ :not([hidden]) {
+    margin-left: calc(var(--spacing) * --value(number));
+    margin-left: --value([length]);
+    margin-right: 0;
+  }
+}
+
+/* Second half of the v3 `space-x-*` / `space-y-*` rules (see the @utility
+   blocks above). Tailwind v4 also gives the first child a bottom/end margin
+   with zero specificity. These rules sit after the utilities, so they win that
+   tie, and a child's own `mb-*` / `mr-*` class still wins over them, as in v3. */
+:where([class*='space-y-'] > :first-child) {
+  margin-bottom: 0;
+}
+
+:where([class*='space-x-'] > :first-child) {
+  margin-right: 0;
+}
 
 /* Add styles for the Admin Auto Schedule tab */
 .auto-schedule-container {

@@ -36,7 +36,7 @@ export const interactive = {
       'active:scale-[0.98] active:bg-accent/5 dark:active:bg-accent/10 transition-all duration-100',
     // Combined hover + pressed for interactive cards
     interactive:
-      'hover:bg-muted/50 hover:shadow-md active:scale-[0.98] active:shadow-sm active:bg-accent/50 transition-all duration-100 cursor-pointer',
+      'hover:bg-muted/50 hover:shadow-md active:scale-[0.98] active:shadow-xs active:bg-accent/50 transition-all duration-100 cursor-pointer',
   },
 
   // Row/item states with pressed feedback

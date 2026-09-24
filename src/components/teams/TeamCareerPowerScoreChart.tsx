@@ -123,7 +123,7 @@ const TeamCareerPowerScoreChart = ({
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg bg-card shadow-sm p-4 md:p-6">
+      <div className="border rounded-lg bg-card shadow-xs p-4 md:p-6">
         <Skeleton className="h-8 w-64 mb-2" />
         <Skeleton className="h-4 w-96 mb-4" />
         <Skeleton className="h-[300px] w-full" />

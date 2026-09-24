@@ -69,7 +69,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
 
   if (isSignedUp) {
     return (
-      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
+      <div className="bg-white/10 backdrop-blur-xs rounded-xl p-4">
         <div className="flex items-center justify-center gap-2 text-white">
           <div className="bg-green-500/30 rounded-full p-1">
             <Check className="size-5 text-green-300" />
@@ -81,7 +81,7 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+    <div className="bg-white/10 backdrop-blur-xs rounded-xl p-3">
       <div className="flex items-center gap-2 mb-2">
         <UserPlus className="size-4 text-white" />
         <span className="text-white font-semibold text-sm">Sign Up</span>

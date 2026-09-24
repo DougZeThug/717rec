@@ -80,7 +80,7 @@ const RankColumn: React.FC<{
   rankChange: Ranking['rankChange'];
   showRankChange: boolean;
 }> = ({ rank, rankChange, showRankChange }) => (
-  <div className="flex flex-col items-center w-7 flex-shrink-0">
+  <div className="flex flex-col items-center w-7 shrink-0">
     <span className="text-sm font-bold tabular-nums text-foreground">{rank}</span>
     {showRankChange && (
       <div className="scale-90">
@@ -106,7 +106,7 @@ const TeamColumn: React.FC<{ ranking: Ranking; showDivision: boolean }> = ({
       imageUrl={ranking.imageUrl || ranking.logoUrl}
       teamName={ranking.teamName}
       size="sm"
-      className="flex-shrink-0"
+      className="shrink-0"
     />
     <div className="min-w-0 flex-1">
       <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
@@ -150,7 +150,7 @@ export const RankingCardCompact: React.FC<RankingCardCompactProps> = ({
         <TeamColumn ranking={ranking} showDivision={showDivision} />
 
         {/* Badges */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <TeamBadgeCollection
             teamId={ranking.teamId}
             size="sm"
@@ -160,7 +160,7 @@ export const RankingCardCompact: React.FC<RankingCardCompactProps> = ({
         </div>
 
         {/* Power score - always right-aligned */}
-        <div className="flex flex-col items-end flex-shrink-0 w-16">
+        <div className="flex flex-col items-end shrink-0 w-16">
           <span className="text-xs text-muted-foreground leading-tight">Power</span>
           {/* The colour is the only cue for how good the number is, so the
               band it falls in is spelled out for screen readers. */}

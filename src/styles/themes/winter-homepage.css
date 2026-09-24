@@ -204,8 +204,8 @@
 
 /* Subtle backdrop blur for frosted effect - limited to small containers */
 .winter-frozen .frost-card-blur {
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 /* Hover glow effect for cards - STRONGER */
@@ -495,17 +495,17 @@
 .winter-frozen [class*="to-teal"],
 .winter-frozen [class*="to-cyan-7"],
 .winter-frozen [class*="to-cyan-8"] {
-  --tw-gradient-from: hsla(222, 45%, 12%, 0.96) var(--tw-gradient-from-position) !important;
-  --tw-gradient-via: hsla(222, 40%, 14%, 0.96) var(--tw-gradient-via-position) !important;
-  --tw-gradient-to: hsla(222, 38%, 16%, 0.96) var(--tw-gradient-to-position) !important;
+  --tw-gradient-from: hsla(222, 45%, 12%, 0.96) !important;
+  --tw-gradient-via: hsla(222, 40%, 14%, 0.96) !important;
+  --tw-gradient-to: hsla(222, 38%, 16%, 0.96) !important;
 }
 
 /* CTA bars - override amber/teal to ice palette */
 .winter-frozen [class*="from-amber"][class*="to-orange"],
 .winter-frozen [class*="from-orange"][class*="to-amber"] {
-  --tw-gradient-from: hsla(222, 45%, 15%, 0.95) var(--tw-gradient-from-position) !important;
-  --tw-gradient-via: hsla(199, 60%, 28%, 0.9) var(--tw-gradient-via-position) !important;
-  --tw-gradient-to: hsla(222, 45%, 15%, 0.95) var(--tw-gradient-to-position) !important;
+  --tw-gradient-from: hsla(222, 45%, 15%, 0.95) !important;
+  --tw-gradient-via: hsla(199, 60%, 28%, 0.9) !important;
+  --tw-gradient-to: hsla(222, 45%, 15%, 0.95) !important;
 }
 
 /* Additional ice-glass treatment for all Card components in winter */
@@ -650,8 +650,8 @@
   ) !important;
   
   /* Strong frosted glass blur effect */
-  backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   
   /* Icy blue border at bottom */
   border-bottom: 2px solid hsla(199, 80%, 65%, 0.6);
@@ -719,8 +719,8 @@
 
 .winter-frozen .bottom-nav-winter {
   background: hsla(222, 47%, 9%, 0.96) !important;
-  backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border-top: 2px solid hsla(199, 75%, 60%, 0.5) !important;
   border-bottom: none !important;
   box-shadow: 

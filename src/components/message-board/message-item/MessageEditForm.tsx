@@ -70,7 +70,7 @@ const MessageEditForm: React.FC<MessageEditFormProps> = ({
           onKeyDown={handleKeyDown}
           aria-label="Edit message"
           className={cn(
-            'w-full min-h-[80px] p-2 border rounded-md focus:outline-none focus:ring-1',
+            'w-full min-h-[80px] p-2 border rounded-md bg-[color:Field] focus:outline-hidden focus:ring-1',
             'focus:ring-primary/40 resize-none text-sm'
           )}
           placeholder="Edit message..."

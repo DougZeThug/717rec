@@ -164,7 +164,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       )}
 
       {/* Double Header Toggle */}
-      <div className="flex items-center justify-between rounded-lg border p-2.5 shadow-sm">
+      <div className="flex items-center justify-between rounded-lg border p-2.5 shadow-xs">
         <div className="space-y-0.5">
           <Label htmlFor="double-header-toggle" className="text-sm font-medium">
             Double Header
@@ -190,7 +190,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
 
       <Button
         type="submit"
-        className={`w-full disabled:!opacity-100 disabled:!bg-muted disabled:!text-muted-foreground ${isDoubleHeader ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400' : 'bg-cornhole-navy hover:bg-cornhole-navy/90'}`}
+        className={`w-full disabled:opacity-100! disabled:bg-muted! disabled:text-muted-foreground! ${isDoubleHeader ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400' : 'bg-cornhole-navy hover:bg-cornhole-navy/90'}`}
         disabled={
           (isDoubleHeader &&
             (selectedTimeslots.length !== 2 ||

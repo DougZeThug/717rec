@@ -63,7 +63,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
               compact={true}
             />
           </div>
-          <div className="mt-1 text-sm whitespace-pre-wrap break-words">{comment.content}</div>
+          <div className="mt-1 text-sm whitespace-pre-wrap wrap-break-word">{comment.content}</div>
         </div>
 
         {/* Comment actions */}

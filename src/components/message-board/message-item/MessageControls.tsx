@@ -38,7 +38,7 @@ const MessageControls: React.FC<MessageControlsProps> = ({
       {/* Message Options - Only visible when showOptions is true and user is author */}
       {isAuthor && showOptions && (
         <div
-          className="absolute right-3 top-3 p-1 bg-background/90 rounded-md border shadow-sm flex gap-1"
+          className="absolute right-3 top-3 p-1 bg-background/90 rounded-md border shadow-xs flex gap-1"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Edit option */}

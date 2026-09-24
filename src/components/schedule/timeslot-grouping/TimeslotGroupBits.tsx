@@ -182,7 +182,7 @@ export const TimeslotMatchRow = ({
           variant="doubleHeader"
           className={cn(
             'w-full max-w-full text-[11px] leading-tight',
-            'flex-col items-start gap-0.5 whitespace-normal break-words',
+            'flex-col items-start gap-0.5 whitespace-normal wrap-break-word',
             'sm:w-auto sm:flex-row sm:items-center sm:gap-1 sm:text-xs'
           )}
         >

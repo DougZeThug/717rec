@@ -185,7 +185,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ section: activeTab }) => {
                     'hover:bg-accent hover:text-accent-foreground',
                     'min-h-[44px]', // Touch target
                     activeTab === item.id
-                      ? 'bg-primary/10 text-primary dark:!text-blue-200 font-medium'
+                      ? 'bg-primary/10 text-primary dark:text-blue-200! font-medium'
                       : 'text-muted-foreground'
                   )}
                 >

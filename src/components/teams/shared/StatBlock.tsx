@@ -31,7 +31,7 @@ export const StatBlock: React.FC<StatBlockProps> = ({
       return 'bg-gradient-to-br from-[hsl(222,30%,18%)] via-[hsl(222,35%,15%)] to-[hsl(222,40%,12%)]';
     }
 
-    return 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80';
+    return 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/80 dark:to-gray-900/80 dark:via-none';
   };
 
   const baseClasses = cn(

@@ -44,7 +44,7 @@ const PastWinnersDisplay: React.FC<PastWinnersDisplayProps> = ({
           <div
             key={weekData.week}
             className={cn(
-              'backdrop-blur-sm rounded-lg p-2 border',
+              'backdrop-blur-xs rounded-lg p-2 border',
               shouldApplyWinter
                 ? 'bg-cyan-500/10 border-cyan-400/10'
                 : 'bg-white/10 border-white/10'

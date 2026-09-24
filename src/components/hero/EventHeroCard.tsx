@@ -147,7 +147,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
             )}
           >
             {/* Left Column - Header, Date, Countdown (desktop) */}
-            <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:flex-shrink-0">
+            <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:shrink-0">
               <div className="flex items-center gap-2">
                 <m.div
                   initial={{ rotate: -10, opacity: 0 }}
@@ -171,7 +171,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               {(isActiveEvent || card.subtitle) && (
                 <div
                   className={cn(
-                    'inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 py-1',
+                    'inline-flex items-center gap-2 backdrop-blur-xs rounded-full px-3 py-1',
                     shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
                   )}
                 >
@@ -233,7 +233,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                   {signupCount !== undefined && signupCount > 0 && (
                     <div
                       className={cn(
-                        'flex items-center justify-center gap-2 backdrop-blur-sm rounded-full px-3 py-1.5 w-fit mx-auto',
+                        'flex items-center justify-center gap-2 backdrop-blur-xs rounded-full px-3 py-1.5 w-fit mx-auto',
                         shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
                       )}
                     >

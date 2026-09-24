@@ -87,6 +87,6 @@ function getCardElevation(type: 'default' | 'active' | 'highlighted'): string {
     case 'highlighted':
       return 'shadow-lg hover:shadow-xl dark:shadow-gray-900/40 transition-all duration-300';
     default:
-      return 'shadow-sm hover:shadow-md dark:shadow-gray-900/20 transition-all duration-300';
+      return 'shadow-xs hover:shadow-md dark:shadow-gray-900/20 transition-all duration-300';
   }
 }

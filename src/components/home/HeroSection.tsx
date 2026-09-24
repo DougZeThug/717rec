@@ -19,7 +19,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, icon, label, className }) => 
     to={to}
     className={cn(
       'flex items-center gap-2.5 px-4 py-3.5 rounded-xl font-semibold text-sm text-white',
-      'transition-all duration-200 active:scale-[0.97] shadow-sm',
+      'transition duration-200 active:scale-[0.97] shadow-xs',
       className
     )}
   >
@@ -54,7 +54,7 @@ const HeroSection = () => {
             {...{ fetchpriority: 'high' }}
             loading="eager"
             decoding="sync"
-            className="h-12 w-auto max-w-full drop-shadow-sm mb-1.5"
+            className="h-12 w-auto max-w-full drop-shadow-xs mb-1.5"
           />
           {shouldApplyWinter ? (
             <SnowtopText
@@ -132,13 +132,13 @@ const HeroSection = () => {
               {...{ fetchpriority: 'high' }}
               loading="eager"
               decoding="sync"
-              className="h-24 w-auto max-w-full transition-all duration-200 drop-shadow-sm"
+              className="h-24 w-auto max-w-full transition duration-200 drop-shadow-xs"
             />
           </div>
           {shouldApplyWinter ? (
             <SnowtopText
               as="h1"
-              className="text-5xl lg:text-6xl uppercase tracking-wide font-normal mb-2 leading-tight"
+              className="text-5xl lg:text-6xl uppercase tracking-wide font-normal mb-2 leading-tight lg:leading-none"
             >
               <>
                 717Rec
@@ -146,7 +146,7 @@ const HeroSection = () => {
               </>
             </SnowtopText>
           ) : (
-            <h1 className="text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-2 leading-tight text-white">
+            <h1 className="text-5xl lg:text-6xl font-bebas uppercase tracking-wide font-normal mb-2 leading-tight lg:leading-none text-white">
               717Rec
               <span className="sr-only"> — Lancaster&apos;s Premier Cornhole League</span>
             </h1>
@@ -180,7 +180,7 @@ const HeroSection = () => {
                 'flex items-center gap-2',
                 shouldApplyWinter
                   ? 'btn-winter-secondary'
-                  : 'bg-white/20 backdrop-blur-sm hover:bg-white/30'
+                  : 'bg-white/20 backdrop-blur-xs hover:bg-white/30'
               )}
             >
               <Link to="/schedule" className="flex items-center gap-2">

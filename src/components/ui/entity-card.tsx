@@ -36,7 +36,7 @@ export const EntityCard: React.FC<EntityCardProps> = ({
   return (
     <m.div
       className={cn(
-        'rounded-lg border shadow-sm h-full',
+        'rounded-lg border shadow-xs h-full',
         isWinterTheme
           ? 'winter-card-surface frost-edge border-frost-border/30 text-card-foreground'
           : 'border-border bg-card text-card-foreground',

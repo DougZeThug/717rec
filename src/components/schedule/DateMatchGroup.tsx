@@ -52,7 +52,7 @@ const DateMatchGroup: React.FC<DateMatchGroupProps> = ({
         className={cn(
           'flex w-full items-center justify-between p-3 text-left font-semibold text-sm rounded-lg transition-all',
           isLight
-            ? 'bg-gray-50 text-gray-700 shadow-sm border-b border-gray-200'
+            ? 'bg-gray-50 text-gray-700 shadow-xs border-b border-gray-200'
             : 'bg-gray-800 text-white border-gray-700',
           isCompleted
             ? isLight

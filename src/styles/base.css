@@ -1,4 +1,3 @@
-
 :root {
   /* Base variables */
   --page-transition-duration: 300ms;
@@ -37,5 +36,5 @@ button, a {
 
 /* Form elements - let component-level focus-visible styles take precedence */
 input, select, textarea {
-  @apply focus:outline-none;
+  @apply focus:outline-hidden;
 }

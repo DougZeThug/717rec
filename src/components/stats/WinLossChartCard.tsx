@@ -18,7 +18,7 @@ const WinLossChartCard: React.FC<WinLossChartCardProps> = ({ data, chartLimit, i
 
   return (
     <AnimatedChartWrapper delay={0}>
-      <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-sm">
+      <Card className="bg-card text-card-foreground border border-border rounded-xl shadow-xs">
         <CardHeader
           className={isMobile ? 'py-2 px-3' : 'pb-1.5'}
           style={

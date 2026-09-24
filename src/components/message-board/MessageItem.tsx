@@ -113,11 +113,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   return (
     <Card
       className={cn(
-        'mb-2 overflow-hidden relative border shadow-sm transition-all duration-200',
+        'mb-2 overflow-hidden relative border shadow-xs transition-all duration-200',
         isAuthor ? gradients.card.highlight : gradients.card.default,
         isAuthor ? 'hover:shadow-md' : '',
         isAnnouncement ? 'border-blue-300 dark:border-blue-800' : '',
-        isAuthor ? 'focus:outline-none focus:ring-2 focus:ring-primary' : '',
+        isAuthor ? 'focus:outline-hidden focus:ring-2 focus:ring-primary' : '',
         animations.fadeIn
       )}
       {...longPressHandlers}

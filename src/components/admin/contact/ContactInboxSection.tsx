@@ -271,7 +271,7 @@ const ContactInboxSection: React.FC = () => {
                     )}
                   </div>
 
-                  <p className="mt-2 whitespace-pre-wrap break-words text-sm text-foreground/90">
+                  <p className="mt-2 whitespace-pre-wrap wrap-break-word text-sm text-foreground/90">
                     {item.message}
                   </p>
 

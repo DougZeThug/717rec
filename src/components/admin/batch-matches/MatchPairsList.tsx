@@ -184,7 +184,7 @@ const MatchPairRow: React.FC<MatchPairRowProps> = ({
   return (
     <div
       className={cn(
-        'p-3 border rounded-lg bg-card shadow-sm',
+        'p-3 border rounded-lg bg-card shadow-xs',
         error && 'border-destructive ring-1 ring-destructive'
       )}
     >

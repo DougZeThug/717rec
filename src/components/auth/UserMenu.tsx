@@ -68,11 +68,11 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
         <Button
           variant="secondary"
           size="sm"
-          className="whitespace-nowrap !flex !items-center px-2"
+          className="whitespace-nowrap flex! items-center! px-2"
           onClick={handleLoginClick}
         >
           <LogIn className="size-4 mr-1" />
-          <span className="!block">Login</span>
+          <span className="block!">Login</span>
         </Button>
       </div>
     );

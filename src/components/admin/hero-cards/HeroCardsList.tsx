@@ -166,7 +166,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
         <Tooltip>
           <TooltipTrigger>
             <div
-              className="size-8 rounded-md border shadow-sm"
+              className="size-8 rounded-md border shadow-xs"
               style={{ background: getColorPreview(card.background_color) }}
             />
           </TooltipTrigger>

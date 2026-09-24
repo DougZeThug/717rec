@@ -1,14 +1,13 @@
-
 /* Utilities */
 
 /* Accessible focus ring - WCAG 2.1 AA compliant */
 .focus-ring {
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
 }
 
 /* High contrast focus ring for dark backgrounds */
 .focus-ring-light {
-  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent;
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent;
 }
 
 /* Numeric typography - prevents column wiggle in tables/standings */
@@ -58,17 +57,17 @@
     left: 0;
     right: 0;
     height: 240px;
-    background-color: theme('colors.cornhole.cream');
+    background-color: var(--color-cornhole-cream);
     z-index: -1;
   }
   
   .dark .cornhole-bg::before {
-    background-color: theme('colors.gray.900');
+    background-color: var(--color-gray-900);
   }
 
   /* Elevation system */
   .elevation-low {
-    @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+    @apply shadow-xs hover:shadow-md transition-shadow duration-200;
   }
   
   .elevation-medium {

@@ -68,7 +68,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
               'absolute inset-0',
               isWinter
                 ? 'bg-gradient-to-br from-cyan-900/10 via-transparent to-violet-900/10'
-                : 'bg-gradient-to-br from-blue-50/30 via-transparent to-amber-50/20 dark:from-blue-900/10 dark:to-amber-900/10'
+                : 'bg-gradient-to-br from-blue-50/30 via-transparent to-amber-50/20 dark:from-blue-900/10 dark:to-amber-900/10 dark:via-none'
             )}
           />
           <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />

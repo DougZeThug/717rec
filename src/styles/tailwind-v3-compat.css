@@ -1,0 +1,32 @@
+/* Tailwind v3 Preflight defaults that v4 changed.
+
+   Imported right after Tailwind's Preflight in index.css, so these rules win
+   ties against styles/base.css exactly as v3 Preflight did. */
+
+/* v3 gave every border a gray-200 colour; v4 uses currentcolor. */
+*,
+::after,
+::before,
+::backdrop,
+::file-selector-button {
+  border-color: var(--color-gray-200, currentcolor);
+}
+
+/* v3 placeholders were gray-400; v4 uses the text colour at 50%. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-gray-400);
+}
+
+/* v3 showed a pointer on buttons; v4 uses the browser default. */
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}
+
+/* v3 kept the browser's 1px table-cell padding; v4 Preflight resets every
+   element's padding to 0. A `p*-*` class on the cell still wins. */
+td,
+th {
+  padding: 1px;
+}

@@ -21,7 +21,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
       className={cn(
         'relative flex flex-col items-center p-3 rounded-lg',
         'border border-border/50',
-        'shadow-sm hover:shadow-md transition-shadow',
+        'shadow-xs hover:shadow-md transition-shadow',
         'min-w-[100px] flex-1',
         'active:scale-[0.98]',
         isWinter
@@ -41,7 +41,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
           re-checking the ratio; e2e/a11y.spec.ts catches it, intermittently. */}
       <div
         className={cn(
-          'absolute -top-2 -left-1 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm',
+          'absolute -top-2 -left-1 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-xs',
           isWinter ? 'bg-cyan-700' : 'bg-blue-600'
         )}
       >

@@ -70,7 +70,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
             'bg-muted/50 rounded-lg',
             'px-3 py-2 sm:px-4 sm:py-3',
             'hover:bg-accent transition-colors',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
+            'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring'
           )}
         >
           <span>

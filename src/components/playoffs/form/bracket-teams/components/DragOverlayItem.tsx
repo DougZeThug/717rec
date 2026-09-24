@@ -27,7 +27,7 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
       {/* Seed Badge */}
       <div
         className={cn(
-          'flex items-center justify-center min-w-[2rem] h-7 rounded-md text-sm font-bold',
+          'flex items-center justify-center min-w-8 h-7 rounded-md text-sm font-bold',
           'bg-primary text-primary-foreground'
         )}
       >
@@ -37,7 +37,7 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
       {/* Team Info */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         {logoUrl ? (
-          <div className="size-6 rounded-full overflow-hidden bg-muted flex-shrink-0">
+          <div className="size-6 rounded-full overflow-hidden bg-muted shrink-0">
             <img
               src={logoUrl}
               alt={`${name} logo`}
@@ -47,7 +47,7 @@ export const DragOverlayItem: React.FC<DragOverlayItemProps> = ({ name, seed, lo
             />
           </div>
         ) : (
-          <div className="size-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+          <div className="size-6 rounded-full bg-muted flex items-center justify-center shrink-0">
             <Users className="size-3.5 text-muted-foreground" />
           </div>
         )}

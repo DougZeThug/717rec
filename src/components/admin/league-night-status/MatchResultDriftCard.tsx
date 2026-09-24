@@ -80,7 +80,7 @@ const MatchResultDriftCard: React.FC = () => {
                   <li key={m.id}>
                     <TransitionLink
                       to={`/matches/${m.id}/live`}
-                      className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="rounded-sm underline-offset-2 hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={`Open ${m.team1Name} versus ${m.team2Name}`}
                     >
                       <span className="font-medium">

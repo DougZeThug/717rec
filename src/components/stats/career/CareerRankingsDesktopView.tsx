@@ -150,7 +150,7 @@ const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
                       imageUrl={ranking.imageUrl || ranking.logoUrl}
                       teamName={ranking.teamName}
                       size="sm"
-                      className="flex-shrink-0"
+                      className="shrink-0"
                     />
                     <span className="font-medium truncate group-hover:text-primary transition-colors">
                       {ranking.teamName}

@@ -76,7 +76,7 @@ export const TimeslotBlockPicker: React.FC<TimeslotBlockPickerProps> = ({
                       ${
                         isSelected
                           ? 'bg-gradient-to-br from-amber-500 to-orange-500 text-white border-transparent hover:from-amber-400 hover:to-orange-400'
-                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10 dark:!border-blue-200 dark:!text-blue-200 dark:hover:bg-blue-200/10'
+                          : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10 dark:border-blue-200! dark:text-blue-200! dark:hover:bg-blue-200/10'
                       }
                     `}
             >
@@ -104,10 +104,10 @@ export const TimeslotBlockPicker: React.FC<TimeslotBlockPickerProps> = ({
                     choice.value === 'BYE'
                       ? selectedTimeslot === choice.value
                         ? 'bg-orange-600 text-white'
-                        : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:!border-orange-200 dark:!text-orange-200 dark:hover:bg-orange-200/10'
+                        : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-200! dark:text-orange-200! dark:hover:bg-orange-200/10'
                       : selectedTimeslot === choice.value
                         ? 'bg-cornhole-navy text-white'
-                        : 'border-cornhole-navy text-cornhole-navy dark:!border-blue-200 dark:!text-blue-200'
+                        : 'border-cornhole-navy text-cornhole-navy dark:border-blue-200! dark:text-blue-200!'
                   }
                 `}
           >

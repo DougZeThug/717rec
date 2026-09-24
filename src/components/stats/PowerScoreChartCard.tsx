@@ -23,7 +23,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
     <AnimatedChartWrapper delay={0.1}>
       <Card
         className={cn(
-          'bg-card text-foreground border border-border rounded-xl shadow-sm',
+          'bg-card text-foreground border border-border rounded-xl shadow-xs',
           animations.fadeInSlideUp,
           'animation-delay-200'
         )}

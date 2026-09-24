@@ -160,15 +160,15 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
             <img
               src={team.logoUrl}
               alt={`${team.name} logo`}
-              className="size-6 object-contain flex-shrink-0"
+              className="size-6 object-contain shrink-0"
             />
           ) : (
-            <Users className="size-4 flex-shrink-0" />
+            <Users className="size-4 shrink-0" />
           )}
           <span className="font-medium truncate flex-1 min-w-0">{team.name || 'Unnamed Team'}</span>
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <SeedStatusBadge
             seed={team.seed || 0}
             isManual={isManual}
@@ -180,7 +180,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
         </div>
 
         {team.powerScore && (
-          <div className="flex items-center gap-1 text-xs opacity-75 flex-shrink-0">
+          <div className="flex items-center gap-1 text-xs opacity-75 shrink-0">
             <Zap className="size-3" />
             <span>{Math.round(team.powerScore)}</span>
           </div>

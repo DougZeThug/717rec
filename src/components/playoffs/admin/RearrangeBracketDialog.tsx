@@ -124,7 +124,7 @@ const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
             )}
           </div>
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
-            <AlertTriangle className="mt-0.5 size-4 flex-shrink-0" />
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <p>
               Saving applies every change above at once. Matches that have already been played are
               never touched.

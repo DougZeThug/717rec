@@ -28,7 +28,7 @@ export function ToggleButtonGroup<T extends string>({
 }: ToggleButtonGroupProps<T>) {
   if (variant === 'segmented') {
     return (
-      <div className={cn('inline-flex rounded-lg bg-muted p-0.5 shadow-sm', className)}>
+      <div className={cn('inline-flex rounded-lg bg-muted p-0.5 shadow-xs', className)}>
         {options.map((option) => {
           const Icon = option.icon;
           const isActive = value === option.value;

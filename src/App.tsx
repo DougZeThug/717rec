@@ -142,7 +142,7 @@ const AppLayout = () => {
               ref={mainRef}
               id="main-content"
               tabIndex={-1}
-              className="flex-grow focus:outline-none"
+              className="grow focus:outline-hidden"
             >
               {/* Above the Suspense, not inside a route.
                 A page whose code fails to download rejects the lazy import, and

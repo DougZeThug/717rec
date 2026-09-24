@@ -10,7 +10,7 @@
  * this app ships a seasonal winter theme that overrides --primary. A published
  * league graphic has to look the same whoever made it and whenever.
  *
- * Colours come from the `cornhole` palette in tailwind.config.ts.
+ * Colours come from the `cornhole` palette (`--color-cornhole-*` in src/index.css).
  */
 
 export const RECAP_GRAPHIC_WIDTH = 1080;

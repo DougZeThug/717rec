@@ -32,9 +32,9 @@ const TabsTrigger = React.forwardRef<
       'active:scale-[0.98] active:bg-accent/30',
       // Fast transition for snappy response
       'transition-all duration-100',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       'disabled:pointer-events-none disabled:opacity-50',
-      'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
+      'data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs',
       className
     )}
     {...props}
@@ -49,7 +49,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      'mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+      'mt-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       className
     )}
     {...props}
