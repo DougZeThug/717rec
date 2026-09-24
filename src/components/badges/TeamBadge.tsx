@@ -96,9 +96,6 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     return config.description;
   };
 
-  // Determine if badge should have special animation
-  const isStreakBadge =
-    badge.badge_type.includes('hot_streak') || badge.badge_type.includes('cold_streak');
   const isChampionshipBadge =
     badge.badge_type.includes('champion') ||
     badge.badge_type.includes('runner_up') ||
@@ -112,8 +109,6 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
         sizeClasses[size],
         'shadow-xs border-2 border-white',
         'transition-all duration-200',
-        // Streak badges get subtle pulse
-        isStreakBadge && 'animate-pulse [animation-duration:3s]',
         // Championship badges get hover glow
         isChampionshipBadge && 'hover:shadow-lg hover:shadow-yellow-400/30 hover:scale-105',
         isMobile ? 'cursor-pointer active:scale-95' : 'cursor-help hover:scale-105',
