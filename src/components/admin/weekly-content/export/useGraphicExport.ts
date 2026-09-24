@@ -23,7 +23,7 @@ export interface ExportRequest {
  * Captures a designed element to a PNG in the admin's browser.
  *
  * html-to-image is imported dynamically and only from here. A static import
- * from anywhere a public page also reaches would let Rollup hoist it into a
+ * from anywhere a public page also reaches would let the bundler hoist it into a
  * shared chunk and eat the bundle budget that CI enforces.
  */
 export const useGraphicExport = () => {
