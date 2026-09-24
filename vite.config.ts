@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     sourcemap: true,
+    // Vite 7's default browser list, written out. Vite 8 raises the default to
+    // Safari 16.4 / Chrome 111, which would give a blank page on iPhones still
+    // on iOS 16.0-16.3. Keep this list until we decide to drop those phones.
+    target: ['chrome107', 'edge107', 'firefox104', 'safari16'],
     rollupOptions: {
       output: {
         manualChunks: {
