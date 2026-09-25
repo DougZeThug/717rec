@@ -13,3 +13,11 @@ export interface EditMatchTeamsParams {
   expectedOpponent1Id: number | null;
   expectedOpponent2Id: number | null;
 }
+
+/**
+ * Who sits in a slot, as Edit teams plans it: a team (its participant id;
+ * negative while a team new to the bracket has no participant row yet), a
+ * stored BYE, or an empty spot still waiting for a team.
+ */
+export type Occupant =
+  { kind: 'team'; participantId: number; name: string } | { kind: 'bye' } | { kind: 'tbd' };

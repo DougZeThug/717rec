@@ -109,7 +109,10 @@ async function score(service: BracketManagerService, match: MatchRow, opponent1W
   });
 }
 
-async function buildSixTeamBracket(service: BracketManagerService): Promise<void> {
+async function buildSixTeamBracket(
+  service: BracketManagerService,
+  format: 'single_elimination' | 'double_elimination' = 'double_elimination'
+): Promise<void> {
   db().seed('brackets', [{ id: BRACKET_ID, state: 'pending', uses_brackets_manager: true }]);
   db().seed('teams', [
     { id: 'uuid-7', name: 'T7' },
@@ -117,7 +120,7 @@ async function buildSixTeamBracket(service: BracketManagerService): Promise<void
   ]);
   await service.createBracket({
     bracketId: BRACKET_ID,
-    format: 'double_elimination',
+    format,
     teams: Array.from({ length: 6 }, (_, i) => ({
       id: `uuid-${i + 1}`,
       name: `T${i + 1}`,
@@ -125,6 +128,16 @@ async function buildSixTeamBracket(service: BracketManagerService): Promise<void
     })),
     grandFinalType: 'simple',
   });
+}
+
+/** Score every Ready match (opponent1 winning) until none is left. */
+async function playToTheEnd(service: BracketManagerService): Promise<void> {
+  for (let i = 0; i < 32; i++) {
+    const ready = matchRows().find((m) => m.status === 2 || m.status === 3);
+    if (!ready) return;
+    await score(service, ready);
+  }
+  throw new Error('playToTheEnd did not converge');
 }
 
 beforeAll(() => {
@@ -280,15 +293,157 @@ describe('Edit teams (real service + real library over fake DB)', () => {
     expect(matchRows()).toEqual(before);
   });
 
-  it('refuses BYE changes for now', async () => {
+  it('replaces a walkover winner, updating the round 2 slot it already reached', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const t1 = participantIdByName('T1');
+    expect(matchBy(1, 2, 1).opponent1_id).toBe(t1);
+
+    const result = await service.editMatchParticipants(editOf(wbR1(1), team(7), { kind: 'bye' }));
+
+    const t7 = participantIdByName('T7');
+    expect(wbR1(1)).toMatchObject({
+      opponent1_id: t7,
+      opponent1_position: 1,
+      opponent1_result: 'win',
+      opponent2_result: 'bye',
+      status: 0,
+    });
+    expect(matchBy(1, 2, 1).opponent1_id).toBe(t7);
+    expect(result.message).toContain(
+      'T7 has no opponent in Winners Round 1 Match 1 and moves on to Winners Round 2 Match 1 automatically.'
+    );
+    // T1 is out of the bracket entirely.
+    expect(matchRows().some((m) => m.opponent1_id === t1 || m.opponent2_id === t1)).toBe(false);
+  });
+
+  it('refuses adding or removing a BYE in double elimination for now', async () => {
     const service = new BracketManagerService();
     await buildSixTeamBracket(service);
 
     await expect(service.editMatchParticipants(editOf(wbR1(1), team(1), team(7)))).rejects.toThrow(
-      'This match has a BYE or an empty spot.'
+      'Adding or removing a BYE in a double-elimination bracket is not available yet.'
     );
     await expect(
       service.editMatchParticipants(editOf(wbR1(4), team(3), { kind: 'bye' }))
-    ).rejects.toThrow('Choosing a BYE is not available yet.');
+    ).rejects.toThrow(
+      'Adding or removing a BYE in a double-elimination bracket is not available yet.'
+    );
+  });
+
+  it('refuses two BYEs', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    await expect(
+      service.editMatchParticipants(editOf(wbR1(1), { kind: 'bye' }, { kind: 'bye' }))
+    ).rejects.toThrow('A match needs at least one team');
+  });
+});
+
+describe('Edit teams BYEs in single elimination (real service + real library over fake DB)', () => {
+  it('turns a match into a walkover and back, and the bracket plays to the end', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service, 'single_elimination');
+    const t1 = participantIdByName('T1');
+    const t4 = participantIdByName('T4');
+    const t5 = participantIdByName('T5');
+    const m2 = wbR1(2);
+
+    // T5 drops out: T4 wins Round 1 Match 2 by walkover and moves on.
+    const bye = await service.editMatchParticipants(editOf(m2, team(4), { kind: 'bye' }));
+    expect(wbR1(2)).toMatchObject({
+      opponent1_id: t4,
+      opponent1_result: 'win',
+      opponent1_score: null,
+      opponent2_id: null,
+      opponent2_position: null,
+      opponent2_result: 'bye',
+      status: 0,
+    });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: t1, opponent2_id: t4, status: 2 });
+    expect(bye.message).toBe(
+      'Round 1 Match 2 is now T4 vs BYE. T4 has no opponent in Round 1 Match 2 and moves on ' +
+        'to Round 2 Match 1 automatically.'
+    );
+
+    // Undo: T5 comes back in its seed slot, T4 leaves round 2 again.
+    const undo = await service.editMatchParticipants(editOf(wbR1(2), team(4), team(5)));
+    expect(wbR1(2)).toMatchObject({
+      opponent1_id: t4,
+      opponent1_result: null,
+      opponent2_id: t5,
+      opponent2_position: m2.opponent2_position,
+      opponent2_result: null,
+      status: 2,
+    });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: t1, opponent2_id: null, status: 1 });
+    expect(undo.message).toContain(
+      'T4 is taken back out of Round 2 Match 1; that spot now waits for Round 1 Match 2 to be played.'
+    );
+
+    await playToTheEnd(service);
+    expect(db().rows('brackets')[0]).toMatchObject({ state: 'completed' });
+  });
+
+  it("fills a top seed's BYE with a team new to the bracket", async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service, 'single_elimination');
+    const t1 = participantIdByName('T1');
+
+    await service.editMatchParticipants(editOf(wbR1(1), team(1), team(7)));
+
+    expect(wbR1(1)).toMatchObject({
+      opponent1_id: t1,
+      opponent1_result: null,
+      opponent2_id: participantIdByName('T7'),
+      // The seed number the slot was built for (seed 8 faces seed 1).
+      opponent2_position: 8,
+      opponent2_result: null,
+      status: 2,
+    });
+    // Both round 2 spots now wait for round 1: the library calls that Locked (0).
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: null, opponent2_id: null, status: 0 });
+
+    await playToTheEnd(service);
+    expect(db().rows('brackets')[0]).toMatchObject({ state: 'completed' });
+  });
+
+  it('refuses when the round 2 match it would change is being played', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service, 'single_elimination');
+    const roundTwo = matchBy(1, 2, 1);
+    Object.assign(
+      db()
+        .tableRows('match')
+        .find((row) => row.id === roundTwo.id) ?? {},
+      {
+        status: 3,
+      }
+    );
+
+    await expect(service.editMatchParticipants(editOf(wbR1(1), team(1), team(7)))).rejects.toThrow(
+      'This change needs to update Round 2 Match 1, but that match is currently being played.'
+    );
+  });
+
+  it('finishes an interrupted edit when the same teams are saved again', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service, 'single_elimination');
+    const params = editOf(wbR1(2), team(4), { kind: 'bye' });
+
+    // Round 2 is written, then the edited match fails.
+    db().interceptUpdates((table, index) =>
+      table === 'match' && index === 1 ? 'error' : undefined
+    );
+    await expect(service.editMatchParticipants(params)).rejects.toMatchObject({
+      name: 'DatabaseError',
+    });
+    expect(matchBy(1, 2, 1).opponent2_id).toBe(participantIdByName('T4'));
+    expect(wbR1(2).opponent2_id).toBe(participantIdByName('T5'));
+
+    db().interceptUpdates(null);
+    await service.editMatchParticipants(params);
+    expect(wbR1(2)).toMatchObject({ opponent2_result: 'bye', status: 0 });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent2_id: participantIdByName('T4'), status: 2 });
   });
 });

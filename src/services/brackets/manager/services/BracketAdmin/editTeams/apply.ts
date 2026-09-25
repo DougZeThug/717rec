@@ -1,35 +1,32 @@
 import { BusinessLogicError, ServiceError, ValidationError } from '@/types/errors';
 import { bracketLog, failureLog, successLog } from '@/utils/logger';
 
+import { computeStageSlotLayout } from '../../../utils/lbFeederMarkers';
 import { markBracketCompleteIfDone } from '../../BracketUpdate/completion';
 import type { TeamSummary } from '../participants';
 import { ensureParticipantRow, lookupTeam } from '../participants';
 import type { MatchUpdateFields, OpponentSide } from '../shapes';
-import { shapeOf, slotFields } from '../shapes';
 import type { BracketAdminDeps, EditMatchParticipantsResult } from '../types';
 import { updateMatchRowOrThrow } from '../writes';
 import type { EditTeamsContext } from './context';
 import { loadEditTeamsContext } from './context';
+import { assertFootprint } from './footprint';
+import { planOccupancy } from './occupancy';
 import {
-  findParticipantElsewhere,
   isWinnersRoundOne,
   matchLabel,
+  occupantId,
+  occupantOf,
+  SIDES,
   winnersRoundOneBlockReason,
 } from './rules';
-import type { EditMatchTeamsParams, TeamChoice } from './types';
-
-const SIDES: OpponentSide[] = ['opponent1', 'opponent2'];
+import type { EditMatchTeamsParams, Occupant, TeamChoice } from './types';
+import type { PlannedWrite } from './winnersPlan';
+import { planWinnersChanges } from './winnersPlan';
 
 const STALE_MESSAGE =
   'This match changed since Edit teams was opened. Close it and open it again to continue.';
 const NOT_SAVED_MESSAGE = 'Not saved — only admins can edit brackets. Nothing was changed.';
-
-/** A picked team, resolved against the bracket before anything is written. */
-interface ResolvedTeam {
-  team: TeamSummary;
-  /** The team's participant id, or null when it is not in the bracket yet. */
-  participantId: number | null;
-}
 
 const expectedIdOf = (params: EditMatchTeamsParams, side: OpponentSide): number | null =>
   side === 'opponent1' ? params.expectedOpponent1Id : params.expectedOpponent2Id;
@@ -53,38 +50,56 @@ function assertEditableMatch(ctx: EditTeamsContext): void {
   }
   const blocked = winnersRoundOneBlockReason(match);
   if (blocked) throw new BusinessLogicError(`This match ${blocked}, so its teams can't change.`);
-  if (SIDES.some((side) => shapeOf(match[side]) !== 'team')) {
-    throw new BusinessLogicError(
-      'This match has a BYE or an empty spot. Changing BYEs with Edit teams is not available yet.'
-    );
-  }
-}
-
-async function resolveChoice(ctx: EditTeamsContext, choice: TeamChoice): Promise<ResolvedTeam> {
-  if (choice.kind === 'bye') {
-    throw new ValidationError('Choosing a BYE is not available yet.');
-  }
-  const participant = ctx.participants.find((p) => p.team_id === choice.teamId);
-  if (participant) {
-    return {
-      team: { id: choice.teamId, name: participant.name ?? 'The team' },
-      participantId: participant.id,
-    };
-  }
-  return { team: await lookupTeam(choice.teamId), participantId: null };
 }
 
 /**
- * Admin operation: change the teams of a winners-bracket round 1 match — the
- * seeding fix this tool exists for.
+ * Resolve a pick to an occupant. A team not in the bracket yet gets a
+ * placeholder (negative) participant id: its real participant row is only
+ * inserted once every check has passed.
+ */
+async function resolvePick(
+  ctx: EditTeamsContext,
+  choice: TeamChoice,
+  placeholderId: number,
+  newTeams: Map<number, TeamSummary>
+): Promise<Occupant> {
+  if (choice.kind === 'bye') return { kind: 'bye' };
+  const participant = ctx.participants.find((p) => p.team_id === choice.teamId);
+  if (participant) {
+    return { kind: 'team', participantId: participant.id, name: participant.name ?? 'The team' };
+  }
+  const team = await lookupTeam(choice.teamId);
+  newTeams.set(placeholderId, team);
+  return { kind: 'team', participantId: placeholderId, name: team.name };
+}
+
+/** Swap placeholder participant ids for the real ones in a planned write. */
+function withRealIds(write: PlannedWrite, realIds: Map<number, number>): PlannedWrite {
+  const fields: MatchUpdateFields = { ...write.fields };
+  for (const side of SIDES) {
+    const key = `${side}_id` as const;
+    const id = fields[key];
+    if (typeof id === 'number' && realIds.has(id)) fields[key] = realIds.get(id);
+  }
+  return { matchId: write.matchId, fields };
+}
+
+/**
+ * Admin operation: change who plays in a winners-bracket round 1 match — a
+ * team for another team, a team for a BYE, or a BYE for a team.
  *
  * Every check runs before the first write: the match must be an unplayed
- * round 1 match with a real team on each side, still hold the teams the
- * screen was opened with, and every picked team must not already sit in
- * another match. Only then is a participant row created for a team new to
- * the bracket and the match rewritten — ids, cleared scores and results, and
- * the slot's own feeder marker. A write that reaches no row (row-level
- * security for a non-admin) fails loudly instead of reporting success.
+ * round 1 match that still holds what the screen was opened with, and every
+ * picked team must not already play in another match. The plan then covers
+ * the knock-on changes too — a walkover's team moving on to round 2 by itself,
+ * or a team taken back out of round 2 when its BYE goes — and is replayed on
+ * a copy of the stage to prove no team ends up in two matches.
+ *
+ * Writes run one at a time, knock-on changes first and the edited match last.
+ * The plan is declarative, so if a write fails part-way the edited match
+ * still holds its old teams and saving the same edit again finishes the job
+ * (Repair Bracket does not reconcile these links). A write that reaches no
+ * row — row-level security for a non-admin — fails loudly.
  */
 export async function editMatchTeams(
   deps: BracketAdminDeps,
@@ -97,69 +112,78 @@ export async function editMatchTeams(
     const { match, stage } = ctx;
     assertEditableMatch(ctx);
 
-    if (SIDES.some((side) => (match[side]?.id ?? null) !== expectedIdOf(params, side))) {
+    if (
+      SIDES.some((side) => occupantId(occupantOf(ctx, match[side])) !== expectedIdOf(params, side))
+    ) {
       throw new BusinessLogicError(STALE_MESSAGE);
     }
 
-    const [resolved1, resolved2] = await Promise.all([
-      resolveChoice(ctx, params.opponent1),
-      resolveChoice(ctx, params.opponent2),
-    ]);
-    if (resolved1.team.id === resolved2.team.id) {
+    if (
+      params.opponent1.kind === 'team' &&
+      params.opponent2.kind === 'team' &&
+      params.opponent1.teamId === params.opponent2.teamId
+    ) {
       throw new ValidationError("A team can't be on both sides of a match.");
     }
-    const resolved: Record<OpponentSide, ResolvedTeam> = {
-      opponent1: resolved1,
-      opponent2: resolved2,
-    };
+    const newTeams = new Map<number, TeamSummary>();
+    const [pick1, pick2] = await Promise.all([
+      resolvePick(ctx, params.opponent1, -1, newTeams),
+      resolvePick(ctx, params.opponent2, -2, newTeams),
+    ]);
 
-    for (const side of SIDES) {
-      const { participantId, team } = resolved[side];
-      if (participantId === null) continue;
-      const elsewhere = findParticipantElsewhere(ctx, participantId, [match.id]);
-      if (elsewhere) {
-        throw new BusinessLogicError(
-          `${team.name} is already in ${matchLabel(ctx, elsewhere)}. A team can only be in one match.`
-        );
-      }
-    }
-
-    if (SIDES.every((side) => resolved[side].participantId === match[side]?.id)) {
-      throw new ValidationError('Nothing to change — those teams are already in this match.');
-    }
-
-    // Every check passed: now it is safe to write.
-    const ids = {} as Record<OpponentSide, number>;
-    for (const side of SIDES) {
-      ids[side] =
-        resolved[side].participantId ??
-        (await ensureParticipantRow(stage.tournament_id, resolved[side].team, ctx.participants));
-    }
-
-    const fields: MatchUpdateFields = { status: 2 };
-    for (const side of SIDES) {
-      Object.assign(
-        fields,
-        slotFields(side, {
-          id: ids[side],
-          position: match[side]?.position ?? null,
-          score: null,
-          result: null,
-        })
+    const wanted = planOccupancy(ctx, { opponent1: pick1, opponent2: pick2 });
+    const layout = await computeStageSlotLayout(stage);
+    const winners = planWinnersChanges(ctx, wanted, layout.wbRoundOneSeedOf);
+    if (stage.type === 'double_elimination' && winners.byeChanges.length > 0) {
+      throw new BusinessLogicError(
+        'Adding or removing a BYE in a double-elimination bracket is not available yet.'
       );
     }
-    await updateMatchRowOrThrow(match.id, fields, NOT_SAVED_MESSAGE);
+
+    // The edited match is written last, so an interrupted edit can be saved again.
+    const editedWrites = winners.roundOneWrites.filter((write) => write.matchId === match.id);
+    const writes = [
+      ...winners.roundTwoWrites,
+      ...winners.roundOneWrites.filter((write) => write.matchId !== match.id),
+      ...editedWrites,
+    ];
+    assertFootprint(ctx, wanted, writes);
+
+    // Every check passed: now it is safe to write.
+    const realIds = new Map<number, number>();
+    for (const [placeholderId, team] of newTeams) {
+      realIds.set(
+        placeholderId,
+        await ensureParticipantRow(stage.tournament_id, team, ctx.participants)
+      );
+    }
+    const partialMessage =
+      `Only part of this change was saved. Open Edit teams on ${matchLabel(ctx, match)} ` +
+      'again and save the same teams to finish.';
+    for (const [index, write] of writes.map((w) => withRealIds(w, realIds)).entries()) {
+      await updateMatchRowOrThrow(
+        write.matchId,
+        write.fields,
+        index === 0 ? NOT_SAVED_MESSAGE : partialMessage
+      );
+    }
     await markBracketCompleteIfDone({ storage: deps.storage }, stage.tournament_id);
 
-    successLog(
-      `Admin edited the teams of match ${match.id}`,
-      `opponent1_id=${ids.opponent1}, opponent2_id=${ids.opponent2}`
-    );
+    const nameOf = (occupant: Occupant) => (occupant.kind === 'team' ? occupant.name : 'BYE');
+    const message = [
+      `${matchLabel(ctx, match)} is now ${nameOf(pick1)} vs ${nameOf(pick2)}.`,
+      ...winners.consequences,
+    ].join(' ');
+    const idOf = (occupant: Occupant) => {
+      const id = occupantId(occupant);
+      return id === null ? null : (realIds.get(id) ?? id);
+    };
+    successLog(`Admin edited the teams of match ${match.id}`, message);
     return {
       matchId: match.id,
-      opponent1_id: ids.opponent1,
-      opponent2_id: ids.opponent2,
-      message: `${matchLabel(ctx, match)} is now ${resolved1.team.name} vs ${resolved2.team.name}.`,
+      opponent1_id: idOf(pick1),
+      opponent2_id: idOf(pick2),
+      message,
     };
   } catch (error) {
     failureLog('Admin Edit teams failed', error);
