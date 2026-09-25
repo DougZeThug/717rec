@@ -10,6 +10,7 @@ import type {
   StorageRound,
   StorageStage,
 } from '../../types/BracketServiceTypes';
+import { computeLbFeederMarkers } from '../../utils/lbFeederMarkers';
 import { markBracketCompleteIfDone } from '../BracketUpdate/completion';
 import type { NextRoundTarget } from './placement';
 import {
@@ -211,7 +212,8 @@ interface MatchWritePlan {
 function buildMatchWritePlan(
   match: StorageMatch,
   side: OpponentSide,
-  incoming: StorageMatch['opponent1']
+  incoming: StorageMatch['opponent1'],
+  destinationMarker: number | null
 ): Omit<MatchWritePlan, 'nextTarget'> {
   const partnerSide = otherSide(side);
   const partner = match[partnerSide];
@@ -221,13 +223,16 @@ function buildMatchWritePlan(
   const staleWinnerSide = winnerSideOf(match);
   const staleWinnerId = staleWinnerSide ? (match[staleWinnerSide]?.id ?? null) : null;
 
-  // The whole slot travels: id, feeder-position marker, and BYE sentinel. The
-  // position is what the viewer's "Loser of WB x.y" labels and the library's
-  // reverse traversal read, so it must follow the occupant. Prior results and
-  // scores never carry across — they are recomputed from the new match shape.
+  // The occupant travels (id, or the BYE sentinel); the feeder marker stays
+  // with the slot. The library reads a losers-bracket slot's marker to look up
+  // the winners-bracket match that feeds it, so a team that brought its old
+  // marker into another slot could make scoring fail ("Match not found." or
+  // "Position is undefined."). An incoming team takes the slot's marker as the
+  // library lays it out. Prior results and scores never carry across — they
+  // are recomputed from the new match shape.
   let fields: MatchUpdateFields = slotFields(side, {
     id: incoming?.id ?? null,
-    position: incoming?.position ?? null,
+    position: incoming === null ? null : destinationMarker,
     score: null,
     result: incoming === null ? 'bye' : null,
   });
@@ -273,14 +278,24 @@ export async function adminSwapLoserBracketSlots(
   bracketLog('Admin losers-bracket swap requested', { ...params });
 
   const { source, target, sourceSlot, targetSlot } = await loadValidatedSwapContexts(deps, params);
-
-  const names = await loadParticipantNames(deps, String(source.stage.tournament_id));
+  const [feederMarkers, names] = await Promise.all([
+    computeLbFeederMarkers(source.stage),
+    loadParticipantNames(deps, String(source.stage.tournament_id)),
+  ]);
   const nameOf: NameOf = (participantId) =>
     (participantId != null ? names.get(participantId) : null) ?? 'the team';
 
   // Resolve every write before performing any. Each match receives the other's
   // named slot; walkover changes are planned against the next round.
-  const plans = await buildSwapPlans(deps, source, target, params, sourceSlot, targetSlot);
+  const plans = await buildSwapPlans(
+    deps,
+    source,
+    target,
+    params,
+    sourceSlot,
+    targetSlot,
+    feederMarkers
+  );
   const clears = planDownstreamChanges(plans, nameOf);
 
   const outcome = await executeSwapWrites(deps, plans, clears);
@@ -379,11 +394,24 @@ async function buildSwapPlans(
   target: RoundContext,
   params: SwapLoserSlotsParams,
   sourceSlot: StorageMatch['opponent1'],
-  targetSlot: StorageMatch['opponent1']
+  targetSlot: StorageMatch['opponent1'],
+  feederMarkers: Awaited<ReturnType<typeof computeLbFeederMarkers>>
 ): Promise<MatchWritePlan[]> {
+  const markerOf = (context: RoundContext, side: OpponentSide): number | null =>
+    feederMarkers.markerOf(context.round.number, context.match.number, side);
   const partials = [
-    buildMatchWritePlan(source.match, params.sourceSide, targetSlot),
-    buildMatchWritePlan(target.match, params.targetSide, sourceSlot),
+    buildMatchWritePlan(
+      source.match,
+      params.sourceSide,
+      targetSlot,
+      markerOf(source, params.sourceSide)
+    ),
+    buildMatchWritePlan(
+      target.match,
+      params.targetSide,
+      sourceSlot,
+      markerOf(target, params.targetSide)
+    ),
   ];
   const nextTargets = await Promise.all(
     partials.map((partial) => findNextRoundMatch(deps, partial.match))

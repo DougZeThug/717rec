@@ -115,10 +115,12 @@ strict `null` on read. Rows created before this convention (no sentinel) read
 back as TBD.
 
 **Losers-bracket slot swaps** (`BracketAdmin/swap.ts`): the admin tool that
-moves teams between losers-bracket matches operates on these columns directly
-and must move `opponentN_id`, `opponentN_position`, and the BYE sentinel **as a
-unit** — the position marker is what the library's reverse traversal and the
-viewer's "Loser of WB x.y" labels read, so it follows the occupant. Swaps are
+moves teams between losers-bracket matches operates on these columns directly.
+It moves the occupant (`opponentN_id`, or the BYE sentinel) but **not** the
+feeder marker: `opponentN_position` belongs to the slot, because the library's
+reverse traversal reads it to find the winners-bracket match feeding that slot.
+An incoming team takes the slot's marker as the library lays it out
+(`utils/lbFeederMarkers.ts`); an incoming BYE stores NULL. Swaps are
 same-round only, and only once every slot of both matches is resolved (team or
 stored BYE): the library routes winners-bracket losers dynamically at result
 time and would overwrite a slot whose feeder match hasn't finished.
@@ -132,11 +134,19 @@ automatic result — never assigned, recomputed by simulation). A pure
 simulation (`simulate.ts`) applies the desired occupancy of every origin slot,
 then ripples walkovers and BYE propagation forward one round at a time,
 producing a single diff-based update per changed match. Invariants it
-maintains, beyond the swap's slot-as-a-unit rule:
+maintains:
 
+- The feeder marker belongs to the **slot**, not the team. A team assigned to
+  an origin slot takes that slot's marker as brackets-manager lays it out
+  (`utils/lbFeederMarkers.ts` rebuilds an empty copy of the stage in memory
+  and reads the markers off it, so BYE slots — stored without one — get theirs
+  too). The library reads a losers-bracket slot's marker to look up the
+  winners-bracket match that feeds it (round 1: both slots; minor rounds:
+  opponent1), so a team carrying its old marker into another round made
+  scoring fail with "Match not found.". A slot left as a BYE stores NULL.
 - Landing writes touch ids/results only, never `opponentN_position` — landing
   slots (minor-round carries, major-round winner spots) are structurally
-  unmarked, and only occupants carry markers.
+  unmarked.
 - A match written as two stored BYEs (status 0, both sentinels) is a
   legitimate shape — the library itself creates them in brackets with many
   first-round BYEs (e.g. 10 teams), and the simulation passes their BYE on to
@@ -152,6 +162,14 @@ maintains, beyond the swap's slot-as-a-unit rule:
   changed under the screen fails the assignment-coverage check and is refused
   whole. Writes are sequential in ascending round order; Repair Bracket is the
   recovery tool, the same stance as the swap.
+
+**Repairing feeder markers** (`normalization/LbFeederMarkerRepairService.ts`):
+Repair Bracket puts every losers-bracket team or TBD slot's
+`opponentN_position` back to the value the library gives that slot (carry
+slots: NULL). This heals brackets whose markers were moved with teams by
+earlier versions of the swap and rearrange tools, or blanked by the losers
+round 1 normalization. BYE slots, the winners bracket, and the grand final are
+left as stored. Healed rows count toward the "match(es) updated" total.
 
 **Indexes:**
 - `idx_match_stage` on `stage_id`

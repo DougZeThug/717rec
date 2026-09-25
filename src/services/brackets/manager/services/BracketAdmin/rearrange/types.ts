@@ -51,8 +51,14 @@ export interface RearrangeMatchView {
 export interface SnapshotSlot {
   shape: SlotShape;
   participantId: number | null;
-  /** Feeder marker: the WB match number whose loser this occupant is. Travels with the team. */
+  /** Feeder marker currently stored on the slot (`opponentN_position`). */
   position: number | null;
+  /**
+   * The marker the library gives this slot: the number of the winners-bracket
+   * match whose loser drops in here, or null for a slot it leaves unmarked
+   * (carries, later rounds). It belongs to the slot — a team moved in takes it.
+   */
+  feederMarker: number | null;
   result: string | null;
   score: number | null;
   /** Assignable by the admin (team or BYE in an editable match, not auto-filled). */

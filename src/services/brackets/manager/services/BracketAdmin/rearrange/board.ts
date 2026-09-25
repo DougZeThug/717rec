@@ -8,6 +8,7 @@ import type {
   StorageRound,
   StorageStage,
 } from '../../../types/BracketServiceTypes';
+import { computeLbFeederMarkers } from '../../../utils/lbFeederMarkers';
 import type { OpponentSide } from '../shapes';
 import {
   destinationBlockReason,
@@ -71,6 +72,8 @@ export async function loadRearrangeBoard(
       'Teams can only be rearranged in a double-elimination bracket (it has no losers bracket).'
     );
   }
+
+  const feederMarkers = await computeLbFeederMarkers(stage);
 
   const groups = asArray(
     (await deps.storage.select('group', { stage_id: stage.id })) as StorageGroup[] | null
@@ -153,6 +156,7 @@ export async function loadRearrangeBoard(
         shape,
         participantId: slot?.id ?? null,
         position: slot?.position ?? null,
+        feederMarker: feederMarkers.markerOf(roundNumber, match.number, side),
         result: shape === 'bye' ? 'bye' : (slot?.result ?? null),
         score: slot?.score ?? null,
         isOrigin: editable && !isDerived && shape !== 'tbd',

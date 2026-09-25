@@ -125,13 +125,13 @@ async function playWinnersBracketThroughRound(
   throw new Error('playWinnersBracketThroughRound did not converge');
 }
 
-/** Create the 9-team bracket and play WB rounds 1-2 so the losers have dropped. */
-async function buildScenario(service: BracketManagerService): Promise<void> {
+/** Create the bracket (9 teams by default) and play WB rounds 1-2 so the losers have dropped. */
+async function buildScenario(service: BracketManagerService, teamCount = 9): Promise<void> {
   db().seed('brackets', [{ id: BRACKET_ID, state: 'pending', uses_brackets_manager: true }]);
   await service.createBracket({
     bracketId: BRACKET_ID,
     format: 'double_elimination',
-    teams: teams(9),
+    teams: teams(teamCount),
     grandFinalType: 'simple',
   });
   await playWinnersBracketThroughRound(service, 2);
@@ -192,10 +192,10 @@ describe('losers-bracket swap (real service + real library over fake DB)', () =>
       targetSide: 'opponent1',
     });
 
-    // LB R2 M1 is now T7 vs T9, Ready, with T7's feeder marker along for the ride.
+    // LB R2 M1 is now T7 vs T9, Ready; the slot keeps its own feeder marker.
     expect(matchBy(2, 2, 1)).toMatchObject({
       opponent1_id: t7,
-      opponent1_position: t7Position,
+      opponent1_position: t5Position,
       opponent1_score: null,
       opponent1_result: null,
       opponent2_id: t9,
@@ -205,7 +205,7 @@ describe('losers-bracket swap (real service + real library over fake DB)', () =>
     // LB R2 M4 is now T5 vs BYE: completed walkover, sentinel intact.
     expect(matchBy(2, 2, 4)).toMatchObject({
       opponent1_id: t5,
-      opponent1_position: t5Position,
+      opponent1_position: t7Position,
       opponent1_result: 'win',
       opponent1_score: 0,
       opponent2_result: 'bye',
@@ -235,6 +235,57 @@ describe('losers-bracket swap (real service + real library over fake DB)', () =>
     const lbR3M1 = matchBy(2, 3, 1);
     expect([lbR3M1.opponent1_id, lbR3M1.opponent2_id]).toContain(t9);
     expect(lbR3M1.status).toBe(2);
+  });
+
+  it('swaps a drop-in with a carry team and the moved team can play its new match', async () => {
+    // 6 teams: LB R2 M1 = [T3 drop-in, T5 carry], LB R2 M2 = [T4 drop-in, T6 carry].
+    // T6 moved into M1's drop-in slot used to bring the carry slot's empty
+    // marker along, and scoring M1 then failed inside the library.
+    const service = new BracketManagerService();
+    await buildScenario(service, 6);
+
+    const t3 = participantIdByName('T3');
+    const t4 = participantIdByName('T4');
+    const t5 = participantIdByName('T5');
+    const t6 = participantIdByName('T6');
+    const lbR2M1 = matchBy(2, 2, 1);
+    const lbR2M2 = matchBy(2, 2, 2);
+    expect(lbR2M1).toMatchObject({ opponent1_id: t3, opponent2_id: t5, status: 2 });
+    expect(lbR2M2).toMatchObject({
+      opponent1_id: t4,
+      opponent2_id: t6,
+      opponent2_position: null,
+      status: 2,
+    });
+
+    await service.adminSwapLoserBracketSlots({
+      sourceMatchId: lbR2M1.id,
+      sourceSide: 'opponent1',
+      targetMatchId: lbR2M2.id,
+      targetSide: 'opponent2',
+    });
+
+    expect(matchBy(2, 2, 1)).toMatchObject({
+      opponent1_id: t6,
+      opponent1_position: lbR2M1.opponent1_position,
+      opponent2_id: t5,
+      status: 2,
+    });
+    expect(matchBy(2, 2, 2)).toMatchObject({
+      opponent1_id: t4,
+      opponent2_id: t3,
+      opponent2_position: null,
+      status: 2,
+    });
+
+    await service.updateMatch({
+      matchId: lbR2M1.id,
+      scores: {
+        opponent1: { score: 2, result: 'win' },
+        opponent2: { score: 0, result: 'loss' },
+      },
+    });
+    expect(matchBy(2, 3, 1).opponent1_id).toBe(t6);
   });
 
   it('refuses the swap once the walkover winner’s next match has started or finished', async () => {

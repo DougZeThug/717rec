@@ -43,7 +43,8 @@ const STAGE = {
   name: 'S',
   type: 'double_elimination',
   number: 1,
-  settings: {},
+  // Size 16: LB round 2's drop-in markers are 2, 1, 4, 3 — the fixture's positions.
+  settings: { size: 16, seedOrdering: ['inner_outer'], grandFinal: 'simple' },
 };
 
 const GROUPS = [
@@ -308,7 +309,7 @@ describe('adminSwapLoserBracketSlots — validation (all refusals happen before 
 });
 
 describe('adminSwapLoserBracketSlots — column semantics (team-for-team, no walkover change)', () => {
-  it('moves id + feeder position together, clears results/scores, and leaves both matches Ready', async () => {
+  it("moves the team ids, keeps each slot's feeder marker, clears results/scores, and leaves both matches Ready", async () => {
     // 204 becomes a real pairing so neither match changes walkover state: the
     // swap is exactly two row updates and the completion re-check.
     wire({
@@ -323,7 +324,7 @@ describe('adminSwapLoserBracketSlots — column semantics (team-for-team, no wal
         id: 201,
         fields: {
           opponent1_id: 7,
-          opponent1_position: 3,
+          opponent1_position: 2,
           opponent1_score: null,
           opponent1_result: null,
           opponent2_result: null,
@@ -336,7 +337,7 @@ describe('adminSwapLoserBracketSlots — column semantics (team-for-team, no wal
         id: 204,
         fields: {
           opponent1_id: 5,
-          opponent1_position: 2,
+          opponent1_position: 3,
           opponent1_score: null,
           opponent1_result: null,
           opponent2_result: null,
@@ -353,6 +354,35 @@ describe('adminSwapLoserBracketSlots — column semantics (team-for-team, no wal
     });
     expect(result.message).toContain('Swapped T5 and T7.');
     expect(markBracketCompleteIfDone).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('adminSwapLoserBracketSlots — feeder markers stay with the slot', () => {
+  it('gives a carry team moved into a drop-in slot that slot marker, and the carry slot none', async () => {
+    // Without this, T9 would land in 204's drop-in slot with no marker, and
+    // scoring 204 would fail inside the library ("Position is undefined.").
+    wire({
+      204: { status: 2, opponent1: { id: 7, position: 3 }, opponent2: { id: 12 } },
+    });
+
+    await swap(201, 'opponent2', 204, 'opponent1');
+
+    expect(updateCalls.find((call) => call.id === 201)?.fields).toMatchObject({
+      opponent2_id: 7,
+      opponent2_position: null,
+    });
+    expect(updateCalls.find((call) => call.id === 204)?.fields).toMatchObject({
+      opponent1_id: 9,
+      opponent1_position: 3,
+    });
+  });
+
+  it('refuses before any write when the layout cannot be worked out', async () => {
+    wire({}, { ...STAGE, settings: {} });
+    await expect(swap(201, 'opponent1', 204, 'opponent1')).rejects.toThrow(
+      /losers-bracket layout cannot be worked out/
+    );
+    expect(updateCalls).toHaveLength(0);
   });
 });
 

@@ -14,6 +14,10 @@ import type { RearrangeSnapshot, SlotAssignment, SnapshotMatch, SnapshotSlot } f
  *   R1 M2 [BYE, BYE]      → R2 M2 carry     R2 M2 [D2, BYE] w/o   → R3 M1 bottom
  *   R1 M3 [BYE, T10 w/o]  → R2 M3 carry     R2 M3 [D3, T10] ready → R3 M2 top
  *   R1 M4 [BYE, BYE]      → R2 M4 carry     R2 M4 [D4, BYE] w/o   → R3 M2 bottom
+ *
+ * Each drop-in spot carries the library's feeder marker for that SPOT
+ * (`feederMarker`): round 1 spots are 1-8 in order, round 2 drop-ins 9-12.
+ * A team moved into a spot takes the spot's marker.
  */
 
 const T9 = 9;
@@ -36,6 +40,7 @@ const teamSlot = (participantId: number, overrides: Partial<SnapshotSlot> = {}):
   shape: 'team',
   participantId,
   position: null,
+  feederMarker: null,
   result: null,
   score: null,
   isOrigin: true,
@@ -47,6 +52,7 @@ const byeSlot = (overrides: Partial<SnapshotSlot> = {}): SnapshotSlot => ({
   shape: 'bye',
   participantId: null,
   position: null,
+  feederMarker: null,
   result: 'bye',
   score: null,
   isOrigin: true,
@@ -58,6 +64,7 @@ const tbdSlot = (): SnapshotSlot => ({
   shape: 'tbd',
   participantId: null,
   position: null,
+  feederMarker: null,
   result: null,
   score: null,
   isOrigin: false,
@@ -97,32 +104,32 @@ function tenTeamSnapshot(): RearrangeSnapshot {
         number: 1,
         roundNumber: 1,
         status: 0,
-        opponent1: byeSlot(),
-        opponent2: teamSlot(T9, { position: 2, result: 'win' }),
+        opponent1: byeSlot({ feederMarker: 1 }),
+        opponent2: teamSlot(T9, { position: 2, feederMarker: 2, result: 'win' }),
       }),
       match({
         id: 302,
         number: 2,
         roundNumber: 1,
         status: 0,
-        opponent1: byeSlot(),
-        opponent2: byeSlot(),
+        opponent1: byeSlot({ feederMarker: 3 }),
+        opponent2: byeSlot({ feederMarker: 4 }),
       }),
       match({
         id: 303,
         number: 3,
         roundNumber: 1,
         status: 0,
-        opponent1: byeSlot(),
-        opponent2: teamSlot(T10, { position: 6, result: 'win' }),
+        opponent1: byeSlot({ feederMarker: 5 }),
+        opponent2: teamSlot(T10, { position: 6, feederMarker: 6, result: 'win' }),
       }),
       match({
         id: 304,
         number: 4,
         roundNumber: 1,
         status: 0,
-        opponent1: byeSlot(),
-        opponent2: byeSlot(),
+        opponent1: byeSlot({ feederMarker: 7 }),
+        opponent2: byeSlot({ feederMarker: 8 }),
       }),
       // Losers round 2 (minor round): opponent1 = WB drop-in, opponent2 = carry.
       match({
@@ -130,7 +137,7 @@ function tenTeamSnapshot(): RearrangeSnapshot {
         number: 1,
         roundNumber: 2,
         status: 2,
-        opponent1: teamSlot(D1, { position: 9 }),
+        opponent1: teamSlot(D1, { position: 9, feederMarker: 9 }),
         opponent2: teamSlot(T9, { isOrigin: false, isDerived: true }),
       }),
       match({
@@ -138,7 +145,7 @@ function tenTeamSnapshot(): RearrangeSnapshot {
         number: 2,
         roundNumber: 2,
         status: 0,
-        opponent1: teamSlot(D2, { position: 10, result: 'win' }),
+        opponent1: teamSlot(D2, { position: 10, feederMarker: 10, result: 'win' }),
         opponent2: byeSlot({ isOrigin: false, isDerived: true }),
       }),
       match({
@@ -146,7 +153,7 @@ function tenTeamSnapshot(): RearrangeSnapshot {
         number: 3,
         roundNumber: 2,
         status: 2,
-        opponent1: teamSlot(D3, { position: 11 }),
+        opponent1: teamSlot(D3, { position: 11, feederMarker: 11 }),
         opponent2: teamSlot(T10, { isOrigin: false, isDerived: true }),
       }),
       match({
@@ -154,7 +161,7 @@ function tenTeamSnapshot(): RearrangeSnapshot {
         number: 4,
         roundNumber: 2,
         status: 0,
-        opponent1: teamSlot(D4, { position: 12, result: 'win' }),
+        opponent1: teamSlot(D4, { position: 12, feederMarker: 12, result: 'win' }),
         opponent2: byeSlot({ isOrigin: false, isDerived: true }),
       }),
       // Losers round 3: waiting on round 2's real matches.
@@ -260,16 +267,17 @@ describe('simulateRearrange', () => {
     expect(result.ok).toBe(true);
     expect(result.moves).toEqual(['T9 moves from Round 1 Match 1 to Round 1 Match 2.']);
 
-    // T9's old match becomes a double BYE; the sentinel and marker move as a unit.
+    // T9's old match becomes a double BYE: the sentinel replaces T9.
     expect(fieldsFor(result, 301)).toEqual({
       opponent2_id: null,
       opponent2_position: null,
       opponent2_result: 'bye',
     });
-    // T9's new match is a walkover in the app's written form (Completed + win).
+    // T9's new match is a walkover in the app's written form (Completed + win),
+    // and T9 takes that spot's feeder marker.
     expect(fieldsFor(result, 302)).toEqual({
       opponent2_id: T9,
-      opponent2_position: 2,
+      opponent2_position: 4,
       opponent2_result: 'win',
       opponent2_score: 0,
       status: 4,
@@ -317,15 +325,11 @@ describe('simulateRearrange', () => {
 
     expect(result.problems).toEqual([]);
     expect(result.ok).toBe(true);
-    // The real match now holds D2, whose feeder marker traveled with it.
-    expect(fieldsFor(result, 401)).toEqual({
-      opponent1_id: D2,
-      opponent1_position: 10,
-    });
-    // The walkover now belongs to D1 (marker traveled; win recomputed).
+    // The real match now holds D2; the spot keeps its own feeder marker.
+    expect(fieldsFor(result, 401)).toEqual({ opponent1_id: D2 });
+    // The walkover now belongs to D1 (marker stays with the spot; win recomputed).
     expect(fieldsFor(result, 402)).toEqual({
       opponent1_id: D1,
-      opponent1_position: 9,
       opponent1_score: 0,
       status: 4,
     });
@@ -337,6 +341,40 @@ describe('simulateRearrange', () => {
         'D2 is removed from Round 3 Match 1; D1 takes that spot automatically.',
       ])
     );
+  });
+
+  it('keeps each spot marker when a round-1 team and a round-2 drop-in trade places', () => {
+    // The reported bug: T9 (lost in winners round 1) moved into a round-2
+    // drop-in spot used to bring its round-1 marker along, and scoring that
+    // match then sent the library to a winners-round-2 match that does not exist.
+    const snapshot = tenTeamSnapshot();
+    let assignments = identityAssignments(snapshot);
+    assignments = withAssignment(assignments, 301, 'opponent2', D1);
+    assignments = withAssignment(assignments, 401, 'opponent1', T9);
+    const result = simulateRearrange(snapshot, assignments);
+
+    expect(result.problems).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(fieldsFor(result, 401)).toEqual({ opponent1_id: T9, opponent2_id: D1 });
+    expect(fieldsFor(result, 301)).not.toHaveProperty('opponent2_position');
+    expect(result.preview['401'].opponent1).toMatchObject({ participantId: T9, position: 9 });
+    expect(result.preview['301'].opponent2).toMatchObject({ participantId: D1, position: 2 });
+  });
+
+  it('writes the spot marker when the stored one has gone wrong', () => {
+    const snapshot = tenTeamSnapshot();
+    const damaged = snapshot.matches.find((m) => m.id === 401);
+    if (!damaged) throw new Error('fixture: match 401 missing');
+    damaged.opponent1.position = 2;
+
+    let assignments = identityAssignments(snapshot);
+    assignments = withAssignment(assignments, 401, 'opponent1', D3);
+    assignments = withAssignment(assignments, 403, 'opponent1', D1);
+    const result = simulateRearrange(snapshot, assignments);
+
+    expect(result.ok).toBe(true);
+    expect(fieldsFor(result, 401)).toEqual({ opponent1_id: D3, opponent1_position: 9 });
+    expect(fieldsFor(result, 403)).toEqual({ opponent1_id: D1 });
   });
 
   it('cascades a BYE two levels when a team moves into the round-1 placeholder that feeds its own match', () => {
@@ -352,7 +390,7 @@ describe('simulateRearrange', () => {
     // slot; its old drop-in slot is now a stored BYE, so it walks over again.
     expect(fieldsFor(result, 302)).toEqual({
       opponent1_id: D2,
-      opponent1_position: 10,
+      opponent1_position: 3,
       opponent1_result: 'win',
       opponent1_score: 0,
       status: 4,
@@ -531,7 +569,7 @@ describe('simulateRearrange', () => {
     assignments = withAssignment(assignments, 402, 'opponent1', D1);
     const result = simulateRearrange(snapshot, assignments);
 
-    expect(result.preview['401'].opponent1).toMatchObject({ participantId: D2, position: 10 });
+    expect(result.preview['401'].opponent1).toMatchObject({ participantId: D2, position: 9 });
     expect(result.preview['402'].opponent1).toMatchObject({
       participantId: D1,
       result: 'win',

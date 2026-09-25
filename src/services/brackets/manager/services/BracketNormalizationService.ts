@@ -1,5 +1,6 @@
 import type { SupabaseSqlStorage } from '../SupabaseSqlStorage';
 import { GrandFinalNormalizationService } from './normalization/GrandFinalNormalizationService';
+import { LbFeederMarkerRepairService } from './normalization/LbFeederMarkerRepairService';
 import { LbStructureService } from './normalization/LbStructureService';
 import { LosersRoundNormalizationService } from './normalization/LosersRoundNormalizationService';
 import { MatchPropagationRepairService } from './normalization/MatchPropagationRepairService';
@@ -20,6 +21,7 @@ export class BracketNormalizationService {
   private readonly grandFinalNormalizationService: GrandFinalNormalizationService;
   private readonly losersRoundNormalizationService: LosersRoundNormalizationService;
   private readonly matchPropagationRepairService: MatchPropagationRepairService;
+  private readonly lbFeederMarkerRepairService: LbFeederMarkerRepairService;
 
   constructor(private storage: SupabaseSqlStorage) {
     this.lbStructureService = new LbStructureService(storage);
@@ -32,6 +34,10 @@ export class BracketNormalizationService {
       this.lbStructureService
     );
     this.matchPropagationRepairService = new MatchPropagationRepairService(
+      storage,
+      this.lbStructureService
+    );
+    this.lbFeederMarkerRepairService = new LbFeederMarkerRepairService(
       storage,
       this.lbStructureService
     );
@@ -50,5 +56,13 @@ export class BracketNormalizationService {
   /** Repairs missing winner advancement without rewriting completed source match results. */
   propagateCompletedMatches(stageId: number): Promise<void> {
     return this.matchPropagationRepairService.propagateCompletedMatches(stageId);
+  }
+
+  /**
+   * Puts every losers-bracket feeder marker back to the library's own value.
+   * Returns how many matches were corrected.
+   */
+  repairLbFeederMarkers(stageId: number): Promise<number> {
+    return this.lbFeederMarkerRepairService.repairLbFeederMarkers(stageId);
   }
 }

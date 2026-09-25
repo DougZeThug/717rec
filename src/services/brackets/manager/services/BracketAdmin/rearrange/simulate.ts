@@ -208,10 +208,13 @@ function validateConservation(sim: Simulation, assignments: SlotAssignment[]): b
 }
 
 /**
- * Write the admin's desired occupancy into the origin slots. A team keeps its
- * feeder marker (which WB match's loser it is) wherever it goes — the marker
- * describes the team, not the slot, and the viewer's "Loser of WB x.y" labels
- * read it. A spot left as BYE stores the sentinel.
+ * Write the admin's desired occupancy into the origin slots. A team moved in
+ * takes the SLOT's feeder marker: the library reads a losers-bracket slot's
+ * marker to look up the winners-bracket match that feeds it, so a team that
+ * carried its old marker into another round sent that lookup to a match that
+ * does not exist ("Match not found."). Using the library's own marker also
+ * mends a slot whose stored marker went wrong. A spot left as BYE stores the
+ * sentinel.
  */
 function applyAssignments(sim: Simulation, assignments: SlotAssignment[]): void {
   const originalSlotOf = new Map<number, OriginSlotRef>();
@@ -230,7 +233,7 @@ function applyAssignments(sim: Simulation, assignments: SlotAssignment[]): void 
         ? {
             shape: 'team',
             participantId: assignment.participantId,
-            position: originalSlotOf.get(assignment.participantId)?.slot.position ?? null,
+            position: origin.slot.feederMarker,
             result: null,
             score: null,
           }

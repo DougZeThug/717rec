@@ -81,8 +81,9 @@ export class BracketManagerService {
    * Admin-only: run a single explicit repair pass over a bracket.
    *
    * Consolidates the normalization/propagation machinery (losers-round slot
-   * fixes, grand-final population, stuck-winner propagation, readying fully
-   * populated matches) into one gated action for older/corrupted brackets,
+   * fixes, grand-final population, stuck-winner propagation, losers-bracket
+   * feeder-marker restoration, readying fully populated matches) into one
+   * gated action for older/corrupted brackets,
    * then re-evaluates bracket completion. Returns an auditable summary of
    * what changed.
    *
@@ -398,8 +399,9 @@ export class BracketManagerService {
    * the same round — for leagues that hand-seed the losers bracket differently
    * than the library's automatic pairing.
    *
-   * Moves each slot as a unit (team id + feeder-position marker + BYE sentinel)
-   * and recomputes walkover state: a team newly facing a BYE advances
+   * Moves each occupant (team id or BYE sentinel) while every slot keeps its
+   * own feeder-position marker, and recomputes walkover state: a team newly
+   * facing a BYE advances
    * automatically; a team pulled off a BYE has its automatic advancement undone.
    * Serialized through matchUpdateQueue so it cannot interleave with score saves.
    *
