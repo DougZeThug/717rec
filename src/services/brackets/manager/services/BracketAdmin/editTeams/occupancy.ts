@@ -3,7 +3,15 @@ import { BusinessLogicError, ValidationError } from '@/types/errors';
 import type { StorageMatch } from '../../../types/BracketServiceTypes';
 import type { OpponentSide } from '../shapes';
 import type { EditTeamsContext } from './context';
-import { findMatchAt, matchLabel, occupantOf, sameOccupant, SIDES } from './rules';
+import {
+  findMatchAt,
+  isWinnersRoundOne,
+  matchLabel,
+  occupantOf,
+  sameOccupant,
+  SIDES,
+  winnersRoundOneBlockReason,
+} from './rules';
 import type { Occupant } from './types';
 
 /** One winners round 1 match and who should sit in it after the edit. */
@@ -39,10 +47,62 @@ function allowedSlotsOf(ctx: EditTeamsContext, match: StorageMatch): Set<string>
   return allowed;
 }
 
+/** Where a team the admin picked sits now, as Edit teams sees it. */
+type TeamPosition =
+  /** In no match (or not in the bracket at all). */
+  | { kind: 'free' }
+  /** Already in the edited match. */
+  | { kind: 'here'; side: OpponentSide }
+  /** In another unplayed round 1 match: picking it trades places. */
+  | { kind: 'trade'; match: StorageMatch; side: OpponentSide }
+  /** Somewhere it can't be moved from, e.g. a played match. */
+  | { kind: 'taken'; match: StorageMatch; reason: string | null };
+
+/** Why a round 1 match can't be a trade partner, phrased to follow "which …", or null. */
+function partnerBlockReason(ctx: EditTeamsContext, partner: StorageMatch): string | null {
+  const blocked = winnersRoundOneBlockReason(partner);
+  if (blocked) return blocked;
+  if (SIDES.some((side) => occupantOf(ctx, partner[side]).kind === 'tbd')) {
+    return 'has an empty spot';
+  }
+  if ((partner.child_count ?? 0) > 0) return 'has several games';
+  return null;
+}
+
+function teamPosition(ctx: EditTeamsContext, participantId: number): TeamPosition {
+  const here = SIDES.find((side) => ctx.match[side]?.id === participantId);
+  if (here) return { kind: 'here', side: here };
+
+  const hereAllowed = allowedSlotsOf(ctx, ctx.match);
+  const occurrences = ctx.stageMatches.flatMap((match) =>
+    SIDES.filter(
+      (side) => match[side]?.id === participantId && !hereAllowed.has(`${match.id}:${side}`)
+    ).map((side) => ({ match, side }))
+  );
+  if (occurrences.length === 0) return { kind: 'free' };
+
+  const roundOne = occurrences.filter(({ match }) => isWinnersRoundOne(ctx, match));
+  if (roundOne.length === 1) {
+    const partner = roundOne[0].match;
+    const reason = partnerBlockReason(ctx, partner);
+    const partnerAllowed = allowedSlotsOf(ctx, partner);
+    if (reason) return { kind: 'taken', match: partner, reason };
+    if (occurrences.every(({ match, side }) => partnerAllowed.has(`${match.id}:${side}`))) {
+      return { kind: 'trade', match: partner, side: roundOne[0].side };
+    }
+  }
+  return { kind: 'taken', match: occurrences[0].match, reason: null };
+}
+
 /**
  * Turn the admin's picks into the wanted occupancy of the edited round 1
- * match, refusing picks that can never be right: two BYEs, the same team
- * twice, a team that already plays in another match, or no change at all.
+ * match — and of one other round 1 match when a picked team trades places.
+ *
+ * Refuses picks that can never be right: two BYEs, the same team twice, no
+ * change at all, or a team that plays somewhere it can't be moved from. A
+ * picked team from another unplayed round 1 match trades places: whoever it
+ * replaces here (a team or a BYE) takes its old spot, preferring the one on
+ * the side it moves into. A replaced team nobody takes leaves the bracket.
  */
 export function planOccupancy(
   ctx: EditTeamsContext,
@@ -61,24 +121,81 @@ export function planOccupancy(
   ) {
     throw new ValidationError("A team can't be on both sides of a match.");
   }
-  if (SIDES.every((side) => sameOccupant(picks[side], occupantOf(ctx, match[side])))) {
+  const stored: Record<OpponentSide, Occupant> = {
+    opponent1: occupantOf(ctx, match.opponent1),
+    opponent2: occupantOf(ctx, match.opponent2),
+  };
+  if (SIDES.every((side) => sameOccupant(picks[side], stored[side]))) {
     throw new ValidationError('Nothing to change — those teams are already in this match.');
   }
 
-  const allowed = allowedSlotsOf(ctx, match);
+  const sources: { pickSide: OpponentSide; partner: StorageMatch; partnerSide: OpponentSide }[] =
+    [];
   for (const side of SIDES) {
     const pick = picks[side];
     if (pick.kind !== 'team' || pick.participantId < 0) continue;
-    for (const other of ctx.stageMatches) {
-      for (const otherSide of SIDES) {
-        if (other[otherSide]?.id !== pick.participantId) continue;
-        if (allowed.has(`${other.id}:${otherSide}`)) continue;
-        throw new BusinessLogicError(
-          `${pick.name} is already in ${matchLabel(ctx, other)}. A team can only be in one match.`
-        );
-      }
+    const position = teamPosition(ctx, pick.participantId);
+    if (position.kind === 'taken') {
+      const which = position.reason ? `, which ${position.reason}` : '';
+      throw new BusinessLogicError(
+        `${pick.name} is already in ${matchLabel(ctx, position.match)}${which}. ` +
+          'A team can only be in one match.'
+      );
+    }
+    if (position.kind === 'trade') {
+      sources.push({ pickSide: side, partner: position.match, partnerSide: position.side });
     }
   }
+  if (sources.length === 0) return [{ match, opponent1, opponent2 }];
+  if (new Set(sources.map((source) => source.partner.id)).size > 1) {
+    throw new ValidationError(
+      'One save can trade places with only one other match. Make this change in two steps.'
+    );
+  }
 
-  return [{ match, opponent1, opponent2 }];
+  // Whoever the picks replace here, and who is kept (a side switch keeps a team).
+  const keptIds = new Set(
+    SIDES.map((side) => picks[side]).flatMap((p) => (p.kind === 'team' ? [p.participantId] : []))
+  );
+  const pickedBye = SIDES.some((side) => picks[side].kind === 'bye');
+  const displaced = SIDES.filter((side) => !sameOccupant(picks[side], stored[side])).flatMap(
+    (side) => {
+      const old = stored[side];
+      if (old.kind === 'tbd') return [];
+      if (old.kind === 'team' && keptIds.has(old.participantId)) return [];
+      if (old.kind === 'bye' && pickedBye) return [];
+      return [{ side, occupant: old }];
+    }
+  );
+  const partner = sources[0].partner;
+  if (sources.length > displaced.length) {
+    throw new BusinessLogicError(
+      `This trade would leave ${matchLabel(ctx, partner)} with an empty spot.`
+    );
+  }
+
+  const partnerWanted: Record<OpponentSide, Occupant> = {
+    opponent1: occupantOf(ctx, partner.opponent1),
+    opponent2: occupantOf(ctx, partner.opponent2),
+  };
+  const remaining = [...displaced];
+  const unassigned = sources.filter((source) => {
+    const sameSide = remaining.findIndex((entry) => entry.side === source.pickSide);
+    if (sameSide === -1) return true;
+    partnerWanted[source.partnerSide] = remaining.splice(sameSide, 1)[0].occupant;
+    return false;
+  });
+  for (const source of unassigned) {
+    partnerWanted[source.partnerSide] = (remaining.shift() as { occupant: Occupant }).occupant;
+  }
+  if (partnerWanted.opponent1.kind === 'bye' && partnerWanted.opponent2.kind === 'bye') {
+    throw new BusinessLogicError(
+      `This trade would leave ${matchLabel(ctx, partner)} with two BYEs and no team.`
+    );
+  }
+
+  return [
+    { match, opponent1, opponent2 },
+    { match: partner, opponent1: partnerWanted.opponent1, opponent2: partnerWanted.opponent2 },
+  ];
 }

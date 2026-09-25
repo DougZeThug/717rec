@@ -75,6 +75,18 @@ async function resolvePick(
   return { kind: 'team', participantId: placeholderId, name: team.name };
 }
 
+/** The winners round 1 match a team sits in, or null when it is in none. */
+function roundOneLocationOf(ctx: EditTeamsContext, teamId: string): number | null {
+  const participant = ctx.participants.find((p) => p.team_id === teamId);
+  if (!participant) return null;
+  const home = ctx.stageMatches.find(
+    (candidate) =>
+      isWinnersRoundOne(ctx, candidate) &&
+      SIDES.some((side) => candidate[side]?.id === participant.id)
+  );
+  return home?.id ?? null;
+}
+
 /** Swap placeholder participant ids for the real ones in a planned write. */
 function withRealIds(write: PlannedWrite, realIds: Map<number, number>): PlannedWrite {
   const fields: MatchUpdateFields = { ...write.fields };
@@ -135,6 +147,14 @@ export async function editMatchTeams(
       resolvePick(ctx, params.opponent2, -2, newTeams),
     ]);
 
+    for (const choice of [params.opponent1, params.opponent2]) {
+      if (choice.kind !== 'team' || !params.expectedPickLocations) continue;
+      if (!(choice.teamId in params.expectedPickLocations)) continue;
+      if (roundOneLocationOf(ctx, choice.teamId) !== params.expectedPickLocations[choice.teamId]) {
+        throw new BusinessLogicError(STALE_MESSAGE);
+      }
+    }
+
     const wanted = planOccupancy(ctx, { opponent1: pick1, opponent2: pick2 });
     const layout = await computeStageSlotLayout(stage);
     const winners = planWinnersChanges(ctx, wanted, layout.wbRoundOneSeedOf);
@@ -180,7 +200,10 @@ export async function editMatchTeams(
 
     const nameOf = (occupant: Occupant) => (occupant.kind === 'team' ? occupant.name : 'BYE');
     const message = [
-      `${matchLabel(ctx, match)} is now ${nameOf(pick1)} vs ${nameOf(pick2)}.`,
+      ...wanted.map(
+        (entry) =>
+          `${matchLabel(ctx, entry.match)} is now ${nameOf(entry.opponent1)} vs ${nameOf(entry.opponent2)}.`
+      ),
       ...winners.consequences,
       ...losers.consequences,
     ].join(' ');

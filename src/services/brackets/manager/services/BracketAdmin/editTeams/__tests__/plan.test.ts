@@ -5,6 +5,7 @@ import type { EditTeamsContext } from '../context';
 import { applyFields, assertFootprint } from '../footprint';
 import { planLosersChanges } from '../losersPlan';
 import type { WantedMatch } from '../occupancy';
+import { planOccupancy } from '../occupancy';
 import type { Occupant } from '../types';
 import { planWinnersChanges } from '../winnersPlan';
 
@@ -179,6 +180,57 @@ describe('planLosersChanges', () => {
     const snapshot = { bracketId: 'b1', stageId: 1, matches: [], landings: {}, names: {} };
     expect(() => planLosersChanges(ctx, snapshot, wanted, new Set([2]))).toThrow(
       "The losers-bracket spot fed by Round 1 Match 2 can't be found. Run Repair Bracket first."
+    );
+  });
+});
+
+describe('planOccupancy trades', () => {
+  const bye: Occupant = { kind: 'bye' };
+  const summary = (wanted: WantedMatch[]) =>
+    wanted.map((entry) => [
+      entry.match.id,
+      entry.opponent1.kind === 'team' ? entry.opponent1.participantId : entry.opponent1.kind,
+      entry.opponent2.kind === 'team' ? entry.opponent2.participantId : entry.opponent2.kind,
+    ]);
+
+  it("hands the replaced team the picked team's old spot", () => {
+    const { ctx, matches } = fixture();
+    ctx.match = matches[0];
+    // P3 comes over from the walkover in Match 2; P1 takes its place there.
+    expect(summary(planOccupancy(ctx, { opponent1: teamOf(3), opponent2: teamOf(2) }))).toEqual([
+      [1, 3, 2],
+      [2, 1, 'bye'],
+    ]);
+  });
+
+  it('keeps a team that only switches sides, and trades the one it replaces', () => {
+    const { ctx, matches } = fixture();
+    ctx.match = matches[0];
+    expect(summary(planOccupancy(ctx, { opponent1: teamOf(2), opponent2: teamOf(3) }))).toEqual([
+      [1, 2, 3],
+      [2, 1, 'bye'],
+    ]);
+  });
+
+  it('lets a replaced team nobody takes leave the bracket', () => {
+    const { ctx, matches } = fixture();
+    ctx.match = matches[0];
+    const newTeam: Occupant = { kind: 'team', participantId: -1, name: 'P9' };
+    expect(summary(planOccupancy(ctx, { opponent1: teamOf(3), opponent2: newTeam }))).toEqual([
+      [1, 3, -1],
+      [2, 1, 'bye'],
+    ]);
+  });
+
+  it('moves a replaced BYE into the other match', () => {
+    const { ctx } = fixture();
+    // Editing Match 2 (P3 vs BYE): P1 comes over, the BYE goes to Match 1.
+    expect(summary(planOccupancy(ctx, { opponent1: teamOf(3), opponent2: teamOf(1) }))).toEqual([
+      [2, 3, 1],
+      [1, 'bye', 2],
+    ]);
+    expect(() => planOccupancy(ctx, { opponent1: bye, opponent2: bye })).toThrow(
+      'both sides are set to BYE'
     );
   });
 });

@@ -12,6 +12,12 @@ export interface EditMatchTeamsParams {
    */
   expectedOpponent1Id: number | null;
   expectedOpponent2Id: number | null;
+  /**
+   * For each picked team (by team id): the winners round 1 match it sat in
+   * when the screen was opened, or null if none. A trade is refused when a
+   * picked team has moved since, so it never trades with the wrong match.
+   */
+  expectedPickLocations?: Record<string, number | null>;
 }
 
 /**

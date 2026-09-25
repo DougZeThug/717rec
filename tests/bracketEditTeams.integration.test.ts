@@ -228,7 +228,8 @@ describe('Edit teams (real service + real library over fake DB)', () => {
     // T5 lost Round 1 Match 2 and now sits in the losers bracket too.
     const before = matchRows();
     await expect(service.editMatchParticipants(editOf(wbR1(4), team(3), team(5)))).rejects.toThrow(
-      'T5 is already in Winners Round 1 Match 2. A team can only be in one match.'
+      'T5 is already in Winners Round 1 Match 2, which has already been played. ' +
+        'A team can only be in one match.'
     );
     expect(matchRows()).toEqual(before);
   });
@@ -594,5 +595,102 @@ describe('Edit teams BYEs in double elimination (real service + real library ove
     db().interceptUpdates(null);
     await service.editMatchParticipants(params);
     expect(matchRows()).toEqual(clean);
+  });
+});
+
+describe('Edit teams trading places (real service + real library over fake DB)', () => {
+  it('trades two teams between round 1 matches in one step', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const [m2, m4] = [wbR1(2), wbR1(4)];
+
+    const result = await service.editMatchParticipants(editOf(m2, team(4), team(6)));
+
+    expect(wbR1(2)).toMatchObject({
+      opponent2_id: participantIdByName('T6'),
+      opponent2_position: m2.opponent2_position,
+    });
+    expect(wbR1(4)).toMatchObject({
+      opponent1_id: participantIdByName('T3'),
+      opponent2_id: participantIdByName('T5'),
+      opponent2_position: m4.opponent2_position,
+    });
+    expect(result.message).toBe(
+      'Winners Round 1 Match 2 is now T4 vs T6. Winners Round 1 Match 4 is now T3 vs T5.'
+    );
+  });
+
+  it('trades a walkover team, handing the walkover and its round 2 spot to the other team', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const t1 = participantIdByName('T1');
+    const t5 = participantIdByName('T5');
+
+    await service.editMatchParticipants(editOf(wbR1(2), team(4), team(1)));
+
+    expect(wbR1(1)).toMatchObject({ opponent1_id: t5, opponent1_result: 'win', status: 0 });
+    expect(wbR1(2)).toMatchObject({ opponent2_id: t1, opponent2_result: null, status: 2 });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: t5, opponent2_id: null });
+
+    await playToTheEnd(service);
+    expect(db().rows('brackets')[0]).toMatchObject({ state: 'completed' });
+  });
+
+  it("trades a BYE: a seed's walkover moves to the other match, losers bracket included", async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const t4 = participantIdByName('T4');
+
+    const result = await service.editMatchParticipants(editOf(wbR1(1), team(1), team(5)));
+
+    expect(wbR1(1)).toMatchObject({ opponent2_id: participantIdByName('T5'), status: 2 });
+    expect(wbR1(2)).toMatchObject({
+      opponent1_id: t4,
+      opponent1_result: 'win',
+      opponent2_result: 'bye',
+      status: 0,
+    });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: null, opponent2_id: t4 });
+    expect(matchBy(2, 1, 1)).toMatchObject({
+      opponent1_position: 1,
+      opponent1_result: null,
+      opponent2_position: null,
+      opponent2_result: 'bye',
+    });
+    expect(result.message).toContain('Winners Round 1 Match 2 is now T4 vs BYE.');
+
+    await playToTheEnd(service);
+    expect(db().rows('brackets')[0]).toMatchObject({ state: 'completed' });
+  });
+
+  it('refuses a trade that would leave a match with two BYEs', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    await expect(service.editMatchParticipants(editOf(wbR1(1), team(1), team(2)))).rejects.toThrow(
+      'This trade would leave Winners Round 1 Match 3 with two BYEs and no team.'
+    );
+  });
+
+  it('refuses trading with two matches in one save', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    await expect(service.editMatchParticipants(editOf(wbR1(2), team(3), team(1)))).rejects.toThrow(
+      'One save can trade places with only one other match.'
+    );
+  });
+
+  it('refuses a trade when the picked team moved since the screen was opened', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const stale: EditMatchTeamsParams = {
+      ...editOf(wbR1(2), team(4), team(6)),
+      expectedPickLocations: { 'uuid-6': wbR1(4).id },
+    };
+    // Someone else trades T6 into Round 1 Match 3's BYE spot first.
+    await service.editMatchParticipants(editOf(wbR1(3), team(2), team(6)));
+
+    await expect(service.editMatchParticipants(stale)).rejects.toThrow(
+      'This match changed since Edit teams was opened.'
+    );
   });
 });
