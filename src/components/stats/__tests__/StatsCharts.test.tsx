@@ -178,7 +178,9 @@ describe('StatsCharts', () => {
     expect(screen.getByTestId('win-loss-chart')).toHaveAttribute('data-limit', '8');
     expect(screen.getByTestId('win-loss-chart')).toHaveAttribute('data-mobile', 'false');
     expect(screen.getByText('Alpha Aces 8-1')).toBeInTheDocument();
-    expect(screen.getByText('Beta Bears 77.4')).toBeInTheDocument();
+    // PowerScoreChart is lazy. React 19 can hold its Suspense fallback for a
+    // moment before it shows the chart, so wait for it.
+    expect(await screen.findByText('Beta Bears 77.4')).toBeInTheDocument();
     expect(screen.getByText('Week 3 → Week 4 changes')).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes('+4.5'))).toBeInTheDocument();
   });

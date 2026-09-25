@@ -89,8 +89,12 @@ test.describe('toast messages', () => {
       await fillContactForm(page);
       await page.getByRole('button', { name: 'Send Message' }).click();
 
+      // exact: for about a second the toast's screen-reader announcement holds
+      // the same text inside a longer string, and a substring match finds both.
       await expect(
-        page.getByText('Failed to send message: Too many requests. Please try again later.')
+        page.getByText('Failed to send message: Too many requests. Please try again later.', {
+          exact: true,
+        })
       ).toBeVisible();
     });
 
@@ -114,7 +118,9 @@ test.describe('toast messages', () => {
       await fillContactForm(page);
       await page.getByRole('button', { name: 'Send Message' }).click();
 
-      await expect(page.getByText('Failed to send message. Please try again.')).toBeVisible();
+      await expect(
+        page.getByText('Failed to send message. Please try again.', { exact: true })
+      ).toBeVisible();
       await expect(page.getByText(/non-2xx/)).toHaveCount(0);
     });
   });
