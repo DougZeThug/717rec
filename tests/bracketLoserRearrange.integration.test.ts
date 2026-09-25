@@ -201,8 +201,7 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     const lbR1M2 = matchBy(2, 1, 2);
     expect(lbR1M1).toMatchObject({ opponent1_result: 'bye', opponent2_id: t9 });
     expect(lbR1M2).toMatchObject({ opponent1_result: 'bye', opponent2_result: 'bye' });
-    const t9Position = lbR1M1.opponent2_position;
-    expect(t9Position).not.toBeNull();
+    expect(lbR1M1.opponent2_position).toBe(2);
 
     // The board offers the placeholder's spots as ordinary BYE destinations —
     // the exact thing the same-round swap tool refused.
@@ -221,7 +220,7 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     const result = await service.applyLoserBracketRearrange(BRACKET_ID, assignments, baseline);
     expect(result.message).toContain('T9 moves from Round 1 Match 1 to Round 1 Match 2.');
 
-    // Old match: double BYE. New match: T9's walkover, marker along for the ride.
+    // Old match: double BYE. New match: T9's walkover, in that spot's marker (4).
     expect(matchBy(2, 1, 1)).toMatchObject({
       opponent1_result: 'bye',
       opponent2_id: null,
@@ -232,7 +231,7 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     expect(matchBy(2, 1, 2)).toMatchObject({
       opponent1_result: 'bye',
       opponent2_id: t9,
-      opponent2_position: t9Position,
+      opponent2_position: 4,
       opponent2_result: 'win',
       opponent2_score: 0,
       status: 4,
@@ -281,7 +280,6 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     const lbR1M3 = matchBy(2, 1, 3);
     expect(lbR1M1.opponent2_id).toBe(t9);
     expect(lbR1M3.opponent2_id).toBe(t10);
-    const t10Position = lbR1M3.opponent2_position;
 
     const board = await service.getLoserRearrangeBoard(BRACKET_ID);
     let assignments = assignmentsFromBoard(board);
@@ -292,7 +290,7 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     // A real match now exists where the library had scheduled two walkovers.
     expect(matchBy(2, 1, 1)).toMatchObject({
       opponent1_id: t10,
-      opponent1_position: t10Position,
+      opponent1_position: 1,
       opponent1_result: null,
       opponent2_id: t9,
       opponent2_result: null,
@@ -328,7 +326,6 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     const lbR2M2 = matchBy(2, 2, 2);
     expect(lbR2M2).toMatchObject({ opponent1_result: 'win', opponent2_result: 'bye' });
     const dropInId = lbR2M2.opponent1_id as number;
-    const dropInPosition = lbR2M2.opponent1_position;
     const lbR1M2 = matchBy(2, 1, 2);
     const lbR3M1Before = matchBy(2, 3, 1);
     expect([lbR3M1Before.opponent1_id, lbR3M1Before.opponent2_id]).toContain(dropInId);
@@ -343,7 +340,7 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     // carry spot, and walks over again — round 3 needs no change at all.
     expect(matchBy(2, 1, 2)).toMatchObject({
       opponent1_id: dropInId,
-      opponent1_position: dropInPosition,
+      opponent1_position: 3,
       opponent1_result: 'win',
       opponent1_score: 0,
       opponent2_result: 'bye',
@@ -403,10 +400,11 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     assignments = setSlot(assignments, lbR2M4.id, 'opponent1', t5);
     await service.applyLoserBracketRearrange(BRACKET_ID, assignments);
 
-    // Field-for-field the same end state the swap tool produces.
+    // Field-for-field the same end state the swap tool produces; each spot
+    // keeps its own feeder marker.
     expect(matchBy(2, 2, 1)).toMatchObject({
       opponent1_id: t7,
-      opponent1_position: t7Position,
+      opponent1_position: t5Position,
       opponent1_score: null,
       opponent1_result: null,
       opponent2_id: t9,
@@ -415,13 +413,67 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     });
     expect(matchBy(2, 2, 4)).toMatchObject({
       opponent1_id: t5,
-      opponent1_position: t5Position,
+      opponent1_position: t7Position,
       opponent1_result: 'win',
       opponent1_score: 0,
       opponent2_result: 'bye',
       status: 4,
     });
     expect(matchBy(2, 3, 2)).toMatchObject({ opponent1_id: t6, opponent2_id: t5, status: 2 });
+  });
+
+  it('lets a round-1 team moved into a round-2 drop-in spot play that match', async () => {
+    // The reported 6-team case: seeds 1 and 2 have BYEs, so losers round 1 is
+    // two walkovers. After winners round 2 the admin rotates three teams —
+    // the round-1 walkover team T6 into round 2 Match 1's drop-in spot. That
+    // spot's feeder marker must stay "winners round 2": T6 carrying its own
+    // round-1 marker (4) sent the library looking for winners round 2 match 4.
+    const service = new BracketManagerService();
+    db().seed('brackets', [{ id: BRACKET_ID, state: 'pending', uses_brackets_manager: true }]);
+    await service.createBracket({
+      bracketId: BRACKET_ID,
+      format: 'double_elimination',
+      teams: teams(6),
+      grandFinalType: 'simple',
+    });
+    await playWinnersBracketThroughRound(service, 2);
+
+    const t3 = participantIdByName('T3');
+    const t4 = participantIdByName('T4');
+    const t5 = participantIdByName('T5');
+    const t6 = participantIdByName('T6');
+    const lbR1M2 = matchBy(2, 1, 2);
+    const lbR2M1 = matchBy(2, 2, 1);
+    const lbR2M2 = matchBy(2, 2, 2);
+    expect(lbR1M2).toMatchObject({ opponent1_result: 'bye', opponent2_id: t6 });
+    expect(lbR2M1).toMatchObject({ opponent1_id: t3, opponent2_id: t5, status: 2 });
+    expect(lbR2M2).toMatchObject({ opponent1_id: t4, opponent2_id: t6, status: 2 });
+
+    const board = await service.getLoserRearrangeBoard(BRACKET_ID);
+    const baseline = assignmentsFromBoard(board);
+    let assignments = setSlot(baseline, lbR2M1.id, 'opponent1', t6);
+    assignments = setSlot(assignments, lbR2M2.id, 'opponent1', t3);
+    assignments = setSlot(assignments, lbR1M2.id, 'opponent2', t4);
+    await service.applyLoserBracketRearrange(BRACKET_ID, assignments, baseline);
+
+    expect(matchBy(2, 2, 1)).toMatchObject({ opponent1_id: t6, opponent2_id: t5, status: 2 });
+    expect(matchBy(2, 2, 2)).toMatchObject({ opponent1_id: t3, opponent2_id: t4, status: 2 });
+
+    // Scoring the moved team's match goes through the library and advances the winner.
+    await service.updateMatch({
+      matchId: lbR2M1.id,
+      scores: {
+        opponent1: { score: 2, result: 'win' },
+        opponent2: { score: 0, result: 'loss' },
+      },
+    });
+    expect(matchBy(2, 2, 1).status).toBeGreaterThanOrEqual(4);
+    expect(matchBy(2, 3, 1).opponent1_id).toBe(t6);
+
+    // Every spot kept the marker it was created with.
+    expect(matchBy(2, 1, 2).opponent2_position).toBe(lbR1M2.opponent2_position);
+    expect(matchBy(2, 2, 1).opponent1_position).toBe(lbR2M1.opponent1_position);
+    expect(matchBy(2, 2, 2).opponent1_position).toBe(lbR2M2.opponent1_position);
   });
 
   it('locks matches whose automatic winner reached a played match, and refuses stale boards', async () => {

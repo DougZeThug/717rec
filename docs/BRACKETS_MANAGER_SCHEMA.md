@@ -132,11 +132,19 @@ automatic result — never assigned, recomputed by simulation). A pure
 simulation (`simulate.ts`) applies the desired occupancy of every origin slot,
 then ripples walkovers and BYE propagation forward one round at a time,
 producing a single diff-based update per changed match. Invariants it
-maintains, beyond the swap's slot-as-a-unit rule:
+maintains:
 
+- The feeder marker belongs to the **slot**, not the team. A team assigned to
+  an origin slot takes that slot's marker as brackets-manager lays it out
+  (`utils/lbFeederMarkers.ts` rebuilds an empty copy of the stage in memory
+  and reads the markers off it, so BYE slots — stored without one — get theirs
+  too). The library reads a losers-bracket slot's marker to look up the
+  winners-bracket match that feeds it (round 1: both slots; minor rounds:
+  opponent1), so a team carrying its old marker into another round made
+  scoring fail with "Match not found.". A slot left as a BYE stores NULL.
 - Landing writes touch ids/results only, never `opponentN_position` — landing
   slots (minor-round carries, major-round winner spots) are structurally
-  unmarked, and only occupants carry markers.
+  unmarked.
 - A match written as two stored BYEs (status 0, both sentinels) is a
   legitimate shape — the library itself creates them in brackets with many
   first-round BYEs (e.g. 10 teams), and the simulation passes their BYE on to

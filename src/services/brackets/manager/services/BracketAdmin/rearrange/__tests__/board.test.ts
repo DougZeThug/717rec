@@ -5,7 +5,7 @@ vi.mock('@/utils/logger', async (importOriginal) => {
   return Object.fromEntries(Object.keys(actual).map((key) => [key, vi.fn()]));
 });
 
-import { NotFoundError, ValidationError } from '@/types/errors';
+import { BusinessLogicError, NotFoundError, ValidationError } from '@/types/errors';
 
 import type { SupabaseSqlStorage } from '../../../../SupabaseSqlStorage';
 import type { BracketAdminDeps } from '../../types';
@@ -39,7 +39,7 @@ function tenTeamFixture(): FixtureData {
         name: 'S',
         type: 'double_elimination',
         number: 1,
-        settings: {},
+        settings: { size: 16, seedOrdering: ['inner_outer'], grandFinal: 'simple' },
       },
     ],
     groups: [
@@ -286,6 +286,30 @@ describe('loadRearrangeBoard', () => {
       502: null,
     });
     expect(board.snapshot.names['9']).toBe('T9');
+  });
+
+  it("gives each snapshot slot the library's feeder marker for that spot", async () => {
+    const board = await loadRearrangeBoard(makeDeps(tenTeamFixture()), BRACKET_ID);
+    const markerOf = (matchId: number, side: 'opponent1' | 'opponent2') =>
+      board.snapshot.matches.find((m) => m.id === matchId)?.[side].feederMarker;
+
+    // Size-16 layout: round 1 in order, round 2 drop-ins reverse-half-shifted.
+    // BYE spots get their marker too, although the stored slot has none.
+    expect([markerOf(301, 'opponent1'), markerOf(301, 'opponent2')]).toEqual([1, 2]);
+    expect([markerOf(302, 'opponent1'), markerOf(302, 'opponent2')]).toEqual([3, 4]);
+    expect([markerOf(401, 'opponent1'), markerOf(401, 'opponent2')]).toEqual([2, null]);
+    expect(markerOf(402, 'opponent1')).toBe(1);
+    expect([markerOf(501, 'opponent1'), markerOf(501, 'opponent2')]).toEqual([null, null]);
+    // The stored marker is still reported as-is next to it.
+    expect(board.snapshot.matches.find((m) => m.id === 401)?.opponent1.position).toBe(9);
+  });
+
+  it('refuses a bracket whose layout cannot be worked out', async () => {
+    const noSize = tenTeamFixture();
+    noSize.stages[0].settings = {};
+    await expect(loadRearrangeBoard(makeDeps(noSize), BRACKET_ID)).rejects.toThrow(
+      BusinessLogicError
+    );
   });
 
   it('locks the whole chain behind a landing match that has been played', async () => {
