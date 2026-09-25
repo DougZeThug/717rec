@@ -42,7 +42,8 @@ function withRealIds(write: PlannedWrite, realIds: Map<number, number>): Planned
  * The plan is declarative, so if a write fails part-way the edited match
  * still holds its old teams and saving the same edit again finishes the job
  * (Repair Bracket does not reconcile these links). A write that reaches no
- * row — row-level security for a non-admin — fails loudly.
+ * row — row-level security for a non-admin — fails loudly, and any failure
+ * after the first write says the change is only partly saved.
  */
 export async function editMatchTeams(
   deps: BracketAdminDeps,
@@ -74,11 +75,14 @@ export async function editMatchTeams(
     // failure part-way then leaves the edited match untouched, so saving the
     // same edit again finishes the job. Do not parallelize with Promise.all.
     for (const [index, write] of plan.writes.map((w) => withRealIds(w, realIds)).entries()) {
-      await updateMatchRowOrThrow(
-        write.matchId,
-        write.fields,
-        index === 0 ? NOT_SAVED_MESSAGE : partialMessage
-      );
+      try {
+        await updateMatchRowOrThrow(write.matchId, write.fields, NOT_SAVED_MESSAGE);
+      } catch (error) {
+        // Earlier writes have landed, so whatever this one failed with, the
+        // admin must hear that the change is half done and how to finish it.
+        if (index === 0) throw error;
+        throw new BusinessLogicError(partialMessage, error);
+      }
     }
     await markBracketCompleteIfDone({ storage: deps.storage }, stage.tournament_id);
 

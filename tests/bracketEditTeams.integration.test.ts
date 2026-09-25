@@ -437,9 +437,10 @@ describe('Edit teams BYEs in single elimination (real service + real library ove
     db().interceptUpdates((table, index) =>
       table === 'match' && index === 1 ? 'error' : undefined
     );
-    await expect(service.editMatchParticipants(params)).rejects.toMatchObject({
-      name: 'DatabaseError',
-    });
+    await expect(service.editMatchParticipants(params)).rejects.toThrow(
+      'Only part of this change was saved. Open Edit teams on Round 1 Match 2 again ' +
+        'and save the same teams to finish.'
+    );
     expect(matchBy(1, 2, 1).opponent2_id).toBe(participantIdByName('T4'));
     expect(wbR1(2).opponent2_id).toBe(participantIdByName('T5'));
 
@@ -601,9 +602,9 @@ describe('Edit teams BYEs in double elimination (real service + real library ove
     db().interceptUpdates((table, index) =>
       table === 'match' && index === 1 ? 'error' : undefined
     );
-    await expect(service.editMatchParticipants(params)).rejects.toMatchObject({
-      name: 'DatabaseError',
-    });
+    await expect(service.editMatchParticipants(params)).rejects.toThrow(
+      'Only part of this change was saved.'
+    );
     expect(matchRows()).not.toEqual(clean);
 
     db().interceptUpdates(null);
