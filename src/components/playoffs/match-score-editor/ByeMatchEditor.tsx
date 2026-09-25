@@ -149,6 +149,38 @@ const ByeStatusControl: React.FC<{
   );
 };
 
+interface EditTeamsActionProps {
+  onEditTeams: () => void;
+  busy: boolean;
+  canEditTeams?: boolean;
+  blockedReason?: string | null;
+}
+
+/** The Edit teams button, with the reason as text when it is disabled. */
+const EditTeamsAction: React.FC<EditTeamsActionProps> = ({
+  onEditTeams,
+  busy,
+  canEditTeams,
+  blockedReason,
+}) => (
+  <div className="space-y-1">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onEditTeams}
+      disabled={busy || !canEditTeams}
+      className="w-full sm:w-auto"
+      title="Change who plays in this match, for example fill the BYE with a team"
+    >
+      <ArrowLeftRight className="mr-1 size-4" />
+      Edit teams
+    </Button>
+    {!canEditTeams && blockedReason && (
+      <p className="text-xs text-muted-foreground">Edit teams: {blockedReason}</p>
+    )}
+  </div>
+);
+
 export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   byeWinner,
   hasOpponent1,
@@ -240,22 +272,12 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
       )}
 
       {onEditTeams && (
-        <div className="space-y-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onEditTeams}
-            disabled={isSaving || isTogglingStatus || !canEditTeams}
-            className="w-full sm:w-auto"
-            title="Change who plays in this match, for example fill the BYE with a team"
-          >
-            <ArrowLeftRight className="mr-1 size-4" />
-            Edit teams
-          </Button>
-          {!canEditTeams && editTeamsBlockedReason && (
-            <p className="text-xs text-muted-foreground">Edit teams: {editTeamsBlockedReason}</p>
-          )}
-        </div>
+        <EditTeamsAction
+          onEditTeams={onEditTeams}
+          busy={isSaving || isTogglingStatus}
+          canEditTeams={canEditTeams}
+          blockedReason={editTeamsBlockedReason}
+        />
       )}
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">

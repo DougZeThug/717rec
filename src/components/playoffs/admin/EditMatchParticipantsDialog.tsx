@@ -23,6 +23,7 @@ import {
 import { useEditTeamsOptions, useEditTeamsPreview } from '@/hooks/playoffs/useEditTeams';
 import { usePlayoffEditMatchParticipants } from '@/hooks/playoffs/usePlayoffEditMatchParticipants';
 import type { EditTeamsOptions } from '@/services/brackets/manager/services/BracketAdmin/editTeams/options';
+import type { EditTeamsPreview } from '@/services/brackets/manager/services/BracketAdmin/editTeams/preview';
 import type {
   EditMatchTeamsParams,
   TeamChoice,
@@ -145,6 +146,67 @@ const TeamSelect: React.FC<TeamSelectProps> = ({
   );
 };
 
+const Spinner: React.FC = () => (
+  <div className="flex items-center justify-center p-8">
+    <Loader2 className="size-8 animate-spin" />
+  </div>
+);
+
+interface ReviewStepProps {
+  preview: EditTeamsPreview | undefined;
+  loading: boolean;
+  saving: boolean;
+  onBack: () => void;
+  onSave: () => void;
+}
+
+/** The review step: the admin's changes and what follows, or why the save is refused. */
+const ReviewStep: React.FC<ReviewStepProps> = ({ preview, loading, saving, onBack, onSave }) => (
+  <>
+    {loading || !preview ? (
+      <Spinner />
+    ) : preview.ok ? (
+      <div className="space-y-4 text-sm">
+        <div className="space-y-1">
+          <p className="font-medium">Your changes</p>
+          <ul className="list-disc space-y-1 pl-5">
+            {preview.changes.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="space-y-1">
+          <p className="font-medium">What happens automatically</p>
+          {preview.consequences.length > 0 ? (
+            <ul className="list-disc space-y-1 pl-5">
+              {preview.consequences.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground">Nothing else changes.</p>
+          )}
+        </div>
+      </div>
+    ) : (
+      <div className="space-y-1 text-sm text-destructive">
+        {preview.problems.map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </div>
+    )}
+    <DialogFooter>
+      <Button variant="outline" onClick={onBack} disabled={saving}>
+        Back
+      </Button>
+      <Button onClick={onSave} disabled={!preview?.ok || saving}>
+        {saving && <Loader2 className="mr-2 size-4 animate-spin" />}
+        Save
+      </Button>
+    </DialogFooter>
+  </>
+);
+
 interface EditTeamsBodyProps {
   bracketId: string | null;
   matchId: number;
@@ -166,13 +228,7 @@ const EditTeamsBody: React.FC<EditTeamsBodyProps> = ({ bracketId, matchId, onDon
   const params = reviewing && options && picks ? toParams(matchId, picks, options) : null;
   const { data: preview, isLoading: previewLoading } = useEditTeamsPreview(params);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="size-8 animate-spin" />
-      </div>
-    );
-  }
+  if (isLoading) return <Spinner />;
   if (error || !options || !picks || !initial) {
     return <p className="text-sm text-destructive">Could not load this match. Please try again.</p>;
   }
@@ -194,58 +250,13 @@ const EditTeamsBody: React.FC<EditTeamsBodyProps> = ({ bracketId, matchId, onDon
 
   if (reviewing) {
     return (
-      <>
-        {previewLoading || !preview ? (
-          <div className="flex items-center justify-center p-8">
-            <Loader2 className="size-8 animate-spin" />
-          </div>
-        ) : preview.ok ? (
-          <div className="space-y-4 text-sm">
-            <div className="space-y-1">
-              <p className="font-medium">Your changes</p>
-              <ul className="list-disc space-y-1 pl-5">
-                {preview.changes.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">What happens automatically</p>
-              {preview.consequences.length > 0 ? (
-                <ul className="list-disc space-y-1 pl-5">
-                  {preview.consequences.map((line) => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">Nothing else changes.</p>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-1 text-sm text-destructive">
-            {preview.problems.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </div>
-        )}
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setReviewing(false)}
-            disabled={mutation.isPending}
-          >
-            Back
-          </Button>
-          <Button
-            onClick={() => params && mutation.mutate(params, { onSuccess: onDone })}
-            disabled={!preview?.ok || mutation.isPending}
-          >
-            {mutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-            Save
-          </Button>
-        </DialogFooter>
-      </>
+      <ReviewStep
+        preview={preview}
+        loading={previewLoading}
+        saving={mutation.isPending}
+        onBack={() => setReviewing(false)}
+        onSave={() => params && mutation.mutate(params, { onSuccess: onDone })}
+      />
     );
   }
 
