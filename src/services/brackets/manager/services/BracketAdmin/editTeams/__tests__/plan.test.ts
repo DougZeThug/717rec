@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { StorageMatch } from '../../../../types/BracketServiceTypes';
 import type { EditTeamsContext } from '../context';
 import { applyFields, assertFootprint } from '../footprint';
+import { planLosersChanges } from '../losersPlan';
 import type { WantedMatch } from '../occupancy';
 import type { Occupant } from '../types';
 import { planWinnersChanges } from '../winnersPlan';
@@ -166,5 +167,18 @@ describe('assertFootprint', () => {
         { matchId: 2, fields: { opponent1_id: 4 } },
       ])
     ).not.toThrow();
+  });
+});
+
+describe('planLosersChanges', () => {
+  it('refuses when no losers-bracket spot carries the match number', () => {
+    const { ctx, matches } = fixture();
+    const wanted: WantedMatch[] = [
+      { match: matches[1], opponent1: teamOf(3), opponent2: teamOf(4) },
+    ];
+    const snapshot = { bracketId: 'b1', stageId: 1, matches: [], landings: {}, names: {} };
+    expect(() => planLosersChanges(ctx, snapshot, wanted, new Set([2]))).toThrow(
+      "The losers-bracket spot fed by Round 1 Match 2 can't be found. Run Repair Bracket first."
+    );
   });
 });

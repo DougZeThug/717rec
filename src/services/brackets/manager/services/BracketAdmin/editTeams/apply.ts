@@ -5,12 +5,14 @@ import { computeStageSlotLayout } from '../../../utils/lbFeederMarkers';
 import { markBracketCompleteIfDone } from '../../BracketUpdate/completion';
 import type { TeamSummary } from '../participants';
 import { ensureParticipantRow, lookupTeam } from '../participants';
+import { loadRearrangeBoard } from '../rearrange/board';
 import type { MatchUpdateFields, OpponentSide } from '../shapes';
 import type { BracketAdminDeps, EditMatchParticipantsResult } from '../types';
 import { updateMatchRowOrThrow } from '../writes';
 import type { EditTeamsContext } from './context';
 import { loadEditTeamsContext } from './context';
 import { assertFootprint } from './footprint';
+import { planLosersChanges } from './losersPlan';
 import { planOccupancy } from './occupancy';
 import {
   isWinnersRoundOne,
@@ -92,7 +94,9 @@ function withRealIds(write: PlannedWrite, realIds: Map<number, number>): Planned
  * round 1 match that still holds what the screen was opened with, and every
  * picked team must not already play in another match. The plan then covers
  * the knock-on changes too — a walkover's team moving on to round 2 by itself,
- * or a team taken back out of round 2 when its BYE goes — and is replayed on
+ * or a team taken back out of round 2 when its BYE goes, and in double
+ * elimination the losers-bracket spot the match's loser drops into (a BYE or
+ * a waiting spot) with everything that ripples from it — and is replayed on
  * a copy of the stage to prove no team ends up in two matches.
  *
  * Writes run one at a time, knock-on changes first and the edited match last.
@@ -134,15 +138,20 @@ export async function editMatchTeams(
     const wanted = planOccupancy(ctx, { opponent1: pick1, opponent2: pick2 });
     const layout = await computeStageSlotLayout(stage);
     const winners = planWinnersChanges(ctx, wanted, layout.wbRoundOneSeedOf);
-    if (stage.type === 'double_elimination' && winners.byeChanges.length > 0) {
-      throw new BusinessLogicError(
-        'Adding or removing a BYE in a double-elimination bracket is not available yet.'
-      );
-    }
+    const losers =
+      stage.type === 'double_elimination'
+        ? planLosersChanges(
+            ctx,
+            (await loadRearrangeBoard(deps, stage.tournament_id)).snapshot,
+            wanted,
+            new Set(winners.byeChanges.map((change) => change.match.id))
+          )
+        : { writes: [], consequences: [] };
 
     // The edited match is written last, so an interrupted edit can be saved again.
     const editedWrites = winners.roundOneWrites.filter((write) => write.matchId === match.id);
     const writes = [
+      ...losers.writes,
       ...winners.roundTwoWrites,
       ...winners.roundOneWrites.filter((write) => write.matchId !== match.id),
       ...editedWrites,
@@ -173,6 +182,7 @@ export async function editMatchTeams(
     const message = [
       `${matchLabel(ctx, match)} is now ${nameOf(pick1)} vs ${nameOf(pick2)}.`,
       ...winners.consequences,
+      ...losers.consequences,
     ].join(' ');
     const idOf = (occupant: Occupant) => {
       const id = occupantId(occupant);

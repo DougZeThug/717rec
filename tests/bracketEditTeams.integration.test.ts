@@ -29,6 +29,7 @@ import type {
   EditMatchTeamsParams,
   TeamChoice,
 } from '@/services/brackets/manager/services/BracketAdmin/editTeams/types';
+import { computeLbFeederMarkers } from '@/services/brackets/manager/utils/lbFeederMarkers';
 
 const db = (): FakeSupabaseBracketDb =>
   (globalThis as Record<string, unknown>).__fakeBracketDb as FakeSupabaseBracketDb;
@@ -317,20 +318,6 @@ describe('Edit teams (real service + real library over fake DB)', () => {
     expect(matchRows().some((m) => m.opponent1_id === t1 || m.opponent2_id === t1)).toBe(false);
   });
 
-  it('refuses adding or removing a BYE in double elimination for now', async () => {
-    const service = new BracketManagerService();
-    await buildSixTeamBracket(service);
-
-    await expect(service.editMatchParticipants(editOf(wbR1(1), team(1), team(7)))).rejects.toThrow(
-      'Adding or removing a BYE in a double-elimination bracket is not available yet.'
-    );
-    await expect(
-      service.editMatchParticipants(editOf(wbR1(4), team(3), { kind: 'bye' }))
-    ).rejects.toThrow(
-      'Adding or removing a BYE in a double-elimination bracket is not available yet.'
-    );
-  });
-
   it('refuses two BYEs', async () => {
     const service = new BracketManagerService();
     await buildSixTeamBracket(service);
@@ -445,5 +432,167 @@ describe('Edit teams BYEs in single elimination (real service + real library ove
     await service.editMatchParticipants(params);
     expect(wbR1(2)).toMatchObject({ opponent2_result: 'bye', status: 0 });
     expect(matchBy(1, 2, 1)).toMatchObject({ opponent2_id: participantIdByName('T4'), status: 2 });
+  });
+});
+
+describe('Edit teams BYEs in double elimination (real service + real library over fake DB)', () => {
+  it('adds a BYE: the walkover moves on and the losers bracket passes the BYE along', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const t1 = participantIdByName('T1');
+    const t4 = participantIdByName('T4');
+
+    const result = await service.editMatchParticipants(editOf(wbR1(2), team(4), { kind: 'bye' }));
+
+    expect(wbR1(2)).toMatchObject({
+      opponent1_id: t4,
+      opponent1_result: 'win',
+      opponent2_result: 'bye',
+      status: 0,
+    });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: t1, opponent2_id: t4, status: 2 });
+    // Round 1 Match 2 has no loser any more: its losers spot is a BYE, the
+    // BYE-vs-BYE match passes its BYE on, and round 2's carry spot takes it.
+    expect(matchBy(2, 1, 1)).toMatchObject({
+      opponent1_result: 'bye',
+      opponent2_id: null,
+      opponent2_position: null,
+      opponent2_result: 'bye',
+      status: 0,
+    });
+    expect(matchBy(2, 2, 1)).toMatchObject({ opponent1_id: null, opponent2_result: 'bye' });
+    expect(result.message).toContain(
+      'Losers Round 1 Match 1 is left with no teams; a BYE passes on to the next round.'
+    );
+
+    await playToTheEnd(service);
+    expect(db().rows('brackets')[0]).toMatchObject({ state: 'completed' });
+  });
+
+  it("undoes a seed's BYE: the losers spot gets its feeder marker back and plays", async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const t7 = participantIdByName('T6') + 1; // the next participant id, created by the edit
+
+    await service.editMatchParticipants(editOf(wbR1(1), team(1), team(7)));
+
+    expect(participantIdByName('T7')).toBe(t7);
+    expect(wbR1(1)).toMatchObject({ opponent2_id: t7, opponent2_position: 8, status: 2 });
+    expect(matchBy(1, 2, 1)).toMatchObject({ opponent1_id: null });
+    expect(matchBy(2, 1, 1)).toMatchObject({
+      opponent1_id: null,
+      opponent1_position: 1,
+      opponent1_result: null,
+      opponent2_id: null,
+      opponent2_position: 2,
+      opponent2_result: null,
+      status: 1,
+    });
+
+    // Both round 1 losers drop into the right spots and the match scores.
+    await score(service, wbR1(1));
+    await score(service, wbR1(2));
+    expect(matchBy(2, 1, 1)).toMatchObject({
+      opponent1_id: t7,
+      opponent2_id: participantIdByName('T5'),
+      status: 2,
+    });
+    await score(service, matchBy(2, 1, 1));
+    expect(matchBy(2, 2, 1).opponent2_id).toBe(t7);
+  });
+
+  it('puts every team, BYE and losers-bracket marker back after a BYE is added and removed', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    // Who sits where: ids, feeder markers and BYEs. (Statuses of untouched
+    // waiting matches follow the rearrange tool's convention, not creation's.)
+    const layout = () =>
+      matchRows().map((m) => ({
+        id: m.id,
+        slots: [
+          [m.opponent1_id, m.opponent1_position, m.opponent1_result === 'bye'],
+          [m.opponent2_id, m.opponent2_position, m.opponent2_result === 'bye'],
+        ],
+      }));
+    const before = layout();
+
+    await service.editMatchParticipants(editOf(wbR1(4), team(3), { kind: 'bye' }));
+    await service.editMatchParticipants(editOf(wbR1(4), team(3), team(6)));
+
+    expect(layout()).toEqual(before);
+    const stage = db().rows('stage')[0] as { type: string; settings: Record<string, unknown> };
+    const markers = await computeLbFeederMarkers(stage);
+    expect(matchBy(2, 1, 2).opponent2_position).toBe(markers.markerOf(1, 2, 'opponent2'));
+
+    await playToTheEnd(service);
+    expect(db().rows('brackets')[0]).toMatchObject({ state: 'completed' });
+  });
+
+  it("undoes a BYE after the losers bracket's walkover moved on", async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const t6 = participantIdByName('T6');
+    await score(service, wbR1(4));
+    // T6 dropped next to Round 1 Match 3's BYE and walked over into round 2.
+    expect(matchBy(2, 1, 2)).toMatchObject({ opponent2_id: t6, opponent2_result: 'win' });
+    expect(matchBy(2, 2, 2).opponent2_id).toBe(t6);
+
+    const result = await service.editMatchParticipants(editOf(wbR1(3), team(2), team(7)));
+
+    expect(matchBy(2, 1, 2)).toMatchObject({
+      opponent1_position: 3,
+      opponent1_result: null,
+      opponent2_id: t6,
+      opponent2_result: null,
+      status: 1,
+    });
+    expect(matchBy(2, 2, 2)).toMatchObject({ opponent2_id: null });
+    expect(result.message).toContain(
+      'T6 is removed from Losers Round 2 Match 2; that spot now waits for an earlier match.'
+    );
+  });
+
+  it('refuses once a losers-bracket match the change reaches has been played', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    await score(service, wbR1(2));
+    await score(service, wbR1(4));
+    await score(service, matchBy(1, 2, 1));
+    await score(service, matchBy(2, 2, 2));
+
+    const before = matchRows();
+    await expect(service.editMatchParticipants(editOf(wbR1(3), team(2), team(7)))).rejects.toThrow(
+      'This change needs to change Losers Round 1 Match 2 automatically'
+    );
+    expect(matchRows()).toEqual(before);
+    expect(
+      db()
+        .rows('participant')
+        .some((p) => p.name === 'T7')
+    ).toBe(false);
+  });
+
+  it('finishes an interrupted losers-bracket cascade when the same teams are saved again', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    await service.editMatchParticipants(editOf(wbR1(2), team(4), { kind: 'bye' }));
+    const clean = matchRows();
+
+    db().reset();
+    db().setRpcHandler('finalize_bracket_standings', () => ({ data: 0, error: null }));
+    await buildSixTeamBracket(service);
+    const params = editOf(wbR1(2), team(4), { kind: 'bye' });
+    // The first losers write lands, the second fails.
+    db().interceptUpdates((table, index) =>
+      table === 'match' && index === 1 ? 'error' : undefined
+    );
+    await expect(service.editMatchParticipants(params)).rejects.toMatchObject({
+      name: 'DatabaseError',
+    });
+    expect(matchRows()).not.toEqual(clean);
+
+    db().interceptUpdates(null);
+    await service.editMatchParticipants(params);
+    expect(matchRows()).toEqual(clean);
   });
 });
