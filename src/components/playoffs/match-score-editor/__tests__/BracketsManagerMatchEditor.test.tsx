@@ -60,10 +60,11 @@ vi.mock('@/components/playoffs/admin/EditMatchParticipantsDialog', () => ({
     open ? <div data-testid="edit-participants-dialog" /> : null,
 }));
 
-// The losers-bracket swap action needs auth (admin gate) and react-query
-// (eligibility) — both out of scope here, so stub them to "not an admin".
+// The admin-only actions (losers-bracket swap, Edit teams) need auth and
+// react-query (eligibility) — stub them; tests default to "not an admin".
+let mockIsAdmin = false;
 vi.mock('@/hooks/useAdminAccess', () => ({
-  useAdminAccess: () => ({ isAdminAccessGranted: false }),
+  useAdminAccess: () => ({ isAdminAccessGranted: mockIsAdmin }),
 }));
 
 vi.mock('@/hooks/playoffs/usePlayoffLoserSwap', () => ({
@@ -97,10 +98,14 @@ vi.mock('@/components/playoffs/match-score-editor/RegularMatchEditor', () => ({
     opponent1Name: string;
     opponent2Name: string;
     canEditTeams: boolean;
-    onEditTeams: () => void;
+    onEditTeams?: () => void;
     onClose: () => void;
   }) => (
-    <div data-testid="regular-match-editor" data-can-edit-teams={String(canEditTeams)}>
+    <div
+      data-testid="regular-match-editor"
+      data-can-edit-teams={String(canEditTeams)}
+      data-has-edit-teams={String(Boolean(onEditTeams))}
+    >
       <span data-testid="opp1-name">{opponent1Name}</span>
       <span data-testid="opp2-name">{opponent2Name}</span>
       <button data-testid="edit-teams-btn" onClick={onEditTeams}>
@@ -163,6 +168,7 @@ const defaultProps = {
 
 describe('BracketsManagerMatchEditor', () => {
   beforeEach(() => {
+    mockIsAdmin = false;
     vi.clearAllMocks();
     mockEditorState = { ...defaultEditorState };
   });
@@ -253,6 +259,17 @@ describe('BracketsManagerMatchEditor', () => {
       render(<BracketsManagerMatchEditor {...defaultProps} />);
 
       expect(screen.getByTestId('regular-match-editor').dataset.canEditTeams).toBe('false');
+    });
+
+    it('offers Edit teams to admins only', () => {
+      mockEditorState = { ...defaultEditorState, matchData: makeMatchData({ status: 1 }) };
+      const { unmount } = render(<BracketsManagerMatchEditor {...defaultProps} />);
+      expect(screen.getByTestId('regular-match-editor').dataset.hasEditTeams).toBe('false');
+      unmount();
+
+      mockIsAdmin = true;
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+      expect(screen.getByTestId('regular-match-editor').dataset.hasEditTeams).toBe('true');
     });
 
     it('canEditTeams is false when opponent1 has result win', () => {

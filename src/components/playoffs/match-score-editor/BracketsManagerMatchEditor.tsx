@@ -46,8 +46,8 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
   const [isEditTeamsOpen, setIsEditTeamsOpen] = useState(false);
   const [isSwapTeamsOpen, setIsSwapTeamsOpen] = useState(false);
 
-  // The losers-bracket swap is admin-only: the editor itself can open for
-  // non-admins, so the action gets its own explicit gate here.
+  // The losers-bracket swap and Edit teams are admin-only: the editor itself
+  // can open for non-admins, so each action gets its own explicit gate here.
   const { isAdminAccessGranted } = useAdminAccess();
   const { data: swapEligibility } = useLoserSwapEligibility(isAdminAccessGranted ? matchId : null);
   const canSwapTeams = isAdminAccessGranted && swapEligibility?.ok === true;
@@ -157,7 +157,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
           isSaving={isSaving}
           onSave={handleSave}
           onClose={onClose}
-          onEditTeams={() => setIsEditTeamsOpen(true)}
+          onEditTeams={isAdminAccessGranted ? () => setIsEditTeamsOpen(true) : undefined}
           canEditTeams={canEditTeams}
           status={matchData.status}
           onSwapTeams={onSwapTeams}
