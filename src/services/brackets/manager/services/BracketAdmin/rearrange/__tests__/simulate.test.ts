@@ -674,6 +674,32 @@ describe('simulateSlotChanges', () => {
     ]);
   });
 
+  it('changes both spots of one match together, checking each against the unchanged match', () => {
+    // Round 1 Match 2 as the library writes a BYE facing a waiting spot: an
+    // anticipated 'win' on the waiting side. Both spots change at once (a
+    // winners-bracket trade moves the BYE from one feeder to the other).
+    const snapshot = tenTeamSnapshot();
+    const placeholder = snapshot.matches.find((m) => m.id === 302);
+    if (!placeholder) throw new Error('fixture: match 302 missing');
+    placeholder.editable = false;
+    placeholder.lockedReason = 'is still waiting on a team from an earlier match';
+    placeholder.opponent2 = { ...tbdSlot(), feederMarker: 4, position: 4, result: 'win' };
+
+    const result = simulateSlotChanges(snapshot, [
+      { matchId: 302, side: 'opponent1', content: { kind: 'tbd', position: 3 } },
+      { matchId: 302, side: 'opponent2', content: { kind: 'bye' } },
+    ]);
+
+    expect(result.problems).toEqual([]);
+    expect(fieldsFor(result, 302)).toEqual({
+      opponent1_position: 3,
+      opponent1_result: null,
+      opponent2_position: null,
+      opponent2_result: 'bye',
+      status: 1,
+    });
+  });
+
   it('refuses a target slot that holds a team', () => {
     const result = simulateSlotChanges(tenTeamSnapshot(), [
       { matchId: 301, side: 'opponent2', content: { kind: 'bye' } },

@@ -136,6 +136,9 @@ export function simulateSlotChanges(
   options: SimulationOptions = {}
 ): RearrangePlanResult {
   const sim = initSimulation(snapshot, { subject: 'This change', ...options });
+  // Every target is checked against the bracket as it stands before any
+  // change: two targets can share a match (both of its losers spots change),
+  // and the first change must not make the second look blocked.
   for (const change of changes) {
     const state = sim.working.get(change.matchId);
     if (!state) {
@@ -156,8 +159,12 @@ export function simulateSlotChanges(
         message: `${sim.subject} needs to change ${label} automatically, but that match ${blocked}.`,
         slot: change,
       });
-      continue;
     }
+  }
+  if (sim.problems.length > 0) return resultOf(sim, []);
+
+  for (const change of changes) {
+    const state = sim.working.get(change.matchId) as WorkingMatch;
     state[change.side] =
       change.content.kind === 'bye'
         ? { shape: 'bye', participantId: null, position: null, result: 'bye', score: null }
@@ -170,7 +177,6 @@ export function simulateSlotChanges(
           };
     state.dirty = true;
   }
-  if (sim.problems.length > 0) return resultOf(sim, []);
   propagateRounds(sim);
   return resultOf(sim, sim.problems.length === 0 ? collectWrites(sim) : []);
 }
