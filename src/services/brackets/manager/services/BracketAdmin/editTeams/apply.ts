@@ -56,16 +56,23 @@ export async function editMatchTeams(
     const { match, stage } = ctx;
 
     // Every check passed: now it is safe to write.
-    const realIds = new Map<number, number>();
-    for (const [placeholderId, team] of plan.newTeams) {
-      realIds.set(
-        placeholderId,
-        await ensureParticipantRow(stage.tournament_id, team, ctx.participants)
-      );
-    }
+    const realIds = new Map(
+      await Promise.all(
+        [...plan.newTeams].map(
+          async ([placeholderId, team]) =>
+            [
+              placeholderId,
+              await ensureParticipantRow(stage.tournament_id, team, ctx.participants),
+            ] as const
+        )
+      )
+    );
     const partialMessage =
       `Only part of this change was saved. Open Edit teams on ${matchLabel(ctx, match)} ` +
       'again and save the same teams to finish.';
+    // One at a time ON PURPOSE, in plan order with the edited match last: a
+    // failure part-way then leaves the edited match untouched, so saving the
+    // same edit again finishes the job. Do not parallelize with Promise.all.
     for (const [index, write] of plan.writes.map((w) => withRealIds(w, realIds)).entries()) {
       await updateMatchRowOrThrow(
         write.matchId,

@@ -140,17 +140,21 @@ export async function planEdit(
   }
 
   const wanted = planOccupancy(ctx, { opponent1: pick1, opponent2: pick2 });
-  const layout = await computeStageSlotLayout(stage);
-  const winners = planWinnersChanges(ctx, wanted, layout.wbRoundOneSeedOf);
-  const losers =
+  const [layout, board] = await Promise.all([
+    computeStageSlotLayout(stage),
     stage.type === 'double_elimination'
-      ? planLosersChanges(
-          ctx,
-          (await loadRearrangeBoard(deps, stage.tournament_id)).snapshot,
-          wanted,
-          new Set(winners.byeChanges.map((change) => change.match.id))
-        )
-      : { writes: [], consequences: [] };
+      ? loadRearrangeBoard(deps, stage.tournament_id)
+      : Promise.resolve(null),
+  ]);
+  const winners = planWinnersChanges(ctx, wanted, layout.wbRoundOneSeedOf);
+  const losers = board
+    ? planLosersChanges(
+        ctx,
+        board.snapshot,
+        wanted,
+        new Set(winners.byeChanges.map((change) => change.match.id))
+      )
+    : { writes: [], consequences: [] };
 
   // The edited match is written last, so an interrupted edit can be saved again.
   const writes = [
