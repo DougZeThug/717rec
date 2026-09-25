@@ -12,7 +12,7 @@ this repo automatically.
 
 ## Tech stack
 
-- **Frontend**: React 18 + TypeScript + Vite, styled with Tailwind CSS + shadcn/ui
+- **Frontend**: React 19 + TypeScript + Vite, styled with Tailwind CSS + shadcn/ui
 - **Backend**: Supabase (PostgreSQL, Auth, Realtime, Edge Functions)
 - **Server state**: TanStack Query v5
 - **Playoff brackets**: [`brackets-manager`](https://github.com/Drarig29/brackets-manager.js)
