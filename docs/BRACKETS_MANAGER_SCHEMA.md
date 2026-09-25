@@ -115,10 +115,12 @@ strict `null` on read. Rows created before this convention (no sentinel) read
 back as TBD.
 
 **Losers-bracket slot swaps** (`BracketAdmin/swap.ts`): the admin tool that
-moves teams between losers-bracket matches operates on these columns directly
-and must move `opponentN_id`, `opponentN_position`, and the BYE sentinel **as a
-unit** — the position marker is what the library's reverse traversal and the
-viewer's "Loser of WB x.y" labels read, so it follows the occupant. Swaps are
+moves teams between losers-bracket matches operates on these columns directly.
+It moves the occupant (`opponentN_id`, or the BYE sentinel) but **not** the
+feeder marker: `opponentN_position` belongs to the slot, because the library's
+reverse traversal reads it to find the winners-bracket match feeding that slot.
+An incoming team takes the slot's marker as the library lays it out
+(`utils/lbFeederMarkers.ts`); an incoming BYE stores NULL. Swaps are
 same-round only, and only once every slot of both matches is resolved (team or
 stored BYE): the library routes winners-bracket losers dynamically at result
 time and would overwrite a slot whose feeder match hasn't finished.

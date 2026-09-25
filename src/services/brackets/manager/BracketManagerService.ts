@@ -398,8 +398,9 @@ export class BracketManagerService {
    * the same round — for leagues that hand-seed the losers bracket differently
    * than the library's automatic pairing.
    *
-   * Moves each slot as a unit (team id + feeder-position marker + BYE sentinel)
-   * and recomputes walkover state: a team newly facing a BYE advances
+   * Moves each occupant (team id or BYE sentinel) while every slot keeps its
+   * own feeder-position marker, and recomputes walkover state: a team newly
+   * facing a BYE advances
    * automatically; a team pulled off a BYE has its automatic advancement undone.
    * Serialized through matchUpdateQueue so it cannot interleave with score saves.
    *
