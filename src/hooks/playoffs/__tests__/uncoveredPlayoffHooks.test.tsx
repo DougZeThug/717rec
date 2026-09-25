@@ -139,31 +139,45 @@ describe('uncovered playoff hooks', () => {
     expect(mocks.board).toHaveBeenCalledWith('b1');
   });
   it('edits participants and refreshes bracket caches', async () => {
-    mocks.edit.mockResolvedValue({});
+    mocks.edit.mockResolvedValue({ message: 'Round 1 Match 2 is now A vs B.' });
     const { client, wrapper } = setup();
     const invalidate = vi.spyOn(client, 'invalidateQueries');
     const refetch = vi.spyOn(client, 'refetchQueries');
     const { result } = renderHook(() => usePlayoffEditMatchParticipants('b1'), { wrapper });
+    const params = {
+      matchId: 2,
+      opponent1: { kind: 'team' as const, teamId: 'a' },
+      opponent2: { kind: 'team' as const, teamId: 'b' },
+      expectedOpponent1Id: 11,
+      expectedOpponent2Id: 12,
+    };
     await act(async () => {
-      await result.current.mutateAsync({
-        matchId: 2,
-        opponent1TeamId: 'a',
-        opponent2TeamId: null,
-      });
+      await result.current.mutateAsync(params);
     });
-    expect(mocks.edit).toHaveBeenCalledWith(2, 'a', null);
+    expect(mocks.edit).toHaveBeenCalledWith(params);
     // The open score editor must re-read its match, or it keeps the old teams.
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['brackets-manager-match'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
     expect(refetch).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
-    expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Teams updated' }));
+    expect(mocks.toast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Teams updated',
+        description: 'Round 1 Match 2 is now A vs B.',
+      })
+    );
   });
   it('reports participant edit errors', async () => {
     mocks.edit.mockRejectedValue(new Error('played'));
     const { wrapper } = setup();
     const { result } = renderHook(() => usePlayoffEditMatchParticipants(null), { wrapper });
     await expect(
-      result.current.mutateAsync({ matchId: 2, opponent1TeamId: null, opponent2TeamId: null })
+      result.current.mutateAsync({
+        matchId: 2,
+        opponent1: { kind: 'team', teamId: 'a' },
+        opponent2: { kind: 'bye' },
+        expectedOpponent1Id: 11,
+        expectedOpponent2Id: 12,
+      })
     ).rejects.toThrow('played');
     await waitFor(() =>
       expect(mocks.toast).toHaveBeenCalledWith(

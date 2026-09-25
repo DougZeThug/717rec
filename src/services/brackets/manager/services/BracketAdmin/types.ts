@@ -1,10 +1,5 @@
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
-import type {
-  StorageGroup,
-  StorageMatch,
-  StorageParticipant,
-  StorageRound,
-} from '../../types/BracketServiceTypes';
+import type { StorageGroup, StorageMatch, StorageRound } from '../../types/BracketServiceTypes';
 
 export type BracketAdminDeps = {
   storage: SupabaseSqlStorage;
@@ -45,9 +40,3 @@ export type ByeEligibilityResult = {
     opponent2Name: string | null;
   };
 };
-
-export type ResolveTeamToParticipantIdFn = (
-  teamId: string | null,
-  tournamentId: string,
-  participants: StorageParticipant[]
-) => Promise<number | null>;

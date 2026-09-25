@@ -101,6 +101,8 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
         matchId={matchId}
         currentTeam1Id={matchData.opponent1?.team_id ?? null}
         currentTeam2Id={matchData.opponent2?.team_id ?? null}
+        expectedOpponent1Id={matchData.opponent1?.id ?? null}
+        expectedOpponent2Id={matchData.opponent2?.id ?? null}
         teams={teams ?? []}
       />
     ) : null;

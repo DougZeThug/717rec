@@ -21,8 +21,6 @@ import {
 import { usePlayoffEditMatchParticipants } from '@/hooks/playoffs/usePlayoffEditMatchParticipants';
 import { Team } from '@/types';
 
-const NONE_VALUE = '__none__';
-
 interface TeamSelectProps {
   id: string;
   label: string;
@@ -34,15 +32,11 @@ interface TeamSelectProps {
 const TeamSelect: React.FC<TeamSelectProps> = ({ id, label, value, onChange, teams }) => (
   <div className="space-y-2">
     <Label htmlFor={id}>{label}</Label>
-    <Select
-      value={value ?? NONE_VALUE}
-      onValueChange={(v) => onChange(v === NONE_VALUE ? null : v)}
-    >
+    <Select value={value ?? undefined} onValueChange={(v) => onChange(v)}>
       <SelectTrigger id={id}>
         <SelectValue placeholder="Select team" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NONE_VALUE}>— Empty (BYE) —</SelectItem>
         {teams.map((team) => (
           <SelectItem key={team.id} value={team.id}>
             {team.name}
@@ -60,6 +54,9 @@ interface EditMatchParticipantsDialogProps {
   matchId: number | null;
   currentTeam1Id: string | null;
   currentTeam2Id: string | null;
+  /** Participant ids the match held when the editor loaded — the save's staleness check. */
+  expectedOpponent1Id: number | null;
+  expectedOpponent2Id: number | null;
   teams: Team[];
 }
 
@@ -70,6 +67,8 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
   matchId,
   currentTeam1Id,
   currentTeam2Id,
+  expectedOpponent1Id,
+  expectedOpponent2Id,
   teams,
 }) => {
   const [team1Id, setTeam1Id] = useState<string | null>(currentTeam1Id);
@@ -89,12 +88,14 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
   const sortedTeams = [...teams].sort((a, b) => a.name.localeCompare(b.name));
 
   const handleSave = () => {
-    if (matchId === null) return;
+    if (matchId === null || team1Id === null || team2Id === null) return;
     mutation.mutate(
       {
         matchId,
-        opponent1TeamId: team1Id,
-        opponent2TeamId: team2Id,
+        opponent1: { kind: 'team', teamId: team1Id },
+        opponent2: { kind: 'team', teamId: team2Id },
+        expectedOpponent1Id,
+        expectedOpponent2Id,
       },
       {
         onSuccess: () => onOpenChange(false),
@@ -108,6 +109,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
 
   const isSaving = mutation.isPending;
   const noChange = team1Id === currentTeam1Id && team2Id === currentTeam2Id;
+  const incomplete = team1Id === null || team2Id === null;
   const bothSame = team1Id !== null && team2Id !== null && team1Id === team2Id;
 
   return (
@@ -119,8 +121,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
             Edit Matchup Teams
           </DialogTitle>
           <DialogDescription>
-            Swap the teams in this matchup. Only available for matches that have not yet been
-            played.
+            Change the teams in this first-round matchup. Only available before the match is played.
           </DialogDescription>
         </DialogHeader>
 
@@ -143,9 +144,8 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <p>
-              This updates only this match. Downstream matches will populate automatically as this
-              match is played. If the swapped team also appears in another upcoming match, you may
-              need to edit that one separately.
+              A team that is already in another match can't be picked. Later rounds fill in
+              automatically as this match is played.
             </p>
           </div>
 
@@ -160,7 +160,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
           <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={isSaving || noChange || bothSame}>
+          <Button onClick={handleSave} disabled={isSaving || noChange || incomplete || bothSame}>
             {isSaving ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />

@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { matchUpdateQueue } from './MatchUpdateQueue';
+import type { EditMatchTeamsParams } from './services/BracketAdmin/editTeams/types';
 import type { SlotAssignment } from './services/BracketAdmin/rearrange/types';
 import type { SwapLoserSlotsParams } from './services/BracketAdmin/swap';
 import { BracketAdminService } from './services/BracketAdminService';
@@ -354,25 +355,29 @@ export class BracketManagerService {
   }
 
   /**
-   * Admin-only: Swap one or both teams in an unplayed match.
+   * Admin-only: change the teams of an unplayed winners-bracket round 1 match.
    *
-   * Use case: fixing a seeding decision after the bracket has started but before the
-   * match has been played. Refuses to edit matches whose status is Completed (4) or
-   * whose opponents already have a 'win' or 'loss' result recorded.
+   * Use case: fixing a seeding decision after the bracket has started. Refuses
+   * any other match, a match being played or already played, a team that is
+   * already in another match, and a screen opened before the match changed
+   * (the expected participant ids). Serialized through matchUpdateQueue so it
+   * cannot interleave with score saves.
    *
-   * @param matchId - Match ID in the brackets-manager database
-   * @param newOpponent1TeamId - Team UUID to place in opponent1 slot, or null to clear
-   * @param newOpponent2TeamId - Team UUID to place in opponent2 slot, or null to clear
+   * @throws {ValidationError} For a match outside winners round 1 or an invalid pick
+   * @throws {BusinessLogicError} If the match can't change, a team is already
+   *   elsewhere, the screen is stale, or the write reached no row
    *
    * @example
-   * await bracketManagerService.editMatchParticipants(42, 'team-uuid-a', 'team-uuid-b');
+   * await bracketManagerService.editMatchParticipants({
+   *   matchId: 42,
+   *   opponent1: { kind: 'team', teamId: 'team-uuid-a' },
+   *   opponent2: { kind: 'team', teamId: 'team-uuid-b' },
+   *   expectedOpponent1Id: 7,
+   *   expectedOpponent2Id: 9,
+   * });
    */
-  editMatchParticipants(
-    matchId: number,
-    newOpponent1TeamId: string | null,
-    newOpponent2TeamId: string | null
-  ) {
-    return this.adminService.editMatchParticipants(matchId, newOpponent1TeamId, newOpponent2TeamId);
+  editMatchParticipants(params: EditMatchTeamsParams) {
+    return matchUpdateQueue.enqueue(() => this.adminService.editMatchParticipants(params));
   }
 
   /**

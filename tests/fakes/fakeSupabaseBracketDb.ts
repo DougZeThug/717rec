@@ -9,7 +9,10 @@
  *  - serial integer ids assigned in insertion order (starting at 1) when a
  *    row is inserted without an id;
  *  - .eq/.neq/.in filters, .maybeSingle()/.single() row modes;
- *  - insert(...).select(...) returns the inserted rows.
+ *  - insert(...).select(...) and update(...).select(...) return the written rows.
+ *
+ * `interceptUpdates` lets a test make a match update reach zero rows (what
+ * row-level security does to a non-admin) or fail, to drive error paths.
  *
  * Anything the fake does not implement throws loudly — a query-surface drift
  * in the production code fails tests instead of silently returning nothing.
@@ -23,6 +26,10 @@ type Filter =
   | { kind: 'in'; column: string; values: unknown[] };
 
 type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+
+/** What an intercepted update does instead of writing: reach no row, or fail. */
+type UpdateOutcome = 'zero-rows' | 'error' | undefined;
+type UpdateInterceptor = (table: string, updateIndex: number) => UpdateOutcome;
 
 const KNOWN_TABLES = [
   'brackets',
@@ -39,7 +46,7 @@ class FakeQueryBuilder implements PromiseLike<QueryResult> {
   private operation: 'select' | 'insert' | 'update' | 'delete' = 'select';
   private filters: Filter[] = [];
   private payload: Row | Row[] | null = null;
-  private returnInserted = false;
+  private returnWritten = false;
   private rowMode: 'many' | 'single' | 'maybeSingle' = 'many';
   private ordering: { column: string; ascending: boolean } | null = null;
 
@@ -51,8 +58,8 @@ class FakeQueryBuilder implements PromiseLike<QueryResult> {
   select(_columns?: string): this {
     // Column projection is intentionally not applied: production code always
     // reads named fields, and returning full rows can never hide a bug.
-    if (this.operation === 'insert') {
-      this.returnInserted = true;
+    if (this.operation === 'insert' || this.operation === 'update') {
+      this.returnWritten = true;
     }
     return this;
   }
@@ -132,14 +139,19 @@ class FakeQueryBuilder implements PromiseLike<QueryResult> {
     if (this.operation === 'insert') {
       const items = Array.isArray(this.payload) ? this.payload : [this.payload as Row];
       const inserted = items.map((item) => this.db.storeRow(this.table, item));
-      if (!this.returnInserted) return { data: null, error: null };
+      if (!this.returnWritten) return { data: null, error: null };
       return this.wrapRows(inserted.map((row) => structuredClone(row)));
     }
 
     if (this.operation === 'update') {
-      const targets = rows.filter((row) => this.matches(row));
+      const outcome = this.db.nextUpdateOutcome(this.table);
+      if (outcome === 'error') {
+        return { data: null, error: { message: 'fakeSupabaseBracketDb: intercepted update' } };
+      }
+      const targets = outcome === 'zero-rows' ? [] : rows.filter((row) => this.matches(row));
       for (const row of targets) Object.assign(row, structuredClone(this.payload as Row));
-      return { data: null, error: null };
+      if (!this.returnWritten) return { data: null, error: null };
+      return { data: targets.map((row) => structuredClone(row)), error: null };
     }
 
     if (this.operation === 'delete') {
@@ -187,6 +199,8 @@ export class FakeSupabaseBracketDb {
   private counters = new Map<string, number>();
   readonly rpcCalls: { name: string; args: unknown }[] = [];
   private rpcHandlers = new Map<string, (args: unknown) => QueryResult>();
+  private updateInterceptor: UpdateInterceptor | null = null;
+  private updateCount = 0;
 
   /** The object handed to `vi.mock('@/integrations/supabase/client')`. */
   readonly client = {
@@ -223,7 +237,26 @@ export class FakeSupabaseBracketDb {
     this.tables.clear();
     this.counters.clear();
     this.rpcCalls.length = 0;
+    this.updateInterceptor = null;
+    this.updateCount = 0;
     for (const table of KNOWN_TABLES) this.tables.set(table, []);
+  }
+
+  /**
+   * Intercept updates from now on. The handler sees each update's table and
+   * its 0-based index (counted from this call) and may make it reach no row
+   * or fail; returning undefined lets the update run normally.
+   */
+  interceptUpdates(handler: UpdateInterceptor | null): void {
+    this.updateInterceptor = handler;
+    this.updateCount = 0;
+  }
+
+  /** Used by the query builder: the outcome for the next update. */
+  nextUpdateOutcome(table: string): UpdateOutcome {
+    const index = this.updateCount;
+    this.updateCount += 1;
+    return this.updateInterceptor?.(table, index);
   }
 
   setRpcHandler(name: string, handler: (args: unknown) => QueryResult): void {

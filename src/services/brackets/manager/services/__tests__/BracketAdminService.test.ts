@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
-
 const { mockFrom, mockHandleDatabaseError } = vi.hoisted(() => ({
   mockFrom: vi.fn(),
   mockHandleDatabaseError: vi.fn(),
@@ -94,42 +92,6 @@ describe('BracketAdminService', () => {
     const action = service.adminToggleByeReady(42, true);
     await expect(action).rejects.toThrow(BusinessLogicError);
     await expect(action).rejects.toThrow(/Cannot set to Ready/i);
-  });
-
-  it('partial write failure: bubbles Supabase/database failure as BusinessLogicError with original details', async () => {
-    const storage = {
-      select: vi
-        .fn()
-        .mockResolvedValueOnce({
-          id: 7,
-          stage_id: 2,
-          status: 1,
-          opponent1: { result: null },
-          opponent2: { result: null },
-        })
-        .mockResolvedValueOnce({ id: 2, tournament_id: 'tour-1' })
-        .mockResolvedValueOnce([{ id: 12, team_id: 'team-a', tournament_id: 'tour-1', name: 'A' }]),
-      clearParticipantCache: vi.fn(),
-      loadParticipantsForTournament: vi.fn(),
-    };
-
-    const pgErr = { message: 'write failed', code: '23505' };
-    const dbError = new DatabaseError('Failed to update match participants', pgErr);
-    mockHandleDatabaseError.mockImplementation(() => {
-      throw dbError;
-    });
-
-    mockFrom.mockImplementation((table: string) => {
-      if (table === 'match') return updateEqChain({ error: pgErr });
-      return updateEqChain({ error: null });
-    });
-
-    const service = new BracketAdminService(storage as unknown as SupabaseSqlStorage);
-
-    await expect(service.editMatchParticipants(7, 'team-a', null)).rejects.toMatchObject({
-      name: 'BusinessLogicError',
-      details: dbError,
-    });
   });
 
   it('reopening with a downstream clear never blanks a stored BYE marker', async () => {

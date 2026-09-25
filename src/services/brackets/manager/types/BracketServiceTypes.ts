@@ -25,6 +25,8 @@ export interface StorageMatch {
   round_id: number;
   number: number;
   status: number;
+  /** Games per match; 0 unless the stage was created with multi-game series. */
+  child_count?: number;
   opponent1?: BracketOpponent | null;
   opponent2?: BracketOpponent | null;
 }
