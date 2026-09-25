@@ -36,15 +36,15 @@ export default defineConfig(({ mode }) => ({
         // Each group's `test` is anchored on a whole package folder, so `react`
         // does not also catch `react-hook-form` and the like. A group also takes
         // the package's own dependencies with it - but only for modules that are
-        // really bundled. react-router-dom only re-exports react-router, so
-        // Rolldown skips it and react-router has to be named on its own.
+        // really bundled. A package that only re-exports another one is skipped,
+        // so name the real package on its own.
         codeSplitting: {
           groups: [
             // Highest priority: framer-motion and Sentry import React too, and
             // React must stay in this chunk rather than follow them.
             {
               name: 'vendor-react',
-              test: /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom)[\\/]/,
+              test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
               priority: 20,
             },
             { name: 'vendor-motion', test: /[\\/]node_modules[\\/]framer-motion[\\/]/ },
