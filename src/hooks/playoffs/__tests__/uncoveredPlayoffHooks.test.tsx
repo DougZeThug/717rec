@@ -152,6 +152,8 @@ describe('uncovered playoff hooks', () => {
       });
     });
     expect(mocks.edit).toHaveBeenCalledWith(2, 'a', null);
+    // The open score editor must re-read its match, or it keeps the old teams.
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: ['brackets-manager-match'] });
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
     expect(refetch).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
     expect(mocks.toast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Teams updated' }));

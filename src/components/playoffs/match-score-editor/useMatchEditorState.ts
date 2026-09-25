@@ -35,9 +35,11 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [byeEligible, setByeEligible] = useState<ByeEligibility | null>(null);
 
-  const matchScoreKey = `${matchId ?? 'none'}:${matchData?.opponent1?.score ?? 0}:${
-    matchData?.opponent2?.score ?? 0
-  }`;
+  // The teams are part of the key: a score typed for one pairing must not
+  // survive an Edit teams change and be saved against different teams.
+  const matchScoreKey = `${matchId ?? 'none'}:${matchData?.opponent1?.id ?? '-'}:${
+    matchData?.opponent2?.id ?? '-'
+  }:${matchData?.opponent1?.score ?? 0}:${matchData?.opponent2?.score ?? 0}`;
   const opponent1Score =
     scoreDraft?.key === matchScoreKey
       ? scoreDraft.opponent1Score

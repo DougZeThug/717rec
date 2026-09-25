@@ -32,6 +32,17 @@ export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {
     },
     onSuccess: async () => {
       await invalidateMatchRelatedQueries(queryClient);
+      // The open score editor reads ['brackets-manager-match', id]. Left stale,
+      // it keeps showing the old teams, so a score typed there would be saved
+      // against the wrong team. Other matches can change too, so refresh all.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoffs-brackets-overview'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
+        queryClient.invalidateQueries({ queryKey: ['brackets-manager-match'] }),
+        queryClient.invalidateQueries({ queryKey: ['loser-swap-eligibility'] }),
+        queryClient.invalidateQueries({ queryKey: ['loser-rearrange-board', bracketId] }),
+      ]);
 
       if (bracketId) {
         await queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
