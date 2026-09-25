@@ -174,6 +174,8 @@ not refresh". On failure, "Delete failed" with the league's reason.
 **Repair Bracket** and **Recalculate Standings** act on the first press, with no
 confirmation. Repair reports what it changed — "*N* match(es) updated, *N*
 match(es) made playable, bracket marked completed" — or "Nothing needed repair".
+Repair also resets the hidden feeder numbers on losers-bracket spots. When these
+numbers are wrong, a losers-bracket score fails to save with "Match not found".
 Recalculate says "Final standings calculated", or "Bracket still has unfinished
 matches — Complete every match, then try again."
 

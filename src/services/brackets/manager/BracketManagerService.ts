@@ -81,8 +81,9 @@ export class BracketManagerService {
    * Admin-only: run a single explicit repair pass over a bracket.
    *
    * Consolidates the normalization/propagation machinery (losers-round slot
-   * fixes, grand-final population, stuck-winner propagation, readying fully
-   * populated matches) into one gated action for older/corrupted brackets,
+   * fixes, grand-final population, stuck-winner propagation, losers-bracket
+   * feeder-marker restoration, readying fully populated matches) into one
+   * gated action for older/corrupted brackets,
    * then re-evaluates bracket completion. Returns an auditable summary of
    * what changed.
    *

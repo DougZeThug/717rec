@@ -163,6 +163,14 @@ maintains:
   whole. Writes are sequential in ascending round order; Repair Bracket is the
   recovery tool, the same stance as the swap.
 
+**Repairing feeder markers** (`normalization/LbFeederMarkerRepairService.ts`):
+Repair Bracket puts every losers-bracket team or TBD slot's
+`opponentN_position` back to the value the library gives that slot (carry
+slots: NULL). This heals brackets whose markers were moved with teams by
+earlier versions of the swap and rearrange tools, or blanked by the losers
+round 1 normalization. BYE slots, the winners bracket, and the grand final are
+left as stored. Healed rows count toward the "match(es) updated" total.
+
 **Indexes:**
 - `idx_match_stage` on `stage_id`
 - `idx_match_round` on `round_id`

@@ -367,6 +367,101 @@ describe('BracketNormalizationService', () => {
     });
   });
 
+  describe('repairLbFeederMarkers', () => {
+    const DE_STAGE = {
+      id: 100,
+      type: 'double_elimination',
+      settings: { size: 8, seedOrdering: ['inner_outer'] },
+    };
+
+    /** A size-8 losers bracket. Library markers: R1 1/2, 3/4; R2 drop-ins 2, 1; R4 drop-in 1. */
+    const wireStorage = (storage: StorageDouble, stage: Record<string, unknown> = DE_STAGE) => {
+      storage.select.mockImplementation((table: string) => {
+        if (table === 'stage') return Promise.resolve(stage);
+        if (table === 'group') {
+          return Promise.resolve([
+            { id: 10, number: 1 },
+            { id: 20, number: 2 },
+          ]);
+        }
+        if (table === 'round') {
+          return Promise.resolve([
+            { id: 21, number: 1 },
+            { id: 22, number: 2 },
+            { id: 23, number: 3 },
+            { id: 24, number: 4 },
+          ]);
+        }
+        return Promise.resolve([
+          // Healthy walkover: BYE (no marker, left alone) vs its drop-in.
+          { id: 301, round_id: 21, number: 1, opponent1: null, opponent2: { id: 5, position: 2 } },
+          // A team that brought another round's marker along.
+          { id: 302, round_id: 21, number: 2, opponent1: null, opponent2: { id: 4, position: 1 } },
+          // Wrong drop-in marker (the reported bug: 4 has no winners round 2 match).
+          {
+            id: 401,
+            round_id: 22,
+            number: 1,
+            opponent1: { id: 6, position: 4 },
+            opponent2: { id: 5 },
+          },
+          // Stray marker on a carry slot.
+          {
+            id: 402,
+            round_id: 22,
+            number: 2,
+            opponent1: { id: 3, position: 1 },
+            opponent2: { id: 4, position: 2 },
+          },
+          // Major round: no markers, none stored.
+          { id: 501, round_id: 23, number: 1, opponent1: { id: null }, opponent2: { id: null } },
+          // Empty drop-in slot whose marker was blanked.
+          { id: 601, round_id: 24, number: 1, opponent1: { id: null }, opponent2: { id: null } },
+        ]);
+      });
+    };
+
+    it('restores every wrong marker to the library value and leaves the rest alone', async () => {
+      const storage = createStorageDouble();
+      wireStorage(storage);
+      const { update, eq } = mockSupabaseDirectUpdate({ error: null });
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await expect(service.repairLbFeederMarkers(100)).resolves.toBe(4);
+
+      expect(update.mock.calls).toEqual([
+        [{ opponent2_position: 4 }],
+        [{ opponent1_position: 2 }],
+        [{ opponent2_position: null }],
+        [{ opponent1_position: 1 }],
+      ]);
+      expect(eq.mock.calls).toEqual([
+        ['id', 302],
+        ['id', 401],
+        ['id', 402],
+        ['id', 601],
+      ]);
+    });
+
+    it('does nothing for a single-elimination stage', async () => {
+      const storage = createStorageDouble();
+      wireStorage(storage, { id: 100, type: 'single_elimination', settings: { size: 8 } });
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await expect(service.repairLbFeederMarkers(100)).resolves.toBe(0);
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('throws a DatabaseError when a marker write fails', async () => {
+      const storage = createStorageDouble();
+      wireStorage(storage);
+      mockSupabaseDirectUpdate({ error: { message: 'sql failed' } });
+
+      const service = new BracketNormalizationService(storage as unknown as SupabaseSqlStorage);
+      await expect(service.repairLbFeederMarkers(100)).rejects.toThrow(DatabaseError);
+    });
+  });
+
   it('repairs propagation for completed match winners', async () => {
     const storage = {
       clearParticipantCache: vi.fn(),

@@ -17,7 +17,7 @@ import { markBracketCompleteIfDone } from './BracketUpdate';
  */
 export interface BracketRepairSummary {
   stagesRepaired: number;
-  /** Match rows whose opponents/results/status changed during the repair. */
+  /** Match rows whose opponents/results/feeder markers/status changed during the repair. */
   matchesChanged: number;
   /** Matches flipped from Locked/Waiting to Ready because both slots are filled. */
   statusesNormalized: number;
@@ -31,9 +31,11 @@ const matchFingerprint = (m: StorageMatch): string =>
     m.opponent1?.id ?? null,
     m.opponent1?.score ?? null,
     m.opponent1?.result ?? null,
+    m.opponent1?.position ?? null,
     m.opponent2?.id ?? null,
     m.opponent2?.score ?? null,
     m.opponent2?.result ?? null,
+    m.opponent2?.position ?? null,
     m.status,
   ]);
 
@@ -42,9 +44,9 @@ const matchFingerprint = (m: StorageMatch): string =>
  *
  * Runs the normalization/propagation passes that older brackets may need
  * (stuck losers-round slots, unpopulated grand finals, winners that never
- * advanced) exactly ONCE, then re-evaluates bracket completion. This is the
- * gated home for the repair machinery that previously ran automatically on
- * every score save.
+ * advanced, losers-bracket feeder markers that went wrong) exactly ONCE, then
+ * re-evaluates bracket completion. This is the gated home for the repair
+ * machinery that previously ran automatically on every score save.
  */
 export class BracketRepairService {
   constructor(
@@ -76,6 +78,8 @@ export class BracketRepairService {
       await this.normalizationService.normalizeLosersR1(stage.id);
       await this.normalizationService.normalizeGrandFinalPopulation(stage.id);
       await this.normalizationService.propagateCompletedMatches(stage.id);
+      // After normalizeLosersR1, which can blank markers when it shifts a team.
+      await this.normalizationService.repairLbFeederMarkers(stage.id);
       summary.statusesNormalized += await this.readyFullyPopulatedMatches(stage.id);
 
       const after = await this.snapshotStage(stage.id);

@@ -1130,6 +1130,86 @@ describe('bracket service characterization (real service + real library over fak
         "Bracket stage with ID 'missing-bracket' not found"
       );
     });
+
+    it('restores wrong losers-bracket feeder markers so the match can be scored again', async () => {
+      seedBracketRow();
+      const service = new BracketManagerService();
+      await service.createBracket({
+        bracketId: BRACKET_ID,
+        format: 'double_elimination',
+        teams: teams(6),
+        grandFinalType: 'simple',
+      });
+
+      const groupId = (number: number) =>
+        (db().rows('group') as { id: number; number: number }[]).find((g) => g.number === number)
+          ?.id;
+      const roundId = (group: number, number: number) =>
+        (db().rows('round') as { id: number; group_id: number; number: number }[]).find(
+          (r) => r.group_id === groupId(group) && r.number === number
+        )?.id;
+      const lbMatch = (round: number, number: number) =>
+        mustFindMatch(
+          (m) => m.round_id === roundId(2, round) && m.number === number,
+          `LB R${round} M${number}`
+        );
+
+      // Play winners rounds 1-2 (opponent1 wins), so round 2 of the losers
+      // bracket is [T3, T5] and [T4, T6].
+      const wbEarlyRounds = [roundId(1, 1), roundId(1, 2)];
+      for (let i = 0; i < 8; i++) {
+        const playable = matchRows()
+          .filter((m) => wbEarlyRounds.includes(m.round_id) && (m.status === 2 || m.status === 3))
+          .sort((a, b) => a.id - b.id)[0];
+        if (!playable) break;
+        await service.updateMatch({
+          matchId: playable.id,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        });
+      }
+      const lbR2M1 = lbMatch(2, 1);
+      const t3 = (db().rows('participant') as { id: number; name: string }[]).find(
+        (p) => p.name === 'T3'
+      )?.id;
+      expect(lbR2M1).toMatchObject({ opponent1_id: t3, opponent1_position: 2, status: 2 });
+
+      // A healthy bracket has nothing to restore.
+      expect((await service.repairBracket(BRACKET_ID)).matchesChanged).toBe(0);
+
+      // Damage three markers the way the old rearrange tool could.
+      const setRow = (id: number, fields: Record<string, unknown>) =>
+        Object.assign(
+          db()
+            .tableRows('match')
+            .find((row) => row.id === id) ?? {},
+          fields
+        );
+      setRow(lbR2M1.id, { opponent1_position: 4 });
+      setRow(lbMatch(2, 2).id, { opponent2_position: 1 });
+      setRow(lbMatch(4, 1).id, { opponent1_position: null });
+
+      const scoreLbR2M1 = () =>
+        service.updateMatch({
+          matchId: lbR2M1.id,
+          scores: {
+            opponent1: { score: 2, result: 'win' },
+            opponent2: { score: 0, result: 'loss' },
+          },
+        });
+      await expect(scoreLbR2M1()).rejects.toThrow(/Match not found/);
+
+      const summary = await service.repairBracket(BRACKET_ID);
+      expect(summary.matchesChanged).toBe(3);
+      expect(lbMatch(2, 1).opponent1_position).toBe(2);
+      expect(lbMatch(2, 2).opponent2_position).toBeNull();
+      expect(lbMatch(4, 1).opponent1_position).toBe(1);
+
+      await scoreLbR2M1();
+      expect(lbMatch(3, 1).opponent1_id).toBe(t3);
+    });
   });
 
   describe('final standings (server-side RPC)', () => {
