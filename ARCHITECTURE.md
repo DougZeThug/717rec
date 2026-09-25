@@ -5,7 +5,7 @@ A recreational league management system built with React, TypeScript, and Supaba
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Vite
-- **Routing**: React Router v7 (client-side SPA)
+- **Routing**: React Router v8 (client-side SPA)
 - **Styling**: Tailwind CSS v4 + shadcn/ui components
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
 - **State**: TanStack Query v5 (server state caching)
