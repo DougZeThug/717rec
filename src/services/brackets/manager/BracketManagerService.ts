@@ -1,6 +1,7 @@
 import { BracketsManager } from 'brackets-manager';
 
 import { matchUpdateQueue } from './MatchUpdateQueue';
+import type { EditMatchTeamsParams } from './services/BracketAdmin/editTeams/types';
 import type { SlotAssignment } from './services/BracketAdmin/rearrange/types';
 import type { SwapLoserSlotsParams } from './services/BracketAdmin/swap';
 import { BracketAdminService } from './services/BracketAdminService';
@@ -354,25 +355,57 @@ export class BracketManagerService {
   }
 
   /**
-   * Admin-only: Swap one or both teams in an unplayed match.
+   * Admin-only: change who plays in an unplayed winners-bracket round 1
+   * match — a team, a BYE (the other team walks over), or a team from another
+   * unplayed round 1 match (the two trade places). Round 2 and, in double
+   * elimination, the losers bracket are updated to match.
    *
-   * Use case: fixing a seeding decision after the bracket has started but before the
-   * match has been played. Refuses to edit matches whose status is Completed (4) or
-   * whose opponents already have a 'win' or 'loss' result recorded.
+   * Use case: fixing a seeding decision after the bracket has started. Refuses
+   * any other match, a match being played or already played, a team playing
+   * somewhere it can't leave, a change reaching a played match, and a screen
+   * opened before the bracket changed (the expected ids). Serialized through
+   * matchUpdateQueue so it cannot interleave with score saves.
    *
-   * @param matchId - Match ID in the brackets-manager database
-   * @param newOpponent1TeamId - Team UUID to place in opponent1 slot, or null to clear
-   * @param newOpponent2TeamId - Team UUID to place in opponent2 slot, or null to clear
+   * @throws {ValidationError} For a match outside winners round 1 or an invalid pick
+   * @throws {BusinessLogicError} If the match or a knock-on match can't change,
+   *   a team can't move, the screen is stale, or a write reached no row
    *
    * @example
-   * await bracketManagerService.editMatchParticipants(42, 'team-uuid-a', 'team-uuid-b');
+   * await bracketManagerService.editMatchParticipants({
+   *   matchId: 42,
+   *   opponent1: { kind: 'team', teamId: 'team-uuid-a' },
+   *   opponent2: { kind: 'team', teamId: 'team-uuid-b' },
+   *   expectedOpponent1Id: 7,
+   *   expectedOpponent2Id: 9,
+   * });
    */
-  editMatchParticipants(
-    matchId: number,
-    newOpponent1TeamId: string | null,
-    newOpponent2TeamId: string | null
-  ) {
-    return this.adminService.editMatchParticipants(matchId, newOpponent1TeamId, newOpponent2TeamId);
+  editMatchParticipants(params: EditMatchTeamsParams) {
+    return matchUpdateQueue.enqueue(() => this.adminService.editMatchParticipants(params));
+  }
+
+  /**
+   * Can Edit teams change this match, and if not, why not (plain language).
+   * Read-only; drives whether the Edit teams button is enabled.
+   */
+  checkEditTeamsEligibility(matchId: number) {
+    return this.adminService.checkEditTeamsEligibility(matchId);
+  }
+
+  /**
+   * Everything the Edit teams screen needs: the match's two sides, every
+   * league team grouped by how it can be picked, and the concurrency token
+   * the save sends back. Read-only.
+   */
+  getEditTeamsOptions(matchId: number) {
+    return this.adminService.getEditTeamsOptions(matchId);
+  }
+
+  /**
+   * What saving an Edit teams change would do — the same checks and plan as
+   * the save, with nothing written. A refused edit returns its reason.
+   */
+  previewEditMatchTeams(params: EditMatchTeamsParams) {
+    return this.adminService.previewEditMatchTeams(params);
   }
 
   /**

@@ -258,4 +258,93 @@ describe('BracketFormTeamsContainer', () => {
       );
     });
   });
+
+  describe('Division filter', () => {
+    const divisions = [
+      { id: 'comp', name: 'Competitive', display_division: 'Competitive' },
+      { id: 'comp-high', name: 'Competitive High', display_division: 'Competitive' },
+      { id: 'rec', name: 'Recreational', display_division: 'Recreational' },
+      { id: 'inter', name: 'Intermediate', display_division: 'Intermediate' },
+    ];
+    const teamIn = (id: string, divisionId: string) => ({
+      ...mockProcessedTeams[0],
+      id,
+      name: id,
+      division_id: divisionId,
+    });
+    const leagueTeams = [
+      teamIn('c1', 'comp'),
+      teamIn('c2', 'comp-high'),
+      teamIn('r1', 'rec'),
+      teamIn('r2', 'rec'),
+    ];
+
+    const selecting = (ids: string[]) =>
+      mockUseTeamSelectionState.mockReturnValue({
+        selected: new Set(ids),
+        selectedArray: ids,
+        count: ids.length,
+        handleTeamToggle: vi.fn(),
+        clearSelection: vi.fn(),
+        statusMessage: `${ids.length} teams selected`,
+      });
+
+    const renderWith = (divisionId: string | null) =>
+      render(
+        <BracketFormTeamsContainer
+          {...defaultProps}
+          divisions={divisions}
+          divisionId={divisionId}
+        />
+      );
+
+    beforeEach(() => {
+      mockUseBracketFormData.mockReturnValue({
+        teams: leagueTeams,
+        isLoading: false,
+        isError: false,
+        errorMessage: null,
+        isDataReady: true,
+      });
+      selecting([]);
+    });
+
+    it('shows only the teams of the picked display division', () => {
+      renderWith('comp');
+
+      expect(screen.getByText('Teams: 2')).toBeInTheDocument();
+      expect(screen.getByLabelText('Show teams from all divisions')).not.toBeChecked();
+    });
+
+    it('shows every team once "Show teams from all divisions" is ticked', async () => {
+      renderWith('comp');
+
+      await userEvent.click(screen.getByLabelText('Show teams from all divisions'));
+
+      expect(screen.getByText('Teams: 4')).toBeInTheDocument();
+    });
+
+    it('keeps a selected team from another division in the list', () => {
+      selecting(['r1']);
+      renderWith('comp');
+
+      expect(screen.getByText('Teams: 3')).toBeInTheDocument();
+    });
+
+    it('shows every team, with no checkbox, before a division is picked', () => {
+      renderWith(null);
+
+      expect(screen.getByText('Teams: 4')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Show teams from all divisions')).not.toBeInTheDocument();
+    });
+
+    it('says when the picked division has no teams, and still offers every team', async () => {
+      renderWith('inter');
+
+      expect(screen.getByText(/No Intermediate teams/)).toBeInTheDocument();
+      expect(screen.queryByTestId('team-selection-empty')).not.toBeInTheDocument();
+      await userEvent.click(screen.getByLabelText('Show teams from all divisions'));
+      expect(screen.getByText('Teams: 4')).toBeInTheDocument();
+    });
+  });
 });

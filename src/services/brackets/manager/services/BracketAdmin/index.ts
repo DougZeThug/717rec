@@ -1,8 +1,11 @@
 import type { SupabaseSqlStorage } from '../../SupabaseSqlStorage';
 import { adminCompleteByeMatch } from './byeCompletion';
+import { editMatchTeams } from './editTeams/apply';
+import { checkEditTeamsEligibility, getEditTeamsOptions } from './editTeams/options';
+import { previewEditMatchTeams } from './editTeams/preview';
+import type { EditMatchTeamsParams } from './editTeams/types';
 import { isLosersByeMatch } from './eligibility';
 import { adminToggleByeReady } from './lifecycle';
-import { editMatchParticipants } from './participants';
 import { applyLoserBracketRearrange } from './rearrange/apply';
 import { loadRearrangeBoard } from './rearrange/board';
 import type { SlotAssignment } from './rearrange/types';
@@ -27,17 +30,20 @@ export class BracketAdminService {
     return adminCompleteByeMatch({ storage: this.storage }, matchId, score);
   }
 
-  editMatchParticipants(
-    matchId: number,
-    newOpponent1TeamId: string | null,
-    newOpponent2TeamId: string | null
-  ) {
-    return editMatchParticipants(
-      { storage: this.storage },
-      matchId,
-      newOpponent1TeamId,
-      newOpponent2TeamId
-    );
+  editMatchParticipants(params: EditMatchTeamsParams) {
+    return editMatchTeams({ storage: this.storage }, params);
+  }
+
+  checkEditTeamsEligibility(matchId: number) {
+    return checkEditTeamsEligibility({ storage: this.storage }, matchId);
+  }
+
+  getEditTeamsOptions(matchId: number) {
+    return getEditTeamsOptions({ storage: this.storage }, matchId);
+  }
+
+  previewEditMatchTeams(params: EditMatchTeamsParams) {
+    return previewEditMatchTeams({ storage: this.storage }, params);
   }
 
   checkLoserSwapEligibility(matchId: number) {

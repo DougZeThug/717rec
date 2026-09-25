@@ -3,35 +3,37 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
 import { bracketManagerService } from '@/services/brackets/manager';
+import type { EditMatchTeamsParams } from '@/services/brackets/manager/services/BracketAdmin/editTeams/types';
 import { bracketLog, errorLog } from '@/utils/logger';
 
-interface EditMatchParticipantsVariables {
-  matchId: number;
-  opponent1TeamId: string | null;
-  opponent2TeamId: string | null;
-}
-
 /**
- * Admin mutation hook: swap one or both teams in an unplayed playoff match.
- *
- * Mirrors the manual workflow of editing 'opponent1_id' / 'opponent2_id' in Supabase
- * — the service will refuse to touch a match that has already been played.
+ * Admin mutation hook: change the teams of an unplayed winners-bracket round 1
+ * match. The service refuses any other match, a team already in another
+ * match, and a screen opened before the match changed.
  */
 export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: ({ matchId, opponent1TeamId, opponent2TeamId }: EditMatchParticipantsVariables) => {
-      bracketLog('usePlayoffEditMatchParticipants - calling service', {
-        matchId,
-        opponent1TeamId,
-        opponent2TeamId,
-      });
-      return bracketManagerService.editMatchParticipants(matchId, opponent1TeamId, opponent2TeamId);
+    mutationFn: (params: EditMatchTeamsParams) => {
+      bracketLog('usePlayoffEditMatchParticipants - calling service', { ...params });
+      return bracketManagerService.editMatchParticipants(params);
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       await invalidateMatchRelatedQueries(queryClient);
+      // The open score editor reads ['brackets-manager-match', id]. Left stale,
+      // it keeps showing the old teams, so a score typed there would be saved
+      // against the wrong team. Other matches can change too, so refresh all.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['brackets'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoffs-brackets-overview'] }),
+        queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
+        queryClient.invalidateQueries({ queryKey: ['brackets-manager-match'] }),
+        queryClient.invalidateQueries({ queryKey: ['loser-swap-eligibility'] }),
+        queryClient.invalidateQueries({ queryKey: ['loser-rearrange-board', bracketId] }),
+        queryClient.invalidateQueries({ queryKey: ['edit-teams-eligibility'] }),
+      ]);
 
       if (bracketId) {
         await queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] });
@@ -41,7 +43,7 @@ export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {
 
       toast({
         title: 'Teams updated',
-        description: 'Matchup teams were swapped successfully.',
+        description: result.message,
       });
     },
     onError: (error: Error) => {

@@ -1,4 +1,4 @@
-import { Loader2, Shuffle } from 'lucide-react';
+import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,11 @@ interface ByeMatchEditorProps {
   onToggleByeStatus: (clearDownstream: boolean) => void;
   /** Admin-only, losers bracket only: move the team into a sibling match. */
   onSwapTeams?: () => void;
+  /** Admin-only: change who plays in a winners round 1 match (e.g. fill the BYE). */
+  onEditTeams?: () => void;
+  canEditTeams?: boolean;
+  /** Why Edit teams is disabled, shown as text (tooltips don't show on phones). */
+  editTeamsBlockedReason?: string | null;
   status?: number;
 }
 
@@ -144,6 +149,38 @@ const ByeStatusControl: React.FC<{
   );
 };
 
+interface EditTeamsActionProps {
+  onEditTeams: () => void;
+  busy: boolean;
+  canEditTeams?: boolean;
+  blockedReason?: string | null;
+}
+
+/** The Edit teams button, with the reason as text when it is disabled. */
+const EditTeamsAction: React.FC<EditTeamsActionProps> = ({
+  onEditTeams,
+  busy,
+  canEditTeams,
+  blockedReason,
+}) => (
+  <div className="space-y-1">
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={onEditTeams}
+      disabled={busy || !canEditTeams}
+      className="w-full sm:w-auto"
+      title="Change who plays in this match, for example fill the BYE with a team"
+    >
+      <ArrowLeftRight className="mr-1 size-4" />
+      Edit teams
+    </Button>
+    {!canEditTeams && blockedReason && (
+      <p className="text-xs text-muted-foreground">Edit teams: {blockedReason}</p>
+    )}
+  </div>
+);
+
 export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   byeWinner,
   hasOpponent1,
@@ -158,6 +195,9 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   onClose,
   onToggleByeStatus,
   onSwapTeams,
+  onEditTeams,
+  canEditTeams,
+  editTeamsBlockedReason,
   status,
 }) => {
   return (
@@ -229,6 +269,15 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
           <Shuffle className="mr-1 size-4" />
           Move team to another match
         </Button>
+      )}
+
+      {onEditTeams && (
+        <EditTeamsAction
+          onEditTeams={onEditTeams}
+          busy={isSaving || isTogglingStatus}
+          canEditTeams={canEditTeams}
+          blockedReason={editTeamsBlockedReason}
+        />
       )}
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">

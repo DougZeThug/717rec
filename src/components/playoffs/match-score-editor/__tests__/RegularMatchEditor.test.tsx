@@ -29,6 +29,32 @@ describe('RegularMatchEditor', () => {
     vi.clearAllMocks();
   });
 
+  it('shows why Edit teams is disabled, as text', () => {
+    const onEditTeams = vi.fn();
+    render(
+      <RegularMatchEditor
+        {...defaultProps}
+        onEditTeams={onEditTeams}
+        canEditTeams={false}
+        editTeamsBlockedReason="This match is being played, so its teams can't change."
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /edit teams/i })).toBeDisabled();
+    expect(
+      screen.getByText("Edit teams: This match is being played, so its teams can't change.")
+    ).toBeInTheDocument();
+  });
+
+  it('opens Edit teams when it is allowed', () => {
+    const onEditTeams = vi.fn();
+    render(<RegularMatchEditor {...defaultProps} onEditTeams={onEditTeams} canEditTeams />);
+
+    fireEvent.click(screen.getByRole('button', { name: /edit teams/i }));
+    expect(onEditTeams).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/^Edit teams:/)).not.toBeInTheDocument();
+  });
+
   it('clamps negative team 1 score to 0', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 

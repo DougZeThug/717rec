@@ -56,6 +56,25 @@ describe('useMatchEditorState', () => {
     expect(result.current.opponent2Score).toBe(5);
   });
 
+  it('drops a typed score when the teams in the match change', () => {
+    const { result, rerender } = renderHook(
+      () => useMatchEditorState({ matchId: 1, onClose: vi.fn() }),
+      { wrapper }
+    );
+    act(() => result.current.setOpponent1Score(3));
+    expect(result.current.opponent1Score).toBe(3);
+
+    // Edit teams replaced opponent1: the draft belonged to the old pairing.
+    const original = matchData.opponent1;
+    matchData.opponent1 = { id: 11, score: 0 };
+    try {
+      rerender();
+      expect(result.current.opponent1Score).toBe(0);
+    } finally {
+      matchData.opponent1 = original;
+    }
+  });
+
   it('preserves opponent1 score when opponent2 setter runs after (double-setter)', () => {
     const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
       wrapper,

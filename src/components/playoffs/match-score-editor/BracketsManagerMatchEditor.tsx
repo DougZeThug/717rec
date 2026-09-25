@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import EditMatchParticipantsDialog from '@/components/playoffs/admin/EditMatchParticipantsDialog';
 import SwapLoserSlotsDialog from '@/components/playoffs/admin/SwapLoserSlotsDialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useEditTeamsEligibility } from '@/hooks/playoffs/useEditTeams';
 import { useLoserSwapEligibility } from '@/hooks/playoffs/usePlayoffLoserSwap';
-import { usePlayoffTeams } from '@/hooks/playoffs/usePlayoffTeams';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 
 import { ByeMatchEditor } from './ByeMatchEditor';
@@ -42,16 +42,23 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
     handleToggleByeStatus,
   } = useMatchEditorState({ matchId, onClose, onSaved });
 
-  const { data: teams } = usePlayoffTeams();
   const [isEditTeamsOpen, setIsEditTeamsOpen] = useState(false);
   const [isSwapTeamsOpen, setIsSwapTeamsOpen] = useState(false);
 
-  // The losers-bracket swap is admin-only: the editor itself can open for
-  // non-admins, so the action gets its own explicit gate here.
+  // The losers-bracket swap and Edit teams are admin-only: the editor itself
+  // can open for non-admins, so each action gets its own explicit gate here.
   const { isAdminAccessGranted } = useAdminAccess();
   const { data: swapEligibility } = useLoserSwapEligibility(isAdminAccessGranted ? matchId : null);
   const canSwapTeams = isAdminAccessGranted && swapEligibility?.ok === true;
   const onSwapTeams = canSwapTeams ? () => setIsSwapTeamsOpen(true) : undefined;
+  const { data: editTeamsEligibility } = useEditTeamsEligibility(
+    isAdminAccessGranted ? matchId : null
+  );
+  const editTeamsProps = {
+    onEditTeams: isAdminAccessGranted ? () => setIsEditTeamsOpen(true) : undefined,
+    canEditTeams: editTeamsEligibility?.ok === true,
+    editTeamsBlockedReason: editTeamsEligibility?.reason ?? null,
+  };
 
   if (isLoading) {
     return (
@@ -84,14 +91,6 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
   const isBye = !matchData.opponent1 || !matchData.opponent2;
   const byeWinner = matchData.opponent1 || matchData.opponent2;
 
-  // A match is safe to reassign teams on only if it hasn't been played yet
-  const canEditTeams =
-    matchData.status !== 4 &&
-    matchData.opponent1?.result !== 'win' &&
-    matchData.opponent1?.result !== 'loss' &&
-    matchData.opponent2?.result !== 'win' &&
-    matchData.opponent2?.result !== 'loss';
-
   const editTeamsDialog =
     matchId !== null ? (
       <EditMatchParticipantsDialog
@@ -99,9 +98,6 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
         onOpenChange={setIsEditTeamsOpen}
         bracketId={bracketId}
         matchId={matchId}
-        currentTeam1Id={matchData.opponent1?.team_id ?? null}
-        currentTeam2Id={matchData.opponent2?.team_id ?? null}
-        teams={teams ?? []}
       />
     ) : null;
 
@@ -134,6 +130,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             onToggleByeStatus={handleToggleByeStatus}
             status={matchData.status}
             onSwapTeams={onSwapTeams}
+            {...editTeamsProps}
           />
         </Dialog>
         {editTeamsDialog}
@@ -157,8 +154,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
           isSaving={isSaving}
           onSave={handleSave}
           onClose={onClose}
-          onEditTeams={() => setIsEditTeamsOpen(true)}
-          canEditTeams={canEditTeams}
+          {...editTeamsProps}
           status={matchData.status}
           onSwapTeams={onSwapTeams}
         />
