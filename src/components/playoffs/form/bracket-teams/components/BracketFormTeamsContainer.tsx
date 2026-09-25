@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { useToast } from '@/hooks/useToast';
 import { warnLog } from '@/utils/logger';
@@ -9,12 +11,52 @@ import { useBracketFormData } from '../hooks/useBracketFormData';
 import { useBracketFormValidation } from '../hooks/useBracketFormValidation';
 import { useTeamSelectionState } from '../hooks/useTeamSelectionState';
 import { BracketFormTeamsContainerProps, ProcessedTeam } from '../types';
+import { teamsInDisplayDivision } from '../utils/divisionFilter';
 import { TeamSelectionEmpty } from './TeamSelectionEmpty';
 import { TeamSelectionError } from './TeamSelectionError';
 import { TeamSelectionForm } from './TeamSelectionForm';
 import { TeamSelectionLoading } from './TeamSelectionLoading';
 
 const EMPTY_DIVISIONS: BracketFormTeamsContainerProps['divisions'] = [];
+
+/**
+ * The teams to list: only the picked division's — unless the admin asks for
+ * every division, so a team that moved up can still be picked. A selected
+ * team always stays listed, so a division change never hides a pick that
+ * still counts.
+ */
+function visibleTeams(
+  teams: ProcessedTeam[],
+  divisionGroup: { teams: ProcessedTeam[] } | null,
+  showAllDivisions: boolean,
+  selected: Set<string>
+): ProcessedTeam[] {
+  if (!divisionGroup || showAllDivisions) return teams;
+  const inDivision = new Set(divisionGroup.teams.map((team) => team.id));
+  return teams.filter((team) => inDivision.has(team.id) || selected.has(team.id));
+}
+
+interface ShowAllDivisionsToggleProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}
+
+/** The box that lists every league team again once a division narrows the list. */
+const ShowAllDivisionsToggle: React.FC<ShowAllDivisionsToggleProps> = ({
+  checked,
+  onCheckedChange,
+}) => (
+  <div className="flex items-center gap-2">
+    <Checkbox
+      id="bracket-show-all-divisions"
+      checked={checked}
+      onCheckedChange={(value) => onCheckedChange(value === true)}
+    />
+    <Label htmlFor="bracket-show-all-divisions" className="cursor-pointer">
+      Show teams from all divisions
+    </Label>
+  </div>
+);
 
 /**
  * Main container component for bracket team selection
@@ -31,6 +73,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
 }) => {
   const { toast } = useToast();
   const hasToastedInvalidDivision = React.useRef(false);
+  const [showAllDivisions, setShowAllDivisions] = React.useState(false);
 
   // Runtime validation of props using type guards
   const validDivisions = React.useMemo(() => {
@@ -115,11 +158,15 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     }));
   }, [allTeams]);
 
-  // No division filtering - allow all teams to be selected regardless of division
-  // This supports playoff scenarios where teams can move up divisions
-  const filteredTeams = React.useMemo(() => {
-    return processedTeams;
-  }, [processedTeams]);
+  // The picked division's display division ("Competitive" covers every
+  // Competitive division), so the admin is not handed every league team.
+  const divisionGroup = React.useMemo(
+    () =>
+      validDivisionId
+        ? teamsInDisplayDivision(processedTeams, validDivisions, validDivisionId)
+        : null,
+    [processedTeams, validDivisions, validDivisionId]
+  );
 
   // Resolve the bounds once so selection state and validation agree — passing
   // the raw props to one and the fallbacks to the other let the picker cap
@@ -133,8 +180,13 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
   const formState = useTeamSelectionState(
     resolvedMaxTeams,
     new Set(), // initialSelected
-    Array.isArray(filteredTeams) ? filteredTeams.length : 0,
+    processedTeams.length,
     resolvedMinTeams
+  );
+
+  const filteredTeams = React.useMemo(
+    () => visibleTeams(processedTeams, divisionGroup, showAllDivisions, formState.selected),
+    [processedTeams, divisionGroup, showAllDivisions, formState.selected]
   );
 
   // Unified validation
@@ -155,7 +207,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     });
   }, [formState.selected, validation.isValid, onChange]);
 
-  // Don't clear selection when division changes - teams can be in any division
+  // Don't clear selection when the division changes: selected teams stay listed
   React.useEffect(() => {
     // Reset toast flag when division changes
     hasToastedInvalidDivision.current = false;
@@ -186,23 +238,33 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     );
   }
 
-  // Empty state (no teams available)
-  if (!Array.isArray(filteredTeams) || filteredTeams.length === 0) {
+  // Empty state (no teams in the league at all)
+  if (processedTeams.length === 0) {
     return <TeamSelectionEmpty />;
   }
 
   // Main form with teams available
   return (
     <div className="space-y-2">
-      <TeamSelectionForm
-        teams={filteredTeams}
-        formState={formState}
-        maxTeams={resolvedMaxTeams}
-        minTeams={resolvedMinTeams}
-        divisionId={validDivisionId ?? undefined}
-        seedValidation={seedValidation}
-        onSeedChange={handleSeedChange}
-      />
+      {divisionGroup && (
+        <ShowAllDivisionsToggle checked={showAllDivisions} onCheckedChange={setShowAllDivisions} />
+      )}
+      {filteredTeams.length > 0 ? (
+        <TeamSelectionForm
+          teams={filteredTeams}
+          formState={formState}
+          maxTeams={resolvedMaxTeams}
+          minTeams={resolvedMinTeams}
+          divisionId={validDivisionId ?? undefined}
+          seedValidation={seedValidation}
+          onSeedChange={handleSeedChange}
+        />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          No {divisionGroup?.label} teams. Tick &quot;Show teams from all divisions&quot; to pick
+          from other divisions.
+        </p>
+      )}
 
       {/* Display validation message */}
       {validation.message && <div className="text-sm text-destructive">{validation.message}</div>}

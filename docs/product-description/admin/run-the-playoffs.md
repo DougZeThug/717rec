@@ -114,8 +114,11 @@ lost on leaving. The Brackets/Teams tab is remembered for the browser tab.
 The create dialog opens empty every time. Its fields:
 
 - **Title** — free text, required, no length limit stated.
-- **Division** — required; it only labels the bracket. **Teams are not filtered
-  by it**, deliberately, so a bracket can mix divisions.
+- **Division** — required; it labels the bracket and **narrows the team list**
+  to its display division ("Competitive" lists every Competitive division's
+  teams). A **Show teams from all divisions** box lists every team again, so a
+  bracket can still mix divisions. A selected team stays listed when the
+  division changes; a division with no teams says so and offers the box.
 - **Format** — Single or Double Elimination. Default Double.
 - **Grand final** — one match or two, for double elimination only.
 - **Teams** — between **2 and 32**, shown as "Select Teams (*N*/32)".
@@ -341,8 +344,10 @@ sees a count.
   After that, Edit teams can still change the teams of a first-round winners
   bracket match that has not been played; anything later needs the bracket
   deleted and built again.
-- **Teams are not filtered by the chosen division**, so a bracket can contain
-  teams from anywhere while being labelled one division.
+- **The team list follows the chosen division, but only as a filter**: with
+  Show teams from all divisions ticked, or with teams kept selected across a
+  division change, a bracket can contain teams from anywhere while being
+  labelled one division.
 - **The Seeds tab writes to the league before the bracket exists**, and
   cancelling the dialog does not undo it.
 - **Blind draw Clear All is league-wide**, whatever night the signups were for.
@@ -395,8 +400,10 @@ sees a count.
 
 Verified against `717rec` commit `ea5c8f4`, except the bracket-editing
 behaviour, the phone behaviour of the admin controls, Repair Bracket's
-feeder-number reset, and Edit teams above, all changed after that commit — see
+feeder-number reset, Edit teams, and the division filter on the create
+dialog's team list above, all changed after that commit — see
 [B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed),
 [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone),
-[pull request 1556](https://github.com/DougZeThug/717rec/pull/1556), and the
-Edit teams rebuild that followed it.
+[pull request 1556](https://github.com/DougZeThug/717rec/pull/1556), and
+[pull request 1559](https://github.com/DougZeThug/717rec/pull/1559) (the Edit
+teams rebuild and the division filter).
