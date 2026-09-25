@@ -74,6 +74,10 @@ if (!isSupabaseConfigured) {
       themes={['light', 'dark', 'winter-frozen']}
       enableSystem={false}
       disableTransitionOnChange={false}
+      // next-themes renders an inline <script> for server rendering. React
+      // never runs a script it creates on the client, and React 19 logs a
+      // console error for one unless its type marks it as data.
+      scriptProps={{ type: 'text/plain' }}
     >
       <App />
     </ThemeProvider>

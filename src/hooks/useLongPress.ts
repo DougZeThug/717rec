@@ -7,7 +7,7 @@ interface UseLongPressOptions {
 }
 
 export function useLongPress({ onClick, onLongPress, longPressDelay = 500 }: UseLongPressOptions) {
-  const timeout = useRef<ReturnType<typeof setTimeout>>();
+  const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const target = useRef<EventTarget | null>(null);
 
   // Clear timeout if component unmounts or user stops pressing
