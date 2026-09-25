@@ -38,6 +38,30 @@ describe('ByeMatchEditor', () => {
     vi.clearAllMocks();
   });
 
+  it('offers Edit teams (for example to fill the BYE), with the reason when disabled', () => {
+    const onEditTeams = vi.fn();
+    const { rerender } = render(
+      <ByeMatchEditor {...defaultProps} onEditTeams={onEditTeams} canEditTeams />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /edit teams/i }));
+    expect(onEditTeams).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <ByeMatchEditor
+        {...defaultProps}
+        onEditTeams={onEditTeams}
+        canEditTeams={false}
+        editTeamsBlockedReason="Edit teams only works on first-round matches of the winners bracket."
+      />
+    );
+    expect(screen.getByRole('button', { name: /edit teams/i })).toBeDisabled();
+    expect(
+      screen.getByText(
+        'Edit teams: Edit teams only works on first-round matches of the winners bracket.'
+      )
+    ).toBeInTheDocument();
+  });
+
   it('clamps negative BYE winner score to 0', () => {
     render(<ByeMatchEditor {...defaultProps} />);
 

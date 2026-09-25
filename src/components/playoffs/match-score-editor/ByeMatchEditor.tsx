@@ -1,4 +1,4 @@
-import { Loader2, Shuffle } from 'lucide-react';
+import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,11 @@ interface ByeMatchEditorProps {
   onToggleByeStatus: (clearDownstream: boolean) => void;
   /** Admin-only, losers bracket only: move the team into a sibling match. */
   onSwapTeams?: () => void;
+  /** Admin-only: change who plays in a winners round 1 match (e.g. fill the BYE). */
+  onEditTeams?: () => void;
+  canEditTeams?: boolean;
+  /** Why Edit teams is disabled, shown as text (tooltips don't show on phones). */
+  editTeamsBlockedReason?: string | null;
   status?: number;
 }
 
@@ -158,6 +163,9 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   onClose,
   onToggleByeStatus,
   onSwapTeams,
+  onEditTeams,
+  canEditTeams,
+  editTeamsBlockedReason,
   status,
 }) => {
   return (
@@ -229,6 +237,25 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
           <Shuffle className="mr-1 size-4" />
           Move team to another match
         </Button>
+      )}
+
+      {onEditTeams && (
+        <div className="space-y-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onEditTeams}
+            disabled={isSaving || isTogglingStatus || !canEditTeams}
+            className="w-full sm:w-auto"
+            title="Change who plays in this match, for example fill the BYE with a team"
+          >
+            <ArrowLeftRight className="mr-1 size-4" />
+            Edit teams
+          </Button>
+          {!canEditTeams && editTeamsBlockedReason && (
+            <p className="text-xs text-muted-foreground">Edit teams: {editTeamsBlockedReason}</p>
+          )}
+        </div>
       )}
 
       <div className="flex flex-col sm:flex-row justify-end gap-2">

@@ -26,6 +26,8 @@ interface RegularMatchEditorProps {
   onClose: () => void;
   onEditTeams?: () => void;
   canEditTeams?: boolean;
+  /** Why Edit teams is disabled, shown as text (tooltips don't show on phones). */
+  editTeamsBlockedReason?: string | null;
   /** Admin-only, losers bracket only: move a team into a sibling match. */
   onSwapTeams?: () => void;
   status?: number;
@@ -44,6 +46,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
   onClose,
   onEditTeams,
   canEditTeams,
+  editTeamsBlockedReason,
   onSwapTeams,
   status,
 }) => {
@@ -108,11 +111,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
               size="sm"
               onClick={onEditTeams}
               disabled={isSaving || !canEditTeams}
-              title={
-                canEditTeams
-                  ? 'Change which teams are in this matchup'
-                  : 'Teams can only be swapped on unplayed matches'
-              }
+              title="Change which teams are in this matchup"
             >
               <ArrowLeftRight className="mr-1 size-4" />
               Edit teams
@@ -142,6 +141,9 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
           </Button>
         </div>
       </div>
+      {onEditTeams && !canEditTeams && editTeamsBlockedReason && (
+        <p className="text-xs text-muted-foreground">Edit teams: {editTeamsBlockedReason}</p>
+      )}
     </DialogContent>
   );
 };
