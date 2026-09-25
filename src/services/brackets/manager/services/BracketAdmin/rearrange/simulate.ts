@@ -1,6 +1,7 @@
 import type { MatchUpdateFields } from '../shapes';
 import { otherSide } from '../shapes';
 import type {
+  ForcedSlotChange,
   PlannedMatchWrite,
   RearrangePlanResult,
   RearrangeProblem,
@@ -75,6 +76,12 @@ interface OriginSlotRef {
   slot: SnapshotSlot;
 }
 
+/** Wording options: a label prefix ("Losers ") and how problems name the action. */
+interface SimulationOptions {
+  labelPrefix?: string;
+  subject?: string;
+}
+
 /** Everything the simulation steps share. */
 interface Simulation {
   snapshot: RearrangeSnapshot;
@@ -84,11 +91,13 @@ interface Simulation {
   moves: string[];
   consequences: string[];
   nameOf: (participantId: number | null | undefined) => string;
+  /** Match numbers restart every round, so labels always carry the round. */
+  labelOf: (match: { roundNumber: number; number: number }) => string;
+  /** The last losers-bracket round: the only one whose matches have no landing. */
+  lastRoundNumber: number;
+  /** How problems name the admin's action, e.g. "This arrangement". */
+  subject: string;
 }
-
-/** Match numbers restart every round, so labels always carry the round. */
-const labelOf = (match: { roundNumber: number; number: number }): string =>
-  `Round ${match.roundNumber} Match ${match.number}`;
 
 /**
  * Simulate an entire losers-bracket rearrangement without touching the
@@ -109,7 +118,67 @@ export function simulateRearrange(
   return resultOf(sim, sim.problems.length === 0 ? collectWrites(sim) : []);
 }
 
-function initSimulation(snapshot: RearrangeSnapshot): Simulation {
+/**
+ * Simulate losers-bracket slots changing from outside — a winners-bracket
+ * edit turning the spot a loser drops into into a BYE, or back into a spot
+ * waiting for a team — and ripple the automatic results forward exactly as
+ * a rearrangement does. Pure, like simulateRearrange.
+ *
+ * Every target is marked changed even when it already holds the wanted
+ * content, so the cascade is recomputed from it: saving an interrupted edit
+ * again finishes whatever part of the cascade was not written. A target
+ * that holds a team, or whose match can't absorb the change (played, being
+ * played, results recorded), is refused.
+ */
+export function simulateSlotChanges(
+  snapshot: RearrangeSnapshot,
+  changes: ForcedSlotChange[],
+  options: SimulationOptions = {}
+): RearrangePlanResult {
+  const sim = initSimulation(snapshot, { subject: 'This change', ...options });
+  for (const change of changes) {
+    const state = sim.working.get(change.matchId);
+    if (!state) {
+      sim.problems.push({ message: STALE_MESSAGE });
+      continue;
+    }
+    const label = sim.labelOf(state.original);
+    if (state[change.side].shape === 'team') {
+      sim.problems.push({
+        message: `${label} already holds a team in that spot, so it can't change automatically.`,
+        slot: change,
+      });
+      continue;
+    }
+    const blocked = state.original.editable ? null : landingBlockReason(state);
+    if (blocked) {
+      sim.problems.push({
+        message: `${sim.subject} needs to change ${label} automatically, but that match ${blocked}.`,
+        slot: change,
+      });
+      continue;
+    }
+    state[change.side] =
+      change.content.kind === 'bye'
+        ? { shape: 'bye', participantId: null, position: null, result: 'bye', score: null }
+        : {
+            shape: 'tbd',
+            participantId: null,
+            position: change.content.position,
+            result: null,
+            score: null,
+          };
+    state.dirty = true;
+  }
+  if (sim.problems.length > 0) return resultOf(sim, []);
+  propagateRounds(sim);
+  return resultOf(sim, sim.problems.length === 0 ? collectWrites(sim) : []);
+}
+
+function initSimulation(
+  snapshot: RearrangeSnapshot,
+  { labelPrefix = '', subject = 'This arrangement' }: SimulationOptions = {}
+): Simulation {
   const working = new Map<number, WorkingMatch>();
   const originSlots = new Map<string, OriginSlotRef>();
   for (const match of snapshot.matches) {
@@ -135,6 +204,9 @@ function initSimulation(snapshot: RearrangeSnapshot): Simulation {
     consequences: [],
     nameOf: (participantId) =>
       (participantId != null ? snapshot.names[String(participantId)] : null) ?? 'the team',
+    labelOf: (match) => `${labelPrefix}Round ${match.roundNumber} Match ${match.number}`,
+    lastRoundNumber: Math.max(0, ...snapshot.matches.map((match) => match.roundNumber)),
+    subject,
   };
 }
 
@@ -256,8 +328,8 @@ function narrateMove(
   if (!from) return;
   sim.moves.push(
     from.match.id === origin.match.id
-      ? `${sim.nameOf(participantId)} switches sides within ${labelOf(origin.match)}.`
-      : `${sim.nameOf(participantId)} moves from ${labelOf(from.match)} to ${labelOf(origin.match)}.`
+      ? `${sim.nameOf(participantId)} switches sides within ${sim.labelOf(origin.match)}.`
+      : `${sim.nameOf(participantId)} moves from ${sim.labelOf(from.match)} to ${sim.labelOf(origin.match)}.`
   );
 }
 
@@ -290,12 +362,20 @@ function carryProductToLanding(sim: Simulation, match: SnapshotMatch, state: Wor
 
   if (landing === null) {
     // Last losers-bracket round: its outcome feeds the grand final, which
-    // this tool does not touch — the outcome spot must stay the same.
+    // this tool does not touch — the outcome spot must stay the same. Any
+    // earlier match without a landing is one whose landing could not be
+    // worked out (the board locks it), so its outcome can't move either.
     const oldProduct = productOf(cloneSlot(match.opponent1), cloneSlot(match.opponent2));
-    if (!sameProduct(oldProduct, newProduct)) {
+    if (!sameProduct(oldProduct, newProduct) && match.roundNumber < sim.lastRoundNumber) {
       sim.problems.push({
         message:
-          `This change would alter what comes out of ${labelOf(match)} (the losers-bracket ` +
+          `This change needs to change what comes out of ${sim.labelOf(match)}, but that part ` +
+          'of the bracket looks inconsistent — run Repair Bracket first.',
+      });
+    } else if (!sameProduct(oldProduct, newProduct)) {
+      sim.problems.push({
+        message:
+          `This change would alter what comes out of ${sim.labelOf(match)} (the losers-bracket ` +
           'final) into the grand final — that is not supported. Keep the same outcome there.',
       });
     }
@@ -321,12 +401,12 @@ function carryProductToLanding(sim: Simulation, match: SnapshotMatch, state: Wor
   if (blocked) {
     sim.problems.push({
       message:
-        `This arrangement needs to change ${labelOf(landingMatch)} automatically, ` +
+        `${sim.subject} needs to change ${sim.labelOf(landingMatch)} automatically, ` +
         `but that match ${blocked}.`,
     });
     return;
   }
-  narrateLandingChange(sim, currentContent, nextContent, labelOf(landingMatch));
+  narrateLandingChange(sim, currentContent, nextContent, sim.labelOf(landingMatch));
   landingState[landing.side] = nextContent;
   landingState.dirty = true;
 }
@@ -389,7 +469,7 @@ function recomputeMatch(sim: Simulation, state: WorkingMatch): void {
     clearNonByeResults();
     state.status = 1;
     if (!hadTbd) {
-      sim.consequences.push(`${labelOf(before)} goes back to waiting for an earlier match.`);
+      sim.consequences.push(`${sim.labelOf(before)} goes back to waiting for an earlier match.`);
     }
     return;
   }
@@ -398,7 +478,7 @@ function recomputeMatch(sim: Simulation, state: WorkingMatch): void {
     state.status = 2;
     if (!wasRealMatch) {
       sim.consequences.push(
-        `${labelOf(before)} is now ${sim.nameOf(state.opponent1.participantId)} vs ` +
+        `${sim.labelOf(before)} is now ${sim.nameOf(state.opponent1.participantId)} vs ` +
           `${sim.nameOf(state.opponent2.participantId)}, ready to play.`
       );
     }
@@ -408,7 +488,7 @@ function recomputeMatch(sim: Simulation, state: WorkingMatch): void {
     state.status = 0;
     if (beforeProduct.kind !== 'bye') {
       sim.consequences.push(
-        `${labelOf(before)} is left with no teams; a BYE passes on to the next round.`
+        `${sim.labelOf(before)} is left with no teams; a BYE passes on to the next round.`
       );
     }
     return;
@@ -424,7 +504,7 @@ function recomputeMatch(sim: Simulation, state: WorkingMatch): void {
     beforeProduct.kind !== 'team' || beforeProduct.participantId !== winner.participantId;
   if (winnerChanged) {
     sim.consequences.push(
-      `${sim.nameOf(winner.participantId)} has no opponent in ${labelOf(before)} and advances automatically.`
+      `${sim.nameOf(winner.participantId)} has no opponent in ${sim.labelOf(before)} and advances automatically.`
     );
   }
 }

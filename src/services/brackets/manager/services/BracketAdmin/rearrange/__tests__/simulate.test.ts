@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { simulateRearrange } from '../simulate';
+import { simulateRearrange, simulateSlotChanges } from '../simulate';
 import type { RearrangeSnapshot, SlotAssignment, SnapshotMatch, SnapshotSlot } from '../types';
 
 /**
@@ -577,5 +577,123 @@ describe('simulateRearrange', () => {
     });
     expect(result.preview['501'].opponent2).toMatchObject({ participantId: D1 });
     expect(result.preview['303'].opponent2).toMatchObject({ participantId: T10 });
+  });
+});
+
+/** The snapshot as it would read after a simulation's writes. */
+function snapshotAfter(
+  snapshot: RearrangeSnapshot,
+  result: ReturnType<typeof simulateSlotChanges>
+): RearrangeSnapshot {
+  return {
+    ...snapshot,
+    matches: snapshot.matches.map((m) => {
+      const after = result.preview[String(m.id)];
+      return {
+        ...m,
+        status: after.status,
+        opponent1: { ...m.opponent1, ...after.opponent1 },
+        opponent2: { ...m.opponent2, ...after.opponent2 },
+      };
+    }),
+  };
+}
+
+describe('simulateSlotChanges', () => {
+  const reopenPlaceholder = {
+    matchId: 302,
+    side: 'opponent1' as const,
+    content: { kind: 'tbd' as const, position: 3 },
+  };
+
+  it('turns a BYE spot back into a waiting spot and undoes the walkovers it caused', () => {
+    const result = simulateSlotChanges(tenTeamSnapshot(), [reopenPlaceholder], {
+      labelPrefix: 'Losers ',
+    });
+
+    expect(result.problems).toEqual([]);
+    expect(fieldsFor(result, 302)).toEqual({
+      opponent1_position: 3,
+      opponent1_result: null,
+      status: 1,
+    });
+    // D2's walkover in Round 2 Match 2 is off: the carry spot waits now.
+    expect(fieldsFor(result, 402)).toEqual({
+      opponent1_result: null,
+      opponent2_result: null,
+      status: 1,
+    });
+    expect(fieldsFor(result, 501)).toEqual({ opponent2_id: null });
+    expect(result.consequences).toEqual(
+      expect.arrayContaining([
+        'Losers Round 1 Match 2 goes back to waiting for an earlier match.',
+        'D2 is removed from Losers Round 3 Match 1; that spot now waits for an earlier match.',
+      ])
+    );
+  });
+
+  it('turns a waiting spot into a BYE, passing it on, and a second run writes nothing', () => {
+    const reopened = snapshotAfter(
+      tenTeamSnapshot(),
+      simulateSlotChanges(tenTeamSnapshot(), [reopenPlaceholder])
+    );
+    const toBye = [{ ...reopenPlaceholder, content: { kind: 'bye' as const } }];
+
+    const result = simulateSlotChanges(reopened, toBye);
+    expect(result.problems).toEqual([]);
+    expect(fieldsFor(result, 302)).toEqual({
+      opponent1_position: null,
+      opponent1_result: 'bye',
+      status: 0,
+    });
+    expect(fieldsFor(result, 402)).toEqual({
+      opponent1_result: 'win',
+      opponent1_score: 0,
+      opponent2_result: 'bye',
+      status: 4,
+    });
+    expect(fieldsFor(result, 501)).toEqual({ opponent2_id: D2 });
+
+    // Saved again on the state it wrote: the cascade is already complete.
+    expect(simulateSlotChanges(snapshotAfter(reopened, result), toBye).writes).toEqual([]);
+  });
+
+  it('refuses when a match the cascade reaches has been played', () => {
+    const snapshot = tenTeamSnapshot();
+    const played = snapshot.matches.find((m) => m.id === 501);
+    if (!played) throw new Error('fixture: match 501 missing');
+    played.status = 4;
+    played.lockedReason = 'has already been played';
+
+    const result = simulateSlotChanges(snapshot, [reopenPlaceholder], { labelPrefix: 'Losers ' });
+    expect(result.ok).toBe(false);
+    expect(result.writes).toEqual([]);
+    expect(result.problems.map((problem) => problem.message)).toEqual([
+      'This change needs to change Losers Round 3 Match 1 automatically, but that match has ' +
+        'already been played.',
+    ]);
+  });
+
+  it('refuses a target slot that holds a team', () => {
+    const result = simulateSlotChanges(tenTeamSnapshot(), [
+      { matchId: 301, side: 'opponent2', content: { kind: 'bye' } },
+    ]);
+    expect(result.ok).toBe(false);
+    expect(result.problems[0].message).toBe(
+      "Round 1 Match 1 already holds a team in that spot, so it can't change automatically."
+    );
+  });
+
+  it('refuses an outcome change in a match whose landing is unknown', () => {
+    const snapshot = {
+      ...tenTeamSnapshot(),
+      landings: { ...tenTeamSnapshot().landings, 402: null },
+    };
+    const result = simulateSlotChanges(snapshot, [reopenPlaceholder]);
+    expect(result.ok).toBe(false);
+    expect(result.problems[0].message).toBe(
+      'This change needs to change what comes out of Round 2 Match 2, but that part of the ' +
+        'bracket looks inconsistent — run Repair Bracket first.'
+    );
   });
 });

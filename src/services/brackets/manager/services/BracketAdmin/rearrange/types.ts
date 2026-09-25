@@ -9,6 +9,15 @@ export interface SlotRef {
 export const slotKeyOf = (ref: SlotRef): string => `${ref.matchId}:${ref.side}`;
 
 /**
+ * A losers-bracket slot whose content is changed from outside the losers
+ * bracket — by a winners-bracket edit that decides whether a team or a BYE
+ * will drop in. 'tbd' carries the slot's feeder marker back.
+ */
+export interface ForcedSlotChange extends SlotRef {
+  content: { kind: 'bye' } | { kind: 'tbd'; position: number | null };
+}
+
+/**
  * The admin's desired occupancy of one origin slot: a movable team's
  * participant id, or null to leave the spot as a BYE.
  */
