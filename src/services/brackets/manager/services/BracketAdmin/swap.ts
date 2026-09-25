@@ -278,9 +278,10 @@ export async function adminSwapLoserBracketSlots(
   bracketLog('Admin losers-bracket swap requested', { ...params });
 
   const { source, target, sourceSlot, targetSlot } = await loadValidatedSwapContexts(deps, params);
-  const feederMarkers = await computeLbFeederMarkers(source.stage);
-
-  const names = await loadParticipantNames(deps, String(source.stage.tournament_id));
+  const [feederMarkers, names] = await Promise.all([
+    computeLbFeederMarkers(source.stage),
+    loadParticipantNames(deps, String(source.stage.tournament_id)),
+  ]);
   const nameOf: NameOf = (participantId) =>
     (participantId != null ? names.get(participantId) : null) ?? 'the team';
 

@@ -39,21 +39,19 @@ export class LbFeederMarkerRepairService {
     const lbGroup = await this.lbStructureService.findLbGroup(stageId);
     if (!lbGroup) return 0;
 
-    const feederMarkers = await computeLbFeederMarkers(stage);
-    const rounds = await this.lbStructureService.findGroupRounds(lbGroup.id);
+    const [feederMarkers, rounds, matches] = await Promise.all([
+      computeLbFeederMarkers(stage),
+      this.lbStructureService.findGroupRounds(lbGroup.id),
+      this.storage.select('match', { group_id: lbGroup.id }),
+    ]);
     const roundNumberById = new Map(rounds.map((round) => [round.id, round.number]));
-
-    const matches = await this.storage.select('match', { group_id: lbGroup.id });
     const matchesArray = (
       Array.isArray(matches) ? matches : matches ? [matches] : []
     ) as StorageMatch[];
 
-    let repaired = 0;
-    // Sequential on purpose, like the other repair passes: a failure part-way
-    // through leaves a clear, loggable point to resume from.
-    for (const match of matchesArray) {
+    const corrections = matchesArray.flatMap((match) => {
       const roundNumber = roundNumberById.get(match.round_id);
-      if (roundNumber === undefined) continue;
+      if (roundNumber === undefined) return [];
 
       const fields: MatchUpdateFields = {};
       for (const side of SIDES) {
@@ -62,15 +60,19 @@ export class LbFeederMarkerRepairService {
         const expected = feederMarkers.markerOf(roundNumber, match.number, side);
         if ((slot.position ?? null) !== expected) fields[`${side}_position`] = expected;
       }
-      if (Object.keys(fields).length === 0) continue;
+      return Object.keys(fields).length > 0 ? [{ matchId: match.id, fields }] : [];
+    });
 
-      const { error } = await supabase.from('match').update(fields).eq('id', match.id);
-      if (error) {
-        handleDatabaseError(error, `Failed to restore the feeder markers of match ${match.id}`);
-      }
-      bracketLog(`Restored feeder markers of match ${match.id}`, fields);
-      repaired += 1;
-    }
-    return repaired;
+    // Each correction touches its own row, so they are written together.
+    await Promise.all(
+      corrections.map(async ({ matchId, fields }) => {
+        const { error } = await supabase.from('match').update(fields).eq('id', matchId);
+        if (error) {
+          handleDatabaseError(error, `Failed to restore the feeder markers of match ${matchId}`);
+        }
+        bracketLog(`Restored feeder markers of match ${matchId}`, fields);
+      })
+    );
+    return corrections.length;
   }
 }
