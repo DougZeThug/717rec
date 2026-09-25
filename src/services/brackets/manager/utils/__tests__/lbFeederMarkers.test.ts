@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BusinessLogicError } from '@/types/errors';
 
-import { computeLbFeederMarkers } from '../lbFeederMarkers';
+import { computeLbFeederMarkers, computeStageSlotLayout } from '../lbFeederMarkers';
 
 type Side = 'opponent1' | 'opponent2';
 
@@ -14,19 +14,25 @@ const doubleElimination = (settings: object) => ({
 });
 
 /** Create a seeded stage exactly as BracketCreationService does, in memory. */
-async function createSeededStage(teamCount: number) {
+async function createSeededStage(
+  teamCount: number,
+  type: 'single_elimination' | 'double_elimination' = 'double_elimination'
+) {
   let size = 2;
   while (size < teamCount) size *= 2;
   const manager = new BracketsManager(new InMemoryDatabase());
   const stage = await manager.create.stage({
     tournamentId: 0,
     name: 'Playoffs',
-    type: 'double_elimination',
+    type,
     seeding: [
       ...Array.from({ length: teamCount }, (_, i) => `T${i + 1}`),
       ...Array<null>(size - teamCount).fill(null),
     ],
-    settings: { seedOrdering: ['inner_outer'], grandFinal: 'simple' },
+    settings:
+      type === 'double_elimination'
+        ? { seedOrdering: ['inner_outer'], grandFinal: 'simple' }
+        : { seedOrdering: ['inner_outer'] },
   });
   return { stage, data: await manager.get.stageData(stage.id) };
 }
@@ -139,5 +145,81 @@ describe('computeLbFeederMarkers', () => {
     await expect(computeLbFeederMarkers(doubleElimination({ size: 6 }))).rejects.toThrow(
       /Could not work out this bracket's losers-bracket layout/
     );
+  });
+});
+
+describe('computeStageSlotLayout', () => {
+  it.each(['single_elimination', 'double_elimination'])(
+    'gives the seed number of every %s round 1 slot',
+    async (type) => {
+      const layout = await computeStageSlotLayout({
+        type,
+        settings: { size: 8, seedOrdering: ['inner_outer'] },
+      });
+      const seedsOf = (match: number) => [
+        layout.wbRoundOneSeedOf(match, 'opponent1'),
+        layout.wbRoundOneSeedOf(match, 'opponent2'),
+      ];
+      expect([seedsOf(1), seedsOf(2), seedsOf(3), seedsOf(4)]).toEqual([
+        [1, 8],
+        [4, 5],
+        [2, 7],
+        [3, 6],
+      ]);
+      // Later rounds and missing matches have no seed slot.
+      expect(layout.wbRoundOneSeedOf(5, 'opponent1')).toBeNull();
+    }
+  );
+
+  it('gives losers-bracket markers in double elimination and none in single elimination', async () => {
+    const double = await computeStageSlotLayout(
+      doubleElimination({ size: 8, seedOrdering: ['inner_outer'] })
+    );
+    expect(double.lbMarkerOf(2, 1, 'opponent1')).toBe(2);
+    const single = await computeStageSlotLayout({
+      type: 'single_elimination',
+      settings: { size: 8, seedOrdering: ['inner_outer'] },
+    });
+    expect(single.lbMarkerOf(1, 1, 'opponent1')).toBeNull();
+  });
+
+  it.each([
+    ['single_elimination', 3],
+    ['single_elimination', 6],
+    ['single_elimination', 13],
+    ['double_elimination', 5],
+    ['double_elimination', 6],
+    ['double_elimination', 11],
+    ['double_elimination', 32],
+  ] as const)(
+    'matches every round 1 seed the library stores on a real %s bracket of %i teams',
+    async (type, teamCount) => {
+      const { stage, data } = await createSeededStage(teamCount, type);
+      const layout = await computeStageSlotLayout({
+        type,
+        settings: stage.settings as Record<string, unknown>,
+      });
+
+      const winnersGroup = data.group.find((group) => group.number === 1);
+      const roundOne = data.round.find(
+        (round) => round.group_id === winnersGroup?.id && round.number === 1
+      );
+      let checked = 0;
+      for (const match of data.match.filter((m) => m.round_id === roundOne?.id)) {
+        for (const side of ['opponent1', 'opponent2'] as Side[]) {
+          const slot = match[side];
+          if (slot === null) continue; // A BYE slot is stored without a seed.
+          expect(layout.wbRoundOneSeedOf(match.number, side)).toBe(slot.position ?? null);
+          checked += 1;
+        }
+      }
+      expect(checked).toBe(teamCount);
+    }
+  );
+
+  it('refuses a bracket that is not an elimination bracket', async () => {
+    await expect(
+      computeStageSlotLayout({ type: 'round_robin', settings: { size: 8 } })
+    ).rejects.toThrow('Only an elimination bracket has a layout.');
   });
 });
