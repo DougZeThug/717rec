@@ -11,12 +11,13 @@ import { loadEditTeamsContext } from './context';
 import { assertFootprint } from './footprint';
 import { planLosersChanges } from './losersPlan';
 import type { WantedMatch } from './occupancy';
-import { planOccupancy } from './occupancy';
+import { displacedOccupants, planOccupancy } from './occupancy';
 import {
   isWinnersRoundOne,
   matchLabel,
   occupantId,
   occupantOf,
+  sameOccupant,
   SIDES,
   winnersRoundOneBlockReason,
 } from './rules';
@@ -75,6 +76,28 @@ export function roundOneLocationOf(ctx: EditTeamsContext, teamId: string): numbe
   return home?.id ?? null;
 }
 
+/**
+ * Whether a picked team that left the match it was picked from did so in an
+ * earlier save of this same trade, which stopped part-way: the team is now in
+ * no round 1 match, and that match holds whoever this edit pushes out.
+ * Saving the same teams again then finishes the trade instead of refusing it.
+ */
+function isUnfinishedTrade(
+  ctx: EditTeamsContext,
+  pickedFrom: number | null,
+  now: number | null,
+  pushedOut: Occupant[]
+): boolean {
+  if (pickedFrom === null || now !== null) return false;
+  const source = ctx.stageMatches.find((candidate) => candidate.id === pickedFrom);
+  return (
+    source !== undefined &&
+    pushedOut.some((occupant) =>
+      SIDES.some((side) => sameOccupant(occupantOf(ctx, source[side]), occupant))
+    )
+  );
+}
+
 const expectedIdOf = (params: EditMatchTeamsParams, side: OpponentSide): number | null =>
   side === 'opponent1' ? params.expectedOpponent1Id : params.expectedOpponent2Id;
 
@@ -131,15 +154,19 @@ export async function planEdit(
     resolvePick(ctx, params.opponent2, -2, newTeams),
   ]);
 
+  const picks = { opponent1: pick1, opponent2: pick2 };
+  const pushedOut = displacedOccupants(ctx, picks).map((entry) => entry.occupant);
   for (const choice of [params.opponent1, params.opponent2]) {
     if (choice.kind !== 'team' || !params.expectedPickLocations) continue;
     if (!(choice.teamId in params.expectedPickLocations)) continue;
-    if (roundOneLocationOf(ctx, choice.teamId) !== params.expectedPickLocations[choice.teamId]) {
+    const pickedFrom = params.expectedPickLocations[choice.teamId];
+    const now = roundOneLocationOf(ctx, choice.teamId);
+    if (now !== pickedFrom && !isUnfinishedTrade(ctx, pickedFrom, now, pushedOut)) {
       throw new BusinessLogicError(STALE_MESSAGE);
     }
   }
 
-  const wanted = planOccupancy(ctx, { opponent1: pick1, opponent2: pick2 });
+  const wanted = planOccupancy(ctx, picks);
   const [layout, board] = await Promise.all([
     computeStageSlotLayout(stage),
     stage.type === 'double_elimination'

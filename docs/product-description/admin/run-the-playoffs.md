@@ -203,9 +203,9 @@ where each team plays and why it can't move. "Review changes…" then lists
 It refuses a match being played or already played, a change that would reach a
 round 2 or losers-bracket match that has been played, a trade with two matches
 at once, and a screen opened before the bracket changed. If a save stops part
-way, the toast says "Only part of this change was saved"; opening Edit teams on
-the same match and saving the same teams again finishes it. Repair Bracket does
-not.
+way, the toast says "Only part of this change was saved"; saving the same teams
+again finishes it, a half-done trade included, whether from the same screen or
+after opening Edit teams on that match again. Repair Bracket does not.
 
 ### Blind draw
 

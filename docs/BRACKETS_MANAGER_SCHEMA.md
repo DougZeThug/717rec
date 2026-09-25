@@ -194,8 +194,11 @@ to prove no team ends up in two matches (`footprint.ts`).
   through the losers bracket, refusing a change that reaches a played match.
 - Writes run one at a time: losers bracket, round 2, the trade partner, and
   the edited match last. The plan is declarative, so saving the same edit
-  again finishes an interrupted one. **Repair Bracket does not reconcile
-  these links.**
+  again finishes an interrupted one. A trade that stopped after its partner
+  was written (the picked team in no match, the pushed-out team already in
+  the partner) is finished too: the planner keeps the pushed-out team where
+  it is, and the stale-screen check accepts that state. **Repair Bracket
+  does not reconcile these links.**
 - Every write asks for the updated id back (`BracketAdmin/writes.ts`), so an
   update row-level security filters out fails instead of reporting success.
   The screen sends the participant ids (and each picked team's round 1 match)

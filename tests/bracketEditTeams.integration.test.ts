@@ -131,6 +131,20 @@ async function buildSixTeamBracket(
   });
 }
 
+/** All eight league teams: T1..T6 and T8 in division A (the bracket's), T7 in division B. */
+function seedLeague() {
+  db().seed(
+    'teams',
+    [1, 2, 3, 4, 5, 6].map((n) => ({ id: `uuid-${n}`, name: `T${n}`, division_id: 'div-a' }))
+  );
+  const [t7, t8] = db()
+    .tableRows('teams')
+    .filter((row) => row.id === 'uuid-7' || row.id === 'uuid-8');
+  Object.assign(t7, { division_id: 'div-b' });
+  Object.assign(t8, { division_id: 'div-a' });
+  Object.assign(db().tableRows('brackets')[0], { division_id: 'div-a' });
+}
+
 /** Score every Ready match (opponent1 winning) until none is left. */
 async function playToTheEnd(service: BracketManagerService): Promise<void> {
   for (let i = 0; i < 32; i++) {
@@ -695,21 +709,75 @@ describe('Edit teams trading places (real service + real library over fake DB)',
   });
 });
 
-describe('Edit teams options, eligibility and preview (real service + real library over fake DB)', () => {
-  /** All eight league teams: T1..T6 and T8 in division A (the bracket's), T7 in division B. */
-  function seedLeague() {
-    db().seed(
-      'teams',
-      [1, 2, 3, 4, 5, 6].map((n) => ({ id: `uuid-${n}`, name: `T${n}`, division_id: 'div-a' }))
-    );
-    const [t7, t8] = db()
-      .tableRows('teams')
-      .filter((row) => row.id === 'uuid-7' || row.id === 'uuid-8');
-    Object.assign(t7, { division_id: 'div-b' });
-    Object.assign(t8, { division_id: 'div-a' });
-    Object.assign(db().tableRows('brackets')[0], { division_id: 'div-a' });
+describe('Edit teams finishing an interrupted trade (real service + real library over fake DB)', () => {
+  /** The save the admin makes, with the token the screen was opened with. */
+  async function openScreen(
+    service: BracketManagerService,
+    matchId: number,
+    opponent1: TeamChoice,
+    opponent2: TeamChoice
+  ): Promise<EditMatchTeamsParams> {
+    const options = await service.getEditTeamsOptions(matchId);
+    return {
+      matchId,
+      opponent1,
+      opponent2,
+      expectedOpponent1Id: options.expectedOpponent1Id,
+      expectedOpponent2Id: options.expectedOpponent2Id,
+      expectedPickLocations: options.expectedPickLocations,
+    };
   }
 
+  async function freshBracket(service: BracketManagerService): Promise<void> {
+    db().reset();
+    db().setRpcHandler('finalize_bracket_standings', () => ({ data: 0, error: null }));
+    await buildSixTeamBracket(service);
+    seedLeague();
+  }
+
+  it.each([
+    { trade: 'two teams', edited: 2, picks: [team(4), team(6)] },
+    { trade: 'a walkover team', edited: 2, picks: [team(4), team(1)] },
+    { trade: 'a BYE', edited: 1, picks: [team(1), team(5)] },
+  ])(
+    'finishes a trade of $trade when the same teams are saved again, wherever it stopped',
+    async ({ edited, picks: [opponent1, opponent2] }) => {
+      const service = new BracketManagerService();
+      await freshBracket(service);
+      let writeCount = 0;
+      db().interceptUpdates((table) => {
+        if (table === 'match') writeCount += 1;
+        return undefined;
+      });
+      await service.editMatchParticipants(
+        await openScreen(service, wbR1(edited).id, opponent1, opponent2)
+      );
+      const clean = matchRows();
+      expect(writeCount).toBeGreaterThan(1);
+
+      for (let failing = 0; failing < writeCount; failing++) {
+        for (const retry of ['same screen', 'reopened screen'] as const) {
+          await freshBracket(service);
+          const params = await openScreen(service, wbR1(edited).id, opponent1, opponent2);
+          db().interceptUpdates((table, index) =>
+            table === 'match' && index === failing ? 'error' : undefined
+          );
+          await expect(service.editMatchParticipants(params)).rejects.toThrow();
+          db().interceptUpdates(null);
+
+          await service.editMatchParticipants(
+            retry === 'same screen'
+              ? params
+              : await openScreen(service, wbR1(edited).id, opponent1, opponent2)
+          );
+          expect(matchRows(), `write ${failing} failed, retried on the ${retry}`).toEqual(clean);
+        }
+      }
+    }
+  );
+});
+
+describe('Edit teams options, eligibility and preview (real service + real library over fake DB)', () => {
   it('groups every league team by how it can be picked, with the save token', async () => {
     const service = new BracketManagerService();
     await buildSixTeamBracket(service);

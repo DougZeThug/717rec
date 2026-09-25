@@ -72,7 +72,14 @@ function partnerBlockReason(ctx: EditTeamsContext, partner: StorageMatch): strin
 export function teamPosition(ctx: EditTeamsContext, participantId: number): TeamPosition {
   const here = SIDES.find((side) => ctx.match[side]?.id === participantId);
   if (here) return { kind: 'here', side: here };
+  return positionElsewhere(ctx, participantId);
+}
 
+/** Where a team sits outside the edited match and the round 2 slot that match feeds. */
+function positionElsewhere(
+  ctx: EditTeamsContext,
+  participantId: number
+): Exclude<TeamPosition, { kind: 'here' }> {
   const hereAllowed = allowedSlotsOf(ctx, ctx.match);
   const occurrences = ctx.stageMatches.flatMap((match) =>
     SIDES.filter(
@@ -95,6 +102,57 @@ export function teamPosition(ctx: EditTeamsContext, participantId: number): Team
 }
 
 /**
+ * Who the picks push out of the edited match: a team no pick keeps (a side
+ * switch keeps a team), or its BYE when neither pick is a BYE. An empty spot
+ * pushes nobody out.
+ */
+export function displacedOccupants(
+  ctx: EditTeamsContext,
+  picks: Record<OpponentSide, Occupant>
+): { side: OpponentSide; occupant: Occupant }[] {
+  const keptIds = new Set(
+    SIDES.map((side) => picks[side]).flatMap((p) => (p.kind === 'team' ? [p.participantId] : []))
+  );
+  const pickedBye = SIDES.some((side) => picks[side].kind === 'bye');
+  return SIDES.flatMap((side) => {
+    const old = occupantOf(ctx, ctx.match[side]);
+    if (sameOccupant(picks[side], old) || old.kind === 'tbd') return [];
+    if (old.kind === 'team' && keptIds.has(old.participantId)) return [];
+    if (old.kind === 'bye' && pickedBye) return [];
+    return [{ side, occupant: old }];
+  });
+}
+
+/**
+ * The round 1 matches pushed-out teams already sit in, kept as they are.
+ *
+ * A pushed-out team normally leaves the bracket. If it already sits in one
+ * other unplayed round 1 match, it stays there instead: that is a trade an
+ * earlier save started and stopped part-way (the other match was written,
+ * this one was not), so saving the same teams again finishes it.
+ */
+function finishedMoves(
+  ctx: EditTeamsContext,
+  pushedOut: { occupant: Occupant }[],
+  planned: WantedMatch[]
+): WantedMatch[] {
+  const kept: WantedMatch[] = [];
+  for (const { occupant } of pushedOut) {
+    if (occupant.kind !== 'team') continue;
+    const position = positionElsewhere(ctx, occupant.participantId);
+    if (position.kind !== 'trade') continue;
+    const home = position.match;
+    if ([...planned, ...kept].some((entry) => entry.match.id === home.id)) continue;
+    kept.push({
+      match: home,
+      opponent1: occupantOf(ctx, home.opponent1),
+      opponent2: occupantOf(ctx, home.opponent2),
+    });
+  }
+  return kept;
+}
+
+/**
  * Turn the admin's picks into the wanted occupancy of the edited round 1
  * match — and of one other round 1 match when a picked team trades places.
  *
@@ -102,7 +160,8 @@ export function teamPosition(ctx: EditTeamsContext, participantId: number): Team
  * change at all, or a team that plays somewhere it can't be moved from. A
  * picked team from another unplayed round 1 match trades places: whoever it
  * replaces here (a team or a BYE) takes its old spot, preferring the one on
- * the side it moves into. A replaced team nobody takes leaves the bracket.
+ * the side it moves into. A replaced team nobody takes leaves the bracket,
+ * unless an interrupted save already moved it (see finishedMoves).
  */
 export function planOccupancy(
   ctx: EditTeamsContext,
@@ -146,27 +205,15 @@ export function planOccupancy(
       sources.push({ pickSide: side, partner: position.match, partnerSide: position.side });
     }
   }
-  if (sources.length === 0) return [{ match, opponent1, opponent2 }];
+  const edited: WantedMatch = { match, opponent1, opponent2 };
+  const displaced = displacedOccupants(ctx, picks);
+  if (sources.length === 0) return [edited, ...finishedMoves(ctx, displaced, [edited])];
   if (new Set(sources.map((source) => source.partner.id)).size > 1) {
     throw new ValidationError(
       'One save can trade places with only one other match. Make this change in two steps.'
     );
   }
 
-  // Whoever the picks replace here, and who is kept (a side switch keeps a team).
-  const keptIds = new Set(
-    SIDES.map((side) => picks[side]).flatMap((p) => (p.kind === 'team' ? [p.participantId] : []))
-  );
-  const pickedBye = SIDES.some((side) => picks[side].kind === 'bye');
-  const displaced = SIDES.filter((side) => !sameOccupant(picks[side], stored[side])).flatMap(
-    (side) => {
-      const old = stored[side];
-      if (old.kind === 'tbd') return [];
-      if (old.kind === 'team' && keptIds.has(old.participantId)) return [];
-      if (old.kind === 'bye' && pickedBye) return [];
-      return [{ side, occupant: old }];
-    }
-  );
   const partner = sources[0].partner;
   if (sources.length > displaced.length) {
     throw new BusinessLogicError(
@@ -194,8 +241,9 @@ export function planOccupancy(
     );
   }
 
-  return [
-    { match, opponent1, opponent2 },
+  const planned = [
+    edited,
     { match: partner, opponent1: partnerWanted.opponent1, opponent2: partnerWanted.opponent2 },
   ];
+  return [...planned, ...finishedMoves(ctx, remaining, planned)];
 }
