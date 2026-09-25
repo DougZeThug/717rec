@@ -69,7 +69,7 @@ function partnerBlockReason(ctx: EditTeamsContext, partner: StorageMatch): strin
   return null;
 }
 
-function teamPosition(ctx: EditTeamsContext, participantId: number): TeamPosition {
+export function teamPosition(ctx: EditTeamsContext, participantId: number): TeamPosition {
   const here = SIDES.find((side) => ctx.match[side]?.id === participantId);
   if (here) return { kind: 'here', side: here };
 

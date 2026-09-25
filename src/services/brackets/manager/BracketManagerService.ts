@@ -381,6 +381,31 @@ export class BracketManagerService {
   }
 
   /**
+   * Can Edit teams change this match, and if not, why not (plain language).
+   * Read-only; drives whether the Edit teams button is enabled.
+   */
+  checkEditTeamsEligibility(matchId: number) {
+    return this.adminService.checkEditTeamsEligibility(matchId);
+  }
+
+  /**
+   * Everything the Edit teams screen needs: the match's two sides, every
+   * league team grouped by how it can be picked, and the concurrency token
+   * the save sends back. Read-only.
+   */
+  getEditTeamsOptions(matchId: number) {
+    return this.adminService.getEditTeamsOptions(matchId);
+  }
+
+  /**
+   * What saving an Edit teams change would do — the same checks and plan as
+   * the save, with nothing written. A refused edit returns its reason.
+   */
+  previewEditMatchTeams(params: EditMatchTeamsParams) {
+    return this.adminService.previewEditMatchTeams(params);
+  }
+
+  /**
    * Check whether a losers-bracket match can take part in a same-round team swap,
    * and list the movable teams and the sibling slots they could trade with.
    *

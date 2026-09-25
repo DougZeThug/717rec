@@ -694,3 +694,94 @@ describe('Edit teams trading places (real service + real library over fake DB)',
     );
   });
 });
+
+describe('Edit teams options, eligibility and preview (real service + real library over fake DB)', () => {
+  /** All eight league teams: T1..T6 and T8 in division A (the bracket's), T7 in division B. */
+  function seedLeague() {
+    db().seed(
+      'teams',
+      [1, 2, 3, 4, 5, 6].map((n) => ({ id: `uuid-${n}`, name: `T${n}`, division_id: 'div-a' }))
+    );
+    const [t7, t8] = db()
+      .tableRows('teams')
+      .filter((row) => row.id === 'uuid-7' || row.id === 'uuid-8');
+    Object.assign(t7, { division_id: 'div-b' });
+    Object.assign(t8, { division_id: 'div-a' });
+    Object.assign(db().tableRows('brackets')[0], { division_id: 'div-a' });
+  }
+
+  it('groups every league team by how it can be picked, with the save token', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    seedLeague();
+    await score(service, wbR1(4));
+    const m2 = wbR1(2);
+
+    const options = await service.getEditTeamsOptions(m2.id);
+
+    expect(options).toMatchObject({
+      ok: true,
+      reason: null,
+      matchLabel: 'Winners Round 1 Match 2',
+      slots: [
+        { side: 'opponent1', kind: 'team', teamId: 'uuid-4', name: 'T4' },
+        { side: 'opponent2', kind: 'team', teamId: 'uuid-5', name: 'T5' },
+      ],
+      expectedOpponent1Id: m2.opponent1_id,
+      expectedOpponent2Id: m2.opponent2_id,
+    });
+    expect(options.candidates.map((c) => [c.name, c.group, c.where, c.reason])).toEqual([
+      ['T4', 'here', null, null],
+      ['T5', 'here', null, null],
+      ['T1', 'trade', 'Winners Round 1 Match 1', null],
+      ['T2', 'trade', 'Winners Round 1 Match 3', null],
+      ['T8', 'available', null, null],
+      ['T7', 'available', null, null],
+      ['T3', 'taken', 'Winners Round 1 Match 4', 'has already been played'],
+      ['T6', 'taken', 'Winners Round 1 Match 4', 'has already been played'],
+    ]);
+    expect(options.expectedPickLocations).toMatchObject({
+      'uuid-1': wbR1(1).id,
+      'uuid-4': m2.id,
+      'uuid-7': null,
+    });
+  });
+
+  it('says why a match cannot be edited', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+
+    expect(await service.checkEditTeamsEligibility(wbR1(2).id)).toEqual({ ok: true, reason: null });
+    const later = await service.checkEditTeamsEligibility(matchBy(1, 2, 1).id);
+    expect(later.ok).toBe(false);
+    expect(later.reason).toMatch(/only works on first-round matches of the winners bracket/);
+    const options = await service.getEditTeamsOptions(matchBy(1, 2, 1).id);
+    expect(options).toMatchObject({ ok: false, candidates: [] });
+  });
+
+  it('previews an edit without writing, and reports a refused one', async () => {
+    const service = new BracketManagerService();
+    await buildSixTeamBracket(service);
+    const before = matchRows();
+
+    const preview = await service.previewEditMatchTeams(editOf(wbR1(2), team(4), { kind: 'bye' }));
+    expect(preview).toMatchObject({
+      ok: true,
+      problems: [],
+      changes: ['Winners Round 1 Match 2 is now T4 vs BYE.'],
+    });
+    expect(preview.consequences).toContain(
+      'T4 has no opponent in Winners Round 1 Match 2 and moves on to Winners Round 2 Match 1 automatically.'
+    );
+
+    const refused = await service.previewEditMatchTeams(editOf(wbR1(2), team(4), team(4)));
+    expect(refused).toEqual({
+      ok: false,
+      problems: ["A team can't be on both sides of a match."],
+      changes: [],
+      consequences: [],
+    });
+    expect(matchRows()).toEqual(before);
+    expect(db().rows('participant')).toHaveLength(6);
+  });
+});

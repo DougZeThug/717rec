@@ -32,6 +32,7 @@ export const usePlayoffEditMatchParticipants = (bracketId: string | null) => {
         queryClient.invalidateQueries({ queryKey: ['brackets-manager-match'] }),
         queryClient.invalidateQueries({ queryKey: ['loser-swap-eligibility'] }),
         queryClient.invalidateQueries({ queryKey: ['loser-rearrange-board', bracketId] }),
+        queryClient.invalidateQueries({ queryKey: ['edit-teams-eligibility'] }),
       ]);
 
       if (bracketId) {
