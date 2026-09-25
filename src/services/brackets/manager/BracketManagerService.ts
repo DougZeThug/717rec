@@ -355,17 +355,20 @@ export class BracketManagerService {
   }
 
   /**
-   * Admin-only: change the teams of an unplayed winners-bracket round 1 match.
+   * Admin-only: change who plays in an unplayed winners-bracket round 1
+   * match — a team, a BYE (the other team walks over), or a team from another
+   * unplayed round 1 match (the two trade places). Round 2 and, in double
+   * elimination, the losers bracket are updated to match.
    *
    * Use case: fixing a seeding decision after the bracket has started. Refuses
-   * any other match, a match being played or already played, a team that is
-   * already in another match, and a screen opened before the match changed
-   * (the expected participant ids). Serialized through matchUpdateQueue so it
-   * cannot interleave with score saves.
+   * any other match, a match being played or already played, a team playing
+   * somewhere it can't leave, a change reaching a played match, and a screen
+   * opened before the bracket changed (the expected ids). Serialized through
+   * matchUpdateQueue so it cannot interleave with score saves.
    *
    * @throws {ValidationError} For a match outside winners round 1 or an invalid pick
-   * @throws {BusinessLogicError} If the match can't change, a team is already
-   *   elsewhere, the screen is stale, or the write reached no row
+   * @throws {BusinessLogicError} If the match or a knock-on match can't change,
+   *   a team can't move, the screen is stale, or a write reached no row
    *
    * @example
    * await bracketManagerService.editMatchParticipants({

@@ -179,9 +179,33 @@ numbers are wrong, a losers-bracket score fails to save with "Match not found".
 Recalculate says "Final standings calculated", or "Bracket still has unfinished
 matches — Complete every match, then try again."
 
-**Rearrange Teams** is the one admin write here with a preview step: drag losers
-into different slots, then a confirmation screen listing "Your moves" and "What
-happens automatically" before it saves.
+**Rearrange Teams** and **Edit teams** are the two admin writes here with a
+preview step. Rearrange Teams: drag losers into different slots, then a
+confirmation screen listing "Your moves" and "What happens automatically"
+before it saves.
+
+**Edit teams** sits in the Edit Match Score box, for admins only. It changes who
+plays in a **first-round match of the winners bracket** that has not been
+played; on any other match the button is disabled and the reason is written
+under it. Each side offers "BYE (no opponent)" and every league team, grouped:
+teams already in the match, teams in another unplayed round 1 match (picking
+one makes the two **trade places** in one save), teams in no match (the
+bracket's division first), and a disabled "Can't be picked" group that says
+where each team plays and why it can't move. "Review changes…" then lists
+"Your changes" and "What happens automatically" before anything is saved:
+
+- a team left facing a BYE wins by walkover and moves on to round 2 by itself;
+- filling a BYE with a team takes the old walkover winner back out of round 2;
+- in a double-elimination bracket, the losers-bracket spot that match's loser
+  drops into becomes a BYE, or a spot waiting for a team again, and the losers
+  bracket follows on from there.
+
+It refuses a match being played or already played, a change that would reach a
+round 2 or losers-bracket match that has been played, a trade with two matches
+at once, and a screen opened before the bracket changed. If a save stops part
+way, the toast says "Only part of this change was saved"; opening Edit teams on
+the same match and saving the same teams again finishes it. Repair Bracket does
+not.
 
 ### Blind draw
 
@@ -313,8 +337,10 @@ sees a count.
   see [B-13](../bug-triage.md#b-13-only-one-toast-is-shown-at-a-time-so-paired-messages-are-lost).
 - **Creation navigates the page on a timer**, one second after the refresh,
   wherever the admin has got to.
-- **Seeding is final once a result is entered.** The only fix is to delete the
-  bracket and build it again.
+- **Seeding is final once a result is entered** as far as Update Seeding goes.
+  After that, Edit teams can still change the teams of a first-round winners
+  bracket match that has not been played; anything later needs the bracket
+  deleted and built again.
 - **Teams are not filtered by the chosen division**, so a bracket can contain
   teams from anywhere while being labelled one division.
 - **The Seeds tab writes to the league before the bracket exists**, and
@@ -361,12 +387,16 @@ sees a count.
 - Not confirmed by hand: whether a bracket created for an archived season is
   reachable from that season's page, and whether the Challonge embeds still
   load at all.
+- Not confirmed by hand: Edit teams. Its grouped lists, BYEs, trades and the
+  automatic round 2 and losers-bracket changes are described from the code and
+  its tests; they were not observed in the running app.
 - Assumption: deleting a bracket also removes the playoff matches and games the
   library created for it. The confirmation says so; it was not observed.
 
 Verified against `717rec` commit `ea5c8f4`, except the bracket-editing
-behaviour, the phone behaviour of the admin controls, and Repair Bracket's
-feeder-number reset above, all changed after that commit — see
+behaviour, the phone behaviour of the admin controls, Repair Bracket's
+feeder-number reset, and Edit teams above, all changed after that commit — see
 [B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed),
 [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone),
-and [pull request 1556](https://github.com/DougZeThug/717rec/pull/1556).
+[pull request 1556](https://github.com/DougZeThug/717rec/pull/1556), and the
+Edit teams rebuild that followed it.

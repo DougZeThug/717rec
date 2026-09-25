@@ -171,6 +171,36 @@ earlier versions of the swap and rearrange tools, or blanked by the losers
 round 1 normalization. BYE slots, the winners bracket, and the grand final are
 left as stored. Healed rows count toward the "match(es) updated" total.
 
+**Winners round 1 team edits** (`BracketAdmin/editTeams/`): Edit teams changes
+who plays in an unplayed winners-bracket round 1 match — a team, a BYE, or a
+trade with one other unplayed round 1 match. It plans every write before the
+first one, from the rules below, and replays the plan on a copy of the stage
+to prove no team ends up in two matches (`footprint.ts`).
+
+- Round 1 rows are written the way the library writes them at creation: a
+  walkover is status 0 (Locked) with `'win'` for its team and no score; a real
+  match is status 2 with no results; a BYE slot is the `'bye'` sentinel with
+  NULL position; a team's slot keeps the seed number the slot was built for
+  (`computeStageSlotLayout` in `utils/lbFeederMarkers.ts`). Statuses come from
+  the library's `helpers.getMatchStatus`.
+- Round 1 match n feeds round 2 match ⌈n/2⌉ (odd n → opponent1). A walkover's
+  team is placed there, and removed again when the walkover goes. A round 2
+  slot holding a team this match could not have sent, or a played round 2
+  match, is refused.
+- Double elimination: match n's loser drops into the losers round 1 slot whose
+  feeder marker is n. A BYE there when match n has a BYE; otherwise a waiting
+  slot with marker n. When that changes (or the slot has gone wrong) the slot
+  is forced and `rearrange/simulate.ts` `simulateSlotChanges` ripples it
+  through the losers bracket, refusing a change that reaches a played match.
+- Writes run one at a time: losers bracket, round 2, the trade partner, and
+  the edited match last. The plan is declarative, so saving the same edit
+  again finishes an interrupted one. **Repair Bracket does not reconcile
+  these links.**
+- Every write asks for the updated id back (`BracketAdmin/writes.ts`), so an
+  update row-level security filters out fails instead of reporting success.
+  The screen sends the participant ids (and each picked team's round 1 match)
+  it was opened with; a changed bracket refuses the save.
+
 **Indexes:**
 - `idx_match_stage` on `stage_id`
 - `idx_match_round` on `round_id`
