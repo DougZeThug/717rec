@@ -63,6 +63,8 @@ export const ExampleService = {
 - Use `brackets-manager` library for playoff brackets — don't roll your own
 - `.npmrc` has `legacy-peer-deps=true` — don't remove it
 - Returning null is OK when it means "no data" (e.g., no match history). Returning null for errors is not OK — throw instead.
+- Import routing from `react-router`, never `react-router-dom`. That package
+  was removed: React Router v8 does not publish it.
 
 ## Tailwind CSS v4
 
@@ -90,8 +92,7 @@ export const ExampleService = {
   `build.rolldownOptions.output.codeSplitting` in `vite.config.ts`. Do not add
   `rollupOptions` or `manualChunks`: Vite 8 dropped the object form.
 - A group only catches modules that are really bundled. If a package only
-  re-exports another one (`react-router-dom` re-exports `react-router`), name
-  the real package in the group's `test` too.
+  re-exports another one, name the real package in the group's `test` too.
 - `build.target` is pinned to Vite 7's browser list on purpose, so iPhones on
   iOS 16.0-16.3 still load the app. Do not remove it unless we decide to drop
   those phones.

@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockNavigate = vi.hoisted(() => vi.fn());
 
-// LoginPrompt imports useNavigate from 'react-router' (not 'react-router-dom'),
-// so we mock that exact module path.
+// LoginPrompt imports useNavigate from 'react-router', so we mock that exact
+// module path.
 vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
