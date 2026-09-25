@@ -355,7 +355,9 @@ sees a count.
   playoff night. The six are now behind a **⋯** menu in the bracket header. See
   [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
 - Not confirmed by hand: what the page does if the automatic navigation fires
-  while a second dialog is open, and what Repair Bracket actually changes.
+  while a second dialog is open, and what Repair Bracket actually changes. Its
+  reset of the losers-bracket feeder numbers is described from the code and its
+  tests; it was not observed in the running app.
 - Not confirmed by hand: whether a bracket created for an archived season is
   reachable from that season's page, and whether the Challonge embeds still
   load at all.
@@ -363,7 +365,8 @@ sees a count.
   library created for it. The confirmation says so; it was not observed.
 
 Verified against `717rec` commit `ea5c8f4`, except the bracket-editing
-behaviour and the phone behaviour of the admin controls above, both changed
-after that commit — see
-[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed) and
-[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
+behaviour, the phone behaviour of the admin controls, and Repair Bracket's
+feeder-number reset above, all changed after that commit — see
+[B-21](../bug-triage.md#b-21-eight-controls-do-nothing-when-pressed),
+[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone),
+and [pull request 1556](https://github.com/DougZeThug/717rec/pull/1556).
