@@ -61,6 +61,18 @@ const movedLater = {
   date: '2026-10-01T23:00:00.000Z',
 } as unknown as Omit<Match, 'id'>;
 
+// What the form submits after the admin records a result: Team 1 wins 2-1.
+const finished = {
+  ...scheduled,
+  iscompleted: true,
+  team1Score: 2,
+  team2Score: 1,
+  winnerId: 't1',
+  loserId: 't2',
+  team1_game_wins: 2,
+  team2_game_wins: 1,
+} as unknown as Omit<Match, 'id'>;
+
 const createWrapper = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -103,7 +115,7 @@ describe('the Schedule match form', () => {
     });
   });
 
-  it('closes after a saved edit', async () => {
+  it('closes after a saved edit, still on the match it edited', async () => {
     const { result } = renderManagement();
     openOn(result, scheduled);
     expect(result.current.isFormOpen).toBe(true);
@@ -119,6 +131,39 @@ describe('the Schedule match form', () => {
       expect.objectContaining({ date: movedLater.date })
     );
     expect(result.current.isFormOpen).toBe(false);
+    // The form stays mounted while it fades out. Keeping its target means it
+    // fades out as the edit form, not as a live "Create New Match" form.
+    expect(result.current.editingMatch).toBe(scheduled);
+    expect(mockCreateMatch).not.toHaveBeenCalled();
+  });
+
+  // The result write runs after the plain match update. When it fails, the form
+  // used to lose its target and offer "Create Match" with the edited teams
+  // filled in. It has to stay an edit form on the same match instead.
+  it('stays open on the same match when the result write fails, and a retry saves it', async () => {
+    mockResubmitMatchResult.mockRejectedValueOnce(new Error('rpc down'));
+    const { result } = renderManagement();
+    openOn(result, scheduled);
+
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.handleUpdateMatch(finished, TEAMS);
+    });
+
+    expect(saved).toBe(false);
+    expect(result.current.isFormOpen).toBe(true);
+    expect(result.current.editingMatch).toBe(scheduled);
+    expect(result.current.isUpdating).toBe(false);
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+
+    await act(async () => {
+      saved = await result.current.handleUpdateMatch(finished, TEAMS);
+    });
+
+    expect(saved).toBe(true);
+    expect(result.current.isFormOpen).toBe(false);
+    expect(mockResubmitMatchResult).toHaveBeenCalledTimes(2);
+    expect(mockResubmitMatchResult).toHaveBeenLastCalledWith('m1', 't1', 't2', 2, 1);
     expect(mockCreateMatch).not.toHaveBeenCalled();
   });
 

@@ -66,7 +66,6 @@ describe('useMatchUpdate — Case 1 regression', () => {
 
   it('calls reopenMatchResult when completed → incomplete', async () => {
     const setMatches = vi.fn();
-    const setEditingMatch = vi.fn();
 
     const { result } = renderHook(
       () =>
@@ -74,7 +73,6 @@ describe('useMatchUpdate — Case 1 regression', () => {
           matches: [completedMatch],
           setMatches,
           editingMatch: completedMatch,
-          setEditingMatch,
         }),
       { wrapper }
     );
@@ -112,7 +110,6 @@ describe('useMatchUpdate — Case 1 regression', () => {
           matches: [noWinnerMatch],
           setMatches: vi.fn(),
           editingMatch: noWinnerMatch,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -137,7 +134,6 @@ describe('useMatchUpdate — Case 1 regression', () => {
           matches: [completedMatch],
           setMatches: vi.fn(),
           editingMatch: completedMatch,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -218,7 +214,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
           matches: [incompleteMatch],
           setMatches,
           editingMatch: incompleteMatch,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -254,7 +249,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
           matches: [previouslyCompleted],
           setMatches: vi.fn(),
           editingMatch: previouslyCompleted,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -286,7 +280,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
           matches: [previouslyCompleted],
           setMatches: vi.fn(),
           editingMatch: previouslyCompleted,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -315,7 +308,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
           matches: [incompleteMatch],
           setMatches: vi.fn(),
           editingMatch: incompleteMatch,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -338,7 +330,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
           matches: [incompleteMatch],
           setMatches,
           editingMatch: incompleteMatch,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
@@ -361,7 +352,6 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
           matches: [incompleteMatch],
           setMatches: vi.fn(),
           editingMatch: undefined,
-          setEditingMatch: vi.fn(),
         }),
       { wrapper }
     );
