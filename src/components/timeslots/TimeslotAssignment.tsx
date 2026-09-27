@@ -52,6 +52,16 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
     [teams, assignedTeamIds]
   );
 
+  // The ticked teams this date can still take. Ticks survive a change of date,
+  // and the grid hides a team once it has a booking, but the count, the button
+  // and the submit used to keep it, so a team ticked on one night was booked a
+  // second time on a night it already had. Derived rather than pruned, so a
+  // team that frees up again comes back ticked, like the rest of the selection.
+  const validSelectedTeamIds = useMemo(() => {
+    const availableIds = new Set(availableTeams.map((team) => team.id));
+    return selectedTeamIds.filter((id) => availableIds.has(id));
+  }, [availableTeams, selectedTeamIds]);
+
   const handleToggleTeam = (teamId: string) => {
     setSelectedTeamIds((prev) =>
       prev.includes(teamId) ? prev.filter((id) => id !== teamId) : [...prev, teamId]
@@ -59,7 +69,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   };
 
   const handleSelectAll = () => {
-    if (selectedTeamIds.length === availableTeams.length) {
+    if (validSelectedTeamIds.length === availableTeams.length) {
       setSelectedTeamIds([]);
     } else {
       setSelectedTeamIds(availableTeams.map((team) => team.id));
@@ -101,8 +111,12 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         return;
       }
       if (batchMode) {
-        if (selectedTeamIds.length > 0 && onBatchAssignDoubleHeaders) {
-          onBatchAssignDoubleHeaders(selectedTeamIds, selectedTimeslots[0], selectedTimeslots[1]);
+        if (validSelectedTeamIds.length > 0 && onBatchAssignDoubleHeaders) {
+          onBatchAssignDoubleHeaders(
+            validSelectedTeamIds,
+            selectedTimeslots[0],
+            selectedTimeslots[1]
+          );
           setSelectedTeamIds([]);
         }
       }
@@ -113,8 +127,8 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       }
 
       if (batchMode) {
-        if (selectedTeamIds.length > 0 && onBatchAssign) {
-          onBatchAssign(selectedTeamIds, selectedTimeslot);
+        if (validSelectedTeamIds.length > 0 && onBatchAssign) {
+          onBatchAssign(validSelectedTeamIds, selectedTimeslot);
           setSelectedTeamIds([]);
         }
       } else {
@@ -157,7 +171,7 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       ) : (
         <TimeslotTeamGrid
           availableTeams={availableTeams}
-          selectedTeamIds={selectedTeamIds}
+          selectedTeamIds={validSelectedTeamIds}
           onToggleTeam={handleToggleTeam}
           onSelectAll={handleSelectAll}
         />
@@ -194,10 +208,10 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         disabled={
           (isDoubleHeader &&
             (selectedTimeslots.length !== 2 ||
-              (batchMode && selectedTeamIds.length === 0) ||
+              (batchMode && validSelectedTeamIds.length === 0) ||
               (!batchMode && !teamId))) ||
           (!isDoubleHeader &&
-            ((batchMode && (!selectedTimeslot || selectedTeamIds.length === 0)) ||
+            ((batchMode && (!selectedTimeslot || validSelectedTeamIds.length === 0)) ||
               (!batchMode && (!teamId || !selectedTimeslot)))) ||
           availableTeams.length === 0 ||
           isSubmitting
@@ -206,9 +220,9 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
         {isSubmitting
           ? 'Booking…'
           : isDoubleHeader
-            ? `Confirm Double Header (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+            ? `Confirm Double Header (${validSelectedTeamIds.length} Team${validSelectedTeamIds.length !== 1 ? 's' : ''})`
             : batchMode
-              ? `Confirm Assignment (${selectedTeamIds.length} Team${selectedTeamIds.length !== 1 ? 's' : ''})`
+              ? `Confirm Assignment (${validSelectedTeamIds.length} Team${validSelectedTeamIds.length !== 1 ? 's' : ''})`
               : 'Confirm Assignment'}
       </Button>
     </form>

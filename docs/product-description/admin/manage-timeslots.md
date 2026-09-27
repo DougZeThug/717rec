@@ -100,11 +100,15 @@ Nothing marks the form dirty, and there is no draft.
 
 The submit button is disabled until there is at least one team and a chosen time
 — two times in double header mode — and it is also disabled when no team is
-available on that date. Its label counts the ticked teams.
+available on that date. Its label counts the ticked teams that are still free on
+that date.
 
 Changing the date **keeps the ticked teams and the chosen block** while reloading
 the list. A team ticked on one date and then submitted on another is assigned to
-the second date, with nothing to say the selection carried over.
+the second date, with nothing to say the selection carried over. **A ticked team
+that already has a booking on the new date is left out:** it leaves the grid, the
+count and the label drop it, and submit does not send it, so it cannot be booked
+twice. It comes back ticked if it becomes free again.
 
 Turning the Double Header switch on or off clears the chosen block or times, but
 not the ticked teams.
@@ -299,7 +303,7 @@ the player's side.
 | The session expires | No effect while reading. | Writes fail. Nothing signs the admin out or moves them. |
 | The same record changed in another tab, or by another user | No realtime, but the list polls every sixty seconds, so another admin's work appears within a minute. | **Two admins can still assign the same team to two different times on the same night** inside that minute, because each sees the team as available. Nothing detects the clash. |
 | Browser autofill or a password manager writes into the form | Nothing here is a text field a password manager would fill. | Same. |
-| The window loses focus | The poll stops while the tab is hidden and resumes on return, so the team grid and the list can both change the moment focus comes back. | A team can vanish from the grid mid-selection, leaving it ticked but no longer submittable. |
+| The window loses focus | The poll stops while the tab is hidden and resumes on return, so the team grid and the list can both change the moment focus comes back. | A team can vanish from the grid mid-selection. It drops out of the count and is not sent, and it comes back ticked if it becomes free again. |
 
 ## Interactions with other systems
 
@@ -364,6 +368,9 @@ sent.
   example after the team was deleted.
 - **Changing the date keeps the selection**, so it is possible to tick teams for
   one night and assign them to another by changing the date and pressing submit.
+  A ticked team already booked on the new night is left out rather than booked
+  twice, but only once that night's rows have arrived: pressed in the moment
+  before, the form still checks against the night before.
 - **The team grid empties once every team is assigned**, which disables the whole
   form with no explanation beyond "All teams have been assigned for this date".
 - **Removing one half of a pair removes both**, and the confirmation names only
