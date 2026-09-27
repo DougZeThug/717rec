@@ -608,4 +608,81 @@ describe('auto-schedule generate -> conflict -> edit loop (integration)', () => 
       expect(result.current.hasUnsavedWork).toBe(true);
     });
   });
+
+  // Every match carries the date it was applied for, but the save writes them
+  // all on the date the picker shows now. Moving the picker after applying
+  // used to write one night's pairings onto another.
+  describe('saving after the date has moved', () => {
+    // Noon, so no daylight-saving change can move the day.
+    const daysAfter = (date: Date, days: number) =>
+      new Date(date.getFullYear(), date.getMonth(), date.getDate() + days, 12);
+
+    const saveNow = async (result: Awaited<ReturnType<typeof renderReadyToEdit>>) => {
+      let saved: boolean | undefined;
+      await act(async () => {
+        saved = await result.current.handleSaveSchedule();
+      });
+      return saved;
+    };
+
+    it('refuses the edit-mode save', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+      const madeFor = result.current.editableMatches[0].date;
+
+      act(() => {
+        result.current.setSelectedDate(daysAfter(madeFor, 7));
+      });
+
+      expect(await saveNow(result)).toBe(false);
+      expect(mockSaveMatches).not.toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Schedule Stale', variant: 'destructive' })
+      );
+    });
+
+    it('refuses the Export tab save too', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+      const madeFor = result.current.editableMatches[0].date;
+
+      // The Export tab saves the applied set, outside edit mode.
+      act(() => {
+        result.current.setIsEditMode(false);
+      });
+      act(() => {
+        result.current.setSelectedDate(daysAfter(madeFor, 7));
+      });
+
+      expect(await saveNow(result)).toBe(false);
+      expect(mockSaveMatches).not.toHaveBeenCalled();
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Schedule Stale', variant: 'destructive' })
+      );
+    });
+
+    it('still saves on the same night at another time of day', async () => {
+      mockSaveMatches.mockResolvedValue(true);
+      const result = await renderReadyToEdit();
+      const madeFor = result.current.editableMatches[0].date;
+
+      act(() => {
+        result.current.setSelectedDate(
+          new Date(
+            madeFor.getFullYear(),
+            madeFor.getMonth(),
+            madeFor.getDate(),
+            madeFor.getHours() === 23 ? 0 : 23,
+            30
+          )
+        );
+      });
+
+      expect(await saveNow(result)).toBe(true);
+      expect(mockSaveMatches).toHaveBeenCalledTimes(1);
+      expect(mockToast).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Schedule Stale' })
+      );
+    });
+  });
 });

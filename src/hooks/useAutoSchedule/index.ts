@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useTeamsMap } from '@/hooks/teams';
 import { useActiveSeason } from '@/hooks/useSeasons';
 import { useToast } from '@/hooks/useToast';
+import { normalizeScheduleDate } from '@/utils/autoSchedule/dateUtils';
 
 import { useAutoScheduleSave } from './useAutoScheduleSave';
 import { useAutoScheduleState } from './useAutoScheduleState';
@@ -230,6 +231,30 @@ export function useAutoSchedule() {
         variant: 'destructive',
       });
       return false;
+    }
+
+    // Each match carries the date it was applied for, but saveMatches writes
+    // them all on `selectedDate`. Moving the date picker after applying used to
+    // write one night's pairings onto another. Applying already refuses a draft
+    // made for a different day; this is the same refusal at save time. A date
+    // that cannot be read proves nothing, and normalizeScheduleDate would read
+    // it as today, so it is skipped rather than refused.
+    if (selectedDate) {
+      const selectedDay = normalizeScheduleDate(selectedDate, 'saveSchedule');
+      const madeForDay = matchesToSave
+        .map((match) => new Date(match.date))
+        .filter((madeFor) => !Number.isNaN(madeFor.getTime()))
+        .map((madeFor) => normalizeScheduleDate(madeFor, 'saveSchedule'))
+        .find((day) => day !== selectedDay);
+
+      if (madeForDay) {
+        toast({
+          title: 'Schedule Stale',
+          description: `These matches were made for ${madeForDay}. Pick that date again, or regenerate for the selected date before saving.`,
+          variant: 'destructive',
+        });
+        return false;
+      }
     }
 
     // Validate before saving if in edit mode
