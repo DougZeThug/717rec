@@ -308,6 +308,42 @@ exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
 applied, so every bracket-creation insert failed with PGRST204 "Could not
 find the 'opponent1_position' column of 'match'".
 
+> ### Applying `20260927120000_is_username_taken.sql` (name check) — **to do**
+>
+> The profile form's "Name is available" check now asks the database function
+> `is_username_taken`, because a player cannot read other players' profiles.
+> The migration only *adds* that function, so applying it early changes nothing
+> for players. Until it is applied the call fails with `PGRST202` and the check
+> shows no mark at all, neither tick nor warning; saving still works, and a
+> taken name is still refused at save time. Follow the worked example below:
+> **database first, code second.**
+>
+> 1. Open the Supabase dashboard → SQL Editor. Paste the **full** contents of
+>    `supabase/migrations/20260927120000_is_username_taken.sql` and Run.
+>    The file is `CREATE OR REPLACE`, so re-running it is safe.
+> 2. Regenerate the types. In Lovable, ask it verbatim: _"Apply the SQL migration file
+>    `supabase/migrations/20260927120000_is_username_taken.sql` from the
+>    GitHub repo to the project database, then regenerate the Supabase types."_
+> 3. Verify, in the SQL editor:
+>
+>    ```sql
+>    SELECT proname FROM pg_proc WHERE proname = 'is_username_taken';
+>    SELECT has_function_privilege('anon', 'public.is_username_taken(text)', 'EXECUTE') AS anon,
+>           has_function_privilege('authenticated', 'public.is_username_taken(text)', 'EXECUTE') AS players;
+>    ```
+>
+>    One row, then `anon` false and `players` true. Then sign in as an ordinary
+>    player (not an admin), open the profile page, and type another player's
+>    exact name: after a second, "This name is already taken" must appear.
+> 4. Delete the temporary cast `callIsUsernameTaken` in
+>    `src/services/profile/ProfileService.ts` and call
+>    `supabase.rpc('is_username_taken', { p_username: username })` directly.
+>    `npm run typecheck` is the check that it worked: it only passes once the
+>    regenerated types carry the function.
+>
+> `supabase/tests/username_availability.sql` covers the function and runs in the
+> `db-apply-and-smoke` CI job.
+
 > ### Applying `20260922120000_start_game_with_roster.sql` (B-67) — **done**
 >
 > Applied to production on 2026-09-22, before the change merged, and the types
