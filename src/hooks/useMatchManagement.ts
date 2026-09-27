@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Match } from '@/types';
+import { Match, Team } from '@/types';
 
 import { useMatchCreation } from './useMatchCreation';
 import { useMatchUpdates } from './useMatchUpdates';
@@ -26,9 +26,20 @@ export const useMatchManagement = (initialMatches: Match[]) => {
     isUpdating,
     setEditingMatch,
     setDeleteMatchId,
-    handleUpdateMatch,
+    handleUpdateMatch: updateEditingMatch,
     handleDeleteMatch,
   } = useMatchUpdates(matches, setMatches);
+
+  // A saved edit closes the form, the way a saved create already closes it
+  // inside useMatchCreation. The open flag lives there and the edit target in
+  // useMatchUpdates, so this is the one place that holds both. Left open, the
+  // form offered its submit button again, one press from a second write. A
+  // failed save returns false and keeps the form open with the input in it.
+  const handleUpdateMatch = async (matchData: Omit<Match, 'id'>, teams: Team[]) => {
+    const updated = await updateEditingMatch(matchData, teams);
+    if (updated) setIsFormOpen(false);
+    return updated;
+  };
 
   return {
     matches,
