@@ -157,6 +157,31 @@ describe('useMessageBoard', () => {
     await waitFor(() => expect(result.current.messages.find((m) => m.id === 'm2')).toBeUndefined());
   });
 
+  it('shows a realtime message the server search would return for a % search', async () => {
+    mockFetchMessages.mockResolvedValue([]);
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    act(() => {
+      result.current.setFilter({ searchQuery: '100%' });
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 350));
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // The server runs ILIKE '%100%%', where % is a wildcard, so this matches.
+    act(() => {
+      realtimeHandlers.onMessageInserted?.({
+        ...baseMessage,
+        id: 'm2',
+        content: 'I scored 100 points',
+        created_at: '2026-04-21T10:00:00.000Z',
+      });
+    });
+    await waitFor(() => expect(result.current.messages.map((m) => m.id)).toEqual(['m2']));
+  });
+
   it('shows load-more toast on failure', async () => {
     mockFetchMessages
       .mockResolvedValueOnce(
