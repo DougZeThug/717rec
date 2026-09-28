@@ -16,13 +16,17 @@ updates:
           - "typescript*"
           - "@testing-library/*"
           - "vitest*"
+          - "@vitest/*"
       dev-dependencies:
         patterns:
           - "@types/*"
           - "eslint*"
           - "typescript*"
           - "@testing-library/*"
+          # vitest and @vitest/coverage-v8 must move together: coverage needs
+          # the exact same Vitest version.
           - "vitest*"
+          - "@vitest/*"
     ignore:
       # Avoid React 19.x until ecosystem stabilizes
       - dependency-name: "react"
