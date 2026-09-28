@@ -261,6 +261,36 @@ describe('useAuth', () => {
     );
   });
 
+  it('shows no profile error when a redundant SIGNED_IN fetch fails after the profile loaded', async () => {
+    vi.useFakeTimers();
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    const loaded = { id: 'oauth-user', username: 'oauth-user' } as UserProfile;
+    fetchProfileSpy.mockResolvedValueOnce(loaded);
+    fetchProfileSpy.mockRejectedValueOnce(new Error('profile failed'));
+
+    renderHook(() => useAuth());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Cold OAuth return: INITIAL_SESSION loads the profile, then the deferred
+    // SIGNED_IN for the same session fetches it again and that fetch fails.
+    await act(async () => {
+      await authStateCallback?.('INITIAL_SESSION', makeSession('oauth-user'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('oauth-user'));
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(fetchProfileSpy).toHaveBeenCalledTimes(2);
+    expect(mockToast).not.toHaveBeenCalled();
+    expect(setProfileLoadFailedSpy).not.toHaveBeenCalledWith(true);
+    expect(profileState).toEqual(loaded);
+  });
+
   it('resets profile when auth session becomes null', async () => {
     mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
 
