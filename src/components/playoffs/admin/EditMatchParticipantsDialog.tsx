@@ -155,15 +155,28 @@ const Spinner: React.FC = () => (
 interface ReviewStepProps {
   preview: EditTeamsPreview | undefined;
   loading: boolean;
+  /** The preview could not be read at all (a database or network failure). */
+  failed: boolean;
   saving: boolean;
   onBack: () => void;
   onSave: () => void;
 }
 
 /** The review step: the admin's changes and what follows, or why the save is refused. */
-const ReviewStep: React.FC<ReviewStepProps> = ({ preview, loading, saving, onBack, onSave }) => (
+const ReviewStep: React.FC<ReviewStepProps> = ({
+  preview,
+  loading,
+  failed,
+  saving,
+  onBack,
+  onSave,
+}) => (
   <>
-    {loading || !preview ? (
+    {failed ? (
+      <p className="text-sm text-destructive">
+        Could not check this change. Go back and try again.
+      </p>
+    ) : loading || !preview ? (
       <Spinner />
     ) : preview.ok ? (
       <div className="space-y-4 text-sm">
@@ -226,7 +239,11 @@ const EditTeamsBody: React.FC<EditTeamsBodyProps> = ({ bracketId, matchId, onDon
   const initial = options ? initialPicks(options) : null;
   const picks = edited ?? initial;
   const params = reviewing && options && picks ? toParams(matchId, picks, options) : null;
-  const { data: preview, isLoading: previewLoading } = useEditTeamsPreview(params);
+  const {
+    data: preview,
+    isLoading: previewLoading,
+    error: previewError,
+  } = useEditTeamsPreview(params);
 
   if (isLoading) return <Spinner />;
   if (error || !options || !picks || !initial) {
@@ -253,6 +270,7 @@ const EditTeamsBody: React.FC<EditTeamsBodyProps> = ({ bracketId, matchId, onDon
       <ReviewStep
         preview={preview}
         loading={previewLoading}
+        failed={previewError != null && !preview}
         saving={mutation.isPending}
         onBack={() => setReviewing(false)}
         onSave={() => params && mutation.mutate(params, { onSuccess: onDone })}
