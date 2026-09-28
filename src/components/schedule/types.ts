@@ -25,15 +25,6 @@ export interface MatchFormValues {
   team2Score?: number;
 }
 
-export interface TeamSelectorProps {
-  teamId: string;
-  setTeamId: (value: string) => void;
-  otherTeamId: string;
-  teams: Team[];
-  label: string;
-  placeholder: string;
-}
-
 export interface ScoreSectionProps {
   isCompleted: boolean;
   team1Id: string;
