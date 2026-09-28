@@ -1,4 +1,3 @@
-import type { BracketsManager } from 'brackets-manager';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DatabaseError } from '@/types/errors';
@@ -46,11 +45,7 @@ vi.mock('@/utils/logger', () => ({
   warnLog: vi.fn(),
 }));
 
-function makeService(opts: {
-  stages?: unknown;
-  participants?: unknown;
-  finalStandings?: () => Promise<unknown>;
-}) {
+function makeService(opts: { stages?: unknown; participants?: unknown }) {
   const storage = {
     select: vi.fn().mockImplementation((table: string) => {
       if (table === 'stage') return Promise.resolve(opts.stages ?? [{ id: 10, number: 1 }]);
@@ -60,16 +55,7 @@ function makeService(opts: {
       return Promise.resolve([]);
     }),
   };
-  const manager = {
-    get: {
-      finalStandings:
-        opts.finalStandings ?? vi.fn().mockResolvedValue([{ id: 101, name: 'Team A', rank: 1 }]),
-    },
-  };
-  return new BracketStandingsService(
-    storage as unknown as SupabaseSqlStorage,
-    manager as unknown as BracketsManager
-  );
+  return new BracketStandingsService(storage as unknown as SupabaseSqlStorage);
 }
 
 describe('BracketStandingsService.calculateFinalStandings', () => {
@@ -168,11 +154,7 @@ describe('BracketStandingsService.calculateFinalStandings', () => {
     const storage = {
       select: vi.fn().mockRejectedValue(new Error('boom')),
     };
-    const manager = { get: { finalStandings: vi.fn() } };
-    const service = new BracketStandingsService(
-      storage as unknown as SupabaseSqlStorage,
-      manager as unknown as BracketsManager
-    );
+    const service = new BracketStandingsService(storage as unknown as SupabaseSqlStorage);
 
     await expect(service.calculateFinalStandings('bracket-x')).rejects.toBeInstanceOf(
       DatabaseError

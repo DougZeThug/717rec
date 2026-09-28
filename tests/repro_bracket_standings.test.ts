@@ -4,8 +4,6 @@ import { BracketStandingsService } from '../src/services/brackets/manager/servic
 
 type BracketStandingsServiceArgs = ConstructorParameters<typeof BracketStandingsService>;
 type StandingsStorage = Pick<BracketStandingsServiceArgs[0], 'select'>;
-type StandingsGet = BracketStandingsServiceArgs[1]['get'];
-type StandingsManager = { get: Pick<StandingsGet, 'finalStandings'> };
 
 // Since PR-06, final standings are computed server-side by the
 // finalize_bracket_standings RPC. The regression guarded here — that the LAST
@@ -57,16 +55,7 @@ describe('BracketStandingsService', () => {
       }),
     };
 
-    const mockManager: StandingsManager = {
-      get: {
-        finalStandings: vi.fn(),
-      },
-    };
-
-    const service = new BracketStandingsService(
-      mockStorage as BracketStandingsServiceArgs[0],
-      mockManager as BracketStandingsServiceArgs[1]
-    );
+    const service = new BracketStandingsService(mockStorage as BracketStandingsServiceArgs[0]);
     await service.calculateFinalStandings('bracket-123');
 
     // The completion pre-check must run against the LAST stage (highest
