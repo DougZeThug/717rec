@@ -40,7 +40,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
     byeEligible,
     handleSave,
     handleToggleByeStatus,
-  } = useMatchEditorState({ matchId, onClose, onSaved });
+  } = useMatchEditorState({ matchId, bracketId, onClose, onSaved });
 
   const [isEditTeamsOpen, setIsEditTeamsOpen] = useState(false);
   const [isSwapTeamsOpen, setIsSwapTeamsOpen] = useState(false);

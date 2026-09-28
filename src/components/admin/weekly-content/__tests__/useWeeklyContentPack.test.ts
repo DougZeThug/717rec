@@ -159,6 +159,58 @@ describe('useWeeklyContentPack', () => {
     expect(result.current.draft.commissionerNote).toBe('He beat his brother');
   });
 
+  it('drops the caption model when a cleared caption falls back on re-generate', async () => {
+    mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+    mockFetchEditionForWeek.mockResolvedValue({ id: 'e-1', status: 'draft' });
+    mockFetchLatestVersion.mockResolvedValue({
+      id: 'v-1',
+      headline: 'Saved headline',
+      caption: 'An AI caption',
+      commissioner_note: null,
+      caption_source: 'ai',
+      caption_model: 'claude-opus-5',
+    });
+    const { result } = renderHook(() => useWeeklyContentPack());
+
+    await act(async () => {
+      await result.current.generateFor('s-1', 6);
+    });
+    expect(result.current.draft.captionModel).toBe('claude-opus-5');
+
+    act(() => result.current.setField('caption', ''));
+    await act(async () => {
+      await result.current.generateFor('s-1', 6);
+    });
+
+    // No model wrote the rebuilt caption, so none may be saved with it.
+    expect(result.current.draft.captionSource).toBe('fallback');
+    expect(result.current.draft.captionModel).toBe(null);
+  });
+
+  it('keeps the caption model when the caption was kept on re-generate', async () => {
+    mockGenerateMutateAsync.mockResolvedValue(facts(6, 'Bag Chasers'));
+    mockFetchEditionForWeek.mockResolvedValue({ id: 'e-1', status: 'draft' });
+    mockFetchLatestVersion.mockResolvedValue({
+      id: 'v-1',
+      headline: 'Saved headline',
+      caption: 'An AI caption',
+      commissioner_note: null,
+      caption_source: 'ai',
+      caption_model: 'claude-opus-5',
+    });
+    const { result } = renderHook(() => useWeeklyContentPack());
+
+    await act(async () => {
+      await result.current.generateFor('s-1', 6);
+    });
+    await act(async () => {
+      await result.current.generateFor('s-1', 6);
+    });
+
+    expect(result.current.draft.captionSource).toBe('ai');
+    expect(result.current.draft.captionModel).toBe('claude-opus-5');
+  });
+
   // The bug: Save draft wrote a version nothing ever read back, so a draft did
   // not survive closing the tab.
   it('restores a draft saved earlier for that week', async () => {

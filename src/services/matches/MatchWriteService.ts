@@ -104,6 +104,11 @@ export const createMatch = async (insertInput: MatchInsertInput) => {
       team2_id: insertInput.team2Id,
       date: insertInput.date,
       location: insertInput.location,
+      // Written explicitly, as the batch path does: the columns have no default,
+      // and a NULL iscompleted keeps the match out of v_pending_matches.
+      iscompleted: false,
+      team1_score: 0,
+      team2_score: 0,
       team1_game_wins: insertInput.team1_game_wins,
       team2_game_wins: insertInput.team2_game_wins,
       round_number: 0,

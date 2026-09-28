@@ -33,6 +33,7 @@ vi.mock('@/utils/logger', () => ({
 import {
   batchCreateMatches,
   confirmMatchTie,
+  createMatch,
   createScoreSubmission,
   fetchActiveSeason,
   MatchCreateData,
@@ -193,6 +194,48 @@ describe('batchCreateMatches', () => {
 
     await batchCreateMatches([makeMatchData()]);
     expect(mockFrom).toHaveBeenCalledWith('matches');
+  });
+});
+
+// ─── createMatch ──────────────────────────────────────────────────────────────
+
+describe('createMatch', () => {
+  it('saves a new match as not completed, with zero scores', async () => {
+    const insert = vi.fn(() => ({
+      select: () => ({
+        single: () => Promise.resolve({ data: { id: 'new-match' }, error: null }),
+      }),
+    }));
+    mockFrom.mockImplementation((table: string) =>
+      table === 'seasons'
+        ? {
+            select: () => ({
+              eq: () => ({
+                maybeSingle: () => Promise.resolve({ data: { id: 'season-1' }, error: null }),
+              }),
+            }),
+          }
+        : { insert }
+    );
+
+    await createMatch({
+      team1Id: 'team-a',
+      team2Id: 'team-b',
+      date: '2025-06-15T10:00:00',
+      location: 'Court A',
+      team1_game_wins: 0,
+      team2_game_wins: 0,
+    });
+
+    // v_pending_matches filters on iscompleted = false, which skips NULL.
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        iscompleted: false,
+        team1_score: 0,
+        team2_score: 0,
+        season_id: 'season-1',
+      })
+    );
   });
 });
 

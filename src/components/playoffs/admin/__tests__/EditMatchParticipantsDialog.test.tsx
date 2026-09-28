@@ -64,7 +64,7 @@ const options = (overrides: Partial<EditTeamsOptions> = {}): EditTeamsOptions =>
   ...overrides,
 });
 
-function wire(data: EditTeamsOptions, preview?: unknown): void {
+function wire(data: EditTeamsOptions, preview?: unknown, previewError: Error | null = null): void {
   vi.mocked(useEditTeamsOptions).mockReturnValue({
     data,
     isLoading: false,
@@ -75,6 +75,7 @@ function wire(data: EditTeamsOptions, preview?: unknown): void {
       ({
         data: params ? preview : undefined,
         isLoading: false,
+        error: params ? previewError : null,
       }) as unknown as ReturnType<typeof useEditTeamsPreview>
   );
 }
@@ -190,6 +191,22 @@ describe('EditMatchParticipantsDialog', () => {
     await userEvent.click(screen.getByRole('button', { name: /review changes/i }));
 
     expect(screen.getByText(/that match is currently being played/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
+    await userEvent.click(screen.getByRole('button', { name: /back/i }));
+    expect(screen.getByRole('button', { name: /review changes/i })).toBeEnabled();
+  });
+
+  // A thrown preview (database or network down) has no data and is not
+  // loading. It used to look exactly like loading: a spinner that never ended.
+  it('says so when the review cannot be read, instead of spinning', async () => {
+    wire(options(), undefined, new Error('network down'));
+    renderDialog();
+
+    await pick('Team 2', /^T7$/);
+    await userEvent.click(screen.getByRole('button', { name: /review changes/i }));
+
+    expect(screen.getByText(/could not check this change/i)).toBeInTheDocument();
+    expect(document.querySelector('.animate-spin')).toBeNull();
     expect(screen.getByRole('button', { name: /^save$/i })).toBeDisabled();
     await userEvent.click(screen.getByRole('button', { name: /back/i }));
     expect(screen.getByRole('button', { name: /review changes/i })).toBeEnabled();

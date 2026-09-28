@@ -81,12 +81,21 @@ const fetchWeekStandings = async (
     })
     .map((s) => {
       const team = teamsById.get(s.team_id);
+      // Name the division the team played in that week -- unless that division
+      // is not on screen: a team that was Hidden when the snapshot was taken
+      // and has been restored since. The Hidden division is never shown, and
+      // without a name the row would get a standings table titled "Division".
+      // Use the team's division today, as the movers half of the edition does.
+      const divisionId =
+        s.division_id && visibleDivisions.has(s.division_id)
+          ? s.division_id
+          : (team?.division_id ?? null);
       return {
         teamId: s.team_id,
         teamName: team?.name ?? 'Unknown',
         logoUrl: team?.image_url ?? team?.logo_url ?? null,
-        divisionId: s.division_id,
-        divisionName: s.division_id ? (visibleDivisions.get(s.division_id) ?? null) : null,
+        divisionId,
+        divisionName: divisionId ? (visibleDivisions.get(divisionId) ?? null) : null,
         wins: s.match_wins,
         losses: s.match_losses,
         gameWins: s.game_wins,

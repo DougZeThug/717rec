@@ -270,6 +270,48 @@ describe('fetchRecapFacts', () => {
     expect(ranked).not.toContain('t-2');
   });
 
+  // The other direction: a team Hidden when the snapshot was taken, restored
+  // since. Its snapshot names the Hidden division, which has no visible name,
+  // and it used to get its own standings table titled "Division".
+  it('names the division of a team that was Hidden then but is back today', async () => {
+    setupSupabase({
+      seasons: [season],
+      power_score_snapshots: [
+        {
+          data: [snapshotRow('t-1', 6), { ...snapshotRow('t-2', 6), division_id: 'd-hidden' }],
+          error: null,
+        },
+      ],
+      v_team_details: [
+        {
+          data: [
+            { team_id: 't-1', name: 'A', logo_url: null, image_url: null, division_id: 'd-1' },
+            { team_id: 't-2', name: 'B', logo_url: null, image_url: null, division_id: 'd-1' },
+          ],
+          error: null,
+        },
+      ],
+      divisions: [
+        {
+          data: [
+            { id: 'd-1', name: 'Competitive', display_division: 'Competitive' },
+            { id: 'd-hidden', name: 'Hidden', display_division: 'Hidden' },
+          ],
+          error: null,
+        },
+      ],
+      matches: [
+        { count: 0, error: null },
+        { data: [], error: null },
+      ],
+    });
+
+    const facts = await fetchRecapFacts('s-1', 6);
+
+    expect(facts.divisions.map((d) => d.divisionName)).toEqual(['Competitive']);
+    expect(facts.divisions[0].standings.map((row) => row.teamId).sort()).toEqual(['t-1', 't-2']);
+  });
+
   it('asks the recap and the streaks for the same week it is building', async () => {
     setupSupabase({
       seasons: [season],

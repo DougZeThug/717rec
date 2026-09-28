@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from '@/hooks/useToast';
 import type { Message, MessageCategory } from '@/types/reactions';
 import { getUIErrorMessage } from '@/utils/errorHandler';
+import { matchesIlikeContains } from '@/utils/ilikeMatch';
 import { errorLog } from '@/utils/logger';
 
 import { messageBoardKeys } from './messageBoardKeys';
@@ -91,7 +92,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
       (!filterOptions.category || message.category === filterOptions.category) &&
       (!filterOptions.teamId || message.team_id === filterOptions.teamId) &&
       (!filterOptions.searchQuery ||
-        message.content.toLowerCase().includes(filterOptions.searchQuery.toLowerCase())),
+        // Same rules as the server's ILIKE search, so realtime rows agree with it.
+        matchesIlikeContains(message.content, filterOptions.searchQuery)),
     [filterOptions.category, filterOptions.teamId, filterOptions.searchQuery]
   );
 
