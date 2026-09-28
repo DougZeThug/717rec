@@ -96,15 +96,26 @@ export function usePendingMatches() {
       const loserGameWins =
         winnerTeamIndex === 1 ? match.team2_game_wins || 0 : match.team1_game_wins || 0;
 
-      await approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
+      // False means the RPC's guard matched no row: another admin already
+      // named a winner, or the match is gone. Nothing was written.
+      return approveMatchResult(match.id, winnerId, loserId, winnerGameWins, loserGameWins);
     },
     onMutate: ({ match }) => beginResolving(match.id),
     onSettled: (_data, _error, { match }) => endResolving(match.id),
-    onSuccess: async () => {
-      toast({
-        title: 'Result Approved',
-        description: 'Match result has been successfully approved.',
-      });
+    onSuccess: async (applied) => {
+      if (applied) {
+        toast({
+          title: 'Result Approved',
+          description: 'Match result has been successfully approved.',
+        });
+      } else {
+        toast({
+          title: 'Already Resolved',
+          description:
+            'Another admin already recorded a result for this match, or it was removed. Nothing was changed.',
+        });
+      }
+      // Refresh either way, so a match someone else resolved leaves the list.
       await invalidateMatchRelatedQueries(queryClient);
     },
     onError: (error) => {
