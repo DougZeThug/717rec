@@ -33,7 +33,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   onProfileUpdated,
 }) => {
   const { user } = useAuth();
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  // Each result keeps the name it was for. A bare boolean outlived the name:
+  // after an edit it still said "available" for a value nobody had checked.
+  const [availability, setAvailability] = useState<{
+    name: string;
+    available: boolean | null;
+  } | null>(null);
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
 
   const form = useForm<ProfileFormData>({
@@ -47,6 +52,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const { isSubmitting } = form.formState;
   const username = useWatch({ control: form.control, name: 'username' });
 
+  // Only a result for the name now in the field counts.
+  const usernameAvailable = availability?.name === username ? availability.available : null;
+  // An edited name with no result yet. During the 500ms debounce the request
+  // has not started, so isCheckingUsername alone does not cover this gap. The
+  // saved name is the user's own, so it needs no check.
+  const awaitingCheck =
+    username.length >= 3 && username !== initialUsername && usernameAvailable === null;
+
   // Track the latest username being checked to ignore stale responses
   const latestCheckRef = useRef<string>('');
 
@@ -54,7 +67,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const handleUsernameAvailabilityCheck = useCallback(
     async (value: string) => {
       if (value.length < 3) {
-        setUsernameAvailable(null);
+        setAvailability(null);
         return;
       }
 
@@ -68,7 +81,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       // Ignore stale responses — only apply if this is still the latest check
       if (latestCheckRef.current !== value) return;
 
-      setUsernameAvailable(available);
+      setAvailability({ name: value, available });
 
       if (available === false) {
         form.setError('username', {
@@ -98,12 +111,13 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
 
-    if (usernameAvailable === false || isCheckingUsername) {
+    if (usernameAvailable === false || isCheckingUsername || awaitingCheck) {
       toast({
         title: 'Invalid first name',
-        description: isCheckingUsername
-          ? 'Please wait for the name check to complete'
-          : 'Please choose another name',
+        description:
+          isCheckingUsername || awaitingCheck
+            ? 'Please wait for the name check to complete'
+            : 'Please choose another name',
         variant: 'destructive',
       });
       return;
