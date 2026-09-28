@@ -313,10 +313,12 @@ find the 'opponent1_position' column of 'match'".
 > The profile form's "Name is available" check now asks the database function
 > `is_username_taken`, because a player cannot read other players' profiles.
 > The migration only *adds* that function, so applying it early changes nothing
-> for players. Until it is applied the call fails with `PGRST202` and the check
-> shows no mark at all, neither tick nor warning; saving still works, and a
-> taken name is still refused at save time. Follow the worked example below:
-> **database first, code second.**
+> for players. Until it is applied the call fails with `PGRST202`, and the check
+> falls back to reading profiles the old way, trusting only a hit: an admin
+> still sees "This name is already taken" for a taken name, a free name shows no
+> mark, and nobody gets a false tick. Saving still works, and a taken name is
+> still refused at save time. Follow the worked example below: **database
+> first, code second.**
 >
 > 1. Open the Supabase dashboard → SQL Editor. Paste the **full** contents of
 >    `supabase/migrations/20260927120000_is_username_taken.sql` and Run.
@@ -335,8 +337,9 @@ find the 'opponent1_position' column of 'match'".
 >    One row, then `anon` false and `players` true. Then sign in as an ordinary
 >    player (not an admin), open the profile page, and type another player's
 >    exact name: after a second, "This name is already taken" must appear.
-> 4. Delete the temporary cast `callIsUsernameTaken` in
->    `src/services/profile/ProfileService.ts` and call
+> 4. Delete the temporary cast `callIsUsernameTaken` and the fallback
+>    `checkUsernameByReadingProfiles` in `src/services/profile/ProfileService.ts`
+>    (and the fallback's tests), then call
 >    `supabase.rpc('is_username_taken', { p_username: username })` directly.
 >    `npm run typecheck` is the check that it worked: it only passes once the
 >    regenerated types carry the function.

@@ -76,12 +76,11 @@ describe('checkUsernameAvailability', () => {
   });
 
   it('returns { available: null } on Supabase error (non-critical fallback)', async () => {
-    // PGRST202 is what comes back while the function is not in the database yet.
     mockRpc.mockResolvedValue({
       data: null,
       error: {
-        message: 'Could not find the function public.is_username_taken',
-        code: 'PGRST202',
+        message: 'connection error',
+        code: '08000',
         details: null,
         hint: null,
         name: 'PostgrestError',
@@ -91,6 +90,67 @@ describe('checkUsernameAvailability', () => {
     const result = await checkUsernameAvailability({ username: 'some_user' });
     // Returns null (unknown) instead of throwing — best-effort hint
     expect(result).toEqual({ available: null });
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  // The migration is applied by hand, so the app can be live before the
+  // function exists. PostgREST then answers PGRST202.
+  describe('while the database function is missing', () => {
+    const missingFunction = {
+      data: null,
+      error: {
+        message: 'Could not find the function public.is_username_taken(p_username)',
+        code: 'PGRST202',
+        details: null,
+        hint: null,
+        name: 'PostgrestError',
+      },
+    };
+    const profilesRead = (result: { data: unknown; error: unknown }) => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: () => Promise.resolve(result),
+        }),
+      }),
+    });
+
+    it('reads profiles, and reports a name it finds as taken', async () => {
+      mockRpc.mockResolvedValue(missingFunction);
+      mockFrom.mockReturnValue(profilesRead({ data: { username: 'taken_name' }, error: null }));
+
+      const result = await checkUsernameAvailability({ username: 'taken_name' });
+      expect(mockFrom).toHaveBeenCalledWith('profiles');
+      expect(result).toEqual({ available: false });
+    });
+
+    // RLS lets a player read only their own row, so finding nothing proves
+    // nothing. Reporting it as free was the original bug.
+    it('reports a name it cannot find as unknown, never as free', async () => {
+      mockRpc.mockResolvedValue(missingFunction);
+      mockFrom.mockReturnValue(profilesRead({ data: null, error: null }));
+
+      const result = await checkUsernameAvailability({ username: 'fresh_name' });
+      expect(result).toEqual({ available: null });
+    });
+
+    it('reports unknown when that read fails too', async () => {
+      mockRpc.mockResolvedValue(missingFunction);
+      mockFrom.mockReturnValue(
+        profilesRead({
+          data: null,
+          error: {
+            message: 'connection error',
+            code: '08000',
+            details: null,
+            hint: null,
+            name: 'PostgrestError',
+          },
+        })
+      );
+
+      const result = await checkUsernameAvailability({ username: 'some_user' });
+      expect(result).toEqual({ available: null });
+    });
   });
 
   it('returns { available: null } when the call throws', async () => {

@@ -25,13 +25,13 @@ interface IsUsernameTakenArgs {
  * regenerated -- see the runbook in `docs/OPERATIONS.md`. Without this,
  * `npm run typecheck` fails on a call that is valid at runtime.
  *
- * REMOVE THIS once the types carry the function: delete the cast and this
- * interface and call `supabase.rpc('is_username_taken', { p_username: username })`
- * directly.
+ * REMOVE THIS once the types carry the function: delete the cast, this
+ * interface and checkUsernameByReadingProfiles below, and call
+ * `supabase.rpc('is_username_taken', { p_username: username })` directly.
  *
  * The argument name is still checked, against the interface above. Only the
  * function name goes unchecked, and PostgREST checks that at runtime -- a
- * wrong one comes back as PGRST202, which reads below as "unknown", not "free".
+ * wrong one comes back as PGRST202, the same as a missing function.
  */
 const callIsUsernameTaken = (args: IsUsernameTakenArgs) =>
   (
@@ -40,6 +40,33 @@ const callIsUsernameTaken = (args: IsUsernameTakenArgs) =>
       rpcArgs: IsUsernameTakenArgs
     ) => Promise<{ data: boolean | null; error: PostgrestError | null }>
   )('is_username_taken', args);
+
+/**
+ * TEMPORARY fallback for as long as is_username_taken is missing from the
+ * database (PGRST202). The migration is applied by hand, and a publish can
+ * land first. REMOVE THIS with callIsUsernameTaken.
+ *
+ * It reads profiles the way the check used to, but trusts only a hit. RLS lets
+ * a player read only their own row, so finding nothing proves nothing, and it
+ * reads as "unknown", never as "free". An admin, who can read every row, still
+ * gets "taken" for a taken name.
+ */
+const checkUsernameByReadingProfiles = async (
+  username: string
+): Promise<UsernameAvailabilityResult> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('username', username)
+    .maybeSingle();
+
+  if (error) {
+    errorLog('Failed to check username availability:', error);
+    return { available: null };
+  }
+
+  return { available: data ? false : null };
+};
 
 export const checkUsernameAvailability = async ({
   username,
@@ -61,6 +88,10 @@ export const checkUsernameAvailability = async ({
     // read only their own row, so the read found nothing for a name another
     // player owned, and every such name came back as available.
     const { data, error } = await callIsUsernameTaken({ p_username: username });
+
+    if (error?.code === 'PGRST202') {
+      return await checkUsernameByReadingProfiles(username);
+    }
 
     if (error) {
       errorLog('Failed to check username availability:', error);
