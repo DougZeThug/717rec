@@ -26,18 +26,16 @@ export const checkUsernameAvailability = async ({
   }
 
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', username)
-      .maybeSingle();
+    // RLS hides other players' rows, so a direct read always saw names as
+    // free. The RPC answers past RLS with only a boolean.
+    const { data, error } = await supabase.rpc('is_username_taken', { _username: username });
 
     if (error) {
       errorLog('Failed to check username availability:', error);
       return { available: null };
     }
 
-    return { available: !data };
+    return { available: data !== true };
   } catch (err) {
     errorLog('Unexpected error checking username availability:', err);
     return { available: null };
