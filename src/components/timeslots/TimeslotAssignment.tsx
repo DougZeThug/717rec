@@ -26,6 +26,42 @@ interface TimeslotAssignmentProps {
   isSubmitting?: boolean;
 }
 
+/** What the Confirm button reads from the form to decide its state and text. */
+interface SubmitState {
+  isSubmitting: boolean;
+  isDoubleHeader: boolean;
+  batchMode: boolean;
+  /** Ticked teams that are still free on the date. */
+  teamCount: number;
+  teamId: string;
+  selectedTimeslot: string;
+  selectedTimeslotCount: number;
+  hasAvailableTeams: boolean;
+}
+
+// Confirm needs a team and a time (two times for a double header), a date with
+// a team still free, and no booking already on its way.
+const isSubmitDisabled = (state: SubmitState): boolean =>
+  (state.isDoubleHeader &&
+    (state.selectedTimeslotCount !== 2 ||
+      (state.batchMode && state.teamCount === 0) ||
+      (!state.batchMode && !state.teamId))) ||
+  (!state.isDoubleHeader &&
+    ((state.batchMode && (!state.selectedTimeslot || state.teamCount === 0)) ||
+      (!state.batchMode && (!state.teamId || !state.selectedTimeslot)))) ||
+  !state.hasAvailableTeams ||
+  state.isSubmitting;
+
+const countTeams = (count: number) => `${count} Team${count !== 1 ? 's' : ''}`;
+
+const submitLabel = (state: SubmitState): string => {
+  if (state.isSubmitting) return 'Booking…';
+  if (state.isDoubleHeader) return `Confirm Double Header (${countTeams(state.teamCount)})`;
+  return state.batchMode
+    ? `Confirm Assignment (${countTeams(state.teamCount)})`
+    : 'Confirm Assignment';
+};
+
 const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
   selectedDate: _selectedDate,
   teams,
@@ -142,6 +178,17 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
     // Keep the selected timeslot(s) for convenience when making multiple assignments
   };
 
+  const submitState: SubmitState = {
+    isSubmitting,
+    isDoubleHeader,
+    batchMode,
+    teamCount: validSelectedTeamIds.length,
+    teamId,
+    selectedTimeslot,
+    selectedTimeslotCount: selectedTimeslots.length,
+    hasAvailableTeams: availableTeams.length > 0,
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       {!batchMode ? (
@@ -205,25 +252,9 @@ const TimeslotAssignment: React.FC<TimeslotAssignmentProps> = ({
       <Button
         type="submit"
         className={`w-full disabled:opacity-100! disabled:bg-muted! disabled:text-muted-foreground! ${isDoubleHeader ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400' : 'bg-cornhole-navy hover:bg-cornhole-navy/90'}`}
-        disabled={
-          (isDoubleHeader &&
-            (selectedTimeslots.length !== 2 ||
-              (batchMode && validSelectedTeamIds.length === 0) ||
-              (!batchMode && !teamId))) ||
-          (!isDoubleHeader &&
-            ((batchMode && (!selectedTimeslot || validSelectedTeamIds.length === 0)) ||
-              (!batchMode && (!teamId || !selectedTimeslot)))) ||
-          availableTeams.length === 0 ||
-          isSubmitting
-        }
+        disabled={isSubmitDisabled(submitState)}
       >
-        {isSubmitting
-          ? 'Booking…'
-          : isDoubleHeader
-            ? `Confirm Double Header (${validSelectedTeamIds.length} Team${validSelectedTeamIds.length !== 1 ? 's' : ''})`
-            : batchMode
-              ? `Confirm Assignment (${validSelectedTeamIds.length} Team${validSelectedTeamIds.length !== 1 ? 's' : ''})`
-              : 'Confirm Assignment'}
+        {submitLabel(submitState)}
       </Button>
     </form>
   );
