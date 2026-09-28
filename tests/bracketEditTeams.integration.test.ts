@@ -776,6 +776,41 @@ describe('Edit teams finishing an interrupted trade (real service + real library
       }
     }
   );
+
+  it('reports only the match still to write when an interrupted trade is saved again', async () => {
+    const service = new BracketManagerService();
+    await freshBracket(service);
+    let writeCount = 0;
+    db().interceptUpdates((table) => {
+      if (table === 'match') writeCount += 1;
+      return undefined;
+    });
+    const first = await service.editMatchParticipants(
+      await openScreen(service, wbR1(2).id, team(4), team(6))
+    );
+    const partnerLine = first.message
+      .split(/(?<=\.) /)
+      .find((line) => / is now /.test(line) && !line.startsWith('Winners Round 1 Match 2 '));
+    expect(partnerLine).toBeDefined();
+
+    // Stop at the last write, the edited match: the trade partner has landed.
+    await freshBracket(service);
+    db().interceptUpdates((table, index) =>
+      table === 'match' && index === writeCount - 1 ? 'error' : undefined
+    );
+    await expect(
+      service.editMatchParticipants(await openScreen(service, wbR1(2).id, team(4), team(6)))
+    ).rejects.toThrow();
+    db().interceptUpdates(null);
+
+    const params = await openScreen(service, wbR1(2).id, team(4), team(6));
+    const preview = await service.previewEditMatchTeams(params);
+    const retry = await service.editMatchParticipants(params);
+
+    expect(preview.changes).toEqual(['Winners Round 1 Match 2 is now T4 vs T6.']);
+    expect(retry.message).toContain('Winners Round 1 Match 2 is now T4 vs T6.');
+    expect(retry.message).not.toContain(partnerLine);
+  });
 });
 
 describe('Edit teams options, eligibility and preview (real service + real library over fake DB)', () => {

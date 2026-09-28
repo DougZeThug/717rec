@@ -193,15 +193,21 @@ export async function planEdit(
   assertFootprint(ctx, wanted, writes);
 
   const nameOf = (occupant: Occupant) => (occupant.kind === 'team' ? occupant.name : 'BYE');
+  // Only the matches this save writes. Saving an interrupted trade again keeps
+  // the trade partner, already written, in `wanted` at its current teams; it
+  // must not be reported as a change.
+  const written = new Set(winners.roundOneWrites.map((write) => write.matchId));
   return {
     ctx,
     wanted,
     writes,
     newTeams,
-    changes: wanted.map(
-      (entry) =>
-        `${matchLabel(ctx, entry.match)} is now ${nameOf(entry.opponent1)} vs ${nameOf(entry.opponent2)}.`
-    ),
+    changes: wanted
+      .filter((entry) => written.has(entry.match.id))
+      .map(
+        (entry) =>
+          `${matchLabel(ctx, entry.match)} is now ${nameOf(entry.opponent1)} vs ${nameOf(entry.opponent2)}.`
+      ),
     consequences: [...winners.consequences, ...losers.consequences],
   };
 }
