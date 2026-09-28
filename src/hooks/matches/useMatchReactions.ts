@@ -78,8 +78,10 @@ export const useMatchReactions = (matchId: string) => {
   // holds rows the server has already removed, so it only has to bridge the one
   // fetch that was in flight. These are different: until the delete commits the
   // server still reports the row, so a second refetch landing in that window
-  // would put back a reaction the reader had turned off. Cleared when the
-  // delete settles, not per fetch.
+  // would put back a reaction the reader had turned off. Not cleared per
+  // fetch. Cleared by the realtime DELETE event for the row, or when the
+  // delete fails. Not when the delete request returns: the INSERT event for
+  // the row can still be on its way then, and would put the row back.
   const inFlightDeletesRef = useRef<Set<string>>(new Set());
   const pendingOptimisticRemovalsRef = useRef<Set<string>>(new Set());
   const mutationChainsRef = useRef<Map<string, Promise<void>>>(new Map());
@@ -265,6 +267,9 @@ export const useMatchReactions = (matchId: string) => {
                 if (deletedReaction.id) {
                   realtimeInsertsRef.current.delete(deletedReaction.id);
                   realtimeDeletesRef.current.add(deletedReaction.id);
+                  // The DELETE follows the row's INSERT event, so nothing is
+                  // left on its way that could put the row back.
+                  inFlightDeletesRef.current.delete(deletedReaction.id);
                 }
                 queryClient.setQueryData<MatchReaction[]>(queryKey, (curr = []) =>
                   curr.filter((r) => r.id !== deletedReaction.id)
@@ -322,18 +327,16 @@ export const useMatchReactions = (matchId: string) => {
           // Do not rethrow: the insert succeeded, so onError's rollback and its
           // "failed to update" would be the wrong story. The removal is what
           // failed, and the toast below says so.
-          if (tombstonedId) realtimeDeletesRef.current.delete(tombstonedId);
+          if (tombstonedId) {
+            realtimeDeletesRef.current.delete(tombstonedId);
+            inFlightDeletesRef.current.delete(tombstonedId);
+          }
           errorLog('Error removing delayed optimistic match reaction:', err);
           toast({
             title: 'Error',
             description: getUIErrorMessage(err, 'Failed to remove reaction'),
             variant: 'destructive',
           });
-        } finally {
-          // Settled either way: the row is gone, or the catch above has just
-          // put it back. Holding it hidden past this point would hide a row
-          // that is still in the table.
-          if (tombstonedId) inFlightDeletesRef.current.delete(tombstonedId);
         }
       }
     },
