@@ -48,3 +48,12 @@ The seasons read policy has been dropped or rewritten multiple times in the
 past (`20260202182410`, `20260410153406`). The
 `<ts>_seasons_rls_canonical.sql` migration pins the intended state and adds
 the drift detector so the next accidental narrowing is caught fast.
+## `public.team_season_stats`
+
+Season stats are public. Stats, History, Insights, team pages and the public
+MCP tools read them without an auth session.
+
+- Keep `Anyone can view team season stats` (SELECT, `public`, `true`).
+- Writes stay admin-only (`current_user_is_admin()`).
+- **Do not remove public read** — the pages go empty with no error.
+- Verify: `psql "$SUPABASE_DB_URL" -f supabase/tests/team_season_stats_rls.sql`
