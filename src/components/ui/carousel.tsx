@@ -17,11 +17,6 @@ type CarouselProps = {
 
 type CarouselContextProps = {
   carouselRef: ReturnType<typeof useEmblaCarousel>[0];
-  api: ReturnType<typeof useEmblaCarousel>[1];
-  scrollPrev: () => void;
-  scrollNext: () => void;
-  canScrollPrev: boolean;
-  canScrollNext: boolean;
 } & CarouselProps;
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null);
@@ -51,17 +46,6 @@ const Carousel = React.forwardRef<
     },
     plugins
   );
-  const [canScrollPrev, setCanScrollPrev] = React.useState(false);
-  const [canScrollNext, setCanScrollNext] = React.useState(false);
-
-  const onSelect = React.useCallback((api: CarouselApi) => {
-    if (!api) {
-      return;
-    }
-
-    setCanScrollPrev(api.canScrollPrev());
-    setCanScrollNext(api.canScrollNext());
-  }, []);
 
   const scrollPrev = React.useCallback(() => {
     api?.scrollPrev();
@@ -92,32 +76,11 @@ const Carousel = React.forwardRef<
     setApi(api);
   }, [api, setApi]);
 
-  React.useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- embla API callback sync (vendored shadcn)
-    onSelect(api);
-    api.on('reInit', onSelect);
-    api.on('select', onSelect);
-
-    return () => {
-      api?.off('select', onSelect);
-    };
-  }, [api, onSelect]);
-
   return (
     <CarouselContext.Provider
       value={{
         carouselRef,
-        api: api,
-        opts,
         orientation: orientation || (opts?.axis === 'y' ? 'vertical' : 'horizontal'),
-        scrollPrev,
-        scrollNext,
-        canScrollPrev,
-        canScrollNext,
       }}
     >
       <div
