@@ -21,8 +21,10 @@ initOnlineStatus();
 if ('requestIdleCallback' in window) {
   requestIdleCallback(() => initSentry(), { timeout: 8000 });
 } else {
-  // Fallback for browsers without requestIdleCallback
-  setTimeout(initSentry, 8000);
+  // Fallback for browsers without requestIdleCallback.
+  // Still off the first-paint task, but with no wait: 8000 above is a
+  // deadline, and using it as a delay here slept through the early crashes.
+  setTimeout(initSentry, 0);
 }
 
 // Core styles only - bracket CSS is lazy-loaded on Playoffs page
