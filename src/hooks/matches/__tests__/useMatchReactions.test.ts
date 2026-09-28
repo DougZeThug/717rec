@@ -527,6 +527,65 @@ describe('useMatchReactions', () => {
   // a tombstone left behind by a failed delete made the next refetch hide a row
   // that is still in the table: no reaction for this reader, one for everybody
   // else.
+  it('keeps a turned-off row gone when its INSERT event arrives after the clean-up delete', async () => {
+    mockUser.current = { id: 'user-1' };
+    const saved = reaction('real-1', 'user-1', '🔥');
+    let resolveInsert!: () => void;
+    mockInsertReaction.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          resolveInsert = resolve;
+        })
+    );
+    mockDeleteReaction.mockResolvedValue(undefined);
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    const insertHandler = mockChannel.on.mock.calls[0][2];
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+
+    let firstTap: Promise<void> | undefined;
+    act(() => {
+      firstTap = result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions[0]?.id).toMatch(/^optimistic-/));
+
+    // Tap off while the insert is on its way: the removal is deferred.
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+    await waitFor(() => expect(result.current.reactions).toHaveLength(0));
+
+    // The insert lands and the clean-up delete finishes before any realtime
+    // event for the row has arrived.
+    mockFetchReactions.mockResolvedValue([saved]);
+    await act(async () => {
+      resolveInsert();
+      await firstTap;
+    });
+    await waitFor(() => expect(mockDeleteReaction).toHaveBeenCalledWith('real-1', 'user-1'));
+    mockFetchReactions.mockResolvedValue([]);
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    // Now the late INSERT event for that row arrives. It must not come back.
+    await act(async () => {
+      insertHandler({ new: saved });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(result.current.reactions).toEqual([]);
+
+    await act(async () => {
+      deleteHandler({ old: { id: 'real-1' } });
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(result.current.reactions).toEqual([]);
+  });
+
   it('keeps a reaction that a failed clean-up left in the table', async () => {
     mockUser.current = { id: 'user-1' };
     let resolveInsert!: () => void;

@@ -60,7 +60,10 @@ const SUPPORT_CLS = 'bg-violet-500/10 text-violet-600 dark:text-violet-300 borde
 function contactHref(contact: string): string | undefined {
   const trimmed = contact.trim();
   if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return `mailto:${trimmed}`;
-  const digits = trimmed.replace(/[^0-9+]/g, '');
+  // A tel: link may only carry a '+' as its first character (RFC 3966). The
+  // contact is free text, so a '+' anywhere else is dropped, not passed on.
+  const cleaned = trimmed.replace(/[^0-9+]/g, '');
+  const digits = (cleaned.startsWith('+') ? '+' : '') + cleaned.replace(/\+/g, '');
   if (digits.length >= 7) return `tel:${digits}`;
   return undefined;
 }

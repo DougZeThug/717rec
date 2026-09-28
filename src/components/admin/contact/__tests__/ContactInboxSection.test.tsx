@@ -75,6 +75,32 @@ describe('ContactInboxSection', () => {
     expect(within(list()).getAllByRole('listitem')).toHaveLength(2);
   });
 
+  it('keeps a phone link valid when the number has a + in the middle', () => {
+    mockUseContactRequests.mockReturnValue({
+      data: [{ ...leagueRequest, submitter_contact: '011 +44 20 7946 0958' }],
+      isLoading: false,
+    });
+    render(<ContactInboxSection />);
+
+    expect(screen.getByRole('link', { name: '011 +44 20 7946 0958' })).toHaveAttribute(
+      'href',
+      'tel:011442079460958'
+    );
+  });
+
+  it('keeps a leading + on an international phone number', () => {
+    mockUseContactRequests.mockReturnValue({
+      data: [{ ...leagueRequest, submitter_contact: '+44 20 7946 0958' }],
+      isLoading: false,
+    });
+    render(<ContactInboxSection />);
+
+    expect(screen.getByRole('link', { name: '+44 20 7946 0958' })).toHaveAttribute(
+      'href',
+      'tel:+442079460958'
+    );
+  });
+
   it('labels a support ticket with its subject and counts both sources as new', () => {
     render(<ContactInboxSection />);
 

@@ -51,6 +51,10 @@ const expectDriftRefreshed = () =>
 const expectUnsavedRefreshed = () =>
   expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'unsaved-live-matches'] });
 
+/** The corrections page's list, which shows " · final" from matches.iscompleted. */
+const expectCorrectionsListRefreshed = () =>
+  expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ['admin', 'live-scored-matches'] });
+
 beforeEach(() => {
   vi.clearAllMocks();
   mockInvalidateMatchRelatedQueries.mockResolvedValue(null);
@@ -80,6 +84,7 @@ describe('finalize', () => {
     );
     expectDriftRefreshed();
     expectUnsavedRefreshed();
+    expectCorrectionsListRefreshed();
   });
 
   it('reports an already-finalized match as informational, not an error', async () => {
@@ -135,6 +140,7 @@ describe('reopen', () => {
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Match reopened' }));
     expectDriftRefreshed();
     expectUnsavedRefreshed();
+    expectCorrectionsListRefreshed();
   });
 
   it('handles the idempotent nothing-to-reopen outcome', async () => {
@@ -201,6 +207,7 @@ describe('reopenAndRefinalize', () => {
     expect(mockInvalidateMatchRelatedQueries).toHaveBeenCalledWith(queryClient);
     expectDriftRefreshed();
     expectUnsavedRefreshed();
+    expectCorrectionsListRefreshed();
   });
 
   it('reopens before it saves, so finalize_live_match is not a no-op', async () => {

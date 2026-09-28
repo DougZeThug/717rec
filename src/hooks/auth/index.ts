@@ -1,5 +1,5 @@
 import { Session, User } from '@supabase/supabase-js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { publishRealtimeToken } from '@/hooks/realtime/realtimeAuthGate';
@@ -52,6 +52,15 @@ export const useAuth = () => {
     checkProfileSetup,
     refreshProfile,
   } = useAuthProfile(user, navigate);
+
+  // The profile as of the last render, for the listener below. On a cold
+  // return from OAuth or a magic link, initializeAuth and the INITIAL_SESSION
+  // and SIGNED_IN events all fetch the same profile. When one of them has
+  // already loaded it, a later one failing must not report a failure.
+  const profileRef = useRef(profile);
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
 
   // Auth methods
   const { signIn, signUp, signOut, signInWithGoogle, signInWithGoogleNative } = useAuthMethods(
@@ -163,6 +172,13 @@ export const useAuth = () => {
               checkProfileSetup(profileData);
             }
           } catch (error) {
+            // A sibling fetch already loaded this user's profile, so this
+            // failure changes nothing: keep the profile, raise no flag and
+            // show no "Profile error" to a user who is signed in fine.
+            if (!isCancelled && profileRef.current?.id === fetchUserId) {
+              errorLog(`Redundant profile fetch failed for ${event}:`, error);
+              return;
+            }
             // Only show error if this fetch is still relevant
             if (!isCancelled && currentUserId === fetchUserId) {
               // A failed read must leave nothing behind that answers for
