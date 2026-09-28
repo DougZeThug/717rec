@@ -113,8 +113,11 @@ export const initSentry = () => {
     // Only send errors in production
     enabled: import.meta.env.PROD,
 
-    // Disable automatic PII collection (IP, cookies, headers). User IDs set via setUser() are still sent intentionally.
-    sendDefaultPii: false,
+    // Disable automatic PII collection: no IP address or auto-filled user fields,
+    // no cookies. Sentry 11 turns both on by default (it replaced the old
+    // `sendDefaultPii: false`). User IDs set via setUser() are still sent
+    // intentionally. The User-Agent and Referer headers stay on, as before.
+    dataCollection: { userInfo: false, cookies: false },
 
     // NO integrations on initial load - replay added lazily below
     integrations: [],

@@ -176,7 +176,7 @@ describe('sentry utils', () => {
       expect(initMock).toHaveBeenCalledTimes(1);
       const config = initMock.mock.calls[0][0];
       expect(config.enabled).toBe(true);
-      expect(config.sendDefaultPii).toBe(false);
+      expect(config.dataCollection).toEqual({ userInfo: false, cookies: false });
       expect(config.integrations).toEqual([]);
       expect(config.replaysSessionSampleRate).toBe(0.1);
       expect(config.replaysOnErrorSampleRate).toBe(1);
