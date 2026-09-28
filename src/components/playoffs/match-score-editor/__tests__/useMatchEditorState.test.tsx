@@ -30,27 +30,40 @@ vi.mock('@/services/brackets/manager', () => ({
   },
 }));
 
-const wrapper = ({ children }: { children: React.ReactNode }) => {
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-};
+let client: QueryClient;
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={client}>{children}</QueryClientProvider>
+);
+
+const invalidatedKeys = (spy: { mock: { calls: unknown[][] } }) =>
+  spy.mock.calls.map((call) => (call[0] as { queryKey: unknown[] }).queryKey);
 
 describe('useMatchEditorState', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  });
 
   it('sets opponent1 score independently', () => {
-    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      {
+        wrapper,
+      }
+    );
     act(() => result.current.setOpponent1Score(3));
     expect(result.current.opponent1Score).toBe(3);
     expect(result.current.opponent2Score).toBe(0);
   });
 
   it('sets opponent2 score independently', () => {
-    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      {
+        wrapper,
+      }
+    );
     act(() => result.current.setOpponent2Score(5));
     expect(result.current.opponent1Score).toBe(0);
     expect(result.current.opponent2Score).toBe(5);
@@ -58,7 +71,7 @@ describe('useMatchEditorState', () => {
 
   it('drops a typed score when the teams in the match change', () => {
     const { result, rerender } = renderHook(
-      () => useMatchEditorState({ matchId: 1, onClose: vi.fn() }),
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
       { wrapper }
     );
     act(() => result.current.setOpponent1Score(3));
@@ -76,9 +89,12 @@ describe('useMatchEditorState', () => {
   });
 
   it('preserves opponent1 score when opponent2 setter runs after (double-setter)', () => {
-    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      {
+        wrapper,
+      }
+    );
     act(() => {
       result.current.setOpponent1Score(4);
       result.current.setOpponent2Score(2);
@@ -88,9 +104,12 @@ describe('useMatchEditorState', () => {
   });
 
   it('preserves opponent2 score when opponent1 setter runs after (double-setter)', () => {
-    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      {
+        wrapper,
+      }
+    );
     act(() => {
       result.current.setOpponent2Score(7);
       result.current.setOpponent1Score(1);
@@ -101,9 +120,12 @@ describe('useMatchEditorState', () => {
 
   it('rejects tied scores before writing (PR-06)', async () => {
     const { bracketManagerService } = await import('@/services/brackets/manager');
-    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      {
+        wrapper,
+      }
+    );
     act(() => {
       result.current.setOpponent1Score(2);
       result.current.setOpponent2Score(2);
@@ -116,9 +138,12 @@ describe('useMatchEditorState', () => {
 
   it('allows decisive (non-tied) scores', async () => {
     const { bracketManagerService } = await import('@/services/brackets/manager');
-    const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      {
+        wrapper,
+      }
+    );
     act(() => {
       result.current.setOpponent1Score(3);
       result.current.setOpponent2Score(1);
@@ -127,6 +152,61 @@ describe('useMatchEditorState', () => {
       await result.current.handleSave();
     });
     expect(bracketManagerService.updateMatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes the bracket grid after a score save', async () => {
+    const spy = vi.spyOn(client, 'invalidateQueries');
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      { wrapper }
+    );
+    act(() => {
+      result.current.setOpponent1Score(3);
+      result.current.setOpponent2Score(1);
+    });
+    await act(async () => {
+      await result.current.handleSave();
+    });
+
+    expect(invalidatedKeys(spy)).toEqual(
+      expect.arrayContaining([
+        ['bracket-data', 'bracket-1'],
+        ['bracket-info', 'bracket-1'],
+      ])
+    );
+  });
+
+  it('refreshes the bracket grid after a BYE status change', async () => {
+    const { bracketManagerService } = await import('@/services/brackets/manager');
+    vi.mocked(bracketManagerService.checkByeEligibility).mockResolvedValue({
+      ok: true,
+      meta: { status: 4, currentStatusName: 'Completed' },
+    } as never);
+    vi.mocked(bracketManagerService.adminToggleByeReady).mockResolvedValue({
+      matchId: 1,
+      status: 2,
+      statusName: 'Ready',
+      message: 'done',
+    } as never);
+    const spy = vi.spyOn(client, 'invalidateQueries');
+
+    const { result } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      { wrapper }
+    );
+    await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(4));
+    await act(async () => {
+      // Reopen + Clear Downstream: every later match changes in one write.
+      await result.current.handleToggleByeStatus(true);
+    });
+
+    expect(invalidatedKeys(spy)).toEqual(
+      expect.arrayContaining([
+        ['bracket-data', 'bracket-1'],
+        ['bracket-info', 'bracket-1'],
+        ['playoff-matches'],
+      ])
+    );
   });
 
   describe('BYE status toggle direction', () => {
@@ -151,9 +231,12 @@ describe('useMatchEditorState', () => {
         message: 'done',
       } as never);
 
-      const { result } = renderHook(() => useMatchEditorState({ matchId: 1, onClose: vi.fn() }), {
-        wrapper,
-      });
+      const { result } = renderHook(
+        () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+        {
+          wrapper,
+        }
+      );
       await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(status));
 
       await act(async () => {

@@ -21,11 +21,18 @@ export interface ByeEligibility {
 
 interface UseMatchEditorStateOptions {
   matchId: number | null;
+  /** The bracket the grid shows, so a save can refresh it. */
+  bracketId: string | null;
   onClose: () => void;
   onSaved?: () => void;
 }
 
-export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEditorStateOptions) => {
+export const useMatchEditorState = ({
+  matchId,
+  bracketId,
+  onClose,
+  onSaved,
+}: UseMatchEditorStateOptions) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: matchData, isLoading, error } = useBracketsManagerMatch(matchId);
@@ -88,11 +95,20 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
     checkByeEligibility();
   }, [matchData, matchId]);
 
+  // The bracket grid renders ['bracket-data', bracketId] and does not refetch
+  // on its own, so it stays stale after a save unless this invalidates it.
+  // Realtime usually refreshes it too, but not while realtime is down.
   const invalidateQueries = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] }),
       queryClient.invalidateQueries({ queryKey: ['brackets'] }),
       queryClient.invalidateQueries({ queryKey: ['playoff-matches'] }),
+      ...(bracketId
+        ? [
+            queryClient.invalidateQueries({ queryKey: ['bracket-info', bracketId] }),
+            queryClient.invalidateQueries({ queryKey: ['bracket-data', bracketId] }),
+          ]
+        : []),
     ]);
   };
 
@@ -193,8 +209,7 @@ export const useMatchEditorState = ({ matchId, onClose, onSaved }: UseMatchEdito
         description: result.message,
       });
 
-      await queryClient.invalidateQueries({ queryKey: ['brackets-manager-match', matchId] });
-      await queryClient.invalidateQueries({ queryKey: ['brackets'] });
+      await invalidateQueries();
 
       onSaved?.();
 
