@@ -23,7 +23,7 @@ structure, routing, data flow, and the service-layer rules.
 
 ## Getting started
 
-Requires Node.js 20+ and npm. Day-to-day development and CI are npm-based —
+Requires Node.js 24 (pinned in `.nvmrc`) and npm. Day-to-day development and CI are npm-based —
 `npm ci` installs from `package-lock.json`, and `.npmrc` sets
 `legacy-peer-deps=true`. Do not use pnpm or yarn.
 
