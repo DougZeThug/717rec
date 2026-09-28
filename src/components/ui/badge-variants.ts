@@ -20,12 +20,9 @@ export const badgeVariants = cva(
           'border border-[hsl(var(--intermediate-soft)/0.3)] bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft))] hover:bg-[hsl(var(--intermediate-soft)/0.25)]',
         competitive:
           'border border-[hsl(var(--competitive-soft)/0.3)] bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft))] hover:bg-[hsl(var(--competitive-soft)/0.25)]',
-        blueorange:
-          'border-transparent bg-gradient-to-br from-blue-500 to-amber-500 text-white hover:from-blue-400 hover:to-amber-400',
         // Winter theme variants - frosted pills
         winter: 'badge-winter',
         winterAccent: 'badge-winter-accent',
-        winterRank: 'badge-rank',
         // Double header variant - amber/orange gradient
         doubleHeader:
           'border-transparent bg-gradient-to-br from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400',

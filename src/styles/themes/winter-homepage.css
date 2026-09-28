@@ -346,20 +346,6 @@
   box-shadow: 0 0 10px hsla(199, 80%, 60%, 0.2);
 }
 
-/* Rank badges with snowflake feel */
-.winter-frozen .badge-rank {
-  background: linear-gradient(135deg,
-    hsla(199, 85%, 60%, 0.9) 0%,
-    hsla(199, 90%, 50%, 0.8) 100%
-  );
-  color: hsl(222, 47%, 8%);
-  border: 1px solid hsla(199, 90%, 75%, 0.6);
-  font-weight: 700;
-  box-shadow: 
-    0 2px 8px hsla(199, 89%, 55%, 0.4),
-    inset 0 1px 0 hsla(199, 95%, 90%, 0.4);
-}
-
 /* ==========================================================================
    Winter Text Treatments
    ========================================================================== */
