@@ -25,3 +25,9 @@ export const loadBracketStyles = async (): Promise<void> => {
     errorLog('Failed to load bracket styles:', error);
   }
 };
+
+/**
+ * Whether the stylesheets have loaded. loadBracketStyles logs a failure and
+ * resolves anyway, so a caller must ask here to learn that it failed.
+ */
+export const areBracketStylesLoaded = (): boolean => stylesLoaded;

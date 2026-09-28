@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   loadBracketStyles: vi.fn<() => Promise<void>>(),
+  areBracketStylesLoaded: vi.fn<() => boolean>(),
   errorLog: vi.fn(),
   /**
    * Stands in for evaluating the brackets-viewer dist bundle (an IIFE whose
@@ -18,6 +19,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/styles/bracket-styles', () => ({
   loadBracketStyles: mocks.loadBracketStyles,
+  areBracketStylesLoaded: mocks.areBracketStylesLoaded,
 }));
 
 vi.mock('@/utils/logger', () => ({
@@ -53,6 +55,7 @@ describe('useBracketsViewerScript', () => {
     vi.resetAllMocks();
     // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
     mocks.loadBracketStyles.mockResolvedValue(undefined); // skipcq: JS-W1042
+    mocks.areBracketStylesLoaded.mockReturnValue(true);
     delete windowWithViewer.bracketsViewer;
   });
 
@@ -124,6 +127,37 @@ describe('useBracketsViewerScript', () => {
 
     await waitFor(() => expect(result.current.error).toBe('Failed to load bracket viewer library'));
     expect(result.current.isReady).toBe(false);
+  });
+
+  // The real loader logs a stylesheet failure and resolves anyway. The hook
+  // used to call that ready and draw an unstyled bracket with no retry.
+  it('reports an error when a stylesheet fails but the loader still resolves', async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+      windowWithViewer.bracketsViewer = fakeViewer();
+    });
+    mocks.areBracketStylesLoaded.mockReturnValue(false);
+    const useBracketsViewerScript = await importHook();
+
+    const { result } = renderHook(() => useBracketsViewerScript());
+
+    await waitFor(() => expect(result.current.error).toBe('Failed to load bracket styles'));
+    expect(result.current.isReady).toBe(false);
+  });
+
+  it('loads again on a remount when the script is there but the styles are not', async () => {
+    windowWithViewer.bracketsViewer = fakeViewer();
+    mocks.areBracketStylesLoaded.mockReturnValue(false);
+    mocks.loadBracketStyles.mockImplementation(async () => {
+      mocks.areBracketStylesLoaded.mockReturnValue(true);
+    });
+    const useBracketsViewerScript = await importHook();
+
+    const { result } = renderHook(() => useBracketsViewerScript());
+
+    expect(result.current.isReady).toBe(false);
+    await waitFor(() => expect(result.current.isReady).toBe(true));
+    expect(mocks.loadBracketStyles).toHaveBeenCalledTimes(1);
+    expect(result.current.error).toBeNull();
   });
 
   it('shares one bundle evaluation across concurrent mounts', async () => {
