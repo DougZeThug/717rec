@@ -95,15 +95,9 @@ interface UseMatchUpdateProps {
   matches: Match[];
   setMatches: (matches: Match[]) => void;
   editingMatch: Match | undefined;
-  setEditingMatch: (match?: Match) => void;
 }
 
-export const useMatchUpdate = ({
-  matches,
-  setMatches,
-  editingMatch,
-  setEditingMatch,
-}: UseMatchUpdateProps) => {
+export const useMatchUpdate = ({ matches, setMatches, editingMatch }: UseMatchUpdateProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -199,7 +193,13 @@ export const useMatchUpdate = ({
       setMatches(updatedMatches);
       didUpdateMatches = true;
 
-      setEditingMatch();
+      // The edit target is left alone. Cleared here, before the result write
+      // below, it turned a form left open by a failed write into "Create New
+      // Match" with the edited teams filled in, one press from a duplicate
+      // match, and a form closing after a good write showed the same while it
+      // faded out. Kept, a failed save can simply be pressed again.
+      // useMatchManagement closes the form on success, and the next edit sets
+      // its own target.
 
       const loserChanged = editingMatch.loserId !== matchData.loserId;
 

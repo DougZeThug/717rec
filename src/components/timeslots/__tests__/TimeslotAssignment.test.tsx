@@ -33,11 +33,13 @@ const makeTimeslot = (overrides: Partial<TeamTimeslot>): TeamTimeslot => ({
   ...overrides,
 });
 
-const renderForm = (props?: Partial<React.ComponentProps<typeof TimeslotAssignment>>) => {
+type FormProps = Partial<React.ComponentProps<typeof TimeslotAssignment>>;
+
+const renderForm = (props?: FormProps) => {
   const onAssign = vi.fn();
   const onBatchAssign = vi.fn();
   const onBatchAssignDoubleHeaders = vi.fn();
-  render(
+  const form = (overrides?: FormProps) => (
     <TimeslotAssignment
       selectedDate={new Date('2026-07-01T12:00:00.000Z')}
       teams={teams}
@@ -46,9 +48,18 @@ const renderForm = (props?: Partial<React.ComponentProps<typeof TimeslotAssignme
       onBatchAssign={onBatchAssign}
       onBatchAssignDoubleHeaders={onBatchAssignDoubleHeaders}
       {...props}
+      {...overrides}
     />
   );
-  return { onAssign, onBatchAssign, onBatchAssignDoubleHeaders };
+  const { rerender } = render(form());
+  return {
+    onAssign,
+    onBatchAssign,
+    onBatchAssignDoubleHeaders,
+    // The same form with new props, keeping what is ticked: what a change of
+    // night, or a poll that brings in another admin's bookings, does to it.
+    rerenderWith: (overrides: FormProps) => rerender(form(overrides)),
+  };
 };
 
 describe('TimeslotAssignment', () => {
@@ -151,5 +162,82 @@ describe('TimeslotAssignment', () => {
     expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
     expect(screen.getByText('Team Bravo')).toBeInTheDocument();
     expect(screen.getByText('Team Charlie')).toBeInTheDocument();
+  });
+
+  // The grid hides a team once it has a booking on the date on screen. A tick
+  // set before that, on another night or before another admin booked the team,
+  // used to stay counted and be sent, so the team was booked twice.
+  describe('a ticked team that turns out to be booked', () => {
+    const bookedT1 = [makeTimeslot({ id: 'ts-1', team_id: 't1' })];
+
+    it('sends only the ticked teams still free', () => {
+      const { onBatchAssign, rerenderWith } = renderForm();
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Team Bravo/ }));
+      fireEvent.click(screen.getByRole('radio', { name: '7:00 + 7:30 PM' }));
+
+      rerenderWith({ existingTimeslots: bookedT1 });
+
+      expect(screen.getByText('1 team selected')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm Assignment (1 Team)' }));
+      expect(onBatchAssign).toHaveBeenCalledWith(['t2'], '7:00 PM');
+    });
+
+    it('sends only the ticked teams still free as a double header', () => {
+      const { onBatchAssignDoubleHeaders, rerenderWith } = renderForm();
+      fireEvent.click(screen.getByRole('switch'));
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+      fireEvent.click(screen.getByRole('button', { name: /Team Bravo/ }));
+      fireEvent.click(screen.getByRole('button', { name: '7:00 PM' }));
+      fireEvent.click(screen.getByRole('button', { name: '8:00 PM' }));
+
+      rerenderWith({ existingTimeslots: bookedT1 });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Confirm Double Header (1 Team)' }));
+      expect(onBatchAssignDoubleHeaders).toHaveBeenCalledWith(['t2'], '7:00 PM', '8:00 PM');
+    });
+
+    it('will not submit when every ticked team is booked', () => {
+      const { onBatchAssign, rerenderWith } = renderForm();
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+      fireEvent.click(screen.getByRole('radio', { name: '7:00 + 7:30 PM' }));
+
+      rerenderWith({ existingTimeslots: bookedT1 });
+
+      const submit = screen.getByRole('button', { name: 'Confirm Assignment (0 Teams)' });
+      expect(submit).toBeDisabled();
+      expect(screen.queryByText(/teams? selected/)).not.toBeInTheDocument();
+
+      // Enter in the form reaches the submit handler without the button.
+      fireEvent.submit(submit.closest('form') as HTMLFormElement);
+      expect(onBatchAssign).not.toHaveBeenCalled();
+    });
+
+    it('counts only free teams for Select All', () => {
+      const { rerenderWith } = renderForm();
+      fireEvent.click(screen.getByRole('button', { name: 'Select All' }));
+      expect(screen.getByText('3 teams selected')).toBeInTheDocument();
+
+      rerenderWith({ existingTimeslots: bookedT1 });
+
+      expect(screen.getByText('2 teams selected')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Deselect All' })).toBeInTheDocument();
+    });
+
+    it('shows the team ticked again once it is free again', () => {
+      const { rerenderWith } = renderForm();
+      fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
+
+      rerenderWith({ existingTimeslots: bookedT1 });
+      expect(screen.queryByText('Team Alpha')).not.toBeInTheDocument();
+
+      rerenderWith({ existingTimeslots: [] });
+
+      expect(screen.getByRole('button', { name: /Team Alpha/ })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(screen.getByText('1 team selected')).toBeInTheDocument();
+    });
   });
 });

@@ -26,8 +26,9 @@ export const checkUsernameAvailability = async ({
   }
 
   try {
-    // RLS hides other players' rows, so a direct read always saw names as
-    // free. The RPC answers past RLS with only a boolean.
+    // Asked of the database rather than read from profiles. RLS lets a player
+    // read only their own row, so the read found nothing for a name another
+    // player owned, and every such name came back as available.
     const { data, error } = await supabase.rpc('is_username_taken', { _username: username });
 
     if (error) {
@@ -35,7 +36,8 @@ export const checkUsernameAvailability = async ({
       return { available: null };
     }
 
-    return { available: data !== true };
+    // Only a yes or a no is an answer; anything else is unknown, never free.
+    return { available: typeof data === 'boolean' ? !data : null };
   } catch (err) {
     errorLog('Unexpected error checking username availability:', err);
     return { available: null };

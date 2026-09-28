@@ -123,12 +123,16 @@ an empty timeslot, or the same team in two matches at the same time. Rematches
 are a **warning**, not an error: the card gets an amber edge reading "Rematch —
 these teams have already played", and Save still works.
 
-Three refusals are worth knowing:
+Four refusals are worth knowing:
 
 - Generating with teams loaded for a **different calendar day** raises "Teams Out
   of Date" and does nothing.
 - Applying pairings generated for a **different day** raises "Schedule Stale" and
   does nothing.
+- Saving matches applied for a **different day**, after the date picker moved,
+  raises "Schedule Stale" too, names the day they were made for, and writes
+  nothing. Both Save buttons refuse: Save Matches in edit mode, and "Save
+  Schedule to Database" on the Export tab.
 - Applying a schedule that pairs teams from different time blocks raises
   "Schedule Validation Failed" and does nothing.
 

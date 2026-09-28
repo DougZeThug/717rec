@@ -130,6 +130,11 @@ so a non-zero exit code means drift was detected.
   game row left behind, a match that does not exist is refused rather than
   falling through to a foreign-key error, and somebody who cannot score the
   match is refused. Covers B-67.
+- `username_availability.sql` — asserts `is_username_taken(text)`, the profile
+  form's name check, answers past RLS: as an ordinary player a plain read of
+  another player's profile finds nothing, while the function reports that name
+  as taken. The player's own name and a free name read as not taken, the match
+  is exact like `profiles_username_unique`, and only signed-in users may call it.
 - `_bootstrap.sql` — CI-only Supabase stubs (auth/storage/roles/realtime
   publication). Files prefixed with `_` are helpers and are skipped by
   the smoke runner.

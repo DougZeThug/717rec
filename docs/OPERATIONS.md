@@ -308,6 +308,27 @@ exactly what broke bracket creation on 2026-07-23: PR-13's two migrations
 applied, so every bracket-creation insert failed with PGRST204 "Could not
 find the 'opponent1_position' column of 'match'".
 
+> ### Applying the name check function `is_username_taken` — **done**
+>
+> Applied on 2026-09-28 through Lovable, which wrote and applied its own
+> migration, `20260928121245_0920861a-….sql`, rather than the repo's, and
+> regenerated the types. Its parameter is `_username`, so `ProfileService`
+> calls `supabase.rpc('is_username_taken', { _username: username })` directly.
+> The PR's own migration (parameter `p_username`) and its temporary cast were
+> dropped.
+>
+> **The lesson:** asked to apply a repo migration, Lovable may write its own
+> copy, under a new file name and with its own parameter names. Postgres cannot
+> rename a parameter with `CREATE OR REPLACE`, so two copies of one function
+> that name it differently break the migration replay in CI. After Lovable
+> applies a migration, compare its copy with the repo's, keep one, and call the
+> function with the parameter names in the regenerated `types.ts`.
+>
+> Verify in the SQL editor that `has_function_privilege('anon',
+> 'public.is_username_taken(text)', 'EXECUTE')` is false and the same check for
+> `authenticated` is true. `supabase/tests/username_availability.sql` covers the
+> function in the `db-apply-and-smoke` CI job.
+
 > ### Applying `20260922120000_start_game_with_roster.sql` (B-67) — **done**
 >
 > Applied to production on 2026-09-22, before the change merged, and the types

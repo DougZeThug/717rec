@@ -110,4 +110,33 @@ describe('useMatchManagement', () => {
     });
     expect(mockHandleCreateMatch).toHaveBeenCalled();
   });
+
+  // The create path closes the form inside useMatchCreation. The update path
+  // did not, so the form stayed open after a saved edit.
+  it('closes the form after a successful update', async () => {
+    mockHandleUpdateMatch.mockResolvedValue(true);
+    const { result } = renderHook(() => useMatchManagement([]));
+
+    let updated: boolean | undefined;
+    await act(async () => {
+      updated = await result.current.handleUpdateMatch({} as unknown as Omit<Match, 'id'>, []);
+    });
+
+    expect(updated).toBe(true);
+    expect(mockHandleUpdateMatch).toHaveBeenCalledTimes(1);
+    expect(mockSetIsFormOpen).toHaveBeenCalledWith(false);
+  });
+
+  it('keeps the form open when the update fails', async () => {
+    mockHandleUpdateMatch.mockResolvedValue(false);
+    const { result } = renderHook(() => useMatchManagement([]));
+
+    let updated: boolean | undefined;
+    await act(async () => {
+      updated = await result.current.handleUpdateMatch({} as unknown as Omit<Match, 'id'>, []);
+    });
+
+    expect(updated).toBe(false);
+    expect(mockSetIsFormOpen).not.toHaveBeenCalled();
+  });
 });

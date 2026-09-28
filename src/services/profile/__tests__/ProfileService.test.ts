@@ -5,10 +5,12 @@ import { DatabaseError } from '@/types/errors';
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
 const mockFrom = vi.fn();
+const mockRpc = vi.fn();
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
+    rpc: (...args: unknown[]) => mockRpc(...args),
   },
 }));
 
@@ -35,8 +37,8 @@ describe('checkUsernameAvailability', () => {
   it('returns { available: null } when username is shorter than 3 characters', async () => {
     const result = await checkUsernameAvailability({ username: 'ab' });
     expect(result).toEqual({ available: null });
-    // Supabase should not be called
-    expect(mockFrom).not.toHaveBeenCalled();
+    // The database should not be asked
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it('returns { available: true } when username matches currentUsername', async () => {
@@ -45,88 +47,76 @@ describe('checkUsernameAvailability', () => {
       currentUsername: 'alice',
     });
     expect(result).toEqual({ available: true });
+    expect(mockRpc).not.toHaveBeenCalled();
+  });
+
+  // RLS lets a player read only their own profile, so reading the table found
+  // nothing for a name another player owned, and the answer was "available".
+  it('asks the database function, not the profiles table', async () => {
+    mockRpc.mockResolvedValue({ data: false, error: null });
+
+    await checkUsernameAvailability({ username: 'valid_user' });
+
+    expect(mockRpc).toHaveBeenCalledWith('is_username_taken', { _username: 'valid_user' });
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
   it('returns { available: false } when username is already taken', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: { username: 'taken_name' }, error: null }),
-        }),
-      }),
-    });
+    mockRpc.mockResolvedValue({ data: true, error: null });
 
     const result = await checkUsernameAvailability({ username: 'taken_name' });
     expect(result).toEqual({ available: false });
   });
 
   it('returns { available: true } when username is not taken', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        }),
-      }),
-    });
+    mockRpc.mockResolvedValue({ data: false, error: null });
 
     const result = await checkUsernameAvailability({ username: 'fresh_name' });
     expect(result).toEqual({ available: true });
   });
 
   it('returns { available: null } on Supabase error (non-critical fallback)', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () =>
-            Promise.resolve({
-              data: null,
-              error: {
-                message: 'connection error',
-                code: '08000',
-                details: null,
-                hint: null,
-                name: 'PostgrestError',
-              },
-            }),
-        }),
-      }),
+    mockRpc.mockResolvedValue({
+      data: null,
+      error: {
+        message: 'connection error',
+        code: '08000',
+        details: null,
+        hint: null,
+        name: 'PostgrestError',
+      },
     });
 
     const result = await checkUsernameAvailability({ username: 'some_user' });
     // Returns null (unknown) instead of throwing — best-effort hint
     expect(result).toEqual({ available: null });
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('queries the profiles table', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        }),
-      }),
-    });
+  it('returns { available: null } when the call throws', async () => {
+    mockRpc.mockRejectedValue(new Error('network down'));
 
-    await checkUsernameAvailability({ username: 'valid_user' });
-    expect(mockFrom).toHaveBeenCalledWith('profiles');
+    const result = await checkUsernameAvailability({ username: 'some_user' });
+    expect(result).toEqual({ available: null });
+  });
+
+  it('returns { available: null } when the answer is neither yes nor no', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null });
+
+    const result = await checkUsernameAvailability({ username: 'some_user' });
+    expect(result).toEqual({ available: null });
   });
 
   it('is case-sensitive — different case is treated as different username', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: () => Promise.resolve({ data: null, error: null }),
-        }),
-      }),
-    });
+    mockRpc.mockResolvedValue({ data: false, error: null });
 
     // 'Alice' vs 'alice' — currentUsername check is strict equality
     const result = await checkUsernameAvailability({
       username: 'Alice',
       currentUsername: 'alice',
     });
-    // Not the same username — should query DB
-    expect(mockFrom).toHaveBeenCalled();
+    // Not the same username — should ask the database, with the case kept
+    expect(mockRpc).toHaveBeenCalledWith('is_username_taken', { _username: 'Alice' });
     expect(result.available).toBe(true);
   });
 });

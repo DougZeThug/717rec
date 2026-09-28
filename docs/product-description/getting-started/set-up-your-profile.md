@@ -97,11 +97,12 @@ shown. Only the answer to the most recent check is used, so typing quickly does 
 leave a stale tick behind.
 
 > **Technical note:** an ordinary player can only read their own profile, so the
-> check looks for a matching name in a list that contains nobody but themselves and
-> almost always answers "free". **The green tick means very little.** A name that is
-> genuinely taken is refused at save time instead, and the refusal is the generic
-> failure toast, which says nothing about names. An admin, who can read every
-> profile, gets a correct answer.
+> check does not read profiles. It asks the database function `is_username_taken`,
+> which sees every profile and answers only yes or no. The match is exact, the
+> same rule the save enforces, so "Bob" and "bob" are different names, and the
+> player's own current name never counts as taken. The answer is the same for a
+> player and an admin. The check used to read profiles directly, found nobody but
+> the player, and almost always answered "free".
 
 **The field rules.** The first name must be at least 3 characters and may contain
 only letters, numbers, and underscores. These are checked on submit, not while
@@ -220,8 +221,9 @@ keep the name they were written under.
   can contain dots and hyphens. The form forbids those, so a user who opens this
   page and presses Save without touching anything is told their first name can only
   contain letters, numbers, and underscores — about a name they never chose.
-- **The green tick can be wrong.** For an ordinary player it is almost always
-  green, whatever the name.
+- **The green tick holds nothing.** It is right when it appears, but it reserves
+  nothing: a name another player takes after the check still fails at save time,
+  with the generic failure toast.
 - **Saving always navigates away.** A user editing their name from the user menu
   is dropped on the home page.
 - **Pressing Enter immediately after typing is refused.** "Please wait for the name
@@ -235,9 +237,11 @@ keep the name they were written under.
 
 ## Open questions and verification
 
-- **The name-availability check cannot work for an ordinary player.** The app can
-  only read its own profile row, so the check asks a question it cannot answer and
-  answers "free". **May be worth treating as a bug rather than documenting.**
+- Resolved: **the name-availability check could not work for an ordinary player.**
+  It read profiles, and the player can read only their own row, so it answered
+  "free" for nearly every name. It now asks the database function
+  `is_username_taken`, which answers yes or no for any name. Not confirmed by
+  hand: the live check as an ordinary player.
 - **A signed-out visitor is shown a working-looking form whose Save button silently
   does nothing.** The three-second wait before redirecting is deliberate, but the
   form should not be visible during it. **May be worth treating as a bug rather
@@ -257,6 +261,8 @@ keep the name they were written under.
 - Not confirmed by hand: what happens if two tabs save different names at once.
 - The page's tests cover the loading branch, the redirect after three tries, and a
   successful save, but they replace the name check with one that always answers
-  "free", so its real behaviour is read from the service rather than from a test.
+  "free". The check itself is covered by the service's unit tests and by
+  `supabase/tests/username_availability.sql`, which runs the database function
+  as an ordinary player.
 
 Verified against `717rec` commit `ea5c8f4`.

@@ -523,9 +523,9 @@ actions are optimistic is listed in
 
 **Name check.** The live check on the profile page asking whether a chosen name
 is already in use, run shortly after the user stops typing. A tick means free, a
-warning means taken. The check can only see profiles the user is allowed to read,
-which for an ordinary player is their own, so it almost always answers "free"; a
-genuine clash is caught at save time instead.
+warning means taken. It asks a database function that sees every profile and
+answers only yes or no, so the answer is right for every player. A name taken by
+someone else after the check is still caught at save time.
 
 **Display preference.** A layout choice a page remembers in the browser between
 visits rather than in the address or against the account. `/teams` is the only

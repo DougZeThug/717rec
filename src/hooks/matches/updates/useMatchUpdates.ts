@@ -27,7 +27,6 @@ export const useMatchUpdates = (matches: Match[], setMatches: (matches: Match[])
     matches,
     setMatches,
     editingMatch,
-    setEditingMatch,
   });
 
   const { handleDeleteMatch } = useMatchDelete({

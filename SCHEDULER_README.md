@@ -150,13 +150,17 @@ Display preview & apply to database
 
 ### Date staleness guards
 
-Team lists are specific to the selected date, so two checks stop a schedule from
-being built against the wrong day:
+Team lists are specific to the selected date, so three checks stop a schedule
+from being built or saved against the wrong day:
 
 - **Generate** refuses to run when the date picker moved after teams were
   loaded ("Teams Out of Date") — reload teams for the new date first.
 - **Apply** refuses to run when the pairings on screen were generated for a
   different date ("Schedule Stale") — regenerate first.
+- **Save** (edit mode and the Export tab) refuses to write matches that were
+  applied for a different date ("Schedule Stale"). Each match carries the date
+  it was applied for, while the save writes on the date picker's day — pick
+  that date again, or regenerate first.
 
 ---
 
