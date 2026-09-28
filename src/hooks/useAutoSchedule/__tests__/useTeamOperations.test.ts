@@ -115,31 +115,17 @@ describe('useTeamOperations', () => {
     await act(async () => {
       const response = await result.current.handleLoadTeams(
         new Date('2026-04-20T00:00:00.000Z'),
-        true,
-        {
-          primaryBlock: 'Early',
-          secondaryBlock: 'Late',
-        }
+        true
       );
       expect(response).toEqual(loadedTeams);
     });
 
     expect(result.current.timeBlockTeams).toEqual(loadedTeams);
     expect(result.current.originalTimeBlockTeams).toEqual(loadedTeams);
-    expect(result.current.pairedTimeBlockTeams).toEqual({
-      'Early-Late': {
-        primaryBlock: 'Early',
-        secondaryBlock: 'Late',
-        primaryTeams: loadedTeams.Early,
-        secondaryTeams: loadedTeams.Late,
-      },
-    });
 
     await act(async () => {
       await result.current.handleLoadTeams(new Date('2026-04-20T00:00:00.000Z'), false);
     });
-
-    expect(result.current.pairedTimeBlockTeams).toEqual({});
   });
 
   it('handleLoadTeams continues when validation has warnings/errors and loader failures reset state', async () => {
@@ -172,7 +158,6 @@ describe('useTeamOperations', () => {
 
     expect(result.current.timeBlockTeams).toEqual({});
     expect(result.current.originalTimeBlockTeams).toEqual({});
-    expect(result.current.pairedTimeBlockTeams).toEqual({});
   });
 
   it('computes teamBlockMap and getTeamCountStatus for single and multi-block teams', () => {
