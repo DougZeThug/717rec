@@ -7236,6 +7236,7 @@ export type Database = {
         Returns: undefined
       }
       is_team_opted_out_active: { Args: { _team_id: string }; Returns: boolean }
+      is_username_taken: { Args: { _username: string }; Returns: boolean }
       log_security_operation: {
         Args: {
           p_action: string
