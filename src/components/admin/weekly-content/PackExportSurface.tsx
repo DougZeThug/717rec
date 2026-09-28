@@ -32,7 +32,10 @@ const KeyedExportNode = <K,>({
   const ref = React.useRef<HTMLDivElement | null>(null);
   const assign = setRef(nodeKey);
 
-  React.useEffect(() => {
+  // A layout effect, like the summary's JSX ref, so the node is in the Map at
+  // commit. The export reads the Maps one animation frame after mounting, and
+  // a passive effect can run after that frame, which dropped these graphics.
+  React.useLayoutEffect(() => {
     assign(ref.current);
     return () => assign(null);
   }, [assign]);

@@ -237,26 +237,54 @@ describe('losers-bracket swap (real service + real library over fake DB)', () =>
     expect(lbR3M1.status).toBe(2);
   });
 
-  it('swaps a drop-in with a carry team and the moved team can play its new match', async () => {
+  it('refuses a drop-in for carry swap when the carry team is still in its walkover', async () => {
     // 6 teams: LB R2 M1 = [T3 drop-in, T5 carry], LB R2 M2 = [T4 drop-in, T6 carry].
-    // T6 moved into M1's drop-in slot used to bring the carry slot's empty
-    // marker along, and scoring M1 then failed inside the library.
+    // T6 reached M2's carry slot by a LB R1 walkover, and the Rearrange board
+    // counts it there, because the carry slot fills itself. Moved into M1's
+    // drop-in slot it would count twice, and Rearrange could never save.
     const service = new BracketManagerService();
     await buildScenario(service, 6);
 
-    const t3 = participantIdByName('T3');
-    const t4 = participantIdByName('T4');
-    const t5 = participantIdByName('T5');
-    const t6 = participantIdByName('T6');
     const lbR2M1 = matchBy(2, 2, 1);
     const lbR2M2 = matchBy(2, 2, 2);
-    expect(lbR2M1).toMatchObject({ opponent1_id: t3, opponent2_id: t5, status: 2 });
-    expect(lbR2M2).toMatchObject({
-      opponent1_id: t4,
-      opponent2_id: t6,
-      opponent2_position: null,
-      status: 2,
-    });
+    const before = matchRows();
+
+    await expect(
+      service.adminSwapLoserBracketSlots({
+        sourceMatchId: lbR2M1.id,
+        sourceSide: 'opponent1',
+        targetMatchId: lbR2M2.id,
+        targetSide: 'opponent2',
+      })
+    ).rejects.toThrow('This swap would put T6 in two losers-bracket spots at once');
+    expect(matchRows()).toEqual(before);
+  });
+
+  it('swaps a drop-in with a carry team and the moved team can play its new match', async () => {
+    // 8 teams, with LB R1 played: its winners hold LB R2's carry slots, and a
+    // played match is locked, so each team has one movable spot. T6 moved into
+    // M1's drop-in slot used to bring the carry slot's empty marker along, and
+    // scoring M1 then failed inside the library.
+    const service = new BracketManagerService();
+    await buildScenario(service, 8);
+    for (const matchNumber of [1, 2]) {
+      await service.updateMatch({
+        matchId: matchBy(2, 1, matchNumber).id,
+        scores: {
+          opponent1: { score: 2, result: 'win' },
+          opponent2: { score: 0, result: 'loss' },
+        },
+      });
+    }
+
+    const lbR2M1 = matchBy(2, 2, 1);
+    const lbR2M2 = matchBy(2, 2, 2);
+    expect(lbR2M1.status).toBe(2);
+    expect(lbR2M2).toMatchObject({ opponent2_position: null, status: 2 });
+    const dropIn = lbR2M1.opponent1_id;
+    const carry = lbR2M2.opponent2_id;
+    expect(dropIn).not.toBeNull();
+    expect(carry).not.toBeNull();
 
     await service.adminSwapLoserBracketSlots({
       sourceMatchId: lbR2M1.id,
@@ -266,14 +294,12 @@ describe('losers-bracket swap (real service + real library over fake DB)', () =>
     });
 
     expect(matchBy(2, 2, 1)).toMatchObject({
-      opponent1_id: t6,
+      opponent1_id: carry,
       opponent1_position: lbR2M1.opponent1_position,
-      opponent2_id: t5,
       status: 2,
     });
     expect(matchBy(2, 2, 2)).toMatchObject({
-      opponent1_id: t4,
-      opponent2_id: t3,
+      opponent2_id: dropIn,
       opponent2_position: null,
       status: 2,
     });
@@ -285,7 +311,7 @@ describe('losers-bracket swap (real service + real library over fake DB)', () =>
         opponent2: { score: 0, result: 'loss' },
       },
     });
-    expect(matchBy(2, 3, 1).opponent1_id).toBe(t6);
+    expect(matchBy(2, 3, 1).opponent1_id).toBe(carry);
   });
 
   it('refuses the swap once the walkover winner’s next match has started or finished', async () => {

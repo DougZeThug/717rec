@@ -128,6 +128,13 @@ const customRoundName = (info: BracketsViewerCustomRoundInfo): string => {
     return `Losers Round ${roundNumber}`;
   }
 
+  // Without this branch a single-elimination final fell through to "Round N"
+  // and hid the library's own "Final Round" label.
+  if (groupType === 'single-bracket') {
+    if (roundNumber === roundCount) return 'Final Round';
+    return `Round ${roundNumber}`;
+  }
+
   return `Round ${roundNumber}`;
 };
 

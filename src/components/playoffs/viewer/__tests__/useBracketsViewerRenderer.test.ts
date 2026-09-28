@@ -667,6 +667,18 @@ describe('useBracketsViewerRenderer', () => {
       );
     });
 
+    it('labels the last single-elimination round as Final Round', async () => {
+      const name = await getCustomRoundName();
+      // 4, 8 and 16 teams: 2, 3 and 4 rounds.
+      for (const roundCount of [2, 3, 4]) {
+        expect(name({ groupType: 'single-bracket', roundNumber: roundCount, roundCount })).toBe(
+          'Final Round'
+        );
+      }
+      expect(name({ groupType: 'single-bracket', roundNumber: 1, roundCount: 3 })).toBe('Round 1');
+      expect(name({ groupType: 'single-bracket', roundNumber: 2, roundCount: 3 })).toBe('Round 2');
+    });
+
     it('falls back to a plain round label for unknown group types', async () => {
       const name = await getCustomRoundName();
       expect(name({ roundNumber: 2, roundCount: 3 })).toBe('Round 2');

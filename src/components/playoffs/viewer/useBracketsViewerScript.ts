@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { loadBracketStyles } from '@/styles/bracket-styles';
+import { areBracketStylesLoaded, loadBracketStyles } from '@/styles/bracket-styles';
 import { errorLog } from '@/utils/logger';
 
 import { importViewerBundle } from './viewerBundleLoader';
@@ -46,7 +46,11 @@ const RETRY_DELAYS_MS = [2000, 4000, 8000];
  * Returns { isReady, error } indicating when the viewer library is available.
  */
 export const useBracketsViewerScript = () => {
-  const [isReady, setIsReady] = useState(Boolean(window.bracketsViewer));
+  // The script alone is not enough: a remount after a failed stylesheet load
+  // would otherwise skip the load and draw an unstyled bracket.
+  const [isReady, setIsReady] = useState(
+    () => Boolean(window.bracketsViewer) && areBracketStylesLoaded()
+  );
   const [error, setError] = useState<string | null>(null);
   // Bumping this re-runs the load effect below. A failed load leaves `isReady`
   // false and changes nothing else, so without this the effect's dependencies
@@ -79,6 +83,14 @@ export const useBracketsViewerScript = () => {
         if (!window.bracketsViewer) {
           errorLog('brackets-viewer is not available on window object');
           fail('brackets-viewer library not loaded');
+          return;
+        }
+
+        // loadBracketStyles does not reject when a stylesheet chunk fails, so
+        // the catch below never sees it. Route it through fail() so the
+        // backoff and back-online retries run.
+        if (!areBracketStylesLoaded()) {
+          fail('Failed to load bracket styles');
           return;
         }
 

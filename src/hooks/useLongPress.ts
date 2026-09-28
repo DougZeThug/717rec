@@ -6,9 +6,16 @@ interface UseLongPressOptions {
   longPressDelay?: number; // Delay in ms to trigger long press
 }
 
+/**
+ * How far a finger may drift, in px, before the press counts as a scroll. A
+ * still finger still jitters a few px, so any move at all is too strict.
+ */
+const MOVE_TOLERANCE_PX = 10;
+
 export function useLongPress({ onClick, onLongPress, longPressDelay = 500 }: UseLongPressOptions) {
   const timeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const target = useRef<EventTarget | null>(null);
+  const touchOrigin = useRef<{ x: number; y: number } | null>(null);
 
   // Clear timeout if component unmounts or user stops pressing
   const clear = useCallback(() => {
@@ -23,6 +30,8 @@ export function useLongPress({ onClick, onLongPress, longPressDelay = 500 }: Use
     (event: React.MouseEvent | React.TouchEvent) => {
       // Save target to check if it's the same on end
       target.current = event.target;
+      const touch = 'touches' in event ? event.touches[0] : undefined;
+      touchOrigin.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
 
       // Set the timeout to trigger long press
       clear();
@@ -47,6 +56,20 @@ export function useLongPress({ onClick, onLongPress, longPressDelay = 500 }: Use
     [onClick, clear]
   );
 
+  // A finger that drags past the tolerance is scrolling the feed, not holding
+  // still, so the long press must not fire mid-scroll.
+  const move = useCallback(
+    (event: React.TouchEvent) => {
+      const origin = touchOrigin.current;
+      const touch = event.touches[0];
+      if (!origin || !touch) return;
+      const dx = touch.clientX - origin.x;
+      const dy = touch.clientY - origin.y;
+      if (Math.hypot(dx, dy) > MOVE_TOLERANCE_PX) clear();
+    },
+    [clear]
+  );
+
   // Use useEffect to clean up timeout on component unmount
   useEffect(() => {
     return clear;
@@ -59,5 +82,7 @@ export function useLongPress({ onClick, onLongPress, longPressDelay = 500 }: Use
     onMouseLeave: clear,
     onTouchStart: start,
     onTouchEnd: end,
+    onTouchMove: move,
+    onTouchCancel: clear,
   };
 }

@@ -4,12 +4,14 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockCheckUsernameAvailability = vi.hoisted(() => vi.fn());
+const mockUpdateProfile = vi.hoisted(() => vi.fn());
+const mockToast = vi.hoisted(() => vi.fn());
 
 vi.mock('@/contexts/auth-context', () => ({
   useAuth: () => ({ user: { id: 'user-1' } }),
 }));
 
-vi.mock('@/hooks/useToast', () => ({ toast: vi.fn() }));
+vi.mock('@/hooks/useToast', () => ({ toast: mockToast }));
 
 vi.mock('@/services/profile/ProfileService', async () => {
   const actual = await vi.importActual<typeof import('@/services/profile/ProfileService')>(
@@ -18,7 +20,7 @@ vi.mock('@/services/profile/ProfileService', async () => {
   return {
     ...actual,
     checkUsernameAvailability: (...args: unknown[]) => mockCheckUsernameAvailability(...args),
-    updateProfile: vi.fn().mockResolvedValue(true),
+    updateProfile: (...args: unknown[]) => mockUpdateProfile(...args),
   };
 });
 
@@ -38,6 +40,7 @@ const typeName = (name: string) =>
 describe('ProfileForm name availability', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUpdateProfile.mockResolvedValue(true);
   });
 
   it('says in words that a name is available, not by a tick alone', async () => {
@@ -78,5 +81,48 @@ describe('ProfileForm name availability', () => {
       timeout: SETTLE_TIMEOUT_MS,
     });
     expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
+  });
+
+  // The last check said "available" for the old value. An edit then a quick
+  // submit, inside the 500ms debounce, used to save a name nobody checked.
+  it('blocks a submit until the edited name has been checked', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: true });
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'Dougie');
+    expect(
+      await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS })
+    ).toBeInTheDocument();
+    expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1);
+
+    await user.type(input, 'X');
+    // The green line must not vouch for the unchecked name.
+    expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Save Profile' }));
+
+    expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1);
+    expect(mockUpdateProfile).not.toHaveBeenCalled();
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ description: 'Please wait for the name check to complete' })
+    );
+  });
+
+  it('saves the edited name once its check has passed', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: true });
+    renderForm();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS });
+    await user.click(screen.getByRole('button', { name: 'Save Profile' }));
+
+    await waitFor(() =>
+      expect(mockUpdateProfile).toHaveBeenCalledWith('user-1', {
+        username: 'Dougie',
+        fullName: '',
+      })
+    );
   });
 });

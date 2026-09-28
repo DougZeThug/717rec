@@ -30,6 +30,7 @@ import {
   slotFields,
   winnerSideOf,
 } from './shapes';
+import { assertSwapKeepsTeamsUnique } from './swapOccupancyGuard';
 import type { BracketAdminDeps } from './types';
 
 export interface SwapLoserSlotsParams {
@@ -298,6 +299,27 @@ export async function adminSwapLoserBracketSlots(
   );
   const clears = planDownstreamChanges(plans, nameOf);
 
+  const walkoverWinnerIds = plans.flatMap((plan) =>
+    plan.becomesWalkover && plan.newWinnerId != null ? [plan.newWinnerId] : []
+  );
+  await assertSwapKeepsTeamsUnique(
+    deps,
+    String(source.stage.tournament_id),
+    {
+      writes: [
+        ...clears.map((clear) => ({ matchId: clear.matchId, fields: clearFields(clear) })),
+        ...plans.map((plan) => ({ matchId: plan.match.id, fields: plan.fields })),
+      ],
+      walkovers: plans.flatMap((plan) =>
+        plan.becomesWalkover && plan.newWinnerId != null
+          ? [{ match: plan.match, winnerId: plan.newWinnerId }]
+          : []
+      ),
+    },
+    [sourceSlot?.id, targetSlot?.id, ...walkoverWinnerIds].filter((id): id is number => id != null),
+    nameOf
+  );
+
   const outcome = await executeSwapWrites(deps, plans, clears);
 
   await markBracketCompleteIfDone({ storage: deps.storage }, String(source.stage.tournament_id));
@@ -498,6 +520,13 @@ function planDownstreamChanges(plans: MatchWritePlan[], nameOf: NameOf): Downstr
   return clears;
 }
 
+/** The columns that undo a stale automatic advancement. */
+function clearFields(clear: DownstreamClear): MatchUpdateFields {
+  const fields: MatchUpdateFields = idField(clear.side, null);
+  if (clear.demote) fields.status = 1;
+  return fields;
+}
+
 interface SwapWriteOutcome {
   walkoverCompletedMatchIds: number[];
   downstreamClearedMatchIds: number[];
@@ -519,9 +548,10 @@ async function executeSwapWrites(
 ): Promise<SwapWriteOutcome> {
   const downstreamClearedMatchIds: number[] = [];
   for (const clear of clears) {
-    const fields: MatchUpdateFields = idField(clear.side, null);
-    if (clear.demote) fields.status = 1;
-    const { error } = await supabase.from('match').update(fields).eq('id', clear.matchId);
+    const { error } = await supabase
+      .from('match')
+      .update(clearFields(clear))
+      .eq('id', clear.matchId);
     if (error) {
       handleDatabaseError(error, `Failed to undo the advancement in match ${clear.matchId}`);
     }

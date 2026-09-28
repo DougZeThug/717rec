@@ -18,9 +18,11 @@ vi.mock('@/services/matches/MatchWriteService', () => ({
   confirmMatchTie: vi.fn(),
 }));
 
+const mockToast = vi.hoisted(() => vi.fn());
+
 vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({
-    toast: vi.fn(),
+    toast: mockToast,
   }),
 }));
 
@@ -115,6 +117,40 @@ describe('usePendingMatches', () => {
     });
 
     expect(approveMatchResult).toHaveBeenCalled();
+  });
+
+  it('shows the success toast when the approval is applied', async () => {
+    const { result } = renderHook(() => usePendingMatches(), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.handleApproveResult(mockMatch, 1);
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Result Approved' }));
+  });
+
+  // The RPC returns false when its guard matched no row: another admin already
+  // named a winner, or the match was deleted. Nothing was written, so the admin
+  // must not be told their result was recorded.
+  it('does not report success when the approval was a no-op', async () => {
+    vi.mocked(approveMatchResult).mockResolvedValue(false);
+
+    const { result } = renderHook(() => usePendingMatches(), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => {
+      await result.current.handleApproveResult(mockMatch, 1);
+    });
+
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Result Approved' })
+    );
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Already Resolved' }));
   });
 
   it('should call confirmMatchTie with match id', async () => {
