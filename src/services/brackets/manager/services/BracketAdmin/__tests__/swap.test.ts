@@ -182,8 +182,15 @@ function wire(
         ROUNDS.filter((r) => r.group_id === (filter as { group_id: number }).group_id)
       );
     }
+    // The duplicate-spot guard loads the whole Rearrange board.
+    if (table === 'match' && filter && typeof filter === 'object' && 'stage_id' in filter) {
+      return Promise.resolve(matches);
+    }
     if (table === 'group' && typeof filter === 'number') {
       return Promise.resolve(GROUPS.find((g) => g.id === filter) ?? null);
+    }
+    if (table === 'group' && filter && typeof filter === 'object' && 'stage_id' in filter) {
+      return Promise.resolve(GROUPS);
     }
     if (table === 'stage') return Promise.resolve(stage);
     if (table === 'participant') return Promise.resolve(PARTICIPANTS);
