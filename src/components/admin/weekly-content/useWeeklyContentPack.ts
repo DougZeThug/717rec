@@ -140,13 +140,19 @@ export const useWeeklyContentPack = () => {
       if (isSameWeek) {
         // Re-generating the week already on screen, usually after fixing a
         // score. Keep whatever has been typed and fill only what is empty.
-        setDraft((current) => ({
-          ...current,
-          headline: current.headline.trim() === '' ? defaultHeadline(next) : current.headline,
-          caption: current.caption.trim() === '' ? buildFallbackCaption(next) : current.caption,
-          captionSource: current.caption.trim() === '' ? 'fallback' : current.captionSource,
-          blurbs: fillMissingBlurbs(current.blurbs, next),
-        }));
+        setDraft((current) => {
+          const captionWasEmpty = current.caption.trim() === '';
+          return {
+            ...current,
+            headline: current.headline.trim() === '' ? defaultHeadline(next) : current.headline,
+            caption: captionWasEmpty ? buildFallbackCaption(next) : current.caption,
+            captionSource: captionWasEmpty ? 'fallback' : current.captionSource,
+            // No model wrote a fallback caption. Keeping the old model here
+            // would save 'fallback' with a caption_model set, a contradiction.
+            captionModel: captionWasEmpty ? null : current.captionModel,
+            blurbs: fillMissingBlurbs(current.blurbs, next),
+          };
+        });
         return next;
       }
 
