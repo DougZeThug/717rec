@@ -18,6 +18,21 @@ import { BracketFormTitle } from './form/BracketFormTitle';
 
 const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
+/**
+ * Why the typed seeds cannot be used, or null when they can. Seeds may leave
+ * gaps (not every team needs one), but each must be a whole number from 1 to
+ * the team count, and no two teams may share one.
+ */
+const findSeedProblem = (seeds: number[], teamCount: number): string | null => {
+  if (seeds.some((seed) => !Number.isInteger(seed) || seed < 1 || seed > teamCount)) {
+    return `Seeds must be whole numbers from 1 to ${teamCount}.`;
+  }
+  if (new Set(seeds).size !== seeds.length) {
+    return 'Two teams have the same seed. Give each team its own seed.';
+  }
+  return null;
+};
+
 interface BracketFormProps {
   divisions?: Division[];
   teams?: Team[];
@@ -97,6 +112,19 @@ const BracketForm: React.FC<BracketFormProps> = ({
     });
   }, []);
 
+  // Only the selected teams' seeds count: a seed typed for a team that was
+  // then removed is not sent, and must not block the form.
+  const selectedTeamSeeds = React.useMemo(
+    () =>
+      Object.fromEntries(
+        selectedTeams
+          .filter((teamId) => teamSeeds[teamId] !== undefined)
+          .map((teamId) => [teamId, teamSeeds[teamId]])
+      ),
+    [selectedTeams, teamSeeds]
+  );
+  const seedProblem = findSeedProblem(Object.values(selectedTeamSeeds), selectedTeams.length);
+
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {
     // Guard: Only proceed if this is an explicit submission
@@ -113,12 +141,17 @@ const BracketForm: React.FC<BracketFormProps> = ({
       return;
     }
 
+    if (seedProblem) {
+      errorLog('BracketForm: Invalid manual seeds - blocking submission');
+      return;
+    }
+
     // Find division name for the selected division
     const selectedDivision = divisions?.find((d) => d.id === data.divisionId);
     const formDataWithDivision = {
       ...data,
       divisionName: selectedDivision?.name || 'Unknown Division',
-      teamSeeds, // Include manual seed overrides
+      teamSeeds: selectedTeamSeeds, // Include manual seed overrides
     };
 
     onSubmit(formDataWithDivision);
@@ -148,6 +181,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
     teamsValidationState &&
     selectedTeamCount >= minTeams &&
     selectedTeamCount <= maxTeams &&
+    !seedProblem &&
     !isSubmitting
   );
 
@@ -202,6 +236,12 @@ const BracketForm: React.FC<BracketFormProps> = ({
               </span>
             </div>
           )}
+
+        {seedProblem && (
+          <p role="alert" className="text-sm text-destructive">
+            {seedProblem}
+          </p>
+        )}
 
         {/* Form Actions */}
         <div className="flex gap-3 pt-4 border-t">
