@@ -50,10 +50,19 @@ const scheduled = {
   iscompleted: false,
 } as unknown as Match;
 
+const nextMatch = {
+  id: 'm2',
+  team1Id: 't3',
+  team2Id: 't4',
+  date: '2026-10-01T23:30:00.000Z',
+  location: 'Court 2',
+  iscompleted: false,
+} as unknown as Match;
+
 // A module constant, not a literal in the render callback: the hook copies its
 // argument into state from an effect keyed on the array itself, so a new array
 // on every render would re-sync forever.
-const INITIAL_MATCHES: Match[] = [scheduled];
+const INITIAL_MATCHES: Match[] = [scheduled, nextMatch];
 
 // What the form submits after the admin moves the match half an hour later.
 const movedLater = {
@@ -165,6 +174,48 @@ describe('the Schedule match form', () => {
     expect(mockResubmitMatchResult).toHaveBeenCalledTimes(2);
     expect(mockResubmitMatchResult).toHaveBeenLastCalledWith('m1', 't1', 't2', 2, 1);
     expect(mockCreateMatch).not.toHaveBeenCalled();
+  });
+
+  // Cancel stays live while a save runs. A save that lands after the admin
+  // has closed the form and opened another match must leave that form alone.
+  it('leaves the next match open when an earlier save lands late', async () => {
+    let landSave: () => void = () => {};
+    mockUpdateMatch.mockImplementationOnce(
+      (matchId: string, payload: { date?: string }) =>
+        new Promise((resolve) => {
+          landSave = () =>
+            resolve({
+              id: matchId,
+              team1_id: 't1',
+              team2_id: 't2',
+              date: payload.date,
+              location: 'Court 1',
+              iscompleted: false,
+              round_number: 0,
+            });
+        })
+    );
+    const { result } = renderManagement();
+    openOn(result, scheduled);
+
+    let save: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      save = result.current.handleUpdateMatch(movedLater, TEAMS);
+    });
+    act(() => {
+      result.current.setIsFormOpen(false);
+    });
+    openOn(result, nextMatch);
+
+    let saved: boolean | undefined;
+    await act(async () => {
+      landSave();
+      saved = await save;
+    });
+
+    expect(saved).toBe(true);
+    expect(result.current.isFormOpen).toBe(true);
+    expect(result.current.editingMatch).toBe(nextMatch);
   });
 
   // Guards the obvious other fix, closing the form whenever it is open with no
