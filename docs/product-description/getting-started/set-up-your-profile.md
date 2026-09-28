@@ -241,8 +241,7 @@ keep the name they were written under.
   It read profiles, and the player can read only their own row, so it answered
   "free" for nearly every name. It now asks the database function
   `is_username_taken`, which answers yes or no for any name. Not confirmed by
-  hand: the live check as an ordinary player once the function is in the live
-  database.
+  hand: the live check as an ordinary player.
 - **A signed-out visitor is shown a working-looking form whose Save button silently
   does nothing.** The three-second wait before redirecting is deliberate, but the
   form should not be visible during it. **May be worth treating as a bug rather
