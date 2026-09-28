@@ -176,7 +176,17 @@ describe('sentry utils', () => {
       expect(initMock).toHaveBeenCalledTimes(1);
       const config = initMock.mock.calls[0][0];
       expect(config.enabled).toBe(true);
-      expect(config.sendDefaultPii).toBe(false);
+      // Sentry 10's `sendDefaultPii: false` limits, spelled out for Sentry 11.
+      const legacyPiiKeySnippets = ['forwarded', '-ip', 'remote-', 'via', '-user'];
+      expect(config.dataCollection).toEqual({
+        userInfo: false,
+        cookies: false,
+        httpHeaders: { deny: legacyPiiKeySnippets },
+        urlQueryParams: { deny: legacyPiiKeySnippets },
+        httpBodies: [],
+        genAI: { inputs: false, outputs: false },
+        databaseQueryData: false,
+      });
       expect(config.integrations).toEqual([]);
       expect(config.replaysSessionSampleRate).toBe(0.1);
       expect(config.replaysOnErrorSampleRate).toBe(1);

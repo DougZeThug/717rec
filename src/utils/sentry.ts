@@ -8,6 +8,14 @@ import { runAfterDelayWhenIdle } from '@/utils/deferWork';
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN || '';
 
+/**
+ * Key snippets that Sentry 10 filtered out of headers and URL query params when
+ * `sendDefaultPii` was false (PII_HEADER_SNIPPETS in @sentry/core 10.75.2).
+ * Sentry 11 dropped the list, so it is copied here. Sentry still filters its
+ * own list of secret keys (auth, token, key, ...) on top of these.
+ */
+const LEGACY_PII_KEY_SNIPPETS = ['forwarded', '-ip', 'remote-', 'via', '-user'];
+
 let isInitialized = false;
 
 /**
@@ -113,8 +121,21 @@ export const initSentry = () => {
     // Only send errors in production
     enabled: import.meta.env.PROD,
 
-    // Disable automatic PII collection (IP, cookies, headers). User IDs set via setUser() are still sent intentionally.
-    sendDefaultPii: false,
+    // Keep the privacy level of Sentry 10's `sendDefaultPii: false`. Sentry 11
+    // removed that option, and any category left out of `dataCollection`
+    // defaults to "collect", so every category Sentry 10 limited is set here to
+    // the value Sentry 10 used (defaultPiiToCollectionOptions in
+    // @sentry/core 10.75.2). Cookies stay fully off, which is stricter.
+    // User IDs set via setUser() are still sent intentionally.
+    dataCollection: {
+      userInfo: false, // no IP address or auto-filled user fields
+      cookies: false,
+      httpHeaders: { deny: LEGACY_PII_KEY_SNIPPETS },
+      urlQueryParams: { deny: LEGACY_PII_KEY_SNIPPETS },
+      httpBodies: [],
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+    },
 
     // NO integrations on initial load - replay added lazily below
     integrations: [],
