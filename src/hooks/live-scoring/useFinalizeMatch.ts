@@ -30,6 +30,9 @@ export function useFinalizeMatch(matchId: string) {
     // keys are reached without knowing which season is active.
     await queryClient.invalidateQueries({ queryKey: MATCH_RESULT_DRIFT_KEY });
     await queryClient.invalidateQueries({ queryKey: UNSAVED_LIVE_MATCHES_KEY });
+    // The corrections page lists live-scored matches with a "final" tag, and
+    // saving or reopening flips it. Same prefix useAdminCorrections refreshes.
+    await queryClient.invalidateQueries({ queryKey: ['admin', 'live-scored-matches'] });
   };
 
   const finalize = useMutation({
