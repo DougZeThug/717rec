@@ -1,8 +1,24 @@
 import '@testing-library/jest-dom';
 
+import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
 import { cleanup, configure } from '@testing-library/react';
 import { afterEach, expect, vi } from 'vitest';
 import { toHaveNoViolations } from 'vitest-axe/dist/matchers';
+
+// Vitest 5 no longer reads matcher types from the global `jest.Matchers`, and
+// @testing-library/jest-dom 7.0.1 declares its matchers only there. This block
+// adds them to Vitest's own `Matchers<R, T>`, so `expect(el).toBeInTheDocument()`
+// type-checks again. Runtime is unchanged: the import above registers them.
+// Delete this block when jest-dom ships Vitest 5 types:
+// https://github.com/testing-library/jest-dom/issues/738
+declare module 'vitest' {
+  // R and T must keep these names to merge with Vitest's own declaration, so T
+  // stays even though it is unused. The first argument is the type jest-dom
+  // accepts for asymmetric matchers such as expect.stringContaining(), which
+  // Vitest types as `any` anyway.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-unused-vars -- declaration merge, not a new type
+  interface Matchers<R, T> extends TestingLibraryMatchers<unknown, R> {}
+}
 
 expect.extend({ toHaveNoViolations });
 

@@ -101,6 +101,26 @@ export const ExampleService = {
   for every platform, which the hosting build needs) and
   `bun install --lockfile-only` (the deploy runs a frozen bun install).
 
+## Vitest 5
+
+- `vitest` and `@vitest/coverage-v8` are pinned to the **same exact version**.
+  Coverage needs the matching Vitest, so bump them together. Dependabot groups
+  `vitest*` and `@vitest/*` for this reason.
+- The `declare module 'vitest'` block in `src/setupTests.ts` gives the jest-dom
+  matchers (`toBeInTheDocument` and the rest) their types. Vitest 5 no longer
+  reads `jest.Matchers`, and jest-dom 7.0.1 declares them only there. Delete the
+  block when jest-dom ships Vitest 5 types (testing-library/jest-dom#738). Keep
+  it in a `.ts` file: `skipLibCheck` hides mistakes in `.d.ts` files.
+- Vitest clears the call history of every mock before each test (`clearMocks`
+  is on by default). Check calls in the test that makes them, not in
+  `beforeAll`.
+- `await` every `expect(...).resolves` and `.rejects`. Vitest 5 fails the test
+  otherwise.
+- Keep `vi.mock`, `vi.unmock` and `vi.hoisted` at the top level of the file.
+  Vitest 5 throws when they are inside a function or a `describe`.
+- Coverage `include` and `exclude` globs match paths relative to the repo root.
+  An `include` entry without a wildcard means a whole folder.
+
 ## Docs Maintenance
 
 - Update docs **in the same PR as the behavior they describe.** If a PR renames
@@ -191,4 +211,4 @@ export const ExampleService = {
 
 ---
 
-*Last updated: 2026-09-24*
+*Last updated: 2026-09-28*
