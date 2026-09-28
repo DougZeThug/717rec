@@ -1,4 +1,4 @@
-import { Calendar, CheckCircle } from 'lucide-react';
+import { Calendar, CheckCircle, Clock } from 'lucide-react';
 import React from 'react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,14 +12,26 @@ interface ScheduleContentSkeletonProps {
 const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activeTab }) => {
   return (
     <Tabs value={activeTab} className="mb-6">
+      {/* Keep these triggers in step with ScheduleContent's tab bar. The active
+          tab is often 'timeslots' while data loads, and a missing trigger
+          leaves no tab selected. */}
       <TabsList className="w-full md:min-w-[340px] font-inter bg-muted">
+        <TabsTrigger
+          value="timeslots"
+          className="flex-1 md:grow-0 data-[state=active]:bg-background px-2 md:px-6"
+        >
+          <div className="flex items-center justify-center">
+            <Clock className="size-4 mr-2 shrink-0" />
+            <span className="text-sm md:text-base md:whitespace-nowrap">Timeslots</span>
+          </div>
+        </TabsTrigger>
         <TabsTrigger
           value="upcoming"
           className="flex-1 md:grow-0 data-[state=active]:bg-background px-2 md:px-6"
         >
           <div className="flex items-center justify-center">
             <Calendar className="size-4 mr-2 shrink-0" />
-            <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming Matches</span>
+            <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming</span>
           </div>
         </TabsTrigger>
         <TabsTrigger
@@ -28,7 +40,7 @@ const ScheduleContentSkeleton: React.FC<ScheduleContentSkeletonProps> = ({ activ
         >
           <div className="flex items-center justify-center">
             <CheckCircle className="size-4 mr-2 shrink-0" />
-            <span className="text-sm md:text-base md:whitespace-nowrap">Completed Matches</span>
+            <span className="text-sm md:text-base md:whitespace-nowrap">Completed</span>
           </div>
         </TabsTrigger>
       </TabsList>
