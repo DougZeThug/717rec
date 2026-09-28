@@ -1,14 +1,17 @@
-import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
-import { handleDatabaseError } from '@/utils/errorHandler';
 import { bracketLog, successLog } from '@/utils/logger';
 
 import { markBracketCompleteIfDone } from '../../BracketUpdate/completion';
 import type { BracketAdminDeps } from '../types';
+import { updateMatchRowOrThrow } from '../writes';
 import { loadRearrangeBoard } from './board';
 import { simulateRearrange } from './simulate';
 import type { RearrangeApplyResult, RearrangeSnapshot, SlotAssignment } from './types';
 import { slotKeyOf } from './types';
+
+const NOT_SAVED_MESSAGE = 'Not saved — only admins can edit brackets. Nothing was changed.';
+const PARTIAL_MESSAGE =
+  'Only part of this rearrangement was saved. Run Repair Bracket to fix the bracket.';
 
 /**
  * Admin-only: apply a whole losers-bracket rearrangement in one batch.
@@ -42,10 +45,14 @@ export async function applyLoserBracketRearrange(
     throw new BusinessLogicError(plan.problems.map((problem) => problem.message).join(' '));
   }
 
-  for (const write of plan.writes) {
-    const { error } = await supabase.from('match').update(write.fields).eq('id', write.matchId);
-    if (error) {
-      handleDatabaseError(error, `Failed to update match ${write.matchId} during rearrange`);
+  // updateMatchRowOrThrow turns a zero-row update (RLS block) into a loud
+  // failure instead of a false "Teams rearranged".
+  for (const [index, write] of plan.writes.entries()) {
+    try {
+      await updateMatchRowOrThrow(write.matchId, write.fields, NOT_SAVED_MESSAGE);
+    } catch (error) {
+      if (index === 0) throw error;
+      throw new BusinessLogicError(PARTIAL_MESSAGE, error);
     }
   }
 
