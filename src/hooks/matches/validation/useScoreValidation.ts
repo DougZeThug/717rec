@@ -1,5 +1,3 @@
-import { useToast } from '@/hooks/useToast';
-
 interface ValidationResult {
   isValid: boolean;
   errorMessage?: string;
@@ -25,8 +23,6 @@ const validateScore = (team1Score: number, team2Score: number): ValidationResult
 };
 
 export const useScoreValidation = () => {
-  const { toast: _toast } = useToast();
-
   return {
     validateScore,
   };

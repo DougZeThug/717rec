@@ -1,11 +1,7 @@
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { useScoreValidation } from '../useScoreValidation';
-
-vi.mock('@/hooks/useToast', () => ({
-  useToast: () => ({ toast: vi.fn() }),
-}));
 
 const setup = () => renderHook(() => useScoreValidation()).result.current;
 
