@@ -93,7 +93,7 @@ describe('MatchResultDriftCard', () => {
     });
     renderCard();
 
-    expect(screen.getByText(/No active season — nothing to check/)).toBeInTheDocument();
+    expect(screen.getByText(/No active season — nothing to check/u)).toBeInTheDocument();
     expect(screen.queryByText(/All clear/)).not.toBeInTheDocument();
     expect(fetchMatchResultDrift).not.toHaveBeenCalled();
   });
@@ -175,6 +175,6 @@ describe('MatchResultDriftCard', () => {
     fetchMatchResultDrift.mockResolvedValue([drift({ date: null })]);
     renderCard();
 
-    expect(await screen.findByText(/· no date/)).toBeInTheDocument();
+    expect(await screen.findByText(/· no date/u)).toBeInTheDocument();
   });
 });
