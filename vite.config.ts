@@ -61,6 +61,10 @@ export default defineConfig(({ mode }) => ({
             // `dist/assets/index-*.js` and would otherwise count this lazy chunk
             // as part of first paint.
             { name: 'vendor-html-to-image', test: /[\\/]node_modules[\\/]html-to-image[\\/]/ },
+            // Same trick for confetti: it is only reached through a dynamic
+            // import in utils/confetti.ts, so naming it keeps its chunk from
+            // being called `index-*.js` and miscounted as main.
+            { name: 'vendor-canvas-confetti', test: /[\\/]node_modules[\\/]canvas-confetti[\\/]/ },
             // Same trick for the native Google login plugin: it is only reached
             // through a dynamic import in utils/nativeAuth.ts, so naming it keeps
             // its chunk from being called `index-*.js` and miscounted as main.

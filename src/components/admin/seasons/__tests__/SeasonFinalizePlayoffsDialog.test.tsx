@@ -13,6 +13,12 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: toastMock }),
 }));
 
+const confettiMock = vi.fn();
+
+vi.mock('@/utils/confetti', () => ({
+  fireChampionConfetti: () => confettiMock(),
+}));
+
 vi.mock('@/hooks/useSeasonMutations', () => ({
   useSeasonMutations: () => ({
     finalizePlayoffs: { mutateAsync: finalizeMock },
@@ -58,6 +64,7 @@ describe('SeasonFinalizePlayoffsDialog', () => {
       expect.objectContaining({ description: expect.stringMatching(/finalized/i) })
     );
     expect(onClose).toHaveBeenCalled();
+    expect(confettiMock).toHaveBeenCalledTimes(1);
   });
 
   it('shows an error toast and keeps the dialog open on failure', async () => {
@@ -74,6 +81,7 @@ describe('SeasonFinalizePlayoffsDialog', () => {
     );
     // Dialog must stay open on failure so the user can retry.
     expect(onClose).not.toHaveBeenCalled();
+    expect(confettiMock).not.toHaveBeenCalled();
   });
 
   it('does not call the mutation when Cancel is clicked', async () => {
