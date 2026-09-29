@@ -240,7 +240,7 @@ describe('MatchCorrectionsPanel', () => {
 
     expect(screen.getByText('Round 1')).toBeInTheDocument();
     // The game header and the round row both carry the score.
-    expect(screen.getAllByText(/Team A 2 – 1 Team B/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Team A 2 – 1 Team B/u).length).toBeGreaterThan(0);
   });
 
   it('drops the finalized warning on an archived season, which cannot be edited anyway', () => {
@@ -326,7 +326,7 @@ describe('MatchCorrectionsPanel', () => {
     mockReopenAndRefinalize.isPending = true;
     renderFinalized();
 
-    expect(screen.getByRole('button', { name: /Re-saving…/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Re-saving…/u })).toBeDisabled();
   });
 
   it('offers no Reopen & re-save on an archived season', () => {
