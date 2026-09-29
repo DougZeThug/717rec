@@ -1,7 +1,6 @@
 import { UseFormReturn } from 'react-hook-form';
 
-import { Team } from '@/types';
-import { Match } from '@/types';
+import type { Match, Team } from '@/types';
 
 export interface MatchFormProps {
   match?: Match;
