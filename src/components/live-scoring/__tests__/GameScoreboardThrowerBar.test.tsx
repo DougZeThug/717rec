@@ -27,6 +27,25 @@ describe('GameScoreboard', () => {
     expect(screen.getByText('Baggers')).toBeInTheDocument();
     expect(screen.getByText('Tossers')).toBeInTheDocument();
   });
+
+  it('hides the animated digits from screen readers and keeps the score as plain text', () => {
+    const { container } = render(
+      <GameScoreboard
+        gameNumber={1}
+        team1Name="Baggers"
+        team2Name="Tossers"
+        totals={{ team1: 24, team2: 9 }}
+        leaderSide={1}
+        rulesLabel="First to 21, win by 2"
+      />
+    );
+
+    const animated = container.querySelectorAll('[data-value]');
+    expect(animated).toHaveLength(2);
+    for (const digits of animated) expect(digits).toHaveAttribute('aria-hidden', 'true');
+    expect(within(screen.getByTestId('team1-total')).getByText('24')).toHaveClass('sr-only');
+    expect(within(screen.getByTestId('team2-total')).getByText('9')).toHaveClass('sr-only');
+  });
 });
 
 describe('ThrowerBar', () => {

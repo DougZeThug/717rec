@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers';
 import { cleanup, configure } from '@testing-library/react';
+import { createElement } from 'react';
 import { afterEach, expect, vi } from 'vitest';
 import { toHaveNoViolations } from 'vitest-axe/dist/matchers';
 
@@ -21,6 +22,16 @@ declare module 'vitest' {
 }
 
 expect.extend({ toHaveNoViolations });
+
+// NumberFlow draws its digits inside a custom element that jsdom cannot start:
+// the first re-render throws "this.el?.willUpdate is not a function". Tests
+// render an empty span that carries the value in `data-value`. The real number
+// is in the plain-text copy each caller keeps for screen readers. Real
+// animation is browser-only.
+vi.mock('@number-flow/react', () => ({
+  default: (props: { value: number; 'aria-hidden'?: 'true' | 'false' }) =>
+    createElement('span', { 'data-value': props.value, 'aria-hidden': props['aria-hidden'] }),
+}));
 
 // Provide safe default Supabase env vars for sandboxed agent shells (Codex /
 // Claude Code) where Vite's .env auto-loading isn't available. Tests always
