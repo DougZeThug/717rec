@@ -200,20 +200,7 @@ export class SupabaseSqlStorage implements CrudInterface {
   }
 
   /**
-   * Delete all rows from a bracket-manager table.
-   */
-  async delete<T extends keyof DataTypes>(table: T): Promise<boolean>;
-
-  /**
-   * Delete bracket-manager rows matching a partial filter.
-   */
-  async delete<T extends keyof DataTypes>(
-    table: T,
-    filter: Partial<DataTypes[T]>
-  ): Promise<boolean>;
-
-  /**
-   * Delete bracket-manager rows from Supabase, optionally constrained by a filter.
+   * Delete bracket-manager rows from Supabase. Without a filter, deletes all rows in the table.
    */
   async delete<T extends keyof DataTypes>(
     table: T,
