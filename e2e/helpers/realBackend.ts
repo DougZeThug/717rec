@@ -8,6 +8,10 @@ export interface RealBackendEnv {
   password: string;
 }
 
+/**
+ * Reads the E2E_* environment variables for the real-backend tests. Returns
+ * null when any of them is missing, so those tests can skip.
+ */
 export const getRealBackendEnv = (): RealBackendEnv | null => {
   const supabaseUrl = process.env.E2E_SUPABASE_URL;
   const anonKey = process.env.E2E_SUPABASE_ANON_KEY;
@@ -18,6 +22,10 @@ export const getRealBackendEnv = (): RealBackendEnv | null => {
   return { supabaseUrl, anonKey, serviceRoleKey, email, password };
 };
 
+/**
+ * Creates a service-role Supabase client for seeding and cleanup. It does not
+ * persist or refresh a session.
+ */
 export const createAdminClient = (env: RealBackendEnv): SupabaseClient =>
   createClient(env.supabaseUrl, env.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -85,8 +93,13 @@ export interface SeededMatch {
   team2Name: string;
 }
 
+/** Short random suffix so seeded names do not clash across test runs. */
 const uniqueSuffix = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+/**
+ * Inserts two teams and one unscored match dated yesterday, so the match shows
+ * in the "Pending Scores" view. Pair with `cleanupSeededMatch`.
+ */
 export const seedPendingMatch = async (admin: SupabaseClient): Promise<SeededMatch> => {
   const suffix = uniqueSuffix();
   const team1Name = `E2E Alpha ${suffix}`;
@@ -127,6 +140,10 @@ export const seedPendingMatch = async (admin: SupabaseClient): Promise<SeededMat
   };
 };
 
+/**
+ * Deletes the rows `seedPendingMatch` created (score submissions, match,
+ * teams). Safe to re-run: failed deletes are logged, not thrown.
+ */
 export const cleanupSeededMatch = async (
   admin: SupabaseClient,
   seeded: SeededMatch

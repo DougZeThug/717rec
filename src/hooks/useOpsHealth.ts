@@ -12,6 +12,10 @@ export interface RealtimeHealth {
   lastChangeAt: Date | null;
 }
 
+/**
+ * Fetches the newest power-score snapshot (or null if none exists yet) for
+ * the ops health page. Refetches every 60 seconds.
+ */
 export const useLastPowerSnapshot = () => {
   return useQuery({
     queryKey: ['ops-health', 'last-power-snapshot'],
@@ -21,6 +25,11 @@ export const useLastPowerSnapshot = () => {
   });
 };
 
+/**
+ * Fetches counts of admin work waiting for action: pending score submissions,
+ * team requests, new contact requests and new support tickets. Refetches every
+ * 30 seconds.
+ */
 export const usePendingOpsCounts = () => {
   return useQuery({
     queryKey: ['ops-health', 'pending-ops-counts'],
