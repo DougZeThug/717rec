@@ -98,6 +98,7 @@
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.7.0",
     "tailwindcss-animate": "^1.0.7",
+    "use-sound": "^5.0.0",
     "uuid": "^14.0.2",
     "vaul": "^1.1.2",
     "vite-plugin-beasties": "^0.5.4",

@@ -90,7 +90,9 @@ Four GitHub Actions workflows live in `.github/workflows/`:
   (about 290 KB gzipped in total at the Vite 8 upgrade). Note that the glob also
   catches any lazy chunk Rolldown happens to name `index-*.js` after its
   package's own entry file, which is why `vite.config.ts` gives `html-to-image`
-  its own `vendor-html-to-image` code-splitting group.
+  its own `vendor-html-to-image` code-splitting group. `canvas-confetti`
+  (`vendor-canvas-confetti`) and Howler, the audio engine behind `use-sound`
+  (`vendor-howler`), are named the same way.
 - **All JS chunks** — 1250 KB gzipped. This counts _every_ chunk, including
   admin-only lazy ones no visitor ever downloads, so it grows whenever the admin
   console does. Raised from 1200 KB when the Weekly Content Pack landed (an

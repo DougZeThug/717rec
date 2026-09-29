@@ -7,6 +7,7 @@ import {
   useUnsettledRoundCount,
 } from '@/hooks/live-scoring/usePausedRoundCount';
 import type { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
+import { useRoundSavedSound } from '@/hooks/live-scoring/useRoundSavedSound';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from '@/hooks/useToast';
 import { DuplicateRoundError } from '@/types/errors';
@@ -90,6 +91,8 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
 
   /** The last round this scorer filed, for the on-screen confirmation. */
   const [savedRound, setSavedRound] = useState<SavedRound | null>(null);
+
+  const { soundEnabled, setSoundEnabled, playRoundSaved } = useRoundSavedSound();
 
   const isOnline = useOnlineStatus();
   const pausedRounds = usePausedRoundCount(matchId);
@@ -186,6 +189,7 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
         // takes the catch below instead: that round is the other scorer's.
         .then((): RoundSaveOutcome => {
           setSavedRound({ round: roundNumber, at: Date.now() });
+          playRoundSaved();
           return 'saved';
         })
         .catch((error: unknown): RoundSaveOutcome => {
@@ -283,6 +287,8 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
             lastRound &&
             undoLastRound.mutate({ gameId: game.game.id, roundNumber: lastRound.round_number })
           }
+          soundEnabled={soundEnabled}
+          onSoundEnabledChange={setSoundEnabled}
         />
       )}
 
