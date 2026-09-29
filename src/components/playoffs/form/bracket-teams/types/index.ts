@@ -7,10 +7,6 @@ interface TeamSelectionCallback {
 // Form validation types
 export interface ValidationProgress {
   percentage: number;
-  selected: number;
-  required: number;
-  maximum: number;
-  available: number;
 }
 
 // Consolidated state types
@@ -34,9 +30,6 @@ export interface BracketFormStateResult {
   warningMessage: string | null;
   statusMessage: string;
   progress: ValidationProgress;
-
-  // Effects
-  cleanup: () => void;
 }
 
 // Use Team from main types - ProcessedTeam is kept for internal processing
