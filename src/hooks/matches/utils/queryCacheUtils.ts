@@ -2,6 +2,11 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { cacheLog } from '@/utils/logger';
 
+/**
+ * Marks every query that depends on match results as stale (teams, standings,
+ * career stats, head-to-head, schedule, playoffs, live scoring) so screens
+ * refetch after a match is created, scored or changed.
+ */
 export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) => {
   cacheLog('Invalidating all match and team related queries...');
 
@@ -48,6 +53,10 @@ export const invalidateMatchRelatedQueries = async (queryClient: QueryClient) =>
   cacheLog('Query cache invalidation complete for:', queriesToInvalidate.join(', '));
 };
 
+/**
+ * Invalidates each given top-level query key in parallel and waits for all of
+ * them to finish.
+ */
 export const batchInvalidateQueries = async (queryClient: QueryClient, keys: string[]) => {
   const promises = keys.map((key) => queryClient.invalidateQueries({ queryKey: [key] }));
   await Promise.all(promises);

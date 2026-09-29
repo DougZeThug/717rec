@@ -6,6 +6,11 @@ export interface TeamRosters {
   team2: string[];
 }
 
+/**
+ * Picks the next thrower for one side by rotating to the player after
+ * `lastThrowerId`. Falls back to the first player when nobody has thrown yet or
+ * the last thrower is no longer on the roster. Returns null for an empty roster.
+ */
 function nextForSide(lastThrowerId: string | null, roster: string[]): string | null {
   if (roster.length === 0) return null;
   if (roster.length === 1) return roster[0];
