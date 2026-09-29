@@ -13,12 +13,15 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 
 interface LiveScoringControlsProps {
   canUndo: boolean;
   isUndoing: boolean;
   lastRoundLabel: string | null;
   onUndo: () => void;
+  soundEnabled: boolean;
+  onSoundEnabledChange: (enabled: boolean) => void;
 }
 
 export const LiveScoringControls: React.FC<LiveScoringControlsProps> = ({
@@ -26,8 +29,14 @@ export const LiveScoringControls: React.FC<LiveScoringControlsProps> = ({
   isUndoing,
   lastRoundLabel,
   onUndo,
+  soundEnabled,
+  onSoundEnabledChange,
 }) => (
-  <div className="flex justify-end">
+  <div className="flex items-center justify-between gap-3">
+    <label className="flex min-h-[44px] cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+      <Switch checked={soundEnabled} onCheckedChange={onSoundEnabledChange} />
+      Sound
+    </label>
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button

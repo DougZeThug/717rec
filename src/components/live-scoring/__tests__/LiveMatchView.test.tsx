@@ -12,6 +12,16 @@ vi.mock('@/hooks/useToast', () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
+const mockPlayRoundSaved = vi.hoisted(() => vi.fn());
+const mockSetSoundEnabled = vi.hoisted(() => vi.fn());
+vi.mock('@/hooks/live-scoring/useRoundSavedSound', () => ({
+  useRoundSavedSound: () => ({
+    soundEnabled: false,
+    setSoundEnabled: mockSetSoundEnabled,
+    playRoundSaved: mockPlayRoundSaved,
+  }),
+}));
+
 const mockSubmitRound = {
   mutate: vi.fn(),
   mutateAsync: vi.fn(),
@@ -501,6 +511,54 @@ describe('in-game state', () => {
     const after = screen.getAllByRole('group');
     expect(gridButton(after[0], '5')).toHaveAttribute('aria-pressed', 'true');
     expect(gridButton(after[1], '0')).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('plays the round-saved sound once the round is confirmed saved', async () => {
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(mockPlayRoundSaved).toHaveBeenCalledTimes(1));
+  });
+
+  it('stays silent when the round fails to save', async () => {
+    mockSubmitRound.mutateAsync.mockRejectedValue(new Error('Failed to fetch'));
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(mockSubmitRound.mutateAsync).toHaveBeenCalled());
+    expect(mockPlayRoundSaved).not.toHaveBeenCalled();
+  });
+
+  it('stays silent when another scorer recorded the round first', async () => {
+    mockSubmitRound.mutateAsync.mockRejectedValue(new DuplicateRoundError('game-1', 2));
+    renderView(inGameBundle());
+
+    const grids = screen.getAllByRole('group');
+    await userEvent.click(gridButton(grids[0], '9'));
+    await userEvent.click(gridButton(grids[1], '0'));
+    await userEvent.click(screen.getByRole('button', { name: /save round/i }));
+
+    await waitFor(() => expect(mockSubmitRound.mutateAsync).toHaveBeenCalled());
+    expect(mockPlayRoundSaved).not.toHaveBeenCalled();
+  });
+
+  it('shows the sound switch off and passes the scorer choice on', async () => {
+    renderView(inGameBundle());
+
+    const soundSwitch = screen.getByRole('switch', { name: /sound/i });
+    expect(soundSwitch).not.toBeChecked();
+
+    await userEvent.click(soundSwitch);
+
+    expect(mockSetSoundEnabled).toHaveBeenCalledWith(true);
   });
 
   it('clears the tapped scores when another scorer recorded the round first', async () => {

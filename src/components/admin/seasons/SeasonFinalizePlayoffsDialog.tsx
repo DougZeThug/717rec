@@ -15,6 +15,7 @@ import {
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { toast } from '@/hooks/useToast';
 import { Season } from '@/types/season';
+import { fireChampionConfetti } from '@/utils/confetti';
 
 interface SeasonFinalizePlayoffsDialogProps {
   isOpen: boolean;
@@ -95,6 +96,7 @@ const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> 
         title: 'Success',
         description: `${season.name}'s playoffs have been finalized.`,
       });
+      void fireChampionConfetti();
       onClose();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to finalize playoffs';
