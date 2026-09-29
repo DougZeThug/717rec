@@ -67,8 +67,6 @@ Not checkable by hand:
 - **The "No Time" group and unparsable time labels.** No admin screen can write a
   time the browser cannot parse, so neither the group nor the unpredictable sort
   can be reached.
-- **The search-specific empty state.** It exists in the code and is reachable from
-  no page, so there is nothing to look at.
 - **Whether Thursday is really the league's night.** It is a fixed default with no
   setting behind it; ask the league rather than the app.
 
