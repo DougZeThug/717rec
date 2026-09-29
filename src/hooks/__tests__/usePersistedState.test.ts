@@ -1,5 +1,5 @@
-import { renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { usePersistedState } from '@/hooks/usePersistedState';
 
@@ -14,6 +14,10 @@ describe('usePersistedState', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('returns default value when key is missing', () => {
@@ -81,5 +85,28 @@ describe('usePersistedState', () => {
       'persisted-key',
       'invalid_shape'
     );
+  });
+
+  describe('when the browser blocks storage', () => {
+    it('returns the default value instead of throwing on read', () => {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new DOMException('blocked', 'SecurityError');
+      });
+
+      const { result } = renderHook(() => usePersistedState('blocked-key', 'default-value'));
+
+      expect(result.current[0]).toBe('default-value');
+    });
+
+    it('keeps the value in memory instead of throwing on write', () => {
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new DOMException('blocked', 'SecurityError');
+      });
+
+      const { result } = renderHook(() => usePersistedState('blocked-key', 'default-value'));
+      act(() => result.current[1]('changed'));
+
+      expect(result.current[0]).toBe('changed');
+    });
   });
 });

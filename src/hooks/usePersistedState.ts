@@ -8,6 +8,29 @@ const isPrimitiveValue = (value: unknown): value is string | number | boolean =>
   typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
 
 /**
+ * Reads a stored string, or null when there is none or the browser blocks
+ * storage. Blocked storage is a privacy setting, not a bug, so it must never
+ * stop the screen that asked for a preference.
+ */
+const readStoredValue = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    warnLog('Storage is blocked. Using the default value for key "%s":', key, e);
+    return null;
+  }
+};
+
+/** Writes a stored string. When storage is blocked, the value stays in memory only. */
+const writeStoredValue = (key: string, value: string): void => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {
+    warnLog('Storage is blocked. Not saving key "%s":', key, e);
+  }
+};
+
+/**
  * Custom hook for managing state that persists to localStorage
  * @param key - localStorage key
  * @param defaultValue - default value if no stored value exists
@@ -21,7 +44,7 @@ export function usePersistedState<T>(
 ): [T, (value: T) => void] {
   // Initialize state from localStorage or use default
   const [value, setValue] = useState<T>(() => {
-    const savedValue = localStorage.getItem(key);
+    const savedValue = readStoredValue(key);
 
     if (!savedValue) {
       return defaultValue;
@@ -64,7 +87,7 @@ export function usePersistedState<T>(
 
   // Persist to localStorage whenever value changes
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(value));
+    writeStoredValue(key, JSON.stringify(value));
   }, [key, value]);
 
   return [value, setValue];

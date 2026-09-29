@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const playMock = vi.hoisted(() => vi.fn());
 const soundSpy = vi.hoisted(() => vi.fn());
@@ -18,6 +18,10 @@ const STORAGE_KEY = '717rec:live-scoring-sound';
 describe('useRoundSavedSound', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('is off by default', () => {
@@ -76,5 +80,22 @@ describe('useRoundSavedSound', () => {
     const { result } = renderHook(() => useRoundSavedSound());
 
     expect(result.current.playRoundSaved).toBe(playMock);
+  });
+
+  it('still works when the browser blocks storage', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+
+    const { result } = renderHook(() => useRoundSavedSound());
+    expect(result.current.soundEnabled).toBe(false);
+
+    act(() => result.current.setSoundEnabled(true));
+
+    expect(result.current.soundEnabled).toBe(true);
+    expect(playMock).toHaveBeenCalledWith({ forceSoundEnabled: true });
   });
 });
