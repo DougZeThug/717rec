@@ -185,7 +185,10 @@ matches — Complete every match, then try again."
 **Rearrange Teams** and **Edit teams** are the two admin writes here with a
 preview step. Rearrange Teams: drag losers into different slots, then a
 confirmation screen listing "Your moves" and "What happens automatically"
-before it saves.
+before it saves. If a match it writes is played or started by someone else after
+the screen was read, the save stops with "The bracket changed since this screen
+was opened. Close it and reopen to continue." The played result is not
+overwritten.
 
 **Edit teams** sits in the Edit Match Score box, for admins only. It changes who
 plays in a **first-round match of the winners bracket** that has not been
@@ -205,7 +208,9 @@ where each team plays and why it can't move. "Review changes…" then lists
 
 It refuses a match being played or already played, a change that would reach a
 round 2 or losers-bracket match that has been played, a trade with two matches
-at once, and a screen opened before the bracket changed. If a save stops part
+at once, and a screen opened before the bracket changed. A match that another
+admin scores while the save is running is refused too, with "This match changed
+since Edit teams was opened", and its result is left alone. If a save stops part
 way, the toast says "Only part of this change was saved"; saving the same teams
 again finishes it, a half-done trade included, whether from the same screen or
 after opening Edit teams on that match again. Repair Bracket does not.
