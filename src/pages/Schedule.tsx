@@ -26,6 +26,10 @@ import { normalizeDate } from '@/utils/dateNormalization';
 import { errorLog, scheduleLog } from '@/utils/logger';
 import { isMatchCompleted, isMatchOpenForScoring } from '@/utils/matchStatus';
 
+// One shared empty list. A fresh `[]` each render made useMatchManagement
+// reset its state on every render while matches load, looping forever.
+const NO_MATCHES: Match[] = [];
+
 // Get upcoming Thursday (or today if it's Thursday)
 const getUpcomingThursday = () => {
   const today = new Date();
@@ -296,7 +300,7 @@ const Schedule = () => {
     handleCreateMatch,
     handleUpdateMatch,
     handleDeleteMatch,
-  } = useMatchManagement(matchesData || []);
+  } = useMatchManagement(matchesData ?? NO_MATCHES);
 
   // Trigger teams loading when form is about to open
   const handleOpenForm = (match?: typeof editingMatch) => {
@@ -378,8 +382,6 @@ const Schedule = () => {
     []
   );
 
-  (window as unknown as { __rc?: number }).__rc = ((window as unknown as { __rc?: number }).__rc ?? 0) + 1;
-  ((window as unknown as { __v?: unknown[] }).__v ??= []).push([selectedDate.getTime(), matchesLoading, timeslotDatesLoading, timeslotsLoading, activeTab, teamsLoading, shouldLoadTeams, String(searchTerm), division, teamFilter, matchesData?.length, groupedTimeslots?.length]);
   return (
     <PageLayout withBackground gradientVariant="blueOrange">
       <SeoHead
