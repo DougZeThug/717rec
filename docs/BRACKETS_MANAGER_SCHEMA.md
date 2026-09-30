@@ -219,7 +219,7 @@ to prove no team ends up in two matches (`footprint.ts`).
 3. `READY` (2) - Match ready to be played
 4. `RUNNING` (3) - Match in progress
 5. `COMPLETED` (4) - Match finished
-6. `ARCHIVED` (5) - Match locked after stage completion (admin corrections unlock to `COMPLETED`)
+6. `ARCHIVED` (5) - Match locked after stage completion (still editable via admin correction)
 
 ---
 
