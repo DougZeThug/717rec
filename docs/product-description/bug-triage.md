@@ -3332,6 +3332,13 @@ finding read a superseded migration.
   fetch. The third site, the realtime DELETE handler, is a row the server has
   already removed and still uses the one-fetch tombstone. Both hooks carry the
   change, so they do not drift apart again.
+- **Follow-up, also done.** The `finally` clear was itself too early on the
+  success path: the row's realtime INSERT event can land after the delete request
+  returns and before its DELETE follows, and it put the row back until the DELETE
+  came. The match hook now clears `inFlightDeletesRef` on the realtime DELETE
+  event, or in the catch when the delete fails — not when the request returns —
+  and the `finally` is gone. The message hook kept the `finally` clear, so the
+  two have drifted apart again.
 - **Note on the sibling:** `useMessageReactions` was given the per-fetch clear
   on 2026-07-15 and the match hook was not. Two comments in this repo asserting
   that the match queryFn never clears its buffers — one in the hook, one in its
