@@ -379,6 +379,7 @@ const Schedule = () => {
   );
 
   (window as unknown as { __rc?: number }).__rc = ((window as unknown as { __rc?: number }).__rc ?? 0) + 1;
+  ((window as unknown as { __v?: unknown[] }).__v ??= []).push([selectedDate.getTime(), matchesLoading, timeslotDatesLoading, timeslotsLoading, activeTab, teamsLoading, shouldLoadTeams, String(searchTerm), division, teamFilter, matchesData?.length, groupedTimeslots?.length]);
   return (
     <PageLayout withBackground gradientVariant="blueOrange">
       <SeoHead
