@@ -23,11 +23,27 @@ const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
  * division seeds (1 to the division size), not bracket positions: a partial
  * bracket can hold seeds 5-8, and a cross-division bracket can hold two teams
  * that are each seed 1 in their own division. Bracket creation sorts by seed
- * and renumbers teams 1..N, so only a non-whole or non-positive seed is bad.
+ * and renumbers teams 1..N, so a seed only has to be a whole number of 1 or
+ * more. Two teams of the same division may not share a seed (the database
+ * enforces that too), because the tie would be broken by pick order.
  */
-const findSeedProblem = (seeds: number[]): string | null => {
-  if (seeds.some((seed) => !Number.isInteger(seed) || seed < 1)) {
+const findSeedProblem = (
+  seeds: Record<string, number>,
+  divisionOf: (teamId: string) => string | null
+): string | null => {
+  const entries = Object.entries(seeds);
+  if (entries.some(([, seed]) => !Number.isInteger(seed) || seed < 1)) {
     return 'Seeds must be whole numbers of 1 or more.';
+  }
+  const taken = new Set<string>();
+  for (const [teamId, seed] of entries) {
+    const divisionId = divisionOf(teamId);
+    if (divisionId === null) continue; // unknown division: cannot say it is a clash
+    const key = `${divisionId}:${seed}`;
+    if (taken.has(key)) {
+      return 'Two teams in the same division have the same seed. Give each team its own seed.';
+    }
+    taken.add(key);
   }
   return null;
 };
@@ -122,7 +138,15 @@ const BracketForm: React.FC<BracketFormProps> = ({
       ),
     [selectedTeams, teamSeeds]
   );
-  const seedProblem = findSeedProblem(Object.values(selectedTeamSeeds));
+  const divisionByTeamId = React.useMemo(
+    () =>
+      new Map((teams ?? []).map((team) => [team.id, team.division_id || team.division || null])),
+    [teams]
+  );
+  const seedProblem = findSeedProblem(
+    selectedTeamSeeds,
+    (teamId) => divisionByTeamId.get(teamId) ?? null
+  );
 
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {

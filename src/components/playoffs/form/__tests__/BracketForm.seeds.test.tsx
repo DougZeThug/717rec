@@ -54,6 +54,9 @@ vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
       <button type="button" onClick={() => onSeedChange('t1', 1)}>
         t1 seed 1
       </button>
+      <button type="button" onClick={() => onSeedChange('t2', 1)}>
+        t2 seed 1
+      </button>
       <button type="button" onClick={() => onSeedChange('t2', 2)}>
         t2 seed 2
       </button>
@@ -91,9 +94,17 @@ vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
   ),
 }));
 
+const team = (id: string, division_id: string | null) => ({ id, name: id, division_id });
+
+// a1 and b1 sit in different divisions; every other team is in division A.
+const TEAMS = [
+  ...['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 'a1'].map((id) => team(id, 'A')),
+  team('b1', 'B'),
+];
+
 const renderForm = () => {
   const onSubmit = vi.fn();
-  render(<BracketForm divisions={[]} teams={[]} onSubmit={onSubmit} onCancel={vi.fn()} />);
+  render(<BracketForm divisions={[]} teams={TEAMS} onSubmit={onSubmit} onCancel={vi.fn()} />);
   return { onSubmit, user: userEvent.setup() };
 };
 
@@ -119,6 +130,16 @@ describe('BracketForm manual seeds', () => {
     await user.click(screen.getByText('t4 seed 1.5'));
 
     expect(screen.getByRole('alert')).toHaveTextContent('whole numbers');
+    expect(createButton()).toBeDisabled();
+  });
+
+  it('blocks two teams of the same division with the same seed', async () => {
+    const { user } = renderForm();
+    await user.click(screen.getByText('pick four'));
+    await user.click(screen.getByText('t1 seed 1'));
+    await user.click(screen.getByText('t2 seed 1'));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('same division have the same seed');
     expect(createButton()).toBeDisabled();
   });
 
