@@ -109,6 +109,46 @@ describe('ProfileForm name availability', () => {
     );
   });
 
+  // A check that finished but could not answer (the service returns null on an
+  // error) is not "still waiting". Save says so, asks again, and the next Save
+  // works once the service is back.
+  it('says the check failed, asks again, and saves once the name is verified', async () => {
+    mockCheckUsernameAvailability
+      .mockResolvedValueOnce({ available: null })
+      .mockResolvedValue({ available: true });
+    renderForm();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+    await waitFor(() => expect(screen.queryByText('Name is available')).not.toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Save Profile' }));
+
+    expect(mockUpdateProfile).not.toHaveBeenCalled();
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Couldn't check this name" })
+    );
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ description: 'Please wait for the name check to complete' })
+    );
+    // The second check runs on its own and passes.
+    expect(
+      await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS })
+    ).toBeInTheDocument();
+    expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(2);
+
+    await user.click(screen.getByRole('button', { name: 'Save Profile' }));
+    await waitFor(() =>
+      expect(mockUpdateProfile).toHaveBeenCalledWith('user-1', {
+        username: 'Dougie',
+        fullName: '',
+      })
+    );
+  });
+
   it('saves the edited name once its check has passed', async () => {
     mockCheckUsernameAvailability.mockResolvedValue({ available: true });
     renderForm();

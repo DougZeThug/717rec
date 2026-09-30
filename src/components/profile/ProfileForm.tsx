@@ -40,6 +40,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     available: boolean | null;
   } | null>(null);
   const [isCheckingUsername, setIsCheckingUsername] = useState<boolean>(false);
+  // Bumped to ask for another check of the same name after one could not answer.
+  const [recheckCount, setRecheckCount] = useState<number>(0);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -52,13 +54,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const { isSubmitting } = form.formState;
   const username = useWatch({ control: form.control, name: 'username' });
 
-  // Only a result for the name now in the field counts.
-  const usernameAvailable = availability?.name === username ? availability.available : null;
+  // Only a result for the name now in the field counts. undefined means no
+  // check has finished for this name; null means one finished but could not
+  // answer (the service returns null on an error). Keep the two apart.
+  const resultForName = availability?.name === username ? availability.available : undefined;
+  const usernameAvailable = resultForName ?? null;
   // An edited name with no result yet. During the 500ms debounce the request
   // has not started, so isCheckingUsername alone does not cover this gap. The
   // saved name is the user's own, so it needs no check.
   const awaitingCheck =
-    username.length >= 3 && username !== initialUsername && usernameAvailable === null;
+    username.length >= 3 && username !== initialUsername && resultForName === undefined;
+  const checkFailed =
+    username.length >= 3 && username !== initialUsername && resultForName === null;
 
   // Track the latest username being checked to ignore stale responses
   const latestCheckRef = useRef<string>('');
@@ -106,7 +113,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     }, 500);
 
     return () => clearTimeout(handler);
-  }, [username, handleUsernameAvailabilityCheck]);
+  }, [username, recheckCount, handleUsernameAvailabilityCheck]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
@@ -120,6 +127,18 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
             : 'Please choose another name',
         variant: 'destructive',
       });
+      return;
+    }
+
+    // The check finished but could not answer. Say so, and ask again, so the
+    // next Save can work once the service is back.
+    if (checkFailed) {
+      toast({
+        title: "Couldn't check this name",
+        description: "We couldn't check if this name is free. Try Save again.",
+        variant: 'destructive',
+      });
+      setRecheckCount((count) => count + 1);
       return;
     }
 
