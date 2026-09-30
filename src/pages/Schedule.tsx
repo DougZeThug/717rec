@@ -378,6 +378,7 @@ const Schedule = () => {
     []
   );
 
+  (window as unknown as { __rc?: number }).__rc = ((window as unknown as { __rc?: number }).__rc ?? 0) + 1;
   return (
     <PageLayout withBackground gradientVariant="blueOrange">
       <SeoHead
