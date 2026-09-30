@@ -19,16 +19,31 @@ import { BracketFormTitle } from './form/BracketFormTitle';
 const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
 /**
- * Why the typed seeds cannot be used, or null when they can. Seeds may leave
- * gaps (not every team needs one), but each must be a whole number from 1 to
- * the team count, and no two teams may share one.
+ * Why the carried seeds cannot be used, or null when they can. These are
+ * division seeds (1 to the division size), not bracket positions: a partial
+ * bracket can hold seeds 5-8, and a cross-division bracket can hold two teams
+ * that are each seed 1 in their own division. Bracket creation sorts by seed
+ * and renumbers teams 1..N, so a seed only has to be a whole number of 1 or
+ * more. Two teams of the same division may not share a seed (the database
+ * enforces that too), because the tie would be broken by pick order.
  */
-const findSeedProblem = (seeds: number[], teamCount: number): string | null => {
-  if (seeds.some((seed) => !Number.isInteger(seed) || seed < 1 || seed > teamCount)) {
-    return `Seeds must be whole numbers from 1 to ${teamCount}.`;
+const findSeedProblem = (
+  seeds: Record<string, number>,
+  divisionOf: (teamId: string) => string | null
+): string | null => {
+  const entries = Object.entries(seeds);
+  if (entries.some(([, seed]) => !Number.isInteger(seed) || seed < 1)) {
+    return 'Seeds must be whole numbers of 1 or more.';
   }
-  if (new Set(seeds).size !== seeds.length) {
-    return 'Two teams have the same seed. Give each team its own seed.';
+  const taken = new Set<string>();
+  for (const [teamId, seed] of entries) {
+    const divisionId = divisionOf(teamId);
+    if (divisionId === null) continue; // unknown division: cannot say it is a clash
+    const key = `${divisionId}:${seed}`;
+    if (taken.has(key)) {
+      return 'Two teams in the same division have the same seed. Give each team its own seed.';
+    }
+    taken.add(key);
   }
   return null;
 };
@@ -123,7 +138,15 @@ const BracketForm: React.FC<BracketFormProps> = ({
       ),
     [selectedTeams, teamSeeds]
   );
-  const seedProblem = findSeedProblem(Object.values(selectedTeamSeeds), selectedTeams.length);
+  const divisionByTeamId = React.useMemo(
+    () =>
+      new Map((teams ?? []).map((team) => [team.id, team.division_id || team.division || null])),
+    [teams]
+  );
+  const seedProblem = findSeedProblem(
+    selectedTeamSeeds,
+    (teamId) => divisionByTeamId.get(teamId) ?? null
+  );
 
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {
