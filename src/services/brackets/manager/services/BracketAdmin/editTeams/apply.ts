@@ -70,7 +70,11 @@ export async function editMatchTeams(
     );
     // The status each match had when the plan was checked. Sent with every
     // write, so a match scored in another tab since is refused, not overwritten.
+    // The edited match was checked as `ctx.match`, which the context reads
+    // before `stageMatches`: take its status from there, or a scoring that lands
+    // between the two reads would be guarded as if it had been checked.
     const plannedStatus = new Map(ctx.stageMatches.map((m) => [m.id, m.status]));
+    plannedStatus.set(match.id, match.status);
     const partialMessage =
       `Only part of this change was saved. Open Edit teams on ${matchLabel(ctx, match)} ` +
       'again and save the same teams to finish.';
