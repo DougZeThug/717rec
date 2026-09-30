@@ -290,9 +290,6 @@ ordinary pageview.
   schedule area and it contradicts "nothing polls" in
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md).
   The foundation is the document that needs correcting, not this one.
-- A search-specific empty state exists in the code and is not reachable from any
-  page, so searching to zero results shows the generic "No Upcoming Matches"
-  panel with buttons that do not help.
 - Not confirmed by hand: how the carousel behaves when a search removes the group
   it was showing.
 - Not confirmed by hand: whether the tab bar's sticky backdrop reads correctly
