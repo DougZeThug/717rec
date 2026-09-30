@@ -19,16 +19,15 @@ import { BracketFormTitle } from './form/BracketFormTitle';
 const isPowerOf2 = (n: number) => n > 0 && (n & (n - 1)) === 0;
 
 /**
- * Why the typed seeds cannot be used, or null when they can. Seeds may leave
- * gaps (not every team needs one), but each must be a whole number from 1 to
- * the team count, and no two teams may share one.
+ * Why the carried seeds cannot be used, or null when they can. These are
+ * division seeds (1 to the division size), not bracket positions: a partial
+ * bracket can hold seeds 5-8, and a cross-division bracket can hold two teams
+ * that are each seed 1 in their own division. Bracket creation sorts by seed
+ * and renumbers teams 1..N, so only a non-whole or non-positive seed is bad.
  */
-const findSeedProblem = (seeds: number[], teamCount: number): string | null => {
-  if (seeds.some((seed) => !Number.isInteger(seed) || seed < 1 || seed > teamCount)) {
-    return `Seeds must be whole numbers from 1 to ${teamCount}.`;
-  }
-  if (new Set(seeds).size !== seeds.length) {
-    return 'Two teams have the same seed. Give each team its own seed.';
+const findSeedProblem = (seeds: number[]): string | null => {
+  if (seeds.some((seed) => !Number.isInteger(seed) || seed < 1)) {
+    return 'Seeds must be whole numbers of 1 or more.';
   }
   return null;
 };
@@ -123,7 +122,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
       ),
     [selectedTeams, teamSeeds]
   );
-  const seedProblem = findSeedProblem(Object.values(selectedTeamSeeds), selectedTeams.length);
+  const seedProblem = findSeedProblem(Object.values(selectedTeamSeeds));
 
   // EXPLICIT form submission handler - ONLY triggered by submit button
   const onFormSubmit = (data: BracketFormValues) => {

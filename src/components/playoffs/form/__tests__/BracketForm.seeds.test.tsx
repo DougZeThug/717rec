@@ -54,14 +54,38 @@ vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
       <button type="button" onClick={() => onSeedChange('t1', 1)}>
         t1 seed 1
       </button>
-      <button type="button" onClick={() => onSeedChange('t2', 1)}>
-        t2 seed 1
-      </button>
       <button type="button" onClick={() => onSeedChange('t2', 2)}>
         t2 seed 2
       </button>
-      <button type="button" onClick={() => onSeedChange('t4', 99)}>
-        t4 seed 99
+      <button type="button" onClick={() => onSeedChange('t4', 0)}>
+        t4 seed 0
+      </button>
+      <button type="button" onClick={() => onSeedChange('t4', 1.5)}>
+        t4 seed 1.5
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          for (let i = 1; i <= 8; i++) onSeedChange(`t${i}`, i);
+        }}
+      >
+        reorder division
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange({ ids: ['t5', 't6', 't7', 't8'], isValid: true })}
+      >
+        pick high seeds
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          onSeedChange('a1', 1);
+          onSeedChange('b1', 1);
+          onChange({ ids: ['a1', 'b1'], isValid: true });
+        }}
+      >
+        cross-division same seed
       </button>
     </div>
   ),
@@ -76,33 +100,34 @@ const renderForm = () => {
 const createButton = () => screen.getByRole('button', { name: /Create Bracket/ });
 
 describe('BracketForm manual seeds', () => {
-  it('blocks a seed larger than the team count', async () => {
+  it('blocks a seed that is zero', async () => {
     const { user } = renderForm();
     await user.click(screen.getByText('pick four'));
     await waitFor(() => expect(createButton()).toBeEnabled());
 
-    await user.click(screen.getByText('t4 seed 99'));
+    await user.click(screen.getByText('t4 seed 0'));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('from 1 to 4');
+    expect(screen.getByRole('alert')).toHaveTextContent('1 or more');
     expect(createButton()).toBeDisabled();
   });
 
-  it('blocks two teams with the same seed', async () => {
+  it('blocks a seed that is not a whole number', async () => {
     const { user } = renderForm();
     await user.click(screen.getByText('pick four'));
-    await user.click(screen.getByText('t1 seed 1'));
-    await user.click(screen.getByText('t2 seed 1'));
+    await waitFor(() => expect(createButton()).toBeEnabled());
 
-    expect(screen.getByRole('alert')).toHaveTextContent('same seed');
+    await user.click(screen.getByText('t4 seed 1.5'));
+
+    expect(screen.getByRole('alert')).toHaveTextContent('whole numbers');
     expect(createButton()).toBeDisabled();
   });
 
-  it('sends unique in-range seeds, and ignores a seed on a removed team', async () => {
+  it('sends the seeds, and ignores a seed on a removed team', async () => {
     const { user, onSubmit } = renderForm();
     await user.click(screen.getByText('pick four'));
     await user.click(screen.getByText('t1 seed 1'));
     await user.click(screen.getByText('t2 seed 2'));
-    await user.click(screen.getByText('t4 seed 99'));
+    await user.click(screen.getByText('t4 seed 0'));
     await user.click(screen.getByText('drop t4'));
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -111,5 +136,34 @@ describe('BracketForm manual seeds', () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit.mock.calls[0][0].teamSeeds).toEqual({ t1: 1, t2: 2 });
+  });
+
+  // Manage Seeds carries division seeds (1 to the division size), not bracket
+  // positions, so a partial or cross-division bracket must still be creatable.
+  describe('division seeds from Manage Seeds', () => {
+    it('allows a partial bracket of lower-ranked teams (seeds above the team count)', async () => {
+      const { user, onSubmit } = renderForm();
+      await user.click(screen.getByText('reorder division'));
+      await user.click(screen.getByText('pick high seeds'));
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      await waitFor(() => expect(createButton()).toBeEnabled());
+      await user.click(createButton());
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit.mock.calls[0][0].teamSeeds).toEqual({ t5: 5, t6: 6, t7: 7, t8: 8 });
+    });
+
+    it('allows a cross-division bracket where two teams are each seed 1', async () => {
+      const { user, onSubmit } = renderForm();
+      await user.click(screen.getByText('cross-division same seed'));
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      await waitFor(() => expect(createButton()).toBeEnabled());
+      await user.click(createButton());
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit.mock.calls[0][0].teamSeeds).toEqual({ a1: 1, b1: 1 });
+    });
   });
 });
