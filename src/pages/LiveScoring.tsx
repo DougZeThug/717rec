@@ -3,6 +3,7 @@ import React from 'react';
 import { Link, useParams } from 'react-router';
 
 import { LiveMatchView } from '@/components/live-scoring/LiveMatchView';
+import SeoHead from '@/components/seo/SeoHead';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useCanScoreMatch } from '@/hooks/live-scoring/useCanScoreMatch';
@@ -88,6 +89,11 @@ const LiveScoring: React.FC = () => {
 
   return (
     <section className="container mx-auto max-w-lg px-4 pb-24 pt-4">
+      <SeoHead
+        title="Live Match Scoring | 717REC"
+        description="Follow and score a 717REC cornhole match live, game by game."
+        path={`/matches/${matchId ?? ''}/live`}
+      />
       <Link
         to="/schedule"
         className="mb-3 inline-flex min-h-[44px] items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"

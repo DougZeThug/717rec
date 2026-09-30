@@ -5,6 +5,7 @@ import AuthContainer from '@/components/auth/AuthContainer';
 import AuthForm from '@/components/auth/AuthForm';
 import SocialAuthButtons from '@/components/auth/SocialAuthButtons';
 import PageLayout from '@/components/layout/PageLayout';
+import SeoHead from '@/components/seo/SeoHead';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/auth-context';
 import { useAuthForm } from '@/hooks/useAuthForm';
@@ -84,6 +85,11 @@ const Auth = () => {
 
   return (
     <PageLayout compact>
+      <SeoHead
+        title="Sign In | 717REC"
+        description="Sign in or create a 717REC account to join a team, report scores, and follow Lancaster cornhole league play."
+        path="/auth"
+      />
       <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
         <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
