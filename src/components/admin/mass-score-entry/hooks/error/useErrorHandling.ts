@@ -28,7 +28,5 @@ export const useErrorHandling = () => {
     errorMessages,
     clearErrors,
     addError,
-    setFailedMatches,
-    setErrorMessages,
   };
 };
