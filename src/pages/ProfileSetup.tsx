@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import PageLayout from '@/components/layout/PageLayout';
 import ProfileForm from '@/components/profile/ProfileForm';
 import ProfileLoadingState from '@/components/profile/ProfileLoadingState';
+import SeoHead from '@/components/seo/SeoHead';
 import TeamMembershipSection from '@/components/teams/TeamMembershipSection';
 import PageTransition from '@/components/transitions/PageTransition';
 import {
@@ -96,6 +97,11 @@ const ProfileSetup = () => {
 
   return (
     <PageLayout compact>
+      <SeoHead
+        title="Set Up Your Profile | 717REC"
+        description="Pick your player name and join your team in the 717REC cornhole league."
+        path="/setup-profile"
+      />
       <PageTransition>
         <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
           <Card className="w-full max-w-md">

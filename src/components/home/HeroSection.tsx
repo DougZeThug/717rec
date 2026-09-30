@@ -48,7 +48,7 @@ const HeroSection = () => {
         <div className="relative z-10 flex flex-col items-center text-center px-4 pb-4 pt-2">
           <img
             src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png"
-            alt="717 Rec Logo"
+            alt="717REC cornhole league logo"
             width={64}
             height={64}
             fetchPriority="high"
@@ -57,20 +57,28 @@ const HeroSection = () => {
             className="h-12 w-auto max-w-full drop-shadow-xs mb-1.5"
           />
           {shouldApplyWinter ? (
-            <SnowtopText
-              as="h1"
-              className="text-xl uppercase tracking-wide font-normal mb-0.5 leading-tight text-white"
-            >
-              <>
-                717Rec
-                <span className="sr-only"> — Lancaster&apos;s Premier Cornhole League</span>
-              </>
-            </SnowtopText>
+            <div role="heading" aria-level={1}>
+              <SnowtopText
+                as="span"
+                className="block text-xl uppercase tracking-wide font-normal mb-0.5 leading-tight text-white"
+              >
+                <>
+                  717Rec
+                  <span className="sr-only"> — Lancaster&apos;s Premier Cornhole League</span>
+                </>
+              </SnowtopText>
+            </div>
           ) : (
-            <h1 className="text-xl font-bebas uppercase tracking-wide font-normal mb-0.5 leading-tight text-white">
+            // Only one real <h1> tag per page: the desktop hero owns it. This
+            // mobile copy keeps level-1 heading semantics for screen readers.
+            <div
+              role="heading"
+              aria-level={1}
+              className="text-xl font-bebas uppercase tracking-wide font-normal mb-0.5 leading-tight text-white"
+            >
               717Rec
               <span className="sr-only"> — Lancaster&apos;s Premier Cornhole League</span>
-            </h1>
+            </div>
           )}
           <p
             className={cn(
@@ -126,7 +134,7 @@ const HeroSection = () => {
           <div className="flex justify-center mb-6" style={{ contain: 'layout' }}>
             <img
               src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png"
-              alt="717 Rec Logo"
+              alt="717REC cornhole league logo"
               width={96}
               height={96}
               fetchPriority="high"
