@@ -209,6 +209,10 @@ to prove no team ends up in two matches (`footprint.ts`).
   was opened" message instead of overwriting the result. When such a write
   reaches no row, `writes.ts` reads the status back to tell that apart from
   row-level security, which keeps the "Not saved — only admins" message.
+- Losers-bracket rearrange guards its writes the same way
+  (`rearrange/apply.ts`): each write carries the status its match had on the
+  board the plan was made from, and a match that moved on fails the save with
+  the "bracket changed since this screen was opened" message.
 
 **Indexes:**
 - `idx_match_stage` on `stage_id`

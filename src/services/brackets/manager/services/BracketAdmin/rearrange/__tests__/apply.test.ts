@@ -21,7 +21,14 @@ vi.mock('../../../BracketUpdate/completion', () => ({
 const deps = { storage: {} } as unknown as BracketAdminDeps;
 
 beforeEach(() => {
-  mocks.load.mockResolvedValue({ snapshot: { matches: [] } });
+  mocks.load.mockResolvedValue({
+    snapshot: {
+      matches: [
+        { id: 1, status: 2 },
+        { id: 2, status: 1 },
+      ],
+    },
+  });
   mocks.simulate.mockReturnValue({
     ok: true,
     writes: [
@@ -38,6 +45,33 @@ describe('applyLoserBracketRearrange', () => {
     mocks.update.mockResolvedValue(undefined);
     const result = await applyLoserBracketRearrange(deps, 'b1', []);
     expect(result.changedMatchIds).toEqual([1, 2]);
+  });
+
+  it('sends each match the status it had on the board the plan was made from', async () => {
+    mocks.update.mockResolvedValue(undefined);
+    await applyLoserBracketRearrange(deps, 'b1', []);
+    expect(mocks.update).toHaveBeenNthCalledWith(
+      1,
+      1,
+      expect.anything(),
+      expect.any(String),
+      expect.objectContaining({ expectedStatus: 2, staleMessage: expect.any(String) })
+    );
+    expect(mocks.update).toHaveBeenNthCalledWith(
+      2,
+      2,
+      expect.anything(),
+      expect.any(String),
+      expect.objectContaining({ expectedStatus: 1 })
+    );
+  });
+
+  it('refuses when the first match was played after the board was read', async () => {
+    mocks.update.mockRejectedValueOnce(new BusinessLogicError('The bracket changed since'));
+    await expect(applyLoserBracketRearrange(deps, 'b1', [])).rejects.toThrow(
+      'The bracket changed since'
+    );
+    expect(mocks.update).toHaveBeenCalledTimes(1);
   });
 
   it('fails with the not-saved message when the first write changes nothing', async () => {

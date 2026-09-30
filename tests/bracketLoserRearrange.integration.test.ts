@@ -568,4 +568,49 @@ describe('losers-bracket rearrange (real service + real library over fake DB)', 
     ).rejects.toThrow(/bracket changed since this screen was opened/);
     expect(matchRows()).toEqual(before);
   });
+
+  it('refuses a write to a match that started being played after the board was read', async () => {
+    const service = new BracketManagerService();
+    db().seed('brackets', [{ id: BRACKET_ID, state: 'pending', uses_brackets_manager: true }]);
+    await service.createBracket({
+      bracketId: BRACKET_ID,
+      format: 'double_elimination',
+      teams: teams(9),
+      grandFinalType: 'simple',
+    });
+    await playWinnersBracketThroughRound(service, 2);
+
+    const t5 = participantIdByName('T5');
+    const t7 = participantIdByName('T7');
+    const lbR2M1 = matchBy(2, 2, 1);
+    const lbR2M4 = matchBy(2, 2, 4);
+    const board = await service.getLoserRearrangeBoard(BRACKET_ID);
+    const baseline = assignmentsFromBoard(board);
+    let swap = setSlot(baseline, lbR2M1.id, 'opponent1', t7);
+    swap = setSlot(swap, lbR2M4.id, 'opponent1', t5);
+
+    // Another tab starts the first match this save writes, after the board was
+    // read and checked, at the moment the save's first write is sent.
+    db().interceptUpdates((table, index) => {
+      if (table === 'match' && index === 0) {
+        Object.assign(
+          db()
+            .tableRows('match')
+            .find((row) => row.id === lbR2M1.id) ?? {},
+          {
+            status: 3,
+          }
+        );
+      }
+      return undefined;
+    });
+
+    await expect(service.applyLoserBracketRearrange(BRACKET_ID, swap, baseline)).rejects.toThrow(
+      /bracket changed since this screen was opened/
+    );
+
+    // Nothing was overwritten: both matches still hold their old teams.
+    expect(matchBy(2, 2, 1)).toMatchObject({ status: 3, opponent1_id: lbR2M1.opponent1_id });
+    expect(matchBy(2, 2, 4).opponent1_id).toBe(lbR2M4.opponent1_id);
+  });
 });
