@@ -10,6 +10,8 @@ import type { RearrangeApplyResult, RearrangeSnapshot, SlotAssignment } from './
 import { slotKeyOf } from './types';
 
 const NOT_SAVED_MESSAGE = 'Not saved — only admins can edit brackets. Nothing was changed.';
+const STALE_MESSAGE =
+  'The bracket changed since this screen was opened. Close it and reopen to continue.';
 const PARTIAL_MESSAGE =
   'Only part of this rearrangement was saved. Run Repair Bracket to fix the bracket.';
 
@@ -45,11 +47,22 @@ export async function applyLoserBracketRearrange(
     throw new BusinessLogicError(plan.problems.map((problem) => problem.message).join(' '));
   }
 
+  // The status each match had on the board the plan was made from. Sent with
+  // every write, so a match scored in another tab since is refused, not
+  // overwritten.
+  const plannedStatus = new Map(board.snapshot.matches.map((match) => [match.id, match.status]));
+
   // updateMatchRowOrThrow turns a zero-row update (RLS block) into a loud
   // failure instead of a false "Teams rearranged".
   for (const [index, write] of plan.writes.entries()) {
     try {
-      await updateMatchRowOrThrow(write.matchId, write.fields, NOT_SAVED_MESSAGE);
+      const expectedStatus = plannedStatus.get(write.matchId);
+      await updateMatchRowOrThrow(
+        write.matchId,
+        write.fields,
+        NOT_SAVED_MESSAGE,
+        expectedStatus === undefined ? undefined : { expectedStatus, staleMessage: STALE_MESSAGE }
+      );
     } catch (error) {
       if (index === 0) throw error;
       throw new BusinessLogicError(PARTIAL_MESSAGE, error);
@@ -93,8 +106,6 @@ function assertBaselineUnchanged(
       return !fresh.has(key) || fresh.get(key) !== slot.participantId;
     });
   if (changed) {
-    throw new BusinessLogicError(
-      'The bracket changed since this screen was opened. Close it and reopen to continue.'
-    );
+    throw new BusinessLogicError(STALE_MESSAGE);
   }
 }
