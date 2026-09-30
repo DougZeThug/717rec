@@ -27,6 +27,9 @@ const INVALIDATED_KEYS = [
   ['team-power-scores'],
   ['team-details'],
   ['season-opponent-history'],
+  // Home-page recap and movers read the active season too.
+  ['weekly-recap'],
+  ['weekly-power-score-trends'],
   ['rankings'],
   ['v_team_details'],
   ['teamStats'],

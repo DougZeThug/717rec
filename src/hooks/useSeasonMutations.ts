@@ -31,6 +31,10 @@ const SEASON_WIDE_QUERY_KEYS = [
   'team-power-scores',
   'team-details',
   'season-opponent-history',
+  // Home-page recap and movers read the active season and cache for 5 minutes.
+  // A prefix match, so 'weekly-power-score-trends' covers every direction/limit.
+  'weekly-recap',
+  'weekly-power-score-trends',
   'rankings',
   'v_team_details',
   'teamStats',
