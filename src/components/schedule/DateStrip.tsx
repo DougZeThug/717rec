@@ -8,7 +8,6 @@ import {
 } from 'date-fns';
 import React, { useEffect, useRef } from 'react';
 
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
 
@@ -76,7 +75,9 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   };
 
   return (
-    <ScrollArea className="w-full whitespace-nowrap">
+    // A native scroll box, not Radix ScrollArea: ScrollArea with both scrollbars
+    // mounted loops forever under React 19.3 ("Maximum update depth exceeded").
+    <div className="w-full overflow-x-auto whitespace-nowrap [scrollbar-width:thin]">
       <div className="flex gap-1 py-1 px-0.5">
         {dates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
@@ -126,8 +127,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
           );
         })}
       </div>
-      <ScrollBar orientation="horizontal" className="h-1.5" />
-    </ScrollArea>
+    </div>
   );
 };
 
