@@ -203,6 +203,12 @@ to prove no team ends up in two matches (`footprint.ts`).
   update row-level security filters out fails instead of reporting success.
   The screen sends the participant ids (and each picked team's round 1 match)
   it was opened with; a changed bracket refuses the save.
+- Every write also carries the status its match had when the plan was checked
+  (`.eq('status', …)`). A match scored in another tab after the checks
+  matches no row, and the save fails with the "match changed since Edit teams
+  was opened" message instead of overwriting the result. When such a write
+  reaches no row, `writes.ts` reads the status back to tell that apart from
+  row-level security, which keeps the "Not saved — only admins" message.
 
 **Indexes:**
 - `idx_match_stage` on `stage_id`

@@ -6,7 +6,7 @@ import { ensureParticipantRow } from '../participants';
 import type { MatchUpdateFields } from '../shapes';
 import type { BracketAdminDeps, EditMatchParticipantsResult } from '../types';
 import { updateMatchRowOrThrow } from '../writes';
-import { planEdit } from './plan';
+import { planEdit, STALE_MESSAGE } from './plan';
 import { matchLabel, occupantId, SIDES } from './rules';
 import type { EditMatchTeamsParams, Occupant } from './types';
 import type { PlannedWrite } from './winnersPlan';
@@ -68,6 +68,9 @@ export async function editMatchTeams(
         )
       )
     );
+    // The status each match had when the plan was checked. Sent with every
+    // write, so a match scored in another tab since is refused, not overwritten.
+    const plannedStatus = new Map(ctx.stageMatches.map((m) => [m.id, m.status]));
     const partialMessage =
       `Only part of this change was saved. Open Edit teams on ${matchLabel(ctx, match)} ` +
       'again and save the same teams to finish.';
@@ -76,7 +79,13 @@ export async function editMatchTeams(
     // same edit again finishes the job. Do not parallelize with Promise.all.
     for (const [index, write] of plan.writes.map((w) => withRealIds(w, realIds)).entries()) {
       try {
-        await updateMatchRowOrThrow(write.matchId, write.fields, NOT_SAVED_MESSAGE);
+        const expectedStatus = plannedStatus.get(write.matchId);
+        await updateMatchRowOrThrow(
+          write.matchId,
+          write.fields,
+          NOT_SAVED_MESSAGE,
+          expectedStatus === undefined ? undefined : { expectedStatus, staleMessage: STALE_MESSAGE }
+        );
       } catch (error) {
         // Earlier writes have landed, so whatever this one failed with, the
         // admin must hear that the change is half done and how to finish it.

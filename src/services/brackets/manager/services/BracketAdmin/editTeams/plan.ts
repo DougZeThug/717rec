@@ -25,7 +25,7 @@ import type { EditMatchTeamsParams, Occupant, TeamChoice } from './types';
 import type { PlannedWrite } from './winnersPlan';
 import { planWinnersChanges } from './winnersPlan';
 
-const STALE_MESSAGE =
+export const STALE_MESSAGE =
   'This match changed since Edit teams was opened. Close it and open it again to continue.';
 
 /** A fully checked edit, ready to write: nothing in it has touched the database. */
