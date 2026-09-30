@@ -38,7 +38,6 @@ Use content-shaped skeleton components for data sections and lists. These provid
 
 **Component-specific Skeletons:**
 - `FinalStandingsSkeleton` - Playoff final standings
-- `TeamDayTimeslotSkeleton` - Inline timeslot badge
 - `SeasonAccordionSkeleton` - History season content
 - `SignupsListSkeleton` - Blind draw signups table
 - `MatchesTableSkeleton` - Mass score entry table
