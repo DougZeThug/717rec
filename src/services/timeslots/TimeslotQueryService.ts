@@ -41,69 +41,6 @@ export const TimeslotQueryService = {
   },
 
   /**
-   * Fetch timeslots for a formatted date string (used by useTimeslotsByDate hook)
-   */
-  async fetchTimeslotsByDate(formattedDate: string) {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .select(
-        `
-        id,
-        match_date,
-        timeslot,
-        team_id,
-        created_at,
-        is_back_to_back,
-        is_double_header,
-        pair_slot,
-        match_sequence,
-        teams:team_id (
-          id,
-          name,
-          logo_url,
-          image_url
-        )
-      `
-      )
-      .eq('match_date', formattedDate);
-
-    if (error) handleDatabaseError(error, 'Failed to fetch timeslots by date');
-
-    return data ?? [];
-  },
-
-  /**
-   * Fetch timeslots for a formatted date (used by useTimeslotOperations hook)
-   * Note: no image_url in teams select
-   */
-  async fetchTimeslotsForDate(formattedDate: string) {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .select(
-        `
-        id,
-        match_date,
-        timeslot,
-        team_id,
-        created_at,
-        is_back_to_back,
-        is_double_header,
-        pair_slot,
-        match_sequence,
-        teams:team_id (
-          id,
-          name,
-          logo_url
-        )
-      `
-      )
-      .eq('match_date', formattedDate);
-
-    if (error) handleDatabaseError(error, 'Failed to fetch timeslots for date');
-    return data ?? [];
-  },
-
-  /**
    * Fetch timeslots for a team within a date range (used by WeekTimeslotDisplay)
    */
   async fetchWeekTimeslotsByTeam(teamId: string, startDate: string, endDate: string) {
