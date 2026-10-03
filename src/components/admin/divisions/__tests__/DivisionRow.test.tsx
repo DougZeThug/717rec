@@ -126,7 +126,7 @@ describe('DivisionRow', () => {
     expect(updateMutate).toHaveBeenCalledWith(
       {
         id: 'd1',
-        patch: { name: 'Competitive A', display_division: 'Recreational', division_weight: 0.5 },
+        patch: { name: 'Competitive A', display_division: 'Hidden', division_weight: 0.5 },
       },
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
