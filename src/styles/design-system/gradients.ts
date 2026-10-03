@@ -23,7 +23,8 @@ export const gradients = {
       'bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 dark:from-green-700 dark:to-green-800',
     // New button gradients with orange accents
     orange:
-      'bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white',
+      // Dark text: white on amber measured 2.2:1.
+      'bg-gradient-to-br from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-gray-950',
     orangeSubtle:
       'bg-gradient-to-br from-orange-100 to-orange-200 hover:from-orange-200 hover:to-orange-300 text-orange-800 dark:text-orange-900',
     blueOrange:

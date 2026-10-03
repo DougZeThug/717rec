@@ -37,7 +37,7 @@ const TeamDragOverlay: React.FC<TeamDragOverlayProps> = ({ team, rank }) => {
         className={cn(
           'flex items-center justify-center min-w-8 h-7 rounded-md text-sm font-bold',
           team.champion
-            ? 'bg-yellow-500 text-white'
+            ? 'bg-yellow-500 text-gray-950'
             : team.runner_up
               ? 'bg-gray-500 text-white'
               : 'bg-primary text-primary-foreground'

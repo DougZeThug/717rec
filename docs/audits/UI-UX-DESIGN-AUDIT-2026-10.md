@@ -31,7 +31,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 - [x] 4. Default `Button` has no text colour (about 1.7:1 in light theme). (Step 1)
 - [x] 5. `text-destructive` is about 2:1 in dark and winter themes. (Step 1)
-- [ ] 6. Status colours (amber/emerald/green 400-500, white on amber/orange) fail contrast in light theme. (Step 10)
+- [x] 6. Status colours fail contrast in light theme. Fixed in Step 10 for text that carries meaning (win %, W/L, rank, trend, status, character counter): `-700` with a `dark:` twin. White-on-amber/orange fills now use dark text or deeper colours. Decorative icons beside a text label (about 90) are left as they are.
 - [x] 7. `--input` equals `--border`: 1.2:1 in light, 1.3:1 in dark. Needs 3:1. (Step 1)
 - [x] 8. Plain `border` resolves to gray-200 in every theme. (Step 1)
 - [~] 9. Winter theme never gets the `dark` variant. Step 9a done: the `dark:` variant, the cornhole background and the bracket viewer now treat `.winter-frozen` as dark. Checked at 375px on 9 pages with empty data: no visible change. NOT checked with real data. Step 9b (removing the ~80 `!important` patches in `winter-homepage.css`) is waiting for a go-ahead.
@@ -51,14 +51,14 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 ## Medium
 
-- [ ] Unused status tokens (`--success`, `--warning`, `--info`) not mapped in `@theme inline`. (Step 10)
-- [ ] Two competing division colour systems. (Step 10)
+- [x] Unused status tokens (`--success`, `--warning`, `--info`) not mapped in `@theme inline`. Mapped in Steps 8 and 10 (`bg-success`, `text-warning-foreground`, ...). Migrating the ~1,500 raw palette classes is not planned.
+- [x] Two competing division colour systems. The unused hex set is deleted; the HSL set stays, and badge text gets darker `--*-soft-text` tokens (4.5:1 or better).
 - [ ] Button, Input and Select heights differ. (Step 11)
 - [ ] 50 raw `<button>` elements skip the `Button` component. (Steps 3, 11)
 - [ ] Inconsistent type: hand-made page headings, fake-bold Bebas. (Step 12)
 - [ ] 39 uses of `text-[8..11px]` carry real information. (Step 12)
 - [ ] Duplicate components: pills, spinners, `TeamLogo`, cards. (Step 11)
-- [ ] Dead or broken CSS (`.compatibility-score-*`, `.auto-schedule-container`, unused tokens). (Step 10)
+- [x] Dead or broken CSS removed in Step 10: `.compatibility-score-*`, `.auto-schedule-container`, `truncate-tab`, `--font-oswald`, `--color-cornhole-wood/green`, the stale Snowtop TODO. The Oswald font file stays (recap graphics use it). Sidebar tokens stay (shadcn defaults, harmless).
 - [x] Touch targets under 44px. (Step 3) Small controls use the new `hit-area-44` utility, which grows the tap area without changing the look. Also found: the team-page section bar was `fixed` inside the page, so it scrolled away; it now uses `ViewportPortal`.
 - [x] Toast close button is hover-only. (Step 3)
 - [x] Raw error text reaches users. Fixed in Step 7 for the public pages (Standings, History, season accordion, bracket boundary) and the admin toasts that call database services. The bracket dialogs keep their messages on purpose: the bracket library throws plain, readable errors an admin needs.

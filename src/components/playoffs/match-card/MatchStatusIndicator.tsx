@@ -39,14 +39,14 @@ const MatchStatusIndicator: React.FC<MatchStatusIndicatorProps> = ({
       </div>
 
       {isResetMatch && (
-        <div className="flex items-center text-amber-500">
+        <div className="flex items-center text-amber-700 dark:text-amber-400">
           <AlertTriangle className="size-3.5 mr-1" />
           <span className="text-xs">Bracket Reset</span>
         </div>
       )}
 
       {matchType === 'finals' && winnerId && (
-        <div className="flex items-center text-amber-500">
+        <div className="flex items-center text-amber-700 dark:text-amber-400">
           <Trophy className="size-3.5 mr-1" />
           <span className="text-xs">Champion</span>
         </div>

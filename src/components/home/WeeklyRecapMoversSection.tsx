@@ -45,7 +45,7 @@ function MoverRow({ trend, direction, winter }: MoverRowProps) {
         <span
           className={cn(
             'text-sm font-semibold tabular-nums',
-            isUp ? 'text-emerald-500' : 'text-red-500'
+            isUp ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
           )}
         >
           {isUp ? '+' : ''}

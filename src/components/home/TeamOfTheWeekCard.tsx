@@ -120,7 +120,7 @@ const TeamOfTheWeekCard: React.FC<TeamOfTheWeekCardProps> = ({ trend, weekNumber
             <div className="flex flex-col items-end gap-1">
               <div className="flex items-center gap-1.5">
                 <TrendingUp className="size-4 text-emerald-500" />
-                <span className="text-lg md:text-xl font-bold tabular-nums text-emerald-500">
+                <span className="text-lg md:text-xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
                   +{trend.delta.toFixed(1)}
                 </span>
               </div>

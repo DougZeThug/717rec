@@ -15,17 +15,18 @@ export const badgeVariants = cva(
         // Tier badges use the muted division tokens so large lists of team
         // cards stay inside the app theme instead of shouting.
         recreational:
-          'border border-[hsl(var(--recreational-soft)/0.3)] bg-[hsl(var(--recreational-soft)/0.15)] text-[hsl(var(--recreational-soft))] hover:bg-[hsl(var(--recreational-soft)/0.25)]',
+          'border border-[hsl(var(--recreational-soft)/0.3)] bg-[hsl(var(--recreational-soft)/0.15)] text-[hsl(var(--recreational-soft-text))] hover:bg-[hsl(var(--recreational-soft)/0.25)]',
         intermediate:
-          'border border-[hsl(var(--intermediate-soft)/0.3)] bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft))] hover:bg-[hsl(var(--intermediate-soft)/0.25)]',
+          'border border-[hsl(var(--intermediate-soft)/0.3)] bg-[hsl(var(--intermediate-soft)/0.15)] text-[hsl(var(--intermediate-soft-text))] hover:bg-[hsl(var(--intermediate-soft)/0.25)]',
         competitive:
-          'border border-[hsl(var(--competitive-soft)/0.3)] bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft))] hover:bg-[hsl(var(--competitive-soft)/0.25)]',
+          'border border-[hsl(var(--competitive-soft)/0.3)] bg-[hsl(var(--competitive-soft)/0.15)] text-[hsl(var(--competitive-soft-text))] hover:bg-[hsl(var(--competitive-soft)/0.25)]',
         // Winter theme variants - frosted pills
         winter: 'badge-winter',
         winterAccent: 'badge-winter-accent',
         // Double header variant - amber/orange gradient
         doubleHeader:
-          'border-transparent bg-gradient-to-br from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400',
+          // Dark text: white on amber/orange measured 2.2 to 2.8:1.
+          'border-transparent bg-gradient-to-br from-amber-400 to-orange-400 text-gray-950 hover:from-amber-300 hover:to-orange-300',
       },
     },
     defaultVariants: {

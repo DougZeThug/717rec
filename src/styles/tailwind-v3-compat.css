@@ -16,10 +16,12 @@
   border-color: hsl(var(--border));
 }
 
-/* v3 placeholders were gray-400; v4 uses the text colour at 50%. */
+/* v3 placeholders were gray-400; v4 uses the text colour at 50%.
+   gray-400 measured 2.5:1 on white, so this reads the theme's muted text colour
+   (4.5:1 or better in every theme). */
 input::placeholder,
 textarea::placeholder {
-  color: var(--color-gray-400);
+  color: hsl(var(--muted-foreground));
 }
 
 /* v3 showed a pointer on buttons; v4 uses the browser default. */

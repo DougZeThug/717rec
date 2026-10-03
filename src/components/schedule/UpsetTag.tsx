@@ -18,7 +18,8 @@ export const UpsetTag: React.FC<UpsetTagProps> = ({ className }) => {
     <div
       className={cn(
         'inline-flex items-center gap-1 px-2 py-0.5 rounded-full',
-        'bg-gradient-to-r from-orange-500 to-red-500',
+        // Deep red-to-orange so white text reaches 4.5:1 (it was 2.8 to 3.8:1).
+        'bg-gradient-to-r from-orange-700 to-red-700',
         'text-white text-[10px] font-bold uppercase tracking-wider',
         'shadow-xs animate-pulse',
         className

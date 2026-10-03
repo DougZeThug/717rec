@@ -46,6 +46,11 @@
   --destructive-foreground: 0 0% 98%;
   --destructive-text: 0 84% 68%; /* 6.3:1 on the winter page */
 
+  /* Division badge text on the dark winter page (see theme.css). */
+  --competitive-soft-text: 0 52% 64%;
+  --intermediate-soft-text: 38 60% 62%;
+  --recreational-soft-text: 150 36% 56%;
+
   /* Borders - Subtle frost */
   --border: 220 30% 22%;
   --input: 222 20% 45%; /* 3.5:1 on the winter page */

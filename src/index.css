@@ -58,9 +58,7 @@
   --font-sans: Inter, system-ui, sans-serif;
   --font-inter: Inter, system-ui, sans-serif;
   --font-mono: IBM Plex Mono, ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-oswald: Oswald, League Spartan, Bebas Neue, Arial, sans-serif;
   --font-bebas: Bebas Neue, Arial, sans-serif;
-  /* TODO: Load Snowtop Caps font file if keeping this feature */
   --font-snowtop: Snowtop Caps, Bebas Neue, Arial, sans-serif;
 
   /* v3 line heights for the text-* sizes. v4 uses ratios (text-xs is
@@ -75,14 +73,8 @@
   --text-3xl--line-height: 2.25rem;
   --text-4xl--line-height: 2.5rem;
 
-  --color-cornhole-wood: #9e7e5a;
-  --color-cornhole-green: #2c5530;
   --color-cornhole-navy: #1e3a5f;
   --color-cornhole-cream: #f9f5e7;
-
-  --color-division-competitive: #d97706;
-  --color-division-intermediate: #3b82f6;
-  --color-division-recreational: #10b981;
 
   /* v3 default for a ring width class with no ring colour (blue-500 at 50%). */
   --default-ring-color: color-mix(in oklab, var(--color-blue-500) 50%, transparent);
@@ -266,6 +258,10 @@
   --color-destructive-text: hsl(var(--destructive-text));
   --color-success: hsl(var(--success));
   --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
   --color-muted: hsl(var(--muted));
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-accent: hsl(var(--accent));
@@ -347,36 +343,6 @@
 
 :where([class*='space-x-'] > :first-child) {
   margin-right: 0;
-}
-
-/* Add styles for the Admin Auto Schedule tab */
-.auto-schedule-container {
-  background-color: var(--background);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.compatibility-score-high {
-  color: var(--green-600);
-}
-
-.compatibility-score-medium {
-  color: var(--amber-500);
-}
-
-.compatibility-score-low {
-  color: var(--red-500);
-}
-
-/* Mobile responsiveness improvements */
-@media (max-width: 640px) {
-  /* Fix for tab labels in auto-schedule tab */
-  [data-state='active'].truncate-tab {
-    max-width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
 
 /* Reduced motion.

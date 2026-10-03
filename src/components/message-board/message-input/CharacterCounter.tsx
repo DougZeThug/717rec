@@ -16,8 +16,8 @@ const CharacterCounter: React.FC<CharacterCounterProps> = ({ current, max }) => 
     <span
       className={cn(
         'text-xs',
-        isNearLimit ? 'text-yellow-500' : 'text-muted-foreground',
-        isOverLimit ? 'text-red-500' : ''
+        isNearLimit ? 'text-yellow-700 dark:text-yellow-400' : 'text-muted-foreground',
+        isOverLimit ? 'text-red-600 dark:text-red-400' : ''
       )}
     >
       {remaining} left

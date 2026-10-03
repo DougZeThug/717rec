@@ -191,7 +191,7 @@ const DualBlockMetricsPanel: React.FC<DualBlockMetricsPanelProps> = ({
         <div
           className="text-lg font-semibold"
           style={{
-            color: metrics.teamsWithDuplicateOpponents > 0 ? 'var(--amber-500)' : 'inherit',
+            color: metrics.teamsWithDuplicateOpponents > 0 ? 'var(--color-amber-500)' : 'inherit',
           }}
         >
           {metrics.teamsWithDuplicateOpponents}

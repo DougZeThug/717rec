@@ -37,9 +37,9 @@ const PlayoffCell = ({ season }: { season: SeasonBreakdown }) => {
         className={cn(
           'font-mono text-sm font-medium',
           season.isChampion
-            ? 'text-yellow-500'
+            ? 'text-yellow-700 dark:text-yellow-400'
             : season.isTop3
-              ? 'text-emerald-500'
+              ? 'text-emerald-700 dark:text-emerald-400'
               : 'text-foreground'
         )}
       >

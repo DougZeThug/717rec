@@ -25,7 +25,7 @@ const ScheduleSearch: React.FC<ScheduleSearchProps> = ({ value, onChange }) => {
         className="
           pl-9 h-9 rounded-md text-sm font-inter tracking-wide
           border border-border dark:border-border
-          placeholder:text-gray-400 placeholder:italic
+          placeholder:text-muted-foreground placeholder:italic
           focus:border-cornhole-navy focus:outline-hidden 
           transition
         "
