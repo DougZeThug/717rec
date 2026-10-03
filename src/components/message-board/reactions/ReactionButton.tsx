@@ -21,7 +21,7 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({ emoji, count, hasReacte
             size="xs"
             className={cn(
               'py-0 px-2 gap-1 text-xs border transition-all duration-150',
-              'h-8 min-h-[36px] sm:h-6 sm:min-h-0',
+              'hit-area-44 h-8 min-h-8 sm:h-6 sm:min-h-0',
               hasReacted
                 ? 'bg-accent/30 border-primary/30 hover:bg-accent/40'
                 : 'bg-background/80 border-border hover:bg-accent/10'

@@ -61,6 +61,31 @@ describe('SwipeableDateGroups', () => {
     expect(screen.getByTestId('date-match-group')).toHaveTextContent(groups[0].date.toISOString());
   });
 
+  it('names Previous and Next by label, and marks the current date, for a screen reader', () => {
+    render(
+      <SwipeableDateGroups
+        groupedMatches={groups}
+        selectedDate={groups[1].date}
+        activeIndex={1}
+        onIndexChange={vi.fn()}
+      />
+    );
+
+    // The words are hidden on a phone, so the name has to come from aria-label.
+    expect(screen.getByRole('button', { name: 'Previous date' })).toHaveAttribute(
+      'aria-label',
+      'Previous date'
+    );
+    expect(screen.getByRole('button', { name: 'Next date' })).toHaveAttribute(
+      'aria-label',
+      'Next date'
+    );
+
+    const dots = screen.getAllByRole('button', { name: /go to/i });
+    expect(dots[1]).toHaveAttribute('aria-current', 'true');
+    expect(dots[0]).not.toHaveAttribute('aria-current');
+  });
+
   it('fires onIndexChange(1) when Next is clicked', () => {
     const onIndexChange = vi.fn();
     render(

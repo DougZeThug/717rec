@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { ICON_SIZES } from '@/styles/icon-system';
+import { pathIsWithin } from '@/utils/pathIsWithin';
 import { confirmLeavingClick } from '@/utils/unsavedChanges';
 
 const BottomNav = React.memo(() => {
@@ -76,7 +77,7 @@ const BottomNav = React.memo(() => {
             className={cn(
               'flex-1 px-2 py-1.5 text-sm',
               'flex flex-col items-center justify-center',
-              location.pathname === item.path &&
+              pathIsWithin(location.pathname, item.path) &&
                 'bg-gradient-to-b from-transparent to-blue-50/40 dark:to-blue-900/10'
             )}
           />

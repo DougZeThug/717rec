@@ -2,6 +2,7 @@ import { m } from 'framer-motion';
 import { BarChart3, Clock, Swords, TrendingUp } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import ViewportPortal from '@/components/layout/ViewportPortal';
 import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
 import { cn } from '@/lib/utils';
 
@@ -123,51 +124,55 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
   if (!isVisible) return null;
 
   return (
-    <m.div
-      ref={navRef}
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -100, opacity: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className={cn(
-        'fixed top-0 left-0 right-0 z-30',
-        'bg-background/95 backdrop-blur-lg',
-        'border-b border-border',
-        'shadow-xs',
-        className
-      )}
-    >
-      <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <nav
-          aria-label="Team details section navigation"
-          className="flex items-center gap-1 px-4 py-2 min-w-max"
-        >
-          {sections.map(({ id, label, icon: Icon, ariaLabel }) => {
-            const isActive = activeSection === id;
-            return (
-              <button
-                type="button"
-                key={id}
-                onClick={() => scrollToSection(id)}
-                aria-label={ariaLabel}
-                aria-current={isActive ? 'location' : undefined}
-                className={cn(
-                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-full',
-                  'text-sm font-medium transition-all whitespace-nowrap',
-                  'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                  isActive
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'bg-muted text-foreground/70 hover:bg-muted/80 hover:text-foreground'
-                )}
-              >
-                <Icon size={14} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
-                <span>{label}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
-    </m.div>
+    // Portalled: inside the page `fixed top-0` pinned to the top of the page, so
+    // the bar scrolled away with the content (see ViewportPortal).
+    <ViewportPortal>
+      <m.div
+        ref={navRef}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -100, opacity: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className={cn(
+          'fixed top-0 left-0 right-0 z-30 pt-(--sat)',
+          'bg-background/95 backdrop-blur-lg',
+          'border-b border-border',
+          'shadow-xs',
+          className
+        )}
+      >
+        <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <nav
+            aria-label="Team details section navigation"
+            className="flex items-center gap-1 px-4 py-2 min-w-max"
+          >
+            {sections.map(({ id, label, icon: Icon, ariaLabel }) => {
+              const isActive = activeSection === id;
+              return (
+                <button
+                  type="button"
+                  key={id}
+                  onClick={() => scrollToSection(id)}
+                  aria-label={ariaLabel}
+                  aria-current={isActive ? 'location' : undefined}
+                  className={cn(
+                    'hit-area-44 relative flex items-center gap-1.5 px-3 py-1.5 rounded-full',
+                    'text-sm font-medium transition-all whitespace-nowrap',
+                    'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'bg-muted text-foreground/70 hover:bg-muted/80 hover:text-foreground'
+                  )}
+                >
+                  <Icon size={14} strokeWidth={isActive ? 2.5 : 2} aria-hidden="true" />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </m.div>
+    </ViewportPortal>
   );
 };
 

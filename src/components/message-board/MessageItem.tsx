@@ -97,8 +97,13 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   useEffect(() => {
     if (showOptions) {
       const handleClickOutside = () => setShowOptions(false);
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      // Attached on the next tick: the click that opened the options is still
+      // travelling up to `document`, and would close them again at once.
+      const timer = setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener('click', handleClickOutside);
+      };
     }
     return undefined;
   }, [showOptions]);
@@ -126,7 +131,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
       role={isAuthor ? 'button' : undefined}
       tabIndex={isAuthor ? 0 : undefined}
     >
-      <CardContent className="p-3">
+      {/* pr-12 leaves room for the options button in the corner (authors only). */}
+      <CardContent className={cn('p-3', isAuthor && !isEditing && 'pr-12')}>
         <MessageHeader
           username={message.username}
           teamName={message.team_name}

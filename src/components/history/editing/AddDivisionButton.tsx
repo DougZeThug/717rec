@@ -84,10 +84,22 @@ const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
             />
             {error && <p className="text-destructive-text text-xs mt-1">{error}</p>}
           </div>
-          <Button variant="default" size="icon" className="size-9" onClick={handleSave}>
+          <Button
+            variant="default"
+            size="icon"
+            className="size-9"
+            onClick={handleSave}
+            aria-label="Save new division"
+          >
             <Check className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="size-9" onClick={handleCancel}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-9"
+            onClick={handleCancel}
+            aria-label="Cancel adding division"
+          >
             <X className="size-4" />
           </Button>
         </div>

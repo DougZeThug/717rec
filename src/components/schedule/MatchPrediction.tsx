@@ -82,7 +82,7 @@ export const MatchPrediction: React.FC<MatchPredictionProps> = ({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-center gap-1.5 py-0.5 hover:bg-muted/30 rounded transition-colors"
+        className="hit-area-44 w-full flex items-center justify-center gap-1.5 py-0.5 hover:bg-muted/30 rounded transition-colors"
         aria-expanded={isExpanded}
         aria-label={`Toggle prediction details for ${team1Name} vs ${team2Name}`}
       >

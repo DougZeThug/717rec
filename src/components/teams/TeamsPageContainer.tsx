@@ -58,7 +58,7 @@ const TeamsPageContainer: React.FC = () => {
         {/* Mobile: Compact inline controls */}
         <div className="flex sm:hidden flex-wrap items-center gap-x-1 text-sm w-full">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-6 items-center gap-0.5 text-muted-foreground hover:text-foreground">
+            <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
               Sort:{' '}
               <span className="text-foreground font-medium">
                 {sortMode === 'rank' ? 'Rank' : 'A-Z'}
@@ -72,7 +72,7 @@ const TeamsPageContainer: React.FC = () => {
           </DropdownMenu>
           <span className="text-muted-foreground mx-1">·</span>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-6 items-center gap-0.5 text-muted-foreground hover:text-foreground">
+            <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
               View:{' '}
               <span className="text-foreground font-medium">
                 {displayMode === 'grouped' ? 'By Division' : 'All'}
@@ -88,7 +88,7 @@ const TeamsPageContainer: React.FC = () => {
           </DropdownMenu>
           <span className="text-muted-foreground mx-1">·</span>
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-6 items-center gap-0.5 text-muted-foreground hover:text-foreground">
+            <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
               Style:{' '}
               <span className="text-foreground font-medium">
                 {viewMode === 'grid' ? 'Grid' : 'List'}

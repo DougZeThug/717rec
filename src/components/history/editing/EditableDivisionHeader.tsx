@@ -90,10 +90,22 @@ const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
             />
             {error && <p className="text-destructive-text text-xs mt-1">{error}</p>}
           </div>
-          <Button variant="ghost" size="icon" className="size-8" onClick={handleSaveEdit}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handleSaveEdit}
+            aria-label="Save division name"
+          >
             <Check className="size-4 text-green-600" />
           </Button>
-          <Button variant="ghost" size="icon" className="size-8" onClick={handleCancelEdit}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8"
+            onClick={handleCancelEdit}
+            aria-label="Cancel renaming"
+          >
             <X className="size-4 text-muted-foreground" />
           </Button>
         </div>
@@ -108,7 +120,13 @@ const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8" onClick={handleStartEdit}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                    onClick={handleStartEdit}
+                    aria-label="Rename division"
+                  >
                     <Pencil className="size-4 text-muted-foreground" />
                   </Button>
                 </TooltipTrigger>
@@ -125,6 +143,7 @@ const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
                     className="size-8"
                     onClick={onRemove}
                     disabled={!canRemove}
+                    aria-label="Remove division"
                   >
                     <Trash2
                       className={cn(

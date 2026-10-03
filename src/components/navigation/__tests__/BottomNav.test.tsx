@@ -44,6 +44,14 @@ describe('BottomNav', () => {
     expect(screen.getByRole('navigation', { name: 'Main sections' })).toBeInTheDocument();
   });
 
+  it('keeps a tab lit on a page inside it, not only on the tab page itself', () => {
+    isMobileMock.mockReturnValue(true);
+    renderAt('/teams/3-amigos', <BottomNav />);
+
+    expect(screen.getByRole('link', { name: /Teams/i })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: /Schedule/i })).not.toHaveAttribute('aria-current');
+  });
+
   it('renders nothing above the phone breakpoint', () => {
     isMobileMock.mockReturnValue(false);
     const { container } = renderAt('/teams', <BottomNav />);

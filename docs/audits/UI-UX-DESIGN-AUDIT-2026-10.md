@@ -39,7 +39,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 ### Accessibility
 
-- [ ] 11. Icon-only buttons with no accessible name (schedule pager, message controls,
+- [x] 11. Icon-only buttons with no accessible name (schedule pager, message controls,
        history editing, team form). (Step 3)
 
 ### UX flows
@@ -59,15 +59,15 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] 39 uses of `text-[8..11px]` carry real information. (Step 12)
 - [ ] Duplicate components: pills, spinners, `TeamLogo`, cards. (Step 11)
 - [ ] Dead or broken CSS (`.compatibility-score-*`, `.auto-schedule-container`, unused tokens). (Step 10)
-- [ ] Touch targets under 44px. (Step 3)
-- [ ] Toast close button is hover-only. (Step 3)
+- [x] Touch targets under 44px. (Step 3) Small controls use the new `hit-area-44` utility, which grows the tap area without changing the look. Also found: the team-page section bar was `fixed` inside the page, so it scrolled away; it now uses `ViewportPortal`.
+- [x] Toast close button is hover-only. (Step 3)
 - [ ] Raw error text reaches users. (Step 7)
 - [ ] No retry on History errors. Stats retry skips teams. (Step 7)
 - [ ] Most query failures are silent. (Step 7)
 - [ ] Toasts have no success style. Titles are generic. (Step 8)
 - [ ] Mixed time zones. (Step 6)
 - [ ] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
-- [ ] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
+- [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
 - [ ] Placeholder-only inputs. (Backlog)
 - [ ] Auth form has no `aria-invalid` or `aria-describedby`. (Backlog)
