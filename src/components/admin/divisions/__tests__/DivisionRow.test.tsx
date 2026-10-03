@@ -111,10 +111,25 @@ describe('DivisionRow', () => {
     expect(deleteMutate).toHaveBeenCalledWith('d1', expect.anything());
   });
 
-  it('disables edit and delete for Hidden divisions', () => {
+  it('allows editing a Hidden division but keeps delete disabled', async () => {
+    const user = userEvent.setup();
     renderRow({ display_division: 'Hidden' });
-    expect(screen.getByRole('button', { name: /edit/i })).toBeDisabled();
+
     expect(screen.getByRole('button', { name: 'Delete division Competitive A' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: /edit/i }));
+    const weightInput = screen.getByRole('spinbutton');
+    await user.clear(weightInput);
+    await user.type(weightInput, '0.5');
+    await user.click(screen.getByRole('button', { name: /save/i }));
+
+    expect(updateMutate).toHaveBeenCalledWith(
+      {
+        id: 'd1',
+        patch: { name: 'Competitive A', display_division: 'Recreational', division_weight: 0.5 },
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 
   it('explains why a blank name cannot be saved, and does not write', async () => {
