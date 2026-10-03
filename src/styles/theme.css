@@ -34,7 +34,8 @@
   --radius-pill: 9999px;     /* pills, badges */
   
   /* Custom color values for status indicators */
-  --success: 142.1 76.2% 36.3%;
+  /* Was 36.3% lightness: white on it measured 3.3:1. At 29% it is 5.1:1. */
+  --success: 142 72% 29%;
   --success-foreground: 355.7 100% 97.3%;
   --warning: 38 92% 50%;
   --warning-foreground: 0 0% 98%;

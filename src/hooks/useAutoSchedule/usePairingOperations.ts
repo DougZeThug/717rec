@@ -336,7 +336,7 @@ export const usePairingOperations = (
             logCrossBlockViolations(validation.violations);
 
             toast({
-              title: '⚠️ Schedule Validation Failed',
+              title: 'Schedule validation failed',
               description: `Cannot apply schedule: Found ${validation.violations.length} cross-block matches. Check console for details.`,
               variant: 'destructive',
             });

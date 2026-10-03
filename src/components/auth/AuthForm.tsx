@@ -32,7 +32,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
     await onSubmit(email, password);
   };
 
-  const buttonText = type === 'login' ? 'Login' : 'Create account';
+  const buttonText = type === 'login' ? 'Sign in' : 'Create account';
   const loadingText = type === 'login' ? 'Logging in...' : 'Creating account...';
 
   return (

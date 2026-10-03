@@ -175,7 +175,9 @@ describe('useAutoScheduleSave', () => {
 
     expect(clearAutoScheduleState).toHaveBeenCalledTimes(1);
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Rematch Warning' }));
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Success' }));
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Matches saved', variant: 'success' })
+    );
   });
 
   // A timeslot is a league wall-clock time, so the instant is built in league

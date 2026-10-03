@@ -59,7 +59,8 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
       setFirstName('');
       setLastInitial('');
       toast({
-        title: 'Success',
+        title: "You're signed up",
+        variant: 'success',
         description: confirmationMessage,
       });
     } catch (_error) {

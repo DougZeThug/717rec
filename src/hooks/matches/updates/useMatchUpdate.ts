@@ -230,7 +230,7 @@ export const useMatchUpdate = ({ matches, setMatches, editingMatch }: UseMatchUp
       invalidateAllDataQueries(queryClient);
       errorLog('Error updating match:', error);
       toast({
-        title: 'Error',
+        title: "Couldn't update match",
         description: getUIErrorMessage(error, 'Failed to update match'),
         variant: 'destructive',
       });

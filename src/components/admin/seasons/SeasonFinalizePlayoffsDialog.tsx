@@ -94,7 +94,8 @@ const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> 
         thirdPlaceTeamId: null,
       });
       toast({
-        title: 'Success',
+        title: 'Playoffs finalized',
+        variant: 'success',
         description: `${season.name}'s playoffs have been finalized.`,
       });
       void fireChampionConfetti();
@@ -102,7 +103,7 @@ const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> 
     } catch (error) {
       const message = getUIErrorMessage(error, 'Failed to finalize playoffs');
       toast({
-        title: 'Error',
+        title: "Couldn't finalize playoffs",
         description: message,
         variant: 'destructive',
       });

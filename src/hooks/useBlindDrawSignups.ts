@@ -59,7 +59,8 @@ export const useDeleteBlindDrawSignup = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       toast({
-        title: 'Success',
+        title: 'Signup removed',
+        variant: 'success',
         description: 'Signup removed',
       });
     },
@@ -85,7 +86,8 @@ export const useClearBlindDrawSignups = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blind-draw-signups'] });
       toast({
-        title: 'Success',
+        title: 'Signups cleared',
+        variant: 'success',
         description: 'All signups cleared',
       });
     },

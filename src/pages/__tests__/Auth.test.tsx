@@ -115,15 +115,15 @@ describe('Auth page', () => {
     expect(screen.getByTestId('auth-container')).toBeInTheDocument();
   });
 
-  it('shows Login and Sign Up tab triggers', () => {
+  it('shows Sign in and Sign up tab triggers', () => {
     render(
       <MemoryRouter>
         <Auth />
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Login')).toBeInTheDocument();
-    expect(screen.getByText('Sign Up')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sign in' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Sign up' })).toBeInTheDocument();
   });
 
   it('shows the login form when activeTab is login', () => {
@@ -219,7 +219,7 @@ describe('Auth page', () => {
     );
 
     expect(screen.getByText('Already have an account?')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Login' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument();
   });
 
   it('calls setActiveTab when footer Sign up button is clicked', () => {
@@ -240,7 +240,7 @@ describe('Auth page', () => {
     expect(setActiveTab).toHaveBeenCalledWith('signup');
   });
 
-  it('calls setActiveTab when footer Login button is clicked', () => {
+  it('calls setActiveTab when footer Sign in button is clicked', () => {
     const setActiveTab = vi.fn();
     mockUseAuthForm.mockReturnValue({
       ...defaultAuthFormValues,
@@ -254,7 +254,7 @@ describe('Auth page', () => {
       </MemoryRouter>
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Login' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(setActiveTab).toHaveBeenCalledWith('login');
   });
   // The Google button must carry the page the user came from, or a sign-in

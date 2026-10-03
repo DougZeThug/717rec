@@ -72,7 +72,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
           onClick={handleLoginClick}
         >
           <LogIn className="size-4 mr-1" />
-          <span className="block!">Login</span>
+          <span className="block!">Sign in</span>
         </Button>
       </div>
     );
@@ -155,7 +155,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
           className="cursor-pointer text-destructive-text focus:text-destructive-text"
         >
           <LogOut className="size-4 mr-2" />
-          Logout
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

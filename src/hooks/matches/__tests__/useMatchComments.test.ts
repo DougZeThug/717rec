@@ -184,7 +184,7 @@ describe('useMatchComments', () => {
     await expect(result.current.addComment('Nice shot')).resolves.toBeNull();
 
     expect(mockToast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't post comment",
       // The authored reason, not a fixed sentence.
       description: 'Failed to post comment: That comment is too long.',
       variant: 'destructive',
@@ -212,7 +212,9 @@ describe('useMatchComments', () => {
     });
 
     expect(deleteResult).toBe(false);
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Error' }));
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Couldn't delete comment" })
+    );
   });
 
   // The two branches of onError toast on the same error and were meant to read
@@ -232,7 +234,7 @@ describe('useMatchComments', () => {
     });
 
     expect(mockToast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't delete comment",
       description: 'Failed to delete comment: That comment is already gone.',
       variant: 'destructive',
     });

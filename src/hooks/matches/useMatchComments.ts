@@ -153,7 +153,7 @@ export const useMatchComments = (matchId: string) => {
           confirmedCommentDeletesRef.current.delete(removedComment.id);
           errorLog('Error removing comment after realtime delete confirmation:', err);
           toast({
-            title: 'Error',
+            title: "Couldn't delete comment",
             description: getUIErrorMessage(err, 'Failed to delete comment'),
             variant: 'destructive',
           });
@@ -170,7 +170,7 @@ export const useMatchComments = (matchId: string) => {
       }
       errorLog('Error removing comment:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't delete comment",
         description: getUIErrorMessage(err, 'Failed to delete comment'),
         variant: 'destructive',
       });
@@ -214,7 +214,7 @@ export const useMatchComments = (matchId: string) => {
     } catch (err) {
       errorLog('Error adding comment:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't post comment",
         description: getUIErrorMessage(err, 'Failed to post comment'),
         variant: 'destructive',
       });

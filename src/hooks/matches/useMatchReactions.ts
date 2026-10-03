@@ -333,7 +333,7 @@ export const useMatchReactions = (matchId: string) => {
           }
           errorLog('Error removing delayed optimistic match reaction:', err);
           toast({
-            title: 'Error',
+            title: "Couldn't remove reaction",
             description: getUIErrorMessage(err, 'Failed to remove reaction'),
             variant: 'destructive',
           });
@@ -374,7 +374,7 @@ export const useMatchReactions = (matchId: string) => {
         });
       errorLog('Error toggling reaction:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't update reaction",
         description: getUIErrorMessage(err, 'Failed to update reaction'),
         variant: 'destructive',
       });

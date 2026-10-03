@@ -30,6 +30,8 @@ const toastVariants = cva(
         default: 'border bg-background text-foreground',
         destructive:
           'destructive group border-destructive bg-destructive text-destructive-foreground',
+        // A save worked. Green says so before the words are read.
+        success: 'success group border-success bg-success text-success-foreground',
       },
     },
     defaultVariants: {
@@ -59,7 +61,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      'inline-flex min-h-11 shrink-0 items-center justify-center rounded-input border border-border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 hover:group-[.destructive]:border-destructive/30 hover:group-[.destructive]:bg-destructive hover:group-[.destructive]:text-destructive-foreground focus:group-[.destructive]:ring-destructive',
+      'inline-flex min-h-11 shrink-0 items-center justify-center rounded-input border border-border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.success]:border-success-foreground/40 hover:group-[.success]:bg-success-foreground/10 hover:group-[.destructive]:border-destructive/30 hover:group-[.destructive]:bg-destructive hover:group-[.destructive]:text-destructive-foreground focus:group-[.destructive]:ring-destructive',
       className
     )}
     {...props}
@@ -75,7 +77,7 @@ const ToastClose = React.forwardRef<
     ref={ref}
     className={cn(
       // Always visible: it used to appear only on hover, which a phone has not got.
-      'absolute right-1 top-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-input text-foreground/70 transition-colors hover:text-foreground focus:outline-hidden focus:ring-2 group-[.destructive]:text-red-300 hover:group-[.destructive]:text-red-50 focus:group-[.destructive]:ring-red-400 focus:group-[.destructive]:ring-offset-red-600',
+      'absolute right-1 top-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-input text-foreground/70 transition-colors hover:text-foreground focus:outline-hidden focus:ring-2 group-[.success]:text-success-foreground/80 hover:group-[.success]:text-success-foreground group-[.destructive]:text-red-300 hover:group-[.destructive]:text-red-50 focus:group-[.destructive]:ring-red-400 focus:group-[.destructive]:ring-offset-red-600',
       className
     )}
     toast-close=""

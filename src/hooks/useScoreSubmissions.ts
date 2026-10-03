@@ -147,7 +147,11 @@ export function useScoreSubmissions() {
       updateScoreSubmissionStatus(submissionId, 'rejected'),
     onMutate: ({ submissionId }) => removeOptimistically(submissionId),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Score submission rejected successfully.' });
+      toast({
+        title: 'Submission rejected',
+        description: 'The score submission was rejected.',
+        variant: 'success',
+      });
     },
     onError: (error, _variables, context) => {
       restoreOptimistic(context);

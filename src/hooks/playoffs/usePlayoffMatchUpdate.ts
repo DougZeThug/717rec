@@ -129,7 +129,8 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         }
 
         toast({
-          title: 'Success',
+          title: 'Match updated',
+          variant: 'success',
           description: 'Match updated with automatic winner progression',
         });
       } else {
@@ -184,7 +185,8 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
         await invalidateMatchRelatedQueries(queryClient);
 
         toast({
-          title: 'Success',
+          title: 'Score saved',
+          variant: 'success',
           description: 'Match score saved successfully',
         });
       }

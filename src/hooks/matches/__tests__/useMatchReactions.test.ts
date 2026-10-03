@@ -623,7 +623,7 @@ describe('useMatchReactions', () => {
     await waitFor(() => expect(result.current.reactions).toHaveLength(1));
     expect(result.current.reactions[0].id).toBe('real-1');
     expect(mockToast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't remove reaction",
       description: 'Failed to remove reaction. Please try again.',
       variant: 'destructive',
     });
@@ -791,7 +791,7 @@ describe('useMatchReactions', () => {
 
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Error',
+        title: "Couldn't update reaction",
         description: 'Failed to update reaction. Please try again.',
       })
     );

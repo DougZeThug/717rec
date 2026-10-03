@@ -199,7 +199,7 @@ const TeamManagementTab = () => {
     } catch (error) {
       errorLog('Error updating team:', error);
       toast({
-        title: 'Update Failed',
+        title: "Couldn't update team",
         description: getUIErrorMessage(error, 'Failed to update team'),
         variant: 'destructive',
       });
@@ -220,7 +220,7 @@ const TeamManagementTab = () => {
     } catch (error) {
       errorLog('Error updating team division:', error);
       toast({
-        title: 'Update Failed',
+        title: "Couldn't update team",
         description: getUIErrorMessage(error, 'Failed to update team division'),
         variant: 'destructive',
       });

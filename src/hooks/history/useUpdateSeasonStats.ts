@@ -48,7 +48,7 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
       setError(err instanceof Error ? err : new Error(errorMessage));
 
       toast({
-        title: 'Update Failed',
+        title: "Couldn't update season stats",
         description: errorMessage,
         variant: 'destructive',
       });

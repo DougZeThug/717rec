@@ -58,7 +58,8 @@ export const useTeamSeedMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
       queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
       toast({
-        title: 'Success',
+        title: 'Seeds updated',
+        variant: 'success',
         description: 'Team seeds updated successfully.',
       });
     },
@@ -85,7 +86,8 @@ export const useTeamSeedMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['playoff-teams'] });
       queryClient.invalidateQueries({ queryKey: ['seed-validation'] });
       toast({
-        title: 'Success',
+        title: 'Seeds reset',
+        variant: 'success',
         description: 'All seeds reset to automatic.',
       });
     },

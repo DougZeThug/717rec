@@ -65,7 +65,7 @@ const TeamEditSection: React.FC = () => {
       const message = getUIErrorMessage(error, 'Failed to update team details');
       errorLog('Error updating team:', error);
       toast({
-        title: 'Update Failed',
+        title: "Couldn't update team",
         description: message,
         variant: 'destructive',
       });

@@ -67,7 +67,8 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
 
         await updateSeason.mutateAsync(updateData);
         toast({
-          title: 'Success',
+          title: 'Season saved',
+          variant: 'success',
           description: 'Season updated successfully',
         });
       } else {
@@ -79,7 +80,8 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
 
         await createSeason.mutateAsync(createData);
         toast({
-          title: 'Success',
+          title: 'Season created',
+          variant: 'success',
           // A new season is created inactive, so say what starts it. Without
           // this the admin reasonably assumes the league has changed over.
           description: `${data.name} created. Press Activate on its card to start it.`,
@@ -90,7 +92,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
     } catch (error) {
       const message = getUIErrorMessage(error, 'Failed to save season');
       toast({
-        title: 'Error',
+        title: "Couldn't save season",
         description: message,
         variant: 'destructive',
       });
@@ -117,7 +119,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
                 <FormItem>
                   <FormLabel>Season Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Spring 2025" {...field} />
+                    <Input placeholder="e.g., Fall 2026" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

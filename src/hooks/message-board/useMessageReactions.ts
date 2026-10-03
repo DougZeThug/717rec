@@ -262,7 +262,7 @@ export const useMessageReactions = (messageId: string) => {
         });
       errorLog('Error removing reaction:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't remove reaction",
         description: getUIErrorMessage(err, 'Failed to remove reaction'),
         variant: 'destructive',
       });
@@ -314,7 +314,7 @@ export const useMessageReactions = (messageId: string) => {
           if (tombstonedId) realtimeDeletesRef.current.delete(tombstonedId);
           errorLog('Error removing delayed optimistic message reaction:', err);
           toast({
-            title: 'Error',
+            title: "Couldn't remove reaction",
             description: getUIErrorMessage(err, 'Failed to remove reaction'),
             variant: 'destructive',
           });
@@ -346,7 +346,7 @@ export const useMessageReactions = (messageId: string) => {
       if (context) queryClient.setQueryData(queryKey, context.previous ?? []);
       errorLog('Error adding reaction:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't add reaction",
         description: getUIErrorMessage(err, 'Failed to add reaction'),
         variant: 'destructive',
       });

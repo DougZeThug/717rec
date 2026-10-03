@@ -46,13 +46,15 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
       if (showOverlapOption && keepOldPlayoffsActive) {
         await activateSeasonWithPartialArchive.mutateAsync(season.id);
         toast({
-          title: 'Success',
+          title: 'Season activated',
+          variant: 'success',
           description: `${season.name} is active; ${activeSeason?.name}'s playoffs remain in progress.`,
         });
       } else {
         await activateSeason.mutateAsync(season.id);
         toast({
-          title: 'Success',
+          title: 'Season activated',
+          variant: 'success',
           description: `${season.name} is now the active season`,
         });
       }
@@ -60,7 +62,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
     } catch (error) {
       const message = getUIErrorMessage(error, 'Failed to activate season');
       toast({
-        title: 'Error',
+        title: "Couldn't activate season",
         description: message,
         variant: 'destructive',
       });

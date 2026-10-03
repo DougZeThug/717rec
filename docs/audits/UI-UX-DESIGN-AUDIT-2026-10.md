@@ -64,7 +64,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] Raw error text reaches users. Fixed in Step 7 for the public pages (Standings, History, season accordion, bracket boundary) and the admin toasts that call database services. The bracket dialogs keep their messages on purpose: the bracket library throws plain, readable errors an admin needs.
 - [x] No retry on History errors. Fixed in Step 7. (Stats retry already refetched teams and matches.)
 - [x] Most query failures are silent. Fixed in Step 7 for Home (announcements, Team of the Week, Weekly recap) with the new `SectionError`. Other queries are still quiet.
-- [ ] Toasts have no success style. Titles are generic. (Step 8)
+- [x] Toasts have no success style. Titles are generic. Fixed in Step 8: a green `success` variant, and specific titles on the 20 "Success" toasts and the Error toasts for the same actions. About 40 generic "Error" titles remain (backlog).
 - [~] Mixed time zones. Step 6 labels the always-Eastern event times ("EDT"). Match times stay on the viewer's clock on purpose: the Schedule page groups matches by it, and `formatUTCToLocalTimeString` documents why. Moving every display to Eastern needs a decision about that grouping first.
 - [x] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
 - [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
@@ -84,9 +84,9 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Nine dialogs lack `DialogDescription`. (Backlog)
 - [ ] Logo `alt` repeats the adjacent team name. (Step 11)
 - [ ] `focus:` rings instead of `focus-visible:`. (Backlog)
-- [ ] Auth wording: Login / Sign In / Sign Up mixed. (Step 8)
+- [x] Auth wording: Login / Sign In / Sign Up mixed. Fixed in Step 8: Sign in / Sign up / Sign out everywhere.
 - [x] Misleading copy ("An administrator has been notified"). (Step 4)
-- [ ] Stale examples ("Spring 2025"). (Step 8)
+- [x] Stale examples ("Spring 2025"). Fixed in Step 8.
 - [ ] Thursday-only date picker. `datetime-local` uses the browser zone. (Backlog)
 - [ ] "Go Home" does a full page reload. (Backlog)
 - [ ] Images without `loading` or size attributes. (Backlog)

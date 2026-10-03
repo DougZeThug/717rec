@@ -45,7 +45,7 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
           className={cn(interactive.link.inline, 'py-2 px-1 -my-2')}
           onClick={() => setActiveTab('login')}
         >
-          Login
+          Sign in
         </button>
       </>
     )}
@@ -95,8 +95,8 @@ const Auth = () => {
       <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
         <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="login">Sign in</TabsTrigger>
+            <TabsTrigger value="signup">Sign up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="login">

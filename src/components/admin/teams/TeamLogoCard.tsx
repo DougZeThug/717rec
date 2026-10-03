@@ -51,7 +51,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
     } catch (error) {
       errorLog('Error uploading logo:', error);
       toast({
-        title: 'Upload Failed',
+        title: "Couldn't upload logo",
         description: getUIErrorMessage(error, 'Failed to upload logo'),
         variant: 'destructive',
       });

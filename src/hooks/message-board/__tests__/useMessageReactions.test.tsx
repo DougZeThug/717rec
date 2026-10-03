@@ -130,7 +130,7 @@ describe('useMessageReactions', () => {
       await result.current.addReaction('🔥');
     });
     expect(mocks.toast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't add reaction",
       description: 'Failed to add reaction: You have already reacted with that.',
       variant: 'destructive',
     });
@@ -177,7 +177,7 @@ describe('useMessageReactions', () => {
     await waitFor(() => expect(result.current.reactions).toHaveLength(1));
     expect(result.current.reactions[0].id).toBe('server-id');
     expect(mocks.toast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't remove reaction",
       description: 'Failed to remove reaction: That reaction is already gone.',
       variant: 'destructive',
     });
@@ -192,7 +192,7 @@ describe('useMessageReactions', () => {
       await result.current.removeReaction('r1');
     });
     expect(mocks.toast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't remove reaction",
       description: 'Failed to remove reaction: That reaction is already gone.',
       variant: 'destructive',
     });
