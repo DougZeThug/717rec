@@ -65,7 +65,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
   return (
     <div
       className={cn(
-        'min-h-screen py-4 px-3 md:py-8 md:px-8 pb-24 md:pb-8',
+        'min-h-dvh py-4 px-3 md:py-8 md:px-8 pb-8',
         shouldApplyWinterBase ? 'page-winter-bg ice-pattern-bg' : 'cornhole-bg',
         winterClass
       )}
@@ -73,8 +73,11 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
       <div className="max-w-7xl mx-auto">
         <PlayoffHeader selectedSeasonId={data.selectedSeasonId} />
 
-        {/* Season selector - desktop only (mobile moves to bottom bar) */}
-        <div className="hidden md:block mb-4">
+        {/* Season selector, at the top on every screen size. On a phone it used
+            to be a `fixed bottom-0` bar, but every route sits inside a box with
+            `contain: layout`, so that bar never pinned: it sat at the end of the
+            page, and the tab bar covered it there. */}
+        <div className="mb-4">
           <SeasonSelector
             selectedSeasonId={data.selectedSeasonId}
             onSeasonChange={data.setSelectedSeasonId}
@@ -99,14 +102,6 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
 
         {/* Realtime indicator */}
         <RealtimeIndicator enabled={Boolean(realtimeEnabled) && Boolean(data.selectedBracketId)} />
-      </div>
-
-      {/* Mobile bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-card/95 backdrop-blur-xs border-t border-border px-3 py-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))]">
-        <SeasonSelector
-          selectedSeasonId={data.selectedSeasonId}
-          onSeasonChange={data.setSelectedSeasonId}
-        />
       </div>
 
       {/* All dialogs */}

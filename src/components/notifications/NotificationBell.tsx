@@ -56,7 +56,7 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[360px] p-3">
+      <PopoverContent align="end" className="w-[min(360px,calc(100vw-1rem))] p-3">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Notifications</h3>

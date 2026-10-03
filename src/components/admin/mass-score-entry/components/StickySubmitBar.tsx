@@ -14,9 +14,10 @@ interface StickySubmitBarProps {
  * This is portalled to `document.body` rather than positioned in place, because
  * neither `sticky` nor `fixed` works where the button used to live:
  *
- * - `overflow-x-hidden` on the app shell (App.tsx) and PageLayout makes them
- *   scroll containers, so `sticky` has no scrollport to stick within, and the
- *   tool's own Card adds `overflow-hidden` on top of that.
+ * - The tool's own Card adds `overflow-hidden`, which makes it a scroll
+ *   container, so `sticky` has no scrollport to stick within. (The app shell and
+ *   PageLayout used to do the same with `overflow-x-hidden`; they use
+ *   `overflow-x-clip` now, which does not.)
  * - `.animate-fade-in` carries `contain: layout` (styles/utilities.css), and
  *   layout containment makes that element the containing block for any `fixed`
  *   descendant, so `fixed bottom-0` would pin to the bottom of the page content
@@ -34,10 +35,10 @@ const StickySubmitBar: React.FC<StickySubmitBarProps> = ({ children }) => {
         // Below BottomNav (z-40) and below dialogs, so a confirm still covers it.
         'fixed inset-x-0 z-30',
         // Clear the mobile tab bar, which only exists below `md`.
-        'bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] md:bottom-0',
+        'bottom-(--bottom-nav-h)',
         'border-t border-border bg-background/95 backdrop-blur-sm',
         'supports-backdrop-filter:bg-background/80',
-        'px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] md:pb-3',
+        'px-4 py-3',
         'flex justify-end'
       )}
     >

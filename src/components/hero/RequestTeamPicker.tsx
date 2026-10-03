@@ -89,7 +89,11 @@ const RequestTeamPicker: React.FC<RequestTeamPickerProps> = ({
             <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent id={listboxId} className="w-[300px] p-0" align="start">
+        <PopoverContent
+          id={listboxId}
+          className="w-[min(300px,calc(100vw-1rem))] p-0"
+          align="start"
+        >
           <TeamSearchList
             teams={teams}
             selectedTeamId={selectedTeamId}

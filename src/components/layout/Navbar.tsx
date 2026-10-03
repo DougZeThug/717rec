@@ -59,8 +59,13 @@ const Navbar: React.FC = React.memo(() => {
       <SkipToContent />
       <nav
         aria-label="Primary"
+        // Not sticky, and it never was: this list used to say `sticky top-0`, but
+        // `relative` came later in the same list and tailwind-merge kept only
+        // that one. The header scrolls away on purpose, which keeps the whole
+        // phone screen for the page. The bars that pin themselves under it
+        // (Schedule dates, Message Board) therefore stick at the very top.
         className={cn(
-          'text-white shadow-lg sticky top-0 z-50 safe-area-top relative',
+          'text-white shadow-lg z-50 safe-area-top relative',
           // Default theme
           !isWinterTheme &&
             'bg-gradient-to-r from-[#0f2647] via-cornhole-navy to-[#1d4068] dark:from-gray-900 dark:via-gray-900 dark:to-gray-800',

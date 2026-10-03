@@ -14,10 +14,18 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 ### Phone layout (device check)
 
-- [ ] 1. Bottom bars stack on the phone bottom nav (Playoffs season bar, message-board
-      sign-in bar, realtime dot, footer). Fix: one shared `--bottom-nav-h` offset. (Step 2)
-- [ ] 2. `overflow-x-hidden` on the app shell can stop `sticky top-0` working. Fix: `overflow-x-clip`. (Step 2)
-- [ ] 3. Hamburger menu caps height at 500px and clips the Admin link. (Step 2)
+- [x] 1. Bottom bars stack on the phone bottom nav (Playoffs season bar, message-board
+      sign-in bar, realtime dot, footer). Fixed in Step 2. Checked in a browser: the real cause was
+      deeper. Every route sits in a box with `contain: layout`, so `fixed` bars were never pinned to
+      the screen. The sign-in bar and the "Live updates" pill now use `ViewportPortal` and
+      `--bottom-nav-h`. The Playoffs season picker moved to the top of the page. The footer clears
+      the tab bar.
+- [x] 2. `overflow-x-hidden` on the app shell stopped `sticky` bars working. Fixed in Step 2
+      (`overflow-x-clip`). Checked in a browser: the header itself was never sticky, because
+      `tailwind-merge` dropped `sticky` in favour of the later `relative`. It still scrolls away,
+      on purpose. Decision for the owner: make it sticky if wanted (then sub-bars need an offset).
+- [x] 3. Hamburger menu caps height at 500px and clips the Admin link. Fixed in Step 2: the panel
+      scrolls inside `100dvh - 5rem`.
 
 ### Colour and contrast
 
@@ -60,7 +68,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Mixed time zones. (Step 6)
 - [ ] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
 - [ ] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
-- [ ] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
+- [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
 - [ ] Placeholder-only inputs. (Backlog)
 - [ ] Auth form has no `aria-invalid` or `aria-describedby`. (Backlog)
 - [ ] Table rows use `role="button"`. (Backlog)
@@ -82,7 +90,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Thursday-only date picker. `datetime-local` uses the browser zone. (Backlog)
 - [ ] "Go Home" does a full page reload. (Backlog)
 - [ ] Images without `loading` or size attributes. (Backlog)
-- [ ] Duplicate DOM id `season-selector`. (Step 2)
+- [x] Duplicate DOM id `season-selector`. (Step 2)
 - [ ] `LoginRequired` adds a 1-second wait. (Step 8)
 - [ ] `ScoreButton` logs on every render. (Backlog)
 - [ ] Emoji in UI text. (Backlog)

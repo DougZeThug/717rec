@@ -62,7 +62,7 @@ const SectionsDrawer: React.FC<{
   pendingRequestsCount: number;
 }> = ({ open, onOpenChange, activeTab, onSelect, pendingRequestsCount }) => (
   <Drawer open={open} onOpenChange={onOpenChange}>
-    <DrawerContent className="max-h-[90vh]">
+    <DrawerContent className="max-h-[90dvh]">
       <DrawerHeader className="pb-2">
         <DrawerTitle>Admin sections</DrawerTitle>
         <DrawerDescription>Choose a section to open.</DrawerDescription>
@@ -87,10 +87,10 @@ const SectionsDrawer: React.FC<{
  * league-night task began with a full-screen scroll (UX audit X-06). Only the
  * bar is on the page now.
  *
- * The bar is deliberately **not** sticky, though the finding suggested it: the
- * site header is already `sticky top-0`, so a second sticky bar slides
- * underneath it. The finding is about the first screen, which one short bar
- * fixes on its own.
+ * The bar is deliberately **not** sticky, though the finding suggested it: if the
+ * site header is ever made sticky (it is not today, see `Navbar`), a second
+ * sticky bar would slide underneath it. The finding is about the first screen,
+ * which one short bar fixes on its own.
  */
 const AdminMobileNav: React.FC<AdminMobileNavProps> = ({
   activeTab,

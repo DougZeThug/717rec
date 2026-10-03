@@ -97,13 +97,19 @@ const MobileMenu: React.FC = React.memo(() => {
         {isOpen && (
           <m.div
             id={PANEL_ID}
-            className="lg:hidden pt-2 pb-3 space-y-1 overflow-hidden"
-            initial={{ opacity: 0, maxHeight: 0 }}
-            animate={{ opacity: 1, maxHeight: '500px' }}
-            exit={{ opacity: 0, maxHeight: 0 }}
+            className="lg:hidden overflow-hidden"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
-            <NavLinks isMobile={true} onLinkClick={handleLinkClose} />
+            {/* The outer box clips while it animates open. This inner box scrolls
+                once it is open: a fixed 500px cap used to cut off the last links
+                (Admin) when the list was taller, and on a short phone held on its
+                side. 5rem leaves room for the top bar. */}
+            <div className="pt-2 pb-3 space-y-1 max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain">
+              <NavLinks isMobile={true} onLinkClick={handleLinkClose} />
+            </div>
           </m.div>
         )}
       </AnimatePresence>

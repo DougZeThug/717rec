@@ -9,6 +9,13 @@
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
 
+  /* Height of the phone tab bar (components/navigation/BottomNav.tsx: h-16 +
+     12px padding + the iPhone home-bar inset). Anything that is pinned to the
+     bottom of the screen on a phone sits at `bottom-(--bottom-nav-h)`, or it
+     slides underneath the tab bar. The bar only exists below `md` (768px), the
+     same cut-off as useIsMobile, so the height is 0 from there up. */
+  --bottom-nav-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+
   /* Tell the browser which scheme the page uses, so scrollbars, date pickers,
      autofill and form controls match it. */
   color-scheme: light;
@@ -17,6 +24,12 @@
 .dark,
 .winter-frozen {
   color-scheme: dark;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --bottom-nav-h: 0px;
+  }
 }
 
 /* Theme transition for smooth theme switching */

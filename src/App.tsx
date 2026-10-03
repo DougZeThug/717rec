@@ -131,11 +131,14 @@ const AppLayout = () => {
         <RouteAnnouncer />
         <ScrollToTop />
         <UnsavedWorkBlocker />
-        <div className="flex flex-col min-h-screen overflow-x-hidden">
+        <div className="flex flex-col min-h-dvh overflow-x-clip">
           <Navbar />
-          {/* Under the header and in normal flow, never sticky: the header is
-            already `sticky top-0 z-50`, so a second sticky bar slides beneath
-            it. See the same note on the admin phone menu. */}
+          {/* Under the header and in normal flow, never sticky: if the header is
+            ever made sticky (it is not today, see Navbar), a second sticky bar
+            would slide beneath it. See the same note on the admin phone menu.
+            `overflow-x-clip` on this shell, not `hidden`: `hidden` also turns
+            the box into a scroll container, and no `sticky` bar below it can
+            stick to the page while that is so. */}
           <OfflineBanner />
           <PageTransition>
             <main
