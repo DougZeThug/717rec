@@ -40,4 +40,16 @@ describe('MatchScoreEditor — 0-0 save guard (regression)', () => {
     expect(onSave).not.toHaveBeenCalled();
     expect(screen.getByText(/cannot save a match with no winner/i)).toBeInTheDocument();
   });
+
+  it('keeps the Save Scores button in a sticky bottom bar so it stays visible on phones', () => {
+    render(<MatchScoreEditor match={match} teams={teams} onSave={vi.fn()} onCancel={vi.fn()} />);
+
+    const saveButton = screen.getByRole('button', { name: /save scores/i });
+    const stickyBar = saveButton.closest('.sticky');
+
+    expect(stickyBar).not.toBeNull();
+    expect(stickyBar?.className).toContain('bottom-0');
+    expect(stickyBar?.className).toContain('bg-background');
+    expect(saveButton.className).toContain('w-full');
+  });
 });
