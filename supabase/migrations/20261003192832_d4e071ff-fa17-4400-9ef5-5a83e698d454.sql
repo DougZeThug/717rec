@@ -1,0 +1,14 @@
+REVOKE EXECUTE ON FUNCTION public.audit_admin_mutation() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.delete_match_with_stats_reversal(p_match_id uuid) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.enforce_message_author_identity() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.enforce_message_identity() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.prevent_member_competitive_field_updates() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.prevent_team_membership_reassignment() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.record_division_weight_change() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.replace_playoff_games(p_match_id uuid, p_games jsonb) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.sync_bracket_wb_champion() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.tg_finalize_bracket_standings() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.upsert_team_season_stats(p_include_archived boolean) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.validate_game_players_row() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.validate_games_row() FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.validate_match_rounds_row() FROM PUBLIC;
