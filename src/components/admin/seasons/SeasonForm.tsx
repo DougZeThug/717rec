@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { toast } from '@/hooks/useToast';
 import { Season } from '@/types/season';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const seasonSchema = z
   .object({
@@ -87,7 +88,7 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
 
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to save season';
+      const message = getUIErrorMessage(error, 'Failed to save season');
       toast({
         title: 'Error',
         description: message,

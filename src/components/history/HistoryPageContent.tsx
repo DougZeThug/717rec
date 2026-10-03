@@ -2,16 +2,18 @@ import { AlertTriangle, Calendar, History, Loader2 } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import WinterSection from '@/components/winter/WinterSection';
 import { useHistoricalSeasons } from '@/hooks/useSeasons';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 import SeasonAccordion from './SeasonAccordion';
 
 const HistoryPageContent: React.FC = () => {
   const navigate = useNavigate();
-  const { data: seasons = [], isLoading, isError, error } = useHistoricalSeasons();
+  const { data: seasons = [], isLoading, isError, error, refetch } = useHistoricalSeasons();
 
   if (isLoading) {
     return (
@@ -33,11 +35,17 @@ const HistoryPageContent: React.FC = () => {
           <div className="text-center py-8">
             <AlertTriangle className="size-12 text-destructive-text mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load season history</h3>
-            <p className="text-muted-foreground">
-              {error instanceof Error
-                ? error.message
-                : 'An unexpected error occurred. Please try again later.'}
-            </p>
+            <p className="text-muted-foreground">{getUIErrorMessage(error)}</p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => {
+                void refetch();
+              }}
+            >
+              Try again
+            </Button>
           </div>
         </CardContent>
       </Card>

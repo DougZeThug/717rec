@@ -115,8 +115,10 @@ describe('StatsContainer', () => {
     );
 
     expect(screen.getByText(/error loading the statistics data/i)).toBeInTheDocument();
-    expect(screen.getByText('Teams unavailable')).toBeInTheDocument();
-    expect(screen.getByText('Matches unavailable')).toBeInTheDocument();
+    // The reason is reduced to a safe sentence; the raw text stays out of the page.
+    expect(screen.getByText('Something went wrong. Please try again.')).toBeInTheDocument();
+    expect(screen.queryByText('Teams unavailable')).not.toBeInTheDocument();
+    expect(screen.queryByText('Matches unavailable')).not.toBeInTheDocument();
     expect(screen.queryByTestId('full-rankings')).not.toBeInTheDocument();
   });
 

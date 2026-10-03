@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { sortHistoryDivisions } from '@/utils/historyDivisionUtils';
 
 import DivisionPanel from './DivisionPanel';
@@ -56,7 +57,7 @@ const SeasonAccordionExpandedContent: React.FC<SeasonAccordionExpandedContentPro
         <div className="text-red-600 dark:text-red-400 mb-4">
           <Trophy className="size-8 mx-auto mb-2" />
           <p className="font-medium">Failed to load season data</p>
-          <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
+          <p className="text-sm text-muted-foreground mb-4">{getUIErrorMessage(error)}</p>
           <Button
             onClick={() => refetch()}
             disabled={isRefetching}

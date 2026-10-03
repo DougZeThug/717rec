@@ -48,7 +48,9 @@ describe('BracketErrorBoundary', () => {
 
     // Fallback UI is shown instead of the crashed children.
     expect(screen.getByText('Bracket Rendering Error')).toBeInTheDocument();
-    expect(screen.getByText(/Bracket ID: bracket-123/)).toBeInTheDocument();
+    expect(screen.getByText(/The bracket could not be shown/)).toBeInTheDocument();
+    // Technical detail is for developers only (this test runs in dev mode).
+    expect(screen.getByText(/bracket bracket-123/)).toBeInTheDocument();
 
     // Sentry received the error plus bracket context (matches ErrorBoundary/RouteErrorBoundary).
     expect(captureError).toHaveBeenCalledTimes(1);

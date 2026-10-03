@@ -55,9 +55,14 @@ class BracketErrorBoundary extends Component<Props, State> {
             <AlertDescription>
               <div className="space-y-2">
                 <p className="font-semibold">Bracket Rendering Error</p>
-                <p>Failed to render bracket component: {this.state.error?.message}</p>
-                {this.props.bracketId && (
-                  <p className="text-xs opacity-80">Bracket ID: {this.props.bracketId}</p>
+                <p>The bracket could not be shown. Try again, or reload the page.</p>
+                {/* Technical detail for whoever is debugging; a visitor gains
+                    nothing from an error string or an internal id. */}
+                {import.meta.env.DEV && (
+                  <p className="text-xs opacity-80">
+                    {this.state.error?.message}
+                    {this.props.bracketId ? ` (bracket ${this.props.bracketId})` : ''}
+                  </p>
                 )}
               </div>
             </AlertDescription>

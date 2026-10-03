@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { toast } from '@/hooks/useToast';
 import { Season } from '@/types/season';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 interface SeasonArchivalDialogProps {
   isOpen: boolean;
@@ -163,7 +164,7 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
       }
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to archive season';
+      const message = getUIErrorMessage(error, 'Failed to archive season');
       toast({
         title: 'Error',
         description: message,

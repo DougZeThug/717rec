@@ -61,9 +61,9 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Dead or broken CSS (`.compatibility-score-*`, `.auto-schedule-container`, unused tokens). (Step 10)
 - [x] Touch targets under 44px. (Step 3) Small controls use the new `hit-area-44` utility, which grows the tap area without changing the look. Also found: the team-page section bar was `fixed` inside the page, so it scrolled away; it now uses `ViewportPortal`.
 - [x] Toast close button is hover-only. (Step 3)
-- [ ] Raw error text reaches users. (Step 7)
-- [ ] No retry on History errors. Stats retry skips teams. (Step 7)
-- [ ] Most query failures are silent. (Step 7)
+- [x] Raw error text reaches users. Fixed in Step 7 for the public pages (Standings, History, season accordion, bracket boundary) and the admin toasts that call database services. The bracket dialogs keep their messages on purpose: the bracket library throws plain, readable errors an admin needs.
+- [x] No retry on History errors. Fixed in Step 7. (Stats retry already refetched teams and matches.)
+- [x] Most query failures are silent. Fixed in Step 7 for Home (announcements, Team of the Week, Weekly recap) with the new `SectionError`. Other queries are still quiet.
 - [ ] Toasts have no success style. Titles are generic. (Step 8)
 - [~] Mixed time zones. Step 6 labels the always-Eastern event times ("EDT"). Match times stay on the viewer's clock on purpose: the Schedule page groups matches by it, and `formatUTCToLocalTimeString` documents why. Moving every display to Eastern needs a decision about that grouping first.
 - [x] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)

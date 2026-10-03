@@ -294,7 +294,8 @@ describe('BatchMatchFormContainer submission (end-to-end)', () => {
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
           variant: 'destructive',
-          description: expect.stringMatching(/insert failed/i),
+          // The raw reason ("insert failed") stays out of the toast.
+          description: expect.stringMatching(/something went wrong/i),
         })
       )
     );

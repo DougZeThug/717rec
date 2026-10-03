@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { useToast } from '@/hooks/useToast';
 import { updateTeamNameAndImage } from '@/services/teams/TeamUpdateService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog } from '@/utils/logger';
 
 const TeamEditSection: React.FC = () => {
@@ -61,7 +62,7 @@ const TeamEditSection: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['teams'] });
       queryClient.invalidateQueries({ queryKey: ['team-details', membership.team.id] });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update team details';
+      const message = getUIErrorMessage(error, 'Failed to update team details');
       errorLog('Error updating team:', error);
       toast({
         title: 'Update Failed',

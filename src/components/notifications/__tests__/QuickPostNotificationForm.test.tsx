@@ -81,7 +81,8 @@ describe('QuickPostNotificationForm', () => {
     await waitFor(() =>
       expect(mockToast).toHaveBeenCalledWith({
         title: 'Failed to post notification',
-        description: 'network down',
+        // Raw error text is never shown; a bare Error reads as this.
+        description: 'Something went wrong. Please try again.',
         variant: 'destructive',
       })
     );

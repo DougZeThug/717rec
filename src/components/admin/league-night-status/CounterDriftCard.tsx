@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCounterDrift, useReconcileCounters } from '@/hooks/admin/useCounterDrift';
 import { toast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const CounterDriftCard: React.FC = () => {
   const driftQuery = useCounterDrift();
@@ -38,7 +39,7 @@ const CounterDriftCard: React.FC = () => {
     } catch (err) {
       toast({
         title: 'Repair failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getUIErrorMessage(err),
         variant: 'destructive',
       });
     }

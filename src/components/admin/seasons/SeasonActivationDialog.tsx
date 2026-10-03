@@ -18,6 +18,7 @@ import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { useSeasons } from '@/hooks/useSeasons';
 import { toast } from '@/hooks/useToast';
 import { Season } from '@/types/season';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 interface SeasonActivationDialogProps {
   isOpen: boolean;
@@ -57,7 +58,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
       }
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to activate season';
+      const message = getUIErrorMessage(error, 'Failed to activate season');
       toast({
         title: 'Error',
         description: message,

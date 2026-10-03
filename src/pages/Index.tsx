@@ -15,6 +15,7 @@ import WeeklyRecapSkeleton from '@/components/home/WeeklyRecapSkeleton';
 import PageLayout from '@/components/layout/PageLayout';
 import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
+import { SectionError } from '@/components/ui/SectionError';
 import { useHeroCards } from '@/hooks/useHeroCards';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useMyNextMatch } from '@/hooks/useMyNextMatch';
@@ -52,10 +53,28 @@ const hasRecapToShow = (
 const Index: React.FC = () => {
   const { teams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
   const { matches: pendingMatches, isLoading: pendingScoresLoading } = usePendingScoresMatches();
-  const { data: heroCards, isLoading: heroCardsLoading } = useHeroCards();
-  const { data: trendData, isLoading: trendLoading } = useWeeklyPowerScoreTrends('up', 3);
+  const {
+    data: heroCards,
+    isLoading: heroCardsLoading,
+    isError: heroCardsFailed,
+    error: heroCardsError,
+    refetch: refetchHeroCards,
+  } = useHeroCards();
+  const {
+    data: trendData,
+    isLoading: trendLoading,
+    isError: trendFailed,
+    error: trendError,
+    refetch: refetchTrend,
+  } = useWeeklyPowerScoreTrends('up', 3);
   const { data: fallerData, isLoading: fallerLoading } = useWeeklyPowerScoreTrends('down', 1);
-  const { data: recapData, isLoading: recapLoading } = useWeeklyRecap();
+  const {
+    data: recapData,
+    isLoading: recapLoading,
+    isError: recapFailed,
+    error: recapError,
+    refetch: refetchRecap,
+  } = useWeeklyRecap();
   const { data: publishedRecap, isLoading: publishedRecapLoading } = usePublishedRecapEdition();
   const { data: confirmationSeason } = useConfirmationSeason();
   const myNextMatch = useMyNextMatch();
@@ -113,6 +132,16 @@ const Index: React.FC = () => {
             ))
           )}
 
+          {heroCardsFailed && (
+            <SectionError
+              title="League announcements"
+              error={heroCardsError}
+              onRetry={() => {
+                void refetchHeroCards();
+              }}
+            />
+          )}
+
           {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
           <div className="hidden md:block">
             <PageTransition animation="fadeIn" immediate>
@@ -145,7 +174,15 @@ const Index: React.FC = () => {
           )}
 
           {/* Team of the Week */}
-          {trendLoading ? (
+          {trendFailed ? (
+            <SectionError
+              title="Team of the Week"
+              error={trendError}
+              onRetry={() => {
+                void refetchTrend();
+              }}
+            />
+          ) : trendLoading ? (
             <TeamOfTheWeekSkeleton />
           ) : hasTeamOfWeek && trendData?.latestWeek ? (
             <PageTransition animation="fadeIn" delay="medium">
@@ -159,7 +196,15 @@ const Index: React.FC = () => {
             falls back to exactly the live card it always showed — which is also
             the rollback path if an edition is unpublished.
           */}
-          {recapLoading || trendLoading || fallerLoading || publishedRecapLoading ? (
+          {recapFailed && !publishedRecap ? (
+            <SectionError
+              title="Weekly recap"
+              error={recapError}
+              onRetry={() => {
+                void refetchRecap();
+              }}
+            />
+          ) : recapLoading || trendLoading || fallerLoading || publishedRecapLoading ? (
             <WeeklyRecapSkeleton />
           ) : publishedRecap ? (
             <PageTransition animation="fadeIn" delay="medium">

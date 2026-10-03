@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useMatchSubmission } from '@/hooks/matches/useMatchSubmission';
 import { invalidateMatchRelatedQueries } from '@/hooks/matches/utils/queryCacheUtils';
 import { useToast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { errorLog, filterLog, scoreLog } from '@/utils/logger';
 
 import { MatchWithTeams } from '../types';
@@ -188,8 +189,7 @@ export const useScoreEntryData = () => {
           }
         } catch (err) {
           errorLog(`Error submitting match ${match.id}:`, err);
-          const rawMessage = err instanceof Error ? err.message : 'Unknown error';
-          const message = `Couldn't save ${getMatchDisplayName(match)} — try again. ${rawMessage}`;
+          const message = `Couldn't save ${getMatchDisplayName(match)}: ${getUIErrorMessage(err)}`;
           addError(match.id, message);
           submissionOutcomes.push({ matchId: match.id, succeeded: false, message });
         }
