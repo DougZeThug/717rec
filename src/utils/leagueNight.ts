@@ -27,3 +27,40 @@ export const nextThursday = (from: Date = new Date()): Date => {
   const daysAway = (THURSDAY - leagueDayOfWeek + 7) % 7;
   return new Date(year, month - 1, day + daysAway, 12, 0, 0, 0);
 };
+
+/** How often a page asks for fresh data while league night is under way. */
+export const LIVE_REFETCH_MS = 60_000;
+
+/** League night runs Thursday evening: when scores are being entered. */
+const LEAGUE_NIGHT_START_HOUR = 16;
+
+const LEAGUE_WEEKDAY_HOUR = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  weekday: 'short',
+  hour: 'numeric',
+  hour12: false,
+});
+
+/**
+ * True from 4 PM on a Thursday, league time, to midnight.
+ *
+ * The league plays its night's matches in the evening, and scores arrive as they
+ * finish. Outside those hours nothing changes minute to minute, so nothing needs
+ * to poll. League time rather than the viewer's, so a visitor anywhere gets the
+ * same answer.
+ */
+export const isLeagueNightNow = (now: Date = new Date()): boolean => {
+  const parts = LEAGUE_WEEKDAY_HOUR.formatToParts(now);
+  const weekday = parts.find((part) => part.type === 'weekday')?.value;
+  // Some ICU builds report midnight as hour 24.
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? NaN) % 24;
+  return weekday === 'Thu' && hour >= LEAGUE_NIGHT_START_HOUR;
+};
+
+/**
+ * `refetchInterval` for data that changes while matches are played: every
+ * minute on league night, never otherwise. TanStack Query already pauses an
+ * interval while the tab is in the background.
+ */
+export const liveRefetchInterval = (): number | false =>
+  isLeagueNightNow() ? LIVE_REFETCH_MS : false;

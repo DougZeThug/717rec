@@ -10,7 +10,8 @@ import { buildBreadcrumbJsonLd } from '@/utils/breadcrumbJsonLd';
 
 const Stats = () => {
   useScrollRestoration('/stats');
-  const { latestMatches, matchesLoading, matchesError } = useRankingsData();
+  const { latestMatches, matchesLoading, matchesError, matchesUpdatedAt, matchesFetching } =
+    useRankingsData();
   const { rankings } = useTeamRankings();
 
   const standingsJsonLd = useMemo(
@@ -55,6 +56,8 @@ const Stats = () => {
         matches={latestMatches || []}
         isLoadingMatches={matchesLoading}
         matchesError={matchesError}
+        matchesUpdatedAt={matchesUpdatedAt}
+        matchesFetching={matchesFetching}
       />
     </PageLayout>
   );

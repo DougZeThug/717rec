@@ -45,7 +45,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 ### UX flows
 
 - [x] 12. No session-expiry message. Expired-token errors read "permission denied". (Step 4)
-- [ ] 13. Standings and Schedule do not refresh on league night. No "last updated". (Step 6)
+- [x] 13. Standings and Schedule do not refresh on league night. No "last updated". Fixed in Step 6: refetch on focus and on mount, a 60-second poll from 4 PM Thursday (league time), and an "Updated 2:41 PM" line with a refresh button on both pages.
 - [x] 14. A failed team fetch shows "Team Not Found". (Step 5)
 - [x] 15. Team page has no "next match" for signed-out visitors. (Step 5)
 
@@ -65,7 +65,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] No retry on History errors. Stats retry skips teams. (Step 7)
 - [ ] Most query failures are silent. (Step 7)
 - [ ] Toasts have no success style. Titles are generic. (Step 8)
-- [ ] Mixed time zones. (Step 6)
+- [~] Mixed time zones. Step 6 labels the always-Eastern event times ("EDT"). Match times stay on the viewer's clock on purpose: the Schedule page groups matches by it, and `formatUTCToLocalTimeString` documents why. Moving every display to Eastern needs a decision about that grouping first.
 - [x] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
 - [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)

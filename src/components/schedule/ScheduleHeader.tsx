@@ -3,6 +3,7 @@ import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { LastUpdated } from '@/components/ui/LastUpdated';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import DateStrip from './DateStrip';
@@ -17,6 +18,10 @@ interface ScheduleHeaderProps {
   matchDates?: Set<string>;
   /** The division and "my team" chips, when the page has any to show. */
   filters?: React.ReactNode;
+  /** When the matches last arrived, and a way to ask again. Omit to hide both. */
+  updatedAt?: number;
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
 }
 
 const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
@@ -26,6 +31,9 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   onDateSelect,
   matchDates = new Set(),
   filters,
+  updatedAt,
+  isRefreshing = false,
+  onRefresh,
 }) => {
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onDateSelect) {
@@ -81,6 +89,10 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
         </div>
 
         {filters}
+
+        {onRefresh && updatedAt !== undefined && (
+          <LastUpdated updatedAt={updatedAt} isRefreshing={isRefreshing} onRefresh={onRefresh} />
+        )}
       </div>
     </header>
   );

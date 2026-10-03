@@ -1,7 +1,12 @@
 import { format } from 'date-fns';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { nextThursday } from '../leagueNight';
+import {
+  isLeagueNightNow,
+  LIVE_REFETCH_MS,
+  liveRefetchInterval,
+  nextThursday,
+} from '../leagueNight';
 import { getLeagueMidnightUtc } from '../timezone';
 
 /**
@@ -69,5 +74,49 @@ describe('nextThursday', () => {
     it('moves to next week once league time is past midnight', () => {
       expect(dayKey(nextThursday(new Date('2026-10-02T04:30:00Z')))).toBe('2026-10-08');
     });
+  });
+});
+
+describe('isLeagueNightNow', () => {
+  // 2026-10-08 is a Thursday.
+  it('is true on Thursday evening in league time', () => {
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 20))).toBe(true);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 16))).toBe(true);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 23))).toBe(true);
+  });
+
+  it('is false on Thursday before the evening', () => {
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 9))).toBe(false);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 15))).toBe(false);
+  });
+
+  it('is false on other days, even in the evening', () => {
+    expect(isLeagueNightNow(leagueTime(2026, 10, 7, 20))).toBe(false);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 9, 20))).toBe(false);
+  });
+
+  it('is false once league time is past midnight, even though a UTC clock still says Thursday', () => {
+    // 2026-10-09 03:30 UTC is 11:30 PM Thursday in league time (EDT)...
+    expect(isLeagueNightNow(new Date('2026-10-09T03:30:00Z'))).toBe(true);
+    // ...and 04:30 UTC is 12:30 AM Friday.
+    expect(isLeagueNightNow(new Date('2026-10-09T04:30:00Z'))).toBe(false);
+  });
+});
+
+describe('liveRefetchInterval', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('polls every minute on league night', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(leagueTime(2026, 10, 8, 20));
+    expect(liveRefetchInterval()).toBe(LIVE_REFETCH_MS);
+  });
+
+  it('does not poll at any other time', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(leagueTime(2026, 10, 6, 20));
+    expect(liveRefetchInterval()).toBe(false);
   });
 });

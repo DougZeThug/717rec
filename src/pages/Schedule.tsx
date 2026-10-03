@@ -120,6 +120,8 @@ const Schedule = () => {
     matchesError,
     matchesErrorMessage,
     refetchMatches,
+    matchesUpdatedAt,
+    matchesFetching,
     upcomingMatches,
     completedMatches,
   } = useScheduleData();
@@ -397,6 +399,11 @@ const Schedule = () => {
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           matchDates={scheduleDates}
+          updatedAt={matchesUpdatedAt}
+          isRefreshing={matchesFetching}
+          onRefresh={() => {
+            void refetchMatches();
+          }}
           filters={
             <ScheduleFilters
               options={divisionOptions}

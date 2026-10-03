@@ -20,6 +20,8 @@ const formatTime = (isoString: string) => {
     hour: 'numeric',
     minute: '2-digit',
     timeZone: 'America/New_York',
+    // "EDT"/"EST": event times are always Lancaster time, wherever you are.
+    timeZoneName: 'short',
   });
 };
 
