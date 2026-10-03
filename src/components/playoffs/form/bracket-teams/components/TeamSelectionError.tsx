@@ -21,7 +21,7 @@ export const TeamSelectionError: React.FC<TeamSelectionErrorProps> = ({
   return (
     <Card className="border-destructive/50">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-destructive">
+        <CardTitle className="flex items-center gap-2 text-destructive-text">
           <AlertCircle className="size-5" />
           Error Loading Teams
         </CardTitle>

@@ -143,7 +143,7 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
         )}
 
         {validation.errorMessage && (
-          <div className="p-3 bg-destructive/10 text-destructive rounded-lg border border-destructive/20">
+          <div className="p-3 bg-destructive/10 text-destructive-text rounded-lg border border-destructive/20">
             {validation.errorMessage}
           </div>
         )}

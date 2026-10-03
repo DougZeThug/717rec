@@ -22,7 +22,7 @@ const placeLabels = ['🥇 1st', '🥈 2nd', '🥉 3rd'];
  */
 const MetadataBlockedNotice: React.FC<{ error: string }> = ({ error }) => (
   <div className="bg-card rounded-lg border p-4">
-    <p className="text-sm text-destructive">{error}.</p>
+    <p className="text-sm text-destructive-text">{error}.</p>
     <p className="mt-1 text-xs text-muted-foreground">
       Fix &quot;Extra Data (JSON)&quot; under Advanced Settings to edit this section.
     </p>
@@ -116,7 +116,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={() => removeWeek(weekIndex)}
-                className="text-destructive hover:text-destructive size-8 p-0"
+                className="text-destructive-text hover:text-destructive-text size-8 p-0"
                 aria-label={`Remove week ${weekData.week}`}
               >
                 <Trash2 className="size-4" />
@@ -142,7 +142,7 @@ export const EventWinnersEditor: React.FC<FormSectionProps> = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => removeWinner(weekIndex, winnerIndex)}
-                  className="text-destructive hover:text-destructive size-8 p-0 shrink-0"
+                  className="text-destructive-text hover:text-destructive-text size-8 p-0 shrink-0"
                   aria-label="Remove winner"
                 >
                   <Trash2 className="size-3" />

@@ -50,7 +50,7 @@ const NotificationActions: React.FC<{
       type="button"
       variant="ghost"
       size="icon"
-      className="size-8 text-muted-foreground hover:text-destructive"
+      className="size-8 text-muted-foreground hover:text-destructive-text"
       onClick={onDelete}
       disabled={isDeleting}
       aria-label="Delete notification"

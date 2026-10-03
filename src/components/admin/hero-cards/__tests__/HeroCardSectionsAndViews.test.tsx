@@ -178,7 +178,7 @@ describe('hero cards sections/views', () => {
     await userEvent.click(screen.getByRole('button', { name: /Add Week/i }));
     const removeButtons = screen
       .getAllByRole('button')
-      .filter((button) => button.className.includes('text-destructive'));
+      .filter((button) => button.className.includes('text-destructive-text'));
     await userEvent.click(removeButtons[0]);
     expect(onChange).toHaveBeenCalledWith('metadata', expect.stringContaining('past_winners'));
   });

@@ -80,7 +80,7 @@ const LiveCorrectionsSection: React.FC = () => {
         <LoadingState variant="section" message="Loading live-scored matches…" />
       )}
       {filters.error && (
-        <p className="text-sm text-destructive" role="alert">
+        <p className="text-sm text-destructive-text" role="alert">
           Failed to load matches.
         </p>
       )}

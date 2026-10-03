@@ -130,7 +130,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
               {analysis.isValid ? (
                 <CheckCircle2 className="size-4 text-green-500" />
               ) : (
-                <AlertCircle className="size-4 text-destructive" />
+                <AlertCircle className="size-4 text-destructive-text" />
               )}
             </div>
             <ChevronDown className={`size-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />

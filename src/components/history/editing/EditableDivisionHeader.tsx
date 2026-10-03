@@ -88,7 +88,7 @@ const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
               className={cn('h-9', error && 'border-destructive')}
               placeholder="Division name"
             />
-            {error && <p className="text-destructive text-xs mt-1">{error}</p>}
+            {error && <p className="text-destructive-text text-xs mt-1">{error}</p>}
           </div>
           <Button variant="ghost" size="icon" className="size-8" onClick={handleSaveEdit}>
             <Check className="size-4 text-green-600" />
@@ -130,7 +130,7 @@ const EditableDivisionHeader: React.FC<EditableDivisionHeaderProps> = ({
                       className={cn(
                         'size-4',
                         canRemove
-                          ? 'text-destructive hover:text-destructive'
+                          ? 'text-destructive-text hover:text-destructive-text'
                           : 'text-muted-foreground/50'
                       )}
                     />

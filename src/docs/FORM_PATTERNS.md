@@ -81,7 +81,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name <span className="text-destructive">*</span></FormLabel>
+              <FormLabel>Name <span className="text-destructive-text">*</span></FormLabel>
               <FormControl>
                 <Input placeholder="Enter name" {...field} />
               </FormControl>
@@ -95,7 +95,7 @@ const MyForm = ({ onSuccess, onCancel }) => {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email <span className="text-destructive">*</span></FormLabel>
+              <FormLabel>Email <span className="text-destructive-text">*</span></FormLabel>
               <FormControl>
                 <Input type="email" placeholder="Enter email" {...field} />
               </FormControl>

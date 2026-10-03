@@ -267,7 +267,9 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
       )}
 
       {/* Display validation message */}
-      {validation.message && <div className="text-sm text-destructive">{validation.message}</div>}
+      {validation.message && (
+        <div className="text-sm text-destructive-text">{validation.message}</div>
+      )}
     </div>
   );
 };

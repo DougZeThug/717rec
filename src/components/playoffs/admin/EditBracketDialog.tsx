@@ -48,7 +48,9 @@ const NameField = ({ value, onChange }: { value: string; onChange: (value: strin
       onChange={(e) => onChange(e.target.value)}
       placeholder="Bracket name"
     />
-    {!value.trim() && <p className="text-sm text-destructive">Enter a name for the bracket.</p>}
+    {!value.trim() && (
+      <p className="text-sm text-destructive-text">Enter a name for the bracket.</p>
+    )}
   </div>
 );
 

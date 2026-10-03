@@ -56,7 +56,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
           disabled={isSubmitting}
           className={emailError ? 'border-red-500' : ''}
         />
-        {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+        {emailError && <p className="text-sm text-destructive-text">{emailError}</p>}
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
@@ -80,7 +80,7 @@ const AuthForm: React.FC<AuthFormProps> = ({
           disabled={isSubmitting}
           className={passwordError ? 'border-red-500' : ''}
         />
-        {passwordError && <p className="text-sm text-destructive">{passwordError}</p>}
+        {passwordError && <p className="text-sm text-destructive-text">{passwordError}</p>}
       </div>
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? (

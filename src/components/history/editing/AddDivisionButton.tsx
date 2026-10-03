@@ -82,7 +82,7 @@ const AddDivisionButton: React.FC<AddDivisionButtonProps> = ({
               className={cn('h-9', error && 'border-destructive')}
               placeholder="Enter division name (e.g., Intermediate 2)"
             />
-            {error && <p className="text-destructive text-xs mt-1">{error}</p>}
+            {error && <p className="text-destructive-text text-xs mt-1">{error}</p>}
           </div>
           <Button variant="default" size="icon" className="size-9" onClick={handleSave}>
             <Check className="size-4" />

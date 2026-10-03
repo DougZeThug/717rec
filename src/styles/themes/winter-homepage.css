@@ -44,10 +44,11 @@
   /* Destructive */
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  
+  --destructive-text: 0 84% 68%; /* 6.3:1 on the winter page */
+
   /* Borders - Subtle frost */
   --border: 220 30% 22%;
-  --input: 222 30% 18%;
+  --input: 222 20% 45%; /* 3.5:1 on the winter page */
   --ring: 199 89% 62%;
   
   /* Winter-specific tokens - STRONGER */

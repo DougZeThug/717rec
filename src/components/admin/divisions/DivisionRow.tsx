@@ -223,7 +223,7 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         onClick={() => setConfirmDelete(true)}
         disabled={isHidden}
         title={isHidden ? 'Hidden divisions cannot be deleted' : undefined}
-        className="text-destructive hover:text-destructive flex-1 md:flex-none"
+        className="text-destructive-text hover:text-destructive-text flex-1 md:flex-none"
         aria-label={`Delete division ${division.name}`}
       >
         <Trash2 className="size-4" />

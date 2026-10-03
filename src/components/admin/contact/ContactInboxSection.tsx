@@ -312,7 +312,7 @@ const ContactInboxSection: React.FC = () => {
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive-text"
                         onClick={() => setPendingDelete(item)}
                         disabled={remove.isPending}
                       >

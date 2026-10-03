@@ -18,8 +18,13 @@
   --accent-foreground: 222.2 47.4% 11.2%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
+  /* For red TEXT and icons. --destructive is a fill colour: as text it is only
+     3.8:1 on white here, and in the dark themes it is about 2:1. */
+  --destructive-text: 0 72% 51%; /* 4.8:1 on white */
   --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  /* Form-field outlines need 3:1 against the page (WCAG 1.4.11). The old value
+     matched --border and measured 1.2:1. */
+  --input: 214 15% 55%; /* 3.5:1 on white */
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
   
@@ -73,8 +78,9 @@
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
+  --destructive-text: 0 84% 68%; /* 6.6:1 on the dark page */
   --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+  --input: 240 4% 40%; /* 3.3:1 on the dark page */
   --ring: 240 4.9% 83.9%;
   
   /* Custom color values for status indicators - dark mode */

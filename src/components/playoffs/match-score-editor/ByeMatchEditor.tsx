@@ -120,7 +120,7 @@ const ByeStatusControl: React.FC<{
       <div className="text-xs text-muted-foreground">
         {byeEligible.currentStatus === 4 ? (
           <div className="space-y-1">
-            <p className="text-destructive font-medium">
+            <p className="text-destructive-text font-medium">
               ⚠️ This match is marked as Completed but has no winner (zombie state).
             </p>
             <p>
@@ -247,7 +247,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
             className="w-full"
           />
           {byeEligible && byeEligible.currentStatus !== 2 && (
-            <p className="text-xs text-destructive">
+            <p className="text-xs text-destructive-text">
               Match is {byeEligible.statusName}. Use the status toggle above to unlock.
             </p>
           )}

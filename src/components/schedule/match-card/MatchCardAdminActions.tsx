@@ -54,7 +54,10 @@ export const MatchCardAdminActions: React.FC<MatchCardAdminActionsProps> = ({
           aria-label={isCompleted ? 'Permanently delete completed match' : 'Delete match'}
         >
           <Trash2
-            className={cn('size-3.5', isCompleted ? 'text-destructive' : 'text-muted-foreground')}
+            className={cn(
+              'size-3.5',
+              isCompleted ? 'text-destructive-text' : 'text-muted-foreground'
+            )}
           />
         </button>
       )}

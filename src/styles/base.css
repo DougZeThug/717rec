@@ -8,6 +8,15 @@
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
+
+  /* Tell the browser which scheme the page uses, so scrollbars, date pickers,
+     autofill and form controls match it. */
+  color-scheme: light;
+}
+
+.dark,
+.winter-frozen {
+  color-scheme: dark;
 }
 
 /* Theme transition for smooth theme switching */

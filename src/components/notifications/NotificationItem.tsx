@@ -53,7 +53,7 @@ const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }
           type="button"
           variant="ghost"
           size="icon"
-          className="size-7 shrink-0 text-muted-foreground hover:text-destructive"
+          className="size-7 shrink-0 text-muted-foreground hover:text-destructive-text"
           onClick={() => del.mutate(notification.id)}
           disabled={del.isPending}
           aria-label="Delete notification"

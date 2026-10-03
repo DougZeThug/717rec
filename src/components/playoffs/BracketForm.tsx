@@ -261,7 +261,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
           )}
 
         {seedProblem && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-destructive-text">
             {seedProblem}
           </p>
         )}

@@ -31,7 +31,7 @@ const HistoryPageContent: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <AlertTriangle className="size-12 text-destructive mx-auto mb-4" />
+            <AlertTriangle className="size-12 text-destructive-text mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load season history</h3>
             <p className="text-muted-foreground">
               {error instanceof Error

@@ -152,7 +152,7 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleSignOut}
-          className="cursor-pointer text-destructive focus:text-destructive"
+          className="cursor-pointer text-destructive-text focus:text-destructive-text"
         >
           <LogOut className="size-4 mr-2" />
           Logout

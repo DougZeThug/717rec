@@ -58,7 +58,7 @@ const PasswordField: React.FC<PasswordFieldProps> = ({
       className={error ? 'border-red-500' : ''}
     />
     {error && (
-      <p id={`${id}-error`} className="text-sm text-destructive">
+      <p id={`${id}-error`} className="text-sm text-destructive-text">
         {error}
       </p>
     )}

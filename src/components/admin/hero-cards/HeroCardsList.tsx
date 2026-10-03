@@ -249,7 +249,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
             label="Delete card"
             onClick={() => setDeletingCardId(card.id)}
             disabled={isDeleting}
-            className="text-destructive hover:text-destructive"
+            className="text-destructive-text hover:text-destructive-text"
           />
         </div>
       ),

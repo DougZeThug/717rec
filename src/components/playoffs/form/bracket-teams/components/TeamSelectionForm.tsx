@@ -188,7 +188,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
   // Calculate status color and icon
   const getStatusDisplay = () => {
     if (safeFormState.hasError) {
-      return { color: 'text-destructive', icon: AlertCircle };
+      return { color: 'text-destructive-text', icon: AlertCircle };
     }
     if (safeFormState.hasWarning) {
       return { color: 'text-yellow-600', icon: AlertCircle };
@@ -295,7 +295,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
 
               {/* Error/Warning messages */}
               {safeFormState.errorMessage && (
-                <div className="text-sm text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
+                <div className="text-sm text-destructive-text bg-destructive/10 p-2 rounded border border-destructive/20">
                   {safeFormState.errorMessage}
                 </div>
               )}

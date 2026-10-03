@@ -290,8 +290,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
         {dialogError && (
           <div className="mb-4 p-4 border border-destructive rounded-lg bg-destructive/10">
-            <p className="text-sm text-destructive font-medium">Error Details:</p>
-            <p className="text-sm text-destructive mt-1">{dialogError}</p>
+            <p className="text-sm text-destructive-text font-medium">Error Details:</p>
+            <p className="text-sm text-destructive-text mt-1">{dialogError}</p>
           </div>
         )}
 

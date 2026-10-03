@@ -42,7 +42,7 @@ const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
       ? 'text-muted-foreground'
       : dpr >= 0
         ? 'text-emerald-600 dark:text-emerald-400'
-        : 'text-destructive';
+        : 'text-destructive-text';
   const dprLabel = dpr === null ? '–' : `${dpr >= 0 ? '+' : ''}${dpr.toFixed(2)}`;
 
   return (

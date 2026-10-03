@@ -10,7 +10,7 @@ import { UpsetTag } from '../UpsetTag';
 const statusPillClasses: Record<Exclude<MatchStatus, 'scheduled'>, string> = {
   completed: 'bg-primary/10 text-primary',
   postponed: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-  canceled: 'bg-destructive/10 text-destructive',
+  canceled: 'bg-destructive/10 text-destructive-text',
 };
 
 interface MatchCardStatusBadgeProps {

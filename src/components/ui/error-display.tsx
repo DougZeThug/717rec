@@ -48,10 +48,10 @@ export function ErrorDisplay({
         role="alert"
         aria-live="assertive"
       >
-        <AlertCircle className="size-10 text-destructive" aria-hidden="true" />
+        <AlertCircle className="size-10 text-destructive-text" aria-hidden="true" />
         <div className="text-center">
           {context && <p className="text-sm text-muted-foreground mb-1">{context}</p>}
-          <p className="text-destructive font-medium">{error}</p>
+          <p className="text-destructive-text font-medium">{error}</p>
         </div>
         {onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">

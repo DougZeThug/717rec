@@ -16,7 +16,7 @@ export const gradients = {
   // Button gradients
   button: {
     primary:
-      'bg-gradient-to-br from-cornhole-navy to-cornhole-navy/90 hover:from-cornhole-navy/90 hover:to-cornhole-navy/80',
+      'bg-gradient-to-br from-cornhole-navy to-cornhole-navy/90 hover:from-cornhole-navy/90 hover:to-cornhole-navy/80 text-white',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
     blue: 'bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 dark:from-blue-700 dark:to-blue-800',
     green:

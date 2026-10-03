@@ -59,7 +59,7 @@ export const LockableField: React.FC<LockableFieldProps> = ({
       className={cn('mt-1', locked && 'bg-muted/50')}
     />
     {error && (
-      <p id={`${id}-error`} className="mt-1 text-sm text-destructive">
+      <p id={`${id}-error`} className="mt-1 text-sm text-destructive-text">
         {error}
       </p>
     )}

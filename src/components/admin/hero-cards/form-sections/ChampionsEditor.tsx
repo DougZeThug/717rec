@@ -27,7 +27,7 @@ import { FormSectionProps } from './types';
  */
 const MetadataBlockedNotice: React.FC<{ error: string }> = ({ error }) => (
   <div className="bg-card rounded-lg border p-4">
-    <p className="text-sm text-destructive">{error}.</p>
+    <p className="text-sm text-destructive-text">{error}.</p>
     <p className="mt-1 text-xs text-muted-foreground">
       Fix &quot;Extra Data (JSON)&quot; under Advanced Settings to edit this section.
     </p>

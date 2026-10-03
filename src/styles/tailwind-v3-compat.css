@@ -3,13 +3,17 @@
    Imported right after Tailwind's Preflight in index.css, so these rules win
    ties against styles/base.css exactly as v3 Preflight did. */
 
-/* v3 gave every border a gray-200 colour; v4 uses currentcolor. */
+/* v3 gave every border a gray-200 colour; v4 uses currentcolor.
+
+   This reads the theme's --border (light: nearly gray-200) instead of a fixed
+   gray-200. A fixed colour turned every plain `border` bright white-grey in the
+   dark and winter themes, because this rule wins over base.css. */
 *,
 ::after,
 ::before,
 ::backdrop,
 ::file-selector-button {
-  border-color: var(--color-gray-200, currentcolor);
+  border-color: hsl(var(--border));
 }
 
 /* v3 placeholders were gray-400; v4 uses the text colour at 50%. */

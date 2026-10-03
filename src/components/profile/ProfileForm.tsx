@@ -170,7 +170,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                First Name <span className="text-destructive">*</span>
+                First Name <span className="text-destructive-text">*</span>
               </FormLabel>
               <div className="relative">
                 <FormControl>
@@ -181,7 +181,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                     {usernameAvailable === true ? (
                       <CheckCircle2 className="size-5 text-green-500" aria-hidden="true" />
                     ) : usernameAvailable === false ? (
-                      <AlertCircle className="size-5 text-destructive" aria-hidden="true" />
+                      <AlertCircle className="size-5 text-destructive-text" aria-hidden="true" />
                     ) : null}
                   </div>
                 )}

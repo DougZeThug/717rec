@@ -80,7 +80,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             <DialogTitle>Error</DialogTitle>
           </DialogHeader>
           <div className="p-4">
-            <p className="text-destructive">Failed to load match data. Please try again.</p>
+            <p className="text-destructive-text">Failed to load match data. Please try again.</p>
           </div>
         </DialogContent>
       </Dialog>

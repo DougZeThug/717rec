@@ -204,7 +204,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                 ))}
               </div>
               {!field.value && (
-                <p className="text-sm text-destructive">Please select a time slot</p>
+                <p className="text-sm text-destructive-text">Please select a time slot</p>
               )}
               <FormMessage />
             </FormItem>

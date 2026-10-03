@@ -95,7 +95,7 @@ const ForgotPassword: React.FC = () => {
                 disabled={isSubmitting}
                 className={emailError ? 'border-red-500' : ''}
               />
-              {emailError && <p className="text-sm text-destructive">{emailError}</p>}
+              {emailError && <p className="text-sm text-destructive-text">{emailError}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (

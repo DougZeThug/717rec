@@ -103,7 +103,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
         </div>
       )}
       {hasError && !isSubmitting && (
-        <div className="flex items-center gap-2 text-sm text-destructive">
+        <div className="flex items-center gap-2 text-sm text-destructive-text">
           <AlertCircle className="size-4" />
           <span>Submission failed - please retry</span>
         </div>
@@ -123,7 +123,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="size-7 text-muted-foreground hover:text-destructive shrink-0"
+              className="size-7 text-muted-foreground hover:text-destructive-text shrink-0"
               onClick={() => {
                 onDelete(realMatchId);
               }}

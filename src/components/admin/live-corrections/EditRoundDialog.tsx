@@ -311,7 +311,7 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
         </div>
 
         {!validation.ok && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-sm text-destructive-text" role="alert">
             {validation.message}
           </p>
         )}

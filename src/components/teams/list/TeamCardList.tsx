@@ -97,7 +97,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
                 {isAdminAccessGranted && onDelete && (
                   <DropdownMenuItem
                     onClick={() => onDelete(team.id)}
-                    className="text-destructive focus:text-destructive cursor-pointer"
+                    className="text-destructive-text focus:text-destructive-text cursor-pointer"
                   >
                     <Trash2 className="mr-2 size-4" /> Delete
                   </DropdownMenuItem>

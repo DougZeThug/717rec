@@ -229,7 +229,7 @@ const BracketsViewerComponentInner: React.FC<BracketsViewerComponentProps> = ({
               role="alert"
               className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background text-center p-8"
             >
-              <p className="text-lg text-destructive">Error loading bracket: {error}</p>
+              <p className="text-lg text-destructive-text">Error loading bracket: {error}</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Please ensure brackets-viewer is properly installed and loaded.
               </p>

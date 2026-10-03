@@ -183,7 +183,7 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
               disabled={action.disabled}
               className={cn(
                 'cursor-pointer',
-                action.destructive && 'text-destructive focus:text-destructive'
+                action.destructive && 'text-destructive-text focus:text-destructive-text'
               )}
             >
               <ActionIcon action={action} />

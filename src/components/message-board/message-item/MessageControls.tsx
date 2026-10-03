@@ -64,7 +64,7 @@ const MessageControls: React.FC<MessageControlsProps> = ({
               setShowOptions(false);
             }}
           >
-            <Trash2 className="size-4 text-destructive hover:text-destructive/80 cursor-pointer" />
+            <Trash2 className="size-4 text-destructive-text hover:text-destructive-text/80 cursor-pointer" />
           </button>
         </div>
       )}

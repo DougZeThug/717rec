@@ -99,7 +99,7 @@ export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = (
               aria-describedby={metadataError ? 'metadata-error' : undefined}
             />
             {metadataError && (
-              <p id="metadata-error" className="mt-1 text-sm text-destructive">
+              <p id="metadata-error" className="mt-1 text-sm text-destructive-text">
                 {metadataError}. The card cannot be saved until this is fixed.
               </p>
             )}

@@ -123,7 +123,7 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Your Name <span className="text-destructive">*</span>
+                    Your Name <span className="text-destructive-text">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input placeholder="Enter your name" {...field} />
@@ -153,7 +153,7 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Score Report <span className="text-destructive">*</span>
+                    Score Report <span className="text-destructive-text">*</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea

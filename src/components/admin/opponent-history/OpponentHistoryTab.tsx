@@ -214,7 +214,7 @@ const OpponentHistoryTab: React.FC = () => {
   if (error) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-destructive">
+        <CardContent className="py-8 text-center text-destructive-text">
           Error loading opponent history. Please try again.
         </CardContent>
       </Card>
