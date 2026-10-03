@@ -4694,6 +4694,140 @@ export type Database = {
         }
         Relationships: []
       }
+      team_division_history: {
+        Row: {
+          changed_at: string
+          division_id: string
+          id: string
+          team_id: string
+        }
+        Insert: {
+          changed_at?: string
+          division_id: string
+          id?: string
+          team_id: string
+        }
+        Update: {
+          changed_at?: string
+          division_id?: string
+          id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_division_history_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_division_history_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "v_division_rateable"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_division_history_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_current_division"
+            referencedColumns: ["division_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_last_known_division"
+            referencedColumns: ["division_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_counter_drift"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team1_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_pending_matches"
+            referencedColumns: ["team2_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_current_division"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_details_with_season"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_game_totals"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_match_stats"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_power_scores"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_team_strength_of_schedule"
+            referencedColumns: ["team_id"]
+          },
+          {
+            foreignKeyName: "team_division_history_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "v_visible_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_memberships: {
         Row: {
           approved_at: string | null
