@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -83,7 +83,7 @@ describe('admin route gating', () => {
     window.history.replaceState({}, '', '/admin');
   });
 
-  it('redirects an authenticated non-admin away from /admin without rendering the dashboard', async () => {
+  it('keeps an authenticated non-admin on /admin with an explanation, not the dashboard', async () => {
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1', email: 'player@example.com' },
       authInitialized: true,
@@ -101,8 +101,8 @@ describe('admin route gating', () => {
 
     render(<App />);
 
-    await waitFor(() => expect(window.location.pathname).toBe('/'));
-    expect(await screen.findByRole('heading', { name: /home page/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Admins only' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/admin');
     expect(screen.queryByRole('heading', { name: /admin dashboard/i })).not.toBeInTheDocument();
   });
 
@@ -131,7 +131,7 @@ describe('admin route gating', () => {
 
   // Each section is its own address, so the guard has to cover them all and not
   // just the bare /admin it was written for.
-  it('renders a section address for an admin and turns a non-admin away', async () => {
+  it('renders a section address for an admin and explains to a non-admin', async () => {
     window.history.replaceState({}, '', '/admin/pending-matches');
     mockUseAuth.mockReturnValue({
       user: { id: 'admin-1', email: 'admin@example.com' },
@@ -172,7 +172,8 @@ describe('admin route gating', () => {
 
     render(<App />);
 
-    await waitFor(() => expect(window.location.pathname).toBe('/'));
+    expect(await screen.findByRole('heading', { name: 'Admins only' })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/admin/pending-matches');
     expect(screen.queryByRole('heading', { name: /admin dashboard/i })).not.toBeInTheDocument();
   });
   it('keeps an admin on /admin with a retry card when the profile failed to load', async () => {

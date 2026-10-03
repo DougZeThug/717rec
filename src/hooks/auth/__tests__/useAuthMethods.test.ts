@@ -57,7 +57,8 @@ describe('useAuthMethods', () => {
 
     expect(response.user).toEqual({ id: 'u1' });
     expect(ensureThemeConsistency).toHaveBeenCalled();
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Welcome back!' }));
+    // The page changing is the confirmation; only failures speak.
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
   it('tells a signed-in new account it is signed in, not to check its email', async () => {
@@ -115,6 +116,7 @@ describe('useAuthMethods', () => {
 
     await result.current.signOut();
     expect(navigate).toHaveBeenCalledWith('/');
+    expect(mockToast).not.toHaveBeenCalled();
 
     mockSignOutUser.mockRejectedValueOnce(new Error('network gone'));
     rerender();

@@ -30,12 +30,14 @@ vi.mock('@/utils/logger', () => ({
 
 // Mock Navigate component to track redirects
 const mockNavigate = vi.fn();
+const mockNavigateState = vi.fn();
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return {
     ...actual,
-    Navigate: ({ to }: { to: string }) => {
+    Navigate: ({ to, state }: { to: string; state?: unknown }) => {
       mockNavigate(to);
+      mockNavigateState(state);
       return <div data-testid="navigate">{`Redirecting to ${to}`}</div>;
     },
   };
@@ -97,7 +99,7 @@ describe('ProtectedAdminRoute', () => {
     });
   });
 
-  it('redirects non-admin users to home page', async () => {
+  it('keeps a non-admin on a page that explains why, with no toast and no redirect', async () => {
     mockUseAuth.mockReturnValue({
       user: { id: 'user-1', email: 'user@test.com' },
       authInitialized: true,
@@ -113,18 +115,42 @@ describe('ProtectedAdminRoute', () => {
     render(
       <MemoryRouter>
         <ProtectedAdminRoute>
+          <div data-testid="admin-content">Admin Content</div>
+        </ProtectedAdminRoute>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Admins only' })).toBeInTheDocument();
+    expect(screen.getByText(/user@test\.com/)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'Contact the league' })).toHaveAttribute(
+      'href',
+      '/contact'
+    );
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(vi.mocked(toast)).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('admin-content')).not.toBeInTheDocument();
+  });
+
+  it('sends a signed-out visitor to sign in, remembering the whole address', async () => {
+    mockUseAuth.mockReturnValue({ user: null, authInitialized: true, profile: null });
+    mockUseAdminAccess.mockReturnValue({
+      isAdminAccessGranted: false,
+      accessCheckFailed: false,
+      retryAccessCheck: vi.fn(),
+      isLoading: false,
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/admin/scores?week=3#row-9']}>
+        <ProtectedAdminRoute>
           <div>Admin Content</div>
         </ProtectedAdminRoute>
       </MemoryRouter>
     );
 
-    // Wait for the initial check timeout (1 second in the component)
-    await waitFor(
-      () => {
-        expect(screen.getByText('Redirecting to /')).toBeInTheDocument();
-      },
-      { timeout: 2000 }
-    );
+    expect(await screen.findByText('Redirecting to /auth')).toBeInTheDocument();
+    expect(mockNavigateState).toHaveBeenCalledWith({ returnTo: '/admin/scores?week=3#row-9' });
   });
 
   it('renders children for admin users', async () => {

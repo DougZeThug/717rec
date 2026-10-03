@@ -169,7 +169,7 @@ describe('Auth page', () => {
       </MemoryRouter>
     );
 
-    expect(mockNavigate).toHaveBeenCalledWith('/');
+    expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true });
   });
 
   it('does not redirect when auth is not yet initialized', () => {

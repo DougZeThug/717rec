@@ -44,7 +44,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 ### UX flows
 
-- [ ] 12. No session-expiry message. Expired-token errors read "permission denied". (Step 4)
+- [x] 12. No session-expiry message. Expired-token errors read "permission denied". (Step 4)
 - [ ] 13. Standings and Schedule do not refresh on league night. No "last updated". (Step 6)
 - [ ] 14. A failed team fetch shows "Team Not Found". (Step 5)
 - [ ] 15. Team page has no "next match" for signed-out visitors. (Step 5)
@@ -66,7 +66,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Most query failures are silent. (Step 7)
 - [ ] Toasts have no success style. Titles are generic. (Step 8)
 - [ ] Mixed time zones. (Step 6)
-- [ ] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
+- [x] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
 - [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
 - [ ] Placeholder-only inputs. (Backlog)
@@ -85,7 +85,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Logo `alt` repeats the adjacent team name. (Step 11)
 - [ ] `focus:` rings instead of `focus-visible:`. (Backlog)
 - [ ] Auth wording: Login / Sign In / Sign Up mixed. (Step 8)
-- [ ] Misleading copy ("An administrator has been notified"). (Step 4)
+- [x] Misleading copy ("An administrator has been notified"). (Step 4)
 - [ ] Stale examples ("Spring 2025"). (Step 8)
 - [ ] Thursday-only date picker. `datetime-local` uses the browser zone. (Backlog)
 - [ ] "Go Home" does a full page reload. (Backlog)

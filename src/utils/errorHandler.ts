@@ -118,6 +118,8 @@ export function convertErrorToString(error: unknown): string | null {
 /** Shown whenever we have nothing safe and specific to tell the user. */
 const GENERIC_REASON = 'Something went wrong. Please try again.';
 const PERMISSION_REASON = 'You do not have permission to do this.';
+/** PGRST301 is a bad or expired login token, not a missing right. */
+export const SESSION_EXPIRED_REASON = 'Your session has expired. Please sign in again.';
 
 /**
  * Postgres/PostgREST codes we can translate into something a league admin can
@@ -141,7 +143,7 @@ const POSTGRES_REASONS: Record<string, string> = {
   '23503': "This is still linked to other records, so it can't be changed yet.",
   '23514': "Some of those values aren't allowed. Check the form and try again.",
   '42501': PERMISSION_REASON,
-  PGRST301: PERMISSION_REASON,
+  PGRST301: SESSION_EXPIRED_REASON,
   PGRST116: 'That record no longer exists. Refresh and try again.',
 };
 

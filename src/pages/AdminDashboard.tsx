@@ -1,6 +1,6 @@
 import { m } from 'framer-motion';
 import React, { useEffect } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router';
 
 import { AdminAccessModal } from '@/components/admin/AdminAccessModal';
 import {
@@ -10,13 +10,13 @@ import {
 import AdminSidebar from '@/components/admin/dashboard/AdminSidebar';
 import { useAuth } from '@/contexts/auth-context';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
-import { toast } from '@/hooks/useToast';
 import { readRememberedAdminSection, rememberAdminSection } from '@/utils/adminTabs';
 
 const AdminDashboard = () => {
   const { isAdminAccessGranted, requestAdminAccess, isLoading } = useAdminAccess();
   const { user, authInitialized } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { section } = useParams<{ section?: string }>();
   const openSection = isAdminSectionId(section) ? section : null;
 
@@ -31,9 +31,11 @@ const AdminDashboard = () => {
   // Redirect users who aren't logged in to the auth page
   useEffect(() => {
     if (authInitialized && !user) {
-      navigate('/auth', { state: { returnTo: '/admin' } });
+      navigate('/auth', {
+        state: { returnTo: `${location.pathname}${location.search}${location.hash}` },
+      });
     }
-  }, [user, authInitialized, navigate]);
+  }, [user, authInitialized, navigate, location.pathname, location.search, location.hash]);
 
   // Show loading state if still checking auth or admin status
   if (isLoading || !authInitialized) {
@@ -52,13 +54,9 @@ const AdminDashboard = () => {
     return (
       <AdminAccessModal
         isOpen={true}
-        onRequestAccess={() => {
-          requestAdminAccess();
-          toast({
-            title: 'Access requested',
-            description: 'An administrator has been notified of your request.',
-          });
-        }}
+        // requestAdminAccess shows its own message. No admin is notified: there
+        // is no request feature yet, so it says to contact one.
+        onRequestAccess={requestAdminAccess}
       />
     );
   }

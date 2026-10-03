@@ -79,7 +79,9 @@ const Auth = () => {
     // Only redirect if authentication check has completed
     if (authInitialized && user) {
       authLog('User already logged in, redirecting to:', returnTo);
-      navigate(returnTo);
+      // replace: Back from the page we land on should not return to the sign-in
+      // page, which would only send the person forward again.
+      navigate(returnTo, { replace: true });
     }
   }, [user, navigate, returnTo, authInitialized]);
 
