@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS public.power_score_floor_ddl_backup;
+DROP TABLE IF EXISTS public.power_score_rollout_ddl_backup;
+DROP TABLE IF EXISTS public.team_details_pre_career_split;
+DROP TABLE IF EXISTS public.team_details_pre_floor_adjustment;
+DROP TABLE IF EXISTS public.team_details_pre_power_rollout;
+DROP TABLE IF EXISTS public.team_season_stats_pre_career_split;
+DROP TABLE IF EXISTS public.team_season_stats_pre_division_history;
+DROP TABLE IF EXISTS public.team_season_stats_pre_floor_adjustment;
+DROP TABLE IF EXISTS public.team_season_stats_pre_power_rollout;
