@@ -31,8 +31,15 @@
 
 @plugin 'tailwindcss-animate';
 
-/* v3 `darkMode: ['class']`. */
-@custom-variant dark (&:is(.dark *));
+/* v3 `darkMode: ['class']`.
+
+   The winter theme is a dark surface (a deep navy page, light text), but
+   next-themes can set only one class on <html>, so it never got `.dark` and
+   every `dark:` utility was skipped there. The winter stylesheet patched that
+   over with a long list of `!important` remaps. Treating `.winter-frozen` as
+   dark too makes the same utilities apply, so a new `dark:` class works in
+   winter with no extra override. */
+@custom-variant dark (&:is(.dark *, .winter-frozen *));
 
 /* v4 applies `hover:` only on devices with a mouse. Keep the v3 behaviour, so
    hover-only controls (for example the comment actions) still appear when a

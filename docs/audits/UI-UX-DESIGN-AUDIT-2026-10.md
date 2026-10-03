@@ -34,7 +34,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] 6. Status colours (amber/emerald/green 400-500, white on amber/orange) fail contrast in light theme. (Step 10)
 - [x] 7. `--input` equals `--border`: 1.2:1 in light, 1.3:1 in dark. Needs 3:1. (Step 1)
 - [x] 8. Plain `border` resolves to gray-200 in every theme. (Step 1)
-- [ ] 9. Winter theme never gets the `dark` variant. About 81 `!important` patches hide it. (Step 9)
+- [~] 9. Winter theme never gets the `dark` variant. Step 9a done: the `dark:` variant, the cornhole background and the bracket viewer now treat `.winter-frozen` as dark. Checked at 375px on 9 pages with empty data: no visible change. NOT checked with real data. Step 9b (removing the ~80 `!important` patches in `winter-homepage.css`) is waiting for a go-ahead.
 - [x] 10. No `color-scheme` on the page. (Step 1)
 
 ### Accessibility

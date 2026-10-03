@@ -95,7 +95,8 @@
    Dark Mode - Dark Blue Aesthetic
    ============================================ */
 
-.dark .brackets-viewer {
+.dark .brackets-viewer,
+.winter-frozen .brackets-viewer {
   /* Dark Mode - Official brackets-viewer variables with enhanced visibility */
   --primary-background: #0d1117;
   --secondary-background: #1c2835;

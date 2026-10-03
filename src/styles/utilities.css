@@ -79,7 +79,8 @@
     z-index: -1;
   }
   
-  .dark .cornhole-bg::before {
+  .dark .cornhole-bg::before,
+  .winter-frozen .cornhole-bg::before {
     background-color: var(--color-gray-900);
   }
 
