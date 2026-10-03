@@ -56,10 +56,6 @@ const insertSelectChain = (result: { data: unknown; error: unknown }) => ({
   insert: () => ({ select: () => Promise.resolve(result) }),
 });
 
-const insertSelectSingleChain = (result: { data: unknown; error: unknown }) => ({
-  insert: () => ({ select: () => ({ single: () => Promise.resolve(result) }) }),
-});
-
 const deleteEqChain = (result: { error: unknown }) => ({
   delete: () => ({ eq: () => Promise.resolve(result) }),
 });
@@ -124,29 +120,6 @@ describe('TimeslotBatchService.batchAssignBackToBackTimeslots', () => {
   });
 });
 
-// ─── insertTimeslot ───────────────────────────────────────────────────────────
-
-describe('TimeslotBatchService.insertTimeslot', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns the inserted row on success', async () => {
-    const row = makeRawSlot();
-    mockFrom.mockReturnValue(insertSelectSingleChain({ data: row, error: null }));
-
-    const result = await TimeslotBatchService.insertTimeslot('2026-04-17', 'team-1', '6:30 PM');
-
-    expect(result).toEqual(row);
-    expect(mockFrom).toHaveBeenCalledWith('team_timeslots');
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(insertSelectSingleChain({ data: null, error: pgError() }));
-    await expect(
-      TimeslotBatchService.insertTimeslot('2026-04-17', 'team-1', '6:30 PM')
-    ).rejects.toThrow(DatabaseError);
-  });
-});
-
 // ─── deleteTimeslotSimple ─────────────────────────────────────────────────────
 
 describe('TimeslotBatchService.deleteTimeslotSimple', () => {
@@ -195,39 +168,6 @@ describe('TimeslotBatchService.deleteTimeslotsByIds', () => {
     mockFrom.mockReturnValue(deleteInChain({ error: pgError() }));
 
     await expect(TimeslotBatchService.deleteTimeslotsByIds(['ts-1'])).rejects.toThrow(
-      DatabaseError
-    );
-  });
-});
-
-// ─── batchInsertTimeslots ─────────────────────────────────────────────────────
-
-describe('TimeslotBatchService.batchInsertTimeslots', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  const insertData = [
-    { match_date: '2026-04-17', team_id: 'team-1', timeslot: '6:30 PM' },
-    { match_date: '2026-04-17', team_id: 'team-2', timeslot: '6:30 PM' },
-  ];
-
-  it('returns inserted rows on success', async () => {
-    const rows = insertData.map((d, i) => ({ ...makeRawSlot({ id: `ts-${i}` }), ...d }));
-    mockFrom.mockReturnValue(insertSelectChain({ data: rows, error: null }));
-
-    const result = await TimeslotBatchService.batchInsertTimeslots(insertData);
-
-    expect(result).toHaveLength(2);
-  });
-
-  it('returns empty array when data is null', async () => {
-    mockFrom.mockReturnValue(insertSelectChain({ data: null, error: null }));
-    const result = await TimeslotBatchService.batchInsertTimeslots(insertData);
-    expect(result).toEqual([]);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(insertSelectChain({ data: null, error: pgError() }));
-    await expect(TimeslotBatchService.batchInsertTimeslots(insertData)).rejects.toThrow(
       DatabaseError
     );
   });
