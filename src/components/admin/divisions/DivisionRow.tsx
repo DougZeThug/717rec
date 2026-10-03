@@ -212,8 +212,6 @@ const DivisionRow: React.FC<Props> = ({ division, layout }) => {
         size="sm"
         variant="outline"
         onClick={() => setEditing(true)}
-        disabled={isHidden}
-        title={isHidden ? 'Hidden divisions cannot be edited' : undefined}
         className="flex-1 md:flex-none"
       >
         <Pencil className="size-4 mr-1" />
