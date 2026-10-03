@@ -42,9 +42,7 @@ describe('MatchScoreEditor — 0-0 save guard (regression)', () => {
   });
 
   it('keeps the Save Scores button in a sticky bottom bar so it stays visible on phones', () => {
-    render(
-      <MatchScoreEditor match={match} teams={teams} onSave={vi.fn()} onCancel={vi.fn()} />
-    );
+    render(<MatchScoreEditor match={match} teams={teams} onSave={vi.fn()} onCancel={vi.fn()} />);
 
     const saveButton = screen.getByRole('button', { name: /save scores/i });
     const stickyBar = saveButton.closest('.sticky');
