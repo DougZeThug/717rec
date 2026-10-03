@@ -55,8 +55,8 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] Two competing division colour systems. The unused hex set is deleted; the HSL set stays, and badge text gets darker `--*-soft-text` tokens (4.5:1 or better).
 - [ ] Button, Input and Select heights differ. (Step 11)
 - [ ] 50 raw `<button>` elements skip the `Button` component. (Steps 3, 11)
-- [ ] Inconsistent type: hand-made page headings, fake-bold Bebas. (Step 12)
-- [ ] 39 uses of `text-[8..11px]` carry real information. (Step 12)
+- [x] Inconsistent type: Help, Contact and My Team now use `PageHeader`; the weekly recap heading uses `typeScale.h1`. Bebas Neue has one weight, so `font-semibold`/`font-bold` next to it (typeScale h1-h3, Standings table head, division heading) is removed to stop the faked bold. Mono bold is left: IBM Plex Mono ships 600, which `font-bold` resolves to.
+- [x] 39 uses of `text-[8..11px]` carry real information. New `text-2xs` (11px) replaces all of them; stat labels, prediction text and status badges that carry information use `text-xs` (12px). The 60%-opacity prediction footnote now reads at full muted strength.
 - [ ] Duplicate components: pills, spinners, `TeamLogo`, cards. (Step 11)
 - [x] Dead or broken CSS removed in Step 10: `.compatibility-score-*`, `.auto-schedule-container`, `truncate-tab`, `--font-oswald`, `--color-cornhole-wood/green`, the stale Snowtop TODO. The Oswald font file stays (recap graphics use it). Sidebar tokens stay (shadcn defaults, harmless).
 - [x] Touch targets under 44px. (Step 3) Small controls use the new `hit-area-44` utility, which grows the tap area without changing the look. Also found: the team-page section bar was `fixed` inside the page, so it scrolled away; it now uses `ViewportPortal`.

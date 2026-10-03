@@ -141,7 +141,7 @@ const TeamRowGroup: React.FC<TeamRowGroupProps> = ({ row, isMobile, expanded, on
             <span className="ml-2 text-xs text-muted-foreground">{row.divisionName}</span>
           )}
           {row.isNewSinceBackup && (
-            <Badge variant="secondary" className="ml-2 text-[10px]">
+            <Badge variant="secondary" className="ml-2 text-2xs">
               New since backup
             </Badge>
           )}

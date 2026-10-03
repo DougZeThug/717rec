@@ -24,7 +24,7 @@ const ThrowerSide: React.FC<ThrowerSideProps> = ({
   disabled,
 }) => (
   <div className="min-w-0 flex-1">
-    <div className="mb-1 truncate text-[10px] uppercase tracking-wide text-muted-foreground">
+    <div className="mb-1 truncate text-2xs uppercase tracking-wide text-muted-foreground">
       {label}
     </div>
     <div className="flex flex-wrap gap-1.5">

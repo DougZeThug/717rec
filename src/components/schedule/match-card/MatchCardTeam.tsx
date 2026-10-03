@@ -9,7 +9,7 @@ import { toTeamSlug } from '@/utils/teamSlug';
 // greyscale or to a screen reader. Add the word as well, and keep the colour.
 // Static, so it is built once rather than on every render.
 const winnerTag = (
-  <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-full">
+  <span className="px-1.5 py-0.5 text-2xs font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 rounded-full">
     Won
   </span>
 );

@@ -50,7 +50,7 @@ export const ColorPresetPicker = ({
               <span className="text-xs font-medium text-center leading-tight">{preset.name}</span>
 
               {/* Description on hover - hidden on mobile */}
-              <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-0.5">
+              <span className="hidden sm:block text-2xs text-muted-foreground text-center mt-0.5">
                 {preset.description}
               </span>
             </button>

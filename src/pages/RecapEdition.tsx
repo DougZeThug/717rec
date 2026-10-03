@@ -8,6 +8,8 @@ import SeoHead from '@/components/seo/SeoHead';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRecapEditionBySlug } from '@/hooks/useRecapEditions';
+import { cn } from '@/lib/utils';
+import { typeScale } from '@/styles/design-system';
 
 import NotFound from './NotFound';
 
@@ -102,7 +104,7 @@ const RecapEdition: React.FC = () => {
 
       <header className="mb-6">
         <p className="text-sm uppercase tracking-wider text-muted-foreground">{facts.seasonName}</p>
-        <h1 className="text-3xl font-bebas tracking-wide">Week {facts.weekNumber}</h1>
+        <h1 className={cn(typeScale.h1, 'text-foreground')}>Week {facts.weekNumber}</h1>
         {version.headline && <p className="text-lg mt-2">{version.headline}</p>}
         <p className="text-xs text-muted-foreground mt-3">
           Published {formatDate(edition.first_published_at)}

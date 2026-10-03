@@ -89,7 +89,7 @@ const ScoreButtonGroup: React.FC<ScoreButtonGroupProps> = ({
 
   return (
     <div className="space-y-1">
-      <div className="flex justify-between items-center px-1 text-[10px] font-medium text-muted-foreground">
+      <div className="flex justify-between items-center px-1 text-2xs font-medium text-muted-foreground">
         <span className="truncate max-w-[40%]">← {abbreviate(team1Name)}</span>
         <span className="truncate max-w-[40%] text-right">{abbreviate(team2Name)} →</span>
       </div>

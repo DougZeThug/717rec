@@ -89,7 +89,7 @@ const CareerCompactCard: React.FC<{
 
         {/* Power score - right-aligned */}
         <div className="flex flex-col items-end shrink-0 w-16">
-          <span className="text-[10px] text-muted-foreground leading-tight">Power</span>
+          <span className="text-xs text-muted-foreground leading-tight">Power</span>
           <span
             className={cn(
               'text-base font-bold tabular-nums leading-tight',
@@ -170,7 +170,7 @@ const CareerDetailedCard: React.FC<{
         {/* 2x2 stat grid */}
         <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Win %</p>
+            <p className="text-xs text-muted-foreground leading-tight">Win %</p>
             <p
               className={cn(
                 'text-sm font-bold tabular-nums leading-tight',
@@ -181,7 +181,7 @@ const CareerDetailedCard: React.FC<{
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">SOS</p>
+            <p className="text-xs text-muted-foreground leading-tight">SOS</p>
             <p
               className={cn(
                 'text-sm font-bold tabular-nums leading-tight',
@@ -192,13 +192,13 @@ const CareerDetailedCard: React.FC<{
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Games</p>
+            <p className="text-xs text-muted-foreground leading-tight">Games</p>
             <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
               {ranking.careerGameWins}-{ranking.careerGameLosses}
             </p>
           </div>
           <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-[10px] text-muted-foreground leading-tight">Game %</p>
+            <p className="text-xs text-muted-foreground leading-tight">Game %</p>
             <p
               className={cn(
                 'text-sm font-bold tabular-nums leading-tight',

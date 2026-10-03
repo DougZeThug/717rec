@@ -9,7 +9,7 @@ import {
 } from '@/utils/formatNotificationDate';
 
 const ExpiredTag: React.FC = () => (
-  <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
+  <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-2xs font-medium uppercase text-muted-foreground">
     Expired
   </span>
 );
@@ -28,7 +28,7 @@ const NotificationHeading: React.FC<{
     <time
       dateTime={posted.iso}
       title={posted.iso}
-      className="flex shrink-0 flex-col text-right text-[11px] leading-tight text-muted-foreground sm:items-end"
+      className="flex shrink-0 flex-col text-right text-2xs leading-tight text-muted-foreground sm:items-end"
     >
       <span className="font-medium text-foreground/80 tabular-nums">{posted.absolute}</span>
       {posted.relative && <span>{posted.relative}</span>}
@@ -94,7 +94,7 @@ const NotificationRow: React.FC<NotificationRowProps> = ({
           {notification.body}
         </p>
         {expires && (
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-2xs text-muted-foreground">
             Expires <span className="tabular-nums">{expires.absolute}</span>
           </p>
         )}

@@ -29,7 +29,7 @@ export const MatchCardStatusBadge: React.FC<MatchCardStatusBadgeProps> = ({
     <div className="flex items-center justify-center gap-2 pt-1.5">
       <span
         className={cn(
-          'px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full',
+          'px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase rounded-full',
           statusPillClasses[status]
         )}
       >

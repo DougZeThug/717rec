@@ -64,6 +64,10 @@
   /* v3 line heights for the text-* sizes. v4 uses ratios (text-xs is
      1.333), which a child with a different font size inherits differently.
      Lengths keep v3's inherited line heights, for example inside badges. */
+  /* 11px: the smallest size for a badge or caption. Anything that carries
+     information a reader needs uses text-xs (12px) or larger. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
   --text-xs--line-height: 1rem;
   --text-sm--line-height: 1.25rem;
   --text-base--line-height: 1.5rem;

@@ -68,7 +68,7 @@ const LeagueParityCard: React.FC<LeagueParityCardProps> = ({ parity, totalTeams 
             style={{ width: `${parity.parityIndex}%` }}
           />
         </div>
-        <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+        <div className="flex justify-between mt-1 text-2xs text-muted-foreground">
           <span>Lopsided</span>
           <span>Competitive</span>
         </div>

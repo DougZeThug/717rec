@@ -50,7 +50,7 @@ export const IconPicker = ({ value, onChange }: IconPickerProps) => {
             {/* Icon name */}
             <span
               className={cn(
-                'text-[10px] mt-1.5 text-center leading-tight',
+                'text-2xs mt-1.5 text-center leading-tight',
                 isSelected ? 'font-medium text-primary' : 'text-muted-foreground'
               )}
             >

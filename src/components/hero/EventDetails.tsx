@@ -40,7 +40,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   );
 
   const labelClasses = cn(
-    'text-[10px] font-bebas uppercase tracking-wide',
+    'text-2xs font-bebas uppercase tracking-wide',
     shouldApplyWinter ? 'text-cyan-200/80' : 'text-white/80'
   );
 

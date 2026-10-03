@@ -38,7 +38,7 @@ const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }
           <time
             dateTime={iso}
             title={iso}
-            className="flex shrink-0 flex-col text-right text-[11px] leading-tight text-muted-foreground sm:items-end"
+            className="flex shrink-0 flex-col text-right text-2xs leading-tight text-muted-foreground sm:items-end"
           >
             <span className="font-medium text-foreground/80 tabular-nums">{absolute}</span>
             {relative && <span className="text-muted-foreground">{relative}</span>}

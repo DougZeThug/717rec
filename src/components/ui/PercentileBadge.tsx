@@ -23,7 +23,7 @@ const tierStyles: Record<string, string> = {
 };
 
 const sizeStyles: Record<string, string> = {
-  xs: 'text-[10px] px-1.5 py-0.5',
+  xs: 'text-2xs px-1.5 py-0.5',
   sm: 'text-xs px-2 py-0.5',
   md: 'text-sm px-2.5 py-1',
 };

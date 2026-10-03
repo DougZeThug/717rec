@@ -37,7 +37,7 @@ const FilterToggleButton: React.FC<FilterToggleButtonProps> = ({
       {hasActiveFilters && (
         <span
           className={cn(
-            'absolute -top-1 -right-1 rounded-full size-4 text-[10px] flex items-center justify-center bg-white text-blue-600'
+            'absolute -top-1 -right-1 rounded-full size-4 text-2xs flex items-center justify-center bg-white text-blue-600'
           )}
         >
           {Object.values(filterOptions).filter(Boolean).length}
