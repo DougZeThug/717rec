@@ -1,0 +1,57 @@
+-- Revoke public (anon) access from internal functions no public page calls
+REVOKE EXECUTE ON FUNCTION public._do_finalize_bracket_standings(p_bracket_id uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.audit_admin_mutation() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.delete_match_with_stats_reversal(p_match_id uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.enforce_message_author_identity() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.enforce_message_identity() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.finalize_bracket_standings(p_bracket_id uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.finalize_live_match(p_match_id uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.prevent_member_competitive_field_updates() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.prevent_team_membership_reassignment() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.reconcile_team_counters() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.record_division_weight_change() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.reopen_live_match(p_match_id uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.replace_playoff_games(p_match_id uuid, p_games jsonb) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.resubmit_match_result(p_match_id uuid, p_winner_id uuid, p_loser_id uuid, p_winner_game_wins integer, p_loser_game_wins integer) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.start_game_with_roster(p_match_id uuid, p_game_number integer, p_team1_id uuid, p_team1_player_ids uuid[], p_team2_id uuid, p_team2_player_ids uuid[]) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.sync_bracket_wb_champion() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.tg_finalize_bracket_standings() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.upsert_team_season_stats(p_include_archived boolean) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.validate_game_players_row() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.validate_games_row() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.validate_match_rounds_row() FROM anon;
+
+-- Revoke signed-in (authenticated) access from internal-only functions the client never calls
+-- (badge awarding, stat recalculation, trigger helpers). Admins keep access to admin-panel functions.
+REVOKE EXECUTE ON FUNCTION public.award_broom_crew_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_bully_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_chaos_agent_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_clutch_performer_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_consistent_performer_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_gatekeeper_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_ice_cold_badge(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_kingslayer_badge(p_winner_id uuid, p_loser_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.award_streak_badges(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.process_match_badges(p_team1_id uuid, p_team2_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.calculate_career_power_score(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.calculate_team_streak(p_team_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.update_team_stats(p_winner_id uuid, p_loser_id uuid, p_winner_game_wins integer, p_loser_game_wins integer) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.reverse_team_stats(p_winner_id uuid, p_loser_id uuid, p_winner_game_wins integer, p_loser_game_wins integer) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.upsert_team_season_stats(p_include_archived boolean) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.prune_team_season_stats_not_in_agg() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.recreate_power_view_dependents() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.resolve_division_bonus_weight(p_division_name text) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.rotate_season_badges(p_season_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public._do_finalize_bracket_standings(p_bracket_id uuid) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.audit_admin_mutation() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.enforce_message_author_identity() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.enforce_message_identity() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.insert_participant(p_bracket_id uuid, p_team_id uuid, p_team_position integer) FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_member_competitive_field_updates() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_team_membership_reassignment() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.record_division_weight_change() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.sync_bracket_wb_champion() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.tg_finalize_bracket_standings() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.validate_game_players_row() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.validate_games_row() FROM authenticated;
+REVOKE EXECUTE ON FUNCTION public.validate_match_rounds_row() FROM authenticated;
