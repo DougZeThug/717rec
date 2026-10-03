@@ -46,8 +46,8 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 - [x] 12. No session-expiry message. Expired-token errors read "permission denied". (Step 4)
 - [ ] 13. Standings and Schedule do not refresh on league night. No "last updated". (Step 6)
-- [ ] 14. A failed team fetch shows "Team Not Found". (Step 5)
-- [ ] 15. Team page has no "next match" for signed-out visitors. (Step 5)
+- [x] 14. A failed team fetch shows "Team Not Found". (Step 5)
+- [x] 15. Team page has no "next match" for signed-out visitors. (Step 5)
 
 ## Medium
 
