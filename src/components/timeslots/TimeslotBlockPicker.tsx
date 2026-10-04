@@ -75,7 +75,7 @@ export const TimeslotBlockPicker: React.FC<TimeslotBlockPickerProps> = ({
                       px-3 py-1.5 transition-colors
                       ${
                         isSelected
-                          ? 'bg-gradient-to-br from-amber-400 to-orange-400 text-gray-950 border-transparent hover:from-amber-300 hover:to-orange-300'
+                          ? 'bg-gradient-to-br from-amber-400 to-orange-400 text-gray-950 border-cornhole-navy hover:from-amber-300 hover:to-orange-300'
                           : 'border-cornhole-navy text-cornhole-navy hover:bg-cornhole-navy/10 dark:border-blue-200! dark:text-blue-200! dark:hover:bg-blue-200/10'
                       }
                     `}

@@ -77,7 +77,7 @@ const ToastClose = React.forwardRef<
     ref={ref}
     className={cn(
       // Always visible: it used to appear only on hover, which a phone has not got.
-      'absolute right-1 top-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-input text-foreground/70 transition-colors hover:text-foreground focus:outline-hidden focus:ring-2 group-[.success]:text-success-foreground/80 hover:group-[.success]:text-success-foreground group-[.destructive]:text-red-300 hover:group-[.destructive]:text-red-50 focus:group-[.destructive]:ring-red-400 focus:group-[.destructive]:ring-offset-red-600',
+      'absolute right-1 top-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-input text-foreground/70 transition-colors hover:text-foreground focus:outline-hidden focus:ring-2 group-[.success]:text-success-foreground/80 hover:group-[.success]:text-success-foreground group-[.destructive]:text-destructive-foreground hover:group-[.destructive]:text-destructive-foreground focus:group-[.destructive]:ring-red-400 focus:group-[.destructive]:ring-offset-red-600',
       className
     )}
     toast-close=""

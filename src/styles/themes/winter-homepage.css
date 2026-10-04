@@ -500,6 +500,15 @@
   --tw-gradient-to: hsla(222, 45%, 15%, 0.95) !important;
 }
 
+/* The same bars carry DARK text outside winter (white on amber/orange measured
+   2.2 to 2.8:1, so the double-header badge and the selected timeslot button use
+   text-gray-950). The remap above makes the fill dark navy, so the text has to
+   go light with it. Gradient TEXT (text-transparent) is left alone. */
+.winter-frozen [class*="from-amber"][class*="to-orange"]:not(.text-transparent),
+.winter-frozen [class*="from-orange"][class*="to-amber"]:not(.text-transparent) {
+  color: hsl(var(--foreground));
+}
+
 /* Additional ice-glass treatment for all Card components in winter */
 .winter-frozen .card,
 .winter-frozen [data-slot="card"] {

@@ -67,13 +67,13 @@ export const TeamAdvancedStatsInsightsTab = ({
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5',
                   s.isChampion
-                    ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                    ? 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-400'
                     : 'bg-muted text-muted-foreground'
                 )}
               >
                 {s.isChampion ? <Trophy size={12} /> : <Award size={12} />}
                 {s.seasonName}
-                <span className="text-xs opacity-70">({s.divisionName})</span>
+                <span className="text-xs">({s.divisionName})</span>
               </div>
             ))}
         </div>
@@ -96,19 +96,19 @@ export const TeamAdvancedStatsInsightsTab = ({
                 className={cn(
                   'px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1.5',
                   s.playoffRank === 1
-                    ? 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-400'
+                    ? 'bg-yellow-500/20 text-yellow-800 dark:text-yellow-400'
                     : s.playoffRank === 2
                       ? // eslint-disable-next-line no-restricted-syntax -- silver medal: the colour carries the meaning
                         'bg-slate-500/20 text-slate-600 dark:text-slate-300'
                       : s.playoffRank === 3
-                        ? 'bg-amber-800/20 text-amber-600 dark:text-amber-400'
+                        ? 'bg-amber-800/20 text-amber-800 dark:text-amber-400'
                         : 'bg-muted text-muted-foreground'
                 )}
               >
                 {s.playoffRank === 1 && <Trophy size={12} />}
                 {s.playoffRank === 2 && <Award size={12} />}
                 {getPlayoffFinishLabel(s.playoffRank)}
-                <span className="text-xs opacity-70">
+                <span className="text-xs">
                   {s.seasonName} ({s.divisionName})
                 </span>
               </div>

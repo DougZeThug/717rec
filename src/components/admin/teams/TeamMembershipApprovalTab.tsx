@@ -170,7 +170,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-destructive-text border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        className="text-destructive-text border-destructive hover:bg-destructive hover:text-foreground"
                         disabled={processingIds.has(membership.id)}
                       >
                         <XCircle className="size-4 mr-1" />
