@@ -39,9 +39,10 @@ vi.mock('../bracket-teams/hooks/useBracketFormValidation', () => ({
 
 // Mock individual child component files
 vi.mock('../bracket-teams/components/TeamSelectionError', () => ({
-  TeamSelectionError: ({ message }: { message: string }) => (
+  TeamSelectionError: ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
     <div data-testid="team-selection-error">
       <span>{message}</span>
+      <button onClick={onRetry}>Retry</button>
     </div>
   ),
 }));
@@ -55,11 +56,12 @@ vi.mock('../bracket-teams/components/TeamSelectionEmpty', () => ({
 }));
 
 vi.mock('../bracket-teams/components/TeamSelectionForm', () => ({
-  TeamSelectionForm: ({ teams, formState }: MockTeamSelectionFormProps) => (
+  TeamSelectionForm: ({ teams, formState, onSeedChange }: MockTeamSelectionFormProps) => (
     <div data-testid="team-selection-form">
       <span>Teams: {teams ? teams.length : 0}</span>
       <span>{formState?.statusMessage || 'Ready'}</span>
       <button onClick={() => formState?.handleTeamToggle?.('team-1')}>Toggle Team</button>
+      <button onClick={() => onSeedChange?.('team-1', 3)}>Seed Team</button>
     </div>
   ),
 }));
@@ -141,6 +143,70 @@ describe('BracketFormTeamsContainer', () => {
 
       expect(screen.getByTestId('team-selection-error')).toBeInTheDocument();
       expect(screen.getByText('Failed to load teams')).toBeInTheDocument();
+    });
+  });
+
+  describe('Error recovery', () => {
+    it('reloads the page when Retry is pressed', async () => {
+      const reload = vi.fn();
+      vi.stubGlobal('location', { ...window.location, reload });
+      mockUseBracketFormData.mockReturnValue({
+        teams: [],
+        isLoading: false,
+        isError: true,
+        errorMessage: null,
+        isDataReady: false,
+      });
+
+      render(<BracketFormTeamsContainer {...defaultProps} />);
+
+      expect(screen.getByText('An error occurred loading teams')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Retry' }));
+      expect(reload).toHaveBeenCalledTimes(1);
+      vi.unstubAllGlobals();
+    });
+  });
+
+  describe('Seed changes', () => {
+    it('passes a seed change on to the parent', async () => {
+      const onSeedChange = vi.fn();
+      render(<BracketFormTeamsContainer {...defaultProps} onSeedChange={onSeedChange} />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Seed Team' }));
+      expect(onSeedChange).toHaveBeenCalledWith('team-1', 3);
+    });
+
+    it('ignores a seed change when no parent is listening', async () => {
+      render(<BracketFormTeamsContainer {...defaultProps} />);
+
+      await userEvent.click(screen.getByRole('button', { name: 'Seed Team' }));
+      expect(screen.getByTestId('team-selection-form')).toBeInTheDocument();
+    });
+  });
+
+  describe('Bad props', () => {
+    it('falls back to no divisions when the divisions prop is not a list', () => {
+      render(
+        <BracketFormTeamsContainer
+          {...defaultProps}
+          divisions={'nope' as unknown as typeof defaultProps.divisions}
+        />
+      );
+
+      expect(screen.getByTestId('team-selection-form')).toBeInTheDocument();
+    });
+
+    it('ignores a teams prop that is not a list', () => {
+      render(
+        <BracketFormTeamsContainer
+          {...defaultProps}
+          teams={
+            'nope' as unknown as React.ComponentProps<typeof BracketFormTeamsContainer>['teams']
+          }
+        />
+      );
+
+      expect(screen.getByTestId('team-selection-form')).toBeInTheDocument();
     });
   });
 

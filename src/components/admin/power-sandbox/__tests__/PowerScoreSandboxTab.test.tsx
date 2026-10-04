@@ -269,4 +269,25 @@ describe('PowerScoreSandboxTab', () => {
       expect(toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }))
     );
   });
+
+  it('lets the admin retry when the live weights cannot be read', async () => {
+    const refetch = vi.fn();
+    mockState.mockReturnValue(queryResult({ isError: true, refetch }));
+    render(<PowerScoreSandboxTab />);
+
+    expect(screen.getByText("Couldn't check the live weights.")).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes the Revert dialog when Cancel is pressed', async () => {
+    render(<PowerScoreSandboxTab />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /revert to 50\/35\/15/i }));
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }));
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+  });
 });

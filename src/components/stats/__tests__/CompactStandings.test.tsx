@@ -86,3 +86,37 @@ describe('CompactStandings (mobile)', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/teams/team-1', expect.any(Object));
   });
 });
+
+describe('CompactStandings (desktop table)', () => {
+  beforeEach(() => {
+    mockIsMobile = false;
+    mockShouldVirtualize = false;
+    mockNavigate.mockReset();
+  });
+
+  it('shows one row per team with its record', () => {
+    render(<CompactStandings rankings={makeRankings(3)} />);
+    expect(screen.getByRole('button', { name: 'View Team 2 team details' })).toBeInTheDocument();
+    expect(screen.getByText('2-0')).toBeInTheDocument();
+  });
+
+  it('opens the team page when a row is clicked', async () => {
+    render(<CompactStandings rankings={makeRankings(3)} />);
+    await userEvent.click(screen.getByRole('button', { name: 'View Team 1 team details' }));
+    expect(mockNavigate).toHaveBeenCalledWith('/teams/team-1', expect.any(Object));
+  });
+
+  it.each(['{Enter}', ' '])('opens the team page when %s is pressed on a row', async (key) => {
+    render(<CompactStandings rankings={makeRankings(3)} />);
+    screen.getByRole('button', { name: 'View Team 1 team details' }).focus();
+    await userEvent.keyboard(key);
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores other keys on a row', async () => {
+    render(<CompactStandings rankings={makeRankings(3)} />);
+    screen.getByRole('button', { name: 'View Team 1 team details' }).focus();
+    await userEvent.keyboard('a');
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});

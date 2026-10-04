@@ -101,6 +101,17 @@ describe('ContactInboxSection', () => {
     );
   });
 
+  it('shows a contact with too few digits as plain text, not a phone link', () => {
+    mockUseContactRequests.mockReturnValue({
+      data: [{ ...leagueRequest, submitter_contact: 'text me' }],
+      isLoading: false,
+    });
+    render(<ContactInboxSection />);
+
+    expect(screen.getByText('text me')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'text me' })).not.toBeInTheDocument();
+  });
+
   it('labels a support ticket with its subject and counts both sources as new', () => {
     render(<ContactInboxSection />);
 
@@ -191,6 +202,19 @@ describe('ContactInboxSection', () => {
     fireEvent.click(screen.getByRole('button', { name: /reopen/i }));
     expect(reopenTicket).toHaveBeenCalledWith('ticket-1');
     expect(reopenRequest).not.toHaveBeenCalled();
+  });
+
+  it('routes Reopen to the right service for a resolved league request', () => {
+    mockUseContactRequests.mockReturnValue({
+      data: [{ ...leagueRequest, status: 'resolved' }],
+      isLoading: false,
+    });
+    mockUseSupportTickets.mockReturnValue({ data: [], isLoading: false });
+    render(<ContactInboxSection />);
+
+    fireEvent.click(screen.getByRole('button', { name: /reopen/i }));
+    expect(reopenRequest).toHaveBeenCalledWith('req-1');
+    expect(reopenTicket).not.toHaveBeenCalled();
   });
 
   it('still renders league requests when support tickets are unavailable', () => {

@@ -183,6 +183,22 @@ describe('hero cards sections/views', () => {
     expect(onChange).toHaveBeenCalledWith('metadata', expect.stringContaining('past_winners'));
   });
 
+  it('champions editor refuses to edit while the extra data box will not parse', () => {
+    const onChange = vi.fn();
+    wrap(
+      <ChampionsEditor
+        formData={{ ...baseForm, card_type: 'champions', metadata: '{oops' }}
+        onChange={onChange}
+        metadataError="Extra Data is not valid JSON"
+      />
+    );
+    expect(screen.getByText('Extra Data is not valid JSON.')).toBeInTheDocument();
+    expect(
+      screen.getByText(/Fix "Extra Data \(JSON\)" under Advanced Settings/)
+    ).toBeInTheDocument();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('preview updates safely when optional fields are missing', () => {
     const card = makeCard({ title: 'Hello', subtitle: null });
     const { rerender } = render(<HeroCardPreview card={card} />);

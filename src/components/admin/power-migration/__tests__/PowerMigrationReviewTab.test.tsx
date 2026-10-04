@@ -4,6 +4,7 @@ import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PowerMigrationComparisonRow } from '@/hooks/admin/buildPowerMigrationComparison';
+import { toast } from '@/hooks/useToast';
 
 const mockStatus = vi.fn();
 const mockComparison = vi.fn();
@@ -260,5 +261,87 @@ describe('PowerMigrationReviewTab', () => {
     expect(screen.queryByText('Season 1')).not.toBeInTheDocument();
     await user.click(screen.getByText('Bravo'));
     expect(await screen.findByText('Season 1')).toBeInTheDocument();
+  });
+
+  it('says so when an expanded team has no completed-season history', async () => {
+    mockStatus.mockReturnValue(queryResult({ data: appliedStatus }));
+    mockComparison.mockReturnValue(
+      queryResult({ data: { backedUpAt: appliedStatus.backedUpAt, rows: comparisonRows } })
+    );
+    render(<PowerMigrationReviewTab />);
+
+    await userEvent.setup().click(screen.getByText('Charlie'));
+    expect(
+      await screen.findByText('No completed-season history for this team.')
+    ).toBeInTheDocument();
+  });
+
+  it('lets the admin retry when the status check fails', async () => {
+    const refetch = vi.fn();
+    mockStatus.mockReturnValue(queryResult({ isError: true, refetch }));
+    render(<PowerMigrationReviewTab />);
+
+    expect(screen.getByText("Couldn't check the migration status.")).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the admin retry when the comparison cannot be built', async () => {
+    const refetch = vi.fn();
+    mockStatus.mockReturnValue(queryResult({ data: appliedStatus }));
+    mockComparison.mockReturnValue(queryResult({ isError: true, refetch }));
+    render(<PowerMigrationReviewTab />);
+
+    expect(screen.getByText("Couldn't build the comparison.")).toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('warns when the database is in a mixed state', () => {
+    mockStatus.mockReturnValue(
+      queryResult({ data: { ...appliedStatus, status: 'partial' as const } })
+    );
+    render(<PowerMigrationReviewTab />);
+
+    expect(screen.getByText(/database is in a mixed state/i)).toBeInTheDocument();
+  });
+
+  it('keeps the dialog open and says so when the revert fails', async () => {
+    const revertMutation = mutationResult({
+      mutateAsync: vi.fn(() => Promise.reject(new Error('boom'))),
+    });
+    mockStatus.mockReturnValue(queryResult({ data: appliedStatus }));
+    mockComparison.mockReturnValue(
+      queryResult({ data: { backedUpAt: appliedStatus.backedUpAt, rows: comparisonRows } })
+    );
+    mockRevert.mockReturnValue(revertMutation);
+    render(<PowerMigrationReviewTab />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /revert to old scores/i }));
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: /^revert$/i }));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Revert failed', variant: 'destructive' })
+      )
+    );
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+  });
+
+  it('closes the confirm dialog when Cancel is pressed', async () => {
+    mockStatus.mockReturnValue(queryResult({ data: appliedStatus }));
+    mockComparison.mockReturnValue(
+      queryResult({ data: { backedUpAt: appliedStatus.backedUpAt, rows: comparisonRows } })
+    );
+    render(<PowerMigrationReviewTab />);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /revert to old scores/i }));
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }));
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 });

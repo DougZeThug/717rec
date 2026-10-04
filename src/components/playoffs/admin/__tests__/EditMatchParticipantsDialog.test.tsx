@@ -267,4 +267,46 @@ describe('EditMatchParticipantsDialog', () => {
     expect(screen.getByText("A team can't be on both sides of a match.")).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /review changes/i })).toBeDisabled();
   });
+
+  it('closes the dialog when Cancel is pressed', async () => {
+    wire(options());
+    const onOpenChange = vi.fn();
+    render(
+      <EditMatchParticipantsDialog open onOpenChange={onOpenChange} bracketId="b1" matchId={12} />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes the dialog once a saved change goes through', async () => {
+    wire(options(), { ok: true, problems: [], changes: ['Changed.'], consequences: [] });
+    mutateMock.mockImplementation((_params: unknown, handlers: { onSuccess: () => void }) =>
+      handlers.onSuccess()
+    );
+    const onOpenChange = vi.fn();
+    render(
+      <EditMatchParticipantsDialog open onOpenChange={onOpenChange} bracketId="b1" matchId={12} />
+    );
+
+    await pick('Team 2', /^T7$/);
+    await userEvent.click(screen.getByRole('button', { name: /review changes/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('does not allow reviewing a match that has a BYE on both sides', () => {
+    wire(
+      options({
+        slots: [
+          { side: 'opponent1', kind: 'bye', teamId: null, name: 'BYE' },
+          { side: 'opponent2', kind: 'bye', teamId: null, name: 'BYE' },
+        ],
+      })
+    );
+    renderDialog();
+
+    expect(screen.getByRole('button', { name: /review changes/i })).toBeDisabled();
+  });
 });

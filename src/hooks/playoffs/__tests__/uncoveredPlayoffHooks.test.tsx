@@ -268,4 +268,63 @@ describe('uncovered playoff hooks', () => {
     });
     expect(refetch).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b1'] });
   });
+  it('refuses to score a brackets-manager match that cannot be found', async () => {
+    mocks.bmMatch.mockResolvedValue(null);
+    const { wrapper } = setup();
+    const { result } = renderHook(
+      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: true } as never),
+      { wrapper }
+    );
+    await act(async () => {
+      await expect(result.current.updateMatch('9', 0, 0, [], 1, 2)).rejects.toThrow(
+        'Failed to fetch match data from brackets-manager table'
+      );
+    });
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it('still scores a brackets-manager match that has a BYE on one side', async () => {
+    mocks.bmMatch.mockResolvedValue({ opponent1_id: 1, opponent2_id: null });
+    mocks.participants.mockResolvedValue([{ id: 1, name: 'Team One' }]);
+    mocks.update.mockResolvedValue({});
+    const { wrapper } = setup();
+    const { result } = renderHook(
+      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: true } as never),
+      { wrapper }
+    );
+    await act(async () => {
+      await result.current.updateMatch('9', 0, 0, [], 2, 0);
+    });
+    expect(mocks.update).toHaveBeenCalledWith({
+      matchId: 9,
+      scores: { opponent1: { score: 2, result: 'win' }, opponent2: { score: 0, result: 'loss' } },
+    });
+  });
+  it('refuses to score a legacy match that cannot be found', async () => {
+    mocks.legacyTeams.mockResolvedValue(null);
+    const { wrapper } = setup();
+    const { result } = renderHook(
+      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: false } as never),
+      { wrapper }
+    );
+    await act(async () => {
+      await expect(result.current.updateMatch('m1', 21, 18, [], 2, 0)).rejects.toThrow(
+        'Failed to fetch match data'
+      );
+    });
+    expect(mocks.scores).not.toHaveBeenCalled();
+  });
+  it('refuses to complete a legacy match that is missing a team', async () => {
+    mocks.legacyTeams.mockResolvedValue({ team1_id: 't1', team2_id: null });
+    const { wrapper } = setup();
+    const { result } = renderHook(
+      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: false } as never),
+      { wrapper }
+    );
+    await act(async () => {
+      await expect(result.current.updateMatch('m1', 21, 18, [], 2, 0)).rejects.toThrow(
+        'Cannot complete playoff match without both teams assigned'
+      );
+    });
+    expect(mocks.scores).not.toHaveBeenCalled();
+  });
 });
