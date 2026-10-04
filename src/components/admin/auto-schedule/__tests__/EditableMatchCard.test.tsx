@@ -108,6 +108,6 @@ describe('EditableMatchCard', () => {
   it('shows the rematch warning when there is no error', () => {
     renderCard({ hasWarning: true });
 
-    expect(screen.getByText(/Rematch — these teams have already played/)).toBeInTheDocument();
+    expect(screen.getByText(/Rematch — these teams have already played/u)).toBeInTheDocument();
   });
 });

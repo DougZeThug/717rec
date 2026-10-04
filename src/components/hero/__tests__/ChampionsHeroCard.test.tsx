@@ -51,7 +51,7 @@ describe('ChampionsHeroCard', () => {
   });
 
   it('shows a loading placeholder while the champion teams load', () => {
-    mocks.fetchChampionTeams.mockImplementation(() => new Promise(() => {}));
+    mocks.fetchChampionTeams.mockImplementation(() => new Promise(() => undefined));
     const { container } = renderCard(makeCard({ Competitive: 't1' }));
 
     expect(container.querySelector('section.animate-pulse')).toBeInTheDocument();
