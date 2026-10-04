@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -87,6 +87,9 @@ vi.mock('@/components/playoffs/match-score-editor/ByeMatchEditor', () => ({
     <div data-testid="bye-match-editor" data-has-edit-teams={String(Boolean(onEditTeams))}>
       <button data-testid="bye-close" onClick={onClose}>
         Close
+      </button>
+      <button data-testid="bye-edit-teams" onClick={onEditTeams}>
+        Edit teams
       </button>
     </div>
   ),
@@ -284,6 +287,17 @@ describe('BracketsManagerMatchEditor', () => {
       mockIsAdmin = true;
       render(<BracketsManagerMatchEditor {...defaultProps} />);
       expect(screen.getByTestId('regular-match-editor').dataset.hasEditTeams).toBe('true');
+    });
+
+    it('opens the Edit teams dialog when an admin presses Edit teams', () => {
+      mockIsAdmin = true;
+      mockEditorState = { ...defaultEditorState, matchData: makeMatchData({ opponent2: null }) };
+      render(<BracketsManagerMatchEditor {...defaultProps} />);
+      expect(screen.queryByTestId('edit-participants-dialog')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByTestId('bye-edit-teams'));
+
+      expect(screen.getByTestId('edit-participants-dialog')).toBeInTheDocument();
     });
 
     it('offers Edit teams on a BYE match too, for admins', () => {
