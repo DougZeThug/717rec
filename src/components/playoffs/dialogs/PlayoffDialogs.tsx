@@ -110,7 +110,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
           if (!open) onCloseMatchEditor();
         }}
       >
-        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[95dvh] sm:max-h-[90dvh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[95vh] sm:max-h-[90vh] supports-[height:95dvh]:max-h-[95dvh] supports-[height:90dvh]:sm:max-h-[90dvh] overflow-y-auto">
           <DialogHeader className="sr-only">
             <DialogTitle>{isQuickEdit ? 'Quick Score Update' : 'Edit Match Score'}</DialogTitle>
             <DialogDescription>

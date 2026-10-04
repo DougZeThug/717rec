@@ -62,7 +62,7 @@ const SectionsDrawer: React.FC<{
   pendingRequestsCount: number;
 }> = ({ open, onOpenChange, activeTab, onSelect, pendingRequestsCount }) => (
   <Drawer open={open} onOpenChange={onOpenChange}>
-    <DrawerContent className="max-h-[90dvh]">
+    <DrawerContent className="max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh]">
       <DrawerHeader className="pb-2">
         <DrawerTitle>Admin sections</DrawerTitle>
         <DrawerDescription>Choose a section to open.</DrawerDescription>

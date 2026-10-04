@@ -79,7 +79,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   if (!isAdminAccessGranted) {
     authLog(`Admin access DENIED for ${user.email}`);
     return (
-      <div className="container mx-auto py-8 px-4 flex items-center justify-center min-h-[60dvh]">
+      <div className="container mx-auto py-8 px-4 flex items-center justify-center min-h-[60vh] supports-[height:60dvh]:min-h-[60dvh]">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center space-y-4">
             <LockIcon className="size-10 mx-auto text-muted-foreground" aria-hidden="true" />

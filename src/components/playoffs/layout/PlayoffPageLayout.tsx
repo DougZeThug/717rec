@@ -65,7 +65,7 @@ const PlayoffPageLayout: React.FC<PlayoffPageLayoutProps> = ({ data }) => {
   return (
     <div
       className={cn(
-        'min-h-dvh py-4 px-3 md:py-8 md:px-8 pb-8',
+        'min-h-screen supports-[height:100dvh]:min-h-dvh py-4 px-3 md:py-8 md:px-8 pb-8',
         shouldApplyWinterBase ? 'page-winter-bg ice-pattern-bg' : 'cornhole-bg',
         winterClass
       )}

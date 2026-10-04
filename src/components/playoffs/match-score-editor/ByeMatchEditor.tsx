@@ -201,7 +201,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
   status,
 }) => {
   return (
-    <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90dvh] overflow-y-auto">
+    <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
       </DialogHeader>

@@ -86,8 +86,12 @@ export const ResponsiveDialogContent: React.FC<ResponsiveDialogContentProps> = (
 
   if (isMobile) {
     return (
-      <DrawerContent className={cn('max-h-[90dvh]', className)}>
-        <div className="overflow-y-auto max-h-[80dvh] px-4 pb-4">{children}</div>
+      <DrawerContent
+        className={cn('max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh]', className)}
+      >
+        <div className="overflow-y-auto max-h-[80vh] supports-[height:80dvh]:max-h-[80dvh] px-4 pb-4">
+          {children}
+        </div>
       </DrawerContent>
     );
   }

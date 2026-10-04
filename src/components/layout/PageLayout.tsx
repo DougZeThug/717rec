@@ -56,7 +56,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   return (
     <div
       className={cn(
-        'min-h-dvh transition-colors duration-300 overflow-x-clip',
+        'min-h-screen supports-[height:100dvh]:min-h-dvh transition-colors duration-300 overflow-x-clip',
         getGradientClass(),
         // The footer that follows already clears the phone tab bar, so this does
         // not need to (it used to add 5rem, which stacked with the footer's).

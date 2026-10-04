@@ -31,7 +31,7 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80dvh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] supports-[height:80dvh]:max-h-[80dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Head-to-Head vs {opponentName}</DialogTitle>
         </DialogHeader>

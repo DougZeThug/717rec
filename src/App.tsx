@@ -131,7 +131,7 @@ const AppLayout = () => {
         <RouteAnnouncer />
         <ScrollToTop />
         <UnsavedWorkBlocker />
-        <div className="flex flex-col min-h-dvh overflow-x-clip">
+        <div className="flex flex-col min-h-screen supports-[height:100dvh]:min-h-dvh overflow-x-clip">
           <Navbar />
           {/* Under the header and in normal flow, never sticky: if the header is
             ever made sticky (it is not today, see Navbar), a second sticky bar
