@@ -52,4 +52,22 @@ describe('HistoryPageContent when the seasons fail to load', () => {
 
     expect(screen.getAllByText('Seasons')).toHaveLength(2);
   });
+  it('invites the visitor to look at the current season when there is no history yet', () => {
+    mockUseHistoricalSeasons.mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <HistoryPageContent />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('No Season History Yet')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view current season/i })).toBeInTheDocument();
+  });
 });

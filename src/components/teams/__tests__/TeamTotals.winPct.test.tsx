@@ -90,4 +90,14 @@ describe('TeamTotals loading and empty states', () => {
 
     expect(screen.getByText('No career statistics available')).toBeInTheDocument();
   });
+  it('says there are no career statistics inside its section too', () => {
+    mockUseTeamTotals.mockReturnValue({ isLoading: false, totals: null });
+    render(
+      <MemoryRouter>
+        <TeamTotals teamId="team-1" />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('button', { name: /career statistics/i })).toBeInTheDocument();
+  });
 });

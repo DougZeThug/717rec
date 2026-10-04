@@ -94,7 +94,7 @@ describe('blind draw signup queries', () => {
   });
 
   it('does not ask the server to count when there is no event date', () => {
-    const { result } = renderHook(() => useBlindDrawSignupCount(undefined), { wrapper });
+    const { result } = renderHook(() => useBlindDrawSignupCount(), { wrapper });
 
     expect(result.current.fetchStatus).toBe('idle');
     expect(mockService.fetchBlindDrawSignupCount).not.toHaveBeenCalled();
