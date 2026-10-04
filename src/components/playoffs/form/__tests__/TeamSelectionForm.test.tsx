@@ -128,4 +128,37 @@ describe('TeamSelectionForm', () => {
 
     expect(screen.getByText('Need at least 2 teams')).toBeInTheDocument();
   });
+  it('shows the error message and uses the error status when the form state has an error', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        formState={createMockFormState({
+          hasError: true,
+          hasWarning: false,
+          warningMessage: null,
+          errorMessage: 'Too many teams selected',
+          statusMessage: 'Remove a team',
+        })}
+      />
+    );
+
+    expect(screen.getByText('Too many teams selected')).toBeInTheDocument();
+    expect(screen.getByText('Remove a team')).toBeInTheDocument();
+  });
+
+  it('shows the plain status when the selection is valid', () => {
+    renderWithRouter(
+      <TeamSelectionForm
+        {...defaultProps}
+        formState={createMockFormState({
+          isValid: true,
+          hasWarning: false,
+          warningMessage: null,
+          statusMessage: 'Ready to create bracket',
+        })}
+      />
+    );
+
+    expect(screen.getByText('Ready to create bracket')).toBeInTheDocument();
+  });
 });

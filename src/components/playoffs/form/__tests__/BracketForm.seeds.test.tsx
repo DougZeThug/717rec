@@ -60,6 +60,9 @@ vi.mock('../bracket-teams/components/BracketFormTeamsContainer', () => ({
       <button type="button" onClick={() => onSeedChange('t2', 2)}>
         t2 seed 2
       </button>
+      <button type="button" onClick={() => onSeedChange('t1', null)}>
+        t1 clear seed
+      </button>
       <button type="button" onClick={() => onSeedChange('t4', 0)}>
         t4 seed 0
       </button>
@@ -157,6 +160,29 @@ describe('BracketForm manual seeds', () => {
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
     expect(onSubmit.mock.calls[0][0].teamSeeds).toEqual({ t1: 1, t2: 2 });
+  });
+
+  it('forgets a seed that is cleared, so it is not sent', async () => {
+    const { user, onSubmit } = renderForm();
+    await user.click(screen.getByText('pick four'));
+    await user.click(screen.getByText('t1 seed 1'));
+    await user.click(screen.getByText('t2 seed 2'));
+    await user.click(screen.getByText('t1 clear seed'));
+
+    await waitFor(() => expect(createButton()).toBeEnabled());
+    await user.click(createButton());
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect(onSubmit.mock.calls[0][0].teamSeeds).toEqual({ t2: 2 });
+  });
+
+  it('tells the admin the bracket is ready and says BYEs will be added for an odd count', async () => {
+    const { user } = renderForm();
+    await user.click(screen.getByText('drop t4'));
+
+    expect(screen.getByText(/Ready to create bracket with 3 teams/)).toHaveTextContent(
+      'BYEs will be added'
+    );
   });
 
   // Manage Seeds carries division seeds (1 to the division size), not bracket

@@ -205,6 +205,20 @@ describe('TeamDetails page', () => {
     expect(refetchTeam).toHaveBeenCalledTimes(1);
   });
 
+  it('still lets the visitor go back to the teams list when the fetch fails', () => {
+    mockUseTeamDetails.mockReturnValue({
+      team: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+      refetch: vi.fn(),
+    });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Teams' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/teams');
+  });
+
   it('offers a retry when only the match data failed, instead of reading as no matches', () => {
     const refetchMatches = vi.fn();
     mockUseTeamMatches.mockReturnValue({

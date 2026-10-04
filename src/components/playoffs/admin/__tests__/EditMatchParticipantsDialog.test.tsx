@@ -121,6 +121,23 @@ describe('EditMatchParticipantsDialog', () => {
     expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
   });
 
+  it('says the match could not be loaded when the team options fail to arrive', () => {
+    vi.mocked(useEditTeamsOptions).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+    } as unknown as ReturnType<typeof useEditTeamsOptions>);
+    vi.mocked(useEditTeamsPreview).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useEditTeamsPreview>);
+    renderDialog();
+
+    expect(screen.getByText('Could not load this match. Please try again.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
+  });
+
   it('lists teams grouped by how they can be picked, with the ones that cannot disabled', async () => {
     wire(options());
     renderDialog();
