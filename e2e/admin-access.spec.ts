@@ -78,7 +78,9 @@ const seedAuthenticatedUser = async (
 };
 
 test.describe('admin access control', () => {
-  test('redirects an authenticated non-admin away from admin-only screens', async ({ page }) => {
+  test('keeps an authenticated non-admin out of admin-only screens, with an explanation', async ({
+    page,
+  }) => {
     await seedAuthenticatedUser(page, {
       id: 'e2e-non-admin-user',
       email: 'e2e-member@example.com',
@@ -87,9 +89,11 @@ test.describe('admin access control', () => {
 
     await page.goto('/admin');
 
-    await expect(page).toHaveURL(/\/$/);
+    // The person stays on the address and is told why, instead of a short toast
+    // and a redirect home. The dashboard itself must never render.
+    await expect(page.getByRole('heading', { name: 'Admins only' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toHaveCount(0);
-    await expect(page.getByRole('link', { name: /717Rec/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Back to home' })).toBeVisible();
   });
 
   test('allows an authenticated admin to reach the admin landing screen', async ({ page }) => {
