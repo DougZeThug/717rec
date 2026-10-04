@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { BusinessLogicError } from '@/types/errors';
 import { handleDatabaseError } from '@/utils/errorHandler';
 
-export type DisplayDivision = 'Competitive' | 'Intermediate' | 'Recreational';
+export type DisplayDivision = 'Competitive' | 'Intermediate' | 'Recreational' | 'Hidden';
 
 export interface DivisionInput {
   name: string;

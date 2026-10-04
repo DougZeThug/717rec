@@ -160,7 +160,10 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
       />
 
       {/* Game scores section */}
-      <div className={cn('border-t pt-4', animations.fadeIn)} style={{ animationDelay: '0.1s' }}>
+      <div
+        className={cn('border-t pt-4 pb-2', animations.fadeIn)}
+        style={{ animationDelay: '0.1s' }}
+      >
         <div className="text-sm font-medium mb-2">Game Scores (Best of {match.bestOf})</div>
 
         <GameScoresList

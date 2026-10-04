@@ -46,21 +46,32 @@ const MatchScoreActions: React.FC<MatchScoreActionsProps> = ({
         </div>
       </div>
 
-      <div className="flex justify-end space-x-2 pt-2 border-t">
-        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
-          <X className="size-4 mr-1" />
-          Cancel
-        </Button>
-        <Button onClick={onSave} disabled={isSubmitting || hasValidationError}>
-          {isSubmitting ? (
-            <>Saving...</>
-          ) : (
-            <>
-              <Save className="size-4 mr-1" />
-              Save Scores
-            </>
-          )}
-        </Button>
+      <div className="sticky bottom-0 -mb-2 bg-background pt-2 pb-2 border-t">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto"
+          >
+            <X className="size-4 mr-1" />
+            Cancel
+          </Button>
+          <Button
+            onClick={onSave}
+            disabled={isSubmitting || hasValidationError}
+            className="w-full sm:w-auto"
+          >
+            {isSubmitting ? (
+              <>Saving...</>
+            ) : (
+              <>
+                <Save className="size-4 mr-1" />
+                Save Scores
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );

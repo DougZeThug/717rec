@@ -32,12 +32,13 @@ interface DivisionItem {
   display_division: string;
 }
 
-const DISPLAY_OPTIONS: DisplayDivision[] = ['Competitive', 'Intermediate', 'Recreational'];
+const DISPLAY_OPTIONS: DisplayDivision[] = ['Competitive', 'Intermediate', 'Recreational', 'Hidden'];
 
 const normalizeDisplay = (value: string | null | undefined): DisplayDivision => {
   const v = (value ?? '').toLowerCase();
   if (v.includes('competitive')) return 'Competitive';
   if (v.includes('intermediate')) return 'Intermediate';
+  if (v === 'hidden') return 'Hidden';
   return 'Recreational';
 };
 
