@@ -53,5 +53,3 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({
     </div>
   );
 };
-
-export default LastUpdated;

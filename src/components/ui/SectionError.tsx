@@ -44,5 +44,3 @@ export const SectionError: React.FC<SectionErrorProps> = ({ title, error, onRetr
     </Button>
   </div>
 );
-
-export default SectionError;

@@ -119,7 +119,7 @@ export function convertErrorToString(error: unknown): string | null {
 const GENERIC_REASON = 'Something went wrong. Please try again.';
 const PERMISSION_REASON = 'You do not have permission to do this.';
 /** PGRST301 is a bad or expired login token, not a missing right. */
-export const SESSION_EXPIRED_REASON = 'Your session has expired. Please sign in again.';
+const SESSION_EXPIRED_REASON = 'Your session has expired. Please sign in again.';
 
 /**
  * Postgres/PostgREST codes we can translate into something a league admin can

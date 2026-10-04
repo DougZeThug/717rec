@@ -24,7 +24,7 @@ interface NextMatchStripProps {
  *
  * Times use the same clock as the Schedule page it links to, so the two agree.
  */
-export const NextMatchStrip: React.FC<NextMatchStripProps> = ({ match, teamId }) => {
+const NextMatchStrip: React.FC<NextMatchStripProps> = ({ match, teamId }) => {
   const isTeam1 = match.team1Id === teamId;
   const opponent = isTeam1 ? match.team2Details : match.team1Details;
   const opponentName = opponent?.name || 'To be decided';
