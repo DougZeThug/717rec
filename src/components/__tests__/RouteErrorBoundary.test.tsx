@@ -198,4 +198,49 @@ describe('RouteErrorBoundary', () => {
 
     expect(screen.getByText('Standings')).toBeInTheDocument();
   });
+  describe('recovery buttons on an ordinary error', () => {
+    it('shows the page again when Try Again is pressed and the problem has gone', async () => {
+      let shouldThrow = true;
+      const Flaky = () => {
+        if (shouldThrow) throw new Error('boom');
+        return <p>Recovered page</p>;
+      };
+      render(
+        <RouteErrorBoundary routeName="Standings">
+          <Flaky />
+        </RouteErrorBoundary>
+      );
+
+      shouldThrow = false;
+      await userEvent.click(screen.getByRole('button', { name: /try again/i }));
+
+      expect(screen.getByText('Recovered page')).toBeInTheDocument();
+    });
+
+    it('goes back one page when Go Back is pressed', async () => {
+      const back = vi.spyOn(window.history, 'back').mockImplementation(() => undefined);
+      render(
+        <RouteErrorBoundary routeName="Standings">
+          <Bomb message="boom" />
+        </RouteErrorBoundary>
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: /go back/i }));
+
+      expect(back).toHaveBeenCalledTimes(1);
+      back.mockRestore();
+    });
+
+    it('goes to the home page when Home is pressed', async () => {
+      render(
+        <RouteErrorBoundary routeName="Standings">
+          <Bomb message="boom" />
+        </RouteErrorBoundary>
+      );
+
+      await userEvent.click(screen.getByRole('button', { name: /home/i }));
+
+      expect(window.location.href).toBe('/');
+    });
+  });
 });

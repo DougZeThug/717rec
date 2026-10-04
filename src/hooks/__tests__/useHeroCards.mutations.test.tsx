@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -18,7 +18,7 @@ const { mockToast, mockService } = vi.hoisted(() => ({
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: mockToast }) }));
 vi.mock('@/services/HeroCardService', () => ({ HeroCardService: mockService }));
 
-import { useHeroCardMutations } from '../useHeroCards';
+import { useAllHeroCards, useHeroCardMutations, useHeroCards } from '../useHeroCards';
 
 const wrapper = ({ children }: { children: React.ReactNode }) =>
   React.createElement(
@@ -70,5 +70,27 @@ describe('useHeroCardMutations toasts', () => {
     await run(() => (result.current[action] as (a: unknown) => Promise<unknown>)(arg));
 
     expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }));
+  });
+});
+
+describe('hero card queries', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockService.fetchVisibleHeroCards.mockResolvedValue([{ id: 'visible-1' }]);
+    mockService.fetchAllHeroCards.mockResolvedValue([{ id: 'all-1' }, { id: 'all-2' }]);
+  });
+
+  it('loads the visible hero cards for the home page', async () => {
+    const { result } = renderHook(() => useHeroCards(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual([{ id: 'visible-1' }]);
+  });
+
+  it('loads every hero card for the admin list', async () => {
+    const { result } = renderHook(() => useAllHeroCards(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toHaveLength(2);
   });
 });
