@@ -119,17 +119,24 @@ describe('MessageItem', () => {
     expect(optionButtons().some((b) => b.querySelector('.lucide-pencil'))).toBe(false);
   });
 
-  it('closes the options when the reader clicks somewhere else, and not when they click the card', () => {
+  it('closes the options when the reader clicks somewhere else', () => {
     render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Message options' }));
     expect(optionButtons()).toHaveLength(2);
 
-    // A click on the message text is inside the card: the card handles it.
-    fireEvent.click(screen.getByText('Practice is on for tonight'));
-    // A click on the page behind it closes the options.
+    // A click on the page behind the card closes the options.
     fireEvent.click(document.body);
     expect(optionButtons()).toHaveLength(0);
+  });
+
+  it('opens the options from a click on the card itself and keeps them open', () => {
+    render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
+
+    // The card's own click opens them. The outside-click listener must ignore
+    // that same click, or the options would close in the same moment.
+    fireEvent.click(card());
+    expect(optionButtons()).toHaveLength(2);
   });
 
   it('opens the delete confirmation dialog when the author clicks the trash control', () => {
