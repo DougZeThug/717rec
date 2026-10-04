@@ -97,13 +97,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   useEffect(() => {
     if (showOptions) {
       const handleClickOutside = () => setShowOptions(false);
-      // Attached on the next tick: the click that opened the options is still
-      // travelling up to `document`, and would close them again at once.
-      const timer = setTimeout(() => document.addEventListener('click', handleClickOutside), 0);
-      return () => {
-        clearTimeout(timer);
-        document.removeEventListener('click', handleClickOutside);
-      };
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
     }
     return undefined;
   }, [showOptions]);

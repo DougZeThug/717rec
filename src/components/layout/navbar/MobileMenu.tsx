@@ -98,9 +98,11 @@ const MobileMenu: React.FC = React.memo(() => {
           <m.div
             id={PANEL_ID}
             className="lg:hidden overflow-hidden"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            // maxHeight, as before, not height: it is only a ceiling that lets
+            // the panel grow into view. The real cap is the scroll box inside.
+            initial={{ opacity: 0, maxHeight: 0 }}
+            animate={{ opacity: 1, maxHeight: '100vh' }}
+            exit={{ opacity: 0, maxHeight: 0 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
           >
             {/* The outer box clips while it animates open. This inner box scrolls
