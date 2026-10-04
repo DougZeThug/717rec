@@ -17,6 +17,7 @@ import { useTeamsQuery } from '@/hooks/teams';
 import { useMatchDates } from '@/hooks/useMatchDates';
 import { useMatchManagement } from '@/hooks/useMatchManagement';
 import { useMatchTimeslots } from '@/hooks/useMatchTimeslots';
+import { getMatchDateKey } from '@/hooks/useMyNextMatch';
 import { useScheduleData } from '@/hooks/useScheduleData';
 import { useScheduleTabs } from '@/hooks/useScheduleTabs';
 import { useTimeslotDates } from '@/hooks/useTimeslotDates';
@@ -175,7 +176,11 @@ const Schedule = () => {
     // completedMatches is sorted most-recent-first by useScheduleData.
     return (
       completedMatches
-        .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
+        .flatMap((match) => {
+          // A date that cannot be read is not a night the page can open on.
+          const key = getMatchDateKey(match);
+          return key ? [key] : [];
+        })
         .find((key) => key <= todayKey) ?? null
     );
   }, [completedMatches]);
@@ -197,7 +202,11 @@ const Schedule = () => {
     return (
       upcomingMatches
         .filter(isMatchOpenForScoring)
-        .flatMap((match) => (match.date ? [format(parseISO(match.date), 'yyyy-MM-dd')] : []))
+        .flatMap((match) => {
+          // A date that cannot be read is not a night the page can open on.
+          const key = getMatchDateKey(match);
+          return key ? [key] : [];
+        })
         .find((key) => key >= todayKey) ?? null
     );
   }, [upcomingMatches]);

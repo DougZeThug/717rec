@@ -365,6 +365,7 @@ describe('Schedule page', () => {
     mockUseScheduleData.mockReturnValue({
       ...baseScheduleData,
       matchesData: [{ id: 'bad', date: 'not-a-date', iscompleted: false }],
+      upcomingMatches: [{ id: 'bad', date: 'not-a-date', iscompleted: false }],
     });
 
     expect(() => renderPage()).not.toThrow();
