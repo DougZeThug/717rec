@@ -239,4 +239,48 @@ describe('useMatchComments', () => {
       variant: 'destructive',
     });
   });
+
+  // Realtime can report the delete before the request that made it answers. If
+  // that request then fails, the comment really is gone, so putting it back (or
+  // saying it could not be deleted) would be wrong.
+  it('says the request failed, and keeps the comment gone, when realtime already confirmed the delete', async () => {
+    mockUser.current = { id: 'user-1' };
+    mockFetchComments.mockResolvedValue([comment]);
+    let rejectDelete: (reason: Error) => void = () => undefined;
+    mockDeleteComment.mockImplementation(
+      () =>
+        new Promise((_resolve, reject) => {
+          rejectDelete = reject;
+        })
+    );
+
+    const { result } = renderHook(() => useMatchComments('match-1'), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.comments).toHaveLength(1));
+
+    let pending: Promise<boolean> = Promise.resolve(false);
+    act(() => {
+      pending = result.current.deleteComment('comment-1');
+    });
+    await waitFor(() => expect(mockDeleteComment).toHaveBeenCalled());
+
+    // The server's own change feed reports the row gone first.
+    const deleteHandler = mockChannel.on.mock.calls[1][2];
+    act(() => {
+      deleteHandler({ old: { id: 'comment-1' } });
+    });
+
+    mockFetchComments.mockResolvedValue([]);
+    await act(async () => {
+      rejectDelete(new Error('network dropped'));
+      await pending;
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Delete request failed', variant: 'destructive' })
+    );
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Couldn't delete comment" })
+    );
+    expect(result.current.comments).toEqual([]);
+  });
 });
