@@ -98,6 +98,9 @@ describe('TeamTotals loading and empty states', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('button', { name: /career statistics/i })).toBeInTheDocument();
+    // The section starts closed, so open it to read what it says.
+    fireEvent.click(screen.getByRole('button', { name: /career statistics/i }));
+
+    expect(screen.getByText('No career statistics available')).toBeInTheDocument();
   });
 });
