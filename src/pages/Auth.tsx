@@ -52,6 +52,39 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
   </p>
 );
 
+type AuthFormFields = Omit<React.ComponentProps<typeof AuthForm>, 'type' | 'onSubmit'>;
+
+interface AuthTabsProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  formProps: AuthFormFields;
+  onSignIn: React.ComponentProps<typeof AuthForm>['onSubmit'];
+  onSignUp: React.ComponentProps<typeof AuthForm>['onSubmit'];
+}
+
+const AuthTabs: React.FC<AuthTabsProps> = ({
+  activeTab,
+  setActiveTab,
+  formProps,
+  onSignIn,
+  onSignUp,
+}) => (
+  <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
+    <TabsList className="grid w-full grid-cols-2">
+      <TabsTrigger value="login">Sign in</TabsTrigger>
+      <TabsTrigger value="signup">Sign up</TabsTrigger>
+    </TabsList>
+
+    <TabsContent value="login">
+      <AuthForm type="login" onSubmit={onSignIn} {...formProps} />
+    </TabsContent>
+
+    <TabsContent value="signup">
+      <AuthForm type="signup" onSubmit={onSignUp} {...formProps} />
+    </TabsContent>
+  </Tabs>
+);
+
 const Auth = () => {
   const { user, authInitialized } = useAuth();
   const navigate = useNavigate();
@@ -93,34 +126,13 @@ const Auth = () => {
         path="/auth"
       />
       <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
-        <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Sign in</TabsTrigger>
-            <TabsTrigger value="signup">Sign up</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <AuthForm
-              type="login"
-              onSubmit={handleSignIn}
-              isSubmitting={isSubmitting}
-              emailError={emailError}
-              passwordError={passwordError}
-              authError={authError}
-            />
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <AuthForm
-              type="signup"
-              onSubmit={handleSignUp}
-              isSubmitting={isSubmitting}
-              emailError={emailError}
-              passwordError={passwordError}
-              authError={authError}
-            />
-          </TabsContent>
-        </Tabs>
+        <AuthTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          formProps={{ isSubmitting, emailError, passwordError, authError }}
+          onSignIn={handleSignIn}
+          onSignUp={handleSignUp}
+        />
 
         <SocialAuthButtons
           onGoogleSignIn={() => handleGoogleSignIn(returnTo)}

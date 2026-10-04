@@ -58,6 +58,66 @@ interface BracketFormProps {
   onCancel: () => void;
 }
 
+const TeamsFieldLabel: React.FC<{ selectedTeamCount: number; maxTeams: number }> = ({
+  selectedTeamCount,
+  maxTeams,
+}) => (
+  <div className="flex items-center gap-2">
+    <Users className="size-4" />
+    <label className="text-sm font-medium leading-none">
+      Select Teams ({selectedTeamCount}/{maxTeams})
+    </label>
+  </div>
+);
+
+const ReadyNotice: React.FC<{ selectedTeamCount: number }> = ({ selectedTeamCount }) => (
+  <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
+    <Users className="size-4" />
+    <span>
+      Ready to create bracket with {selectedTeamCount} teams
+      {!isPowerOf2(selectedTeamCount) ? ' (BYEs will be added)' : ''}
+    </span>
+  </div>
+);
+
+interface BracketFormActionsProps {
+  onCancel: () => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
+  canSubmit: boolean;
+  selectedTeamCount: number;
+}
+
+const BracketFormActions: React.FC<BracketFormActionsProps> = ({
+  onCancel,
+  onSubmit,
+  isSubmitting,
+  canSubmit,
+  selectedTeamCount,
+}) => (
+  <div className="flex gap-3 pt-4 border-t">
+    <Button
+      type="button"
+      variant="outline"
+      onClick={onCancel}
+      disabled={isSubmitting}
+      className="flex-1"
+    >
+      Cancel
+    </Button>
+    <Button type="button" onClick={onSubmit} disabled={!canSubmit} className="flex-1">
+      {isSubmitting ? (
+        <>
+          <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+          Creating Bracket...
+        </>
+      ) : (
+        `Create Bracket (${selectedTeamCount} teams)`
+      )}
+    </Button>
+  </div>
+);
+
 const BracketForm: React.FC<BracketFormProps> = ({
   divisions,
   teams,
@@ -227,12 +287,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
 
         {/* Team Selection */}
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Users className="size-4" />
-            <label className="text-sm font-medium leading-none">
-              Select Teams ({selectedTeamCount}/{maxTeams})
-            </label>
-          </div>
+          <TeamsFieldLabel selectedTeamCount={selectedTeamCount} maxTeams={maxTeams} />
 
           <BracketFormTeamsContainer
             divisionId={watchedDivisionId}
@@ -248,15 +303,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
         {/* Validation Messages */}
         {selectedTeamCount > 0 &&
           selectedTeamCount >= minTeams &&
-          selectedTeamCount <= maxTeams && (
-            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-              <Users className="size-4" />
-              <span>
-                Ready to create bracket with {selectedTeamCount} teams
-                {!isPowerOf2(selectedTeamCount) ? ' (BYEs will be added)' : ''}
-              </span>
-            </div>
-          )}
+          selectedTeamCount <= maxTeams && <ReadyNotice selectedTeamCount={selectedTeamCount} />}
 
         {seedProblem && (
           <p role="alert" className="text-sm text-destructive-text">
@@ -264,33 +311,13 @@ const BracketForm: React.FC<BracketFormProps> = ({
           </p>
         )}
 
-        {/* Form Actions */}
-        <div className="flex gap-3 pt-4 border-t">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-            className="flex-1"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmitButtonClick}
-            disabled={!isButtonEnabled}
-            className="flex-1"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                Creating Bracket...
-              </>
-            ) : (
-              `Create Bracket (${selectedTeamCount} teams)`
-            )}
-          </Button>
-        </div>
+        <BracketFormActions
+          onCancel={onCancel}
+          onSubmit={handleSubmitButtonClick}
+          isSubmitting={isSubmitting}
+          canSubmit={isButtonEnabled}
+          selectedTeamCount={selectedTeamCount}
+        />
       </form>
     </Form>
   );

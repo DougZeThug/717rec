@@ -15,6 +15,78 @@ interface NextMatchStripProps {
   teamId: string;
 }
 
+type Opponent = Match['team1Details'];
+
+const MatchWhen: React.FC<{ formattedDate: string; formattedTime?: string | null }> = ({
+  formattedDate,
+  formattedTime,
+}) => (
+  <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+    <span className="inline-flex items-center gap-1">
+      <Calendar className="size-3.5" aria-hidden="true" />
+      {formattedDate}
+    </span>
+    {formattedTime && (
+      <span className="inline-flex items-center gap-1">
+        <Clock className="size-3.5" aria-hidden="true" />
+        {formattedTime}
+      </span>
+    )}
+  </p>
+);
+
+const OpponentLine: React.FC<{ opponent: Opponent; opponentName: string }> = ({
+  opponent,
+  opponentName,
+}) => (
+  <div className="flex items-center gap-2 min-w-0">
+    <TeamLogo
+      imageUrl={opponent?.image_url || opponent?.logo_url}
+      teamName={opponentName}
+      size="sm"
+      rounded
+    />
+    <p className="truncate font-semibold">vs {opponentName}</p>
+  </div>
+);
+
+interface NextMatchLinkProps {
+  href: string;
+  opponent: Opponent;
+  opponentName: string;
+  formattedDate: string;
+  formattedTime?: string | null;
+}
+
+const NextMatchLink: React.FC<NextMatchLinkProps> = ({
+  href,
+  opponent,
+  opponentName,
+  formattedDate,
+  formattedTime,
+}) => (
+  <Link
+    to={href}
+    className="group flex min-h-11 items-center justify-between gap-3 p-4 rounded-lg focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+  >
+    <div className="min-w-0 space-y-1">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Next match
+      </p>
+      <OpponentLine opponent={opponent} opponentName={opponentName} />
+      <MatchWhen formattedDate={formattedDate} formattedTime={formattedTime} />
+    </div>
+    <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
+      <span className="hidden sm:inline">See on Schedule</span>
+      <ChevronRight
+        className="size-5 transition-transform group-hover:translate-x-1"
+        aria-hidden="true"
+      />
+      <span className="sr-only sm:hidden">See on Schedule</span>
+    </span>
+  </Link>
+);
+
 /**
  * "Next match" on a team page.
  *
@@ -38,45 +110,13 @@ const NextMatchStrip: React.FC<NextMatchStripProps> = ({ match, teamId }) => {
     <section aria-label="Next match">
       <Card>
         <CardContent className="p-0">
-          <Link
-            to={scheduleHref}
-            className="group flex min-h-11 items-center justify-between gap-3 p-4 rounded-lg focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <div className="min-w-0 space-y-1">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Next match
-              </p>
-              <div className="flex items-center gap-2 min-w-0">
-                <TeamLogo
-                  imageUrl={opponent?.image_url || opponent?.logo_url}
-                  teamName={opponentName}
-                  size="sm"
-                  rounded
-                />
-                <p className="truncate font-semibold">vs {opponentName}</p>
-              </div>
-              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-3.5" aria-hidden="true" />
-                  {formattedDate}
-                </span>
-                {formattedTime && (
-                  <span className="inline-flex items-center gap-1">
-                    <Clock className="size-3.5" aria-hidden="true" />
-                    {formattedTime}
-                  </span>
-                )}
-              </p>
-            </div>
-            <span className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary">
-              <span className="hidden sm:inline">See on Schedule</span>
-              <ChevronRight
-                className="size-5 transition-transform group-hover:translate-x-1"
-                aria-hidden="true"
-              />
-              <span className="sr-only sm:hidden">See on Schedule</span>
-            </span>
-          </Link>
+          <NextMatchLink
+            href={scheduleHref}
+            opponent={opponent}
+            opponentName={opponentName}
+            formattedDate={formattedDate}
+            formattedTime={formattedTime}
+          />
         </CardContent>
       </Card>
     </section>

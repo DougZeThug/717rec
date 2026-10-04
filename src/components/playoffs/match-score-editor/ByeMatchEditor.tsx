@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 import { MatchStatusBadge } from './MatchStatusBadge';
 import type { ByeEligibility } from './useMatchEditorState';
@@ -32,6 +33,133 @@ interface ByeMatchEditorProps {
   status?: number;
 }
 
+interface ByeToggleButtonProps {
+  emoji: string;
+  label: string;
+  colour: string;
+  busy: boolean;
+  onClick: () => void;
+}
+
+/** One outlined status button: a spinner while busy, otherwise its emoji. */
+const ByeToggleButton: React.FC<ByeToggleButtonProps> = ({
+  emoji,
+  label,
+  colour,
+  busy,
+  onClick,
+}) => (
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={onClick}
+    disabled={busy}
+    className={cn(colour, 'w-full sm:w-auto text-xs sm:text-sm')}
+  >
+    {busy ? (
+      <Loader2 className="mr-2 size-4 animate-spin" />
+    ) : (
+      <span className="mr-2">{emoji}</span>
+    )}
+    {label}
+  </Button>
+);
+
+interface ByeStatusActionsProps {
+  byeEligible: ByeEligibility;
+  isRevertable: boolean;
+  isTogglingStatus: boolean;
+  onToggleByeStatus: (clearDownstream: boolean) => void;
+}
+
+const ByeStatusActions: React.FC<ByeStatusActionsProps> = ({
+  byeEligible,
+  isRevertable,
+  isTogglingStatus,
+  onToggleByeStatus,
+}) => {
+  if (byeEligible.currentStatus === 4) {
+    return (
+      <>
+        <ByeToggleButton
+          emoji="🔄"
+          label="Reopen (Safe)"
+          colour="border-blue-600 text-blue-600 hover:bg-blue-50"
+          busy={isTogglingStatus}
+          onClick={() => onToggleByeStatus(false)}
+        />
+        <ByeToggleButton
+          emoji="⚠️"
+          label="Reopen + Clear Downstream"
+          colour="border-red-600 text-red-600 hover:bg-red-50"
+          busy={isTogglingStatus}
+          onClick={() => onToggleByeStatus(true)}
+        />
+      </>
+    );
+  }
+
+  if (isRevertable) {
+    return (
+      <ByeToggleButton
+        emoji="🔒"
+        label="Revert to Waiting"
+        colour="border-amber-600 text-amber-600 hover:bg-amber-50"
+        busy={isTogglingStatus}
+        onClick={() => onToggleByeStatus(false)}
+      />
+    );
+  }
+
+  return (
+    <ByeToggleButton
+      emoji="🔓"
+      label="Unlock to Ready"
+      colour="border-green-600 text-green-600 hover:bg-green-50"
+      busy={isTogglingStatus}
+      onClick={() => onToggleByeStatus(false)}
+    />
+  );
+};
+
+/** The sentence under the buttons that says what the current status means. */
+const ByeStatusHint: React.FC<{ currentStatus: number; isRevertable: boolean }> = ({
+  currentStatus,
+  isRevertable,
+}) => {
+  if (currentStatus === 4) {
+    return (
+      <div className="space-y-1">
+        <p className="text-destructive-text font-medium">
+          ⚠️ This match is marked as Completed but has no winner (zombie state).
+        </p>
+        <p>
+          <strong>Reopen (Safe)</strong>: Only works if downstream matches haven&apos;t been
+          populated yet.
+        </p>
+        <p>
+          <strong>Reopen + Clear Downstream</strong>: Nullifies all downstream matches. Use with
+          caution!
+        </p>
+      </div>
+    );
+  }
+  if (currentStatus === 3) {
+    return (
+      <p>▶️ This BYE match is in progress. Click &quot;Revert to Waiting&quot; to lock it again.</p>
+    );
+  }
+  if (isRevertable) {
+    return <p>✅ Match is ready. You can now enter scores below or revert if needed.</p>;
+  }
+  return (
+    <p>
+      ⚠️ This BYE match is currently locked. Click &quot;Unlock to Ready&quot; to enable score
+      entry.
+    </p>
+  );
+};
+
 /** Status toggle buttons for BYE matches. */
 const ByeStatusControl: React.FC<{
   byeEligible: ByeEligibility;
@@ -45,105 +173,22 @@ const ByeStatusControl: React.FC<{
 
   return (
     <div className="bg-muted/50 border border-border rounded-lg p-3 sm:p-4 space-y-3">
-      <div className="space-y-3">
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Match Status Control</p>
-          <p className="text-xs text-muted-foreground">
-            Current Status: <span className="font-semibold">{byeEligible.statusName}</span>
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-          {byeEligible.currentStatus === 4 ? (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onToggleByeStatus(false)}
-                disabled={isTogglingStatus}
-                className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full sm:w-auto text-xs sm:text-sm"
-              >
-                {isTogglingStatus ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                ) : (
-                  <span className="mr-2">🔄</span>
-                )}
-                Reopen (Safe)
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onToggleByeStatus(true)}
-                disabled={isTogglingStatus}
-                className="border-red-600 text-red-600 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm"
-              >
-                {isTogglingStatus ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                ) : (
-                  <span className="mr-2">⚠️</span>
-                )}
-                Reopen + Clear Downstream
-              </Button>
-            </>
-          ) : isRevertable ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onToggleByeStatus(false)}
-              disabled={isTogglingStatus}
-              className="border-amber-600 text-amber-600 hover:bg-amber-50 w-full sm:w-auto text-xs sm:text-sm"
-            >
-              {isTogglingStatus ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <span className="mr-2">🔒</span>
-              )}
-              Revert to Waiting
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onToggleByeStatus(false)}
-              disabled={isTogglingStatus}
-              className="border-green-600 text-green-600 hover:bg-green-50 w-full sm:w-auto text-xs sm:text-sm"
-            >
-              {isTogglingStatus ? (
-                <Loader2 className="mr-2 size-4 animate-spin" />
-              ) : (
-                <span className="mr-2">🔓</span>
-              )}
-              Unlock to Ready
-            </Button>
-          )}
-        </div>
+      <div className="space-y-1">
+        <p className="text-sm font-medium">Match Status Control</p>
+        <p className="text-xs text-muted-foreground">
+          Current Status: <span className="font-semibold">{byeEligible.statusName}</span>
+        </p>
+      </div>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        <ByeStatusActions
+          byeEligible={byeEligible}
+          isRevertable={isRevertable}
+          isTogglingStatus={isTogglingStatus}
+          onToggleByeStatus={onToggleByeStatus}
+        />
       </div>
       <div className="text-xs text-muted-foreground">
-        {byeEligible.currentStatus === 4 ? (
-          <div className="space-y-1">
-            <p className="text-destructive-text font-medium">
-              ⚠️ This match is marked as Completed but has no winner (zombie state).
-            </p>
-            <p>
-              <strong>Reopen (Safe)</strong>: Only works if downstream matches haven&apos;t been
-              populated yet.
-            </p>
-            <p>
-              <strong>Reopen + Clear Downstream</strong>: Nullifies all downstream matches. Use with
-              caution!
-            </p>
-          </div>
-        ) : byeEligible.currentStatus === 3 ? (
-          <p>
-            ▶️ This BYE match is in progress. Click &quot;Revert to Waiting&quot; to lock it again.
-          </p>
-        ) : isRevertable ? (
-          <p>✅ Match is ready. You can now enter scores below or revert if needed.</p>
-        ) : (
-          <p>
-            ⚠️ This BYE match is currently locked. Click &quot;Unlock to Ready&quot; to enable score
-            entry.
-          </p>
-        )}
+        <ByeStatusHint currentStatus={byeEligible.currentStatus} isRevertable={isRevertable} />
       </div>
     </div>
   );
