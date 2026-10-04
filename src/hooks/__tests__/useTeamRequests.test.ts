@@ -17,7 +17,7 @@ import {
 
 const toast = vi.fn();
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast }) }));
-vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'admin-7' } }) }));
+vi.mock('@/contexts/auth-context', () => ({ useAuth: () => ({ user: { id: 'admin-7' } }) }));
 vi.mock('@/utils/logger', () => ({ errorLog: vi.fn() }));
 vi.mock('@/services/teams/TeamFetchService', () => ({
   fetchAllRequests: vi.fn(),
