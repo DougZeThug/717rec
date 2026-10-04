@@ -91,6 +91,7 @@ test.describe('admin access control', () => {
 
     // The person stays on the address and is told why, instead of a short toast
     // and a redirect home. The dashboard itself must never render.
+    await expect(page).toHaveURL(/\/admin$/);
     await expect(page.getByRole('heading', { name: 'Admins only' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Back to home' })).toBeVisible();

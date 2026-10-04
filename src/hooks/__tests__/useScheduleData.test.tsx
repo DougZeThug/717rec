@@ -28,8 +28,10 @@ const match = (overrides: Record<string, unknown>) => ({
   ...overrides,
 });
 
+let activeClient: QueryClient;
 const createWrapper = () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  activeClient = queryClient;
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
@@ -141,5 +143,29 @@ describe('useScheduleData ordering with unscheduled matches', () => {
     await waitFor(() => expect(result.current.upcomingMatches).toHaveLength(2));
 
     expect(result.current.upcomingMatches.map((m) => m.id)).toEqual(['first', 'second']);
+  });
+});
+
+describe('useScheduleData polling', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFetchScheduleMatches.mockResolvedValue([]);
+  });
+
+  it('configures a refetchInterval that works when TanStack calls it with the query', async () => {
+    const { result } = renderScheduleData();
+    await waitFor(() => expect(result.current.matchesLoading).toBe(false));
+
+    const query = activeClient.getQueryCache().find({ queryKey: ['matches', 'schedule'] });
+    // The option lives on the observer (the hook), not on the cached query.
+    const interval = query?.observers[0]?.options.refetchInterval;
+
+    // TanStack passes the query as the first argument. A bare reference to a
+    // function that reads its first argument as a Date would break here.
+    expect(typeof interval).toBe('function');
+    const wait = (interval as (q: unknown) => number | false)(query);
+    expect(typeof wait).toBe('number');
+    expect(wait).toBeGreaterThanOrEqual(60_000);
+    expect(wait).toBeLessThanOrEqual(60 * 60 * 1000);
   });
 });

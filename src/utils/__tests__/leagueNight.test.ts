@@ -124,10 +124,4 @@ describe('liveRefetchInterval', () => {
     const justBefore = new Date(leagueTime(2026, 10, 8, 16).getTime() - 1000);
     expect(liveRefetchInterval(justBefore)).toBe(LIVE_REFETCH_MS);
   });
-
-  it('is usable as a TanStack refetchInterval, which passes the query as its argument', () => {
-    // The hooks wrap it; this documents why a bare reference would break.
-    const asQueryCallback = () => liveRefetchInterval();
-    expect(typeof asQueryCallback()).toBe('number');
-  });
 });
