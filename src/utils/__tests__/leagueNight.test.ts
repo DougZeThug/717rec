@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import {
   isLeagueNightNow,
@@ -104,19 +104,30 @@ describe('isLeagueNightNow', () => {
 });
 
 describe('liveRefetchInterval', () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('polls every minute on league night', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(leagueTime(2026, 10, 8, 20));
-    expect(liveRefetchInterval()).toBe(LIVE_REFETCH_MS);
+    expect(liveRefetchInterval(leagueTime(2026, 10, 8, 20))).toBe(LIVE_REFETCH_MS);
   });
 
-  it('does not poll at any other time', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(leagueTime(2026, 10, 6, 20));
-    expect(liveRefetchInterval()).toBe(false);
+  it('waits exactly until 4 PM when league night is less than an hour away', () => {
+    // 3:20 PM Thursday: 40 minutes to go. Returning `false` here is the bug: the
+    // page would never wake up to start polling.
+    const threeTwenty = new Date(leagueTime(2026, 10, 8, 15).getTime() + 20 * 60 * 1000);
+    expect(liveRefetchInterval(threeTwenty)).toBe(40 * 60 * 1000);
+  });
+
+  it('checks again within an hour when league night is further away', () => {
+    expect(liveRefetchInterval(leagueTime(2026, 10, 6, 20))).toBe(60 * 60 * 1000);
+    expect(liveRefetchInterval(leagueTime(2026, 10, 8, 9))).toBe(60 * 60 * 1000);
+  });
+
+  it('never returns less than a minute, so it cannot spin', () => {
+    const justBefore = new Date(leagueTime(2026, 10, 8, 16).getTime() - 1000);
+    expect(liveRefetchInterval(justBefore)).toBe(LIVE_REFETCH_MS);
+  });
+
+  it('is usable as a TanStack refetchInterval, which passes the query as its argument', () => {
+    // The hooks wrap it; this documents why a bare reference would break.
+    const asQueryCallback = () => liveRefetchInterval();
+    expect(typeof asQueryCallback()).toBe('number');
   });
 });

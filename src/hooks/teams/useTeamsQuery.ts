@@ -40,7 +40,7 @@ export function useTeamsQuery(
     queryFn: () => fetchTeamsWithOptions(options),
     staleTime: 1000 * 60 * 5, // 5 minutes - team data only changes when scores are entered
     enabled: options?.enabled !== false, // Default to true unless explicitly disabled
-    refetchInterval: live ? liveRefetchInterval : false,
+    refetchInterval: live ? () => liveRefetchInterval() : false,
   });
 }
 

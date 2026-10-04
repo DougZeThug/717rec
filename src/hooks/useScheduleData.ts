@@ -66,7 +66,8 @@ export const useScheduleData = () => {
     // night as it was an hour ago with nothing to say so.
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: liveRefetchInterval, // every minute on league night only
+    // Wrapped: TanStack passes the query as the first argument.
+    refetchInterval: () => liveRefetchInterval(), // every minute on league night
     staleTime: 0, // Always fresh - instant updates
   });
 

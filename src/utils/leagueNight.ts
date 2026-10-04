@@ -1,4 +1,4 @@
-import { getLeagueCalendarDate } from '@/utils/timezone';
+import { getLeagueCalendarDate, getLeagueTimeUtc } from '@/utils/timezone';
 
 /**
  * League night is Thursday.
@@ -57,10 +57,33 @@ export const isLeagueNightNow = (now: Date = new Date()): boolean => {
   return weekday === 'Thu' && hour >= LEAGUE_NIGHT_START_HOUR;
 };
 
+/** Longest wait before checking again whether league night has started. */
+const MAX_IDLE_CHECK_MS = 60 * 60 * 1000;
+
+/** The next 4 PM on a Thursday in league time, as an instant. */
+const nextLeagueNightStart = (now: Date): Date => {
+  const THURSDAY = 4;
+  const { year, month, day } = getLeagueCalendarDate(now);
+  const leagueDayOfWeek = new Date(year, month - 1, day).getDay();
+  const daysAway = (THURSDAY - leagueDayOfWeek + 7) % 7;
+  return getLeagueTimeUtc(year, month, day + daysAway, LEAGUE_NIGHT_START_HOUR, 0);
+};
+
 /**
- * `refetchInterval` for data that changes while matches are played: every
- * minute on league night, never otherwise. TanStack Query already pauses an
- * interval while the tab is in the background.
+ * `refetchInterval` for data that changes while matches are played.
+ *
+ * - On league night: every minute.
+ * - Any other time: the wait until league night starts, but never more than an
+ *   hour. It cannot simply be `false`: TanStack Query only re-reads this
+ *   function after a fetch, so a page opened at noon on Thursday would then
+ *   never start polling when 4 PM arrives. Waiting exactly until the start
+ *   (and at most an hour, in case the clock or a sleeping device drifts) makes
+ *   the first poll land on the start, which then returns the one-minute value.
+ *
+ * TanStack Query already pauses an interval while the tab is in the background.
  */
-export const liveRefetchInterval = (): number | false =>
-  isLeagueNightNow() ? LIVE_REFETCH_MS : false;
+export const liveRefetchInterval = (now: Date = new Date()): number => {
+  if (isLeagueNightNow(now)) return LIVE_REFETCH_MS;
+  const untilStart = nextLeagueNightStart(now).getTime() - now.getTime();
+  return Math.min(Math.max(untilStart, LIVE_REFETCH_MS), MAX_IDLE_CHECK_MS);
+};
