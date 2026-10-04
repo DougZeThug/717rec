@@ -70,14 +70,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   // Track the latest username being checked to ignore stale responses
   const latestCheckRef = useRef<string>('');
 
-  // Check username availability
+  // Check username availability. The debounce effect below only calls this for
+  // names of 3+ characters, so shorter names never get here.
   const handleUsernameAvailabilityCheck = useCallback(
     async (value: string) => {
-      if (value.length < 3) {
-        setAvailability(null);
-        return;
-      }
-
       latestCheckRef.current = value;
       setIsCheckingUsername(true);
       const { available } = await checkUsernameAvailability({
