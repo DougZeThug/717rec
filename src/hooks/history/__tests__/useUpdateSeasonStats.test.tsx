@@ -29,7 +29,7 @@ describe('useUpdateSeasonStats', () => {
   });
 
   it('saves and returns true', async () => {
-    mockBatchUpdate.mockResolvedValue(undefined);
+    mockBatchUpdate.mockImplementation(() => Promise.resolve());
     const { result } = renderHook(() => useUpdateSeasonStats(), { wrapper });
 
     let ok: boolean | undefined;

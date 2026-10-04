@@ -43,7 +43,7 @@ describe('TeamEditSection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseTeamMembership.mockReturnValue({ membership: approved, refreshMembership: mockRefresh });
-    mockUpdateTeam.mockResolvedValue(undefined);
+    mockUpdateTeam.mockImplementation(() => Promise.resolve());
   });
 
   it.each([

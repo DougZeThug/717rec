@@ -361,6 +361,15 @@ describe('Schedule page', () => {
     expect(refetchMatches).toHaveBeenCalledTimes(1);
   });
 
+  it('still opens when a match has a date that cannot be read', () => {
+    mockUseScheduleData.mockReturnValue({
+      ...baseScheduleData,
+      matchesData: [{ id: 'bad', date: 'not-a-date', iscompleted: false }],
+    });
+
+    expect(() => renderPage()).not.toThrow();
+  });
+
   it('filters matches by search interaction', () => {
     mockUseScheduleData.mockReturnValue({
       ...baseScheduleData,

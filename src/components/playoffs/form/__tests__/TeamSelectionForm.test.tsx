@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
@@ -162,5 +163,20 @@ describe('TeamSelectionForm', () => {
 
     // The status line takes the valid colour.
     expect(screen.getByText('Ready to create bracket').parentElement).toHaveClass('text-green-600');
+  });
+  it('moves to the seeds tab when Manage Seeds is chosen', async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <QueryClientProvider client={new QueryClient()}>
+        <TeamSelectionForm {...defaultProps} />
+      </QueryClientProvider>
+    );
+
+    const seedsTab = screen.getByRole('tab', { name: /manage seeds/i });
+    expect(seedsTab).toHaveAttribute('aria-selected', 'false');
+
+    await user.click(seedsTab);
+
+    expect(seedsTab).toHaveAttribute('aria-selected', 'true');
   });
 });

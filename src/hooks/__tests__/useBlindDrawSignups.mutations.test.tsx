@@ -34,7 +34,7 @@ const run = async (fn: () => Promise<unknown>) => {
 describe('blind draw signup mutations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.values(mockService).forEach((fn) => fn.mockResolvedValue(undefined));
+    Object.values(mockService).forEach((fn) => fn.mockImplementation(() => Promise.resolve()));
   });
 
   it('confirms a removed signup with a success toast', async () => {

@@ -35,4 +35,21 @@ describe('HistoryPageContent when the seasons fail to load', () => {
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(refetch).toHaveBeenCalledTimes(1);
   });
+  it('lists one accordion per season when they load', () => {
+    mockUseHistoricalSeasons.mockReturnValue({
+      data: [{ id: 's1' }, { id: 's2' }],
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <HistoryPageContent />
+      </MemoryRouter>
+    );
+
+    expect(screen.getAllByText('Seasons')).toHaveLength(2);
+  });
 });

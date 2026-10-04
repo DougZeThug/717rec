@@ -106,7 +106,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
   // Debounce username checks
   useEffect(() => {
-    if (!username || username.length < 3) return;
+    if (!username || username.length < 3) return undefined;
 
     const handler = setTimeout(() => {
       handleUsernameAvailabilityCheck(username);

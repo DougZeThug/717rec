@@ -138,6 +138,36 @@ describe('EditMatchParticipantsDialog', () => {
     expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
   });
 
+  it('shows a spinner while the team options load', () => {
+    vi.mocked(useEditTeamsOptions).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as unknown as ReturnType<typeof useEditTeamsOptions>);
+    vi.mocked(useEditTeamsPreview).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useEditTeamsPreview>);
+    renderDialog();
+
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
+  });
+
+  it('does not offer a second BYE once one side is already a BYE', async () => {
+    wire(options());
+    renderDialog();
+
+    await pick('Team 2', /BYE \(no opponent\)/);
+    await openRadixTrigger(screen.getByLabelText('Team 1'));
+
+    expect(await screen.findByRole('option', { name: /BYE \(no opponent\)/ })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+  });
+
   it('lists teams grouped by how they can be picked, with the ones that cannot disabled', async () => {
     wire(options());
     renderDialog();

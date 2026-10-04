@@ -36,7 +36,7 @@ const run = async (fn: () => Promise<unknown>) => {
 describe('useHeroCardMutations toasts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    Object.values(mockService).forEach((fn) => fn.mockResolvedValue(undefined));
+    Object.values(mockService).forEach((fn) => fn.mockImplementation(() => Promise.resolve()));
   });
 
   it.each([

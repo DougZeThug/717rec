@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TeamTotals from '../TeamTotals';
@@ -56,5 +57,37 @@ describe('TeamTotals division win percentage colour', () => {
     render(<TeamTotals teamId="team-1" standalone />);
 
     expect(screen.getByText(pct)).toHaveClass(light, dark);
+  });
+});
+
+describe('TeamTotals loading and empty states', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each([
+    ['on its own', true],
+    ['inside its section', false],
+  ])('shows placeholders while the totals load %s', (_label, standalone) => {
+    mockUseTeamTotals.mockReturnValue({ isLoading: true, totals: null });
+    const { container } = render(
+      <MemoryRouter>
+        <TeamTotals teamId="team-1" standalone={standalone} />
+      </MemoryRouter>
+    );
+
+    // The section starts closed, so open it to see what it holds.
+    if (!standalone) fireEvent.click(screen.getByRole('button', { name: /career statistics/i }));
+
+    // Four placeholder blocks of two bars each, whichever way it is wrapped.
+    expect(container.querySelectorAll('.h-4.w-20')).toHaveLength(4);
+    expect(screen.queryByText('No career statistics available')).not.toBeInTheDocument();
+  });
+
+  it('says there are no career statistics when the team has none, on its own', () => {
+    mockUseTeamTotals.mockReturnValue({ isLoading: false, totals: null });
+    render(<TeamTotals teamId="team-1" standalone />);
+
+    expect(screen.getByText('No career statistics available')).toBeInTheDocument();
   });
 });
