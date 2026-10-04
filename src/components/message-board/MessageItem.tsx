@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/auth-context';
@@ -29,6 +29,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   const { getTeamPowerScore } = useTeamPowerScores();
   const [showReactionPicker, setShowReactionPicker] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   // Get power score for the team
   const powerScore = getTeamPowerScore(message.team_id);
@@ -96,7 +97,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
   // Close options when clicking outside
   useEffect(() => {
     if (showOptions) {
-      const handleClickOutside = () => setShowOptions(false);
+      // A click INSIDE the card is the card's own business. Without this check
+      // the click that opens the options bubbles up to this listener, which
+      // closes them again in the same moment, so a click on the card surface
+      // never opened them. (Checked in a real browser; jsdom tests run inside
+      // act() and never showed it.)
+      const handleClickOutside = (event: MouseEvent) => {
+        if (cardRef.current?.contains(event.target as Node)) return;
+        setShowOptions(false);
+      };
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
@@ -112,6 +121,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
 
   return (
     <Card
+      ref={cardRef}
       className={cn(
         'mb-2 overflow-hidden relative border shadow-xs transition-all duration-200',
         isAuthor ? gradients.card.highlight : gradients.card.default,

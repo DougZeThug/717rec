@@ -35,7 +35,7 @@ export const MatchCardAdminActions: React.FC<MatchCardAdminActionsProps> = ({
         <button
           type="button"
           onClick={() => onEdit(match)}
-          className="hit-area-44 p-1.5 rounded-full transition-colors duration-200 bg-muted hover:bg-muted/80 active:scale-95"
+          className="hit-area-44 p-1.5 rounded-full transition-[background-color,transform] duration-200 bg-muted hover:bg-muted/80 active:scale-95"
           aria-label="Edit match"
         >
           <Pencil className="size-3.5 text-muted-foreground" />
@@ -46,7 +46,7 @@ export const MatchCardAdminActions: React.FC<MatchCardAdminActionsProps> = ({
           type="button"
           onClick={() => onDelete(match.id)}
           className={cn(
-            'hit-area-44 p-1.5 rounded-full transition-colors duration-200 active:scale-95',
+            'hit-area-44 p-1.5 rounded-full transition-[background-color,transform] duration-200 active:scale-95',
             isCompleted
               ? 'bg-destructive/10 hover:bg-destructive/20'
               : 'bg-muted hover:bg-destructive/10'
