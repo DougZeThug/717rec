@@ -33,9 +33,12 @@ export const LastUpdated: React.FC<LastUpdatedProps> = ({
     <div
       className={cn('flex items-center justify-end gap-1 text-xs text-muted-foreground', className)}
     >
-      {/* Polite and atomic: a refresh announces the new time, nothing else. */}
-      <span role="status" aria-live="polite">
-        Updated {format(new Date(updatedAt), 'h:mm a')}
+      <span aria-hidden="true">Updated {format(new Date(updatedAt), 'h:mm a')}</span>
+      {/* For a screen reader. Seconds are in the text on purpose: the visible
+          time changes only on the minute, so two refreshes inside one minute
+          would read the same and the second would never be announced. */}
+      <span role="status" aria-live="polite" className="sr-only">
+        Updated {format(new Date(updatedAt), 'h:mm:ss a')}
       </span>
       <Button
         type="button"
