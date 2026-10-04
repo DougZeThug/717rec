@@ -117,13 +117,11 @@ const BracketForm: React.FC<BracketFormProps> = ({
   // Handle seed change - track manual seed overrides
   const handleSeedChange = React.useCallback((teamId: string, seed: number | null) => {
     setTeamSeeds((prev) => {
-      const updated = { ...prev };
       if (seed === null) {
-        delete updated[teamId];
-      } else {
-        updated[teamId] = seed;
+        const { [teamId]: _removed, ...rest } = prev;
+        return rest;
       }
-      return updated;
+      return { ...prev, [teamId]: seed };
     });
   }, []);
 
@@ -198,7 +196,7 @@ const BracketForm: React.FC<BracketFormProps> = ({
   const maxTeams = MAX_BRACKET_TEAMS;
 
   // Simplified button state logic - check individual field requirements
-  const isButtonEnabled = !!(
+  const isButtonEnabled = Boolean(
     watchedTitle &&
     watchedDivisionId &&
     teamsValidationState &&

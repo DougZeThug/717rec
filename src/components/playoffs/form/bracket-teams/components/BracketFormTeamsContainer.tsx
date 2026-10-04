@@ -98,7 +98,7 @@ export const BracketFormTeamsContainer: React.FC<BracketFormTeamsContainerProps>
     return divisionId;
   }, [divisionId, validDivisions]);
 
-  const isInvalidDivisionSelection = !!divisionId && validDivisionId === null;
+  const isInvalidDivisionSelection = Boolean(divisionId) && validDivisionId === null;
 
   // Toast error once per invalid selection (side effect runs outside render)
   React.useEffect(() => {

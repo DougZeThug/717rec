@@ -94,7 +94,7 @@ describe('SeasonFinalizePlayoffsDialog', () => {
   });
 
   it('shows "Finalizing..." and disables the action while the mutation is pending', async () => {
-    let resolveFn: (value: unknown) => void = () => {};
+    let resolveFn: (value: unknown) => void = () => undefined;
     finalizeMock.mockImplementation(
       () =>
         new Promise((resolve) => {

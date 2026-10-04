@@ -333,7 +333,7 @@ const TeamSelectionFormComponent: React.FC<TeamSelectionFormProps> = ({
             divisionId={divisionId || ''}
             validation={seedValidation ?? EMPTY_SEED_VALIDATION}
             onSeedChange={onSeedChange}
-            show={!!(divisionId && seedValidation)}
+            show={Boolean(divisionId && seedValidation)}
           />
         </TabsContent>
       </Tabs>

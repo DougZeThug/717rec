@@ -537,7 +537,7 @@ describe('useMatchReactions', () => {
           resolveInsert = resolve;
         })
     );
-    mockDeleteReaction.mockResolvedValue(undefined);
+    mockDeleteReaction.mockImplementation(() => Promise.resolve());
 
     const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));

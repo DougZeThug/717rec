@@ -62,7 +62,7 @@ const CounterDriftCard: React.FC = () => {
 
         {driftQuery.isError && !driftQuery.isLoading && (
           <div className="space-y-2">
-            <p className="text-sm text-red-500">Couldn't check counter sync.</p>
+            <p className="text-sm text-red-500">Couldn&apos;t check counter sync.</p>
             <Button size="sm" variant="outline" onClick={() => driftQuery.refetch()}>
               Retry
             </Button>
@@ -74,7 +74,7 @@ const CounterDriftCard: React.FC = () => {
             {count === 0 ? (
               <div className="flex items-center gap-2 text-sm text-emerald-500">
                 <CheckCircle2 className="size-4" aria-hidden="true" />
-                In sync — every team's stored W-L matches match history.
+                In sync — every team&apos;s stored W-L matches match history.
               </div>
             ) : (
               <>
@@ -112,9 +112,9 @@ const CounterDriftCard: React.FC = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Repair standings counters?</AlertDialogTitle>
               <AlertDialogDescription>
-                This recomputes every team's wins, losses, and game counts from completed matches,
-                then refreshes the season-stats cache. Safe to run any time — it does nothing if
-                counters already match.
+                This recomputes every team&apos;s wins, losses, and game counts from completed
+                matches, then refreshes the season-stats cache. Safe to run any time — it does
+                nothing if counters already match.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

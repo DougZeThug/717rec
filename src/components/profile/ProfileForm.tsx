@@ -112,7 +112,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       handleUsernameAvailabilityCheck(username);
     }, 500);
 
-    return () => clearTimeout(handler);
+    return () => {
+      clearTimeout(handler);
+    };
   }, [username, recheckCount, handleUsernameAvailabilityCheck]);
 
   const onSubmit = async (data: ProfileFormData) => {

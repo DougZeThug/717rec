@@ -145,7 +145,8 @@ export const useMatchUpdate = ({ matches, setMatches, editingMatch }: UseMatchUp
       // resubmit_match_result RPC writes match fields AND team counters in one
       // transaction, so we skip the plain match UPDATE and only touch
       // non-result fields (date/location/teams) up front.
-      const isResultEdit = !!matchData.iscompleted && !!matchData.winnerId && !!matchData.loserId;
+      const isResultEdit =
+        Boolean(matchData.iscompleted) && Boolean(matchData.winnerId) && Boolean(matchData.loserId);
 
       // A caller that says nothing about the location is not asking for it to
       // be cleared. Auto Schedule and Batch Match Creation write a court onto
