@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -265,5 +265,70 @@ describe('Index page', () => {
 
       expect(screen.queryByText('Weekly Recap')).not.toBeInTheDocument();
     });
+  });
+  // A section whose query failed used to vanish. Each one now shows a card that
+  // names it and retries only that query.
+  describe('sections that fail to load', () => {
+    it('lets the visitor retry the hero cards', () => {
+      const refetch = vi.fn();
+      mockUseHeroCards.mockReturnValue({
+        data: [],
+        isLoading: false,
+        isError: true,
+        error: new Error('boom'),
+        refetch,
+      });
+      renderPage();
+
+      expect(screen.getByText('League announcements could not load')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('lets the visitor retry Team of the Week', () => {
+      const refetch = vi.fn();
+      mockUseWeeklyPowerScoreTrends.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: new Error('boom'),
+        refetch,
+      });
+      renderPage();
+
+      expect(screen.getByText('Team of the Week could not load')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+      expect(refetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('lets the visitor retry the weekly recap when nothing is published', () => {
+      const refetchRecap = vi.fn();
+      mockUseWeeklyRecap.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: new Error('boom'),
+        refetch: refetchRecap,
+      });
+      renderPage();
+
+      expect(screen.getByText('Weekly recap could not load')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+      expect(refetchRecap).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('shows the participation card when confirmation is open', async () => {
+    mockUseConfirmationSeason.mockReturnValue({ data: { id: 's-1' } });
+    renderPage();
+
+    expect(await screen.findByText('Participation Card')).toBeInTheDocument();
+  });
+
+  it('shows the pending scores card when scores are waiting', () => {
+    mockUsePendingScoresMatches.mockReturnValue({ matches: [{ id: 'm-1' }], isLoading: false });
+    renderPage();
+
+    expect(screen.getByText('Pending Scores')).toBeInTheDocument();
   });
 });
