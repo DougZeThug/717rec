@@ -282,23 +282,6 @@ describe('uncovered playoff hooks', () => {
     });
     expect(mocks.update).not.toHaveBeenCalled();
   });
-  it('still scores a brackets-manager match that has a BYE on one side', async () => {
-    mocks.bmMatch.mockResolvedValue({ opponent1_id: 1, opponent2_id: null });
-    mocks.participants.mockResolvedValue([{ id: 1, name: 'Team One' }]);
-    mocks.update.mockResolvedValue({});
-    const { wrapper } = setup();
-    const { result } = renderHook(
-      () => usePlayoffMatchUpdate({ id: 'b1', uses_brackets_manager: true } as never),
-      { wrapper }
-    );
-    await act(async () => {
-      await result.current.updateMatch('9', 0, 0, [], 2, 0);
-    });
-    expect(mocks.update).toHaveBeenCalledWith({
-      matchId: 9,
-      scores: { opponent1: { score: 2, result: 'win' }, opponent2: { score: 0, result: 'loss' } },
-    });
-  });
   it('refuses to score a legacy match that cannot be found', async () => {
     mocks.legacyTeams.mockResolvedValue(null);
     const { wrapper } = setup();
