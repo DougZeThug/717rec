@@ -47,14 +47,14 @@ describe('TeamTotals division win percentage colour', () => {
 
   // Each band reads on both themes: a darker shade for light, a lighter one for dark.
   it.each([
-    [{ wins: 7, losses: 3 }, '70%', 'text-emerald-700'],
-    [{ wins: 5, losses: 5 }, '50%', 'text-blue-600'],
-    [{ wins: 4, losses: 6 }, '40%', 'text-yellow-700'],
-    [{ wins: 1, losses: 9 }, '10%', 'text-red-600'],
-  ])('colours a %o record as %s with %s', (record, pct, colourClass) => {
+    [{ wins: 7, losses: 3 }, '70%', 'text-emerald-700', 'dark:text-emerald-400'],
+    [{ wins: 5, losses: 5 }, '50%', 'text-blue-600', 'dark:text-blue-400'],
+    [{ wins: 4, losses: 6 }, '40%', 'text-yellow-700', 'dark:text-yellow-400'],
+    [{ wins: 1, losses: 9 }, '10%', 'text-red-600', 'dark:text-red-400'],
+  ])('colours a %o record as %s: %s on light, %s on dark', (record, pct, light, dark) => {
     mockUseTeamTotals.mockReturnValue(totalsWith(record));
     render(<TeamTotals teamId="team-1" standalone />);
 
-    expect(screen.getByText(pct)).toHaveClass(colourClass);
+    expect(screen.getByText(pct)).toHaveClass(light, dark);
   });
 });

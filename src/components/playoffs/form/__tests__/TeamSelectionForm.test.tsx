@@ -143,7 +143,8 @@ describe('TeamSelectionForm', () => {
     );
 
     expect(screen.getByText('Too many teams selected')).toBeInTheDocument();
-    expect(screen.getByText('Remove a team')).toBeInTheDocument();
+    // The status line takes the error colour.
+    expect(screen.getByText('Remove a team').parentElement).toHaveClass('text-destructive-text');
   });
 
   it('shows the plain status when the selection is valid', () => {
@@ -159,6 +160,7 @@ describe('TeamSelectionForm', () => {
       />
     );
 
-    expect(screen.getByText('Ready to create bracket')).toBeInTheDocument();
+    // The status line takes the valid colour.
+    expect(screen.getByText('Ready to create bracket').parentElement).toHaveClass('text-green-600');
   });
 });
