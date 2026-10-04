@@ -98,7 +98,7 @@ const SeasonFinalizePlayoffsDialog: React.FC<SeasonFinalizePlayoffsDialogProps> 
         variant: 'success',
         description: `${season.name}'s playoffs have been finalized.`,
       });
-      void fireChampionConfetti();
+      fireChampionConfetti();
       onClose();
     } catch (error) {
       const message = getUIErrorMessage(error, 'Failed to finalize playoffs');

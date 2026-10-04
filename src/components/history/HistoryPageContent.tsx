@@ -41,7 +41,7 @@ const HistoryPageContent: React.FC = () => {
               size="sm"
               className="mt-4"
               onClick={() => {
-                void refetch();
+                refetch();
               }}
             >
               Try again

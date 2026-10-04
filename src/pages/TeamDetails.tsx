@@ -316,7 +316,7 @@ const TeamDetailsPage = () => {
           context="Loading this team"
           error={getUIErrorMessage(teamError, 'We could not load this team.')}
           onRetry={() => {
-            void refetchTeam();
+            refetchTeam();
           }}
         />
         <div className="mt-4 text-center">
@@ -401,7 +401,7 @@ const TeamDetailsPage = () => {
             context="Match data"
             error={getUIErrorMessage(matchesError, 'Matches could not be loaded.')}
             onRetry={() => {
-              void refetchMatches();
+              refetchMatches();
             }}
           />
         )}

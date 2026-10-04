@@ -87,7 +87,7 @@ export const HeroCardsSection: React.FC = () => {
           title="League announcements"
           error={error}
           onRetry={() => {
-            void refetch();
+            refetch();
           }}
         />
       )}
@@ -142,7 +142,7 @@ export const TeamOfTheWeekSection: React.FC = () => {
         title="Team of the Week"
         error={error}
         onRetry={() => {
-          void refetch();
+          refetch();
         }}
       />
     );
@@ -186,7 +186,7 @@ export const WeeklyRecapSection: React.FC = () => {
         title="Weekly recap"
         error={recapError}
         onRetry={() => {
-          void refetchRecap();
+          refetchRecap();
         }}
       />
     );

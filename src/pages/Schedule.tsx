@@ -402,7 +402,7 @@ const Schedule = () => {
           updatedAt={matchesUpdatedAt}
           isRefreshing={matchesFetching}
           onRefresh={() => {
-            void refetchMatches();
+            refetchMatches();
           }}
           filters={
             <ScheduleFilters
