@@ -40,6 +40,7 @@ import {
   MatchNonResultUpdate,
   reopenMatchResult,
   updateMatch,
+  updateScoreSubmissionStatus,
 } from '../MatchWriteService';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -484,6 +485,69 @@ describe('confirmMatchTie', () => {
     });
 
     await expect(confirmMatchTie(MATCH_ID)).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── updateScoreSubmissionStatus ──────────────────────────────────────────────
+
+describe('updateScoreSubmissionStatus', () => {
+  const SUBMISSION_ID = '66666666-6666-4666-8666-666666666666';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'admin-1' } } });
+  });
+
+  /** `result` is what the update selects back: null is a write that matched no row. */
+  const mockUpdate = (result: { data: { id: string } | null; error: unknown }) => {
+    const payloads: unknown[] = [];
+    mockFrom.mockReturnValue({
+      update: (payload: unknown) => {
+        payloads.push(payload);
+        return {
+          eq: () => ({
+            select: () => ({ maybeSingle: () => Promise.resolve(result) }),
+          }),
+        };
+      },
+    });
+    return payloads;
+  };
+
+  it('stamps the status and who reviewed it', async () => {
+    const payloads = mockUpdate({ data: { id: SUBMISSION_ID }, error: null });
+
+    await expect(updateScoreSubmissionStatus(SUBMISSION_ID, 'rejected')).resolves.toBeUndefined();
+
+    expect(mockFrom).toHaveBeenCalledWith('score_submissions');
+    expect(payloads[0]).toMatchObject({ status: 'rejected', reviewed_by: 'admin-1' });
+  });
+
+  // The defect: a write that matched no row (cascade-deleted submission, or RLS
+  // hiding it) returned no error, so the admin was told it had worked.
+  it('throws BusinessLogicError when no row was updated', async () => {
+    mockUpdate({ data: null, error: null });
+
+    await expect(updateScoreSubmissionStatus(SUBMISSION_ID, 'rejected')).rejects.toThrow(
+      BusinessLogicError
+    );
+  });
+
+  it('throws DatabaseError when the write fails', async () => {
+    mockUpdate({
+      data: null,
+      error: {
+        message: 'update failed',
+        code: '42P01',
+        details: null,
+        hint: null,
+        name: 'PostgrestError',
+      },
+    });
+
+    await expect(updateScoreSubmissionStatus(SUBMISSION_ID, 'approved')).rejects.toThrow(
+      DatabaseError
+    );
   });
 });
 

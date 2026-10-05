@@ -221,6 +221,7 @@ export const createScoreSubmission = async (data: ScoreSubmissionInsertData) => 
  * Update score submission status (approve or reject).
  * Fetches current user ID internally.
  * @throws {DatabaseError} When database operations fail
+ * @throws {BusinessLogicError} When no row was updated
  */
 export const updateScoreSubmissionStatus = async (
   submissionId: string,
@@ -230,16 +231,27 @@ export const updateScoreSubmissionStatus = async (
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { error } = await supabase
+  // A bare UPDATE that matches no row still returns no error, so the row is
+  // selected back. A submission that was cascade-deleted with its match, or one
+  // that RLS now hides, would otherwise look like a successful review.
+  const { data: updated, error } = await supabase
     .from('score_submissions')
     .update({
       status,
       reviewed_by: user?.id,
       reviewed_at: new Date().toISOString(),
     })
-    .eq('id', submissionId);
+    .eq('id', submissionId)
+    .select('id')
+    .maybeSingle();
 
   if (error) handleDatabaseError(error, 'Failed to update score submission status');
+
+  if (!updated) {
+    throw new BusinessLogicError(
+      'The submission could not be updated. It may have been removed, or your admin access may have changed. Refresh and try again.'
+    );
+  }
 };
 
 /**
