@@ -97,6 +97,22 @@ describe('ChampionsHeroCard', () => {
     expect(divisions).toEqual(['Competitive', 'Intermediate', 'Recreational']);
   });
 
+  it('puts a division with an unfamiliar name after the three known ones', async () => {
+    mocks.fetchChampionTeams.mockImplementation(() =>
+      Promise.resolve([
+        { id: 't1', name: 'Bag Boys', image_url: null },
+        { id: 't2', name: 'Hole Punchers', image_url: null },
+      ])
+    );
+    renderCard(makeCard({ 'Open Division': 't2', Competitive: 't1' }));
+
+    expect(await screen.findByText('Season Champions')).toBeInTheDocument();
+    const divisions = screen
+      .getAllByRole('heading', { level: 3 })
+      .map((heading) => heading.textContent);
+    expect(divisions).toEqual(['Competitive', 'Open Division']);
+  });
+
   it('skips a division whose team was not returned', async () => {
     mocks.fetchChampionTeams.mockImplementation(() =>
       Promise.resolve([{ id: 't1', name: 'Bag Boys', image_url: null }])

@@ -70,12 +70,6 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
           opponent2: { id: bmMatchData.opponent2_id, name: opponent2Name },
         });
 
-        // Handle BYE matches (one opponent is null) as forfeits
-        const isBye = !bmMatchData.opponent1_id || !bmMatchData.opponent2_id;
-        if (isBye) {
-          scoreLog('BYE match detected - treating as forfeit');
-        }
-
         // For brackets-manager, we use opponent IDs directly (not team UUIDs)
         const _winnerOpponentId =
           team1GameWins > team2GameWins ? bmMatchData.opponent1_id : bmMatchData.opponent2_id;
