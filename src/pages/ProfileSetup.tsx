@@ -2,20 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 
 import PageLayout from '@/components/layout/PageLayout';
-import ProfileForm from '@/components/profile/ProfileForm';
 import ProfileLoadingState from '@/components/profile/ProfileLoadingState';
+import ProfileSetupCard from '@/components/profile/ProfileSetupCard';
 import SeoHead from '@/components/seo/SeoHead';
-import TeamMembershipSection from '@/components/teams/TeamMembershipSection';
 import PageTransition from '@/components/transitions/PageTransition';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/auth-context';
 import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
 import { authLog } from '@/utils/logger';
@@ -39,7 +29,7 @@ const ProfileSetup = () => {
     // If authentication is still initializing, wait
     if (!authInitialized) {
       authLog('Auth not initialized yet, waiting...');
-      return;
+      return undefined;
     }
 
     // If authentication is no longer loading but we have no user
@@ -60,6 +50,8 @@ const ProfileSetup = () => {
         navigate('/auth', { state: { returnTo } });
       }
     }
+
+    return undefined;
   }, [user, isLoading, authInitialized, navigate, retries, searchParams]);
 
   // If the profile is already complete and a `next` destination was requested
@@ -77,10 +69,16 @@ const ProfileSetup = () => {
     navigate(nextPath && nextPath !== '/setup-profile' ? nextPath : '/');
   };
 
-  // Show loading state while waiting for auth to initialize
-  if (isLoading || (!authInitialized && retries < maxRetries)) {
+  // Show loading state until auth is ready, and through the retry window when
+  // there is no user. The retry counter only moves once auth is ready, so a gate
+  // on `!authInitialized && retries < maxRetries` never held: the form showed
+  // for the whole window before the redirect.
+  if (isLoading || !authInitialized || (!user && retries < maxRetries)) {
     return (
       <PageLayout compact>
+        {/* The form's own h1 is not on screen yet. A page with no h1 leaves a
+            screen-reader user with nothing to say where they are. */}
+        <h1 className="sr-only">Set Up Your Profile</h1>
         <PageTransition>
           <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
             <ProfileLoadingState />
@@ -104,34 +102,12 @@ const ProfileSetup = () => {
       />
       <PageTransition>
         <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle as="h1" className="text-2xl">
-                Set Up Your Profile
-              </CardTitle>
-              <CardDescription>Enter your name and details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProfileForm
-                initialUsername={profile?.username || ''}
-                initialFullName={profile?.full_name || ''}
-                onProfileUpdated={handleProfileUpdated}
-              />
-
-              {/* Team Membership Section */}
-              {user && (
-                <>
-                  <Separator className="my-6" />
-                  <TeamMembershipSection />
-                </>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-center">
-              <p className="text-sm text-muted-foreground">
-                This information will be visible to other players
-              </p>
-            </CardFooter>
-          </Card>
+          <ProfileSetupCard
+            initialUsername={profile?.username || ''}
+            initialFullName={profile?.full_name || ''}
+            onProfileUpdated={handleProfileUpdated}
+            showTeamMembership={Boolean(user)}
+          />
         </div>
       </PageTransition>
     </PageLayout>

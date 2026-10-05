@@ -714,6 +714,51 @@ describe('usePairingOperations', () => {
       );
     });
 
+    // State saved before generationDate existed has pairings but no origin date.
+    // That used to skip the check, so moving the picker and saving wrote the old
+    // pairings onto the new day. The saved picker date cannot stand in for the
+    // origin, because it is saved on every move.
+    describe('saved state with pairings but no generation date', () => {
+      const loadLegacyState = (generationDate: string | null) =>
+        mockLoadAutoScheduleState.mockReturnValue({
+          selectedDate: new Date(2026, 3, 21, 10, 0, 0, 0).toISOString(),
+          generationDate,
+          generatedPairings: buildPairings(),
+          unmatchedTeamIds: ['9'],
+        });
+
+      it('drops the pairings, so there is nothing to save onto the wrong day', () => {
+        loadLegacyState(null);
+
+        const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+        expect(result.current.generatedPairings).toEqual({});
+        expect(result.current.unmatchedTeamIds).toEqual([]);
+        expect(result.current.generationDate).toBeNull();
+
+        const setGeneratedMatches = vi.fn();
+        const applied = result.current.handleApplySchedule(
+          result.current.generatedPairings,
+          new Date(2026, 3, 21, 10, 0, 0, 0),
+          false,
+          setGeneratedMatches,
+          vi.fn()
+        );
+        expect(applied).toBeNull();
+        expect(setGeneratedMatches).not.toHaveBeenCalled();
+      });
+
+      it('keeps pairings that carry their generation date', () => {
+        loadLegacyState(new Date(2026, 3, 20, 10, 0, 0, 0).toISOString());
+
+        const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+        expect(result.current.generatedPairings).toEqual(buildPairings());
+        expect(result.current.unmatchedTeamIds).toEqual(['9']);
+        expect(result.current.generationDate).toEqual(new Date(2026, 3, 20, 10, 0, 0, 0));
+      });
+    });
+
     it('applies when generation and selected dates are identical timestamps', async () => {
       const generationDate = new Date(2026, 3, 20, 10, 30, 0, 0);
       const { result, pairings } = await setupWithGenerationDate(generationDate);

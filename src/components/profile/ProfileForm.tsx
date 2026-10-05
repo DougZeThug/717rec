@@ -67,14 +67,17 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const checkFailed =
     username.length >= 3 && username !== initialUsername && resultForName === null;
 
-  // Track the latest username being checked to ignore stale responses
-  const latestCheckRef = useRef<string>('');
+  // Numbers each check, so a reply can tell whether a newer check has started.
+  // Comparing names was not enough: typing a name, editing away and back made
+  // an older in-flight check for the same name look current.
+  const latestCheckIdRef = useRef<number>(0);
 
   // Check username availability. The debounce effect below only calls this for
   // names of 3+ characters, so shorter names never get here.
   const handleUsernameAvailabilityCheck = useCallback(
     async (value: string) => {
-      latestCheckRef.current = value;
+      latestCheckIdRef.current += 1;
+      const checkId = latestCheckIdRef.current;
       setIsCheckingUsername(true);
       const { available } = await checkUsernameAvailability({
         username: value,
@@ -82,7 +85,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       });
 
       // Ignore stale responses — only apply if this is still the latest check
-      if (latestCheckRef.current !== value) return;
+      if (latestCheckIdRef.current !== checkId) return;
 
       setAvailability({ name: value, available });
 

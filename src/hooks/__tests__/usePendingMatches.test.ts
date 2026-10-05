@@ -26,7 +26,7 @@ vi.mock('@/hooks/useToast', () => ({
   }),
 }));
 
-import { fetchTeamsMap } from '@/services/matches/MatchReadService';
+import { fetchPendingMatches, fetchTeamsMap } from '@/services/matches/MatchReadService';
 import { approveMatchResult, confirmMatchTie } from '@/services/matches/MatchWriteService';
 
 // Create a wrapper for React Query
@@ -165,6 +165,25 @@ describe('usePendingMatches', () => {
     });
 
     expect(confirmMatchTie).toHaveBeenCalledWith('match-1');
+  });
+
+  // The tie write is row-gated on "no winner yet", so it loses cleanly when
+  // another admin names a winner first. The card must then leave the list, as
+  // it does when the approve write loses.
+  it('refreshes the pending list when the tie write is refused', async () => {
+    vi.mocked(confirmMatchTie).mockRejectedValue(new Error('already has a winner'));
+
+    const { result } = renderHook(() => usePendingMatches(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    const loadsBefore = vi.mocked(fetchPendingMatches).mock.calls.length;
+
+    await act(async () => {
+      await result.current.handleMarkAsTie('match-1').catch(() => undefined);
+    });
+
+    await waitFor(() =>
+      expect(vi.mocked(fetchPendingMatches).mock.calls.length).toBeGreaterThan(loadsBefore)
+    );
   });
 
   // The list locks the actions of whichever matches are being written, so the

@@ -35,11 +35,23 @@ export const usePairingOperations = (
   // Load persisted state on mount
   const persistedState = useLazyRef(() => loadAutoScheduleState());
 
-  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(
-    () => persistedState.current?.generatedPairings || {}
+  // State saved before generationDate existed has pairings but no origin date.
+  // Without one the stale-date check is skipped, and the pairings could be saved
+  // onto whatever day the picker shows. The saved picker date is no help: it is
+  // saved on every move, so it can differ from the day the pairings were made
+  // for. The origin is unknown, so those pairings are dropped and the admin
+  // regenerates.
+  const savedPairings = persistedState.current?.generatedPairings;
+  const hasUnknownOrigin =
+    !persistedState.current?.generationDate &&
+    savedPairings !== undefined &&
+    Object.keys(savedPairings).length > 0;
+
+  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(() =>
+    hasUnknownOrigin ? {} : savedPairings || {}
   );
-  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(
-    () => persistedState.current?.unmatchedTeamIds || []
+  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(() =>
+    hasUnknownOrigin ? [] : persistedState.current?.unmatchedTeamIds || []
   );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
   const [generationDate, setGenerationDate] = useState<Date | null>(() =>

@@ -117,6 +117,37 @@ describe('ProfileSetup', () => {
     expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
   });
 
+  it('keeps the spinner up, not the form, while it retries with no user', () => {
+    vi.mocked(useAuth).mockReturnValue({
+      user: null,
+      profile: null,
+      refreshProfile: vi.fn(),
+      isLoading: false,
+      authInitialized: true,
+    } as never);
+
+    renderPage();
+
+    // Before any retry, and between retries.
+    expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
+    // The spinner page still needs its h1, or axe fails the page.
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Set Up Your Profile' })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save Profile' })).not.toBeInTheDocument();
+
+    // After each of the first two retries the redirect has not happened yet.
+    for (let retry = 1; retry <= 2; retry += 1) {
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
+
+      expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Save Profile' })).not.toBeInTheDocument();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    }
+  });
+
   it('redirects to /auth after max retries when there is no user', () => {
     vi.mocked(useAuth).mockReturnValue({
       user: null,
