@@ -455,6 +455,30 @@ describe('useBracketsViewerRenderer', () => {
       expect(handlerV1).not.toHaveBeenCalled();
     });
 
+    it('logs low source coverage and still renders', async () => {
+      // Opponents with no source node: a new or bye-heavy bracket.
+      mockedAdapter.transformFromSql.mockResolvedValue(
+        makeResult({
+          matches: [
+            makeMatch(
+              1,
+              makeOpponent(1, { source_node_id: undefined }),
+              makeOpponent(2, { source_node_id: undefined })
+            ),
+          ],
+        })
+      );
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      expect(bracketLog).toHaveBeenCalledWith(
+        expect.stringContaining('Low source coverage'),
+        expect.objectContaining({ matches: 1, sourced: 0 })
+      );
+      expect(renderMock).toHaveBeenCalledTimes(1);
+    });
+
     it('renders a different bracket even when its data fingerprints the same', async () => {
       // The legacy transform numbers matches locally per bracket, so two
       // brackets of the same size at the same stage fingerprint identically.
@@ -576,6 +600,41 @@ describe('useBracketsViewerRenderer', () => {
 
       rerender({ bracket: makeBracket(), refreshKey: '0:1700000000' });
       await waitFor(() => expect(renderMock).toHaveBeenCalledTimes(2));
+    });
+  });
+
+  describe('edge cases during the async render', () => {
+    it('does not draw when the container is gone by the time the data arrives', async () => {
+      // The component unmounted while the transform was in flight.
+      mockedAdapter.transformFromSql.mockImplementation(() => {
+        containerRef.current = null;
+        return Promise.resolve(makeResult());
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await flushAsync();
+
+      expect(warnLog).toHaveBeenCalledWith(
+        'Container element not found (component likely unmounted during async render)'
+      );
+      expect(renderMock).not.toHaveBeenCalled();
+      expect(result.current.isInitialized).toBe(false);
+    });
+
+    it('treats a failing decoration pass as non-fatal', async () => {
+      const failure = new Error('decoration blew up');
+      renderMock.mockImplementation(() => {
+        // The decorations read the container first, so this makes them throw.
+        vi.spyOn(container, 'querySelectorAll').mockImplementation(() => {
+          throw failure;
+        });
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      expect(warnLog).toHaveBeenCalledWith('Bracket decoration failed (non-fatal):', failure);
+      expect(result.current.error).toBeNull();
     });
   });
 

@@ -5,8 +5,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMatchEditorState } from '../useMatchEditorState';
 
+// Hoisted so tests can assert on what the hook reports.
+const reported = vi.hoisted(() => ({ toast: vi.fn(), errorLog: vi.fn() }));
+
 vi.mock('@/hooks/useToast', () => ({
-  useToast: () => ({ toast: vi.fn() }),
+  useToast: () => ({ toast: reported.toast }),
+}));
+
+vi.mock('@/utils/logger', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/utils/logger')>()),
+  errorLog: reported.errorLog,
 }));
 
 const matchData = {
@@ -33,6 +41,7 @@ vi.mock('@/services/brackets/manager', () => ({
       .mockResolvedValue({ ok: false, meta: { status: 0, currentStatusName: 'Locked' } }),
     // vi.fn() alone returns undefined, not a promise; this sets the resolved value.
     updateMatch: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
+    adminCompleteByeMatch: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
     adminToggleByeReady: vi.fn(),
   },
 }));
@@ -49,6 +58,7 @@ const invalidatedKeys = (spy: { mock: { calls: unknown[][] } }) =>
 describe('useMatchEditorState', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    matchOverride.current = null;
     client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   });
 
@@ -257,6 +267,113 @@ describe('useMatchEditorState', () => {
         ['playoff-matches'],
       ])
     );
+  });
+
+  describe('failure paths', () => {
+    const renderEditor = (onClose = vi.fn()) =>
+      renderHook(() => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose }), {
+        wrapper,
+      });
+
+    it('logs a failed BYE eligibility check and leaves the panel empty', async () => {
+      const { bracketManagerService } = await import('@/services/brackets/manager');
+      const failure = new Error('lookup failed');
+      vi.mocked(bracketManagerService.checkByeEligibility).mockRejectedValueOnce(failure);
+
+      const { result } = renderEditor();
+
+      await waitFor(() =>
+        expect(reported.errorLog).toHaveBeenCalledWith('Error checking BYE eligibility:', failure)
+      );
+      expect(result.current.byeEligible).toBeNull();
+    });
+
+    it('does not log a failure from a check a newer one has replaced', async () => {
+      const { bracketManagerService } = await import('@/services/brackets/manager');
+      const check = vi.mocked(bracketManagerService.checkByeEligibility);
+      let rejectOlder: (reason: Error) => void = () => undefined;
+      const older = new Promise<never>((_, reject) => {
+        rejectOlder = reject;
+      });
+      check.mockReturnValueOnce(older).mockResolvedValueOnce({
+        ok: true,
+        meta: { status: 2, currentStatusName: 'Ready' },
+      } as never);
+
+      const { result, rerender } = renderEditor();
+      matchOverride.current = { ...matchData };
+      rerender();
+      await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(2));
+
+      await act(async () => {
+        rejectOlder(new Error('late failure'));
+        await older.catch(() => undefined);
+      });
+
+      expect(reported.errorLog).not.toHaveBeenCalledWith(
+        'Error checking BYE eligibility:',
+        expect.anything()
+      );
+      expect(result.current.byeEligible?.currentStatus).toBe(2);
+    });
+
+    it('completes a one-sided match with the present team’s score', async () => {
+      const { bracketManagerService } = await import('@/services/brackets/manager');
+      matchOverride.current = { id: 1, opponent1: { id: 10, score: 3 }, opponent2: null };
+      const onClose = vi.fn();
+
+      const { result } = renderEditor(onClose);
+      await act(async () => {
+        await result.current.handleSave();
+      });
+
+      expect(bracketManagerService.adminCompleteByeMatch).toHaveBeenCalledWith(1, 3);
+      expect(bracketManagerService.updateMatch).not.toHaveBeenCalled();
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it('reports a failed save and keeps the editor open', async () => {
+      const { bracketManagerService } = await import('@/services/brackets/manager');
+      vi.mocked(bracketManagerService.updateMatch).mockRejectedValueOnce(new Error('write failed'));
+      const onClose = vi.fn();
+
+      const { result } = renderEditor(onClose);
+      act(() => {
+        result.current.setOpponent1Score(3);
+        result.current.setOpponent2Score(1);
+      });
+      await act(async () => {
+        await result.current.handleSave();
+      });
+
+      expect(reported.toast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Error', description: 'write failed' })
+      );
+      expect(onClose).not.toHaveBeenCalled();
+      expect(result.current.isSaving).toBe(false);
+    });
+
+    it('reports a failed BYE status change', async () => {
+      const { bracketManagerService } = await import('@/services/brackets/manager');
+      vi.mocked(bracketManagerService.checkByeEligibility).mockResolvedValue({
+        ok: true,
+        meta: { status: 0, currentStatusName: 'Locked' },
+      } as never);
+      vi.mocked(bracketManagerService.adminToggleByeReady).mockRejectedValueOnce(
+        new Error('toggle refused')
+      );
+
+      const { result } = renderEditor();
+      await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(0));
+      await act(async () => {
+        await result.current.handleToggleByeStatus();
+      });
+
+      expect(reported.toast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Toggle Failed', description: 'toggle refused' })
+      );
+      expect(result.current.isTogglingStatus).toBe(false);
+    });
   });
 
   describe('BYE status toggle direction', () => {
