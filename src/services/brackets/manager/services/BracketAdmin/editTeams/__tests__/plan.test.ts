@@ -248,6 +248,48 @@ describe('planLosersChanges', () => {
   });
 });
 
+describe('planLosersChanges targets', () => {
+  it('lists a target that needs no change, so the audit still starts from it', () => {
+    const { ctx, matches } = fixture();
+    const slot = (feederMarker: number | null, position: number | null) => ({
+      shape: 'tbd' as const,
+      participantId: null,
+      position,
+      feederMarker,
+      result: null,
+      score: null,
+      isOrigin: false,
+      isDerived: false,
+    });
+    const snapshot = {
+      bracketId: 'b1',
+      stageId: 1,
+      matches: [
+        {
+          id: 101,
+          number: 1,
+          roundNumber: 1,
+          status: 1,
+          editable: false,
+          lockedReason: null,
+          opponent1: slot(2, 2),
+          opponent2: slot(null, null),
+        },
+      ],
+      landings: {},
+      names: {},
+    };
+    const wanted: WantedMatch[] = [
+      { match: matches[1], opponent1: teamOf(3), opponent2: teamOf(4) },
+    ];
+
+    const plan = planLosersChanges(ctx, snapshot, wanted, new Set());
+
+    expect(plan.writes).toEqual([]);
+    expect(plan.targetMatchIds).toEqual([101]);
+  });
+});
+
 describe('planOccupancy trades', () => {
   const bye: Occupant = { kind: 'bye' };
   const summary = (wanted: WantedMatch[]) =>

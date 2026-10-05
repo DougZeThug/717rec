@@ -10,7 +10,7 @@ import type { PlannedWrite } from './winnersPlan';
 export interface LosersPlan {
   writes: PlannedWrite[];
   consequences: string[];
-  /** The losers matches the edit aims at, even when they already hold the wanted content. */
+  /** Every losers match the edit aims at, even one that already holds the wanted content. */
   targetMatchIds: number[];
 }
 
@@ -33,6 +33,7 @@ export function planLosersChanges(
   byeChangedMatchIds: Set<number>
 ): LosersPlan {
   const changes: ForcedSlotChange[] = [];
+  const targetMatchIds: number[] = [];
   for (const entry of wanted) {
     const wbNumber = entry.match.number;
     const target = snapshot.matches
@@ -50,6 +51,9 @@ export function planLosersChanges(
       );
     }
 
+    // Every target is audited, even one that needs no change: a trade partner
+    // saved again may hold a cascade an earlier save left half-written.
+    targetMatchIds.push(target.lbMatch.id);
     const slot = target.lbMatch[target.side];
     const nowBye = hasBye(entry.opponent1, entry.opponent2);
     const alreadyRight = nowBye
@@ -63,7 +67,7 @@ export function planLosersChanges(
       content: nowBye ? { kind: 'bye' } : { kind: 'tbd', position: wbNumber },
     });
   }
-  if (changes.length === 0) return { writes: [], consequences: [], targetMatchIds: [] };
+  if (changes.length === 0) return { writes: [], consequences: [], targetMatchIds };
 
   const result = simulateSlotChanges(snapshot, changes, { labelPrefix: 'Losers ' });
   if (!result.ok) {
@@ -72,6 +76,6 @@ export function planLosersChanges(
   return {
     writes: result.writes.map((write) => ({ matchId: write.matchId, fields: write.fields })),
     consequences: result.consequences,
-    targetMatchIds: changes.map((change) => change.matchId),
+    targetMatchIds,
   };
 }
