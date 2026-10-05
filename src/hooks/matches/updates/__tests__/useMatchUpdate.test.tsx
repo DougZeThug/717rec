@@ -299,6 +299,122 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
     expect(mockResubmitMatchResult).not.toHaveBeenCalled();
   });
 
+  describe('with the real edit-form payload (no game-win keys)', () => {
+    const storedMatch = {
+      ...incompleteMatch,
+      iscompleted: true,
+      winnerId: 't1',
+      loserId: 't2',
+      team1Score: 1,
+      team2Score: 0,
+      team1_game_wins: 2,
+      team2_game_wins: 1,
+    } as unknown as Match;
+
+    // buildMatchSubmission never sends team1_game_wins / team2_game_wins.
+    const formPayload = (overrides: Partial<Match>) =>
+      ({
+        team1Id: 't1',
+        team2Id: 't2',
+        date: '2026-01-01',
+        iscompleted: true,
+        team1Score: 1,
+        team2Score: 0,
+        winnerId: 't1',
+        loserId: 't2',
+        ...overrides,
+      }) as unknown as Omit<Match, 'id'>;
+
+    it('does not call the RPC for an edit that keeps the same result', async () => {
+      const { result } = renderHook(
+        () =>
+          useMatchUpdate({
+            matches: [storedMatch],
+            setMatches: vi.fn(),
+            editingMatch: storedMatch,
+          }),
+        { wrapper }
+      );
+
+      let outcome = false;
+      await act(async () => {
+        outcome = await result.current.handleUpdateMatch(
+          formPayload({ date: '2026-01-08' }),
+          [] as Team[]
+        );
+      });
+
+      expect(outcome).toBe(true);
+      expect(mockResubmitMatchResult).not.toHaveBeenCalled();
+    });
+
+    it('gives the old winner game wins to the new winner, never 0-0, when the winner changes', async () => {
+      const { result } = renderHook(
+        () =>
+          useMatchUpdate({
+            matches: [storedMatch],
+            setMatches: vi.fn(),
+            editingMatch: storedMatch,
+          }),
+        { wrapper }
+      );
+
+      await act(async () => {
+        await result.current.handleUpdateMatch(
+          formPayload({ winnerId: 't2', loserId: 't1', team1Score: 0, team2Score: 1 }),
+          [] as Team[]
+        );
+      });
+
+      // The winner keeps the winner's count: the old winner had 2, the old loser 1.
+      expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't2', 't1', 2, 1);
+    });
+
+    it('does not call the RPC for a date-only edit of a legacy match with no stored counts', async () => {
+      const legacyMatch = {
+        ...storedMatch,
+        team1_game_wins: undefined,
+        team2_game_wins: undefined,
+      } as unknown as Match;
+      const { result } = renderHook(
+        () =>
+          useMatchUpdate({
+            matches: [legacyMatch],
+            setMatches: vi.fn(),
+            editingMatch: legacyMatch,
+          }),
+        { wrapper }
+      );
+
+      await act(async () => {
+        await result.current.handleUpdateMatch(formPayload({ date: '2026-01-08' }), [] as Team[]);
+      });
+
+      expect(mockResubmitMatchResult).not.toHaveBeenCalled();
+    });
+
+    it('does not call the RPC with 0-0 when the team slots swap and the winner stays', async () => {
+      const { result } = renderHook(
+        () =>
+          useMatchUpdate({
+            matches: [storedMatch],
+            setMatches: vi.fn(),
+            editingMatch: storedMatch,
+          }),
+        { wrapper }
+      );
+
+      await act(async () => {
+        await result.current.handleUpdateMatch(
+          formPayload({ team1Id: 't2', team2Id: 't1', team1Score: 0, team2Score: 1 }),
+          [] as Team[]
+        );
+      });
+
+      expect(mockResubmitMatchResult).not.toHaveBeenCalledWith('m1', 't1', 't2', 0, 0);
+    });
+  });
+
   it('returns false when the atomic resubmit RPC throws', async () => {
     mockResubmitMatchResult.mockRejectedValueOnce(new Error('rpc down'));
 

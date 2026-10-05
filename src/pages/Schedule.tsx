@@ -146,8 +146,6 @@ const Schedule = () => {
     return dates;
   }, [matchDates, timeslotDates]);
 
-  useScrollToLinkedMatch(matchesLoading);
-
   // The nights the auto-pick below may land on, oldest first. matchDates holds
   // every night with any match row, called-off ones included, so it cannot tell
   // a night that was played from one that was called off — which is how the
@@ -290,6 +288,9 @@ const Schedule = () => {
     timeslotsLoading,
     upcomingMatches,
   });
+
+  // After useScheduleTabs: the card may only appear once the tab has settled.
+  useScrollToLinkedMatch(matchesLoading, activeTab);
 
   // Lazy load teams only when form dialog is open (for team selection dropdown)
   const [shouldLoadTeams, setShouldLoadTeams] = useState(false);

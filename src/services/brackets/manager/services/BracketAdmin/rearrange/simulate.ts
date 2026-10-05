@@ -80,6 +80,7 @@ interface OriginSlotRef {
 interface SimulationOptions {
   labelPrefix?: string;
   subject?: string;
+  forceCascade?: boolean;
 }
 
 /** Everything the simulation steps share. */
@@ -97,6 +98,18 @@ interface Simulation {
   lastRoundNumber: number;
   /** How problems name the admin's action, e.g. "This arrangement". */
   subject: string;
+  /**
+   * Keep rippling forward through a landing that already holds the wanted
+   * content. Set for outside changes, whose saved cascade may have stopped
+   * part-way; a rearrangement leaves it off so a second run writes nothing.
+   */
+  forceCascade: boolean;
+  /**
+   * Matches a forced cascade passes through without recomputing them: they
+   * already hold what it wants, but what they send on still has to be carried.
+   * Carried when the pass reaches them, after every feeder has had its say.
+   */
+  carryOnly: Set<number>;
 }
 
 /**
@@ -135,7 +148,11 @@ export function simulateSlotChanges(
   changes: ForcedSlotChange[],
   options: SimulationOptions = {}
 ): RearrangePlanResult {
-  const sim = initSimulation(snapshot, { subject: 'This change', ...options });
+  const sim = initSimulation(snapshot, {
+    subject: 'This change',
+    forceCascade: true,
+    ...options,
+  });
   // Every target is checked against the bracket as it stands before any
   // change: two targets can share a match (both of its losers spots change),
   // and the first change must not make the second look blocked.
@@ -183,7 +200,7 @@ export function simulateSlotChanges(
 
 function initSimulation(
   snapshot: RearrangeSnapshot,
-  { labelPrefix = '', subject = 'This arrangement' }: SimulationOptions = {}
+  { labelPrefix = '', subject = 'This arrangement', forceCascade = false }: SimulationOptions = {}
 ): Simulation {
   const working = new Map<number, WorkingMatch>();
   const originSlots = new Map<string, OriginSlotRef>();
@@ -213,6 +230,8 @@ function initSimulation(
     labelOf: (match) => `${labelPrefix}Round ${match.roundNumber} Match ${match.number}`,
     lastRoundNumber: Math.max(0, ...snapshot.matches.map((match) => match.roundNumber)),
     subject,
+    forceCascade,
+    carryOnly: new Set(),
   };
 }
 
@@ -355,9 +374,13 @@ function propagateRounds(sim: Simulation): void {
   );
   for (const match of ordered) {
     const state = sim.working.get(match.id);
-    if (!state || !state.dirty) continue;
-    recomputeMatch(sim, state);
-    carryProductToLanding(sim, match, state);
+    if (!state) continue;
+    if (state.dirty) {
+      recomputeMatch(sim, state);
+      carryProductToLanding(sim, match, state);
+    } else if (sim.carryOnly.has(match.id)) {
+      carryProductToLanding(sim, match, state);
+    }
   }
 }
 
@@ -399,6 +422,16 @@ function carryProductToLanding(sim: Simulation, match: SnapshotMatch, state: Wor
     currentContent.shape === nextContent.shape &&
     currentContent.participantId === nextContent.participantId
   ) {
+    // The landing already holds this result — an earlier save wrote it. The
+    // matches after it may not have been written yet, so a forced cascade
+    // carries on from it. The landing itself is not recomputed: it is already
+    // right, and a recompute would strip the library's advance notation from
+    // it. What it sends on follows from its slots once every feeder has been
+    // applied, so it is carried when the pass reaches it. A match that can't
+    // absorb a change is left alone, as before.
+    if (sim.forceCascade && (landingState.original.editable || !landingBlockReason(landingState))) {
+      sim.carryOnly.add(landingState.original.id);
+    }
     return;
   }
 

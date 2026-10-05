@@ -181,7 +181,7 @@ export async function planEdit(
         wanted,
         new Set(winners.byeChanges.map((change) => change.match.id))
       )
-    : { writes: [], consequences: [] };
+    : { writes: [], consequences: [], targetMatchIds: [] };
 
   // The edited match is written last, so an interrupted edit can be saved again.
   const writes = [
@@ -190,7 +190,17 @@ export async function planEdit(
     ...winners.roundOneWrites.filter((write) => write.matchId !== match.id),
     ...winners.roundOneWrites.filter((write) => write.matchId === match.id),
   ];
-  assertFootprint(ctx, wanted, writes);
+  assertFootprint(
+    ctx,
+    wanted,
+    writes,
+    board
+      ? {
+          landings: board.snapshot.landings,
+          startMatchIds: [...losers.writes.map((write) => write.matchId), ...losers.targetMatchIds],
+        }
+      : undefined
+  );
 
   const nameOf = (occupant: Occupant) => (occupant.kind === 'team' ? occupant.name : 'BYE');
   // Only the matches this save writes. Saving an interrupted trade again keeps

@@ -658,6 +658,95 @@ describe('simulateSlotChanges', () => {
     expect(simulateSlotChanges(snapshotAfter(reopened, result), toBye).writes).toEqual([]);
   });
 
+  describe('saving again after a save that stopped part-way', () => {
+    /** The board as it reads once only the listed matches' writes landed. */
+    function afterPartialSave(
+      snapshot: RearrangeSnapshot,
+      result: ReturnType<typeof simulateSlotChanges>,
+      writtenIds: number[]
+    ): RearrangeSnapshot {
+      const full = snapshotAfter(snapshot, result);
+      return {
+        ...snapshot,
+        matches: snapshot.matches.map((m) =>
+          writtenIds.includes(m.id) ? (full.matches.find((f) => f.id === m.id) ?? m) : m
+        ),
+      };
+    }
+
+    it('writes the deepest match of a three-level cascade that the first save never reached', () => {
+      const original = tenTeamSnapshot();
+      const first = simulateSlotChanges(original, [reopenPlaceholder]);
+      // Round 1 and round 2 were written; round 3 (501) was not.
+      expect(first.writes.map((write) => write.matchId)).toEqual([302, 402, 501]);
+      const interrupted = afterPartialSave(original, first, [302, 402]);
+
+      const again = simulateSlotChanges(interrupted, [reopenPlaceholder]);
+
+      expect(again.problems).toEqual([]);
+      expect(again.writes.map((write) => write.matchId)).toEqual([501]);
+      expect(fieldsFor(again, 501)).toEqual({ opponent2_id: null });
+    });
+
+    it("keeps the library's advance notation on a landing that is already right", () => {
+      const snapshot = tenTeamSnapshot();
+      // Round 2 Match 2 as the library writes a walkover it can see coming: a
+      // waiting spot with a pre-recorded win, facing the BYE the cascade sends.
+      const landing = snapshot.matches.find((m) => m.id === 402);
+      if (!landing) throw new Error('fixture: match 402 missing');
+      landing.status = 1;
+      landing.opponent1 = { ...tbdSlot(), position: 10, feederMarker: 10, result: 'win' };
+
+      const result = simulateSlotChanges(snapshot, [
+        { matchId: 302, side: 'opponent1', content: { kind: 'bye' } },
+      ]);
+
+      expect(result.problems).toEqual([]);
+      // 402 already holds the BYE, so it is left as it is — the pre-recorded
+      // win stays — while the deeper match still gets what it was owed.
+      expect(result.writes.map((write) => write.matchId)).toEqual([501]);
+      expect(fieldsFor(result, 501)).toEqual({ opponent2_id: null });
+    });
+
+    it('waits for both feeders of a match before carrying its result on', () => {
+      const original = tenTeamSnapshot();
+      const first = simulateSlotChanges(original, [reopenPlaceholder]);
+      const interrupted = afterPartialSave(original, first, [302, 402]);
+      // Both feeders of Losers Round 3 Match 1 are forced: 301 (already a BYE
+      // spot, passing through 401) and 302 (the interrupted one, via 402).
+      const result = simulateSlotChanges(interrupted, [
+        reopenPlaceholder,
+        { matchId: 301, side: 'opponent1', content: { kind: 'bye' } },
+      ]);
+
+      expect(result.problems).toEqual([]);
+      expect(fieldsFor(result, 501)).toEqual({ opponent2_id: null });
+    });
+
+    it('writes nothing once the whole cascade was saved', () => {
+      const original = tenTeamSnapshot();
+      const done = snapshotAfter(original, simulateSlotChanges(original, [reopenPlaceholder]));
+
+      expect(simulateSlotChanges(done, [reopenPlaceholder]).writes).toEqual([]);
+    });
+
+    it('stops quietly at a match that already holds the result and can no longer change', () => {
+      const original = tenTeamSnapshot();
+      const first = simulateSlotChanges(original, [reopenPlaceholder]);
+      const interrupted = afterPartialSave(original, first, [302, 402, 501]);
+      const played = interrupted.matches.find((m) => m.id === 501);
+      if (!played) throw new Error('fixture: match 501 missing');
+      played.status = 4;
+      played.editable = false;
+      played.lockedReason = 'has already been played';
+
+      const again = simulateSlotChanges(interrupted, [reopenPlaceholder]);
+
+      expect(again.ok).toBe(true);
+      expect(again.writes).toEqual([]);
+    });
+  });
+
   it('refuses when a match the cascade reaches has been played', () => {
     const snapshot = tenTeamSnapshot();
     const played = snapshot.matches.find((m) => m.id === 501);
@@ -698,6 +787,54 @@ describe('simulateSlotChanges', () => {
       opponent2_result: 'bye',
       status: 1,
     });
+  });
+
+  it('reports a stale board when a target match is not on the board', () => {
+    const result = simulateSlotChanges(tenTeamSnapshot(), [
+      { matchId: 9999, side: 'opponent1', content: { kind: 'bye' } },
+    ]);
+
+    expect(result.ok).toBe(false);
+    expect(result.writes).toEqual([]);
+    expect(result.problems[0].message).toBe(
+      'The bracket changed since this screen was opened. Close it and reopen to continue.'
+    );
+  });
+
+  it('reports a stale board when the cascade lands in a match that is not on the board', () => {
+    const snapshot = {
+      ...tenTeamSnapshot(),
+      landings: {
+        ...tenTeamSnapshot().landings,
+        302: { matchId: 9999, side: 'opponent2' as const },
+      },
+    };
+
+    const result = simulateSlotChanges(snapshot, [reopenPlaceholder]);
+
+    expect(result.ok).toBe(false);
+    expect(result.problems.map((problem) => problem.message)).toContain(
+      'The bracket changed since this screen was opened. Close it and reopen to continue.'
+    );
+  });
+
+  it('refuses when a match the cascade reaches already has results recorded', () => {
+    const snapshot = tenTeamSnapshot();
+    const reached = snapshot.matches.find((m) => m.id === 501);
+    if (!reached) throw new Error('fixture: match 501 missing');
+    // Not marked played, but a result sits on its waiting spot.
+    reached.editable = false;
+    reached.lockedReason = null;
+    reached.opponent1 = { ...tbdSlot(), result: 'win', score: 1 };
+
+    const result = simulateSlotChanges(snapshot, [reopenPlaceholder], { labelPrefix: 'Losers ' });
+
+    expect(result.ok).toBe(false);
+    expect(result.writes).toEqual([]);
+    expect(result.problems.map((problem) => problem.message)).toEqual([
+      'This change needs to change Losers Round 3 Match 1 automatically, but that match ' +
+        'already has results recorded.',
+    ]);
   });
 
   it('refuses a target slot that holds a team', () => {

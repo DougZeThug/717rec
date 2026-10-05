@@ -6,6 +6,7 @@ import { applyFields, assertFootprint } from '../footprint';
 import { planLosersChanges } from '../losersPlan';
 import type { WantedMatch } from '../occupancy';
 import { planOccupancy } from '../occupancy';
+import { assertEditableMatch } from '../plan';
 import type { Occupant } from '../types';
 import { planWinnersChanges } from '../winnersPlan';
 
@@ -76,6 +77,36 @@ const teamOf = (participantId: number): Occupant => ({
 });
 const seedOf = () => null;
 
+describe('assertEditableMatch', () => {
+  it('accepts a round 1 match of a single-elimination bracket', () => {
+    const { ctx } = fixture();
+    expect(() => assertEditableMatch(ctx)).not.toThrow();
+  });
+
+  it('refuses a bracket that is not elimination', () => {
+    const { ctx } = fixture();
+    const roundRobin = { ...ctx, stage: { ...ctx.stage, type: 'round_robin' as const } };
+    expect(() => assertEditableMatch(roundRobin)).toThrow(
+      'Edit teams only works in elimination brackets.'
+    );
+  });
+
+  it('refuses a bracket that skips its first round', () => {
+    const { ctx } = fixture({ settings: { size: 4, skipFirstRound: true } });
+    expect(() => assertEditableMatch(ctx)).toThrow(
+      "Edit teams doesn't support this bracket's layout."
+    );
+  });
+
+  it('refuses a match that has several games', () => {
+    const { ctx, matches } = fixture();
+    matches[1].child_count = 3;
+    expect(() => assertEditableMatch(ctx)).toThrow(
+      "This match has several games, so Edit teams can't change it."
+    );
+  });
+});
+
 describe('planWinnersChanges', () => {
   it('replaces a walkover winner in its round 2 slot', () => {
     const { ctx, matches } = fixture();
@@ -143,6 +174,24 @@ describe('applyFields', () => {
     applyFields(match, { opponent2_id: 6 });
     expect(match.opponent2).toEqual({ id: 6, position: 8 });
   });
+
+  it('drops a cleared column from the slot but keeps a cleared id as null', () => {
+    const match: StorageMatch = {
+      id: 9,
+      stage_id: 1,
+      group_id: 1,
+      round_id: 11,
+      number: 1,
+      status: 2,
+      opponent1: { id: 1, position: 1, score: 0, result: 'win' },
+      opponent2: { id: 2, position: 4 },
+    };
+    applyFields(match, { opponent1_result: null, opponent1_score: null, opponent2_id: null });
+
+    expect(match.opponent1).toEqual({ id: 1, position: 1 });
+    expect(Object.keys(match.opponent1 ?? {})).not.toContain('result');
+    expect(match.opponent2).toEqual({ id: null, position: 4 });
+  });
 });
 
 describe('assertFootprint', () => {
@@ -171,6 +220,70 @@ describe('assertFootprint', () => {
   });
 });
 
+describe('assertFootprint losers audit', () => {
+  /** Losers Round 1 Match 1 feeds Losers Round 2 Match 1 through its opponent1 spot. */
+  function losersFixture(
+    feeder: Pick<StorageMatch, 'opponent1' | 'opponent2'>,
+    landed: number | null
+  ) {
+    const { ctx } = fixture();
+    const losersMatches: StorageMatch[] = [
+      { id: 101, stage_id: 1, group_id: 2, round_id: 21, number: 1, status: 1, ...feeder },
+      {
+        id: 102,
+        stage_id: 1,
+        group_id: 2,
+        round_id: 22,
+        number: 1,
+        status: 1,
+        opponent1: { id: landed },
+        opponent2: { id: null },
+      },
+    ];
+    return {
+      ctx: {
+        ...ctx,
+        stage: { ...ctx.stage, type: 'double_elimination' as const },
+        groupNumberById: new Map([
+          [1, 1],
+          [2, 2],
+        ]),
+        roundNumberById: new Map([
+          [11, 1],
+          [12, 2],
+          [21, 1],
+          [22, 2],
+        ]),
+        stageMatches: [...ctx.stageMatches, ...losersMatches],
+      },
+      losers: {
+        landings: { '101': { matchId: 102, side: 'opponent1' as const }, '102': null },
+        startMatchIds: [101],
+      },
+    };
+  }
+
+  it('refuses a team left in a later spot after its earlier match went back to waiting', () => {
+    const { ctx, losers } = losersFixture({ opponent1: { id: null }, opponent2: { id: 4 } }, 4);
+    expect(() => assertFootprint(ctx, [], [], losers)).toThrow(
+      'This change would leave Losers Round 2 Match 1 out of step with the match before it.'
+    );
+  });
+
+  it('accepts a walkover team in the spot its match sends it to', () => {
+    const { ctx, losers } = losersFixture(
+      { opponent1: { id: 4, result: 'win' }, opponent2: null },
+      4
+    );
+    expect(() => assertFootprint(ctx, [], [], losers)).not.toThrow();
+  });
+
+  it('skips a match with two teams, whose winner is whoever played', () => {
+    const { ctx, losers } = losersFixture({ opponent1: { id: 3 }, opponent2: { id: 4 } }, 3);
+    expect(() => assertFootprint(ctx, [], [], losers)).not.toThrow();
+  });
+});
+
 describe('planLosersChanges', () => {
   it('refuses when no losers-bracket spot carries the match number', () => {
     const { ctx, matches } = fixture();
@@ -181,6 +294,48 @@ describe('planLosersChanges', () => {
     expect(() => planLosersChanges(ctx, snapshot, wanted, new Set([2]))).toThrow(
       "The losers-bracket spot fed by Round 1 Match 2 can't be found. Run Repair Bracket first."
     );
+  });
+});
+
+describe('planLosersChanges targets', () => {
+  it('lists a target that needs no change, so the audit still starts from it', () => {
+    const { ctx, matches } = fixture();
+    const slot = (feederMarker: number | null, position: number | null) => ({
+      shape: 'tbd' as const,
+      participantId: null,
+      position,
+      feederMarker,
+      result: null,
+      score: null,
+      isOrigin: false,
+      isDerived: false,
+    });
+    const snapshot = {
+      bracketId: 'b1',
+      stageId: 1,
+      matches: [
+        {
+          id: 101,
+          number: 1,
+          roundNumber: 1,
+          status: 1,
+          editable: false,
+          lockedReason: null,
+          opponent1: slot(2, 2),
+          opponent2: slot(null, null),
+        },
+      ],
+      landings: {},
+      names: {},
+    };
+    const wanted: WantedMatch[] = [
+      { match: matches[1], opponent1: teamOf(3), opponent2: teamOf(4) },
+    ];
+
+    const plan = planLosersChanges(ctx, snapshot, wanted, new Set());
+
+    expect(plan.writes).toEqual([]);
+    expect(plan.targetMatchIds).toEqual([101]);
   });
 });
 

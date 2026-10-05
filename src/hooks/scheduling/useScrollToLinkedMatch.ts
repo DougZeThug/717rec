@@ -12,8 +12,12 @@ import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
  * is not open, or on another night — it does nothing. Forcing a tab change to
  * find it would fight the page's own choice of tab, and the link has already
  * opened the right night.
+ *
+ * It looks again when the open tab changes. The page picks its tab after the
+ * matches load, and the inactive tab's cards are not in the page, so the card
+ * may only appear on that swap.
  */
-export const useScrollToLinkedMatch = (matchesLoading: boolean): void => {
+export const useScrollToLinkedMatch = (matchesLoading: boolean, activeTab: string): void => {
   const arrivalHash = useLocation().hash;
   const scrollBehavior = useScrollBehavior();
   const hasScrolled = useRef(false);
@@ -27,5 +31,5 @@ export const useScrollToLinkedMatch = (matchesLoading: boolean): void => {
 
     hasScrolled.current = true;
     card.scrollIntoView({ behavior: scrollBehavior, block: 'center' });
-  }, [arrivalHash, matchesLoading, scrollBehavior]);
+  }, [arrivalHash, matchesLoading, scrollBehavior, activeTab]);
 };
