@@ -19,6 +19,26 @@ import { invalidateAllDataQueries } from './utils/queryInvalidation';
 const gameWinsFor = (match: Match, teamId: string | undefined): number =>
   teamId === match.team1Id ? match.team1_game_wins || 0 : match.team2_game_wins || 0;
 
+// Game wins to keep when an edit says nothing about them: the stored winner's
+// count follows the winner and the stored loser's follows the loser, placed on
+// the slots the edit gives each team. A match with no stored winner and loser
+// has no roles to follow, so each slot keeps its own count.
+const carriedGameWins = (
+  stored: Match,
+  edit: Omit<Match, 'id'>
+): { team1: number | undefined; team2: number | undefined } => {
+  if (!stored.winnerId || !stored.loserId || !edit.winnerId) {
+    return { team1: stored.team1_game_wins, team2: stored.team2_game_wins };
+  }
+  const winnerWins = gameWinsFor(stored, stored.winnerId);
+  const loserWins = gameWinsFor(stored, stored.loserId);
+  const team1IsWinner = edit.team1Id === edit.winnerId;
+  return {
+    team1: team1IsWinner ? winnerWins : loserWins,
+    team2: team1IsWinner ? loserWins : winnerWins,
+  };
+};
+
 // Build the app-format Match from the DB update response.
 const toUpdatedMatch = (
   editingMatch: Match,
@@ -138,9 +158,12 @@ export const useMatchUpdate = ({ matches, setMatches, editingMatch }: UseMatchUp
 
       // The edit form has no game-wins control, so its payload leaves these
       // keys out. A missing value means "unchanged", not "0": reading it as 0
-      // sent the stored result to the RPC as 0-0 and wiped it.
-      const team1GameWins = matchData.team1_game_wins ?? editingMatch.team1_game_wins;
-      const team2GameWins = matchData.team2_game_wins ?? editingMatch.team2_game_wins;
+      // sent the stored result to the RPC as 0-0 and wiped it. Unchanged means
+      // by role: the winner keeps the winner's game wins, so a flipped winner
+      // never ends up with fewer game wins than the loser.
+      const carried = carriedGameWins(editingMatch, matchData);
+      const team1GameWins = matchData.team1_game_wins ?? carried.team1;
+      const team2GameWins = matchData.team2_game_wins ?? carried.team2;
       const gameWinsChanged =
         editingMatch.team1_game_wins !== team1GameWins ||
         editingMatch.team2_game_wins !== team2GameWins;

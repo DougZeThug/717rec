@@ -348,7 +348,7 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
       expect(mockResubmitMatchResult).not.toHaveBeenCalled();
     });
 
-    it('sends the stored game wins, never 0-0, when the winner changes', async () => {
+    it('gives the old winner game wins to the new winner, never 0-0, when the winner changes', async () => {
       const { result } = renderHook(
         () =>
           useMatchUpdate({
@@ -366,8 +366,29 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
         );
       });
 
-      // Each team keeps its own stored game wins: t2 had 1, t1 had 2.
-      expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't2', 't1', 1, 2);
+      // The winner keeps the winner's count: the old winner had 2, the old loser 1.
+      expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't2', 't1', 2, 1);
+    });
+
+    it('does not call the RPC with 0-0 when the team slots swap and the winner stays', async () => {
+      const { result } = renderHook(
+        () =>
+          useMatchUpdate({
+            matches: [storedMatch],
+            setMatches: vi.fn(),
+            editingMatch: storedMatch,
+          }),
+        { wrapper }
+      );
+
+      await act(async () => {
+        await result.current.handleUpdateMatch(
+          formPayload({ team1Id: 't2', team2Id: 't1', team1Score: 0, team2Score: 1 }),
+          [] as Team[]
+        );
+      });
+
+      expect(mockResubmitMatchResult).not.toHaveBeenCalledWith('m1', 't1', 't2', 0, 0);
     });
   });
 
