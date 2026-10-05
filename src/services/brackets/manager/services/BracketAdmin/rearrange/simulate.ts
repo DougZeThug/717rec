@@ -104,6 +104,12 @@ interface Simulation {
    * part-way; a rearrangement leaves it off so a second run writes nothing.
    */
   forceCascade: boolean;
+  /**
+   * Matches a forced cascade passes through without recomputing them: they
+   * already hold what it wants, but what they send on still has to be carried.
+   * Carried when the pass reaches them, after every feeder has had its say.
+   */
+  carryOnly: Set<number>;
 }
 
 /**
@@ -225,6 +231,7 @@ function initSimulation(
     lastRoundNumber: Math.max(0, ...snapshot.matches.map((match) => match.roundNumber)),
     subject,
     forceCascade,
+    carryOnly: new Set(),
   };
 }
 
@@ -367,9 +374,13 @@ function propagateRounds(sim: Simulation): void {
   );
   for (const match of ordered) {
     const state = sim.working.get(match.id);
-    if (!state || !state.dirty) continue;
-    recomputeMatch(sim, state);
-    carryProductToLanding(sim, match, state);
+    if (!state) continue;
+    if (state.dirty) {
+      recomputeMatch(sim, state);
+      carryProductToLanding(sim, match, state);
+    } else if (sim.carryOnly.has(match.id)) {
+      carryProductToLanding(sim, match, state);
+    }
   }
 }
 
@@ -415,10 +426,11 @@ function carryProductToLanding(sim: Simulation, match: SnapshotMatch, state: Wor
     // matches after it may not have been written yet, so a forced cascade
     // carries on from it. The landing itself is not recomputed: it is already
     // right, and a recompute would strip the library's advance notation from
-    // it. What it sends on follows from its slots as they stand. A match that
-    // can't absorb a change is left alone, as before.
+    // it. What it sends on follows from its slots once every feeder has been
+    // applied, so it is carried when the pass reaches it. A match that can't
+    // absorb a change is left alone, as before.
     if (sim.forceCascade && (landingState.original.editable || !landingBlockReason(landingState))) {
-      carryProductToLanding(sim, landingState.original, landingState);
+      sim.carryOnly.add(landingState.original.id);
     }
     return;
   }

@@ -708,6 +708,21 @@ describe('simulateSlotChanges', () => {
       expect(fieldsFor(result, 501)).toEqual({ opponent2_id: null });
     });
 
+    it('waits for both feeders of a match before carrying its result on', () => {
+      const original = tenTeamSnapshot();
+      const first = simulateSlotChanges(original, [reopenPlaceholder]);
+      const interrupted = afterPartialSave(original, first, [302, 402]);
+      // Both feeders of Losers Round 3 Match 1 are forced: 301 (already a BYE
+      // spot, passing through 401) and 302 (the interrupted one, via 402).
+      const result = simulateSlotChanges(interrupted, [
+        reopenPlaceholder,
+        { matchId: 301, side: 'opponent1', content: { kind: 'bye' } },
+      ]);
+
+      expect(result.problems).toEqual([]);
+      expect(fieldsFor(result, 501)).toEqual({ opponent2_id: null });
+    });
+
     it('writes nothing once the whole cascade was saved', () => {
       const original = tenTeamSnapshot();
       const done = snapshotAfter(original, simulateSlotChanges(original, [reopenPlaceholder]));
