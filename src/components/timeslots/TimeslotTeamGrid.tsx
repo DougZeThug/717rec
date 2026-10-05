@@ -39,19 +39,12 @@ export const TimeslotTeamGrid: React.FC<TimeslotTeamGridProps> = ({
           {availableTeams.map((team) => {
             const isSelected = selectedTeamIds.includes(team.id);
             return (
-              <div
+              <button
                 key={team.id}
-                role="button"
-                tabIndex={0}
+                type="button"
                 title={team.name}
                 aria-pressed={isSelected}
                 onClick={() => onToggleTeam(team.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onToggleTeam(team.id);
-                  }
-                }}
                 className={`flex items-center gap-2 p-2 rounded-lg border transition-colors text-left cursor-pointer ${
                   isSelected ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted'
                 }`}
@@ -62,7 +55,7 @@ export const TimeslotTeamGrid: React.FC<TimeslotTeamGridProps> = ({
                 <span className="line-clamp-2 flex-1 wrap-break-word text-xs font-medium">
                   {team.name}
                 </span>
-                <div
+                <span
                   className={`size-4 shrink-0 rounded-sm border flex items-center justify-center ${
                     isSelected
                       ? 'border-primary bg-primary text-primary-foreground'
@@ -70,8 +63,8 @@ export const TimeslotTeamGrid: React.FC<TimeslotTeamGridProps> = ({
                   }`}
                 >
                   {isSelected && <Check className="size-3" />}
-                </div>
-              </div>
+                </span>
+              </button>
             );
           })}
         </div>

@@ -71,7 +71,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
 - [ ] Placeholder-only inputs. (Backlog)
 - [x] Auth form has no `aria-invalid` or `aria-describedby`. Fixed for sign in, sign up and forgot password: the field is marked invalid and the message is tied to it.
-- [ ] Table rows use `role="button"`. (Backlog)
+- [x] Table rows use `role="button"`. Fixed: the stats standings table row is no longer a button; the team name is a real button (the row keeps its mouse click). The timeslot team picker uses real `<button aria-pressed>`. The flyer upload zone keeps its role but Space no longer scrolls the page and it ignores keys while uploading. The message card and `app-card` were left as they are.
 - [ ] Win/loss shown by colour alone. (Backlog)
 - [x] Charts have no text alternative. Fixed: the win/loss, power score, division strength, team career, all-teams career and traffic charts are now `role="img"` with a text summary of the data (long lists are cut with a count). The report card radar and the power score gauge ring only repeat text that is already on screen, so they are hidden from screen readers.
 - [x] Score inputs lack `inputMode="numeric"`. Fixed for the schedule score form, the match form, the playoff score editors and the seed box. The Challonge sort order is left alone on purpose: it can be negative and the phone number pad has no minus key.

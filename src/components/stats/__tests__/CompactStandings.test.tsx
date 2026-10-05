@@ -96,26 +96,45 @@ describe('CompactStandings (desktop table)', () => {
 
   it('shows one row per team with its record', () => {
     render(<CompactStandings rankings={makeRankings(3)} />);
-    expect(screen.getByRole('button', { name: 'View Team 2 team details' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Team 2' })).toBeInTheDocument();
     expect(screen.getByText('2-0')).toBeInTheDocument();
   });
 
-  it('opens the team page when a row is clicked', async () => {
+  // The row used to be a focusable role="button" that held the team name, which
+  // is a button inside a button for a screen reader. Now only the name is one.
+  it('keeps the row itself out of the tab order and the button list', () => {
     render(<CompactStandings rankings={makeRankings(3)} />);
-    await userEvent.click(screen.getByRole('button', { name: 'View Team 1 team details' }));
+    expect(screen.queryByRole('button', { name: /team details/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button')).toHaveLength(3);
+  });
+
+  it('opens the team page when the rest of a row is clicked', async () => {
+    render(<CompactStandings rankings={makeRankings(3)} />);
+    await userEvent.click(screen.getByText('1-0'));
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
     expect(mockNavigate).toHaveBeenCalledWith('/teams/team-1', expect.any(Object));
   });
 
-  it.each(['{Enter}', ' '])('opens the team page when %s is pressed on a row', async (key) => {
+  it('opens the team page once when the team name is clicked', async () => {
     render(<CompactStandings rankings={makeRankings(3)} />);
-    screen.getByRole('button', { name: 'View Team 1 team details' }).focus();
-    await userEvent.keyboard(key);
+    await userEvent.click(screen.getByRole('button', { name: 'Team 1' }));
     expect(mockNavigate).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledWith('/teams/team-1', expect.any(Object));
   });
 
-  it('ignores other keys on a row', async () => {
+  it.each(['{Enter}', ' '])(
+    'opens the team page when %s is pressed on a team name',
+    async (key) => {
+      render(<CompactStandings rankings={makeRankings(3)} />);
+      screen.getByRole('button', { name: 'Team 1' }).focus();
+      await userEvent.keyboard(key);
+      expect(mockNavigate).toHaveBeenCalledTimes(1);
+    }
+  );
+
+  it('ignores other keys on a team name', async () => {
     render(<CompactStandings rankings={makeRankings(3)} />);
-    screen.getByRole('button', { name: 'View Team 1 team details' }).focus();
+    screen.getByRole('button', { name: 'Team 1' }).focus();
     await userEvent.keyboard('a');
     expect(mockNavigate).not.toHaveBeenCalled();
   });
