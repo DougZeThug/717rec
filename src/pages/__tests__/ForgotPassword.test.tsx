@@ -65,6 +65,19 @@ describe('ForgotPassword', () => {
     expect(mockResetPassword).not.toHaveBeenCalled();
   });
 
+  it('ties the email message to the field for screen readers', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const email = screen.getByLabelText('Email');
+    await user.type(email, 'not-an-email');
+    await user.click(screen.getByRole('button', { name: 'Send reset link' }));
+
+    await screen.findByText('Please enter a valid email address');
+    expect(email).toHaveAttribute('aria-invalid', 'true');
+    expect(email).toHaveAccessibleDescription('Please enter a valid email address');
+  });
+
   it('sends the link back to the reset page on this origin', async () => {
     const user = userEvent.setup();
     renderPage();

@@ -70,7 +70,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
 - [ ] Placeholder-only inputs. (Backlog)
-- [ ] Auth form has no `aria-invalid` or `aria-describedby`. (Backlog)
+- [x] Auth form has no `aria-invalid` or `aria-describedby`. Fixed for sign in, sign up and forgot password: the field is marked invalid and the message is tied to it.
 - [ ] Table rows use `role="button"`. (Backlog)
 - [ ] Win/loss shown by colour alone. (Backlog)
 - [ ] Charts have no text alternative. (Backlog)
