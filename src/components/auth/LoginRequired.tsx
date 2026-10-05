@@ -13,7 +13,7 @@ interface LoginRequiredProps {
 
 const LoginRequired: React.FC<LoginRequiredProps> = ({
   children,
-  message = 'You must log in to use this feature.',
+  message = 'You must sign in to use this feature.',
   fallback,
 }) => {
   const { user, isLoading, authInitialized } = useAuth();
@@ -62,7 +62,7 @@ const LoginRequired: React.FC<LoginRequiredProps> = ({
           })
         }
       >
-        Login / Sign Up
+        Sign in / Sign up
       </Button>
     </div>
   );

@@ -73,12 +73,15 @@ vi.mock('@/components/schedule/ScheduleHeader', () => ({
   default: ({
     setSearchTerm,
     filters,
+    onRefresh,
   }: {
     setSearchTerm: (term: string) => void;
     filters?: React.ReactNode;
+    onRefresh?: () => void;
   }) => (
     <div>
       <button onClick={() => setSearchTerm('alpha')}>Filter Alpha</button>
+      <button onClick={onRefresh}>Refresh schedule</button>
       {filters}
     </div>
   ),
@@ -346,6 +349,26 @@ describe('Schedule page', () => {
       window.removeEventListener('error', preventExpectedJsdomError);
       errorSpy.mockRestore();
     }
+  });
+
+  it('refreshes the schedule when the header asks for a fresh read', () => {
+    const refetchMatches = vi.fn();
+    mockUseScheduleData.mockReturnValue({ ...baseScheduleData, refetchMatches });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh schedule' }));
+
+    expect(refetchMatches).toHaveBeenCalledTimes(1);
+  });
+
+  it('still opens when a match has a date that cannot be read', () => {
+    mockUseScheduleData.mockReturnValue({
+      ...baseScheduleData,
+      matchesData: [{ id: 'bad', date: 'not-a-date', iscompleted: false }],
+      upcomingMatches: [{ id: 'bad', date: 'not-a-date', iscompleted: false }],
+    });
+
+    expect(() => renderPage()).not.toThrow();
   });
 
   it('filters matches by search interaction', () => {

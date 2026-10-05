@@ -36,10 +36,15 @@ const baseMessage: Message = {
   team_name: 'Wolves',
 };
 
-// The two message-control buttons (edit / delete) are the only real <button>
-// elements on the card; the Card itself is a <div role="button">. Filtering by
-// tag name isolates the option controls from the clickable card.
-const optionButtons = () => screen.queryAllByRole('button').filter((el) => el.tagName === 'BUTTON');
+// The Card itself is a <div role="button">; the edit and delete controls are
+// real buttons with names. These helpers tell them apart.
+const card = () => {
+  const found = screen.getAllByRole('button').find((el) => el.tagName === 'DIV');
+  if (!found) throw new Error('The message card is not a button');
+  return found;
+};
+const optionButtons = () =>
+  ['Edit message', 'Delete message'].flatMap((name) => screen.queryAllByRole('button', { name }));
 
 describe('MessageItem', () => {
   beforeEach(() => {
@@ -80,8 +85,18 @@ describe('MessageItem', () => {
 
     // Author => the card is an interactive button; option controls stay hidden
     // until it is clicked.
-    expect(screen.getByRole('button')).toBeInTheDocument();
+    expect(card()).toBeInTheDocument();
     expect(optionButtons()).toHaveLength(0);
+  });
+
+  it('gives the author a visible options button, so a phone does not need a long press', () => {
+    render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Message options' }));
+
+    expect(optionButtons()).toHaveLength(2);
+    // The trigger gives way to the two controls.
+    expect(screen.queryByRole('button', { name: 'Message options' })).not.toBeInTheDocument();
   });
 
   it('opens the edit form when the author clicks the card then the pencil control', () => {
@@ -91,7 +106,7 @@ describe('MessageItem', () => {
     expect(screen.queryByPlaceholderText('Edit message...')).not.toBeInTheDocument();
 
     // Click the card to reveal the edit/delete option controls.
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(card());
     const controls = optionButtons();
     expect(controls).toHaveLength(2);
 
@@ -104,10 +119,30 @@ describe('MessageItem', () => {
     expect(optionButtons().some((b) => b.querySelector('.lucide-pencil'))).toBe(false);
   });
 
+  it('closes the options when the reader clicks somewhere else', () => {
+    render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Message options' }));
+    expect(optionButtons()).toHaveLength(2);
+
+    // A click on the page behind the card closes the options.
+    fireEvent.click(document.body);
+    expect(optionButtons()).toHaveLength(0);
+  });
+
+  it('opens the options from a click on the card itself and keeps them open', () => {
+    render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
+
+    // The card's own click opens them. The outside-click listener must ignore
+    // that same click, or the options would close in the same moment.
+    fireEvent.click(card());
+    expect(optionButtons()).toHaveLength(2);
+  });
+
   it('opens the delete confirmation dialog when the author clicks the trash control', () => {
     render(<MessageItem message={baseMessage} onDelete={vi.fn()} onEdit={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(card());
     const controls = optionButtons();
     expect(controls).toHaveLength(2);
 

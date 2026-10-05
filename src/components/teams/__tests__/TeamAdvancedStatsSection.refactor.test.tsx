@@ -134,9 +134,9 @@ describe('Team advanced stats refactor behavior', () => {
       worstDivisionTier: null,
     });
     const { rerender } = render(<TeamAdvancedStatsSummaryCards advancedStats={mk('improving')} />);
-    expect(screen.getByText('improving')).toHaveClass('text-emerald-500');
+    expect(screen.getByText('improving')).toHaveClass('text-emerald-700');
     rerender(<TeamAdvancedStatsSummaryCards advancedStats={mk('declining')} />);
-    expect(screen.getByText('declining')).toHaveClass('text-red-500');
+    expect(screen.getByText('declining')).toHaveClass('text-red-600');
     rerender(<TeamAdvancedStatsSummaryCards advancedStats={mk('stable')} />);
     expect(screen.getByText('stable')).toHaveClass('text-muted-foreground');
   });

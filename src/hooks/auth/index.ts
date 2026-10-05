@@ -12,6 +12,7 @@ import { authLog, errorLog } from '@/utils/logger';
 import { useAuthMethods } from './useAuthMethods';
 import { keepProfileOnlyFor, useAuthProfile } from './useAuthProfile';
 import { handleAuthError as handleAuthErrorUtil } from './utils/authErrorHandler';
+import { consumeUserSignOut } from './utils/signOutIntent';
 
 /**
  * Consolidated auth hook that manages:
@@ -77,6 +78,9 @@ export const useAuth = () => {
     const maxRetries = 2;
     let isCancelled = false; // Track if effect is cleaned up or session changed
     let currentUserId: string | null = null; // Track which user's profile we're fetching
+    // True once this tab has held a session, so SIGNED_OUT can be told apart from
+    // the first event of a visitor who was never signed in.
+    let hadSession = false;
 
     /**
      * Timers this effect has started and not yet run, so the cleanup below can
@@ -103,6 +107,18 @@ export const useAuth = () => {
       data: { subscription },
     } = onAuthStateChange((event, currentSession) => {
       authLog('Auth state changed:', event);
+
+      // The session ended and the person did not ask for that: the token
+      // expired, or they signed out in another tab. Say so, or an admin in the
+      // middle of a form is sent to the sign-in page with no explanation.
+      if (event === 'SIGNED_OUT' && hadSession && !consumeUserSignOut()) {
+        toast({
+          title: 'You were signed out',
+          description: 'Your session ended. Sign in again to keep going.',
+          duration: 20000,
+        });
+      }
+      hadSession = currentSession !== null;
 
       // Update the current user ID to track which profile fetch is valid
       const newUserId = currentSession?.user?.id ?? null;

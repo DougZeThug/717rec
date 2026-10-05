@@ -23,13 +23,15 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-card border border-border p-6 pr-8 shadow-xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-(--radix-toast-swipe-end-x) data-[swipe=move]:translate-x-(--radix-toast-swipe-move-x) data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full sm:data-[state=open]:slide-in-from-bottom-full',
+  'group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-card border border-border p-6 pr-12 shadow-xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-(--radix-toast-swipe-end-x) data-[swipe=move]:translate-x-(--radix-toast-swipe-move-x) data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full sm:data-[state=open]:slide-in-from-bottom-full',
   {
     variants: {
       variant: {
         default: 'border bg-background text-foreground',
         destructive:
           'destructive group border-destructive bg-destructive text-destructive-foreground',
+        // A save worked. Green says so before the words are read.
+        success: 'success group border-success bg-success text-success-foreground',
       },
     },
     defaultVariants: {
@@ -59,7 +61,7 @@ const ToastAction = React.forwardRef<
   <ToastPrimitives.Action
     ref={ref}
     className={cn(
-      'inline-flex h-8 shrink-0 items-center justify-center rounded-input border border-border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 hover:group-[.destructive]:border-destructive/30 hover:group-[.destructive]:bg-destructive hover:group-[.destructive]:text-destructive-foreground focus:group-[.destructive]:ring-destructive',
+      'inline-flex min-h-11 shrink-0 items-center justify-center rounded-input border border-border bg-transparent px-3 text-sm font-medium ring-offset-background transition-colors hover:bg-secondary focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.success]:border-success-foreground/40 hover:group-[.success]:bg-success-foreground/10 hover:group-[.destructive]:border-destructive/30 hover:group-[.destructive]:bg-destructive hover:group-[.destructive]:text-destructive-foreground focus:group-[.destructive]:ring-destructive',
       className
     )}
     {...props}
@@ -74,7 +76,8 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      'absolute right-2 top-2 rounded-input p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-hidden focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 hover:group-[.destructive]:text-red-50 focus:group-[.destructive]:ring-red-400 focus:group-[.destructive]:ring-offset-red-600',
+      // Always visible: it used to appear only on hover, which a phone has not got.
+      'absolute right-1 top-1 inline-flex min-h-11 min-w-11 items-center justify-center rounded-input text-foreground/70 transition-colors hover:text-foreground focus:outline-hidden focus:ring-2 group-[.success]:text-success-foreground/80 hover:group-[.success]:text-success-foreground group-[.destructive]:text-destructive-foreground hover:group-[.destructive]:text-destructive-foreground focus:group-[.destructive]:ring-red-400 focus:group-[.destructive]:ring-offset-red-600',
       className
     )}
     toast-close=""

@@ -19,7 +19,7 @@ interface AuthContainerProps {
 
 const AuthContainer: React.FC<AuthContainerProps> = ({
   title = 'Welcome to 717Rec',
-  description = 'Login or create an account to access all features',
+  description = 'Sign in or create an account to access all features',
   children,
   footer,
 }) => {

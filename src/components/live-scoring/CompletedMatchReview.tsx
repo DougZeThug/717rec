@@ -185,7 +185,7 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
             <Button
               type="button"
               variant="outline"
-              className="min-h-[44px] w-full gap-2 text-destructive"
+              className="min-h-[44px] w-full gap-2 text-destructive-text"
               disabled={isReopening}
             >
               <RotateCcw className="size-4" aria-hidden />

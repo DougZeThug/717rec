@@ -144,7 +144,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
             className="mt-1"
           />
           {errors.message && (
-            <p id="contact-message-error" className="mt-1 text-sm text-destructive">
+            <p id="contact-message-error" className="mt-1 text-sm text-destructive-text">
               {errors.message}
             </p>
           )}

@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/auth-context';
 import { useCreateNotification } from '@/hooks/notifications/useNotificationMutations';
 import { toast } from '@/hooks/useToast';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 const QuickPostNotificationForm: React.FC = () => {
   const { user } = useAuth();
@@ -26,7 +27,7 @@ const QuickPostNotificationForm: React.FC = () => {
     } catch (err) {
       toast({
         title: 'Failed to post notification',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getUIErrorMessage(err),
         variant: 'destructive',
       });
     }

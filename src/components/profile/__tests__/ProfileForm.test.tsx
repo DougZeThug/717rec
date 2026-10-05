@@ -165,4 +165,21 @@ describe('ProfileForm name availability', () => {
       })
     );
   });
+  it('says the save failed, and keeps the form, when the update is rejected', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: true });
+    mockUpdateProfile.mockRejectedValue(new Error('db down'));
+    renderForm();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByPlaceholderText('Enter your first name'), 'Dougie');
+    await screen.findByText('Name is available', undefined, { timeout: SETTLE_TIMEOUT_MS });
+    await user.click(screen.getByRole('button', { name: 'Save Profile' }));
+
+    await waitFor(() =>
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Error updating profile', variant: 'destructive' })
+      )
+    );
+    expect(screen.getByRole('button', { name: 'Save Profile' })).toBeInTheDocument();
+  });
 });

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { fetchScheduleMatches } from '@/services/matches/MatchReadService';
+import { liveRefetchInterval } from '@/utils/leagueNight';
 import { errorLog, scheduleLog } from '@/utils/logger';
 import { isMatchCompleted } from '@/utils/matchStatus';
 import { type RawMatchRow, transformDatabaseMatches } from '@/utils/matchTransformers';
@@ -12,6 +13,8 @@ export const useScheduleData = () => {
     isError: matchesError,
     error: matchesErrorObj,
     refetch: refetchMatches,
+    dataUpdatedAt: matchesUpdatedAt,
+    isFetching: matchesFetching,
   } = useQuery({
     queryKey: ['matches', 'schedule'],
     queryFn: async () => {
@@ -58,8 +61,13 @@ export const useScheduleData = () => {
 
       return validMatches;
     },
-    refetchOnWindowFocus: false, // Don't refetch on tab focus
-    refetchOnMount: false, // Trust the cache
+    // Scores come in while people watch. These used to be off ("trust the
+    // cache"), so a page left open, or opened again from the cache, showed the
+    // night as it was an hour ago with nothing to say so.
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    // Wrapped: TanStack passes the query as the first argument.
+    refetchInterval: () => liveRefetchInterval(), // every minute on league night
     staleTime: 0, // Always fresh - instant updates
   });
 
@@ -91,6 +99,8 @@ export const useScheduleData = () => {
     matchesError,
     matchesErrorMessage: matchesErrorObj instanceof Error ? matchesErrorObj.message : null,
     refetchMatches,
+    matchesUpdatedAt,
+    matchesFetching,
     upcomingMatches,
     completedMatches,
   };

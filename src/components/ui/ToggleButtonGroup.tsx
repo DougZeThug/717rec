@@ -42,7 +42,7 @@ export function ToggleButtonGroup<T extends string>({
               aria-pressed={isActive}
               onClick={() => onChange(option.value)}
               className={cn(
-                'px-3 py-1 text-sm rounded-md transition-all',
+                'min-h-11 px-3 py-1 text-sm rounded-md transition-all',
                 Icon && 'flex items-center gap-1.5',
                 isActive
                   ? option.activeClassName || 'bg-primary text-primary-foreground'
@@ -72,7 +72,7 @@ export function ToggleButtonGroup<T extends string>({
             aria-pressed={isActive}
             onClick={() => onChange(option.value)}
             className={cn(
-              'flex-1 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
+              'flex-1 min-h-11 px-3 py-1.5 rounded-lg font-medium text-sm transition-colors',
               'flex items-center justify-center gap-1.5',
               isActive
                 ? option.activeClassName || 'bg-primary/10 text-primary dark:bg-primary/20'

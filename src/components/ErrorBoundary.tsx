@@ -66,7 +66,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="max-w-md w-full text-center space-y-6">
             <div className="flex justify-center">
               <div className="p-4 bg-destructive/10 rounded-full">
-                <AlertTriangle className="size-12 text-destructive" />
+                <AlertTriangle className="size-12 text-destructive-text" />
               </div>
             </div>
 
@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {import.meta.env.DEV && this.state.error && (
               <div className="p-4 bg-muted rounded-lg text-left">
-                <p className="text-sm font-mono text-destructive break-all">
+                <p className="text-sm font-mono text-destructive-text break-all">
                   {this.state.error.message}
                 </p>
               </div>

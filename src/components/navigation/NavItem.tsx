@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 import { ICON_STROKE } from '@/styles/icon-system';
+import { pathIsWithin } from '@/utils/pathIsWithin';
 import { prefetchRoute } from '@/utils/routePrefetch';
 
 export interface NavItemProps {
@@ -21,7 +22,8 @@ export const NavItem: React.FC<NavItemProps> = React.memo(
   ({ to, label, icon, isActive: isActiveProp, className, onClick }) => {
     const location = useLocation();
     const { isWinterTheme } = useSeasonalThemeBase();
-    const isActive = isActiveProp !== undefined ? isActiveProp : location.pathname === to;
+    const isActive =
+      isActiveProp !== undefined ? isActiveProp : pathIsWithin(location.pathname, to);
 
     const handlePrefetch = useCallback(() => {
       prefetchRoute(to);

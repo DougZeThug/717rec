@@ -44,10 +44,16 @@
   /* Destructive */
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
-  
+  --destructive-text: 0 84% 68%; /* 6.3:1 on the winter page */
+
+  /* Division badge text on the dark winter page (see theme.css). */
+  --competitive-soft-text: 0 52% 64%;
+  --intermediate-soft-text: 38 60% 62%;
+  --recreational-soft-text: 150 36% 56%;
+
   /* Borders - Subtle frost */
   --border: 220 30% 22%;
-  --input: 222 30% 18%;
+  --input: 222 20% 45%; /* 3.5:1 on the winter page */
   --ring: 199 89% 62%;
   
   /* Winter-specific tokens - STRONGER */
@@ -492,6 +498,15 @@
   --tw-gradient-from: hsla(222, 45%, 15%, 0.95) !important;
   --tw-gradient-via: hsla(199, 60%, 28%, 0.9) !important;
   --tw-gradient-to: hsla(222, 45%, 15%, 0.95) !important;
+}
+
+/* The same bars carry DARK text outside winter (white on amber/orange measured
+   2.2 to 2.8:1, so the double-header badge and the selected timeslot button use
+   text-gray-950). The remap above makes the fill dark navy, so the text has to
+   go light with it. Gradient TEXT (text-transparent) is left alone. */
+.winter-frozen [class*="from-amber"][class*="to-orange"]:not(.text-transparent),
+.winter-frozen [class*="from-orange"][class*="to-amber"]:not(.text-transparent) {
+  color: hsl(var(--foreground));
 }
 
 /* Additional ice-glass treatment for all Card components in winter */

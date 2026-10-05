@@ -7,6 +7,7 @@ import AnimatedBreadcrumbs from '@/components/navigation/AnimatedBreadcrumbs';
 import SeoHead from '@/components/seo/SeoHead';
 import HeadToHeadRecords from '@/components/stats/HeadToHeadRecords';
 import MatchList from '@/components/teams/MatchList';
+import NextMatchStrip from '@/components/teams/NextMatchStrip';
 import PlayerList from '@/components/teams/PlayerList';
 import RivalryHighlights from '@/components/teams/RivalryHighlights';
 import StatBreakdown from '@/components/teams/StatBreakdown';
@@ -18,6 +19,7 @@ import TeamPlayerStatsSection from '@/components/teams/TeamPlayerStatsSection';
 import TeamTotals from '@/components/teams/TeamTotals';
 import { Button } from '@/components/ui/button';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTeamsQuery } from '@/hooks/teams';
 import { useScrollBehavior } from '@/hooks/usePrefersReducedMotion';
@@ -25,7 +27,9 @@ import { useResolveTeamSlug } from '@/hooks/useResolveTeamSlug';
 import { useTeamDetails } from '@/hooks/useTeamDetails';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
+import { isMatchOpenForScoring } from '@/utils/matchStatus';
 import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
 import { calculateSweepRate } from '@/utils/teamDetailsUtils/sweepRateUtils';
 import {
@@ -239,8 +243,9 @@ const TeamDetailsPage = () => {
     return LINKABLE_SECTIONS.includes(section) ? section : null;
   });
 
-  const { team, isLoading } = useTeamDetails(teamId);
-  const { pastMatches, isLoadingMatches } = useTeamMatches(teamId);
+  const { team, isLoading, error: teamError, refetch: refetchTeam } = useTeamDetails(teamId);
+  const { pastMatches, upcomingMatches, isLoadingMatches, matchesError, refetchMatches } =
+    useTeamMatches(teamId);
   const { rankings } = useTeamRankings();
   // The same options useResolveTeamSlug passes, deliberately: same cache key, so
   // arriving by the readable name costs nothing extra, and the same array in the
@@ -302,6 +307,27 @@ const TeamDetailsPage = () => {
     );
   }
 
+  // A failed fetch is not a missing team. Say so, and let the visitor retry.
+  if (teamError && !team) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-md">
+        <ErrorDisplay
+          variant="card"
+          context="Loading this team"
+          error={getUIErrorMessage(teamError, 'We could not load this team.')}
+          onRetry={() => {
+            refetchTeam();
+          }}
+        />
+        <div className="mt-4 text-center">
+          <Button variant="ghost" onClick={() => navigate('/teams')}>
+            Back to Teams
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (!team) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
@@ -314,6 +340,9 @@ const TeamDetailsPage = () => {
 
   const winPct = toPercent(team.win_percentage);
   const gamePct = toPercent(team.game_win_percentage);
+  // The next match still to be played. The list comes back oldest first, as
+  // useMyNextMatch relies on, and postponed or canceled matches drop out.
+  const nextMatch = upcomingMatches.find(isMatchOpenForScoring);
   const sweepStats = calculateSweepRate(teamId || '', pastMatches);
   const clutchRecord = calculateClutchRecord(teamId || '', pastMatches);
 
@@ -365,6 +394,19 @@ const TeamDetailsPage = () => {
 
         {/* Hero Section */}
         <TeamHeader team={team} winPercentage={winPct.toFixed(1)} pastMatches={pastMatches} />
+
+        {/* Match data failed to load: without this the page reads as "no matches". */}
+        {matchesError && (
+          <ErrorDisplay
+            context="Match data"
+            error={getUIErrorMessage(matchesError, 'Matches could not be loaded.')}
+            onRetry={() => {
+              refetchMatches();
+            }}
+          />
+        )}
+
+        {nextMatch && teamId && <NextMatchStrip match={nextMatch} teamId={teamId} />}
 
         {/* 1. Performance Cards (always visible) */}
         <section id="performance" className="scroll-mt-20">

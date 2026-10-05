@@ -1,4 +1,4 @@
-import { getLeagueCalendarDate } from '@/utils/timezone';
+import { getLeagueCalendarDate, getLeagueTimeUtc } from '@/utils/timezone';
 
 /**
  * League night is Thursday.
@@ -26,4 +26,64 @@ export const nextThursday = (from: Date = new Date()): Date => {
   const leagueDayOfWeek = new Date(year, month - 1, day).getDay();
   const daysAway = (THURSDAY - leagueDayOfWeek + 7) % 7;
   return new Date(year, month - 1, day + daysAway, 12, 0, 0, 0);
+};
+
+/** How often a page asks for fresh data while league night is under way. */
+export const LIVE_REFETCH_MS = 60_000;
+
+/** League night runs Thursday evening: when scores are being entered. */
+const LEAGUE_NIGHT_START_HOUR = 16;
+
+const LEAGUE_WEEKDAY_HOUR = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  weekday: 'short',
+  hour: 'numeric',
+  hour12: false,
+});
+
+/**
+ * True from 4 PM on a Thursday, league time, to midnight.
+ *
+ * The league plays its night's matches in the evening, and scores arrive as they
+ * finish. Outside those hours nothing changes minute to minute, so nothing needs
+ * to poll. League time rather than the viewer's, so a visitor anywhere gets the
+ * same answer.
+ */
+export const isLeagueNightNow = (now: Date = new Date()): boolean => {
+  const parts = LEAGUE_WEEKDAY_HOUR.formatToParts(now);
+  const weekday = parts.find((part) => part.type === 'weekday')?.value;
+  // Some ICU builds report midnight as hour 24.
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? NaN) % 24;
+  return weekday === 'Thu' && hour >= LEAGUE_NIGHT_START_HOUR;
+};
+
+/** Longest wait before checking again whether league night has started. */
+const MAX_IDLE_CHECK_MS = 60 * 60 * 1000;
+
+/** The next 4 PM on a Thursday in league time, as an instant. */
+const nextLeagueNightStart = (now: Date): Date => {
+  const THURSDAY = 4;
+  const { year, month, day } = getLeagueCalendarDate(now);
+  const leagueDayOfWeek = new Date(year, month - 1, day).getDay();
+  const daysAway = (THURSDAY - leagueDayOfWeek + 7) % 7;
+  return getLeagueTimeUtc(year, month, day + daysAway, LEAGUE_NIGHT_START_HOUR, 0);
+};
+
+/**
+ * `refetchInterval` for data that changes while matches are played.
+ *
+ * - On league night: every minute.
+ * - Any other time: the wait until league night starts, but never more than an
+ *   hour. It cannot simply be `false`: TanStack Query only re-reads this
+ *   function after a fetch, so a page opened at noon on Thursday would then
+ *   never start polling when 4 PM arrives. Waiting exactly until the start
+ *   (and at most an hour, in case the clock or a sleeping device drifts) makes
+ *   the first poll land on the start, which then returns the one-minute value.
+ *
+ * TanStack Query already pauses an interval while the tab is in the background.
+ */
+export const liveRefetchInterval = (now: Date = new Date()): number => {
+  if (isLeagueNightNow(now)) return LIVE_REFETCH_MS;
+  const untilStart = nextLeagueNightStart(now).getTime() - now.getTime();
+  return Math.min(Math.max(untilStart, LIVE_REFETCH_MS), MAX_IDLE_CHECK_MS);
 };

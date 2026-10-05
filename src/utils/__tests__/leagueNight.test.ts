@@ -1,7 +1,12 @@
 import { format } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
-import { nextThursday } from '../leagueNight';
+import {
+  isLeagueNightNow,
+  LIVE_REFETCH_MS,
+  liveRefetchInterval,
+  nextThursday,
+} from '../leagueNight';
 import { getLeagueMidnightUtc } from '../timezone';
 
 /**
@@ -69,5 +74,54 @@ describe('nextThursday', () => {
     it('moves to next week once league time is past midnight', () => {
       expect(dayKey(nextThursday(new Date('2026-10-02T04:30:00Z')))).toBe('2026-10-08');
     });
+  });
+});
+
+describe('isLeagueNightNow', () => {
+  // 2026-10-08 is a Thursday.
+  it('is true on Thursday evening in league time', () => {
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 20))).toBe(true);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 16))).toBe(true);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 23))).toBe(true);
+  });
+
+  it('is false on Thursday before the evening', () => {
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 9))).toBe(false);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 8, 15))).toBe(false);
+  });
+
+  it('is false on other days, even in the evening', () => {
+    expect(isLeagueNightNow(leagueTime(2026, 10, 7, 20))).toBe(false);
+    expect(isLeagueNightNow(leagueTime(2026, 10, 9, 20))).toBe(false);
+  });
+
+  it('is false once league time is past midnight, even though a UTC clock still says Thursday', () => {
+    // 2026-10-09 03:30 UTC is 11:30 PM Thursday in league time (EDT)...
+    expect(isLeagueNightNow(new Date('2026-10-09T03:30:00Z'))).toBe(true);
+    // ...and 04:30 UTC is 12:30 AM Friday.
+    expect(isLeagueNightNow(new Date('2026-10-09T04:30:00Z'))).toBe(false);
+  });
+});
+
+describe('liveRefetchInterval', () => {
+  it('polls every minute on league night', () => {
+    expect(liveRefetchInterval(leagueTime(2026, 10, 8, 20))).toBe(LIVE_REFETCH_MS);
+  });
+
+  it('waits exactly until 4 PM when league night is less than an hour away', () => {
+    // 3:20 PM Thursday: 40 minutes to go. Returning `false` here is the bug: the
+    // page would never wake up to start polling.
+    const threeTwenty = new Date(leagueTime(2026, 10, 8, 15).getTime() + 20 * 60 * 1000);
+    expect(liveRefetchInterval(threeTwenty)).toBe(40 * 60 * 1000);
+  });
+
+  it('checks again within an hour when league night is further away', () => {
+    expect(liveRefetchInterval(leagueTime(2026, 10, 6, 20))).toBe(60 * 60 * 1000);
+    expect(liveRefetchInterval(leagueTime(2026, 10, 8, 9))).toBe(60 * 60 * 1000);
+  });
+
+  it('never returns less than a minute, so it cannot spin', () => {
+    const justBefore = new Date(leagueTime(2026, 10, 8, 16).getTime() - 1000);
+    expect(liveRefetchInterval(justBefore)).toBe(LIVE_REFETCH_MS);
   });
 });

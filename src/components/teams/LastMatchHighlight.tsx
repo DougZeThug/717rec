@@ -46,7 +46,12 @@ const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
       className={cn('inline-flex items-center gap-1.5 text-xs text-muted-foreground', className)}
     >
       <span className="opacity-70">Last match:</span>
-      <span className={cn('font-semibold', isWin ? 'text-green-500' : 'text-red-500')}>
+      <span
+        className={cn(
+          'font-semibold',
+          isWin ? 'text-green-700 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+        )}
+      >
         {isWin ? 'W' : 'L'}
       </span>
       <span className="font-medium">

@@ -57,5 +57,8 @@ export const useTeamMatches = (teamId: string | undefined) => {
     upcomingMatches: matchesQuery.data?.upcomingMatches ?? [],
     pastMatches: matchesQuery.data?.pastMatches ?? [],
     isLoadingMatches: matchesQuery.isLoading,
+    matchesError: matchesQuery.error,
+    isMatchesError: matchesQuery.isError,
+    refetchMatches: matchesQuery.refetch,
   };
 };

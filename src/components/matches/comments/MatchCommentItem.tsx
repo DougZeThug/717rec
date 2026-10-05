@@ -89,7 +89,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
                 <DropdownMenuItem
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={isDeleting}
-                  className="text-destructive focus:text-destructive cursor-pointer"
+                  className="text-destructive-text focus:text-destructive-text cursor-pointer"
                 >
                   <Trash className="size-4 mr-2" />
                   Delete

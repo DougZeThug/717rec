@@ -72,7 +72,7 @@ export const useMatchSubmission = () => {
       errorLog('[useMatchSubmission] Error updating scores:', error);
       if (!options.suppressToast) {
         toast({
-          title: 'Error',
+          title: "Couldn't update scores",
           description: getUIErrorMessage(error, 'Failed to update scores'),
           variant: 'destructive',
         });

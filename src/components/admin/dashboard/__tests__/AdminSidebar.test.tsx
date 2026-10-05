@@ -50,6 +50,22 @@ vi.mock('@/components/admin/dashboard/AdminMobileNav', () => ({
   ),
 }));
 
+// These cases test the menu, not what each section shows. The real sections load
+// lazily and need a QueryClient, so one that finished loading in the middle of a
+// slow run threw "No QueryClient set" and failed whichever case was running.
+vi.mock('@/components/admin/dashboard/adminSections', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../adminSections')>();
+  const sections = actual.ADMIN_SECTIONS.map((section) => ({
+    ...section,
+    Component: () => null,
+  }));
+  return {
+    ...actual,
+    ADMIN_SECTIONS: sections,
+    findAdminSection: (id: string | undefined) => sections.find((section) => section.id === id),
+  };
+});
+
 const tabButton = (name: RegExp) => screen.getByRole('button', { name });
 
 const LocationProbe = () => {

@@ -193,11 +193,11 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                     label="Match Record"
                     value={
                       <div className="flex items-center justify-center gap-4">
-                        <div className="flex items-center text-green-500">
+                        <div className="flex items-center text-green-700 dark:text-green-400">
                           <Trophy size={16} className="mr-1" />
                           <span>{wins}</span>
                         </div>
-                        <div className="flex items-center text-red-500">
+                        <div className="flex items-center text-red-600 dark:text-red-400">
                           <X size={16} className="mr-1" />
                           <span>{losses}</span>
                         </div>
@@ -225,11 +225,11 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
                     label="Game Record"
                     value={
                       <div className="flex items-center justify-center gap-4">
-                        <div className="flex items-center text-green-500">
+                        <div className="flex items-center text-green-700 dark:text-green-400">
                           <Trophy size={16} className="mr-1" />
                           <span>{gamesWon}</span>
                         </div>
-                        <div className="flex items-center text-red-500">
+                        <div className="flex items-center text-red-600 dark:text-red-400">
                           <X size={16} className="mr-1" />
                           <span>{gamesLost}</span>
                         </div>

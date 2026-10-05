@@ -75,6 +75,8 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           type="button"
           onClick={() => canGoPrev && onIndexChange(activeIndex - 1)}
           disabled={!canGoPrev}
+          // The word is hidden on a phone, which also hides it from a screen reader.
+          aria-label="Previous date"
           className={cn(
             'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
             'min-h-[44px] min-w-[44px]', // Touch target
@@ -87,21 +89,25 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           <span className="hidden sm:inline">Previous</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           {groupedMatches.map((group, idx) => (
+            // The button is the 44px tap area; the span inside is the visible dot.
             <button
               type="button"
               key={group.date.toISOString()}
               onClick={() => onIndexChange(idx)}
               aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
-              className={cn(
-                'size-2 rounded-full transition-all min-w-[20px] min-h-[20px] flex items-center justify-center',
-                idx === safeIndex
-                  ? 'bg-primary scale-125'
-                  : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-              )}
+              aria-current={idx === safeIndex ? 'true' : undefined}
+              className="group flex min-h-11 min-w-6 items-center justify-center"
             >
-              <span className="size-2 rounded-full" />
+              <span
+                className={cn(
+                  'size-2.5 rounded-full transition-all',
+                  idx === safeIndex
+                    ? 'bg-primary scale-125'
+                    : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'
+                )}
+              />
             </button>
           ))}
         </div>
@@ -110,6 +116,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           type="button"
           onClick={() => canGoNext && onIndexChange(activeIndex + 1)}
           disabled={!canGoNext}
+          aria-label="Next date"
           className={cn(
             'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
             'min-h-[44px] min-w-[44px]', // Touch target

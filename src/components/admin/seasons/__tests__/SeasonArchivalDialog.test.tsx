@@ -105,4 +105,49 @@ describe('SeasonArchivalDialog', () => {
     ).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Archive Season' })).toBeInTheDocument();
   });
+
+  describe('archiving', () => {
+    it('archives the season, says so with a success toast, and closes', async () => {
+      const user = userEvent.setup();
+      const onClose = vi.fn();
+      render(<SeasonArchivalDialog isOpen onClose={onClose} season={season} />);
+
+      await user.click(screen.getByRole('button', { name: 'Archive Season' }));
+
+      expect(archiveMock).toHaveBeenCalledWith({ id: 's-1' });
+      expect(partialArchiveMock).not.toHaveBeenCalled();
+      expect(toastMock).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Season archived', variant: 'success' })
+      );
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it('keeps playoffs running when the admin ticks the box', async () => {
+      const user = userEvent.setup();
+      const onClose = vi.fn();
+      render(<SeasonArchivalDialog isOpen onClose={onClose} season={season} />);
+
+      await user.click(screen.getByRole('checkbox', { name: /keep playoffs active/i }));
+      await user.click(screen.getByRole('button', { name: 'Archive & Keep Playoffs' }));
+
+      expect(partialArchiveMock).toHaveBeenCalledWith({ id: 's-1' });
+      expect(archiveMock).not.toHaveBeenCalled();
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    it('shows a clear error toast when archiving fails', async () => {
+      const user = userEvent.setup();
+      archiveMock.mockImplementationOnce(() => Promise.reject(new Error('db down')));
+      render(<SeasonArchivalDialog isOpen onClose={vi.fn()} season={season} />);
+
+      await user.click(screen.getByRole('button', { name: 'Archive Season' }));
+
+      expect(toastMock).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Couldn't archive season", variant: 'destructive' })
+      );
+      expect(toastMock).not.toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Season archived' })
+      );
+    });
+  });
 });

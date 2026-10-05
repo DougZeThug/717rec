@@ -276,7 +276,7 @@ const ChallongeFallbackSection: React.FC = () => {
                   disabled={isMutating}
                   aria-label="Remove bracket"
                 >
-                  <Trash2 className="size-4 text-destructive" />
+                  <Trash2 className="size-4 text-destructive-text" />
                 </Button>
               </div>
             ))}

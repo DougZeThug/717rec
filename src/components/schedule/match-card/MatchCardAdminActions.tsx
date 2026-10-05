@@ -30,12 +30,12 @@ export const MatchCardAdminActions: React.FC<MatchCardAdminActionsProps> = ({
   if (!canEdit && !onDelete) return null;
 
   return (
-    <div className="flex justify-end gap-2 pt-2">
+    <div className="flex justify-end gap-5 pt-2">
       {canEdit && onEdit && (
         <button
           type="button"
           onClick={() => onEdit(match)}
-          className="p-1.5 rounded-full transition-all duration-200 bg-muted hover:bg-muted/80 active:scale-95"
+          className="hit-area-44 p-1.5 rounded-full transition-[background-color,transform] duration-200 bg-muted hover:bg-muted/80 active:scale-95"
           aria-label="Edit match"
         >
           <Pencil className="size-3.5 text-muted-foreground" />
@@ -46,7 +46,7 @@ export const MatchCardAdminActions: React.FC<MatchCardAdminActionsProps> = ({
           type="button"
           onClick={() => onDelete(match.id)}
           className={cn(
-            'p-1.5 rounded-full transition-all duration-200 active:scale-95',
+            'hit-area-44 p-1.5 rounded-full transition-[background-color,transform] duration-200 active:scale-95',
             isCompleted
               ? 'bg-destructive/10 hover:bg-destructive/20'
               : 'bg-muted hover:bg-destructive/10'
@@ -54,7 +54,10 @@ export const MatchCardAdminActions: React.FC<MatchCardAdminActionsProps> = ({
           aria-label={isCompleted ? 'Permanently delete completed match' : 'Delete match'}
         >
           <Trash2
-            className={cn('size-3.5', isCompleted ? 'text-destructive' : 'text-muted-foreground')}
+            className={cn(
+              'size-3.5',
+              isCompleted ? 'text-destructive-text' : 'text-muted-foreground'
+            )}
           />
         </button>
       )}

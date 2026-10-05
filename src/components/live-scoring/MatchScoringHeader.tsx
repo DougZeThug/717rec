@@ -62,7 +62,7 @@ export const MatchScoringHeader: React.FC<MatchScoringHeaderProps> = ({
           <span className="font-display text-3xl font-bold tabular-nums" data-testid="game-wins">
             {gameWins.team1}–{gameWins.team2}
           </span>
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Games</span>
+          <span className="text-2xs uppercase tracking-wide text-muted-foreground">Games</span>
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col items-center gap-1">

@@ -74,7 +74,7 @@ describe('TeamPlayerStatsSection', () => {
     await userEvent.click(screen.getByText('Player Stats'));
 
     const dpr = screen.getByText('-3.00');
-    expect(dpr).toHaveClass('text-destructive');
+    expect(dpr).toHaveClass('text-destructive-text');
   });
 
   it('renders the bag mix bar and percentages from the bag counters', async () => {

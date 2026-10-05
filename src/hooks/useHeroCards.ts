@@ -34,7 +34,8 @@ export const useHeroCardMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
-        title: 'Success',
+        title: 'Hero card created',
+        variant: 'success',
         description: 'Hero card created successfully',
       });
     },
@@ -52,7 +53,8 @@ export const useHeroCardMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
-        title: 'Success',
+        title: 'Hero card updated',
+        variant: 'success',
         description: 'Hero card updated successfully',
       });
     },
@@ -70,7 +72,8 @@ export const useHeroCardMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
-        title: 'Success',
+        title: 'Hero card deleted',
+        variant: 'success',
         description: 'Hero card deleted successfully',
       });
     },
@@ -89,7 +92,8 @@ export const useHeroCardMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hero-cards'] });
       toast({
-        title: 'Success',
+        title: 'Visibility updated',
+        variant: 'success',
         description: 'Visibility updated',
       });
     },

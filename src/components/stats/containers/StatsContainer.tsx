@@ -51,11 +51,27 @@ interface StatsContainerProps {
   matches: Match[];
   isLoadingMatches: boolean;
   matchesError: Error | null;
+  /** When the matches last arrived (ms), and whether they are being fetched. */
+  matchesUpdatedAt?: number;
+  matchesFetching?: boolean;
 }
 
-const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContainerProps) => {
+const StatsContainer = ({
+  matches,
+  isLoadingMatches,
+  matchesError,
+  matchesUpdatedAt = 0,
+  matchesFetching = false,
+}: StatsContainerProps) => {
   const { isWinterTheme } = useSeasonalTheme();
-  const { data: teams, isLoading: isLoadingTeams, error: teamsError } = useTeamsQuery();
+  // `true`: poll once a minute on league night, so standings follow the scores.
+  const {
+    data: teams,
+    isLoading: isLoadingTeams,
+    error: teamsError,
+    dataUpdatedAt: teamsUpdatedAt,
+    isFetching: teamsFetching,
+  } = useTeamsQuery(undefined, true);
   const { rankings, isLoading: isLoadingRankings, refetch } = useTeamRankings(teams, matches);
   const { membership } = useTeamMembership();
 
@@ -64,6 +80,11 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
 
   const isLoading = isLoadingTeams || isLoadingMatches || isLoadingRankings;
   const hasError = teamsError || matchesError;
+
+  // Standings need both the teams and the matches, so they are only as fresh as
+  // the older of the two.
+  const updatedAt =
+    teamsUpdatedAt && matchesUpdatedAt ? Math.min(teamsUpdatedAt, matchesUpdatedAt) : 0;
 
   if (hasError) {
     return (
@@ -94,7 +115,11 @@ const StatsContainer = ({ matches, isLoadingMatches, matchesError }: StatsContai
         isWinterTheme ? 'bg-transparent' : 'bg-muted dark:bg-transparent'
       )}
     >
-      <StatsPageHeader />
+      <StatsPageHeader
+        updatedAt={updatedAt}
+        isRefreshing={teamsFetching || matchesFetching}
+        onRefresh={refetch}
+      />
 
       <div className="font-inter">
         {rankings.length > 0 ? (

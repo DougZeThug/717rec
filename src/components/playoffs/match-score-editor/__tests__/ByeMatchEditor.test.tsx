@@ -151,5 +151,41 @@ describe('ByeMatchEditor', () => {
 
       expect(screen.queryByText('Match Status Control')).not.toBeInTheDocument();
     });
+    it('reopens safely, or clears downstream, from a completed zombie match', () => {
+      render(<ByeMatchEditor {...defaultProps} byeEligible={eligibleAt(4, 'Completed')} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /reopen \(safe\)/i }));
+      expect(defaultProps.onToggleByeStatus).toHaveBeenLastCalledWith(false);
+
+      fireEvent.click(screen.getByRole('button', { name: /reopen \+ clear downstream/i }));
+      expect(defaultProps.onToggleByeStatus).toHaveBeenLastCalledWith(true);
+    });
+
+    it('unlocks a locked match', () => {
+      render(<ByeMatchEditor {...defaultProps} byeEligible={eligibleAt(0, 'Locked')} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /unlock to ready/i }));
+
+      expect(defaultProps.onToggleByeStatus).toHaveBeenCalledWith(false);
+    });
+
+    it('disables the status button while a change is being saved', () => {
+      render(
+        <ByeMatchEditor {...defaultProps} isTogglingStatus byeEligible={eligibleAt(1, 'Waiting')} />
+      );
+
+      expect(screen.getByRole('button', { name: /unlock to ready/i })).toBeDisabled();
+    });
+
+    it.each([
+      [0, /currently locked/i],
+      [2, /match is ready/i],
+      [3, /bye match is in progress/i],
+      [4, /zombie state/i],
+    ])('explains what status %i means', (status, text) => {
+      render(<ByeMatchEditor {...defaultProps} byeEligible={eligibleAt(status, 'x')} />);
+
+      expect(screen.getByText(text)).toBeInTheDocument();
+    });
   });
 });

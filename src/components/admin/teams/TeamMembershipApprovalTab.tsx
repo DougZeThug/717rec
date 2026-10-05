@@ -64,7 +64,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <AlertTriangle className="size-12 text-destructive mx-auto mb-4" />
+            <AlertTriangle className="size-12 text-destructive-text mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Failed to load memberships</h3>
             <p className="text-muted-foreground">
               {error instanceof Error
@@ -170,7 +170,7 @@ const TeamMembershipApprovalTab: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
+                        className="text-destructive-text border-destructive hover:bg-destructive hover:text-foreground"
                         disabled={processingIds.has(membership.id)}
                       >
                         <XCircle className="size-4 mr-1" />

@@ -27,7 +27,8 @@ export const useThemeConsistency = () => {
 
   return {
     currentTheme: resolvedTheme || theme,
-    isDark: resolvedTheme === 'dark',
+    // The winter theme is a dark surface too (see useIsDarkSurface).
+    isDark: resolvedTheme === 'dark' || resolvedTheme === 'winter-frozen',
     ensureThemeConsistency,
   };
 };

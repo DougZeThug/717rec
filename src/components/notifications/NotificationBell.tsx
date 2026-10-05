@@ -48,7 +48,7 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           <Bell className="size-5" />
           {showUnreadBadge && (
             <span
-              className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold leading-none text-destructive-foreground"
+              className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-2xs font-semibold leading-none text-destructive-foreground"
               aria-hidden
             >
               {badgeText}
@@ -56,7 +56,7 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[360px] p-3">
+      <PopoverContent align="end" className="w-[min(360px,calc(100vw-1rem))] p-3">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-foreground">Notifications</h3>

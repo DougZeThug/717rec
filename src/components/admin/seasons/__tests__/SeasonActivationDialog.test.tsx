@@ -145,7 +145,10 @@ describe('SeasonActivationDialog', () => {
 
     await waitFor(() =>
       expect(toastMock).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive', description: 'db down' })
+        expect.objectContaining({
+          variant: 'destructive',
+          description: 'Failed to activate season. Please try again.',
+        })
       )
     );
     // Dialog must stay open on failure so the user can retry.

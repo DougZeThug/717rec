@@ -72,7 +72,7 @@ describe('SeasonForm', () => {
 
     it('shows empty fields', () => {
       render(<SeasonForm onClose={mockOnClose} />);
-      expect(screen.getByPlaceholderText(/e\.g\., Spring 2025/i)).toHaveValue('');
+      expect(screen.getByPlaceholderText(/e\.g\., Fall 2026/i)).toHaveValue('');
     });
 
     it('shows validation error when name is empty on submit', async () => {
@@ -95,7 +95,7 @@ describe('SeasonForm', () => {
       render(<SeasonForm onClose={mockOnClose} />);
 
       // Fill name but leave start_date empty
-      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'Fall 2025');
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Fall 2026/i), 'Fall 2025');
 
       await userEvent.click(screen.getByRole('button', { name: /create season/i }));
 
@@ -109,7 +109,7 @@ describe('SeasonForm', () => {
     it('refuses an end date that falls before the start date', async () => {
       render(<SeasonForm onClose={mockOnClose} />);
 
-      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'Fall 2025');
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Fall 2026/i), 'Fall 2025');
       // The name is filled, so the two remaining empty inputs are the dates.
       const [startDate, endDate] = screen.getAllByDisplayValue('');
       fireEvent.change(startDate, { target: { value: '2025-09-01' } });
@@ -128,7 +128,7 @@ describe('SeasonForm', () => {
     it('accepts a season that starts and ends on the same day', async () => {
       render(<SeasonForm onClose={mockOnClose} />);
 
-      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'One Day 2025');
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Fall 2026/i), 'One Day 2025');
       // The name is filled, so the two remaining empty inputs are the dates.
       const [startDate, endDate] = screen.getAllByDisplayValue('');
       fireEvent.change(startDate, { target: { value: '2025-09-01' } });
@@ -142,7 +142,7 @@ describe('SeasonForm', () => {
     it('calls createSeason.mutateAsync with correct data on valid submit', async () => {
       render(<SeasonForm onClose={mockOnClose} />);
 
-      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'Fall 2025');
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Fall 2026/i), 'Fall 2025');
       fireEvent.change(screen.getByLabelText(/start date/i), {
         target: { value: '2025-09-01' },
       });
@@ -159,7 +159,7 @@ describe('SeasonForm', () => {
     it('calls onClose after successful create', async () => {
       render(<SeasonForm onClose={mockOnClose} />);
 
-      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'Fall 2025');
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Fall 2026/i), 'Fall 2025');
       fireEvent.change(screen.getByLabelText(/start date/i), {
         target: { value: '2025-09-01' },
       });
@@ -175,7 +175,7 @@ describe('SeasonForm', () => {
       mockCreateMutateAsync.mockRejectedValue(new Error('Database error'));
       render(<SeasonForm onClose={mockOnClose} />);
 
-      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Spring 2025/i), 'Fall 2025');
+      await userEvent.type(screen.getByPlaceholderText(/e\.g\., Fall 2026/i), 'Fall 2025');
       fireEvent.change(screen.getByLabelText(/start date/i), {
         target: { value: '2025-09-01' },
       });

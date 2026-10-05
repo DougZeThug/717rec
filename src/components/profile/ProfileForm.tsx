@@ -70,14 +70,10 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   // Track the latest username being checked to ignore stale responses
   const latestCheckRef = useRef<string>('');
 
-  // Check username availability
+  // Check username availability. The debounce effect below only calls this for
+  // names of 3+ characters, so shorter names never get here.
   const handleUsernameAvailabilityCheck = useCallback(
     async (value: string) => {
-      if (value.length < 3) {
-        setAvailability(null);
-        return;
-      }
-
       latestCheckRef.current = value;
       setIsCheckingUsername(true);
       const { available } = await checkUsernameAvailability({
@@ -106,13 +102,15 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
 
   // Debounce username checks
   useEffect(() => {
-    if (!username || username.length < 3) return;
+    if (!username || username.length < 3) return undefined;
 
     const handler = setTimeout(() => {
       handleUsernameAvailabilityCheck(username);
     }, 500);
 
-    return () => clearTimeout(handler);
+    return () => {
+      clearTimeout(handler);
+    };
   }, [username, recheckCount, handleUsernameAvailabilityCheck]);
 
   const onSubmit = async (data: ProfileFormData) => {
@@ -170,7 +168,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                First Name <span className="text-destructive">*</span>
+                First Name <span className="text-destructive-text">*</span>
               </FormLabel>
               <div className="relative">
                 <FormControl>
@@ -181,7 +179,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
                     {usernameAvailable === true ? (
                       <CheckCircle2 className="size-5 text-green-500" aria-hidden="true" />
                     ) : usernameAvailable === false ? (
-                      <AlertCircle className="size-5 text-destructive" aria-hidden="true" />
+                      <AlertCircle className="size-5 text-destructive-text" aria-hidden="true" />
                     ) : null}
                   </div>
                 )}

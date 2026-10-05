@@ -80,7 +80,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
             <DialogTitle>Error</DialogTitle>
           </DialogHeader>
           <div className="p-4">
-            <p className="text-destructive">Failed to load match data. Please try again.</p>
+            <p className="text-destructive-text">Failed to load match data. Please try again.</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -117,7 +117,7 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
         <Dialog open={isOpen} onOpenChange={onClose}>
           <ByeMatchEditor
             byeWinner={byeWinner}
-            hasOpponent1={!!matchData.opponent1}
+            hasOpponent1={Boolean(matchData.opponent1)}
             opponent1Score={opponent1Score}
             opponent2Score={opponent2Score}
             setOpponent1Score={setOpponent1Score}

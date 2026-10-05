@@ -121,6 +121,53 @@ describe('EditMatchParticipantsDialog', () => {
     expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
   });
 
+  it('says the match could not be loaded when the team options fail to arrive', () => {
+    vi.mocked(useEditTeamsOptions).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+    } as unknown as ReturnType<typeof useEditTeamsOptions>);
+    vi.mocked(useEditTeamsPreview).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useEditTeamsPreview>);
+    renderDialog();
+
+    expect(screen.getByText('Could not load this match. Please try again.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
+  });
+
+  it('shows a spinner while the team options load', () => {
+    vi.mocked(useEditTeamsOptions).mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: null,
+    } as unknown as ReturnType<typeof useEditTeamsOptions>);
+    vi.mocked(useEditTeamsPreview).mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    } as unknown as ReturnType<typeof useEditTeamsPreview>);
+    renderDialog();
+
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /review changes/i })).not.toBeInTheDocument();
+  });
+
+  it('does not offer a second BYE once one side is already a BYE', async () => {
+    wire(options());
+    renderDialog();
+
+    await pick('Team 2', /BYE \(no opponent\)/);
+    await openRadixTrigger(screen.getByLabelText('Team 1'));
+
+    expect(await screen.findByRole('option', { name: /BYE \(no opponent\)/ })).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    );
+  });
+
   it('lists teams grouped by how they can be picked, with the ones that cannot disabled', async () => {
     wire(options());
     renderDialog();
@@ -218,6 +265,48 @@ describe('EditMatchParticipantsDialog', () => {
 
     await pick('Team 2', /^T4$/);
     expect(screen.getByText("A team can't be on both sides of a match.")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /review changes/i })).toBeDisabled();
+  });
+
+  it('closes the dialog when Cancel is pressed', async () => {
+    wire(options());
+    const onOpenChange = vi.fn();
+    render(
+      <EditMatchParticipantsDialog open onOpenChange={onOpenChange} bracketId="b1" matchId={12} />
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('closes the dialog once a saved change goes through', async () => {
+    wire(options(), { ok: true, problems: [], changes: ['Changed.'], consequences: [] });
+    mutateMock.mockImplementation((_params: unknown, handlers: { onSuccess: () => void }) =>
+      handlers.onSuccess()
+    );
+    const onOpenChange = vi.fn();
+    render(
+      <EditMatchParticipantsDialog open onOpenChange={onOpenChange} bracketId="b1" matchId={12} />
+    );
+
+    await pick('Team 2', /^T7$/);
+    await userEvent.click(screen.getByRole('button', { name: /review changes/i }));
+    await userEvent.click(screen.getByRole('button', { name: /^save$/i }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('does not allow reviewing a match that has a BYE on both sides', () => {
+    wire(
+      options({
+        slots: [
+          { side: 'opponent1', kind: 'bye', teamId: null, name: 'BYE' },
+          { side: 'opponent2', kind: 'bye', teamId: null, name: 'BYE' },
+        ],
+      })
+    );
+    renderDialog();
+
     expect(screen.getByRole('button', { name: /review changes/i })).toBeDisabled();
   });
 });

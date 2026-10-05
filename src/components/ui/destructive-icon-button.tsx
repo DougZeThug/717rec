@@ -38,12 +38,12 @@ const DestructiveIconButton: React.FC<DestructiveIconButtonProps> = ({
       title={title}
       aria-label={ariaLabel ?? title}
       className={cn(
-        'hover:bg-destructive/10 hover:text-destructive',
+        'hover:bg-destructive/10 hover:text-destructive-text',
         'disabled:opacity-30',
         className
       )}
     >
-      {icon || <Trash2 className="size-4 text-destructive" />}
+      {icon || <Trash2 className="size-4 text-destructive-text" />}
     </Button>
   );
 };

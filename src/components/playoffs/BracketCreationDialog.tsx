@@ -269,7 +269,7 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
         </DialogHeader>
@@ -290,8 +290,8 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
 
         {dialogError && (
           <div className="mb-4 p-4 border border-destructive rounded-lg bg-destructive/10">
-            <p className="text-sm text-destructive font-medium">Error Details:</p>
-            <p className="text-sm text-destructive mt-1">{dialogError}</p>
+            <p className="text-sm text-destructive-text font-medium">Error Details:</p>
+            <p className="text-sm text-destructive-text mt-1">{dialogError}</p>
           </div>
         )}
 

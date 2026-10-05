@@ -101,7 +101,7 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
     <div className="mb-6 sm:mb-8">
       <h2
         className={cn(
-          'mb-3 sm:mb-4 text-xl font-bold font-bebas tracking-widest',
+          'mb-3 sm:mb-4 text-xl font-bebas tracking-widest',
           'pl-3 py-1',
           isWinterTheme
             ? 'border-l-4 border-frost-primary text-card-foreground'

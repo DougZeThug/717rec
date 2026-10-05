@@ -143,7 +143,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
                         key={label}
                         onClick={() => emblaApi?.scrollTo(index)}
                         className={cn(
-                          'px-2 py-1 rounded-full text-xs transition-all',
+                          'min-h-11 px-3 py-1 rounded-full text-xs transition-all',
                           selectedIndex === index
                             ? 'bg-blue-600 text-white'
                             : 'bg-muted text-muted-foreground hover:bg-muted/80'

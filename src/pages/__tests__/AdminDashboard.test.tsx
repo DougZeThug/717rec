@@ -108,8 +108,11 @@ describe('AdminDashboard page', () => {
       requestAdminAccess: vi.fn(),
       isLoading: false,
     });
-    renderDashboard();
-    expect(mockNavigate).toHaveBeenCalledWith('/auth', { state: { returnTo: '/admin' } });
+    renderDashboard('/admin/scores?week=3#row-9');
+    // The section, its query and its anchor all come back after sign-in.
+    expect(mockNavigate).toHaveBeenCalledWith('/auth', {
+      state: { returnTo: '/admin/scores?week=3#row-9' },
+    });
   });
 
   it('shows admin access request gate for authenticated non-admin users', () => {
@@ -197,7 +200,7 @@ describe('AdminDashboard page', () => {
     expect(currentPath()).toBe('/admin/timeslots');
   });
 
-  it('calls requestAdminAccess and shows toast after clicking request access', async () => {
+  it('calls requestAdminAccess after clicking request access', async () => {
     const requestAdminAccess = vi.fn();
     mockUseAuth.mockReturnValue({ user: { id: 'user-1' }, authInitialized: true });
     mockUseAdminAccess.mockReturnValue({
@@ -208,6 +211,7 @@ describe('AdminDashboard page', () => {
     renderDashboard();
     await userEvent.click(screen.getByRole('button', { name: 'Request Access' }));
     expect(requestAdminAccess).toHaveBeenCalled();
-    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Access requested' }));
+    // It must not claim an admin was told: there is no request feature yet.
+    expect(mockToast).not.toHaveBeenCalled();
   });
 });

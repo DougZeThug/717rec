@@ -4,13 +4,25 @@ import { useNavigate } from 'react-router';
 
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
+import { LastUpdated } from '@/components/ui/LastUpdated';
 import SeasonBadge from '@/components/ui/season-badge';
 import { useIsMobile } from '@/hooks/useMobile';
 import { cn } from '@/lib/utils';
 import { animations } from '@/styles/design-system';
 import { ICON_SIZES, ICON_STROKE } from '@/styles/icon-system';
 
-const StatsPageHeader = () => {
+interface StatsPageHeaderProps {
+  /** When the standings data last arrived (ms), whether it is refreshing, and how to ask again. */
+  updatedAt?: number;
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
+}
+
+const StatsPageHeader = ({
+  updatedAt = 0,
+  isRefreshing = false,
+  onRefresh,
+}: StatsPageHeaderProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -37,6 +49,14 @@ const StatsPageHeader = () => {
           </Button>
         )}
       </div>
+      {onRefresh && (
+        <LastUpdated
+          updatedAt={updatedAt}
+          isRefreshing={isRefreshing}
+          onRefresh={onRefresh}
+          className="mb-2"
+        />
+      )}
       {!isMobile && (
         <div className="flex justify-between items-start">
           <PageHeader

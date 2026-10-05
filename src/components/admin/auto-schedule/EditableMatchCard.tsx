@@ -60,7 +60,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
       }`}
     >
       {hasError && errorMessage && (
-        <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive">
+        <div className="mb-3 p-2 bg-destructive/10 border border-destructive/20 rounded text-sm text-destructive-text">
           {errorMessage}
         </div>
       )}

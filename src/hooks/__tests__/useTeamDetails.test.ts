@@ -49,6 +49,17 @@ describe('useTeamDetails', () => {
     expect(result.current.isLoading).toBe(true);
   });
 
+  it('exposes the error and a refetch when the fetch fails, instead of looking like no team', async () => {
+    (fetchTeamDetails as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('network down'));
+    const { result } = renderHook(() => useTeamDetails('team-1'), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.team).toBeUndefined();
+    expect(result.current.error).toBeInstanceOf(Error);
+    expect(typeof result.current.refetch).toBe('function');
+  });
+
   it('returns team data on success', async () => {
     (fetchTeamDetails as ReturnType<typeof vi.fn>).mockResolvedValue(mockTeam);
     const { result } = renderHook(() => useTeamDetails('team-1'), {

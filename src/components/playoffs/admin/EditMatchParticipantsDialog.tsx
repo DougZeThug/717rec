@@ -173,7 +173,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 }) => (
   <>
     {failed ? (
-      <p className="text-sm text-destructive">
+      <p className="text-sm text-destructive-text">
         Could not check this change. Go back and try again.
       </p>
     ) : loading || !preview ? (
@@ -202,7 +202,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         </div>
       </div>
     ) : (
-      <div className="space-y-1 text-sm text-destructive">
+      <div className="space-y-1 text-sm text-destructive-text">
         {preview.problems.map((line) => (
           <p key={line}>{line}</p>
         ))}
@@ -247,7 +247,9 @@ const EditTeamsBody: React.FC<EditTeamsBodyProps> = ({ bracketId, matchId, onDon
 
   if (isLoading) return <Spinner />;
   if (error || !options || !picks || !initial) {
-    return <p className="text-sm text-destructive">Could not load this match. Please try again.</p>;
+    return (
+      <p className="text-sm text-destructive-text">Could not load this match. Please try again.</p>
+    );
   }
   if (!options.ok) {
     return (

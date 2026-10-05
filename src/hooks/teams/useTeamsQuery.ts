@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 
 import { fetchTeamsWithOptions, type TeamsQueryOptions } from '@/services/teams/TeamFetchService';
 import { Team } from '@/types';
+import { liveRefetchInterval } from '@/utils/leagueNight';
 
 // Shared empty array reference to avoid creating a new [] on every render
 // (which would cause useEffect deps depending on this array to re-run forever).
@@ -29,12 +30,17 @@ function buildQueryKey(options?: TeamsQueryOptions): (string | object)[] {
  * Primary hook for fetching teams as an array
  * Uses TanStack Query for caching and deduplication
  */
-export function useTeamsQuery(options?: TeamsQueryOptions): UseQueryResult<Team[], Error> {
+export function useTeamsQuery(
+  options?: TeamsQueryOptions,
+  /** Poll once a minute on league night. For pages people watch for scores. */
+  live = false
+): UseQueryResult<Team[], Error> {
   return useQuery({
     queryKey: buildQueryKey(options),
     queryFn: () => fetchTeamsWithOptions(options),
     staleTime: 1000 * 60 * 5, // 5 minutes - team data only changes when scores are entered
     enabled: options?.enabled !== false, // Default to true unless explicitly disabled
+    refetchInterval: live ? () => liveRefetchInterval() : false,
   });
 }
 

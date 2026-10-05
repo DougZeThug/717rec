@@ -121,7 +121,9 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
             )}
             aria-label={`Seed for ${name}`}
           />
-          {hasConflict && <span className="text-xs text-destructive font-medium">Duplicate</span>}
+          {hasConflict && (
+            <span className="text-xs text-destructive-text font-medium">Duplicate</span>
+          )}
         </div>
       )}
     </m.div>

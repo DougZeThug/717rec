@@ -17,16 +17,17 @@
 
 export const typeScale = {
   // Page headings: 28px / 32px line-height
-  h1: 'text-[28px] leading-[32px] font-bebas uppercase tracking-wide font-semibold',
+  // Bebas Neue ships one weight (400). Asking for semibold makes the browser fake a bold.
+  h1: 'text-[28px] leading-[32px] font-bebas uppercase tracking-wide',
 
   // Section headings: 20px / 28px line-height
-  h2: 'text-[20px] leading-[28px] font-bebas uppercase tracking-wide font-medium',
+  h2: 'text-[20px] leading-[28px] font-bebas uppercase tracking-wide',
 
   // Card titles: 16px / 22px line-height
-  h3: 'text-[16px] leading-[22px] font-bebas uppercase tracking-wide font-medium',
+  h3: 'text-[16px] leading-[22px] font-bebas uppercase tracking-wide',
 
   // Body: 14px / 20px (default)
-  body: 'text-[14px] leading-[20px] font-inter',
+  body: 'text-sm font-inter',
 
   // Body relaxed: 15px / 22px (longer form text)
   bodyRelaxed: 'text-[15px] leading-[22px] font-inter',

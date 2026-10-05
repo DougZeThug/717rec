@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -77,6 +77,9 @@ describe('TeamDetailsStickyNav', () => {
   });
 
   afterEach(() => {
+    // Unmount first: the nav renders into document.body (a portal), and React
+    // cannot remove it from a body that has already been emptied.
+    cleanup();
     document.body.innerHTML = '';
     vi.unstubAllGlobals();
   });

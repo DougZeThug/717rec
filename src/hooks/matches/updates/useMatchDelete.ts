@@ -59,7 +59,7 @@ export const useMatchDelete = ({
     } catch (error) {
       errorLog('Error deleting match:', error);
       toast({
-        title: 'Error',
+        title: "Couldn't delete match",
         description: getUIErrorMessage(error, 'Failed to delete match'),
         variant: 'destructive',
       });

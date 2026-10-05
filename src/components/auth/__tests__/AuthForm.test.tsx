@@ -51,7 +51,7 @@ describe('AuthForm invalid email', () => {
 
     await user.type(screen.getByLabelText('Email'), 'sam');
     await user.type(screen.getByLabelText('Password'), 'sixchr');
-    await user.click(screen.getByRole('button', { name: 'Login' }));
+    await user.click(screen.getByRole('button', { name: 'Sign in' }));
 
     expect(onSubmit).toHaveBeenCalledWith('sam', 'sixchr');
   });

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { toast } from '@/hooks/useToast';
 import { batchUpdateSeasonStats, type TeamUpdate } from '@/services/TeamStatsService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { dbLog, errorLog } from '@/utils/logger';
 
 interface UseUpdateSeasonStatsReturn {
@@ -42,12 +43,12 @@ export const useUpdateSeasonStats = (): UseUpdateSeasonStatsReturn => {
       dbLog(`Successfully updated ${updates.length} team season stats`);
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      const errorMessage = getUIErrorMessage(err);
       errorLog('Failed to update team season stats:', err);
       setError(err instanceof Error ? err : new Error(errorMessage));
 
       toast({
-        title: 'Update Failed',
+        title: "Couldn't update season stats",
         description: errorMessage,
         variant: 'destructive',
       });

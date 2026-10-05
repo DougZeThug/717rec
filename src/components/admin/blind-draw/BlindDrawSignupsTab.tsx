@@ -149,7 +149,7 @@ const BlindDrawSignupsTab: React.FC = () => {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center gap-2 text-destructive">
+          <div className="flex items-center gap-2 text-destructive-text">
             <AlertCircle className="size-5" />
             <span>Failed to load signups. Make sure you have admin access.</span>
           </div>

@@ -24,6 +24,7 @@ import {
 } from '@/hooks/admin/usePowerWeightSandbox';
 import { toast } from '@/hooks/useToast';
 import { PowerWeightState, toPowerScoreWeights } from '@/services/admin/PowerWeightSandboxService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { isValidWeights, PowerScoreWeights, weightsEqual } from '@/utils/powerScore/weights';
 
 import { formatTriple } from './previewFormat';
@@ -277,7 +278,7 @@ const PowerScoreSandboxTab: React.FC = () => {
     } catch (err) {
       toast({
         title: action === 'save' ? 'Save failed' : 'Revert failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getUIErrorMessage(err),
         variant: 'destructive',
       });
       // keep dialog open on error so the failure is seen in context

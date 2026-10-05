@@ -234,7 +234,7 @@ const MatchPairRow: React.FC<MatchPairRowProps> = ({
         </div>
       </div>
       {error && (
-        <p id={errorId} role="alert" className="mt-2 text-sm text-destructive">
+        <p id={errorId} role="alert" className="mt-2 text-sm text-destructive-text">
           {error}
         </p>
       )}

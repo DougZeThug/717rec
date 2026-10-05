@@ -309,7 +309,7 @@ describe('getUIErrorMessage', () => {
       ['23503', "This is still linked to other records, so it can't be changed yet."],
       ['23514', "Some of those values aren't allowed. Check the form and try again."],
       ['42501', 'You do not have permission to do this.'],
-      ['PGRST301', 'You do not have permission to do this.'],
+      ['PGRST301', 'Your session has expired. Please sign in again.'],
       ['PGRST116', 'That record no longer exists. Refresh and try again.'],
     ])('translates postgres code %s', (code, expected) => {
       const error = databaseErrorFrom({ code }, 'Failed to save');

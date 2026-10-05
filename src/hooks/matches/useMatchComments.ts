@@ -152,9 +152,11 @@ export const useMatchComments = (matchId: string) => {
           pendingCommentDeletesRef.current.delete(removedComment.id);
           confirmedCommentDeletesRef.current.delete(removedComment.id);
           errorLog('Error removing comment after realtime delete confirmation:', err);
+          // Realtime already told us the comment is gone, so it was NOT left
+          // standing: it is this follow-up request that failed.
           toast({
-            title: 'Error',
-            description: getUIErrorMessage(err, 'Failed to delete comment'),
+            title: 'Delete request failed',
+            description: getUIErrorMessage(err, 'The comment was removed, but the request failed'),
             variant: 'destructive',
           });
           return;
@@ -170,7 +172,7 @@ export const useMatchComments = (matchId: string) => {
       }
       errorLog('Error removing comment:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't delete comment",
         description: getUIErrorMessage(err, 'Failed to delete comment'),
         variant: 'destructive',
       });
@@ -214,7 +216,7 @@ export const useMatchComments = (matchId: string) => {
     } catch (err) {
       errorLog('Error adding comment:', err);
       toast({
-        title: 'Error',
+        title: "Couldn't post comment",
         description: getUIErrorMessage(err, 'Failed to post comment'),
         variant: 'destructive',
       });

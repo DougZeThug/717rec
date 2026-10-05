@@ -250,7 +250,7 @@ const ContactInboxSection: React.FC = () => {
                     <time
                       dateTime={stamp.iso}
                       title={stamp.iso}
-                      className="ml-auto text-[11px] tabular-nums text-muted-foreground"
+                      className="ml-auto text-2xs tabular-nums text-muted-foreground"
                     >
                       {stamp.absolute}
                     </time>
@@ -312,7 +312,7 @@ const ContactInboxSection: React.FC = () => {
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive-text"
                         onClick={() => setPendingDelete(item)}
                         disabled={remove.isPending}
                       >

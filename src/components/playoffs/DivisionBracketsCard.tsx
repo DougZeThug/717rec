@@ -101,7 +101,7 @@ const BracketRow: React.FC<BracketRowProps> = ({
           <Button
             size="sm"
             variant="outline"
-            className="text-xs h-8 text-destructive hover:text-destructive"
+            className="text-xs h-8 text-destructive-text hover:text-destructive-text"
             onClick={() => bracket.id && onDeleteBracket(bracket.id, bracket.name ?? '')}
           >
             Delete

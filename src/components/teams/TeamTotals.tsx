@@ -37,10 +37,10 @@ const getWinPctColor = (wins: number, losses: number): string => {
   const total = wins + losses;
   if (total === 0) return 'text-muted-foreground';
   const pct = (wins / total) * 100;
-  if (pct >= 60) return 'text-emerald-500';
-  if (pct >= 50) return 'text-blue-500';
-  if (pct >= 40) return 'text-yellow-500';
-  return 'text-red-500';
+  if (pct >= 60) return 'text-emerald-700 dark:text-emerald-400';
+  if (pct >= 50) return 'text-blue-600 dark:text-blue-400';
+  if (pct >= 40) return 'text-yellow-700 dark:text-yellow-400';
+  return 'text-red-600 dark:text-red-400';
 };
 
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {

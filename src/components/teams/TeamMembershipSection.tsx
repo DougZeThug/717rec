@@ -138,7 +138,7 @@ const TeamMembershipSection: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="shrink-0 self-start text-destructive sm:self-auto"
+                    className="shrink-0 self-start text-destructive-text sm:self-auto"
                   >
                     <LogOut className="size-4 mr-2" />
                     Leave Team

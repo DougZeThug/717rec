@@ -23,6 +23,7 @@ import {
 } from '@/hooks/admin/usePowerMigrationReview';
 import { toast } from '@/hooks/useToast';
 import { PowerMigrationStatus } from '@/services/admin/PowerMigrationService';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 import ComparisonTable from './ComparisonTable';
 
@@ -301,7 +302,7 @@ const PowerMigrationReviewTab: React.FC = () => {
     } catch (err) {
       toast({
         title: action === 'revert' ? 'Revert failed' : 'Re-apply failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getUIErrorMessage(err),
         variant: 'destructive',
       });
       // keep dialog open on error so the user sees the failure in context

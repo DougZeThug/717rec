@@ -120,7 +120,7 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
               Higher weights mean stronger divisions (e.g. 1.0 = top, 0.7 = weakest).
             </p>
           </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-sm text-destructive-text">{error}</p>}
           <DialogFooter>
             <Button
               type="button"

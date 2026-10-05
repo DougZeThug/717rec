@@ -76,7 +76,10 @@ describe('SeasonFinalizePlayoffsDialog', () => {
 
     await waitFor(() =>
       expect(toastMock).toHaveBeenCalledWith(
-        expect.objectContaining({ variant: 'destructive', description: 'rpc failed' })
+        expect.objectContaining({
+          variant: 'destructive',
+          description: 'Failed to finalize playoffs. Please try again.',
+        })
       )
     );
     // Dialog must stay open on failure so the user can retry.
@@ -91,7 +94,7 @@ describe('SeasonFinalizePlayoffsDialog', () => {
   });
 
   it('shows "Finalizing..." and disables the action while the mutation is pending', async () => {
-    let resolveFn: (value: unknown) => void = () => {};
+    let resolveFn: (value: unknown) => void = () => undefined;
     finalizeMock.mockImplementation(
       () =>
         new Promise((resolve) => {

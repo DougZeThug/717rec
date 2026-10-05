@@ -81,7 +81,7 @@ export const ResultPicker = ({
 }: ResultPickerProps) => (
   <fieldset className="space-y-2">
     <legend className="text-sm font-medium mb-2">
-      What was the result? <span className="text-destructive">*</span>
+      What was the result? <span className="text-destructive-text">*</span>
     </legend>
     <div className="grid grid-cols-2 gap-2">
       {SCORE_OPTIONS.map((option) => {

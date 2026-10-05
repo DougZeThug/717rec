@@ -85,7 +85,7 @@ export function usePendingScoresMatches() {
     onError: (error) => {
       errorLog('Error submitting score:', error);
       toast({
-        title: 'Error',
+        title: "Couldn't submit score",
         description: getUIErrorMessage(error, 'Failed to submit score'),
         variant: 'destructive',
       });

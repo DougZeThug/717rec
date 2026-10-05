@@ -62,6 +62,8 @@ vi.mock('@/services/matches/MatchReactionsService', () => ({
 
 vi.mock('@/utils/logger', () => ({ errorLog: vi.fn() }));
 
+import { errorLog } from '@/utils/logger';
+
 import { useMatchReactions } from '../useMatchReactions';
 
 const reaction = (id: string, userId: string, emoji: string) => ({
@@ -72,11 +74,12 @@ const reaction = (id: string, userId: string, emoji: string) => ({
   created_at: '2026-06-24T00:00:00Z',
 });
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
+const createClient = () =>
+  new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 }, mutations: { retry: false } },
   });
 
+const createWrapper = (queryClient: QueryClient = createClient()) => {
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
@@ -537,7 +540,7 @@ describe('useMatchReactions', () => {
           resolveInsert = resolve;
         })
     );
-    mockDeleteReaction.mockResolvedValue(undefined);
+    mockDeleteReaction.mockImplementation(() => Promise.resolve());
 
     const { result } = renderHook(() => useMatchReactions('match-1'), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -623,7 +626,7 @@ describe('useMatchReactions', () => {
     await waitFor(() => expect(result.current.reactions).toHaveLength(1));
     expect(result.current.reactions[0].id).toBe('real-1');
     expect(mockToast).toHaveBeenCalledWith({
-      title: 'Error',
+      title: "Couldn't remove reaction",
       description: 'Failed to remove reaction. Please try again.',
       variant: 'destructive',
     });
@@ -791,9 +794,62 @@ describe('useMatchReactions', () => {
 
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Error',
+        title: "Couldn't update reaction",
         description: 'Failed to update reaction. Please try again.',
       })
+    );
+  });
+
+  it('logs, and does not crash, when the resync after a reconnect fails', async () => {
+    const client = createClient();
+    const { result } = renderHook(() => useMatchReactions('match-1'), {
+      wrapper: createWrapper(client),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    vi.spyOn(client, 'invalidateQueries').mockImplementation(() =>
+      Promise.reject(new Error('offline'))
+    );
+    act(() => {
+      subscribeOptions.current?.onReconnect?.(false);
+    });
+
+    await waitFor(() =>
+      expect(errorLog).toHaveBeenCalledWith(
+        'Error invalidating match reactions:',
+        expect.any(Error)
+      )
+    );
+  });
+
+  it('logs when refreshing the reactions fails after a failed toggle', async () => {
+    mockUser.current = { id: 'user-1' };
+    mockInsertReaction.mockRejectedValue(new Error('insert failed'));
+    const client = createClient();
+
+    const { result } = renderHook(() => useMatchReactions('match-1'), {
+      wrapper: createWrapper(client),
+    });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    vi.spyOn(client, 'invalidateQueries').mockImplementation(() =>
+      Promise.reject(new Error('offline'))
+    );
+    await act(async () => {
+      await result.current.toggleReaction('🔥');
+    });
+
+    await waitFor(() =>
+      expect(errorLog).toHaveBeenCalledWith(
+        'Error invalidating match reactions after failed toggle:',
+        expect.any(Error)
+      )
+    );
+    await waitFor(() =>
+      expect(errorLog).toHaveBeenCalledWith(
+        'Error invalidating match reactions after settlement:',
+        expect.any(Error)
+      )
     );
   });
 });

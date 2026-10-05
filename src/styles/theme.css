@@ -18,8 +18,14 @@
   --accent-foreground: 222.2 47.4% 11.2%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
+  /* For red TEXT and icons. --destructive is a fill colour: as text it is only
+     3.8:1 on white here, and in the dark themes it is about 2:1. It also has to
+     read on the 5-10% red tint of error boxes (bg-destructive/10), hence 45%. */
+  --destructive-text: 0 72% 45%; /* 5.8:1 on white, 4.9:1 on the pink error-box tint */
   --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  /* Form-field outlines need 3:1 against the page (WCAG 1.4.11). The old value
+     matched --border and measured 1.2:1. */
+  --input: 214 15% 55%; /* 3.5:1 on white */
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
   
@@ -29,10 +35,13 @@
   --radius-pill: 9999px;     /* pills, badges */
   
   /* Custom color values for status indicators */
-  --success: 142.1 76.2% 36.3%;
+  /* Was 36.3% lightness: white on it measured 3.3:1. At 29% it is 5.1:1 on
+     white and 4.6:1 against --success-foreground. */
+  --success: 142 72% 29%;
   --success-foreground: 355.7 100% 97.3%;
+  /* Amber is a light fill: dark text on it is 8.4:1; the old near-white was 2.1:1. */
   --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 98%;
+  --warning-foreground: 0 0% 9%;
   --info: 221.2 83.2% 53.3%;
   --info-foreground: 210 40% 98%;
   
@@ -54,6 +63,13 @@
   --competitive-soft: 0 48% 48%;
   --intermediate-soft: 38 58% 42%;
   --recreational-soft: 150 34% 38%;
+
+  /* Division badge TEXT. The soft tones above are fine as fills and borders, but
+     as 12px text on their own 15% tint they measured 3.3 to 4.5:1. These are the
+     same hues, darker, for 4.5:1 or better in light mode. */
+  --competitive-soft-text: 0 55% 40%;
+  --intermediate-soft-text: 38 70% 28%;
+  --recreational-soft-text: 150 40% 26%;
 }
 
 .dark {
@@ -73,8 +89,9 @@
   --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
+  --destructive-text: 0 84% 68%; /* 6.6:1 on the dark page */
   --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
+  --input: 240 4% 40%; /* 3.3:1 on the dark page */
   --ring: 240 4.9% 83.9%;
   
   /* Custom color values for status indicators - dark mode */
@@ -94,4 +111,9 @@
   --competitive-soft: 0 52% 64%;
   --intermediate-soft: 38 60% 62%;
   --recreational-soft: 150 36% 56%;
+
+  /* On a dark page the soft tones are already light enough to read. */
+  --competitive-soft-text: 0 52% 64%;
+  --intermediate-soft-text: 38 60% 62%;
+  --recreational-soft-text: 150 36% 56%;
 }

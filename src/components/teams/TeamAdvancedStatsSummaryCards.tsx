@@ -20,9 +20,9 @@ export const TeamAdvancedStatsSummaryCards = ({
 
   const trendColor =
     advancedStats.powerScoreTrend === 'improving'
-      ? 'text-emerald-500'
+      ? 'text-emerald-700 dark:text-emerald-400'
       : advancedStats.powerScoreTrend === 'declining'
-        ? 'text-red-500'
+        ? 'text-red-600 dark:text-red-400'
         : 'text-muted-foreground';
 
   return (

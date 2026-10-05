@@ -220,6 +220,7 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
                     size="icon"
                     className="absolute -top-2 -right-2 size-8 rounded-full p-0"
                     onClick={handleRemoveImage}
+                    aria-label="Remove team image"
                   >
                     <X size={16} />
                   </Button>

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UserProfile } from '@/types/user';
 
 import { useAuth } from '../index';
+import { markUserSignOut } from '../utils/signOutIntent';
 
 const mockGetAuthSession = vi.fn();
 const mockOnAuthStateChange = vi.fn();
@@ -306,6 +307,59 @@ describe('useAuth', () => {
 
     expect(setProfileSpy).toHaveBeenCalledWith(null);
     expect(setIsProfileLoadingSpy).toHaveBeenCalledWith(false);
+  });
+
+  it('says so when a session ends that the person did not end', async () => {
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    renderHook(() => useAuth());
+    await waitFor(() => {
+      expect(authStateCallback).toBeTruthy();
+    });
+
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('user-a'));
+    });
+    await act(async () => {
+      await authStateCallback?.('SIGNED_OUT', null);
+    });
+
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'You were signed out' })
+    );
+  });
+
+  it('stays quiet when the person signed out themselves', async () => {
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    renderHook(() => useAuth());
+    await waitFor(() => {
+      expect(authStateCallback).toBeTruthy();
+    });
+
+    await act(async () => {
+      await authStateCallback?.('SIGNED_IN', makeSession('user-a'));
+    });
+    markUserSignOut();
+    await act(async () => {
+      await authStateCallback?.('SIGNED_OUT', null);
+    });
+
+    expect(mockToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'You were signed out' })
+    );
+  });
+
+  it('stays quiet for a visitor who was never signed in', async () => {
+    mockGetAuthSession.mockResolvedValue({ data: { session: null }, error: null });
+    renderHook(() => useAuth());
+    await waitFor(() => {
+      expect(authStateCallback).toBeTruthy();
+    });
+
+    await act(async () => {
+      await authStateCallback?.('SIGNED_OUT', null);
+    });
+
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
   it('discards stale profile fetch when user changes before timeout callback resolves', async () => {

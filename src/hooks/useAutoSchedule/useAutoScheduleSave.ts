@@ -104,7 +104,8 @@ export function useAutoScheduleSave() {
       scheduleLog('Successfully saved matches:', data);
 
       toast({
-        title: 'Success',
+        title: 'Matches saved',
+        variant: 'success',
         description: `Saved ${matches.length} matches to the database`,
       });
 

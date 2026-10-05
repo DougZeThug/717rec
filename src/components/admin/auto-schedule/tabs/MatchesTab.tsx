@@ -6,6 +6,7 @@ import EditableMatchList from '@/components/admin/auto-schedule/EditableMatchLis
 import ScheduleMatchesPreview from '@/components/admin/batch-matches/auto-schedule/ScheduleMatchesPreview';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   AutoScheduleMatch,
   MatchQualityMetrics,
@@ -189,10 +190,11 @@ const DualBlockMetricsPanel: React.FC<DualBlockMetricsPanelProps> = ({
       </div>
       <div className="bg-muted/50 p-3 rounded-md text-center">
         <div
-          className="text-lg font-semibold"
-          style={{
-            color: metrics.teamsWithDuplicateOpponents > 0 ? 'var(--amber-500)' : 'inherit',
-          }}
+          className={cn(
+            'text-lg font-semibold',
+            // Theme-aware: amber-500 was 2:1 on the light card.
+            metrics.teamsWithDuplicateOpponents > 0 && 'text-amber-700 dark:text-amber-400'
+          )}
         >
           {metrics.teamsWithDuplicateOpponents}
         </div>

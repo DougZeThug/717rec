@@ -62,7 +62,7 @@ const RoundRow: React.FC<RoundRowProps> = ({
           onClick={() => onDelete(round.id)}
           aria-label={`Delete round ${round.round_number}`}
         >
-          <Trash2 className="size-4 text-destructive" aria-hidden />
+          <Trash2 className="size-4 text-destructive-text" aria-hidden />
         </Button>
       </div>
     )}

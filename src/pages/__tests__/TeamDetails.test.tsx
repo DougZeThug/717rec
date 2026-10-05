@@ -151,7 +151,11 @@ describe('TeamDetails page', () => {
       },
       isLoading: false,
     });
-    mockUseTeamMatches.mockReturnValue({ pastMatches: [{ id: 'm1' }], isLoadingMatches: false });
+    mockUseTeamMatches.mockReturnValue({
+      pastMatches: [{ id: 'm1' }],
+      upcomingMatches: [],
+      isLoadingMatches: false,
+    });
     mockUseTeamRankings.mockReturnValue({ rankings: [{ teamId: 't-1', rankChange: 1 }] });
     // The canonical address is only the readable one when that address leads
     // back to this team, so the list has to hold it.
@@ -184,8 +188,88 @@ describe('TeamDetails page', () => {
     expect(screen.getByRole('button', { name: 'Back to Teams' })).toBeInTheDocument();
   });
 
+  it('says the team could not be loaded, with a retry, when the fetch fails', () => {
+    const refetchTeam = vi.fn();
+    mockUseTeamDetails.mockReturnValue({
+      team: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+      refetch: refetchTeam,
+    });
+    renderPage();
+
+    // A dropped connection is not a missing team.
+    expect(screen.queryByText('Team Not Found')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetchTeam).toHaveBeenCalledTimes(1);
+  });
+
+  it('still lets the visitor go back to the teams list when the fetch fails', () => {
+    mockUseTeamDetails.mockReturnValue({
+      team: undefined,
+      isLoading: false,
+      error: new Error('network down'),
+      refetch: vi.fn(),
+    });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to Teams' }));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/teams');
+  });
+
+  it('offers a retry when only the match data failed, instead of reading as no matches', () => {
+    const refetchMatches = vi.fn();
+    mockUseTeamMatches.mockReturnValue({
+      pastMatches: [],
+      upcomingMatches: [],
+      isLoadingMatches: false,
+      matchesError: new Error('boom'),
+      refetchMatches,
+    });
+    renderPage();
+
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    expect(refetchMatches).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the next match, linked to the schedule night, for anyone', () => {
+    mockUseTeamMatches.mockReturnValue({
+      pastMatches: [],
+      upcomingMatches: [
+        {
+          id: 'm-next',
+          team1Id: 't-1',
+          team2Id: 't-2',
+          date: '2026-10-08T23:30:00.000Z',
+          iscompleted: false,
+          team2Details: { name: 'Hawks', image_url: null, logo_url: null },
+        },
+      ],
+      isLoadingMatches: false,
+    });
+    renderPage();
+
+    const strip = screen.getByRole('region', { name: 'Next match' });
+    expect(strip).toHaveTextContent('vs Hawks');
+    expect(screen.getByRole('link', { name: /next match/i })).toHaveAttribute(
+      'href',
+      expect.stringMatching(/^\/schedule\?date=\d{4}-\d{2}-\d{2}#match-m-next$/)
+    );
+  });
+
+  it('shows no next-match strip when nothing is left to play', () => {
+    renderPage();
+    expect(screen.queryByRole('region', { name: 'Next match' })).not.toBeInTheDocument();
+  });
+
   it('shows match-history empty surface when there are no past matches', () => {
-    mockUseTeamMatches.mockReturnValue({ pastMatches: [], isLoadingMatches: false });
+    mockUseTeamMatches.mockReturnValue({
+      pastMatches: [],
+      upcomingMatches: [],
+      isLoadingMatches: false,
+    });
     renderPage();
     expect(screen.getByText('No Match History')).toBeInTheDocument();
   });

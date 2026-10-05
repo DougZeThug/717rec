@@ -48,7 +48,7 @@ const ChampionCardCompact = React.forwardRef<
     >
       <p
         className={cn(
-          'text-[10px] font-bebas uppercase tracking-wide mb-2 text-center',
+          'text-2xs font-bebas uppercase tracking-wide mb-2 text-center',
           isWinter ? 'text-amber-200/80' : 'text-white/80'
         )}
       >

@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useSeasonMutations } from '@/hooks/useSeasonMutations';
 import { toast } from '@/hooks/useToast';
 import { Season } from '@/types/season';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 
 interface SeasonArchivalDialogProps {
   isOpen: boolean;
@@ -151,21 +152,23 @@ const SeasonArchivalDialog: React.FC<SeasonArchivalDialogProps> = ({ isOpen, onC
       if (keepPlayoffsActive) {
         await partialArchiveSeason.mutateAsync({ id: season.id });
         toast({
-          title: 'Success',
+          title: 'Season archived',
+          variant: 'success',
           description: `${season.name} archived; playoffs remain in progress. Finalize when the bracket is complete.`,
         });
       } else {
         await archiveSeason.mutateAsync({ id: season.id });
         toast({
-          title: 'Success',
+          title: 'Season archived',
+          variant: 'success',
           description: `${season.name} has been archived`,
         });
       }
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to archive season';
+      const message = getUIErrorMessage(error, 'Failed to archive season');
       toast({
-        title: 'Error',
+        title: "Couldn't archive season",
         description: message,
         variant: 'destructive',
       });

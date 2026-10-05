@@ -10,6 +10,7 @@ import {
 } from '@/services/matches/MatchWriteService';
 import { Team } from '@/types';
 import { ALL_BLOCK_TIMES } from '@/utils/autoSchedule/constants';
+import { getUIErrorMessage } from '@/utils/errorHandler';
 import { nextThursday } from '@/utils/leagueNight';
 import { errorLog, matchLog, timezoneLog } from '@/utils/logger';
 
@@ -216,7 +217,7 @@ export const useBatchMatchForm = (_teams: Team[]) => {
 
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
+      const message = getUIErrorMessage(error);
       toast({
         title: 'Could not create the matches',
         description: message,

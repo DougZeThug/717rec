@@ -71,7 +71,7 @@ const SubmissionActions: React.FC<{ onApprove: () => void; onReject: () => void 
       variant="outline"
       size="sm"
       onClick={onReject}
-      className="text-destructive hover:text-destructive"
+      className="text-destructive-text hover:text-destructive-text"
     >
       <XCircle className="size-4 mr-1" aria-hidden="true" />
       Reject

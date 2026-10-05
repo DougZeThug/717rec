@@ -20,6 +20,8 @@ const formatTime = (isoString: string) => {
     hour: 'numeric',
     minute: '2-digit',
     timeZone: 'America/New_York',
+    // "EDT"/"EST": event times are always Lancaster time, wherever you are.
+    timeZoneName: 'short',
   });
 };
 
@@ -38,7 +40,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   );
 
   const labelClasses = cn(
-    'text-[10px] font-bebas uppercase tracking-wide',
+    'text-2xs font-bebas uppercase tracking-wide',
     shouldApplyWinter ? 'text-cyan-200/80' : 'text-white/80'
   );
 

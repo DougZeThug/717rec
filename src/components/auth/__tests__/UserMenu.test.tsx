@@ -206,7 +206,7 @@ describe('UserMenu', () => {
       renderMenu('/admin/scores');
       await openMenu();
 
-      await userEvent.click(await screen.findByRole('menuitem', { name: /logout/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /sign out/i }));
 
       expect(confirmSpy).toHaveBeenCalledWith('Unsaved scores');
       expect(mockSignOut).not.toHaveBeenCalled();
@@ -216,7 +216,7 @@ describe('UserMenu', () => {
       renderMenu('/admin/scores');
       await openMenu();
 
-      await userEvent.click(await screen.findByRole('menuitem', { name: /logout/i }));
+      await userEvent.click(await screen.findByRole('menuitem', { name: /sign out/i }));
 
       expect(mockSignOut).toHaveBeenCalled();
     });

@@ -11,6 +11,7 @@ interface PageLayoutProps {
   children: ReactNode;
   withBackground?: boolean;
   className?: string;
+  /** Kept so existing callers still compile. It changed nothing for a long time. */
   compact?: boolean;
   gradientVariant?: 'default' | 'blue' | 'blueOrange';
 }
@@ -22,7 +23,6 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   withBackground = true,
   className = '',
-  compact = false,
   gradientVariant = 'blueOrange',
 }) => {
   const { isDark } = useThemeConsistency();
@@ -56,13 +56,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   return (
     <div
       className={cn(
-        'min-h-screen transition-colors duration-300 overflow-x-hidden',
+        'min-h-screen supports-[height:100dvh]:min-h-dvh transition-colors duration-300 overflow-x-clip',
         getGradientClass(),
-        isMobile
-          ? compact
-            ? 'py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]'
-            : 'py-3 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]'
-          : 'py-5 pb-6',
+        // The footer that follows already clears the phone tab bar, so this does
+        // not need to (it used to add 5rem, which stacked with the footer's).
+        isMobile ? 'py-3 pb-6' : 'py-5 pb-6',
         'px-1 sm:px-3 md:px-4 lg:px-5',
         animations.fadeIn,
         // Apply winter class to all pages for CSS variable overrides

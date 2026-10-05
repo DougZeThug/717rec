@@ -45,11 +45,44 @@ const AuthFooter: React.FC<AuthFooterProps> = ({ activeTab, setActiveTab }) => (
           className={cn(interactive.link.inline, 'py-2 px-1 -my-2')}
           onClick={() => setActiveTab('login')}
         >
-          Login
+          Sign in
         </button>
       </>
     )}
   </p>
+);
+
+type AuthFormFields = Omit<React.ComponentProps<typeof AuthForm>, 'type' | 'onSubmit'>;
+
+interface AuthTabsProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  formProps: AuthFormFields;
+  onSignIn: React.ComponentProps<typeof AuthForm>['onSubmit'];
+  onSignUp: React.ComponentProps<typeof AuthForm>['onSubmit'];
+}
+
+const AuthTabs: React.FC<AuthTabsProps> = ({
+  activeTab,
+  setActiveTab,
+  formProps,
+  onSignIn,
+  onSignUp,
+}) => (
+  <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
+    <TabsList className="grid w-full grid-cols-2">
+      <TabsTrigger value="login">Sign in</TabsTrigger>
+      <TabsTrigger value="signup">Sign up</TabsTrigger>
+    </TabsList>
+
+    <TabsContent value="login">
+      <AuthForm type="login" onSubmit={onSignIn} {...formProps} />
+    </TabsContent>
+
+    <TabsContent value="signup">
+      <AuthForm type="signup" onSubmit={onSignUp} {...formProps} />
+    </TabsContent>
+  </Tabs>
 );
 
 const Auth = () => {
@@ -79,7 +112,9 @@ const Auth = () => {
     // Only redirect if authentication check has completed
     if (authInitialized && user) {
       authLog('User already logged in, redirecting to:', returnTo);
-      navigate(returnTo);
+      // replace: Back from the page we land on should not return to the sign-in
+      // page, which would only send the person forward again.
+      navigate(returnTo, { replace: true });
     }
   }, [user, navigate, returnTo, authInitialized]);
 
@@ -91,34 +126,13 @@ const Auth = () => {
         path="/auth"
       />
       <AuthContainer footer={<AuthFooter activeTab={activeTab} setActiveTab={setActiveTab} />}>
-        <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <AuthForm
-              type="login"
-              onSubmit={handleSignIn}
-              isSubmitting={isSubmitting}
-              emailError={emailError}
-              passwordError={passwordError}
-              authError={authError}
-            />
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <AuthForm
-              type="signup"
-              onSubmit={handleSignUp}
-              isSubmitting={isSubmitting}
-              emailError={emailError}
-              passwordError={passwordError}
-              authError={authError}
-            />
-          </TabsContent>
-        </Tabs>
+        <AuthTabs
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          formProps={{ isSubmitting, emailError, passwordError, authError }}
+          onSignIn={handleSignIn}
+          onSignUp={handleSignUp}
+        />
 
         <SocialAuthButtons
           onGoogleSignIn={() => handleGoogleSignIn(returnTo)}

@@ -12,5 +12,10 @@ export const useTeamDetails = (teamId: string | undefined) => {
   return {
     team: teamQuery.data,
     isLoading: teamQuery.isLoading,
+    // A failed fetch is not the same as "no such team": the page needs both to
+    // tell a dropped connection from a wrong address.
+    error: teamQuery.error,
+    isError: teamQuery.isError,
+    refetch: teamQuery.refetch,
   };
 };

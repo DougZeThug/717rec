@@ -229,7 +229,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
             <TableHead className="w-10 font-mono tracking-wide text-muted-foreground">
               Rank
             </TableHead>
-            <TableHead className="font-semibold uppercase tracking-wide font-bebas text-muted-foreground">
+            <TableHead className="uppercase tracking-wide font-bebas text-muted-foreground">
               Team
             </TableHead>
             <TableHead className="text-center font-mono text-muted-foreground">Record</TableHead>

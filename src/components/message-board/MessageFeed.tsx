@@ -63,7 +63,7 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
     if (error) {
       return (
         <Card className={cn('mb-4 border-destructive/50', animations.fadeIn)}>
-          <CardContent className="text-center py-12 text-destructive">
+          <CardContent className="text-center py-12 text-destructive-text">
             <div className="space-y-2">
               <p className="font-medium">{error}</p>
               <p className="text-sm mt-2 text-muted-foreground">Please try refreshing the page</p>

@@ -91,9 +91,7 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
           onMouseEnter={() => prefetchRoute(item.href)}
           onFocus={() => prefetchRoute(item.href)}
           onTouchStart={() => prefetchRoute(item.href)}
-          className={({ isActive }) =>
-            cn(baseClass, isActive && !isMobile ? activeClass : undefined)
-          }
+          className={({ isActive }) => cn(baseClass, isActive ? activeClass : undefined)}
         >
           {({ isActive }) => (
             <>

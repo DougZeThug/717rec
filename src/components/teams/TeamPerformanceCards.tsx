@@ -53,7 +53,7 @@ const TeamPerformanceCards: React.FC<TeamPerformanceCardsProps> = ({
             className={cn(
               'text-3xl font-bebas tracking-wide',
               rank && rank <= 3
-                ? 'text-amber-500'
+                ? 'text-amber-700 dark:text-amber-400'
                 : rank && rank <= 10
                   ? 'text-primary'
                   : 'text-foreground'

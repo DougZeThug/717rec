@@ -58,7 +58,7 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
               className="w-full"
               onClick={() => navigate('/auth', { state: { returnTo: '/admin' } })}
             >
-              Login to Continue
+              Sign in to continue
             </Button>
           ) : (
             <>

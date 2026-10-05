@@ -124,7 +124,11 @@ describe('TeamDetails team-to-team in-app navigation', () => {
       team: teamId === 't-2' ? team('t-2', 'Eagles') : team('t-1', 'Falcons'),
       isLoading: false,
     }));
-    mockUseTeamMatches.mockReturnValue({ pastMatches: [{ id: 'm1' }], isLoadingMatches: false });
+    mockUseTeamMatches.mockReturnValue({
+      pastMatches: [{ id: 'm1' }],
+      upcomingMatches: [],
+      isLoadingMatches: false,
+    });
     mockUseTeamRankings.mockReturnValue({ rankings: [{ teamId: 't-1', rankChange: 1 }] });
     // The canonical address is only the readable one when that address leads
     // back to this team, so the list has to hold it.

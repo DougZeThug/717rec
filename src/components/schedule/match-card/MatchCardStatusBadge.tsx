@@ -10,7 +10,7 @@ import { UpsetTag } from '../UpsetTag';
 const statusPillClasses: Record<Exclude<MatchStatus, 'scheduled'>, string> = {
   completed: 'bg-primary/10 text-primary',
   postponed: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
-  canceled: 'bg-destructive/10 text-destructive',
+  canceled: 'bg-destructive/10 text-destructive-text',
 };
 
 interface MatchCardStatusBadgeProps {
@@ -29,7 +29,7 @@ export const MatchCardStatusBadge: React.FC<MatchCardStatusBadgeProps> = ({
     <div className="flex items-center justify-center gap-2 pt-1.5">
       <span
         className={cn(
-          'px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full',
+          'px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase rounded-full',
           statusPillClasses[status]
         )}
       >

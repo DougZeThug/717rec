@@ -1,5 +1,6 @@
 import { Mail } from 'lucide-react';
 import React from 'react';
+import { Link } from 'react-router';
 
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
@@ -11,7 +12,7 @@ interface WinterProps {
 /** The two footer links share one style; it was written out twice. */
 const footerLinkClasses = (isWinterTheme: boolean) =>
   cn(
-    'inline-flex min-h-6 items-center transition-colors font-inter font-medium',
+    'inline-flex min-h-11 items-center transition-colors font-inter font-medium',
     isWinterTheme ? 'hover:text-[hsl(var(--foreground))]' : 'hover:text-foreground'
   );
 
@@ -47,9 +48,9 @@ const FooterContact = ({ isWinterTheme }: WinterProps) => (
         admin@717rec.com
       </a>
       <span aria-hidden="true">·</span>
-      <a href="/contact" className={footerLinkClasses(isWinterTheme)}>
+      <Link to="/contact" className={footerLinkClasses(isWinterTheme)}>
         Contact us
-      </a>
+      </Link>
     </p>
   </div>
 );
@@ -61,7 +62,8 @@ const Footer = () => {
   return (
     <footer
       className={cn(
-        'border-t py-4 transition-colors duration-300',
+        // The bottom padding keeps the copyright line clear of the phone tab bar.
+        'border-t pt-4 pb-[calc(1rem+var(--bottom-nav-h))] transition-colors duration-300',
         isWinterTheme ? 'winter-card-surface border-frost-border/30' : 'bg-muted border-border'
       )}
       // minHeight still reserves the space against layout shift; the fixed

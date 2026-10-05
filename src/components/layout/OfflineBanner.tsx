@@ -16,11 +16,11 @@ interface OfflineBannerProps {
  * found out by pressing something. At a venue with poor signal that is the
  * worst moment to be guessing.
  *
- * Deliberately **not** sticky. The site header is already `sticky top-0 z-50`,
- * so a second sticky bar slides underneath it — the same reason the admin phone
- * menu is not sticky either (see `AdminMobileNav`). This sits in normal flow
- * directly under the header, where it pushes the page down rather than covering
- * it, and scrolls away once it has been read.
+ * Deliberately **not** sticky. If the header is ever made sticky (it is not
+ * today, see `Navbar`), a second sticky bar would slide underneath it — the same
+ * reason the admin phone menu is not sticky either (see `AdminMobileNav`). This
+ * sits in normal flow directly under the header, where it pushes the page down
+ * rather than covering it, and scrolls away once it has been read.
  *
  * `role="status"` and not a landmark: `role="banner"` would be a second one on
  * every page and the accessibility gate forbids that.

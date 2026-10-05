@@ -77,8 +77,14 @@ export const ExampleService = {
 - Kept v3 behaviours (each has a comment in `src/index.css`): `hover:` also
   fires on touch screens, `space-x-*`/`space-y-*` use the v3 selector,
   `text-*` sizes keep v3's fixed line heights, and
-  `src/styles/tailwind-v3-compat.css` restores the gray-200 border, placeholder
-  colour, button pointer and 1px table-cell padding.
+  `src/styles/tailwind-v3-compat.css` restores the default border (it reads the
+  theme's `--border`, so dark and winter stay dark), placeholder colour,
+  button pointer and 1px table-cell padding.
+- Red text and icons use `text-destructive-text`, not `text-destructive`.
+  `--destructive` is a fill colour and is too dark to read as text in the dark
+  and winter themes. Keep `bg-destructive` and `border-destructive` for fills.
+- Form-field borders (`border-input`) are 3:1 on purpose (WCAG 1.4.11). Do not
+  lighten `--input` back to `--border`.
 - Keep `bg-gradient-to-*` (not `bg-linear-to-*`): hero card presets save these
   class names in the database, and the winter theme matches them with
   `[class*="bg-gradient"]`.

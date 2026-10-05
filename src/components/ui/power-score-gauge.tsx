@@ -12,7 +12,7 @@ interface PowerScoreGaugeProps {
 }
 
 const sizeConfig = {
-  sm: { width: 48, strokeWidth: 4, fontSize: 'text-sm', labelSize: 'text-[10px]' },
+  sm: { width: 48, strokeWidth: 4, fontSize: 'text-sm', labelSize: 'text-2xs' },
   md: { width: 64, strokeWidth: 5, fontSize: 'text-lg', labelSize: 'text-xs' },
   lg: { width: 80, strokeWidth: 6, fontSize: 'text-xl', labelSize: 'text-sm' },
 };

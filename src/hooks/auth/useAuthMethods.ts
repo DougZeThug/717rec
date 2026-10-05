@@ -15,6 +15,7 @@ import { AuthResponse } from '@/types/auth';
 // signInWithGoogleNative so the Capacitor login plugin stays out of the
 // eagerly-loaded main bundle (it is only needed on native sign-in).
 import { HandleAuthErrorFn } from './utils/authErrorHandler';
+import { consumeUserSignOut, markUserSignOut } from './utils/signOutIntent';
 
 const extractWeakPasswordReasons = (
   data: Awaited<ReturnType<typeof signUpWithEmail>>
@@ -41,11 +42,7 @@ export const useAuthMethods = (
 
         ensureThemeConsistency();
 
-        toast({
-          title: 'Welcome back!',
-          description: "You've successfully logged in",
-        });
-
+        // No toast: the page changing is the confirmation. Only failures speak.
         return { user: data.user, session: data.session, weakPassword: null };
       } catch (error) {
         if (error instanceof Error) {
@@ -114,14 +111,13 @@ export const useAuthMethods = (
   const signOut = useCallback(async () => {
     try {
       clearAuthError();
+      // So the auth listener does not report this as an expired session.
+      markUserSignOut();
       await signOutUser();
 
       navigate('/');
-      toast({
-        title: 'Logged out',
-        description: 'You have been successfully logged out',
-      });
     } catch (error) {
+      consumeUserSignOut();
       if (error instanceof Error) {
         handleAuthError(error, 'Logout');
       } else {

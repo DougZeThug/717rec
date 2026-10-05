@@ -13,6 +13,7 @@ import { ScheduleSection } from '@/components/help/sections/ScheduleSection';
 import { StandingsSection } from '@/components/help/sections/StandingsSection';
 import { TeamsSection } from '@/components/help/sections/TeamsSection';
 import { WelcomeSection } from '@/components/help/sections/WelcomeSection';
+import PageHeader from '@/components/layout/PageHeader';
 import SeoHead from '@/components/seo/SeoHead';
 import { Accordion } from '@/components/ui/accordion';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
@@ -74,15 +75,16 @@ const Help: React.FC = () => {
       />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <HelpCircle className="size-8 text-primary" />
-            <h1 className="text-3xl font-bold">Help & Getting Started</h1>
-          </div>
-          <p className="text-muted-foreground">
-            Everything you need to know about using 717REC for league management and participation.
-          </p>
-        </div>
+        <PageHeader
+          className="mb-8"
+          title={
+            <span className="flex items-center gap-3">
+              <HelpCircle className="size-8 text-primary" aria-hidden="true" />
+              <span>Help & Getting Started</span>
+            </span>
+          }
+          description="Everything you need to know about using 717REC for league management and participation."
+        />
 
         <HelpQuickLinks />
 

@@ -36,7 +36,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       <h1
         className={cn(
           typeScale.h1,
-          isMobile && 'text-[24px] leading-[28px]',
+          isMobile && 'text-2xl leading-7',
           withGradient ? blueAmberHeading() : 'text-foreground'
         )}
       >

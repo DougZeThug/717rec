@@ -89,7 +89,7 @@ const GameScoreRow: React.FC<GameScoreRowProps> = ({
         onClick={() => onRemoveGame(index)}
         disabled={!canRemove}
         title={`Remove game ${index + 1}`}
-        icon={<MinusCircle className="size-4 text-destructive" />}
+        icon={<MinusCircle className="size-4 text-destructive-text" />}
         className="flex-none size-8 rounded-lg"
       />
     </m.div>

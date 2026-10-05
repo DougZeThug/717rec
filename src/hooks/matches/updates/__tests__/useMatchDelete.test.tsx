@@ -116,7 +116,7 @@ describe('useMatchDelete', () => {
     expect(setMatches).not.toHaveBeenCalled();
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Error',
+        title: "Couldn't delete match",
         description: 'Failed to delete match: Match not found',
         variant: 'destructive',
       })
@@ -139,7 +139,7 @@ describe('useMatchDelete', () => {
     expect(mockInvalidateAllDataQueries).not.toHaveBeenCalled();
     expect(mockToast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'Error',
+        title: "Couldn't delete match",
         description: 'Failed to delete match. Please try again.',
       })
     );

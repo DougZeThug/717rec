@@ -11,6 +11,7 @@ import { useState } from 'react';
 
 import { ContactFormCard } from '@/components/contact/ContactFormCard';
 import { MessageSentCard } from '@/components/contact/MessageSentCard';
+import PageHeader from '@/components/layout/PageHeader';
 import PageLayout from '@/components/layout/PageLayout';
 import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
@@ -32,10 +33,11 @@ const PageHeading = (
         <MessageSquare className="h-8 w-8 text-primary" />
       </div>
     </div>
-    <h1 className="text-3xl font-bold mb-2">Contact the league</h1>
-    <p className="text-muted-foreground">
-      A timeslot, a score, joining the league, or anything else — it all starts here.
-    </p>
+    <PageHeader
+      title="Contact the league"
+      description="A timeslot, a score, joining the league, or anything else — it all starts here."
+      className="items-center text-center mb-0"
+    />
   </div>
 );
 
