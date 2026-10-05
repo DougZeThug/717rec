@@ -67,7 +67,7 @@ const TrafficMiniChart: React.FC = () => {
           <>
             <div
               role="img"
-              aria-label={`Line chart of daily visitors over the last ${rows.length} days. The last 7 days had ${totals7.visitors} visitors in total.`}
+              aria-label={`Line chart of daily visitors from ${fmtDay(rows[0].day)} to ${fmtDay(rows[rows.length - 1].day)}. The ${last7.length} most recent days with visits had ${totals7.visitors} visitors in total.`}
               className="h-40"
             >
               <ResponsiveContainer width="100%" height="100%">

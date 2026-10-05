@@ -22,6 +22,7 @@ import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import { describeChart } from '@/utils/charts/chartAccessibility';
 import { getTeamColor } from '@/utils/colors/teamColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
@@ -59,6 +60,27 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
 
       return dataPoint;
     });
+};
+
+/** Text for screen readers: the counts, plus every team's score in the latest season. */
+const describeCareerChart = (
+  chartData: ReturnType<typeof transformDataForChart>,
+  teamsData?: TeamCareerData[]
+): string => {
+  const teams = teamsData ?? [];
+  const intro = `Line chart of career power scores across ${chartData.length} seasons for ${teams.length} teams.`;
+  const latest = chartData[chartData.length - 1];
+  if (!latest) return intro;
+
+  const scores = teams
+    .map((team) => ({ name: team.teamName, value: latest[`team_${team.teamId}`] }))
+    .filter((entry): entry is { name: string; value: number } => typeof entry.value === 'number')
+    .sort((a, b) => b.value - a.value);
+
+  return describeChart(
+    `${intro} Scores in the latest season, ${latest.seasonName}, highest first:`,
+    scores.map((entry) => `${entry.name} ${entry.value.toFixed(1)}`)
+  );
 };
 
 interface CustomTooltipProps {
@@ -236,8 +258,9 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
             )}
 
             <div
-              role="img"
-              aria-label={`Line chart of career power scores across ${chartData.length} seasons for ${teamsData?.length ?? 0} teams. Open a team's page for its season-by-season scores.`}
+              // A group, not an img: an img hides the team links in the tooltip.
+              role="group"
+              aria-label={describeCareerChart(chartData, teamsData)}
             >
               <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
                 <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>

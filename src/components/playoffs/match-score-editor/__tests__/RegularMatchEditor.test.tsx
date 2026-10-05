@@ -6,10 +6,17 @@ import { RegularMatchEditor } from '../RegularMatchEditor';
 
 // Inline Dialog mock so portals render in the test tree
 vi.mock('@/components/ui/dialog', () => ({
-  DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  // Keep the link a real dialog makes between itself and its description.
+  DialogContent: ({ children }: { children: React.ReactNode }) => (
+    <div role="dialog" aria-describedby="mock-dialog-description">
+      {children}
+    </div>
+  ),
   DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
-  DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
+  DialogDescription: ({ children }: { children: React.ReactNode }) => (
+    <p id="mock-dialog-description">{children}</p>
+  ),
 }));
 
 describe('RegularMatchEditor', () => {
@@ -59,7 +66,9 @@ describe('RegularMatchEditor', () => {
   it('describes the dialog for screen readers', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 
-    expect(screen.getByText('Enter the score for each team, then save.')).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+      'Enter the score for each team, then save.'
+    );
   });
 
   it('asks phones for the number pad on both score inputs', () => {

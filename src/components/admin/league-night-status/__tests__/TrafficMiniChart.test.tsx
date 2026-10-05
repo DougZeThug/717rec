@@ -52,7 +52,7 @@ describe('TrafficMiniChart', () => {
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
   });
 
-  it('summarises the line for screen readers, with the last 7 days total', () => {
+  it('summarises the line for screen readers, with the date range and recent total', () => {
     query = {
       data: Array.from({ length: 10 }, (_, i) =>
         day(`2026-09-${String(i + 1).padStart(2, '0')}`, 2)
@@ -64,7 +64,7 @@ describe('TrafficMiniChart', () => {
 
     expect(
       screen.getByRole('img', {
-        name: 'Line chart of daily visitors over the last 10 days. The last 7 days had 14 visitors in total.',
+        name: 'Line chart of daily visitors from Sep 1 to Sep 10. The 7 most recent days with visits had 14 visitors in total.',
       })
     ).toBeInTheDocument();
   });

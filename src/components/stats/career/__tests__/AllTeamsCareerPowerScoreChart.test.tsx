@@ -125,15 +125,16 @@ describe('AllTeamsCareerPowerScoreChart', () => {
     expect(screen.getByText('Select teams above to highlight their trends')).toBeInTheDocument();
   });
 
-  it('gives the chart a text summary with the team and season counts', async () => {
+  it('gives the chart a text summary with the counts and the latest season scores', async () => {
     const user = userEvent.setup();
     renderChart();
 
     await open(user);
 
     expect(
-      screen.getByRole('img', {
-        name: /Line chart of career power scores across 2 seasons for 2 teams\./,
+      // A group, not an img, so the team links in the tooltip stay reachable.
+      screen.getByRole('group', {
+        name: 'Line chart of career power scores across 2 seasons for 2 teams. Scores in the latest season, Season 2, highest first: Tigers 75.0; Lions 65.0.',
       })
     ).toBeInTheDocument();
   });

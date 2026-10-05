@@ -47,13 +47,26 @@ describe('DesignAppearanceSection flyer upload zone', () => {
     return { zone, picker };
   };
 
-  it.each(['Enter', ' '])('opens the file picker on %j without scrolling the page', (key) => {
+  it('opens the file picker when Enter is pressed, without scrolling the page', () => {
     const { zone, picker } = renderZone();
 
     // fireEvent returns false when the handler called preventDefault.
-    const notPrevented = fireEvent.keyDown(zone, { key });
+    const notPrevented = fireEvent.keyDown(zone, { key: 'Enter' });
 
     expect(notPrevented).toBe(false);
+    expect(picker).toHaveBeenCalledTimes(1);
+  });
+
+  // Like a real button, Space acts when it is released, so holding it or
+  // pressing it by mistake and sliding off does nothing.
+  it('opens the file picker when Space is released, not when it is pressed', () => {
+    const { zone, picker } = renderZone();
+
+    const notPrevented = fireEvent.keyDown(zone, { key: ' ' });
+    expect(notPrevented).toBe(false);
+    expect(picker).not.toHaveBeenCalled();
+
+    fireEvent.keyUp(zone, { key: ' ' });
     expect(picker).toHaveBeenCalledTimes(1);
   });
 

@@ -106,6 +106,10 @@ describe('CompactStandings (desktop table)', () => {
     render(<CompactStandings rankings={makeRankings(3)} />);
     expect(screen.queryByRole('button', { name: /team details/ })).not.toBeInTheDocument();
     expect(screen.getAllByRole('button')).toHaveLength(3);
+    // No row is an extra keyboard stop either.
+    for (const row of screen.getAllByRole('row')) {
+      expect(row).not.toHaveAttribute('tabindex');
+    }
   });
 
   it('opens the team page when the rest of a row is clicked', async () => {
