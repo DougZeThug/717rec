@@ -276,6 +276,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
           <Input
             id="winner-score"
             type="number"
+            inputMode="numeric"
             min="0"
             value={hasOpponent1 ? opponent1Score : opponent2Score}
             onChange={(e) => {

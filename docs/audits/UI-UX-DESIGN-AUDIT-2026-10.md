@@ -74,7 +74,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [ ] Table rows use `role="button"`. (Backlog)
 - [ ] Win/loss shown by colour alone. (Backlog)
 - [ ] Charts have no text alternative. (Backlog)
-- [ ] Score inputs lack `inputMode="numeric"`. (Backlog)
+- [x] Score inputs lack `inputMode="numeric"`. Fixed for the schedule score form, the match form, the playoff score editors and the seed box. The Challonge sort order is left alone on purpose: it can be negative and the phone number pad has no minus key.
 - [ ] Public "Report Score" form is free text. (Backlog)
 - [ ] Teams page sort control exists only on phones. (Backlog)
 - [ ] Admin menu order and labels differ between desktop and phone. (Backlog)

@@ -65,6 +65,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
           <Input
             id="team1-score"
             type="number"
+            inputMode="numeric"
             min="0"
             value={opponent1Score}
             onChange={(e) => setOpponent1Score(Math.max(0, parseInt(e.target.value) || 0))}
@@ -78,6 +79,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
           <Input
             id="team2-score"
             type="number"
+            inputMode="numeric"
             min="0"
             value={opponent2Score}
             onChange={(e) => setOpponent2Score(Math.max(0, parseInt(e.target.value) || 0))}

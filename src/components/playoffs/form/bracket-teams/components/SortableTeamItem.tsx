@@ -106,6 +106,7 @@ export const SortableTeamItem: React.FC<SortableTeamItemProps> = ({
           <span className="text-xs text-muted-foreground hidden sm:inline">Seed:</span>
           <input
             type="number"
+            inputMode="numeric"
             min="1"
             value={seed}
             onChange={(e) => onSeedChange(parseInt(e.target.value) || null)}

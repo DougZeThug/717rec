@@ -55,6 +55,13 @@ describe('RegularMatchEditor', () => {
     expect(screen.queryByText(/^Edit teams:/)).not.toBeInTheDocument();
   });
 
+  it('asks phones for the number pad on both score inputs', () => {
+    render(<RegularMatchEditor {...defaultProps} />);
+
+    expect(screen.getByLabelText('Team One Score')).toHaveAttribute('inputmode', 'numeric');
+    expect(screen.getByLabelText('Team Two Score')).toHaveAttribute('inputmode', 'numeric');
+  });
+
   it('clamps negative team 1 score to 0', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 

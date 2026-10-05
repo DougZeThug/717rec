@@ -26,6 +26,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         <Input
           id="team1Score"
           type="number"
+          inputMode="numeric"
           min="0"
           value={team1Score === undefined ? '' : team1Score}
           onChange={(e) => setTeam1Score(e.target.value ? parseInt(e.target.value) : undefined)}
@@ -40,6 +41,7 @@ const ScoreSection: React.FC<ScoreSectionProps> = ({
         <Input
           id="team2Score"
           type="number"
+          inputMode="numeric"
           min="0"
           value={team2Score === undefined ? '' : team2Score}
           onChange={(e) => setTeam2Score(e.target.value ? parseInt(e.target.value) : undefined)}

@@ -62,6 +62,15 @@ describe('ByeMatchEditor', () => {
     ).toBeInTheDocument();
   });
 
+  it('asks phones for the number pad on the winner score', () => {
+    render(<ByeMatchEditor {...defaultProps} />);
+
+    expect(screen.getByLabelText('Team One Score (Games Won)')).toHaveAttribute(
+      'inputmode',
+      'numeric'
+    );
+  });
+
   it('clamps negative BYE winner score to 0', () => {
     render(<ByeMatchEditor {...defaultProps} />);
 

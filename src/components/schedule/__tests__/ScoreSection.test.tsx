@@ -37,6 +37,12 @@ describe('ScoreSection', () => {
     expect(screen.getByLabelText('Bravo Score')).toBeInTheDocument();
   });
 
+  it('asks phones for the number pad on both score inputs', () => {
+    render(<ScoreSection {...baseProps} />);
+    expect(screen.getByLabelText('Alpha Score')).toHaveAttribute('inputmode', 'numeric');
+    expect(screen.getByLabelText('Bravo Score')).toHaveAttribute('inputmode', 'numeric');
+  });
+
   it('falls back to generic labels when a team id does not resolve', () => {
     render(<ScoreSection {...baseProps} team1Id="missing-1" team2Id="missing-2" />);
     expect(screen.getByLabelText('Team 1 Score')).toBeInTheDocument();
