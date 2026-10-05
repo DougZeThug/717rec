@@ -144,6 +144,20 @@ describe('ChallongeFallbackSection', () => {
     });
   });
 
+  it('labels each bracket field, so a screen reader hears more than the sample text', async () => {
+    const user = userEvent.setup();
+    render(<ChallongeFallbackSection />);
+
+    await user.click(screen.getByRole('button', { name: /add bracket/i }));
+
+    const titles = screen.getAllByLabelText('Title');
+    expect(titles.length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('Challonge slug')).toHaveLength(titles.length);
+    expect(screen.getAllByLabelText('Order')).toHaveLength(titles.length);
+    // One label per row, so ids must differ between rows.
+    expect(new Set(titles.map((t) => t.id)).size).toBe(titles.length);
+  });
+
   it('adds a new bracket via createBracket', async () => {
     const user = userEvent.setup();
     render(<ChallongeFallbackSection />);

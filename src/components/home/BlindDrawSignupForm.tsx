@@ -94,6 +94,9 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
             <Input
               type="text"
               placeholder="First Name"
+              aria-label="First name"
+              aria-invalid={errors.firstName ? true : undefined}
+              aria-describedby={errors.firstName ? 'blind-draw-first-name-error' : undefined}
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               autoComplete="given-name"
@@ -101,7 +104,9 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
               maxLength={30}
             />
             {errors.firstName && (
-              <span className="text-xs text-red-300 mt-0.5 block">{errors.firstName}</span>
+              <span id="blind-draw-first-name-error" className="text-xs text-red-300 mt-0.5 block">
+                {errors.firstName}
+              </span>
             )}
           </div>
 
@@ -109,13 +114,21 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
             <Input
               type="text"
               placeholder="L.I."
+              aria-label="Last initial"
+              aria-invalid={errors.lastInitial ? true : undefined}
+              aria-describedby={errors.lastInitial ? 'blind-draw-last-initial-error' : undefined}
               value={lastInitial}
               onChange={(e) => setLastInitial(e.target.value.slice(0, 1).toUpperCase())}
               className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base text-center"
               maxLength={1}
             />
             {errors.lastInitial && (
-              <span className="text-xs text-red-300 mt-0.5 block">{errors.lastInitial}</span>
+              <span
+                id="blind-draw-last-initial-error"
+                className="text-xs text-red-300 mt-0.5 block"
+              >
+                {errors.lastInitial}
+              </span>
             )}
           </div>
         </div>

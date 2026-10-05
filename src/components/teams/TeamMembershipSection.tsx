@@ -177,7 +177,7 @@ const TeamMembershipSection: React.FC = () => {
         <div className="space-y-4">
           <div className="grid gap-2">
             <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-              <SelectTrigger>
+              <SelectTrigger aria-label="Team to join">
                 <SelectValue placeholder="Select a team to join" />
               </SelectTrigger>
               <SelectContent>

@@ -31,6 +31,13 @@ describe('QuickPostNotificationForm', () => {
 
   const getSubmitButton = () => screen.getByRole('button', { name: 'Post' });
 
+  it('names both fields, since a placeholder is not a name', () => {
+    render(<QuickPostNotificationForm />);
+
+    expect(screen.getByRole('textbox', { name: 'Notification title' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Notification message' })).toBeInTheDocument();
+  });
+
   it('renders the title and message fields with the submit button disabled while empty', () => {
     render(<QuickPostNotificationForm />);
 

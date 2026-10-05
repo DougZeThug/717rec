@@ -43,7 +43,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         {/* Category Filter */}
         <div className="w-full sm:w-auto flex-1">
           <Select value={filterOptions.category || 'all'} onValueChange={handleCategoryChange}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Filter by category">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -62,7 +62,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         {/* Team Filter */}
         <div className="w-full sm:w-auto flex-1">
           <Select value={filterOptions.teamId || 'all'} onValueChange={handleTeamChange}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Filter by team">
               <SelectValue placeholder="Team" />
             </SelectTrigger>
             <SelectContent>

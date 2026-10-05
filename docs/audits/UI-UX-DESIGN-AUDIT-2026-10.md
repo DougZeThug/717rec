@@ -69,7 +69,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
 - [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
-- [ ] Placeholder-only inputs. (Backlog)
+- [x] Placeholder-only inputs. Fixed: the blind draw sign-up, quick notification post, both team searches, the team search inside the multi-select, the Challonge bracket fields (labels now linked), and the team, category, team-to-join and per-team division pickers now have a name. The blind draw errors are linked to their fields too. The bracket seed box already had one.
 - [x] Auth form has no `aria-invalid` or `aria-describedby`. Fixed for sign in, sign up and forgot password: the field is marked invalid and the message is tied to it.
 - [x] Table rows use `role="button"`. Fixed: the stats standings table row is no longer a button; the team name is a real button (the row keeps its mouse click). The timeslot team picker uses real `<button aria-pressed>`. The flyer upload zone keeps its role but Space no longer scrolls the page and it ignores keys while uploading. The message card and `app-card` were left as they are.
 - [ ] Win/loss shown by colour alone. (Backlog)
