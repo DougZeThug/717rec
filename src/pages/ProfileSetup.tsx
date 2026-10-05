@@ -39,7 +39,7 @@ const ProfileSetup = () => {
     // If authentication is still initializing, wait
     if (!authInitialized) {
       authLog('Auth not initialized yet, waiting...');
-      return;
+      return undefined;
     }
 
     // If authentication is no longer loading but we have no user
@@ -60,6 +60,8 @@ const ProfileSetup = () => {
         navigate('/auth', { state: { returnTo } });
       }
     }
+
+    return undefined;
   }, [user, isLoading, authInitialized, navigate, retries, searchParams]);
 
   // If the profile is already complete and a `next` destination was requested
