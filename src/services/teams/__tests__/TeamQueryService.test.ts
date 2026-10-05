@@ -41,7 +41,6 @@ import {
   fetchAvailableTeams,
   fetchTeamDetails,
   fetchTeamForStats,
-  fetchTeamsFromApi,
   fetchTeamsWithOptions,
 } from '../TeamQueryService';
 
@@ -75,36 +74,6 @@ const makeTeamRow = (overrides: Record<string, unknown> = {}) => ({
   close_match_losses: null,
   seed: null,
   ...overrides,
-});
-
-// ─── fetchTeamsFromApi ────────────────────────────────────────────────────────
-
-describe('fetchTeamsFromApi', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns transformed teams on success', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({ order: () => Promise.resolve({ data: [makeTeamRow()], error: null }) }),
-    });
-    const result = await fetchTeamsFromApi();
-    expect(result).toHaveLength(1);
-    expect(result[0].name).toBe('Eagles');
-    expect(mockFrom).toHaveBeenCalledWith('v_team_details');
-  });
-
-  it('returns empty array when no rows', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({ order: () => Promise.resolve({ data: null, error: null }) }),
-    });
-    expect(await fetchTeamsFromApi()).toEqual([]);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue({
-      select: () => ({ order: () => Promise.resolve({ data: null, error: pgError() }) }),
-    });
-    await expect(fetchTeamsFromApi()).rejects.toThrow(DatabaseError);
-  });
 });
 
 // ─── fetchTeamsWithOptions ────────────────────────────────────────────────────

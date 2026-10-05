@@ -27,7 +27,6 @@ export {
   fetchAvailableTeams,
   fetchTeamDetails,
   fetchTeamForStats,
-  fetchTeamsFromApi,
   fetchTeamsWithOptions,
 } from './TeamQueryService';
 export {
