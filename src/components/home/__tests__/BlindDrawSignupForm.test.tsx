@@ -42,7 +42,7 @@ describe('BlindDrawSignupForm', () => {
   });
 
   it('replaces the form with the confirmation once the sign-up is saved', async () => {
-    mockMutateAsync.mockResolvedValue(undefined);
+    mockMutateAsync.mockResolvedValue({ id: 'signup-1' });
     const user = userEvent.setup();
     render(<BlindDrawSignupForm eventDate="2026-10-08" />);
 
