@@ -658,6 +658,60 @@ describe('simulateSlotChanges', () => {
     expect(simulateSlotChanges(snapshotAfter(reopened, result), toBye).writes).toEqual([]);
   });
 
+  describe('saving again after a save that stopped part-way', () => {
+    /** The board as it reads once only the listed matches' writes landed. */
+    function afterPartialSave(
+      snapshot: RearrangeSnapshot,
+      result: ReturnType<typeof simulateSlotChanges>,
+      writtenIds: number[]
+    ): RearrangeSnapshot {
+      const full = snapshotAfter(snapshot, result);
+      return {
+        ...snapshot,
+        matches: snapshot.matches.map((m) =>
+          writtenIds.includes(m.id) ? (full.matches.find((f) => f.id === m.id) ?? m) : m
+        ),
+      };
+    }
+
+    it('writes the deepest match of a three-level cascade that the first save never reached', () => {
+      const original = tenTeamSnapshot();
+      const first = simulateSlotChanges(original, [reopenPlaceholder]);
+      // Round 1 and round 2 were written; round 3 (501) was not.
+      expect(first.writes.map((write) => write.matchId)).toEqual([302, 402, 501]);
+      const interrupted = afterPartialSave(original, first, [302, 402]);
+
+      const again = simulateSlotChanges(interrupted, [reopenPlaceholder]);
+
+      expect(again.problems).toEqual([]);
+      expect(again.writes.map((write) => write.matchId)).toEqual([501]);
+      expect(fieldsFor(again, 501)).toEqual({ opponent2_id: null });
+    });
+
+    it('writes nothing once the whole cascade was saved', () => {
+      const original = tenTeamSnapshot();
+      const done = snapshotAfter(original, simulateSlotChanges(original, [reopenPlaceholder]));
+
+      expect(simulateSlotChanges(done, [reopenPlaceholder]).writes).toEqual([]);
+    });
+
+    it('stops quietly at a match that already holds the result and can no longer change', () => {
+      const original = tenTeamSnapshot();
+      const first = simulateSlotChanges(original, [reopenPlaceholder]);
+      const interrupted = afterPartialSave(original, first, [302, 402, 501]);
+      const played = interrupted.matches.find((m) => m.id === 501);
+      if (!played) throw new Error('fixture: match 501 missing');
+      played.status = 4;
+      played.editable = false;
+      played.lockedReason = 'has already been played';
+
+      const again = simulateSlotChanges(interrupted, [reopenPlaceholder]);
+
+      expect(again.ok).toBe(true);
+      expect(again.writes).toEqual([]);
+    });
+  });
+
   it('refuses when a match the cascade reaches has been played', () => {
     const snapshot = tenTeamSnapshot();
     const played = snapshot.matches.find((m) => m.id === 501);

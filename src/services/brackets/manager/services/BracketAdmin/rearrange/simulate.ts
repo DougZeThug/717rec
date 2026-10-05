@@ -80,6 +80,7 @@ interface OriginSlotRef {
 interface SimulationOptions {
   labelPrefix?: string;
   subject?: string;
+  forceCascade?: boolean;
 }
 
 /** Everything the simulation steps share. */
@@ -97,6 +98,12 @@ interface Simulation {
   lastRoundNumber: number;
   /** How problems name the admin's action, e.g. "This arrangement". */
   subject: string;
+  /**
+   * Keep rippling forward through a landing that already holds the wanted
+   * content. Set for outside changes, whose saved cascade may have stopped
+   * part-way; a rearrangement leaves it off so a second run writes nothing.
+   */
+  forceCascade: boolean;
 }
 
 /**
@@ -135,7 +142,11 @@ export function simulateSlotChanges(
   changes: ForcedSlotChange[],
   options: SimulationOptions = {}
 ): RearrangePlanResult {
-  const sim = initSimulation(snapshot, { subject: 'This change', ...options });
+  const sim = initSimulation(snapshot, {
+    subject: 'This change',
+    forceCascade: true,
+    ...options,
+  });
   // Every target is checked against the bracket as it stands before any
   // change: two targets can share a match (both of its losers spots change),
   // and the first change must not make the second look blocked.
@@ -183,7 +194,7 @@ export function simulateSlotChanges(
 
 function initSimulation(
   snapshot: RearrangeSnapshot,
-  { labelPrefix = '', subject = 'This arrangement' }: SimulationOptions = {}
+  { labelPrefix = '', subject = 'This arrangement', forceCascade = false }: SimulationOptions = {}
 ): Simulation {
   const working = new Map<number, WorkingMatch>();
   const originSlots = new Map<string, OriginSlotRef>();
@@ -213,6 +224,7 @@ function initSimulation(
     labelOf: (match) => `${labelPrefix}Round ${match.roundNumber} Match ${match.number}`,
     lastRoundNumber: Math.max(0, ...snapshot.matches.map((match) => match.roundNumber)),
     subject,
+    forceCascade,
   };
 }
 
@@ -399,6 +411,14 @@ function carryProductToLanding(sim: Simulation, match: SnapshotMatch, state: Wor
     currentContent.shape === nextContent.shape &&
     currentContent.participantId === nextContent.participantId
   ) {
+    // The landing already holds this result — an earlier save wrote it. The
+    // matches after it may not have been written yet, so a forced cascade
+    // recomputes the landing and carries on from it. Recomputing a match that
+    // is already right changes nothing, so no write comes of it; a match that
+    // can't absorb a change is left alone, as before.
+    if (sim.forceCascade && (landingState.original.editable || !landingBlockReason(landingState))) {
+      landingState.dirty = true;
+    }
     return;
   }
 

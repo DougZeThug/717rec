@@ -1,12 +1,14 @@
 import { BusinessLogicError } from '@/types/errors';
 
 import type { StorageMatch } from '../../../types/BracketServiceTypes';
+import type { SlotRef } from '../rearrange/types';
 import type { MatchUpdateFields, OpponentSide } from '../shapes';
 import type { EditTeamsContext } from './context';
 import type { WantedMatch } from './occupancy';
 import { roundTwoLandingOf } from './occupancy';
 import {
   isWinnersRoundOne,
+  matchLabel,
   occupantId,
   occupantOf,
   participantName,
@@ -40,6 +42,16 @@ export function applyFields(match: StorageMatch, fields: MatchUpdateFields): voi
 }
 
 /**
+ * Where the losers bracket sends each match's automatic result, and which
+ * losers matches the edit changes or aims at. Together they say which part of
+ * the losers bracket the audit has to walk.
+ */
+export interface LosersAudit {
+  landings: Record<string, SlotRef | null>;
+  startMatchIds: number[];
+}
+
+/**
  * Last line of defence before writing: replay every planned write on a copy
  * of the stage and prove each team the edit touches ends up where it should.
  *
@@ -47,11 +59,15 @@ export function applyFields(match: StorageMatch, fields: MatchUpdateFields): voi
  * round 2 slot its walkover sends it to, and nowhere else. A team taken out
  * of the bracket sits nowhere. Anything else means the plan would leave a
  * team in two matches or in none, so nothing is written.
+ *
+ * In a double-elimination bracket the losers bracket is audited too, so a
+ * losers team a half-finished cascade left in a stale spot is caught.
  */
 export function assertFootprint(
   ctx: EditTeamsContext,
   wanted: WantedMatch[],
-  writes: PlannedWrite[]
+  writes: PlannedWrite[],
+  losers?: LosersAudit
 ): void {
   const working = new Map(ctx.stageMatches.map((match) => [match.id, structuredClone(match)]));
   for (const write of writes) {
@@ -105,6 +121,49 @@ export function assertFootprint(
       throw new BusinessLogicError(
         `This change would leave ${participantName(ctx, participantId)} in the wrong place ` +
           '(in two matches, or in none). Nothing was changed.'
+      );
+    }
+  }
+  if (losers) assertLosersCascade(ctx, matches, losers);
+}
+
+/**
+ * Walk the losers bracket forward from every match the edit changes or aims
+ * at, and prove each match's result sits where the bracket sends it.
+ *
+ * A match with a BYE or an empty spot sends on its walkover team, a double
+ * BYE, or nothing yet. The spot it lands in must hold exactly that. A team
+ * left in a later spot after its earlier match went back to waiting is the
+ * leftover of a cascade that stopped part-way, so nothing is written on top of
+ * it. A match with two teams is skipped: its winner is whoever played.
+ */
+function assertLosersCascade(
+  ctx: EditTeamsContext,
+  matches: StorageMatch[],
+  { landings, startMatchIds }: LosersAudit
+): void {
+  const byId = new Map(matches.map((match) => [match.id, match]));
+  const seen = new Set<number>();
+  const queue = [...startMatchIds];
+  for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const feeder = byId.get(id);
+    const landing = landings[String(id)];
+    const landingMatch = landing ? byId.get(landing.matchId) : undefined;
+    if (!feeder || !landing || !landingMatch) continue;
+    queue.push(landing.matchId);
+
+    const first = occupantOf(ctx, feeder.opponent1);
+    const second = occupantOf(ctx, feeder.opponent2);
+    if (first.kind === 'team' && second.kind === 'team') continue;
+
+    const sent = occupantId(productOf(first, second));
+    const held = occupantId(occupantOf(ctx, landingMatch[landing.side]));
+    if (sent !== held) {
+      throw new BusinessLogicError(
+        `This change would leave ${matchLabel(ctx, landingMatch)} out of step with the match ` +
+          'before it. Nothing was changed.'
       );
     }
   }

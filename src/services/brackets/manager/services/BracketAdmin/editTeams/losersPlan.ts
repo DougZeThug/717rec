@@ -10,6 +10,8 @@ import type { PlannedWrite } from './winnersPlan';
 export interface LosersPlan {
   writes: PlannedWrite[];
   consequences: string[];
+  /** The losers matches the edit aims at, even when they already hold the wanted content. */
+  targetMatchIds: number[];
 }
 
 /**
@@ -61,7 +63,7 @@ export function planLosersChanges(
       content: nowBye ? { kind: 'bye' } : { kind: 'tbd', position: wbNumber },
     });
   }
-  if (changes.length === 0) return { writes: [], consequences: [] };
+  if (changes.length === 0) return { writes: [], consequences: [], targetMatchIds: [] };
 
   const result = simulateSlotChanges(snapshot, changes, { labelPrefix: 'Losers ' });
   if (!result.ok) {
@@ -70,5 +72,6 @@ export function planLosersChanges(
   return {
     writes: result.writes.map((write) => ({ matchId: write.matchId, fields: write.fields })),
     consequences: result.consequences,
+    targetMatchIds: changes.map((change) => change.matchId),
   };
 }

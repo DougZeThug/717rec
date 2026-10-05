@@ -171,6 +171,70 @@ describe('assertFootprint', () => {
   });
 });
 
+describe('assertFootprint losers audit', () => {
+  /** Losers Round 1 Match 1 feeds Losers Round 2 Match 1 through its opponent1 spot. */
+  function losersFixture(
+    feeder: Pick<StorageMatch, 'opponent1' | 'opponent2'>,
+    landed: number | null
+  ) {
+    const { ctx } = fixture();
+    const losersMatches: StorageMatch[] = [
+      { id: 101, stage_id: 1, group_id: 2, round_id: 21, number: 1, status: 1, ...feeder },
+      {
+        id: 102,
+        stage_id: 1,
+        group_id: 2,
+        round_id: 22,
+        number: 1,
+        status: 1,
+        opponent1: { id: landed },
+        opponent2: { id: null },
+      },
+    ];
+    return {
+      ctx: {
+        ...ctx,
+        stage: { ...ctx.stage, type: 'double_elimination' as const },
+        groupNumberById: new Map([
+          [1, 1],
+          [2, 2],
+        ]),
+        roundNumberById: new Map([
+          [11, 1],
+          [12, 2],
+          [21, 1],
+          [22, 2],
+        ]),
+        stageMatches: [...ctx.stageMatches, ...losersMatches],
+      },
+      losers: {
+        landings: { '101': { matchId: 102, side: 'opponent1' as const }, '102': null },
+        startMatchIds: [101],
+      },
+    };
+  }
+
+  it('refuses a team left in a later spot after its earlier match went back to waiting', () => {
+    const { ctx, losers } = losersFixture({ opponent1: { id: null }, opponent2: { id: 4 } }, 4);
+    expect(() => assertFootprint(ctx, [], [], losers)).toThrow(
+      'This change would leave Losers Round 2 Match 1 out of step with the match before it.'
+    );
+  });
+
+  it('accepts a walkover team in the spot its match sends it to', () => {
+    const { ctx, losers } = losersFixture(
+      { opponent1: { id: 4, result: 'win' }, opponent2: null },
+      4
+    );
+    expect(() => assertFootprint(ctx, [], [], losers)).not.toThrow();
+  });
+
+  it('skips a match with two teams, whose winner is whoever played', () => {
+    const { ctx, losers } = losersFixture({ opponent1: { id: 3 }, opponent2: { id: 4 } }, 3);
+    expect(() => assertFootprint(ctx, [], [], losers)).not.toThrow();
+  });
+});
+
 describe('planLosersChanges', () => {
   it('refuses when no losers-bracket spot carries the match number', () => {
     const { ctx, matches } = fixture();
