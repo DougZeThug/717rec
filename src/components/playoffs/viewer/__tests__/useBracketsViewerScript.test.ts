@@ -132,8 +132,9 @@ describe('useBracketsViewerScript', () => {
   // The real loader logs a stylesheet failure and resolves anyway. The hook
   // used to call that ready and draw an unstyled bracket with no retry.
   it('reports an error when a stylesheet fails but the loader still resolves', async () => {
-    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(() => {
       windowWithViewer.bracketsViewer = fakeViewer();
+      return Promise.resolve();
     });
     mocks.areBracketStylesLoaded.mockReturnValue(false);
     const useBracketsViewerScript = await importHook();
@@ -147,8 +148,9 @@ describe('useBracketsViewerScript', () => {
   it('loads again on a remount when the script is there but the styles are not', async () => {
     windowWithViewer.bracketsViewer = fakeViewer();
     mocks.areBracketStylesLoaded.mockReturnValue(false);
-    mocks.loadBracketStyles.mockImplementation(async () => {
+    mocks.loadBracketStyles.mockImplementation(() => {
       mocks.areBracketStylesLoaded.mockReturnValue(true);
+      return Promise.resolve();
     });
     const useBracketsViewerScript = await importHook();
 

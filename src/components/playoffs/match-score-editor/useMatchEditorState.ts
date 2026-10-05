@@ -150,8 +150,8 @@ export const useMatchEditorState = ({
         opponent1Score,
         opponent2Score,
         isBye,
-        hasOpponent1: !!matchData.opponent1,
-        hasOpponent2: !!matchData.opponent2,
+        hasOpponent1: Boolean(matchData.opponent1),
+        hasOpponent2: Boolean(matchData.opponent2),
       });
 
       if (isBye) {
