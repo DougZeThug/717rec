@@ -42,9 +42,21 @@ export const usePairingOperations = (
     () => persistedState.current?.unmatchedTeamIds || []
   );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
-  const [generationDate, setGenerationDate] = useState<Date | null>(() =>
-    persistedState.current?.generationDate ? new Date(persistedState.current.generationDate) : null
-  );
+  const [generationDate, setGenerationDate] = useState<Date | null>(() => {
+    const saved = persistedState.current;
+    if (saved?.generationDate) return new Date(saved.generationDate);
+
+    // State saved before generationDate existed has pairings but no origin date,
+    // which would skip the stale-date check and let them be written onto
+    // whatever date the picker shows later. The date the page was left on is the
+    // best evidence of the day they were made for. A date that cannot be read
+    // proves nothing, so it stays null, as in the save path.
+    if (saved?.selectedDate && Object.keys(saved.generatedPairings).length > 0) {
+      const leftOn = new Date(saved.selectedDate);
+      if (!Number.isNaN(leftOn.getTime())) return leftOn;
+    }
+    return null;
+  });
 
   const {
     isGenerating,

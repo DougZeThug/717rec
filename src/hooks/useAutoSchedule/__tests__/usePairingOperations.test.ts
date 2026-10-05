@@ -714,6 +714,63 @@ describe('usePairingOperations', () => {
       );
     });
 
+    // State saved before generationDate existed has pairings but no origin date.
+    // That used to skip the check, so moving the picker and saving wrote the old
+    // pairings onto the new day.
+    describe('saved state with pairings but no generation date', () => {
+      const loadLegacyState = (selectedDate: string | null) =>
+        mockLoadAutoScheduleState.mockReturnValue({
+          selectedDate,
+          generationDate: null,
+          generatedPairings: buildPairings(),
+          unmatchedTeamIds: [],
+        });
+
+      const applyOn = (date: Date) => {
+        const { result } = renderHook(() => usePairingOperations(vi.fn()));
+        const setGeneratedMatches = vi.fn();
+        const applied = result.current.handleApplySchedule(
+          result.current.generatedPairings,
+          date,
+          false,
+          setGeneratedMatches,
+          vi.fn()
+        );
+        return { applied, setGeneratedMatches };
+      };
+
+      it('rejects as stale when the picker moved off the day the page was left on', () => {
+        loadLegacyState(new Date(2026, 3, 20, 10, 0, 0, 0).toISOString());
+
+        const { applied, setGeneratedMatches } = applyOn(new Date(2026, 3, 21, 10, 0, 0, 0));
+
+        expect(applied).toBeNull();
+        expect(setGeneratedMatches).not.toHaveBeenCalled();
+        expect(mockToast).toHaveBeenCalledWith(
+          expect.objectContaining({ title: 'Schedule Stale', variant: 'destructive' })
+        );
+      });
+
+      it('applies when the picker is still on that day', () => {
+        loadLegacyState(new Date(2026, 3, 20, 10, 0, 0, 0).toISOString());
+
+        const { applied } = applyOn(new Date(2026, 3, 20, 0, 0, 0, 0));
+
+        expect(applied).not.toBeNull();
+        expect(mockToast).not.toHaveBeenCalledWith(
+          expect.objectContaining({ title: 'Schedule Stale' })
+        );
+      });
+
+      it('applies when the saved date cannot be read, since that proves nothing', () => {
+        loadLegacyState('not a date');
+
+        const { applied } = applyOn(new Date(2026, 3, 21, 10, 0, 0, 0));
+
+        expect(applied).not.toBeNull();
+      });
+    });
+
     it('applies when generation and selected dates are identical timestamps', async () => {
       const generationDate = new Date(2026, 3, 20, 10, 30, 0, 0);
       const { result, pairings } = await setupWithGenerationDate(generationDate);
