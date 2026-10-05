@@ -65,7 +65,11 @@ const TrafficMiniChart: React.FC = () => {
         )}
         {rows.length > 0 && (
           <>
-            <div className="h-40">
+            <div
+              role="img"
+              aria-label={`Line chart of daily visitors over the last ${rows.length} days. The last 7 days had ${totals7.visitors} visitors in total.`}
+              className="h-40"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />

@@ -73,7 +73,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] Auth form has no `aria-invalid` or `aria-describedby`. Fixed for sign in, sign up and forgot password: the field is marked invalid and the message is tied to it.
 - [ ] Table rows use `role="button"`. (Backlog)
 - [ ] Win/loss shown by colour alone. (Backlog)
-- [ ] Charts have no text alternative. (Backlog)
+- [x] Charts have no text alternative. Fixed: the win/loss, power score, division strength, team career, all-teams career and traffic charts are now `role="img"` with a text summary of the data (long lists are cut with a count). The report card radar and the power score gauge ring only repeat text that is already on screen, so they are hidden from screen readers.
 - [x] Score inputs lack `inputMode="numeric"`. Fixed for the schedule score form, the match form, the playoff score editors and the seed box. The Challonge sort order is left alone on purpose: it can be negative and the phone number pad has no minus key.
 - [ ] Public "Report Score" form is free text. (Backlog)
 - [ ] Teams page sort control exists only on phones. (Backlog)

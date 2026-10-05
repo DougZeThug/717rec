@@ -13,6 +13,7 @@ import {
 
 import { useIsMobile } from '@/hooks/useMobile';
 import { PowerScoreDataItem } from '@/types/chart';
+import { describeChart } from '@/utils/charts/chartAccessibility';
 import { useChartColors } from '@/utils/charts/chartStyleUtils';
 import { formatPowerScore } from '@/utils/colors/powerScoreColors';
 
@@ -80,6 +81,11 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
 
   return (
     <div
+      role="img"
+      aria-label={describeChart(
+        'Bar chart of power scores out of 100, highest first.',
+        displayData.map((d) => `${d.name} ${formatPowerScore(d.powerScore)}`)
+      )}
       className="w-full rounded-xl overflow-hidden"
       style={{
         backgroundColor: colors.background,

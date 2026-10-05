@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 
 import { DivisionStrength } from '@/hooks/useLeagueInsights';
+import { describeChart } from '@/utils/charts/chartAccessibility';
 import { useChartColors } from '@/utils/charts/chartStyleUtils';
 
 interface DivisionStrengthChartProps {
@@ -57,31 +58,39 @@ const DivisionStrengthChart: React.FC<DivisionStrengthChartProps> = ({ divisions
       <h3 className="font-bebas text-lg tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent mb-4">
         Division Strength
       </h3>
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={divisions} layout="vertical" margin={{ left: 10, right: 20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} horizontal={false} />
-          <XAxis
-            type="number"
-            domain={[0, 100]}
-            tick={{ fill: colors.mutedTextColor, fontSize: 11 }}
-          />
-          <YAxis
-            dataKey="division"
-            type="category"
-            tick={{ fill: colors.textColor, fontSize: 12, fontWeight: 500 }}
-            width={110}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Bar dataKey="avgPowerScore" radius={[0, 4, 4, 0]} maxBarSize={32}>
-            {divisions.map((division, index) => (
-              <Cell
-                key={division.division ?? `division-cell-${index}`}
-                fill={DIVISION_COLORS[index % DIVISION_COLORS.length]}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div
+        role="img"
+        aria-label={describeChart(
+          'Bar chart of average power score by division.',
+          divisions.map((d) => `${d.division} ${d.avgPowerScore}, ${d.teamCount} teams`)
+        )}
+      >
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={divisions} layout="vertical" margin={{ left: 10, right: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} horizontal={false} />
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              tick={{ fill: colors.mutedTextColor, fontSize: 11 }}
+            />
+            <YAxis
+              dataKey="division"
+              type="category"
+              tick={{ fill: colors.textColor, fontSize: 12, fontWeight: 500 }}
+              width={110}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="avgPowerScore" radius={[0, 4, 4, 0]} maxBarSize={32}>
+              {divisions.map((division, index) => (
+                <Cell
+                  key={division.division ?? `division-cell-${index}`}
+                  fill={DIVISION_COLORS[index % DIVISION_COLORS.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

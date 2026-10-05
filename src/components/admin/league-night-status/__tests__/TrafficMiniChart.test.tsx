@@ -1,0 +1,71 @@
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import TrafficMiniChart from '../TrafficMiniChart';
+
+type Row = {
+  day: string;
+  visitors: number;
+  ios_visitors: number;
+  android_visitors: number;
+  other_visitors: number;
+};
+
+let query: { data: Row[] | undefined; isLoading: boolean; error: Error | null } = {
+  data: [],
+  isLoading: false,
+  error: null,
+};
+
+vi.mock('@/hooks/useDailyTraffic', () => ({ useDailyTraffic: () => query }));
+
+/** jsdom has no layout, so the responsive box would collapse to nothing. */
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts');
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+      <actual.ResponsiveContainer width={600} height={160}>
+        {children as React.ReactElement}
+      </actual.ResponsiveContainer>
+    ),
+  };
+});
+
+const day = (iso: string, visitors: number): Row => ({
+  day: iso,
+  visitors,
+  ios_visitors: visitors,
+  android_visitors: 0,
+  other_visitors: 0,
+});
+
+describe('TrafficMiniChart', () => {
+  beforeEach(() => {
+    query = { data: [], isLoading: false, error: null };
+  });
+
+  it('draws no chart before any visit has been recorded', () => {
+    render(<TrafficMiniChart />);
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('summarises the line for screen readers, with the last 7 days total', () => {
+    query = {
+      data: Array.from({ length: 10 }, (_, i) =>
+        day(`2026-09-${String(i + 1).padStart(2, '0')}`, 2)
+      ),
+      isLoading: false,
+      error: null,
+    };
+    render(<TrafficMiniChart />);
+
+    expect(
+      screen.getByRole('img', {
+        name: 'Line chart of daily visitors over the last 10 days. The last 7 days had 14 visitors in total.',
+      })
+    ).toBeInTheDocument();
+  });
+});

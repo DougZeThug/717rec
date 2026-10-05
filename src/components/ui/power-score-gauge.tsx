@@ -55,7 +55,13 @@ export const PowerScoreGauge: React.FC<PowerScoreGaugeProps> = ({
 
   return (
     <div className={cn('relative inline-flex items-center justify-center', className)}>
-      <svg width={config.width} height={config.width} className="transform -rotate-90">
+      {/* The ring only repeats the number printed inside it. */}
+      <svg
+        width={config.width}
+        height={config.width}
+        className="transform -rotate-90"
+        aria-hidden="true"
+      >
         {/* Background circle */}
         <circle
           cx={config.width / 2}

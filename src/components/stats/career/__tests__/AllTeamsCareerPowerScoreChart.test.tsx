@@ -125,6 +125,19 @@ describe('AllTeamsCareerPowerScoreChart', () => {
     expect(screen.getByText('Select teams above to highlight their trends')).toBeInTheDocument();
   });
 
+  it('gives the chart a text summary with the team and season counts', async () => {
+    const user = userEvent.setup();
+    renderChart();
+
+    await open(user);
+
+    expect(
+      screen.getByRole('img', {
+        name: /Line chart of career power scores across 2 seasons for 2 teams\./,
+      })
+    ).toBeInTheDocument();
+  });
+
   it('draws one line per team', async () => {
     const user = userEvent.setup();
     const { container } = renderChart();
