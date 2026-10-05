@@ -716,58 +716,46 @@ describe('usePairingOperations', () => {
 
     // State saved before generationDate existed has pairings but no origin date.
     // That used to skip the check, so moving the picker and saving wrote the old
-    // pairings onto the new day.
+    // pairings onto the new day. The saved picker date cannot stand in for the
+    // origin, because it is saved on every move.
     describe('saved state with pairings but no generation date', () => {
-      const loadLegacyState = (selectedDate: string | null) =>
+      const loadLegacyState = (generationDate: string | null) =>
         mockLoadAutoScheduleState.mockReturnValue({
-          selectedDate,
-          generationDate: null,
+          selectedDate: new Date(2026, 3, 21, 10, 0, 0, 0).toISOString(),
+          generationDate,
           generatedPairings: buildPairings(),
-          unmatchedTeamIds: [],
+          unmatchedTeamIds: ['9'],
         });
 
-      const applyOn = (date: Date) => {
+      it('drops the pairings, so there is nothing to save onto the wrong day', () => {
+        loadLegacyState(null);
+
         const { result } = renderHook(() => usePairingOperations(vi.fn()));
+
+        expect(result.current.generatedPairings).toEqual({});
+        expect(result.current.unmatchedTeamIds).toEqual([]);
+        expect(result.current.generationDate).toBeNull();
+
         const setGeneratedMatches = vi.fn();
         const applied = result.current.handleApplySchedule(
           result.current.generatedPairings,
-          date,
+          new Date(2026, 3, 21, 10, 0, 0, 0),
           false,
           setGeneratedMatches,
           vi.fn()
         );
-        return { applied, setGeneratedMatches };
-      };
-
-      it('rejects as stale when the picker moved off the day the page was left on', () => {
-        loadLegacyState(new Date(2026, 3, 20, 10, 0, 0, 0).toISOString());
-
-        const { applied, setGeneratedMatches } = applyOn(new Date(2026, 3, 21, 10, 0, 0, 0));
-
         expect(applied).toBeNull();
         expect(setGeneratedMatches).not.toHaveBeenCalled();
-        expect(mockToast).toHaveBeenCalledWith(
-          expect.objectContaining({ title: 'Schedule Stale', variant: 'destructive' })
-        );
       });
 
-      it('applies when the picker is still on that day', () => {
+      it('keeps pairings that carry their generation date', () => {
         loadLegacyState(new Date(2026, 3, 20, 10, 0, 0, 0).toISOString());
 
-        const { applied } = applyOn(new Date(2026, 3, 20, 0, 0, 0, 0));
+        const { result } = renderHook(() => usePairingOperations(vi.fn()));
 
-        expect(applied).not.toBeNull();
-        expect(mockToast).not.toHaveBeenCalledWith(
-          expect.objectContaining({ title: 'Schedule Stale' })
-        );
-      });
-
-      it('applies when the saved date cannot be read, since that proves nothing', () => {
-        loadLegacyState('not a date');
-
-        const { applied } = applyOn(new Date(2026, 3, 21, 10, 0, 0, 0));
-
-        expect(applied).not.toBeNull();
+        expect(result.current.generatedPairings).toEqual(buildPairings());
+        expect(result.current.unmatchedTeamIds).toEqual(['9']);
+        expect(result.current.generationDate).toEqual(new Date(2026, 3, 20, 10, 0, 0, 0));
       });
     });
 

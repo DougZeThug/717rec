@@ -35,28 +35,28 @@ export const usePairingOperations = (
   // Load persisted state on mount
   const persistedState = useLazyRef(() => loadAutoScheduleState());
 
-  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(
-    () => persistedState.current?.generatedPairings || {}
+  // State saved before generationDate existed has pairings but no origin date.
+  // Without one the stale-date check is skipped, and the pairings could be saved
+  // onto whatever day the picker shows. The saved picker date is no help: it is
+  // saved on every move, so it can differ from the day the pairings were made
+  // for. The origin is unknown, so those pairings are dropped and the admin
+  // regenerates.
+  const savedPairings = persistedState.current?.generatedPairings;
+  const hasUnknownOrigin =
+    !persistedState.current?.generationDate &&
+    savedPairings !== undefined &&
+    Object.keys(savedPairings).length > 0;
+
+  const [generatedPairings, setGeneratedPairings] = useState<TeamPairingMap>(() =>
+    hasUnknownOrigin ? {} : savedPairings || {}
   );
-  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(
-    () => persistedState.current?.unmatchedTeamIds || []
+  const [unmatchedTeamIds, setUnmatchedTeamIds] = useState<string[]>(() =>
+    hasUnknownOrigin ? [] : persistedState.current?.unmatchedTeamIds || []
   );
   const [qualityMetrics, setQualityMetrics] = useState<MatchQualityMetrics | null>(null);
-  const [generationDate, setGenerationDate] = useState<Date | null>(() => {
-    const saved = persistedState.current;
-    if (saved?.generationDate) return new Date(saved.generationDate);
-
-    // State saved before generationDate existed has pairings but no origin date,
-    // which would skip the stale-date check and let them be written onto
-    // whatever date the picker shows later. The date the page was left on is the
-    // best evidence of the day they were made for. A date that cannot be read
-    // proves nothing, so it stays null, as in the save path.
-    if (saved?.selectedDate && Object.keys(saved.generatedPairings).length > 0) {
-      const leftOn = new Date(saved.selectedDate);
-      if (!Number.isNaN(leftOn.getTime())) return leftOn;
-    }
-    return null;
-  });
+  const [generationDate, setGenerationDate] = useState<Date | null>(() =>
+    persistedState.current?.generationDate ? new Date(persistedState.current.generationDate) : null
+  );
 
   const {
     isGenerating,
