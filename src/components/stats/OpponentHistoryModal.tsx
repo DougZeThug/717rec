@@ -3,7 +3,13 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { LoadingState } from '@/components/ui/loading-state';
 import { useOpponentHistory } from '@/hooks/useHeadToHead';
 import { formatWithPattern } from '@/utils/formatDateSafe';
@@ -34,6 +40,9 @@ export const OpponentHistoryModal: React.FC<OpponentHistoryModalProps> = ({
       <DialogContent className="max-w-4xl max-h-[80vh] supports-[height:80dvh]:max-h-[80dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Head-to-Head vs {opponentName}</DialogTitle>
+          <DialogDescription className="sr-only">
+            Every match this team has played against {opponentName}.
+          </DialogDescription>
         </DialogHeader>
 
         {/* Summary Stats */}

@@ -127,7 +127,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, onDelete, onEdit }) 
         isAuthor ? gradients.card.highlight : gradients.card.default,
         isAuthor ? 'hover:shadow-md' : '',
         isAnnouncement ? 'border-blue-300 dark:border-blue-800' : '',
-        isAuthor ? 'focus:outline-hidden focus:ring-2 focus:ring-primary' : '',
+        isAuthor
+          ? 'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary'
+          : '',
         animations.fadeIn
       )}
       {...longPressHandlers}

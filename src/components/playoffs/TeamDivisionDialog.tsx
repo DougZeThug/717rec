@@ -86,7 +86,10 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                               value={team.divisionName || 'Unassigned'}
                               onValueChange={(value) => onTeamDivisionChange(team.id, value)}
                             >
-                              <SelectTrigger className="w-[140px]">
+                              <SelectTrigger
+                                className="w-[140px]"
+                                aria-label={`Division for ${team.name}`}
+                              >
                                 <SelectValue placeholder="Division..." />
                               </SelectTrigger>
                               <SelectContent>
@@ -138,7 +141,10 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                               value={team.divisionName || 'Unassigned'}
                               onValueChange={(value) => onTeamDivisionChange(team.id, value)}
                             >
-                              <SelectTrigger className="w-[140px]">
+                              <SelectTrigger
+                                className="w-[140px]"
+                                aria-label={`Division for ${team.name}`}
+                              >
                                 <SelectValue placeholder="Division..." />
                               </SelectTrigger>
                               <SelectContent>

@@ -3,6 +3,7 @@ import React from 'react';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
+  ResponsiveDialogDescription,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
@@ -40,6 +41,11 @@ const MatchFormDialog: React.FC<MatchFormDialogProps> = ({
       <ResponsiveDialogContent className="sm:max-w-[550px]">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>{match ? 'Edit Match' : 'Create New Match'}</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription className="sr-only">
+            {match
+              ? 'Change the teams, time or score of this match.'
+              : 'Pick two teams and a time slot.'}
+          </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
         {isLoadingTeams ? (
           <div className="space-y-4 p-4">

@@ -38,6 +38,16 @@ describe('DivisionStrengthChart', () => {
     expect(screen.queryByText('Division Strength')).not.toBeInTheDocument();
   });
 
+  it('gives the chart a text summary for screen readers', () => {
+    render(<DivisionStrengthChart divisions={divisionsFixture} />);
+
+    expect(
+      screen.getByRole('img', {
+        name: 'Bar chart of average power score by division. Competitive 82, 8 teams; Intermediate 71, 10 teams.',
+      })
+    ).toBeInTheDocument();
+  });
+
   it('renders the heading and the chart container when populated', () => {
     const { container } = render(<DivisionStrengthChart divisions={divisionsFixture} />);
 

@@ -54,9 +54,15 @@ const AuthForm: React.FC<AuthFormProps> = ({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isSubmitting}
+          aria-invalid={emailError ? true : undefined}
+          aria-describedby={emailError ? 'email-error' : undefined}
           className={emailError ? 'border-red-500' : ''}
         />
-        {emailError && <p className="text-sm text-destructive-text">{emailError}</p>}
+        {emailError && (
+          <p id="email-error" className="text-sm text-destructive-text">
+            {emailError}
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
@@ -78,9 +84,15 @@ const AuthForm: React.FC<AuthFormProps> = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           disabled={isSubmitting}
+          aria-invalid={passwordError ? true : undefined}
+          aria-describedby={passwordError ? 'password-error' : undefined}
           className={passwordError ? 'border-red-500' : ''}
         />
-        {passwordError && <p className="text-sm text-destructive-text">{passwordError}</p>}
+        {passwordError && (
+          <p id="password-error" className="text-sm text-destructive-text">
+            {passwordError}
+          </p>
+        )}
       </div>
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? (

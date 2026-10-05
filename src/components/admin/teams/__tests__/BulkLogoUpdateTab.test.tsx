@@ -48,6 +48,12 @@ describe('BulkLogoUpdateTab', () => {
    * `isLoading`-only guard fell through to an empty list under four zeroed
    * counts — which reads as "every logo is already sorted".
    */
+  it('names the search box, since a placeholder is not a name', () => {
+    render(<BulkLogoUpdateTab />);
+
+    expect(screen.getByRole('textbox', { name: 'Search teams' })).toBeInTheDocument();
+  });
+
   it('says so when the teams cannot be loaded, and offers a retry', async () => {
     const refetch = vi.fn();
     mockUseTeamsQuery.mockReturnValue({

@@ -16,8 +16,8 @@ import { useDailyTraffic } from '@/hooks/useDailyTraffic';
 const DAYS = 30;
 
 const fmtDay = (iso: string): string => {
-  const d = new Date(`${iso}T12:00:00Z`);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const date = new Date(`${iso}T12:00:00Z`);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
 const TrafficMiniChart: React.FC = () => {
@@ -65,7 +65,11 @@ const TrafficMiniChart: React.FC = () => {
         )}
         {rows.length > 0 && (
           <>
-            <div className="h-40">
+            <div
+              role="img"
+              aria-label={`Line chart of daily visitors from ${fmtDay(rows[0].day)} to ${fmtDay(rows[rows.length - 1].day)}. The ${last7.length} most recent days with visits had ${totals7.visitors} visitors in total.`}
+              className="h-40"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -82,6 +83,9 @@ const ReportCardLeaderboard: React.FC<ReportCardLeaderboardProps> = ({ teamId, i
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">GPA Leaderboard</DialogTitle>
+          <DialogDescription className="sr-only">
+            Teams ranked by report card GPA.
+          </DialogDescription>
         </DialogHeader>
 
         <ToggleGroup

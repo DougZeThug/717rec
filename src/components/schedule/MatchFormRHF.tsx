@@ -247,6 +247,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min="0"
                       value={field.value === undefined ? '' : field.value}
                       onChange={(e) => {
@@ -277,6 +278,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       min="0"
                       value={field.value === undefined ? '' : field.value}
                       onChange={(e) => {

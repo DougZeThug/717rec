@@ -93,9 +93,15 @@ const ForgotPassword: React.FC = () => {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 disabled={isSubmitting}
+                aria-invalid={emailError ? true : undefined}
+                aria-describedby={emailError ? 'reset-email-error' : undefined}
                 className={emailError ? 'border-red-500' : ''}
               />
-              {emailError && <p className="text-sm text-destructive-text">{emailError}</p>}
+              {emailError && (
+                <p id="reset-email-error" className="text-sm text-destructive-text">
+                  {emailError}
+                </p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? (

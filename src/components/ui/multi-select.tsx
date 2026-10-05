@@ -77,7 +77,7 @@ export function MultiSelect({
       </PopoverTrigger>
       <PopoverContent id={listboxId} className="w-full p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search teams..." />
+          <CommandInput placeholder="Search teams..." aria-label="Search teams" />
           <CommandList>
             <CommandEmpty>No teams found.</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">

@@ -17,6 +17,7 @@ import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useTeamCareerPowerScore } from '@/hooks/useTeamCareerPowerScore';
 import { SeasonPowerScoreData } from '@/types/teamCareerPowerScore';
+import { describeChart } from '@/utils/charts/chartAccessibility';
 import { getDivisionHexColor } from '@/utils/colors/divisionHexColors';
 
 interface TeamCareerPowerScoreChartProps {
@@ -139,47 +140,57 @@ const TeamCareerPowerScoreChart = ({
 
   const chartContent = (
     <>
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <LineChart
-          data={seasonData}
-          margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
-        >
-          <CartesianGrid
-            strokeDasharray="3 3"
-            stroke={isDark ? '#374151' : '#e5e7eb'}
-            opacity={0.5}
-          />
-          <XAxis
-            dataKey="seasonName"
-            angle={isMobile ? -45 : 0}
-            textAnchor={isMobile ? 'end' : 'middle'}
-            height={isMobile ? 80 : 30}
-            tick={{ fontSize: 11, fill: 'currentColor' }}
-            stroke="currentColor"
-          />
-          <YAxis
-            domain={[0, 100]}
-            label={{
-              value: 'Power Score',
-              angle: -90,
-              position: 'insideLeft',
-              style: { fontSize: 12, fill: 'currentColor' },
-            }}
-            tick={{ fontSize: 11, fill: 'currentColor' }}
-            stroke="currentColor"
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Line
-            type="monotone"
-            dataKey="powerScore"
-            stroke="#8b5cf6"
-            strokeWidth={2}
-            connectNulls={false}
-            dot={<CustomDot />}
-            label={<CustomLabel />}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <div
+        role="img"
+        aria-label={describeChart(
+          "Line chart of this team's power score by season.",
+          seasonData.map(
+            (s) => `${s.seasonName} ${s.powerScore === null ? 'no score' : s.powerScore.toFixed(1)}`
+          )
+        )}
+      >
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <LineChart
+            data={seasonData}
+            margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={isDark ? '#374151' : '#e5e7eb'}
+              opacity={0.5}
+            />
+            <XAxis
+              dataKey="seasonName"
+              angle={isMobile ? -45 : 0}
+              textAnchor={isMobile ? 'end' : 'middle'}
+              height={isMobile ? 80 : 30}
+              tick={{ fontSize: 11, fill: 'currentColor' }}
+              stroke="currentColor"
+            />
+            <YAxis
+              domain={[0, 100]}
+              label={{
+                value: 'Power Score',
+                angle: -90,
+                position: 'insideLeft',
+                style: { fontSize: 12, fill: 'currentColor' },
+              }}
+              tick={{ fontSize: 11, fill: 'currentColor' }}
+              stroke="currentColor"
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Line
+              type="monotone"
+              dataKey="powerScore"
+              stroke="#8b5cf6"
+              strokeWidth={2}
+              connectNulls={false}
+              dot={<CustomDot />}
+              label={<CustomLabel />}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Division legend */}
       <div className="flex flex-wrap gap-4 mt-4 text-xs text-muted-foreground">

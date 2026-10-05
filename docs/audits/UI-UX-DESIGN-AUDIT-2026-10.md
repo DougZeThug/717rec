@@ -69,21 +69,21 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 - [x] Non-admin gets a short toast and a redirect. Return path drops search and hash. (Step 4)
 - [x] Hamburger menu has no active-page marker. `/teams/:id` does not light Teams. (Step 3)
 - [x] `vh` units instead of `dvh`. Fixed widths that can clip at 375px. (Step 2)
-- [ ] Placeholder-only inputs. (Backlog)
-- [ ] Auth form has no `aria-invalid` or `aria-describedby`. (Backlog)
-- [ ] Table rows use `role="button"`. (Backlog)
+- [x] Placeholder-only inputs. Fixed: the blind draw sign-up, quick notification post, both team searches, the team search inside the multi-select, the Challonge bracket fields (labels now linked), and the team, category, team-to-join and per-team division pickers now have a name. The blind draw errors are linked to their fields too. The bracket seed box already had one.
+- [x] Auth form has no `aria-invalid` or `aria-describedby`. Fixed for sign in, sign up and forgot password: the field is marked invalid and the message is tied to it.
+- [x] Table rows use `role="button"`. Fixed: the stats standings table row is no longer a button; the team name is a real button (the row keeps its mouse click). The timeslot team picker uses real `<button aria-pressed>`. The flyer upload zone keeps its role but Space no longer scrolls the page and it ignores keys while uploading. The message card and `app-card` were left as they are.
 - [ ] Win/loss shown by colour alone. (Backlog)
-- [ ] Charts have no text alternative. (Backlog)
-- [ ] Score inputs lack `inputMode="numeric"`. (Backlog)
+- [x] Charts have no text alternative. Fixed: the win/loss, power score, division strength, team career and traffic charts are now `role="img"` with a text summary of the data (long lists are cut with a count). The all-teams career chart is a labelled `group` (its tooltip holds team links) and its label lists every team's score in the latest season; the full season-by-season data stays in the tooltip and on each team page. The report card radar and the power score gauge ring only repeat text that is already on screen, so they are hidden from screen readers.
+- [x] Score inputs lack `inputMode="numeric"`. Fixed for the schedule score form, the match form, the playoff score editors and the seed box. The Challonge sort order is left alone on purpose: it can be negative and the phone number pad has no minus key.
 - [ ] Public "Report Score" form is free text. (Backlog)
 - [ ] Teams page sort control exists only on phones. (Backlog)
 - [ ] Admin menu order and labels differ between desktop and phone. (Backlog)
 
 ## Low
 
-- [ ] Nine dialogs lack `DialogDescription`. (Backlog)
+- [x] Nine dialogs lack `DialogDescription`. Fixed: each now has a screen-reader-only description (the screen looks the same). The match editor's loading and error dialogs got a title and description too.
 - [ ] Logo `alt` repeats the adjacent team name. (Step 11)
-- [ ] `focus:` rings instead of `focus-visible:`. (Backlog)
+- [x] `focus:` rings instead of `focus-visible:`. Fixed for buttons, triggers and badges: the badge, select trigger, dialog close, toast buttons, season accordion, date strip and the author's message card. Text inputs, the skip link and the main region keep `focus:` on purpose.
 - [x] Auth wording: Login / Sign In / Sign Up mixed. Fixed in Step 8: Sign in / Sign up / Sign out everywhere.
 - [x] Misleading copy ("An administrator has been notified"). (Step 4)
 - [x] Stale examples ("Spring 2025"). Fixed in Step 8.

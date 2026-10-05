@@ -2,6 +2,7 @@ import React from 'react';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
+import { describeChart } from '@/utils/charts/chartAccessibility';
 import { chartLog } from '@/utils/logger';
 
 import ChartEmptyState from './ChartEmptyState';
@@ -90,6 +91,11 @@ const WinLossBarChart: React.FC<BarChartProps> = ({ data, isMobile }) => {
 
   return (
     <div
+      role="img"
+      aria-label={describeChart(
+        'Bar chart of wins and losses by team.',
+        data.map((d) => `${d.tooltipName ?? d.displayName} ${d.wins} wins, ${d.losses} losses`)
+      )}
       className="w-full h-[220px] rounded-xl overflow-hidden"
       style={{ backgroundColor: chartBgColor }}
     >

@@ -80,7 +80,7 @@ describe('TimeslotAssignment', () => {
   it('batch-assigns the selected team and timeslot in single mode', () => {
     const { onBatchAssign } = renderForm();
 
-    // Pick a team card (rendered as a role="button" div).
+    // Pick a team card (a real <button> with aria-pressed).
     fireEvent.click(screen.getByRole('button', { name: /Team Alpha/ }));
     expect(screen.getByText('1 team selected')).toBeInTheDocument();
 

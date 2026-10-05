@@ -2,7 +2,12 @@ import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -54,6 +59,9 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
         <DialogTitle>Edit Match Score</DialogTitle>
+        <DialogDescription className="sr-only">
+          Enter the score for each team, then save.
+        </DialogDescription>
       </DialogHeader>
 
       <MatchStatusBadge status={status} />
@@ -65,6 +73,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
           <Input
             id="team1-score"
             type="number"
+            inputMode="numeric"
             min="0"
             value={opponent1Score}
             onChange={(e) => setOpponent1Score(Math.max(0, parseInt(e.target.value) || 0))}
@@ -78,6 +87,7 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
           <Input
             id="team2-score"
             type="number"
+            inputMode="numeric"
             min="0"
             value={opponent2Score}
             onChange={(e) => setOpponent2Score(Math.max(0, parseInt(e.target.value) || 0))}

@@ -8,15 +8,19 @@ import AuthForm from '../AuthForm';
 
 type AuthFormProps = React.ComponentProps<typeof AuthForm>;
 
-const renderForm = (type: 'login' | 'signup', onSubmit: AuthFormProps['onSubmit'] = vi.fn()) =>
+const renderForm = (
+  type: 'login' | 'signup',
+  onSubmit: AuthFormProps['onSubmit'] = vi.fn(),
+  errors: Partial<Pick<AuthFormProps, 'emailError' | 'passwordError'>> = {}
+) =>
   render(
     <MemoryRouter>
       <AuthForm
         type={type}
         onSubmit={onSubmit}
         isSubmitting={false}
-        emailError={null}
-        passwordError={null}
+        emailError={errors.emailError ?? null}
+        passwordError={errors.passwordError ?? null}
         authError={null}
       />
     </MemoryRouter>
@@ -66,5 +70,37 @@ describe('AuthForm invalid email', () => {
     await user.click(screen.getByRole('button', { name: 'Create account' }));
 
     expect(onSubmit).toHaveBeenCalledWith('sam', 'sixchr');
+  });
+});
+
+// UX audit (UI/UX 2026-10, item "Auth form has no aria-invalid"): the red border
+// and the message under a field are for the eye. A screen reader needs the field
+// marked invalid and the message tied to it.
+describe('AuthForm field errors for screen readers', () => {
+  it('marks the email field invalid and reads its message', () => {
+    renderForm('login', vi.fn(), { emailError: 'Please enter a valid email address' });
+
+    const email = screen.getByLabelText('Email');
+    expect(email).toHaveAttribute('aria-invalid', 'true');
+    expect(email).toHaveAccessibleDescription('Please enter a valid email address');
+    expect(screen.getByLabelText('Password')).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('marks the password field invalid and reads its message', () => {
+    renderForm('signup', vi.fn(), { passwordError: 'Password must be at least 6 characters' });
+
+    const password = screen.getByLabelText('Password');
+    expect(password).toHaveAttribute('aria-invalid', 'true');
+    expect(password).toHaveAccessibleDescription('Password must be at least 6 characters');
+    expect(screen.getByLabelText('Email')).not.toHaveAttribute('aria-invalid');
+  });
+
+  it('adds no aria attributes while there is no error', () => {
+    renderForm('login');
+
+    for (const field of [screen.getByLabelText('Email'), screen.getByLabelText('Password')]) {
+      expect(field).not.toHaveAttribute('aria-invalid');
+      expect(field).not.toHaveAttribute('aria-describedby');
+    }
   });
 });

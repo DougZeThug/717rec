@@ -68,6 +68,18 @@ describe('WinLossBarChart', () => {
     });
   });
 
+  describe('for screen readers', () => {
+    it('is one picture with a text summary of every team record', () => {
+      render(<WinLossBarChart data={rows} isMobile={false} />);
+
+      expect(
+        screen.getByRole('img', {
+          name: 'Bar chart of wins and losses by team. Tigers 5 wins, 2 losses; Lions 3 wins, 4 losses.',
+        })
+      ).toBeInTheDocument();
+    });
+  });
+
   describe('the surface it draws on', () => {
     it('uses a white ground on a light page', () => {
       const { container } = render(<WinLossBarChart data={rows} isMobile={false} />);

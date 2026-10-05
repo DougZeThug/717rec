@@ -41,6 +41,12 @@ describe('TeamMembershipSection', () => {
     mockUseTeamMembership.mockReturnValue({ ...baseState });
   });
 
+  it('names the team picker, since its placeholder is not a name', () => {
+    render(<TeamMembershipSection />);
+
+    expect(screen.getByRole('combobox', { name: 'Team to join' })).toBeInTheDocument();
+  });
+
   it('shows a pending request as waiting for approval', () => {
     mockUseTeamMembership.mockReturnValue({ ...baseState, membership: membership() });
     render(<TeamMembershipSection />);

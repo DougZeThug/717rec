@@ -22,6 +22,7 @@ import { useIsDarkSurface } from '@/hooks/useIsDarkSurface';
 import { useIsMobile } from '@/hooks/useMobile';
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
+import { describeChart } from '@/utils/charts/chartAccessibility';
 import { getTeamColor } from '@/utils/colors/teamColors';
 import { toTeamSlug } from '@/utils/teamSlug';
 
@@ -59,6 +60,27 @@ const transformDataForChart = (teamsData?: TeamCareerData[]) => {
 
       return dataPoint;
     });
+};
+
+/** Text for screen readers: the counts, plus every team's score in the latest season. */
+const describeCareerChart = (
+  chartData: ReturnType<typeof transformDataForChart>,
+  teamsData?: TeamCareerData[]
+): string => {
+  const teams = teamsData ?? [];
+  const intro = `Line chart of career power scores across ${chartData.length} seasons for ${teams.length} teams.`;
+  const latest = chartData[chartData.length - 1];
+  if (!latest) return intro;
+
+  const scores = teams
+    .map((team) => ({ name: team.teamName, value: latest[`team_${team.teamId}`] }))
+    .filter((entry): entry is { name: string; value: number } => typeof entry.value === 'number')
+    .sort((a, b) => b.value - a.value);
+
+  return describeChart(
+    `${intro} Scores in the latest season, ${latest.seasonName}, highest first:`,
+    scores.map((entry) => `${entry.name} ${entry.value.toFixed(1)}`)
+  );
 };
 
 interface CustomTooltipProps {
@@ -235,48 +257,54 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
               </p>
             )}
 
-            <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
-              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis
-                  dataKey="seasonName"
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                  tick={{ fontSize: 11 }}
-                />
-                <YAxis
-                  domain={[0, 100]}
-                  label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip
-                  content={
-                    <CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />
-                  }
-                  wrapperStyle={{ pointerEvents: 'auto' }}
-                />
+            <div
+              // A group, not an img: an img hides the team links in the tooltip.
+              role="group"
+              aria-label={describeCareerChart(chartData, teamsData)}
+            >
+              <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis
+                    dataKey="seasonName"
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip
+                    content={
+                      <CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />
+                    }
+                    wrapperStyle={{ pointerEvents: 'auto' }}
+                  />
 
-                {teamsData?.map((team) => {
-                  const isSelected = selectedTeamIds.includes(team.teamId);
-                  const color = isSelected ? getTeamColor(team.teamId, isDark) : '#9ca3af';
+                  {teamsData?.map((team) => {
+                    const isSelected = selectedTeamIds.includes(team.teamId);
+                    const color = isSelected ? getTeamColor(team.teamId, isDark) : '#9ca3af';
 
-                  return (
-                    <Line
-                      key={team.teamId}
-                      type="monotone"
-                      dataKey={`team_${team.teamId}`}
-                      stroke={color}
-                      strokeWidth={isSelected ? 3 : 1}
-                      opacity={isSelected ? 1 : 0.2}
-                      dot={false}
-                      connectNulls={false}
-                      name={team.teamName}
-                      isAnimationActive={false}
-                    />
-                  );
-                })}
-              </LineChart>
-            </ResponsiveContainer>
+                    return (
+                      <Line
+                        key={team.teamId}
+                        type="monotone"
+                        dataKey={`team_${team.teamId}`}
+                        stroke={color}
+                        strokeWidth={isSelected ? 3 : 1}
+                        opacity={isSelected ? 1 : 0.2}
+                        dot={false}
+                        connectNulls={false}
+                        name={team.teamName}
+                        isAnimationActive={false}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
 
             {selectedTeamIds.length > 0 && (
               <SelectedTeamsLegend

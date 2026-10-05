@@ -237,24 +237,33 @@ const ChallongeFallbackSection: React.FC = () => {
                 className="grid gap-2 rounded-md border p-3 sm:grid-cols-[1fr_1fr_90px_auto_auto] sm:items-end"
               >
                 <div className="space-y-1">
-                  <Label className="text-xs">Title</Label>
+                  <Label htmlFor={`challonge-title-${row.id}`} className="text-xs">
+                    Title
+                  </Label>
                   <Input
+                    id={`challonge-title-${row.id}`}
                     value={row.title}
                     onChange={(e) => handleRowChange(row.id, { title: e.target.value })}
                     placeholder="Competitive"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Challonge slug</Label>
+                  <Label htmlFor={`challonge-slug-${row.id}`} className="text-xs">
+                    Challonge slug
+                  </Label>
                   <Input
+                    id={`challonge-slug-${row.id}`}
                     value={row.slug}
                     onChange={(e) => handleRowChange(row.id, { slug: e.target.value })}
                     placeholder="5hy558bb"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Order</Label>
+                  <Label htmlFor={`challonge-order-${row.id}`} className="text-xs">
+                    Order
+                  </Label>
                   <Input
+                    id={`challonge-order-${row.id}`}
                     type="number"
                     value={row.sort_order}
                     onChange={(e) =>

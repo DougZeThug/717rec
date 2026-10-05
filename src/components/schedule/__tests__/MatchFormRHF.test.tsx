@@ -201,6 +201,17 @@ describe('MatchFormRHF (edit mode)', () => {
     });
   });
 
+  it('asks phones for the number pad on the score inputs', async () => {
+    render(<MatchFormRHF match={upcoming} teams={teams} onSubmit={vi.fn()} onCancel={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('switch'));
+
+    await waitFor(() => expect(screen.getAllByRole('spinbutton')).toHaveLength(2));
+    for (const input of screen.getAllByRole('spinbutton')) {
+      expect(input).toHaveAttribute('inputmode', 'numeric');
+    }
+  });
+
   it('shows the score inputs only once the match is marked completed', async () => {
     render(<MatchFormRHF match={upcoming} teams={teams} onSubmit={vi.fn()} onCancel={vi.fn()} />);
 

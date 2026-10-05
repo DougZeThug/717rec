@@ -113,24 +113,28 @@ const ReportCardRadar: React.FC<{
     { category: 'Games', value: grades.games.percentile },
   ].filter((point) => point.value !== null);
 
+  // The six grade cards below list every grade as text, so the radar only
+  // repeats them for the eye and is hidden from screen readers.
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">
-        <PolarGrid stroke={colors.gridColor} />
-        <PolarAngleAxis
-          dataKey="category"
-          tick={{ fill: colors.textColor, fontSize: 11, fontWeight: 500 }}
-        />
-        <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} axisLine={false} />
-        <Radar
-          dataKey="value"
-          stroke={overallColor}
-          fill={overallColor}
-          fillOpacity={0.2}
-          strokeWidth={2}
-        />
-      </RadarChart>
-    </ResponsiveContainer>
+    <div aria-hidden="true">
+      <ResponsiveContainer width="100%" height={260}>
+        <RadarChart data={data} cx="50%" cy="50%" outerRadius="75%">
+          <PolarGrid stroke={colors.gridColor} />
+          <PolarAngleAxis
+            dataKey="category"
+            tick={{ fill: colors.textColor, fontSize: 11, fontWeight: 500 }}
+          />
+          <PolarRadiusAxis angle={90} domain={[0, 100]} tick={false} axisLine={false} />
+          <Radar
+            dataKey="value"
+            stroke={overallColor}
+            fill={overallColor}
+            fillOpacity={0.2}
+            strokeWidth={2}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 

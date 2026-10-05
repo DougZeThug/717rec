@@ -67,6 +67,23 @@ describe('TeamCareerPowerScoreChart', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('gives the chart a text summary, saying so when a season has no score', () => {
+    query = {
+      data: [
+        season({ seasonName: 'Summer 1 2026', powerScore: 72.25 }),
+        season({ seasonName: 'Fall 2026', powerScore: null }),
+      ],
+      isLoading: false,
+    };
+    render(<TeamCareerPowerScoreChart teamId="t1" standalone />);
+
+    expect(
+      screen.getByRole('img', {
+        name: "Line chart of this team's power score by season. Summer 1 2026 72.3; Fall 2026 no score.",
+      })
+    ).toBeInTheDocument();
+  });
+
   it('names the three divisions in its key', () => {
     render(<TeamCareerPowerScoreChart teamId="t1" standalone />);
 

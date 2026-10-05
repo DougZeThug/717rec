@@ -155,16 +155,6 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
     [navigate]
   );
 
-  const handleRowKeyDown = useCallback(
-    (e: React.KeyboardEvent, teamName: string) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        handleTeamClick(teamName);
-      }
-    },
-    [handleTeamClick]
-  );
-
   const renderMobileRow = useCallback(
     (team: Ranking, index: number, style: CSSProperties) => (
       <div key={team.teamId} style={style} className="pb-2">
@@ -243,9 +233,6 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
           {rankings.map((team, index) => (
             <TableRow
               key={team.teamId}
-              role="button"
-              tabIndex={0}
-              aria-label={`View ${team.teamName} team details`}
               className={cn(
                 getRowInteractionStyles('cursor-pointer font-inter'),
                 isLight && index % 2 === 0 ? 'bg-white' : '',
@@ -255,11 +242,11 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                 index === 0 ? 'border-l-4 border-amber-400 dark:border-amber-600' : '',
                 index === 1 ? 'border-l-4 border-blue-400 dark:border-blue-600' : '',
                 index === 2 ? 'border-l-4 border-orange-400 dark:border-orange-600' : '',
-                'hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5',
-                'focus:outline-hidden focus:ring-4 focus:ring-primary focus:ring-offset-2'
+                'hover:bg-gradient-to-r hover:from-blue-50/40 hover:to-orange-50/20 dark:hover:from-blue-900/10 dark:hover:to-orange-900/5'
               )}
+              // Mouse shortcut only. The team name below is the real button for
+              // keyboards and screen readers (as RankingTableRow does).
               onClick={() => handleTeamClick(team.teamName)}
-              onKeyDown={(e) => handleRowKeyDown(e, team.teamName)}
             >
               <TableCell className={cn(getRankStyles(index, isLight), 'font-mono text-lg')}>
                 <div className="size-8 flex items-center justify-center rounded-full">
@@ -277,14 +264,20 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
                       />
                     </div>
                   )}
-                  <span
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTeamClick(team.teamName);
+                    }}
                     className={cn(
-                      'font-bebas tracking-wide uppercase text-base text-foreground truncate',
+                      'font-bebas tracking-wide uppercase text-base text-foreground truncate text-left rounded-xs',
+                      'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
                       index < 3 && 'text-lg'
                     )}
                   >
                     {team.teamName}
-                  </span>
+                  </button>
                 </div>
               </TableCell>
               <TableCell className="text-center font-mono text-foreground">

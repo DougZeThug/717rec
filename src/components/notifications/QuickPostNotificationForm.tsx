@@ -40,12 +40,14 @@ const QuickPostNotificationForm: React.FC = () => {
       </p>
       <Input
         placeholder="Title"
+        aria-label="Notification title"
         maxLength={120}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
       />
       <Textarea
         placeholder="Message"
+        aria-label="Notification message"
         maxLength={1000}
         rows={3}
         value={body}

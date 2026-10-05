@@ -112,7 +112,15 @@ export const DesignAppearanceSection: React.FC<FormSectionProps> = ({ formData, 
             onDragLeave={handleDragLeave}
             onClick={() => !isUploading && fileInputRef.current?.click()}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click();
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              // Space would otherwise scroll the page. Like a real button, Enter
+              // acts on press and Space on release (see onKeyUp). Match the
+              // click: do nothing while an upload is running.
+              e.preventDefault();
+              if (e.key === 'Enter' && !isUploading) fileInputRef.current?.click();
+            }}
+            onKeyUp={(e) => {
+              if (e.key === ' ' && !isUploading) fileInputRef.current?.click();
             }}
             className={`cursor-pointer rounded-lg border-2 border-dashed p-4 transition-colors ${
               isDragging
