@@ -688,6 +688,26 @@ describe('simulateSlotChanges', () => {
       expect(fieldsFor(again, 501)).toEqual({ opponent2_id: null });
     });
 
+    it("keeps the library's advance notation on a landing that is already right", () => {
+      const snapshot = tenTeamSnapshot();
+      // Round 2 Match 2 as the library writes a walkover it can see coming: a
+      // waiting spot with a pre-recorded win, facing the BYE the cascade sends.
+      const landing = snapshot.matches.find((m) => m.id === 402);
+      if (!landing) throw new Error('fixture: match 402 missing');
+      landing.status = 1;
+      landing.opponent1 = { ...tbdSlot(), position: 10, feederMarker: 10, result: 'win' };
+
+      const result = simulateSlotChanges(snapshot, [
+        { matchId: 302, side: 'opponent1', content: { kind: 'bye' } },
+      ]);
+
+      expect(result.problems).toEqual([]);
+      // 402 already holds the BYE, so it is left as it is — the pre-recorded
+      // win stays — while the deeper match still gets what it was owed.
+      expect(result.writes.map((write) => write.matchId)).toEqual([501]);
+      expect(fieldsFor(result, 501)).toEqual({ opponent2_id: null });
+    });
+
     it('writes nothing once the whole cascade was saved', () => {
       const original = tenTeamSnapshot();
       const done = snapshotAfter(original, simulateSlotChanges(original, [reopenPlaceholder]));

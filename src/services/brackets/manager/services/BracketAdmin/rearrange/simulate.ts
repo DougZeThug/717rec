@@ -413,11 +413,12 @@ function carryProductToLanding(sim: Simulation, match: SnapshotMatch, state: Wor
   ) {
     // The landing already holds this result — an earlier save wrote it. The
     // matches after it may not have been written yet, so a forced cascade
-    // recomputes the landing and carries on from it. Recomputing a match that
-    // is already right changes nothing, so no write comes of it; a match that
+    // carries on from it. The landing itself is not recomputed: it is already
+    // right, and a recompute would strip the library's advance notation from
+    // it. What it sends on follows from its slots as they stand. A match that
     // can't absorb a change is left alone, as before.
     if (sim.forceCascade && (landingState.original.editable || !landingBlockReason(landingState))) {
-      landingState.dirty = true;
+      carryProductToLanding(sim, landingState.original, landingState);
     }
     return;
   }
