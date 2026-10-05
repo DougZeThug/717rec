@@ -132,16 +132,16 @@ describe('ProfileSetup', () => {
     expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save Profile' })).not.toBeInTheDocument();
 
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
+    // After each of the first two retries the redirect has not happened yet.
+    for (let retry = 1; retry <= 2; retry += 1) {
+      act(() => {
+        vi.advanceTimersByTime(1000);
+      });
 
-    expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save Profile' })).not.toBeInTheDocument();
-    expect(mockNavigate).not.toHaveBeenCalled();
+      expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Save Profile' })).not.toBeInTheDocument();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    }
   });
 
   it('redirects to /auth after max retries when there is no user', () => {

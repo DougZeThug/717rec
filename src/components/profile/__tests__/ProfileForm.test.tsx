@@ -108,7 +108,7 @@ describe('ProfileForm name availability', () => {
     await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(2), {
       timeout: SETTLE_TIMEOUT_MS,
     });
-    await user.type(input, '{backspace}');
+    await user.type(input, '{Backspace}');
     await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(3), {
       timeout: SETTLE_TIMEOUT_MS,
     });
@@ -119,6 +119,7 @@ describe('ProfileForm name availability', () => {
 
     await act(async () => {
       resolveSlow({ available: false });
+      await slowCheck;
     });
 
     expect(screen.getByText('Name is available')).toBeInTheDocument();
