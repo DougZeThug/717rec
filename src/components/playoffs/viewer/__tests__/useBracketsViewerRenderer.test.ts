@@ -24,6 +24,7 @@ import { BracketsViewerAdapter } from '@/services/brackets/viewer';
 import { bracketLog, errorLog, warnLog } from '@/utils/logger';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
+import type { BracketsViewerMatchClick } from '../useBracketsViewerRenderer';
 import { useBracketsViewerRenderer } from '../useBracketsViewerRenderer';
 
 const mockedAdapter = vi.mocked(BracketsViewerAdapter);
@@ -138,18 +139,24 @@ interface HookProps {
   bracket: ReturnType<typeof makeBracket>;
   isScriptReady?: boolean;
   refreshKey?: string | number;
+  onMatchClicked?: (match: BracketsViewerMatchClick) => void;
 }
 
 const renderRenderer = (initial: HookProps) =>
   renderHook(
-    ({ bracket, isScriptReady = true, refreshKey = '0:initial' }: HookProps) =>
+    ({
+      bracket,
+      isScriptReady = true,
+      refreshKey = '0:initial',
+      onMatchClicked: clickHandler = onMatchClicked,
+    }: HookProps) =>
       useBracketsViewerRenderer({
         bracket,
         containerRef,
         containerId: 'test-container',
         isScriptReady,
         refreshKey,
-        onMatchClicked,
+        onMatchClicked: clickHandler,
       }),
     { initialProps: initial }
   );
@@ -290,7 +297,10 @@ describe('useBracketsViewerRenderer', () => {
         showLowerBracketSlotsOrigin: true,
         highlightParticipantOnHover: true,
       });
-      expect(config.onMatchClick).toBe(onMatchClicked);
+      // A stable wrapper, so it must forward to the handler it was given.
+      const match = { id: 1 };
+      config.onMatchClick(match);
+      expect(onMatchClicked).toHaveBeenCalledWith(match);
       expect(typeof config.customRoundName).toBe('function');
     });
 
@@ -416,6 +426,59 @@ describe('useBracketsViewerRenderer', () => {
       expect(bracketLog).toHaveBeenCalledWith('No-op: identical fingerprint, skipping render');
     });
 
+    it('sends a click to the latest onMatchClicked after a no-op re-render', async () => {
+      // The library keeps the handler it was given at render() and the no-op
+      // path never calls render() again, so the handler it holds must read the
+      // current one rather than the one from the first render.
+      const libraryHandlers: Array<(m: BracketsViewerMatchClick) => void> = [];
+      renderMock.mockImplementation((_data, config) => {
+        libraryHandlers.push(config.onMatchClick);
+      });
+      mockedAdapter.transformFromSql.mockResolvedValue(makeResult());
+
+      const handlerV1 = vi.fn();
+      const handlerV2 = vi.fn();
+      const { result, rerender } = renderRenderer({
+        bracket: makeBracket(),
+        onMatchClicked: handlerV1,
+      });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      // Same data, new handler: what happens when the admin profile resolves.
+      rerender({ bracket: makeBracket(), onMatchClicked: handlerV2 });
+      await flushAsync();
+      expect(renderMock).toHaveBeenCalledTimes(1);
+
+      libraryHandlers[0]({ id: 1 });
+
+      expect(handlerV2).toHaveBeenCalledTimes(1);
+      expect(handlerV1).not.toHaveBeenCalled();
+    });
+
+    it('logs low source coverage and still renders', async () => {
+      // Opponents with no source node: a new or bye-heavy bracket.
+      mockedAdapter.transformFromSql.mockResolvedValue(
+        makeResult({
+          matches: [
+            makeMatch(
+              1,
+              makeOpponent(1, { source_node_id: undefined }),
+              makeOpponent(2, { source_node_id: undefined })
+            ),
+          ],
+        })
+      );
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      expect(bracketLog).toHaveBeenCalledWith(
+        expect.stringContaining('Low source coverage'),
+        expect.objectContaining({ matches: 1, sourced: 0 })
+      );
+      expect(renderMock).toHaveBeenCalledTimes(1);
+    });
+
     it('renders a different bracket even when its data fingerprints the same', async () => {
       // The legacy transform numbers matches locally per bracket, so two
       // brackets of the same size at the same stage fingerprint identically.
@@ -537,6 +600,41 @@ describe('useBracketsViewerRenderer', () => {
 
       rerender({ bracket: makeBracket(), refreshKey: '0:1700000000' });
       await waitFor(() => expect(renderMock).toHaveBeenCalledTimes(2));
+    });
+  });
+
+  describe('edge cases during the async render', () => {
+    it('does not draw when the container is gone by the time the data arrives', async () => {
+      // The component unmounted while the transform was in flight.
+      mockedAdapter.transformFromSql.mockImplementation(() => {
+        containerRef.current = null;
+        return Promise.resolve(makeResult());
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await flushAsync();
+
+      expect(warnLog).toHaveBeenCalledWith(
+        'Container element not found (component likely unmounted during async render)'
+      );
+      expect(renderMock).not.toHaveBeenCalled();
+      expect(result.current.isInitialized).toBe(false);
+    });
+
+    it('treats a failing decoration pass as non-fatal', async () => {
+      const failure = new Error('decoration blew up');
+      renderMock.mockImplementation(() => {
+        // The decorations read the container first, so this makes them throw.
+        vi.spyOn(container, 'querySelectorAll').mockImplementation(() => {
+          throw failure;
+        });
+      });
+
+      const { result } = renderRenderer({ bracket: makeBracket() });
+      await waitFor(() => expect(result.current.isInitialized).toBe(true));
+
+      expect(warnLog).toHaveBeenCalledWith('Bracket decoration failed (non-fatal):', failure);
+      expect(result.current.error).toBeNull();
     });
   });
 

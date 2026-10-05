@@ -32,6 +32,7 @@ interface QueryCalls {
   table?: string;
   select?: string;
   ilike: [string, string][];
+  order: [string, { ascending?: boolean; nullsFirst?: boolean }?][];
 }
 
 /** The fake builder implements only the methods the handlers actually call. */
@@ -45,11 +46,25 @@ function asCtx(stub: Partial<ToolContext>): ToolContext {
 }
 
 /**
- * Minimal stand-in for the PostgREST builder. Only .order() resolves, matching
- * the real call shape: await supabase.from(t).select(s).eq(...).order(...).
+ * Minimal stand-in for the PostgREST builder. Only the result of .order()
+ * resolves, matching the real call shape:
+ * await supabase.from(t).select(s).eq(...).order(...)[.order(...)].
+ * Every .order() call is recorded, in order, in `calls.order`.
  */
 function makeClient(rows: Row[], error: { message: string } | null = null) {
-  const calls: QueryCalls = { ilike: [] };
+  const calls: QueryCalls = { ilike: [], order: [] };
+  const ordered = {
+    order(col: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) {
+      calls.order.push([col, opts]);
+      return ordered;
+    },
+    then(
+      onFulfilled: (value: { data: Row[] | null; error: { message: string } | null }) => unknown,
+      onRejected?: (reason: unknown) => unknown
+    ) {
+      return Promise.resolve({ data: error ? null : rows, error }).then(onFulfilled, onRejected);
+    },
+  };
   const builder = {
     select(s: string) {
       calls.select = s;
@@ -62,9 +77,7 @@ function makeClient(rows: Row[], error: { message: string } | null = null) {
       calls.ilike.push([col, val]);
       return builder;
     },
-    order() {
-      return Promise.resolve({ data: error ? null : rows, error });
-    },
+    order: ordered.order,
   };
   return {
     client: asClient({
@@ -175,6 +188,20 @@ describe('public get_standings handler', () => {
     expect(calls.ilike).toEqual([['division_name', 'Competitive']]);
   });
 
+  // Ties on power_score come back in no defined order, so rank would flip
+  // between calls. team_id makes the order, and so the rank, repeatable.
+  it('breaks power_score ties by team_id so ranks are repeatable', async () => {
+    const { client, calls } = makeClient([VISIBLE_A]);
+    usePublicClient(client);
+
+    await publicGetStandings.handler(NO_FILTER, AUTHED);
+
+    expect(calls.order).toEqual([
+      ['power_score', { ascending: false, nullsFirst: false }],
+      ['team_id', { ascending: true }],
+    ]);
+  });
+
   it('returns an empty list when there is no active season', async () => {
     vi.mocked(getPublicSeasonId).mockResolvedValue({ data: null, error: null });
     const { client } = makeClient([VISIBLE_A]);
@@ -227,6 +254,18 @@ describe('authenticated tools', () => {
     const result = await authedListTeams.handler(NO_FILTER, ANON);
 
     expect(result.isError).toBe(true);
+  });
+
+  it('get_standings breaks power_score ties by team_id so ranks are repeatable', async () => {
+    const { client, calls } = makeClient([VISIBLE_A]);
+    useAuthedClient(client);
+
+    await authedGetStandings.handler(NO_FILTER, AUTHED);
+
+    expect(calls.order).toEqual([
+      ['power_score', { ascending: false, nullsFirst: false }],
+      ['team_id', { ascending: true }],
+    ]);
   });
 
   it('get_standings filters hidden teams for authenticated callers too', async () => {

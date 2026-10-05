@@ -175,6 +175,16 @@ export const useBracketsViewerRenderer = ({
   const getPlayoffMatchIdRef = useRef<((id: number) => string | undefined) | null>(null);
   const lastFingerprintRef = useRef<string | null>(null);
 
+  // brackets-viewer keeps the handler it was given at render() and nothing else
+  // updates it. The fingerprint no-op below skips render() when the data is
+  // unchanged, so a handler that changed on its own (e.g. once the admin
+  // profile resolves) would never reach the library. Hand it a wrapper that
+  // reads the latest one instead, and keep the handler out of the effect deps.
+  const onMatchClickedRef = useRef(onMatchClicked);
+  useEffect(() => {
+    onMatchClickedRef.current = onMatchClicked;
+  }, [onMatchClicked]);
+
   // Forget the last fingerprint whenever the container can be replaced under
   // us. BracketsViewerComponent keys the container on `${bracket.id}-${refreshKey}`,
   // so both parts belong here: a change to either mounts a fresh, empty node,
@@ -331,7 +341,7 @@ export const useBracketsViewerRenderer = ({
               showSlotsOrigin: true,
               showLowerBracketSlotsOrigin: true,
               highlightParticipantOnHover: true,
-              onMatchClick: onMatchClicked,
+              onMatchClick: (match) => onMatchClickedRef.current(match),
               customRoundName,
             }
           );
@@ -395,7 +405,7 @@ export const useBracketsViewerRenderer = ({
       if (cleanupTimer) clearTimeout(cleanupTimer);
       setIsInitialized(false);
     };
-  }, [bracket, isScriptReady, containerId, onMatchClicked, refreshKey, containerRef]);
+  }, [bracket, isScriptReady, containerId, refreshKey, containerRef]);
 
   return { isInitialized, error, getPlayoffMatchIdRef };
 };

@@ -28,6 +28,21 @@ describe('matchesIlikeContains', () => {
     expect(matchesIlikeContains('snakeXcase', 'e\\_c')).toBe(false);
   });
 
+  // The server pattern is '%<query>%', so a lone trailing backslash escapes the
+  // closing '%' and makes it a literal percent sign.
+  it('lets a trailing backslash escape the closing wildcard, like the server', () => {
+    expect(matchesIlikeContains('xxfoo%', 'foo\\')).toBe(true);
+    expect(matchesIlikeContains('C:\\Users\\', 'Users\\')).toBe(false);
+    expect(matchesIlikeContains('foo\\', 'foo\\')).toBe(false);
+    expect(matchesIlikeContains('foo% bar', 'foo\\')).toBe(false);
+  });
+
+  it('matches the whole text, with the wrapping % supplying the ends', () => {
+    expect(matchesIlikeContains('hello world', 'o w')).toBe(true);
+    expect(matchesIlikeContains('hello world', '')).toBe(true);
+    expect(matchesIlikeContains('multi\nline', 'i%l')).toBe(true);
+  });
+
   it('does not treat regex characters as special', () => {
     expect(matchesIlikeContains('is it (really) over?', '(really)')).toBe(true);
     expect(matchesIlikeContains('abc', 'a.c')).toBe(false);

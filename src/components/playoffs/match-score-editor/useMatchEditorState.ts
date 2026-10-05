@@ -75,11 +75,16 @@ export const useMatchEditorState = ({
 
   // Check BYE eligibility when match loads
   useEffect(() => {
+    // A newer run supersedes this one. Without the flag, whichever check
+    // resolves last wins, so a slow older check could overwrite fresh state.
+    let cancelled = false;
+
     const checkByeEligibility = async () => {
       if (!matchData || !matchId) return;
 
       try {
         const result = await bracketManagerService.checkByeEligibility(matchId);
+        if (cancelled) return;
 
         setByeEligible({
           canToggle: result.ok,
@@ -88,11 +93,16 @@ export const useMatchEditorState = ({
           reason: result.reason,
         });
       } catch (err) {
+        if (cancelled) return;
         errorLog('Error checking BYE eligibility:', err);
       }
     };
 
     checkByeEligibility();
+
+    return () => {
+      cancelled = true;
+    };
   }, [matchData, matchId]);
 
   // The bracket grid renders ['bracket-data', bracketId] and does not refetch
@@ -140,8 +150,8 @@ export const useMatchEditorState = ({
         opponent1Score,
         opponent2Score,
         isBye,
-        hasOpponent1: !!matchData.opponent1,
-        hasOpponent2: !!matchData.opponent2,
+        hasOpponent1: Boolean(matchData.opponent1),
+        hasOpponent2: Boolean(matchData.opponent2),
       });
 
       if (isBye) {

@@ -236,10 +236,7 @@ var get_standings_default = defineTool3({
       "team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name, divisions(name, display_division))"
     ).eq("season_id", seasonId);
     if (division) query = query.ilike("division_name", division);
-    const { data, error } = await query.order("power_score", {
-      ascending: false,
-      nullsFirst: false
-    });
+    const { data, error } = await query.order("power_score", { ascending: false, nullsFirst: false }).order("team_id", { ascending: true });
     if (error) return errorResult(error.message);
     const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).map((row, index) => {
       const { teams, ...rest } = row;

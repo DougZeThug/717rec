@@ -32,10 +32,11 @@ export default defineTool({
       )
       .eq('season_id', seasonId);
     if (division) query = query.ilike('division_name', division);
-    const { data, error } = await query.order('power_score', {
-      ascending: false,
-      nullsFirst: false,
-    });
+    // team_id breaks power_score ties. Rank is the row's position, so without
+    // it tied teams can swap ranks between calls.
+    const { data, error } = await query
+      .order('power_score', { ascending: false, nullsFirst: false })
+      .order('team_id', { ascending: true });
     if (error) return errorResult(error.message);
 
     // Filter before ranking, so ranks stay contiguous.

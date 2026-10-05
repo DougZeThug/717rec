@@ -121,7 +121,12 @@ export const useBracketsViewerScript = () => {
     // 'online' listener below.
     if (delay === undefined) return undefined;
 
-    const retryTimer = setTimeout(() => setAttempt(failedAttempt + 1), delay);
+    // Never lower `attempt`: an 'online' event can advance it while this timer
+    // is pending, and writing the captured value back would undo that.
+    const retryTimer = setTimeout(
+      () => setAttempt((prev) => Math.max(prev, failedAttempt + 1)),
+      delay
+    );
     return () => clearTimeout(retryTimer);
   }, [isReady, failedAttempt]);
 

@@ -130,6 +130,26 @@ describe('useOptimisticScoreMutation', () => {
     expect(data?.matches[0].winnerId).toBe('team-a'); // team1GameWins > team2GameWins
   });
 
+  it('rolls a legacy-format overlapping save back to confirmed game wins, not the binary outcome', () => {
+    queryClient.setQueryData(['bracket-data', BRACKET_ID], { matches: [makeLegacyMatch()] });
+    const { result } = renderHook(() => useOptimisticScoreMutation(BRACKET_ID), {
+      wrapper: createWrapper(),
+    });
+
+    // The editor passes a binary 1-0 outcome next to the real game wins.
+    act(() => result.current.applyOptimisticUpdate(MATCH_ID, 1, 0, 2, 1, 'team-a', 'team-b'));
+    act(() => result.current.applyOptimisticUpdate(MATCH_ID, 1, 0, 3, 2, 'team-a', 'team-b'));
+
+    act(() => result.current.onSuccess(MATCH_ID));
+    act(() => result.current.onError(new Error('Save 2 failed'), MATCH_ID));
+
+    const data = queryClient.getQueryData<{
+      matches: { team1Score: number; team2Score: number }[];
+    }>(['bracket-data', BRACKET_ID]);
+    expect(data?.matches[0].team1Score).toBe(2);
+    expect(data?.matches[0].team2Score).toBe(1);
+  });
+
   it('rollback restores original cache values', () => {
     queryClient.setQueryData(['bracket-data', BRACKET_ID], {
       matches: [makeBmMatch({ opponent1_score: 5, opponent2_score: 3, status: 4 })],

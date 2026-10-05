@@ -132,8 +132,9 @@ describe('useBracketsViewerScript', () => {
   // The real loader logs a stylesheet failure and resolves anyway. The hook
   // used to call that ready and draw an unstyled bracket with no retry.
   it('reports an error when a stylesheet fails but the loader still resolves', async () => {
-    mocks.viewerBundleEvaluation.mockImplementation(async () => {
+    mocks.viewerBundleEvaluation.mockImplementation(() => {
       windowWithViewer.bracketsViewer = fakeViewer();
+      return Promise.resolve();
     });
     mocks.areBracketStylesLoaded.mockReturnValue(false);
     const useBracketsViewerScript = await importHook();
@@ -147,8 +148,9 @@ describe('useBracketsViewerScript', () => {
   it('loads again on a remount when the script is there but the styles are not', async () => {
     windowWithViewer.bracketsViewer = fakeViewer();
     mocks.areBracketStylesLoaded.mockReturnValue(false);
-    mocks.loadBracketStyles.mockImplementation(async () => {
+    mocks.loadBracketStyles.mockImplementation(() => {
       mocks.areBracketStylesLoaded.mockReturnValue(true);
+      return Promise.resolve();
     });
     const useBracketsViewerScript = await importHook();
 
@@ -277,6 +279,60 @@ describe('useBracketsViewerScript', () => {
 
       await waitFor(() => expect(result.current.isReady).toBe(true));
       expect(result.current.error).toBeNull();
+    });
+
+    it('does not let a stale backoff timer walk the attempt counter backwards', async () => {
+      vi.useFakeTimers();
+      try {
+        let rejectInFlight: (error: Error) => void = () => undefined;
+        mocks.viewerBundleEvaluation.mockRejectedValueOnce(new Error('offline')).mockImplementation(
+          () =>
+            new Promise((_, reject) => {
+              rejectInFlight = reject;
+            })
+        );
+        const useBracketsViewerScript = await importHook();
+        const { result } = renderHook(() => useBracketsViewerScript());
+
+        await vi.waitFor(() =>
+          expect(result.current.error).toBe('Failed to load bracket viewer library')
+        );
+
+        // Two reconnects while the 2s backoff is still pending. Each moves
+        // `attempt` on, and the load they start hangs.
+        act(() => {
+          window.dispatchEvent(new Event('online'));
+        });
+        act(() => {
+          window.dispatchEvent(new Event('online'));
+        });
+
+        // The pending timer fires. It must not set `attempt` back below where
+        // the reconnects left it.
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(2000);
+        });
+
+        // The load in flight now fails. That is attempt 2 failing, so the next
+        // backoff is the 8s tier, not the 4s tier of attempt 1.
+        await act(async () => {
+          rejectInFlight(new Error('still offline'));
+          await vi.advanceTimersByTimeAsync(0);
+        });
+        const callsAfterFailure = mocks.viewerBundleEvaluation.mock.calls.length;
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(4000);
+        });
+        expect(mocks.viewerBundleEvaluation).toHaveBeenCalledTimes(callsAfterFailure);
+
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(4000);
+        });
+        expect(mocks.viewerBundleEvaluation).toHaveBeenCalledTimes(callsAfterFailure + 1);
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('gives up on the timers rather than retrying forever', async () => {
