@@ -370,6 +370,29 @@ describe('useMatchUpdate — Case 2 (completion / winner changes)', () => {
       expect(mockResubmitMatchResult).toHaveBeenCalledWith('m1', 't2', 't1', 2, 1);
     });
 
+    it('does not call the RPC for a date-only edit of a legacy match with no stored counts', async () => {
+      const legacyMatch = {
+        ...storedMatch,
+        team1_game_wins: undefined,
+        team2_game_wins: undefined,
+      } as unknown as Match;
+      const { result } = renderHook(
+        () =>
+          useMatchUpdate({
+            matches: [legacyMatch],
+            setMatches: vi.fn(),
+            editingMatch: legacyMatch,
+          }),
+        { wrapper }
+      );
+
+      await act(async () => {
+        await result.current.handleUpdateMatch(formPayload({ date: '2026-01-08' }), [] as Team[]);
+      });
+
+      expect(mockResubmitMatchResult).not.toHaveBeenCalled();
+    });
+
     it('does not call the RPC with 0-0 when the team slots swap and the winner stays', async () => {
       const { result } = renderHook(
         () =>

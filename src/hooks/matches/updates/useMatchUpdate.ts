@@ -30,8 +30,11 @@ const carriedGameWins = (
   if (!stored.winnerId || !stored.loserId || !edit.winnerId) {
     return { team1: stored.team1_game_wins, team2: stored.team2_game_wins };
   }
-  const winnerWins = gameWinsFor(stored, stored.winnerId);
-  const loserWins = gameWinsFor(stored, stored.loserId);
+  // Kept as stored, so a legacy match with no counts still reads as unchanged.
+  const storedWinsOf = (teamId: string): number | undefined =>
+    teamId === stored.team1Id ? stored.team1_game_wins : stored.team2_game_wins;
+  const winnerWins = storedWinsOf(stored.winnerId);
+  const loserWins = storedWinsOf(stored.loserId);
   const team1IsWinner = edit.team1Id === edit.winnerId;
   return {
     team1: team1IsWinner ? winnerWins : loserWins,
