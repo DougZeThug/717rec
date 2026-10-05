@@ -84,6 +84,9 @@ const ProfileSetup = () => {
   if (isLoading || !authInitialized || (!user && retries < maxRetries)) {
     return (
       <PageLayout compact>
+        {/* The form's own h1 is not on screen yet. A page with no h1 leaves a
+            screen-reader user with nothing to say where they are. */}
+        <h1 className="sr-only">Set Up Your Profile</h1>
         <PageTransition>
           <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
             <ProfileLoadingState />

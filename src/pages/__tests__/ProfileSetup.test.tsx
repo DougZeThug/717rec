@@ -130,6 +130,10 @@ describe('ProfileSetup', () => {
 
     // Before any retry, and between retries.
     expect(screen.getByText('Checking authentication...')).toBeInTheDocument();
+    // The spinner page still needs its h1, or axe fails the page.
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Set Up Your Profile' })
+    ).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Save Profile' })).not.toBeInTheDocument();
 
     // After each of the first two retries the redirect has not happened yet.
