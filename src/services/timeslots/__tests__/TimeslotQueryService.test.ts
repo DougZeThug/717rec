@@ -107,56 +107,6 @@ describe('TimeslotQueryService.fetchByDate', () => {
   });
 });
 
-// ─── fetchTimeslotsByDate ─────────────────────────────────────────────────────
-
-describe('TimeslotQueryService.fetchTimeslotsByDate', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns raw rows on success', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: [makeRawSlot()], error: null }));
-    const result = await TimeslotQueryService.fetchTimeslotsByDate('2026-04-17');
-    expect(result).toHaveLength(1);
-  });
-
-  it('returns empty array when no rows', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: null, error: null }));
-    const result = await TimeslotQueryService.fetchTimeslotsByDate('2026-04-17');
-    expect(result).toEqual([]);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: null, error: pgError() }));
-    await expect(TimeslotQueryService.fetchTimeslotsByDate('2026-04-17')).rejects.toThrow(
-      DatabaseError
-    );
-  });
-});
-
-// ─── fetchTimeslotsForDate ────────────────────────────────────────────────────
-
-describe('TimeslotQueryService.fetchTimeslotsForDate', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('returns raw rows on success', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: [makeRawSlot()], error: null }));
-    const result = await TimeslotQueryService.fetchTimeslotsForDate('2026-04-17');
-    expect(result).toHaveLength(1);
-  });
-
-  it('returns empty array when data is null', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: null, error: null }));
-    const result = await TimeslotQueryService.fetchTimeslotsForDate('2026-04-17');
-    expect(result).toEqual([]);
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(selectEqChain({ data: null, error: pgError() }));
-    await expect(TimeslotQueryService.fetchTimeslotsForDate('2026-04-17')).rejects.toThrow(
-      DatabaseError
-    );
-  });
-});
-
 // ─── fetchWeekTimeslotsByTeam ─────────────────────────────────────────────────
 
 describe('TimeslotQueryService.fetchWeekTimeslotsByTeam', () => {

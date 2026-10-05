@@ -68,65 +68,6 @@ const insertSelectChain = (result: { data: unknown; error: unknown }) => ({
   insert: () => ({ select: () => Promise.resolve(result) }),
 });
 
-// ─── assignDoubleHeader ───────────────────────────────────────────────────────
-
-describe('DoubleHeaderService.assignDoubleHeader', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('inserts 4 rows and returns transformed timeslots', async () => {
-    const rows = [
-      makeRawSlot({ id: 'ts-1', timeslot: '6:30 PM', match_sequence: 1 }),
-      makeRawSlot({ id: 'ts-2', timeslot: '7:00 PM', match_sequence: 2 }),
-      makeRawSlot({ id: 'ts-3', timeslot: '7:30 PM', match_sequence: 1 }),
-      makeRawSlot({ id: 'ts-4', timeslot: '8:00 PM', match_sequence: 2 }),
-    ];
-    mockFrom.mockReturnValue(insertSelectChain({ data: rows, error: null }));
-
-    const result = await DoubleHeaderService.assignDoubleHeader(
-      new Date('2026-04-17'),
-      'team-1',
-      '6:30 PM',
-      '7:30 PM'
-    );
-
-    expect(result).toHaveLength(4);
-    expect(result[0].is_double_header).toBe(true);
-    expect(mockFrom).toHaveBeenCalledWith('team_timeslots');
-  });
-
-  it('returns empty array when data is null', async () => {
-    mockFrom.mockReturnValue(insertSelectChain({ data: null, error: null }));
-    const result = await DoubleHeaderService.assignDoubleHeader(
-      new Date('2026-04-17'),
-      'team-1',
-      '6:30 PM',
-      '7:30 PM'
-    );
-    expect(result).toEqual([]);
-  });
-
-  it('throws ValidationError for unrecognised slot1', async () => {
-    await expect(
-      DoubleHeaderService.assignDoubleHeader(new Date('2026-04-17'), 'team-1', 'INVALID', '7:30 PM')
-    ).rejects.toThrow(ValidationError);
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('throws ValidationError for unrecognised slot2', async () => {
-    await expect(
-      DoubleHeaderService.assignDoubleHeader(new Date('2026-04-17'), 'team-1', '6:30 PM', 'INVALID')
-    ).rejects.toThrow(ValidationError);
-    expect(mockFrom).not.toHaveBeenCalled();
-  });
-
-  it('throws DatabaseError on Supabase error', async () => {
-    mockFrom.mockReturnValue(insertSelectChain({ data: null, error: pgError() }));
-    await expect(
-      DoubleHeaderService.assignDoubleHeader(new Date('2026-04-17'), 'team-1', '6:30 PM', '7:30 PM')
-    ).rejects.toThrow(DatabaseError);
-  });
-});
-
 // ─── batchAssignDoubleHeaders ─────────────────────────────────────────────────
 
 describe('DoubleHeaderService.batchAssignDoubleHeaders', () => {

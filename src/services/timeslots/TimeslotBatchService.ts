@@ -85,22 +85,6 @@ export const TimeslotBatchService = {
   },
 
   /**
-   * Insert a single timeslot (used by useTimeslotOperations.addTimeslot).
-   */
-  async insertTimeslot(match_date: string, team_id: string, timeslot: string) {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .insert({ match_date, team_id, timeslot })
-      .select(
-        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
-      )
-      .single();
-
-    if (error) handleDatabaseError(error, 'Failed to insert timeslot');
-    return data;
-  },
-
-  /**
    * Delete a single timeslot by id.
    * Simple delete — does NOT handle back-to-back pair deletion.
    */
@@ -124,22 +108,5 @@ export const TimeslotBatchService = {
 
     const { error } = await supabase.from('team_timeslots').delete().in('id', ids);
     if (error) handleDatabaseError(error, 'Failed to remove timeslots');
-  },
-
-  /**
-   * Batch insert timeslots (used by useTimeslotOperations.batchAssignTimeslots).
-   */
-  async batchInsertTimeslots(
-    insertData: Array<{ match_date: string; team_id: string; timeslot: string }>
-  ) {
-    const { data, error } = await supabase
-      .from('team_timeslots')
-      .insert(insertData)
-      .select(
-        'id, match_date, timeslot, team_id, created_at, is_back_to_back, is_double_header, pair_slot, match_sequence, teams:team_id(id, name, logo_url, image_url)'
-      );
-
-    if (error) handleDatabaseError(error, 'Failed to batch insert timeslots');
-    return data ?? [];
   },
 };

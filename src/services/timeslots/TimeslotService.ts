@@ -13,8 +13,6 @@ import { TimeslotQueryService } from './TimeslotQueryService';
 export const TimeslotService = {
   // ── Query ──────────────────────────────────────────────────────────────────
   fetchByDate: TimeslotQueryService.fetchByDate.bind(TimeslotQueryService),
-  fetchTimeslotsByDate: TimeslotQueryService.fetchTimeslotsByDate.bind(TimeslotQueryService),
-  fetchTimeslotsForDate: TimeslotQueryService.fetchTimeslotsForDate.bind(TimeslotQueryService),
   fetchWeekTimeslotsByTeam:
     TimeslotQueryService.fetchWeekTimeslotsByTeam.bind(TimeslotQueryService),
   fetchTimeslotsForPair: TimeslotQueryService.fetchTimeslotsForPair.bind(TimeslotQueryService),
@@ -29,7 +27,6 @@ export const TimeslotService = {
   deleteTimeslot: BackToBackTimeslotService.deleteTimeslot.bind(BackToBackTimeslotService),
 
   // ── Double header ──────────────────────────────────────────────────────────
-  assignDoubleHeader: DoubleHeaderService.assignDoubleHeader.bind(DoubleHeaderService),
   batchAssignDoubleHeaders: DoubleHeaderService.batchAssignDoubleHeaders.bind(DoubleHeaderService),
 
   // ── Batch ──────────────────────────────────────────────────────────────────
@@ -37,8 +34,5 @@ export const TimeslotService = {
     TimeslotBatchService.batchAssignBackToBackTimeslots.bind(TimeslotBatchService),
   /** @deprecated Use batchAssignBackToBackTimeslots instead */
   batchAssignTimeslots: TimeslotBatchService.batchAssignTimeslots.bind(TimeslotBatchService),
-  insertTimeslot: TimeslotBatchService.insertTimeslot.bind(TimeslotBatchService),
-  deleteTimeslotSimple: TimeslotBatchService.deleteTimeslotSimple.bind(TimeslotBatchService),
   deleteTimeslotsByIds: TimeslotBatchService.deleteTimeslotsByIds.bind(TimeslotBatchService),
-  batchInsertTimeslots: TimeslotBatchService.batchInsertTimeslots.bind(TimeslotBatchService),
 };
