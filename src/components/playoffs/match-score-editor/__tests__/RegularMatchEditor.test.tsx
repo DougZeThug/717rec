@@ -63,6 +63,23 @@ describe('RegularMatchEditor', () => {
     expect(screen.queryByText(/^Edit teams:/)).not.toBeInTheDocument();
   });
 
+  it('lists each game with its score, using a dash for a score not entered yet', () => {
+    render(
+      <RegularMatchEditor
+        {...defaultProps}
+        games={[
+          { id: 1, number: 1, opponent1_score: 21, opponent2_score: 15 },
+          { id: 2, number: 2, opponent1_score: null, opponent2_score: null },
+        ]}
+      />
+    );
+
+    expect(screen.getByText('Game 1:')).toBeInTheDocument();
+    expect(screen.getByText('21 - 15')).toBeInTheDocument();
+    expect(screen.getByText('Game 2:')).toBeInTheDocument();
+    expect(screen.getByText('- - -')).toBeInTheDocument();
+  });
+
   it('describes the dialog for screen readers', () => {
     render(<RegularMatchEditor {...defaultProps} />);
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -50,6 +50,25 @@ describe('TrafficMiniChart', () => {
     render(<TrafficMiniChart />);
 
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('shows the day and its visitor count in a tooltip when the line is hovered', async () => {
+    query = {
+      data: Array.from({ length: 10 }, (_, i) =>
+        day(`2026-09-${String(i + 1).padStart(2, '0')}`, 2)
+      ),
+      isLoading: false,
+      error: null,
+    };
+    const { container } = render(<TrafficMiniChart />);
+
+    const chart = container.querySelector('.recharts-wrapper') as HTMLElement;
+    fireEvent.mouseMove(chart, { clientX: 300, clientY: 60 });
+
+    expect(await screen.findByText('Visitors')).toBeInTheDocument();
+    expect(
+      screen.getByText(/^Sep \d+$/, { selector: '.recharts-tooltip-label' })
+    ).toBeInTheDocument();
   });
 
   it('summarises the line for screen readers, with the date range and recent total', () => {

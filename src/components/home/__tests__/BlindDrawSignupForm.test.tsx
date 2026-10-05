@@ -41,6 +41,24 @@ describe('BlindDrawSignupForm', () => {
     expect(mockMutateAsync).not.toHaveBeenCalled();
   });
 
+  it('replaces the form with the confirmation once the sign-up is saved', async () => {
+    mockMutateAsync.mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(<BlindDrawSignupForm eventDate="2026-10-08" />);
+
+    await user.type(screen.getByRole('textbox', { name: 'First name' }), 'Sam');
+    await user.type(screen.getByRole('textbox', { name: 'Last initial' }), 'k');
+    await user.click(screen.getByRole('button', { name: /sign up/i }));
+
+    expect(mockMutateAsync).toHaveBeenCalledWith({
+      eventDate: '2026-10-08',
+      firstName: 'Sam',
+      lastInitial: 'K',
+    });
+    expect(await screen.findByText("You're signed up! See you there!")).toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: 'First name' })).not.toBeInTheDocument();
+  });
+
   it('adds no aria-invalid while the fields are fine', () => {
     render(<BlindDrawSignupForm eventDate="2026-10-08" />);
 

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -34,6 +34,23 @@ describe('PowerScoreChart', () => {
 
     expect(screen.getByText('Power scores available after matches')).toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  });
+
+  it('shows the team and its power score in a tooltip when the chart is hovered', async () => {
+    const { container } = render(
+      <PowerScoreChart
+        data={[
+          { name: 'Tigers', powerScore: 82.5 },
+          { name: 'Lions', powerScore: 71 },
+        ]}
+      />
+    );
+
+    const chart = container.querySelector('.recharts-wrapper') as HTMLElement;
+    fireEvent.mouseMove(chart, { clientX: 200, clientY: 40 });
+
+    expect(await screen.findByText(/Power Score: /)).toHaveTextContent(/82/);
+    expect(screen.getAllByText('Tigers').length).toBeGreaterThan(0);
   });
 
   it('is one picture with a text summary of each team and its score', () => {
