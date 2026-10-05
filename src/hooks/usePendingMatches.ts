@@ -136,13 +136,17 @@ export function usePendingMatches() {
       await confirmMatchTie(matchId);
     },
     onMutate: (matchId) => beginResolving(matchId),
-    onSettled: (_data, _error, matchId) => endResolving(matchId),
-    onSuccess: async () => {
+    // Refresh on success and on failure. Losing the race to an admin who named
+    // a winner is an expected failure, and that match must leave the list too.
+    onSettled: async (_data, _error, matchId) => {
+      endResolving(matchId);
+      await invalidateMatchRelatedQueries(queryClient);
+    },
+    onSuccess: () => {
       toast({
         title: 'Tie Confirmed',
         description: 'The match is recorded as a tie and has left the list.',
       });
-      await invalidateMatchRelatedQueries(queryClient);
     },
     onError: (error) => {
       errorLog('Error confirming tie:', error);
