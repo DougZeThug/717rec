@@ -41,7 +41,9 @@ describe('DesignAppearanceSection flyer upload zone', () => {
     const zone = screen.getByRole('button', {
       name: 'Upload flyer image — click or drop image here',
     });
-    const picker = vi.spyOn(HTMLInputElement.prototype, 'click').mockImplementation(() => {});
+    const picker = vi
+      .spyOn(HTMLInputElement.prototype, 'click')
+      .mockImplementation(() => undefined);
     return { zone, picker };
   };
 

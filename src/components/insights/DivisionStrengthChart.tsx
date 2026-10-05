@@ -48,6 +48,33 @@ const CustomTooltip = ({
   );
 };
 
+const DivisionBars: React.FC<{
+  divisions: DivisionStrength[];
+  colors: ReturnType<typeof useChartColors>;
+}> = ({ divisions, colors }) => (
+  <ResponsiveContainer width="100%" height={240}>
+    <BarChart data={divisions} layout="vertical" margin={{ left: 10, right: 20 }}>
+      <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} horizontal={false} />
+      <XAxis type="number" domain={[0, 100]} tick={{ fill: colors.mutedTextColor, fontSize: 11 }} />
+      <YAxis
+        dataKey="division"
+        type="category"
+        tick={{ fill: colors.textColor, fontSize: 12, fontWeight: 500 }}
+        width={110}
+      />
+      <Tooltip content={<CustomTooltip />} />
+      <Bar dataKey="avgPowerScore" radius={[0, 4, 4, 0]} maxBarSize={32}>
+        {divisions.map((division, index) => (
+          <Cell
+            key={division.division ?? `division-cell-${index}`}
+            fill={DIVISION_COLORS[index % DIVISION_COLORS.length]}
+          />
+        ))}
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+);
+
 const DivisionStrengthChart: React.FC<DivisionStrengthChartProps> = ({ divisions }) => {
   const colors = useChartColors();
 
@@ -65,31 +92,7 @@ const DivisionStrengthChart: React.FC<DivisionStrengthChartProps> = ({ divisions
           divisions.map((d) => `${d.division} ${d.avgPowerScore}, ${d.teamCount} teams`)
         )}
       >
-        <ResponsiveContainer width="100%" height={240}>
-          <BarChart data={divisions} layout="vertical" margin={{ left: 10, right: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} horizontal={false} />
-            <XAxis
-              type="number"
-              domain={[0, 100]}
-              tick={{ fill: colors.mutedTextColor, fontSize: 11 }}
-            />
-            <YAxis
-              dataKey="division"
-              type="category"
-              tick={{ fill: colors.textColor, fontSize: 12, fontWeight: 500 }}
-              width={110}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="avgPowerScore" radius={[0, 4, 4, 0]} maxBarSize={32}>
-              {divisions.map((division, index) => (
-                <Cell
-                  key={division.division ?? `division-cell-${index}`}
-                  fill={DIVISION_COLORS[index % DIVISION_COLORS.length]}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <DivisionBars divisions={divisions} colors={colors} />
       </div>
     </div>
   );

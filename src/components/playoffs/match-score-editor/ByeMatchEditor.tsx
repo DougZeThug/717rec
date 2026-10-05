@@ -255,7 +255,7 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
       <DialogHeader>
         <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
         <DialogDescription className="sr-only">
-          Set the winner's score for this BYE match, or change its status.
+          Set the winner&apos;s score for this BYE match, or change its status.
         </DialogDescription>
       </DialogHeader>
 

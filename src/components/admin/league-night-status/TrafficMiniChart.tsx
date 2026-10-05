@@ -16,8 +16,8 @@ import { useDailyTraffic } from '@/hooks/useDailyTraffic';
 const DAYS = 30;
 
 const fmtDay = (iso: string): string => {
-  const d = new Date(`${iso}T12:00:00Z`);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const date = new Date(`${iso}T12:00:00Z`);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
 const TrafficMiniChart: React.FC = () => {
