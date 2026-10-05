@@ -789,6 +789,54 @@ describe('simulateSlotChanges', () => {
     });
   });
 
+  it('reports a stale board when a target match is not on the board', () => {
+    const result = simulateSlotChanges(tenTeamSnapshot(), [
+      { matchId: 9999, side: 'opponent1', content: { kind: 'bye' } },
+    ]);
+
+    expect(result.ok).toBe(false);
+    expect(result.writes).toEqual([]);
+    expect(result.problems[0].message).toBe(
+      'The bracket changed since this screen was opened. Close it and reopen to continue.'
+    );
+  });
+
+  it('reports a stale board when the cascade lands in a match that is not on the board', () => {
+    const snapshot = {
+      ...tenTeamSnapshot(),
+      landings: {
+        ...tenTeamSnapshot().landings,
+        302: { matchId: 9999, side: 'opponent2' as const },
+      },
+    };
+
+    const result = simulateSlotChanges(snapshot, [reopenPlaceholder]);
+
+    expect(result.ok).toBe(false);
+    expect(result.problems.map((problem) => problem.message)).toContain(
+      'The bracket changed since this screen was opened. Close it and reopen to continue.'
+    );
+  });
+
+  it('refuses when a match the cascade reaches already has results recorded', () => {
+    const snapshot = tenTeamSnapshot();
+    const reached = snapshot.matches.find((m) => m.id === 501);
+    if (!reached) throw new Error('fixture: match 501 missing');
+    // Not marked played, but a result sits on its waiting spot.
+    reached.editable = false;
+    reached.lockedReason = null;
+    reached.opponent1 = { ...tbdSlot(), result: 'win', score: 1 };
+
+    const result = simulateSlotChanges(snapshot, [reopenPlaceholder], { labelPrefix: 'Losers ' });
+
+    expect(result.ok).toBe(false);
+    expect(result.writes).toEqual([]);
+    expect(result.problems.map((problem) => problem.message)).toEqual([
+      'This change needs to change Losers Round 3 Match 1 automatically, but that match ' +
+        'already has results recorded.',
+    ]);
+  });
+
   it('refuses a target slot that holds a team', () => {
     const result = simulateSlotChanges(tenTeamSnapshot(), [
       { matchId: 301, side: 'opponent2', content: { kind: 'bye' } },

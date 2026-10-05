@@ -6,6 +6,7 @@ import { applyFields, assertFootprint } from '../footprint';
 import { planLosersChanges } from '../losersPlan';
 import type { WantedMatch } from '../occupancy';
 import { planOccupancy } from '../occupancy';
+import { assertEditableMatch } from '../plan';
 import type { Occupant } from '../types';
 import { planWinnersChanges } from '../winnersPlan';
 
@@ -75,6 +76,36 @@ const teamOf = (participantId: number): Occupant => ({
   name: `P${participantId}`,
 });
 const seedOf = () => null;
+
+describe('assertEditableMatch', () => {
+  it('accepts a round 1 match of a single-elimination bracket', () => {
+    const { ctx } = fixture();
+    expect(() => assertEditableMatch(ctx)).not.toThrow();
+  });
+
+  it('refuses a bracket that is not elimination', () => {
+    const { ctx } = fixture();
+    const roundRobin = { ...ctx, stage: { ...ctx.stage, type: 'round_robin' as const } };
+    expect(() => assertEditableMatch(roundRobin)).toThrow(
+      'Edit teams only works in elimination brackets.'
+    );
+  });
+
+  it('refuses a bracket that skips its first round', () => {
+    const { ctx } = fixture({ settings: { size: 4, skipFirstRound: true } });
+    expect(() => assertEditableMatch(ctx)).toThrow(
+      "Edit teams doesn't support this bracket's layout."
+    );
+  });
+
+  it('refuses a match that has several games', () => {
+    const { ctx, matches } = fixture();
+    matches[1].child_count = 3;
+    expect(() => assertEditableMatch(ctx)).toThrow(
+      "This match has several games, so Edit teams can't change it."
+    );
+  });
+});
 
 describe('planWinnersChanges', () => {
   it('replaces a walkover winner in its round 2 slot', () => {
