@@ -77,8 +77,11 @@ const ProfileSetup = () => {
     navigate(nextPath && nextPath !== '/setup-profile' ? nextPath : '/');
   };
 
-  // Show loading state while waiting for auth to initialize
-  if (isLoading || (!authInitialized && retries < maxRetries)) {
+  // Show loading state until auth is ready, and through the retry window when
+  // there is no user. The retry counter only moves once auth is ready, so a gate
+  // on `!authInitialized && retries < maxRetries` never held: the form showed
+  // for the whole window before the redirect.
+  if (isLoading || !authInitialized || (!user && retries < maxRetries)) {
     return (
       <PageLayout compact>
         <PageTransition>
