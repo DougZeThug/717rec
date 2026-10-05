@@ -83,7 +83,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 - [x] Nine dialogs lack `DialogDescription`. Fixed: each now has a screen-reader-only description (the screen looks the same). The match editor's loading and error dialogs got a title and description too.
 - [ ] Logo `alt` repeats the adjacent team name. (Step 11)
-- [ ] `focus:` rings instead of `focus-visible:`. (Backlog)
+- [x] `focus:` rings instead of `focus-visible:`. Fixed for buttons, triggers and badges: the badge, select trigger, dialog close, toast buttons, season accordion, date strip and the author's message card. Text inputs, the skip link and the main region keep `focus:` on purpose.
 - [x] Auth wording: Login / Sign In / Sign Up mixed. Fixed in Step 8: Sign in / Sign up / Sign out everywhere.
 - [x] Misleading copy ("An administrator has been notified"). (Step 4)
 - [x] Stale examples ("Spring 2025"). Fixed in Step 8.
