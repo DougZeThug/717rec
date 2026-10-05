@@ -106,7 +106,7 @@ const ProfileSetup = () => {
             initialUsername={profile?.username || ''}
             initialFullName={profile?.full_name || ''}
             onProfileUpdated={handleProfileUpdated}
-            showTeamMembership={!!user}
+            showTeamMembership={Boolean(user)}
           />
         </div>
       </PageTransition>
