@@ -238,8 +238,8 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
   const applyOptimisticUpdate = useCallback(
     (
       matchId: string,
-      team1Score: number,
-      team2Score: number,
+      _team1Score: number,
+      _team2Score: number,
       team1GameWins: number,
       team2GameWins: number,
       team1Id: string | null,
@@ -288,13 +288,15 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
                 status: 4, // Completed in brackets-manager
               };
             } else {
-              // Legacy format
+              // Legacy format. These fields hold game wins, like the server and
+              // `transformBracketsManagerData` do — not the binary 1-0 outcome.
+              // Writing that here would be snapshotted as the rollback baseline.
               return {
                 ...match,
-                team1Score: team1Score,
-                team2Score: team2Score,
-                team1_score: team1Score,
-                team2_score: team2Score,
+                team1Score: team1GameWins,
+                team2Score: team2GameWins,
+                team1_score: team1GameWins,
+                team2_score: team2GameWins,
                 winnerId: winnerId,
                 winner_id: winnerId,
                 status: 'completed',
