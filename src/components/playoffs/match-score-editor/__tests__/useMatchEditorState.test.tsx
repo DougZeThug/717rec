@@ -15,8 +15,15 @@ const matchData = {
   opponent2: { id: 20, score: 0 },
 };
 
+// Lets a test hand the hook a new `matchData` reference, as a refetch would.
+const matchOverride = vi.hoisted(() => ({ current: null as unknown }));
+
 vi.mock('@/hooks/playoffs/useBracketsManagerMatch', () => ({
-  useBracketsManagerMatch: () => ({ data: matchData, isLoading: false, error: null }),
+  useBracketsManagerMatch: () => ({
+    data: matchOverride.current ?? matchData,
+    isLoading: false,
+    error: null,
+  }),
 }));
 
 vi.mock('@/services/brackets/manager', () => ({
@@ -85,6 +92,49 @@ describe('useMatchEditorState', () => {
       expect(result.current.opponent1Score).toBe(0);
     } finally {
       matchData.opponent1 = original;
+    }
+  });
+
+  it('keeps the newest BYE eligibility result when an older check resolves last', async () => {
+    const { bracketManagerService } = await import('@/services/brackets/manager');
+    const check = vi.mocked(bracketManagerService.checkByeEligibility);
+    const deferred = () => {
+      let resolve!: (value: Awaited<ReturnType<typeof check>>) => void;
+      const promise = new Promise<Awaited<ReturnType<typeof check>>>((r) => {
+        resolve = r;
+      });
+      return { promise, resolve };
+    };
+    const older = deferred();
+    const newer = deferred();
+    check.mockReturnValueOnce(older.promise).mockReturnValueOnce(newer.promise);
+
+    const { result, rerender } = renderHook(
+      () => useMatchEditorState({ matchId: 1, bracketId: 'bracket-1', onClose: vi.fn() }),
+      { wrapper }
+    );
+
+    // A refetch hands the hook a new matchData reference, firing a second check.
+    matchOverride.current = { ...matchData };
+    try {
+      rerender();
+      expect(check).toHaveBeenCalledTimes(2);
+
+      await act(async () => {
+        newer.resolve({ ok: true, meta: { status: 2, currentStatusName: 'Ready' } } as never);
+        await newer.promise;
+      });
+      await waitFor(() => expect(result.current.byeEligible?.currentStatus).toBe(2));
+
+      // The older check resolves last. It must not overwrite the newer result.
+      await act(async () => {
+        older.resolve({ ok: true, meta: { status: 1, currentStatusName: 'Waiting' } } as never);
+        await older.promise;
+      });
+      expect(result.current.byeEligible?.currentStatus).toBe(2);
+      expect(result.current.byeEligible?.statusName).toBe('Ready');
+    } finally {
+      matchOverride.current = null;
     }
   });
 
