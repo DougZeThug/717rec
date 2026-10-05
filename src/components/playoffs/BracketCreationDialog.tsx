@@ -2,7 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { MAX_BRACKET_TEAMS, MIN_BRACKET_TEAMS } from '@/constants/brackets';
 import { useToast } from '@/hooks/useToast';
 import { createBracket } from '@/services/bracket-creator';
@@ -272,6 +278,9 @@ const BracketCreationDialog: React.FC<BracketCreationDialogProps> = ({
       <DialogContent className="max-w-2xl lg:max-w-5xl xl:max-w-6xl max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Playoff Bracket</DialogTitle>
+          <DialogDescription className="sr-only">
+            Choose the teams, their seeds and the bracket format.
+          </DialogDescription>
         </DialogHeader>
 
         {isRefreshing && (

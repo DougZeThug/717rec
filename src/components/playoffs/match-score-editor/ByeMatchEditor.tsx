@@ -2,7 +2,12 @@ import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -249,6 +254,9 @@ export const ByeMatchEditor: React.FC<ByeMatchEditorProps> = ({
     <DialogContent className="max-w-[95vw] sm:max-w-[500px] max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="text-base sm:text-lg">Match Forfeit - BYE</DialogTitle>
+        <DialogDescription className="sr-only">
+          Set the winner's score for this BYE match, or change its status.
+        </DialogDescription>
       </DialogHeader>
 
       <MatchStatusBadge status={byeEligible?.currentStatus ?? status} />

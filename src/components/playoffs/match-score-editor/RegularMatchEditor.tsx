@@ -2,7 +2,12 @@ import { ArrowLeftRight, Loader2, Shuffle } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -54,6 +59,9 @@ export const RegularMatchEditor: React.FC<RegularMatchEditorProps> = ({
     <DialogContent className="sm:max-w-[500px]">
       <DialogHeader>
         <DialogTitle>Edit Match Score</DialogTitle>
+        <DialogDescription className="sr-only">
+          Enter the score for each team, then save.
+        </DialogDescription>
       </DialogHeader>
 
       <MatchStatusBadge status={status} />

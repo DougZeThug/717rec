@@ -3,7 +3,13 @@ import React, { useState } from 'react';
 
 import EditMatchParticipantsDialog from '@/components/playoffs/admin/EditMatchParticipantsDialog';
 import SwapLoserSlotsDialog from '@/components/playoffs/admin/SwapLoserSlotsDialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useEditTeamsEligibility } from '@/hooks/playoffs/useEditTeams';
 import { useLoserSwapEligibility } from '@/hooks/playoffs/usePlayoffLoserSwap';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
@@ -64,6 +70,10 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent>
+          <DialogHeader className="sr-only">
+            <DialogTitle>Loading match</DialogTitle>
+            <DialogDescription>Loading the match details.</DialogDescription>
+          </DialogHeader>
           <div className="flex items-center justify-center p-8">
             <Loader2 className="size-8 animate-spin" />
           </div>
@@ -78,6 +88,9 @@ const BracketsManagerMatchEditorComponent: React.FC<BracketsManagerMatchEditorPr
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Error</DialogTitle>
+            <DialogDescription className="sr-only">
+              The match could not be loaded.
+            </DialogDescription>
           </DialogHeader>
           <div className="p-4">
             <p className="text-destructive-text">Failed to load match data. Please try again.</p>

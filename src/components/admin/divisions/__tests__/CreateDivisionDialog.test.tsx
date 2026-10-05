@@ -28,6 +28,13 @@ describe('CreateDivisionDialog', () => {
     return onOpenChange;
   };
 
+  it('gives the dialog a description for screen readers', () => {
+    renderDialog();
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+      'Name the new division and set how it is ranked.'
+    );
+  });
+
   it('blocks submit and shows a message when the name is empty', async () => {
     const user = userEvent.setup();
     renderDialog();

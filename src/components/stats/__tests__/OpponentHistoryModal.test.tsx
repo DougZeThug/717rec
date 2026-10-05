@@ -59,6 +59,18 @@ describe('OpponentHistoryModal', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('gives the dialog a description for screen readers', () => {
+    mockUseOpponentHistory.mockReturnValue({
+      data: { summary, matches: [match] },
+      isLoading: false,
+    });
+    renderModal();
+
+    expect(screen.getByRole('dialog')).toHaveAccessibleDescription(
+      'Every match this team has played against Rivals.'
+    );
+  });
+
   it('shows summary stats and the computed game win rate', () => {
     mockUseOpponentHistory.mockReturnValue({
       data: { summary, matches: [] },

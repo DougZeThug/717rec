@@ -1,5 +1,11 @@
 import TeamForm from '@/components/teams/TeamForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Team } from '@/types';
 
 type EditTeamDialogProps = {
@@ -14,6 +20,9 @@ const EditTeamDialog = ({ team, onOpenChange, onSubmit, onCancel }: EditTeamDial
     <DialogContent className="max-w-2xl max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Edit Team: {team?.name}</DialogTitle>
+        <DialogDescription className="sr-only">
+          Change the team name, logo, division and members.
+        </DialogDescription>
       </DialogHeader>
       {team && <TeamForm team={team} onSubmit={onSubmit} onCancel={onCancel} />}
     </DialogContent>

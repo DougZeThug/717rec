@@ -9,6 +9,7 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
 }));
 
 describe('RegularMatchEditor', () => {
@@ -53,6 +54,12 @@ describe('RegularMatchEditor', () => {
     fireEvent.click(screen.getByRole('button', { name: /edit teams/i }));
     expect(onEditTeams).toHaveBeenCalledTimes(1);
     expect(screen.queryByText(/^Edit teams:/)).not.toBeInTheDocument();
+  });
+
+  it('describes the dialog for screen readers', () => {
+    render(<RegularMatchEditor {...defaultProps} />);
+
+    expect(screen.getByText('Enter the score for each team, then save.')).toBeInTheDocument();
   });
 
   it('asks phones for the number pad on both score inputs', () => {

@@ -10,6 +10,7 @@ vi.mock('@/components/ui/dialog', () => ({
   DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  DialogDescription: ({ children }: { children: React.ReactNode }) => <p>{children}</p>,
 }));
 
 const readyByeEligibility: ByeEligibility = {
@@ -59,6 +60,14 @@ describe('ByeMatchEditor', () => {
       screen.getByText(
         'Edit teams: Edit teams only works on first-round matches of the winners bracket.'
       )
+    ).toBeInTheDocument();
+  });
+
+  it('describes the dialog for screen readers', () => {
+    render(<ByeMatchEditor {...defaultProps} />);
+
+    expect(
+      screen.getByText("Set the winner's score for this BYE match, or change its status.")
     ).toBeInTheDocument();
   });
 

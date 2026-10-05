@@ -81,7 +81,7 @@ This audit lists only items still open or new after `UX-AUDIT-2026-09.md`.
 
 ## Low
 
-- [ ] Nine dialogs lack `DialogDescription`. (Backlog)
+- [x] Nine dialogs lack `DialogDescription`. Fixed: each now has a screen-reader-only description (the screen looks the same). The match editor's loading and error dialogs got a title and description too.
 - [ ] Logo `alt` repeats the adjacent team name. (Step 11)
 - [ ] `focus:` rings instead of `focus-visible:`. (Backlog)
 - [x] Auth wording: Login / Sign In / Sign Up mixed. Fixed in Step 8: Sign in / Sign up / Sign out everywhere.
