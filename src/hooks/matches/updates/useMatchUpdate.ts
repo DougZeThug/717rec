@@ -136,10 +136,14 @@ export const useMatchUpdate = ({ matches, setMatches, editingMatch }: UseMatchUp
       const wasCompleted = isMatchCompleted(editingMatch);
       const isNowCompleted = isMatchCompleted(matchData);
 
-      // Check if game wins changed
+      // The edit form has no game-wins control, so its payload leaves these
+      // keys out. A missing value means "unchanged", not "0": reading it as 0
+      // sent the stored result to the RPC as 0-0 and wiped it.
+      const team1GameWins = matchData.team1_game_wins ?? editingMatch.team1_game_wins;
+      const team2GameWins = matchData.team2_game_wins ?? editingMatch.team2_game_wins;
       const gameWinsChanged =
-        editingMatch.team1_game_wins !== matchData.team1_game_wins ||
-        editingMatch.team2_game_wins !== matchData.team2_game_wins;
+        editingMatch.team1_game_wins !== team1GameWins ||
+        editingMatch.team2_game_wins !== team2GameWins;
 
       // For result-carrying edits (completed with winner/loser) the atomic
       // resubmit_match_result RPC writes match fields AND team counters in one
@@ -174,8 +178,8 @@ export const useMatchUpdate = ({ matches, setMatches, editingMatch }: UseMatchUp
         updatedMatch.loserId = matchData.loserId;
         updatedMatch.team1Score = matchData.team1Score;
         updatedMatch.team2Score = matchData.team2Score;
-        updatedMatch.team1_game_wins = matchData.team1_game_wins;
-        updatedMatch.team2_game_wins = matchData.team2_game_wins;
+        updatedMatch.team1_game_wins = team1GameWins;
+        updatedMatch.team2_game_wins = team2GameWins;
       }
       if (!isNowCompleted) {
         updatedMatch.iscompleted = false;
