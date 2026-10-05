@@ -49,8 +49,10 @@ describe('PowerScoreChart', () => {
     const chart = container.querySelector('.recharts-wrapper') as HTMLElement;
     fireEvent.mouseMove(chart, { clientX: 200, clientY: 40 });
 
-    expect(await screen.findByText(/Power Score: /)).toHaveTextContent(/82/);
-    expect(screen.getAllByText('Tigers').length).toBeGreaterThan(0);
+    // The Y axis also prints each team name, so look inside the tooltip itself.
+    const score = await screen.findByText(/Power Score: /);
+    expect(score).toHaveTextContent(/82/);
+    expect(score.parentElement).toHaveTextContent('Tigers');
   });
 
   it('is one picture with a text summary of each team and its score', () => {

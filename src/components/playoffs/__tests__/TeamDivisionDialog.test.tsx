@@ -50,6 +50,7 @@ describe('TeamDivisionDialog', () => {
   it('shows a spinner, not the divisions, while the teams load', () => {
     renderDialog({}, true);
 
+    expect(document.body.querySelector('svg.animate-spin')).toBeInTheDocument();
     expect(screen.queryByText('Competitive Division')).not.toBeInTheDocument();
   });
 

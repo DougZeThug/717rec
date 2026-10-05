@@ -65,7 +65,9 @@ describe('TrafficMiniChart', () => {
     const chart = container.querySelector('.recharts-wrapper') as HTMLElement;
     fireEvent.mouseMove(chart, { clientX: 300, clientY: 60 });
 
-    expect(await screen.findByText('Visitors')).toBeInTheDocument();
+    // Every day in the fixture has 2 visitors.
+    const item = (await screen.findByText('Visitors')).closest('.recharts-tooltip-item');
+    expect(item).toHaveTextContent(/Visitors\s*:?\s*2/);
     expect(
       screen.getByText(/^Sep \d+$/, { selector: '.recharts-tooltip-label' })
     ).toBeInTheDocument();
