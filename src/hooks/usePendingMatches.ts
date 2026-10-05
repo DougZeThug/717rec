@@ -88,7 +88,7 @@ export function usePendingMatches() {
 
   // Mutation for approving match results — atomic & idempotent via RPC
   const approveMutation = useMutation({
-    mutationFn: async ({ match, winnerTeamIndex }: { match: Match; winnerTeamIndex: 1 | 2 }) => {
+    mutationFn: ({ match, winnerTeamIndex }: { match: Match; winnerTeamIndex: 1 | 2 }) => {
       const winnerId = winnerTeamIndex === 1 ? match.team1Id : match.team2Id;
       const loserId = winnerTeamIndex === 1 ? match.team2Id : match.team1Id;
       const winnerGameWins =
