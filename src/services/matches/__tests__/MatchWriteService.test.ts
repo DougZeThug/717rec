@@ -31,14 +31,18 @@ vi.mock('@/utils/logger', () => ({
 
 // Import after mocks
 import {
+  approveMatchResult,
   batchCreateMatches,
   confirmMatchTie,
   createMatch,
   createScoreSubmission,
+  deleteMatchWithStatsReversal,
   fetchActiveSeason,
+  fetchActiveSeasonIdOptional,
   MatchCreateData,
   MatchNonResultUpdate,
   reopenMatchResult,
+  saveAutoScheduleMatches,
   updateMatch,
   updateScoreSubmissionStatus,
 } from '../MatchWriteService';
@@ -58,6 +62,15 @@ const makeMatchData = (overrides: Partial<MatchCreateData> = {}): MatchCreateDat
   team2_game_wins: 0,
   season_id: 'season-1',
   ...overrides,
+});
+
+/** A PostgrestError shape, the way this file's other write tests build one. */
+const postgrestError = (message = 'query failed') => ({
+  message,
+  code: '42P01',
+  details: null,
+  hint: null,
+  name: 'PostgrestError',
 });
 
 // Type-level guard: result fields must not be accepted by generic match updates.
@@ -238,6 +251,44 @@ describe('createMatch', () => {
       })
     );
   });
+
+  const newMatchInput = {
+    team1Id: 'team-a',
+    team2Id: 'team-b',
+    date: '2025-06-15T10:00:00',
+    location: 'Court A',
+    team1_game_wins: 0,
+    team2_game_wins: 0,
+  };
+
+  /** Route the season lookup to `season`; any other table is a plain insert that must not run. */
+  const mockSeasonLookup = (season: { data: { id: string } | null; error: unknown }) => {
+    const insert = vi.fn();
+    mockFrom.mockImplementation((table: string) =>
+      table === 'seasons'
+        ? {
+            select: () => ({
+              eq: () => ({ maybeSingle: () => Promise.resolve(season) }),
+            }),
+          }
+        : { insert }
+    );
+    return insert;
+  };
+
+  it('throws DatabaseError when the active season cannot be read', async () => {
+    const insert = mockSeasonLookup({ data: null, error: postgrestError() });
+
+    await expect(createMatch(newMatchInput)).rejects.toThrow(DatabaseError);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it('throws BusinessLogicError and writes nothing when there is no active season', async () => {
+    const insert = mockSeasonLookup({ data: null, error: null });
+
+    await expect(createMatch(newMatchInput)).rejects.toThrow(BusinessLogicError);
+    expect(insert).not.toHaveBeenCalled();
+  });
 });
 
 // ─── updateMatch ──────────────────────────────────────────────────────────────
@@ -332,6 +383,149 @@ describe('reopenMatchResult', () => {
     });
 
     await expect(reopenMatchResult(MATCH_ID)).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── deleteMatchWithStatsReversal ─────────────────────────────────────────────
+
+describe('deleteMatchWithStatsReversal', () => {
+  const MATCH_ID = '77777777-7777-4777-8777-777777777777';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('deletes through the atomic function so the stats are reversed with it', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null });
+
+    await expect(deleteMatchWithStatsReversal(MATCH_ID)).resolves.toBeUndefined();
+    expect(mockRpc).toHaveBeenCalledWith('delete_match_with_stats_reversal', {
+      p_match_id: MATCH_ID,
+    });
+  });
+
+  it('throws DatabaseError when the function fails', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: postgrestError('rolled back') });
+
+    await expect(deleteMatchWithStatsReversal(MATCH_ID)).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── fetchActiveSeasonIdOptional ──────────────────────────────────────────────
+
+describe('fetchActiveSeasonIdOptional', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const mockSeason = (result: { data: { id: string } | null; error: unknown }) =>
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({ maybeSingle: () => Promise.resolve(result) }),
+      }),
+    });
+
+  it('returns the active season id', async () => {
+    mockSeason({ data: { id: 'season-1' }, error: null });
+
+    await expect(fetchActiveSeasonIdOptional()).resolves.toBe('season-1');
+    expect(mockFrom).toHaveBeenCalledWith('seasons');
+  });
+
+  it('returns undefined, not an error, when there is no active season', async () => {
+    mockSeason({ data: null, error: null });
+
+    await expect(fetchActiveSeasonIdOptional()).resolves.toBeUndefined();
+  });
+
+  it('throws DatabaseError when the lookup fails', async () => {
+    mockSeason({ data: null, error: postgrestError() });
+
+    await expect(fetchActiveSeasonIdOptional()).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── saveAutoScheduleMatches ──────────────────────────────────────────────────
+
+describe('saveAutoScheduleMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const rows = [
+    {
+      team1_id: 'team-a',
+      team2_id: 'team-b',
+      date: '2025-06-15T10:00:00',
+      location: 'Court A',
+      round_number: 1,
+      season_id: 'season-1',
+      metadata: { autoScheduled: true },
+    },
+  ];
+
+  it('inserts into matches and returns the saved rows', async () => {
+    const insert = vi.fn(() => ({
+      select: () => Promise.resolve({ data: [{ id: 'm1', ...rows[0] }], error: null }),
+    }));
+    mockFrom.mockReturnValue({ insert });
+
+    const saved = await saveAutoScheduleMatches(rows);
+
+    expect(mockFrom).toHaveBeenCalledWith('matches');
+    expect(insert).toHaveBeenCalledWith(rows);
+    expect(saved).toEqual([{ id: 'm1', ...rows[0] }]);
+  });
+
+  it('throws DatabaseError when the insert fails', async () => {
+    mockFrom.mockReturnValue({
+      insert: () => ({
+        select: () => Promise.resolve({ data: null, error: postgrestError() }),
+      }),
+    });
+
+    await expect(saveAutoScheduleMatches(rows)).rejects.toThrow(DatabaseError);
+  });
+});
+
+// ─── approveMatchResult ───────────────────────────────────────────────────────
+
+describe('approveMatchResult', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const approve = () => approveMatchResult('match-1', 'team-a', 'team-b', 2, 1);
+
+  it('sends the winner, the loser and both game counts to the atomic function', async () => {
+    mockRpc.mockResolvedValue({ data: true, error: null });
+
+    await expect(approve()).resolves.toBe(true);
+    expect(mockRpc).toHaveBeenCalledWith('approve_match_result', {
+      p_match_id: 'match-1',
+      p_winner_id: 'team-a',
+      p_loser_id: 'team-b',
+      p_winner_game_wins: 2,
+      p_loser_game_wins: 1,
+    });
+  });
+
+  it('returns false when the guard matched no row', async () => {
+    mockRpc.mockResolvedValue({ data: false, error: null });
+
+    await expect(approve()).resolves.toBe(false);
+  });
+
+  it('treats a missing answer as false', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: null });
+
+    await expect(approve()).resolves.toBe(false);
+  });
+
+  it('throws DatabaseError when the function fails', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: postgrestError('Admin access required') });
+
+    await expect(approve()).rejects.toThrow(DatabaseError);
   });
 });
 
