@@ -2,20 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 
 import PageLayout from '@/components/layout/PageLayout';
-import ProfileForm from '@/components/profile/ProfileForm';
 import ProfileLoadingState from '@/components/profile/ProfileLoadingState';
+import ProfileSetupCard from '@/components/profile/ProfileSetupCard';
 import SeoHead from '@/components/seo/SeoHead';
-import TeamMembershipSection from '@/components/teams/TeamMembershipSection';
 import PageTransition from '@/components/transitions/PageTransition';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/auth-context';
 import { sanitizeReturnTo } from '@/utils/auth/sanitizeReturnTo';
 import { authLog } from '@/utils/logger';
@@ -112,34 +102,12 @@ const ProfileSetup = () => {
       />
       <PageTransition>
         <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle as="h1" className="text-2xl">
-                Set Up Your Profile
-              </CardTitle>
-              <CardDescription>Enter your name and details</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ProfileForm
-                initialUsername={profile?.username || ''}
-                initialFullName={profile?.full_name || ''}
-                onProfileUpdated={handleProfileUpdated}
-              />
-
-              {/* Team Membership Section */}
-              {user && (
-                <>
-                  <Separator className="my-6" />
-                  <TeamMembershipSection />
-                </>
-              )}
-            </CardContent>
-            <CardFooter className="flex justify-center">
-              <p className="text-sm text-muted-foreground">
-                This information will be visible to other players
-              </p>
-            </CardFooter>
-          </Card>
+          <ProfileSetupCard
+            initialUsername={profile?.username || ''}
+            initialFullName={profile?.full_name || ''}
+            onProfileUpdated={handleProfileUpdated}
+            showTeamMembership={!!user}
+          />
         </div>
       </PageTransition>
     </PageLayout>
