@@ -100,6 +100,21 @@ export const DivisionService = {
       );
     }
 
+    // Block deletion if any power-score snapshots reference this division.
+    // Snapshots are permanent history, so the message gives no way to clear them.
+    const { count: snapshotCount, error: snapshotCountError } = await supabase
+      .from('power_score_snapshots')
+      .select('id', { count: 'exact', head: true })
+      .eq('division_id', id);
+
+    if (snapshotCountError)
+      handleDatabaseError(snapshotCountError, 'Failed to check division usage');
+    if ((snapshotCount ?? 0) > 0) {
+      throw new BusinessLogicError(
+        'Division has historical power-score snapshots and cannot be deleted.'
+      );
+    }
+
     const { error } = await supabase.from('divisions').delete().eq('id', id);
     if (error) handleDatabaseError(error, 'Failed to delete division');
   },
