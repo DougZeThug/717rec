@@ -143,6 +143,24 @@ describe('applyFields', () => {
     applyFields(match, { opponent2_id: 6 });
     expect(match.opponent2).toEqual({ id: 6, position: 8 });
   });
+
+  it('drops a cleared column from the slot but keeps a cleared id as null', () => {
+    const match: StorageMatch = {
+      id: 9,
+      stage_id: 1,
+      group_id: 1,
+      round_id: 11,
+      number: 1,
+      status: 2,
+      opponent1: { id: 1, position: 1, score: 0, result: 'win' },
+      opponent2: { id: 2, position: 4 },
+    };
+    applyFields(match, { opponent1_result: null, opponent1_score: null, opponent2_id: null });
+
+    expect(match.opponent1).toEqual({ id: 1, position: 1 });
+    expect(Object.keys(match.opponent1 ?? {})).not.toContain('result');
+    expect(match.opponent2).toEqual({ id: null, position: 4 });
+  });
 });
 
 describe('assertFootprint', () => {

@@ -30,13 +30,16 @@ export function applyFields(match: StorageMatch, fields: MatchUpdateFields): voi
       match[side] = null;
       continue;
     }
-    const slot: Record<string, unknown> = match[side] === null ? {} : { ...(match[side] ?? {}) };
+    // A null clears a column (its key leaves the slot); an id of null stays as null.
+    const cleared = new Set<string>();
+    const written: Record<string, unknown> = {};
     for (const key of present) {
       const value = fields[columnOf(key)];
-      if (value === null && key !== 'id') delete slot[key];
-      else slot[key] = value;
+      if (value === null && key !== 'id') cleared.add(key);
+      else written[key] = value;
     }
-    (match as Record<OpponentSide, unknown>)[side] = slot;
+    const kept = Object.entries(match[side] ?? {}).filter(([key]) => !cleared.has(key));
+    (match as Record<OpponentSide, unknown>)[side] = { ...Object.fromEntries(kept), ...written };
   }
   if (fields.status !== undefined) match.status = fields.status;
 }
