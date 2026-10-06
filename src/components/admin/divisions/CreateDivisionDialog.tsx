@@ -47,9 +47,13 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     setError(null);
     const trimmed = name.trim();
     const numericWeight = Number(weight);
-    if (!trimmed) return setError('Name is required');
+    if (!trimmed) {
+      setError('Name is required');
+      return;
+    }
     if (!Number.isFinite(numericWeight) || numericWeight <= 0) {
-      return setError('Weight must be a positive number');
+      setError('Weight must be a positive number');
+      return;
     }
     createDivision.mutate(
       {

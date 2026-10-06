@@ -74,7 +74,7 @@ export function useBracketsManagerRealtime(
         bracketId,
         stageId,
       });
-      return;
+      return undefined;
     }
 
     bracketLog('Setting up realtime subscription for match table', { bracketId, stageId });

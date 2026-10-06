@@ -46,7 +46,7 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   }, [emblaApi]);
 
   useEffect(() => {
-    if (!emblaApi) return;
+    if (!emblaApi) return undefined;
     emblaApi.on('select', onSelect);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sync chart state to prop changes
     onSelect();

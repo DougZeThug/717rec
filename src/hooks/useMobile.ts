@@ -18,7 +18,7 @@ export function useIsMobile(): boolean {
 
   useEffect(() => {
     // Check if we're in a browser environment
-    if (typeof window === 'undefined' || !window.matchMedia) return;
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
 
     // Use matchMedia to avoid forced reflow from reading innerWidth
     const mediaQuery = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);

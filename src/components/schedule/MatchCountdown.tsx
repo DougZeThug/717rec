@@ -20,7 +20,7 @@ const MatchCountdown: React.FC<MatchCountdownProps> = memo(({ matchDate }) => {
     const now = new Date();
 
     // Only show countdown if match is in the future
-    if (targetDate <= now) return;
+    if (targetDate <= now) return undefined;
 
     const updateCountdown = () => {
       const now = new Date();

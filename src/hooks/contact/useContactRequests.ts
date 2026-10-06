@@ -18,7 +18,7 @@ export function useContactRequests(enabled = true) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) return undefined;
     const { dispose } = subscribeWithRetry({
       label: 'useContactRequests',
       build: () =>
