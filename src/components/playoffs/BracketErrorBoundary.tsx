@@ -14,7 +14,6 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
-  errorInfo?: ErrorInfo;
 }
 
 class BracketErrorBoundary extends Component<Props, State> {
@@ -39,11 +38,10 @@ class BracketErrorBoundary extends Component<Props, State> {
       bracketId: this.props.bracketId,
       componentStack: errorInfo.componentStack,
     });
-    this.setState({ error, errorInfo });
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    this.setState({ hasError: false, error: undefined });
   };
 
   render() {

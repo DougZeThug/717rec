@@ -34,13 +34,12 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
   const metadata = parseMetadata(formData.metadata);
 
   const updateMetadataField = (key: string, value: unknown) => {
-    const m = parseMetadata(formData.metadata);
-    if (value === '' || value === null || value === undefined) {
-      delete m[key];
-    } else {
-      m[key] = value;
-    }
-    onChange('metadata', JSON.stringify(m, null, 2));
+    const current = parseMetadata(formData.metadata);
+    const updated =
+      value === '' || value === null || value === undefined
+        ? Object.fromEntries(Object.entries(current).filter(([name]) => name !== key))
+        : { ...current, [key]: value };
+    onChange('metadata', JSON.stringify(updated, null, 2));
   };
 
   return (

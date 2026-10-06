@@ -6,11 +6,9 @@ export const useErrorHandling = () => {
 
   const clearErrors = (matchId?: string) => {
     if (matchId) {
-      setErrorMessages((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[matchId];
-        return newErrors;
-      });
+      setErrorMessages((prev) =>
+        Object.fromEntries(Object.entries(prev).filter(([id]) => id !== matchId))
+      );
       setFailedMatches((prev) => prev.filter((id) => id !== matchId));
     } else {
       setErrorMessages({});

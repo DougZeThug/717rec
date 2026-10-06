@@ -9,7 +9,7 @@ export function getCacheKey(team1Id: string, team2Id: string): string {
 /**
  * Cache for previous match history to reduce database queries
  */
-const matchHistoryCache: { [key: string]: boolean } = {};
+const matchHistoryCache = new Map<string, boolean>();
 
 /**
  * Get cached match history or fetch it
@@ -22,13 +22,14 @@ export async function getCachedMatchHistory(
   const cacheKey = getCacheKey(team1Id, team2Id);
 
   // Return from cache if available
-  if (matchHistoryCache[cacheKey] !== undefined) {
-    return matchHistoryCache[cacheKey];
+  const cached = matchHistoryCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
   }
 
   // Fetch match history and cache it
   const hasPlayed = await checkFn(team1Id, team2Id);
-  matchHistoryCache[cacheKey] = hasPlayed;
+  matchHistoryCache.set(cacheKey, hasPlayed);
 
   return hasPlayed;
 }
@@ -37,7 +38,5 @@ export async function getCachedMatchHistory(
  * Clear the match history cache
  */
 export function clearMatchHistoryCache(): void {
-  Object.keys(matchHistoryCache).forEach((key) => {
-    delete matchHistoryCache[key];
-  });
+  matchHistoryCache.clear();
 }

@@ -282,6 +282,8 @@ const EditModeContainer: React.FC<EditModeContainerProps> = ({
   /** Leave edit mode, asking for confirmation first if there are unsaved changes. */
   const handleCancel = () => {
     if (hasChanges) {
+      // skipcq: JS-0052 -- same native unsaved-changes prompt the rest of the
+      // admin uses (see useUnsavedChangesGuard); keep them consistent
       const confirmed = window.confirm(
         'You have unsaved changes. Are you sure you want to cancel?'
       );

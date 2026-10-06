@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import type { Team } from '@/types';
 import { mockTeams } from '@/utils/test/autoSchedule/mockData';
 
-import { TimeBlockTeamsList } from '../../auto-schedule/TimeBlockTeamsList';
+import { TimeBlockTeamsList } from '../TimeBlockTeamsList';
 
 describe('TimeBlockTeamsList', () => {
   it('should render a message when no teams are available', () => {

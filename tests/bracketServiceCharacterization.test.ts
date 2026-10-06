@@ -809,7 +809,7 @@ describe('bracket service characterization (real service + real library over fak
       const updateSpy = vi.spyOn(storage, 'update').mockImplementation(async (...args) => {
         writes += 1;
         if (writes > 1) throw new Error('simulated storage failure during propagation');
-        return originalUpdate(...args);
+        return await originalUpdate(...args);
       });
 
       try {

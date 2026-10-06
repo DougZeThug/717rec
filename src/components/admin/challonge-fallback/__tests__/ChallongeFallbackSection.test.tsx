@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -235,8 +235,6 @@ describe('ChallongeFallbackSection', () => {
 
     expect(hookMocks.mutations.deleteBracket).not.toHaveBeenCalled();
     expect(screen.getAllByRole('button', { name: /remove bracket/i })).toHaveLength(1);
-    // silence unused import
-    void within;
   });
 
   it('preserves unsaved new rows when brackets data refetches (regression)', async () => {

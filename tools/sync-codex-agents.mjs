@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Builds .codex/agents/*.toml from .claude/agents/*.md so there is ONE source of truth.
 // Edit the .md files. Then run:  node tools/sync-codex-agents.mjs
 // Check for drift (CI or pre-commit):  node tools/sync-codex-agents.mjs --check
@@ -66,5 +65,9 @@ for (const f of stale) {
   drift += 1;
   console.error(`STALE (no .claude/agents source): .codex/agents/${f}`);
 }
-if (check && drift) process.exit(1);
-console.log(check ? `OK: ${files.length} agents in sync` : `Wrote ${files.length} agents (${drift} changed)`);
+if (check && drift) {
+  // Set the exit code instead of calling process.exit() so the script ends on its own.
+  process.exitCode = 1;
+} else {
+  console.log(check ? `OK: ${files.length} agents in sync` : `Wrote ${files.length} agents (${drift} changed)`);
+}

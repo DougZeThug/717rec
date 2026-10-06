@@ -89,8 +89,9 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({
     const currentChampions = currentMeta.champions || {};
     const staleKeys = Object.keys(currentChampions).filter((k) => !validNames.has(k));
     if (staleKeys.length > 0) {
-      const cleaned: Record<string, string> = { ...currentChampions };
-      staleKeys.forEach((k) => delete cleaned[k]);
+      const cleaned: Record<string, string> = Object.fromEntries(
+        Object.entries(currentChampions).filter(([name]) => validNames.has(name))
+      );
       const newMeta = { ...currentMeta, champions: cleaned };
       onChangeRef.current('metadata', JSON.stringify(newMeta, null, 2));
     }
@@ -106,12 +107,10 @@ export const ChampionsEditor: React.FC<FormSectionProps> = ({
   const champions = metadata.champions || {};
 
   const updateChampion = (divisionName: string, teamId: string) => {
-    const updated = { ...champions };
-    if (teamId === '__clear__') {
-      delete updated[divisionName];
-    } else {
-      updated[divisionName] = teamId;
-    }
+    const updated: Record<string, string> =
+      teamId === '__clear__'
+        ? Object.fromEntries(Object.entries(champions).filter(([name]) => name !== divisionName))
+        : { ...champions, [divisionName]: teamId };
     const newMetadata = { ...metadata, champions: updated };
     onChange('metadata', JSON.stringify(newMetadata, null, 2));
   };
