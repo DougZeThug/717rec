@@ -113,7 +113,7 @@ describe('useScoreSubmissions', () => {
     const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    await act(async () => {
+    act(() => {
       result.current.handleApproveSubmission(approveInput);
     });
 
@@ -146,7 +146,7 @@ describe('useScoreSubmissions', () => {
     const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    await act(async () => {
+    act(() => {
       result.current.handleApproveSubmission({ ...approveInput, winner: 2, team2GameWins: 3 });
     });
 
@@ -165,7 +165,7 @@ describe('useScoreSubmissions', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     mockToast.mockClear();
 
-    await act(async () => {
+    act(() => {
       result.current.handleApproveSubmission(approveInput);
     });
 
@@ -184,7 +184,7 @@ describe('useScoreSubmissions', () => {
     const { result } = renderHook(() => useScoreSubmissions(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    await act(async () => {
+    act(() => {
       result.current.handleRejectSubmission('sub-2');
     });
 
@@ -206,7 +206,7 @@ describe('useScoreSubmissions', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     mockToast.mockClear();
 
-    await act(async () => {
+    act(() => {
       result.current.handleApproveSubmission(approveInput);
     });
 
