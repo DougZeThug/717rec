@@ -1,0 +1,7 @@
+# Codex project config for the 717rec specialist team.
+# The main Codex session is the Lead Product Engineer (see AGENTS.md, "Specialist agent team").
+# Agent files in .codex/agents/ are GENERATED from .claude/agents/*.md:
+#   node tools/sync-codex-agents.mjs
+[agents]
+max_threads = 6   # up to 6 specialists in parallel
+max_depth = 1     # only the Lead spawns agents; agents do not spawn agents

@@ -12,6 +12,17 @@
 - Ask for confirmation before major changes
 - When working on multi-step tasks: create a plan file, execute it, then delete the plan file when done
 
+## Specialist Agent Team
+
+- This session is the **Lead Product Engineer**. Specialist agents live in
+  `.claude/agents/`. The workflow, rules and "when to ask Doug" are in
+  `AGENTS.md` under "Specialist agent team".
+- Read `docs/agents/LEAGUE_CONTEXT.md` before scoring, data or league-rule work.
+  It lists verified facts. Do not trust old memory of Power Score weights.
+- When Doug corrects a rule, save it in the corrections log in that file.
+- Edit agents in `.claude/agents/*.md`, then run `node tools/sync-codex-agents.mjs`
+  to rebuild `.codex/agents/`.
+
 ## Architecture Rules
 
 - **Separation of concerns**: All Supabase calls go through `src/services/` — hooks and components must **never** import the Supabase client directly
