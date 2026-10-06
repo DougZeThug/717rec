@@ -202,8 +202,8 @@ export function calculateSourceNodeIds(
     // Find last round of Winners Bracket (group 1)
     const wbRounds = rounds
       .filter((round) => {
-        const g = groupsById.get(round.group_id);
-        return g && g.number === 1;
+        const group = groupsById.get(round.group_id);
+        return group && group.number === 1;
       })
       .sort((a, b) => b.number - a.number);
     const wbFinalRound = wbRounds[0];
@@ -211,8 +211,8 @@ export function calculateSourceNodeIds(
     // Find last round of Losers Bracket (group 2)
     const lbRounds = rounds
       .filter((round) => {
-        const g = groupsById.get(round.group_id);
-        return g && g.number === 2;
+        const group = groupsById.get(round.group_id);
+        return group && group.number === 2;
       })
       .sort((a, b) => b.number - a.number);
     const lbFinalRound = lbRounds[0];
