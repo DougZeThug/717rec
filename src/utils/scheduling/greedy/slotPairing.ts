@@ -7,7 +7,7 @@ import { pairKey } from './pairKey';
 import { RelaxationLevel, ScheduledMatch } from './types';
 
 /** State shared by every step of the swap pass. */
-interface SwapContext {
+export interface SwapContext {
   slotName: string;
   playedSet: Set<string>;
   tonightPairs: Set<string>;
@@ -147,7 +147,9 @@ function trySwapIntoExistingMatch(
  * find an existing match M=(A,B) where we can swap to (U1,A)+(U2,B)
  * or (U1,B)+(U2,A), resolving the stranding without creating new conflicts.
  */
-function trySwapToFixUnmatched(
+// Exported so tests can reach the direct-pairing step, which generateSlotPairings
+// never hits: a team only ends up stranded when it cannot play any open team.
+export function trySwapToFixUnmatched(
   matches: ScheduledMatch[],
   unmatchedTeams: Team[],
   allTeams: Team[],

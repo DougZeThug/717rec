@@ -429,6 +429,36 @@ describe('fetchCareerData query flow', () => {
       }
     });
 
+    it('sends both bracket queries before either one answers', async () => {
+      // Both answers are held back. If the second query only started after the
+      // first answered, it would not have been sent yet.
+      let releaseWeights: (value: QueryResult) => void = () => undefined;
+      let releaseSeasons: (value: QueryResult) => void = () => undefined;
+      setup({
+        playoff_matches: { data: [playoffRow('b1')], error: null },
+        bracket_weights: new Promise<QueryResult>((resolve) => {
+          releaseWeights = resolve;
+        }) as unknown as QueryResult,
+        bracket_seasons: new Promise<QueryResult>((resolve) => {
+          releaseSeasons = resolve;
+        }) as unknown as QueryResult,
+      });
+
+      const pending = fetchCareerData(TEAM_ID);
+      await vi.waitFor(() => expect(queriesOn('brackets')).toHaveLength(2));
+
+      releaseSeasons({ data: [{ id: 'b1', season_id: 's1' }], error: null });
+      releaseWeights({
+        data: [{ id: 'b1', divisions: { division_weight: 0.7, display_division: 'Intermediate' } }],
+        error: null,
+      });
+      const result = await pending;
+
+      expect(result?.bracketDivisionWeights).toEqual({ b1: 0.7 });
+      expect(result?.bracketDivisionDisplayNames).toEqual({ b1: 'Intermediate' });
+      expect(result?.bracketSeasonMap).toEqual({ b1: 's1' });
+    });
+
     it('builds the weight, display name and season maps', async () => {
       setup({
         playoff_matches: {

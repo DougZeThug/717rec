@@ -48,8 +48,7 @@ function computeGfStatus(gfMatch: StorageMatch, update: GfUpdate): number | unde
   const willHaveOpp1 = Boolean(update.opponent1?.id ?? gfMatch.opponent1?.id);
   const willHaveOpp2 = Boolean(update.opponent2?.id ?? gfMatch.opponent2?.id);
   if (willHaveOpp1 && willHaveOpp2) return STATUS_READY;
-  if (willHaveOpp1 || willHaveOpp2) return STATUS_WAITING;
-  return gfMatch.status;
+  return willHaveOpp1 || willHaveOpp2 ? STATUS_WAITING : gfMatch.status;
 }
 
 function describePopulatedSlots(update: GfUpdate): string {

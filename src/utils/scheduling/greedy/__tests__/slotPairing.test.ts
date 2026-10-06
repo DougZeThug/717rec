@@ -9,7 +9,7 @@ vi.mock('@/utils/logger', () => ({
 import { scheduleLog, warnLog } from '@/utils/logger';
 
 import { pairKey } from '../pairKey';
-import { generateSlotPairings } from '../slotPairing';
+import { generateSlotPairings, type SwapContext, trySwapToFixUnmatched } from '../slotPairing';
 import { expectNoDuplicatePairs, expectNoTeamDoubleBookedPerSlot, makeTeam } from './testHelpers';
 
 describe('generateSlotPairings', () => {
@@ -282,6 +282,113 @@ describe('generateSlotPairings swap pass', () => {
     expect(teamMatchCounts.get('c')).toBe(0);
     expect(teamMatchCounts.get('d')).toBe(0);
     expect(scheduleLog).not.toHaveBeenCalled();
+    expect(warnLog).toHaveBeenCalledWith('Swap pass: 2 teams still unmatched after swap attempts');
+  });
+});
+
+// generateSlotPairings never reaches the direct-pairing step: a team is only
+// left over when it cannot play any open team, so two leftovers cannot play
+// each other. The step is still part of trySwapToFixUnmatched, so it is tested
+// on its own here.
+describe('trySwapToFixUnmatched direct pairing', () => {
+  const makeContext = (overrides: Partial<SwapContext> = {}): SwapContext => ({
+    slotName: 'S1',
+    playedSet: new Set<string>(),
+    tonightPairs: new Set<string>(),
+    teamMatchCounts: new Map<string, number>(),
+    maxTierGap: 1,
+    newPairs: new Set<string>(),
+    relaxationLevel: 0,
+    ...overrides,
+  });
+
+  it('pairs two stranded teams that can play each other', () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const ctx = makeContext({
+      teamMatchCounts: new Map([
+        ['x', 0],
+        ['y', 0],
+      ]),
+    });
+
+    const result = trySwapToFixUnmatched([], [first, second], [first, second], ctx);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      slot: 'S1',
+      teamAId: 'x',
+      teamBId: 'y',
+      teamAName: 'Team x',
+      teamBName: 'Team y',
+      divisionA: 'Competitive',
+      divisionB: 'Competitive',
+      tierA: 1,
+      tierB: 1,
+    });
+    expect(ctx.tonightPairs).toEqual(new Set([pairKey('x', 'y')]));
+    expect(ctx.newPairs).toEqual(new Set([pairKey('x', 'y')]));
+    expect(ctx.teamMatchCounts.get('x')).toBe(1);
+    expect(ctx.teamMatchCounts.get('y')).toBe(1);
+    expect(scheduleLog).not.toHaveBeenCalled();
+    expect(warnLog).not.toHaveBeenCalled();
+  });
+
+  it('keeps the existing matches and adds the new one at the end', () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const existing = {
+      slot: 'S1',
+      teamAId: 'a',
+      teamBId: 'b',
+      teamAName: 'Team a',
+      teamBName: 'Team b',
+      divisionA: 'Competitive',
+      divisionB: 'Competitive',
+      tierA: 1,
+      tierB: 1,
+    };
+    const ctx = makeContext();
+
+    const result = trySwapToFixUnmatched([existing], [second, first], [first, second], ctx);
+
+    expect(result.map((match) => [match.teamAId, match.teamBId])).toEqual([
+      ['a', 'b'],
+      ['y', 'x'],
+    ]);
+    expect(result[0]).toBe(existing);
+  });
+
+  it("does not touch the caller's match list", () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const matches: Parameters<typeof trySwapToFixUnmatched>[0] = [];
+
+    trySwapToFixUnmatched(matches, [first, second], [first, second], makeContext());
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it('works without a newPairs set', () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const ctx = makeContext({ newPairs: undefined });
+
+    const result = trySwapToFixUnmatched([], [first, second], [first, second], ctx);
+
+    expect(result).toHaveLength(1);
+    expect(ctx.tonightPairs.has(pairKey('x', 'y'))).toBe(true);
+  });
+
+  it('leaves teams that cannot play each other to the swap step', () => {
+    // A tier gap of 2 blocks Competitive vs Recreational, and nothing is left to swap with.
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Recreational');
+    const ctx = makeContext();
+
+    const result = trySwapToFixUnmatched([], [first, second], [first, second], ctx);
+
+    expect(result).toEqual([]);
     expect(warnLog).toHaveBeenCalledWith('Swap pass: 2 teams still unmatched after swap attempts');
   });
 });

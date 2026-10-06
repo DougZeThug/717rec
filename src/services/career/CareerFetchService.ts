@@ -222,11 +222,12 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
 
   const teamDivisionWeight = teamData?.divisions?.division_weight || DEFAULT_DIVISION_WEIGHT;
 
-  // The two bracket lookups run one after the other, as they always have.
+  // The two bracket lookups do not depend on each other, so they run together.
   const bracketIds = uniqueBracketIds(playoffMatches);
-  const { weights: bracketDivisionWeights, displayNames: bracketDivisionDisplayNames } =
-    await fetchBracketDivisionInfo(bracketIds);
-  const bracketSeasonMap = await fetchBracketSeasonMap(bracketIds);
+  const [
+    { weights: bracketDivisionWeights, displayNames: bracketDivisionDisplayNames },
+    bracketSeasonMap,
+  ] = await Promise.all([fetchBracketDivisionInfo(bracketIds), fetchBracketSeasonMap(bracketIds)]);
 
   return {
     teamData,
