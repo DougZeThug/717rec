@@ -54,8 +54,8 @@ stateDiagram-v2
     rated --> rated : a result is completed, reopened, or corrected
     rated --> rated : an admin changes a division weight (active seasons only)
     rated --> frozen : the season is archived
-    frozen --> frozen : formula and weight changes no longer apply
-    frozen --> rated : an admin deliberately recomputes the archived season
+    frozen --> frozen : formula changes and re-tiering no longer apply
+    frozen --> rated : new weights are saved, or an admin deliberately recomputes the archived season
 ```
 
 ### Arrive
