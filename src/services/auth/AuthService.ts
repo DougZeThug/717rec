@@ -91,5 +91,5 @@ export const updatePassword = async (newPassword: string): Promise<void> => {
  * Pass `null` on sign-out to fall back to the publishable key.
  */
 export const setRealtimeAuth = (token: string | null): void => {
-  void supabase.realtime.setAuth(token ?? undefined);
+  supabase.realtime.setAuth(token ?? undefined);
 };

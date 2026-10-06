@@ -175,7 +175,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
       startParkedWatch();
       const stale = currentChannel;
       currentChannel = null;
-      if (stale) void supabase.removeChannel(stale);
+      if (stale) supabase.removeChannel(stale);
       return;
     }
 
@@ -191,7 +191,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
       currentChannel = null;
       if (stale) {
         // Fire-and-forget; removeChannel returns a promise but we don't await
-        void supabase.removeChannel(stale);
+        supabase.removeChannel(stale);
       }
       connect();
     }, delay);
@@ -209,7 +209,7 @@ export function subscribeWithRetry(options: SubscribeWithRetryOptions): { dispos
         retryTimer = null;
       }
       if (currentChannel) {
-        void supabase.removeChannel(currentChannel);
+        supabase.removeChannel(currentChannel);
         currentChannel = null;
       }
     },
