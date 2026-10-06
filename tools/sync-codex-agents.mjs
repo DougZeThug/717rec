@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Builds .codex/agents/*.toml from .claude/agents/*.md so there is ONE source of truth.
 // Edit the .md files. Then run:  node tools/sync-codex-agents.mjs
 // Check for drift (CI or pre-commit):  node tools/sync-codex-agents.mjs --check
