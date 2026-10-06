@@ -137,9 +137,11 @@ under the scoreboard reads **"Offline — 1 round waiting to sync. Keep this pag
 open."** No "Round N saved" appears, because it has not been. Before the first
 round is held, the line reads **"Offline — keep this page open. Rounds send when
 the signal is back."** The held round is in memory, so while any round waits,
-reloading or closing the tab raises the browser's own leave warning. Links and
-Back inside the app are not blocked: they do not lose a held round. The warning
-is not reliable on iPhone Safari.
+reloading or closing the tab on the live-scoring screen raises the browser's own
+leave warning. Links and Back inside the app are not blocked: they do not lose a
+held round. On another app page a reload gives no warning, but held rounds still
+send when the signal returns if the tab stays open. The warning is not reliable
+on iPhone Safari.
 
 **If a held round is refused when it is finally sent**, the round drops out of
 the log and the round number comes back to it. The grids are empty — they were

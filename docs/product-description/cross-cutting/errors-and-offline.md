@@ -141,9 +141,10 @@ and they are sent by themselves when the connection returns. The line says to
 keep the page open. The held round is in memory, so closing the tab loses it —
 but the tapped scores are kept on the phone for twelve hours, so a reload hands
 them back and one press files them again. While a round waits, reloading or
-closing the tab raises the browser's own leave warning (not reliable on iPhone
-Safari). Links and Back inside the app are not blocked, because they do not lose
-a held round.
+closing the tab on the live-scoring screen raises the browser's own leave
+warning (not reliable on iPhone Safari). Links and Back inside the app are not
+blocked, because they do not lose a held round. On another app page a reload
+gives no warning, but held rounds still send on reconnect if the tab stays open.
 
 Everywhere else there is still no queue. A long message typed offline is lost on
 submit. See
