@@ -87,7 +87,7 @@ Not applicable. There is no commit on any of these numbers.
 | Number | What it is | Where it comes from |
 | --- | --- | --- |
 | **W-L** | Matches won and lost this season. | Counted on the server from completed matches. Every match counts, including ones whose opponent division could not be resolved. |
-| **Win %** | Matches won divided by matches played. | Server. |
+| **Win %** | Wins divided by wins plus losses. A tie counts in neither, so it does not lower Win %. A team with only ties reads 0. | Server. |
 | **Games** | Games won and lost, summed across matches. | Server. |
 | **Game %** | Games won divided by games played. | Server. |
 | **SOS** | Strength of schedule: the average division weight of the opponents faced, held between 0.1 and 1.0, shown to three decimals. | Server. Not the average power score of opponents. |

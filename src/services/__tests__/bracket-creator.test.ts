@@ -280,14 +280,14 @@ describe('createBracket — seeding order', () => {
     expect(seededTeams().map((t) => t.id)).toEqual(['a', 'b']);
   });
 
-  it('seeds on the stored win percentage, not wins over wins-plus-losses', async () => {
-    // The view divides by every completed match, so a match that completed
-    // without a winner sits in the denominator and in neither `wins` nor
-    // `losses`. Alpha has four of those: stored 3/10 = 0.30, but a local
-    // 3/(3+3) would read 0.50 and put Alpha first. The standings — and so the
-    // projected-seeds preview the admin checks the bracket against — say
-    // Bravo. `localeCompare` would also say Alpha, so this ordering can only
-    // come from the stored column.
+  it('seeds on the stored win percentage, not a local recomputation', async () => {
+    // The view owns the Win % rule (today W / (W + L): a tie is left out), so
+    // seeding must read the stored column and never redo the sum. To prove
+    // that, the fixture makes the stored value disagree with the record on
+    // purpose: Alpha's stored 0.30 against a local 3/(3+3) = 0.50 that would
+    // put Alpha first. The standings — and so the projected-seeds preview the
+    // admin checks the bracket against — say Bravo. `localeCompare` would also
+    // say Alpha, so this ordering can only come from the stored column.
     installSupabase({
       fullTeamData: [
         {

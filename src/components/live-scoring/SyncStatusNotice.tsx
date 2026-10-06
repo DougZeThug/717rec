@@ -15,6 +15,9 @@ interface SyncStatusNoticeProps {
  * record that a round was held, and no reason to believe pressing Save had
  * done anything.
  *
+ * Both offline lines say to keep the page open: held rounds live in memory, so
+ * a reload or a closed tab loses them.
+ *
  * This is **not** the "Live updates" pill in the header. That one reports the
  * realtime channel — whether another scorer's work would reach this screen —
  * and it is on a different axis: the channel can be down on a perfectly good
@@ -46,8 +49,8 @@ export const SyncStatusNotice: React.FC<SyncStatusNoticeProps> = ({ isOnline, pa
     >
       <CloudOff className="size-4 shrink-0" aria-hidden />
       {pausedCount === 0
-        ? 'Offline — keep scoring. Rounds send themselves when the signal is back.'
-        : `Offline — ${rounds} waiting to sync.`}
+        ? 'Offline — keep this page open. Rounds send when the signal is back.'
+        : `Offline — ${rounds} waiting to sync. Keep this page open.`}
     </p>
   );
 };

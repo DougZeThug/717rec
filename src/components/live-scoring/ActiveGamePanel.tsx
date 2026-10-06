@@ -8,6 +8,7 @@ import {
 } from '@/hooks/live-scoring/usePausedRoundCount';
 import type { useRoundMutations } from '@/hooks/live-scoring/useRoundMutations';
 import { useRoundSavedSound } from '@/hooks/live-scoring/useRoundSavedSound';
+import { useBeforeUnloadWarning } from '@/hooks/useBeforeUnloadWarning';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { toast } from '@/hooks/useToast';
 import { DuplicateRoundError } from '@/types/errors';
@@ -97,6 +98,9 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
   const isOnline = useOnlineStatus();
   const pausedRounds = usePausedRoundCount(matchId);
   const unsettledRounds = useUnsettledRoundCount(matchId);
+  // A reload or closed tab loses rounds that are held or still sending; in-app
+  // moves do not, so this is not useUnsavedChangesGuard.
+  useBeforeUnloadWarning(unsettledRounds > 0);
 
   /**
    * A round held for a missing connection stays `isPending` for as long as the

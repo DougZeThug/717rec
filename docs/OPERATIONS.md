@@ -48,9 +48,26 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 
 ### 2c. Wrong score was approved
 
-1. In Admin → Match management, open the match.
-2. Either: use **Mark as tie** (`mark_match_as_tie`) to zero it out, then re-approve the correct submission; or edit directly if you know the right numbers.
-3. Standings and streaks recompute on the next query invalidation — usually within seconds. If not, hit refresh.
+**First: was it live-scored?** If the match is listed in **Admin → Live Corrections**, yes. Scores and Live Corrections take off the old result and put on the new one in the same save. You do not undo anything first.
+
+**Wrong winner or wrong 2–0 / 2–1 (not live-scored)**
+1. **Admin → Scores**. Pick the night with **Filter by Date**.
+2. On the match card, tap the correct button: **2–0**, **2–1**, **1–2** or **0–2**. "Edited" shows.
+3. Tap **Submit (1) Changes**. It does not ask first. Both teams' records and the standings change in that save.
+
+**Wrong result on a live-scored match.** Do not use Scores for this. Scores changes the result but not the rounds, so the match lands on **League Night → "Matches that disagree with their rounds"**, and a later re-save puts the old result back.
+1. **Admin → Live Corrections**. Check **Season** and **Night**, then tap the match.
+2. Fix the bad round (pencil → **Save changes**), or tap **Change winner** on the game → **Set winner**.
+3. Tap **Reopen & re-save result** → **Reopen & re-save**. Wait for "Result re-saved". If the games no longer give a winner, the match stays open. Fix the games and re-save.
+
+**It should have been a tie.** **No button in the app does this.** Scores has no tie choice, and Live Corrections will not save a result with no winner. Leave the result as it is and get a developer: the fix is the database function `mark_match_as_tie`, run as an admin user. Do not run it yourself without help — a wrong match ID changes a different match. Afterwards, **Admin → Score approvals → Unresolved matches → It was a tie** clears it from that list.
+
+**Wrong teams.** A finished match has no Edit pencil.
+1. **Admin → Scores** → bin on the card → **Delete**. Both teams' records are reversed. Live rounds are deleted too.
+2. **Admin → Match Creation**. Pick the Thursday, both teams and a timeslot → **Create Matches**.
+3. **Admin → Scores**. Tap the result → **Submit (1) Changes**.
+
+**Standings** change in the database in the same save. Your own screen refreshes by itself. Other people's phones can keep showing old numbers until they reload the page.
 
 ### 2d. Standings look wrong (a team's W-L doesn't match its games)
 
@@ -390,6 +407,10 @@ find the 'opponent1_position' column of 'match'".
 > admin closing out an old season will zero the current season's standings for
 > the whole league.
 
+> **Applying the tie rule for Win %** (`20261006120000`) has its own runbook:
+> **§6e** below. It changes stored scores in every season, archived included,
+> so run its backup script first.
+
 > **Applying the career power score fix** (`20260901120000`) has its own
 > runbook too: **§6c** below. It changes who holds the King Slayer badge, so
 > read what players will notice before you run it.
@@ -438,6 +459,10 @@ in the admin panel under **Operations → Power Score Review**:
 
 Caveats:
 
+- **Do not press Revert or Re-apply after §6e is applied.** Both buttons
+  rebuild the views from text saved in `20260812171710`, which still counts a
+  tie as a loss in Win % and the Power Score. Either one quietly undoes §6e.
+  This is a pre-existing problem with those controls and needs its own fix.
 - The homepage **Movers** section diffs against last week's
   `power_score_snapshots` row, so it can look skewed for up to a week after a
   revert or re-apply. It self-corrects at the next weekly snapshot (or run the
@@ -643,3 +668,101 @@ to its live recap card and nothing is deleted.
 A published edition stores the numbers it was built from. A later score
 correction does **not** change what was published — that is the point. If a
 published recap is wrong, publish a correction; do not expect it to fix itself.
+
+## 6e. A tie does not count in Win % or the Power Score
+
+Doug's rule (2026-10-06): **Win % = wins ÷ (wins + losses).** A tie is left
+out of the top and the bottom. Migration
+`supabase/migrations/20261006120000_exclude_ties_from_win_rate.sql` applies the
+same rule to the Power Score's match-win term, so every screen agrees. History
+and Career already worked this way. The game-win term and SOS still count a
+tie: the games were played and the opponent was faced.
+
+**What players will notice.** Teams with at least one win **and** a tie move
+up. A team with no wins does not change: its Win % and its match term stay 0
+under both rules. (A few teams with no tie can also move once; see step 0
+below.)
+
+- Their Standings Win % goes up (a tie no longer counts as a loss).
+- Their Power Score goes up, in every season, **archived seasons included**
+  (Doug: "fine if they change").
+- Win % is a Standings tie-break, so two teams level on power score can swap
+  places. **New** brackets seed from the new order. Brackets already created
+  do not move.
+- **Movers** on the homepage shows a one-time jump for those teams, because
+  last week's `power_score_snapshots` rows are left alone. It corrects itself
+  at the next weekly snapshot.
+
+### Applying it (Supabase SQL Editor, not Lovable)
+
+0. **Before you apply**, list the teams that will move for a reason other
+   than a tie. Migration `20261003183939` changed how an opponent's division
+   is found, but it did not recompute the stored season scores. This migration
+   recomputes every season, so those old scores catch up now too. The query
+   only reads. It changes nothing:
+
+   ```sql
+   SELECT se.name AS season, s.season_id, t.name AS team,
+          s.power_score AS stored, a.power_score AS computed_now
+   FROM team_season_stats s
+   JOIN v_team_season_agg a USING (season_id, team_id)
+   JOIN seasons se ON se.id = s.season_id
+   JOIN teams t ON t.id = s.team_id
+   WHERE (s.power_score IS NULL) <> (a.power_score IS NULL)
+      OR abs(s.power_score - a.power_score) > 1e-9
+      OR (s.career_power_score IS NULL) <> (a.career_power_score IS NULL)
+      OR abs(s.career_power_score - a.career_power_score) > 1e-9
+      OR (s.sos IS NULL) <> (a.sos IS NULL)
+      OR abs(s.sos - a.sos) > 1e-9
+   ORDER BY se.name, t.name;
+   ```
+
+   **Save or screenshot the result.** You need it in step 4. No rows is a
+   good result: it means only tie teams will move.
+
+1. Paste the **full** contents of
+   `supabase/scripts/backup_before_tie_exclusion.sql` and Run. Success looks
+   like `NOTICE: tie-exclusion backup: NNN rows saved, NNN rows live`. The two
+   numbers must match.
+2. Paste the **full** contents of the migration above and Run. Success looks
+   like `NOTICE: ties excluded from win rate: NNN season rows recomputed`.
+   Re-running it is safe.
+3. Verify. This must return **no rows**:
+
+   ```sql
+   SELECT team_id FROM v_team_details
+   WHERE wins + losses > 0
+     AND abs(win_percentage - wins::numeric / (wins + losses)) > 1e-9;
+   ```
+
+4. Check before against after. Each row listed must be in one of two groups:
+   - a team that has a tie in that season, or
+   - a team in your step 0 list (same season and team). It moves even with
+     no tie. That is expected.
+
+   If a row is in **neither** group, stop. Use "If it needs undoing" below.
+
+   ```sql
+   SELECT s.season_id, t.name, b.power_score AS before, s.power_score AS after
+   FROM team_season_stats s
+   JOIN team_season_stats_pre_tie_exclusion b USING (season_id, team_id)
+   JOIN teams t ON t.id = s.team_id
+   WHERE s.power_score IS DISTINCT FROM b.power_score
+      OR s.career_power_score IS DISTINCT FROM b.career_power_score
+      OR s.sos IS DISTINCT FROM b.sos
+   ORDER BY s.season_id, t.name;
+   ```
+
+5. When Doug accepts the new numbers, drop the backup:
+   `DROP TABLE public.team_season_stats_pre_tie_exclusion;`
+
+### If it needs undoing
+
+Paste `supabase/scripts/revert_tie_exclusion.sql` and Run. It puts the old
+view text back and recomputes every season from match history. It does
+**not** copy scores from the backup table: that would erase the ratings of
+every match played since. Then revert the PR, or the next person to apply
+migrations by hand rolls forward again.
+
+`supabase/tests/power_score_ties_excluded.sql` covers the rule in the
+`db-apply-and-smoke` CI job.

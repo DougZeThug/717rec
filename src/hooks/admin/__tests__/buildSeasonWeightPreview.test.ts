@@ -132,17 +132,17 @@ describe('buildSeasonWeightPreview', () => {
   });
 
   // The regression guard for the win-percentage denominator. Every other
-  // fixture here has wins + losses === matches_played, so the old
-  // wins / (wins + losses) and the correct wins / matches_played agree and the
-  // bug stays invisible. These two are chosen so the formulas disagree on the
-  // WINNER, not just the numbers.
-  it('counts a winner-less match in the denominator, as /standings does', () => {
+  // fixture here has wins + losses === matches_played, so wins / (wins + losses)
+  // and the old wins / matches_played agree and the rule stays invisible.
+  // These two are chosen so the formulas disagree on the WINNER, not just the
+  // numbers.
+  it('leaves a tie out of win percentage, as /standings does', () => {
     const pair = [team('x', 'Xray', 'Competitive'), team('y', 'Yankee', 'Competitive')];
     const nearTied = [
-      // 7 wins, 0 losses, 3 matches that completed with no winner.
-      //   correct: 7 / 10 = 0.700   old: 7 / 7 = 1.000
+      // 7 wins, 0 losses, 3 ties.
+      //   correct: 7 / 7 = 1.000   old: 7 / 10 = 0.700
       { ...component('x', 0.8, 0.9, 0.7027), matches_played: 10, wins: 7, losses: 0 },
-      // No winner-less matches, so both formulas agree on this one.
+      // No ties, so both formulas agree on this one.
       //   correct: 8 / 10 = 0.800   old: 8 / 10 = 0.800
       { ...component('y', 0.8, 0.9, 0.7), matches_played: 10, wins: 8, losses: 2 },
     ];
@@ -153,9 +153,45 @@ describe('buildSeasonWeightPreview', () => {
       candidate,
     });
 
-    // Both scores round to 83.0, so win percentage decides. Yankee's 0.800
-    // beats Xray's 0.700. The old formula handed Xray a perfect 1.000 and put
-    // it first, disagreeing with the /standings order this preview mirrors.
-    expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Yankee', 'Xray']);
+    // Both scores round to 83.0, so win percentage decides. Xray's 1.000
+    // beats Yankee's 0.800. The old formula counted Xray's ties as losses
+    // (0.700) and put Yankee first.
+    expect(preview[0].rows.map((r) => r.teamName)).toEqual(['Xray', 'Yankee']);
+  });
+
+  it('scores Team A (W 2-0, L 1-2, T 1-1) as the database does', () => {
+    // The same fixture as supabase/tests/power_score_ties_excluded.sql: every
+    // opponent weighs 0.5. The tie is out of the match term (0.5 / 1.0 = 0.5)
+    // but its games still count in the game term (4 of 7).
+    const teamA = {
+      ...component('a', 0.5, 0.5, 4 / 7),
+      matches_played: 3,
+      wins: 1,
+      losses: 1,
+      game_wins: 4,
+      game_losses: 3,
+    };
+    // Ties only: 0, never NaN, and still rated because it played.
+    const teamE = {
+      ...component('e', 0, 0.5, 0.5),
+      matches_played: 1,
+      wins: 0,
+      losses: 0,
+      game_wins: 1,
+      game_losses: 1,
+    };
+    const preview = buildSeasonWeightPreview({
+      teams: [team('a', 'Team A', 'Recreational'), team('e', 'Team E', 'Recreational')],
+      components: [teamA, teamE],
+      baseline,
+      candidate,
+    });
+
+    const [first, second] = preview[0].rows;
+    expect(first.teamName).toBe('Team A');
+    expect(first.baselineScore).toBeCloseTo(0.5 * 40 + 0.5 * 45 + (4 / 7) * 15, 9); // 51.0714
+    expect(second.teamName).toBe('Team E');
+    expect(second.baselineScore).toBeCloseTo(30, 9);
+    expect(preview[0].unrated).toEqual([]);
   });
 });

@@ -10,6 +10,8 @@ If the code disagrees with this file, the code wins. Then fix this file.
 - A league app for a recreational cornhole league (717rec).
 - Players, captains and admins use it on phones, mostly on league night.
 - Admin is one person (Doug) who is not a coder. Admin steps must stay few.
+- As of 2026-10-06, **nobody has used live scoring on a real league night yet.** There is no real data on lost rounds.
+- Rainouts and forfeits **almost never** happen. Do not build for them unless Doug asks.
 
 ## Stack (verified)
 
@@ -34,7 +36,9 @@ If the code disagrees with this file, the code wins. Then fix this file.
   Someone must apply them by hand or through Lovable. See `docs/OPERATIONS.md` section 6.
 - Repo SQL tests live in `supabase/tests/` (run by the `supabase-ci` workflow on a throwaway database).
 - Public data must stay public. Do not narrow SELECT policies on `seasons` or `team_season_stats`. See `docs/RLS_NOTES.md`.
-- Archived seasons are frozen. Their ratings do not move when formulas or weights change.
+- Archived seasons are frozen against division and division-weight edits.
+  **Exception:** saving new Power Score weights in the Sandbox recomputes every season, archived included.
+  This is on purpose, and Doug accepts it (2026-10-06). See `20260820120000_power_score_weight_sandbox.sql`.
 
 ## League rules (verified from `docs/product-description/foundations/league-objects.md`)
 
@@ -96,3 +100,5 @@ Keep rows short. Do not delete rows. Mark a row `superseded` if a later row repl
 | Date | Doug said | Now true | Where it is enforced |
 |---|---|---|---|
 | 2026-10-06 | (setup) Old Power Score memory said 40/40/20 and divisions 1.00/0.75/0.35. | Default is 40/45/15 and admin-adjustable. Division weights are unconfirmed. | This file; `src/utils/powerScore/README.md` |
+| 2026-10-06 | Old seasons may get new Power Scores when the weights change ("fine if they change"). | A weight save recomputes every season, archived included. This file said archived ratings never move. | This file; `docs/product-description/stats/power-score.md`; `.claude/agents/implementer.md` |
+| 2026-10-06 | A tie must **not count** in Win %. | Win % = W ÷ (W + L). History and Career already do this. Standings Win % counted a tie as a loss. Power Score's match term must use the same rule (Doug, 2026-10-06): a tie does not count there either. Game term and SOS still count a tie. **Changed in repo; needs hand-apply** (`20261006120000`, `docs/OPERATIONS.md` §6e). | `supabase/tests/power_score_ties_excluded.sql`, `buildSeasonWeightPreview.test.ts` |

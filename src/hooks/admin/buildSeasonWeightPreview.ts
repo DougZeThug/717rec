@@ -95,14 +95,16 @@ export function buildSeasonWeightPreview({
     const scored = rated.map(({ team, component }) => ({
       teamId: team.id,
       name: team.name,
-      // wins / matches_played, the same denominator v_team_match_stats uses for
-      // the win_percentage /standings sorts on. A completed match with no
-      // winner counts in matches_played but in neither wins nor losses, so
-      // wins / (wins + losses) reads high for any team that has one and can
-      // order a division differently from the standings this preview claims to
-      // reproduce. bracket-creator hit the same trap; see its note on seeding.
-      // rated teams all have matches_played > 0, but guard anyway.
-      winPct: component.matches_played > 0 ? component.wins / component.matches_played : 0,
+      // wins / (wins + losses), the same rule v_team_match_stats uses for the
+      // win_percentage /standings sorts on. A tie (a completed match with no
+      // winner) counts in matches_played but in neither wins nor losses, and
+      // the league leaves it out of Win % (Doug, 2026-10-06). Do not divide by
+      // matches_played: that counts a tie as a loss. A team with only ties
+      // reads 0, as the view does.
+      winPct:
+        component.wins + component.losses > 0
+          ? component.wins / (component.wins + component.losses)
+          : 0,
       baselineScore: powerScore100(
         component.weighted_win_pct,
         component.sos,

@@ -137,9 +137,14 @@ for "definitely working", which is why nothing is blocked on it.
 There is **one offline write queue in the product, and it covers live scoring
 only**. A round entered at a venue with no signal is held rather than lost: it
 shows in the round log, a line under the scoreboard counts how many are waiting,
-and they are sent by themselves when the connection returns. The held round is in
-memory, so closing the tab loses it — but the tapped scores are kept on the phone
-for twelve hours, so a reload hands them back and one press files them again.
+and they are sent by themselves when the connection returns. The line says to
+keep the page open. The held round is in memory, so closing the tab loses it —
+but the tapped scores are kept on the phone for twelve hours, so a reload hands
+them back and one press files them again. While a round waits or is still
+sending, reloading or closing the tab on the live-scoring screen raises the
+browser's own leave warning (not reliable on iPhone Safari). Links and Back inside the app are not
+blocked, because they do not lose a held round. On another app page a reload
+gives no warning, but held rounds still send on reconnect if the tab stays open.
 
 Everywhere else there is still no queue. A long message typed offline is lost on
 submit. See
@@ -210,7 +215,8 @@ on every reconnection, and several screens hold one. **Only live scoring shows
 the connection's state**; everywhere else a channel can be down for half a minute
 with nothing on screen to say so.
 
-**Offline.** Defined here. No queue, no detection, no warning.
+**Offline.** Defined here. Live scoring alone holds rounds and warns before a
+reload; everywhere else there is no queue and no warning.
 
 **Toasts and notifications.** Up to three at a time, about five seconds each,
 surviving navigation. See
