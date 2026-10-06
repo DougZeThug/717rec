@@ -115,7 +115,7 @@ Power score = weighted match win rate × 40
 | Term | What it is |
 | --- | --- |
 | **Weighted match win rate** | Wins divided by wins plus losses, with every match weighted by the opponent's division weight. A tie is left out of both, so it neither helps nor hurts this term. Winning every match reads 1.0 whoever was played, so this term rewards winning, not opponent strength. |
-| **Weighted game win rate** | The same shape, counted in games rather than matches. |
+| **Weighted game win rate** | The same shape, counted in games rather than matches. A tied match still counts here: its games were played, so a 1–1 tie adds one game won and one game lost. |
 | **Strength of schedule** | The average division weight of the opponents faced, held between 0.1 and 1.0. **This is the term that rewards a hard schedule.** It is not the average power score of opponents, which is what most people assume. |
 
 Three consequences follow, and all three surprise people:

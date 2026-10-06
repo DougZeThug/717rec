@@ -678,9 +678,9 @@ same rule to the Power Score's match-win term, so every screen agrees. History
 and Career already worked this way. The game-win term and SOS still count a
 tie: the games were played and the opponent was faced.
 
-**What players will notice.** Teams with at least one win or loss **and** a
-tie move up. A team with only ties does not change: its Win % stays 0 and its
-match term stays 0. (A few teams with no tie can also move once; see step 0
+**What players will notice.** Teams with at least one win **and** a tie move
+up. A team with no wins does not change: its Win % and its match term stay 0
+under both rules. (A few teams with no tie can also move once; see step 0
 below.)
 
 - Their Standings Win % goes up (a tie no longer counts as a loss).
