@@ -216,8 +216,9 @@ the app change some time after a score is entered rather than instantly.
 - **A round with zero net points** is normal and is recorded like any other.
 - **A hidden team's past opponents keep their results.** Hiding is retroactively
   invisible in listings but not in history.
-- **An archived season's numbers are frozen** even when the formula that produced
-  them changes. Two seasons' power scores are therefore not always comparable.
+- **An archived season's numbers are frozen** through later formula changes,
+  except a Power Score weight save in the Sandbox, which recomputes every
+  season. Two seasons' power scores are therefore not always comparable.
 
 ## Open questions and verification
 

@@ -14,7 +14,8 @@ has.
 
 The numbers here are frozen. An archived season's standings, power scores, and
 strength of schedule do not move when the league later changes how those numbers
-are worked out. See
+are worked out — except saving new Power Score weights in the Sandbox, which
+recomputes every season, archived included. See
 [`../foundations/seasons.md`](../foundations/seasons.md#what-frozen-means).
 
 ## The simple case

@@ -40,7 +40,7 @@ that do not obviously make sense.
 | Flag | What it means to the user |
 | --- | --- |
 | **Active** | This is the season the app means by "now". At most one season has it. Pages that do not name a season show this one. |
-| **Archived** | The season is finished and frozen. Its numbers no longer move, even when the formula that produced them changes. It appears in history. |
+| **Archived** | The season is finished and frozen. Its numbers no longer move. It appears in history. |
 | **Confirmation open** | Teams can confirm their place for this season. When it is off, the confirmation controls are **absent**, not disabled — the user sees nothing rather than something greyed out. |
 | **Playoffs active** | The playoffs page shows a live bracket instead of a placeholder, and the regular season stops being the centre of the app. |
 
@@ -53,7 +53,9 @@ and the champion badges read from.
 An archived season's numbers are deliberately immune to later changes in how
 numbers are calculated. When the league changes a division's weight, or changes
 the power score formula, active-season numbers move and archived-season numbers
-do not.
+do not. The exception is saving new Power Score weights in the Sandbox, which
+recomputes every season, archived included; see
+[`stats/power-score.md`](../stats/power-score.md).
 
 The freeze covers the **raw scoring rows** as well, not only the numbers computed
 from them. An archived season's rounds and games are shown in the admin's Live
