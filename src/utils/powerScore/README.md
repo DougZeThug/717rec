@@ -59,9 +59,9 @@ stores both per season.
 
 | Term | Meaning |
 |------|---------|
-| **Weighted match win rate** | `SUM(win × opponent division weight) / SUM(opponent division weight)`. A true weighted average on a 0-1 scale. Beating a strong opponent counts more than beating a weak one, but winning every match still reads as 1.0 whoever you played. |
+| **Weighted match win rate** | `SUM(win × opponent division weight) / SUM(opponent division weight)`, over wins and losses only. A true weighted average on a 0-1 scale. Beating a strong opponent counts more than beating a weak one, but winning every match still reads as 1.0 whoever you played. **A tie leaves both the top and the bottom** of this term, the same as Win % = wins ÷ (wins + losses) (migration `20261006120000_exclude_ties_from_win_rate.sql`). A team with no rated win or loss (only ties) reads 0 on this term. |
 | **Strength of schedule (SOS)** | Average `division_weight` of the opponents faced, clamped to `[0.1, 1.0]`. This is the term that rewards a harder schedule. It is **not** the average power score of opponents. |
-| **Weighted game win rate** | `SUM(game wins × opponent weight) / SUM(total games × opponent weight)`. Same weighted-average shape as the match term. |
+| **Weighted game win rate** | `SUM(game wins × opponent weight) / SUM(total games × opponent weight)`. Same weighted-average shape as the match term. Games from a tied match still count here, and the tied opponent still counts in SOS: the games were played and the opponent was faced. |
 | **Performance** (career only) | The blend of the two win-rate terms on a 0-1 scale. A team at 0.30 performance keeps 100% of its SOS credit; a team at 0.15 performance keeps 50%. This lowers the career floor for teams with very poor long-run records without touching teams above the threshold. |
 
 ### Division weights

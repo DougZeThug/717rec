@@ -66,9 +66,11 @@ so a non-zero exit code means drift was detected.
   the admin surfaces that fetch it deliberately).
 - `power_score_ties_excluded.sql` — pins Doug's tie rule (`20261006120000`):
   Standings Win % is W ÷ (W + L) and the Power Score match term leaves a tie
-  out of top and bottom, while the game term and SOS still count it. Covers a
-  team with a tie, a team with no tie (unchanged), a team with only a tie
-  (0, never NULL) and a tie corrected to a win.
+  out of top and bottom, while the game term and SOS still count it. The tied
+  opponent sits in a heavier division, so SOS reads 0.6 with the tie and would
+  read 0.5 without it. Covers a team with a tie, a team with no tie
+  (unchanged), a team with only a tie (0, never NULL) and a tie corrected to a
+  win. Lookups use `INTO STRICT`, so a missing row fails the test.
 - `power_score_historical_opponent_division.sql` — pins that an opponent is
   rated by the division they were **actually in when the match was played**.
   Reproduces the real defect (a team plays in Recreational, drops out, is moved

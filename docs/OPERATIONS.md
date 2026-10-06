@@ -678,7 +678,10 @@ same rule to the Power Score's match-win term, so every screen agrees. History
 and Career already worked this way. The game-win term and SOS still count a
 tie: the games were played and the opponent was faced.
 
-**What players will notice.** Only teams with a tie move:
+**What players will notice.** Teams with at least one win or loss **and** a
+tie move up. A team with only ties does not change: its Win % stays 0 and its
+match term stays 0. (A few teams with no tie can also move once; see step 0
+below.)
 
 - Their Standings Win % goes up (a tie no longer counts as a loss).
 - Their Power Score goes up, in every season, **archived seasons included**
@@ -691,6 +694,31 @@ tie: the games were played and the opponent was faced.
   at the next weekly snapshot.
 
 ### Applying it (Supabase SQL Editor, not Lovable)
+
+0. **Before you apply**, list the teams that will move for a reason other
+   than a tie. Migration `20261003183939` changed how an opponent's division
+   is found, but it did not recompute the stored season scores. This migration
+   recomputes every season, so those old scores catch up now too. The query
+   only reads. It changes nothing:
+
+   ```sql
+   SELECT se.name AS season, s.season_id, t.name AS team,
+          s.power_score AS stored, a.power_score AS computed_now
+   FROM team_season_stats s
+   JOIN v_team_season_agg a USING (season_id, team_id)
+   JOIN seasons se ON se.id = s.season_id
+   JOIN teams t ON t.id = s.team_id
+   WHERE (s.power_score IS NULL) <> (a.power_score IS NULL)
+      OR abs(s.power_score - a.power_score) > 1e-9
+      OR (s.career_power_score IS NULL) <> (a.career_power_score IS NULL)
+      OR abs(s.career_power_score - a.career_power_score) > 1e-9
+      OR (s.sos IS NULL) <> (a.sos IS NULL)
+      OR abs(s.sos - a.sos) > 1e-9
+   ORDER BY se.name, t.name;
+   ```
+
+   **Save or screenshot the result.** You need it in step 4. No rows is a
+   good result: it means only tie teams will move.
 
 1. Paste the **full** contents of
    `supabase/scripts/backup_before_tie_exclusion.sql` and Run. Success looks
@@ -707,8 +735,12 @@ tie: the games were played and the opponent was faced.
      AND abs(win_percentage - wins::numeric / (wins + losses)) > 1e-9;
    ```
 
-4. Check before against after. Every row listed should be a team that has a
-   tie in that season. A team with no tie must not appear:
+4. Check before against after. Each row listed must be in one of two groups:
+   - a team that has a tie in that season, or
+   - a team in your step 0 list (same season and team). It moves even with
+     no tie. That is expected.
+
+   If a row is in **neither** group, stop. Use "If it needs undoing" below.
 
    ```sql
    SELECT s.season_id, t.name, b.power_score AS before, s.power_score AS after
