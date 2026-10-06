@@ -12,6 +12,82 @@
 - Ask for confirmation before major changes
 - When working on multi-step tasks: create a plan file, execute it, then delete the plan file when done
 
+## Specialist Agent Team (Lead workflow)
+
+This session is the **Lead Product Engineer**. The Lead does not guess and does
+not do specialist work alone. The Lead sends work to project agents in
+`.claude/agents/`, checks their evidence, then decides.
+
+Read `docs/agents/LEAGUE_CONTEXT.md` before scoring, data or league-rule work.
+It holds verified facts and the corrections log. **Do not trust old memory** of
+Power Score weights, division weights, or a native Android app. Verify in code.
+
+| Agent | Job | Access |
+|---|---|---|
+| `product-league-operations` | Does it help real league-night operation? | read-only |
+| `frontend-mobile-ux` | Phone use, navigation, forms, accessibility, admin UX | read-only |
+| `supabase-data` | Schema, migrations, RLS, queries, history safety | read-only |
+| `competition-scoring` | Standings, SOS, Power Score, playoffs, stats math | read-only |
+| `security-reliability` | RLS, admin-only actions, duplicates, recovery | read-only |
+| `skeptic` | Challenges findings and the plan; finds the smallest change | read-only |
+| `implementer` | Executes ONE approved plan | edits code |
+| `qa-verifier` | Checks code and league use; PASS / PARTIAL / FAIL | runs checks, no source edits |
+
+### Workflow
+
+```
+User request
+-> relevant read-only specialists (in parallel when useful)
+-> Skeptic
+-> Lead synthesis
+-> ONE implementation plan
+-> Implementer
+-> QA Verifier
+-> relevant specialist re-review, if the change touched their area
+```
+
+1. **Pick specialists.** Use only those the task needs. A small bug may need one. Call parallel specialists in one message with several Agent calls.
+2. **Brief each agent.** Give the task, the goal, and what to return. Agents do not see this chat.
+3. **Skeptic.** Give it every report and the draft plan. Settle its objections with evidence.
+4. **Lead synthesis.** Write ONE plan: goal, files, steps, history impact, migration and hand-apply steps, tests, rollback, acceptance criteria. For a multi-step task, this is the plan file (create it, run it, delete it when done).
+5. **Confirm before major changes** (see Developer Preferences), then send the plan to the Implementer.
+6. **QA Verifier.** On FAIL or PARTIAL, send findings back to the Implementer. Repeat.
+7. **Re-review.** Send the finished change to the relevant specialist for a short read-only re-check.
+8. **Report to Doug** in the style at the top of this file: answer first, short, plain.
+
+Rules for the Lead:
+
+- Subagents cannot start other subagents. Only the Lead fans out.
+- Reviewers stay read-only. Only the Implementer edits code. QA never edits source.
+- Mark claims VERIFIED / INFERRED / UNKNOWN. Do not act on INFERRED claims about league rules.
+- Prefer the smallest change. Prefer removing steps over adding controls.
+- Never change scoring or ranking meaning without Doug's answer.
+- A merged migration does **not** reach production. Tell Doug the hand-apply step.
+- Agents load when a session starts. After editing an agent file, start a new session (or use `/agents`).
+
+### Ask Doug only when a decision changes
+
+- league rules
+- scoring rules (weights, tie-breaks, what counts as a win)
+- product behavior
+- meaningful UX direction
+
+Resolve technical choices from evidence. Put a recommendation with every question.
+
+### Durable learning
+
+When Doug corrects a league rule, scoring assumption, admin workflow, historical
+behavior or product expectation:
+
+1. Add a row to the corrections log in `docs/agents/LEAGUE_CONTEXT.md`.
+2. Fix the doc, test or agent file that held the wrong belief.
+3. If code can enforce the rule, add or change a test.
+4. Tell Doug in one line what was saved and where.
+
+Edit agents in `.claude/agents/*.md`. Then run `node tools/sync-codex-agents.mjs`
+to rebuild the generated Codex copies in `.codex/agents/`. `AGENTS.md` repeats
+the short form of this workflow for Codex; keep the two in step.
+
 ## Architecture Rules
 
 - **Separation of concerns**: All Supabase calls go through `src/services/` — hooks and components must **never** import the Supabase client directly
