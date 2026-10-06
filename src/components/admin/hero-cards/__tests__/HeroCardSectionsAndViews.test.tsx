@@ -183,6 +183,48 @@ describe('hero cards sections/views', () => {
     expect(onChange).toHaveBeenCalledWith('metadata', expect.stringContaining('past_winners'));
   });
 
+  it('clearing an event field removes only that key from the metadata', async () => {
+    const onChange = vi.fn();
+    render(
+      <TargetingDisplaySection
+        formData={{
+          ...baseForm,
+          card_type: 'event',
+          metadata: '{"buy_in":"$10","payouts":"Top 3"}',
+        }}
+        onChange={onChange}
+      />
+    );
+    await userEvent.clear(screen.getByLabelText('Buy-in'));
+    const [field, json] = onChange.mock.calls[onChange.mock.calls.length - 1];
+    expect(field).toBe('metadata');
+    expect(JSON.parse(json)).toEqual({ payouts: 'Top 3' });
+  });
+
+  it('choosing None for a division removes only that champion', async () => {
+    HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+    const onChange = vi.fn();
+    wrap(
+      <ChampionsEditor
+        formData={{
+          ...baseForm,
+          card_type: 'champions',
+          metadata: '{"champions":{"Alpha":"team1"},"note":"keep"}',
+        }}
+        onChange={onChange}
+      />
+    );
+    await screen.findByText('Alpha');
+    await userEvent.click(screen.getByRole('combobox'));
+    await userEvent.click(await screen.findByRole('option', { name: /None/ }));
+    const [field, json] = onChange.mock.calls[onChange.mock.calls.length - 1];
+    expect(field).toBe('metadata');
+    expect(JSON.parse(json)).toEqual({ champions: {}, note: 'keep' });
+  });
+
   it('champions editor refuses to edit while the extra data box will not parse', () => {
     const onChange = vi.fn();
     wrap(
