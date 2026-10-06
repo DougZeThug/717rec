@@ -48,9 +48,26 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 
 ### 2c. Wrong score was approved
 
-1. In Admin → Match management, open the match.
-2. Either: use **Mark as tie** (`mark_match_as_tie`) to zero it out, then re-approve the correct submission; or edit directly if you know the right numbers.
-3. Standings and streaks recompute on the next query invalidation — usually within seconds. If not, hit refresh.
+**First: was it live-scored?** If the match is listed in **Admin → Live Corrections**, yes. Every fix below takes off the old result and puts on the new one in the same save. You do not undo anything first.
+
+**Wrong winner or wrong 2–0 / 2–1 (not live-scored)**
+1. **Admin → Scores**. Pick the night with **Filter by Date**.
+2. On the match card, tap the correct button: **2–0**, **2–1**, **1–2** or **0–2**. "Edited" shows.
+3. Tap **Submit (1) Changes**. It does not ask first. Both teams' records and the standings change in that save.
+
+**Wrong result on a live-scored match.** Do not use Scores for this. Scores changes the result but not the rounds, so the match lands on **League Night → "Matches that disagree with their rounds"**, and a later re-save puts the old result back.
+1. **Admin → Live Corrections**. Check **Season** and **Night**, then tap the match.
+2. Fix the bad round (pencil → **Save changes**), or tap **Change winner** on the game → **Set winner**.
+3. Tap **Reopen & re-save result** → **Reopen & re-save**. Wait for "Result re-saved". If the games no longer give a winner, the match stays open. Fix the games and re-save.
+
+**It should have been a tie.** **No button in the app does this.** Scores has no tie choice, and Live Corrections will not save a result with no winner. Leave the result as it is and get a developer: the fix is the database function `mark_match_as_tie`, run as an admin user. Do not run it yourself without help — a wrong match ID changes a different match. Afterwards, **Admin → Score approvals → Unresolved matches → It was a tie** clears it from that list.
+
+**Wrong teams.** A finished match has no Edit pencil.
+1. **Admin → Scores** → bin on the card → **Delete**. Both teams' records are reversed. Live rounds are deleted too.
+2. **Admin → Match Creation**. Pick the Thursday, both teams and a timeslot → **Create Matches**.
+3. **Admin → Scores**. Tap the result → **Submit (1) Changes**.
+
+**Standings** change in the database in the same save. Your own screen refreshes by itself. Other people's phones can show old numbers for up to 5 minutes, until they reload.
 
 ### 2d. Standings look wrong (a team's W-L doesn't match its games)
 
