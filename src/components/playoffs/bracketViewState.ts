@@ -34,7 +34,7 @@ export const resolveBracketViewState = ({
     return { kind: 'invalid-id' };
   }
 
-  const hasBracketAlready = hasLegacyBracket || !!isJsonbBracket;
+  const hasBracketAlready = hasLegacyBracket || Boolean(isJsonbBracket);
   if (isLoading && !hasBracketAlready) return { kind: 'loading' };
   if (error && !hasBracketAlready) return { kind: 'error' };
   if (!displayBracket) return { kind: 'empty' };

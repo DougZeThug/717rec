@@ -42,7 +42,7 @@ const isCurrentSeasonPlayoffMatch = (
   bracketSeasonMap: Record<string, string>
 ): boolean => {
   const bracketSeasonId = match.bracket_id ? bracketSeasonMap[match.bracket_id] : null;
-  return bracketSeasonId === currentSeasonId && !!match.winner_id;
+  return bracketSeasonId === currentSeasonId && Boolean(match.winner_id);
 };
 
 /**

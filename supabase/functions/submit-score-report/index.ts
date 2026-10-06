@@ -98,7 +98,7 @@ async function parseReportPayload(
 }
 
 function isHoneypotFilled(payload: ReportPayload): boolean {
-  return !!payload.website && payload.website.trim().length > 0;
+  return (payload.website?.trim().length ?? 0) > 0;
 }
 
 /** A Response to send back when the match is missing or cannot be checked, else null. */
@@ -213,7 +213,7 @@ async function hasPendingDuplicate(
   if (dedupeError) {
     console.warn('[ScoreReport] dedupe pre-check error:', dedupeError);
   }
-  return !!existing;
+  return Boolean(existing);
 }
 
 async function saveReport(

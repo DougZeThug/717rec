@@ -163,7 +163,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const { data: signupCount } = useBlindDrawSignupCount(eventDate ?? undefined);
   const startCountdown = useStartCountdown(startTimeStr);
 
-  const showCountdown = isActiveEvent && !!startTimeStr;
+  const showCountdown = isActiveEvent && Boolean(startTimeStr);
 
   return (
     <m.div

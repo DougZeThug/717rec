@@ -61,8 +61,8 @@ const setup = ({
     [LB_FINAL_ROUND.id]: lbMatches,
   };
   const storage = {
-    select: vi.fn(
-      async (_table: string, filter: { round_id: number }) => matchesByRound[filter.round_id]
+    select: vi.fn((_table: string, filter: { round_id: number }) =>
+      Promise.resolve(matchesByRound[filter.round_id])
     ),
     update: vi.fn().mockResolvedValue(true),
   };

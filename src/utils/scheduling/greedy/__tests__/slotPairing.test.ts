@@ -185,11 +185,11 @@ describe('generateSlotPairings swap pass', () => {
   // c (Competitive) and d (Recreational): a tier gap of 2 blocks c vs d.
   // The swap pass must then break (a, b) and re-pair the stranded teams.
   const setup = (blockedTonightPairs: string[] = []) => {
-    const a = makeTeam('a', 'Intermediate');
-    const b = makeTeam('b', 'Intermediate');
-    const c = makeTeam('c', 'Competitive');
-    const d = makeTeam('d', 'Recreational');
-    const teams = [a, b, c, d];
+    const teamA = makeTeam('a', 'Intermediate');
+    const teamB = makeTeam('b', 'Intermediate');
+    const teamC = makeTeam('c', 'Competitive');
+    const teamD = makeTeam('d', 'Recreational');
+    const teams = [teamA, teamB, teamC, teamD];
     const tonightPairs = new Set(blockedTonightPairs);
     const newPairs = new Set<string>();
     const teamMatchCounts = new Map(teams.map((t) => [t.id, 0]));

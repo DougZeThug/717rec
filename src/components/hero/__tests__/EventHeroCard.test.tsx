@@ -397,7 +397,7 @@ describe('EventHeroCard', () => {
       render(<EventHeroCard card={blindDrawCard({ start_time: undefined })} />);
 
       expect(screen.queryByTestId('signup-form')).not.toBeInTheDocument();
-      expect(mocks.useBlindDrawSignupCount).toHaveBeenLastCalledWith(undefined);
+      expect(mocks.useBlindDrawSignupCount.mock.lastCall).toEqual([undefined]);
     });
   });
 

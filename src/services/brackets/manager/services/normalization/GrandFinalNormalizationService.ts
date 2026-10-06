@@ -45,8 +45,8 @@ type GfUpdate = {
 function computeGfStatus(gfMatch: StorageMatch, update: GfUpdate): number | undefined {
   if ((gfMatch.status ?? 0) > 1) return gfMatch.status;
 
-  const willHaveOpp1 = !!(update.opponent1?.id ?? gfMatch.opponent1?.id);
-  const willHaveOpp2 = !!(update.opponent2?.id ?? gfMatch.opponent2?.id);
+  const willHaveOpp1 = Boolean(update.opponent1?.id ?? gfMatch.opponent1?.id);
+  const willHaveOpp2 = Boolean(update.opponent2?.id ?? gfMatch.opponent2?.id);
   if (willHaveOpp1 && willHaveOpp2) return STATUS_READY;
   if (willHaveOpp1 || willHaveOpp2) return STATUS_WAITING;
   return gfMatch.status;

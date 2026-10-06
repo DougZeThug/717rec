@@ -120,7 +120,7 @@ describe('BracketView', () => {
       data: null,
       isLoading: false,
       error: null,
-      refetch: vi.fn().mockResolvedValue(undefined),
+      refetch: vi.fn(() => Promise.resolve()),
       loadingProgress: { label: 'Loading bracket', percent: 50 },
     };
     mocks.realtime = { realtimeEnabled: false, lastUpdate: null };
@@ -149,7 +149,7 @@ describe('BracketView', () => {
 
     it('passes undefined to the completion hook for an empty id, and the id otherwise', () => {
       const { unmount } = render(<BracketView bracketId="" />);
-      expect(mocks.useBracketCompletion).toHaveBeenLastCalledWith(undefined);
+      expect(mocks.useBracketCompletion.mock.lastCall).toEqual([undefined]);
       unmount();
 
       render(<BracketView bracketId="bracket-1" />);

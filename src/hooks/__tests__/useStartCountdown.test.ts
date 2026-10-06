@@ -70,7 +70,7 @@ describe('useStartCountdown', () => {
   });
 
   it('starts empty and stays idle without a start time', () => {
-    const { result } = renderHook(() => useStartCountdown(undefined));
+    const { result } = renderHook(() => useStartCountdown());
 
     expect(result.current).toEqual({ text: '', percent: 0 });
     expect(vi.getTimerCount()).toBe(0);

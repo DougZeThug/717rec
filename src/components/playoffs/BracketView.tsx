@@ -153,7 +153,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     bracketId,
     isLoading,
     error,
-    hasLegacyBracket: !!legacyBracket,
+    hasLegacyBracket: Boolean(legacyBracket),
     isJsonbBracket,
     displayBracket,
   });
@@ -162,7 +162,7 @@ const BracketView: React.FC<BracketViewProps> = ({
     debugLog('Data fetching status:', {
       isLoadingBracketInfo,
       isLoadingLegacy,
-      hasLegacyBracket: !!legacyBracket,
+      hasLegacyBracket: Boolean(legacyBracket),
       bracketInfo: bracketInfo ? { id: bracketInfo.id } : null,
     });
   }

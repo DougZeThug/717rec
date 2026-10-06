@@ -377,9 +377,9 @@ async function runFlow(
 }
 
 const tablesHit = (stub: FlowStub) =>
-  stub.log.map((r) => {
-    const m = r.url.match(/\/(?:rest|auth)\/v1\/([a-z_]+)/);
-    return `${r.method} ${m ? m[1] : r.url}`;
+  stub.log.map((request) => {
+    const apiMatch = request.url.match(/\/(?:rest|auth)\/v1\/([a-z_]+)/);
+    return `${request.method} ${apiMatch ? apiMatch[1] : request.url}`;
   });
 
 Deno.test({
@@ -688,14 +688,16 @@ Deno.test({
         profile: { id: 'user-1', username: 'ali', full_name: 'Alice Verified' },
       }
     );
-    const dedupe = stub.log.find((r) => r.method === 'GET' && r.url.includes('score_submissions'));
+    const dedupe = stub.log.find(
+      (request) => request.method === 'GET' && request.url.includes('score_submissions')
+    );
     if (!dedupe) throw new Error('no duplicate pre-check request was sent');
-    const u = new URL(dedupe.url);
-    assertEquals(u.searchParams.get('match_id'), `eq.${MATCH_ID}`);
-    assertEquals(u.searchParams.get('status'), 'eq.pending');
-    assertEquals(u.searchParams.get('message'), 'eq.Alpha beat Beta 21-17');
-    assertEquals(u.searchParams.get('submitter_name'), 'eq.Alice Verified');
-    assertEquals(u.searchParams.get('limit'), '1');
+    const dedupeUrl = new URL(dedupe.url);
+    assertEquals(dedupeUrl.searchParams.get('match_id'), `eq.${MATCH_ID}`);
+    assertEquals(dedupeUrl.searchParams.get('status'), 'eq.pending');
+    assertEquals(dedupeUrl.searchParams.get('message'), 'eq.Alpha beat Beta 21-17');
+    assertEquals(dedupeUrl.searchParams.get('submitter_name'), 'eq.Alice Verified');
+    assertEquals(dedupeUrl.searchParams.get('limit'), '1');
   },
 });
 

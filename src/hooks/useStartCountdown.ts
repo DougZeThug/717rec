@@ -28,18 +28,22 @@ export const getStartCountdown = (startTime: Date, now: Date): StartCountdown =>
 };
 
 /** Keeps a start countdown up to date once a minute. Idle when there is no start time. */
-export const useStartCountdown = (startTimeStr: string | null | undefined): StartCountdown => {
+export const useStartCountdown = (startTimeStr?: string | null): StartCountdown => {
   const [countdown, setCountdown] = useState<StartCountdown>(IDLE_COUNTDOWN);
 
   useEffect(() => {
     if (!startTimeStr) return;
 
     const startTime = new Date(startTimeStr);
-    const updateCountdown = () => setCountdown(getStartCountdown(startTime, new Date()));
+    const updateCountdown = () => {
+      setCountdown(getStartCountdown(startTime, new Date()));
+    };
 
     updateCountdown();
     const intervalId = setInterval(updateCountdown, TICK_MS);
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [startTimeStr]);
 
   // With no start time there is nothing to count down to, even if an earlier

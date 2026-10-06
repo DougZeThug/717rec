@@ -30,23 +30,27 @@ export const BracketLoadingState: React.FC<{ progress: { label: string; percent:
   </div>
 );
 
+const BracketErrorAlert: React.FC<{ error: unknown }> = ({ error }) => (
+  <Alert variant="destructive">
+    <AlertCircle className="size-4" />
+    <AlertDescription>
+      <div className="space-y-2">
+        {/* Never error.message: that is raw PostgREST text, which names
+            tables and constraints. getUIErrorMessage keeps the reason
+            when there is a safe one and falls back to a plain sentence
+            otherwise. */}
+        <p>{getUIErrorMessage(error, 'Failed to load bracket')}</p>
+      </div>
+    </AlertDescription>
+  </Alert>
+);
+
 export const BracketErrorState: React.FC<{ error: unknown; onRetry: () => void }> = ({
   error,
   onRetry,
 }) => (
   <div className="space-y-4">
-    <Alert variant="destructive">
-      <AlertCircle className="size-4" />
-      <AlertDescription>
-        <div className="space-y-2">
-          {/* Never error.message: that is raw PostgREST text, which names
-              tables and constraints. getUIErrorMessage keeps the reason
-              when there is a safe one and falls back to a plain sentence
-              otherwise. */}
-          <p>{getUIErrorMessage(error, 'Failed to load bracket')}</p>
-        </div>
-      </AlertDescription>
-    </Alert>
+    <BracketErrorAlert error={error} />
 
     <div className="flex justify-center">
       <Button variant="outline" onClick={onRetry}>

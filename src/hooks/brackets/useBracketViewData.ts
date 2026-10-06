@@ -31,12 +31,12 @@ export const useBracketViewData = (
         id: data.id,
         title: data.title,
         uses_brackets_manager: data.uses_brackets_manager,
-        has_bracket_data: !!data.bracket_data,
+        has_bracket_data: Boolean(data.bracket_data),
       });
 
       return data;
     },
-    enabled: !!bracketId && typeof bracketId === 'string',
+    enabled: Boolean(bracketId) && typeof bracketId === 'string',
   });
 
   const {
