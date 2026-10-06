@@ -8,12 +8,15 @@ export interface StartCountdown {
 
 const COUNTDOWN_WINDOW_MS = 12 * 60 * 60 * 1000;
 const TICK_MS = 60000;
+const IDLE_COUNTDOWN: StartCountdown = { text: '', percent: 0 };
 
 /** Countdown text and progress for an event that starts at `startTime`. */
 export const getStartCountdown = (startTime: Date, now: Date): StartCountdown => {
   const startDiff = startTime.getTime() - now.getTime();
 
-  if (startDiff <= 0) return { text: 'Event started!', percent: 100 };
+  // `!(x > 0)`, not `x <= 0`: an invalid start date gives NaN, which has always
+  // read as "Event started!" here, never as "Starting now!".
+  if (!(startDiff > 0)) return { text: 'Event started!', percent: 100 };
 
   const hours = Math.floor(startDiff / (1000 * 60 * 60));
   const minutes = Math.floor((startDiff % (1000 * 60 * 60)) / (1000 * 60));
@@ -26,7 +29,7 @@ export const getStartCountdown = (startTime: Date, now: Date): StartCountdown =>
 
 /** Keeps a start countdown up to date once a minute. Idle when there is no start time. */
 export const useStartCountdown = (startTimeStr: string | null | undefined): StartCountdown => {
-  const [countdown, setCountdown] = useState<StartCountdown>({ text: '', percent: 0 });
+  const [countdown, setCountdown] = useState<StartCountdown>(IDLE_COUNTDOWN);
 
   useEffect(() => {
     if (!startTimeStr) return;
@@ -39,5 +42,7 @@ export const useStartCountdown = (startTimeStr: string | null | undefined): Star
     return () => clearInterval(intervalId);
   }, [startTimeStr]);
 
-  return countdown;
+  // With no start time there is nothing to count down to, even if an earlier
+  // start time left a value behind.
+  return startTimeStr ? countdown : IDLE_COUNTDOWN;
 };

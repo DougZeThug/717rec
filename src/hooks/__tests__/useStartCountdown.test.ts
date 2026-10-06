@@ -44,6 +44,13 @@ describe('getStartCountdown', () => {
     });
   });
 
+  it('treats an invalid start date as already started', () => {
+    expect(getStartCountdown(new Date('not a date'), NOW)).toEqual({
+      text: 'Event started!',
+      percent: 100,
+    });
+  });
+
   it('keeps progress at 0 when the start is more than 12 hours away', () => {
     const result = getStartCountdown(startIn(30 * HOUR), NOW);
 
@@ -97,6 +104,24 @@ describe('useStartCountdown', () => {
     rerender({ start: startIn(30 * MINUTE).toISOString() });
 
     expect(result.current.text).toBe('30m until start');
+  });
+
+  it('returns to the idle value when the start time is cleared', () => {
+    const { result, rerender } = renderHook(({ start }) => useStartCountdown(start), {
+      initialProps: { start: startIn(2 * HOUR).toISOString() as string | undefined },
+    });
+    expect(result.current.text).toBe('2h 0m until start');
+
+    rerender({ start: undefined });
+
+    expect(result.current).toEqual({ text: '', percent: 0 });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('shows an invalid start date as started, not as starting now', () => {
+    const { result } = renderHook(() => useStartCountdown('not a date'));
+
+    expect(result.current).toEqual({ text: 'Event started!', percent: 100 });
   });
 
   it('stops the timer on unmount', () => {
