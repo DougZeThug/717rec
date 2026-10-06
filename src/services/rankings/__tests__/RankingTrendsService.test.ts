@@ -86,10 +86,10 @@ describe('fetchPowerScoreTrends', () => {
     vi.clearAllMocks();
     resetQueues();
     mockFrom.mockImplementation((table: string) => {
-      const q = queues.get(table);
+      const queue = queues.get(table);
       const next =
-        q && q.length > 0
-          ? (q.shift() ?? { data: null, error: null })
+        queue && queue.length > 0
+          ? (queue.shift() ?? { data: null, error: null })
           : { data: null, error: null };
       return makeChain(next);
     });
@@ -309,10 +309,10 @@ describe('fetchWeeklyPowerScoreTrends', () => {
     vi.clearAllMocks();
     resetQueues();
     mockFrom.mockImplementation((table: string) => {
-      const q = queues.get(table);
+      const queue = queues.get(table);
       const next =
-        q && q.length > 0
-          ? (q.shift() ?? { data: null, error: null })
+        queue && queue.length > 0
+          ? (queue.shift() ?? { data: null, error: null })
           : { data: null, error: null };
       return makeChain(next);
     });
