@@ -6,6 +6,8 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
+import { scheduleLog, warnLog } from '@/utils/logger';
+
 import { pairKey } from '../pairKey';
 import { generateSlotPairings } from '../slotPairing';
 import { expectNoDuplicatePairs, expectNoTeamDoubleBookedPerSlot, makeTeam } from './testHelpers';
@@ -175,5 +177,111 @@ describe('generateSlotPairings', () => {
 
     expect(matches).toHaveLength(1);
     expect(rematchAllowedFor).toEqual(new Set(['a']));
+  });
+});
+
+describe('generateSlotPairings swap pass', () => {
+  // Greedy pairs a (Intermediate) with b (Intermediate) first. That strands
+  // c (Competitive) and d (Recreational): a tier gap of 2 blocks c vs d.
+  // The swap pass must then break (a, b) and re-pair the stranded teams.
+  const setup = (blockedTonightPairs: string[] = []) => {
+    const a = makeTeam('a', 'Intermediate');
+    const b = makeTeam('b', 'Intermediate');
+    const c = makeTeam('c', 'Competitive');
+    const d = makeTeam('d', 'Recreational');
+    const teams = [a, b, c, d];
+    const tonightPairs = new Set(blockedTonightPairs);
+    const newPairs = new Set<string>();
+    const teamMatchCounts = new Map(teams.map((t) => [t.id, 0]));
+    const matches = generateSlotPairings(
+      teams,
+      'S1',
+      new Set(),
+      tonightPairs,
+      teamMatchCounts,
+      1,
+      undefined,
+      newPairs
+    );
+    return { matches, tonightPairs, newPairs, teamMatchCounts };
+  };
+
+  const idsOf = (m: { teamAId: string; teamBId: string }) => [m.teamAId, m.teamBId];
+
+  it('swaps (U1,A) + (U2,B) when option 1 works', () => {
+    const { matches, tonightPairs, newPairs, teamMatchCounts } = setup();
+
+    expect(matches.map(idsOf)).toEqual([
+      ['c', 'a'],
+      ['d', 'b'],
+    ]);
+    expect(matches[0]).toMatchObject({
+      slot: 'S1',
+      teamAName: 'Team c',
+      teamBName: 'Team a',
+      divisionA: 'Competitive',
+      divisionB: 'Intermediate',
+      tierA: 1,
+      tierB: 2,
+    });
+    expect(matches[1]).toMatchObject({
+      slot: 'S1',
+      teamAName: 'Team d',
+      teamBName: 'Team b',
+      divisionA: 'Recreational',
+      divisionB: 'Intermediate',
+      tierA: 3,
+      tierB: 2,
+    });
+    const expectedKeys = new Set([pairKey('c', 'a'), pairKey('d', 'b')]);
+    expect(tonightPairs).toEqual(expectedKeys);
+    expect(newPairs).toEqual(expectedKeys);
+    for (const id of ['a', 'b', 'c', 'd']) {
+      expect(teamMatchCounts.get(id)).toBe(1);
+    }
+    expect(scheduleLog).toHaveBeenCalledWith(
+      'Swap fix: replaced (Team a vs Team b) with (Team c vs Team a) + (Team d vs Team b)'
+    );
+    expect(warnLog).not.toHaveBeenCalledWith(expect.stringContaining('Swap pass'));
+  });
+
+  it('swaps (U1,B) + (U2,A) when only option 2 works', () => {
+    // Session pair a-c blocks option 1 ((c,a) + (d,b)).
+    const { matches, tonightPairs, newPairs, teamMatchCounts } = setup([pairKey('a', 'c')]);
+
+    expect(matches.map(idsOf)).toEqual([
+      ['c', 'b'],
+      ['d', 'a'],
+    ]);
+    expect(tonightPairs).toEqual(
+      new Set([pairKey('a', 'c'), pairKey('c', 'b'), pairKey('d', 'a')])
+    );
+    expect(newPairs).toEqual(new Set([pairKey('c', 'b'), pairKey('d', 'a')]));
+    for (const id of ['a', 'b', 'c', 'd']) {
+      expect(teamMatchCounts.get(id)).toBe(1);
+    }
+    expect(scheduleLog).toHaveBeenCalledWith(
+      'Swap fix: replaced (Team a vs Team b) with (Team c vs Team b) + (Team d vs Team a)'
+    );
+  });
+
+  it('leaves matches unchanged and warns when no swap works', () => {
+    // a-c blocks option 1 and a-d blocks option 2.
+    const { matches, tonightPairs, newPairs, teamMatchCounts } = setup([
+      pairKey('a', 'c'),
+      pairKey('a', 'd'),
+    ]);
+
+    expect(matches.map(idsOf)).toEqual([['a', 'b']]);
+    expect(tonightPairs).toEqual(
+      new Set([pairKey('a', 'c'), pairKey('a', 'd'), pairKey('a', 'b')])
+    );
+    expect(newPairs).toEqual(new Set([pairKey('a', 'b')]));
+    expect(teamMatchCounts.get('a')).toBe(1);
+    expect(teamMatchCounts.get('b')).toBe(1);
+    expect(teamMatchCounts.get('c')).toBe(0);
+    expect(teamMatchCounts.get('d')).toBe(0);
+    expect(scheduleLog).not.toHaveBeenCalled();
+    expect(warnLog).toHaveBeenCalledWith('Swap pass: 2 teams still unmatched after swap attempts');
   });
 });

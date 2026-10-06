@@ -6,6 +6,139 @@ import { findBestOpponent } from './opponentSelection';
 import { pairKey } from './pairKey';
 import { RelaxationLevel, ScheduledMatch } from './types';
 
+/** State shared by every step of the swap pass. */
+interface SwapContext {
+  slotName: string;
+  playedSet: Set<string>;
+  tonightPairs: Set<string>;
+  teamMatchCounts: Map<string, number>;
+  maxTierGap: number;
+  newPairs: Set<string> | undefined;
+  relaxationLevel: RelaxationLevel;
+  rematchAllowedFor?: Set<string>;
+}
+
+type TeamPair = [Team, Team];
+
+function buildMatch(slotName: string, teamA: Team, teamB: Team): ScheduledMatch {
+  return {
+    slot: slotName,
+    teamAId: teamA.id,
+    teamBId: teamB.id,
+    teamAName: teamA.name,
+    teamBName: teamB.name,
+    divisionA: teamA.divisionName || 'Unknown',
+    divisionB: teamB.divisionName || 'Unknown',
+    tierA: getTier(teamA),
+    tierB: getTier(teamB),
+  };
+}
+
+function canPlayInContext(teamA: Team, teamB: Team, ctx: SwapContext): boolean {
+  return canPlay(
+    teamA,
+    teamB,
+    ctx.playedSet,
+    ctx.tonightPairs,
+    ctx.maxTierGap,
+    ctx.relaxationLevel,
+    ctx.rematchAllowedFor
+  );
+}
+
+/** Mark a pair as played tonight and add one match to each team's count. */
+function recordPair(teamA: Team, teamB: Team, ctx: SwapContext): void {
+  const key = pairKey(teamA.id, teamB.id);
+  ctx.tonightPairs.add(key);
+  if (ctx.newPairs) ctx.newPairs.add(key);
+  ctx.teamMatchCounts.set(teamA.id, (ctx.teamMatchCounts.get(teamA.id) || 0) + 1);
+  ctx.teamMatchCounts.set(teamB.id, (ctx.teamMatchCounts.get(teamB.id) || 0) + 1);
+}
+
+/** Undo `recordPair` for a match that the swap pass breaks up. */
+function releasePair(teamA: Team, teamB: Team, ctx: SwapContext): void {
+  const key = pairKey(teamA.id, teamB.id);
+  ctx.tonightPairs.delete(key);
+  if (ctx.newPairs) ctx.newPairs.delete(key);
+  ctx.teamMatchCounts.set(teamA.id, (ctx.teamMatchCounts.get(teamA.id) || 1) - 1);
+  ctx.teamMatchCounts.set(teamB.id, (ctx.teamMatchCounts.get(teamB.id) || 1) - 1);
+}
+
+/** Pair stranded teams with each other when they are allowed to play. */
+function pairUnmatchedDirectly(
+  unmatchedTeams: Team[],
+  stillUnmatched: Set<string>,
+  result: ScheduledMatch[],
+  ctx: SwapContext
+): void {
+  for (let i = 0; i < unmatchedTeams.length; i++) {
+    if (!stillUnmatched.has(unmatchedTeams[i].id)) continue;
+    for (let j = i + 1; j < unmatchedTeams.length; j++) {
+      if (!stillUnmatched.has(unmatchedTeams[j].id)) continue;
+      const u1 = unmatchedTeams[i];
+      const u2 = unmatchedTeams[j];
+      if (!canPlayInContext(u1, u2, ctx)) continue;
+      result.push(buildMatch(ctx.slotName, u1, u2));
+      recordPair(u1, u2, ctx);
+      stillUnmatched.delete(u1.id);
+      stillUnmatched.delete(u2.id);
+    }
+  }
+}
+
+/**
+ * Break match `index` (existing = [A, B]) into `first` + `second`.
+ * `first` replaces the old match. `second` is added at the end.
+ */
+function applySwap(
+  result: ScheduledMatch[],
+  index: number,
+  existing: TeamPair,
+  first: TeamPair,
+  second: TeamPair,
+  ctx: SwapContext
+): void {
+  releasePair(existing[0], existing[1], ctx);
+  result[index] = buildMatch(ctx.slotName, first[0], first[1]);
+  recordPair(first[0], first[1], ctx);
+  result.push(buildMatch(ctx.slotName, second[0], second[1]));
+  recordPair(second[0], second[1], ctx);
+  scheduleLog(
+    `Swap fix: replaced (${existing[0].name} vs ${existing[1].name}) with (${first[0].name} vs ${first[1].name}) + (${second[0].name} vs ${second[1].name})`
+  );
+}
+
+/**
+ * Try to place stranded teams U1 and U2 into one existing match (A, B).
+ * Option 1 is (U1,A) + (U2,B). Option 2 is (U1,B) + (U2,A).
+ * Returns true when a swap was applied.
+ */
+function trySwapIntoExistingMatch(
+  u1: Team,
+  u2: Team,
+  result: ScheduledMatch[],
+  teamMap: Map<string, Team>,
+  ctx: SwapContext
+): boolean {
+  for (let k = 0; k < result.length; k++) {
+    const teamA = teamMap.get(result[k].teamAId);
+    const teamB = teamMap.get(result[k].teamBId);
+    if (!teamA || !teamB) continue;
+
+    const options: TeamPair[] = [
+      [teamA, teamB],
+      [teamB, teamA],
+    ];
+    for (const [x, y] of options) {
+      if (canPlayInContext(u1, x, ctx) && canPlayInContext(u2, y, ctx)) {
+        applySwap(result, k, [teamA, teamB], [u1, x], [u2, y], ctx);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 /**
  * Swap pass: when the greedy left teams unmatched (because their only remaining
  * opponent is a blocked pair), try swapping them into an existing match.
@@ -14,57 +147,18 @@ import { RelaxationLevel, ScheduledMatch } from './types';
  * find an existing match M=(A,B) where we can swap to (U1,A)+(U2,B)
  * or (U1,B)+(U2,A), resolving the stranding without creating new conflicts.
  */
-
 function trySwapToFixUnmatched(
   matches: ScheduledMatch[],
   unmatchedTeams: Team[],
-  slotName: string,
   allTeams: Team[],
-  playedSet: Set<string>,
-  tonightPairs: Set<string>,
-  teamMatchCounts: Map<string, number>,
-  maxTierGap: number,
-  newPairs: Set<string> | undefined,
-  relaxationLevel: RelaxationLevel,
-  rematchAllowedFor?: Set<string>
+  ctx: SwapContext
 ): ScheduledMatch[] {
   const result = [...matches];
   const stillUnmatched = new Set(unmatchedTeams.map((t) => t.id));
   const teamMap = new Map(allTeams.map((t) => [t.id, t]));
 
   // Try to pair unmatched teams directly first
-  const unmatchedList = [...unmatchedTeams];
-  for (let i = 0; i < unmatchedList.length; i++) {
-    if (!stillUnmatched.has(unmatchedList[i].id)) continue;
-    for (let j = i + 1; j < unmatchedList.length; j++) {
-      if (!stillUnmatched.has(unmatchedList[j].id)) continue;
-      const u1 = unmatchedList[i];
-      const u2 = unmatchedList[j];
-      if (
-        canPlay(u1, u2, playedSet, tonightPairs, maxTierGap, relaxationLevel, rematchAllowedFor)
-      ) {
-        const match: ScheduledMatch = {
-          slot: slotName,
-          teamAId: u1.id,
-          teamBId: u2.id,
-          teamAName: u1.name,
-          teamBName: u2.name,
-          divisionA: u1.divisionName || 'Unknown',
-          divisionB: u2.divisionName || 'Unknown',
-          tierA: getTier(u1),
-          tierB: getTier(u2),
-        };
-        result.push(match);
-        const mk = pairKey(u1.id, u2.id);
-        tonightPairs.add(mk);
-        if (newPairs) newPairs.add(mk);
-        teamMatchCounts.set(u1.id, (teamMatchCounts.get(u1.id) || 0) + 1);
-        teamMatchCounts.set(u2.id, (teamMatchCounts.get(u2.id) || 0) + 1);
-        stillUnmatched.delete(u1.id);
-        stillUnmatched.delete(u2.id);
-      }
-    }
-  }
+  pairUnmatchedDirectly(unmatchedTeams, stillUnmatched, result, ctx);
 
   if (stillUnmatched.size < 2) return result;
 
@@ -77,153 +171,9 @@ function trySwapToFixUnmatched(
       const u1 = unmatchedArr[i];
       const u2 = unmatchedArr[j];
 
-      // Try swapping with each existing match
-      for (let k = 0; k < result.length; k++) {
-        const existingMatch = result[k];
-        const teamA = teamMap.get(existingMatch.teamAId);
-        const teamB = teamMap.get(existingMatch.teamBId);
-        if (!teamA || !teamB) continue;
-
-        // Option 1: (U1, A) + (U2, B)
-        if (
-          canPlay(
-            u1,
-            teamA,
-            playedSet,
-            tonightPairs,
-            maxTierGap,
-            relaxationLevel,
-            rematchAllowedFor
-          ) &&
-          canPlay(
-            u2,
-            teamB,
-            playedSet,
-            tonightPairs,
-            maxTierGap,
-            relaxationLevel,
-            rematchAllowedFor
-          )
-        ) {
-          // Remove the old match's tonight pair
-          const oldKey = pairKey(teamA.id, teamB.id);
-          tonightPairs.delete(oldKey);
-          if (newPairs) newPairs.delete(oldKey);
-          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 1) - 1);
-          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 1) - 1);
-
-          // Replace match k with U1 vs A
-          result[k] = {
-            slot: slotName,
-            teamAId: u1.id,
-            teamBId: teamA.id,
-            teamAName: u1.name,
-            teamBName: teamA.name,
-            divisionA: u1.divisionName || 'Unknown',
-            divisionB: teamA.divisionName || 'Unknown',
-            tierA: getTier(u1),
-            tierB: getTier(teamA),
-          };
-          const key1 = pairKey(u1.id, teamA.id);
-          tonightPairs.add(key1);
-          if (newPairs) newPairs.add(key1);
-          teamMatchCounts.set(u1.id, (teamMatchCounts.get(u1.id) || 0) + 1);
-          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 0) + 1);
-
-          // Add new match U2 vs B
-          result.push({
-            slot: slotName,
-            teamAId: u2.id,
-            teamBId: teamB.id,
-            teamAName: u2.name,
-            teamBName: teamB.name,
-            divisionA: u2.divisionName || 'Unknown',
-            divisionB: teamB.divisionName || 'Unknown',
-            tierA: getTier(u2),
-            tierB: getTier(teamB),
-          });
-          const key2 = pairKey(u2.id, teamB.id);
-          tonightPairs.add(key2);
-          if (newPairs) newPairs.add(key2);
-          teamMatchCounts.set(u2.id, (teamMatchCounts.get(u2.id) || 0) + 1);
-          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 0) + 1);
-
-          stillUnmatched.delete(u1.id);
-          stillUnmatched.delete(u2.id);
-          scheduleLog(
-            `Swap fix: replaced (${teamA.name} vs ${teamB.name}) with (${u1.name} vs ${teamA.name}) + (${u2.name} vs ${teamB.name})`
-          );
-          break;
-        }
-
-        // Option 2: (U1, B) + (U2, A)
-        if (
-          canPlay(
-            u1,
-            teamB,
-            playedSet,
-            tonightPairs,
-            maxTierGap,
-            relaxationLevel,
-            rematchAllowedFor
-          ) &&
-          canPlay(
-            u2,
-            teamA,
-            playedSet,
-            tonightPairs,
-            maxTierGap,
-            relaxationLevel,
-            rematchAllowedFor
-          )
-        ) {
-          const oldKey = pairKey(teamA.id, teamB.id);
-          tonightPairs.delete(oldKey);
-          if (newPairs) newPairs.delete(oldKey);
-          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 1) - 1);
-          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 1) - 1);
-
-          result[k] = {
-            slot: slotName,
-            teamAId: u1.id,
-            teamBId: teamB.id,
-            teamAName: u1.name,
-            teamBName: teamB.name,
-            divisionA: u1.divisionName || 'Unknown',
-            divisionB: teamB.divisionName || 'Unknown',
-            tierA: getTier(u1),
-            tierB: getTier(teamB),
-          };
-          const key1 = pairKey(u1.id, teamB.id);
-          tonightPairs.add(key1);
-          if (newPairs) newPairs.add(key1);
-          teamMatchCounts.set(u1.id, (teamMatchCounts.get(u1.id) || 0) + 1);
-          teamMatchCounts.set(teamB.id, (teamMatchCounts.get(teamB.id) || 0) + 1);
-
-          result.push({
-            slot: slotName,
-            teamAId: u2.id,
-            teamBId: teamA.id,
-            teamAName: u2.name,
-            teamBName: teamA.name,
-            divisionA: u2.divisionName || 'Unknown',
-            divisionB: teamA.divisionName || 'Unknown',
-            tierA: getTier(u2),
-            tierB: getTier(teamA),
-          });
-          const key2 = pairKey(u2.id, teamA.id);
-          tonightPairs.add(key2);
-          if (newPairs) newPairs.add(key2);
-          teamMatchCounts.set(u2.id, (teamMatchCounts.get(u2.id) || 0) + 1);
-          teamMatchCounts.set(teamA.id, (teamMatchCounts.get(teamA.id) || 0) + 1);
-
-          stillUnmatched.delete(u1.id);
-          stillUnmatched.delete(u2.id);
-          scheduleLog(
-            `Swap fix: replaced (${teamA.name} vs ${teamB.name}) with (${u1.name} vs ${teamB.name}) + (${u2.name} vs ${teamA.name})`
-          );
-          break;
-        }
+      if (trySwapIntoExistingMatch(u1, u2, result, teamMap, ctx)) {
+        stillUnmatched.delete(u1.id);
+        stillUnmatched.delete(u2.id);
       }
       if (!stillUnmatched.has(u1.id)) break; // u1 was matched, move to next
     }
@@ -340,20 +290,16 @@ export function generateSlotPairings(
     (t) => !pairedInSlot.has(t.id) && (!byeTeamId || t.id !== byeTeamId)
   );
   if (unmatchedTeams.length >= 2) {
-    const swapResult = trySwapToFixUnmatched(
-      matches,
-      unmatchedTeams,
+    return trySwapToFixUnmatched(matches, unmatchedTeams, teams, {
       slotName,
-      teams,
       playedSet,
       tonightPairs,
       teamMatchCounts,
       maxTierGap,
       newPairs,
       relaxationLevel,
-      slotRematchAllowed
-    );
-    return swapResult;
+      rematchAllowedFor: slotRematchAllowed,
+    });
   }
 
   return matches;
