@@ -5,9 +5,10 @@ import { describe, expect, it, vi } from 'vitest';
 // ─── Hook mocks (children render for real) ────────────────────────────────────
 
 const mockPausedCount = vi.hoisted(() => ({ value: 0 }));
+const mockUnsettledCount = vi.hoisted(() => ({ value: 0 }));
 vi.mock('@/hooks/live-scoring/usePausedRoundCount', () => ({
   usePausedRoundCount: () => mockPausedCount.value,
-  useUnsettledRoundCount: () => mockPausedCount.value,
+  useUnsettledRoundCount: () => mockUnsettledCount.value,
 }));
 
 const mockBeforeUnloadWarning = vi.hoisted(() => vi.fn());
@@ -63,15 +64,26 @@ const renderPanel = () =>
 
 // ─── Leave warning ────────────────────────────────────────────────────────────
 
-describe('leave warning while rounds are held', () => {
+describe('leave warning while rounds are held or sending', () => {
   it('turns the warning on while a round waits for a signal', () => {
     mockPausedCount.value = 2;
+    mockUnsettledCount.value = 2;
     renderPanel();
     expect(mockBeforeUnloadWarning).toHaveBeenLastCalledWith(true);
   });
 
-  it('leaves the warning off when no round is held', () => {
+  it('keeps the warning on while a round is still sending after reconnect', () => {
+    // Back online, so nothing is paused, but the round has not landed yet and
+    // can still be refused. A reload now would lose it.
     mockPausedCount.value = 0;
+    mockUnsettledCount.value = 1;
+    renderPanel();
+    expect(mockBeforeUnloadWarning).toHaveBeenLastCalledWith(true);
+  });
+
+  it('leaves the warning off when no round is held or sending', () => {
+    mockPausedCount.value = 0;
+    mockUnsettledCount.value = 0;
     renderPanel();
     expect(mockBeforeUnloadWarning).toHaveBeenLastCalledWith(false);
     expect(mockBeforeUnloadWarning).not.toHaveBeenCalledWith(true);

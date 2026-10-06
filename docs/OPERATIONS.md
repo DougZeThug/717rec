@@ -48,7 +48,7 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 
 ### 2c. Wrong score was approved
 
-**First: was it live-scored?** If the match is listed in **Admin → Live Corrections**, yes. Every fix below takes off the old result and puts on the new one in the same save. You do not undo anything first.
+**First: was it live-scored?** If the match is listed in **Admin → Live Corrections**, yes. Scores and Live Corrections take off the old result and put on the new one in the same save. You do not undo anything first.
 
 **Wrong winner or wrong 2–0 / 2–1 (not live-scored)**
 1. **Admin → Scores**. Pick the night with **Filter by Date**.
@@ -67,7 +67,7 @@ The public form has an app-level rate limit: **5 submissions per 10 minutes per 
 2. **Admin → Match Creation**. Pick the Thursday, both teams and a timeslot → **Create Matches**.
 3. **Admin → Scores**. Tap the result → **Submit (1) Changes**.
 
-**Standings** change in the database in the same save. Your own screen refreshes by itself. Other people's phones can show old numbers for up to 5 minutes, until they reload.
+**Standings** change in the database in the same save. Your own screen refreshes by itself. Other people's phones can keep showing old numbers until they reload the page.
 
 ### 2d. Standings look wrong (a team's W-L doesn't match its games)
 

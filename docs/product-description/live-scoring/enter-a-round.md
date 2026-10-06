@@ -136,9 +136,9 @@ the signal returns. The grids clear so the next round can be entered, and a line
 under the scoreboard reads **"Offline — 1 round waiting to sync. Keep this page
 open."** No "Round N saved" appears, because it has not been. Before the first
 round is held, the line reads **"Offline — keep this page open. Rounds send when
-the signal is back."** The held round is in memory, so while any round waits,
-reloading or closing the tab on the live-scoring screen raises the browser's own
-leave warning. Links and Back inside the app are not blocked: they do not lose a
+the signal is back."** The held round is in memory, so while any round waits or
+is still sending, reloading or closing the tab on the live-scoring screen raises
+the browser's own leave warning. Links and Back inside the app are not blocked: they do not lose a
 held round. On another app page a reload gives no warning, but held rounds still
 send when the signal returns if the tab stays open. The warning is not reliable
 on iPhone Safari.
@@ -189,7 +189,7 @@ applies to the coming round only.
 | Escape, or a Cancel button | Nothing to cancel. | **There is no way to clear the grids.** No Cancel, no Escape handler, no clear button. A wrong tap is corrected by tapping the right number instead; a fully wrong round is corrected after saving, by undoing it. |
 | In-app navigation away, or switching tab within the page | Nothing lost. | **The tapped scores are lost.** A save already sent still lands, and the round appears when the scorer returns. |
 | Browser back or forward | Nothing lost. | As above. |
-| Reload, or the tab closed | The round input returns at the right round number, with any taps kept on the phone. | **The tapped scores come back** if the round number has not moved. A sent save may have landed; the round history after reloading says which. A round that was only *held* for a missing signal is not resent — its taps come back instead, for one more press. While a round is held, the browser first raises its own leave warning (not reliable on iPhone Safari). |
+| Reload, or the tab closed | The round input returns at the right round number, with any taps kept on the phone. | **The tapped scores come back** if the round number has not moved. A sent save may have landed; the round history after reloading says which. A round that was only *held* for a missing signal is not resent — its taps come back instead, for one more press. While a round is held or still sending, the browser first raises its own leave warning (not reliable on iPhone Safari). |
 | Network lost mid-request | The match will not load. | The save fails, the optimistic round rolls back, and a red toast gives the reason. **The tapped numbers stay selected.** The scorer presses Save Round again once the signal returns. |
 | Network already lost when Save Round is pressed | The match will not load. | The round is **held, not failed**: it shows in the log, the grids clear, and a line reads "Offline — 1 round waiting to sync. Keep this page open." It is sent on reconnect with nothing pressed. |
 | The request fails or times out | Not applicable. | As above. The scorer retries rather than re-entering the round. |

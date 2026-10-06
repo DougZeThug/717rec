@@ -98,9 +98,9 @@ export const ActiveGamePanel: React.FC<ActiveGamePanelProps> = ({
   const isOnline = useOnlineStatus();
   const pausedRounds = usePausedRoundCount(matchId);
   const unsettledRounds = useUnsettledRoundCount(matchId);
-  // A reload or closed tab loses held rounds; in-app moves do not, so this is
-  // not useUnsavedChangesGuard, which would also block links and Back.
-  useBeforeUnloadWarning(pausedRounds > 0);
+  // A reload or closed tab loses rounds that are held or still sending; in-app
+  // moves do not, so this is not useUnsavedChangesGuard.
+  useBeforeUnloadWarning(unsettledRounds > 0);
 
   /**
    * A round held for a missing connection stays `isPending` for as long as the
