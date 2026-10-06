@@ -9,13 +9,6 @@ import { transformMatchFromDb, transformMatchToDb } from './SupabaseSqlStorage/m
 import type { BmMatch, DbMatch, Id } from './SupabaseSqlStorage/types';
 
 /**
- * Get Supabase client with proper typing
- */
-function getClient(): SupabaseClient {
-  return supabase;
-}
-
-/**
  * Supabase SQL Storage Adapter for brackets-manager
  * Implements the CrudInterface to work directly with Supabase SQL tables.
  *
@@ -25,6 +18,14 @@ function getClient(): SupabaseClient {
  * machine depends on all three.
  */
 export class SupabaseSqlStorage implements CrudInterface {
+  /**
+   * Get Supabase client with proper typing
+   */
+  // skipcq: JS-0105 -- the CRUD methods below read the client through `this`, so it stays on the instance.
+  private getClient(): SupabaseClient {
+    return supabase;
+  }
+
   private static readonly BRACKET_TABLE_COLUMNS: Record<string, string> = {
     participant: 'id, name, position, team_id, tournament_id',
     match:
@@ -41,7 +42,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     table: T,
     filter?: Partial<DataTypes[T]> | Id
   ): Promise<DataTypes[T][] | DataTypes[T] | null> {
-    const client = getClient();
+    const client = this.getClient();
     const columns = SupabaseSqlStorage.BRACKET_TABLE_COLUMNS[table as string] ?? 'id';
     let query = client.from(table).select(columns);
 
@@ -112,7 +113,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     table: T,
     values: OmitId<DataTypes[T]> | OmitId<DataTypes[T]>[]
   ): Promise<number | boolean> {
-    const client = getClient();
+    const client = this.getClient();
     const isArray = Array.isArray(values);
     const items = isArray ? values : [values];
 
@@ -166,7 +167,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     filter: Partial<DataTypes[T]> | Id,
     values: Partial<DataTypes[T]>
   ): Promise<boolean> {
-    const client = getClient();
+    const client = this.getClient();
 
     // Writes are applied verbatim: the library's full-object match updates
     // are authoritative, including writes that clear an opponent slot
@@ -206,7 +207,7 @@ export class SupabaseSqlStorage implements CrudInterface {
     table: T,
     filter?: Partial<DataTypes[T]>
   ): Promise<boolean> {
-    const client = getClient();
+    const client = this.getClient();
     let query = client.from(table).delete();
 
     bracketLog(`Delete from ${table}`, { filter });

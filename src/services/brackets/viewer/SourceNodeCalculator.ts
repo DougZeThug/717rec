@@ -86,9 +86,9 @@ export function calculateSourceNodeIds(
   // Index matches by group+round for fast lookup: "groupId:roundNumber" -> matches[]
   const matchesByGroupRound = new Map<string, ViewerMatch[]>();
   for (const m of matches) {
-    const r = roundsById.get(m.round_id);
-    if (!r) continue;
-    const key = `${r.group_id}:${r.number}`;
+    const round = roundsById.get(m.round_id);
+    if (!round) continue;
+    const key = `${round.group_id}:${round.number}`;
     let matchesForRound = matchesByGroupRound.get(key);
     if (!matchesForRound) {
       matchesForRound = [];
@@ -201,8 +201,8 @@ export function calculateSourceNodeIds(
 
     // Find last round of Winners Bracket (group 1)
     const wbRounds = rounds
-      .filter((r) => {
-        const g = groupsById.get(r.group_id);
+      .filter((round) => {
+        const g = groupsById.get(round.group_id);
         return g && g.number === 1;
       })
       .sort((a, b) => b.number - a.number);
@@ -210,8 +210,8 @@ export function calculateSourceNodeIds(
 
     // Find last round of Losers Bracket (group 2)
     const lbRounds = rounds
-      .filter((r) => {
-        const g = groupsById.get(r.group_id);
+      .filter((round) => {
+        const g = groupsById.get(round.group_id);
         return g && g.number === 2;
       })
       .sort((a, b) => b.number - a.number);

@@ -34,12 +34,15 @@ globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
   class {
     // jsdom has no ResizeObserver; these tests need no real behavior.
+    // skipcq: JS-0105 -- the real ResizeObserver API is instance methods.
     observe() {
       // no-op
     }
+    // skipcq: JS-0105 -- the real ResizeObserver API is instance methods.
     disconnect() {
       // no-op
     }
+    // skipcq: JS-0105 -- the real ResizeObserver API is instance methods.
     unobserve() {
       // no-op
     }
