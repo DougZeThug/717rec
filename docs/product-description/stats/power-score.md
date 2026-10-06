@@ -200,7 +200,7 @@ missing score is neutral grey.
 | --- | --- | --- |
 | The user's role | No effect. Everyone sees the same number. Only an admin can change anything that feeds it. | No effect. |
 | The record's state | A team with no completed match has no score and shows "—". A hidden team has no score. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
-| The season's state | An active season's scores move. **An archived season's scores are frozen** and no longer respond to a formula change, a weight change, or a re-tiering. | Archiving a season freezes it at that moment. An admin can deliberately recompute an archived season, which is the only way a frozen number ever changes. |
+| The season's state | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, or an admin's deliberate recompute of an archived season, are the only ways a frozen number changes. |
 | Viewport | On a wide screen the score is a coloured number in a table cell. On a phone it is a number in a card, and in detailed view an animated circular gauge. | No effect. |
 | Keys the app honours | None. A power score is text, not a control. | None. |
 
