@@ -68,7 +68,7 @@ export const useMatchComments = (matchId: string) => {
   }, [commentsQuery.error]);
 
   useEffect(() => {
-    if (!matchId) return;
+    if (!matchId) return undefined;
     /** Mark match comments stale after realtime reconnects. */
     const invalidate = () => {
       queryClient.invalidateQueries({ queryKey }).catch((err: unknown) => {

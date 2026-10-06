@@ -24,7 +24,7 @@ export function useBracketCompletion(bracketId: string | undefined) {
   const notifiedRef = useRef(false);
 
   useEffect(() => {
-    if (!bracketId) return;
+    if (!bracketId) return undefined;
     notifiedRef.current = false;
 
     log('useBracketCompletion listening', { bracketId });

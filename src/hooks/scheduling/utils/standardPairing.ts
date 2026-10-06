@@ -86,11 +86,11 @@ export const scheduleStandardPairings = async (
       return count > 0 && count < TARGET_MATCHES;
     });
     if (partialTeams.length > 0) {
+      const teamList = partialTeams
+        .map((t) => `${t.name} (${matchCounts.get(t.id) ?? 0}/${TARGET_MATCHES})`)
+        .join(', ');
       warnLog(
-        `Block ${block} has ${partialTeams.length} team(s) with fewer than ${TARGET_MATCHES} matches: ` +
-          partialTeams
-            .map((t) => `${t.name} (${matchCounts.get(t.id) ?? 0}/${TARGET_MATCHES})`)
-            .join(', ')
+        `Block ${block} has ${partialTeams.length} team(s) with fewer than ${TARGET_MATCHES} matches: ${teamList}`
       );
     }
 

@@ -22,6 +22,7 @@ const RankTrendIndicator: React.FC<RankTrendIndicatorProps> = ({ rankChange }) =
       const timer = setTimeout(() => setShowFlash(false), 1500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [rankChange]);
 
   // Handle undefined, null, or 0 cases

@@ -69,6 +69,7 @@ const FormControl = React.forwardRef<
       const timer = setTimeout(() => setShouldShake(false), 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [error]);
 
   return (
@@ -117,6 +118,7 @@ const FormMessage = React.forwardRef<
       const timer = setTimeout(() => setShouldShake(false), 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [body]);
 
   if (!body) {

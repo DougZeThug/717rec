@@ -30,6 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
+  // skipcq: JS-0105 -- React calls this lifecycle hook on the instance, so it cannot be static.
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // A page whose code could not be downloaded is a lost connection or a
     // fresh deploy, not a defect. ChunkLoadRecovery handles it below.

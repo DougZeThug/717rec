@@ -34,7 +34,7 @@ const toToml = ({ meta, body }, file) => {
   // Reviewers: read-only. QA runs checks (needs temp writes). Implementer edits code.
   const sandbox = canWrite || canRun ? 'workspace-write' : 'read-only';
   return [
-    '# GENERATED from .claude/agents/' + file + ' - do not edit. Run: node tools/sync-codex-agents.mjs',
+    `# GENERATED from .claude/agents/${file} - do not edit. Run: node tools/sync-codex-agents.mjs`,
     `name = ${basic(meta.name)}`,
     `description = ${basic(meta.description)}`,
     `sandbox_mode = ${basic(sandbox)}`,
@@ -45,7 +45,9 @@ const toToml = ({ meta, body }, file) => {
   ].join('\n');
 };
 
-const files = readdirSync(srcDir).filter((f) => f.endsWith('.md')).sort();
+const files = readdirSync(srcDir)
+  .filter((f) => f.endsWith('.md'))
+  .sort();
 let drift = 0;
 if (!check) mkdirSync(outDir, { recursive: true });
 for (const file of files) {
@@ -59,7 +61,9 @@ for (const file of files) {
   }
 }
 const stale = existsSync(outDir)
-  ? readdirSync(outDir).filter((f) => f.endsWith('.toml') && !files.includes(f.replace(/\.toml$/, '.md')))
+  ? readdirSync(outDir).filter(
+      (f) => f.endsWith('.toml') && !files.includes(f.replace(/\.toml$/, '.md'))
+    )
   : [];
 for (const f of stale) {
   drift += 1;
@@ -69,5 +73,7 @@ if (check && drift) {
   // Set the exit code instead of calling process.exit() so the script ends on its own.
   process.exitCode = 1;
 } else {
-  console.log(check ? `OK: ${files.length} agents in sync` : `Wrote ${files.length} agents (${drift} changed)`);
+  console.log(
+    check ? `OK: ${files.length} agents in sync` : `Wrote ${files.length} agents (${drift} changed)`
+  );
 }

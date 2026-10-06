@@ -97,10 +97,10 @@ globalThis.matchMedia =
       matches: false,
       media: query,
       onchange: null,
-      addListener: () => {},
-      removeListener: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
       dispatchEvent: () => true, // MediaQueryList.dispatchEvent returns boolean
     } as MediaQueryList;
   };
@@ -111,19 +111,19 @@ for (const proto of [Element.prototype, HTMLElement.prototype]) {
     proto.hasPointerCapture = () => false;
   }
   if (!proto.setPointerCapture) {
-    proto.setPointerCapture = () => {};
+    proto.setPointerCapture = () => undefined;
   }
   if (!proto.releasePointerCapture) {
-    proto.releasePointerCapture = () => {};
+    proto.releasePointerCapture = () => undefined;
   }
   if (!proto.scrollIntoView) {
-    proto.scrollIntoView = () => {};
+    proto.scrollIntoView = () => undefined;
   }
 }
 
 // jsdom doesn't implement window.scrollTo — stub it to silence "Not implemented" warnings
-window.scrollTo = (() => {}) as typeof window.scrollTo;
-Element.prototype.scrollTo = (() => {}) as typeof Element.prototype.scrollTo;
+window.scrollTo = (() => undefined) as typeof window.scrollTo;
+Element.prototype.scrollTo = (() => undefined) as typeof Element.prototype.scrollTo;
 
 // jsdom doesn't implement HTMLCanvasElement.getContext — stub a 2D context so
 // components that touch canvas (charts, measureText, etc.) don't crash tests.
@@ -187,18 +187,22 @@ globalThis.IntersectionObserver =
     scrollMargin = '0px';
 
     /** Starts observing an element; no-op in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     observe() {
       return null;
     }
     /** Disconnects all observed elements; no-op in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     disconnect() {
       return null;
     }
     /** Stops observing an element; no-op in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     unobserve() {
       return null;
     }
     /** Returns queued intersection records; always empty in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }

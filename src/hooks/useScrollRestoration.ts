@@ -62,7 +62,7 @@ const useScrollRestoration = (routeKey?: string) => {
   useLayoutEffect(() => {
     // Only restore on back/forward (POP) navigation within the SPA
     const isBackNavigation = navigationType === 'POP';
-    if (!isBackNavigation) return;
+    if (!isBackNavigation) return undefined;
 
     let retryCount = 0;
 

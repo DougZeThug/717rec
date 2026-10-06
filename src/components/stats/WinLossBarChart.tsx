@@ -9,7 +9,7 @@ import ChartEmptyState from './ChartEmptyState';
 import WinLossTooltip from './WinLossTooltip';
 
 const truncateLabel = (label: string, max = 10) =>
-  label.length > max ? label.slice(0, max - 1) + '…' : label;
+  label.length > max ? `${label.slice(0, max - 1)}…` : label;
 
 interface WinLossDataItem {
   displayName: string;

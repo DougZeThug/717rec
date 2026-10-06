@@ -12,8 +12,8 @@ class MatchUpdateQueue {
     const result = this.queue.then(() => operation());
     // Update queue regardless of success/failure to continue processing
     this.queue = result.then(
-      () => {},
-      () => {}
+      () => undefined,
+      () => undefined
     );
     return result;
   }

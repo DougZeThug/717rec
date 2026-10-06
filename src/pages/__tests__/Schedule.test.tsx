@@ -317,7 +317,7 @@ describe('Schedule page', () => {
   });
 
   it('shows an error state when schedule loading throws', () => {
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const preventExpectedJsdomError = (event: ErrorEvent) => {
       if (event.error?.message === 'TEST_INTENTIONAL: Schedule hook failure') {
         event.preventDefault();

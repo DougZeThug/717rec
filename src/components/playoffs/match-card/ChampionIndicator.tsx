@@ -13,7 +13,7 @@ const ChampionIndicator: React.FC<ChampionIndicatorProps> = ({ winner }) => {
   return (
     <div className="mt-2 pt-2 border-t border-border text-center">
       <div className="text-xs text-muted-foreground">Champion</div>
-      <div className={blueAmber.text.heading + ' font-semibold'}>{winner.name}</div>
+      <div className={`${blueAmber.text.heading} font-semibold`}>{winner.name}</div>
     </div>
   );
 };

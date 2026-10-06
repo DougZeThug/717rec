@@ -39,7 +39,7 @@ export function useUnreadNotifications(): UseUnreadNotificationsResult {
 
   // Cross-tab sync via storage event
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return undefined;
     const onStorage = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY) setLastSeenAt(e.newValue ?? EPOCH);
     };

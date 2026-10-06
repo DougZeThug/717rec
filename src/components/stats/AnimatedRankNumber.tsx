@@ -53,6 +53,7 @@ export const AnimatedRankNumber: React.FC<AnimatedRankNumberProps> = ({
       const timer = setTimeout(() => setFlashColor(null), 1500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [rank, previousRank, showFlash]);
 
   return (

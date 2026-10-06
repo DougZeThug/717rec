@@ -39,6 +39,16 @@ const matchFingerprint = (m: StorageMatch): string =>
     m.status,
   ]);
 
+async function fetchBracketState(bracketId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('brackets')
+    .select('id, state')
+    .eq('id', bracketId)
+    .maybeSingle();
+  if (error) handleDatabaseError(error, 'Failed to read bracket state');
+  return data?.state ?? null;
+}
+
 /**
  * Explicit, admin-triggered bracket repair.
  *
@@ -130,24 +140,14 @@ export class BracketRepairService {
   }
 
   private async reevaluateCompletion(bracketId: string): Promise<boolean> {
-    const stateBefore = await this.fetchBracketState(bracketId);
+    const stateBefore = await fetchBracketState(bracketId);
     const ctx: BracketUpdateContext = {
       storage: this.storage,
       manager: this.manager,
       normalizationService: this.normalizationService,
     };
     await markBracketCompleteIfDone(ctx, bracketId);
-    const stateAfter = await this.fetchBracketState(bracketId);
+    const stateAfter = await fetchBracketState(bracketId);
     return stateBefore !== 'completed' && stateAfter === 'completed';
-  }
-
-  private async fetchBracketState(bracketId: string): Promise<string | null> {
-    const { data, error } = await supabase
-      .from('brackets')
-      .select('id, state')
-      .eq('id', bracketId)
-      .maybeSingle();
-    if (error) handleDatabaseError(error, 'Failed to read bracket state');
-    return data?.state ?? null;
   }
 }

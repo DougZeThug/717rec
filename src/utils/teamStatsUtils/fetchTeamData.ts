@@ -7,7 +7,7 @@ export const fetchTeamData = async (teamId: string) => {
   const team = await fetchTeamForStats(teamId);
 
   if (!team) {
-    errorLog('ERROR FETCHING TEAM:', 'No team found with ID: ' + teamId);
+    errorLog('ERROR FETCHING TEAM:', `No team found with ID: ${teamId}`);
     return null;
   }
 

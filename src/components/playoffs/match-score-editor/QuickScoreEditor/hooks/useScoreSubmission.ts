@@ -55,7 +55,7 @@ export const useScoreSubmission = ({
         });
 
         // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
-        const dummyRefetch = async () => {};
+        const dummyRefetch = () => Promise.resolve();
 
         // Save the match score - the handleSaveMatchScore function will fetch team IDs from the database
         await onSave(

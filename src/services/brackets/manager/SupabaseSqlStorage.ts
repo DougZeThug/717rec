@@ -21,6 +21,7 @@ export class SupabaseSqlStorage implements CrudInterface {
   /**
    * Get Supabase client with proper typing
    */
+  // skipcq: JS-0105 -- the CRUD methods below read the client through `this`, so it stays on the instance.
   private getClient(): SupabaseClient {
     return supabase;
   }
