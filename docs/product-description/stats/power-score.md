@@ -114,7 +114,7 @@ Power score = weighted match win rate × 40
 
 | Term | What it is |
 | --- | --- |
-| **Weighted match win rate** | Wins divided by matches, with every match weighted by the opponent's division weight. Winning every match reads 1.0 whoever was played, so this term rewards winning, not opponent strength. |
+| **Weighted match win rate** | Wins divided by wins plus losses, with every match weighted by the opponent's division weight. A tie is left out of both, so it neither helps nor hurts this term. Winning every match reads 1.0 whoever was played, so this term rewards winning, not opponent strength. |
 | **Weighted game win rate** | The same shape, counted in games rather than matches. |
 | **Strength of schedule** | The average division weight of the opponents faced, held between 0.1 and 1.0. **This is the term that rewards a hard schedule.** It is not the average power score of opponents, which is what most people assume. |
 
@@ -200,7 +200,7 @@ missing score is neutral grey.
 | --- | --- | --- |
 | The user's role | No effect. Everyone sees the same number. Only an admin can change anything that feeds it. | No effect. |
 | The record's state | A team with no completed match has no score and shows "—". A hidden team has no score. A completed match feeds the score; a pending score submission does not, until it is approved. | A match being reopened reverses everything the original result contributed. |
-| The season's state | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, or an admin's deliberate recompute of an archived season, are the only ways a frozen number changes. |
+| The season's state | An active season's scores move. **An archived season's scores are frozen** against a formula change or a re-tiering. **A Power Score weight change is the exception:** saving new weights in the sandbox recomputes every season, archived included. | Archiving a season freezes it at that moment. Saving new weights, an admin's deliberate recompute of an archived season, or a one-off rule change shipped as a migration (such as the 2026-10 rule that ties leave the match term) are the only ways a frozen number changes. |
 | Viewport | On a wide screen the score is a coloured number in a table cell. On a phone it is a number in a card, and in detailed view an animated circular gauge. | No effect. |
 | Keys the app honours | None. A power score is text, not a control. | None. |
 

@@ -143,7 +143,7 @@ rank is the row's position in the full sorted list.
 | Division | The team's division. | All view only |
 | Power | Power score, one decimal, coloured in eight bands from gold down to red. "—" when the team has not played. | always |
 | W-L | Matches won and lost. | always |
-| Win % | Match win percentage, one decimal, coloured in four bands. | always |
+| Win % | Match win percentage, one decimal, coloured in four bands. Wins divided by wins plus losses: a tie is left out. | always |
 | Games | Games won and lost across all matches. | wide screens |
 | Game % | Game win percentage. | very wide screens |
 | SOS | Strength of schedule, three decimals. The average division weight of the opponents faced — **not** the average power score of opponents. | always |
