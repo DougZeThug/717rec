@@ -94,7 +94,7 @@ export const MatchHeadToHead: React.FC<MatchHeadToHeadProps> = ({
     const leadingWins = Math.max(team1Wins, team2Wins);
     const trailingWins = Math.min(team1Wins, team2Wins);
     const truncatedName =
-      leadingTeam.length > 18 ? leadingTeam.substring(0, 15) + '…' : leadingTeam;
+      leadingTeam.length > 18 ? `${leadingTeam.substring(0, 15)}…` : leadingTeam;
 
     return {
       prefix: 'H2H:',

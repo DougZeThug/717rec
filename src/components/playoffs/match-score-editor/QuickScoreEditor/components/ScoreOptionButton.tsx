@@ -35,7 +35,7 @@ const ScoreOptionButton: React.FC<ScoreOptionButtonProps> = ({
       className={cn(
         'h-12 text-lg font-mono',
         option.winner === (isForTeam1 ? 'team1' : 'team2') && teamClass,
-        selectedOption === option.label && 'ring-2 ring-offset-2 ' + ringClass
+        selectedOption === option.label && `ring-2 ring-offset-2 ${ringClass}`
       )}
       onClick={() => onSelect(option)}
       disabled={isSubmitting}

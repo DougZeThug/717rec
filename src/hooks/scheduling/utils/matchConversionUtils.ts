@@ -57,7 +57,7 @@ export const convertPairingsToMatches = (
 
         // Create match
         matches.push({
-          id: Date.now().toString() + '-' + primaryBlock + '-' + index,
+          id: `${Date.now()}-${primaryBlock}-${index}`,
           team1Id: pairing.team1.id,
           team2Id: pairing.team2.id,
           timeslot,
@@ -82,7 +82,7 @@ export const convertPairingsToMatches = (
 
         // Create match
         matches.push({
-          id: Date.now().toString() + '-' + secondaryBlock + '-' + index,
+          id: `${Date.now()}-${secondaryBlock}-${index}`,
           team1Id: pairing.team1.id,
           team2Id: pairing.team2.id,
           timeslot,
@@ -121,7 +121,7 @@ export const convertPairingsToMatches = (
             : TIME_BLOCKS[block as keyof typeof TIME_BLOCKS].secondary;
 
         matches.push({
-          id: Date.now().toString() + '-' + block + '-' + index,
+          id: `${Date.now()}-${block}-${index}`,
           team1Id: pairing.team1.id,
           team2Id: pairing.team2.id,
           timeslot,
