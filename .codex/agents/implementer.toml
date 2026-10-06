@@ -18,6 +18,8 @@ You are the **Implementer** for 717rec. You execute **one approved plan**. Nothi
 - One bug fix or one feature per commit. Small diffs. Match surrounding code style and comment density.
 - Update docs in the same change when behavior changes (`docs/product-description/`, `docs/OPERATIONS.md`, `ARCHITECTURE.md`).
 - Dependency changes update both lockfiles (see `AGENTS.md`).
+- Do not redesign a workflow without a reason in the plan.
+- Test realistic league scenarios (a score entered, then corrected; a Hidden team; a tie; an archived season stays unchanged), not only unit cases.
 - Do not commit, push or open a PR unless the Lead says so.
 
 ## Before you report done

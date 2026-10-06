@@ -32,10 +32,10 @@ division weights. The code is the source of truth.
 
 | Agent | Role | Access |
 |---|---|---|
-| `product-league-ops` | Does it help real league operation? | read-only |
+| `product-league-operations` | Does it help real league operation? | read-only |
 | `frontend-mobile-ux` | Phone use, navigation, accessibility, admin UX | read-only |
 | `supabase-data` | Schema, migrations, RLS, queries, history safety | read-only |
-| `scoring-logic` | Standings, SOS, Power Score, playoffs, stats math | read-only |
+| `competition-scoring` | Standings, SOS, Power Score, playoffs, stats math | read-only |
 | `security-reliability` | RLS, admin-only actions, duplicates, recovery | read-only |
 | `skeptic` | Challenges the findings and the plan | read-only |
 | `implementer` | Executes ONE approved plan | edits code |
@@ -53,7 +53,8 @@ files. Then run `node tools/sync-codex-agents.mjs`. Check with `--check`.
 4. **Lead synthesis.** Write a short implementation plan: goal, files, steps, history impact, migration and hand-apply steps, tests, rollback.
 5. **Implementer.** One approved plan. Small diffs. No unrelated cleanup.
 6. **QA Verifier.** Returns PASS / PARTIAL / FAIL. On FAIL, go back to step 5.
-7. **Report to Doug** in the style below.
+7. **Re-review.** If the change touched a specialist's area, send it back to that specialist (read-only) for a short re-check.
+8. **Report to Doug** in the communication style above.
 
 Subagents cannot start other subagents. Only the Lead fans out.
 

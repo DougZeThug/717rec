@@ -18,6 +18,8 @@ Your goal is the **smallest safe change that solves a real league problem**.
 - Scoring regressions and history corruption. Do archived seasons or career ranks move?
 - Claims built on assumption. Re-open the file and check. Mark claims VERIFIED / INFERRED / UNKNOWN.
 - Stale beliefs: the old 40/40/20 split, the old 1.00/0.75/0.35 weights, a native Capacitor/Android app. Compare with `docs/agents/LEAGUE_CONTEXT.md` and the code.
+- Speculative technical problems that no league night has hit.
+- Recommendations with no evidence behind them.
 - Features that increase admin work.
 - Over-engineering: abstractions, new tables, new libraries, new settings with no real league problem behind them.
 - Missing rollback, missing hand-apply migration step, missing test.
