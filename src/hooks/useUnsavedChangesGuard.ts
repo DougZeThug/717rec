@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { registerUnsavedWork } from '@/utils/unsavedChanges';
 
+import { useBeforeUnloadWarning } from './useBeforeUnloadWarning';
+
 const DEFAULT_MESSAGE = 'You have unsaved changes. Leave and lose them?';
 
 interface UnsavedChangesGuard {
@@ -25,7 +27,7 @@ interface UnsavedChangesGuard {
  * - **Back and Forward** — no click to hang a handler on, so `UnsavedWorkBlocker`
  *   catches them at the router instead. See UX audit A-07.
  * - **Leaving the site**, by typing an address, reloading or closing the tab —
- *   the `beforeunload` listener below, which raises the browser's own warning.
+ *   `useBeforeUnloadWarning`, which raises the browser's own warning.
  *
  * Call `confirmDiscard` for a fourth: a Cancel button the component owns.
  *
@@ -54,22 +56,7 @@ export const useUnsavedChangesGuard = (
     []
   );
 
-  useEffect(() => {
-    // Explicitly undefined rather than a bare return: every path out of this
-    // callback returns a value, which is what marks it as a cleanup or not.
-    if (!isDirty) return undefined;
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      // Browsers show their own wording and ignore ours; this is what asks.
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isDirty]);
+  useBeforeUnloadWarning(isDirty);
 
   // Asks about this component's own work, not whatever else is registered, so
   // a Cancel button always shows the message that belongs to it.

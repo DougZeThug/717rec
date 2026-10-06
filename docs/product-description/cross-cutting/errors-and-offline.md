@@ -137,9 +137,13 @@ for "definitely working", which is why nothing is blocked on it.
 There is **one offline write queue in the product, and it covers live scoring
 only**. A round entered at a venue with no signal is held rather than lost: it
 shows in the round log, a line under the scoreboard counts how many are waiting,
-and they are sent by themselves when the connection returns. The held round is in
-memory, so closing the tab loses it — but the tapped scores are kept on the phone
-for twelve hours, so a reload hands them back and one press files them again.
+and they are sent by themselves when the connection returns. The line says to
+keep the page open. The held round is in memory, so closing the tab loses it —
+but the tapped scores are kept on the phone for twelve hours, so a reload hands
+them back and one press files them again. While a round waits, reloading or
+closing the tab raises the browser's own leave warning (not reliable on iPhone
+Safari). Links and Back inside the app are not blocked, because they do not lose
+a held round.
 
 Everywhere else there is still no queue. A long message typed offline is lost on
 submit. See
