@@ -32,7 +32,8 @@ export const useStartCountdown = (startTimeStr?: string | null): StartCountdown 
   const [countdown, setCountdown] = useState<StartCountdown>(IDLE_COUNTDOWN);
 
   useEffect(() => {
-    if (!startTimeStr) return;
+    // Explicit `undefined`: this effect returns a cleanup on the other path.
+    if (!startTimeStr) return undefined;
 
     const startTime = new Date(startTimeStr);
     const updateCountdown = () => {
