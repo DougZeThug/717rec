@@ -71,8 +71,9 @@ by different formulas. Nothing in the app warns the user about this. See
 
 > **Technical note:** freezing is done by backfilling the archived season's
 > stored numbers once and then refusing to recompute them. An admin has controls
-> that can override the freeze and rewrite an archived season, which is the only
-> way an archived number ever changes.
+> that can override the freeze and rewrite an archived season;
+> [`stats/power-score.md`](../stats/power-score.md) lists every way an archived
+> number changes.
 
 ## What is scoped to a season, and what is not
 
