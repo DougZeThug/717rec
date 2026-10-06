@@ -2,7 +2,7 @@ import { screen } from '@testing-library/dom';
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { WarningDisplay } from '../../auto-schedule/WarningDisplay';
+import { WarningDisplay } from '../WarningDisplay';
 
 describe('WarningDisplay', () => {
   it('should not render when there are no odd blocks', () => {
