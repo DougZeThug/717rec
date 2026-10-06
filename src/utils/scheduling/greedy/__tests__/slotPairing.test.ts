@@ -6,8 +6,10 @@ vi.mock('@/utils/logger', () => ({
   errorLog: vi.fn(),
 }));
 
+import { scheduleLog, warnLog } from '@/utils/logger';
+
 import { pairKey } from '../pairKey';
-import { generateSlotPairings } from '../slotPairing';
+import { generateSlotPairings, type SwapContext, trySwapToFixUnmatched } from '../slotPairing';
 import { expectNoDuplicatePairs, expectNoTeamDoubleBookedPerSlot, makeTeam } from './testHelpers';
 
 describe('generateSlotPairings', () => {
@@ -175,5 +177,218 @@ describe('generateSlotPairings', () => {
 
     expect(matches).toHaveLength(1);
     expect(rematchAllowedFor).toEqual(new Set(['a']));
+  });
+});
+
+describe('generateSlotPairings swap pass', () => {
+  // Greedy pairs a (Intermediate) with b (Intermediate) first. That strands
+  // c (Competitive) and d (Recreational): a tier gap of 2 blocks c vs d.
+  // The swap pass must then break (a, b) and re-pair the stranded teams.
+  const setup = (blockedTonightPairs: string[] = []) => {
+    const teamA = makeTeam('a', 'Intermediate');
+    const teamB = makeTeam('b', 'Intermediate');
+    const teamC = makeTeam('c', 'Competitive');
+    const teamD = makeTeam('d', 'Recreational');
+    const teams = [teamA, teamB, teamC, teamD];
+    const tonightPairs = new Set(blockedTonightPairs);
+    const newPairs = new Set<string>();
+    const teamMatchCounts = new Map(teams.map((t) => [t.id, 0]));
+    const matches = generateSlotPairings(
+      teams,
+      'S1',
+      new Set(),
+      tonightPairs,
+      teamMatchCounts,
+      1,
+      undefined,
+      newPairs
+    );
+    return { matches, tonightPairs, newPairs, teamMatchCounts };
+  };
+
+  const idsOf = (m: { teamAId: string; teamBId: string }) => [m.teamAId, m.teamBId];
+
+  it('swaps (U1,A) + (U2,B) when option 1 works', () => {
+    const { matches, tonightPairs, newPairs, teamMatchCounts } = setup();
+
+    expect(matches.map(idsOf)).toEqual([
+      ['c', 'a'],
+      ['d', 'b'],
+    ]);
+    expect(matches[0]).toMatchObject({
+      slot: 'S1',
+      teamAName: 'Team c',
+      teamBName: 'Team a',
+      divisionA: 'Competitive',
+      divisionB: 'Intermediate',
+      tierA: 1,
+      tierB: 2,
+    });
+    expect(matches[1]).toMatchObject({
+      slot: 'S1',
+      teamAName: 'Team d',
+      teamBName: 'Team b',
+      divisionA: 'Recreational',
+      divisionB: 'Intermediate',
+      tierA: 3,
+      tierB: 2,
+    });
+    const expectedKeys = new Set([pairKey('c', 'a'), pairKey('d', 'b')]);
+    expect(tonightPairs).toEqual(expectedKeys);
+    expect(newPairs).toEqual(expectedKeys);
+    for (const id of ['a', 'b', 'c', 'd']) {
+      expect(teamMatchCounts.get(id)).toBe(1);
+    }
+    expect(scheduleLog).toHaveBeenCalledWith(
+      'Swap fix: replaced (Team a vs Team b) with (Team c vs Team a) + (Team d vs Team b)'
+    );
+    expect(warnLog).not.toHaveBeenCalledWith(expect.stringContaining('Swap pass'));
+  });
+
+  it('swaps (U1,B) + (U2,A) when only option 2 works', () => {
+    // Session pair a-c blocks option 1 ((c,a) + (d,b)).
+    const { matches, tonightPairs, newPairs, teamMatchCounts } = setup([pairKey('a', 'c')]);
+
+    expect(matches.map(idsOf)).toEqual([
+      ['c', 'b'],
+      ['d', 'a'],
+    ]);
+    expect(tonightPairs).toEqual(
+      new Set([pairKey('a', 'c'), pairKey('c', 'b'), pairKey('d', 'a')])
+    );
+    expect(newPairs).toEqual(new Set([pairKey('c', 'b'), pairKey('d', 'a')]));
+    for (const id of ['a', 'b', 'c', 'd']) {
+      expect(teamMatchCounts.get(id)).toBe(1);
+    }
+    expect(scheduleLog).toHaveBeenCalledWith(
+      'Swap fix: replaced (Team a vs Team b) with (Team c vs Team b) + (Team d vs Team a)'
+    );
+  });
+
+  it('leaves matches unchanged and warns when no swap works', () => {
+    // a-c blocks option 1 and a-d blocks option 2.
+    const { matches, tonightPairs, newPairs, teamMatchCounts } = setup([
+      pairKey('a', 'c'),
+      pairKey('a', 'd'),
+    ]);
+
+    expect(matches.map(idsOf)).toEqual([['a', 'b']]);
+    expect(tonightPairs).toEqual(
+      new Set([pairKey('a', 'c'), pairKey('a', 'd'), pairKey('a', 'b')])
+    );
+    expect(newPairs).toEqual(new Set([pairKey('a', 'b')]));
+    expect(teamMatchCounts.get('a')).toBe(1);
+    expect(teamMatchCounts.get('b')).toBe(1);
+    expect(teamMatchCounts.get('c')).toBe(0);
+    expect(teamMatchCounts.get('d')).toBe(0);
+    expect(scheduleLog).not.toHaveBeenCalled();
+    expect(warnLog).toHaveBeenCalledWith('Swap pass: 2 teams still unmatched after swap attempts');
+  });
+});
+
+// generateSlotPairings never reaches the direct-pairing step: a team is only
+// left over when it cannot play any open team, so two leftovers cannot play
+// each other. The step is still part of trySwapToFixUnmatched, so it is tested
+// on its own here.
+describe('trySwapToFixUnmatched direct pairing', () => {
+  const makeContext = (overrides: Partial<SwapContext> = {}): SwapContext => ({
+    slotName: 'S1',
+    playedSet: new Set<string>(),
+    tonightPairs: new Set<string>(),
+    teamMatchCounts: new Map<string, number>(),
+    maxTierGap: 1,
+    newPairs: new Set<string>(),
+    relaxationLevel: 0,
+    ...overrides,
+  });
+
+  it('pairs two stranded teams that can play each other', () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const ctx = makeContext({
+      teamMatchCounts: new Map([
+        ['x', 0],
+        ['y', 0],
+      ]),
+    });
+
+    const result = trySwapToFixUnmatched([], [first, second], [first, second], ctx);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      slot: 'S1',
+      teamAId: 'x',
+      teamBId: 'y',
+      teamAName: 'Team x',
+      teamBName: 'Team y',
+      divisionA: 'Competitive',
+      divisionB: 'Competitive',
+      tierA: 1,
+      tierB: 1,
+    });
+    expect(ctx.tonightPairs).toEqual(new Set([pairKey('x', 'y')]));
+    expect(ctx.newPairs).toEqual(new Set([pairKey('x', 'y')]));
+    expect(ctx.teamMatchCounts.get('x')).toBe(1);
+    expect(ctx.teamMatchCounts.get('y')).toBe(1);
+    expect(scheduleLog).not.toHaveBeenCalled();
+    expect(warnLog).not.toHaveBeenCalled();
+  });
+
+  it('keeps the existing matches and adds the new one at the end', () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const existing = {
+      slot: 'S1',
+      teamAId: 'a',
+      teamBId: 'b',
+      teamAName: 'Team a',
+      teamBName: 'Team b',
+      divisionA: 'Competitive',
+      divisionB: 'Competitive',
+      tierA: 1,
+      tierB: 1,
+    };
+    const ctx = makeContext();
+
+    const result = trySwapToFixUnmatched([existing], [second, first], [first, second], ctx);
+
+    expect(result.map((match) => [match.teamAId, match.teamBId])).toEqual([
+      ['a', 'b'],
+      ['y', 'x'],
+    ]);
+    expect(result[0]).toBe(existing);
+  });
+
+  it("does not touch the caller's match list", () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const matches: Parameters<typeof trySwapToFixUnmatched>[0] = [];
+
+    trySwapToFixUnmatched(matches, [first, second], [first, second], makeContext());
+
+    expect(matches).toHaveLength(0);
+  });
+
+  it('works without a newPairs set', () => {
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Competitive');
+    const ctx = makeContext({ newPairs: undefined });
+
+    const result = trySwapToFixUnmatched([], [first, second], [first, second], ctx);
+
+    expect(result).toHaveLength(1);
+    expect(ctx.tonightPairs.has(pairKey('x', 'y'))).toBe(true);
+  });
+
+  it('leaves teams that cannot play each other to the swap step', () => {
+    // A tier gap of 2 blocks Competitive vs Recreational, and nothing is left to swap with.
+    const first = makeTeam('x', 'Competitive');
+    const second = makeTeam('y', 'Recreational');
+    const ctx = makeContext();
+
+    const result = trySwapToFixUnmatched([], [first, second], [first, second], ctx);
+
+    expect(result).toEqual([]);
+    expect(warnLog).toHaveBeenCalledWith('Swap pass: 2 teams still unmatched after swap attempts');
   });
 });

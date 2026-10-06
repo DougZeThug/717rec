@@ -6,23 +6,12 @@ import { assertValidUuid } from '@/utils/validation';
 
 import { CareerData, TeamData, TeamDetailsArchive } from './CareerTypes';
 
-/**
- * Fetches all career-related data for a team in parallel.
- * Returns raw data that can be processed by calculation utilities.
- */
-export const fetchCareerData = async (teamId: string): Promise<CareerData | null> => {
-  assertValidUuid(teamId, 'teamId');
+/** Fallback weight for a division with no stored weight. */
+const DEFAULT_DIVISION_WEIGHT = 0.85;
 
-  // Fetch all independent queries in parallel
-  const [
-    teamDataResult,
-    seasonStatsResult,
-    currentMatchesResult,
-    archivedMatchesResult,
-    allTeamSeasonStatsResult,
-    playoffMatchesResult,
-    activeSeasonResult,
-  ] = await Promise.all([
+/** Runs the seven independent career queries in parallel. */
+const runCareerQueries = (teamId: string) =>
+  Promise.all([
     // Get team's current division weight
     supabase.from('teams').select('divisions(division_weight)').eq('id', teamId).single(),
     // Get career stats from team_season_stats with division info and season_id
@@ -100,6 +89,21 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     supabase.from('seasons').select('id').eq('is_active', true).single(),
   ]);
 
+type CareerQueryResults = Awaited<ReturnType<typeof runCareerQueries>>;
+
+/**
+ * Season stats are critical and the active season must not fail silently, so
+ * those throw. Match queries are non-critical and only log.
+ */
+const reportCareerQueryErrors = ([
+  ,
+  seasonStatsResult,
+  currentMatchesResult,
+  archivedMatchesResult,
+  ,
+  playoffMatchesResult,
+  activeSeasonResult,
+]: CareerQueryResults): void => {
   // Handle critical error
   if (seasonStatsResult.error) {
     handleDatabaseError(seasonStatsResult.error, 'Failed to fetch team season stats');
@@ -121,6 +125,92 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
   if (activeSeasonResult.error && activeSeasonResult.error.code !== 'PGRST116') {
     handleDatabaseError(activeSeasonResult.error, 'Failed to fetch active season');
   }
+};
+
+/** Unique, non-empty bracket ids of the playoff matches, in first-seen order. */
+const uniqueBracketIds = (playoffMatches: PlayoffMatchData[] | null): string[] => {
+  if (!playoffMatches || playoffMatches.length === 0) return [];
+  return [...new Set(playoffMatches.map((match) => match.bracket_id).filter(Boolean))] as string[];
+};
+
+/** Division weight and display name per bracket, for playoff tier classification. */
+const fetchBracketDivisionInfo = async (
+  bracketIds: string[]
+): Promise<{ weights: Record<string, number>; displayNames: Record<string, string> }> => {
+  const weights: Record<string, number> = {};
+  const displayNames: Record<string, string> = {};
+  if (bracketIds.length === 0) return { weights, displayNames };
+
+  const { data: bracketData } = await supabase
+    .from('brackets')
+    .select(
+      `
+          id,
+          divisions(division_weight, display_division)
+        `
+    )
+    .in('id', bracketIds);
+
+  for (const bracket of bracketData ?? []) {
+    const divisions = bracket.divisions as {
+      division_weight: number;
+      display_division: string | null;
+    } | null;
+    weights[bracket.id] = divisions?.division_weight || DEFAULT_DIVISION_WEIGHT;
+    displayNames[bracket.id] = divisions?.display_division ?? '';
+  }
+  return { weights, displayNames };
+};
+
+/** Bracket -> season_id map. Brackets with no season are left out. */
+const fetchBracketSeasonMap = async (bracketIds: string[]): Promise<Record<string, string>> => {
+  const bracketSeasonMap: Record<string, string> = {};
+  if (bracketIds.length === 0) return bracketSeasonMap;
+
+  const { data: bracketSeasonData } = await supabase
+    .from('brackets')
+    .select('id, season_id')
+    .in('id', bracketIds);
+
+  for (const bracket of bracketSeasonData ?? []) {
+    if (bracket.season_id) {
+      bracketSeasonMap[bracket.id] = bracket.season_id;
+    }
+  }
+  return bracketSeasonMap;
+};
+
+/** Lookup map: "teamId_seasonId" -> divisionname (from team_details_archive). */
+const buildTeamDivisionMap = (archives: TeamDetailsArchive[] | null): Map<string, string> => {
+  const teamDivisionMap = new Map<string, string>();
+  for (const archive of archives ?? []) {
+    if (archive.team_id && archive.season_id && archive.divisionname) {
+      teamDivisionMap.set(`${archive.team_id}_${archive.season_id}`, archive.divisionname);
+    }
+  }
+  return teamDivisionMap;
+};
+
+/**
+ * Fetches all career-related data for a team in parallel.
+ * Returns raw data that can be processed by calculation utilities.
+ */
+export const fetchCareerData = async (teamId: string): Promise<CareerData | null> => {
+  assertValidUuid(teamId, 'teamId');
+
+  // Fetch all independent queries in parallel
+  const results = await runCareerQueries(teamId);
+  reportCareerQueryErrors(results);
+
+  const [
+    teamDataResult,
+    seasonStatsResult,
+    currentMatchesResult,
+    archivedMatchesResult,
+    allTeamSeasonStatsResult,
+    playoffMatchesResult,
+    activeSeasonResult,
+  ] = results;
 
   const teamData = teamDataResult.data as TeamData | null;
   const seasonStats = seasonStatsResult.data as SeasonStats[] | null;
@@ -130,75 +220,14 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
   const playoffMatches = playoffMatchesResult.data as PlayoffMatchData[] | null;
   const activeSeason = activeSeasonResult.data as { id: string } | null;
 
-  const teamDivisionWeight = teamData?.divisions?.division_weight || 0.85;
+  const teamDivisionWeight = teamData?.divisions?.division_weight || DEFAULT_DIVISION_WEIGHT;
 
-  // Get bracket division weights and display names for playoff tier classification
-  const bracketDivisionWeights: Record<string, number> = {};
-  const bracketDivisionDisplayNames: Record<string, string> = {};
-  if (playoffMatches && playoffMatches.length > 0) {
-    const bracketIds = [
-      ...new Set(playoffMatches.map((match) => match.bracket_id).filter(Boolean)),
-    ] as string[];
-
-    if (bracketIds.length > 0) {
-      const { data: bracketData } = await supabase
-        .from('brackets')
-        .select(
-          `
-          id,
-          divisions(division_weight, display_division)
-        `
-        )
-        .in('id', bracketIds);
-
-      if (bracketData) {
-        for (const bracket of bracketData) {
-          const divisions = bracket.divisions as {
-            division_weight: number;
-            display_division: string | null;
-          } | null;
-          bracketDivisionWeights[bracket.id] = divisions?.division_weight || 0.85;
-          bracketDivisionDisplayNames[bracket.id] = divisions?.display_division ?? '';
-        }
-      }
-    }
-  }
-
-  // Build bracket -> season_id map
-  const bracketSeasonMap: Record<string, string> = {};
-  if (playoffMatches && playoffMatches.length > 0) {
-    const bracketIds = [
-      ...new Set(playoffMatches.map((match) => match.bracket_id).filter(Boolean)),
-    ] as string[];
-
-    if (bracketIds.length > 0) {
-      const { data: bracketSeasonData } = await supabase
-        .from('brackets')
-        .select('id, season_id')
-        .in('id', bracketIds);
-
-      if (bracketSeasonData) {
-        for (const bracket of bracketSeasonData) {
-          if (bracket.season_id) {
-            bracketSeasonMap[bracket.id] = bracket.season_id;
-          }
-        }
-      }
-    }
-  }
-
-  // Build lookup map: "teamId_seasonId" -> divisionname (from team_details_archive)
-  const teamDivisionMap = new Map<string, string>();
-  if (allTeamDetailsArchive) {
-    for (const archive of allTeamDetailsArchive) {
-      if (archive.team_id && archive.season_id && archive.divisionname) {
-        teamDivisionMap.set(`${archive.team_id}_${archive.season_id}`, archive.divisionname);
-      }
-    }
-  }
-
-  // Use the authoritative active season from seasons table
-  const currentSeasonId = activeSeason?.id || null;
+  // The two bracket lookups do not depend on each other, so they run together.
+  const bracketIds = uniqueBracketIds(playoffMatches);
+  const [
+    { weights: bracketDivisionWeights, displayNames: bracketDivisionDisplayNames },
+    bracketSeasonMap,
+  ] = await Promise.all([fetchBracketDivisionInfo(bracketIds), fetchBracketSeasonMap(bracketIds)]);
 
   return {
     teamData,
@@ -206,11 +235,12 @@ export const fetchCareerData = async (teamId: string): Promise<CareerData | null
     currentMatches,
     archivedMatches,
     playoffMatches,
-    teamDivisionMap,
+    teamDivisionMap: buildTeamDivisionMap(allTeamDetailsArchive),
     bracketDivisionWeights,
     bracketDivisionDisplayNames,
     bracketSeasonMap,
     teamDivisionWeight,
-    currentSeasonId,
+    // Use the authoritative active season from seasons table
+    currentSeasonId: activeSeason?.id || null,
   };
 };

@@ -7,12 +7,53 @@ import { LbStructureService } from './LbStructureService';
 /** brackets-manager status: 4 = Completed. */
 const STATUS_COMPLETED = 4;
 const STATUS_READY = 2;
+/** One participant is in, the other is still to come. */
+const STATUS_WAITING = 1;
 
 function pickWinnerId(match: StorageMatch | null | undefined): number | null {
   if (!match) return null;
   if (match.opponent1?.result === 'win' && match.opponent1?.id != null) return match.opponent1.id;
   if (match.opponent2?.result === 'win' && match.opponent2?.id != null) return match.opponent2.id;
   return null;
+}
+
+/** Winner of a completed match, or null when it is not finished or has no winner. */
+function completedWinnerId(match: StorageMatch | null): number | null {
+  if (match?.status !== STATUS_COMPLETED) return null;
+  return pickWinnerId(match) || null;
+}
+
+/**
+ * A slot needs filling when it is an empty (legacy TBD) slot. Strict `null`
+ * is a BYE and is never backfilled.
+ */
+function slotNeedsFill(slot: StorageMatch['opponent1']): boolean {
+  return slot !== null && !slot?.id;
+}
+
+type GfUpdate = {
+  opponent1?: { id: number; position: undefined };
+  opponent2?: { id: number; position: undefined };
+  status?: number;
+};
+
+/**
+ * Status after the write. A still-locked GF match (status <= 1) becomes Ready
+ * when both slots are filled, or Waiting when only one is. Any other status
+ * is kept as it is.
+ */
+function computeGfStatus(gfMatch: StorageMatch, update: GfUpdate): number | undefined {
+  if ((gfMatch.status ?? 0) > 1) return gfMatch.status;
+
+  const willHaveOpp1 = Boolean(update.opponent1?.id ?? gfMatch.opponent1?.id);
+  const willHaveOpp2 = Boolean(update.opponent2?.id ?? gfMatch.opponent2?.id);
+  if (willHaveOpp1 && willHaveOpp2) return STATUS_READY;
+  return willHaveOpp1 || willHaveOpp2 ? STATUS_WAITING : gfMatch.status;
+}
+
+function describePopulatedSlots(update: GfUpdate): string {
+  const slots = [update.opponent1 && 'opp1', update.opponent2 && 'opp2'].filter(Boolean);
+  return slots.join('+');
 }
 
 /**
@@ -48,13 +89,12 @@ export class GrandFinalNormalizationService {
     return sorted[sorted.length - 1] || null;
   }
 
-  async normalizeGrandFinalPopulation(stageId: number): Promise<void> {
-    bracketLog('🔍 Checking Grand Final population...', { stageId });
-
+  /** The single GF match (group 3, round 1), or null when any step is missing. */
+  private async findGrandFinalMatch(stageId: number): Promise<StorageMatch | null> {
     const gfGroup = await this.lbStructureService.findGfGroup(stageId);
     if (!gfGroup) {
       bracketLog('No GF group found, skipping normalization');
-      return;
+      return null;
     }
 
     const gfRounds = await this.lbStructureService.findGroupRounds(gfGroup.id);
@@ -62,7 +102,7 @@ export class GrandFinalNormalizationService {
 
     if (!gfRound1) {
       bracketLog('No GF Round 1 found, skipping normalization');
-      return;
+      return null;
     }
 
     const gfMatches = await this.storage.select('match', { round_id: gfRound1.id });
@@ -71,71 +111,71 @@ export class GrandFinalNormalizationService {
 
     if (!gfMatch) {
       bracketLog('No GF match found, skipping normalization');
-      return;
+      return null;
     }
 
-    // Determine the desired contents of each slot independently. The WB winner
-    // belongs in opponent1; the LB winner in opponent2. Either side may be
-    // empty if legacy propagation failed. (Strict-null slots are BYEs and are
-    // never backfilled — they cannot occur in a grand final of a healthy
-    // bracket, but legacy TBD slots read as { id: null }.)
-    const needsOpp1 = gfMatch.opponent1 !== null && !gfMatch.opponent1?.id;
-    const needsOpp2 = gfMatch.opponent2 !== null && !gfMatch.opponent2?.id;
-    if (!needsOpp1 && !needsOpp2) return;
+    return gfMatch;
+  }
 
-    const update: {
-      opponent1?: { id: number; position: undefined };
-      opponent2?: { id: number; position: undefined };
-      status?: number;
-    } = {};
+  /**
+   * Fills the empty slots from the finals. The WB winner belongs in opponent1;
+   * the LB winner in opponent2. Only finals that are completed with a winner
+   * are used.
+   */
+  private async backfillSlots(
+    stageId: number,
+    gfMatch: StorageMatch,
+    needsOpp1: boolean,
+    needsOpp2: boolean
+  ): Promise<GfUpdate> {
+    const update: GfUpdate = {};
 
     if (needsOpp1) {
-      const wbFinalMatch = await this.findWBFinalMatch(stageId);
-      if (wbFinalMatch?.status === STATUS_COMPLETED) {
-        const wbWinnerId = pickWinnerId(wbFinalMatch);
-        if (wbWinnerId) {
-          update.opponent1 = { id: wbWinnerId, position: undefined };
-          bracketLog('✅ [NORMALIZE GF] Populating opponent1 from WB Final winner', {
-            gfMatchId: gfMatch.id,
-            wbWinnerId,
-          });
-        }
+      const wbWinnerId = completedWinnerId(await this.findWBFinalMatch(stageId));
+      if (wbWinnerId) {
+        update.opponent1 = { id: wbWinnerId, position: undefined };
+        bracketLog('✅ [NORMALIZE GF] Populating opponent1 from WB Final winner', {
+          gfMatchId: gfMatch.id,
+          wbWinnerId,
+        });
       }
     }
 
     if (needsOpp2) {
-      const lbFinalMatch = await this.findLBFinalMatch(stageId);
-      if (lbFinalMatch?.status === STATUS_COMPLETED) {
-        const lbWinnerId = pickWinnerId(lbFinalMatch);
-        if (lbWinnerId) {
-          update.opponent2 = { id: lbWinnerId, position: undefined };
-          bracketLog('✅ [NORMALIZE GF] Populating opponent2 from LB Final winner', {
-            gfMatchId: gfMatch.id,
-            lbWinnerId,
-          });
-        }
+      const lbWinnerId = completedWinnerId(await this.findLBFinalMatch(stageId));
+      if (lbWinnerId) {
+        update.opponent2 = { id: lbWinnerId, position: undefined };
+        bracketLog('✅ [NORMALIZE GF] Populating opponent2 from LB Final winner', {
+          gfMatchId: gfMatch.id,
+          lbWinnerId,
+        });
       }
     }
 
+    return update;
+  }
+
+  async normalizeGrandFinalPopulation(stageId: number): Promise<void> {
+    bracketLog('🔍 Checking Grand Final population...', { stageId });
+
+    const gfMatch = await this.findGrandFinalMatch(stageId);
+    if (!gfMatch) return;
+
+    // Either side may be empty if legacy propagation failed.
+    const needsOpp1 = slotNeedsFill(gfMatch.opponent1);
+    const needsOpp2 = slotNeedsFill(gfMatch.opponent2);
+    if (!needsOpp1 && !needsOpp2) return;
+
+    const update = await this.backfillSlots(stageId, gfMatch, needsOpp1, needsOpp2);
     if (!update.opponent1 && !update.opponent2) return;
 
-    // After the write, will both slots be populated? If so, flip a still-locked
-    // GF match up to Ready so admins can enter the score.
-    const willHaveOpp1 = !!(update.opponent1?.id ?? gfMatch.opponent1?.id);
-    const willHaveOpp2 = !!(update.opponent2?.id ?? gfMatch.opponent2?.id);
-    if (willHaveOpp1 && willHaveOpp2 && (gfMatch.status ?? 0) <= 1) {
-      update.status = STATUS_READY;
-    } else if ((willHaveOpp1 || willHaveOpp2) && (gfMatch.status ?? 0) <= 1) {
-      update.status = 1; // Waiting: one participant ready, awaiting the other
-    } else {
-      update.status = gfMatch.status;
-    }
+    update.status = computeGfStatus(gfMatch, update);
 
     await this.storage.update('match', { id: gfMatch.id }, update);
 
     successLog(
       'Grand Final normalized',
-      `Populated [${update.opponent1 ? 'opp1' : ''}${update.opponent1 && update.opponent2 ? '+' : ''}${update.opponent2 ? 'opp2' : ''}] on GF match ${gfMatch.id}`
+      `Populated [${describePopulatedSlots(update)}] on GF match ${gfMatch.id}`
     );
   }
 }

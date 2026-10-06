@@ -1,11 +1,12 @@
 import { m } from 'framer-motion';
 import { Calendar, Shuffle, Users } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import BlindDrawSignupForm from '@/components/home/BlindDrawSignupForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { useBlindDrawSignupCount } from '@/hooks/useBlindDrawSignups';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
+import { useStartCountdown } from '@/hooks/useStartCountdown';
 import { cn } from '@/lib/utils';
 import { HeroCard } from '@/types/heroCard';
 
@@ -49,52 +50,120 @@ const getEventDateEST = (isoString: string): string | null => {
   });
 };
 
+interface EventMetadata {
+  isActiveEvent: boolean;
+  checkInTimeStr: string;
+  startTimeStr: string;
+  buyIn: string;
+  payouts: string;
+  pastWinners: WeekWinners[];
+}
+
+const parseEventMetadata = (card: HeroCard): EventMetadata => {
+  const metadata = card.metadata || {};
+  return {
+    isActiveEvent: (metadata.is_active_event as boolean) ?? false,
+    checkInTimeStr: metadata.check_in_time as string,
+    startTimeStr: metadata.start_time as string,
+    buyIn: (metadata.buy_in as string) || '$10',
+    payouts: (metadata.payouts as string) || 'Top 3',
+    pastWinners: (metadata.past_winners as WeekWinners[]) || [],
+  };
+};
+
+const EventBackdrop: React.FC<{ shouldApplyWinter: boolean }> = ({ shouldApplyWinter }) => (
+  <>
+    {/* Static background elements */}
+    <div className="absolute inset-0 opacity-20">
+      <div className="absolute top-4 right-8">
+        <Shuffle
+          className={cn('size-24', shouldApplyWinter ? 'text-cyan-300/30' : 'text-white/30')}
+        />
+      </div>
+      <div className="absolute bottom-4 left-8">
+        <Shuffle
+          className={cn(
+            'size-16 rotate-45',
+            shouldApplyWinter ? 'text-cyan-300/20' : 'text-white/20'
+          )}
+        />
+      </div>
+    </div>
+
+    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
+  </>
+);
+
+interface EventSubtitleBadgeProps {
+  subtitle: string | null;
+  isActiveEvent: boolean;
+  checkInTimeStr: string;
+  shouldApplyWinter: boolean;
+}
+
+const EventSubtitleBadge: React.FC<EventSubtitleBadgeProps> = ({
+  subtitle,
+  isActiveEvent,
+  checkInTimeStr,
+  shouldApplyWinter,
+}) => {
+  if (!isActiveEvent && !subtitle) return null;
+
+  return (
+    <div
+      className={cn(
+        'inline-flex items-center gap-2 backdrop-blur-xs rounded-full px-3 py-1',
+        shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
+      )}
+    >
+      <Calendar className="size-4" />
+      <span className="font-inter font-semibold text-sm">
+        {isActiveEvent ? subtitle || formatDate(checkInTimeStr, '') : subtitle}
+      </span>
+    </div>
+  );
+};
+
+interface BlindDrawSignupSectionProps {
+  eventDate: string;
+  signupCount: number | undefined;
+  shouldApplyWinter: boolean;
+}
+
+const BlindDrawSignupSection: React.FC<BlindDrawSignupSectionProps> = ({
+  eventDate,
+  signupCount,
+  shouldApplyWinter,
+}) => (
+  <div className="w-full mt-3 space-y-2">
+    {signupCount !== undefined && signupCount > 0 && (
+      <div
+        className={cn(
+          'flex items-center justify-center gap-2 backdrop-blur-xs rounded-full px-3 py-1.5 w-fit mx-auto',
+          shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
+        )}
+      >
+        <Users className={cn('size-4', shouldApplyWinter ? 'text-cyan-300' : 'text-emerald-300')} />
+        <span className="font-inter font-semibold text-sm tabular-nums">
+          {signupCount} signed up
+        </span>
+      </div>
+    )}
+    <BlindDrawSignupForm eventDate={eventDate} />
+  </div>
+);
+
 const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
-  const [startCountdown, setStartCountdown] = useState({ text: '', percent: 0 });
   const { shouldApplyWinter } = useSeasonalTheme();
 
-  const metadata = card.metadata || {};
-  const isActiveEvent = (metadata.is_active_event as boolean) ?? false;
-  const checkInTimeStr = metadata.check_in_time as string;
-  const startTimeStr = metadata.start_time as string;
-  const buyIn = (metadata.buy_in as string) || '$10';
-  const payouts = (metadata.payouts as string) || 'Top 3';
-  const pastWinners = (metadata.past_winners as WeekWinners[]) || [];
+  const { isActiveEvent, checkInTimeStr, startTimeStr, buyIn, payouts, pastWinners } =
+    parseEventMetadata(card);
 
   const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
   const { data: signupCount } = useBlindDrawSignupCount(eventDate ?? undefined);
+  const startCountdown = useStartCountdown(startTimeStr);
 
-  useEffect(() => {
-    if (!startTimeStr) return;
-
-    const startTime = new Date(startTimeStr);
-    const maxDiff = 12 * 60 * 60 * 1000;
-
-    const updateCountdown = () => {
-      const now = new Date();
-      const startDiff = startTime.getTime() - now.getTime();
-
-      if (startDiff > 0) {
-        const hours = Math.floor(startDiff / (1000 * 60 * 60));
-        const minutes = Math.floor((startDiff % (1000 * 60 * 60)) / (1000 * 60));
-        const percent = Math.max(0, Math.min(100, 100 - (startDiff / maxDiff) * 100));
-
-        if (hours > 0) {
-          setStartCountdown({ text: `${hours}h ${minutes}m until start`, percent });
-        } else if (minutes > 0) {
-          setStartCountdown({ text: `${minutes}m until start`, percent });
-        } else {
-          setStartCountdown({ text: 'Starting now!', percent: 100 });
-        }
-      } else {
-        setStartCountdown({ text: 'Event started!', percent: 100 });
-      }
-    };
-
-    updateCountdown();
-    const intervalId = setInterval(updateCountdown, 60000);
-    return () => clearInterval(intervalId);
-  }, [startTimeStr]);
+  const showCountdown = isActiveEvent && Boolean(startTimeStr);
 
   return (
     <m.div
@@ -120,24 +189,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               )
         )}
       >
-        {/* Static background elements */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-4 right-8">
-            <Shuffle
-              className={cn('size-24', shouldApplyWinter ? 'text-cyan-300/30' : 'text-white/30')}
-            />
-          </div>
-          <div className="absolute bottom-4 left-8">
-            <Shuffle
-              className={cn(
-                'size-16 rotate-45',
-                shouldApplyWinter ? 'text-cyan-300/20' : 'text-white/20'
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-white/5 pointer-events-none" />
+        <EventBackdrop shouldApplyWinter={shouldApplyWinter} />
 
         <CardContent className="relative z-10 p-4 md:p-6">
           <div
@@ -168,23 +220,14 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                 </m.div>
               </div>
 
-              {(isActiveEvent || card.subtitle) && (
-                <div
-                  className={cn(
-                    'inline-flex items-center gap-2 backdrop-blur-xs rounded-full px-3 py-1',
-                    shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
-                  )}
-                >
-                  <Calendar className="size-4" />
-                  <span className="font-inter font-semibold text-sm">
-                    {isActiveEvent
-                      ? card.subtitle || formatDate(checkInTimeStr, '')
-                      : card.subtitle}
-                  </span>
-                </div>
-              )}
+              <EventSubtitleBadge
+                subtitle={card.subtitle}
+                isActiveEvent={isActiveEvent}
+                checkInTimeStr={checkInTimeStr}
+                shouldApplyWinter={shouldApplyWinter}
+              />
 
-              {isActiveEvent && startTimeStr && (
+              {showCountdown && (
                 <EventCountdown
                   text={startCountdown.text}
                   percent={startCountdown.percent}
@@ -219,7 +262,7 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
                 </p>
               )}
 
-              {isActiveEvent && startTimeStr && (
+              {showCountdown && (
                 <EventCountdown
                   text={startCountdown.text}
                   percent={startCountdown.percent}
@@ -229,27 +272,11 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
               )}
 
               {isActiveEvent && card.slug === 'blind-draw' && eventDate && (
-                <div className="w-full mt-3 space-y-2">
-                  {signupCount !== undefined && signupCount > 0 && (
-                    <div
-                      className={cn(
-                        'flex items-center justify-center gap-2 backdrop-blur-xs rounded-full px-3 py-1.5 w-fit mx-auto',
-                        shouldApplyWinter ? 'bg-cyan-500/20' : 'bg-white/20'
-                      )}
-                    >
-                      <Users
-                        className={cn(
-                          'size-4',
-                          shouldApplyWinter ? 'text-cyan-300' : 'text-emerald-300'
-                        )}
-                      />
-                      <span className="font-inter font-semibold text-sm tabular-nums">
-                        {signupCount} signed up
-                      </span>
-                    </div>
-                  )}
-                  <BlindDrawSignupForm eventDate={eventDate} />
-                </div>
+                <BlindDrawSignupSection
+                  eventDate={eventDate}
+                  signupCount={signupCount}
+                  shouldApplyWinter={shouldApplyWinter}
+                />
               )}
             </div>
           </div>

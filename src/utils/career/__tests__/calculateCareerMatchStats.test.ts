@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { calculateCareerMatchStats } from '../calculateCareerMatchStats';
-import { MatchData, SeasonStats } from '../types';
+import { MatchData, PlayoffMatchData, SeasonStats } from '../types';
 
 describe('calculateCareerMatchStats', () => {
   const teamId = 'team-1';
@@ -261,6 +261,213 @@ describe('calculateCareerMatchStats', () => {
       career_match_losses: 0,
       career_game_wins: 0,
       career_game_losses: 0,
+    });
+  });
+
+  it('ignores a regular match where the team is neither winner nor loser', () => {
+    const currentMatches: MatchData[] = [
+      {
+        winner_id: 'team-2',
+        loser_id: 'team-3',
+        team1_id: 'team-2',
+        team2_id: 'team-3',
+        team1_game_wins: 2,
+        team2_game_wins: 1,
+        season_id: 'season-1',
+      },
+    ];
+
+    const result = calculateCareerMatchStats({ seasonStats: null, currentMatches, teamId });
+
+    expect(result).toEqual({
+      career_match_wins: 0,
+      career_match_losses: 0,
+      career_game_wins: 0,
+      career_game_losses: 0,
+    });
+  });
+
+  it('treats null season stat fields as 0', () => {
+    const seasonStats: SeasonStats[] = [
+      {
+        match_wins: null,
+        match_losses: 2,
+        game_wins: null,
+        game_losses: 3,
+        champion: null,
+        runner_up: null,
+        playoff_rank: null,
+        sos: null,
+        division_name: null,
+      },
+    ];
+
+    const result = calculateCareerMatchStats({ seasonStats, currentMatches: null, teamId });
+
+    expect(result).toEqual({
+      career_match_wins: 0,
+      career_match_losses: 2,
+      career_game_wins: 0,
+      career_game_losses: 3,
+    });
+  });
+
+  describe('current-season playoff matches', () => {
+    const currentSeasonId = 'current-season';
+    const bracketSeasonMap = { 'bracket-now': currentSeasonId, 'bracket-old': 'old-season' };
+    const playoff = (overrides: Partial<PlayoffMatchData>): PlayoffMatchData => ({
+      winner_id: 'team-1',
+      loser_id: 'team-2',
+      team1_id: 'team-1',
+      team2_id: 'team-2',
+      team1_score: 2,
+      team2_score: 1,
+      bracket_id: 'bracket-now',
+      ...overrides,
+    });
+    const run = (
+      playoffMatches: PlayoffMatchData[] | null,
+      options: { currentSeasonId?: string | null; bracketSeasonMap?: Record<string, string> } = {
+        currentSeasonId,
+        bracketSeasonMap,
+      }
+    ) =>
+      calculateCareerMatchStats({
+        seasonStats: null,
+        currentMatches: null,
+        teamId,
+        playoffMatches,
+        ...options,
+      });
+
+    it('counts a playoff win with the team on side 1', () => {
+      expect(run([playoff({})])).toEqual({
+        career_match_wins: 1,
+        career_match_losses: 0,
+        career_game_wins: 2,
+        career_game_losses: 1,
+      });
+    });
+
+    it('counts a playoff win with the team on side 2', () => {
+      const match = playoff({
+        team1_id: 'team-2',
+        team2_id: 'team-1',
+        team1_score: 1,
+        team2_score: 2,
+      });
+      expect(run([match])).toEqual({
+        career_match_wins: 1,
+        career_match_losses: 0,
+        career_game_wins: 2,
+        career_game_losses: 1,
+      });
+    });
+
+    it('counts a playoff loss with the team on side 1', () => {
+      const match = playoff({
+        winner_id: 'team-2',
+        loser_id: 'team-1',
+        team1_score: 1,
+        team2_score: 2,
+      });
+      expect(run([match])).toEqual({
+        career_match_wins: 0,
+        career_match_losses: 1,
+        career_game_wins: 1,
+        career_game_losses: 2,
+      });
+    });
+
+    it('counts a playoff loss with the team on side 2', () => {
+      const match = playoff({
+        winner_id: 'team-2',
+        loser_id: 'team-1',
+        team1_id: 'team-2',
+        team2_id: 'team-1',
+        team1_score: 2,
+        team2_score: 1,
+      });
+      expect(run([match])).toEqual({
+        career_match_wins: 0,
+        career_match_losses: 1,
+        career_game_wins: 1,
+        career_game_losses: 2,
+      });
+    });
+
+    it('treats null playoff scores as 0', () => {
+      expect(run([playoff({ team1_score: null, team2_score: null })])).toEqual({
+        career_match_wins: 1,
+        career_match_losses: 0,
+        career_game_wins: 0,
+        career_game_losses: 0,
+      });
+    });
+
+    it('ignores a playoff match where the team is neither winner nor loser', () => {
+      const match = playoff({ winner_id: 'team-2', loser_id: 'team-3', team2_id: 'team-3' });
+      expect(run([match])).toEqual({
+        career_match_wins: 0,
+        career_match_losses: 0,
+        career_game_wins: 0,
+        career_game_losses: 0,
+      });
+    });
+
+    it.each([
+      ['bracket maps to an older season', playoff({ bracket_id: 'bracket-old' })],
+      ['bracket is not in the season map', playoff({ bracket_id: 'bracket-unknown' })],
+      ['bracket_id is null', playoff({ bracket_id: null })],
+      ['winner_id is null', playoff({ winner_id: null })],
+    ])('skips a playoff match when %s', (_label, match) => {
+      expect(run([match])).toEqual({
+        career_match_wins: 0,
+        career_match_losses: 0,
+        career_game_wins: 0,
+        career_game_losses: 0,
+      });
+    });
+
+    it.each([
+      ['currentSeasonId is missing', { bracketSeasonMap }],
+      ['bracketSeasonMap is missing', { currentSeasonId }],
+    ])('ignores playoff matches when %s', (_label, options) => {
+      expect(run([playoff({})], options)).toEqual({
+        career_match_wins: 0,
+        career_match_losses: 0,
+        career_game_wins: 0,
+        career_game_losses: 0,
+      });
+    });
+
+    it('adds playoff matches on top of current-season regular matches', () => {
+      const currentMatches: MatchData[] = [
+        {
+          winner_id: 'team-1',
+          loser_id: 'team-2',
+          team1_id: 'team-1',
+          team2_id: 'team-2',
+          team1_game_wins: 2,
+          team2_game_wins: 0,
+          season_id: currentSeasonId,
+        },
+      ];
+      const result = calculateCareerMatchStats({
+        seasonStats: null,
+        currentMatches,
+        teamId,
+        currentSeasonId,
+        playoffMatches: [playoff({})],
+        bracketSeasonMap,
+      });
+
+      expect(result).toEqual({
+        career_match_wins: 2,
+        career_match_losses: 0,
+        career_game_wins: 4,
+        career_game_losses: 1,
+      });
     });
   });
 });

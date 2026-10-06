@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BusinessLogicError, ValidationError } from '@/types/errors';
+import { BusinessLogicError, DatabaseError, ValidationError } from '@/types/errors';
 
 const mockFrom = vi.fn();
 
@@ -171,6 +171,257 @@ describe('AdminCorrectionsService.updateRound', () => {
     await expect(AdminCorrectionsService.updateRound('r1', { team1Score: 8 })).rejects.toThrow(
       /Summer 1 is archived/
     );
+  });
+});
+
+describe('AdminCorrectionsService.updateRound validation and payload', () => {
+  const TEAM1_SCORE_MSG = 'Team 1 score must be 0-12 (11 is not possible in cornhole)';
+  const TEAM2_SCORE_MSG = 'Team 2 score must be 0-12 (11 is not possible in cornhole)';
+  const TEAM1_BAGS_MSG = 'Team 1 bag breakdown does not match the round score';
+  const TEAM2_BAGS_MSG = 'Team 2 bag breakdown does not match the round score';
+
+  // 8 = 2 in-the-hole (6) + 2 on-the-board (2). 5 = 1 in (3) + 2 on (2) + 1 off.
+  const BAGS_FOR_8 = { bagsIn: 2, bagsOn: 2, bagsOff: 0 };
+  const BAGS_FOR_5 = { bagsIn: 1, bagsOn: 2, bagsOff: 1 };
+  const BAD_BAGS = { bagsIn: 1, bagsOn: 1, bagsOff: 2 };
+
+  const sentKeys = (write: { update: { mock: { calls: unknown[][] } } }) =>
+    Object.keys(write.update.mock.calls[0][0] as object).sort();
+
+  describe('score checks', () => {
+    it.each([11, -1, 13, 1.5])(
+      'rejects a team 1 score of %s with the exact message',
+      async (score) => {
+        await expect(
+          AdminCorrectionsService.updateRound('r1', { team1Score: score })
+        ).rejects.toThrow(TEAM1_SCORE_MSG);
+      }
+    );
+
+    it.each([11, -1, 13, 1.5])(
+      'rejects a team 2 score of %s with the exact message',
+      async (score) => {
+        await expect(
+          AdminCorrectionsService.updateRound('r1', { team2Score: score })
+        ).rejects.toThrow(TEAM2_SCORE_MSG);
+      }
+    );
+
+    it('accepts scores of 0 and 12', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', { team1Score: 0, team2Score: 12 });
+
+      expect(write.update).toHaveBeenCalledWith({ team1_score: 0, team2_score: 12 });
+    });
+  });
+
+  describe('bag breakdown checks', () => {
+    it('rejects a team 1 breakdown that does not match its score', async () => {
+      await expect(
+        AdminCorrectionsService.updateRound('r1', { team1Score: 8, team1Bags: BAD_BAGS })
+      ).rejects.toThrow(TEAM1_BAGS_MSG);
+    });
+
+    it('rejects a team 2 breakdown that does not match its score', async () => {
+      await expect(
+        AdminCorrectionsService.updateRound('r1', { team2Score: 8, team2Bags: BAD_BAGS })
+      ).rejects.toThrow(TEAM2_BAGS_MSG);
+    });
+
+    it('accepts a team 2 breakdown that matches its score', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', { team2Score: 5, team2Bags: BAGS_FOR_5 });
+
+      expect(write.update).toHaveBeenCalledWith({
+        team2_score: 5,
+        team2_bags_in: 1,
+        team2_bags_on: 2,
+        team2_bags_off: 1,
+      });
+    });
+
+    it('does not check a breakdown when the patch has no score for that team', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', { team1Bags: BAD_BAGS });
+
+      expect(write.update).toHaveBeenCalledWith({
+        team1_bags_in: 1,
+        team1_bags_on: 1,
+        team1_bags_off: 2,
+      });
+    });
+
+    it('does not check a cleared (null) breakdown against the score', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', { team2Score: 5, team2Bags: null });
+
+      expect(write.update).toHaveBeenCalledWith({
+        team2_score: 5,
+        team2_bags_in: null,
+        team2_bags_on: null,
+        team2_bags_off: null,
+      });
+    });
+  });
+
+  describe('which error wins when several things are wrong', () => {
+    it('reports team 1 score before team 2 score', async () => {
+      await expect(
+        AdminCorrectionsService.updateRound('r1', { team1Score: 11, team2Score: 11 })
+      ).rejects.toThrow(TEAM1_SCORE_MSG);
+    });
+
+    it('reports a team 2 score error before a team 1 bag error', async () => {
+      await expect(
+        AdminCorrectionsService.updateRound('r1', {
+          team1Score: 8,
+          team1Bags: BAD_BAGS,
+          team2Score: 11,
+        })
+      ).rejects.toThrow(TEAM2_SCORE_MSG);
+    });
+
+    it('reports team 1 bags before team 2 bags', async () => {
+      await expect(
+        AdminCorrectionsService.updateRound('r1', {
+          team1Score: 8,
+          team1Bags: BAD_BAGS,
+          team2Score: 8,
+          team2Bags: BAD_BAGS,
+        })
+      ).rejects.toThrow(TEAM1_BAGS_MSG);
+    });
+
+    it('reports a bag error before the empty-patch error', async () => {
+      await expect(
+        AdminCorrectionsService.updateRound('r1', { team1Score: 8, team1Bags: BAD_BAGS })
+      ).rejects.toThrow(TEAM1_BAGS_MSG);
+    });
+  });
+
+  describe('no database call before the patch is accepted', () => {
+    it.each([
+      ['an invalid score', { team1Score: 11 }],
+      ['a mismatched breakdown', { team1Score: 8, team1Bags: BAD_BAGS }],
+      ['an empty patch', {}],
+      ['a patch of only undefined values', { team1ThrowerId: undefined, team2Score: undefined }],
+    ])('makes no Supabase call for %s', async (_label, patch) => {
+      wire();
+
+      await expect(AdminCorrectionsService.updateRound('r1', patch)).rejects.toBeInstanceOf(
+        ValidationError
+      );
+
+      expect(mockFrom).not.toHaveBeenCalled();
+    });
+
+    it('says there is nothing to save for an empty patch', async () => {
+      await expect(AdminCorrectionsService.updateRound('r1', {})).rejects.toThrow(
+        'No changes to save'
+      );
+    });
+  });
+
+  describe('update payload', () => {
+    it('sends only the thrower column for a thrower-only patch', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', { team1ThrowerId: 'p1' });
+
+      expect(sentKeys(write)).toEqual(['team1_thrower_id']);
+      expect(write.update).toHaveBeenCalledWith({ team1_thrower_id: 'p1' });
+    });
+
+    it('treats a null thrower as a change that clears the column', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', { team2ThrowerId: null });
+
+      expect(sentKeys(write)).toEqual(['team2_thrower_id']);
+      expect(write.update).toHaveBeenCalledWith({ team2_thrower_id: null });
+    });
+
+    it('sends exactly the keys the patch sets, for a mixed patch', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', {
+        team1Score: 8,
+        team2Score: 5,
+        team1ThrowerId: 'p1',
+        team2ThrowerId: null,
+        team1Bags: BAGS_FOR_8,
+        team2Bags: null,
+      });
+
+      expect(sentKeys(write)).toEqual([
+        'team1_bags_in',
+        'team1_bags_off',
+        'team1_bags_on',
+        'team1_score',
+        'team1_thrower_id',
+        'team2_bags_in',
+        'team2_bags_off',
+        'team2_bags_on',
+        'team2_score',
+        'team2_thrower_id',
+      ]);
+      expect(write.update).toHaveBeenCalledWith({
+        team1_score: 8,
+        team2_score: 5,
+        team1_thrower_id: 'p1',
+        team2_thrower_id: null,
+        team1_bags_in: 2,
+        team1_bags_on: 2,
+        team1_bags_off: 0,
+        team2_bags_in: null,
+        team2_bags_on: null,
+        team2_bags_off: null,
+      });
+    });
+
+    it('leaves out keys the patch sets to undefined', async () => {
+      const { write } = wire({ written: { id: 'r1' } });
+
+      await AdminCorrectionsService.updateRound('r1', {
+        team1Score: 8,
+        team2Score: undefined,
+        team1ThrowerId: undefined,
+        team2Bags: undefined,
+      });
+
+      expect(sentKeys(write)).toEqual(['team1_score']);
+    });
+  });
+
+  describe('write result', () => {
+    it('throws when the write returns no row', async () => {
+      wire({ written: null });
+
+      await expect(AdminCorrectionsService.updateRound('r1', { team1Score: 8 })).rejects.toThrow(
+        'Round update returned no data'
+      );
+    });
+
+    it('throws the database error when the write fails', async () => {
+      const single = vi.fn().mockResolvedValue({
+        data: null,
+        error: { code: 'XX000', message: 'boom', details: '', hint: '' },
+      });
+      const parentRead = readChain({ data: { id: 'r1', match: { season_id: null } }, error: null });
+      mockFrom.mockImplementation(() => ({
+        select: parentRead.select,
+        update: () => ({ eq: () => ({ select: () => ({ single }) }) }),
+      }));
+
+      await expect(
+        AdminCorrectionsService.updateRound('r1', { team1Score: 8 })
+      ).rejects.toBeInstanceOf(DatabaseError);
+      expect(mockFrom).toHaveBeenCalledWith('match_rounds');
+    });
   });
 });
 
