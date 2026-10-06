@@ -67,15 +67,16 @@ const makeChain = (result: Result) => {
  * next queued result for that table. Falls back to '{data:null, error:null}'
  * if the queue is exhausted.
  */
-const queues: Record<string, Result[]> = {};
+const queues = new Map<string, Result[]>();
 
 const queueResult = (table: string, result: Result) => {
-  if (!queues[table]) queues[table] = [];
-  queues[table].push(result);
+  const queue = queues.get(table) ?? [];
+  queue.push(result);
+  queues.set(table, queue);
 };
 
 const resetQueues = () => {
-  for (const k of Object.keys(queues)) delete queues[k];
+  queues.clear();
 };
 
 // ─── fetchPowerScoreTrends ───────────────────────────────────────────────────
@@ -85,7 +86,7 @@ describe('fetchPowerScoreTrends', () => {
     vi.clearAllMocks();
     resetQueues();
     mockFrom.mockImplementation((table: string) => {
-      const q = queues[table];
+      const q = queues.get(table);
       const next =
         q && q.length > 0
           ? (q.shift() ?? { data: null, error: null })
@@ -308,7 +309,7 @@ describe('fetchWeeklyPowerScoreTrends', () => {
     vi.clearAllMocks();
     resetQueues();
     mockFrom.mockImplementation((table: string) => {
-      const q = queues[table];
+      const q = queues.get(table);
       const next =
         q && q.length > 0
           ? (q.shift() ?? { data: null, error: null })
