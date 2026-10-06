@@ -1,20 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Loader2 } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { useBracketData } from '@/hooks/brackets/useBracketData';
-import { useBracketsManagerRealtime } from '@/hooks/brackets/useBracketsManagerRealtime';
-import { useBracketCompletion } from '@/hooks/useBracketCompletion';
-import { fetchBracketInfo } from '@/services/brackets/BracketReadService';
+import {
+  type BracketViewDisplayBracket,
+  useBracketViewData,
+} from '@/hooks/brackets/useBracketViewData';
 import type { BracketViewData } from '@/types/playoff';
-import { getUIErrorMessage } from '@/utils/errorHandler';
 import { bracketLog, debugLog, errorLog, log } from '@/utils/logger';
 import type { PlayoffTeam } from '@/utils/playoffs/playoffTypes';
 
 import BracketErrorBoundary from './BracketErrorBoundary';
+import { resolveBracketViewState } from './bracketViewState';
+import {
+  BracketCorruptState,
+  BracketEmptyState,
+  BracketErrorState,
+  BracketLoadingState,
+  InvalidBracketIdState,
+} from './BracketViewStates';
 import { FinalStandings } from './FinalStandings';
 import { BracketsViewerComponent } from './viewer';
 
@@ -25,12 +27,12 @@ interface BracketViewProps {
   onEditMatch?: (matchId: string) => void;
 }
 
-const BracketView: React.FC<BracketViewProps> = ({
-  bracketId,
-  bracket: legacyBracket,
-  teams: legacyTeams,
-  onEditMatch,
-}) => {
+/** Render, mount and prop-change diagnostics. */
+const useBracketViewLogging = (
+  bracketId: string,
+  legacyBracket: BracketViewData | undefined,
+  legacyTeams: PlayoffTeam[] | undefined
+) => {
   const hookCallCount = useRef(0);
   const renderCount = useRef(0);
 
@@ -62,194 +64,25 @@ const BracketView: React.FC<BracketViewProps> = ({
       hasLegacyBracket: !!legacyBracket,
     });
   }, [bracketId, legacyBracket, legacyTeams]);
+};
 
-  const {
-    data: bracketInfo,
-    isLoading: isLoadingBracketInfo,
-    error: bracketInfoError,
-  } = useQuery({
-    queryKey: ['bracket-info', bracketId],
-    queryFn: async () => {
-      bracketLog('Fetching bracket info for JSONB check:', bracketId);
-      const data = await fetchBracketInfo(bracketId);
+interface BracketReadyViewProps {
+  bracketId: string;
+  displayBracket: NonNullable<BracketViewDisplayBracket>;
+  displayTeams: PlayoffTeam[];
+  onMatchClick: (matchId: string) => void;
+  lastUpdate: Date | null;
+  realtimeEnabled: boolean;
+}
 
-      bracketLog('Bracket info fetched:', {
-        id: data.id,
-        title: data.title,
-        uses_brackets_manager: data.uses_brackets_manager,
-        has_bracket_data: !!data.bracket_data,
-      });
-
-      return data;
-    },
-    enabled: !!bracketId && typeof bracketId === 'string',
-  });
-
-  const {
-    data: fetchedBracket,
-    isLoading: isLoadingLegacy,
-    error: legacyError,
-    refetch: refetchBracket,
-    loadingProgress,
-  } = useBracketData(bracketId);
-
-  useBracketCompletion(bracketId || undefined);
-
-  // Add realtime subscription for brackets-manager brackets (auto-fetches stageId if needed)
-  const { realtimeEnabled, lastUpdate } = useBracketsManagerRealtime(
-    bracketInfo?.uses_brackets_manager ? bracketId : null
-  );
-
-  useEffect(() => {
-    if (realtimeEnabled) {
-      bracketLog('BracketView: Realtime subscription active for bracket', { bracketId });
-    }
-  }, [realtimeEnabled, bracketId]);
-
-  const handleMatchClick = useCallback(
-    (matchId: string) => {
-      if (onEditMatch) {
-        onEditMatch(matchId);
-      }
-    },
-    [onEditMatch]
-  );
-
-  const isJsonbBracket = bracketInfo?.uses_brackets_manager && bracketInfo?.bracket_data;
-
-  const displayBracket = useMemo(() => {
-    if (legacyBracket) return legacyBracket;
-    if (isJsonbBracket) return bracketInfo;
-    return fetchedBracket;
-  }, [legacyBracket, isJsonbBracket, bracketInfo, fetchedBracket]);
-
-  const displayTeams = useMemo(() => {
-    return legacyTeams || [];
-  }, [legacyTeams]);
-
-  const handleRetry = useCallback(async () => {
-    bracketLog('Manual retry triggered for bracket:', bracketId);
-    try {
-      await refetchBracket();
-      bracketLog('Manual retry completed successfully');
-    } catch (retryError) {
-      errorLog('Manual retry failed:', retryError);
-    }
-  }, [refetchBracket, bracketId]);
-
-  // Invalid-bracket-id guard moved AFTER all hooks to comply with Rules of Hooks.
-  if (!bracketId || typeof bracketId !== 'string' || bracketId.trim() === '') {
-    errorLog('Invalid bracketId', { bracketId });
-    return (
-      <div className="p-8 text-center">
-        <div className="text-muted-foreground">
-          <p className="text-lg font-semibold mb-2">Invalid bracket ID</p>
-          <p className="text-sm">Cannot display bracket without a valid identifier.</p>
-        </div>
-      </div>
-    );
-  }
-
-  const isLoading = isLoadingBracketInfo || isLoadingLegacy;
-  const error = bracketInfoError || legacyError;
-
-  debugLog('Data fetching status:', {
-    isLoadingBracketInfo,
-    isLoadingLegacy,
-    hasLegacyBracket: !!legacyBracket,
-    bracketInfo: bracketInfo ? { id: bracketInfo.id } : null,
-  });
-
-  if (isLoading && !legacyBracket && !isJsonbBracket) {
-    debugLog('Showing loading state');
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-center space-y-4 w-full max-w-xs">
-          <Loader2 className="size-8 animate-spin mx-auto text-primary" />
-          <div className="space-y-2">
-            <p className="font-medium text-foreground">{loadingProgress.label}</p>
-            <Progress value={loadingProgress.percent} className="h-2" />
-            <p className="text-xs text-muted-foreground">{loadingProgress.percent}% complete</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !legacyBracket && !isJsonbBracket) {
-    debugLog('Showing error state:', error.message);
-    return (
-      <div className="space-y-4">
-        <Alert variant="destructive">
-          <AlertCircle className="size-4" />
-          <AlertDescription>
-            <div className="space-y-2">
-              {/* Never error.message: that is raw PostgREST text, which names
-                  tables and constraints. getUIErrorMessage keeps the reason
-                  when there is a safe one and falls back to a plain sentence
-                  otherwise. */}
-              <p>{getUIErrorMessage(error, 'Failed to load bracket')}</p>
-            </div>
-          </AlertDescription>
-        </Alert>
-
-        <div className="flex justify-center">
-          <Button variant="outline" onClick={handleRetry}>
-            Try Again
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!displayBracket) {
-    debugLog('Showing empty state - no bracket data');
-    return (
-      <div className="text-center p-8 space-y-3">
-        <div className="space-y-2">
-          <p className="text-lg font-medium text-foreground">No bracket selected</p>
-          <p className="text-sm text-muted-foreground">
-            Choose a bracket from the list above to view matches
-          </p>
-        </div>
-        {bracketId && (
-          <div className="bg-muted rounded-lg p-3 text-xs text-muted-foreground">
-            <p>Attempted to load bracket: {bracketId}</p>
-            <p className="mt-1">
-              The bracket may have been deleted or you may not have access to it.
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  const bracketMatches = 'matches' in displayBracket ? displayBracket.matches : undefined;
-
-  if (!isJsonbBracket && (!bracketMatches || !Array.isArray(bracketMatches))) {
-    errorLog('CRITICAL - Bracket exists but matches is not an array!', {
-      bracket: displayBracket,
-      matchesProperty: bracketMatches,
-    });
-
-    return (
-      <div className="text-center p-8 space-y-3">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-lg font-medium text-red-700">Data Structure Error</p>
-          <p className="text-sm text-red-600 mt-1">Bracket found but matches data is corrupted</p>
-        </div>
-      </div>
-    );
-  }
-
-  bracketLog('About to render BracketsViewerComponent:', {
-    isJsonbBracket,
-    bracketId: displayBracket.id,
-    matchesCount: bracketMatches?.length || 0,
-  });
-
-  bracketLog('Rendering BracketsViewerComponent');
-
+const BracketReadyView: React.FC<BracketReadyViewProps> = ({
+  bracketId,
+  displayBracket,
+  displayTeams,
+  onMatchClick,
+  lastUpdate,
+  realtimeEnabled,
+}) => {
   const showStandings = displayBracket.state === 'completed';
 
   return (
@@ -268,7 +101,7 @@ const BracketView: React.FC<BracketViewProps> = ({
                 ? displayBracket.teams
                 : displayTeams
             }
-            onMatchClick={handleMatchClick}
+            onMatchClick={onMatchClick}
             refreshSignal={lastUpdate ? lastUpdate.getTime() : null}
             realtimeEnabled={realtimeEnabled}
           />
@@ -280,6 +113,104 @@ const BracketView: React.FC<BracketViewProps> = ({
       </BracketErrorBoundary>
     </div>
   );
+};
+
+const BracketView: React.FC<BracketViewProps> = ({
+  bracketId,
+  bracket: legacyBracket,
+  teams: legacyTeams,
+  onEditMatch,
+}) => {
+  useBracketViewLogging(bracketId, legacyBracket, legacyTeams);
+
+  const {
+    bracketInfo,
+    isLoadingBracketInfo,
+    isLoadingLegacy,
+    isLoading,
+    error,
+    loadingProgress,
+    displayBracket,
+    isJsonbBracket,
+    handleRetry,
+    realtimeEnabled,
+    lastUpdate,
+  } = useBracketViewData(bracketId, legacyBracket);
+
+  const handleMatchClick = useCallback(
+    (matchId: string) => {
+      onEditMatch?.(matchId);
+    },
+    [onEditMatch]
+  );
+
+  const displayTeams = useMemo(() => {
+    return legacyTeams || [];
+  }, [legacyTeams]);
+
+  // The state is worked out AFTER all hooks, to comply with Rules of Hooks.
+  const state = resolveBracketViewState({
+    bracketId,
+    isLoading,
+    error,
+    hasLegacyBracket: !!legacyBracket,
+    isJsonbBracket,
+    displayBracket,
+  });
+
+  if (state.kind !== 'invalid-id') {
+    debugLog('Data fetching status:', {
+      isLoadingBracketInfo,
+      isLoadingLegacy,
+      hasLegacyBracket: !!legacyBracket,
+      bracketInfo: bracketInfo ? { id: bracketInfo.id } : null,
+    });
+  }
+
+  switch (state.kind) {
+    case 'invalid-id':
+      errorLog('Invalid bracketId', { bracketId });
+      return <InvalidBracketIdState />;
+
+    case 'loading':
+      debugLog('Showing loading state');
+      return <BracketLoadingState progress={loadingProgress} />;
+
+    case 'error':
+      debugLog('Showing error state:', error?.message);
+      return <BracketErrorState error={error} onRetry={handleRetry} />;
+
+    case 'empty':
+      debugLog('Showing empty state - no bracket data');
+      return <BracketEmptyState bracketId={bracketId} />;
+
+    case 'corrupt':
+      errorLog('CRITICAL - Bracket exists but matches is not an array!', {
+        bracket: displayBracket,
+        matchesProperty: state.matches,
+      });
+      return <BracketCorruptState />;
+
+    default: // 'ready'
+      bracketLog('About to render BracketsViewerComponent:', {
+        isJsonbBracket,
+        bracketId: displayBracket?.id,
+        matchesCount: state.matchesCount,
+      });
+
+      bracketLog('Rendering BracketsViewerComponent');
+
+      return (
+        <BracketReadyView
+          bracketId={bracketId}
+          displayBracket={displayBracket as NonNullable<typeof displayBracket>}
+          displayTeams={displayTeams}
+          onMatchClick={handleMatchClick}
+          lastUpdate={lastUpdate}
+          realtimeEnabled={realtimeEnabled}
+        />
+      );
+  }
 };
 
 export default React.memo(BracketView);
