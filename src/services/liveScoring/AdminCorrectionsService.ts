@@ -94,49 +94,74 @@ const seasonIdForGame = async (gameId: string): Promise<string | null | undefine
   return (data?.match as EmbeddedMatch)?.season_id;
 };
 
+type TeamLabel = 'Team 1' | 'Team 2';
+
+const assertValidScore = (label: TeamLabel, score: number | undefined): void => {
+  if (score !== undefined && !isValidRoundScore(score)) {
+    throw new ValidationError(`${label} score must be 0-12 (11 is not possible in cornhole)`);
+  }
+};
+
+/** A breakdown is only checked when the patch also carries that team's score. */
+const assertBagsMatchScore = (
+  label: TeamLabel,
+  score: number | undefined,
+  bags: BagBreakdown | null | undefined
+): void => {
+  if (bags && score !== undefined && !validateBreakdown(score, bags)) {
+    throw new ValidationError(`${label} bag breakdown does not match the round score`);
+  }
+};
+
+/**
+ * Both scores are checked before either breakdown, so when several things are
+ * wrong the admin sees the same error in the same order as before.
+ */
+const validateRoundPatch = (patch: UpdateRoundPatch): void => {
+  assertValidScore('Team 1', patch.team1Score);
+  assertValidScore('Team 2', patch.team2Score);
+  assertBagsMatchScore('Team 1', patch.team1Score, patch.team1Bags);
+  assertBagsMatchScore('Team 2', patch.team2Score, patch.team2Bags);
+};
+
+/** `null` clears the three bag columns. */
+const bagColumns = (bags: BagBreakdown | null) => ({
+  bagsIn: bags?.bagsIn ?? null,
+  bagsOn: bags?.bagsOn ?? null,
+  bagsOff: bags?.bagsOff ?? null,
+});
+
+/** Only keys the patch sets (not `undefined`) are written. */
+const buildRoundUpdate = (patch: UpdateRoundPatch): TablesUpdate<'match_rounds'> => {
+  const update: TablesUpdate<'match_rounds'> = {};
+  if (patch.team1Score !== undefined) update.team1_score = patch.team1Score;
+  if (patch.team2Score !== undefined) update.team2_score = patch.team2Score;
+  if (patch.team1ThrowerId !== undefined) update.team1_thrower_id = patch.team1ThrowerId;
+  if (patch.team2ThrowerId !== undefined) update.team2_thrower_id = patch.team2ThrowerId;
+  if (patch.team1Bags !== undefined) {
+    const { bagsIn, bagsOn, bagsOff } = bagColumns(patch.team1Bags);
+    update.team1_bags_in = bagsIn;
+    update.team1_bags_on = bagsOn;
+    update.team1_bags_off = bagsOff;
+  }
+  if (patch.team2Bags !== undefined) {
+    const { bagsIn, bagsOn, bagsOff } = bagColumns(patch.team2Bags);
+    update.team2_bags_in = bagsIn;
+    update.team2_bags_on = bagsOn;
+    update.team2_bags_off = bagsOff;
+  }
+  return update;
+};
+
 /**
  * Admin-only correction operations for live-scored matches. RLS already
  * restricts these writes to admins on match_rounds (any row) and games.
  */
 export const AdminCorrectionsService = {
   updateRound: async (roundId: string, patch: UpdateRoundPatch): Promise<MatchRoundRow> => {
-    if (patch.team1Score !== undefined && !isValidRoundScore(patch.team1Score)) {
-      throw new ValidationError('Team 1 score must be 0-12 (11 is not possible in cornhole)');
-    }
-    if (patch.team2Score !== undefined && !isValidRoundScore(patch.team2Score)) {
-      throw new ValidationError('Team 2 score must be 0-12 (11 is not possible in cornhole)');
-    }
-    if (
-      patch.team1Bags &&
-      patch.team1Score !== undefined &&
-      !validateBreakdown(patch.team1Score, patch.team1Bags)
-    ) {
-      throw new ValidationError('Team 1 bag breakdown does not match the round score');
-    }
-    if (
-      patch.team2Bags &&
-      patch.team2Score !== undefined &&
-      !validateBreakdown(patch.team2Score, patch.team2Bags)
-    ) {
-      throw new ValidationError('Team 2 bag breakdown does not match the round score');
-    }
+    validateRoundPatch(patch);
 
-    const update: TablesUpdate<'match_rounds'> = {};
-    if (patch.team1Score !== undefined) update.team1_score = patch.team1Score;
-    if (patch.team2Score !== undefined) update.team2_score = patch.team2Score;
-    if (patch.team1ThrowerId !== undefined) update.team1_thrower_id = patch.team1ThrowerId;
-    if (patch.team2ThrowerId !== undefined) update.team2_thrower_id = patch.team2ThrowerId;
-    if (patch.team1Bags !== undefined) {
-      update.team1_bags_in = patch.team1Bags?.bagsIn ?? null;
-      update.team1_bags_on = patch.team1Bags?.bagsOn ?? null;
-      update.team1_bags_off = patch.team1Bags?.bagsOff ?? null;
-    }
-    if (patch.team2Bags !== undefined) {
-      update.team2_bags_in = patch.team2Bags?.bagsIn ?? null;
-      update.team2_bags_on = patch.team2Bags?.bagsOn ?? null;
-      update.team2_bags_off = patch.team2Bags?.bagsOff ?? null;
-    }
-
+    const update = buildRoundUpdate(patch);
     if (Object.keys(update).length === 0) {
       throw new ValidationError('No changes to save');
     }
