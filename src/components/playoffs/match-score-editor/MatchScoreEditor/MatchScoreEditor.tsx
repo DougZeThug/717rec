@@ -52,7 +52,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
       const team1Score = match.team1Id ? 1 : 0;
       const team2Score = match.team2Id ? 1 : 0;
 
-      const dummyRefetch = async () => {};
+      const dummyRefetch = async () => undefined;
 
       await onSave(
         match.id,
@@ -96,7 +96,7 @@ const MatchScoreEditor: React.FC<MatchScoreEditorProps> = ({ match, teams, onSav
       const team2Score = team2Wins > team1Wins ? 1 : 0;
 
       // Create a dummy refetchBrackets function since the actual refetch is handled at a higher level
-      const dummyRefetch = async () => {};
+      const dummyRefetch = async () => undefined;
 
       await onSave(match.id, team1Score, team2Score, games, team1Wins, team2Wins, dummyRefetch);
       onCancel();

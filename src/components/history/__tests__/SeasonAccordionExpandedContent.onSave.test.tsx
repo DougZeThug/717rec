@@ -113,7 +113,7 @@ describe('SeasonAccordionExpandedContent onSave integration', () => {
     await screen.findByText('edit mode');
 
     // Defer the refetch promise so we can observe isSaving=true mid-flight.
-    let resolveRefetch: (value: typeof sampleData) => void = () => {};
+    let resolveRefetch: (value: typeof sampleData) => void = () => undefined;
     fetchSeasonStatsForAccordion.mockImplementationOnce(
       () =>
         new Promise((resolve) => {

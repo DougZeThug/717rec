@@ -175,7 +175,7 @@ describe('PowerMigrationReviewTab', () => {
   });
 
   it('keeps the dialog open and shows a loading state while revert runs', async () => {
-    let resolveMutation: (value: string) => void = () => {};
+    let resolveMutation: (value: string) => void = () => undefined;
     const revertMutation = mutationResult({
       mutateAsync: vi.fn(
         () =>

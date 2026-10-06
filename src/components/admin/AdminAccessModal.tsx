@@ -37,7 +37,7 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
+    <Dialog open={isOpen} onOpenChange={() => undefined}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center">

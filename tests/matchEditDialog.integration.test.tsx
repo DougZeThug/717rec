@@ -179,7 +179,7 @@ describe('the Schedule match form', () => {
   // Cancel stays live while a save runs. A save that lands after the admin
   // has closed the form and opened another match must leave that form alone.
   it('leaves the next match open when an earlier save lands late', async () => {
-    let landSave: () => void = () => {};
+    let landSave: () => void = () => undefined;
     mockUpdateMatch.mockImplementationOnce(
       (matchId: string, payload: { date?: string }) =>
         new Promise((resolve) => {

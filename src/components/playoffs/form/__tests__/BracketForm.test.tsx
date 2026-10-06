@@ -33,9 +33,16 @@ vi.mock('../BracketFormGrandFinal', () => ({
 globalThis.ResizeObserver =
   globalThis.ResizeObserver ||
   class {
-    observe() {}
-    disconnect() {}
-    unobserve() {}
+    // jsdom has no ResizeObserver; these tests need no real behavior.
+    observe() {
+      // no-op
+    }
+    disconnect() {
+      // no-op
+    }
+    unobserve() {
+      // no-op
+    }
   };
 
 const mockDivisions = [
