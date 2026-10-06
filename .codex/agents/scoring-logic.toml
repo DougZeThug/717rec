@@ -18,6 +18,7 @@ Read `docs/agents/LEAGUE_CONTEXT.md`. Then **re-verify from code and the databas
 ## Where the truth is
 
 1. SQL: newest definitions of `power_score_100()`, `power_score_100_career()`, `upsert_team_season_stats()`, views `v_power_score_components*`, `v_team_details`, `v_team_season_agg`. Search `supabase/migrations/` for the latest `CREATE OR REPLACE`. Data tables: `power_score_weight_history`, `division_weight_history`, `team_season_stats`.
+   The live weights are the **newest row** of `power_score_weight_history`. The SQL functions are regenerated from it (`admin_set_power_score_weights()`). The seed (40/45/15) is only a baseline, so the seed is not proof of the live value.
 2. TypeScript mirrors: `src/utils/powerScore/`, `src/utils/standings/`, `src/utils/rankingUtils/`, `src/utils/playoffs/`, `src/services/rankings/`, `src/services/TeamStatsService.ts`, `src/services/liveScoring/`.
 3. Docs: `docs/product-description/stats/`, `docs/POWER_SCORE_ROLLOUT.md`, `docs/OPERATIONS.md` sections 6a and 6b.
 4. Tests: `supabase/tests/power_score_*.sql`, `score_stats_business_logic.sql`, `src/utils/powerScore/__tests__`.
