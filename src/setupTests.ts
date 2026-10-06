@@ -187,18 +187,22 @@ globalThis.IntersectionObserver =
     scrollMargin = '0px';
 
     /** Starts observing an element; no-op in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     observe() {
       return null;
     }
     /** Disconnects all observed elements; no-op in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     disconnect() {
       return null;
     }
     /** Stops observing an element; no-op in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     unobserve() {
       return null;
     }
     /** Returns queued intersection records; always empty in jsdom tests. */
+    // skipcq: JS-0105 -- the real IntersectionObserver API is instance methods.
     takeRecords(): IntersectionObserverEntry[] {
       return [];
     }

@@ -64,6 +64,156 @@ type RestorableMatchColumn = (typeof RESTORABLE_MATCH_COLUMNS)[number];
 type MatchSnapshotRow = Pick<Tables<'match'>, 'id' | 'child_count' | RestorableMatchColumn>;
 
 /**
+ * A settled match (Completed or Archived) whose winner is unchanged: only the
+ * numbers move, so nothing downstream should be touched.
+ */
+function isScoreOnlyCorrection(
+  currentMatch: StorageMatch,
+  scores: UpdateMatchOptions['scores']
+): boolean {
+  if (currentMatch.status < 4) return false; // 4 Completed, 5 Archived
+  const currentWinner = winnerSide(currentMatch.opponent1?.result, currentMatch.opponent2?.result);
+  const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
+  return currentWinner !== null && nextWinner !== null && currentWinner === nextWinner;
+}
+
+/**
+ * Write a same-winner correction directly, bypassing the library.
+ *
+ * The library treats every Completed → Completed update as a result change and
+ * re-propagates, and its `setNextOpponent` REPLACES the downstream opponent
+ * object with just `{id, position}`. The storage adapter then flattens the
+ * missing score as NULL and applies it verbatim, so a later round loses a score
+ * a human entered even though nobody's result changed. Re-propagating a winner
+ * who is already downstream buys nothing, so skip it entirely.
+ *
+ * Only the four score/result columns are written. Status is left alone (an
+ * Archived match stays Archived), as are the ids and the `*_position` feeder
+ * markers the library relies on.
+ *
+ * Safe to write these columns directly: updateMatch has already rejected BYE
+ * matches (strict-null slots) and TBD matches above, so both result columns hold
+ * a real 'win'/'loss' and the stored 'bye' sentinel cannot be clobbered here.
+ */
+async function applyScoreOnlyCorrection(
+  matchId: number,
+  scores: UpdateMatchOptions['scores']
+): Promise<void> {
+  bracketLog(`Score-only correction for match ${matchId} — not re-propagating`);
+
+  const correctionFields: {
+    opponent1_score?: number | null;
+    opponent1_result?: string | null;
+    opponent2_score?: number | null;
+    opponent2_result?: string | null;
+  } = {};
+  if (scores.opponent1) {
+    correctionFields.opponent1_score = scores.opponent1.score ?? null;
+    correctionFields.opponent1_result = scores.opponent1.result ?? null;
+  }
+  if (scores.opponent2) {
+    correctionFields.opponent2_score = scores.opponent2.score ?? null;
+    correctionFields.opponent2_result = scores.opponent2.result ?? null;
+  }
+
+  const { error } = await supabase.from('match').update(correctionFields).eq('id', matchId);
+  if (error) {
+    handleDatabaseError(error, `Failed to correct the score of match ${matchId}`);
+  }
+}
+
+/**
+ * Capture every match in the stage exactly as stored, so a failed update can
+ * be undone.
+ *
+ * Deliberately reads the raw columns instead of going through
+ * `storage.select`: that path runs `inflateOpponentSlot`, which turns a
+ * stored 'bye' sentinel into `null`. Writing that back would quietly demote a
+ * structural BYE to an ordinary TBD slot.
+ *
+ * Scoped to the whole stage rather than the downstream chain because
+ * `updateRelatedMatches` propagates BOTH ways — `updatePrevious` rewrites
+ * feeder matches too, so a downstream-only snapshot would miss rows.
+ *
+ * Throws if the snapshot cannot be taken. Nothing has been written at that
+ * point, so failing costs nothing — whereas continuing would silently drop
+ * the ability to roll back.
+ */
+async function snapshotStageMatches(stageId: number): Promise<MatchSnapshotRow[]> {
+  const { data, error } = await supabase
+    .from('match')
+    .select(MATCH_SNAPSHOT_COLUMNS)
+    .eq('stage_id', stageId);
+
+  if (error) {
+    handleDatabaseError(error, `Failed to snapshot stage ${stageId} before updating a match`);
+  }
+  return (data ?? []) as unknown as MatchSnapshotRow[];
+}
+
+/**
+ * Put every row the failed update touched back the way the snapshot found it.
+ *
+ * Re-reads and writes back only the rows that actually differ, so the usual
+ * rollback is one or two writes and the log names exactly what was undone.
+ *
+ * Best-effort throughout: the caller re-throws the original failure, and
+ * nothing here may replace it with a rollback error.
+ */
+async function restoreStageMatches(snapshot: MatchSnapshotRow[], stageId: number): Promise<void> {
+  const { data, error } = await supabase
+    .from('match')
+    .select(MATCH_SNAPSHOT_COLUMNS)
+    .eq('stage_id', stageId);
+
+  if (error) {
+    failureLog(`Could not re-read stage ${stageId} to roll back a failed match update`, error);
+    return;
+  }
+
+  const current = new Map(
+    ((data ?? []) as unknown as MatchSnapshotRow[]).map((row) => [row.id, row])
+  );
+
+  const rollbacks = snapshot.flatMap((before) => {
+    const after = current.get(before.id);
+    if (!after) return [];
+    const changed = RESTORABLE_MATCH_COLUMNS.filter((column) => after[column] !== before[column]);
+    return changed.length > 0 ? [{ before, changed }] : [];
+  });
+
+  if (rollbacks.length === 0) return;
+
+  // The library also writes match_game rows, but only for matches with child
+  // games (child_count > 0). This app never creates multi-game series, so
+  // there is nothing to undo there — say so out loud if that ever changes.
+  if (snapshot.some((row) => (row.child_count ?? 0) > 0)) {
+    failureLog(
+      `Stage ${stageId} rollback is incomplete`,
+      'matches have child games; match_game rows are not covered'
+    );
+  }
+
+  await Promise.all(
+    rollbacks.map(async ({ before, changed }) => {
+      const payload = Object.fromEntries(
+        changed.map((column) => [column, before[column]])
+      ) as Partial<Pick<Tables<'match'>, RestorableMatchColumn>>;
+      const { error: restoreError } = await supabase
+        .from('match')
+        .update(payload)
+        .eq('id', before.id);
+
+      if (restoreError) {
+        failureLog(`Failed to roll back match ${before.id} after a failed update`, restoreError);
+      } else {
+        bracketLog(`↩️ Rolled back match ${before.id}: ${changed.join(', ')}`);
+      }
+    })
+  );
+}
+
+/**
  * Service responsible for bracket match updates.
  *
  * The library's own state machine drives everything: score writes, winner and
@@ -124,8 +274,8 @@ export class BracketUpdateService {
 
         const stage = (await this.storage.select('stage', currentMatch.stage_id)) as StorageStage;
 
-        if (this.isScoreOnlyCorrection(currentMatch, scores)) {
-          await this.applyScoreOnlyCorrection(matchId, scores);
+        if (isScoreOnlyCorrection(currentMatch, scores)) {
+          await applyScoreOnlyCorrection(matchId, scores);
         } else {
           // Runs BEFORE applyMatchUpdate on purpose: this refuses an edit that WOULD
           // succeed, which no rollback can help with. applyMatchUpdate can undo a
@@ -167,68 +317,6 @@ export class BracketUpdateService {
       manager: this.manager,
       normalizationService: this.normalizationService,
     };
-  }
-
-  /**
-   * A settled match (Completed or Archived) whose winner is unchanged: only the
-   * numbers move, so nothing downstream should be touched.
-   */
-  private isScoreOnlyCorrection(
-    currentMatch: StorageMatch,
-    scores: UpdateMatchOptions['scores']
-  ): boolean {
-    if (currentMatch.status < 4) return false; // 4 Completed, 5 Archived
-    const currentWinner = winnerSide(
-      currentMatch.opponent1?.result,
-      currentMatch.opponent2?.result
-    );
-    const nextWinner = winnerSide(scores.opponent1?.result, scores.opponent2?.result);
-    return currentWinner !== null && nextWinner !== null && currentWinner === nextWinner;
-  }
-
-  /**
-   * Write a same-winner correction directly, bypassing the library.
-   *
-   * The library treats every Completed → Completed update as a result change and
-   * re-propagates, and its `setNextOpponent` REPLACES the downstream opponent
-   * object with just `{id, position}`. The storage adapter then flattens the
-   * missing score as NULL and applies it verbatim, so a later round loses a score
-   * a human entered even though nobody's result changed. Re-propagating a winner
-   * who is already downstream buys nothing, so skip it entirely.
-   *
-   * Only the four score/result columns are written. Status is left alone (an
-   * Archived match stays Archived), as are the ids and the `*_position` feeder
-   * markers the library relies on.
-   *
-   * Safe to write these columns directly: updateMatch has already rejected BYE
-   * matches (strict-null slots) and TBD matches above, so both result columns hold
-   * a real 'win'/'loss' and the stored 'bye' sentinel cannot be clobbered here.
-   */
-  private async applyScoreOnlyCorrection(
-    matchId: number,
-    scores: UpdateMatchOptions['scores']
-  ): Promise<void> {
-    bracketLog(`Score-only correction for match ${matchId} — not re-propagating`);
-
-    const correctionFields: {
-      opponent1_score?: number | null;
-      opponent1_result?: string | null;
-      opponent2_score?: number | null;
-      opponent2_result?: string | null;
-    } = {};
-    if (scores.opponent1) {
-      correctionFields.opponent1_score = scores.opponent1.score ?? null;
-      correctionFields.opponent1_result = scores.opponent1.result ?? null;
-    }
-    if (scores.opponent2) {
-      correctionFields.opponent2_score = scores.opponent2.score ?? null;
-      correctionFields.opponent2_result = scores.opponent2.result ?? null;
-    }
-
-    const { error } = await supabase.from('match').update(correctionFields).eq('id', matchId);
-    if (error) {
-      handleDatabaseError(error, `Failed to correct the score of match ${matchId}`);
-    }
   }
 
   /**
@@ -293,104 +381,13 @@ export class BracketUpdateService {
     }
   }
 
-  /**
-   * Capture every match in the stage exactly as stored, so a failed update can
-   * be undone.
-   *
-   * Deliberately reads the raw columns instead of going through
-   * `storage.select`: that path runs `inflateOpponentSlot`, which turns a
-   * stored 'bye' sentinel into `null`. Writing that back would quietly demote a
-   * structural BYE to an ordinary TBD slot.
-   *
-   * Scoped to the whole stage rather than the downstream chain because
-   * `updateRelatedMatches` propagates BOTH ways — `updatePrevious` rewrites
-   * feeder matches too, so a downstream-only snapshot would miss rows.
-   *
-   * Throws if the snapshot cannot be taken. Nothing has been written at that
-   * point, so failing costs nothing — whereas continuing would silently drop
-   * the ability to roll back.
-   */
-  private async snapshotStageMatches(stageId: number): Promise<MatchSnapshotRow[]> {
-    const { data, error } = await supabase
-      .from('match')
-      .select(MATCH_SNAPSHOT_COLUMNS)
-      .eq('stage_id', stageId);
-
-    if (error) {
-      handleDatabaseError(error, `Failed to snapshot stage ${stageId} before updating a match`);
-    }
-    return (data ?? []) as unknown as MatchSnapshotRow[];
-  }
-
-  /**
-   * Put every row the failed update touched back the way the snapshot found it.
-   *
-   * Re-reads and writes back only the rows that actually differ, so the usual
-   * rollback is one or two writes and the log names exactly what was undone.
-   *
-   * Best-effort throughout: the caller re-throws the original failure, and
-   * nothing here may replace it with a rollback error.
-   */
-  private async restoreStageMatches(snapshot: MatchSnapshotRow[], stageId: number): Promise<void> {
-    const { data, error } = await supabase
-      .from('match')
-      .select(MATCH_SNAPSHOT_COLUMNS)
-      .eq('stage_id', stageId);
-
-    if (error) {
-      failureLog(`Could not re-read stage ${stageId} to roll back a failed match update`, error);
-      return;
-    }
-
-    const current = new Map(
-      ((data ?? []) as unknown as MatchSnapshotRow[]).map((row) => [row.id, row])
-    );
-
-    const rollbacks = snapshot.flatMap((before) => {
-      const after = current.get(before.id);
-      if (!after) return [];
-      const changed = RESTORABLE_MATCH_COLUMNS.filter((column) => after[column] !== before[column]);
-      return changed.length > 0 ? [{ before, changed }] : [];
-    });
-
-    if (rollbacks.length === 0) return;
-
-    // The library also writes match_game rows, but only for matches with child
-    // games (child_count > 0). This app never creates multi-game series, so
-    // there is nothing to undo there — say so out loud if that ever changes.
-    if (snapshot.some((row) => (row.child_count ?? 0) > 0)) {
-      failureLog(
-        `Stage ${stageId} rollback is incomplete`,
-        'matches have child games; match_game rows are not covered'
-      );
-    }
-
-    await Promise.all(
-      rollbacks.map(async ({ before, changed }) => {
-        const payload = Object.fromEntries(
-          changed.map((column) => [column, before[column]])
-        ) as Partial<Pick<Tables<'match'>, RestorableMatchColumn>>;
-        const { error: restoreError } = await supabase
-          .from('match')
-          .update(payload)
-          .eq('id', before.id);
-
-        if (restoreError) {
-          failureLog(`Failed to roll back match ${before.id} after a failed update`, restoreError);
-        } else {
-          bracketLog(`↩️ Rolled back match ${before.id}: ${changed.join(', ')}`);
-        }
-      })
-    );
-  }
-
   private async applyMatchUpdate(
     matchId: number,
     scores: UpdateMatchOptions['scores'],
     currentMatch: StorageMatch
   ): Promise<void> {
     // Taken before the unlock, so the rollback covers the status flip too.
-    const snapshot = await this.snapshotStageMatches(currentMatch.stage_id);
+    const snapshot = await snapshotStageMatches(currentMatch.stage_id);
 
     // ⭐ Admin corrections: the library refuses to update Archived matches
     // ("The match is locked."), but admins legitimately need to fix scores on
@@ -434,7 +431,7 @@ export class BracketUpdateService {
       // still hold results derived from the old one — plus, for an archived
       // match, the unlock already committed. Undo the whole attempt so a failed
       // correction changes nothing. Best-effort: never mask the real failure.
-      await this.restoreStageMatches(snapshot, currentMatch.stage_id);
+      await restoreStageMatches(snapshot, currentMatch.stage_id);
       throw error;
     }
     bracketLog(`manager.update.match() COMPLETED for Match ${matchId}`);
