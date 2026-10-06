@@ -22,6 +22,17 @@ vi.mock('@/utils/rankingUtils/divisionWeightsCache', () => ({
   getDefaultDivisionWeight: () => 0.85,
 }));
 
+// The database path (no prefetched data) goes through CareerQueryService.
+const careerQuery = vi.hoisted(() => ({
+  fetchTeamSeasonPowerScores: vi.fn(),
+  fetchCurrentTeamPower: vi.fn(),
+  fetchActiveSeasonId: vi.fn(),
+}));
+
+vi.mock('@/services/career/CareerQueryService', () => ({
+  CareerQueryService: careerQuery,
+}));
+
 // Mock Supabase client (needed for module resolution, but tests use prefetched data path)
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -387,5 +398,270 @@ describe('calculateCareerPowerScore', () => {
 
       expect(result).toBeCloseTo(56.3175, 4);
     });
+  });
+});
+
+// Exact-value tests that pin every bonus and cap path. A refactor must not move them.
+describe('calculateCareerPowerScore bonus and cap details', () => {
+  // One past season at 0.5 over 10 matches gives a base score of exactly 50.
+  const baseSeason = { power_score: 0.5, match_wins: 5, match_losses: 5, season_id: 's1' };
+  const baseInput = {
+    teamId: 'team-1',
+    championshipDivisions: [] as string[],
+    runnerUpDivisions: [] as string[],
+    careerPlayoffWins: 0,
+    careerPlayoffLosses: 0,
+    competitivePlayoffWins: 0,
+    teamDivisionWeight: 1.0,
+    prefetchedSeasonStats: [baseSeason],
+    prefetchedCurrentTeamData: null,
+  };
+
+  describe('playoff win-rate bonus', () => {
+    it('pays (win rate - 0.5) * 4 * team division weight above a 50% win rate', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        careerPlayoffWins: 7,
+        careerPlayoffLosses: 3,
+      });
+
+      // (0.7 - 0.5) * 4 * 1.0 = 0.8, under the cap of 15
+      expect(result).toBeCloseTo(50.8, 10);
+    });
+
+    it.each([
+      ['an even playoff record', 5, 5],
+      ['a losing playoff record', 3, 7],
+      ['no playoff matches', 0, 0],
+    ])('pays nothing for %s', async (_label, wins, losses) => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        careerPlayoffWins: wins,
+        careerPlayoffLosses: losses,
+      });
+
+      expect(result).toBe(50);
+    });
+
+    it('rates the run by the average live weight of playoffDivisions, not the team division', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: 0.5,
+        careerPlayoffWins: 10,
+        careerPlayoffLosses: 0,
+        playoffDivisions: ['Recreational', 'Competitive'],
+      });
+
+      // average weight (0.35 + 1.0) / 2 = 0.675; bonus (1 - 0.5) * 4 * 0.675 = 1.35
+      expect(result).toBeCloseTo(51.35, 10);
+    });
+  });
+
+  it('adds 0.5 per competitive playoff win', async () => {
+    const result = await calculateCareerPowerScore({ ...baseInput, competitivePlayoffWins: 5 });
+
+    expect(result).toBe(52.5);
+  });
+
+  describe('bonus cap', () => {
+    it('is scaled by playoffDivisions when nothing else qualifies', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        competitivePlayoffWins: 100, // 50 points, far above any cap
+        playoffDivisions: ['Intermediate'],
+      });
+
+      // cap = 15 * 0.7^2 = 7.35
+      expect(result).toBeCloseTo(57.35, 10);
+    });
+
+    it('uses the strongest division across titles, runner-ups and playoff runs', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        championshipDivisions: ['Recreational'],
+        runnerUpDivisions: ['Competitive'],
+        competitivePlayoffWins: 100,
+      });
+
+      // title 7 * 0.35^2 = 0.8575, runner-up 4 * 1.0^2, 50 playoff points: all above the cap.
+      // cap = 15 * 1.0^2 = 15 (the runner-up division sets it)
+      expect(result).toBeCloseTo(65, 10);
+    });
+
+    it('falls back to the team division weight when no bonus division exists', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        teamDivisionWeight: 0.7,
+        competitivePlayoffWins: 100,
+      });
+
+      // cap = 15 * 0.7^2 = 7.35
+      expect(result).toBeCloseTo(57.35, 10);
+    });
+
+    it('still caps the final score at 100', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        championshipDivisions: ['Competitive'],
+        prefetchedSeasonStats: [{ ...baseSeason, power_score: 0.98 }],
+      });
+
+      // 98 + min(15, 7) = 105, capped at 100
+      expect(result).toBe(100);
+    });
+  });
+
+  describe('base score', () => {
+    it('prefers the current row career_power_score over power_score', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        prefetchedSeasonStats: [],
+        prefetchedCurrentTeamData: { power_score: 60, career_power_score: 40, wins: 5, losses: 5 },
+      });
+
+      expect(result).toBe(40);
+    });
+
+    it('falls back to the current row power_score when career_power_score is null', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        prefetchedSeasonStats: [],
+        prefetchedCurrentTeamData: {
+          power_score: 60,
+          career_power_score: null,
+          wins: 5,
+          losses: 5,
+        },
+      });
+
+      expect(result).toBe(60);
+    });
+
+    it.each([
+      ['wins is null', { power_score: 90, wins: null, losses: 3 }],
+      ['losses is null', { power_score: 90, wins: 3, losses: null }],
+      ['the team has no matches', { power_score: 90, wins: 0, losses: 0 }],
+      ['the score is null', { power_score: null, wins: 5, losses: 5 }],
+    ])('ignores the current row when %s', async (_label, currentTeamData) => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        prefetchedCurrentTeamData: currentTeamData,
+      });
+
+      expect(result).toBe(50);
+    });
+
+    it('weights historical and current rows by matches played', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        prefetchedSeasonStats: [
+          { power_score: 0.8, match_wins: 5, match_losses: 5, season_id: 'past' },
+        ],
+        prefetchedCurrentTeamData: { power_score: 50, wins: 20, losses: 10 },
+      });
+
+      // (80 * 10 + 50 * 30) / 40 = 57.5
+      expect(result).toBeCloseTo(57.5, 10);
+    });
+
+    it('skips season rows with no matches or no score', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        prefetchedSeasonStats: [
+          { power_score: 0.9, match_wins: 0, match_losses: 0, season_id: 'empty' },
+          { power_score: null, match_wins: 5, match_losses: 5, season_id: 'no-score' },
+          { power_score: 0.5, match_wins: 5, match_losses: 5, season_id: 'real' },
+        ],
+      });
+
+      expect(result).toBe(50);
+    });
+
+    it('counts a floored career_power_score of 0 instead of falling back', async () => {
+      const result = await calculateCareerPowerScore({
+        ...baseInput,
+        prefetchedSeasonStats: [
+          {
+            power_score: 0.9,
+            career_power_score: 0,
+            match_wins: 5,
+            match_losses: 5,
+            season_id: 'z',
+          },
+        ],
+      });
+
+      expect(result).toBe(0);
+    });
+  });
+});
+
+describe('calculateCareerPowerScore database path', () => {
+  const input = {
+    teamId: 'team-db',
+    championshipDivisions: [] as string[],
+    runnerUpDivisions: [] as string[],
+    careerPlayoffWins: 0,
+    careerPlayoffLosses: 0,
+    competitivePlayoffWins: 0,
+    teamDivisionWeight: 1.0,
+  };
+
+  beforeEach(() => {
+    careerQuery.fetchTeamSeasonPowerScores.mockResolvedValue([
+      { power_score: 0.8, match_wins: 5, match_losses: 5, season_id: 'past' },
+      { power_score: 0.2, match_wins: 5, match_losses: 5, season_id: 'active' },
+    ]);
+    careerQuery.fetchCurrentTeamPower.mockResolvedValue({ power_score: 60, wins: 5, losses: 5 });
+    careerQuery.fetchActiveSeasonId.mockResolvedValue('active');
+  });
+
+  it('fetches the active season and excludes it from the season rows', async () => {
+    const result = await calculateCareerPowerScore(input);
+
+    expect(careerQuery.fetchTeamSeasonPowerScores).toHaveBeenCalledWith('team-db');
+    expect(careerQuery.fetchCurrentTeamPower).toHaveBeenCalledWith('team-db');
+    expect(careerQuery.fetchActiveSeasonId).toHaveBeenCalledTimes(1);
+    // (80 * 10 + 60 * 10) / 20 = 70; the 'active' season row is left out
+    expect(result).toBeCloseTo(70, 10);
+  });
+
+  it('does not look up the active season when currentSeasonId is given', async () => {
+    const result = await calculateCareerPowerScore({ ...input, currentSeasonId: 'active' });
+
+    expect(careerQuery.fetchActiveSeasonId).not.toHaveBeenCalled();
+    expect(result).toBeCloseTo(70, 10);
+  });
+
+  it('keeps every season row when no active season exists', async () => {
+    careerQuery.fetchActiveSeasonId.mockResolvedValue(null);
+
+    const result = await calculateCareerPowerScore(input);
+
+    // (80 * 10 + 20 * 10 + 60 * 10) / 30 = 53.33
+    expect(result).toBeCloseTo(53.3333333, 6);
+  });
+
+  it('uses the database when only one of the two prefetched values is given', async () => {
+    const result = await calculateCareerPowerScore({
+      ...input,
+      prefetchedSeasonStats: [],
+    });
+
+    expect(careerQuery.fetchTeamSeasonPowerScores).toHaveBeenCalledTimes(1);
+    expect(result).toBeCloseTo(70, 10);
+  });
+
+  it('skips the database when both prefetched values are given, even as null', async () => {
+    const result = await calculateCareerPowerScore({
+      ...input,
+      prefetchedSeasonStats: null,
+      prefetchedCurrentTeamData: null,
+    });
+
+    expect(careerQuery.fetchTeamSeasonPowerScores).not.toHaveBeenCalled();
+    expect(careerQuery.fetchCurrentTeamPower).not.toHaveBeenCalled();
+    expect(careerQuery.fetchActiveSeasonId).not.toHaveBeenCalled();
+    expect(result).toBe(0);
   });
 });
