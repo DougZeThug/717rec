@@ -19,6 +19,30 @@ interface MessageHeaderProps {
   isAnnouncement: boolean;
 }
 
+const TeamNameTooltip: React.FC<
+  Pick<MessageHeaderProps, 'username' | 'teamName' | 'powerScore'>
+> = ({ username, teamName, powerScore }) => (
+  <TooltipProvider>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
+        <div>
+          <TeamNameDisplay
+            username={username}
+            teamName={teamName}
+            powerScore={powerScore}
+            compact
+          />
+        </div>
+      </TooltipTrigger>
+      {powerScore && (
+        <TooltipContent side="top" className="px-3 py-1.5">
+          <p className="text-xs font-medium">Team Power Score: {powerScore.toFixed(1)}</p>
+        </TooltipContent>
+      )}
+    </Tooltip>
+  </TooltipProvider>
+);
+
 const MessageHeader: React.FC<MessageHeaderProps> = ({
   username,
   teamName,
@@ -32,25 +56,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
     <>
       <div className="flex items-center justify-between gap-1 mb-1">
         <div className="flex items-center gap-2 max-w-full">
-          <TooltipProvider>
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <div>
-                  <TeamNameDisplay
-                    username={username}
-                    teamName={teamName}
-                    powerScore={powerScore}
-                    compact
-                  />
-                </div>
-              </TooltipTrigger>
-              {powerScore && (
-                <TooltipContent side="top" className="px-3 py-1.5">
-                  <p className="text-xs font-medium">Team Power Score: {powerScore.toFixed(1)}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+          <TeamNameTooltip username={username} teamName={teamName} powerScore={powerScore} />
 
           <time
             className="text-xs text-muted-foreground flex items-center whitespace-nowrap"

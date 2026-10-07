@@ -80,6 +80,44 @@ const queryClient = new QueryClient({
 });
 
 /**
+ * The `<main>` landmark and the page boundary inside it. A separate component
+ * so the layout above stays shallow; the markup is the same.
+ */
+const MainRegion = ({
+  mainRef,
+  pathname,
+}: {
+  mainRef: React.RefObject<HTMLElement | null>;
+  pathname: string;
+}) => (
+  <main ref={mainRef} id="main-content" tabIndex={-1} className="grow focus:outline-hidden">
+    {/* Above the Suspense, not inside a route.
+        A page whose code fails to download rejects the lazy import, and
+        React re-throws that from the Suspense boundary's own position —
+        so the per-route boundaries below are not in its path and the
+        app-level one catches it instead, taking the header with it.
+        That was the dead end in UX audit X-12. A boundary here keeps
+        the header and hands a failed download to ChunkLoadRecovery. */}
+    {/* resetKey: this instance never unmounts, so without it one
+        failed download latched the recovery panel on for the whole
+        visit. Not `key`, which would remount Suspense and the whole
+        page subtree on every navigation to fix a state that is rare. */}
+    <RouteErrorBoundary routeName="this page" resetKey={pathname}>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center min-h-[60vh] py-8">
+            <LoadingState message="Loading page..." size="lg" />
+          </div>
+        }
+      >
+        <Outlet />
+        <RouteFocusManager mainRef={mainRef} />
+      </Suspense>
+    </RouteErrorBoundary>
+  </main>
+);
+
+/**
  * The shell every page renders inside: the header, the transition wrapper, the
  * phone tab bar and the footer, with the matched page in the `<Outlet />`.
  *
@@ -141,36 +179,7 @@ const AppLayout = () => {
             stick to the page while that is so. */}
           <OfflineBanner />
           <PageTransition>
-            <main
-              ref={mainRef}
-              id="main-content"
-              tabIndex={-1}
-              className="grow focus:outline-hidden"
-            >
-              {/* Above the Suspense, not inside a route.
-                A page whose code fails to download rejects the lazy import, and
-                React re-throws that from the Suspense boundary's own position —
-                so the per-route boundaries below are not in its path and the
-                app-level one catches it instead, taking the header with it.
-                That was the dead end in UX audit X-12. A boundary here keeps
-                the header and hands a failed download to ChunkLoadRecovery. */}
-              {/* resetKey: this instance never unmounts, so without it one
-                failed download latched the recovery panel on for the whole
-                visit. Not `key`, which would remount Suspense and the whole
-                page subtree on every navigation to fix a state that is rare. */}
-              <RouteErrorBoundary routeName="this page" resetKey={pathname}>
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center min-h-[60vh] py-8">
-                      <LoadingState message="Loading page..." size="lg" />
-                    </div>
-                  }
-                >
-                  <Outlet />
-                  <RouteFocusManager mainRef={mainRef} />
-                </Suspense>
-              </RouteErrorBoundary>
-            </main>
+            <MainRegion mainRef={mainRef} pathname={pathname} />
           </PageTransition>
           <AppNavigation />
           <Footer />
@@ -439,6 +448,14 @@ const MotionProviders = ({ children }: { children: React.ReactNode }) => (
   </LazyMotion>
 );
 
+/** The tooltip provider, the toaster and the router, innermost in the provider chain. */
+const AppRouter = ({ router }: { router: ReturnType<typeof createAppRouter> }) => (
+  <TooltipProvider>
+    <Toaster />
+    <RouterProvider router={router} />
+  </TooltipProvider>
+);
+
 /** Provides top-level app providers and the router. */
 const App = () => {
   const router = useLazyRef(createAppRouter).current;
@@ -448,10 +465,7 @@ const App = () => {
       <HelmetProvider>
         <QueryClientProvider client={queryClient}>
           <MotionProviders>
-            <TooltipProvider>
-              <Toaster />
-              <RouterProvider router={router} />
-            </TooltipProvider>
+            <AppRouter router={router} />
           </MotionProviders>
         </QueryClientProvider>
       </HelmetProvider>

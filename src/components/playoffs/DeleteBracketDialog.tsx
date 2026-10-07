@@ -20,6 +20,12 @@ interface DeleteBracketDialogProps {
   isDeleting: boolean;
 }
 
+const DeleteBracketQuestion: React.FC<{ bracketName: string }> = ({ bracketName }) => (
+  <p>
+    Are you sure you want to delete the bracket <strong>{bracketName}</strong>?
+  </p>
+);
+
 const DeleteBracketDialog: React.FC<DeleteBracketDialogProps> = ({
   open,
   onOpenChange,
@@ -40,9 +46,7 @@ const DeleteBracketDialog: React.FC<DeleteBracketDialogProps> = ({
             Delete Bracket
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
-            <p>
-              Are you sure you want to delete the bracket <strong>{bracketName}</strong>?
-            </p>
+            <DeleteBracketQuestion bracketName={bracketName} />
             <p className="font-medium text-destructive-text">
               This action cannot be undone. All matches, scores, and game data will be permanently
               deleted.

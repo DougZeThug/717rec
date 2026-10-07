@@ -29,6 +29,71 @@ interface TeamDivisionDialogProps {
   onTeamDivisionChange: (teamId: string, divisionName: string) => void;
 }
 
+type TeamDivisionCardProps = Pick<
+  TeamDivisionDialogProps,
+  'availableDivisions' | 'onTeamDivisionChange'
+> & { team: Team };
+
+/** A team's logo and name. */
+const TeamIdentity: React.FC<{ team: Team }> = ({ team }) => (
+  <div className="flex items-center">
+    <div className="size-10 rounded-full overflow-hidden bg-muted mr-2">
+      {team.logoUrl ? (
+        <img
+          src={team.logoUrl}
+          alt={team.name}
+          loading="lazy"
+          decoding="async"
+          className="size-full object-contain"
+        />
+      ) : (
+        <div className="size-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
+          No Logo
+        </div>
+      )}
+    </div>
+    <span className="truncate max-w-[120px]" title={team.name}>
+      {team.name}
+    </span>
+  </div>
+);
+
+/** The division picker for one team. */
+const TeamDivisionSelect: React.FC<TeamDivisionCardProps> = ({
+  team,
+  availableDivisions,
+  onTeamDivisionChange,
+}) => (
+  <Select
+    value={team.divisionName || 'Unassigned'}
+    onValueChange={(value) => onTeamDivisionChange(team.id, value)}
+  >
+    <SelectTrigger className="w-[140px]" aria-label={`Division for ${team.name}`}>
+      <SelectValue placeholder="Division..." />
+    </SelectTrigger>
+    <SelectContent>
+      {availableDivisions.map((d) => (
+        <SelectItem key={d} value={d}>
+          {d}
+        </SelectItem>
+      ))}
+      <SelectItem value="Unassigned">Unassigned</SelectItem>
+    </SelectContent>
+  </Select>
+);
+
+/** One team with its logo and a division picker. */
+const TeamDivisionCard: React.FC<TeamDivisionCardProps> = (props) => (
+  <Card className="bg-muted/50">
+    <CardContent className="p-3">
+      <div className="flex items-center justify-between">
+        <TeamIdentity team={props.team} />
+        <TeamDivisionSelect {...props} />
+      </div>
+    </CardContent>
+  </Card>
+);
+
 const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
   open,
   onOpenChange,
@@ -59,51 +124,12 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                   <h3 className="text-lg font-semibold">{division} Division</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {teamsByDivision[division]?.map((team) => (
-                      <Card key={team.id} className="bg-muted/50">
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="size-10 rounded-full overflow-hidden bg-muted mr-2">
-                                {team.logoUrl ? (
-                                  <img
-                                    src={team.logoUrl}
-                                    alt={team.name}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="size-full object-contain"
-                                  />
-                                ) : (
-                                  <div className="size-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
-                                    No Logo
-                                  </div>
-                                )}
-                              </div>
-                              <span className="truncate max-w-[120px]" title={team.name}>
-                                {team.name}
-                              </span>
-                            </div>
-                            <Select
-                              value={team.divisionName || 'Unassigned'}
-                              onValueChange={(value) => onTeamDivisionChange(team.id, value)}
-                            >
-                              <SelectTrigger
-                                className="w-[140px]"
-                                aria-label={`Division for ${team.name}`}
-                              >
-                                <SelectValue placeholder="Division..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableDivisions.map((d) => (
-                                  <SelectItem key={d} value={d}>
-                                    {d}
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="Unassigned">Unassigned</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <TeamDivisionCard
+                        key={team.id}
+                        team={team}
+                        availableDivisions={availableDivisions}
+                        onTeamDivisionChange={onTeamDivisionChange}
+                      />
                     ))}
                   </div>
                 </div>
@@ -114,51 +140,12 @@ const TeamDivisionDialog: React.FC<TeamDivisionDialogProps> = ({
                   <h3 className="text-lg font-semibold">Unassigned Teams</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {teamsByDivision['Unassigned']?.map((team) => (
-                      <Card key={team.id} className="bg-muted/50">
-                        <CardContent className="p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="size-10 rounded-full overflow-hidden bg-muted mr-2">
-                                {team.logoUrl ? (
-                                  <img
-                                    src={team.logoUrl}
-                                    alt={team.name}
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="size-full object-contain"
-                                  />
-                                ) : (
-                                  <div className="size-full flex items-center justify-center bg-muted text-muted-foreground text-xs">
-                                    No Logo
-                                  </div>
-                                )}
-                              </div>
-                              <span className="truncate max-w-[120px]" title={team.name}>
-                                {team.name}
-                              </span>
-                            </div>
-                            <Select
-                              value={team.divisionName || 'Unassigned'}
-                              onValueChange={(value) => onTeamDivisionChange(team.id, value)}
-                            >
-                              <SelectTrigger
-                                className="w-[140px]"
-                                aria-label={`Division for ${team.name}`}
-                              >
-                                <SelectValue placeholder="Division..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {availableDivisions.map((d) => (
-                                  <SelectItem key={d} value={d}>
-                                    {d}
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="Unassigned">Unassigned</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </CardContent>
-                      </Card>
+                      <TeamDivisionCard
+                        key={team.id}
+                        team={team}
+                        availableDivisions={availableDivisions}
+                        onTeamDivisionChange={onTeamDivisionChange}
+                      />
                     ))}
                   </div>
                 </div>

@@ -16,6 +16,43 @@ import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
+/** The sticky title and filter bar at the top of the board. */
+const MessageBoardHeader: React.FC<
+  Pick<
+    React.ComponentProps<typeof MessageFilterBar>,
+    'filterOptions' | 'onFilterChange' | 'onRefresh' | 'isRefreshing'
+  >
+> = ({ filterOptions, onFilterChange, onRefresh, isRefreshing }) => (
+  <div
+    className={cn(
+      'sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3 pt-1',
+      gradients.section.subtle
+    )}
+  >
+    <PageHeader
+      title={
+        <div className="flex items-center space-x-2">
+          <MessageSquare className="size-6 text-primary" />
+          <span>Message Board</span>
+        </div>
+      }
+      description="Chat with other teams and participants"
+      className={cn(animations.fadeInSlideDown, 'mb-3')}
+      compact
+    />
+
+    {/* Filter Bar with Refresh button */}
+    <div className={cn(animations.fadeInSlideDown)}>
+      <MessageFilterBar
+        filterOptions={filterOptions}
+        onFilterChange={onFilterChange}
+        onRefresh={onRefresh}
+        isRefreshing={isRefreshing}
+      />
+    </div>
+  </div>
+);
+
 const MessageBoard: React.FC = () => {
   const {
     messages,
@@ -67,34 +104,12 @@ const MessageBoard: React.FC = () => {
       />
       <PageTransition animation="fadeInSlideDown">
         <div className="container max-w-4xl mx-auto pb-20 md:pb-24 px-px">
-          <div
-            className={cn(
-              'sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3 pt-1',
-              gradients.section.subtle
-            )}
-          >
-            <PageHeader
-              title={
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="size-6 text-primary" />
-                  <span>Message Board</span>
-                </div>
-              }
-              description="Chat with other teams and participants"
-              className={cn(animations.fadeInSlideDown, 'mb-3')}
-              compact
-            />
-
-            {/* Filter Bar with Refresh button */}
-            <div className={cn(animations.fadeInSlideDown)}>
-              <MessageFilterBar
-                filterOptions={filterOptions}
-                onFilterChange={setFilter}
-                onRefresh={handleRefresh}
-                isRefreshing={isRefreshing}
-              />
-            </div>
-          </div>
+          <MessageBoardHeader
+            filterOptions={filterOptions}
+            onFilterChange={setFilter}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+          />
 
           <div className={animations.fadeInSlideUp} aria-live="polite" aria-busy={isLoading}>
             <MessageFeed

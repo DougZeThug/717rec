@@ -66,6 +66,28 @@ interface TeamItem {
   seed: number;
 }
 
+const SeedSortableList: React.FC<{ teamIds: string[]; teams: TeamItem[]; disabled: boolean }> = ({
+  teamIds,
+  teams,
+  disabled,
+}) => (
+  <SortableContext items={teamIds} strategy={verticalListSortingStrategy}>
+    <div className="space-y-2">
+      <AnimatePresence mode="popLayout">
+        {teams.map((team) => (
+          <SortableTeamItem
+            key={team.id}
+            id={team.id}
+            name={team.name}
+            seed={team.seed}
+            disabled={disabled}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  </SortableContext>
+);
+
 export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   open,
   onOpenChange,
@@ -232,21 +254,7 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <SortableContext items={teamIds} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2">
-                <AnimatePresence mode="popLayout">
-                  {teams.map((team) => (
-                    <SortableTeamItem
-                      key={team.id}
-                      id={team.id}
-                      name={team.name}
-                      seed={team.seed}
-                      disabled={!canUpdate}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
-            </SortableContext>
+            <SeedSortableList teamIds={teamIds} teams={teams} disabled={!canUpdate} />
 
             <DragOverlay
               dropAnimation={{

@@ -22,13 +22,54 @@ interface FilterSectionProps {
   onClearFilters: () => void;
 }
 
+type FilterSelectProps<T> = { value: T; onChange: (value: string) => void };
+
+const CategoryFilter: React.FC<FilterSelectProps<FilterOptions['category']>> = ({
+  value,
+  onChange,
+}) => (
+  <Select value={value || 'all'} onValueChange={onChange}>
+    <SelectTrigger aria-label="Filter by category">
+      <SelectValue placeholder="Category" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectGroup>
+        <SelectItem value="all">All Categories</SelectItem>
+        {MESSAGE_CATEGORIES.map((category) => (
+          <SelectItem key={category} value={category}>
+            {category}
+          </SelectItem>
+        ))}
+      </SelectGroup>
+    </SelectContent>
+  </Select>
+);
+
+const TeamFilter: React.FC<FilterSelectProps<FilterOptions['teamId']>> = ({ value, onChange }) => {
+  const { teams } = useTeams();
+
+  return (
+    <Select value={value || 'all'} onValueChange={onChange}>
+      <SelectTrigger aria-label="Filter by team">
+        <SelectValue placeholder="Team" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Teams</SelectItem>
+        {teams?.map((team) => (
+          <SelectItem key={team.id} value={team.id}>
+            {team.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
 const FilterSection: React.FC<FilterSectionProps> = ({
   filterOptions,
   onFilterChange,
   onClearFilters,
 }) => {
-  const { teams } = useTeams();
-
   const handleCategoryChange = (value: string) => {
     onFilterChange({ category: value === 'all' ? null : (value as MessageCategory) });
   };
@@ -42,38 +83,12 @@ const FilterSection: React.FC<FilterSectionProps> = ({
       <div className="flex flex-wrap gap-2">
         {/* Category Filter */}
         <div className="w-full sm:w-auto flex-1">
-          <Select value={filterOptions.category || 'all'} onValueChange={handleCategoryChange}>
-            <SelectTrigger aria-label="Filter by category">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">All Categories</SelectItem>
-                {MESSAGE_CATEGORIES.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <CategoryFilter value={filterOptions.category} onChange={handleCategoryChange} />
         </div>
 
         {/* Team Filter */}
         <div className="w-full sm:w-auto flex-1">
-          <Select value={filterOptions.teamId || 'all'} onValueChange={handleTeamChange}>
-            <SelectTrigger aria-label="Filter by team">
-              <SelectValue placeholder="Team" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Teams</SelectItem>
-              {teams?.map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  {team.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <TeamFilter value={filterOptions.teamId} onChange={handleTeamChange} />
         </div>
 
         {/* Clear Filters button */}

@@ -30,6 +30,41 @@ interface BracketDetailProps {
 // Softer, league-standard tier accent for the bracket card top border
 const getDivisionColorClass = (division: string) => getDivisionSoftClasses(division).borderTop;
 
+// min-w-0 lets the title block shrink; without it the no-wrap
+// description row pushes the admin menu past the card's clipped
+// right edge on a phone.
+const BracketTitleBlock: React.FC<{ bracket: PlayoffBracket }> = ({ bracket }) => (
+  <div className="min-w-0">
+    <CardTitle
+      className={cn(blueAmber.text.heading, 'text-2xl font-bold tracking-tight', 'heading-winter')}
+    >
+      {bracket.name}
+    </CardTitle>
+    <CardDescription className="flex items-center gap-2">
+      <span className="font-medium">{bracket.division} Division</span>
+      <span className="text-muted-foreground">•</span>
+      <span>{bracket.format}</span>
+      {bracket.state && (
+        <>
+          <span className="text-muted-foreground">•</span>
+          <span
+            className={cn(
+              'px-2 py-0.5 rounded-full text-xs font-medium',
+              bracket.state === 'pending'
+                ? 'bg-muted text-muted-foreground'
+                : bracket.state === 'in_progress'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                  : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+            )}
+          >
+            {bracket.state.charAt(0).toUpperCase() + bracket.state.slice(1)}
+          </span>
+        </>
+      )}
+    </CardDescription>
+  </div>
+);
+
 const BracketDetail: React.FC<BracketDetailProps> = ({
   bracketId,
   bracket,
@@ -75,42 +110,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
     >
       <CardHeader className="bg-gradient-to-r from-transparent via-blue-50/30 to-amber-50/20 dark:from-transparent dark:via-gray-800/30 dark:to-gray-900/80">
         <div className="flex justify-between items-center gap-2">
-          {/* min-w-0 lets the title block shrink; without it the no-wrap
-              description row pushes the admin menu past the card's clipped
-              right edge on a phone. */}
-          <div className="min-w-0">
-            <CardTitle
-              className={cn(
-                blueAmber.text.heading,
-                'text-2xl font-bold tracking-tight',
-                'heading-winter'
-              )}
-            >
-              {bracket.name}
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2">
-              <span className="font-medium">{bracket.division} Division</span>
-              <span className="text-muted-foreground">•</span>
-              <span>{bracket.format}</span>
-              {bracket.state && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <span
-                    className={cn(
-                      'px-2 py-0.5 rounded-full text-xs font-medium',
-                      bracket.state === 'pending'
-                        ? 'bg-muted text-muted-foreground'
-                        : bracket.state === 'in_progress'
-                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                          : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    )}
-                  >
-                    {bracket.state.charAt(0).toUpperCase() + bracket.state.slice(1)}
-                  </span>
-                </>
-              )}
-            </CardDescription>
-          </div>
+          <BracketTitleBlock bracket={bracket} />
           {isAdminAccessGranted && (
             <BracketAdminToolbar
               bracket={bracket}

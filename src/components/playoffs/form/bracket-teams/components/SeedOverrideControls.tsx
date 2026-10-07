@@ -21,6 +21,29 @@ interface SeedOverrideControlsProps {
   show?: boolean;
 }
 
+const ConflictBadge: React.FC<{ count: number }> = ({ count }) => (
+  <Badge variant="destructive" className="flex items-center gap-1">
+    <AlertCircle className="size-3" />
+    {count} conflicts
+  </Badge>
+);
+
+const ManualModeSwitch: React.FC<{
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled: boolean;
+}> = ({ checked, onCheckedChange, disabled }) => (
+  <div className="flex items-center space-x-2">
+    <Switch
+      id="seed-mode"
+      checked={checked}
+      onCheckedChange={onCheckedChange}
+      disabled={disabled}
+    />
+    <Label htmlFor="seed-mode">Manual seeding</Label>
+  </div>
+);
+
 export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   teams,
   divisionId,
@@ -81,21 +104,12 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Seed Management</CardTitle>
           <div className="flex items-center gap-4">
-            {hasConflicts && (
-              <Badge variant="destructive" className="flex items-center gap-1">
-                <AlertCircle className="size-3" />
-                {validation.conflicts.length} conflicts
-              </Badge>
-            )}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="seed-mode"
-                checked={state.mode === 'manual'}
-                onCheckedChange={(checked) => actions.setMode(checked ? 'manual' : 'automatic')}
-                disabled={isUpdating}
-              />
-              <Label htmlFor="seed-mode">Manual seeding</Label>
-            </div>
+            {hasConflicts && <ConflictBadge count={validation.conflicts.length} />}
+            <ManualModeSwitch
+              checked={state.mode === 'manual'}
+              onCheckedChange={(checked) => actions.setMode(checked ? 'manual' : 'automatic')}
+              disabled={isUpdating}
+            />
           </div>
         </div>
       </CardHeader>
