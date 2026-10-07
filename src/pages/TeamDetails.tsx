@@ -27,7 +27,7 @@ import { useResolveTeamSlug } from '@/hooks/useResolveTeamSlug';
 import { useTeamDetails } from '@/hooks/useTeamDetails';
 import { useTeamMatches } from '@/hooks/useTeamMatches';
 import { useTeamRankings } from '@/hooks/useTeamRankings';
-import { getUIErrorMessage } from '@/utils/errorHandler';
+import { getUIErrorMessage, isNotFoundError } from '@/utils/errorHandler';
 import { teamLog } from '@/utils/logger';
 import { isMatchOpenForScoring } from '@/utils/matchStatus';
 import { calculateClutchRecord } from '@/utils/teamDetailsUtils/matchOutcomeUtils';
@@ -251,7 +251,11 @@ const TeamDetailsPage = () => {
   // arriving by the readable name costs nothing extra, and the same array in the
   // same order, so the canonical below cannot disagree with where that address
   // actually leads.
-  const { data: allTeams } = useTeamsQuery({ includeHidden: true });
+  const {
+    data: allTeams,
+    error: teamsError,
+    refetch: refetchTeams,
+  } = useTeamsQuery({ includeHidden: true });
 
   const { teamRank, teamRanking, totalTeams } = getTeamRankInfo(rankings, teamId);
 
@@ -308,15 +312,29 @@ const TeamDetailsPage = () => {
   }
 
   // A failed fetch is not a missing team. Say so, and let the visitor retry.
-  if (teamError && !team) {
+  // Two fetches can fail:
+  // - The teams list, which a readable-name address needs to find the row id.
+  //   It has no team id until that list loads. A UUID address always has one,
+  //   so this only fires for the readable name. A list we already hold means
+  //   no match is a true "not found", even if a background refresh failed.
+  // - The team itself. A NotFoundError there means the team is gone, not that
+  //   the fetch failed, so it falls through to "Team Not Found" with no retry.
+  const slugListError = !teamId && !allTeams ? teamsError : null;
+  const teamFetchError = teamError && !team && !isNotFoundError(teamError) ? teamError : null;
+  const loadError = slugListError ?? teamFetchError;
+  if (loadError) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-md">
         <ErrorDisplay
           variant="card"
           context="Loading this team"
-          error={getUIErrorMessage(teamError, 'We could not load this team.')}
+          error={getUIErrorMessage(loadError, 'We could not load this team.')}
           onRetry={() => {
-            refetchTeam();
+            if (slugListError) {
+              refetchTeams();
+            } else {
+              refetchTeam();
+            }
           }}
         />
         <div className="mt-4 text-center">

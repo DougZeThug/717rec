@@ -5,6 +5,8 @@ import { HelmetProvider } from 'react-helmet-async';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { NotFoundError } from '@/types/errors';
+
 import TeamDetails from '../TeamDetails';
 
 const mockNavigate = vi.fn();
@@ -203,6 +205,67 @@ describe('TeamDetails page', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(refetchTeam).toHaveBeenCalledTimes(1);
+  });
+
+  it('treats NotFoundError as a missing team, not a retryable load failure', () => {
+    mockUseResolveTeamSlug.mockReturnValue({
+      teamId: '11111111-2222-3333-4444-555555555555',
+      isResolving: false,
+    });
+    mockUseTeamDetails.mockReturnValue({
+      team: undefined,
+      isLoading: false,
+      error: new NotFoundError('Team'),
+      refetch: vi.fn(),
+    });
+    renderPage('/teams/11111111-2222-3333-4444-555555555555');
+
+    expect(screen.getByText('Team Not Found')).toBeInTheDocument();
+    expect(screen.getByText("The team you're looking for doesn't exist.")).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /try again/i })).not.toBeInTheDocument();
+  });
+
+  it('says the team could not be loaded, with a retry, when the teams list fails on a readable-name address', () => {
+    const refetchTeams = vi.fn();
+    mockUseResolveTeamSlug.mockReturnValue({ teamId: undefined, isResolving: false });
+    mockUseTeamDetails.mockReturnValue({
+      team: undefined,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    mockUseTeamsQuery.mockReturnValue({
+      data: undefined,
+      error: new Error('network down'),
+      refetch: refetchTeams,
+    });
+    renderPage('/teams/falcons');
+
+    // The list never loaded, so we cannot say the team does not exist.
+    expect(screen.queryByText('Team Not Found')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetchTeams).toHaveBeenCalledTimes(1);
+  });
+
+  it('still says not found when the teams list loaded and holds no match for the name', () => {
+    mockUseResolveTeamSlug.mockReturnValue({ teamId: undefined, isResolving: false });
+    mockUseTeamDetails.mockReturnValue({
+      team: undefined,
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+    // A background refresh failed, but the list we hold answers the question.
+    mockUseTeamsQuery.mockReturnValue({
+      data: [{ id: 't-9', name: 'Eagles' }],
+      error: new Error('refresh failed'),
+      refetch: vi.fn(),
+    });
+    renderPage('/teams/falcons');
+
+    expect(screen.getByText('Team Not Found')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /try again/i })).not.toBeInTheDocument();
   });
 
   it('still lets the visitor go back to the teams list when the fetch fails', () => {
