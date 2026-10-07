@@ -37,7 +37,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
   const [keepOldPlayoffsActive, setKeepOldPlayoffsActive] = useState(false);
 
   const activeSeason = seasons?.find((s) => s.is_active);
-  const hasActiveSeason = !!activeSeason;
+  const hasActiveSeason = Boolean(activeSeason);
   const showOverlapOption = hasActiveSeason && activeSeason?.id !== season.id;
 
   const handleActivate = async () => {

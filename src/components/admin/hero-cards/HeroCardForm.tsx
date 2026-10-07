@@ -246,7 +246,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
 
         <FormActions
           isSubmitting={isCreating || isUpdating}
-          isEditing={!!card}
+          isEditing={Boolean(card)}
           disabled={metadataError !== null}
           onCancel={handleClose}
         />

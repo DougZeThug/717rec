@@ -239,7 +239,7 @@ const PendingScoresCard = () => {
       {selectedMatch && (
         <ScoreSubmissionModal
           match={selectedMatch}
-          open={!!selectedMatchId}
+          open={Boolean(selectedMatchId)}
           onClose={() => setSelectedMatchId(null)}
         />
       )}

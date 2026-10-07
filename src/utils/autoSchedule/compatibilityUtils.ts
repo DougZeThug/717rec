@@ -76,7 +76,7 @@ export function calculateTeamCompatibility(team1: Team, team2: Team): number {
     10 -
     (normalizedPowerScoreDiff * 1.5 + // Reduced to accommodate tier penalties
       normalizedSosDiff * 0.75 + // Reduced
-      normalizedRecordDiff * 1 + // Reduced
+      normalizedRecordDiff + // Reduced, weight 1.0
       normalizedGameRecordDiff * 0.5); // Reduced
 
   // Apply tier penalty - cross-tier pairings get heavily penalized

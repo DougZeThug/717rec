@@ -125,9 +125,9 @@ const EditableMatchList: React.FC<EditableMatchListProps> = ({
                   onUpdateTimeslot={onUpdateTimeslot}
                   onSwapTeams={onSwapTeams}
                   onRemove={onRemove}
-                  hasError={!!error}
+                  hasError={Boolean(error)}
                   errorMessage={error?.message}
-                  hasWarning={!!warning}
+                  hasWarning={Boolean(warning)}
                   warningMessage={warning?.message}
                 />
               );

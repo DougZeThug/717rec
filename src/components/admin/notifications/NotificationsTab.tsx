@@ -182,7 +182,9 @@ const NotificationsTab: React.FC<{ currentTimeMs?: number }> = ({
         body={body}
         expiresAt={expiresAt}
         isEditing={editing !== null}
-        canSubmit={!create.isPending && !update.isPending && !!title.trim() && !!body.trim()}
+        canSubmit={
+          !create.isPending && !update.isPending && Boolean(title.trim()) && Boolean(body.trim())
+        }
         onTitleChange={setTitle}
         onBodyChange={setBody}
         onExpiresAtChange={setExpiresAt}

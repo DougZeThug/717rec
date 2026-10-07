@@ -22,7 +22,7 @@ export const useTeamParticipation = (seasonId: string | undefined, teamId: strin
       if (!seasonId || !teamId) return null;
       return SeasonService.fetchTeamParticipation(seasonId, teamId);
     },
-    enabled: !!seasonId && !!teamId,
+    enabled: Boolean(seasonId) && Boolean(teamId),
   });
 };
 
@@ -34,7 +34,7 @@ export const useSeasonParticipations = (seasonId: string | undefined) => {
       if (!seasonId) return [];
       return SeasonService.fetchSeasonParticipations(seasonId);
     },
-    enabled: !!seasonId,
+    enabled: Boolean(seasonId),
   });
 };
 

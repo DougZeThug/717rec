@@ -25,14 +25,14 @@ export function useTeamMembership() {
   } = useQuery({
     queryKey: ['team-membership', user?.id],
     queryFn: () => (user ? fetchTeamMembership(user.id) : Promise.resolve(null)),
-    enabled: !!user,
+    enabled: Boolean(user),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: availableTeams = [] as Team[] } = useQuery({
     queryKey: ['available-teams'],
     queryFn: fetchAvailableTeams,
-    enabled: !!user,
+    enabled: Boolean(user),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -51,7 +51,7 @@ export function useTeamMembership() {
     try {
       setIsLoading(true);
 
-      await joinTeamMembership(user.id, teamId, !!membership);
+      await joinTeamMembership(user.id, teamId, Boolean(membership));
 
       // A refused row is still a row, so `membership` is truthy after a
       // rejection. Asking again is a fresh request, not a team change.

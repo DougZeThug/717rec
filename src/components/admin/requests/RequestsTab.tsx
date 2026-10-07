@@ -255,7 +255,7 @@ const RequestsTab: React.FC = () => {
       </CardContent>
 
       {/* Action Dialog */}
-      <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
+      <Dialog open={Boolean(selectedRequest)} onOpenChange={() => setSelectedRequest(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>

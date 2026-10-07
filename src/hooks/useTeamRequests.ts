@@ -31,7 +31,7 @@ export const useTeamRequests = (teamId: string | undefined) => {
       if (!teamId) return Promise.resolve([] as TeamRequest[]);
       return fetchTeamRequests(teamId);
     },
-    enabled: !!teamId,
+    enabled: Boolean(teamId),
     staleTime: 1000 * 60 * 2, // Cache for 2 minutes
   });
 };

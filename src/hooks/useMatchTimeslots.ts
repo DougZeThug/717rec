@@ -68,7 +68,7 @@ export const useMatchTimeslots = (date: Date | null) => {
         groupedTimeslots: sortedGrouped,
       };
     },
-    enabled: !!date,
+    enabled: Boolean(date),
     staleTime: 60_000, // 60s — data is fresh for the polling interval
     refetchInterval: () => {
       // Pause polling when the tab is hidden or the device is offline

@@ -51,7 +51,7 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
 
   const { handleCardClick, handleKeyDown, isInteractive } = useMatchCardInteractions({
     matchId: match.id,
-    hasBothTeams: !!match.team1Id && !!match.team2Id,
+    hasBothTeams: Boolean(match.team1Id) && Boolean(match.team2Id),
     onEditMatch,
   });
 
@@ -59,7 +59,7 @@ const PlayoffMatchCard: React.FC<PlayoffMatchCardProps> = ({
 
   // Determine additional properties needed for components
   const isChampionshipMatch = match.matchType === 'finals' && match.round === 1;
-  const hasWinner = !!match.winnerId;
+  const hasWinner = Boolean(match.winnerId);
 
   return (
     <div

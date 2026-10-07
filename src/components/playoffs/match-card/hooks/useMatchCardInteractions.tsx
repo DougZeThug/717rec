@@ -30,6 +30,6 @@ export const useMatchCardInteractions = ({
   return {
     handleCardClick,
     handleKeyDown,
-    isInteractive: !!onEditMatch,
+    isInteractive: Boolean(onEditMatch),
   };
 };

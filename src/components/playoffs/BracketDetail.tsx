@@ -84,7 +84,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
   const { data: participants } = useQuery({
     queryKey: ['bracket-participants', bracketId],
     queryFn: () => fetchBracketParticipants(bracketId),
-    enabled: !!bracketId,
+    enabled: Boolean(bracketId),
   });
 
   // Early return if bracket is not loaded

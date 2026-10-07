@@ -333,7 +333,7 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
       />
 
       <DeleteHeroCardDialog
-        open={!!deletingCardId}
+        open={Boolean(deletingCardId)}
         cardTitle={cardToDelete?.title}
         isDeleting={isDeleting}
         onClose={() => setDeletingCardId(null)}

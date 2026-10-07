@@ -9,6 +9,6 @@ export const useTeamCareerPowerScore = (teamId: string | undefined) => {
       if (!teamId) throw new Error('Team ID is required');
       return fetchTeamCareerPowerScore(teamId);
     },
-    enabled: !!teamId,
+    enabled: Boolean(teamId),
   });
 };

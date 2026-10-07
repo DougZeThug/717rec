@@ -16,7 +16,7 @@ export const useSeedValidation = (divisionId?: string) => {
       if (!divisionId) return Promise.resolve([]);
       return validateSeeds(divisionId) as Promise<SeedValidationResult[]>;
     },
-    enabled: !!divisionId,
+    enabled: Boolean(divisionId),
     staleTime: 30000, // Cache for 30 seconds
   });
 };

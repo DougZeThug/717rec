@@ -79,7 +79,7 @@ const FormControl = React.forwardRef<
       id={formItemId}
       className={cn(shouldShake && 'animate-shake', className)}
       aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
-      aria-invalid={!!error}
+      aria-invalid={Boolean(error)}
       {...props}
     />
   );

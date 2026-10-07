@@ -105,7 +105,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
 
       {/* Match Score Editor Dialog */}
       <Dialog
-        open={!!editingMatch}
+        open={Boolean(editingMatch)}
         onOpenChange={(open) => {
           if (!open) onCloseMatchEditor();
         }}
@@ -142,7 +142,7 @@ const PlayoffDialogs: React.FC<PlayoffDialogsProps> = ({
 
       {/* Delete Bracket Confirmation Dialog */}
       <DeleteBracketDialog
-        open={!!deletingBracket}
+        open={Boolean(deletingBracket)}
         onOpenChange={(open) => {
           if (!open) setDeletingBracket(null);
         }}

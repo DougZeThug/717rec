@@ -115,7 +115,7 @@ const RemoveSignupDialog: React.FC<RemoveSignupDialogProps> = ({
   onClose,
   onConfirm,
 }) => (
-  <AlertDialog open={!!signup} onOpenChange={(open) => !open && onClose()}>
+  <AlertDialog open={Boolean(signup)} onOpenChange={(open) => !open && onClose()}>
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>Remove Signup</AlertDialogTitle>

@@ -111,7 +111,7 @@ const SeasonFormActions: React.FC<SeasonFormActionsProps> = ({
 
 const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
   const { createSeason, updateSeason } = useSeasonMutations();
-  const isEditing = !!season;
+  const isEditing = season !== undefined;
 
   const form = useForm<SeasonFormData>({
     resolver: zodResolver(seasonSchema),
