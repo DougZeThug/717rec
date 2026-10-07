@@ -35,9 +35,10 @@
   --radius-pill: 9999px;     /* pills, badges */
   
   /* Custom color values for status indicators */
-  /* Was 36.3% lightness: white on it measured 3.3:1. At 29% it is 5.1:1 on
-     white and 4.6:1 against --success-foreground. */
-  --success: 142 72% 29%;
+  /* Was 36.3% lightness: white on it measured 3.3:1. At 26% it is 6.0:1 on
+     white and 5.5:1 against --success-foreground. The toast description sits
+     at 90% opacity: that composite is 4.8:1 here, and it was 4.05:1 at 29%. */
+  --success: 142 72% 26%;
   --success-foreground: 355.7 100% 97.3%;
   /* Amber is a light fill: dark text on it is 8.4:1; the old near-white was 2.1:1. */
   --warning: 38 92% 50%;
