@@ -33,8 +33,9 @@ time. Pages that do not name a season show the active one. Activating a season
 is an admin action and it changes what nearly every page shows.
 
 **Archived season.** A season that has ended and been frozen. Its numbers no
-longer move, even when the formula that produced them changes. Archived seasons
-are readable at [`history/past-seasons.md`](history/past-seasons.md).
+longer move, except a Power Score weight save in the Sandbox, which recomputes
+every season. Archived seasons are readable at
+[`history/past-seasons.md`](history/past-seasons.md).
 
 **Week.** A unit used for grouping in some places and not others. A week number
 is derived from the match date against the season start and is never stored on

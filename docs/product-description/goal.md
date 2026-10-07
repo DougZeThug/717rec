@@ -90,7 +90,8 @@ comment as agreed with the league admin):
   `confirmation_open`, and `playoffs_active` are four independent flags.
 - A season stores its own champion, runner up, and third place.
 - Archived seasons are frozen: their power scores do not move when the formula or
-  a division weight changes.
+  a division weight changes, except saving new Power Score weights in the Sandbox,
+  which recomputes every season, archived included.
 
 **Roles:**
 
