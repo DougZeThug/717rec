@@ -51,6 +51,18 @@ const DiagnosticTitle: React.FC<{ isValid: boolean }> = ({ isValid }) => (
   </div>
 );
 
+const DiagnosticHeader: React.FC<{ isValid: boolean; isOpen: boolean }> = ({ isValid, isOpen }) => (
+  <CardHeader className="pb-3">
+    <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
+      <DiagnosticTitle isValid={isValid} />
+      <ChevronDown className={`size-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+    </CollapsibleTrigger>
+    <CardDescription className="text-xs">
+      Team-to-block assignments and validation status
+    </CardDescription>
+  </CardHeader>
+);
+
 const DiagnosticDetails: React.FC<{ analysis: DiagnosticAnalysis }> = ({ analysis }) => (
   <CardContent className="space-y-4">
     {/* Validation Status */}
@@ -270,15 +282,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
   return (
     <Card className="border-dashed bg-muted/30">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="pb-3">
-          <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
-            <DiagnosticTitle isValid={analysis.isValid} />
-            <ChevronDown className={`size-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CardDescription className="text-xs">
-            Team-to-block assignments and validation status
-          </CardDescription>
-        </CardHeader>
+        <DiagnosticHeader isValid={analysis.isValid} isOpen={isOpen} />
 
         <CollapsibleContent>
           <DiagnosticDetails analysis={analysis} />

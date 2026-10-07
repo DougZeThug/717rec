@@ -16,6 +16,26 @@ interface State {
   error?: Error;
 }
 
+interface BracketErrorDetailsProps {
+  message?: string;
+  bracketId?: string | null;
+}
+
+const BracketErrorDetails: React.FC<BracketErrorDetailsProps> = ({ message, bracketId }) => (
+  <div className="space-y-2">
+    <p className="font-semibold">Bracket Rendering Error</p>
+    <p>The bracket could not be shown. Try again, or reload the page.</p>
+    {/* Technical detail for whoever is debugging; a visitor gains
+        nothing from an error string or an internal id. */}
+    {import.meta.env.DEV && (
+      <p className="text-xs opacity-80">
+        {message}
+        {bracketId ? ` (bracket ${bracketId})` : ''}
+      </p>
+    )}
+  </div>
+);
+
 class BracketErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -51,18 +71,10 @@ class BracketErrorBoundary extends Component<Props, State> {
           <Alert variant="destructive">
             <AlertCircle className="size-4" />
             <AlertDescription>
-              <div className="space-y-2">
-                <p className="font-semibold">Bracket Rendering Error</p>
-                <p>The bracket could not be shown. Try again, or reload the page.</p>
-                {/* Technical detail for whoever is debugging; a visitor gains
-                    nothing from an error string or an internal id. */}
-                {import.meta.env.DEV && (
-                  <p className="text-xs opacity-80">
-                    {this.state.error?.message}
-                    {this.props.bracketId ? ` (bracket ${this.props.bracketId})` : ''}
-                  </p>
-                )}
-              </div>
+              <BracketErrorDetails
+                message={this.state.error?.message}
+                bracketId={this.props.bracketId}
+              />
             </AlertDescription>
           </Alert>
 

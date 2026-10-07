@@ -22,6 +22,16 @@ interface TeamDivisionTableProps {
   isLoading: boolean;
 }
 
+const TeamTableHeader: React.FC = () => (
+  <TableHeader>
+    <TableRow>
+      <TableHead>Team</TableHead>
+      <TableHead>Division</TableHead>
+      <TableHead className="text-right">W-L</TableHead>
+    </TableRow>
+  </TableHeader>
+);
+
 /** Tabbed table of teams grouped by division, showing per-division counts and W-L records. */
 const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams, isLoading }) => {
   const [activeTab, setActiveTab] = useState<string>('all');
@@ -121,13 +131,7 @@ const TeamDivisionTable: React.FC<TeamDivisionTableProps> = ({ divisions, teams,
         {tabOptions.map((division) => (
           <TabsContent key={division} value={division}>
             <Table className="border rounded-md">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Team</TableHead>
-                  <TableHead>Division</TableHead>
-                  <TableHead className="text-right">W-L</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TeamTableHeader />
               <TableBody>
                 {(division === 'all' ? teams : teamsByDivision[division] || []).map((team) => (
                   <TableRow key={team.id}>

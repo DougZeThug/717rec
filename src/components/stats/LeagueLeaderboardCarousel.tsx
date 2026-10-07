@@ -26,6 +26,14 @@ const BADGE_STYLES = [
   'bg-amber-700 text-amber-100',
 ];
 
+const LeaderboardTitle: React.FC<{ teamCount: number }> = ({ teamCount }) => (
+  <div className="flex flex-col shrink-0 pt-1">
+    <span className="text-sm font-semibold text-foreground leading-tight">League</span>
+    <span className="text-sm font-semibold text-foreground leading-tight">Leaderboard</span>
+    <span className="text-xs text-muted-foreground mt-0.5">{teamCount} teams</span>
+  </div>
+);
+
 const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ rankings }) => {
   const { isWinterTheme } = useSeasonalTheme();
 
@@ -38,11 +46,7 @@ const LeagueLeaderboardCarousel: React.FC<LeagueLeaderboardCarouselProps> = ({ r
       <CardContent className="p-3">
         <div className="flex items-start gap-3">
           {/* Left: Title */}
-          <div className="flex flex-col shrink-0 pt-1">
-            <span className="text-sm font-semibold text-foreground leading-tight">League</span>
-            <span className="text-sm font-semibold text-foreground leading-tight">Leaderboard</span>
-            <span className="text-xs text-muted-foreground mt-0.5">{rankings.length} teams</span>
-          </div>
+          <LeaderboardTitle teamCount={rankings.length} />
 
           {/* Right: Top 3 cards */}
           <div className="flex gap-2 flex-1 overflow-x-auto">

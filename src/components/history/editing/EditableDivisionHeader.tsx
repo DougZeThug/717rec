@@ -15,54 +15,55 @@ interface EditableDivisionHeaderProps {
   existingDivisions: string[];
 }
 
-const RenameDivisionButton: React.FC<{ onStartEdit: () => void }> = ({ onStartEdit }) => (
+/** Tooltip around one icon button. The button stays the direct child of the trigger. */
+const IconButtonTooltip: React.FC<{ label: string; children: React.ReactElement }> = ({
+  label,
+  children,
+}) => (
   <TooltipProvider>
     <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={onStartEdit}
-          aria-label="Rename division"
-        >
-          <Pencil className="size-4 text-muted-foreground" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>Rename division</TooltipContent>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   </TooltipProvider>
+);
+
+const RenameDivisionButton: React.FC<{ onStartEdit: () => void }> = ({ onStartEdit }) => (
+  <IconButtonTooltip label="Rename division">
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-8"
+      onClick={onStartEdit}
+      aria-label="Rename division"
+    >
+      <Pencil className="size-4 text-muted-foreground" />
+    </Button>
+  </IconButtonTooltip>
 );
 
 const RemoveDivisionButton: React.FC<
   Pick<EditableDivisionHeaderProps, 'onRemove' | 'canRemove'>
 > = ({ onRemove, canRemove }) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={onRemove}
-          disabled={!canRemove}
-          aria-label="Remove division"
-        >
-          <Trash2
-            className={cn(
-              'size-4',
-              canRemove
-                ? 'text-destructive-text hover:text-destructive-text'
-                : 'text-muted-foreground/50'
-            )}
-          />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>
-        {canRemove ? 'Remove empty division' : 'Move all teams before removing'}
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+  <IconButtonTooltip label={canRemove ? 'Remove empty division' : 'Move all teams before removing'}>
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-8"
+      onClick={onRemove}
+      disabled={!canRemove}
+      aria-label="Remove division"
+    >
+      <Trash2
+        className={cn(
+          'size-4',
+          canRemove
+            ? 'text-destructive-text hover:text-destructive-text'
+            : 'text-muted-foreground/50'
+        )}
+      />
+    </Button>
+  </IconButtonTooltip>
 );
 
 /** Division title row in history edit mode, with inline rename and delete controls. */

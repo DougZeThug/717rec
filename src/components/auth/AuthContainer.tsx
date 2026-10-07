@@ -17,6 +17,18 @@ interface AuthContainerProps {
   footer?: React.ReactNode;
 }
 
+const AuthCardHeader: React.FC<{ title: string; description: string }> = ({
+  title,
+  description,
+}) => (
+  <CardHeader>
+    <CardTitle as="h1" className="text-2xl">
+      {title}
+    </CardTitle>
+    <CardDescription>{description}</CardDescription>
+  </CardHeader>
+);
+
 const AuthContainer: React.FC<AuthContainerProps> = ({
   title = 'Welcome to 717Rec',
   description = 'Sign in or create an account to access all features',
@@ -27,12 +39,7 @@ const AuthContainer: React.FC<AuthContainerProps> = ({
     <PageTransition>
       <div className="flex justify-center items-center min-h-[calc(100dvh-200px)]">
         <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle as="h1" className="text-2xl">
-              {title}
-            </CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </CardHeader>
+          <AuthCardHeader title={title} description={description} />
           <CardContent>{children}</CardContent>
           {footer && (
             <CardFooter className="flex justify-center text-sm text-muted-foreground">

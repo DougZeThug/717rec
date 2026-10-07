@@ -62,6 +62,72 @@ const CustomPowerScoreTooltip: React.FC<{
   );
 };
 
+type ChartColors = ReturnType<typeof useChartColors>;
+
+const PowerScoreBars: React.FC<{
+  data: PowerScoreDataItem[];
+  margin: { top: number; right: number; left: number; bottom: number };
+  colors: ChartColors;
+  isMobile: boolean;
+}> = ({ data, margin, colors, isMobile }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <BarChart
+      layout="vertical"
+      data={data}
+      margin={margin}
+      style={{
+        fontFamily: "'Inter', sans-serif",
+      }}
+    >
+      <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
+      <XAxis
+        type="number"
+        domain={[0, 100]}
+        stroke={colors.mutedTextColor}
+        tick={{
+          fill: colors.textColor,
+          fontSize: 11,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      />
+      <YAxis
+        type="category"
+        dataKey="name"
+        width={isMobile ? 62 : 68}
+        tickFormatter={(value: string) =>
+          value.length > (isMobile ? 8 : 10) ? `${value.slice(0, isMobile ? 8 : 10)}...` : value
+        }
+        stroke={colors.mutedTextColor}
+        tick={{
+          fill: colors.textColor,
+          fontSize: 11,
+          fontFamily: "'Inter', sans-serif",
+        }}
+      />
+      <Tooltip content={<CustomPowerScoreTooltip barColor={colors.powerScore.bar} />} />
+      <Bar
+        dataKey="powerScore"
+        fill={colors.powerScore.bar}
+        name="Power Score"
+        background={{ fill: colors.powerScore.background }}
+        radius={[0, 5, 5, 0]}
+      >
+        {data.map((entry, index) => (
+          <Cell
+            key={`cell-${entry.id ?? entry.name ?? index}`}
+            fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar}
+          />
+        ))}
+        <LabelList
+          dataKey="powerScore"
+          position="right"
+          content={<PowerScoreLabel textColor={colors.textColor} />}
+        />
+      </Bar>
+    </BarChart>
+  </ResponsiveContainer>
+);
+
 const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
   const colors = useChartColors();
   const isMobile = useIsMobile();
@@ -93,62 +159,12 @@ const PowerScoreChart: React.FC<PowerScoreChartProps> = ({ data }) => {
         maxHeight: isMobile ? '220px' : '280px',
       }}
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          layout="vertical"
-          data={displayData}
-          margin={chartMargins}
-          style={{
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke={colors.gridColor} />
-          <XAxis
-            type="number"
-            domain={[0, 100]}
-            stroke={colors.mutedTextColor}
-            tick={{
-              fill: colors.textColor,
-              fontSize: 11,
-              fontFamily: "'Inter', sans-serif",
-            }}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            width={isMobile ? 62 : 68}
-            tickFormatter={(value: string) =>
-              value.length > (isMobile ? 8 : 10) ? `${value.slice(0, isMobile ? 8 : 10)}...` : value
-            }
-            stroke={colors.mutedTextColor}
-            tick={{
-              fill: colors.textColor,
-              fontSize: 11,
-              fontFamily: "'Inter', sans-serif",
-            }}
-          />
-          <Tooltip content={<CustomPowerScoreTooltip barColor={colors.powerScore.bar} />} />
-          <Bar
-            dataKey="powerScore"
-            fill={colors.powerScore.bar}
-            name="Power Score"
-            background={{ fill: colors.powerScore.background }}
-            radius={[0, 5, 5, 0]}
-          >
-            {displayData.map((entry, index) => (
-              <Cell
-                key={`cell-${entry.id ?? entry.name ?? index}`}
-                fill={index === 0 ? colors.powerScore.highlight : colors.powerScore.bar}
-              />
-            ))}
-            <LabelList
-              dataKey="powerScore"
-              position="right"
-              content={<PowerScoreLabel textColor={colors.textColor} />}
-            />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <PowerScoreBars
+        data={displayData}
+        margin={chartMargins}
+        colors={colors}
+        isMobile={isMobile}
+      />
     </div>
   );
 };

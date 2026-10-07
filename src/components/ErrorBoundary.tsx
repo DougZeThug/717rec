@@ -20,6 +20,30 @@ interface State {
   error: Error | null;
 }
 
+const ErrorIcon: React.FC = () => (
+  <div className="flex justify-center">
+    <div className="p-4 bg-destructive/10 rounded-full">
+      <AlertTriangle className="size-12 text-destructive-text" />
+    </div>
+  </div>
+);
+
+const ErrorActions: React.FC<{ onReload: () => void; onGoHome: () => void }> = ({
+  onReload,
+  onGoHome,
+}) => (
+  <div className="flex gap-3 justify-center">
+    <Button onClick={onReload} variant="default">
+      <RefreshCw className="mr-2 h-4 w-4" />
+      Refresh Page
+    </Button>
+    <Button onClick={onGoHome} variant="outline">
+      <Home className="mr-2 h-4 w-4" />
+      Go Home
+    </Button>
+  </div>
+);
+
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -65,11 +89,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen flex items-center justify-center bg-background p-4">
           <div className="max-w-md w-full text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="p-4 bg-destructive/10 rounded-full">
-                <AlertTriangle className="size-12 text-destructive-text" />
-              </div>
-            </div>
+            <ErrorIcon />
 
             <div className="space-y-2">
               <h1 className="text-2xl font-bold text-foreground">Something went wrong</h1>
@@ -86,16 +106,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             )}
 
-            <div className="flex gap-3 justify-center">
-              <Button onClick={this.handleReload} variant="default">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh Page
-              </Button>
-              <Button onClick={this.handleGoHome} variant="outline">
-                <Home className="mr-2 h-4 w-4" />
-                Go Home
-              </Button>
-            </div>
+            <ErrorActions onReload={this.handleReload} onGoHome={this.handleGoHome} />
           </div>
         </div>
       );
