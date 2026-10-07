@@ -23,6 +23,56 @@ interface StatsChartsProps {
 
 const chartLabels = ['Win-Loss', 'Power Score', 'Trends'];
 
+interface ChartsHeaderProps {
+  isMobile: boolean;
+  isWinterTheme: boolean;
+  isLight: boolean;
+  isOpen: boolean;
+}
+
+const ChartsHeader = ({ isMobile, isWinterTheme, isLight, isOpen }: ChartsHeaderProps) => (
+  <CardHeader
+    className={cn(
+      isMobile ? 'py-2.5 px-3' : 'py-4',
+      isWinterTheme
+        ? 'bg-[hsl(var(--card))]'
+        : isLight
+          ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
+          : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
+      isWinterTheme
+        ? 'border-b border-frost-border/30'
+        : 'border-b border-blue-100 dark:border-blue-900/30',
+      'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
+    )}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <CardTitle
+          className={cn(
+            'font-bebas uppercase tracking-wide',
+            isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
+            'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400 dark:via-none',
+            'heading-winter'
+          )}
+          style={{ letterSpacing: '0.5px' }}
+        >
+          Performance Charts
+        </CardTitle>
+        {!isMobile && (
+          <CardDescription
+            className={cn(
+              isLight ? 'text-gray-600 font-medium font-inter' : 'text-gray-400 font-inter'
+            )}
+          >
+            Visual breakdown of team performance metrics
+          </CardDescription>
+        )}
+      </div>
+      <ChevronDown className={cn('size-5 transition-transform', isOpen && 'rotate-180')} />
+    </div>
+  </CardHeader>
+);
+
 const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
@@ -71,46 +121,12 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
           {/* The whole chart header is the trigger and has no focusable descendants.
               Avoid `asChild` here so Radix Slot does not inspect the child ref,
               which can emit React's "ref is not a prop" warning on /stats. */}
-          <CardHeader
-            className={cn(
-              isMobile ? 'py-2.5 px-3' : 'py-4',
-              isWinterTheme
-                ? 'bg-[hsl(var(--card))]'
-                : isLight
-                  ? 'bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30'
-                  : 'bg-gradient-to-br from-gray-800/90 via-gray-800/70 to-gray-900/80',
-              isWinterTheme
-                ? 'border-b border-frost-border/30'
-                : 'border-b border-blue-100 dark:border-blue-900/30',
-              'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle
-                  className={cn(
-                    'font-bebas uppercase tracking-wide',
-                    isMobile ? 'text-lg' : 'text-xl sm:text-2xl',
-                    'bg-gradient-to-br from-blue-800 via-blue-700 to-amber-700 bg-clip-text text-transparent dark:from-blue-400 dark:to-amber-400 dark:via-none',
-                    'heading-winter'
-                  )}
-                  style={{ letterSpacing: '0.5px' }}
-                >
-                  Performance Charts
-                </CardTitle>
-                {!isMobile && (
-                  <CardDescription
-                    className={cn(
-                      isLight ? 'text-gray-600 font-medium font-inter' : 'text-gray-400 font-inter'
-                    )}
-                  >
-                    Visual breakdown of team performance metrics
-                  </CardDescription>
-                )}
-              </div>
-              <ChevronDown className={cn('size-5 transition-transform', isOpen && 'rotate-180')} />
-            </div>
-          </CardHeader>
+          <ChartsHeader
+            isMobile={isMobile}
+            isWinterTheme={isWinterTheme}
+            isLight={isLight}
+            isOpen={isOpen}
+          />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="p-4 pt-0">

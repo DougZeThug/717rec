@@ -4,6 +4,75 @@ import { TeamListSkeleton } from '@/components/teams/TeamListSkeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const RankingsCardSkeleton = () => (
+  <Card className="mb-4 bg-card text-card-foreground border border-border rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-0">
+    <CardHeader className="pb-1.5 rounded-t-xl">
+      <Skeleton className="h-6 w-48 mb-2" />
+      <Skeleton className="h-4 w-72" />
+    </CardHeader>
+    <CardContent className="p-4 pt-1 sm:pt-4">
+      <div className="space-y-4">
+        {['ls-row-1', 'ls-row-2', 'ls-row-3', 'ls-row-4', 'ls-row-5'].map((sk) => (
+          <div key={sk} className="flex items-center gap-3 p-2 border-b border-border">
+            <Skeleton className="size-5" />
+            <Skeleton className="size-8 rounded-full" />
+            <Skeleton className="h-4 w-40" />
+            <div className="ml-auto flex gap-4">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 text-center">
+        <Skeleton className="h-9 w-48 mx-auto" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const StatCardsSkeleton = () => (
+  <div className="mb-5">
+    <Skeleton className="h-6 w-48 mb-4" />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {['ls-card-1', 'ls-card-2', 'ls-card-3', 'ls-card-4'].map((sk) => (
+        <Card key={sk} className="bg-card">
+          <CardHeader className="p-4 pb-0">
+            <Skeleton className="h-5 w-24 mb-1" />
+            <Skeleton className="h-7 w-16" />
+          </CardHeader>
+          <CardContent className="p-4">
+            <Skeleton className="h-4 w-full" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </div>
+);
+
+const ChartCardSkeleton = () => (
+  <Card className="bg-card border border-border">
+    <CardHeader>
+      <Skeleton className="h-6 w-48 mb-2" />
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-64 w-full" />
+    </CardContent>
+  </Card>
+);
+
+const TeamListCardSkeleton = () => (
+  <Card className="bg-card">
+    <CardHeader>
+      <Skeleton className="h-6 w-48 mb-2" />
+    </CardHeader>
+    <CardContent>
+      <TeamListSkeleton viewMode="list" />
+    </CardContent>
+  </Card>
+);
+
 const LoadingStateContainer = () => {
   return (
     <div className="max-w-7xl mx-auto bg-background px-2 sm:px-4">
@@ -11,79 +80,19 @@ const LoadingStateContainer = () => {
         <Skeleton className="h-8 w-64 mb-4" />
       </div>
       <div className="font-inter">
-        <Card className="mb-4 bg-card text-card-foreground border border-border rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] p-0">
-          <CardHeader className="pb-1.5 rounded-t-xl">
-            <Skeleton className="h-6 w-48 mb-2" />
-            <Skeleton className="h-4 w-72" />
-          </CardHeader>
-          <CardContent className="p-4 pt-1 sm:pt-4">
-            <div className="space-y-4">
-              {['ls-row-1', 'ls-row-2', 'ls-row-3', 'ls-row-4', 'ls-row-5'].map((sk) => (
-                <div key={sk} className="flex items-center gap-3 p-2 border-b border-border">
-                  <Skeleton className="size-5" />
-                  <Skeleton className="size-8 rounded-full" />
-                  <Skeleton className="h-4 w-40" />
-                  <div className="ml-auto flex gap-4">
-                    <Skeleton className="h-4 w-12" />
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-4 w-16" />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 text-center">
-              <Skeleton className="h-9 w-48 mx-auto" />
-            </div>
-          </CardContent>
-        </Card>
+        <RankingsCardSkeleton />
 
-        <div className="mb-5">
-          <Skeleton className="h-6 w-48 mb-4" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {['ls-card-1', 'ls-card-2', 'ls-card-3', 'ls-card-4'].map((sk) => (
-              <Card key={sk} className="bg-card">
-                <CardHeader className="p-4 pb-0">
-                  <Skeleton className="h-5 w-24 mb-1" />
-                  <Skeleton className="h-7 w-16" />
-                </CardHeader>
-                <CardContent className="p-4">
-                  <Skeleton className="h-4 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <StatCardsSkeleton />
 
         <div className="mb-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="bg-card border border-border">
-              <CardHeader>
-                <Skeleton className="h-6 w-48 mb-2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-64 w-full" />
-              </CardContent>
-            </Card>
-            <Card className="bg-card border border-border">
-              <CardHeader>
-                <Skeleton className="h-6 w-48 mb-2" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-64 w-full" />
-              </CardContent>
-            </Card>
+            <ChartCardSkeleton />
+            <ChartCardSkeleton />
           </div>
         </div>
 
         <div>
-          <Card className="bg-card">
-            <CardHeader>
-              <Skeleton className="h-6 w-48 mb-2" />
-            </CardHeader>
-            <CardContent>
-              <TeamListSkeleton viewMode="list" />
-            </CardContent>
-          </Card>
+          <TeamListCardSkeleton />
         </div>
       </div>
     </div>

@@ -24,6 +24,129 @@ interface DivisionRankingsSectionProps {
   isLight: boolean;
 }
 
+interface DivisionTableHeaderProps {
+  sortOptions: SortOptions;
+  onSortChange: (field: RankingSortField) => void;
+  showUnified: boolean;
+  isWinterTheme: boolean;
+  isLight: boolean;
+  headerTextColor: string;
+}
+
+const DivisionTableHeader: React.FC<DivisionTableHeaderProps> = ({
+  sortOptions,
+  onSortChange,
+  showUnified,
+  isWinterTheme,
+  isLight,
+  headerTextColor,
+}) => (
+  <TableHeader
+    className={cn(
+      isWinterTheme
+        ? 'bg-frost-primary/10 border-b border-frost-border/30'
+        : isLight
+          ? 'bg-gradient-to-r from-blue-50/80 to-blue-100/30 border-b border-blue-200/50'
+          : 'bg-gradient-to-r from-blue-900/10 to-gray-800/60 border-b border-blue-900/30'
+    )}
+  >
+    <TableRow>
+      {/* Not sortable: the number in this column IS the current sort
+          position, so there is nothing of its own to sort by. The career
+          rankings table has always treated "#" the same way. */}
+      <TableHead className={cn('w-12 font-medium', headerTextColor)}>#</TableHead>
+      <SortableColumnHeader
+        field="teamName"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        align="left"
+        className={cn('transition-colors', headerTextColor)}
+      >
+        Team
+      </SortableColumnHeader>
+      {showUnified && (
+        <TableHead
+          className={cn('font-medium', isWinterTheme ? 'text-card-foreground' : 'text-foreground')}
+        >
+          Division
+        </TableHead>
+      )}
+      <SortableColumnHeader
+        field="powerScore"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center', headerTextColor)}
+      >
+        Power
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="wins"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center', headerTextColor)}
+      >
+        W-L
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="winPercentage"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center', headerTextColor)}
+      >
+        Win %
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="gamesWon"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center hidden md:table-cell', headerTextColor)}
+      >
+        Games
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="gameWinPercentage"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center hidden lg:table-cell', headerTextColor)}
+      >
+        Game %
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="sos"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center', headerTextColor)}
+      >
+        SOS
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="streak"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        className={cn('text-center', headerTextColor)}
+      >
+        Streak
+      </SortableColumnHeader>
+      <TableHead
+        className={cn(
+          'text-center font-medium',
+          isWinterTheme ? 'text-card-foreground' : 'text-foreground'
+        )}
+      >
+        Trend
+      </TableHead>
+    </TableRow>
+  </TableHeader>
+);
+
 const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
   divisionName,
   rankings,
@@ -121,113 +244,14 @@ const DivisionRankingsSection: React.FC<DivisionRankingsSectionProps> = ({
         )}
       >
         <Table>
-          <TableHeader
-            className={cn(
-              isWinterTheme
-                ? 'bg-frost-primary/10 border-b border-frost-border/30'
-                : isLight
-                  ? 'bg-gradient-to-r from-blue-50/80 to-blue-100/30 border-b border-blue-200/50'
-                  : 'bg-gradient-to-r from-blue-900/10 to-gray-800/60 border-b border-blue-900/30'
-            )}
-          >
-            <TableRow>
-              {/* Not sortable: the number in this column IS the current sort
-                  position, so there is nothing of its own to sort by. The career
-                  rankings table has always treated "#" the same way. */}
-              <TableHead className={cn('w-12 font-medium', headerTextColor)}>#</TableHead>
-              <SortableColumnHeader
-                field="teamName"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                align="left"
-                className={cn('transition-colors', headerTextColor)}
-              >
-                Team
-              </SortableColumnHeader>
-              {showUnified && (
-                <TableHead
-                  className={cn(
-                    'font-medium',
-                    isWinterTheme ? 'text-card-foreground' : 'text-foreground'
-                  )}
-                >
-                  Division
-                </TableHead>
-              )}
-              <SortableColumnHeader
-                field="powerScore"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center', headerTextColor)}
-              >
-                Power
-              </SortableColumnHeader>
-              <SortableColumnHeader
-                field="wins"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center', headerTextColor)}
-              >
-                W-L
-              </SortableColumnHeader>
-              <SortableColumnHeader
-                field="winPercentage"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center', headerTextColor)}
-              >
-                Win %
-              </SortableColumnHeader>
-              <SortableColumnHeader
-                field="gamesWon"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center hidden md:table-cell', headerTextColor)}
-              >
-                Games
-              </SortableColumnHeader>
-              <SortableColumnHeader
-                field="gameWinPercentage"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center hidden lg:table-cell', headerTextColor)}
-              >
-                Game %
-              </SortableColumnHeader>
-              <SortableColumnHeader
-                field="sos"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center', headerTextColor)}
-              >
-                SOS
-              </SortableColumnHeader>
-              <SortableColumnHeader
-                field="streak"
-                activeField={sortOptions.field}
-                direction={sortOptions.direction}
-                onSort={onSortChange}
-                className={cn('text-center', headerTextColor)}
-              >
-                Streak
-              </SortableColumnHeader>
-              <TableHead
-                className={cn(
-                  'text-center font-medium',
-                  isWinterTheme ? 'text-card-foreground' : 'text-foreground'
-                )}
-              >
-                Trend
-              </TableHead>
-            </TableRow>
-          </TableHeader>
+          <DivisionTableHeader
+            sortOptions={sortOptions}
+            onSortChange={onSortChange}
+            showUnified={showUnified}
+            isWinterTheme={isWinterTheme}
+            isLight={isLight}
+            headerTextColor={headerTextColor}
+          />
           <TableBody
             className={
               isWinterTheme ? '' : isLight ? 'bg-gradient-to-br from-white to-gray-50/50' : ''

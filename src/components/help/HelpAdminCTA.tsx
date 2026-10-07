@@ -5,6 +5,15 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
+const AdminDashboardLink: React.FC = () => (
+  <Link to="/admin">
+    <Button>
+      <Settings className="size-4 mr-2" />
+      Admin Dashboard
+    </Button>
+  </Link>
+);
+
 export const HelpAdminCTA: React.FC = () => {
   return (
     <Card className="mt-8">
@@ -16,12 +25,7 @@ export const HelpAdminCTA: React.FC = () => {
               Head to the Admin Dashboard to get started.
             </p>
           </div>
-          <Link to="/admin">
-            <Button>
-              <Settings className="size-4 mr-2" />
-              Admin Dashboard
-            </Button>
-          </Link>
+          <AdminDashboardLink />
         </div>
       </CardContent>
     </Card>

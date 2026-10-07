@@ -33,6 +33,20 @@ const gameWinPercentageColorClass = (pct: number) => {
   return 'text-red-600 dark:text-red-500';
 };
 
+const CompactRecord: React.FC<{
+  ranking: CareerRanking;
+  formatPercentage: (v: number) => string;
+}> = ({ ranking, formatPercentage }) => (
+  <p className="text-xs text-muted-foreground tabular-nums">
+    <span className="font-bold">
+      {ranking.careerMatchWins}-{ranking.careerMatchLosses}
+    </span>
+    <span className={cn('ml-1', getWinPercentageColor(ranking.careerWinPercentage))}>
+      ({formatPercentage(ranking.careerWinPercentage)})
+    </span>
+  </p>
+);
+
 // Compact card - mirrors standings compact design
 const CareerCompactCard: React.FC<{
   ranking: CareerRanking;
@@ -64,14 +78,7 @@ const CareerCompactCard: React.FC<{
             <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
               {ranking.teamName}
             </h3>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              <span className="font-bold">
-                {ranking.careerMatchWins}-{ranking.careerMatchLosses}
-              </span>
-              <span className={cn('ml-1', getWinPercentageColor(ranking.careerWinPercentage))}>
-                ({formatPercentage(ranking.careerWinPercentage)})
-              </span>
-            </p>
+            <CompactRecord ranking={ranking} formatPercentage={formatPercentage} />
           </div>
         </Link>
 
