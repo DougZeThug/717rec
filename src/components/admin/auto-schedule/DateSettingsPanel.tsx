@@ -33,18 +33,22 @@ interface DatePickerProps {
   setSelectedDate: (date: Date | null) => void;
 }
 
+const DatePickerLabel: React.FC<{ selectedDate: Date | null }> = ({ selectedDate }) => (
+  <span className="flex items-center">
+    <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
+    {selectedDate ? (
+      format(selectedDate, 'PPP')
+    ) : (
+      <span className="text-muted-foreground">Select a date</span>
+    )}
+  </span>
+);
+
 const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate }) => (
   <Popover>
     <PopoverTrigger asChild>
       <Button variant="outline" className="w-full justify-between text-left font-normal">
-        <span className="flex items-center">
-          <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
-          {selectedDate ? (
-            format(selectedDate, 'PPP')
-          ) : (
-            <span className="text-muted-foreground">Select a date</span>
-          )}
-        </span>
+        <DatePickerLabel selectedDate={selectedDate} />
         <ChevronRight className="size-4 text-muted-foreground" />
       </Button>
     </PopoverTrigger>
@@ -129,6 +133,99 @@ const MatchRulesSection: React.FC<MatchRulesSectionProps> = ({
   </div>
 );
 
+interface DateSectionProps {
+  selectedDate: Date | null;
+  setSelectedDate: (date: Date | null) => void;
+}
+
+const DateSection: React.FC<DateSectionProps> = ({ selectedDate, setSelectedDate }) => (
+  <div>
+    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+      Date
+    </h4>
+    <DatePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+  </div>
+);
+
+interface ActionButtonsProps {
+  selectedDate: Date | null;
+  isLoading: boolean;
+  isGenerating: boolean;
+  totalTeams: number;
+  onLoadTeams: () => Promise<void>;
+  onGenerateSchedule: () => Promise<void>;
+}
+
+const ActionButtons: React.FC<ActionButtonsProps> = ({
+  selectedDate,
+  isLoading,
+  isGenerating,
+  totalTeams,
+  onLoadTeams,
+  onGenerateSchedule,
+}) => (
+  <div className="space-y-3">
+    <Button
+      onClick={onLoadTeams}
+      disabled={!selectedDate || isLoading}
+      variant="secondary"
+      className="w-full flex items-center justify-center"
+    >
+      {isLoading ? (
+        <>
+          <RefreshCw className="mr-2 size-4 animate-spin" />
+          Loading...
+        </>
+      ) : (
+        <>
+          <RefreshCw className="mr-2 size-4" />
+          Load Teams
+        </>
+      )}
+    </Button>
+
+    <Button
+      onClick={onGenerateSchedule}
+      disabled={isGenerating || !selectedDate || totalTeams === 0}
+      className="w-full flex items-center justify-center"
+    >
+      {isGenerating ? (
+        <>
+          <RefreshCw className="mr-2 size-4 animate-spin" />
+          Generating...
+        </>
+      ) : (
+        <>
+          Generate Schedule
+          <ChevronRight className="ml-2 size-4" />
+        </>
+      )}
+    </Button>
+  </div>
+);
+
+interface StatusDisplayProps {
+  formattedDate: string;
+  totalTeams: number;
+  oddBlocks: number;
+}
+
+const StatusDisplay: React.FC<StatusDisplayProps> = ({ formattedDate, totalTeams, oddBlocks }) => (
+  <div className="bg-muted rounded-md p-2 text-sm">
+    <p>
+      Date: <span className="font-medium">{formattedDate}</span>
+    </p>
+    <p>
+      Teams: <span className="font-medium">{totalTeams}</span>
+      {oddBlocks > 0 && (
+        <span className="text-amber-600 ml-1">
+          ({oddBlocks} block{oddBlocks === 1 ? '' : 's'} with odd number of teams)
+        </span>
+      )}
+    </p>
+  </div>
+);
+
 const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   selectedDate,
   setSelectedDate,
@@ -155,12 +252,7 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
 
         <CardContent className="space-y-4">
           {/* Date Section */}
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-              Date
-            </h4>
-            <DatePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-          </div>
+          <DateSection selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
 
           {/* Match Rules Section */}
           <MatchRulesSection
@@ -175,60 +267,22 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
           <Separator />
 
           {/* Action Buttons */}
-          <div className="space-y-3">
-            <Button
-              onClick={onLoadTeams}
-              disabled={!selectedDate || isLoading}
-              variant="secondary"
-              className="w-full flex items-center justify-center"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="mr-2 size-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="mr-2 size-4" />
-                  Load Teams
-                </>
-              )}
-            </Button>
-
-            <Button
-              onClick={onGenerateSchedule}
-              disabled={isGenerating || !selectedDate || totalTeams === 0}
-              className="w-full flex items-center justify-center"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="mr-2 size-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  Generate Schedule
-                  <ChevronRight className="ml-2 size-4" />
-                </>
-              )}
-            </Button>
-          </div>
+          <ActionButtons
+            selectedDate={selectedDate}
+            isLoading={isLoading}
+            isGenerating={isGenerating}
+            totalTeams={totalTeams}
+            onLoadTeams={onLoadTeams}
+            onGenerateSchedule={onGenerateSchedule}
+          />
 
           {/* Status Display */}
           {totalTeams > 0 && (
-            <div className="bg-muted rounded-md p-2 text-sm">
-              <p>
-                Date: <span className="font-medium">{formattedDate}</span>
-              </p>
-              <p>
-                Teams: <span className="font-medium">{totalTeams}</span>
-                {oddBlocks > 0 && (
-                  <span className="text-amber-600 ml-1">
-                    ({oddBlocks} block{oddBlocks === 1 ? '' : 's'} with odd number of teams)
-                  </span>
-                )}
-              </p>
-            </div>
+            <StatusDisplay
+              formattedDate={formattedDate}
+              totalTeams={totalTeams}
+              oddBlocks={oddBlocks}
+            />
           )}
         </CardContent>
       </Card>

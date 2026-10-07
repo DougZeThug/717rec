@@ -109,6 +109,16 @@ interface RemoveSignupDialogProps {
   onConfirm: () => void;
 }
 
+const RemoveSignupHeader: React.FC<{ name: string | undefined }> = ({ name }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>Remove Signup</AlertDialogTitle>
+    <AlertDialogDescription>
+      Are you sure you want to remove <strong>{name}</strong> from the signup list? This action
+      cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
 const RemoveSignupDialog: React.FC<RemoveSignupDialogProps> = ({
   signup,
   isPending,
@@ -117,13 +127,7 @@ const RemoveSignupDialog: React.FC<RemoveSignupDialogProps> = ({
 }) => (
   <AlertDialog open={Boolean(signup)} onOpenChange={(open) => !open && onClose()}>
     <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Remove Signup</AlertDialogTitle>
-        <AlertDialogDescription>
-          Are you sure you want to remove <strong>{signup?.name}</strong> from the signup list? This
-          action cannot be undone.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
+      <RemoveSignupHeader name={signup?.name} />
       <AlertDialogFooter>
         <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
         <AlertDialogAction
@@ -146,6 +150,43 @@ const RemoveSignupDialog: React.FC<RemoveSignupDialogProps> = ({
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>
+);
+
+interface MessageEditorRowProps {
+  message: string;
+  onMessageChange: (value: string) => void;
+  onSave: () => void;
+  canSave: boolean;
+  isSaving: boolean;
+}
+
+const MessageEditorRow: React.FC<MessageEditorRowProps> = ({
+  message,
+  onMessageChange,
+  onSave,
+  canSave,
+  isSaving,
+}) => (
+  <div className="flex gap-2">
+    <Input
+      id="signup-confirmation-message"
+      value={message}
+      onChange={(e) => onMessageChange(e.target.value)}
+      placeholder="You're signed up! See you there!"
+      className="flex-1"
+      maxLength={100}
+    />
+    <Button onClick={onSave} disabled={!canSave} size="sm" className="shrink-0">
+      {isSaving ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <>
+          <Save className="size-4 mr-1" />
+          Save
+        </>
+      )}
+    </Button>
+  </div>
 );
 
 const BlindDrawSettingsCard: React.FC = () => {
@@ -186,31 +227,13 @@ const BlindDrawSettingsCard: React.FC = () => {
           <p className="text-xs text-muted-foreground">
             Shown to players after they sign up (toast + inline text)
           </p>
-          <div className="flex gap-2">
-            <Input
-              id="signup-confirmation-message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="You're signed up! See you there!"
-              className="flex-1"
-              maxLength={100}
-            />
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || updateSettings.isPending}
-              size="sm"
-              className="shrink-0"
-            >
-              {updateSettings.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <>
-                  <Save className="size-4 mr-1" />
-                  Save
-                </>
-              )}
-            </Button>
-          </div>
+          <MessageEditorRow
+            message={message}
+            onMessageChange={setMessage}
+            onSave={handleSave}
+            canSave={hasChanges && !updateSettings.isPending}
+            isSaving={updateSettings.isPending}
+          />
         </div>
       </CardContent>
     </Card>

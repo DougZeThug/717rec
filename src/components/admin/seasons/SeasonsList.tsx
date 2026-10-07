@@ -49,6 +49,35 @@ const getStatusIcon = (season: Season) => {
   }
 };
 
+interface SeasonEditButtonProps {
+  season: Season;
+  onEdit: () => void;
+}
+
+const SeasonEditButton: React.FC<SeasonEditButtonProps> = ({ season, onEdit }) => (
+  <m.div whileTap={{ scale: 0.95 }}>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => onEdit()}
+      className="flex items-center gap-1"
+      // An archived season is a closed record: its stats are
+      // snapshotted and its champions awarded. Renaming it or
+      // moving its dates now would rewrite history the History
+      // page already shows.
+      disabled={season.is_archived}
+      title={
+        season.is_archived
+          ? 'Archived seasons cannot be edited — their results are already final.'
+          : undefined
+      }
+    >
+      <Edit className="size-3" />
+      Edit
+    </Button>
+  </m.div>
+);
+
 interface SeasonHeaderRowProps {
   season: Season;
   onActivate: () => void;
@@ -120,28 +149,22 @@ const SeasonHeaderRow: React.FC<SeasonHeaderRowProps> = ({
           </Button>
         </m.div>
       )}
-      <m.div whileTap={{ scale: 0.95 }}>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onEdit()}
-          className="flex items-center gap-1"
-          // An archived season is a closed record: its stats are
-          // snapshotted and its champions awarded. Renaming it or
-          // moving its dates now would rewrite history the History
-          // page already shows.
-          disabled={season.is_archived}
-          title={
-            season.is_archived
-              ? 'Archived seasons cannot be edited — their results are already final.'
-              : undefined
-          }
-        >
-          <Edit className="size-3" />
-          Edit
-        </Button>
-      </m.div>
+      <SeasonEditButton season={season} onEdit={onEdit} />
     </div>
+  </div>
+);
+
+const SeasonDetails: React.FC<{ season: Season }> = ({ season }) => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+    <div>
+      <span className="font-medium">Created:</span> {toLocalDateString(season.created_at)}
+    </div>
+    {season.is_archived && (
+      <div>
+        <span className="font-medium">Status:</span>{' '}
+        <span className="text-muted-foreground">Archived season</span>
+      </div>
+    )}
   </div>
 );
 
@@ -195,17 +218,7 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
             />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Created:</span> {toLocalDateString(season.created_at)}
-              </div>
-              {season.is_archived && (
-                <div>
-                  <span className="font-medium">Status:</span>{' '}
-                  <span className="text-muted-foreground">Archived season</span>
-                </div>
-              )}
-            </div>
+            <SeasonDetails season={season} />
           </CardContent>
         </Card>
       ))}

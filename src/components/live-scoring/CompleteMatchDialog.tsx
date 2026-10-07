@@ -64,6 +64,35 @@ const CompleteMatchDescription: React.FC<CompleteMatchDescriptionProps> = ({
   </AlertDialogDescription>
 );
 
+interface CompleteMatchDialogContentProps extends CompleteMatchDescriptionProps {
+  winnerName: string;
+  gameWins: { team1: number; team2: number };
+  onConfirm: () => void;
+}
+
+// Confirmation popup: who won, the game scores and the save / cancel buttons
+const CompleteMatchDialogContent: React.FC<CompleteMatchDialogContentProps> = ({
+  team1Name,
+  team2Name,
+  winnerName,
+  gameWins,
+  gameLines,
+  onConfirm,
+}) => (
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>
+        {winnerName} wins {gameWins.team1}–{gameWins.team2}
+      </AlertDialogTitle>
+      <CompleteMatchDescription team1Name={team1Name} team2Name={team2Name} gameLines={gameLines} />
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Not yet</AlertDialogCancel>
+      <AlertDialogAction onClick={onConfirm}>Save result</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+);
+
 /**
  * The point of no return: writes the official result and updates standings.
  * Everything before this (rounds, games) is freely correctable.
@@ -85,22 +114,14 @@ export const CompleteMatchDialog: React.FC<CompleteMatchDialogProps> = ({
           {isFinalizing ? 'Saving result…' : 'Save official result'}
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {winnerName} wins {gameWins.team1}–{gameWins.team2}
-          </AlertDialogTitle>
-          <CompleteMatchDescription
-            team1Name={team1Name}
-            team2Name={team2Name}
-            gameLines={gameLines}
-          />
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Not yet</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>Save result</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
+      <CompleteMatchDialogContent
+        team1Name={team1Name}
+        team2Name={team2Name}
+        winnerName={winnerName}
+        gameWins={gameWins}
+        gameLines={gameLines}
+        onConfirm={onConfirm}
+      />
     </AlertDialog>
     {finalizeError != null ? (
       <Alert variant="destructive">

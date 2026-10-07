@@ -10,25 +10,29 @@ import DivisionRow from './DivisionRow';
 
 type DivisionList = ReturnType<typeof useDivisions>['divisions'];
 
+const DivisionsTableHead: React.FC = () => (
+  <thead className="bg-muted/40">
+    <tr className="text-left">
+      <th scope="col" className="py-2 px-3 font-medium">
+        Name
+      </th>
+      <th scope="col" className="py-2 px-3 font-medium">
+        Display Division
+      </th>
+      <th scope="col" className="py-2 px-3 font-medium">
+        Weight
+      </th>
+      <th scope="col" className="py-2 px-3 font-medium text-right">
+        Actions
+      </th>
+    </tr>
+  </thead>
+);
+
 const DivisionsTable: React.FC<{ divisions: DivisionList }> = ({ divisions }) => (
   <div className="hidden md:block rounded-lg border border-border overflow-hidden">
     <table className="w-full text-sm">
-      <thead className="bg-muted/40">
-        <tr className="text-left">
-          <th scope="col" className="py-2 px-3 font-medium">
-            Name
-          </th>
-          <th scope="col" className="py-2 px-3 font-medium">
-            Display Division
-          </th>
-          <th scope="col" className="py-2 px-3 font-medium">
-            Weight
-          </th>
-          <th scope="col" className="py-2 px-3 font-medium text-right">
-            Actions
-          </th>
-        </tr>
-      </thead>
+      <DivisionsTableHead />
       <tbody>
         {divisions.map((d) => (
           <DivisionRow key={d.id} division={d} layout="row" />

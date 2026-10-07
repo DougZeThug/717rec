@@ -26,6 +26,22 @@ const DeleteBracketQuestion: React.FC<{ bracketName: string }> = ({ bracketName 
   </p>
 );
 
+const DeleteBracketHeader: React.FC<{ bracketName: string }> = ({ bracketName }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle className="flex items-center gap-2 text-destructive-text">
+      <Trash className="size-5" />
+      Delete Bracket
+    </AlertDialogTitle>
+    <AlertDialogDescription className="space-y-2">
+      <DeleteBracketQuestion bracketName={bracketName} />
+      <p className="font-medium text-destructive-text">
+        This action cannot be undone. All matches, scores, and game data will be permanently
+        deleted.
+      </p>
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
 const DeleteBracketDialog: React.FC<DeleteBracketDialogProps> = ({
   open,
   onOpenChange,
@@ -40,19 +56,7 @@ const DeleteBracketDialog: React.FC<DeleteBracketDialogProps> = ({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center gap-2 text-destructive-text">
-            <Trash className="size-5" />
-            Delete Bracket
-          </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <DeleteBracketQuestion bracketName={bracketName} />
-            <p className="font-medium text-destructive-text">
-              This action cannot be undone. All matches, scores, and game data will be permanently
-              deleted.
-            </p>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+        <DeleteBracketHeader bracketName={bracketName} />
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction

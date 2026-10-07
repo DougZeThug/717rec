@@ -49,6 +49,32 @@ const TimeBlockSelect: React.FC<TimeBlockSelectProps> = ({ value, onValueChange 
   </div>
 );
 
+interface AssignControlsProps {
+  selectedTimeBlock: string;
+  onTimeBlockChange: (value: string) => void;
+  onAssign: () => void;
+  isAssigning: boolean;
+  hasSelectedTeams: boolean;
+}
+
+const AssignControls: React.FC<AssignControlsProps> = ({
+  selectedTimeBlock,
+  onTimeBlockChange,
+  onAssign,
+  isAssigning,
+  hasSelectedTeams,
+}) => (
+  <div className="flex flex-col md:flex-row gap-4">
+    <TimeBlockSelect value={selectedTimeBlock} onValueChange={onTimeBlockChange} />
+
+    <div className="flex-none mt-auto">
+      <Button onClick={onAssign} disabled={isAssigning || !selectedTimeBlock || !hasSelectedTeams}>
+        {isAssigning ? 'Assigning...' : 'Assign Teams'}
+      </Button>
+    </div>
+  </div>
+);
+
 const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
   selectedDate,
   onTeamsAssigned,
@@ -159,18 +185,13 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
         <CardTitle className="text-lg">Manually Assign Teams</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <TimeBlockSelect value={selectedTimeBlock} onValueChange={setSelectedTimeBlock} />
-
-          <div className="flex-none mt-auto">
-            <Button
-              onClick={handleAssignTeams}
-              disabled={isAssigning || !selectedTimeBlock || selectedTeamIds.length === 0}
-            >
-              {isAssigning ? 'Assigning...' : 'Assign Teams'}
-            </Button>
-          </div>
-        </div>
+        <AssignControls
+          selectedTimeBlock={selectedTimeBlock}
+          onTimeBlockChange={setSelectedTimeBlock}
+          onAssign={handleAssignTeams}
+          isAssigning={isAssigning}
+          hasSelectedTeams={selectedTeamIds.length > 0}
+        />
 
         {selectedTimeBlock && (
           <div className="border rounded-md p-4">

@@ -110,6 +110,15 @@ interface DeleteHeroCardDialogProps {
   onConfirm: () => void;
 }
 
+const DeleteHeroCardHeader: React.FC<{ cardTitle: string | undefined }> = ({ cardTitle }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>Delete Hero Card</AlertDialogTitle>
+    <AlertDialogDescription>
+      Are you sure you want to delete <strong>{cardTitle}</strong>? This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
 const DeleteHeroCardDialog: React.FC<DeleteHeroCardDialogProps> = ({
   open,
   cardTitle,
@@ -119,13 +128,7 @@ const DeleteHeroCardDialog: React.FC<DeleteHeroCardDialogProps> = ({
 }) => (
   <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
     <AlertDialogContent>
-      <AlertDialogHeader>
-        <AlertDialogTitle>Delete Hero Card</AlertDialogTitle>
-        <AlertDialogDescription>
-          Are you sure you want to delete <strong>{cardTitle}</strong>? This action cannot be
-          undone.
-        </AlertDialogDescription>
-      </AlertDialogHeader>
+      <DeleteHeroCardHeader cardTitle={cardTitle} />
       <AlertDialogFooter>
         <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
         <AlertDialogAction

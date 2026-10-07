@@ -19,27 +19,32 @@ interface PairingScoreTooltipProps {
   isWinterTheme: boolean;
 }
 
+/** Icon and score pill shown inside the tooltip trigger. */
+const PairingScoreBadge: React.FC<PairingScoreTooltipProps> = ({ pairing, isWinterTheme }) => (
+  <div className="flex items-center gap-1">
+    {pairing.hasPlayedBefore ? (
+      <AlertTriangle className="size-4 text-amber-500" />
+    ) : pairing.compatibilityScore < 5 ? (
+      <Info className="size-4 text-amber-500" />
+    ) : (
+      <CheckCircle className="size-4 text-green-500" />
+    )}
+    <span
+      className={`text-xs px-2 py-1 rounded-full ${
+        isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted'
+      }`}
+    >
+      Score: {pairing.compatibilityScore.toFixed(1)}/10
+    </span>
+  </div>
+);
+
 /** Score badge for a pairing, with a tooltip that says why it is flagged. */
 const PairingScoreTooltip: React.FC<PairingScoreTooltipProps> = ({ pairing, isWinterTheme }) => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-1">
-          {pairing.hasPlayedBefore ? (
-            <AlertTriangle className="size-4 text-amber-500" />
-          ) : pairing.compatibilityScore < 5 ? (
-            <Info className="size-4 text-amber-500" />
-          ) : (
-            <CheckCircle className="size-4 text-green-500" />
-          )}
-          <span
-            className={`text-xs px-2 py-1 rounded-full ${
-              isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted'
-            }`}
-          >
-            Score: {pairing.compatibilityScore.toFixed(1)}/10
-          </span>
-        </div>
+        <PairingScoreBadge pairing={pairing} isWinterTheme={isWinterTheme} />
       </TooltipTrigger>
       <TooltipContent>
         <p>

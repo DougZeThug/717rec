@@ -52,14 +52,18 @@ const DateFilter: React.FC<DateFilterProps> = ({ date, onDateChange }) => (
   </Popover>
 );
 
+const SessionDateHintLabel: React.FC = () => (
+  <div className="flex items-center">
+    <Info className="size-3 mr-1" />
+    <span>Showing matches for the entire session (including evening games)</span>
+  </div>
+);
+
 const SessionDateHint: React.FC = () => (
   <TooltipProvider>
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center">
-          <Info className="size-3 mr-1" />
-          <span>Showing matches for the entire session (including evening games)</span>
-        </div>
+        <SessionDateHintLabel />
       </TooltipTrigger>
       <TooltipContent>
         <p className="max-w-xs">
@@ -68,6 +72,31 @@ const SessionDateHint: React.FC = () => (
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>
+);
+
+interface BracketFilterProps {
+  bracketId: FilterState['bracketId'];
+  brackets: FilterBarProps['brackets'];
+  onBracketChange: (bracketId?: string) => void;
+}
+
+const BracketFilter: React.FC<BracketFilterProps> = ({ bracketId, brackets, onBracketChange }) => (
+  <Select
+    value={bracketId || undefined}
+    onValueChange={(value) => onBracketChange(value === 'all' ? undefined : value)}
+  >
+    <SelectTrigger aria-label="Filter by bracket" className="w-full min-h-[44px] hover:bg-accent">
+      <SelectValue placeholder="Filter by Bracket" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">All Brackets</SelectItem>
+      {brackets.map((bracket) => (
+        <SelectItem key={bracket.id} value={bracket.id}>
+          {bracket.title}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
 );
 
 /** Renders date and bracket filters for the mass score entry workflow. */
@@ -85,25 +114,11 @@ const FilterBar: React.FC<FilterBarProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <DateFilter date={filters.date} onDateChange={onDateChange} />
 
-        <Select
-          value={filters.bracketId || undefined}
-          onValueChange={(value) => onBracketChange(value === 'all' ? undefined : value)}
-        >
-          <SelectTrigger
-            aria-label="Filter by bracket"
-            className="w-full min-h-[44px] hover:bg-accent"
-          >
-            <SelectValue placeholder="Filter by Bracket" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Brackets</SelectItem>
-            {brackets.map((bracket) => (
-              <SelectItem key={bracket.id} value={bracket.id}>
-                {bracket.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <BracketFilter
+          bracketId={filters.bracketId}
+          brackets={brackets}
+          onBracketChange={onBracketChange}
+        />
       </div>
 
       {filters.date && (
