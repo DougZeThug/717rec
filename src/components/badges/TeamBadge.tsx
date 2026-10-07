@@ -38,6 +38,24 @@ const DialogBadgeIcon: React.FC<{
   </div>
 );
 
+// Content of the mobile detail dialog (rendered inside <Dialog>)
+const BadgeDialogBody: React.FC<{
+  gradient: string;
+  IconComponent: React.ComponentType<{ className?: string }>;
+  name: string;
+  description: string;
+}> = ({ gradient, IconComponent, name, description }) => (
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader className="text-center">
+      <DialogBadgeIcon gradient={gradient} IconComponent={IconComponent} />
+      <DialogTitle className="text-lg font-semibold">{name}</DialogTitle>
+      <DialogDescription className="text-sm text-muted-foreground mt-2">
+        {description}
+      </DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+);
+
 export const TeamBadge: React.FC<TeamBadgeProps> = ({
   badge,
   size = 'md',
@@ -144,15 +162,12 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       <>
         {BadgeContent}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader className="text-center">
-              <DialogBadgeIcon gradient={config.gradient} IconComponent={IconComponent} />
-              <DialogTitle className="text-lg font-semibold">{config.name}</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-2">
-                {getEnhancedDescription()}
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
+          <BadgeDialogBody
+            gradient={config.gradient}
+            IconComponent={IconComponent}
+            name={config.name}
+            description={getEnhancedDescription()}
+          />
         </Dialog>
       </>
     );
