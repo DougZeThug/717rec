@@ -43,6 +43,56 @@ const getWinPctColor = (wins: number, losses: number): string => {
   return 'text-red-600 dark:text-red-400';
 };
 
+interface CareerStatTileProps {
+  label: string;
+  valueClassName: string;
+  children: React.ReactNode;
+  /** Extra line under the value. */
+  footer?: React.ReactNode;
+}
+
+// One labelled career number
+const CareerStatTile: React.FC<CareerStatTileProps> = ({
+  label,
+  valueClassName,
+  children,
+  footer,
+}) => (
+  <div className="flex flex-col">
+    <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
+      {label}
+    </span>
+    <div className={valueClassName}>{children}</div>
+    {footer}
+  </div>
+);
+
+interface DivisionRecordCardProps {
+  name: string;
+  icon: React.ReactNode;
+  record: { wins: number; losses: number };
+}
+
+// Win-loss record in one division; hidden until the team has played in it
+const DivisionRecordCard: React.FC<DivisionRecordCardProps> = ({ name, icon, record }) => {
+  if (record.wins + record.losses <= 0) return null;
+
+  return (
+    <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
+      <div className="flex items-center gap-2 mb-1">
+        {icon}
+        <span className="text-xs font-medium text-muted-foreground">{name}</span>
+      </div>
+      <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
+        {record.wins}-{record.losses}
+      </div>
+      <span className={`text-xs font-medium ${getWinPctColor(record.wins, record.losses)}`}>
+        {getWinPct(record.wins, record.losses)}
+      </span>
+    </div>
+  );
+};
+
 const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) => {
   const { totals, isLoading } = useTeamTotals(teamId);
   const { getTeamPercentiles } = useLeaguePercentiles();
@@ -119,121 +169,101 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
   const mainContent = (
     <>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 md:gap-6">
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Career Record
-          </span>
-          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center gap-2">
-            <Trophy size={16} className="text-emerald-500 shrink-0" />
-            {totals.career_match_wins}-{totals.career_match_losses}
-            {percentiles && (
-              <PercentileFromResult result={percentiles.winPercentage} statName="Win %" />
-            )}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Career Record"
+          valueClassName="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center gap-2"
+        >
+          <Trophy size={16} className="text-emerald-500 shrink-0" />
+          {totals.career_match_wins}-{totals.career_match_losses}
+          {percentiles && (
+            <PercentileFromResult result={percentiles.winPercentage} statName="Win %" />
+          )}
+        </CareerStatTile>
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Career Games
-          </span>
-          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center">
-            <Target size={16} className="text-blue-500 mr-2" />
-            {totals.career_game_wins}-{totals.career_game_losses}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Career Games"
+          valueClassName="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center"
+        >
+          <Target size={16} className="text-blue-500 mr-2" />
+          {totals.career_game_wins}-{totals.career_game_losses}
+        </CareerStatTile>
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Playoff Record
-          </span>
-          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center">
-            <Trophy size={16} className="text-purple-500 mr-2" />
-            {totals.career_playoff_wins}-{totals.career_playoff_losses}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Playoff Record"
+          valueClassName="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center"
+        >
+          <Trophy size={16} className="text-purple-500 mr-2" />
+          {totals.career_playoff_wins}-{totals.career_playoff_losses}
+        </CareerStatTile>
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Championships
-          </span>
-          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center">
-            <Award size={16} className="text-yellow-500 mr-2" />
-            {totals.championships || 0}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Championships"
+          valueClassName="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center"
+        >
+          <Award size={16} className="text-yellow-500 mr-2" />
+          {totals.championships || 0}
+        </CareerStatTile>
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Runner-ups
-          </span>
-          <div className="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center">
-            <TrendingUp size={16} className="text-orange-500 mr-2" />
-            {totals.runner_ups || 0}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Runner-ups"
+          valueClassName="font-mono text-base md:text-lg font-medium tabular-nums text-foreground flex items-center"
+        >
+          <TrendingUp size={16} className="text-orange-500 mr-2" />
+          {totals.runner_ups || 0}
+        </CareerStatTile>
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Career Power Score
-          </span>
-          <div
-            className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getPowerScoreColor(totals.career_power_score)}`}
-          >
-            <Zap size={16} className="shrink-0" />
-            {totals.career_power_score.toFixed(1)}
-            {percentiles && (
-              <PercentileFromResult result={percentiles.powerScore} statName="Power Score" />
-            )}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Career Power Score"
+          valueClassName={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getPowerScoreColor(totals.career_power_score)}`}
+        >
+          <Zap size={16} className="shrink-0" />
+          {totals.career_power_score.toFixed(1)}
+          {percentiles && (
+            <PercentileFromResult result={percentiles.powerScore} statName="Power Score" />
+          )}
+        </CareerStatTile>
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Career Sweep Rate
-          </span>
-          <div
-            className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getSweepRateColor(totals.career_sweep_rate)}`}
-          >
-            <Wind size={16} className="shrink-0" />
-            {totals.career_sweep_rate.toFixed(1)}%
-          </div>
-          <span className="text-xs tabular-nums text-muted-foreground mt-1">
-            {totals.career_sweeps} sweeps / {totals.career_match_wins + totals.career_match_losses}{' '}
-            matches
-          </span>
-        </div>
+        <CareerStatTile
+          label="Career Sweep Rate"
+          valueClassName={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${getSweepRateColor(totals.career_sweep_rate)}`}
+          footer={
+            <span className="text-xs tabular-nums text-muted-foreground mt-1">
+              {totals.career_sweeps} sweeps /{' '}
+              {totals.career_match_wins + totals.career_match_losses} matches
+            </span>
+          }
+        >
+          <Wind size={16} className="shrink-0" />
+          {totals.career_sweep_rate.toFixed(1)}%
+        </CareerStatTile>
 
         {totals.career_clutch_game3s > 0 && (
-          <div className="flex flex-col">
-            <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-              Career Clutch Win %
-            </span>
-            <div className="font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 text-purple-500">
-              <Swords size={16} className="shrink-0" />
-              {totals.career_clutch_win_pct.toFixed(1)}%
-            </div>
-            <span className="text-xs tabular-nums text-muted-foreground mt-1">
-              {totals.career_clutch_wins} wins / {totals.career_clutch_game3s} game-3s
-            </span>
-          </div>
+          <CareerStatTile
+            label="Career Clutch Win %"
+            valueClassName="font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 text-purple-500"
+            footer={
+              <span className="text-xs tabular-nums text-muted-foreground mt-1">
+                {totals.career_clutch_wins} wins / {totals.career_clutch_game3s} game-3s
+              </span>
+            }
+          >
+            <Swords size={16} className="shrink-0" />
+            {totals.career_clutch_win_pct.toFixed(1)}%
+          </CareerStatTile>
         )}
 
-        <div className="flex flex-col">
-          <span className="font-inter uppercase text-xs tracking-widest text-muted-foreground">
-            Career SOS
-          </span>
-          <div
-            className={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${totals.career_sos > 0 ? getSosColor(totals.career_sos) : 'text-muted-foreground'}`}
-          >
-            <Scale size={16} className="shrink-0" />
-            {totals.career_match_wins + totals.career_match_losses > 0
-              ? totals.career_sos.toFixed(3)
-              : 'N/A'}
-            {percentiles && totals.career_match_wins + totals.career_match_losses > 0 && (
-              <PercentileFromResult result={percentiles.sos} statName="Strength of Schedule" />
-            )}
-          </div>
-        </div>
+        <CareerStatTile
+          label="Career SOS"
+          valueClassName={`font-mono text-base md:text-lg font-medium tabular-nums flex items-center gap-2 ${totals.career_sos > 0 ? getSosColor(totals.career_sos) : 'text-muted-foreground'}`}
+        >
+          <Scale size={16} className="shrink-0" />
+          {totals.career_match_wins + totals.career_match_losses > 0
+            ? totals.career_sos.toFixed(3)
+            : 'N/A'}
+          {percentiles && totals.career_match_wins + totals.career_match_losses > 0 && (
+            <PercentileFromResult result={percentiles.sos} statName="Strength of Schedule" />
+          )}
+        </CareerStatTile>
       </div>
 
       {hasDivisionRecords && (
@@ -242,71 +272,21 @@ const TeamTotals: React.FC<TeamTotalsProps> = ({ teamId, standalone = false }) =
             Records by Division
           </span>
           <div className="grid grid-cols-3 gap-3 md:gap-4">
-            {totals.division_records.competitive.wins + totals.division_records.competitive.losses >
-              0 && (
-              <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-1">
-                  <Shield size={14} className="text-red-500" />
-                  <span className="text-xs font-medium text-muted-foreground">Competitive</span>
-                </div>
-                <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
-                  {totals.division_records.competitive.wins}-
-                  {totals.division_records.competitive.losses}
-                </div>
-                <span
-                  className={`text-xs font-medium ${getWinPctColor(totals.division_records.competitive.wins, totals.division_records.competitive.losses)}`}
-                >
-                  {getWinPct(
-                    totals.division_records.competitive.wins,
-                    totals.division_records.competitive.losses
-                  )}
-                </span>
-              </div>
-            )}
-            {totals.division_records.intermediate.wins +
-              totals.division_records.intermediate.losses >
-              0 && (
-              <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-1">
-                  <Users size={14} className="text-blue-500" />
-                  <span className="text-xs font-medium text-muted-foreground">Intermediate</span>
-                </div>
-                <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
-                  {totals.division_records.intermediate.wins}-
-                  {totals.division_records.intermediate.losses}
-                </div>
-                <span
-                  className={`text-xs font-medium ${getWinPctColor(totals.division_records.intermediate.wins, totals.division_records.intermediate.losses)}`}
-                >
-                  {getWinPct(
-                    totals.division_records.intermediate.wins,
-                    totals.division_records.intermediate.losses
-                  )}
-                </span>
-              </div>
-            )}
-            {totals.division_records.recreational.wins +
-              totals.division_records.recreational.losses >
-              0 && (
-              <div className="flex flex-col p-3 rounded-lg bg-muted/50 border border-border">
-                <div className="flex items-center gap-2 mb-1">
-                  <Star size={14} className="text-green-500" />
-                  <span className="text-xs font-medium text-muted-foreground">Recreational</span>
-                </div>
-                <div className="font-mono text-base md:text-lg font-semibold tabular-nums">
-                  {totals.division_records.recreational.wins}-
-                  {totals.division_records.recreational.losses}
-                </div>
-                <span
-                  className={`text-xs font-medium ${getWinPctColor(totals.division_records.recreational.wins, totals.division_records.recreational.losses)}`}
-                >
-                  {getWinPct(
-                    totals.division_records.recreational.wins,
-                    totals.division_records.recreational.losses
-                  )}
-                </span>
-              </div>
-            )}
+            <DivisionRecordCard
+              name="Competitive"
+              icon={<Shield size={14} className="text-red-500" />}
+              record={totals.division_records.competitive}
+            />
+            <DivisionRecordCard
+              name="Intermediate"
+              icon={<Users size={14} className="text-blue-500" />}
+              record={totals.division_records.intermediate}
+            />
+            <DivisionRecordCard
+              name="Recreational"
+              icon={<Star size={14} className="text-green-500" />}
+              record={totals.division_records.recreational}
+            />
           </div>
         </div>
       )}

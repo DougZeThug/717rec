@@ -41,6 +41,58 @@ interface ScoreSubmissionModalProps {
   onClose: () => void;
 }
 
+// Teams, date and place of the match being reported
+const ScoreMatchInfo: React.FC<{ match: PendingMatch }> = ({ match }) => (
+  <div className="border rounded-lg p-3 bg-muted/50">
+    <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-center gap-2">
+        {match.team1_logo && (
+          <img
+            src={match.team1_logo}
+            alt={`${match.team1_name} logo`}
+            className="size-6 rounded-full object-cover"
+          />
+        )}
+        <span className="font-medium text-sm">{match.team1_name}</span>
+      </div>
+      <Users className="size-4 text-muted-foreground" />
+      <div className="flex items-center gap-2">
+        <span className="font-medium text-sm">{match.team2_name}</span>
+        {match.team2_logo && (
+          <img
+            src={match.team2_logo}
+            alt={`${match.team2_name} logo`}
+            className="size-6 rounded-full object-cover"
+          />
+        )}
+      </div>
+    </div>
+    <div className="text-xs text-muted-foreground text-center">
+      {formatDate(match.date)} at {formatTime(match.date)}
+      {match.location && ` • ${match.location}`}
+    </div>
+  </div>
+);
+
+interface ScoreSubmissionFooterProps {
+  isSubmitting: boolean;
+  onCancel: () => void;
+}
+
+const ScoreSubmissionFooter: React.FC<ScoreSubmissionFooterProps> = ({
+  isSubmitting,
+  onCancel,
+}) => (
+  <ResponsiveDialogFooter>
+    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+      Cancel
+    </Button>
+    <Button type="submit" disabled={isSubmitting}>
+      {isSubmitting ? 'Submitting...' : 'Submit Report'}
+    </Button>
+  </ResponsiveDialogFooter>
+);
+
 export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
   match,
   open,
@@ -84,36 +136,7 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        {/* Match Info */}
-        <div className="border rounded-lg p-3 bg-muted/50">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <div className="flex items-center gap-2">
-              {match.team1_logo && (
-                <img
-                  src={match.team1_logo}
-                  alt={`${match.team1_name} logo`}
-                  className="size-6 rounded-full object-cover"
-                />
-              )}
-              <span className="font-medium text-sm">{match.team1_name}</span>
-            </div>
-            <Users className="size-4 text-muted-foreground" />
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">{match.team2_name}</span>
-              {match.team2_logo && (
-                <img
-                  src={match.team2_logo}
-                  alt={`${match.team2_name} logo`}
-                  className="size-6 rounded-full object-cover"
-                />
-              )}
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground text-center">
-            {formatDate(match.date)} at {formatTime(match.date)}
-            {match.location && ` • ${match.location}`}
-          </div>
-        </div>
+        <ScoreMatchInfo match={match} />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -170,14 +193,7 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
               )}
             />
 
-            <ResponsiveDialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit Report'}
-              </Button>
-            </ResponsiveDialogFooter>
+            <ScoreSubmissionFooter isSubmitting={isSubmitting} onCancel={handleClose} />
           </form>
         </Form>
       </ResponsiveDialogContent>

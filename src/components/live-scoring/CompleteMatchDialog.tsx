@@ -34,6 +34,36 @@ interface CompleteMatchDialogProps {
   onConfirm: () => void;
 }
 
+interface CompleteMatchDescriptionProps {
+  team1Name: string;
+  team2Name: string;
+  gameLines: GameLine[];
+}
+
+// Game-by-game scores plus the warning that this writes the official result
+const CompleteMatchDescription: React.FC<CompleteMatchDescriptionProps> = ({
+  team1Name,
+  team2Name,
+  gameLines,
+}) => (
+  <AlertDialogDescription asChild>
+    <div>
+      <ul className="mb-2 space-y-1 text-sm">
+        {gameLines.map((line) => (
+          <li key={line.gameNumber} className="flex justify-between">
+            <span>
+              Game {line.gameNumber}: {team1Name} {line.team1Total}–{line.team2Total} {team2Name}
+            </span>
+            <span className="font-medium">{line.winnerName ?? '—'}</span>
+          </li>
+        ))}
+      </ul>
+      This records the official match result and updates the standings. An admin can reopen the
+      match later if a correction is needed.
+    </div>
+  </AlertDialogDescription>
+);
+
 /**
  * The point of no return: writes the official result and updates standings.
  * Everything before this (rounds, games) is freely correctable.
@@ -60,23 +90,11 @@ export const CompleteMatchDialog: React.FC<CompleteMatchDialogProps> = ({
           <AlertDialogTitle>
             {winnerName} wins {gameWins.team1}–{gameWins.team2}
           </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div>
-              <ul className="mb-2 space-y-1 text-sm">
-                {gameLines.map((line) => (
-                  <li key={line.gameNumber} className="flex justify-between">
-                    <span>
-                      Game {line.gameNumber}: {team1Name} {line.team1Total}–{line.team2Total}{' '}
-                      {team2Name}
-                    </span>
-                    <span className="font-medium">{line.winnerName ?? '—'}</span>
-                  </li>
-                ))}
-              </ul>
-              This records the official match result and updates the standings. An admin can reopen
-              the match later if a correction is needed.
-            </div>
-          </AlertDialogDescription>
+          <CompleteMatchDescription
+            team1Name={team1Name}
+            team2Name={team2Name}
+            gameLines={gameLines}
+          />
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Not yet</AlertDialogCancel>

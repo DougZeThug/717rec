@@ -21,6 +21,16 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
+// Team logo that links to the team page
+const TeamLogoLink: React.FC<{ name: string; logo: string }> = ({ name, logo }) => (
+  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="shrink-0">
+    <Avatar className="size-7 md:size-8">
+      <AvatarImage src={logo} alt={name} />
+      <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+    </Avatar>
+  </TransitionLink>
+);
+
 /** Match row with date, linked team names/logos, and game wins; can color winner and loser. */
 const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   match,
@@ -68,12 +78,7 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
       >
         {/* Home - Left side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1">
-          <TransitionLink to={`/teams/${toTeamSlug(homeName)}`} className="shrink-0">
-            <Avatar className="size-7 md:size-8">
-              <AvatarImage src={homeLogo} alt={homeName} />
-              <AvatarFallback>{homeName.charAt(0)}</AvatarFallback>
-            </Avatar>
-          </TransitionLink>
+          <TeamLogoLink name={homeName} logo={homeLogo} />
           <TransitionLink
             to={`/teams/${toTeamSlug(homeName)}`}
             className="truncate hover:underline"
@@ -118,12 +123,7 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
               {awayName}
             </span>
           </TransitionLink>
-          <TransitionLink to={`/teams/${toTeamSlug(awayName)}`} className="shrink-0">
-            <Avatar className="size-7 md:size-8">
-              <AvatarImage src={awayLogo} alt={awayName} />
-              <AvatarFallback>{awayName.charAt(0)}</AvatarFallback>
-            </Avatar>
-          </TransitionLink>
+          <TeamLogoLink name={awayName} logo={awayLogo} />
         </div>
       </div>
     </div>

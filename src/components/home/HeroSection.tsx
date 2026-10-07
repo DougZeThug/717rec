@@ -28,6 +28,39 @@ const NavButton: React.FC<NavButtonProps> = ({ to, icon, label, className }) => 
   </Link>
 );
 
+// Desktop hero call-to-action buttons
+const HeroCtaButtons: React.FC<{ shouldApplyWinter: boolean }> = ({ shouldApplyWinter }) => (
+  <div className="flex gap-4 justify-center items-center w-full max-w-md mx-auto">
+    <Button
+      asChild
+      size="lg"
+      variant="blueOrange"
+      className={cn('flex items-center gap-2', shouldApplyWinter && 'btn-winter-primary')}
+    >
+      <Link to="/stats" className="flex items-center gap-2">
+        <Trophy size={20} className="shrink-0" />
+        View Standings
+      </Link>
+    </Button>
+    <Button
+      asChild
+      size="lg"
+      variant="blueOrange"
+      className={cn(
+        'flex items-center gap-2',
+        shouldApplyWinter
+          ? 'btn-winter-secondary'
+          : 'bg-white/20 backdrop-blur-xs hover:bg-white/30'
+      )}
+    >
+      <Link to="/schedule" className="flex items-center gap-2">
+        <Calendar size={20} className="shrink-0" />
+        See Schedule
+      </Link>
+    </Button>
+  </div>
+);
+
 const HeroSection = () => {
   const { shouldApplyWinter } = useSeasonalTheme();
 
@@ -168,35 +201,7 @@ const HeroSection = () => {
             Where Bags Fly and Beers Flow.
           </p>
 
-          <div className="flex gap-4 justify-center items-center w-full max-w-md mx-auto">
-            <Button
-              asChild
-              size="lg"
-              variant="blueOrange"
-              className={cn('flex items-center gap-2', shouldApplyWinter && 'btn-winter-primary')}
-            >
-              <Link to="/stats" className="flex items-center gap-2">
-                <Trophy size={20} className="shrink-0" />
-                View Standings
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="blueOrange"
-              className={cn(
-                'flex items-center gap-2',
-                shouldApplyWinter
-                  ? 'btn-winter-secondary'
-                  : 'bg-white/20 backdrop-blur-xs hover:bg-white/30'
-              )}
-            >
-              <Link to="/schedule" className="flex items-center gap-2">
-                <Calendar size={20} className="shrink-0" />
-                See Schedule
-              </Link>
-            </Button>
-          </div>
+          <HeroCtaButtons shouldApplyWinter={shouldApplyWinter} />
         </div>
       </section>
     </div>

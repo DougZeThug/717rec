@@ -114,6 +114,53 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: TeamTo
   );
 };
 
+interface CareerChartPlotProps {
+  seasonData: SeasonPowerScoreData[];
+  chartHeight: number;
+  isMobile: boolean;
+  isDark: boolean;
+}
+
+const CareerChartPlot = ({ seasonData, chartHeight, isMobile, isDark }: CareerChartPlotProps) => (
+  <ResponsiveContainer width="100%" height={chartHeight}>
+    <LineChart
+      data={seasonData}
+      margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
+    >
+      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#374151' : '#e5e7eb'} opacity={0.5} />
+      <XAxis
+        dataKey="seasonName"
+        angle={isMobile ? -45 : 0}
+        textAnchor={isMobile ? 'end' : 'middle'}
+        height={isMobile ? 80 : 30}
+        tick={{ fontSize: 11, fill: 'currentColor' }}
+        stroke="currentColor"
+      />
+      <YAxis
+        domain={[0, 100]}
+        label={{
+          value: 'Power Score',
+          angle: -90,
+          position: 'insideLeft',
+          style: { fontSize: 12, fill: 'currentColor' },
+        }}
+        tick={{ fontSize: 11, fill: 'currentColor' }}
+        stroke="currentColor"
+      />
+      <Tooltip content={<CustomTooltip />} />
+      <Line
+        type="monotone"
+        dataKey="powerScore"
+        stroke="#8b5cf6"
+        strokeWidth={2}
+        connectNulls={false}
+        dot={<CustomDot />}
+        label={<CustomLabel />}
+      />
+    </LineChart>
+  </ResponsiveContainer>
+);
+
 const TeamCareerPowerScoreChart = ({
   teamId,
   standalone = false,
@@ -149,47 +196,12 @@ const TeamCareerPowerScoreChart = ({
           )
         )}
       >
-        <ResponsiveContainer width="100%" height={chartHeight}>
-          <LineChart
-            data={seasonData}
-            margin={{ top: 20, right: 30, left: 0, bottom: isMobile ? 60 : 20 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke={isDark ? '#374151' : '#e5e7eb'}
-              opacity={0.5}
-            />
-            <XAxis
-              dataKey="seasonName"
-              angle={isMobile ? -45 : 0}
-              textAnchor={isMobile ? 'end' : 'middle'}
-              height={isMobile ? 80 : 30}
-              tick={{ fontSize: 11, fill: 'currentColor' }}
-              stroke="currentColor"
-            />
-            <YAxis
-              domain={[0, 100]}
-              label={{
-                value: 'Power Score',
-                angle: -90,
-                position: 'insideLeft',
-                style: { fontSize: 12, fill: 'currentColor' },
-              }}
-              tick={{ fontSize: 11, fill: 'currentColor' }}
-              stroke="currentColor"
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Line
-              type="monotone"
-              dataKey="powerScore"
-              stroke="#8b5cf6"
-              strokeWidth={2}
-              connectNulls={false}
-              dot={<CustomDot />}
-              label={<CustomLabel />}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <CareerChartPlot
+          seasonData={seasonData}
+          chartHeight={chartHeight}
+          isMobile={isMobile}
+          isDark={isDark}
+        />
       </div>
 
       {/* Division legend */}

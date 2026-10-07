@@ -18,6 +18,26 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   ChevronRight,
 };
 
+// Title and optional subtitle block
+const AnnouncementText: React.FC<{ card: HeroCard; shouldApplyWinter: boolean }> = ({
+  card,
+  shouldApplyWinter,
+}) => (
+  <div className="text-center">
+    <h3 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h3>
+    {card.subtitle && (
+      <p
+        className={cn(
+          'text-sm font-inter mt-1',
+          shouldApplyWinter ? 'text-violet-200/90' : 'opacity-90'
+        )}
+      >
+        {card.subtitle}
+      </p>
+    )}
+  </div>
+);
+
 const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => {
   const Icon = card.icon_name ? iconMap[card.icon_name] : Trophy;
   const { shouldApplyWinter } = useSeasonalTheme();
@@ -73,19 +93,7 @@ const AnnouncementHeroCard: React.FC<AnnouncementHeroCardProps> = ({ card }) => 
             </m.div>
           )}
 
-          <div className="text-center">
-            <h3 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h3>
-            {card.subtitle && (
-              <p
-                className={cn(
-                  'text-sm font-inter mt-1',
-                  shouldApplyWinter ? 'text-violet-200/90' : 'opacity-90'
-                )}
-              >
-                {card.subtitle}
-              </p>
-            )}
-          </div>
+          <AnnouncementText card={card} shouldApplyWinter={shouldApplyWinter} />
 
           {card.cta_url && (
             <ChevronRight className="size-6 transition-transform group-hover:translate-x-1" />
