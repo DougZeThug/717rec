@@ -11,7 +11,7 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalThemeBase: () => ({ isWinterTheme: state.isWinterTheme }),
 }));
 vi.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
   m: { div: ({ children }: { children: React.ReactNode }) => <div>{children}</div> },
 }));
 vi.mock('../HistoricalStandingsTable', () => ({
