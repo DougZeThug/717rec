@@ -62,7 +62,7 @@ const StatsPageHeader = ({
           <PageHeader
             title="Standings"
             description="Current season rankings and performance metrics"
-            withGradient={true}
+            withGradient
           />
           <Button
             variant="outline"

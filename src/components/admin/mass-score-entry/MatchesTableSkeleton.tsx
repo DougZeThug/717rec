@@ -12,7 +12,7 @@ const MatchesTableSkeleton: React.FC = () => {
   return (
     <div className="space-y-4">
       {[1, 2].map((groupIndex) => (
-        <Collapsible key={groupIndex} open={true} className="overflow-hidden">
+        <Collapsible key={groupIndex} open className="overflow-hidden">
           <CollapsibleTrigger
             className={cn(
               'flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t',

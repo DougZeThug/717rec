@@ -57,11 +57,7 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
         {/* Comment content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <TeamNameDisplay
-              username={comment.username}
-              teamName={comment.team_name}
-              compact={true}
-            />
+            <TeamNameDisplay username={comment.username} teamName={comment.team_name} compact />
           </div>
           <div className="mt-1 text-sm whitespace-pre-wrap wrap-break-word">{comment.content}</div>
         </div>
