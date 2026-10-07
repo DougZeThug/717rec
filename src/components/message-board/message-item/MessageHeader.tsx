@@ -40,7 +40,7 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
                     username={username}
                     teamName={teamName}
                     powerScore={powerScore}
-                    compact={true}
+                    compact
                   />
                 </div>
               </TooltipTrigger>

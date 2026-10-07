@@ -1,5 +1,6 @@
+// skipcq: JS-C1003 -- Radix documents this namespace import; its parts are used as Name.Root, Name.Content and so on.
 import * as ProgressPrimitive from '@radix-ui/react-progress';
-import * as React from 'react';
+import React from 'react';
 
 import { cn } from '@/lib/utils';
 

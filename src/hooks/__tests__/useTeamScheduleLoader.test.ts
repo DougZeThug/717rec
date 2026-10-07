@@ -2,6 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TimeBlockTeamsMap } from '@/types/autoSchedule';
+// skipcq: JS-C1003 -- vi.mocked() needs the whole module object.
 import * as teamLoaderUtils from '@/utils/autoSchedule/teamLoaderUtils';
 import { mockDate, mockTeams } from '@/utils/test/autoSchedule/mockData';
 

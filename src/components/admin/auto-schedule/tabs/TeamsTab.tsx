@@ -137,7 +137,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
                 timeBlockTeams={timeBlockTeams}
                 date={selectedDate}
                 unmatchedTeamIds={unmatchedTeamIds}
-                isEditMode={true}
+                isEditMode
                 onTeamUpdate={handleTeamUpdate}
               />
             ) : (

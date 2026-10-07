@@ -63,7 +63,7 @@ const QuickScoreEditor: React.FC<QuickScoreEditorProps> = ({ match, teams, onSav
                 key={option.label}
                 option={option}
                 selectedOption={selectedOption}
-                isForTeam1={true}
+                isForTeam1
                 isSubmitting={isSubmitting}
                 onSelect={handleQuickScore}
                 animationDelay={`${0.3 + index * 0.05}s`}

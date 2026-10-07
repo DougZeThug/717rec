@@ -1,7 +1,8 @@
+// skipcq: JS-C1003 -- Radix documents this namespace import; its parts are used as Name.Root, Name.Content and so on.
 import * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
 import { AlertCircle } from 'lucide-react';
-import * as React from 'react';
+import React from 'react';
 import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider } from 'react-hook-form';
 
 import { Label } from '@/components/ui/label';

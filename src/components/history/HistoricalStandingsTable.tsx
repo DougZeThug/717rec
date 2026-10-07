@@ -118,7 +118,7 @@ const MobileTeamRow: React.FC<{
             source="team_season_stats"
             display="gauge"
             size="sm"
-            showLabel={true}
+            showLabel
           />
           <div className="grid grid-cols-2 gap-1 flex-1">
             <StatCell

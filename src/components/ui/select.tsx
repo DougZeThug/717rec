@@ -1,6 +1,7 @@
+// skipcq: JS-C1003 -- Radix documents this namespace import; its parts are used as Name.Root, Name.Content and so on.
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
-import * as React from 'react';
+import React from 'react';
 
 import { cn } from '@/lib/utils';
 

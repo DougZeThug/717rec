@@ -2,6 +2,7 @@
  * Sentry initialization and configuration for production error logging
  * Optimized: Replay integration is lazy-loaded to reduce TTI
  */
+// skipcq: JS-C1003 -- Sentry documents this namespace import; calls read as Sentry.init, Sentry.setUser and so on.
 import * as Sentry from '@sentry/react';
 
 import { runAfterDelayWhenIdle } from '@/utils/deferWork';

@@ -63,7 +63,7 @@ describe('PlayoffMatchCard', () => {
   ];
 
   it('renders the match card with all sections', () => {
-    render(<PlayoffMatchCard match={mockMatch} teams={mockTeams} hasNextMatch={true} />);
+    render(<PlayoffMatchCard match={mockMatch} teams={mockTeams} hasNextMatch />);
 
     expect(screen.getByTestId('match-card-header')).toBeInTheDocument();
     expect(screen.getByTestId('match-teams-section')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('PlayoffMatchCard', () => {
         match={mockMatch}
         teams={mockTeams}
         onEditMatch={mockOnEditMatch}
-        hasNextMatch={true}
+        hasNextMatch
       />
     );
 
@@ -97,7 +97,7 @@ describe('PlayoffMatchCard', () => {
         match={mockMatch}
         teams={mockTeams}
         onEditMatch={mockOnEditMatch}
-        hasNextMatch={true}
+        hasNextMatch
       />
     );
 

@@ -30,6 +30,7 @@ vi.mock('@/integrations/supabase/client', () => {
   };
 });
 
+// skipcq: JS-C1003 -- The test reads the whole module object to swap the client.
 import * as SupabaseClientModule from '@/integrations/supabase/client';
 const { subscribeCallbacks, removeChannel } = (
   SupabaseClientModule as unknown as {

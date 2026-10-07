@@ -1,5 +1,5 @@
 import { useTheme } from 'next-themes';
-import * as React from 'react';
+import React from 'react';
 
 import { useSeasonalThemeBase } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';

@@ -16,7 +16,7 @@ const DateMatchGroupSkeleton: React.FC<DateMatchGroupSkeletonProps> = ({ matchCo
   const isLight = resolvedTheme === 'light';
 
   return (
-    <Collapsible open={true} className="mb-4 overflow-hidden font-inter">
+    <Collapsible open className="mb-4 overflow-hidden font-inter">
       <CollapsibleTrigger
         className={cn(
           'flex w-full items-center justify-between p-4 text-left font-semibold text-sm rounded-t',

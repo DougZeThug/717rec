@@ -53,7 +53,7 @@ const AdminDashboard = () => {
   if (!isAdminAccessGranted) {
     return (
       <AdminAccessModal
-        isOpen={true}
+        isOpen
         // requestAdminAccess shows its own message. No admin is notified: there
         // is no request feature yet, so it says to contact one.
         onRequestAccess={requestAdminAccess}

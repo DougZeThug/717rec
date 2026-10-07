@@ -110,9 +110,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             {/* Only show category selector for admins with Announcement option */}
-            {isAdmin && (
-              <CategorySelector value={category} onChange={setCategory} adminOnly={true} />
-            )}
+            {isAdmin && <CategorySelector value={category} onChange={setCategory} adminOnly />}
           </div>
 
           <CharacterCounter current={message.length} max={MAX_MESSAGE_LENGTH} />
