@@ -51,6 +51,57 @@ const DisplayDivisionField: React.FC<DisplayDivisionFieldProps> = ({ value, onCh
   </div>
 );
 
+interface TextFieldProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const NameField: React.FC<TextFieldProps> = ({ value, onChange }) => (
+  <div className="space-y-2">
+    <Label htmlFor="division-name">Name</Label>
+    <Input
+      id="division-name"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder="e.g. Competitive High"
+    />
+  </div>
+);
+
+const WeightField: React.FC<TextFieldProps> = ({ value, onChange }) => (
+  <div className="space-y-2">
+    <Label htmlFor="division-weight">Weight</Label>
+    <Input
+      id="division-weight"
+      type="number"
+      inputMode="decimal"
+      step="0.01"
+      min="0"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+    <p className="text-xs text-muted-foreground">
+      Higher weights mean stronger divisions (e.g. 1.0 = top, 0.7 = weakest).
+    </p>
+  </div>
+);
+
+interface CreateDivisionFooterProps {
+  isPending: boolean;
+  onCancel: () => void;
+}
+
+const CreateDivisionFooter: React.FC<CreateDivisionFooterProps> = ({ isPending, onCancel }) => (
+  <DialogFooter>
+    <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>
+      Cancel
+    </Button>
+    <Button type="submit" disabled={isPending}>
+      {isPending ? 'Creating…' : 'Create'}
+    </Button>
+  </DialogFooter>
+);
+
 const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
   const { createDivision } = useDivisionMutations();
   const [name, setName] = useState('');
@@ -109,45 +160,14 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="division-name">Name</Label>
-            <Input
-              id="division-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Competitive High"
-            />
-          </div>
+          <NameField value={name} onChange={setName} />
           <DisplayDivisionField value={displayDivision} onChange={setDisplayDivision} />
-          <div className="space-y-2">
-            <Label htmlFor="division-weight">Weight</Label>
-            <Input
-              id="division-weight"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min="0"
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Higher weights mean stronger divisions (e.g. 1.0 = top, 0.7 = weakest).
-            </p>
-          </div>
+          <WeightField value={weight} onChange={setWeight} />
           {error && <p className="text-sm text-destructive-text">{error}</p>}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={createDivision.isPending}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={createDivision.isPending}>
-              {createDivision.isPending ? 'Creating…' : 'Create'}
-            </Button>
-          </DialogFooter>
+          <CreateDivisionFooter
+            isPending={createDivision.isPending}
+            onCancel={() => onOpenChange(false)}
+          />
         </form>
       </DialogContent>
     </Dialog>
