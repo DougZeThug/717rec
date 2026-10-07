@@ -149,6 +149,20 @@ describe('TeamForm', () => {
     });
   });
 
+  it('opens the file picker when Upload Image is clicked', async () => {
+    const user = userEvent.setup();
+    render(<TeamForm onSubmit={vi.fn()} onCancel={vi.fn()} />);
+
+    const fileInput = screen.getByLabelText(/upload team image/i);
+    const openPicker = vi
+      .spyOn(fileInput as HTMLInputElement, 'click')
+      .mockImplementation(() => {});
+
+    await user.click(screen.getByRole('button', { name: /upload image/i }));
+
+    expect(openPicker).toHaveBeenCalledTimes(1);
+  });
+
   it('shows upload failure feedback and does not keep buttons disabled', async () => {
     const user = userEvent.setup();
     const file = new File(['bad-logo'], 'bad-logo.png', { type: 'image/png' });

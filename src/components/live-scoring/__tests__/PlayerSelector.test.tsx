@@ -76,4 +76,13 @@ describe('PlayerSelector', () => {
 
     expect(onAddPlayer).toHaveBeenCalledWith('New Guy');
   });
+
+  it('adds a new player when Enter is pressed in the name box', async () => {
+    renderSelector([]);
+    await userEvent.click(screen.getByRole('button', { name: /select players/i }));
+    await userEvent.type(await screen.findByLabelText('New player name'), 'Late Arrival{Enter}');
+
+    expect(onAddPlayer).toHaveBeenCalledWith('Late Arrival');
+    expect(screen.getByLabelText('New player name')).toHaveValue('');
+  });
 });
