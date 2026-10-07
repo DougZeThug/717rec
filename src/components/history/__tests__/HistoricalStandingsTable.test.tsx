@@ -12,7 +12,11 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
   useSeasonalThemeBase: () => ({ isWinterTheme: state.isWinterTheme }),
 }));
 vi.mock('@/components/shared/TeamLogo', () => ({
-  TeamLogo: ({ teamName }: { teamName: string }) => <span data-testid="logo">{teamName} logo</span>,
+  TeamLogo: ({ teamName, imageUrl }: { teamName: string; imageUrl?: string | null }) => (
+    <span data-testid="logo" data-image-url={imageUrl ?? ''}>
+      {teamName} logo
+    </span>
+  ),
 }));
 vi.mock('@/components/ui/entity-card', () => ({
   EntityCard: ({ children, className }: { children: React.ReactNode; className?: string }) => (
@@ -83,12 +87,59 @@ describe('HistoricalStandingsTable', () => {
   beforeEach(() => {
     state.isMobile = false;
     state.isWinterTheme = false;
+    powerScoreDisplayMock.mockClear();
   });
 
   it('says there are no standings when the season has no teams', () => {
     render(<HistoricalStandingsTable teams={[]} />);
 
     expect(screen.getByText('No Standings Available')).toBeInTheDocument();
+  });
+
+  describe.each([
+    ['desktop', false],
+    ['phone', true],
+  ])('team picture on a %s', (_layout, isMobile) => {
+    beforeEach(() => {
+      state.isMobile = isMobile;
+    });
+
+    it('prefers the team image over the team logo', () => {
+      render(
+        <HistoricalStandingsTable
+          teams={[
+            team({
+              team_image_url: 'https://x.test/image.png',
+              team_logo_url: 'https://x.test/logo.png',
+            }),
+          ]}
+        />
+      );
+
+      expect(screen.getByTestId('logo')).toHaveAttribute(
+        'data-image-url',
+        'https://x.test/image.png'
+      );
+    });
+
+    it('falls back to the team logo when there is no team image', () => {
+      render(
+        <HistoricalStandingsTable
+          teams={[team({ team_image_url: null, team_logo_url: 'https://x.test/logo.png' })]}
+        />
+      );
+
+      expect(screen.getByTestId('logo')).toHaveAttribute(
+        'data-image-url',
+        'https://x.test/logo.png'
+      );
+    });
+
+    it('passes no picture when the team has neither', () => {
+      render(<HistoricalStandingsTable teams={[team()]} />);
+
+      expect(screen.getByTestId('logo')).toHaveAttribute('data-image-url', '');
+    });
   });
 
   describe('on a desktop', () => {
@@ -290,11 +341,9 @@ describe('HistoricalStandingsTable', () => {
       expect(runnerUp).toHaveClass('border-l-gray-400');
     });
 
-    it('uses the team image over the logo, and the winter colours in the winter theme', () => {
+    it('uses the winter colours in the winter theme', () => {
       state.isWinterTheme = true;
-      render(
-        <HistoricalStandingsTable teams={[team({ team_image_url: 'https://x.test/a.png' })]} />
-      );
+      render(<HistoricalStandingsTable teams={[team()]} />);
 
       expect(screen.getByText('Falcons')).toHaveClass('text-white');
     });
