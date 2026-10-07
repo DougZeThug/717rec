@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 type RequestIdleCallbackFn = (cb: IdleRequestCallback, opts?: { timeout?: number }) => number;
 type GlobalWithRequestIdle = typeof globalThis & { requestIdleCallback?: RequestIdleCallbackFn };
@@ -11,12 +11,22 @@ const initMock = vi.fn();
 const getClientMock = vi.fn();
 const replayIntegrationMock = vi.fn(() => ({ name: 'replay' }));
 const browserTracingIntegrationMock = vi.fn(() => ({ name: 'tracing' }));
+const captureExceptionMock = vi.fn();
+const captureMessageMock = vi.fn();
+const setUserMock = vi.fn();
+const addBreadcrumbMock = vi.fn();
+const metricsMock = { count: vi.fn(), gauge: vi.fn(), distribution: vi.fn() };
 
 vi.mock('@sentry/react', () => ({
   init: initMock,
   getClient: getClientMock,
   replayIntegration: replayIntegrationMock,
   browserTracingIntegration: browserTracingIntegrationMock,
+  captureException: captureExceptionMock,
+  captureMessage: captureMessageMock,
+  setUser: setUserMock,
+  addBreadcrumb: addBreadcrumbMock,
+  metrics: metricsMock,
 }));
 
 const importSentryModule = ({
@@ -390,6 +400,146 @@ describe('sentry utils', () => {
 
       const { initSentry } = await importSentryModule({ prod: true });
       expect(() => initSentry()).not.toThrow();
+    });
+  });
+
+  describe('captureError', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('logs to the console but sends nothing to Sentry outside production', async () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const { captureError } = await importSentryModule({ prod: false });
+      const error = new Error('boom');
+
+      captureError(error, { page: 'teams' });
+
+      expect(errorSpy).toHaveBeenCalledWith('[Error]:', error, { page: 'teams' });
+      expect(captureExceptionMock).not.toHaveBeenCalled();
+    });
+
+    it('sends the error and its context to Sentry in production', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const { captureError } = await importSentryModule({ prod: true });
+      const error = new Error('boom');
+
+      captureError(error, { page: 'teams' });
+
+      expect(captureExceptionMock).toHaveBeenCalledWith(error, { extra: { page: 'teams' } });
+    });
+
+    it('keeps going when Sentry itself fails, because the error is already logged', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const sentryError = new Error('CORS blocked');
+      captureExceptionMock.mockImplementationOnce(() => {
+        throw sentryError;
+      });
+      const { captureError } = await importSentryModule({ prod: true });
+
+      expect(() => captureError(new Error('boom'))).not.toThrow();
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[Sentry] Failed to send error report (CORS/network issue):',
+        sentryError
+      );
+    });
+  });
+
+  describe('captureMessage', () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('logs to the console but sends nothing to Sentry outside production', async () => {
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      const { captureMessage } = await importSentryModule({ prod: false });
+
+      captureMessage('hello');
+
+      expect(logSpy).toHaveBeenCalledWith('[info]:', 'hello');
+      expect(captureMessageMock).not.toHaveBeenCalled();
+    });
+
+    it('sends the message to Sentry at info level unless told otherwise', async () => {
+      vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      const { captureMessage } = await importSentryModule({ prod: true });
+
+      captureMessage('hello');
+      captureMessage('careful', 'warning', { week: 4 });
+
+      expect(captureMessageMock).toHaveBeenNthCalledWith(1, 'hello', {
+        level: 'info',
+        extra: undefined,
+      });
+      expect(captureMessageMock).toHaveBeenNthCalledWith(2, 'careful', {
+        level: 'warning',
+        extra: { week: 4 },
+      });
+    });
+
+    it('keeps going when Sentry itself fails, because the message is already logged', async () => {
+      vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const sentryError = new Error('CORS blocked');
+      captureMessageMock.mockImplementationOnce(() => {
+        throw sentryError;
+      });
+      const { captureMessage } = await importSentryModule({ prod: true });
+
+      expect(() => captureMessage('hello')).not.toThrow();
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[Sentry] Failed to send message (CORS/network issue):',
+        sentryError
+      );
+    });
+  });
+
+  describe('thin Sentry wrappers', () => {
+    it('setUser passes the user, or null on sign-out, to Sentry', async () => {
+      const { setUser } = await importSentryModule();
+
+      setUser({ id: 'u1', username: 'doug' });
+      setUser(null);
+
+      expect(setUserMock).toHaveBeenNthCalledWith(1, { id: 'u1', username: 'doug' });
+      expect(setUserMock).toHaveBeenNthCalledWith(2, null);
+    });
+
+    it('addBreadcrumb passes the breadcrumb to Sentry', async () => {
+      const { addBreadcrumb } = await importSentryModule();
+
+      addBreadcrumb({ category: 'ui.click', message: 'Save' });
+
+      expect(addBreadcrumbMock).toHaveBeenCalledWith({ category: 'ui.click', message: 'Save' });
+    });
+
+    it('metrics.count adds one unless given a value', async () => {
+      const { metrics } = await importSentryModule();
+
+      metrics.count('score.saved');
+      metrics.count('score.saved', 3, { source: 'admin' });
+
+      expect(metricsMock.count).toHaveBeenNthCalledWith(1, 'score.saved', 1, {
+        attributes: undefined,
+      });
+      expect(metricsMock.count).toHaveBeenNthCalledWith(2, 'score.saved', 3, {
+        attributes: { source: 'admin' },
+      });
+    });
+
+    it('metrics.gauge and metrics.distribution pass name, value and attributes through', async () => {
+      const { metrics } = await importSentryModule();
+
+      metrics.gauge('teams.active', 26, { season: 'summer' });
+      metrics.distribution('score.margin', 7);
+
+      expect(metricsMock.gauge).toHaveBeenCalledWith('teams.active', 26, {
+        attributes: { season: 'summer' },
+      });
+      expect(metricsMock.distribution).toHaveBeenCalledWith('score.margin', 7, {
+        attributes: undefined,
+      });
     });
   });
 });
