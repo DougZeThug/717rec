@@ -115,7 +115,7 @@ describe('Blind Draw signups list', () => {
   });
 
   it('removes the chosen signup when Remove is confirmed, then closes the dialog', async () => {
-    deleteSignup.mockResolvedValue(undefined);
+    deleteSignup.mockResolvedValue(undefined); // skipcq: JS-W1042
     render(<BlindDrawSignupsTab />);
 
     const rows = screen.getAllByRole('row').slice(1);

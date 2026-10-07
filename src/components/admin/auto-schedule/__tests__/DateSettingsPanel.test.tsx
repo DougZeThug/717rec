@@ -20,8 +20,8 @@ const buildProps = (overrides: Partial<PanelProps> = {}): PanelProps => ({
   totalTeams: 0,
   oddBlocks: 0,
   formattedDate: 'June 10, 2026',
-  onLoadTeams: vi.fn().mockResolvedValue(undefined),
-  onGenerateSchedule: vi.fn().mockResolvedValue(undefined),
+  onLoadTeams: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
+  onGenerateSchedule: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
   ...overrides,
 });
 

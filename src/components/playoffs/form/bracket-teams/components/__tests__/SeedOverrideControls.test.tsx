@@ -75,8 +75,8 @@ const conflictValidation: SeedValidationState = {
 
 describe('SeedOverrideControls', () => {
   beforeEach(() => {
-    mockBulkUpdate.mockResolvedValue(undefined);
-    mockReset.mockResolvedValue(undefined);
+    mockBulkUpdate.mockResolvedValue(undefined); // skipcq: JS-W1042
+    mockReset.mockResolvedValue(undefined); // skipcq: JS-W1042
   });
 
   it('asks for a division before showing seeds', () => {

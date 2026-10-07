@@ -156,7 +156,7 @@ describe('TeamForm', () => {
     const fileInput = screen.getByLabelText(/upload team image/i);
     const openPicker = vi
       .spyOn(fileInput as HTMLInputElement, 'click')
-      .mockImplementation(() => {});
+      .mockImplementation(() => undefined);
 
     await user.click(screen.getByRole('button', { name: /upload image/i }));
 

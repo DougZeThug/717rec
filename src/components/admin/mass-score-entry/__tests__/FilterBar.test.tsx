@@ -81,6 +81,6 @@ describe('FilterBar', () => {
     await openRadixTrigger(screen.getByRole('combobox', { name: 'Filter by bracket' }));
     await userEvent.click(await screen.findByRole('option', { name: 'All Brackets' }));
 
-    expect(onBracketChange).toHaveBeenCalledWith(undefined);
+    expect(onBracketChange).toHaveBeenCalledWith(undefined); // skipcq: JS-W1042
   });
 });

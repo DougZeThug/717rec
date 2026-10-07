@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import DeleteBracketDialog from '../DeleteBracketDialog';
 
 const renderDialog = (props: Partial<React.ComponentProps<typeof DeleteBracketDialog>> = {}) => {
-  const onConfirm = vi.fn().mockResolvedValue(undefined);
+  const onConfirm = vi.fn().mockResolvedValue(undefined); // skipcq: JS-W1042
   const onOpenChange = vi.fn();
   render(
     <DeleteBracketDialog

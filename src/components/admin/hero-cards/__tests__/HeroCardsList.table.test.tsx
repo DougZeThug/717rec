@@ -142,7 +142,7 @@ describe('HeroCardsList', () => {
   });
 
   it('deletes the card once the dialog is confirmed, then closes it', async () => {
-    deleteCard.mockResolvedValue(undefined);
+    deleteCard.mockResolvedValue(undefined); // skipcq: JS-W1042
     renderList();
 
     await userEvent.click(screen.getByRole('button', { name: 'Delete card' }));
