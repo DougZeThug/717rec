@@ -19,6 +19,19 @@ const SkeletonScoreRow: React.FC = () => (
   </div>
 );
 
+// Placeholder for the team name, spacer, team name row
+const SkeletonNameRow: React.FC = () => (
+  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+    {/* Team 1 Name */}
+    <ShimmerSkeleton className="h-4 w-full" />
+
+    <div className="w-4" />
+
+    {/* Team 2 Name */}
+    <ShimmerSkeleton className="h-4 w-full" />
+  </div>
+);
+
 const MatchCardSkeleton: React.FC = () => {
   return (
     <Card className="overflow-hidden border-border">
@@ -26,15 +39,7 @@ const MatchCardSkeleton: React.FC = () => {
         <div className="flex flex-col space-y-4">
           <SkeletonScoreRow />
 
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
-            {/* Team 1 Name */}
-            <ShimmerSkeleton className="h-4 w-full" />
-
-            <div className="w-4"></div>
-
-            {/* Team 2 Name */}
-            <ShimmerSkeleton className="h-4 w-full" />
-          </div>
+          <SkeletonNameRow />
         </div>
       </CardContent>
     </Card>

@@ -24,6 +24,32 @@ import { errorLog } from '@/utils/logger';
 
 type PendingMembership = ReturnType<typeof usePendingMemberships>['pendingMemberships'][number];
 
+type PendingMembershipUser = PendingMembership['user'];
+
+const MembershipUser: React.FC<{ user: PendingMembershipUser }> = ({ user }) => (
+  <div className="flex items-center gap-2">
+    <div className="size-8 bg-muted rounded-full flex items-center justify-center">
+      {user.avatar_url ? (
+        <img
+          src={user.avatar_url}
+          alt="User"
+          loading="lazy"
+          decoding="async"
+          className="size-8 rounded-full"
+        />
+      ) : (
+        <span className="text-sm font-medium">
+          {(user.full_name || user.username || 'User').charAt(0).toUpperCase()}
+        </span>
+      )}
+    </div>
+    <div>
+      <p className="font-medium">{user.full_name || user.username || 'Anonymous User'}</p>
+      <p className="text-xs text-muted-foreground">wants to join</p>
+    </div>
+  </div>
+);
+
 interface MembershipSummaryProps {
   membership: PendingMembership;
 }
@@ -31,31 +57,7 @@ interface MembershipSummaryProps {
 const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => (
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <div className="size-8 bg-muted rounded-full flex items-center justify-center">
-          {membership.user.avatar_url ? (
-            <img
-              src={membership.user.avatar_url}
-              alt="User"
-              loading="lazy"
-              decoding="async"
-              className="size-8 rounded-full"
-            />
-          ) : (
-            <span className="text-sm font-medium">
-              {(membership.user.full_name || membership.user.username || 'User')
-                .charAt(0)
-                .toUpperCase()}
-            </span>
-          )}
-        </div>
-        <div>
-          <p className="font-medium">
-            {membership.user.full_name || membership.user.username || 'Anonymous User'}
-          </p>
-          <p className="text-xs text-muted-foreground">wants to join</p>
-        </div>
-      </div>
+      <MembershipUser user={membership.user} />
       <div className="flex items-center gap-2">
         <TeamLogo
           imageUrl={membership.team.image_url || membership.team.logo_url}
@@ -71,6 +73,49 @@ const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => 
       {toLocalDateString(membership.joined_at)}
     </Badge>
   </div>
+);
+
+interface RejectMembershipDialogProps {
+  isProcessing: boolean;
+  onReject: () => void;
+}
+
+const RejectMembershipDialog: React.FC<RejectMembershipDialogProps> = ({
+  isProcessing,
+  onReject,
+}) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-destructive-text border-destructive hover:bg-destructive hover:text-foreground"
+        disabled={isProcessing}
+      >
+        <XCircle className="size-4 mr-1" />
+        Reject
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Reject membership request?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Are you sure you want to reject this request to join? The person is shown that it was
+          declined, and can ask again.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={() => onReject()}
+          disabled={isProcessing}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          Reject Request
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
 );
 
 interface MembershipActionsProps {
@@ -101,38 +146,10 @@ const MembershipActions: React.FC<MembershipActionsProps> = ({
       )}
     </Button>
 
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-destructive-text border-destructive hover:bg-destructive hover:text-foreground"
-          disabled={isProcessing}
-        >
-          <XCircle className="size-4 mr-1" />
-          Reject
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Reject membership request?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to reject this request to join? The person is shown that it was
-            declined, and can ask again.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => onApproval(membership.id, false)}
-            disabled={isProcessing}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-          >
-            Reject Request
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <RejectMembershipDialog
+      isProcessing={isProcessing}
+      onReject={() => onApproval(membership.id, false)}
+    />
   </div>
 );
 

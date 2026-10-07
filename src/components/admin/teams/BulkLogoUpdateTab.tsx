@@ -89,6 +89,35 @@ const LogoFilters: React.FC<LogoFiltersProps> = ({
   </div>
 );
 
+interface ProgressCardProps {
+  optimized: number;
+  total: number;
+  percentage: number;
+}
+
+const ProgressCard: React.FC<ProgressCardProps> = ({ optimized, total, percentage }) => (
+  <Card>
+    <CardContent className="p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium">Logo Optimization Progress</span>
+        <span className="text-sm text-muted-foreground">
+          {optimized}/{total} ({percentage}%)
+        </span>
+      </div>
+      <Progress value={percentage} className="h-2" />
+    </CardContent>
+  </Card>
+);
+
+const BulkLogoHeader: React.FC = () => (
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Image className="size-5" />
+      Bulk Logo Update
+    </CardTitle>
+  </CardHeader>
+);
+
 const BulkLogoUpdateTab: React.FC = () => {
   const { data: teams, isLoading, error, refetch } = useTeamsQuery({ includeHidden: true });
   const [searchTerm, setSearchTerm] = useState('');
@@ -194,26 +223,15 @@ const BulkLogoUpdateTab: React.FC = () => {
       </div>
 
       {/* Progress Bar */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Logo Optimization Progress</span>
-            <span className="text-sm text-muted-foreground">
-              {stats.optimized}/{stats.total} ({optimizationPercentage}%)
-            </span>
-          </div>
-          <Progress value={optimizationPercentage} className="h-2" />
-        </CardContent>
-      </Card>
+      <ProgressCard
+        optimized={stats.optimized}
+        total={stats.total}
+        percentage={optimizationPercentage}
+      />
 
       {/* Main Content Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Image className="size-5" />
-            Bulk Logo Update
-          </CardTitle>
-        </CardHeader>
+        <BulkLogoHeader />
         <CardContent className="space-y-4">
           {/* Filters */}
           <LogoFilters

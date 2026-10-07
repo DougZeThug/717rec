@@ -73,6 +73,102 @@ const ChartsHeader = ({ isMobile, isWinterTheme, isLight, isOpen }: ChartsHeader
   </CardHeader>
 );
 
+type ChartData = ReturnType<typeof useChartData>;
+type EmblaCarouselHook = ReturnType<typeof useEmblaCarousel>;
+
+interface ChartSlidesProps {
+  winLossData: ChartData['winLossData'];
+  powerScoreData: ChartData['powerScoreData'];
+  chartLimit: number;
+  isMobile: boolean;
+}
+
+// The three chart cards, one per carousel slide
+const ChartSlides = ({ winLossData, powerScoreData, chartLimit, isMobile }: ChartSlidesProps) => (
+  <div className="flex touch-pan-y">
+    <div className="flex-[0_0_100%] min-w-0 pr-2">
+      <WinLossChartCard data={winLossData} chartLimit={chartLimit} isMobile={isMobile} />
+    </div>
+    <div className="flex-[0_0_100%] min-w-0 pr-2">
+      <PowerScoreChartCard data={powerScoreData} />
+    </div>
+    <div className="flex-[0_0_100%] min-w-0">
+      <PowerScoreTrendsCard />
+    </div>
+  </div>
+);
+
+interface ChartsBodyProps extends ChartSlidesProps {
+  emblaRef: EmblaCarouselHook[0];
+  emblaApi: EmblaCarouselHook[1];
+  selectedIndex: number;
+}
+
+// Mobile: swipeable carousel with dot indicators
+const MobileChartsCarousel = ({
+  winLossData,
+  powerScoreData,
+  chartLimit,
+  isMobile,
+  emblaRef,
+  emblaApi,
+  selectedIndex,
+}: ChartsBodyProps) => (
+  <div className="col-span-1">
+    <div className="overflow-hidden" ref={emblaRef}>
+      <ChartSlides
+        winLossData={winLossData}
+        powerScoreData={powerScoreData}
+        chartLimit={chartLimit}
+        isMobile={isMobile}
+      />
+    </div>
+    {/* Dot indicators */}
+    <div className="flex justify-center gap-2 mt-3">
+      {chartLabels.map((label, index) => (
+        <button
+          type="button"
+          key={label}
+          onClick={() => emblaApi?.scrollTo(index)}
+          className={cn(
+            'min-h-11 px-3 py-1 rounded-full text-xs transition-all',
+            selectedIndex === index
+              ? 'bg-blue-600 text-white'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          )}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+// Body of the collapsible: carousel on mobile, three charts in a row on desktop
+const ChartsBody = (props: ChartsBodyProps) => (
+  <div className="p-4 pt-0">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
+      {/* On mobile: swipeable carousel */}
+      {props.isMobile ? (
+        <MobileChartsCarousel {...props} />
+      ) : (
+        // On desktop: show all three charts in a row
+        <>
+          <WinLossChartCard
+            data={props.winLossData}
+            chartLimit={props.chartLimit}
+            isMobile={props.isMobile}
+          />
+
+          <PowerScoreChartCard data={props.powerScoreData} />
+
+          <PowerScoreTrendsCard />
+        </>
+      )}
+    </div>
+  </div>
+);
+
 const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
@@ -129,63 +225,15 @@ const StatsCharts = ({ rankings, chartLimit }: StatsChartsProps) => {
           />
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="p-4 pt-0">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 font-inter">
-              {/* On mobile: swipeable carousel */}
-              {isMobile ? (
-                <div className="col-span-1">
-                  <div className="overflow-hidden" ref={emblaRef}>
-                    <div className="flex touch-pan-y">
-                      <div className="flex-[0_0_100%] min-w-0 pr-2">
-                        <WinLossChartCard
-                          data={winLossData}
-                          chartLimit={chartLimit}
-                          isMobile={isMobile}
-                        />
-                      </div>
-                      <div className="flex-[0_0_100%] min-w-0 pr-2">
-                        <PowerScoreChartCard data={powerScoreData} />
-                      </div>
-                      <div className="flex-[0_0_100%] min-w-0">
-                        <PowerScoreTrendsCard />
-                      </div>
-                    </div>
-                  </div>
-                  {/* Dot indicators */}
-                  <div className="flex justify-center gap-2 mt-3">
-                    {chartLabels.map((label, index) => (
-                      <button
-                        type="button"
-                        key={label}
-                        onClick={() => emblaApi?.scrollTo(index)}
-                        className={cn(
-                          'min-h-11 px-3 py-1 rounded-full text-xs transition-all',
-                          selectedIndex === index
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        )}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                // On desktop: show all three charts in a row
-                <>
-                  <WinLossChartCard
-                    data={winLossData}
-                    chartLimit={chartLimit}
-                    isMobile={isMobile}
-                  />
-
-                  <PowerScoreChartCard data={powerScoreData} />
-
-                  <PowerScoreTrendsCard />
-                </>
-              )}
-            </div>
-          </div>
+          <ChartsBody
+            isMobile={isMobile}
+            winLossData={winLossData}
+            powerScoreData={powerScoreData}
+            chartLimit={chartLimit}
+            emblaRef={emblaRef}
+            emblaApi={emblaApi}
+            selectedIndex={selectedIndex}
+          />
         </CollapsibleContent>
       </Card>
     </Collapsible>

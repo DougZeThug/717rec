@@ -89,6 +89,72 @@ const DatePickerPopover = ({
   </Popover>
 );
 
+type TimeslotAssignmentProps = React.ComponentProps<typeof TimeslotAssignment>;
+type TimeslotListProps = React.ComponentProps<typeof TimeslotList>;
+
+interface TimeslotColumnsProps {
+  selectedDate: Date;
+  teams: TimeslotAssignmentProps['teams'];
+  timeslots: TimeslotAssignmentProps['existingTimeslots'];
+  isLoadingTeams: boolean;
+  teamsFailed: boolean;
+  onRetryTeams: () => void;
+  isLoadingTimeslots: boolean;
+  isSubmitting: boolean;
+  canDelete: boolean;
+  onAssign: TimeslotAssignmentProps['onAssign'];
+  onBatchAssign: TimeslotAssignmentProps['onBatchAssign'];
+  onBatchAssignDoubleHeaders: TimeslotAssignmentProps['onBatchAssignDoubleHeaders'];
+  onDelete: TimeslotListProps['onDelete'];
+}
+
+/** The two columns: the booking form beside the list of current timeslots. */
+const TimeslotColumns = ({
+  selectedDate,
+  teams,
+  timeslots,
+  isLoadingTeams,
+  teamsFailed,
+  onRetryTeams,
+  isLoadingTimeslots,
+  isSubmitting,
+  canDelete,
+  onAssign,
+  onBatchAssign,
+  onBatchAssignDoubleHeaders,
+  onDelete,
+}: TimeslotColumnsProps) => (
+  <div className="grid md:grid-cols-2 gap-8">
+    <NewTimeslotSection isLoading={isLoadingTeams} hasFailed={teamsFailed} onRetry={onRetryTeams}>
+      <TimeslotAssignment
+        selectedDate={selectedDate}
+        teams={teams}
+        existingTimeslots={timeslots}
+        onAssign={onAssign}
+        onBatchAssign={onBatchAssign}
+        onBatchAssignDoubleHeaders={onBatchAssignDoubleHeaders}
+        isSubmitting={isSubmitting}
+      />
+    </NewTimeslotSection>
+
+    <div>
+      <h3 className="text-lg font-medium mb-4">Current Timeslots</h3>
+      {isLoadingTimeslots ? (
+        <p>Loading timeslots...</p>
+      ) : (
+        <div className="bg-card p-4 rounded-md border border-border">
+          <TimeslotList
+            timeslots={timeslots}
+            teams={teams}
+            onDelete={onDelete}
+            canDelete={canDelete}
+          />
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 const TimeslotsTab = () => {
   const { toast } = useToast();
   const prefill = useTimeslotPrefill();
@@ -334,39 +400,21 @@ const TimeslotsTab = () => {
             onDismiss={prefill.clear}
           />
         )}
-        <div className="grid md:grid-cols-2 gap-8">
-          <NewTimeslotSection
-            isLoading={isLoadingTeams}
-            hasFailed={Boolean(teamsError) && teamsNeverLoaded}
-            onRetry={() => refetchTeams()}
-          >
-            <TimeslotAssignment
-              selectedDate={selectedDate}
-              teams={teams}
-              existingTimeslots={timeslots}
-              onAssign={handleTimeslotAssign}
-              onBatchAssign={handleBatchTimeslotAssign}
-              onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
-              isSubmitting={isSubmitting}
-            />
-          </NewTimeslotSection>
-
-          <div>
-            <h3 className="text-lg font-medium mb-4">Current Timeslots</h3>
-            {isLoadingTimeslots ? (
-              <p>Loading timeslots...</p>
-            ) : (
-              <div className="bg-card p-4 rounded-md border border-border">
-                <TimeslotList
-                  timeslots={timeslots}
-                  teams={teams}
-                  onDelete={handleTimeslotDelete}
-                  canDelete={isNightLoaded}
-                />
-              </div>
-            )}
-          </div>
-        </div>
+        <TimeslotColumns
+          selectedDate={selectedDate}
+          teams={teams}
+          timeslots={timeslots}
+          isLoadingTeams={isLoadingTeams}
+          teamsFailed={Boolean(teamsError) && teamsNeverLoaded}
+          onRetryTeams={() => refetchTeams()}
+          isLoadingTimeslots={isLoadingTimeslots}
+          isSubmitting={isSubmitting}
+          canDelete={isNightLoaded}
+          onAssign={handleTimeslotAssign}
+          onBatchAssign={handleBatchTimeslotAssign}
+          onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
+          onDelete={handleTimeslotDelete}
+        />
       </CardContent>
     </Card>
   );

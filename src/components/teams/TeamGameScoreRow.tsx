@@ -31,6 +31,18 @@ const TeamLogoLink: React.FC<{ name: string; logo: string }> = ({ name, logo }) 
   </TransitionLink>
 );
 
+// Team name that links to the team page; the caller sets winner / loser colours
+const TeamNameLink: React.FC<{ name: string; labelClassName: string }> = ({
+  name,
+  labelClassName,
+}) => (
+  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="truncate hover:underline">
+    <span className={labelClassName} title={name}>
+      {name}
+    </span>
+  </TransitionLink>
+);
+
 /** Match row with date, linked team names/logos, and game wins; can color winner and loser. */
 const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   match,
@@ -79,22 +91,15 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
         {/* Home - Left side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1">
           <TeamLogoLink name={homeName} logo={homeLogo} />
-          <TransitionLink
-            to={`/teams/${toTeamSlug(homeName)}`}
-            className="truncate hover:underline"
-          >
-            <span
-              className={cn(
-                'truncate',
-                'font-bebas uppercase tracking-wide',
-                highlightWinnerLoser && winnerTeamId === homeTeamId && 'text-green-600 font-medium',
-                highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-500'
-              )}
-              title={homeName}
-            >
-              {homeName}
-            </span>
-          </TransitionLink>
+          <TeamNameLink
+            name={homeName}
+            labelClassName={cn(
+              'truncate',
+              'font-bebas uppercase tracking-wide',
+              highlightWinnerLoser && winnerTeamId === homeTeamId && 'text-green-600 font-medium',
+              highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-500'
+            )}
+          />
         </div>
         {/* Game score - center */}
         <div
@@ -107,22 +112,15 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
         </div>
         {/* Away - Right side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1 justify-end">
-          <TransitionLink
-            to={`/teams/${toTeamSlug(awayName)}`}
-            className="truncate hover:underline"
-          >
-            <span
-              className={cn(
-                'truncate text-right',
-                'font-bebas uppercase tracking-wide',
-                highlightWinnerLoser && winnerTeamId === awayTeamId && 'text-green-600 font-medium',
-                highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-500'
-              )}
-              title={awayName}
-            >
-              {awayName}
-            </span>
-          </TransitionLink>
+          <TeamNameLink
+            name={awayName}
+            labelClassName={cn(
+              'truncate text-right',
+              'font-bebas uppercase tracking-wide',
+              highlightWinnerLoser && winnerTeamId === awayTeamId && 'text-green-600 font-medium',
+              highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-500'
+            )}
+          />
           <TeamLogoLink name={awayName} logo={awayLogo} />
         </div>
       </div>

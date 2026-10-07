@@ -274,6 +274,38 @@ interface AdvancedStatsTabProps {
   onAdvancedOpenChange: (open: boolean) => void;
 }
 
+interface DetailedStatsCollapsibleProps {
+  wins: number;
+  losses: number;
+  gamesWon: number;
+  gamesLost: number;
+  isAdvancedOpen: boolean;
+  onAdvancedOpenChange: (open: boolean) => void;
+}
+
+// Show / hide toggle around the detailed stats grid
+const DetailedStatsCollapsible: React.FC<DetailedStatsCollapsibleProps> = ({
+  wins,
+  losses,
+  gamesWon,
+  gamesLost,
+  isAdvancedOpen,
+  onAdvancedOpenChange,
+}) => (
+  <Collapsible
+    open={isAdvancedOpen}
+    onOpenChange={onAdvancedOpenChange}
+    className="col-span-1 md:col-span-2"
+  >
+    <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-md transition-colors">
+      {isAdvancedOpen ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
+    </CollapsibleTrigger>
+    <CollapsibleContent className="pt-2">
+      <DetailedStatsGrid wins={wins} losses={losses} gamesWon={gamesWon} gamesLost={gamesLost} />
+    </CollapsibleContent>
+  </Collapsible>
+);
+
 // Advanced Stats Tab
 const AdvancedStatsTab: React.FC<AdvancedStatsTabProps> = ({
   stats,
@@ -314,23 +346,14 @@ const AdvancedStatsTab: React.FC<AdvancedStatsTabProps> = ({
         />
 
         {/* Detailed Stats Collapsible Section */}
-        <Collapsible
-          open={isAdvancedOpen}
-          onOpenChange={onAdvancedOpenChange}
-          className="col-span-1 md:col-span-2"
-        >
-          <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-md transition-colors">
-            {isAdvancedOpen ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2">
-            <DetailedStatsGrid
-              wins={wins}
-              losses={losses}
-              gamesWon={gamesWon}
-              gamesLost={gamesLost}
-            />
-          </CollapsibleContent>
-        </Collapsible>
+        <DetailedStatsCollapsible
+          wins={wins}
+          losses={losses}
+          gamesWon={gamesWon}
+          gamesLost={gamesLost}
+          isAdvancedOpen={isAdvancedOpen}
+          onAdvancedOpenChange={onAdvancedOpenChange}
+        />
       </div>
     </TabsContent>
   );
@@ -404,6 +427,28 @@ const StatTabsPanel: React.FC<StatTabsPanelProps> = ({
   </div>
 );
 
+// Clickable card header: icon, "Team Stats" title and open / close arrow
+const StatsHeaderTrigger: React.FC<{ isOpen: boolean }> = ({ isOpen }) => (
+  <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
+    <div className="flex items-center gap-2">
+      <BarChart3 className="size-4 md:size-5 text-blue-500" aria-hidden="true" />
+      <h2
+        id="stats-heading"
+        className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter"
+        style={{ letterSpacing: '0.5px' }}
+      >
+        Team Stats
+      </h2>
+    </div>
+    <ChevronDown
+      className={cn(
+        'size-5 text-muted-foreground transition-transform duration-200',
+        isOpen && 'rotate-180'
+      )}
+    />
+  </CollapsibleTrigger>
+);
+
 const StatBreakdown: React.FC<StatBreakdownProps> = ({
   wins,
   losses,
@@ -454,24 +499,7 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
             : 'border-t-2 border-blue-700/80 shadow-lg bg-gradient-to-br from-slate-800/90 via-slate-800/70 to-slate-900/80'
         )}
       >
-        <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 transition-colors">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="size-4 md:size-5 text-blue-500" aria-hidden="true" />
-            <h2
-              id="stats-heading"
-              className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter"
-              style={{ letterSpacing: '0.5px' }}
-            >
-              Team Stats
-            </h2>
-          </div>
-          <ChevronDown
-            className={cn(
-              'size-5 text-muted-foreground transition-transform duration-200',
-              isOpen && 'rotate-180'
-            )}
-          />
-        </CollapsibleTrigger>
+        <StatsHeaderTrigger isOpen={isOpen} />
 
         <CollapsibleContent>
           <StatTabsPanel
