@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { openRadixTrigger } from '@/test/radix';
+
 import CreateDivisionDialog from '../CreateDivisionDialog';
 
 type MutateOptions = { onSuccess?: () => void };
@@ -80,5 +82,19 @@ describe('CreateDivisionDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(mutate).not.toHaveBeenCalled();
+  });
+
+  it('submits the display division the admin picked', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.type(screen.getByLabelText('Name'), 'Comp A');
+    await openRadixTrigger(screen.getByRole('combobox', { name: 'Display Division' }));
+    await user.click(await screen.findByRole('option', { name: 'Competitive' }));
+    await user.click(screen.getByRole('button', { name: 'Create' }));
+
+    expect(mutate).toHaveBeenCalledWith(
+      { name: 'Comp A', display_division: 'Competitive', division_weight: 0.85 },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 });
