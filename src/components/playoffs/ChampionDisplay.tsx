@@ -56,6 +56,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
   const championFoundId = champion?.id;
 
   useEffect(() => {
+    // skipcq: JS-0098 -- fire and forget: `void` marks the promise as deliberately not awaited.
     if (championFoundId) void fireChampionConfettiOnce(championFoundId);
   }, [championFoundId]);
 
