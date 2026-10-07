@@ -55,12 +55,7 @@ const NewTimeslotSection = ({
   hasFailed,
   onRetry,
   children,
-}: {
-  isLoading: boolean;
-  hasFailed: boolean;
-  onRetry: () => void;
-  children: React.ReactElement;
-}) => (
+}: React.ComponentProps<typeof AssignmentColumn>) => (
   <div>
     <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
     <AssignmentColumn isLoading={isLoading} hasFailed={hasFailed} onRetry={onRetry}>
