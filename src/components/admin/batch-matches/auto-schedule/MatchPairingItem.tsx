@@ -19,9 +19,17 @@ interface PairingScoreTooltipProps {
   isWinterTheme: boolean;
 }
 
-/** Icon and score pill shown inside the tooltip trigger. */
-const PairingScoreBadge: React.FC<PairingScoreTooltipProps> = ({ pairing, isWinterTheme }) => (
-  <div className="flex items-center gap-1">
+/**
+ * Icon and score pill shown inside the tooltip trigger. TooltipTrigger asChild
+ * hands this component its hover/focus handlers and ref, so they must land on
+ * the div or the tooltip never opens.
+ */
+const PairingScoreBadge: React.FC<PairingScoreTooltipProps & React.ComponentProps<'div'>> = ({
+  pairing,
+  isWinterTheme,
+  ...triggerProps
+}) => (
+  <div {...triggerProps} className="flex items-center gap-1">
     {pairing.hasPlayedBefore ? (
       <AlertTriangle className="size-4 text-amber-500" />
     ) : pairing.compatibilityScore < 5 ? (

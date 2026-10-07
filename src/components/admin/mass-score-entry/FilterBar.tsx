@@ -52,8 +52,9 @@ const DateFilter: React.FC<DateFilterProps> = ({ date, onDateChange }) => (
   </Popover>
 );
 
-const SessionDateHintLabel: React.FC = () => (
-  <div className="flex items-center">
+/** TooltipTrigger asChild hands this its hover/focus handlers and ref; they must land on the div. */
+const SessionDateHintLabel: React.FC<React.ComponentProps<'div'>> = (triggerProps) => (
+  <div {...triggerProps} className="flex items-center">
     <Info className="size-3 mr-1" />
     <span>Showing matches for the entire session (including evening games)</span>
   </div>
