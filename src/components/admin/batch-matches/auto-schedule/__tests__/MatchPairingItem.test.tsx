@@ -1,13 +1,15 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Team } from '@/types';
 import type { TeamPairing } from '@/types/autoSchedule';
 
 import { MatchPairingItem } from '../MatchPairingItem';
 
+const mockTheme = vi.hoisted(() => ({ isWinterTheme: false }));
+
 vi.mock('@/hooks/useSeasonalTheme', () => ({
-  useSeasonalThemeBase: () => ({ isWinterTheme: false }),
+  useSeasonalThemeBase: () => mockTheme,
 }));
 
 vi.mock('@/components/ui/team/TeamLogo', () => ({ TeamLogo: () => null }));
@@ -23,6 +25,10 @@ const pairing: TeamPairing = {
 };
 
 describe('MatchPairingItem', () => {
+  beforeEach(() => {
+    mockTheme.isWinterTheme = false;
+  });
+
   it('shows the score badge', () => {
     render(<MatchPairingItem pairing={pairing} index={0} blockName="Early" />);
 
@@ -40,5 +46,28 @@ describe('MatchPairingItem', () => {
     fireEvent.focus(trigger as HTMLElement);
 
     expect((await screen.findAllByText('Good match pairing')).length).toBeGreaterThan(0);
+  });
+
+  it('uses the dark winter card colors for a good pairing', () => {
+    mockTheme.isWinterTheme = true;
+    const { container } = render(
+      <MatchPairingItem pairing={pairing} index={0} blockName="Early" />
+    );
+
+    expect(screen.getByText('Score: 8.0/10')).toBeInTheDocument();
+    expect(container.firstChild).toHaveClass('bg-[hsl(222,30%,15%)]');
+  });
+
+  it('keeps the amber warning card in the winter theme for a rematch', () => {
+    mockTheme.isWinterTheme = true;
+    const { container } = render(
+      <MatchPairingItem
+        pairing={{ ...pairing, hasPlayedBefore: true }}
+        index={0}
+        blockName="Early"
+      />
+    );
+
+    expect(container.firstChild).toHaveClass('bg-amber-900/30');
   });
 });

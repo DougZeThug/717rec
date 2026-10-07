@@ -493,3 +493,70 @@ describe('AdminCorrectionsService.setGameWinner', () => {
     expect(write.update).not.toHaveBeenCalled();
   });
 });
+
+describe('AdminCorrectionsService.listLiveScoredMatches', () => {
+  const team = (id: string, name: string) => ({ id, name });
+  const matchRow = {
+    id: 'm1',
+    date: '2026-06-01',
+    location: 'Lancaster',
+    iscompleted: true,
+    winner_id: 't1',
+    season_id: SEASON_ID,
+    team1: team('t1', 'Corn Stars'),
+    team2: team('t2', 'Bag Raiders'),
+  };
+
+  /** games -> match ids, matches -> joined rows, match_rounds -> round counts. */
+  const wireList = (gameRows: unknown[], matchRows: unknown[], roundRows: unknown[] = []) => {
+    const matchEq = vi.fn().mockResolvedValue({ data: matchRows, error: null });
+    const matchOrder = vi.fn(() =>
+      Object.assign(Promise.resolve({ data: matchRows, error: null }), { eq: matchEq })
+    );
+    const matchIn = vi.fn(() => ({ order: matchOrder }));
+    const roundIn = vi.fn().mockResolvedValue({ data: roundRows, error: null });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'games') {
+        return { select: () => Promise.resolve({ data: gameRows, error: null }) };
+      }
+      if (table === 'matches') return { select: () => ({ in: matchIn }) };
+      return { select: () => ({ in: roundIn }) };
+    });
+    return { matchIn, matchEq };
+  };
+
+  it('returns an empty list when no match has live-scored games', async () => {
+    wireList([{ match_id: null }], []);
+
+    await expect(AdminCorrectionsService.listLiveScoredMatches()).resolves.toEqual([]);
+    expect(mockFrom).not.toHaveBeenCalledWith('matches');
+  });
+
+  it('lists each match once with its game and round counts', async () => {
+    const { matchIn } = wireList(
+      [{ match_id: 'm1' }, { match_id: 'm1' }, { match_id: null }],
+      [matchRow],
+      [{ match_id: 'm1' }, { match_id: 'm1' }, { match_id: 'm1' }]
+    );
+
+    const result = await AdminCorrectionsService.listLiveScoredMatches();
+
+    expect(matchIn).toHaveBeenCalledWith('id', ['m1']);
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: 'm1',
+        team1: { id: 't1', name: 'Corn Stars' },
+        gameCount: 2,
+        roundCount: 3,
+      }),
+    ]);
+  });
+
+  it('limits the list to one season when asked', async () => {
+    const { matchEq } = wireList([{ match_id: 'm1' }], [matchRow]);
+
+    await AdminCorrectionsService.listLiveScoredMatches(SEASON_ID);
+
+    expect(matchEq).toHaveBeenCalledWith('season_id', SEASON_ID);
+  });
+});
