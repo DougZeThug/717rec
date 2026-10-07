@@ -1,5 +1,6 @@
 'use client';
 
+// skipcq: JS-C1003 -- Radix documents this namespace import; its parts are used as Name.Root, Name.Content and so on.
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import React from 'react';
 

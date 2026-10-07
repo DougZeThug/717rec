@@ -1,3 +1,4 @@
+// skipcq: JS-C1003 -- Radix documents this namespace import; its parts are used as Name.Root, Name.Content and so on.
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import React from 'react';
 

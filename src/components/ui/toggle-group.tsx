@@ -1,3 +1,4 @@
+// skipcq: JS-C1003 -- Radix documents this namespace import; its parts are used as Name.Root, Name.Content and so on.
 import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
 import { type VariantProps } from 'class-variance-authority';
 import React from 'react';
