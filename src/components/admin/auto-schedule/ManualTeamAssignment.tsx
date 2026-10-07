@@ -24,6 +24,31 @@ interface ManualTeamAssignmentProps {
   onTeamsAssigned: (timeBlockTeams: TimeBlockTeamsMap) => void;
 }
 
+interface TimeBlockSelectProps {
+  value: string;
+  onValueChange: (value: string) => void;
+}
+
+const TimeBlockSelect: React.FC<TimeBlockSelectProps> = ({ value, onValueChange }) => (
+  <div className="flex-1">
+    <label htmlFor="manual-time-block" className="text-sm font-medium mb-1 block">
+      Time Block
+    </label>
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger id="manual-time-block">
+        <SelectValue placeholder="Select time block" />
+      </SelectTrigger>
+      <SelectContent>
+        {Object.keys(TIME_BLOCKS).map((block) => (
+          <SelectItem key={block} value={block}>
+            {block} Block
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
 const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
   selectedDate,
   onTeamsAssigned,
@@ -135,23 +160,7 @@ const ManualTeamAssignment: React.FC<ManualTeamAssignmentProps> = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <label htmlFor="manual-time-block" className="text-sm font-medium mb-1 block">
-              Time Block
-            </label>
-            <Select value={selectedTimeBlock} onValueChange={setSelectedTimeBlock}>
-              <SelectTrigger id="manual-time-block">
-                <SelectValue placeholder="Select time block" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.keys(TIME_BLOCKS).map((block) => (
-                  <SelectItem key={block} value={block}>
-                    {block} Block
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <TimeBlockSelect value={selectedTimeBlock} onValueChange={setSelectedTimeBlock} />
 
           <div className="flex-none mt-auto">
             <Button

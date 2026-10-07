@@ -99,6 +99,89 @@ const QueueTile: React.FC<QueueTileProps> = ({ label, count, icon: Icon, onClick
   </button>
 );
 
+interface RealtimeCardProps {
+  realtime: ReturnType<typeof useRealtimeHealth>;
+}
+
+const RealtimeCard: React.FC<RealtimeCardProps> = ({ realtime }) => (
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="flex items-center gap-2 text-base">
+        <Activity className="size-4" aria-hidden="true" />
+        Realtime
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      <div className="flex items-center gap-2">
+        <span
+          className={cn('inline-block size-2.5 rounded-full', dotClass(realtime.state))}
+          aria-hidden="true"
+        />
+        <span className="font-medium">{stateLabel(realtime.state)}</span>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {realtime.lastChangeAt
+          ? `Last state change: ${relativeAgo(realtime.lastChangeAt.toISOString())}`
+          : 'Waiting for first status…'}
+      </p>
+      {realtime.state === 'error' && (
+        <p className="text-xs text-red-500">
+          If a scorer is stuck, ask them to refresh once — that re-subscribes the channel.
+        </p>
+      )}
+    </CardContent>
+  </Card>
+);
+
+interface SnapshotCardProps {
+  snapshot: ReturnType<typeof useLastPowerSnapshot>['data'] | null;
+  isLoading: boolean;
+  isMissing: boolean;
+  isStale: boolean;
+}
+
+const SnapshotCard: React.FC<SnapshotCardProps> = ({ snapshot, isLoading, isMissing, isStale }) => (
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="flex items-center gap-2 text-base">
+        <RefreshCw className="size-4" aria-hidden="true" />
+        Last power snapshot
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      {isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {isMissing && (
+        <div className="flex items-center gap-2 text-sm text-red-500">
+          <AlertTriangle className="size-4" aria-hidden="true" />
+          No snapshot has ever been captured.
+        </div>
+      )}
+      {snapshot && (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-medium">Ran {relativeAgo(snapshot.created_at)}</span>
+            {isStale && (
+              <Badge variant="destructive" className="text-xs">
+                Stale
+              </Badge>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Week {snapshot.week_number} · {snapshot.row_count} team
+            {snapshot.row_count === 1 ? '' : 's'} captured
+          </p>
+          <p className="text-xs text-muted-foreground">{formatEst(snapshot.created_at)} EST</p>
+          {isStale && (
+            <p className="text-xs text-red-500">
+              Older than {SNAPSHOT_STALE_DAYS} days — verify pg_cron and CRON_WEBHOOK_SECRET.
+            </p>
+          )}
+        </>
+      )}
+    </CardContent>
+  </Card>
+);
+
 const LeagueNightStatusTab: React.FC = () => {
   const realtime = useRealtimeHealth();
   const snapshotQuery = useLastPowerSnapshot();
@@ -122,76 +205,15 @@ const LeagueNightStatusTab: React.FC = () => {
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Realtime health */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="size-4" aria-hidden="true" />
-              Realtime
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn('inline-block size-2.5 rounded-full', dotClass(realtime.state))}
-                aria-hidden="true"
-              />
-              <span className="font-medium">{stateLabel(realtime.state)}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {realtime.lastChangeAt
-                ? `Last state change: ${relativeAgo(realtime.lastChangeAt.toISOString())}`
-                : 'Waiting for first status…'}
-            </p>
-            {realtime.state === 'error' && (
-              <p className="text-xs text-red-500">
-                If a scorer is stuck, ask them to refresh once — that re-subscribes the channel.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <RealtimeCard realtime={realtime} />
 
         {/* Last power snapshot */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <RefreshCw className="size-4" aria-hidden="true" />
-              Last power snapshot
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {snapshotQuery.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
-            {isSnapshotMissing && (
-              <div className="flex items-center gap-2 text-sm text-red-500">
-                <AlertTriangle className="size-4" aria-hidden="true" />
-                No snapshot has ever been captured.
-              </div>
-            )}
-            {snapshot && (
-              <>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">Ran {relativeAgo(snapshot.created_at)}</span>
-                  {isSnapshotStale && (
-                    <Badge variant="destructive" className="text-xs">
-                      Stale
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Week {snapshot.week_number} · {snapshot.row_count} team
-                  {snapshot.row_count === 1 ? '' : 's'} captured
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatEst(snapshot.created_at)} EST
-                </p>
-                {isSnapshotStale && (
-                  <p className="text-xs text-red-500">
-                    Older than {SNAPSHOT_STALE_DAYS} days — verify pg_cron and CRON_WEBHOOK_SECRET.
-                  </p>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+        <SnapshotCard
+          snapshot={snapshot}
+          isLoading={snapshotQuery.isLoading}
+          isMissing={isSnapshotMissing}
+          isStale={isSnapshotStale}
+        />
       </div>
 
       {/* Pending queues */}

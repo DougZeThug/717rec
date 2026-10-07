@@ -12,6 +12,26 @@ import SeasonActions from './SeasonActions';
 import SeasonForm from './SeasonForm';
 import SeasonsList from './SeasonsList';
 
+interface OverviewCardProps {
+  title: string;
+  icon: React.ReactNode;
+  value: React.ReactNode;
+  caption: React.ReactNode;
+}
+
+const OverviewCard: React.FC<OverviewCardProps> = ({ title, icon, value, caption }) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {icon}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      {caption}
+    </CardContent>
+  </Card>
+);
+
 const SeasonManagementTab = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | null>(null);
@@ -41,44 +61,36 @@ const SeasonManagementTab = () => {
       <div className="space-y-6">
         {/* Season Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Season</CardTitle>
-              <Calendar className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeSeason ? activeSeason.name : 'None'}</div>
-              {activeSeason && (
+          <OverviewCard
+            title="Active Season"
+            icon={<Calendar className="size-4 text-muted-foreground" />}
+            value={activeSeason ? activeSeason.name : 'None'}
+            caption={
+              activeSeason && (
                 <p className="text-xs text-muted-foreground">
                   Started {toLocalDateString(activeSeason.start_date)}
                 </p>
-              )}
-            </CardContent>
-          </Card>
+              )
+            }
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Seasons</CardTitle>
-              <Trophy className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{seasons?.length || 0}</div>
+          <OverviewCard
+            title="Total Seasons"
+            icon={<Trophy className="size-4 text-muted-foreground" />}
+            value={seasons?.length || 0}
+            caption={
               <p className="text-xs text-muted-foreground">
                 {archivedSeasons?.length || 0} archived
               </p>
-            </CardContent>
-          </Card>
+            }
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Inactive Seasons</CardTitle>
-              <Calendar className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{inactiveSeasons?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">Ready to activate</p>
-            </CardContent>
-          </Card>
+          <OverviewCard
+            title="Inactive Seasons"
+            icon={<Calendar className="size-4 text-muted-foreground" />}
+            value={inactiveSeasons?.length || 0}
+            caption={<p className="text-xs text-muted-foreground">Ready to activate</p>}
+          />
         </div>
 
         {/* Action Buttons */}

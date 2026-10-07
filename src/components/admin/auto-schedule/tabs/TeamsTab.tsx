@@ -20,6 +20,15 @@ interface TeamsTabProps {
   originalTimeBlockTeams?: TimeBlockTeamsMap; // Store original loaded teams
 }
 
+const TeamsHeading: React.FC = () => (
+  <div>
+    <h3 className="text-lg font-medium">Teams by Time Block</h3>
+    <p className="text-sm text-muted-foreground">
+      Review teams assigned to each time block before generating the schedule.
+    </p>
+  </div>
+);
+
 const EMPTY_TIME_BLOCK_TEAMS: TimeBlockTeamsMap = {};
 
 const TeamsTab: React.FC<TeamsTabProps> = ({
@@ -88,12 +97,7 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
 
         <TabsContent value="auto" className="space-y-4 mt-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Teams by Time Block</h3>
-              <p className="text-sm text-muted-foreground">
-                Review teams assigned to each time block before generating the schedule.
-              </p>
-            </div>
+            <TeamsHeading />
 
             {totalTeams > 0 && (
               <div className="flex items-center gap-2">

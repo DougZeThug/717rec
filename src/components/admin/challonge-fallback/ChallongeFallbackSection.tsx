@@ -26,6 +26,20 @@ type DraftRow = {
 const toDraft = (rows: ChallongeFallbackBracket[]): DraftRow[] =>
   rows.map((r) => ({ id: r.id, title: r.title, slug: r.slug, sort_order: r.sort_order }));
 
+interface BracketEmbedsHeaderProps {
+  onAdd: () => void;
+  disabled: boolean;
+}
+
+const BracketEmbedsHeader: React.FC<BracketEmbedsHeaderProps> = ({ onAdd, disabled }) => (
+  <div className="flex items-center justify-between">
+    <h4 className="font-semibold">Bracket embeds</h4>
+    <Button variant="outline" size="sm" onClick={onAdd} disabled={disabled}>
+      <Plus className="size-4 mr-1" /> Add bracket
+    </Button>
+  </div>
+);
+
 const ChallongeFallbackSection: React.FC = () => {
   const {
     data: config,
@@ -219,12 +233,7 @@ const ChallongeFallbackSection: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold">Bracket embeds</h4>
-            <Button variant="outline" size="sm" onClick={handleAddRow} disabled={isMutating}>
-              <Plus className="size-4 mr-1" /> Add bracket
-            </Button>
-          </div>
+          <BracketEmbedsHeader onAdd={handleAddRow} disabled={isMutating} />
 
           {drafts.length === 0 && (
             <p className="text-sm text-muted-foreground">No brackets configured yet.</p>

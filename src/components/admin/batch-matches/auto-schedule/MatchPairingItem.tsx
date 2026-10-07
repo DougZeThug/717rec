@@ -14,6 +14,46 @@ interface MatchPairingItemProps {
   isDualMatchMode?: boolean;
 }
 
+interface PairingScoreTooltipProps {
+  pairing: TeamPairing;
+  isWinterTheme: boolean;
+}
+
+/** Score badge for a pairing, with a tooltip that says why it is flagged. */
+const PairingScoreTooltip: React.FC<PairingScoreTooltipProps> = ({ pairing, isWinterTheme }) => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center gap-1">
+          {pairing.hasPlayedBefore ? (
+            <AlertTriangle className="size-4 text-amber-500" />
+          ) : pairing.compatibilityScore < 5 ? (
+            <Info className="size-4 text-amber-500" />
+          ) : (
+            <CheckCircle className="size-4 text-green-500" />
+          )}
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${
+              isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted'
+            }`}
+          >
+            Score: {pairing.compatibilityScore.toFixed(1)}/10
+          </span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>
+          {pairing.hasPlayedBefore
+            ? 'These teams have played against each other before'
+            : pairing.compatibilityScore < 5
+              ? 'These teams may not be evenly matched'
+              : 'Good match pairing'}
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
 /** Card showing one proposed matchup with compatibility score, records, and its timeslot. */
 export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
   pairing,
@@ -46,37 +86,7 @@ export const MatchPairingItem: React.FC<MatchPairingItemProps> = ({
     <div className={`p-3 border rounded-md ${getCardClasses()}`}>
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium">Match {index + 1}</span>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1">
-                {pairing.hasPlayedBefore ? (
-                  <AlertTriangle className="size-4 text-amber-500" />
-                ) : pairing.compatibilityScore < 5 ? (
-                  <Info className="size-4 text-amber-500" />
-                ) : (
-                  <CheckCircle className="size-4 text-green-500" />
-                )}
-                <span
-                  className={`text-xs px-2 py-1 rounded-full ${
-                    isWinterTheme ? 'bg-[hsl(222,30%,20%)]' : 'bg-muted'
-                  }`}
-                >
-                  Score: {pairing.compatibilityScore.toFixed(1)}/10
-                </span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {pairing.hasPlayedBefore
-                  ? 'These teams have played against each other before'
-                  : pairing.compatibilityScore < 5
-                    ? 'These teams may not be evenly matched'
-                    : 'Good match pairing'}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <PairingScoreTooltip pairing={pairing} isWinterTheme={isWinterTheme} />
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center min-w-0">

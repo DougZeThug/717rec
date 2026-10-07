@@ -22,6 +22,154 @@ interface TeamAssignment {
   isInvalid: boolean; // Team is in 3+ blocks (invalid)
 }
 
+interface DiagnosticTeamBlocks {
+  teamId: string;
+  teamName: string;
+  blocks: string[];
+}
+
+interface DiagnosticAnalysis {
+  teamAssignments: TeamAssignment[];
+  doubleHeaderTeams: DiagnosticTeamBlocks[];
+  invalidTeams: DiagnosticTeamBlocks[];
+  blockStats: Map<string, number>;
+  teamsWithAssignments: number;
+  isValid: boolean;
+  hasInvalidAssignments: boolean;
+  hasDoubleHeaders: boolean;
+}
+
+const DiagnosticTitle: React.FC<{ isValid: boolean }> = ({ isValid }) => (
+  <div className="flex items-center gap-2">
+    <Database className="size-4 text-muted-foreground" />
+    <CardTitle className="text-sm font-mono">🔍 Diagnostic Panel</CardTitle>
+    {isValid ? (
+      <CheckCircle2 className="size-4 text-green-500" />
+    ) : (
+      <AlertCircle className="size-4 text-destructive-text" />
+    )}
+  </div>
+);
+
+const DiagnosticDetails: React.FC<{ analysis: DiagnosticAnalysis }> = ({ analysis }) => (
+  <CardContent className="space-y-4">
+    {/* Validation Status */}
+    <div className="flex items-center gap-2">
+      <Badge variant={analysis.isValid ? 'default' : 'destructive'} className="font-mono text-xs">
+        {analysis.isValid ? '✅ Valid' : '❌ Invalid'}
+      </Badge>
+      <span className="text-xs text-muted-foreground">
+        {analysis.teamsWithAssignments} teams assigned
+      </span>
+    </div>
+
+    {/* Invalid Assignments (3+ blocks) */}
+    {analysis.hasInvalidAssignments && (
+      <Alert variant="destructive">
+        <AlertCircle className="size-4" />
+        <AlertDescription className="text-xs font-mono">
+          <strong>Critical Error:</strong> {analysis.invalidTeams.length} team(s) assigned to 3+
+          blocks (max is 2 for double headers)
+          {analysis.invalidTeams.map((inv) => (
+            <div key={inv.teamId} className="mt-1 pl-4 border-l-2 border-destructive/50">
+              {inv.teamName}: {inv.blocks.join(', ')}
+            </div>
+          ))}
+        </AlertDescription>
+      </Alert>
+    )}
+
+    {/* Double Header Info */}
+    {analysis.hasDoubleHeaders && (
+      <Alert>
+        <CheckCircle2 className="size-4 text-amber-500" />
+        <AlertDescription className="text-xs font-mono">
+          <strong>Double Headers:</strong> {analysis.doubleHeaderTeams.length} team(s) scheduled for
+          2 back-to-back pairs (4 matches total)
+          {analysis.doubleHeaderTeams.map((dh) => (
+            <div key={dh.teamId} className="mt-1 pl-4 border-l-2 border-amber-500/50">
+              {dh.teamName}: {dh.blocks.join(' & ')}
+            </div>
+          ))}
+        </AlertDescription>
+      </Alert>
+    )}
+
+    {/* Block Statistics */}
+    <div className="space-y-2">
+      <h4 className="text-xs font-semibold text-muted-foreground">Block Statistics</h4>
+      <div className="grid grid-cols-2 gap-2">
+        {Array.from(analysis.blockStats.entries()).map(([block, count]) => (
+          <div
+            key={block}
+            className="flex items-center justify-between p-2 rounded bg-background border text-xs font-mono"
+          >
+            <span className="font-medium">{block}</span>
+            <Badge variant="outline" className="text-xs">
+              {count} teams
+            </Badge>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Team Assignments (Collapsed by default when many) */}
+    {analysis.teamAssignments.length > 0 && (
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:opacity-80">
+          <ChevronDown className="size-3" />
+          Team Assignments ({analysis.teamAssignments.length})
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="mt-2 max-h-64 overflow-y-auto space-y-1">
+            {analysis.teamAssignments.map((assignment) => (
+              <div
+                key={`${assignment.teamId}-${assignment.teamName}`}
+                className={`flex items-center justify-between p-2 rounded text-xs font-mono ${
+                  assignment.isInvalid
+                    ? 'bg-destructive/10 border border-destructive'
+                    : assignment.isDoubleHeader
+                      ? 'bg-amber-500/10 border border-amber-500/50'
+                      : 'bg-background border'
+                }`}
+              >
+                <span className="truncate flex-1">{assignment.teamName}</span>
+                <Badge
+                  variant={
+                    assignment.isInvalid
+                      ? 'destructive'
+                      : assignment.isDoubleHeader
+                        ? 'outline'
+                        : 'secondary'
+                  }
+                  className={`text-xs ml-2 ${assignment.isDoubleHeader ? 'border-amber-500 text-amber-600' : ''}`}
+                >
+                  {assignment.block}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    )}
+
+    {/* Empty State */}
+    {analysis.teamAssignments.length === 0 && (
+      <div className="text-center py-4 text-xs text-muted-foreground font-mono">
+        No team assignments loaded. Load teams first.
+      </div>
+    )}
+
+    {/* Database Check Hint */}
+    <div className="pt-2 border-t">
+      <p className="text-xs text-muted-foreground font-mono">
+        💡 To check database: Query <code className="bg-muted px-1 rounded">team_timeslots</code>{' '}
+        for duplicate pair assignments
+      </p>
+    </div>
+  </CardContent>
+);
+
 /**
  * DiagnosticPanel - Debugging tool for auto-schedule validation
  *
@@ -124,15 +272,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className="pb-3">
           <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-80 transition-opacity">
-            <div className="flex items-center gap-2">
-              <Database className="size-4 text-muted-foreground" />
-              <CardTitle className="text-sm font-mono">🔍 Diagnostic Panel</CardTitle>
-              {analysis.isValid ? (
-                <CheckCircle2 className="size-4 text-green-500" />
-              ) : (
-                <AlertCircle className="size-4 text-destructive-text" />
-              )}
-            </div>
+            <DiagnosticTitle isValid={analysis.isValid} />
             <ChevronDown className={`size-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
           <CardDescription className="text-xs">
@@ -141,126 +281,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         </CardHeader>
 
         <CollapsibleContent>
-          <CardContent className="space-y-4">
-            {/* Validation Status */}
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={analysis.isValid ? 'default' : 'destructive'}
-                className="font-mono text-xs"
-              >
-                {analysis.isValid ? '✅ Valid' : '❌ Invalid'}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {analysis.teamsWithAssignments} teams assigned
-              </span>
-            </div>
-
-            {/* Invalid Assignments (3+ blocks) */}
-            {analysis.hasInvalidAssignments && (
-              <Alert variant="destructive">
-                <AlertCircle className="size-4" />
-                <AlertDescription className="text-xs font-mono">
-                  <strong>Critical Error:</strong> {analysis.invalidTeams.length} team(s) assigned
-                  to 3+ blocks (max is 2 for double headers)
-                  {analysis.invalidTeams.map((inv) => (
-                    <div key={inv.teamId} className="mt-1 pl-4 border-l-2 border-destructive/50">
-                      {inv.teamName}: {inv.blocks.join(', ')}
-                    </div>
-                  ))}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Double Header Info */}
-            {analysis.hasDoubleHeaders && (
-              <Alert>
-                <CheckCircle2 className="size-4 text-amber-500" />
-                <AlertDescription className="text-xs font-mono">
-                  <strong>Double Headers:</strong> {analysis.doubleHeaderTeams.length} team(s)
-                  scheduled for 2 back-to-back pairs (4 matches total)
-                  {analysis.doubleHeaderTeams.map((dh) => (
-                    <div key={dh.teamId} className="mt-1 pl-4 border-l-2 border-amber-500/50">
-                      {dh.teamName}: {dh.blocks.join(' & ')}
-                    </div>
-                  ))}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Block Statistics */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold text-muted-foreground">Block Statistics</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {Array.from(analysis.blockStats.entries()).map(([block, count]) => (
-                  <div
-                    key={block}
-                    className="flex items-center justify-between p-2 rounded bg-background border text-xs font-mono"
-                  >
-                    <span className="font-medium">{block}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {count} teams
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Team Assignments (Collapsed by default when many) */}
-            {analysis.teamAssignments.length > 0 && (
-              <Collapsible>
-                <CollapsibleTrigger className="flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:opacity-80">
-                  <ChevronDown className="size-3" />
-                  Team Assignments ({analysis.teamAssignments.length})
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-2 max-h-64 overflow-y-auto space-y-1">
-                    {analysis.teamAssignments.map((assignment) => (
-                      <div
-                        key={`${assignment.teamId}-${assignment.teamName}`}
-                        className={`flex items-center justify-between p-2 rounded text-xs font-mono ${
-                          assignment.isInvalid
-                            ? 'bg-destructive/10 border border-destructive'
-                            : assignment.isDoubleHeader
-                              ? 'bg-amber-500/10 border border-amber-500/50'
-                              : 'bg-background border'
-                        }`}
-                      >
-                        <span className="truncate flex-1">{assignment.teamName}</span>
-                        <Badge
-                          variant={
-                            assignment.isInvalid
-                              ? 'destructive'
-                              : assignment.isDoubleHeader
-                                ? 'outline'
-                                : 'secondary'
-                          }
-                          className={`text-xs ml-2 ${assignment.isDoubleHeader ? 'border-amber-500 text-amber-600' : ''}`}
-                        >
-                          {assignment.block}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-            )}
-
-            {/* Empty State */}
-            {analysis.teamAssignments.length === 0 && (
-              <div className="text-center py-4 text-xs text-muted-foreground font-mono">
-                No team assignments loaded. Load teams first.
-              </div>
-            )}
-
-            {/* Database Check Hint */}
-            <div className="pt-2 border-t">
-              <p className="text-xs text-muted-foreground font-mono">
-                💡 To check database: Query{' '}
-                <code className="bg-muted px-1 rounded">team_timeslots</code> for duplicate pair
-                assignments
-              </p>
-            </div>
-          </CardContent>
+          <DiagnosticDetails analysis={analysis} />
         </CollapsibleContent>
       </Collapsible>
     </Card>

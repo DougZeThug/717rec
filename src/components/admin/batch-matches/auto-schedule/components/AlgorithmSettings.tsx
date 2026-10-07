@@ -19,6 +19,30 @@ interface AlgorithmSettingsProps {
   setDualMatchMode?: (value: boolean) => void;
 }
 
+interface SettingRowProps {
+  id: string;
+  label: string;
+  description: string;
+  checked: boolean | undefined;
+  onCheckedChange: (value: boolean) => void;
+}
+
+const SettingRow: React.FC<SettingRowProps> = ({
+  id,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+}) => (
+  <div className="flex items-center justify-between">
+    <div className="space-y-0.5">
+      <Label htmlFor={id}>{label}</Label>
+      <p className="text-[0.8rem] text-muted-foreground">{description}</p>
+    </div>
+    <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+  </div>
+);
+
 export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
   avoidRematches,
   setAvoidRematches,
@@ -38,49 +62,31 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
         <AccordionContent>
           <div className="space-y-4 py-2">
             {setDualMatchMode && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="dual-match-mode">Dual Match Mode</Label>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Each team plays in two consecutive time blocks (6:30 & 7:00)
-                  </p>
-                </div>
-                <Switch
-                  id="dual-match-mode"
-                  checked={dualMatchMode}
-                  onCheckedChange={setDualMatchMode}
-                />
-              </div>
+              <SettingRow
+                id="dual-match-mode"
+                label="Dual Match Mode"
+                description="Each team plays in two consecutive time blocks (6:30 & 7:00)"
+                checked={dualMatchMode}
+                onCheckedChange={setDualMatchMode}
+              />
             )}
 
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="avoid-rematches">Avoid Rematches</Label>
-                <p className="text-[0.8rem] text-muted-foreground">
-                  Prioritize pairing teams that haven&apos;t played each other before
-                </p>
-              </div>
-              <Switch
-                id="avoid-rematches"
-                checked={avoidRematches}
-                onCheckedChange={setAvoidRematches}
-              />
-            </div>
+            <SettingRow
+              id="avoid-rematches"
+              label="Avoid Rematches"
+              description="Prioritize pairing teams that haven't played each other before"
+              checked={avoidRematches}
+              onCheckedChange={setAvoidRematches}
+            />
 
             {!dualMatchMode && (
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="prioritize-quality">Prioritize Match Quality</Label>
-                  <p className="text-[0.8rem] text-muted-foreground">
-                    Match teams with similar skill levels (higher priority)
-                  </p>
-                </div>
-                <Switch
-                  id="prioritize-quality"
-                  checked={prioritizeQuality}
-                  onCheckedChange={setPrioritizeQuality}
-                />
-              </div>
+              <SettingRow
+                id="prioritize-quality"
+                label="Prioritize Match Quality"
+                description="Match teams with similar skill levels (higher priority)"
+                checked={prioritizeQuality}
+                onCheckedChange={setPrioritizeQuality}
+              />
             )}
           </div>
         </AccordionContent>

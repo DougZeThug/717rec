@@ -25,6 +25,51 @@ interface FilterBarProps {
   onClearFilters: () => void;
 }
 
+interface DateFilterProps {
+  date: FilterState['date'];
+  onDateChange: (date?: Date) => void;
+}
+
+const DateFilter: React.FC<DateFilterProps> = ({ date, onDateChange }) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        className="w-full justify-start min-h-[44px] transition-colors duration-200 hover:bg-accent"
+      >
+        <CalendarIcon className="mr-2 size-4" />
+        {date ? format(date, 'MMM d, yyyy') : 'Filter by Date'}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0" align="start">
+      <Calendar
+        mode="single"
+        selected={date}
+        onSelect={onDateChange}
+        className="p-3 pointer-events-auto"
+      />
+    </PopoverContent>
+  </Popover>
+);
+
+const SessionDateHint: React.FC = () => (
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex items-center">
+          <Info className="size-3 mr-1" />
+          <span>Showing matches for the entire session (including evening games)</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p className="max-w-xs">
+          This view includes evening matches that might be stored with next-day UTC dates
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
 /** Renders date and bracket filters for the mass score entry workflow. */
 const FilterBar: React.FC<FilterBarProps> = ({
   filters,
@@ -38,25 +83,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <div className="flex flex-col gap-3 w-full">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start min-h-[44px] transition-colors duration-200 hover:bg-accent"
-            >
-              <CalendarIcon className="mr-2 size-4" />
-              {filters.date ? format(filters.date, 'MMM d, yyyy') : 'Filter by Date'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={filters.date}
-              onSelect={onDateChange}
-              className="p-3 pointer-events-auto"
-            />
-          </PopoverContent>
-        </Popover>
+        <DateFilter date={filters.date} onDateChange={onDateChange} />
 
         <Select
           value={filters.bracketId || undefined}
@@ -81,21 +108,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
 
       {filters.date && (
         <div className="flex items-center text-xs text-muted-foreground">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center">
-                  <Info className="size-3 mr-1" />
-                  <span>Showing matches for the entire session (including evening games)</span>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">
-                  This view includes evening matches that might be stored with next-day UTC dates
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <SessionDateHint />
         </div>
       )}
 

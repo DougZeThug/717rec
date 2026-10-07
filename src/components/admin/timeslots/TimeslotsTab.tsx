@@ -49,6 +49,51 @@ const AssignmentColumn = ({
   return children;
 };
 
+/** The "Assign a New Timeslot" column: its heading and the booking form or a stand-in. */
+const NewTimeslotSection = ({
+  isLoading,
+  hasFailed,
+  onRetry,
+  children,
+}: {
+  isLoading: boolean;
+  hasFailed: boolean;
+  onRetry: () => void;
+  children: React.ReactElement;
+}) => (
+  <div>
+    <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
+    <AssignmentColumn isLoading={isLoading} hasFailed={hasFailed} onRetry={onRetry}>
+      {children}
+    </AssignmentColumn>
+  </div>
+);
+
+const DatePickerPopover = ({
+  selectedDate,
+  onSelect,
+}: {
+  selectedDate: Date;
+  onSelect: (date: Date) => void;
+}) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button variant="outline" className="w-[240px] pl-3 text-left font-normal">
+        <CalendarIcon className="mr-2 size-4" />
+        {format(selectedDate, 'PPP')}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0" align="end">
+      <CalendarComponent
+        mode="single"
+        selected={selectedDate}
+        onSelect={(date) => date && onSelect(date)}
+        className="pointer-events-auto"
+      />
+    </PopoverContent>
+  </Popover>
+);
+
 const TimeslotsTab = () => {
   const { toast } = useToast();
   const prefill = useTimeslotPrefill();
@@ -279,22 +324,7 @@ const TimeslotsTab = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle>Assign Timeslots</CardTitle>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-[240px] pl-3 text-left font-normal">
-                <CalendarIcon className="mr-2 size-4" />
-                {format(selectedDate, 'PPP')}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <CalendarComponent
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <DatePickerPopover selectedDate={selectedDate} onSelect={setSelectedDate} />
         </div>
       </CardHeader>
       <CardContent>
@@ -310,24 +340,21 @@ const TimeslotsTab = () => {
           />
         )}
         <div className="grid md:grid-cols-2 gap-8">
-          <div>
-            <h3 className="text-lg font-medium mb-4">Assign a New Timeslot</h3>
-            <AssignmentColumn
-              isLoading={isLoadingTeams}
-              hasFailed={Boolean(teamsError) && teamsNeverLoaded}
-              onRetry={() => refetchTeams()}
-            >
-              <TimeslotAssignment
-                selectedDate={selectedDate}
-                teams={teams}
-                existingTimeslots={timeslots}
-                onAssign={handleTimeslotAssign}
-                onBatchAssign={handleBatchTimeslotAssign}
-                onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
-                isSubmitting={isSubmitting}
-              />
-            </AssignmentColumn>
-          </div>
+          <NewTimeslotSection
+            isLoading={isLoadingTeams}
+            hasFailed={Boolean(teamsError) && teamsNeverLoaded}
+            onRetry={() => refetchTeams()}
+          >
+            <TimeslotAssignment
+              selectedDate={selectedDate}
+              teams={teams}
+              existingTimeslots={timeslots}
+              onAssign={handleTimeslotAssign}
+              onBatchAssign={handleBatchTimeslotAssign}
+              onBatchAssignDoubleHeaders={handleBatchDoubleHeaderAssign}
+              isSubmitting={isSubmitting}
+            />
+          </NewTimeslotSection>
 
           <div>
             <h3 className="text-lg font-medium mb-4">Current Timeslots</h3>

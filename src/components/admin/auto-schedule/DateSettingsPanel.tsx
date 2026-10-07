@@ -28,6 +28,107 @@ interface DateSettingsPanelProps {
   onGenerateSchedule: () => Promise<void>;
 }
 
+interface DatePickerProps {
+  selectedDate: Date | null;
+  setSelectedDate: (date: Date | null) => void;
+}
+
+const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, setSelectedDate }) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button variant="outline" className="w-full justify-between text-left font-normal">
+        <span className="flex items-center">
+          <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
+          {selectedDate ? (
+            format(selectedDate, 'PPP')
+          ) : (
+            <span className="text-muted-foreground">Select a date</span>
+          )}
+        </span>
+        <ChevronRight className="size-4 text-muted-foreground" />
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0" align="start">
+      <Calendar
+        mode="single"
+        selected={selectedDate || undefined}
+        onSelect={(date) => setSelectedDate(date ?? null)}
+        className="pointer-events-auto"
+      />
+    </PopoverContent>
+  </Popover>
+);
+
+interface SwitchRowProps {
+  id: string;
+  label: string;
+  checked: boolean;
+  onCheckedChange: (value: boolean) => void;
+}
+
+const SwitchRow: React.FC<SwitchRowProps> = ({ id, label, checked, onCheckedChange }) => (
+  <div className="flex items-center justify-between space-x-2">
+    <Label htmlFor={id} className="flex-1 text-sm">
+      {label}
+    </Label>
+    <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+  </div>
+);
+
+interface MatchRulesSectionProps {
+  avoidRematches: boolean;
+  setAvoidRematches: (value: boolean) => void;
+  prioritizeQuality: boolean;
+  setPrioritizeQuality: (value: boolean) => void;
+  dualMatchMode: boolean;
+  setDualMatchMode: (value: boolean) => void;
+}
+
+const MatchRulesSection: React.FC<MatchRulesSectionProps> = ({
+  avoidRematches,
+  setAvoidRematches,
+  prioritizeQuality,
+  setPrioritizeQuality,
+  dualMatchMode,
+  setDualMatchMode,
+}) => (
+  <div className="space-y-3">
+    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+      Match Rules
+    </h4>
+
+    <SwitchRow
+      id="avoid-rematches"
+      label="Avoid Rematches"
+      checked={avoidRematches}
+      onCheckedChange={setAvoidRematches}
+    />
+
+    {!dualMatchMode && (
+      <SwitchRow
+        id="prioritize-quality"
+        label="Prioritize Match Quality"
+        checked={prioritizeQuality}
+        onCheckedChange={setPrioritizeQuality}
+      />
+    )}
+
+    <div className="space-y-2">
+      <SwitchRow
+        id="dual-match-mode"
+        label="Dual Match Mode"
+        checked={dualMatchMode}
+        onCheckedChange={setDualMatchMode}
+      />
+      {dualMatchMode && (
+        <p className="text-xs text-muted-foreground">
+          Teams will play 2 matches in consecutive time blocks based on their assigned timeslots.
+        </p>
+      )}
+    </div>
+  </div>
+);
+
 const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
   selectedDate,
   setSelectedDate,
@@ -58,80 +159,18 @@ const DateSettingsPanel: React.FC<DateSettingsPanelProps> = ({
             <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
               Date
             </h4>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-between text-left font-normal">
-                  <span className="flex items-center">
-                    <CalendarIcon className="mr-2 size-4 text-muted-foreground" />
-                    {selectedDate ? (
-                      format(selectedDate, 'PPP')
-                    ) : (
-                      <span className="text-muted-foreground">Select a date</span>
-                    )}
-                  </span>
-                  <ChevronRight className="size-4 text-muted-foreground" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate || undefined}
-                  onSelect={(date) => setSelectedDate(date ?? null)}
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
+            <DatePicker selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
           </div>
 
           {/* Match Rules Section */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Match Rules
-            </h4>
-
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="avoid-rematches" className="flex-1 text-sm">
-                Avoid Rematches
-              </Label>
-              <Switch
-                id="avoid-rematches"
-                checked={avoidRematches}
-                onCheckedChange={setAvoidRematches}
-              />
-            </div>
-
-            {!dualMatchMode && (
-              <div className="flex items-center justify-between space-x-2">
-                <Label htmlFor="prioritize-quality" className="flex-1 text-sm">
-                  Prioritize Match Quality
-                </Label>
-                <Switch
-                  id="prioritize-quality"
-                  checked={prioritizeQuality}
-                  onCheckedChange={setPrioritizeQuality}
-                />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between space-x-2">
-                <Label htmlFor="dual-match-mode" className="flex-1 text-sm">
-                  Dual Match Mode
-                </Label>
-                <Switch
-                  id="dual-match-mode"
-                  checked={dualMatchMode}
-                  onCheckedChange={setDualMatchMode}
-                />
-              </div>
-              {dualMatchMode && (
-                <p className="text-xs text-muted-foreground">
-                  Teams will play 2 matches in consecutive time blocks based on their assigned
-                  timeslots.
-                </p>
-              )}
-            </div>
-          </div>
+          <MatchRulesSection
+            avoidRematches={avoidRematches}
+            setAvoidRematches={setAvoidRematches}
+            prioritizeQuality={prioritizeQuality}
+            setPrioritizeQuality={setPrioritizeQuality}
+            dualMatchMode={dualMatchMode}
+            setDualMatchMode={setDualMatchMode}
+          />
 
           <Separator />
 

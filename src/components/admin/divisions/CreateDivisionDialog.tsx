@@ -28,6 +28,29 @@ interface Props {
 
 const DISPLAY_OPTIONS: DisplayDivision[] = ['Competitive', 'Intermediate', 'Recreational'];
 
+interface DisplayDivisionFieldProps {
+  value: DisplayDivision;
+  onChange: (value: DisplayDivision) => void;
+}
+
+const DisplayDivisionField: React.FC<DisplayDivisionFieldProps> = ({ value, onChange }) => (
+  <div className="space-y-2">
+    <Label htmlFor="display-division">Display Division</Label>
+    <Select value={value} onValueChange={(v) => onChange(v as DisplayDivision)}>
+      <SelectTrigger id="display-division">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {DISPLAY_OPTIONS.map((opt) => (
+          <SelectItem key={opt} value={opt}>
+            {opt}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
 const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
   const { createDivision } = useDivisionMutations();
   const [name, setName] = useState('');
@@ -95,24 +118,7 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
               placeholder="e.g. Competitive High"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="display-division">Display Division</Label>
-            <Select
-              value={displayDivision}
-              onValueChange={(v) => setDisplayDivision(v as DisplayDivision)}
-            >
-              <SelectTrigger id="display-division">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DISPLAY_OPTIONS.map((opt) => (
-                  <SelectItem key={opt} value={opt}>
-                    {opt}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <DisplayDivisionField value={displayDivision} onChange={setDisplayDivision} />
           <div className="space-y-2">
             <Label htmlFor="division-weight">Weight</Label>
             <Input
