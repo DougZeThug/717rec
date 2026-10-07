@@ -18,6 +18,20 @@ interface AdminAccessModalProps {
   onRequestAccess?: () => void;
 }
 
+const AccessRestrictedHeader: React.FC<{ isSignedIn: boolean }> = ({ isSignedIn }) => (
+  <DialogHeader>
+    <DialogTitle className="flex items-center">
+      <LockIcon className="size-5 mr-2" />
+      Access Restricted
+    </DialogTitle>
+    <DialogDescription>
+      {!isSignedIn
+        ? 'You must be logged in to access this area.'
+        : "You don't have permission to access the admin panel."}
+    </DialogDescription>
+  </DialogHeader>
+);
+
 export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
   isOpen,
   // onAccessGranted is available but unused
@@ -39,17 +53,7 @@ export const AdminAccessModal: React.FC<AdminAccessModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={() => undefined}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <LockIcon className="size-5 mr-2" />
-            Access Restricted
-          </DialogTitle>
-          <DialogDescription>
-            {!user
-              ? 'You must be logged in to access this area.'
-              : "You don't have permission to access the admin panel."}
-          </DialogDescription>
-        </DialogHeader>
+        <AccessRestrictedHeader isSignedIn={Boolean(user)} />
 
         <div className="space-y-4">
           {!user ? (

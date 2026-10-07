@@ -62,6 +62,23 @@ const markReloaded = (): void => {
   }
 };
 
+const OfflineIcon: React.FC = () => (
+  <div className="flex justify-center">
+    <div className="p-4 bg-muted rounded-full">
+      <CloudOff className="size-10 text-muted-foreground" />
+    </div>
+  </div>
+);
+
+const RetryButton: React.FC = () => (
+  <div className="flex justify-center">
+    <Button onClick={() => window.location.reload()} variant="default" size="sm">
+      <RefreshCw className="mr-2 size-4" />
+      Try again
+    </Button>
+  </div>
+);
+
 /**
  * Shown when a page's code could not be downloaded, rather than the generic
  * "something went wrong" screen (UX audit X-12).
@@ -107,11 +124,7 @@ export const ChunkLoadRecovery: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
       <div className="max-w-md w-full text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="p-4 bg-muted rounded-full">
-            <CloudOff className="size-10 text-muted-foreground" />
-          </div>
-        </div>
+        <OfflineIcon />
 
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-foreground">This page did not download</h2>
@@ -124,12 +137,7 @@ export const ChunkLoadRecovery: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex justify-center">
-          <Button onClick={() => window.location.reload()} variant="default" size="sm">
-            <RefreshCw className="mr-2 size-4" />
-            Try again
-          </Button>
-        </div>
+        <RetryButton />
       </div>
     </div>
   );
