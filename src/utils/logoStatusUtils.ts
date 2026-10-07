@@ -14,6 +14,8 @@ export const getLogoStatus = (imageUrl: string | null | undefined): LogoStatus =
   return 'legacy';
 };
 
+// skipcq: JS-0045 -- every case returns and the default returns assertNever(), which
+// throws (return type `never`), so no path falls off the end of this function.
 export const getStatusColor = (status: LogoStatus): string => {
   switch (status) {
     case 'optimized':
@@ -27,6 +29,8 @@ export const getStatusColor = (status: LogoStatus): string => {
   }
 };
 
+// skipcq: JS-0045 -- every case returns and the default returns assertNever(), which
+// throws (return type `never`), so no path falls off the end of this function.
 export const getStatusLabel = (status: LogoStatus): string => {
   switch (status) {
     case 'optimized':
@@ -40,6 +44,8 @@ export const getStatusLabel = (status: LogoStatus): string => {
   }
 };
 
+// skipcq: JS-0045 -- every case returns and the default returns assertNever(), which
+// throws (return type `never`), so no path falls off the end of this function.
 export const getStatusIcon = (status: LogoStatus): string => {
   switch (status) {
     case 'optimized':
