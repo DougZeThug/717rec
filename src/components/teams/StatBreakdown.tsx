@@ -43,6 +43,367 @@ interface StatBreakdownProps {
   clutchGame3s?: number;
 }
 
+interface WinLossValueProps {
+  won: number;
+  lost: number;
+}
+
+// Trophy and X icons beside a won count and a lost count
+const WinLossValue: React.FC<WinLossValueProps> = ({ won, lost }) => (
+  <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center text-green-700 dark:text-green-400">
+      <Trophy size={16} className="mr-1" />
+      <span>{won}</span>
+    </div>
+    <div className="flex items-center text-red-600 dark:text-red-400">
+      <X size={16} className="mr-1" />
+      <span>{lost}</span>
+    </div>
+  </div>
+);
+
+interface DetailedStatsGridProps {
+  wins: number;
+  losses: number;
+  gamesWon: number;
+  gamesLost: number;
+}
+
+const DetailedStatsGrid: React.FC<DetailedStatsGridProps> = ({
+  wins,
+  losses,
+  gamesWon,
+  gamesLost,
+}) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+    <StatBlock
+      label="Win-Loss Ratio"
+      value={(wins / (losses || 1)).toFixed(2)}
+      orientation="horizontal"
+      gradient="bg-gradient-to-r from-muted to-card"
+    />
+    <StatBlock
+      label="Game Win-Loss Ratio"
+      value={(gamesWon / (gamesLost || 1)).toFixed(2)}
+      orientation="horizontal"
+      gradient="bg-gradient-to-r from-muted to-card"
+    />
+    <StatBlock
+      label="Total Matches"
+      value={wins + losses}
+      orientation="horizontal"
+      gradient="bg-gradient-to-r from-muted to-card"
+    />
+    <StatBlock
+      label="Total Games"
+      value={gamesWon + gamesLost}
+      orientation="horizontal"
+      gradient="bg-gradient-to-r from-muted to-card"
+    />
+  </div>
+);
+
+type StatBreakdownStats = Required<
+  Pick<
+    StatBreakdownProps,
+    | 'wins'
+    | 'losses'
+    | 'winPercentage'
+    | 'gamesWon'
+    | 'gamesLost'
+    | 'gameWinPercentage'
+    | 'strengthOfSchedule'
+    | 'closeMatchLosses'
+    | 'powerScore'
+    | 'sweeps'
+    | 'sweepRate'
+    | 'clutchWins'
+    | 'clutchWinPct'
+    | 'clutchGame3s'
+  >
+> &
+  Pick<StatBreakdownProps, 'rank' | 'totalTeams' | 'rankChange'>;
+
+// Core Stats Tab
+const CoreStatsTab: React.FC<{ stats: StatBreakdownStats }> = ({ stats }) => {
+  const { powerScore, rank, totalTeams, rankChange, wins, losses, winPercentage } = stats;
+
+  return (
+    <TabsContent value="core" className="space-y-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Power Score with Gauge */}
+        <StatBlock
+          label="Power Score"
+          value={
+            <PowerScoreDisplay
+              score={powerScore}
+              source="v_team_details"
+              display="gauge"
+              size="lg"
+              showLabel={false}
+            />
+          }
+          gradient="bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
+          icon={<Zap size={18} className="text-amber-500" />}
+        />
+
+        {/* Ranking */}
+        {rank && (
+          <StatBlock
+            label="Ranking"
+            value={
+              <div className="flex items-center justify-center gap-2">
+                <span>
+                  {rank}
+                  {totalTeams ? `/${totalTeams}` : ''}
+                </span>
+                {rankChange !== undefined && <RankTrendIndicator rankChange={rankChange} />}
+              </div>
+            }
+            gradient="bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
+            icon={<Medal size={18} className="text-blue-500" />}
+          />
+        )}
+
+        {/* Match Record */}
+        <StatBlock
+          label="Match Record"
+          value={<WinLossValue won={wins} lost={losses} />}
+          gradient="bg-gradient-to-br from-white to-green-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
+          icon={<Trophy size={18} className="text-emerald-500" />}
+        />
+
+        {/* Win Percentage */}
+        <StatBlock
+          label="Win Percentage"
+          value={`${winPercentage}%`}
+          gradient="bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70 dark:via-none"
+          icon={<Target size={18} className="text-purple-500" />}
+        />
+      </div>
+    </TabsContent>
+  );
+};
+
+// Game Stats Tab
+const GameStatsTab: React.FC<{ stats: StatBreakdownStats }> = ({ stats }) => {
+  const {
+    wins,
+    gamesWon,
+    gamesLost,
+    gameWinPercentage,
+    closeMatchLosses,
+    sweeps,
+    sweepRate,
+    clutchWins,
+    clutchWinPct,
+    clutchGame3s,
+  } = stats;
+
+  return (
+    <TabsContent value="games" className="space-y-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Game Record */}
+        <StatBlock
+          label="Game Record"
+          value={<WinLossValue won={gamesWon} lost={gamesLost} />}
+          gradient="bg-gradient-to-br from-white to-indigo-50/40 dark:from-gray-800/90 dark:to-gray-900/70"
+          icon={<Users size={18} className="text-indigo-500" />}
+        />
+
+        {/* Game Win Percentage */}
+        <StatBlock
+          label="Game Win Percentage"
+          value={`${gameWinPercentage}%`}
+          gradient="bg-gradient-to-br from-white to-teal-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
+          icon={<Target size={18} className="text-teal-500" />}
+        />
+
+        {/* Close Match Losses */}
+        <StatBlock
+          label="Close Match Losses"
+          value={closeMatchLosses}
+          gradient="bg-gradient-to-br from-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
+          icon={<GitBranch size={18} className="text-orange-500" />}
+        />
+
+        {/* Sweep Rate */}
+        {wins > 0 && (
+          <StatBlock
+            label="Sweep Rate"
+            value={
+              <div className="flex flex-col items-center gap-1">
+                <span className={getSweepRateColor(sweepRate)}>{sweepRate.toFixed(1)}%</span>
+                <span className="text-xs text-muted-foreground">
+                  {sweeps} of {wins} wins
+                </span>
+              </div>
+            }
+            gradient="bg-gradient-to-br from-white to-yellow-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
+            icon={<Wind size={18} className={getSweepRateColor(sweepRate)} />}
+          />
+        )}
+
+        {/* Clutch Win % (Game 3s) */}
+        {clutchGame3s > 0 && (
+          <StatBlock
+            label="Clutch Win %"
+            value={
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-purple-500 font-semibold">{clutchWinPct.toFixed(1)}%</span>
+                <span className="text-xs text-muted-foreground">
+                  {clutchWins} wins in {clutchGame3s} game-3s
+                </span>
+              </div>
+            }
+            gradient="bg-gradient-to-br from-white to-purple-50/40 dark:from-gray-800/90 dark:to-gray-900/70"
+            icon={<Swords size={18} className="text-purple-500" />}
+          />
+        )}
+      </div>
+    </TabsContent>
+  );
+};
+
+interface AdvancedStatsTabProps {
+  stats: StatBreakdownStats;
+  isLight: boolean;
+  sos: number;
+  sosColorClass: string;
+  isAdvancedOpen: boolean;
+  onAdvancedOpenChange: (open: boolean) => void;
+}
+
+// Advanced Stats Tab
+const AdvancedStatsTab: React.FC<AdvancedStatsTabProps> = ({
+  stats,
+  isLight,
+  sos,
+  sosColorClass,
+  isAdvancedOpen,
+  onAdvancedOpenChange,
+}) => {
+  const { wins, losses, gamesWon, gamesLost, strengthOfSchedule } = stats;
+
+  return (
+    <TabsContent value="advanced" className="space-y-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Strength of Schedule */}
+        <StatBlock
+          label="Strength of Schedule"
+          value={
+            <span
+              className={!isLight ? sosColorClass : ''}
+              style={{
+                color: isLight
+                  ? sos >= 0.875
+                    ? '#b91c1c' // red-700
+                    : sos >= 0.75
+                      ? '#ef4444' // red-500
+                      : sos >= 0.55
+                        ? '#f97316' // orange-500
+                        : '#16a34a' // green-600
+                  : undefined,
+              }}
+            >
+              {strengthOfSchedule}
+            </span>
+          }
+          gradient="bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
+          icon={<Scale size={18} className="text-blue-500" />}
+        />
+
+        {/* Detailed Stats Collapsible Section */}
+        <Collapsible
+          open={isAdvancedOpen}
+          onOpenChange={onAdvancedOpenChange}
+          className="col-span-1 md:col-span-2"
+        >
+          <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-md transition-colors">
+            {isAdvancedOpen ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-2">
+            <DetailedStatsGrid
+              wins={wins}
+              losses={losses}
+              gamesWon={gamesWon}
+              gamesLost={gamesLost}
+            />
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+    </TabsContent>
+  );
+};
+
+interface StatTabsPanelProps {
+  stats: StatBreakdownStats;
+  isLight: boolean;
+  sos: number;
+  sosColorClass: string;
+  getTabGradient: (tabName: string) => string;
+  onTabChange: (tab: string) => void;
+  isAdvancedOpen: boolean;
+  onAdvancedOpenChange: (open: boolean) => void;
+}
+
+// Core / Game / Advanced tabs inside the collapsible card
+const StatTabsPanel: React.FC<StatTabsPanelProps> = ({
+  stats,
+  isLight,
+  sos,
+  sosColorClass,
+  getTabGradient,
+  onTabChange,
+  isAdvancedOpen,
+  onAdvancedOpenChange,
+}) => (
+  <div className="p-3 md:p-5 pt-0">
+    <Tabs defaultValue="core" className="w-full" onValueChange={(value) => onTabChange(value)}>
+      <TabsList className="grid grid-cols-3 mb-4">
+        <TabsTrigger
+          value="core"
+          className={cn(
+            'text-sm whitespace-nowrap transition-all duration-300',
+            getTabGradient('core')
+          )}
+        >
+          Core
+        </TabsTrigger>
+        <TabsTrigger
+          value="games"
+          className={cn(
+            'text-sm whitespace-nowrap transition-all duration-300',
+            getTabGradient('games')
+          )}
+        >
+          Game
+        </TabsTrigger>
+        <TabsTrigger
+          value="advanced"
+          className={cn(
+            'text-sm whitespace-nowrap transition-all duration-300',
+            getTabGradient('advanced')
+          )}
+        >
+          Advanced
+        </TabsTrigger>
+      </TabsList>
+
+      <CoreStatsTab stats={stats} />
+      <GameStatsTab stats={stats} />
+      <AdvancedStatsTab
+        stats={stats}
+        isLight={isLight}
+        sos={sos}
+        sosColorClass={sosColorClass}
+        isAdvancedOpen={isAdvancedOpen}
+        onAdvancedOpenChange={onAdvancedOpenChange}
+      />
+    </Tabs>
+  </div>
+);
+
 const StatBreakdown: React.FC<StatBreakdownProps> = ({
   wins,
   losses,
@@ -113,258 +474,34 @@ const StatBreakdown: React.FC<StatBreakdownProps> = ({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-3 md:p-5 pt-0">
-            <Tabs
-              defaultValue="core"
-              className="w-full"
-              onValueChange={(value) => setActiveTab(value)}
-            >
-              <TabsList className="grid grid-cols-3 mb-4">
-                <TabsTrigger
-                  value="core"
-                  className={cn(
-                    'text-sm whitespace-nowrap transition-all duration-300',
-                    getTabGradient('core')
-                  )}
-                >
-                  Core
-                </TabsTrigger>
-                <TabsTrigger
-                  value="games"
-                  className={cn(
-                    'text-sm whitespace-nowrap transition-all duration-300',
-                    getTabGradient('games')
-                  )}
-                >
-                  Game
-                </TabsTrigger>
-                <TabsTrigger
-                  value="advanced"
-                  className={cn(
-                    'text-sm whitespace-nowrap transition-all duration-300',
-                    getTabGradient('advanced')
-                  )}
-                >
-                  Advanced
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Core Stats Tab */}
-              <TabsContent value="core" className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                  {/* Power Score with Gauge */}
-                  <StatBlock
-                    label="Power Score"
-                    value={
-                      <PowerScoreDisplay
-                        score={powerScore}
-                        source="v_team_details"
-                        display="gauge"
-                        size="lg"
-                        showLabel={false}
-                      />
-                    }
-                    gradient="bg-gradient-to-br from-white to-orange-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
-                    icon={<Zap size={18} className="text-amber-500" />}
-                  />
-
-                  {/* Ranking */}
-                  {rank && (
-                    <StatBlock
-                      label="Ranking"
-                      value={
-                        <div className="flex items-center justify-center gap-2">
-                          <span>
-                            {rank}
-                            {totalTeams ? `/${totalTeams}` : ''}
-                          </span>
-                          {rankChange !== undefined && (
-                            <RankTrendIndicator rankChange={rankChange} />
-                          )}
-                        </div>
-                      }
-                      gradient="bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
-                      icon={<Medal size={18} className="text-blue-500" />}
-                    />
-                  )}
-
-                  {/* Match Record */}
-                  <StatBlock
-                    label="Match Record"
-                    value={
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="flex items-center text-green-700 dark:text-green-400">
-                          <Trophy size={16} className="mr-1" />
-                          <span>{wins}</span>
-                        </div>
-                        <div className="flex items-center text-red-600 dark:text-red-400">
-                          <X size={16} className="mr-1" />
-                          <span>{losses}</span>
-                        </div>
-                      </div>
-                    }
-                    gradient="bg-gradient-to-br from-white to-green-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
-                    icon={<Trophy size={18} className="text-emerald-500" />}
-                  />
-
-                  {/* Win Percentage */}
-                  <StatBlock
-                    label="Win Percentage"
-                    value={`${winPercentage}%`}
-                    gradient="bg-gradient-to-br from-white via-blue-50/20 to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70 dark:via-none"
-                    icon={<Target size={18} className="text-purple-500" />}
-                  />
-                </div>
-              </TabsContent>
-
-              {/* Game Stats Tab */}
-              <TabsContent value="games" className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                  {/* Game Record */}
-                  <StatBlock
-                    label="Game Record"
-                    value={
-                      <div className="flex items-center justify-center gap-4">
-                        <div className="flex items-center text-green-700 dark:text-green-400">
-                          <Trophy size={16} className="mr-1" />
-                          <span>{gamesWon}</span>
-                        </div>
-                        <div className="flex items-center text-red-600 dark:text-red-400">
-                          <X size={16} className="mr-1" />
-                          <span>{gamesLost}</span>
-                        </div>
-                      </div>
-                    }
-                    gradient="bg-gradient-to-br from-white to-indigo-50/40 dark:from-gray-800/90 dark:to-gray-900/70"
-                    icon={<Users size={18} className="text-indigo-500" />}
-                  />
-
-                  {/* Game Win Percentage */}
-                  <StatBlock
-                    label="Game Win Percentage"
-                    value={`${gameWinPercentage}%`}
-                    gradient="bg-gradient-to-br from-white to-teal-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
-                    icon={<Target size={18} className="text-teal-500" />}
-                  />
-
-                  {/* Close Match Losses */}
-                  <StatBlock
-                    label="Close Match Losses"
-                    value={closeMatchLosses}
-                    gradient="bg-gradient-to-br from-white to-orange-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
-                    icon={<GitBranch size={18} className="text-orange-500" />}
-                  />
-
-                  {/* Sweep Rate */}
-                  {wins > 0 && (
-                    <StatBlock
-                      label="Sweep Rate"
-                      value={
-                        <div className="flex flex-col items-center gap-1">
-                          <span className={getSweepRateColor(sweepRate)}>
-                            {sweepRate.toFixed(1)}%
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {sweeps} of {wins} wins
-                          </span>
-                        </div>
-                      }
-                      gradient="bg-gradient-to-br from-white to-yellow-50/50 dark:from-gray-800/90 dark:to-gray-900/70"
-                      icon={<Wind size={18} className={getSweepRateColor(sweepRate)} />}
-                    />
-                  )}
-
-                  {/* Clutch Win % (Game 3s) */}
-                  {clutchGame3s > 0 && (
-                    <StatBlock
-                      label="Clutch Win %"
-                      value={
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="text-purple-500 font-semibold">
-                            {clutchWinPct.toFixed(1)}%
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {clutchWins} wins in {clutchGame3s} game-3s
-                          </span>
-                        </div>
-                      }
-                      gradient="bg-gradient-to-br from-white to-purple-50/40 dark:from-gray-800/90 dark:to-gray-900/70"
-                      icon={<Swords size={18} className="text-purple-500" />}
-                    />
-                  )}
-                </div>
-              </TabsContent>
-
-              {/* Advanced Stats Tab */}
-              <TabsContent value="advanced" className="space-y-4">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                  {/* Strength of Schedule */}
-                  <StatBlock
-                    label="Strength of Schedule"
-                    value={
-                      <span
-                        className={!isLight ? sosColorClass : ''}
-                        style={{
-                          color: isLight
-                            ? sos >= 0.875
-                              ? '#b91c1c' // red-700
-                              : sos >= 0.75
-                                ? '#ef4444' // red-500
-                                : sos >= 0.55
-                                  ? '#f97316' // orange-500
-                                  : '#16a34a' // green-600
-                            : undefined,
-                        }}
-                      >
-                        {strengthOfSchedule}
-                      </span>
-                    }
-                    gradient="bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-800/90 dark:to-gray-900/70"
-                    icon={<Scale size={18} className="text-blue-500" />}
-                  />
-
-                  {/* Detailed Stats Collapsible Section */}
-                  <Collapsible
-                    open={isAdvancedOpen}
-                    onOpenChange={setIsAdvancedOpen}
-                    className="col-span-1 md:col-span-2"
-                  >
-                    <CollapsibleTrigger className="flex items-center justify-center w-full py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-md transition-colors">
-                      {isAdvancedOpen ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                        <StatBlock
-                          label="Win-Loss Ratio"
-                          value={(wins / (losses || 1)).toFixed(2)}
-                          orientation="horizontal"
-                          gradient="bg-gradient-to-r from-muted to-card"
-                        />
-                        <StatBlock
-                          label="Game Win-Loss Ratio"
-                          value={(gamesWon / (gamesLost || 1)).toFixed(2)}
-                          orientation="horizontal"
-                          gradient="bg-gradient-to-r from-muted to-card"
-                        />
-                        <StatBlock
-                          label="Total Matches"
-                          value={wins + losses}
-                          orientation="horizontal"
-                          gradient="bg-gradient-to-r from-muted to-card"
-                        />
-                        <StatBlock
-                          label="Total Games"
-                          value={gamesWon + gamesLost}
-                          orientation="horizontal"
-                          gradient="bg-gradient-to-r from-muted to-card"
-                        />
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
+          <StatTabsPanel
+            stats={{
+              wins,
+              losses,
+              gamesWon,
+              gamesLost,
+              winPercentage,
+              gameWinPercentage,
+              strengthOfSchedule,
+              closeMatchLosses,
+              powerScore,
+              rank,
+              totalTeams,
+              rankChange,
+              sweeps,
+              sweepRate,
+              clutchWins,
+              clutchWinPct,
+              clutchGame3s,
+            }}
+            isLight={isLight}
+            sos={sos}
+            sosColorClass={sosColorClass}
+            getTabGradient={getTabGradient}
+            onTabChange={setActiveTab}
+            isAdvancedOpen={isAdvancedOpen}
+            onAdvancedOpenChange={setIsAdvancedOpen}
+          />
         </CollapsibleContent>
       </div>
     </Collapsible>
