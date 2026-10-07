@@ -61,6 +61,56 @@ const StatCell: React.FC<{
   </div>
 );
 
+// Mobile stats area: PowerScoreGauge + 2x2 grid
+const MobileStatsArea: React.FC<{
+  team: SeasonData;
+  winPercentage: number;
+  isWinterTheme: boolean;
+}> = ({ team, winPercentage, isWinterTheme }) => (
+  <div className="flex items-center gap-3 mt-2">
+    <PowerScoreDisplay
+      score={team.power_score}
+      source="team_season_stats"
+      display="gauge"
+      size="sm"
+      showLabel
+    />
+    <div className="grid grid-cols-2 gap-1 flex-1">
+      <StatCell
+        label="Win%"
+        value={`${winPercentage.toFixed(1)}%`}
+        colorClass={getWinPercentageColor(winPercentage)}
+        isWinterTheme={isWinterTheme}
+      />
+      <StatCell
+        label="SOS"
+        value={team.sos?.toFixed(3) ?? '-'}
+        colorClass={getSosColor(team.sos)}
+        isWinterTheme={isWinterTheme}
+      />
+      <StatCell
+        label="Games"
+        value={`${team.game_wins}-${team.game_losses}`}
+        isWinterTheme={isWinterTheme}
+      />
+      <StatCell
+        label="Game%"
+        value={
+          team.game_wins + team.game_losses > 0
+            ? `${((team.game_wins / (team.game_wins + team.game_losses)) * 100).toFixed(1)}%`
+            : '0.0%'
+        }
+        colorClass={getWinPercentageColor(
+          team.game_wins + team.game_losses > 0
+            ? (team.game_wins / (team.game_wins + team.game_losses)) * 100
+            : 0
+        )}
+        isWinterTheme={isWinterTheme}
+      />
+    </div>
+  </div>
+);
+
 // Mobile row component — EntityCard + PowerScoreGauge layout (matching RankingCard)
 const MobileTeamRow: React.FC<{
   team: SeasonData;
@@ -112,48 +162,7 @@ const MobileTeamRow: React.FC<{
         </div>
 
         {/* Stats area: PowerScoreGauge + 2x2 grid */}
-        <div className="flex items-center gap-3 mt-2">
-          <PowerScoreDisplay
-            score={team.power_score}
-            source="team_season_stats"
-            display="gauge"
-            size="sm"
-            showLabel
-          />
-          <div className="grid grid-cols-2 gap-1 flex-1">
-            <StatCell
-              label="Win%"
-              value={`${winPercentage.toFixed(1)}%`}
-              colorClass={getWinPercentageColor(winPercentage)}
-              isWinterTheme={isWinterTheme}
-            />
-            <StatCell
-              label="SOS"
-              value={team.sos?.toFixed(3) ?? '-'}
-              colorClass={getSosColor(team.sos)}
-              isWinterTheme={isWinterTheme}
-            />
-            <StatCell
-              label="Games"
-              value={`${team.game_wins}-${team.game_losses}`}
-              isWinterTheme={isWinterTheme}
-            />
-            <StatCell
-              label="Game%"
-              value={
-                team.game_wins + team.game_losses > 0
-                  ? `${((team.game_wins / (team.game_wins + team.game_losses)) * 100).toFixed(1)}%`
-                  : '0.0%'
-              }
-              colorClass={getWinPercentageColor(
-                team.game_wins + team.game_losses > 0
-                  ? (team.game_wins / (team.game_wins + team.game_losses)) * 100
-                  : 0
-              )}
-              isWinterTheme={isWinterTheme}
-            />
-          </div>
-        </div>
+        <MobileStatsArea team={team} winPercentage={winPercentage} isWinterTheme={isWinterTheme} />
       </EntityCard>
     </div>
   );

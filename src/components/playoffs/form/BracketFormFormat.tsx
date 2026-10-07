@@ -16,6 +16,14 @@ interface BracketFormFormatProps {
   form: UseFormReturn<BracketFormValues>;
 }
 
+const FormSelectTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => (
+  <FormControl>
+    <SelectTrigger>
+      <SelectValue placeholder={placeholder} />
+    </SelectTrigger>
+  </FormControl>
+);
+
 export const BracketFormFormat: React.FC<BracketFormFormatProps> = ({ form }) => {
   return (
     <FormField
@@ -25,11 +33,7 @@ export const BracketFormFormat: React.FC<BracketFormFormatProps> = ({ form }) =>
         <FormItem>
           <FormLabel>Tournament Format</FormLabel>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a format" />
-              </SelectTrigger>
-            </FormControl>
+            <FormSelectTrigger placeholder="Select a format" />
             <SelectContent>
               <SelectItem value="Single Elimination">Single Elimination</SelectItem>
               <SelectItem value="Double Elimination">Double Elimination</SelectItem>

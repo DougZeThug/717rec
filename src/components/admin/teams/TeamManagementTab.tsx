@@ -96,18 +96,22 @@ const ManageTeamsContent = ({
   </TabsContent>
 );
 
+const CreateTeamHeader = () => (
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Plus className="size-5" />
+      Create New Team
+    </CardTitle>
+  </CardHeader>
+);
+
 const CreateTeamContent = ({
   handleTeamSubmit,
   onCancel,
 }: Pick<TabsProps, 'handleTeamSubmit'> & { onCancel: () => void }) => (
   <TabsContent value="create">
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="size-5" />
-          Create New Team
-        </CardTitle>
-      </CardHeader>
+      <CreateTeamHeader />
       <CardContent>
         <TeamForm onSubmit={handleTeamSubmit} onCancel={onCancel} />
       </CardContent>

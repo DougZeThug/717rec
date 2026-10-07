@@ -35,6 +35,14 @@ interface TeamCardMenuProps {
   onDelete?: (id: string) => void;
 }
 
+const ViewDetailsMenuItem: React.FC<{ teamName: string }> = ({ teamName }) => (
+  <DropdownMenuItem asChild>
+    <Link to={`/teams/${toTeamSlug(teamName)}`}>
+      <ExternalLink className="mr-2 size-4" /> View Details
+    </Link>
+  </DropdownMenuItem>
+);
+
 // "..." menu: edit and delete for admins, view details for everyone
 const TeamCardMenu: React.FC<TeamCardMenuProps> = ({ team, canManage, onEdit, onDelete }) => (
   <DropdownMenu>
@@ -62,11 +70,7 @@ const TeamCardMenu: React.FC<TeamCardMenuProps> = ({ team, canManage, onEdit, on
           <Trash2 className="mr-2 size-4" /> Delete
         </DropdownMenuItem>
       )}
-      <DropdownMenuItem asChild>
-        <Link to={`/teams/${toTeamSlug(team.name)}`}>
-          <ExternalLink className="mr-2 size-4" /> View Details
-        </Link>
-      </DropdownMenuItem>
+      <ViewDetailsMenuItem teamName={team.name} />
     </DropdownMenuContent>
   </DropdownMenu>
 );

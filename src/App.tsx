@@ -117,6 +117,31 @@ const MainRegion = ({
   </main>
 );
 
+/** The page frame: header, offline banner, transition wrapper, tab bar and footer. */
+const AppShell = ({
+  mainRef,
+  pathname,
+}: {
+  mainRef: React.RefObject<HTMLElement | null>;
+  pathname: string;
+}) => (
+  <div className="flex flex-col min-h-screen supports-[height:100dvh]:min-h-dvh overflow-x-clip">
+    <Navbar />
+    {/* Under the header and in normal flow, never sticky: if the header is
+      ever made sticky (it is not today, see Navbar), a second sticky bar
+      would slide beneath it. See the same note on the admin phone menu.
+      `overflow-x-clip` on this shell, not `hidden`: `hidden` also turns
+      the box into a scroll container, and no `sticky` bar below it can
+      stick to the page while that is so. */}
+    <OfflineBanner />
+    <PageTransition>
+      <MainRegion mainRef={mainRef} pathname={pathname} />
+    </PageTransition>
+    <AppNavigation />
+    <Footer />
+  </div>
+);
+
 /**
  * The shell every page renders inside: the header, the transition wrapper, the
  * phone tab bar and the footer, with the matched page in the `<Outlet />`.
@@ -169,21 +194,7 @@ const AppLayout = () => {
         <RouteAnnouncer />
         <ScrollToTop />
         <UnsavedWorkBlocker />
-        <div className="flex flex-col min-h-screen supports-[height:100dvh]:min-h-dvh overflow-x-clip">
-          <Navbar />
-          {/* Under the header and in normal flow, never sticky: if the header is
-            ever made sticky (it is not today, see Navbar), a second sticky bar
-            would slide beneath it. See the same note on the admin phone menu.
-            `overflow-x-clip` on this shell, not `hidden`: `hidden` also turns
-            the box into a scroll container, and no `sticky` bar below it can
-            stick to the page while that is so. */}
-          <OfflineBanner />
-          <PageTransition>
-            <MainRegion mainRef={mainRef} pathname={pathname} />
-          </PageTransition>
-          <AppNavigation />
-          <Footer />
-        </div>
+        <AppShell mainRef={mainRef} pathname={pathname} />
       </NavigationProvider>
     </AuthProvider>
   );
@@ -456,6 +467,15 @@ const AppRouter = ({ router }: { router: ReturnType<typeof createAppRouter> }) =
   </TooltipProvider>
 );
 
+/** The query client and the motion settings around the router. */
+const DataAndMotionProviders = ({ router }: { router: ReturnType<typeof createAppRouter> }) => (
+  <QueryClientProvider client={queryClient}>
+    <MotionProviders>
+      <AppRouter router={router} />
+    </MotionProviders>
+  </QueryClientProvider>
+);
+
 /** Provides top-level app providers and the router. */
 const App = () => {
   const router = useLazyRef(createAppRouter).current;
@@ -463,11 +483,7 @@ const App = () => {
   return (
     <ErrorBoundary>
       <HelmetProvider>
-        <QueryClientProvider client={queryClient}>
-          <MotionProviders>
-            <AppRouter router={router} />
-          </MotionProviders>
-        </QueryClientProvider>
+        <DataAndMotionProviders router={router} />
       </HelmetProvider>
     </ErrorBoundary>
   );

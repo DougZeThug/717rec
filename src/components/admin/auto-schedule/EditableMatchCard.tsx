@@ -105,6 +105,21 @@ const TimeslotSelect: React.FC<TimeslotSelectProps> = ({ id, value, onValueChang
   </div>
 );
 
+/** Icon button that swaps team 1 and team 2. */
+const SwapTeamsButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <Button
+    type="button"
+    variant="ghost"
+    size="sm"
+    onClick={onClick}
+    className="self-center sm:mt-5 shrink-0"
+    title="Swap teams"
+    aria-label="Swap teams"
+  >
+    <ArrowLeftRight className="size-4 rotate-90 sm:rotate-0" />
+  </Button>
+);
+
 /** Card for editing one auto-scheduled match: team pickers, timeslot, swap, and remove. */
 const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
   match,
@@ -167,17 +182,7 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
           />
 
           {/* Swap Button - Rotate icon on mobile */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onSwapTeams(match.id)}
-            className="self-center sm:mt-5 shrink-0"
-            title="Swap teams"
-            aria-label="Swap teams"
-          >
-            <ArrowLeftRight className="size-4 rotate-90 sm:rotate-0" />
-          </Button>
+          <SwapTeamsButton onClick={() => onSwapTeams(match.id)} />
 
           {/* Team 2 */}
           <TeamSelect

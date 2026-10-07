@@ -73,6 +73,15 @@ const TeamListCardSkeleton = () => (
   </Card>
 );
 
+const ChartCardsRowSkeleton = () => (
+  <div className="mb-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <ChartCardSkeleton />
+      <ChartCardSkeleton />
+    </div>
+  </div>
+);
+
 const LoadingStateContainer = () => {
   return (
     <div className="max-w-7xl mx-auto bg-background px-2 sm:px-4">
@@ -84,12 +93,7 @@ const LoadingStateContainer = () => {
 
         <StatCardsSkeleton />
 
-        <div className="mb-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ChartCardSkeleton />
-            <ChartCardSkeleton />
-          </div>
-        </div>
+        <ChartCardsRowSkeleton />
 
         <div>
           <TeamListCardSkeleton />

@@ -65,6 +65,23 @@ const AddPlayerRow: React.FC<AddPlayerRowProps> = ({
   </div>
 );
 
+const PlayerSelectorHeader: React.FC<{ teamName: string }> = ({ teamName }) => (
+  <ResponsiveDialogHeader>
+    <ResponsiveDialogTitle>{teamName} players</ResponsiveDialogTitle>
+    <ResponsiveDialogDescription>
+      Pick up to {MAX_PLAYERS_PER_SIDE} players for this game.
+    </ResponsiveDialogDescription>
+  </ResponsiveDialogHeader>
+);
+
+const PlayerSelectorFooter: React.FC<{ onDone: () => void }> = ({ onDone }) => (
+  <ResponsiveDialogFooter>
+    <Button type="button" className="min-h-[44px] w-full" onClick={onDone}>
+      Done
+    </Button>
+  </ResponsiveDialogFooter>
+);
+
 export const PlayerSelector: React.FC<PlayerSelectorProps> = ({
   teamName,
   roster,
@@ -110,12 +127,7 @@ export const PlayerSelector: React.FC<PlayerSelectorProps> = ({
 
       <ResponsiveDialog open={open} onOpenChange={setOpen}>
         <ResponsiveDialogContent>
-          <ResponsiveDialogHeader>
-            <ResponsiveDialogTitle>{teamName} players</ResponsiveDialogTitle>
-            <ResponsiveDialogDescription>
-              Pick up to {MAX_PLAYERS_PER_SIDE} players for this game.
-            </ResponsiveDialogDescription>
-          </ResponsiveDialogHeader>
+          <PlayerSelectorHeader teamName={teamName} />
 
           <div className="max-h-64 space-y-1 overflow-y-auto px-1">
             {roster.length === 0 && (
@@ -150,11 +162,7 @@ export const PlayerSelector: React.FC<PlayerSelectorProps> = ({
             isAddingPlayer={isAddingPlayer}
           />
 
-          <ResponsiveDialogFooter>
-            <Button type="button" className="min-h-[44px] w-full" onClick={() => setOpen(false)}>
-              Done
-            </Button>
-          </ResponsiveDialogFooter>
+          <PlayerSelectorFooter onDone={() => setOpen(false)} />
         </ResponsiveDialogContent>
       </ResponsiveDialog>
     </div>

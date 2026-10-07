@@ -14,6 +14,17 @@ interface WarningDisplayProps {
 const EMPTY_INSUFFICIENT_BLOCKS: string[] = [];
 const EMPTY_UNMATCHED_DETAILS: NonNullable<WarningDisplayProps['unmatchedTeamDetails']> = [];
 
+const WarningSuggestions: React.FC = () => (
+  <div className="text-sm font-medium mt-2">
+    Suggestions:
+    <ul className="list-disc pl-5 mt-1">
+      <li>Add more teams to time blocks with odd numbers</li>
+      <li>Move teams between time blocks to balance them</li>
+      <li>Continue with the current schedule and some teams will be unmatched</li>
+    </ul>
+  </div>
+);
+
 export const WarningDisplay: React.FC<WarningDisplayProps> = ({
   oddBlocks = 0,
   unmatchedTeams = 0,
@@ -63,14 +74,7 @@ export const WarningDisplay: React.FC<WarningDisplayProps> = ({
           </div>
         )}
 
-        <div className="text-sm font-medium mt-2">
-          Suggestions:
-          <ul className="list-disc pl-5 mt-1">
-            <li>Add more teams to time blocks with odd numbers</li>
-            <li>Move teams between time blocks to balance them</li>
-            <li>Continue with the current schedule and some teams will be unmatched</li>
-          </ul>
-        </div>
+        <WarningSuggestions />
       </AlertDescription>
     </Alert>
   );

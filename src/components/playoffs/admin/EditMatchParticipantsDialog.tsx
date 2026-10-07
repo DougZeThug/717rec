@@ -311,6 +311,19 @@ const EditTeamsBody: React.FC<EditTeamsBodyProps> = ({ bracketId, matchId, onDon
   );
 };
 
+const EditTeamsHeader: React.FC = () => (
+  <DialogHeader>
+    <DialogTitle className="flex items-center gap-2">
+      <ArrowLeftRight className="size-5" />
+      Edit teams
+    </DialogTitle>
+    <DialogDescription>
+      Change who plays in this first-round match. Round 2 and the losers bracket update by
+      themselves.
+    </DialogDescription>
+  </DialogHeader>
+);
+
 interface EditMatchParticipantsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -332,16 +345,7 @@ const EditMatchParticipantsDialog: React.FC<EditMatchParticipantsDialogProps> = 
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="sm:max-w-lg">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <ArrowLeftRight className="size-5" />
-          Edit teams
-        </DialogTitle>
-        <DialogDescription>
-          Change who plays in this first-round match. Round 2 and the losers bracket update by
-          themselves.
-        </DialogDescription>
-      </DialogHeader>
+      <EditTeamsHeader />
       {open && matchId !== null && (
         <EditTeamsBody bracketId={bracketId} matchId={matchId} onDone={() => onOpenChange(false)} />
       )}

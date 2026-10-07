@@ -16,6 +16,55 @@ interface UnresolvedMatchesListProps {
   resolvingMatchIds?: ReadonlySet<string>;
 }
 
+interface ResolveActionsProps {
+  team1Name: string;
+  team2Name: string;
+  locked: boolean;
+  onTeam1Won: () => void;
+  onTeam2Won: () => void;
+  onTie: () => void;
+}
+
+const ResolveActions = ({
+  team1Name,
+  team2Name,
+  locked,
+  onTeam1Won,
+  onTeam2Won,
+  onTie,
+}: ResolveActionsProps) => (
+  <div className="flex flex-wrap gap-2">
+    <Button
+      size="sm"
+      disabled={locked}
+      onClick={onTeam1Won}
+      className="h-auto py-2 whitespace-normal"
+    >
+      <Trophy className="size-4 mr-1 shrink-0" />
+      {team1Name} won
+    </Button>
+    <Button
+      size="sm"
+      disabled={locked}
+      onClick={onTeam2Won}
+      className="h-auto py-2 whitespace-normal"
+    >
+      <Trophy className="size-4 mr-1 shrink-0" />
+      {team2Name} won
+    </Button>
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={locked}
+      onClick={onTie}
+      className="h-auto py-2 whitespace-normal"
+    >
+      <Handshake className="size-4 mr-1 shrink-0" />
+      It was a tie
+    </Button>
+  </div>
+);
+
 /**
  * Completed matches that carry no winner yet.
  *
@@ -61,36 +110,14 @@ const UnresolvedMatchesList = ({
                 </p>
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  disabled={locked}
-                  onClick={() => onApproveWinner(match, 1)}
-                  className="h-auto py-2 whitespace-normal"
-                >
-                  <Trophy className="size-4 mr-1 shrink-0" />
-                  {team1Name} won
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={locked}
-                  onClick={() => onApproveWinner(match, 2)}
-                  className="h-auto py-2 whitespace-normal"
-                >
-                  <Trophy className="size-4 mr-1 shrink-0" />
-                  {team2Name} won
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={locked}
-                  onClick={() => onMarkTie(match.id)}
-                  className="h-auto py-2 whitespace-normal"
-                >
-                  <Handshake className="size-4 mr-1 shrink-0" />
-                  It was a tie
-                </Button>
-              </div>
+              <ResolveActions
+                team1Name={team1Name}
+                team2Name={team2Name}
+                locked={locked}
+                onTeam1Won={() => onApproveWinner(match, 1)}
+                onTeam2Won={() => onApproveWinner(match, 2)}
+                onTie={() => onMarkTie(match.id)}
+              />
             </CardContent>
           </Card>
         );

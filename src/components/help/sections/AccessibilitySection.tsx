@@ -81,6 +81,19 @@ function NeedHelp() {
   );
 }
 
+function AccessibilityDetailsCard() {
+  return (
+    <Card>
+      <CardContent className="pt-6 space-y-4">
+        <KeyboardShortcuts />
+        <ScreenReaderSupport />
+        <AccessibilityFeatures />
+        <NeedHelp />
+      </CardContent>
+    </Card>
+  );
+}
+
 export function AccessibilitySection() {
   return (
     <AccordionItem value="accessibility">
@@ -96,14 +109,7 @@ export function AccessibilitySection() {
           keyboard-only navigation.
         </p>
 
-        <Card>
-          <CardContent className="pt-6 space-y-4">
-            <KeyboardShortcuts />
-            <ScreenReaderSupport />
-            <AccessibilityFeatures />
-            <NeedHelp />
-          </CardContent>
-        </Card>
+        <AccessibilityDetailsCard />
       </AccordionContent>
     </AccordionItem>
   );

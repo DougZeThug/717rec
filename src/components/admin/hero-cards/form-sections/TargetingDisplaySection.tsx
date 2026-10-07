@@ -28,6 +28,23 @@ const fromDatetimeLocal = (val: string): string => {
   return new Date(val).toISOString();
 };
 
+interface VisibilityRowProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}
+
+const VisibilityRow: React.FC<VisibilityRowProps> = ({ checked, onCheckedChange }) => (
+  <div className="flex items-center justify-between py-2">
+    <div>
+      <Label htmlFor="is_visible" className="cursor-pointer">
+        Show on Homepage
+      </Label>
+      <p className="text-xs text-muted-foreground">Toggle to make this card visible to players</p>
+    </div>
+    <Switch id="is_visible" checked={checked} onCheckedChange={onCheckedChange} />
+  </div>
+);
+
 export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, onChange }) => {
   const isEvent = formData.card_type === 'event';
 
@@ -152,21 +169,10 @@ export const TargetingDisplaySection: React.FC<FormSectionProps> = ({ formData, 
           </p>
         </div>
 
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <Label htmlFor="is_visible" className="cursor-pointer">
-              Show on Homepage
-            </Label>
-            <p className="text-xs text-muted-foreground">
-              Toggle to make this card visible to players
-            </p>
-          </div>
-          <Switch
-            id="is_visible"
-            checked={formData.is_visible}
-            onCheckedChange={(checked) => onChange('is_visible', checked)}
-          />
-        </div>
+        <VisibilityRow
+          checked={formData.is_visible}
+          onCheckedChange={(checked) => onChange('is_visible', checked)}
+        />
       </div>
     </div>
   );

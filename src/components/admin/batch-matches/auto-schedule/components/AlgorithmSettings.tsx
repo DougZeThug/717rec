@@ -43,6 +43,51 @@ const SettingRow: React.FC<SettingRowProps> = ({
   </div>
 );
 
+const SettingsTriggerLabel: React.FC = () => (
+  <span className="flex items-center">
+    <Settings2 className="size-4 mr-2" /> Algorithm Settings
+  </span>
+);
+
+const SettingsBody: React.FC<AlgorithmSettingsProps> = ({
+  avoidRematches,
+  setAvoidRematches,
+  prioritizeQuality,
+  setPrioritizeQuality,
+  dualMatchMode,
+  setDualMatchMode,
+}) => (
+  <div className="space-y-4 py-2">
+    {setDualMatchMode && (
+      <SettingRow
+        id="dual-match-mode"
+        label="Dual Match Mode"
+        description="Each team plays in two consecutive time blocks (6:30 & 7:00)"
+        checked={dualMatchMode}
+        onCheckedChange={setDualMatchMode}
+      />
+    )}
+
+    <SettingRow
+      id="avoid-rematches"
+      label="Avoid Rematches"
+      description="Prioritize pairing teams that haven't played each other before"
+      checked={avoidRematches}
+      onCheckedChange={setAvoidRematches}
+    />
+
+    {!dualMatchMode && (
+      <SettingRow
+        id="prioritize-quality"
+        label="Prioritize Match Quality"
+        description="Match teams with similar skill levels (higher priority)"
+        checked={prioritizeQuality}
+        onCheckedChange={setPrioritizeQuality}
+      />
+    )}
+  </div>
+);
+
 export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
   avoidRematches,
   setAvoidRematches,
@@ -55,40 +100,17 @@ export const AlgorithmSettings: React.FC<AlgorithmSettingsProps> = ({
     <Accordion type="single" collapsible className="mb-4">
       <AccordionItem value="settings">
         <AccordionTrigger className="text-sm py-2">
-          <span className="flex items-center">
-            <Settings2 className="size-4 mr-2" /> Algorithm Settings
-          </span>
+          <SettingsTriggerLabel />
         </AccordionTrigger>
         <AccordionContent>
-          <div className="space-y-4 py-2">
-            {setDualMatchMode && (
-              <SettingRow
-                id="dual-match-mode"
-                label="Dual Match Mode"
-                description="Each team plays in two consecutive time blocks (6:30 & 7:00)"
-                checked={dualMatchMode}
-                onCheckedChange={setDualMatchMode}
-              />
-            )}
-
-            <SettingRow
-              id="avoid-rematches"
-              label="Avoid Rematches"
-              description="Prioritize pairing teams that haven't played each other before"
-              checked={avoidRematches}
-              onCheckedChange={setAvoidRematches}
-            />
-
-            {!dualMatchMode && (
-              <SettingRow
-                id="prioritize-quality"
-                label="Prioritize Match Quality"
-                description="Match teams with similar skill levels (higher priority)"
-                checked={prioritizeQuality}
-                onCheckedChange={setPrioritizeQuality}
-              />
-            )}
-          </div>
+          <SettingsBody
+            avoidRematches={avoidRematches}
+            setAvoidRematches={setAvoidRematches}
+            prioritizeQuality={prioritizeQuality}
+            setPrioritizeQuality={setPrioritizeQuality}
+            dualMatchMode={dualMatchMode}
+            setDualMatchMode={setDualMatchMode}
+          />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Plus, Save, X } from 'lucide-react';
 import React from 'react';
-import { type Control, useForm } from 'react-hook-form';
+import { type Control, useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -109,6 +109,56 @@ const SeasonFormActions: React.FC<SeasonFormActionsProps> = ({
   </div>
 );
 
+interface SeasonFormBodyProps {
+  form: UseFormReturn<SeasonFormData>;
+  onSubmit: (data: SeasonFormData) => Promise<void>;
+  isEditing: boolean;
+  isSubmitting: boolean;
+  onClose: () => void;
+}
+
+const SeasonFormBody: React.FC<SeasonFormBodyProps> = ({
+  form,
+  onSubmit,
+  isEditing,
+  isSubmitting,
+  onClose,
+}) => (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Season Name</FormLabel>
+            <FormControl>
+              <Input placeholder="e.g., Fall 2026" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <SeasonDateFields control={form.control} />
+
+      <SeasonFormActions isEditing={isEditing} isSubmitting={isSubmitting} onClose={onClose} />
+    </form>
+  </Form>
+);
+
+const SeasonFormHeader: React.FC<{ isEditing: boolean; onClose: () => void }> = ({
+  isEditing,
+  onClose,
+}) => (
+  <div className="flex items-center justify-between">
+    <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
+    <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
+      <X className="size-4" />
+    </Button>
+  </div>
+);
+
 const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
   const { createSeason, updateSeason } = useSeasonMutations();
   const isEditing = season !== undefined;
@@ -171,39 +221,16 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
-            <X className="size-4" />
-          </Button>
-        </div>
+        <SeasonFormHeader isEditing={isEditing} onClose={onClose} />
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Season Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Fall 2026" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <SeasonDateFields control={form.control} />
-
-            <SeasonFormActions
-              isEditing={isEditing}
-              isSubmitting={isSubmitting}
-              onClose={onClose}
-            />
-          </form>
-        </Form>
+        <SeasonFormBody
+          form={form}
+          onSubmit={onSubmit}
+          isEditing={isEditing}
+          isSubmitting={isSubmitting}
+          onClose={onClose}
+        />
       </CardContent>
     </Card>
   );

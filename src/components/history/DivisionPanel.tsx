@@ -32,6 +32,29 @@ interface DivisionPanelProps {
   teams: SeasonData[];
 }
 
+const DivisionTitle: React.FC<{
+  divisionName: string;
+  teamCount: number;
+  isWinterTheme: boolean;
+}> = ({ divisionName, teamCount, isWinterTheme }) => (
+  <h4
+    className={cn(
+      'text-base md:text-lg font-semibold',
+      isWinterTheme ? 'text-white' : 'text-foreground'
+    )}
+  >
+    {divisionName}
+    <span
+      className={cn(
+        'ml-2 text-base font-normal',
+        isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
+      )}
+    >
+      ({teamCount})
+    </span>
+  </h4>
+);
+
 const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) => {
   const isMobile = useIsMobile();
   const [isExpanded, setIsExpanded] = useState(true);
@@ -77,22 +100,11 @@ const DivisionPanel: React.FC<DivisionPanelProps> = ({ divisionName, teams }) =>
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <h4
-            className={cn(
-              'text-base md:text-lg font-semibold',
-              isWinterTheme ? 'text-white' : 'text-foreground'
-            )}
-          >
-            {divisionName}
-            <span
-              className={cn(
-                'ml-2 text-base font-normal',
-                isWinterTheme ? 'text-white/60' : 'text-muted-foreground'
-              )}
-            >
-              ({teams.length})
-            </span>
-          </h4>
+          <DivisionTitle
+            divisionName={divisionName}
+            teamCount={teams.length}
+            isWinterTheme={isWinterTheme}
+          />
         </div>
         <Button
           variant="ghost"

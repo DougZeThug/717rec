@@ -133,6 +133,49 @@ const PlayerNamesField: React.FC<PlayerNamesFieldProps> = ({
   </div>
 );
 
+interface DivisionSelectProps {
+  value: string | null | undefined;
+  onChange: (divisionId: string | null) => void;
+  divisions: ReturnType<typeof useDivisions>['divisions'];
+  isLoading: boolean;
+}
+
+const DivisionSelect: React.FC<DivisionSelectProps> = ({
+  value,
+  onChange,
+  divisions,
+  isLoading,
+}) => (
+  <Select
+    value={value || 'none'}
+    onValueChange={(selected) => onChange(selected === 'none' ? null : selected)}
+  >
+    <FormControl>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select division" />
+      </SelectTrigger>
+    </FormControl>
+    <SelectContent>
+      <SelectItem value="none">None</SelectItem>
+      {isLoading ? (
+        <SelectItem value="loading-divisions" disabled>
+          Loading divisions...
+        </SelectItem>
+      ) : divisions.length === 0 ? (
+        <SelectItem value="no-divisions-available" disabled>
+          No divisions available
+        </SelectItem>
+      ) : (
+        divisions.map((div) => (
+          <SelectItem key={div.id} value={div.id}>
+            {div.name}
+          </SelectItem>
+        ))
+      )}
+    </SelectContent>
+  </Select>
+);
+
 interface TeamFormActionsProps {
   isUploading: boolean;
   isSubmitting: boolean;
@@ -286,34 +329,12 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Division</FormLabel>
-                <Select
-                  value={field.value || 'none'}
-                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select division" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {isDivisionsLoading ? (
-                      <SelectItem value="loading-divisions" disabled>
-                        Loading divisions...
-                      </SelectItem>
-                    ) : divisions.length === 0 ? (
-                      <SelectItem value="no-divisions-available" disabled>
-                        No divisions available
-                      </SelectItem>
-                    ) : (
-                      divisions.map((div) => (
-                        <SelectItem key={div.id} value={div.id}>
-                          {div.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <DivisionSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  divisions={divisions}
+                  isLoading={isDivisionsLoading}
+                />
                 <FormMessage />
               </FormItem>
             )}

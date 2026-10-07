@@ -134,6 +134,13 @@ const StatusFilterSelect: React.FC<StatusFilterSelectProps> = ({ value, onValueC
   </Select>
 );
 
+const ExportCsvButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <Button variant="outline" size="sm" onClick={onClick}>
+    <Download className="size-4 mr-2" />
+    Export CSV
+  </Button>
+);
+
 interface SummaryCardProps {
   title: string;
   icon: React.ReactNode;
@@ -249,10 +256,7 @@ const SeasonParticipationTab: React.FC = () => {
           <StatusFilterSelect value={statusFilter} onValueChange={setStatusFilter} />
 
           {/* Export */}
-          <Button variant="outline" size="sm" onClick={handleExportCsv}>
-            <Download className="size-4 mr-2" />
-            Export CSV
-          </Button>
+          <ExportCsvButton onClick={handleExportCsv} />
         </div>
       </div>
 

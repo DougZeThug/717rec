@@ -14,17 +14,19 @@ const AdminDashboardLink: React.FC = () => (
   </Link>
 );
 
+const AdminCTAText: React.FC = () => (
+  <div>
+    <h3 className="font-semibold">Ready to manage your league?</h3>
+    <p className="text-sm text-muted-foreground">Head to the Admin Dashboard to get started.</p>
+  </div>
+);
+
 export const HelpAdminCTA: React.FC = () => {
   return (
     <Card className="mt-8">
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold">Ready to manage your league?</h3>
-            <p className="text-sm text-muted-foreground">
-              Head to the Admin Dashboard to get started.
-            </p>
-          </div>
+          <AdminCTAText />
           <AdminDashboardLink />
         </div>
       </CardContent>

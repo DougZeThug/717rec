@@ -46,7 +46,7 @@ interface ScheduleWorkflowTabsProps {
   hasUnsavedEdits?: boolean;
 }
 
-const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
+const ScheduleWorkflowCard: React.FC<ScheduleWorkflowTabsProps> = ({
   activeTab,
   setActiveTab,
   selectedDate,
@@ -77,68 +77,72 @@ const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = ({
   hasUnsavedEdits,
 }) => {
   return (
-    <div className="lg:col-span-2">
-      <Card>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-0">
-            <TabsTrigger value="teams">1. Teams</TabsTrigger>
-            <TabsTrigger value="pairings">2. Matches</TabsTrigger>
-            <TabsTrigger value="export">3. Export</TabsTrigger>
-          </TabsList>
+    <Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-3 mb-0">
+          <TabsTrigger value="teams">1. Teams</TabsTrigger>
+          <TabsTrigger value="pairings">2. Matches</TabsTrigger>
+          <TabsTrigger value="export">3. Export</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="teams" className="p-4">
-            <TeamsTab
-              timeBlockTeams={timeBlockTeams}
-              selectedDate={selectedDate}
-              unmatchedTeamIds={unmatchedTeamIds}
-              oddBlocks={oddBlocks}
-              totalTeams={totalTeams}
-              onManualTeamAssign={onManualTeamAssign}
-              originalTimeBlockTeams={originalTimeBlockTeams}
-            />
-          </TabsContent>
+        <TabsContent value="teams" className="p-4">
+          <TeamsTab
+            timeBlockTeams={timeBlockTeams}
+            selectedDate={selectedDate}
+            unmatchedTeamIds={unmatchedTeamIds}
+            oddBlocks={oddBlocks}
+            totalTeams={totalTeams}
+            onManualTeamAssign={onManualTeamAssign}
+            originalTimeBlockTeams={originalTimeBlockTeams}
+          />
+        </TabsContent>
 
-          <TabsContent value="pairings" className="p-4">
-            <MatchesTab
-              selectedDate={selectedDate}
-              timeBlockTeams={timeBlockTeams}
-              generatedPairings={generatedPairings}
-              unmatchedTeamIds={unmatchedTeamIds}
-              isGenerating={isGenerating}
-              matchQualityMetrics={matchQualityMetrics}
-              dualMatchMode={dualMatchMode}
-              onApplySchedule={onApplySchedule}
-              onSaveSchedule={onSaveSchedule}
-              onSaveGeneratedSchedule={onSaveGeneratedSchedule}
-              isSaving={isSaving}
-              isEditMode={isEditMode}
-              onToggleEditMode={onToggleEditMode}
-              editableMatches={editableMatches}
-              validation={validation}
-              onUpdateMatchTeam={onUpdateMatchTeam}
-              onUpdateMatchTimeslot={onUpdateMatchTimeslot}
-              onSwapTeams={onSwapTeams}
-              onRemoveMatch={onRemoveMatch}
-              onResetEdits={onResetEdits}
-              hasUnsavedEdits={hasUnsavedEdits}
-            />
-          </TabsContent>
+        <TabsContent value="pairings" className="p-4">
+          <MatchesTab
+            selectedDate={selectedDate}
+            timeBlockTeams={timeBlockTeams}
+            generatedPairings={generatedPairings}
+            unmatchedTeamIds={unmatchedTeamIds}
+            isGenerating={isGenerating}
+            matchQualityMetrics={matchQualityMetrics}
+            dualMatchMode={dualMatchMode}
+            onApplySchedule={onApplySchedule}
+            onSaveSchedule={onSaveSchedule}
+            onSaveGeneratedSchedule={onSaveGeneratedSchedule}
+            isSaving={isSaving}
+            isEditMode={isEditMode}
+            onToggleEditMode={onToggleEditMode}
+            editableMatches={editableMatches}
+            validation={validation}
+            onUpdateMatchTeam={onUpdateMatchTeam}
+            onUpdateMatchTimeslot={onUpdateMatchTimeslot}
+            onSwapTeams={onSwapTeams}
+            onRemoveMatch={onRemoveMatch}
+            onResetEdits={onResetEdits}
+            hasUnsavedEdits={hasUnsavedEdits}
+          />
+        </TabsContent>
 
-          <TabsContent value="export" className="p-4">
-            <ExportTab
-              selectedDate={selectedDate}
-              generatedMatches={generatedMatches}
-              matchQualityMetrics={matchQualityMetrics}
-              onApplySchedule={onApplySchedule}
-              onSaveSchedule={onSaveSchedule}
-              isSaving={isSaving}
-              hasUnsavedEdits={hasUnsavedEdits}
-            />
-          </TabsContent>
-        </Tabs>
-      </Card>
-    </div>
+        <TabsContent value="export" className="p-4">
+          <ExportTab
+            selectedDate={selectedDate}
+            generatedMatches={generatedMatches}
+            matchQualityMetrics={matchQualityMetrics}
+            onApplySchedule={onApplySchedule}
+            onSaveSchedule={onSaveSchedule}
+            isSaving={isSaving}
+            hasUnsavedEdits={hasUnsavedEdits}
+          />
+        </TabsContent>
+      </Tabs>
+    </Card>
   );
 };
+
+const ScheduleWorkflowTabs: React.FC<ScheduleWorkflowTabsProps> = (props) => (
+  <div className="lg:col-span-2">
+    <ScheduleWorkflowCard {...props} />
+  </div>
+);
 
 export default ScheduleWorkflowTabs;

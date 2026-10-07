@@ -93,6 +93,21 @@ const RecapBody: React.FC<{ matchId: string }> = ({ matchId }) => {
   );
 };
 
+const MatchRecapHeader: React.FC<{ team1Name: string; team2Name: string }> = ({
+  team1Name,
+  team2Name,
+}) => (
+  <DialogHeader>
+    <DialogTitle className="flex items-center gap-2">
+      <ClipboardList className="size-4 text-primary" aria-hidden />
+      Match Recap
+    </DialogTitle>
+    <DialogDescription>
+      {team1Name} vs {team2Name}
+    </DialogDescription>
+  </DialogHeader>
+);
+
 interface MatchRecapDialogProps {
   matchId: string;
   team1Name: string;
@@ -112,15 +127,7 @@ export const MatchRecapDialog: React.FC<MatchRecapDialogProps> = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ClipboardList className="size-4 text-primary" aria-hidden />
-            Match Recap
-          </DialogTitle>
-          <DialogDescription>
-            {team1Name} vs {team2Name}
-          </DialogDescription>
-        </DialogHeader>
+        <MatchRecapHeader team1Name={team1Name} team2Name={team2Name} />
         {open && <RecapBody matchId={matchId} />}
       </DialogContent>
     </Dialog>

@@ -41,6 +41,48 @@ const candidateLabel = (slot: LoserSwapSlot): string =>
     ? `Match ${slot.matchNumber}: take the BYE spot and play ${slot.partnerName ?? 'the team there'}`
     : `Match ${slot.matchNumber}: swap with ${slot.participantName ?? 'Unknown team'}`;
 
+interface SlotSelectProps {
+  id: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+}
+
+const SlotSelect: React.FC<SlotSelectProps> = ({
+  id,
+  label,
+  placeholder,
+  value,
+  onValueChange,
+  disabled,
+  children,
+}) => (
+  <div className="space-y-2">
+    <Label htmlFor={id}>{label}</Label>
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger id={id}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>{children}</SelectContent>
+    </Select>
+  </div>
+);
+
+const SwapDialogHeader: React.FC = () => (
+  <DialogHeader>
+    <DialogTitle className="flex items-center gap-2">
+      <Shuffle className="size-5" />
+      Move Team to Another Match
+    </DialogTitle>
+    <DialogDescription>
+      Move a team from this losers-bracket match into another match of the same round.
+    </DialogDescription>
+  </DialogHeader>
+);
+
 const SwapLoserSlotsBody: React.FC<Omit<SwapLoserSlotsDialogProps, 'open'>> = ({
   onOpenChange,
   bracketId,
@@ -95,51 +137,41 @@ const SwapLoserSlotsBody: React.FC<Omit<SwapLoserSlotsDialogProps, 'open'>> = ({
         </p>
       ) : (
         <div className="space-y-4 py-2">
-          <div className="space-y-2">
-            <Label htmlFor="swap-team">Which team do you want to move?</Label>
-            <Select
-              value={selectedSlotKey ?? ''}
-              onValueChange={(value) => {
-                setPickedSlotKey(value);
-                // The destination depends on which team is moving (its labels
-                // and its BYE-spot filtering are relative to that team), so a
-                // change of team invalidates the picked destination — clear it
-                // rather than silently pairing the new team with the old pick.
-                setSelectedCandidateKey(null);
-              }}
-            >
-              <SelectTrigger id="swap-team">
-                <SelectValue placeholder="Select team" />
-              </SelectTrigger>
-              <SelectContent>
-                {slots.map((slot) => (
-                  <SelectItem key={slotKey(slot)} value={slotKey(slot)}>
-                    {slot.participantName ?? 'Unknown team'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SlotSelect
+            id="swap-team"
+            label="Which team do you want to move?"
+            placeholder="Select team"
+            value={selectedSlotKey ?? ''}
+            onValueChange={(value) => {
+              setPickedSlotKey(value);
+              // The destination depends on which team is moving (its labels
+              // and its BYE-spot filtering are relative to that team), so a
+              // change of team invalidates the picked destination — clear it
+              // rather than silently pairing the new team with the old pick.
+              setSelectedCandidateKey(null);
+            }}
+          >
+            {slots.map((slot) => (
+              <SelectItem key={slotKey(slot)} value={slotKey(slot)}>
+                {slot.participantName ?? 'Unknown team'}
+              </SelectItem>
+            ))}
+          </SlotSelect>
 
-          <div className="space-y-2">
-            <Label htmlFor="swap-destination">Where should they go?</Label>
-            <Select
-              value={selectedCandidateKey ?? ''}
-              onValueChange={setSelectedCandidateKey}
-              disabled={!selectedSlot}
-            >
-              <SelectTrigger id="swap-destination">
-                <SelectValue placeholder="Select destination" />
-              </SelectTrigger>
-              <SelectContent>
-                {candidates.map((candidate) => (
-                  <SelectItem key={slotKey(candidate)} value={slotKey(candidate)}>
-                    {candidateLabel(candidate)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SlotSelect
+            id="swap-destination"
+            label="Where should they go?"
+            placeholder="Select destination"
+            value={selectedCandidateKey ?? ''}
+            onValueChange={setSelectedCandidateKey}
+            disabled={!selectedSlot}
+          >
+            {candidates.map((candidate) => (
+              <SelectItem key={slotKey(candidate)} value={slotKey(candidate)}>
+                {candidateLabel(candidate)}
+              </SelectItem>
+            ))}
+          </SlotSelect>
 
           <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
@@ -188,15 +220,7 @@ const SwapLoserSlotsDialog: React.FC<SwapLoserSlotsDialogProps> = ({
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="sm:max-w-md">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Shuffle className="size-5" />
-          Move Team to Another Match
-        </DialogTitle>
-        <DialogDescription>
-          Move a team from this losers-bracket match into another match of the same round.
-        </DialogDescription>
-      </DialogHeader>
+      <SwapDialogHeader />
       {/* Selection state lives in the body, keyed by match: switching matches
           remounts it fresh, and the closed dialog unmounts it entirely — so
           the picks reset without any state-syncing effects. */}

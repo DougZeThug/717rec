@@ -26,6 +26,63 @@ interface MultiSelectProps {
   className?: string;
 }
 
+const SelectionSummary: React.FC<{ selected: string[]; placeholder: string }> = ({
+  selected,
+  placeholder,
+}) => (
+  <div className="flex gap-1 flex-wrap">
+    {selected.length === 0 ? (
+      <span className="text-muted-foreground">{placeholder}</span>
+    ) : (
+      <span className="text-sm">
+        {selected.length} team{selected.length > 1 ? 's' : ''} selected
+      </span>
+    )}
+  </div>
+);
+
+const SelectIndicators: React.FC<{
+  hasSelection: boolean;
+  onClear: (e: React.MouseEvent) => void;
+}> = ({ hasSelection, onClear }) => (
+  <div className="flex items-center gap-2">
+    {hasSelection && (
+      <X className="size-4 shrink-0 opacity-50 hover:opacity-100" onClick={onClear} />
+    )}
+    <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+  </div>
+);
+
+const OptionsCommand: React.FC<{
+  options: MultiSelectOption[];
+  selected: string[];
+  onSelect: (value: string) => void;
+}> = ({ options, selected, onSelect }) => (
+  <Command>
+    <CommandInput placeholder="Search teams..." aria-label="Search teams" />
+    <CommandList>
+      <CommandEmpty>No teams found.</CommandEmpty>
+      <CommandGroup className="max-h-64 overflow-auto">
+        {options.map((option) => (
+          <CommandItem
+            key={option.value}
+            value={option.label}
+            onSelect={() => onSelect(option.value)}
+          >
+            <Check
+              className={cn(
+                'mr-2 size-4',
+                selected.includes(option.value) ? 'opacity-100' : 'opacity-0'
+              )}
+            />
+            {option.label}
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </CommandList>
+  </Command>
+);
+
 export function MultiSelect({
   options,
   selected,
@@ -58,47 +115,12 @@ export function MultiSelect({
           aria-controls={listboxId}
           className={cn('w-full justify-between', className)}
         >
-          <div className="flex gap-1 flex-wrap">
-            {selected.length === 0 ? (
-              <span className="text-muted-foreground">{placeholder}</span>
-            ) : (
-              <span className="text-sm">
-                {selected.length} team{selected.length > 1 ? 's' : ''} selected
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {selected.length > 0 && (
-              <X className="size-4 shrink-0 opacity-50 hover:opacity-100" onClick={handleClear} />
-            )}
-            <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-          </div>
+          <SelectionSummary selected={selected} placeholder={placeholder} />
+          <SelectIndicators hasSelection={selected.length > 0} onClear={handleClear} />
         </Button>
       </PopoverTrigger>
       <PopoverContent id={listboxId} className="w-full p-0" align="start">
-        <Command>
-          <CommandInput placeholder="Search teams..." aria-label="Search teams" />
-          <CommandList>
-            <CommandEmpty>No teams found.</CommandEmpty>
-            <CommandGroup className="max-h-64 overflow-auto">
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.label}
-                  onSelect={() => handleSelect(option.value)}
-                >
-                  <Check
-                    className={cn(
-                      'mr-2 size-4',
-                      selected.includes(option.value) ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <OptionsCommand options={options} selected={selected} onSelect={handleSelect} />
       </PopoverContent>
     </Popover>
   );

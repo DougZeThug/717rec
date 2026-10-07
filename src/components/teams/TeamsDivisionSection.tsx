@@ -20,6 +20,18 @@ interface TeamsDivisionSectionProps {
   viewMode: 'grid' | 'list';
 }
 
+const DivisionTitle: React.FC<{ divisionName: string; teamCount: number }> = ({
+  divisionName,
+  teamCount,
+}) => (
+  <span>
+    {divisionName}
+    <span className="ml-1.5 text-muted-foreground text-sm font-inter font-normal">
+      ({teamCount})
+    </span>
+  </span>
+);
+
 export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   divisionName,
   teams,
@@ -73,12 +85,7 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
             'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring'
           )}
         >
-          <span>
-            {divisionName}
-            <span className="ml-1.5 text-muted-foreground text-sm font-inter font-normal">
-              ({teams.length})
-            </span>
-          </span>
+          <DivisionTitle divisionName={divisionName} teamCount={teams.length} />
           <ChevronDown
             size={18}
             aria-hidden="true"

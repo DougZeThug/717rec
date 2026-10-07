@@ -32,14 +32,70 @@ const OverviewCard: React.FC<OverviewCardProps> = ({ title, icon, value, caption
   </Card>
 );
 
+interface SeasonOverviewCardsProps {
+  seasons: Season[] | undefined;
+  activeSeason: Season | undefined;
+}
+
+const SeasonOverviewCards: React.FC<SeasonOverviewCardsProps> = ({ seasons, activeSeason }) => {
+  const archivedSeasons = seasons?.filter((season) => season.is_archived);
+  const inactiveSeasons = seasons?.filter((season) => !season.is_active && !season.is_archived);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <OverviewCard
+        title="Active Season"
+        icon={<Calendar className="size-4 text-muted-foreground" />}
+        value={activeSeason ? activeSeason.name : 'None'}
+        caption={
+          activeSeason && (
+            <p className="text-xs text-muted-foreground">
+              Started {toLocalDateString(activeSeason.start_date)}
+            </p>
+          )
+        }
+      />
+
+      <OverviewCard
+        title="Total Seasons"
+        icon={<Trophy className="size-4 text-muted-foreground" />}
+        value={seasons?.length || 0}
+        caption={
+          <p className="text-xs text-muted-foreground">{archivedSeasons?.length || 0} archived</p>
+        }
+      />
+
+      <OverviewCard
+        title="Inactive Seasons"
+        icon={<Calendar className="size-4 text-muted-foreground" />}
+        value={inactiveSeasons?.length || 0}
+        caption={<p className="text-xs text-muted-foreground">Ready to activate</p>}
+      />
+    </div>
+  );
+};
+
+interface SeasonActionBarProps {
+  activeSeason: Season | undefined;
+  onCreate: () => void;
+}
+
+const SeasonActionBar: React.FC<SeasonActionBarProps> = ({ activeSeason, onCreate }) => (
+  <div className="flex justify-between items-center">
+    <Button onClick={onCreate} className="flex items-center gap-2">
+      <Plus className="size-4" />
+      Create New Season
+    </Button>
+    {activeSeason && <SeasonActions season={activeSeason} />}
+  </div>
+);
+
 const SeasonManagementTab = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | null>(null);
   const { data: seasons, isLoading } = useSeasons();
 
   const activeSeason = seasons?.find((season) => season.is_active);
-  const archivedSeasons = seasons?.filter((season) => season.is_archived);
-  const inactiveSeasons = seasons?.filter((season) => !season.is_active && !season.is_archived);
 
   const handleCreateSeason = () => {
     setEditingSeason(null);
@@ -60,47 +116,10 @@ const SeasonManagementTab = () => {
     <AdminSectionWrapper title="Season Management" icon={Calendar}>
       <div className="space-y-6">
         {/* Season Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <OverviewCard
-            title="Active Season"
-            icon={<Calendar className="size-4 text-muted-foreground" />}
-            value={activeSeason ? activeSeason.name : 'None'}
-            caption={
-              activeSeason && (
-                <p className="text-xs text-muted-foreground">
-                  Started {toLocalDateString(activeSeason.start_date)}
-                </p>
-              )
-            }
-          />
-
-          <OverviewCard
-            title="Total Seasons"
-            icon={<Trophy className="size-4 text-muted-foreground" />}
-            value={seasons?.length || 0}
-            caption={
-              <p className="text-xs text-muted-foreground">
-                {archivedSeasons?.length || 0} archived
-              </p>
-            }
-          />
-
-          <OverviewCard
-            title="Inactive Seasons"
-            icon={<Calendar className="size-4 text-muted-foreground" />}
-            value={inactiveSeasons?.length || 0}
-            caption={<p className="text-xs text-muted-foreground">Ready to activate</p>}
-          />
-        </div>
+        <SeasonOverviewCards seasons={seasons} activeSeason={activeSeason} />
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          <Button onClick={handleCreateSeason} className="flex items-center gap-2">
-            <Plus className="size-4" />
-            Create New Season
-          </Button>
-          {activeSeason && <SeasonActions season={activeSeason} />}
-        </div>
+        <SeasonActionBar activeSeason={activeSeason} onCreate={handleCreateSeason} />
 
         {/* Season Form */}
         {showCreateForm && (

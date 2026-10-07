@@ -273,6 +273,57 @@ const PowerScoreLineChart: React.FC<{
   </div>
 );
 
+/** The collapsible panel: team picker hint, the chart and the colour key. */
+const ChartBody: React.FC<{
+  chartData: ReturnType<typeof transformDataForChart>;
+  teamsData: ReturnType<typeof useAllTeamsCareerPowerScores>['data'];
+  teamOptions: { value: string; label: string }[];
+  selectedTeamIds: string[];
+  onSelectedChange: (ids: string[]) => void;
+  isMobile: boolean;
+  isDark: boolean;
+}> = ({
+  chartData,
+  teamsData,
+  teamOptions,
+  selectedTeamIds,
+  onSelectedChange,
+  isMobile,
+  isDark,
+}) => (
+  <CollapsibleContent>
+    <CardContent>
+      <TeamHighlightPicker
+        options={teamOptions}
+        selected={selectedTeamIds}
+        onChange={onSelectedChange}
+      />
+
+      {selectedTeamIds.length === 0 && (
+        <p className="text-sm text-muted-foreground mb-4 text-center">
+          Select teams above to highlight their trends
+        </p>
+      )}
+
+      <PowerScoreLineChart
+        chartData={chartData}
+        teamsData={teamsData}
+        selectedTeamIds={selectedTeamIds}
+        isMobile={isMobile}
+        isDark={isDark}
+      />
+
+      {selectedTeamIds.length > 0 && (
+        <SelectedTeamsLegend
+          teamsData={teamsData}
+          selectedTeamIds={selectedTeamIds}
+          isDark={isDark}
+        />
+      )}
+    </CardContent>
+  </CollapsibleContent>
+);
+
 const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
   const { data: teamsData, isLoading } = useAllTeamsCareerPowerScores();
   const { resolvedTheme } = useTheme();
@@ -318,37 +369,15 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
           <ChartHeader isMobile={isMobile} theme={theme} isOpen={isOpen} />
         </CollapsibleTrigger>
 
-        <CollapsibleContent>
-          <CardContent>
-            <TeamHighlightPicker
-              options={teamOptions}
-              selected={selectedTeamIds}
-              onChange={setSelectedTeamIds}
-            />
-
-            {selectedTeamIds.length === 0 && (
-              <p className="text-sm text-muted-foreground mb-4 text-center">
-                Select teams above to highlight their trends
-              </p>
-            )}
-
-            <PowerScoreLineChart
-              chartData={chartData}
-              teamsData={teamsData}
-              selectedTeamIds={selectedTeamIds}
-              isMobile={isMobile}
-              isDark={isDark}
-            />
-
-            {selectedTeamIds.length > 0 && (
-              <SelectedTeamsLegend
-                teamsData={teamsData}
-                selectedTeamIds={selectedTeamIds}
-                isDark={isDark}
-              />
-            )}
-          </CardContent>
-        </CollapsibleContent>
+        <ChartBody
+          chartData={chartData}
+          teamsData={teamsData}
+          teamOptions={teamOptions}
+          selectedTeamIds={selectedTeamIds}
+          onSelectedChange={setSelectedTeamIds}
+          isMobile={isMobile}
+          isDark={isDark}
+        />
       </Card>
     </Collapsible>
   );

@@ -11,6 +11,25 @@ interface TeamListSkeletonProps {
 const skeletons = ['team-skel-1', 'team-skel-2', 'team-skel-3'];
 const innerSkeletons = ['team-stat-1', 'team-stat-2', 'team-stat-3', 'team-stat-4'];
 
+const ListCardDetailsSkeleton: React.FC<{ skKey: string }> = ({ skKey }) => (
+  <div className="flex flex-col grow p-4 space-y-4">
+    <div className="flex justify-between">
+      <ShimmerSkeleton variant="input" className="h-6 w-1/3" />
+      <ShimmerSkeleton variant="input" className="h-6 w-8" />
+    </div>
+    <ShimmerSkeleton variant="input" className="h-5 w-1/4" />
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {innerSkeletons.map((innerKey) => (
+        <div key={`${skKey}-${innerKey}`} className="bg-muted/30 p-2 rounded-input space-y-2">
+          <ShimmerSkeleton variant="input" className="h-4 w-1/2" />
+          <ShimmerSkeleton variant="input" className="h-4 w-2/3" />
+        </div>
+      ))}
+    </div>
+    <ShimmerSkeleton variant="input" className="h-4 w-3/4 mt-4" />
+  </div>
+);
+
 export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) => {
   if (viewMode === 'list') {
     return (
@@ -21,25 +40,7 @@ export const TeamListSkeleton: React.FC<TeamListSkeletonProps> = ({ viewMode }) 
               <div className="w-full md:w-[150px] h-[150px] bg-muted/50 flex items-center justify-center">
                 <AvatarSkeleton size="lg" />
               </div>
-              <div className="flex flex-col grow p-4 space-y-4">
-                <div className="flex justify-between">
-                  <ShimmerSkeleton variant="input" className="h-6 w-1/3" />
-                  <ShimmerSkeleton variant="input" className="h-6 w-8" />
-                </div>
-                <ShimmerSkeleton variant="input" className="h-5 w-1/4" />
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {innerSkeletons.map((innerKey) => (
-                    <div
-                      key={`${skKey}-${innerKey}`}
-                      className="bg-muted/30 p-2 rounded-input space-y-2"
-                    >
-                      <ShimmerSkeleton variant="input" className="h-4 w-1/2" />
-                      <ShimmerSkeleton variant="input" className="h-4 w-2/3" />
-                    </div>
-                  ))}
-                </div>
-                <ShimmerSkeleton variant="input" className="h-4 w-3/4 mt-4" />
-              </div>
+              <ListCardDetailsSkeleton skKey={skKey} />
             </div>
           </Card>
         ))}

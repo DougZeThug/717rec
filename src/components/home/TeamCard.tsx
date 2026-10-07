@@ -19,6 +19,39 @@ interface TeamCardProps {
   prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
+const TeamCardImageArea: React.FC<
+  Pick<TeamCardProps, 'team' | 'isWinter' | 'prefetchedBadges'>
+> = ({ team, isWinter, prefetchedBadges }) => (
+  <div
+    className={cn(
+      'h-44 relative flex items-center justify-center p-4',
+      isWinter
+        ? 'bg-gradient-to-br from-slate-800/80 via-slate-800/50 to-slate-900/60'
+        : 'bg-gradient-to-br from-muted to-card'
+    )}
+  >
+    <div
+      className={cn(
+        'absolute inset-0',
+        isWinter
+          ? 'bg-gradient-to-br from-cyan-900/10 via-transparent to-violet-900/10'
+          : 'bg-gradient-to-br from-blue-50/30 via-transparent to-amber-50/20 dark:from-blue-900/10 dark:to-amber-900/10 dark:via-none'
+      )}
+    />
+    <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
+
+    <div className="absolute top-2 right-2">
+      <TeamBadgeCollection
+        teamId={team.id}
+        size="sm"
+        maxDisplay={3}
+        orientation="vertical"
+        prefetchedBadges={prefetchedBadges}
+      />
+    </div>
+  </div>
+);
+
 const TeamCard: React.FC<TeamCardProps> = ({
   team,
   delay = 0,
@@ -55,34 +88,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
       <Link to={`/teams/${team.id}`} className="block">
-        <div
-          className={cn(
-            'h-44 relative flex items-center justify-center p-4',
-            isWinter
-              ? 'bg-gradient-to-br from-slate-800/80 via-slate-800/50 to-slate-900/60'
-              : 'bg-gradient-to-br from-muted to-card'
-          )}
-        >
-          <div
-            className={cn(
-              'absolute inset-0',
-              isWinter
-                ? 'bg-gradient-to-br from-cyan-900/10 via-transparent to-violet-900/10'
-                : 'bg-gradient-to-br from-blue-50/30 via-transparent to-amber-50/20 dark:from-blue-900/10 dark:to-amber-900/10 dark:via-none'
-            )}
-          />
-          <TeamLogo imageUrl={team.imageUrl} teamName={team.name} />
-
-          <div className="absolute top-2 right-2">
-            <TeamBadgeCollection
-              teamId={team.id}
-              size="sm"
-              maxDisplay={3}
-              orientation="vertical"
-              prefetchedBadges={prefetchedBadges}
-            />
-          </div>
-        </div>
+        <TeamCardImageArea team={team} isWinter={isWinter} prefetchedBadges={prefetchedBadges} />
         <div
           className={cn(
             'border-t',

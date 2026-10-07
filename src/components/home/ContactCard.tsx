@@ -5,6 +5,15 @@ import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
+const ContactLinkButton: React.FC = () => (
+  <Button asChild className="gap-2">
+    <Link to="/contact">
+      Send us a message
+      <ArrowRight className="size-4" aria-hidden />
+    </Link>
+  </Button>
+);
+
 /**
  * The home page's way in to the league's one message form.
  *
@@ -36,12 +45,7 @@ const ContactCard: React.FC = () => (
           goes through one form.
         </p>
       </div>
-      <Button asChild className="gap-2">
-        <Link to="/contact">
-          Send us a message
-          <ArrowRight className="size-4" aria-hidden />
-        </Link>
-      </Button>
+      <ContactLinkButton />
     </div>
   </section>
 );

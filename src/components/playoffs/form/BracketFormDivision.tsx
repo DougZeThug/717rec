@@ -49,6 +49,14 @@ const getUniqueDisplayDivisions = (
   return Array.from(displayDivisionMap.values());
 };
 
+const FormSelectTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => (
+  <FormControl>
+    <SelectTrigger>
+      <SelectValue placeholder={placeholder} />
+    </SelectTrigger>
+  </FormControl>
+);
+
 /**
  * Division selection component for bracket forms
  * Handles division selection and updates form state accordingly
@@ -121,11 +129,7 @@ export const BracketFormDivision: React.FC<BracketFormDivisionProps> = ({
         <FormItem>
           <FormLabel>Division</FormLabel>
           <Select onValueChange={handleDivisionChange} value={field.value}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a division" />
-              </SelectTrigger>
-            </FormControl>
+            <FormSelectTrigger placeholder="Select a division" />
             <SelectContent>
               {uniqueDisplayDivisions.map((division) => (
                 <SelectItem key={division.id} value={division.id}>

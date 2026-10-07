@@ -18,6 +18,43 @@ const isThursday = (date: Date) => {
   return date.getDay() === 4; // 4 represents Thursday (0 = Sunday, 1 = Monday, etc.)
 };
 
+interface ThursdayPopoverProps {
+  selected: Date | null;
+  onSelect: (date: Date | undefined) => void;
+}
+
+const ThursdayPopover = ({ selected, onSelect }: ThursdayPopoverProps) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        className={cn(
+          'w-[240px] justify-start text-left font-normal',
+          !selected && 'text-muted-foreground'
+        )}
+      >
+        <CalendarIcon className="mr-2 size-4" />
+        {selected ? (
+          <span>
+            {format(selected, 'PPP')}
+            <span className="ml-1 text-xs opacity-50">({normalizeDate(selected, 'display')})</span>
+          </span>
+        ) : (
+          <span>Pick a Thursday</span>
+        )}
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0" align="start">
+      <Calendar
+        mode="single"
+        selected={selected ?? undefined}
+        onSelect={onSelect}
+        disabled={(date) => !isThursday(date)}
+      />
+    </PopoverContent>
+  </Popover>
+);
+
 export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerProps) => {
   // Enhanced handler to ensure consistent date handling
   const handleDateSelect = (date: Date | undefined) => {
@@ -42,37 +79,7 @@ export const ThursdayDatePicker = ({ selected, onSelect }: ThursdayDatePickerPro
 
   return (
     <div className="flex flex-col space-y-2">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className={cn(
-              'w-[240px] justify-start text-left font-normal',
-              !selected && 'text-muted-foreground'
-            )}
-          >
-            <CalendarIcon className="mr-2 size-4" />
-            {selected ? (
-              <span>
-                {format(selected, 'PPP')}
-                <span className="ml-1 text-xs opacity-50">
-                  ({normalizeDate(selected, 'display')})
-                </span>
-              </span>
-            ) : (
-              <span>Pick a Thursday</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={selected ?? undefined}
-            onSelect={handleDateSelect}
-            disabled={(date) => !isThursday(date)}
-          />
-        </PopoverContent>
-      </Popover>
+      <ThursdayPopover selected={selected} onSelect={handleDateSelect} />
     </div>
   );
 };

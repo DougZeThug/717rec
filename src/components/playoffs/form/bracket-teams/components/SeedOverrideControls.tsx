@@ -44,6 +44,33 @@ const ManualModeSwitch: React.FC<{
   </div>
 );
 
+interface SeedManagementHeaderProps {
+  /** Null when there are no seed conflicts to show. */
+  conflictCount: number | null;
+  manualChecked: boolean;
+  onManualChange: (checked: boolean) => void;
+  disabled: boolean;
+}
+
+const SeedManagementHeader: React.FC<SeedManagementHeaderProps> = ({
+  conflictCount,
+  manualChecked,
+  onManualChange,
+  disabled,
+}) => (
+  <div className="flex items-center justify-between">
+    <CardTitle className="text-lg">Seed Management</CardTitle>
+    <div className="flex items-center gap-4">
+      {conflictCount !== null && <ConflictBadge count={conflictCount} />}
+      <ManualModeSwitch
+        checked={manualChecked}
+        onCheckedChange={onManualChange}
+        disabled={disabled}
+      />
+    </div>
+  </div>
+);
+
 export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   teams,
   divisionId,
@@ -101,17 +128,12 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Seed Management</CardTitle>
-          <div className="flex items-center gap-4">
-            {hasConflicts && <ConflictBadge count={validation.conflicts.length} />}
-            <ManualModeSwitch
-              checked={state.mode === 'manual'}
-              onCheckedChange={(checked) => actions.setMode(checked ? 'manual' : 'automatic')}
-              disabled={isUpdating}
-            />
-          </div>
-        </div>
+        <SeedManagementHeader
+          conflictCount={hasConflicts ? validation.conflicts.length : null}
+          manualChecked={state.mode === 'manual'}
+          onManualChange={(checked) => actions.setMode(checked ? 'manual' : 'automatic')}
+          disabled={isUpdating}
+        />
       </CardHeader>
 
       <CardContent className="space-y-4">

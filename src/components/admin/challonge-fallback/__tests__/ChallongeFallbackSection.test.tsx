@@ -144,6 +144,25 @@ describe('ChallongeFallbackSection', () => {
     });
   });
 
+  it('saves an edited subtitle and the embeds switch together', async () => {
+    const user = userEvent.setup();
+    render(<ChallongeFallbackSection />);
+
+    const subtitle = screen.getByLabelText(/section subtitle/i);
+    await user.clear(subtitle);
+    await user.type(subtitle, 'Tap a bracket');
+    await user.click(screen.getByRole('switch', { name: /show challonge bracket embeds/i }));
+
+    await user.click(screen.getByRole('button', { name: /save settings/i }));
+
+    expect(hookMocks.mutations.updateConfig).toHaveBeenCalledWith({
+      id: 'cfg-1',
+      enabled: true,
+      header_title: 'Playoffs',
+      header_subtitle: 'Tap a bracket',
+    });
+  });
+
   it('labels each bracket field, so a screen reader hears more than the sample text', async () => {
     const user = userEvent.setup();
     render(<ChallongeFallbackSection />);

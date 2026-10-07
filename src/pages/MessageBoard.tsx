@@ -53,6 +53,13 @@ const MessageBoardHeader: React.FC<
   </div>
 );
 
+/** The live region around the feed; it reads "busy" while messages load. */
+const MessageFeedRegion: React.FC<React.ComponentProps<typeof MessageFeed>> = (feedProps) => (
+  <div className={animations.fadeInSlideUp} aria-live="polite" aria-busy={feedProps.isLoading}>
+    <MessageFeed {...feedProps} />
+  </div>
+);
+
 const MessageBoard: React.FC = () => {
   const {
     messages,
@@ -111,21 +118,19 @@ const MessageBoard: React.FC = () => {
             isRefreshing={isRefreshing}
           />
 
-          <div className={animations.fadeInSlideUp} aria-live="polite" aria-busy={isLoading}>
-            <MessageFeed
-              messages={messages}
-              isLoading={isLoading}
-              error={error}
-              onDeleteMessage={deleteMessage}
-              onEditMessage={editMessage}
-              hasMore={hasMore}
-              onLoadMore={loadMoreMessages}
-              loadingMore={loadingMore}
-              // Wait for auth to settle, or a reload flashes the sign-in
-              // prompt at a signed-in reader before the session is restored.
-              isSignedOut={authInitialized && !user}
-            />
-          </div>
+          <MessageFeedRegion
+            messages={messages}
+            isLoading={isLoading}
+            error={error}
+            onDeleteMessage={deleteMessage}
+            onEditMessage={editMessage}
+            hasMore={hasMore}
+            onLoadMore={loadMoreMessages}
+            loadingMore={loadingMore}
+            // Wait for auth to settle, or a reload flashes the sign-in
+            // prompt at a signed-in reader before the session is restored.
+            isSignedOut={authInitialized && !user}
+          />
 
           <div className={cn(animations.fadeIn, 'animation-delay-300')}>
             {user ? <MessageInput onSend={postMessage} /> : <LoginPrompt />}

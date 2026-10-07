@@ -264,6 +264,42 @@ const EventRightColumn: React.FC<EventRightColumnProps> = ({
   </div>
 );
 
+const EventCardContent: React.FC<EventRightColumnProps> = ({
+  card,
+  meta,
+  startCountdown,
+  showCountdown,
+  shouldApplyWinter,
+  eventDate,
+  signupCount,
+}) => (
+  <CardContent className="relative z-10 p-4 md:p-6">
+    <div
+      className={cn(
+        'flex flex-col md:flex-row md:gap-8',
+        shouldApplyWinter ? 'text-cyan-50' : 'text-white'
+      )}
+    >
+      <EventLeftColumn
+        card={card}
+        meta={meta}
+        startCountdown={startCountdown}
+        showCountdown={showCountdown}
+        shouldApplyWinter={shouldApplyWinter}
+      />
+      <EventRightColumn
+        card={card}
+        meta={meta}
+        startCountdown={startCountdown}
+        showCountdown={showCountdown}
+        shouldApplyWinter={shouldApplyWinter}
+        eventDate={eventDate}
+        signupCount={signupCount}
+      />
+    </div>
+  </CardContent>
+);
+
 const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
 
@@ -302,31 +338,15 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
       >
         <EventBackdrop shouldApplyWinter={shouldApplyWinter} />
 
-        <CardContent className="relative z-10 p-4 md:p-6">
-          <div
-            className={cn(
-              'flex flex-col md:flex-row md:gap-8',
-              shouldApplyWinter ? 'text-cyan-50' : 'text-white'
-            )}
-          >
-            <EventLeftColumn
-              card={card}
-              meta={eventMeta}
-              startCountdown={startCountdown}
-              showCountdown={showCountdown}
-              shouldApplyWinter={shouldApplyWinter}
-            />
-            <EventRightColumn
-              card={card}
-              meta={eventMeta}
-              startCountdown={startCountdown}
-              showCountdown={showCountdown}
-              shouldApplyWinter={shouldApplyWinter}
-              eventDate={eventDate}
-              signupCount={signupCount}
-            />
-          </div>
-        </CardContent>
+        <EventCardContent
+          card={card}
+          meta={eventMeta}
+          startCountdown={startCountdown}
+          showCountdown={showCountdown}
+          shouldApplyWinter={shouldApplyWinter}
+          eventDate={eventDate}
+          signupCount={signupCount}
+        />
       </Card>
     </m.div>
   );

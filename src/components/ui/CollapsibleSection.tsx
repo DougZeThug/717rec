@@ -19,6 +19,53 @@ interface CollapsibleSectionProps {
   summaryValue?: ReactNode;
 }
 
+const SectionTitleGroup: React.FC<{
+  icon: LucideIcon;
+  iconColor: string;
+  title: string;
+  headingId?: string;
+  showSnowflake: boolean;
+}> = ({ icon: Icon, iconColor, title, headingId, showSnowflake }) => (
+  <div className="flex items-center gap-2">
+    <Icon className={cn('size-4 md:size-5', iconColor)} aria-hidden="true" />
+    <h2
+      id={headingId}
+      className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter"
+    >
+      {title}
+    </h2>
+    {showSnowflake && <SnowflakeSparkle size={12} className="text-cyan-400/60 ml-0.5" />}
+  </div>
+);
+
+const SectionSummaryGroup: React.FC<{ summaryValue?: ReactNode; isOpen: boolean }> = ({
+  summaryValue,
+  isOpen,
+}) => (
+  <div className="flex items-center gap-2">
+    {summaryValue && !isOpen && (
+      <span className="text-sm font-medium text-muted-foreground">{summaryValue}</span>
+    )}
+    <ChevronDown
+      className={cn(
+        'size-5 text-muted-foreground transition-transform duration-200',
+        isOpen && 'rotate-180'
+      )}
+    />
+  </div>
+);
+
+const SectionContent: React.FC<{ contentClassName?: string; children: ReactNode }> = ({
+  contentClassName,
+  children,
+}) => (
+  <CollapsibleContent>
+    <div className={cn('p-3 md:p-4 pt-0 border-t', contentClassName)}>
+      <div className="pt-3">{children}</div>
+    </div>
+  </CollapsibleContent>
+);
+
 export const CollapsibleSection = ({
   title,
   icon: Icon,
@@ -41,35 +88,16 @@ export const CollapsibleSection = ({
     <Collapsible open={isOpen} onOpenChange={handleOpenChange}>
       <div className={cn('border rounded-lg bg-card shadow-xs', className)}>
         <CollapsibleTrigger className="flex items-center justify-between w-full p-3 md:p-4 hover:bg-accent/50 active:bg-accent/70 transition-colors">
-          <div className="flex items-center gap-2">
-            <Icon className={cn('size-4 md:size-5', iconColor)} aria-hidden="true" />
-            <h2
-              id={headingId}
-              className="font-bebas text-lg md:text-xl tracking-wide uppercase bg-gradient-to-r from-blue-800 via-blue-700 to-amber-700 dark:from-blue-400 dark:to-amber-400 dark:via-none bg-clip-text text-transparent heading-winter"
-            >
-              {title}
-            </h2>
-            {shouldApplyWinterBase && WINTER_ICONS_ENABLED && (
-              <SnowflakeSparkle size={12} className="text-cyan-400/60 ml-0.5" />
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {summaryValue && !isOpen && (
-              <span className="text-sm font-medium text-muted-foreground">{summaryValue}</span>
-            )}
-            <ChevronDown
-              className={cn(
-                'size-5 text-muted-foreground transition-transform duration-200',
-                isOpen && 'rotate-180'
-              )}
-            />
-          </div>
+          <SectionTitleGroup
+            icon={Icon}
+            iconColor={iconColor}
+            title={title}
+            headingId={headingId}
+            showSnowflake={shouldApplyWinterBase && WINTER_ICONS_ENABLED}
+          />
+          <SectionSummaryGroup summaryValue={summaryValue} isOpen={isOpen} />
         </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className={cn('p-3 md:p-4 pt-0 border-t', contentClassName)}>
-            <div className="pt-3">{children}</div>
-          </div>
-        </CollapsibleContent>
+        <SectionContent contentClassName={contentClassName}>{children}</SectionContent>
       </div>
     </Collapsible>
   );

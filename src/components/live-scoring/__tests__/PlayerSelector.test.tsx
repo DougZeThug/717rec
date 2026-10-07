@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -66,6 +66,16 @@ describe('PlayerSelector', () => {
     await userEvent.click(await screen.findByRole('checkbox', { name: 'Doug' }));
 
     expect(onChange).toHaveBeenCalledWith([]);
+  });
+
+  it('closes the picker when the scorer taps Done', async () => {
+    renderSelector([]);
+    await userEvent.click(screen.getByRole('button', { name: /select players/i }));
+    expect(await screen.findByRole('checkbox', { name: 'Doug' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Doug' })).toBeNull());
   });
 
   it('adds a new player by name', async () => {

@@ -55,6 +55,34 @@ const ActionIcon: React.FC<{ action: BracketAction }> = ({ action }) =>
     <action.icon className="size-4 mr-2" />
   );
 
+/** Phone: the same actions behind one button. */
+const ActionsOverflowMenu: React.FC<{ actions: BracketAction[] }> = ({ actions }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="outline" size="icon" className="md:hidden">
+        <MoreHorizontal className="size-4" />
+        <span className="sr-only">Bracket actions</span>
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-[220px]">
+      {actions.map((action) => (
+        <DropdownMenuItem
+          key={action.key}
+          onClick={action.onSelect}
+          disabled={action.disabled}
+          className={cn(
+            'cursor-pointer',
+            action.destructive && 'text-destructive-text focus:text-destructive-text'
+          )}
+        >
+          <ActionIcon action={action} />
+          {action.label}
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
 /**
  * The admin controls above a bracket.
  *
@@ -168,30 +196,7 @@ const BracketAdminToolbar: React.FC<BracketAdminToolbarProps> = ({
 
       {/* Phone: the same actions behind one button. Playoff night is when an
           admin needs these, and a phone is the likely device. */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="md:hidden">
-            <MoreHorizontal className="size-4" />
-            <span className="sr-only">Bracket actions</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-[220px]">
-          {actions.map((action) => (
-            <DropdownMenuItem
-              key={action.key}
-              onClick={action.onSelect}
-              disabled={action.disabled}
-              className={cn(
-                'cursor-pointer',
-                action.destructive && 'text-destructive-text focus:text-destructive-text'
-              )}
-            >
-              <ActionIcon action={action} />
-              {action.label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <ActionsOverflowMenu actions={actions} />
     </div>
   );
 };

@@ -107,6 +107,61 @@ const LeaveTeamDialog: React.FC<LeaveTeamDialogProps> = ({ teamName, onLeave }) 
   </AlertDialog>
 );
 
+const DeclinedHeading: React.FC<{ teamName: string | undefined }> = ({ teamName }) => (
+  <div className="flex items-center gap-2">
+    <Badge variant="secondary" className="bg-red-600">
+      <XCircle className="size-3 mr-1" />
+      Request declined
+    </Badge>
+    <p className="font-medium">{teamName}</p>
+  </div>
+);
+
+// Red card that says a join request was declined, with the date when we have it.
+const DeclinedRequestCard: React.FC<{ membership: Membership | null | undefined }> = ({
+  membership,
+}) => (
+  <Card className="mb-4 bg-red-50 dark:bg-red-950/20">
+    <CardContent className="pt-6">
+      <DeclinedHeading teamName={membership?.team?.name} />
+      <p className="text-xs text-muted-foreground mt-2" suppressHydrationWarning>
+        {membership?.rejected_at
+          ? `An admin declined this request on ${toLocalDateString(membership.rejected_at)}.`
+          : 'An admin declined this request.'}{' '}
+        You can ask to join a team again below.
+      </p>
+    </CardContent>
+  </Card>
+);
+
+// The team picker on the join form.
+const JoinTeamSelect: React.FC<{
+  teams: ReturnType<typeof useTeamMembership>['availableTeams'];
+  value: string;
+  onValueChange: (teamId: string) => void;
+}> = ({ teams, value, onValueChange }) => (
+  <Select value={value} onValueChange={onValueChange}>
+    <SelectTrigger aria-label="Team to join">
+      <SelectValue placeholder="Select a team to join" />
+    </SelectTrigger>
+    <SelectContent>
+      {teams.map((team) => (
+        <SelectItem key={team.id} value={team.id}>
+          <div className="flex items-center gap-2">
+            <TeamLogo
+              imageUrl={team.logoUrl || team.imageUrl}
+              teamName={team.name}
+              size="sm"
+              rounded
+            />
+            <span>{team.name}</span>
+          </div>
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
+
 const TeamMembershipSection: React.FC = () => {
   const { membership, availableTeams, isLoading, isFetching, joinTeam, leaveTeam } =
     useTeamMembership();
@@ -146,25 +201,7 @@ const TeamMembershipSection: React.FC = () => {
         again reuses this same row — one membership row per user is a database
         rule — and clears the refusal.
       */}
-      {isRefused && (
-        <Card className="mb-4 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-red-600">
-                <XCircle className="size-3 mr-1" />
-                Request declined
-              </Badge>
-              <p className="font-medium">{membership?.team?.name}</p>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2" suppressHydrationWarning>
-              {membership?.rejected_at
-                ? `An admin declined this request on ${toLocalDateString(membership.rejected_at)}.`
-                : 'An admin declined this request.'}{' '}
-              You can ask to join a team again below.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {isRefused && <DeclinedRequestCard membership={membership} />}
 
       {membership && !isRefused ? (
         <Card
@@ -192,26 +229,11 @@ const TeamMembershipSection: React.FC = () => {
       ) : (
         <div className="space-y-4">
           <div className="grid gap-2">
-            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-              <SelectTrigger aria-label="Team to join">
-                <SelectValue placeholder="Select a team to join" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTeams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    <div className="flex items-center gap-2">
-                      <TeamLogo
-                        imageUrl={team.logoUrl || team.imageUrl}
-                        teamName={team.name}
-                        size="sm"
-                        rounded
-                      />
-                      <span>{team.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <JoinTeamSelect
+              teams={availableTeams}
+              value={selectedTeamId}
+              onValueChange={setSelectedTeamId}
+            />
           </div>
 
           <Button

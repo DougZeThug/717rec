@@ -28,6 +28,27 @@ interface PlayerStatRow {
   game_losses: number | null;
 }
 
+const StatFigure: React.FC<{
+  label: string;
+  valueClassName: string;
+  children: React.ReactNode;
+}> = ({ label, valueClassName, children }) => (
+  <div>
+    <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+    <div className={valueClassName}>{children}</div>
+  </div>
+);
+
+const FooterStat: React.FC<{ label: string; children: React.ReactNode }> = ({
+  label,
+  children,
+}) => (
+  <span>
+    <span className="uppercase tracking-wide">{label}</span>
+    <span className="font-medium text-foreground">{children}</span>
+  </span>
+);
+
 const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
   const rounds = row.rounds_thrown ?? 0;
   const ppr = pointsPerRound(row.points_for ?? 0, rounds);
@@ -56,18 +77,18 @@ const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
         </div>
 
         <div className="flex items-baseline gap-6">
-          <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">PPR</div>
-            <div className="text-2xl font-semibold tabular-nums leading-tight">
-              {formatRatio(ppr)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">DPR</div>
-            <div className={cn('text-lg font-medium tabular-nums leading-tight', dprColor)}>
-              {dprLabel}
-            </div>
-          </div>
+          <StatFigure
+            label="PPR"
+            valueClassName="text-2xl font-semibold tabular-nums leading-tight"
+          >
+            {formatRatio(ppr)}
+          </StatFigure>
+          <StatFigure
+            label="DPR"
+            valueClassName={cn('text-lg font-medium tabular-nums leading-tight', dprColor)}
+          >
+            {dprLabel}
+          </StatFigure>
         </div>
 
         {totalBags > 0 ? (
@@ -103,16 +124,10 @@ const PlayerStatCard: React.FC<{ row: PlayerStatRow }> = ({ row }) => {
         )}
 
         <div className="flex justify-between text-xs text-muted-foreground tabular-nums pt-1 border-t border-border/50">
-          <span>
-            <span className="uppercase tracking-wide">4B </span>
-            <span className="font-medium text-foreground">{row.four_baggers ?? 0}</span>
-          </span>
-          <span>
-            <span className="uppercase tracking-wide">Games </span>
-            <span className="font-medium text-foreground">
-              {row.game_wins ?? 0}–{row.game_losses ?? 0}
-            </span>
-          </span>
+          <FooterStat label="4B ">{row.four_baggers ?? 0}</FooterStat>
+          <FooterStat label="Games ">
+            {row.game_wins ?? 0}–{row.game_losses ?? 0}
+          </FooterStat>
         </div>
       </CardContent>
     </Card>

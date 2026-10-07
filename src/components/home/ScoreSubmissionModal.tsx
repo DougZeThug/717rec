@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Users } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -93,6 +93,79 @@ const ScoreSubmissionFooter: React.FC<ScoreSubmissionFooterProps> = ({
   </ResponsiveDialogFooter>
 );
 
+interface ScoreSubmissionFormProps {
+  form: UseFormReturn<ScoreSubmissionFormData>;
+  onSubmit: (data: ScoreSubmissionFormData) => Promise<void>;
+  isSubmitting: boolean;
+  onCancel: () => void;
+}
+
+const ScoreSubmissionForm: React.FC<ScoreSubmissionFormProps> = ({
+  form,
+  onSubmit,
+  isSubmitting,
+  onCancel,
+}) => (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <FormField
+        control={form.control}
+        name="submitter_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              Your Name <span className="text-destructive-text">*</span>
+            </FormLabel>
+            <FormControl>
+              <Input placeholder="Enter your name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="submitter_team"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Your Team (optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="e.g., Team Alpha" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="message"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              Score Report <span className="text-destructive-text">*</span>
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
+                rows={3}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+            <p className="text-xs text-muted-foreground">
+              Include the final score and any relevant details about the match.
+            </p>
+          </FormItem>
+        )}
+      />
+
+      <ScoreSubmissionFooter isSubmitting={isSubmitting} onCancel={onCancel} />
+    </form>
+  </Form>
+);
+
 export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
   match,
   open,
@@ -138,64 +211,12 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
 
         <ScoreMatchInfo match={match} />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="submitter_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Your Name <span className="text-destructive-text">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="submitter_team"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Your Team (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Team Alpha" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Score Report <span className="text-destructive-text">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <p className="text-xs text-muted-foreground">
-                    Include the final score and any relevant details about the match.
-                  </p>
-                </FormItem>
-              )}
-            />
-
-            <ScoreSubmissionFooter isSubmitting={isSubmitting} onCancel={handleClose} />
-          </form>
-        </Form>
+        <ScoreSubmissionForm
+          form={form}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          onCancel={handleClose}
+        />
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

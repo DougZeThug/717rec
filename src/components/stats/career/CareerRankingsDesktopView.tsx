@@ -34,104 +34,110 @@ const rankClasses = (rank: number) => {
   return 'text-muted-foreground';
 };
 
+const headerCell = 'text-center px-1.5 whitespace-nowrap';
+
+const CareerTableHeader: React.FC<
+  Pick<CareerRankingsDesktopViewProps, 'sortOptions' | 'onSortChange'>
+> = ({ sortOptions, onSortChange }) => (
+  <TableHeader>
+    <TableRow>
+      {/* Not sortable: the number in this column is the row's position
+            under the current sort, not a value of its own. */}
+      <TableHead className="w-10 text-center px-1.5">#</TableHead>
+      <TableHead className="w-auto min-w-[150px] px-2">Team</TableHead>
+      <SortableColumnHeader
+        field="careerPowerScore"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[86px]')}
+      >
+        Power
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="careerMatchWins"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[88px]')}
+      >
+        Record
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="careerWinPercentage"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[74px]')}
+      >
+        Win %
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="careerGameWins"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[96px]')}
+      >
+        Games
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="careerGameWinPercentage"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[74px]')}
+      >
+        GW %
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="careerPlayoffWins"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[82px]')}
+      >
+        Playoff
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="championships"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[92px]')}
+      >
+        Titles
+      </SortableColumnHeader>
+      <SortableColumnHeader
+        field="careerSos"
+        activeField={sortOptions.field}
+        direction={sortOptions.direction}
+        onSort={onSortChange}
+        icon="arrow"
+        className={cn(headerCell, 'w-[76px]')}
+      >
+        SOS
+      </SortableColumnHeader>
+    </TableRow>
+  </TableHeader>
+);
+
 const CareerRankingsDesktopView: React.FC<CareerRankingsDesktopViewProps> = ({
   rankings,
   sortOptions,
   onSortChange,
 }) => {
-  const headerCell = 'text-center px-1.5 whitespace-nowrap';
-
   return (
     <div className="overflow-x-auto">
       <Table className="w-full table-fixed">
-        <TableHeader>
-          <TableRow>
-            {/* Not sortable: the number in this column is the row's position
-                under the current sort, not a value of its own. */}
-            <TableHead className="w-10 text-center px-1.5">#</TableHead>
-            <TableHead className="w-auto min-w-[150px] px-2">Team</TableHead>
-            <SortableColumnHeader
-              field="careerPowerScore"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[86px]')}
-            >
-              Power
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="careerMatchWins"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[88px]')}
-            >
-              Record
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="careerWinPercentage"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[74px]')}
-            >
-              Win %
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="careerGameWins"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[96px]')}
-            >
-              Games
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="careerGameWinPercentage"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[74px]')}
-            >
-              GW %
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="careerPlayoffWins"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[82px]')}
-            >
-              Playoff
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="championships"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[92px]')}
-            >
-              Titles
-            </SortableColumnHeader>
-            <SortableColumnHeader
-              field="careerSos"
-              activeField={sortOptions.field}
-              direction={sortOptions.direction}
-              onSort={onSortChange}
-              icon="arrow"
-              className={cn(headerCell, 'w-[76px]')}
-            >
-              SOS
-            </SortableColumnHeader>
-          </TableRow>
-        </TableHeader>
+        <CareerTableHeader sortOptions={sortOptions} onSortChange={onSortChange} />
         <TableBody>
           {rankings.map((ranking, index) => {
             const rank = index + 1;

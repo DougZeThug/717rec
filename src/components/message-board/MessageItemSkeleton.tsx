@@ -9,6 +9,21 @@ interface MessageItemSkeletonProps {
   className?: string;
 }
 
+const SkeletonHeader: React.FC = () => (
+  <div className="flex items-center justify-between mb-2">
+    <div className="flex items-center gap-2">
+      {/* Avatar */}
+      <Skeleton className="size-8 rounded-full" />
+      {/* Username */}
+      <Skeleton className="h-4 w-24" />
+      {/* Team badge */}
+      <Skeleton className="h-5 w-16 rounded-full" variant="pill" />
+    </div>
+    {/* Timestamp */}
+    <Skeleton className="h-3 w-12" />
+  </div>
+);
+
 const MessageItemSkeleton: React.FC<MessageItemSkeletonProps> = ({ className }) => {
   return (
     <Card
@@ -16,18 +31,7 @@ const MessageItemSkeleton: React.FC<MessageItemSkeletonProps> = ({ className }) 
     >
       <CardContent className="p-3">
         {/* Header: Avatar, username, team, time */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {/* Avatar */}
-            <Skeleton className="size-8 rounded-full" />
-            {/* Username */}
-            <Skeleton className="h-4 w-24" />
-            {/* Team badge */}
-            <Skeleton className="h-5 w-16 rounded-full" variant="pill" />
-          </div>
-          {/* Timestamp */}
-          <Skeleton className="h-3 w-12" />
-        </div>
+        <SkeletonHeader />
 
         {/* Message content - multiple lines */}
         <div className="space-y-2 mt-3">

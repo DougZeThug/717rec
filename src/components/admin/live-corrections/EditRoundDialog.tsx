@@ -101,6 +101,39 @@ const sidesFromRound = (round: MatchRoundRow) => ({
   ),
 });
 
+interface ThrowerSelectProps {
+  idPrefix: string;
+  value: string;
+  onChange: (throwerId: string) => void;
+  players: GamePlayerRow[];
+  playerLabel: (gp: GamePlayerRow) => string;
+}
+
+const ThrowerSelect: React.FC<ThrowerSelectProps> = ({
+  idPrefix,
+  value,
+  onChange,
+  players,
+  playerLabel,
+}) => (
+  <div>
+    <Label htmlFor={`${idPrefix}-thrower`}>Thrower</Label>
+    <Select value={value === '' ? NULL_THROWER : value} onValueChange={onChange}>
+      <SelectTrigger id={`${idPrefix}-thrower`}>
+        <SelectValue placeholder="Select thrower" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={NULL_THROWER}>Unassigned</SelectItem>
+        {players.map((gp) => (
+          <SelectItem key={gp.player_id} value={gp.player_id}>
+            {playerLabel(gp)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
 export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
   open,
   onOpenChange,
@@ -272,25 +305,13 @@ export const EditRoundDialog: React.FC<EditRoundDialogProps> = ({
           />
         </div>
       </div>
-      <div>
-        <Label htmlFor={`${idPrefix}-thrower`}>Thrower</Label>
-        <Select
-          value={side.throwerId === '' ? NULL_THROWER : side.throwerId}
-          onValueChange={(v) => setSide((s) => ({ ...s, throwerId: v }))}
-        >
-          <SelectTrigger id={`${idPrefix}-thrower`}>
-            <SelectValue placeholder="Select thrower" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={NULL_THROWER}>Unassigned</SelectItem>
-            {players.map((gp) => (
-              <SelectItem key={gp.player_id} value={gp.player_id}>
-                {playerLabel(gp)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <ThrowerSelect
+        idPrefix={idPrefix}
+        value={side.throwerId}
+        onChange={(throwerId) => setSide((s) => ({ ...s, throwerId }))}
+        players={players}
+        playerLabel={playerLabel}
+      />
     </div>
   );
 
