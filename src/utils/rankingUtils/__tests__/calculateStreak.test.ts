@@ -20,7 +20,9 @@ describe('calculateStreak', () => {
   });
 
   it('returns undefined for empty teamId', () => {
-    expect(calculateStreak('', [match('m1', TEAM_ID, 'team-2', TEAM_ID, '2024-01-01')])).toBeUndefined();
+    expect(
+      calculateStreak('', [match('m1', TEAM_ID, 'team-2', TEAM_ID, '2024-01-01')])
+    ).toBeUndefined();
   });
 
   it('returns undefined when no completed matches involve the team', () => {
@@ -36,11 +38,15 @@ describe('calculateStreak', () => {
   });
 
   it('returns W1 for a single win', () => {
-    expect(calculateStreak(TEAM_ID, [match('m1', TEAM_ID, 'team-2', TEAM_ID, '2024-01-01')])).toBe('W1');
+    expect(calculateStreak(TEAM_ID, [match('m1', TEAM_ID, 'team-2', TEAM_ID, '2024-01-01')])).toBe(
+      'W1'
+    );
   });
 
   it('returns L1 for a single loss', () => {
-    expect(calculateStreak(TEAM_ID, [match('m1', TEAM_ID, 'team-2', 'team-2', '2024-01-01')])).toBe('L1');
+    expect(calculateStreak(TEAM_ID, [match('m1', TEAM_ID, 'team-2', 'team-2', '2024-01-01')])).toBe(
+      'L1'
+    );
   });
 
   it('calculates multi-game winning streak (most recent first)', () => {
