@@ -151,7 +151,10 @@
     "glob": "13.0.6",
     "uuid": "$uuid",
     "tmp": "^0.2.5",
-    "undici": "^7.16.0"
+    "undici": "^7.16.0",
+    "@modelcontextprotocol/sdk": {
+      "qs": "^6.16.0"
+    }
   },
   "engines": {
     "node": ">=24"
