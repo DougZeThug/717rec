@@ -27,7 +27,7 @@ describe('useTeamSeasonBreakdown', () => {
   });
 
   it('does not fetch when there is no team id', () => {
-    const { result } = renderHook(() => useTeamSeasonBreakdown(undefined), { wrapper });
+    const { result } = renderHook(() => useTeamSeasonBreakdown(undefined), { wrapper }); // skipcq: JS-W1042
 
     expect(result.current.advancedStats).toBeUndefined();
     expect(result.current.isLoading).toBe(false);
@@ -35,7 +35,7 @@ describe('useTeamSeasonBreakdown', () => {
   });
 
   it('returns null from a manual refetch without a team id', async () => {
-    const { result } = renderHook(() => useTeamSeasonBreakdown(undefined), { wrapper });
+    const { result } = renderHook(() => useTeamSeasonBreakdown(undefined), { wrapper }); // skipcq: JS-W1042
 
     const refetched = await result.current.refetch();
 
