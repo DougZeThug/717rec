@@ -8,7 +8,7 @@ export const useTeamBadges = (teamId: string) => {
   return useQuery({
     queryKey: ['team-badges', teamId],
     queryFn: (): Promise<TeamBadgeEvent[]> => fetchTeamBadges(teamId),
-    enabled: !!teamId,
+    enabled: Boolean(teamId),
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 };

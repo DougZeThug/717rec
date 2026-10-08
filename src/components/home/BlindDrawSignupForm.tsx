@@ -21,6 +21,63 @@ interface BlindDrawSignupFormProps {
   eventDate: string; // YYYY-MM-DD format
 }
 
+interface SignupNameFieldsProps {
+  firstName: string;
+  lastInitial: string;
+  errors: { firstName?: string; lastInitial?: string };
+  onFirstNameChange: (value: string) => void;
+  onLastInitialChange: (value: string) => void;
+}
+
+const SignupNameFields: React.FC<SignupNameFieldsProps> = ({
+  firstName,
+  lastInitial,
+  errors,
+  onFirstNameChange,
+  onLastInitialChange,
+}) => (
+  <div className="flex gap-2">
+    <div className="flex-1">
+      <Input
+        type="text"
+        placeholder="First Name"
+        aria-label="First name"
+        aria-invalid={errors.firstName ? true : undefined}
+        aria-describedby={errors.firstName ? 'blind-draw-first-name-error' : undefined}
+        value={firstName}
+        onChange={(e) => onFirstNameChange(e.target.value)}
+        autoComplete="given-name"
+        className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base"
+        maxLength={30}
+      />
+      {errors.firstName && (
+        <span id="blind-draw-first-name-error" className="text-xs text-red-300 mt-0.5 block">
+          {errors.firstName}
+        </span>
+      )}
+    </div>
+
+    <div className="w-14">
+      <Input
+        type="text"
+        placeholder="L.I."
+        aria-label="Last initial"
+        aria-invalid={errors.lastInitial ? true : undefined}
+        aria-describedby={errors.lastInitial ? 'blind-draw-last-initial-error' : undefined}
+        value={lastInitial}
+        onChange={(e) => onLastInitialChange(e.target.value.slice(0, 1).toUpperCase())}
+        className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base text-center"
+        maxLength={1}
+      />
+      {errors.lastInitial && (
+        <span id="blind-draw-last-initial-error" className="text-xs text-red-300 mt-0.5 block">
+          {errors.lastInitial}
+        </span>
+      )}
+    </div>
+  </div>
+);
+
 const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) => {
   const [firstName, setFirstName] = useState('');
   const [lastInitial, setLastInitial] = useState('');
@@ -89,49 +146,13 @@ const BlindDrawSignupForm: React.FC<BlindDrawSignupFormProps> = ({ eventDate }) 
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-2">
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Input
-              type="text"
-              placeholder="First Name"
-              aria-label="First name"
-              aria-invalid={errors.firstName ? true : undefined}
-              aria-describedby={errors.firstName ? 'blind-draw-first-name-error' : undefined}
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              autoComplete="given-name"
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base"
-              maxLength={30}
-            />
-            {errors.firstName && (
-              <span id="blind-draw-first-name-error" className="text-xs text-red-300 mt-0.5 block">
-                {errors.firstName}
-              </span>
-            )}
-          </div>
-
-          <div className="w-14">
-            <Input
-              type="text"
-              placeholder="L.I."
-              aria-label="Last initial"
-              aria-invalid={errors.lastInitial ? true : undefined}
-              aria-describedby={errors.lastInitial ? 'blind-draw-last-initial-error' : undefined}
-              value={lastInitial}
-              onChange={(e) => setLastInitial(e.target.value.slice(0, 1).toUpperCase())}
-              className="bg-white/20 border-white/30 text-white placeholder:text-white/50 h-11 text-base text-center"
-              maxLength={1}
-            />
-            {errors.lastInitial && (
-              <span
-                id="blind-draw-last-initial-error"
-                className="text-xs text-red-300 mt-0.5 block"
-              >
-                {errors.lastInitial}
-              </span>
-            )}
-          </div>
-        </div>
+        <SignupNameFields
+          firstName={firstName}
+          lastInitial={lastInitial}
+          errors={errors}
+          onFirstNameChange={setFirstName}
+          onLastInitialChange={setLastInitial}
+        />
 
         <Button
           type="submit"

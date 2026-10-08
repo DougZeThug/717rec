@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Plus, Save, X } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { type Control, useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -40,9 +40,128 @@ interface SeasonFormProps {
   onClose: () => void;
 }
 
+const SeasonDateFields: React.FC<{ control: Control<SeasonFormData> }> = ({ control }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FormField
+      control={control}
+      name="start_date"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Start Date</FormLabel>
+          <FormControl>
+            <Input type="date" className="h-11" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+
+    <FormField
+      control={control}
+      name="end_date"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>End Date (Optional)</FormLabel>
+          <FormControl>
+            <Input type="date" className="h-11" {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </div>
+);
+
+interface SeasonFormActionsProps {
+  isEditing: boolean;
+  isSubmitting: boolean;
+  onClose: () => void;
+}
+
+const SeasonFormActions: React.FC<SeasonFormActionsProps> = ({
+  isEditing,
+  isSubmitting,
+  onClose,
+}) => (
+  <div className="flex justify-end gap-2 pt-4">
+    <Button type="button" variant="outline" onClick={onClose}>
+      <X className="size-4 mr-2" />
+      Cancel
+    </Button>
+    <Button type="submit" disabled={isSubmitting}>
+      {isSubmitting ? (
+        <>
+          <Loader2 className="size-4 mr-2 animate-spin" />
+          {isEditing ? 'Updating...' : 'Creating...'}
+        </>
+      ) : isEditing ? (
+        <>
+          <Save className="size-4 mr-2" />
+          Update Season
+        </>
+      ) : (
+        <>
+          <Plus className="size-4 mr-2" />
+          Create Season
+        </>
+      )}
+    </Button>
+  </div>
+);
+
+interface SeasonFormBodyProps {
+  form: UseFormReturn<SeasonFormData>;
+  onSubmit: (data: SeasonFormData) => Promise<void>;
+  isEditing: boolean;
+  isSubmitting: boolean;
+  onClose: () => void;
+}
+
+const SeasonFormBody: React.FC<SeasonFormBodyProps> = ({
+  form,
+  onSubmit,
+  isEditing,
+  isSubmitting,
+  onClose,
+}) => (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <FormField
+        control={form.control}
+        name="name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Season Name</FormLabel>
+            <FormControl>
+              <Input placeholder="e.g., Fall 2026" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <SeasonDateFields control={form.control} />
+
+      <SeasonFormActions isEditing={isEditing} isSubmitting={isSubmitting} onClose={onClose} />
+    </form>
+  </Form>
+);
+
+const SeasonFormHeader: React.FC<{ isEditing: boolean; onClose: () => void }> = ({
+  isEditing,
+  onClose,
+}) => (
+  <div className="flex items-center justify-between">
+    <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
+    <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
+      <X className="size-4" />
+    </Button>
+  </div>
+);
+
 const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
   const { createSeason, updateSeason } = useSeasonMutations();
-  const isEditing = !!season;
+  const isEditing = season !== undefined;
 
   const form = useForm<SeasonFormData>({
     resolver: zodResolver(seasonSchema),
@@ -102,86 +221,16 @@ const SeasonForm: React.FC<SeasonFormProps> = ({ season, onClose }) => {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>{isEditing ? 'Edit Season' : 'Create New Season'}</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
-            <X className="size-4" />
-          </Button>
-        </div>
+        <SeasonFormHeader isEditing={isEditing} onClose={onClose} />
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Season Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Fall 2026" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
-                    <FormControl>
-                      <Input type="date" className="h-11" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Date (Optional)</FormLabel>
-                    <FormControl>
-                      <Input type="date" className="h-11" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
-                <X className="size-4 mr-2" />
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                    {isEditing ? 'Updating...' : 'Creating...'}
-                  </>
-                ) : isEditing ? (
-                  <>
-                    <Save className="size-4 mr-2" />
-                    Update Season
-                  </>
-                ) : (
-                  <>
-                    <Plus className="size-4 mr-2" />
-                    Create Season
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        <SeasonFormBody
+          form={form}
+          onSubmit={onSubmit}
+          isEditing={isEditing}
+          isSubmitting={isSubmitting}
+          onClose={onClose}
+        />
       </CardContent>
     </Card>
   );

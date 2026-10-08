@@ -40,6 +40,35 @@ interface State {
  */
 const routeSignature = (props: Props): string => `${props.routeName}\u0000${props.resetKey ?? ''}`;
 
+const RouteErrorIcon: React.FC = () => (
+  <div className="flex justify-center">
+    <div className="p-4 bg-destructive/10 rounded-full">
+      <AlertTriangle className="size-10 text-destructive-text" />
+    </div>
+  </div>
+);
+
+const RouteErrorActions: React.FC<{
+  onRetry: () => void;
+  onGoBack: () => void;
+  onGoHome: () => void;
+}> = ({ onRetry, onGoBack, onGoHome }) => (
+  <div className="flex flex-col sm:flex-row gap-2 justify-center">
+    <Button onClick={onRetry} variant="default" size="sm">
+      <RefreshCw className="mr-2 size-4" />
+      Try Again
+    </Button>
+    <Button onClick={onGoBack} variant="outline" size="sm">
+      <ArrowLeft className="mr-2 size-4" />
+      Go Back
+    </Button>
+    <Button onClick={onGoHome} variant="ghost" size="sm">
+      <Home className="mr-2 size-4" />
+      Home
+    </Button>
+  </div>
+);
+
 export class RouteErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -94,11 +123,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex items-center justify-center min-h-[60vh] p-4">
           <div className="max-w-md w-full text-center space-y-6">
-            <div className="flex justify-center">
-              <div className="p-4 bg-destructive/10 rounded-full">
-                <AlertTriangle className="size-10 text-destructive-text" />
-              </div>
-            </div>
+            <RouteErrorIcon />
 
             <div className="space-y-2">
               <h2 className="text-xl font-bold text-foreground">
@@ -117,20 +142,11 @@ export class RouteErrorBoundary extends Component<Props, State> {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-2 justify-center">
-              <Button onClick={this.handleRetry} variant="default" size="sm">
-                <RefreshCw className="mr-2 size-4" />
-                Try Again
-              </Button>
-              <Button onClick={this.handleGoBack} variant="outline" size="sm">
-                <ArrowLeft className="mr-2 size-4" />
-                Go Back
-              </Button>
-              <Button onClick={this.handleGoHome} variant="ghost" size="sm">
-                <Home className="mr-2 size-4" />
-                Home
-              </Button>
-            </div>
+            <RouteErrorActions
+              onRetry={this.handleRetry}
+              onGoBack={this.handleGoBack}
+              onGoHome={this.handleGoHome}
+            />
           </div>
         </div>
       );

@@ -69,7 +69,7 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
       isAdmin: isAdminAccessGranted,
       accessCheckFailed,
       isLoading,
-      hasProfile: !!profile,
+      hasProfile: Boolean(profile),
     });
   }, [authInitialized, user, isAdminAccessGranted, accessCheckFailed, isLoading, profile]);
 

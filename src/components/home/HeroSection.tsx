@@ -28,6 +28,54 @@ const NavButton: React.FC<NavButtonProps> = ({ to, icon, label, className }) => 
   </Link>
 );
 
+// Desktop hero call-to-action buttons
+const HeroCtaButtons: React.FC<{ shouldApplyWinter: boolean }> = ({ shouldApplyWinter }) => (
+  <div className="flex gap-4 justify-center items-center w-full max-w-md mx-auto">
+    <Button
+      asChild
+      size="lg"
+      variant="blueOrange"
+      className={cn('flex items-center gap-2', shouldApplyWinter && 'btn-winter-primary')}
+    >
+      <Link to="/stats" className="flex items-center gap-2">
+        <Trophy size={20} className="shrink-0" />
+        View Standings
+      </Link>
+    </Button>
+    <Button
+      asChild
+      size="lg"
+      variant="blueOrange"
+      className={cn(
+        'flex items-center gap-2',
+        shouldApplyWinter
+          ? 'btn-winter-secondary'
+          : 'bg-white/20 backdrop-blur-xs hover:bg-white/30'
+      )}
+    >
+      <Link to="/schedule" className="flex items-center gap-2">
+        <Calendar size={20} className="shrink-0" />
+        See Schedule
+      </Link>
+    </Button>
+  </div>
+);
+
+const DesktopHeroLogo: React.FC = () => (
+  <div className="flex justify-center mb-6" style={{ contain: 'layout' }}>
+    <img
+      src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png"
+      alt="717REC cornhole league logo"
+      width={96}
+      height={96}
+      fetchPriority="high"
+      loading="eager"
+      decoding="sync"
+      className="h-24 w-auto max-w-full transition duration-200 drop-shadow-xs"
+    />
+  </div>
+);
+
 const HeroSection = () => {
   const { shouldApplyWinter } = useSeasonalTheme();
 
@@ -131,18 +179,7 @@ const HeroSection = () => {
         <div className="absolute inset-0 -z-10 opacity-30 bg-gradient-to-b from-black/5 to-transparent" />
 
         <div className="max-w-6xl mx-auto text-center flex flex-col items-center font-sans relative z-10">
-          <div className="flex justify-center mb-6" style={{ contain: 'layout' }}>
-            <img
-              src="/lovable-uploads/59ad55fe-8358-4e10-8e93-3e13a6a46a58.png"
-              alt="717REC cornhole league logo"
-              width={96}
-              height={96}
-              fetchPriority="high"
-              loading="eager"
-              decoding="sync"
-              className="h-24 w-auto max-w-full transition duration-200 drop-shadow-xs"
-            />
-          </div>
+          <DesktopHeroLogo />
           {shouldApplyWinter ? (
             <SnowtopText
               as="h1"
@@ -168,35 +205,7 @@ const HeroSection = () => {
             Where Bags Fly and Beers Flow.
           </p>
 
-          <div className="flex gap-4 justify-center items-center w-full max-w-md mx-auto">
-            <Button
-              asChild
-              size="lg"
-              variant="blueOrange"
-              className={cn('flex items-center gap-2', shouldApplyWinter && 'btn-winter-primary')}
-            >
-              <Link to="/stats" className="flex items-center gap-2">
-                <Trophy size={20} className="shrink-0" />
-                View Standings
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              variant="blueOrange"
-              className={cn(
-                'flex items-center gap-2',
-                shouldApplyWinter
-                  ? 'btn-winter-secondary'
-                  : 'bg-white/20 backdrop-blur-xs hover:bg-white/30'
-              )}
-            >
-              <Link to="/schedule" className="flex items-center gap-2">
-                <Calendar size={20} className="shrink-0" />
-                See Schedule
-              </Link>
-            </Button>
-          </div>
+          <HeroCtaButtons shouldApplyWinter={shouldApplyWinter} />
         </div>
       </section>
     </div>

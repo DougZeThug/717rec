@@ -22,6 +22,162 @@ import { getUIErrorMessage } from '@/utils/errorHandler';
 import { toLocalDateString } from '@/utils/formatDateSafe';
 import { errorLog } from '@/utils/logger';
 
+type PendingMembership = ReturnType<typeof usePendingMemberships>['pendingMemberships'][number];
+
+type PendingMembershipUser = PendingMembership['user'];
+
+const MembershipUser: React.FC<{ user: PendingMembershipUser }> = ({ user }) => (
+  <div className="flex items-center gap-2">
+    <div className="size-8 bg-muted rounded-full flex items-center justify-center">
+      {user.avatar_url ? (
+        <img
+          src={user.avatar_url}
+          alt="User"
+          loading="lazy"
+          decoding="async"
+          className="size-8 rounded-full"
+        />
+      ) : (
+        <span className="text-sm font-medium">
+          {(user.full_name || user.username || 'User').charAt(0).toUpperCase()}
+        </span>
+      )}
+    </div>
+    <div>
+      <p className="font-medium">{user.full_name || user.username || 'Anonymous User'}</p>
+      <p className="text-xs text-muted-foreground">wants to join</p>
+    </div>
+  </div>
+);
+
+interface MembershipSummaryProps {
+  membership: PendingMembership;
+}
+
+const MembershipSummary: React.FC<MembershipSummaryProps> = ({ membership }) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <MembershipUser user={membership.user} />
+      <div className="flex items-center gap-2">
+        <TeamLogo
+          imageUrl={membership.team.image_url || membership.team.logo_url}
+          teamName={membership.team.name}
+          size="sm"
+          rounded
+        />
+        <span className="font-medium">{membership.team.name}</span>
+      </div>
+    </div>
+    <Badge variant="outline">
+      <Clock className="size-3 mr-1" />
+      {toLocalDateString(membership.joined_at)}
+    </Badge>
+  </div>
+);
+
+interface RejectMembershipDialogProps {
+  isProcessing: boolean;
+  onReject: () => void;
+}
+
+const RejectMembershipDialog: React.FC<RejectMembershipDialogProps> = ({
+  isProcessing,
+  onReject,
+}) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button
+        variant="outline"
+        size="sm"
+        className="text-destructive-text border-destructive hover:bg-destructive hover:text-foreground"
+        disabled={isProcessing}
+      >
+        <XCircle className="size-4 mr-1" />
+        Reject
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Reject membership request?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Are you sure you want to reject this request to join? The person is shown that it was
+          declined, and can ask again.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={() => onReject()}
+          disabled={isProcessing}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          Reject Request
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+interface MembershipActionsProps {
+  membership: PendingMembership;
+  isProcessing: boolean;
+  onApproval: (membershipId: string, approved: boolean) => void;
+}
+
+const MembershipActions: React.FC<MembershipActionsProps> = ({
+  membership,
+  isProcessing,
+  onApproval,
+}) => (
+  <div className="flex gap-2">
+    <Button
+      onClick={() => onApproval(membership.id, true)}
+      disabled={isProcessing}
+      className="bg-green-600 hover:bg-green-700"
+      size="sm"
+    >
+      {isProcessing ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <>
+          <CheckCircle className="size-4 mr-1" />
+          Approve
+        </>
+      )}
+    </Button>
+
+    <RejectMembershipDialog
+      isProcessing={isProcessing}
+      onReject={() => onApproval(membership.id, false)}
+    />
+  </div>
+);
+
+interface MembershipCardProps {
+  membership: PendingMembership;
+  isProcessing: boolean;
+  onApproval: (membershipId: string, approved: boolean) => void;
+}
+
+const MembershipCard: React.FC<MembershipCardProps> = ({
+  membership,
+  isProcessing,
+  onApproval,
+}) => (
+  <Card>
+    <CardHeader className="pb-3">
+      <MembershipSummary membership={membership} />
+    </CardHeader>
+    <CardContent>
+      <MembershipActions
+        membership={membership}
+        isProcessing={isProcessing}
+        onApproval={onApproval}
+      />
+    </CardContent>
+  </Card>
+);
+
 const TeamMembershipApprovalTab: React.FC = () => {
   const { toast } = useToast();
   const { pendingMemberships, isLoading, isError, error, approveMembership, processingIds } =
@@ -100,106 +256,12 @@ const TeamMembershipApprovalTab: React.FC = () => {
       ) : (
         <div className="grid gap-4">
           {pendingMemberships.map((membership) => (
-            <Card key={membership.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <div className="size-8 bg-muted rounded-full flex items-center justify-center">
-                        {membership.user.avatar_url ? (
-                          <img
-                            src={membership.user.avatar_url}
-                            alt="User"
-                            loading="lazy"
-                            decoding="async"
-                            className="size-8 rounded-full"
-                          />
-                        ) : (
-                          <span className="text-sm font-medium">
-                            {(membership.user.full_name || membership.user.username || 'User')
-                              .charAt(0)
-                              .toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {membership.user.full_name ||
-                            membership.user.username ||
-                            'Anonymous User'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">wants to join</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <TeamLogo
-                        imageUrl={membership.team.image_url || membership.team.logo_url}
-                        teamName={membership.team.name}
-                        size="sm"
-                        rounded
-                      />
-                      <span className="font-medium">{membership.team.name}</span>
-                    </div>
-                  </div>
-                  <Badge variant="outline">
-                    <Clock className="size-3 mr-1" />
-                    {toLocalDateString(membership.joined_at)}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleApproval(membership.id, true)}
-                    disabled={processingIds.has(membership.id)}
-                    className="bg-green-600 hover:bg-green-700"
-                    size="sm"
-                  >
-                    {processingIds.has(membership.id) ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <>
-                        <CheckCircle className="size-4 mr-1" />
-                        Approve
-                      </>
-                    )}
-                  </Button>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive-text border-destructive hover:bg-destructive hover:text-foreground"
-                        disabled={processingIds.has(membership.id)}
-                      >
-                        <XCircle className="size-4 mr-1" />
-                        Reject
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Reject membership request?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to reject this request to join? The person is shown
-                          that it was declined, and can ask again.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleApproval(membership.id, false)}
-                          disabled={processingIds.has(membership.id)}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Reject Request
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
+            <MembershipCard
+              key={membership.id}
+              membership={membership}
+              isProcessing={processingIds.has(membership.id)}
+              onApproval={handleApproval}
+            />
           ))}
         </div>
       )}

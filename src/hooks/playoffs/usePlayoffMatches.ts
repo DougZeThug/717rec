@@ -24,7 +24,7 @@ export const usePlayoffMatches = (bracketId: string | null) => {
         throw error;
       }
     },
-    enabled: !!bracketId,
+    enabled: Boolean(bracketId),
     staleTime: 0, // Always fresh - instant updates
     retry: 2,
     refetchOnMount: false,

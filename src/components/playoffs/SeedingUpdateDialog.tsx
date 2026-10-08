@@ -66,6 +66,71 @@ interface TeamItem {
   seed: number;
 }
 
+const SeedSortableList: React.FC<{ teamIds: string[]; teams: TeamItem[]; disabled: boolean }> = ({
+  teamIds,
+  teams,
+  disabled,
+}) => (
+  <SortableContext items={teamIds} strategy={verticalListSortingStrategy}>
+    <div className="space-y-2">
+      <AnimatePresence mode="popLayout">
+        {teams.map((team) => (
+          <SortableTeamItem
+            key={team.id}
+            id={team.id}
+            name={team.name}
+            seed={team.seed}
+            disabled={disabled}
+          />
+        ))}
+      </AnimatePresence>
+    </div>
+  </SortableContext>
+);
+
+interface SeedDragSectionProps {
+  sensors: ReturnType<typeof useSensors>;
+  onDragStart: (event: DragStartEvent) => void;
+  onDragEnd: (event: DragEndEvent) => void;
+  teamIds: string[];
+  teams: TeamItem[];
+  disabled: boolean;
+  activeTeam: TeamItem | undefined;
+}
+
+// Drag-to-reorder list of teams, with the floating item shown while dragging
+const SeedDragSection: React.FC<SeedDragSectionProps> = ({
+  sensors,
+  onDragStart,
+  onDragEnd,
+  teamIds,
+  teams,
+  disabled,
+  activeTeam,
+}) => (
+  <div className="py-4">
+    <h3 className="text-sm font-medium mb-3">Drag to Reorder Teams:</h3>
+
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+    >
+      <SeedSortableList teamIds={teamIds} teams={teams} disabled={disabled} />
+
+      <DragOverlay
+        dropAnimation={{
+          duration: 200,
+          easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+        }}
+      >
+        {activeTeam ? <DragOverlayItem name={activeTeam.name} seed={activeTeam.seed} /> : null}
+      </DragOverlay>
+    </DndContext>
+  </div>
+);
+
 export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
   open,
   onOpenChange,
@@ -223,43 +288,15 @@ export const SeedingUpdateDialog: React.FC<SeedingUpdateDialogProps> = ({
           </Alert>
         )}
 
-        <div className="py-4">
-          <h3 className="text-sm font-medium mb-3">Drag to Reorder Teams:</h3>
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={teamIds} strategy={verticalListSortingStrategy}>
-              <div className="space-y-2">
-                <AnimatePresence mode="popLayout">
-                  {teams.map((team) => (
-                    <SortableTeamItem
-                      key={team.id}
-                      id={team.id}
-                      name={team.name}
-                      seed={team.seed}
-                      disabled={!canUpdate}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
-            </SortableContext>
-
-            <DragOverlay
-              dropAnimation={{
-                duration: 200,
-                easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-              }}
-            >
-              {activeTeam ? (
-                <DragOverlayItem name={activeTeam.name} seed={activeTeam.seed} />
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        </div>
+        <SeedDragSection
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          teamIds={teamIds}
+          teams={teams}
+          disabled={!canUpdate}
+          activeTeam={activeTeam}
+        />
 
         <div className="bg-muted/50 p-4 rounded-lg">
           <h3 className="text-sm font-medium mb-2">First Round Matchup Preview:</h3>

@@ -8,6 +8,7 @@ import { useNotificationsRealtime } from '@/hooks/notifications/useNotifications
 import { useUnreadNotifications } from '@/hooks/notifications/useUnreadNotifications';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
+import type { NotificationRow } from '@/services/notifications/NotificationService';
 
 import NotificationList from './NotificationList';
 import QuickPostNotificationForm from './QuickPostNotificationForm';
@@ -15,6 +16,31 @@ import QuickPostNotificationForm from './QuickPostNotificationForm';
 interface Props {
   className?: string;
 }
+
+interface NotificationPanelProps {
+  notifications: NotificationRow[];
+  lastSeenAt: string;
+  isLoading: boolean;
+  showQuickPost: boolean;
+}
+
+const NotificationPanel: React.FC<NotificationPanelProps> = ({
+  notifications,
+  lastSeenAt,
+  isLoading,
+  showQuickPost,
+}) => (
+  <div className="flex flex-col gap-3">
+    <div className="flex items-center justify-between">
+      <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
+      {notifications.length > 0 && (
+        <span className="text-xs text-muted-foreground">{notifications.length} recent</span>
+      )}
+    </div>
+    {showQuickPost && <QuickPostNotificationForm />}
+    <NotificationList notifications={notifications} lastSeenAt={lastSeenAt} isLoading={isLoading} />
+  </div>
+);
 
 const NotificationBell: React.FC<Props> = ({ className }) => {
   useNotificationsRealtime();
@@ -57,20 +83,12 @@ const NotificationBell: React.FC<Props> = ({ className }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(360px,calc(100vw-1rem))] p-3">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
-            {notifications.length > 0 && (
-              <span className="text-xs text-muted-foreground">{notifications.length} recent</span>
-            )}
-          </div>
-          {isAdminAccessGranted && <QuickPostNotificationForm />}
-          <NotificationList
-            notifications={notifications}
-            lastSeenAt={lastSeenAt}
-            isLoading={isLoading}
-          />
-        </div>
+        <NotificationPanel
+          notifications={notifications}
+          lastSeenAt={lastSeenAt}
+          isLoading={isLoading}
+          showQuickPost={isAdminAccessGranted}
+        />
       </PopoverContent>
     </Popover>
   );

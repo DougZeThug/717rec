@@ -94,6 +94,73 @@ const participationColumns: ResponsiveTableColumn<ParticipationRow>[] = [
   },
 ];
 
+interface SeasonSelectProps {
+  value: string;
+  onValueChange: (value: string) => void;
+  seasons: { id: string; name: string; is_active?: boolean | null }[] | undefined;
+}
+
+const SeasonSelect: React.FC<SeasonSelectProps> = ({ value, onValueChange, seasons }) => (
+  <Select value={value} onValueChange={onValueChange}>
+    <SelectTrigger className="w-[200px]">
+      <SelectValue placeholder="Select season" />
+    </SelectTrigger>
+    <SelectContent>
+      {seasons?.map((season) => (
+        <SelectItem key={season.id} value={season.id}>
+          {season.name} {season.is_active && '(Active)'}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
+
+interface StatusFilterSelectProps {
+  value: StatusFilter;
+  onValueChange: (value: StatusFilter) => void;
+}
+
+const StatusFilterSelect: React.FC<StatusFilterSelectProps> = ({ value, onValueChange }) => (
+  <Select value={value} onValueChange={(v) => onValueChange(v as StatusFilter)}>
+    <SelectTrigger className="w-[160px]" aria-label="Filter by status">
+      <SelectValue placeholder="Filter status" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">All Statuses</SelectItem>
+      <SelectItem value="PLAYING">Playing</SelectItem>
+      <SelectItem value="NOT_PLAYING">Not Playing</SelectItem>
+      <SelectItem value="NO_RESPONSE">No Response</SelectItem>
+    </SelectContent>
+  </Select>
+);
+
+const ExportCsvButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <Button variant="outline" size="sm" onClick={onClick}>
+    <Download className="size-4 mr-2" />
+    Export CSV
+  </Button>
+);
+
+interface SummaryCardProps {
+  title: string;
+  icon: React.ReactNode;
+  value: number;
+}
+
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, icon, value }) => (
+  <Card>
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="flex items-center gap-2">
+        {icon}
+        <span className="text-2xl font-bold">{value}</span>
+      </div>
+    </CardContent>
+  </Card>
+);
+
 const SeasonParticipationTab: React.FC = () => {
   const { data: seasons, isLoading: seasonsLoading } = useSeasons();
   const { teams, isLoading: teamsLoading } = useTeams();
@@ -180,90 +247,41 @@ const SeasonParticipationTab: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {/* Season selector */}
-          <Select value={selectedSeasonId} onValueChange={setSelectedSeasonOverride}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select season" />
-            </SelectTrigger>
-            <SelectContent>
-              {seasons?.map((season) => (
-                <SelectItem key={season.id} value={season.id}>
-                  {season.name} {season.is_active && '(Active)'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SeasonSelect
+            value={selectedSeasonId}
+            onValueChange={setSelectedSeasonOverride}
+            seasons={seasons}
+          />
 
-          {/* Status filter */}
-          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-            <SelectTrigger className="w-[160px]" aria-label="Filter by status">
-              <SelectValue placeholder="Filter status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="PLAYING">Playing</SelectItem>
-              <SelectItem value="NOT_PLAYING">Not Playing</SelectItem>
-              <SelectItem value="NO_RESPONSE">No Response</SelectItem>
-            </SelectContent>
-          </Select>
+          <StatusFilterSelect value={statusFilter} onValueChange={setStatusFilter} />
 
           {/* Export */}
-          <Button variant="outline" size="sm" onClick={handleExportCsv}>
-            <Download className="size-4 mr-2" />
-            Export CSV
-          </Button>
+          <ExportCsvButton onClick={handleExportCsv} />
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Playing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Check className="size-5 text-green-500" />
-              <span className="text-2xl font-bold">{counts.playing}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Not Playing</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <X className="size-5 text-red-500" />
-              <span className="text-2xl font-bold">{counts.notPlaying}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">No Response</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <HelpCircle className="size-5 text-yellow-500" />
-              <span className="text-2xl font-bold">{counts.noResponse}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Teams</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="size-5 text-primary" />
-              <span className="text-2xl font-bold">{counts.total}</span>
-            </div>
-          </CardContent>
-        </Card>
+        <SummaryCard
+          title="Playing"
+          icon={<Check className="size-5 text-green-500" />}
+          value={counts.playing}
+        />
+        <SummaryCard
+          title="Not Playing"
+          icon={<X className="size-5 text-red-500" />}
+          value={counts.notPlaying}
+        />
+        <SummaryCard
+          title="No Response"
+          icon={<HelpCircle className="size-5 text-yellow-500" />}
+          value={counts.noResponse}
+        />
+        <SummaryCard
+          title="Total Teams"
+          icon={<Users className="size-5 text-primary" />}
+          value={counts.total}
+        />
       </div>
 
       {/* Table */}

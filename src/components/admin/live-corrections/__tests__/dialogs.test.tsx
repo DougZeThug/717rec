@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Tables } from '@/integrations/supabase/types';
 import { clearUnsavedWork, findUnsavedWork } from '@/utils/unsavedChanges';
@@ -44,6 +44,13 @@ const rosterById = new Map<string, Tables<'team_players'>>([
 ]);
 
 describe('live correction dialogs', () => {
+  beforeAll(() => {
+    HTMLElement.prototype.setPointerCapture = vi.fn();
+    HTMLElement.prototype.releasePointerCapture = vi.fn();
+    HTMLElement.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+    HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
+
   afterEach(() => {
     vi.resetAllMocks();
   });
@@ -117,6 +124,36 @@ describe('live correction dialogs', () => {
         team1Bags: { bagsIn: 0, bagsOn: 3, bagsOff: 1 },
         team2Bags: { bagsIn: 0, bagsOn: 1, bagsOff: 3 },
       });
+    });
+  });
+
+  it('sends the thrower the admin picks for a side', async () => {
+    const onSubmit = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+
+    render(
+      <EditRoundDialog
+        open
+        onOpenChange={vi.fn()}
+        round={baseRound}
+        team1Name="Team A"
+        team2Name="Team B"
+        team1Players={team1Players}
+        team2Players={team2Players}
+        rosterById={rosterById}
+        onSubmit={onSubmit}
+        isSubmitting={false}
+      />
+    );
+
+    await user.click(screen.getAllByRole('combobox')[0]);
+    await user.click(await screen.findByRole('option', { name: 'Ava' }));
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ team1ThrowerId: 'p2', team2ThrowerId: 'p3' })
+      );
     });
   });
 

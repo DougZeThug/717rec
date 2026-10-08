@@ -42,6 +42,179 @@ interface TeamFormProps {
   onCancel: () => void;
 }
 
+interface TeamImageFieldProps {
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  imageUrl: string | undefined;
+  isUploading: boolean;
+  onUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove: () => void;
+}
+
+const TeamImageField: React.FC<TeamImageFieldProps> = ({
+  fileInputRef,
+  imageUrl,
+  isUploading,
+  onUpload,
+  onRemove,
+}) => (
+  <div className="space-y-2">
+    <FormLabel>Team Image</FormLabel>
+    <input
+      type="file"
+      ref={fileInputRef}
+      accept="image/*"
+      onChange={onUpload}
+      className="hidden"
+      disabled={isUploading}
+      aria-label="Upload team image"
+    />
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className="flex items-center gap-2"
+      >
+        <Upload size={16} />
+        {isUploading ? 'Processing...' : 'Upload Image'}
+      </Button>
+      {imageUrl && (
+        <div className="relative">
+          <img src={imageUrl} alt="Team preview" className="size-20 object-cover rounded" />
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            className="absolute -top-2 -right-2 size-8 rounded-full p-0"
+            onClick={onRemove}
+            aria-label="Remove team image"
+          >
+            <X size={16} />
+          </Button>
+        </div>
+      )}
+    </div>
+  </div>
+);
+
+interface PlayerNamesFieldProps {
+  playerNames: string[];
+  playerIds: string[];
+  onChange: (index: number, value: string) => void;
+  onRemove: (index: number) => void;
+  onAdd: () => void;
+}
+
+const PlayerNamesField: React.FC<PlayerNamesFieldProps> = ({
+  playerNames,
+  playerIds,
+  onChange,
+  onRemove,
+  onAdd,
+}) => (
+  <div className="space-y-2">
+    <FormLabel>Players</FormLabel>
+    {playerNames.map((playerName, index) => (
+      <div key={playerIds[index]} className="flex gap-2 mt-2">
+        <Input
+          value={playerName}
+          onChange={(e) => onChange(index, e.target.value)}
+          placeholder={`Player ${index + 1} name`}
+          className="flex-1"
+        />
+        <DestructiveIconButton onClick={() => onRemove(index)} title="Remove player" />
+      </div>
+    ))}
+    <Button type="button" variant="outline" onClick={onAdd} className="mt-2">
+      <Plus className="size-4 mr-2" />
+      Add Player
+    </Button>
+  </div>
+);
+
+interface DivisionSelectProps {
+  value: string | null | undefined;
+  onChange: (divisionId: string | null) => void;
+  divisions: ReturnType<typeof useDivisions>['divisions'];
+  isLoading: boolean;
+}
+
+const DivisionSelect: React.FC<DivisionSelectProps> = ({
+  value,
+  onChange,
+  divisions,
+  isLoading,
+}) => (
+  <Select
+    value={value || 'none'}
+    onValueChange={(selected) => onChange(selected === 'none' ? null : selected)}
+  >
+    <FormControl>
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select division" />
+      </SelectTrigger>
+    </FormControl>
+    <SelectContent>
+      <SelectItem value="none">None</SelectItem>
+      {isLoading ? (
+        <SelectItem value="loading-divisions" disabled>
+          Loading divisions...
+        </SelectItem>
+      ) : divisions.length === 0 ? (
+        <SelectItem value="no-divisions-available" disabled>
+          No divisions available
+        </SelectItem>
+      ) : (
+        divisions.map((div) => (
+          <SelectItem key={div.id} value={div.id}>
+            {div.name}
+          </SelectItem>
+        ))
+      )}
+    </SelectContent>
+  </Select>
+);
+
+interface TeamFormActionsProps {
+  isUploading: boolean;
+  isSubmitting: boolean;
+  isEditing: boolean;
+  onCancel: () => void;
+}
+
+const TeamFormActions: React.FC<TeamFormActionsProps> = ({
+  isUploading,
+  isSubmitting,
+  isEditing,
+  onCancel,
+}) => (
+  <div className="flex justify-end gap-2 mt-4">
+    <Button type="button" variant="outline" onClick={onCancel}>
+      <X className="size-4 mr-2" />
+      Cancel
+    </Button>
+    <Button type="submit" disabled={isUploading || isSubmitting}>
+      {isUploading ? (
+        <>
+          <Loader2 className="size-4 mr-2 animate-spin" />
+          Uploading...
+        </>
+      ) : isEditing ? (
+        <>
+          <Save className="size-4 mr-2" />
+          Update Team
+        </>
+      ) : (
+        <>
+          <Plus className="size-4 mr-2" />
+          Create Team
+        </>
+      )}
+    </Button>
+  </div>
+);
+
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
   const missingImageUrl: string | undefined = undefined;
   const [imageUrl, setImageUrl] = useState<string | undefined>(team?.imageUrl ?? missingImageUrl);
@@ -156,125 +329,39 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Division</FormLabel>
-                <Select
-                  value={field.value || 'none'}
-                  onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
-                >
-                  <FormControl>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select division" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {isDivisionsLoading ? (
-                      <SelectItem value="loading-divisions" disabled>
-                        Loading divisions...
-                      </SelectItem>
-                    ) : divisions.length === 0 ? (
-                      <SelectItem value="no-divisions-available" disabled>
-                        No divisions available
-                      </SelectItem>
-                    ) : (
-                      divisions.map((div) => (
-                        <SelectItem key={div.id} value={div.id}>
-                          {div.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <DivisionSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  divisions={divisions}
+                  isLoading={isDivisionsLoading}
+                />
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="space-y-2">
-            <FormLabel>Team Image</FormLabel>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-              disabled={isUploading}
-              aria-label="Upload team image"
-            />
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="flex items-center gap-2"
-              >
-                <Upload size={16} />
-                {isUploading ? 'Processing...' : 'Upload Image'}
-              </Button>
-              {imageUrl && (
-                <div className="relative">
-                  <img src={imageUrl} alt="Team preview" className="size-20 object-cover rounded" />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute -top-2 -right-2 size-8 rounded-full p-0"
-                    onClick={handleRemoveImage}
-                    aria-label="Remove team image"
-                  >
-                    <X size={16} />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <TeamImageField
+            fileInputRef={fileInputRef}
+            imageUrl={imageUrl}
+            isUploading={isUploading}
+            onUpload={handleImageUpload}
+            onRemove={handleRemoveImage}
+          />
 
-          <div className="space-y-2">
-            <FormLabel>Players</FormLabel>
-            {playerNames.map((playerName, index) => (
-              <div key={playerIds[index]} className="flex gap-2 mt-2">
-                <Input
-                  value={playerName}
-                  onChange={(e) => handlePlayerChange(index, e.target.value)}
-                  placeholder={`Player ${index + 1} name`}
-                  className="flex-1"
-                />
-                <DestructiveIconButton
-                  onClick={() => handleRemovePlayer(index)}
-                  title="Remove player"
-                />
-              </div>
-            ))}
-            <Button type="button" variant="outline" onClick={handleAddPlayer} className="mt-2">
-              <Plus className="size-4 mr-2" />
-              Add Player
-            </Button>
-          </div>
+          <PlayerNamesField
+            playerNames={playerNames}
+            playerIds={playerIds}
+            onChange={handlePlayerChange}
+            onRemove={handleRemovePlayer}
+            onAdd={handleAddPlayer}
+          />
 
-          <div className="flex justify-end gap-2 mt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
-              <X className="size-4 mr-2" />
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isUploading || isSubmitting}>
-              {isUploading ? (
-                <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : team ? (
-                <>
-                  <Save className="size-4 mr-2" />
-                  Update Team
-                </>
-              ) : (
-                <>
-                  <Plus className="size-4 mr-2" />
-                  Create Team
-                </>
-              )}
-            </Button>
-          </div>
+          <TeamFormActions
+            isUploading={isUploading}
+            isSubmitting={isSubmitting}
+            isEditing={Boolean(team)}
+            onCancel={onCancel}
+          />
         </div>
       </form>
     </Form>

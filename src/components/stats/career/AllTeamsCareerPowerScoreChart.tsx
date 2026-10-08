@@ -172,6 +172,158 @@ const SelectedTeamsLegend: React.FC<{
   </div>
 );
 
+/** The multi-select that picks which teams to draw bold. */
+const TeamHighlightPicker: React.FC<{
+  options: { value: string; label: string }[];
+  selected: string[];
+  onChange: (ids: string[]) => void;
+}> = ({ options, selected, onChange }) => (
+  <div className="mb-4">
+    <MultiSelect
+      options={options}
+      selected={selected}
+      onChange={onChange}
+      placeholder="Select teams to highlight..."
+    />
+  </div>
+);
+
+/** The clickable card header: title, short description and the open/close arrow. */
+const ChartHeader: React.FC<{
+  isMobile: boolean;
+  theme: CareerCardTheme;
+  isOpen: boolean;
+}> = ({ isMobile, theme, isOpen }) => (
+  <CardHeader
+    className={cn(
+      careerHeaderPadding(isMobile),
+      careerHeaderClasses(theme),
+      'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
+    )}
+  >
+    <div className="flex items-center justify-between">
+      <div className="text-left">
+        <CardTitle className={cn(careerTitleClasses(isMobile))} style={{ letterSpacing: '0.5px' }}>
+          Career Power Score Trends
+        </CardTitle>
+        {!isMobile && (
+          <CardDescription className="font-inter">
+            Compare team performance across multiple seasons
+          </CardDescription>
+        )}
+      </div>
+      <ChevronDown className={cn('size-5 transition-transform', isOpen && 'rotate-180')} />
+    </div>
+  </CardHeader>
+);
+
+/** The line chart itself, one line per team; selected teams are drawn bold. */
+const PowerScoreLineChart: React.FC<{
+  chartData: ReturnType<typeof transformDataForChart>;
+  teamsData: ReturnType<typeof useAllTeamsCareerPowerScores>['data'];
+  selectedTeamIds: string[];
+  isMobile: boolean;
+  isDark: boolean;
+}> = ({ chartData, teamsData, selectedTeamIds, isMobile, isDark }) => (
+  <div
+    // A group, not an img: an img hides the team links in the tooltip.
+    role="group"
+    aria-label={describeCareerChart(chartData, teamsData)}
+  >
+    <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+      <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+        <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+        <XAxis
+          dataKey="seasonName"
+          angle={-45}
+          textAnchor="end"
+          height={80}
+          tick={{ fontSize: 11 }}
+        />
+        <YAxis
+          domain={[0, 100]}
+          label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }}
+        />
+        <Tooltip
+          content={<CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />}
+          wrapperStyle={{ pointerEvents: 'auto' }}
+        />
+
+        {teamsData?.map((team) => {
+          const isSelected = selectedTeamIds.includes(team.teamId);
+          const color = isSelected ? getTeamColor(team.teamId, isDark) : '#9ca3af';
+
+          return (
+            <Line
+              key={team.teamId}
+              type="monotone"
+              dataKey={`team_${team.teamId}`}
+              stroke={color}
+              strokeWidth={isSelected ? 3 : 1}
+              opacity={isSelected ? 1 : 0.2}
+              dot={false}
+              connectNulls={false}
+              name={team.teamName}
+              isAnimationActive={false}
+            />
+          );
+        })}
+      </LineChart>
+    </ResponsiveContainer>
+  </div>
+);
+
+/** The collapsible panel: team picker hint, the chart and the colour key. */
+const ChartBody: React.FC<{
+  chartData: ReturnType<typeof transformDataForChart>;
+  teamsData: ReturnType<typeof useAllTeamsCareerPowerScores>['data'];
+  teamOptions: { value: string; label: string }[];
+  selectedTeamIds: string[];
+  onSelectedChange: (ids: string[]) => void;
+  isMobile: boolean;
+  isDark: boolean;
+}> = ({
+  chartData,
+  teamsData,
+  teamOptions,
+  selectedTeamIds,
+  onSelectedChange,
+  isMobile,
+  isDark,
+}) => (
+  <CollapsibleContent>
+    <CardContent>
+      <TeamHighlightPicker
+        options={teamOptions}
+        selected={selectedTeamIds}
+        onChange={onSelectedChange}
+      />
+
+      {selectedTeamIds.length === 0 && (
+        <p className="text-sm text-muted-foreground mb-4 text-center">
+          Select teams above to highlight their trends
+        </p>
+      )}
+
+      <PowerScoreLineChart
+        chartData={chartData}
+        teamsData={teamsData}
+        selectedTeamIds={selectedTeamIds}
+        isMobile={isMobile}
+        isDark={isDark}
+      />
+
+      {selectedTeamIds.length > 0 && (
+        <SelectedTeamsLegend
+          teamsData={teamsData}
+          selectedTeamIds={selectedTeamIds}
+          isDark={isDark}
+        />
+      )}
+    </CardContent>
+  </CollapsibleContent>
+);
+
 const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
   const { data: teamsData, isLoading } = useAllTeamsCareerPowerScores();
   const { resolvedTheme } = useTheme();
@@ -214,107 +366,18 @@ const AllTeamsCareerPowerScoreChartComponent: React.FC = () => {
         )}
       >
         <CollapsibleTrigger className="w-full">
-          <CardHeader
-            className={cn(
-              careerHeaderPadding(isMobile),
-              careerHeaderClasses(theme),
-              'rounded-t-lg cursor-pointer hover:bg-muted/50 transition-colors'
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <div className="text-left">
-                <CardTitle
-                  className={cn(careerTitleClasses(isMobile))}
-                  style={{ letterSpacing: '0.5px' }}
-                >
-                  Career Power Score Trends
-                </CardTitle>
-                {!isMobile && (
-                  <CardDescription className="font-inter">
-                    Compare team performance across multiple seasons
-                  </CardDescription>
-                )}
-              </div>
-              <ChevronDown className={cn('size-5 transition-transform', isOpen && 'rotate-180')} />
-            </div>
-          </CardHeader>
+          <ChartHeader isMobile={isMobile} theme={theme} isOpen={isOpen} />
         </CollapsibleTrigger>
 
-        <CollapsibleContent>
-          <CardContent>
-            <div className="mb-4">
-              <MultiSelect
-                options={teamOptions}
-                selected={selectedTeamIds}
-                onChange={setSelectedTeamIds}
-                placeholder="Select teams to highlight..."
-              />
-            </div>
-
-            {selectedTeamIds.length === 0 && (
-              <p className="text-sm text-muted-foreground mb-4 text-center">
-                Select teams above to highlight their trends
-              </p>
-            )}
-
-            <div
-              // A group, not an img: an img hides the team links in the tooltip.
-              role="group"
-              aria-label={describeCareerChart(chartData, teamsData)}
-            >
-              <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
-                <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis
-                    dataKey="seasonName"
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                    tick={{ fontSize: 11 }}
-                  />
-                  <YAxis
-                    domain={[0, 100]}
-                    label={{ value: 'Power Score', angle: -90, position: 'insideLeft' }}
-                  />
-                  <Tooltip
-                    content={
-                      <CustomTooltip teamsData={teamsData} selectedTeamIds={selectedTeamIds} />
-                    }
-                    wrapperStyle={{ pointerEvents: 'auto' }}
-                  />
-
-                  {teamsData?.map((team) => {
-                    const isSelected = selectedTeamIds.includes(team.teamId);
-                    const color = isSelected ? getTeamColor(team.teamId, isDark) : '#9ca3af';
-
-                    return (
-                      <Line
-                        key={team.teamId}
-                        type="monotone"
-                        dataKey={`team_${team.teamId}`}
-                        stroke={color}
-                        strokeWidth={isSelected ? 3 : 1}
-                        opacity={isSelected ? 1 : 0.2}
-                        dot={false}
-                        connectNulls={false}
-                        name={team.teamName}
-                        isAnimationActive={false}
-                      />
-                    );
-                  })}
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {selectedTeamIds.length > 0 && (
-              <SelectedTeamsLegend
-                teamsData={teamsData}
-                selectedTeamIds={selectedTeamIds}
-                isDark={isDark}
-              />
-            )}
-          </CardContent>
-        </CollapsibleContent>
+        <ChartBody
+          chartData={chartData}
+          teamsData={teamsData}
+          teamOptions={teamOptions}
+          selectedTeamIds={selectedTeamIds}
+          onSelectedChange={setSelectedTeamIds}
+          isMobile={isMobile}
+          isDark={isDark}
+        />
       </Card>
     </Collapsible>
   );

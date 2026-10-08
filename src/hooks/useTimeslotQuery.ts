@@ -21,7 +21,7 @@ export const useTimeslotQuery = (date: Date | null) => {
         groupedTimeslots: grouped,
       };
     },
-    enabled: !!date,
+    enabled: Boolean(date),
     staleTime: 60_000,
     refetchInterval: () => {
       if (typeof document !== 'undefined' && document.hidden) return false;

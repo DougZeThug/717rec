@@ -49,6 +49,125 @@ const getStatusIcon = (season: Season) => {
   }
 };
 
+interface SeasonEditButtonProps {
+  season: Season;
+  onEdit: () => void;
+}
+
+const SeasonEditButton: React.FC<SeasonEditButtonProps> = ({ season, onEdit }) => (
+  <m.div whileTap={{ scale: 0.95 }}>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => onEdit()}
+      className="flex items-center gap-1"
+      // An archived season is a closed record: its stats are
+      // snapshotted and its champions awarded. Renaming it or
+      // moving its dates now would rewrite history the History
+      // page already shows.
+      disabled={season.is_archived}
+      title={
+        season.is_archived
+          ? 'Archived seasons cannot be edited — their results are already final.'
+          : undefined
+      }
+    >
+      <Edit className="size-3" />
+      Edit
+    </Button>
+  </m.div>
+);
+
+interface SeasonHeaderRowProps {
+  season: Season;
+  onActivate: () => void;
+  onArchive: () => void;
+  onFinalize: () => void;
+  onEdit: () => void;
+}
+
+const SeasonHeaderRow: React.FC<SeasonHeaderRowProps> = ({
+  season,
+  onActivate,
+  onArchive,
+  onFinalize,
+  onEdit,
+}) => (
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      {getStatusIcon(season)}
+      <div>
+        <CardTitle className="text-lg">{season.name}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {toLocalDateString(season.start_date)} -
+          {season.end_date ? toLocalDateString(season.end_date) : 'Ongoing'}
+        </p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+      {getStatusBadge(season)}
+      {!season.is_active && !season.is_archived && (
+        <m.div whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onActivate()}
+            className="flex items-center gap-1"
+          >
+            <Play className="size-3" />
+            Activate
+          </Button>
+        </m.div>
+      )}
+      {/* Archive used to be offered on the active season alone, from the
+        header above this list. An old season left un-archived kept its
+        matches in the live tables and never awarded its placement
+        badges, with no way to close it out (A-12). */}
+      {!season.is_active && !season.is_archived && (
+        <m.div whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onArchive()}
+            className="flex items-center gap-1"
+          >
+            <Archive className="size-3" />
+            Archive
+          </Button>
+        </m.div>
+      )}
+      {season.playoffs_active && (
+        <m.div whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onFinalize()}
+            className="flex items-center gap-1"
+          >
+            <Trophy className="size-3" />
+            Finalize Playoffs
+          </Button>
+        </m.div>
+      )}
+      <SeasonEditButton season={season} onEdit={onEdit} />
+    </div>
+  </div>
+);
+
+const SeasonDetails: React.FC<{ season: Season }> = ({ season }) => (
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+    <div>
+      <span className="font-medium">Created:</span> {toLocalDateString(season.created_at)}
+    </div>
+    {season.is_archived && (
+      <div>
+        <span className="font-medium">Status:</span>{' '}
+        <span className="text-muted-foreground">Archived season</span>
+      </div>
+    )}
+  </div>
+);
+
 const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSeason }) => {
   const [activatingSeason, setActivatingSeason] = useState<Season | null>(null);
   const [finalizingSeason, setFinalizingSeason] = useState<Season | null>(null);
@@ -90,98 +209,16 @@ const SeasonsList: React.FC<SeasonsListProps> = ({ seasons, isLoading, onEditSea
       {seasons.map((season) => (
         <Card key={season.id}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {getStatusIcon(season)}
-                <div>
-                  <CardTitle className="text-lg">{season.name}</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {toLocalDateString(season.start_date)} -
-                    {season.end_date ? toLocalDateString(season.end_date) : 'Ongoing'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {getStatusBadge(season)}
-                {!season.is_active && !season.is_archived && (
-                  <m.div whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setActivatingSeason(season)}
-                      className="flex items-center gap-1"
-                    >
-                      <Play className="size-3" />
-                      Activate
-                    </Button>
-                  </m.div>
-                )}
-                {/* Archive used to be offered on the active season alone, from the
-                    header above this list. An old season left un-archived kept its
-                    matches in the live tables and never awarded its placement
-                    badges, with no way to close it out (A-12). */}
-                {!season.is_active && !season.is_archived && (
-                  <m.div whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setArchivingSeason(season)}
-                      className="flex items-center gap-1"
-                    >
-                      <Archive className="size-3" />
-                      Archive
-                    </Button>
-                  </m.div>
-                )}
-                {season.playoffs_active && (
-                  <m.div whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFinalizingSeason(season)}
-                      className="flex items-center gap-1"
-                    >
-                      <Trophy className="size-3" />
-                      Finalize Playoffs
-                    </Button>
-                  </m.div>
-                )}
-                <m.div whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEditSeason(season)}
-                    className="flex items-center gap-1"
-                    // An archived season is a closed record: its stats are
-                    // snapshotted and its champions awarded. Renaming it or
-                    // moving its dates now would rewrite history the History
-                    // page already shows.
-                    disabled={season.is_archived}
-                    title={
-                      season.is_archived
-                        ? 'Archived seasons cannot be edited — their results are already final.'
-                        : undefined
-                    }
-                  >
-                    <Edit className="size-3" />
-                    Edit
-                  </Button>
-                </m.div>
-              </div>
-            </div>
+            <SeasonHeaderRow
+              season={season}
+              onActivate={() => setActivatingSeason(season)}
+              onArchive={() => setArchivingSeason(season)}
+              onFinalize={() => setFinalizingSeason(season)}
+              onEdit={() => onEditSeason(season)}
+            />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <span className="font-medium">Created:</span> {toLocalDateString(season.created_at)}
-              </div>
-              {season.is_archived && (
-                <div>
-                  <span className="font-medium">Status:</span>{' '}
-                  <span className="text-muted-foreground">Archived season</span>
-                </div>
-              )}
-            </div>
+            <SeasonDetails season={season} />
           </CardContent>
         </Card>
       ))}

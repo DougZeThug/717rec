@@ -47,6 +47,19 @@ const CareerRankingsBody: React.FC<{
   );
 };
 
+/** The collapsible panel: loading, the table, or the empty line. */
+const CareerRankingsContent: React.FC<{
+  theme: CareerCardTheme;
+  isLoading: boolean;
+  rankings: CareerRanking[] | undefined;
+}> = ({ theme, isLoading, rankings }) => (
+  <CollapsibleContent>
+    <CardContent className={cn('p-2 sm:p-4', careerContentClasses(theme))}>
+      <CareerRankingsBody isLoading={isLoading} rankings={rankings} />
+    </CardContent>
+  </CollapsibleContent>
+);
+
 const CareerRankingsSection: React.FC = () => {
   const isMobile = useIsMobile();
   const { resolvedTheme } = useTheme();
@@ -86,11 +99,7 @@ const CareerRankingsSection: React.FC = () => {
           rankings={careerRankings}
         />
 
-        <CollapsibleContent>
-          <CardContent className={cn('p-2 sm:p-4', careerContentClasses(theme))}>
-            <CareerRankingsBody isLoading={isLoading} rankings={careerRankings} />
-          </CardContent>
-        </CollapsibleContent>
+        <CareerRankingsContent theme={theme} isLoading={isLoading} rankings={careerRankings} />
       </Card>
     </Collapsible>
   );

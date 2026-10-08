@@ -15,6 +15,13 @@ interface ErrorAlertProps {
   retryDisabled?: boolean;
 }
 
+const FailedSummary: React.FC<{ summary: string }> = ({ summary }) => (
+  <div>
+    <p className="font-medium">{summary}</p>
+    <p>Please retry the failed matches or dismiss this banner to keep editing.</p>
+  </div>
+);
+
 const ErrorAlert: React.FC<ErrorAlertProps> = ({
   failedMatches,
   errorMessages = {},
@@ -68,10 +75,7 @@ const ErrorAlert: React.FC<ErrorAlertProps> = ({
       <AlertCircle className="size-4" />
       <AlertDescription className="space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="font-medium">{summary}</p>
-            <p>Please retry the failed matches or dismiss this banner to keep editing.</p>
-          </div>
+          <FailedSummary summary={summary} />
           <div className="flex gap-2">
             {onRetryFailed && (
               <Button

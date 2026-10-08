@@ -47,12 +47,12 @@ const makeSeason = (overrides: Partial<Season> = {}): Season => ({
 
 // The list renders from its prop while the dialog reads useSeasons(). In the app
 // both come from the same cached ['seasons'] entry, so keep them identical here.
-const renderList = (seasons: Season[]) => {
+const renderList = (seasons: Season[], onEditSeason: (season: Season) => void = vi.fn()) => {
   seasonsFromHook = seasons;
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <QueryClientProvider client={qc}>
-      <SeasonsList seasons={seasons} isLoading={false} onEditSeason={vi.fn()} />
+      <SeasonsList seasons={seasons} isLoading={false} onEditSeason={onEditSeason} />
     </QueryClientProvider>
   );
 };
@@ -156,5 +156,41 @@ describe('SeasonsList activation control', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Activate Season' }));
 
     await waitFor(() => expect(activateMock).toHaveBeenCalledWith('s-target'));
+  });
+
+  it('hands the season to onEditSeason when Edit is pressed', async () => {
+    const onEditSeason = vi.fn();
+    const season = makeSeason({ id: 's-edit', name: 'Fall 2026' });
+    renderList([season], onEditSeason);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    expect(onEditSeason).toHaveBeenCalledWith(season);
+  });
+
+  it('opens the finalize playoffs dialog for the season whose button was pressed', async () => {
+    renderList([
+      makeSeason({ id: 's-idle', name: 'Summer 2026' }),
+      makeSeason({ id: 's-playoffs', name: 'Spring 2026', playoffs_active: true }),
+    ]);
+
+    await userEvent.click(screen.getByRole('button', { name: /finalize playoffs/i }));
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(/Spring 2026/);
+  });
+});
+
+describe('SeasonsList loading state', () => {
+  it('shows placeholder cards and no seasons while loading', () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={qc}>
+        <SeasonsList seasons={[makeSeason()]} isLoading onEditSeason={vi.fn()} />
+      </QueryClientProvider>
+    );
+
+    expect(container.querySelectorAll('.space-y-4 > div')).toHaveLength(3);
+    expect(screen.queryByText('Spring 2026')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
   });
 });

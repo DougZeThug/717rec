@@ -1,8 +1,9 @@
-import { render as rtlRender, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render as rtlRender, screen, waitFor } from '@testing-library/react';
 import type { ReactElement } from 'react';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 
+import { FALLBACK_TEAM_IMAGE } from '@/constants/images';
 import type { Team } from '@/types';
 
 const fireOnceMock = vi.hoisted(() => vi.fn());
@@ -24,6 +25,20 @@ const teams = [
 ] as unknown as Team[];
 
 describe('ChampionDisplay', () => {
+  it('shows the team logo and swaps in the fallback image when it fails to load', () => {
+    const withLogo = [
+      { id: 't-3', name: 'Sack Attack', logoUrl: 'https://example.com/logo.png' },
+    ] as unknown as Team[];
+    render(<ChampionDisplay championId="t-3" teams={withLogo} />);
+
+    const logo = screen.getByAltText('Sack Attack');
+    expect(logo).toHaveAttribute('src', 'https://example.com/logo.png');
+    fireEvent.error(logo);
+
+    expect(logo).toHaveAttribute('src', FALLBACK_TEAM_IMAGE);
+    expect(screen.getByText('Division Winner')).toBeInTheDocument();
+  });
+
   it('shows the champion and fires confetti once for that team', async () => {
     render(<ChampionDisplay championId="t-1" teams={teams} />);
 

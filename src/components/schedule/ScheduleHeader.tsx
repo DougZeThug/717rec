@@ -24,6 +24,12 @@ interface ScheduleHeaderProps {
   onRefresh?: () => void;
 }
 
+const SearchSlot: React.FC<React.ComponentProps<typeof ScheduleSearch>> = (props) => (
+  <div className="flex-1">
+    <ScheduleSearch {...props} />
+  </div>
+);
+
 const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   searchTerm,
   setSearchTerm,
@@ -58,9 +64,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
 
         {/* Search + Calendar row */}
         <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <ScheduleSearch value={searchTerm} onChange={setSearchTerm} />
-          </div>
+          <SearchSlot value={searchTerm} onChange={setSearchTerm} />
           {onDateSelect && (
             <Popover>
               <PopoverTrigger asChild>

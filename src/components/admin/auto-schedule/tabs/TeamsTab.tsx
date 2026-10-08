@@ -20,6 +20,66 @@ interface TeamsTabProps {
   originalTimeBlockTeams?: TimeBlockTeamsMap; // Store original loaded teams
 }
 
+const TeamsHeading: React.FC = () => (
+  <div>
+    <h3 className="text-lg font-medium">Teams by Time Block</h3>
+    <p className="text-sm text-muted-foreground">
+      Review teams assigned to each time block before generating the schedule.
+    </p>
+  </div>
+);
+
+interface TeamsHeaderRowProps {
+  showActions: boolean;
+  hasModifications: boolean;
+  isEditMode: boolean;
+  onReset: () => void;
+  onToggleEditMode: () => void;
+}
+
+/** Heading plus the Reset and Edit Teams buttons. */
+const TeamsHeaderRow: React.FC<TeamsHeaderRowProps> = ({
+  showActions,
+  hasModifications,
+  isEditMode,
+  onReset,
+  onToggleEditMode,
+}) => (
+  <div className="flex items-center justify-between">
+    <TeamsHeading />
+
+    {showActions && (
+      <div className="flex items-center gap-2">
+        {hasModifications && (
+          <Button variant="outline" size="sm" onClick={onReset} className="flex items-center gap-2">
+            <RotateCcw className="size-4" />
+            Reset to Auto-Loaded
+          </Button>
+        )}
+
+        <Button
+          variant={isEditMode ? 'default' : 'outline'}
+          size="sm"
+          onClick={onToggleEditMode}
+          className="flex items-center gap-2"
+        >
+          {isEditMode ? (
+            <>
+              <Eye className="size-4" />
+              View Mode
+            </>
+          ) : (
+            <>
+              <Edit3 className="size-4" />
+              Edit Teams
+            </>
+          )}
+        </Button>
+      </div>
+    )}
+  </div>
+);
+
 const EMPTY_TIME_BLOCK_TEAMS: TimeBlockTeamsMap = {};
 
 const TeamsTab: React.FC<TeamsTabProps> = ({
@@ -87,49 +147,13 @@ const TeamsTab: React.FC<TeamsTabProps> = ({
         </TabsList>
 
         <TabsContent value="auto" className="space-y-4 mt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Teams by Time Block</h3>
-              <p className="text-sm text-muted-foreground">
-                Review teams assigned to each time block before generating the schedule.
-              </p>
-            </div>
-
-            {totalTeams > 0 && (
-              <div className="flex items-center gap-2">
-                {hasModifications && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleResetToOriginal}
-                    className="flex items-center gap-2"
-                  >
-                    <RotateCcw className="size-4" />
-                    Reset to Auto-Loaded
-                  </Button>
-                )}
-
-                <Button
-                  variant={isEditMode ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setIsEditMode(!isEditMode)}
-                  className="flex items-center gap-2"
-                >
-                  {isEditMode ? (
-                    <>
-                      <Eye className="size-4" />
-                      View Mode
-                    </>
-                  ) : (
-                    <>
-                      <Edit3 className="size-4" />
-                      Edit Teams
-                    </>
-                  )}
-                </Button>
-              </div>
-            )}
-          </div>
+          <TeamsHeaderRow
+            showActions={totalTeams > 0}
+            hasModifications={hasModifications}
+            isEditMode={isEditMode}
+            onReset={handleResetToOriginal}
+            onToggleEditMode={() => setIsEditMode(!isEditMode)}
+          />
 
           {totalTeams > 0 ? (
             isEditMode ? (

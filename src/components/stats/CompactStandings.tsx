@@ -139,6 +139,27 @@ const MobileStandingRow: React.FC<{
 ));
 MobileStandingRow.displayName = 'MobileStandingRow';
 
+const StandingsTableHeader: React.FC<{ isLight: boolean }> = ({ isLight }) => (
+  <TableHeader>
+    <TableRow
+      className={cn(
+        isLight
+          ? 'bg-gradient-to-r from-blue-50/80 to-blue-100/50'
+          : 'bg-gradient-to-r from-gray-800/90 to-gray-800/60',
+        'border-b border-blue-200/70 dark:border-blue-900/30'
+      )}
+    >
+      <TableHead className="w-10 font-mono tracking-wide text-muted-foreground">Rank</TableHead>
+      <TableHead className="uppercase tracking-wide font-bebas text-muted-foreground">
+        Team
+      </TableHead>
+      <TableHead className="text-center font-mono text-muted-foreground">Record</TableHead>
+      <TableHead className="text-center font-mono text-muted-foreground">Win %</TableHead>
+      <TableHead className="text-center font-mono text-muted-foreground">Power Score</TableHead>
+    </TableRow>
+  </TableHeader>
+);
+
 const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -207,28 +228,7 @@ const CompactStandings: React.FC<CompactStandingsProps> = ({ rankings }) => {
           'border-t-2 border-t-blue-300 dark:border-t-blue-700/70'
         )}
       >
-        <TableHeader>
-          <TableRow
-            className={cn(
-              isLight
-                ? 'bg-gradient-to-r from-blue-50/80 to-blue-100/50'
-                : 'bg-gradient-to-r from-gray-800/90 to-gray-800/60',
-              'border-b border-blue-200/70 dark:border-blue-900/30'
-            )}
-          >
-            <TableHead className="w-10 font-mono tracking-wide text-muted-foreground">
-              Rank
-            </TableHead>
-            <TableHead className="uppercase tracking-wide font-bebas text-muted-foreground">
-              Team
-            </TableHead>
-            <TableHead className="text-center font-mono text-muted-foreground">Record</TableHead>
-            <TableHead className="text-center font-mono text-muted-foreground">Win %</TableHead>
-            <TableHead className="text-center font-mono text-muted-foreground">
-              Power Score
-            </TableHead>
-          </TableRow>
-        </TableHeader>
+        <StandingsTableHeader isLight={isLight} />
         <TableBody>
           {rankings.map((team, index) => (
             <TableRow

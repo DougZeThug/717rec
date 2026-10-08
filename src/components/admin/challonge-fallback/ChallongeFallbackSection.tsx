@@ -26,6 +26,80 @@ type DraftRow = {
 const toDraft = (rows: ChallongeFallbackBracket[]): DraftRow[] =>
   rows.map((r) => ({ id: r.id, title: r.title, slug: r.slug, sort_order: r.sort_order }));
 
+interface BracketEmbedsHeaderProps {
+  onAdd: () => void;
+  disabled: boolean;
+}
+
+const BracketEmbedsHeader: React.FC<BracketEmbedsHeaderProps> = ({ onAdd, disabled }) => (
+  <div className="flex items-center justify-between">
+    <h4 className="font-semibold">Bracket embeds</h4>
+    <Button variant="outline" size="sm" onClick={onAdd} disabled={disabled}>
+      <Plus className="size-4 mr-1" /> Add bracket
+    </Button>
+  </div>
+);
+
+interface ShowEmbedsToggleProps {
+  enabled: boolean;
+  onChange: (checked: boolean) => void;
+  disabled: boolean;
+}
+
+const ShowEmbedsToggle: React.FC<ShowEmbedsToggleProps> = ({ enabled, onChange, disabled }) => (
+  <div className="flex items-center justify-between gap-4 rounded-md border p-4">
+    <div className="space-y-1">
+      <Label htmlFor="challonge-enabled" className="text-base">
+        Show Challonge bracket embeds on Playoffs page
+      </Label>
+      <p className="text-sm text-muted-foreground">
+        When on, the Challonge embeds appear above the native brackets viewer.
+      </p>
+    </div>
+    <Switch
+      id="challonge-enabled"
+      checked={enabled}
+      onCheckedChange={onChange}
+      disabled={disabled}
+    />
+  </div>
+);
+
+interface TitleSubtitleFieldsProps {
+  title: string;
+  subtitle: string;
+  onTitleChange: (value: string) => void;
+  onSubtitleChange: (value: string) => void;
+}
+
+const TitleSubtitleFields: React.FC<TitleSubtitleFieldsProps> = ({
+  title,
+  subtitle,
+  onTitleChange,
+  onSubtitleChange,
+}) => (
+  <div className="grid gap-4 sm:grid-cols-2">
+    <div className="space-y-2">
+      <Label htmlFor="challonge-title">Section title</Label>
+      <Input
+        id="challonge-title"
+        value={title}
+        onChange={(e) => onTitleChange(e.target.value)}
+        placeholder="2025 Summer 2 Playoffs"
+      />
+    </div>
+    <div className="space-y-2">
+      <Label htmlFor="challonge-subtitle">Section subtitle</Label>
+      <Input
+        id="challonge-subtitle"
+        value={subtitle}
+        onChange={(e) => onSubtitleChange(e.target.value)}
+        placeholder="Live tournament brackets - click any bracket to view details"
+      />
+    </div>
+  </div>
+);
+
 const ChallongeFallbackSection: React.FC = () => {
   const {
     data: config,
@@ -174,43 +248,14 @@ const ChallongeFallbackSection: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex items-center justify-between gap-4 rounded-md border p-4">
-          <div className="space-y-1">
-            <Label htmlFor="challonge-enabled" className="text-base">
-              Show Challonge bracket embeds on Playoffs page
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              When on, the Challonge embeds appear above the native brackets viewer.
-            </p>
-          </div>
-          <Switch
-            id="challonge-enabled"
-            checked={enabled}
-            onCheckedChange={setEnabled}
-            disabled={isMutating}
-          />
-        </div>
+        <ShowEmbedsToggle enabled={enabled} onChange={setEnabled} disabled={isMutating} />
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="challonge-title">Section title</Label>
-            <Input
-              id="challonge-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="2025 Summer 2 Playoffs"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="challonge-subtitle">Section subtitle</Label>
-            <Input
-              id="challonge-subtitle"
-              value={subtitle}
-              onChange={(e) => setSubtitle(e.target.value)}
-              placeholder="Live tournament brackets - click any bracket to view details"
-            />
-          </div>
-        </div>
+        <TitleSubtitleFields
+          title={title}
+          subtitle={subtitle}
+          onTitleChange={setTitle}
+          onSubtitleChange={setSubtitle}
+        />
 
         <div className="flex justify-end">
           <Button onClick={handleSaveConfig} disabled={isMutating} size="sm">
@@ -219,12 +264,7 @@ const ChallongeFallbackSection: React.FC = () => {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-semibold">Bracket embeds</h4>
-            <Button variant="outline" size="sm" onClick={handleAddRow} disabled={isMutating}>
-              <Plus className="size-4 mr-1" /> Add bracket
-            </Button>
-          </div>
+          <BracketEmbedsHeader onAdd={handleAddRow} disabled={isMutating} />
 
           {drafts.length === 0 && (
             <p className="text-sm text-muted-foreground">No brackets configured yet.</p>

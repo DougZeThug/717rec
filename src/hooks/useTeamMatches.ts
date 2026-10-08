@@ -49,7 +49,7 @@ export const useTeamMatches = (teamId: string | undefined) => {
         pastMatches: mappedMatches.filter(isMatchCompleted),
       };
     },
-    enabled: !!teamId,
+    enabled: Boolean(teamId),
     staleTime: 0, // Always fresh - instant updates
   });
 

@@ -10,6 +10,19 @@ import ChallongeFallbackSection from '../challonge-fallback/ChallongeFallbackSec
 import HeroCardForm from './HeroCardForm';
 import HeroCardsList from './HeroCardsList';
 
+const HeroCardsHeader: React.FC<{ onCreate: () => void }> = ({ onCreate }) => (
+  <CardHeader className="flex flex-row items-center justify-between">
+    <CardTitle className="flex items-center gap-2">
+      <Image className="size-5" />
+      Hero Cards
+    </CardTitle>
+    <Button onClick={onCreate} size="sm">
+      <Plus className="size-4 mr-2" />
+      Create Card
+    </Button>
+  </CardHeader>
+);
+
 const HeroCardsTab: React.FC = () => {
   const { data: heroCards, isLoading } = useAllHeroCards();
   const [editingCard, setEditingCard] = useState<HeroCard | null>(null);
@@ -37,16 +50,7 @@ const HeroCardsTab: React.FC = () => {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Image className="size-5" />
-            Hero Cards
-          </CardTitle>
-          <Button onClick={handleCreate} size="sm">
-            <Plus className="size-4 mr-2" />
-            Create Card
-          </Button>
-        </CardHeader>
+        <HeroCardsHeader onCreate={handleCreate} />
         <CardContent>
           <HeroCardsList cards={heroCards || []} isLoading={isLoading} onEdit={handleEdit} />
         </CardContent>

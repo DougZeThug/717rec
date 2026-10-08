@@ -24,6 +24,47 @@ interface LiveScoringControlsProps {
   onSoundEnabledChange: (enabled: boolean) => void;
 }
 
+type UndoRoundDialogProps = Pick<
+  LiveScoringControlsProps,
+  'canUndo' | 'isUndoing' | 'lastRoundLabel' | 'onUndo'
+>;
+
+const UndoRoundDialog: React.FC<UndoRoundDialogProps> = ({
+  canUndo,
+  isUndoing,
+  lastRoundLabel,
+  onUndo,
+}) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="min-h-[44px] gap-1.5"
+        disabled={!canUndo || isUndoing}
+      >
+        <Undo2 className="size-4" aria-hidden />
+        {isUndoing ? 'Undoing…' : 'Undo last round'}
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Undo last round?</AlertDialogTitle>
+        <AlertDialogDescription>
+          {lastRoundLabel
+            ? `This removes ${lastRoundLabel} from the game. You can re-enter it afterwards.`
+            : 'This removes the most recent round from the game.'}
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Keep round</AlertDialogCancel>
+        <AlertDialogAction onClick={onUndo}>Undo round</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 export const LiveScoringControls: React.FC<LiveScoringControlsProps> = ({
   canUndo,
   isUndoing,
@@ -37,33 +78,11 @@ export const LiveScoringControls: React.FC<LiveScoringControlsProps> = ({
       <Switch checked={soundEnabled} onCheckedChange={onSoundEnabledChange} />
       Sound
     </label>
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="min-h-[44px] gap-1.5"
-          disabled={!canUndo || isUndoing}
-        >
-          <Undo2 className="size-4" aria-hidden />
-          {isUndoing ? 'Undoing…' : 'Undo last round'}
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Undo last round?</AlertDialogTitle>
-          <AlertDialogDescription>
-            {lastRoundLabel
-              ? `This removes ${lastRoundLabel} from the game. You can re-enter it afterwards.`
-              : 'This removes the most recent round from the game.'}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Keep round</AlertDialogCancel>
-          <AlertDialogAction onClick={onUndo}>Undo round</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <UndoRoundDialog
+      canUndo={canUndo}
+      isUndoing={isUndoing}
+      lastRoundLabel={lastRoundLabel}
+      onUndo={onUndo}
+    />
   </div>
 );

@@ -118,4 +118,25 @@ describe('BulkLogoUpdateTab', () => {
 
     expect(namesInOrder()).toEqual(['Alpha', 'Bravo']);
   });
+
+  it('narrows the list as the admin types in the search box', async () => {
+    const user = userEvent.setup();
+    render(<BulkLogoUpdateTab />);
+
+    await user.type(screen.getByRole('textbox', { name: 'Search teams' }), 'alp');
+
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.queryByText('Bravo')).not.toBeInTheDocument();
+  });
+
+  it('shows only teams with a missing logo when that filter is picked', async () => {
+    const user = userEvent.setup();
+    render(<BulkLogoUpdateTab />);
+
+    await openRadixTrigger(screen.getByRole('combobox', { name: /filter teams by logo status/i }));
+    await user.click(await screen.findByRole('option', { name: /Missing/ }));
+
+    expect(screen.getByText('Bravo')).toBeInTheDocument();
+    expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
+  });
 });

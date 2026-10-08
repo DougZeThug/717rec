@@ -102,6 +102,57 @@ const getColorPresetName = (bgColor: string) => {
   return preset?.name || 'Custom colors';
 };
 
+interface DeleteHeroCardDialogProps {
+  open: boolean;
+  cardTitle: string | undefined;
+  isDeleting: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const DeleteHeroCardHeader: React.FC<{ cardTitle: string | undefined }> = ({ cardTitle }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>Delete Hero Card</AlertDialogTitle>
+    <AlertDialogDescription>
+      Are you sure you want to delete <strong>{cardTitle}</strong>? This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
+const DeleteHeroCardDialog: React.FC<DeleteHeroCardDialogProps> = ({
+  open,
+  cardTitle,
+  isDeleting,
+  onClose,
+  onConfirm,
+}) => (
+  <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <AlertDialogContent>
+      <DeleteHeroCardHeader cardTitle={cardTitle} />
+      <AlertDialogFooter>
+        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={(e) => {
+            e.preventDefault();
+            onConfirm();
+          }}
+          disabled={isDeleting}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          {isDeleting ? (
+            <>
+              <Loader2 className="size-4 mr-2 animate-spin" />
+              Deleting...
+            </>
+          ) : (
+            'Delete'
+          )}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit }) => {
   const { toggleVisibility, deleteCard, createCard, isCreating, isDeleting } =
     useHeroCardMutations();
@@ -284,40 +335,13 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
         rowKey={(card) => card.id}
       />
 
-      <AlertDialog
-        open={!!deletingCardId}
-        onOpenChange={(open) => !open && setDeletingCardId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Hero Card</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete <strong>{cardToDelete?.title}</strong>? This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleConfirmDelete();
-              }}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteHeroCardDialog
+        open={Boolean(deletingCardId)}
+        cardTitle={cardToDelete?.title}
+        isDeleting={isDeleting}
+        onClose={() => setDeletingCardId(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </TooltipProvider>
   );
 };

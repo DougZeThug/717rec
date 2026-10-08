@@ -4,6 +4,29 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const WeeklyRecapHeaderSkeleton: React.FC = () => (
+  <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-2">
+      <ClipboardList className="size-4 text-violet-500/50" />
+      <span className="text-xs font-semibold uppercase tracking-wider text-violet-600/50 dark:text-violet-400/50">
+        Weekly Recap
+      </span>
+    </div>
+    <Skeleton className="h-5 w-16" />
+  </div>
+);
+
+const WeeklyRecapRowSkeleton: React.FC<{ nameWidth: string; badgeWidth: string }> = ({
+  nameWidth,
+  badgeWidth,
+}) => (
+  <div className="flex items-center gap-3">
+    <Skeleton className="size-8 rounded-full shrink-0" />
+    <Skeleton className={`h-4 ${nameWidth}`} />
+    <Skeleton className={`h-5 ${badgeWidth} ml-auto`} />
+  </div>
+);
+
 const WeeklyRecapSkeleton: React.FC = () => {
   return (
     <Card
@@ -14,28 +37,12 @@ const WeeklyRecapSkeleton: React.FC = () => {
 
       <CardContent className="relative p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="size-4 text-violet-500/50" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-violet-600/50 dark:text-violet-400/50">
-              Weekly Recap
-            </span>
-          </div>
-          <Skeleton className="h-5 w-16" />
-        </div>
+        <WeeklyRecapHeaderSkeleton />
 
         {/* Row skeletons */}
         <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-8 rounded-full shrink-0" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-5 w-14 ml-auto" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Skeleton className="size-8 rounded-full shrink-0" />
-            <Skeleton className="h-4 w-36" />
-            <Skeleton className="h-5 w-10 ml-auto" />
-          </div>
+          <WeeklyRecapRowSkeleton nameWidth="w-48" badgeWidth="w-14" />
+          <WeeklyRecapRowSkeleton nameWidth="w-36" badgeWidth="w-10" />
         </div>
       </CardContent>
     </Card>

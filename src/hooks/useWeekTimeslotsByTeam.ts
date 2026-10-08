@@ -6,7 +6,7 @@ export const useWeekTimeslotsByTeam = (teamId: string, startDate: string, endDat
   return useQuery({
     queryKey: ['week-timeslots', teamId, startDate, endDate],
     queryFn: () => TimeslotQueryService.fetchWeekTimeslotsByTeam(teamId, startDate, endDate),
-    enabled: !!teamId && !!startDate && !!endDate,
+    enabled: Boolean(teamId) && Boolean(startDate) && Boolean(endDate),
     staleTime: 60_000,
   });
 };

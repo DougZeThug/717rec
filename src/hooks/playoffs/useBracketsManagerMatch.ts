@@ -72,6 +72,6 @@ export const useBracketsManagerMatch = (matchId: number | null) => {
 
       return result;
     },
-    enabled: !!matchId,
+    enabled: Boolean(matchId),
   });
 };

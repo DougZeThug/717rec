@@ -28,6 +28,131 @@ interface TeamCardListProps {
   onEdit?: (team: Team) => void;
 }
 
+interface TeamCardMenuProps {
+  team: Team;
+  canManage: boolean;
+  onEdit?: (team: Team) => void;
+  onDelete?: (id: string) => void;
+}
+
+const ViewDetailsMenuItem: React.FC<{ teamName: string }> = ({ teamName }) => (
+  <DropdownMenuItem asChild>
+    <Link to={`/teams/${toTeamSlug(teamName)}`}>
+      <ExternalLink className="mr-2 size-4" /> View Details
+    </Link>
+  </DropdownMenuItem>
+);
+
+// "..." menu: edit and delete for admins, view details for everyone
+const TeamCardMenu: React.FC<TeamCardMenuProps> = ({ team, canManage, onEdit, onDelete }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-9 -mt-1 text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-white/10"
+      >
+        <MoreHorizontal size={18} />
+        <span className="sr-only">Open menu</span>
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-[200px]">
+      {canManage && onEdit && (
+        <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
+          <Edit className="mr-2 size-4" /> Edit
+        </DropdownMenuItem>
+      )}
+      {canManage && onDelete && (
+        <DropdownMenuItem
+          onClick={() => onDelete(team.id)}
+          className="text-destructive-text focus:text-destructive-text cursor-pointer"
+        >
+          <Trash2 className="mr-2 size-4" /> Delete
+        </DropdownMenuItem>
+      )}
+      <ViewDetailsMenuItem teamName={team.name} />
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+interface TeamCardHeaderProps extends TeamCardMenuProps {
+  isWinterTheme: boolean;
+}
+
+// Team name (links to details) beside the "..." menu
+const TeamCardHeader: React.FC<TeamCardHeaderProps> = ({
+  team,
+  canManage,
+  isWinterTheme,
+  onEdit,
+  onDelete,
+}) => (
+  <div className="flex justify-between items-start mb-3">
+    <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline">
+      <h3
+        className={cn(
+          'font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl',
+          isWinterTheme ? 'text-[hsl(var(--foreground))]' : 'text-foreground'
+        )}
+      >
+        {team.name}
+      </h3>
+    </Link>
+
+    <TeamCardMenu team={team} canManage={canManage} onEdit={onEdit} onDelete={onDelete} />
+  </div>
+);
+
+interface TeamCardStatsProps {
+  team: Team;
+  powerScoreColor: string;
+  sosColor: string;
+}
+
+const TeamCardStats: React.FC<TeamCardStatsProps> = ({ team, powerScoreColor, sosColor }) => (
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm">
+    <StatBlock
+      label="Record"
+      value={
+        <div className="flex items-center gap-1 font-mono text-lg justify-end">
+          <Trophy size={14} className="text-emerald-400" /> {team.wins}
+          <span className="mx-1">-</span>
+          <X size={14} className="text-rose-400" /> {team.losses}
+        </div>
+      }
+    />
+
+    <StatBlock
+      label="Games"
+      value={
+        <span className="font-mono text-lg justify-end flex">
+          {team.game_wins ?? 0} - {team.game_losses ?? 0}
+        </span>
+      }
+    />
+
+    <StatBlock
+      label="Power Score"
+      value={
+        <span className={`font-mono text-lg justify-end flex ${powerScoreColor}`}>
+          {formatPowerScore(team.power_score)}
+        </span>
+      }
+    />
+
+    <StatBlock
+      label="SOS"
+      value={
+        <span
+          className={`font-mono text-lg justify-end flex ${(team.wins || 0) + (team.losses || 0) > 0 ? sosColor : 'text-muted-foreground'}`}
+        >
+          {(team.wins || 0) + (team.losses || 0) > 0 ? team.sos?.toFixed(3) || 'N/A' : 'N/A'}
+        </span>
+      }
+    />
+  </div>
+);
+
 export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEdit }) => {
   const { isAdminAccessGranted } = useAdminAccess();
   const { isWinterTheme } = useSeasonalTheme();
@@ -65,51 +190,13 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
         </Link>
 
         <div className="flex flex-col grow p-5">
-          <div className="flex justify-between items-start mb-3">
-            <Link to={`/teams/${toTeamSlug(team.name)}`} className="hover:underline">
-              <h3
-                className={cn(
-                  'font-bebas font-normal uppercase tracking-wide text-2xl md:text-3xl',
-                  isWinterTheme ? 'text-[hsl(var(--foreground))]' : 'text-foreground'
-                )}
-              >
-                {team.name}
-              </h3>
-            </Link>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-9 -mt-1 text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-white/10"
-                >
-                  <MoreHorizontal size={18} />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                {isAdminAccessGranted && onEdit && (
-                  <DropdownMenuItem onClick={() => onEdit(team)} className="cursor-pointer">
-                    <Edit className="mr-2 size-4" /> Edit
-                  </DropdownMenuItem>
-                )}
-                {isAdminAccessGranted && onDelete && (
-                  <DropdownMenuItem
-                    onClick={() => onDelete(team.id)}
-                    className="text-destructive-text focus:text-destructive-text cursor-pointer"
-                  >
-                    <Trash2 className="mr-2 size-4" /> Delete
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to={`/teams/${toTeamSlug(team.name)}`}>
-                    <ExternalLink className="mr-2 size-4" /> View Details
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <TeamCardHeader
+            team={team}
+            canManage={isAdminAccessGranted}
+            isWinterTheme={isWinterTheme}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
 
           {team.divisionName && (
             <Badge
@@ -132,49 +219,7 @@ export const TeamCardList: React.FC<TeamCardListProps> = ({ team, onDelete, onEd
             </Badge>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4 text-sm">
-            <StatBlock
-              label="Record"
-              value={
-                <div className="flex items-center gap-1 font-mono text-lg justify-end">
-                  <Trophy size={14} className="text-emerald-400" /> {team.wins}
-                  <span className="mx-1">-</span>
-                  <X size={14} className="text-rose-400" /> {team.losses}
-                </div>
-              }
-            />
-
-            <StatBlock
-              label="Games"
-              value={
-                <span className="font-mono text-lg justify-end flex">
-                  {team.game_wins ?? 0} - {team.game_losses ?? 0}
-                </span>
-              }
-            />
-
-            <StatBlock
-              label="Power Score"
-              value={
-                <span className={`font-mono text-lg justify-end flex ${powerScoreColor}`}>
-                  {formatPowerScore(team.power_score)}
-                </span>
-              }
-            />
-
-            <StatBlock
-              label="SOS"
-              value={
-                <span
-                  className={`font-mono text-lg justify-end flex ${(team.wins || 0) + (team.losses || 0) > 0 ? sosColor : 'text-muted-foreground'}`}
-                >
-                  {(team.wins || 0) + (team.losses || 0) > 0
-                    ? team.sos?.toFixed(3) || 'N/A'
-                    : 'N/A'}
-                </span>
-              }
-            />
-          </div>
+          <TeamCardStats team={team} powerScoreColor={powerScoreColor} sosColor={sosColor} />
 
           <div className="flex flex-wrap gap-1.5 mt-auto">
             {team.players && team.players.length > 0 ? (

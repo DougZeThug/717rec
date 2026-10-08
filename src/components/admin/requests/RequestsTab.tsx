@@ -28,11 +28,117 @@ import {
 } from '@/hooks/useTeamRequests';
 import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
-import { REQUEST_STATUS_LABELS, REQUEST_TYPE_LABELS, TeamRequestStatus } from '@/types/teamRequest';
+import {
+  REQUEST_STATUS_LABELS,
+  REQUEST_TYPE_LABELS,
+  TeamRequestStatus,
+  type TeamRequestWithTeam,
+} from '@/types/teamRequest';
 import { switchAdminTab } from '@/utils/adminTabs';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 import { buildTimeslotHandoff } from './requestHandoff';
+
+interface RequestBadgesProps {
+  request: TeamRequestWithTeam;
+}
+
+/** Team name plus the request type and status badges. */
+const RequestBadges: React.FC<RequestBadgesProps> = ({ request }) => (
+  <div className="flex items-center gap-2">
+    <span className="font-semibold">{request.teams?.name || 'Unknown Team'}</span>
+    <Badge variant={request.request_type === 'EMERGENCY_CANCEL' ? 'destructive' : 'outline'}>
+      {REQUEST_TYPE_LABELS[request.request_type]}
+    </Badge>
+    <Badge
+      variant={
+        request.status === 'APPROVED'
+          ? 'default'
+          : request.status === 'DENIED'
+            ? 'destructive'
+            : 'secondary'
+      }
+    >
+      {REQUEST_STATUS_LABELS[request.status]}
+    </Badge>
+  </div>
+);
+
+interface RequestActionDialogProps {
+  open: boolean;
+  onClose: () => void;
+  actionType: 'approve' | 'reject' | null;
+  adminNotes: string;
+  onAdminNotesChange: (notes: string) => void;
+  onConfirm: () => void;
+  isPending: boolean;
+}
+
+/** Approve or reject dialog with the optional admin notes box. */
+const RequestActionDialog: React.FC<RequestActionDialogProps> = ({
+  open,
+  onClose,
+  actionType,
+  adminNotes,
+  onAdminNotesChange,
+  onConfirm,
+  isPending,
+}) => (
+  <Dialog open={open} onOpenChange={onClose}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>{actionType === 'approve' ? 'Approve Request' : 'Reject Request'}</DialogTitle>
+        <DialogDescription>
+          {actionType === 'approve'
+            ? 'Approve this request? You can add optional notes.'
+            : 'Reject this request? Consider adding a reason.'}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-3">
+        <Textarea
+          aria-label="Admin notes"
+          placeholder="Add notes (optional)..."
+          value={adminNotes}
+          onChange={(e) => onAdminNotesChange(e.target.value)}
+          className="min-h-[100px]"
+        />
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          onClick={onConfirm}
+          disabled={isPending}
+          variant={actionType === 'approve' ? 'default' : 'destructive'}
+        >
+          {isPending && <Loader2 className="size-4 animate-spin mr-2" />}
+          {actionType === 'approve' ? 'Approve' : 'Reject'}
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
+interface StatusFilterSelectProps {
+  value: TeamRequestStatus | 'ALL';
+  onChange: (value: TeamRequestStatus | 'ALL') => void;
+}
+
+/** Status filter dropdown for the request list. */
+const StatusFilterSelect: React.FC<StatusFilterSelectProps> = ({ value, onChange }) => (
+  <Select value={value} onValueChange={(next) => onChange(next as TeamRequestStatus | 'ALL')}>
+    <SelectTrigger className="w-[150px]">
+      <SelectValue placeholder="Filter by status" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="ALL">All Requests</SelectItem>
+      <SelectItem value="PENDING">Pending</SelectItem>
+      <SelectItem value="APPROVED">Approved</SelectItem>
+      <SelectItem value="DENIED">Rejected</SelectItem>
+    </SelectContent>
+  </Select>
+);
 
 const RequestsTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<TeamRequestStatus | 'ALL'>('PENDING');
@@ -111,20 +217,7 @@ const RequestsTab: React.FC = () => {
             </Badge>
           )}
         </CardTitle>
-        <Select
-          value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as TeamRequestStatus | 'ALL')}
-        >
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Requests</SelectItem>
-            <SelectItem value="PENDING">Pending</SelectItem>
-            <SelectItem value="APPROVED">Approved</SelectItem>
-            <SelectItem value="DENIED">Rejected</SelectItem>
-          </SelectContent>
-        </Select>
+        <StatusFilterSelect value={statusFilter} onChange={setStatusFilter} />
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -144,27 +237,7 @@ const RequestsTab: React.FC = () => {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{request.teams?.name || 'Unknown Team'}</span>
-                      <Badge
-                        variant={
-                          request.request_type === 'EMERGENCY_CANCEL' ? 'destructive' : 'outline'
-                        }
-                      >
-                        {REQUEST_TYPE_LABELS[request.request_type]}
-                      </Badge>
-                      <Badge
-                        variant={
-                          request.status === 'APPROVED'
-                            ? 'default'
-                            : request.status === 'DENIED'
-                              ? 'destructive'
-                              : 'secondary'
-                        }
-                      >
-                        {REQUEST_STATUS_LABELS[request.status]}
-                      </Badge>
-                    </div>
+                    <RequestBadges request={request} />
                     <p className="text-sm text-muted-foreground" suppressHydrationWarning>
                       Submitted {formatWithPattern(request.created_at, "MMM d, yyyy 'at' h:mm a")}
                       {request.submitted_by_name && ` by ${request.submitted_by_name}`}
@@ -255,42 +328,15 @@ const RequestsTab: React.FC = () => {
       </CardContent>
 
       {/* Action Dialog */}
-      <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
-            </DialogTitle>
-            <DialogDescription>
-              {actionType === 'approve'
-                ? 'Approve this request? You can add optional notes.'
-                : 'Reject this request? Consider adding a reason.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Textarea
-              aria-label="Admin notes"
-              placeholder="Add notes (optional)..."
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedRequest(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAction}
-              disabled={updateMutation.isPending}
-              variant={actionType === 'approve' ? 'default' : 'destructive'}
-            >
-              {updateMutation.isPending && <Loader2 className="size-4 animate-spin mr-2" />}
-              {actionType === 'approve' ? 'Approve' : 'Reject'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RequestActionDialog
+        open={Boolean(selectedRequest)}
+        onClose={() => setSelectedRequest(null)}
+        actionType={actionType}
+        adminNotes={adminNotes}
+        onAdminNotesChange={setAdminNotes}
+        onConfirm={handleAction}
+        isPending={updateMutation.isPending}
+      />
     </Card>
   );
 };

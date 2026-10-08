@@ -21,6 +21,56 @@ interface SeedOverrideControlsProps {
   show?: boolean;
 }
 
+const ConflictBadge: React.FC<{ count: number }> = ({ count }) => (
+  <Badge variant="destructive" className="flex items-center gap-1">
+    <AlertCircle className="size-3" />
+    {count} conflicts
+  </Badge>
+);
+
+const ManualModeSwitch: React.FC<{
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled: boolean;
+}> = ({ checked, onCheckedChange, disabled }) => (
+  <div className="flex items-center space-x-2">
+    <Switch
+      id="seed-mode"
+      checked={checked}
+      onCheckedChange={onCheckedChange}
+      disabled={disabled}
+    />
+    <Label htmlFor="seed-mode">Manual seeding</Label>
+  </div>
+);
+
+interface SeedManagementHeaderProps {
+  /** Null when there are no seed conflicts to show. */
+  conflictCount: number | null;
+  manualChecked: boolean;
+  onManualChange: (checked: boolean) => void;
+  disabled: boolean;
+}
+
+const SeedManagementHeader: React.FC<SeedManagementHeaderProps> = ({
+  conflictCount,
+  manualChecked,
+  onManualChange,
+  disabled,
+}) => (
+  <div className="flex items-center justify-between">
+    <CardTitle className="text-lg">Seed Management</CardTitle>
+    <div className="flex items-center gap-4">
+      {conflictCount !== null && <ConflictBadge count={conflictCount} />}
+      <ManualModeSwitch
+        checked={manualChecked}
+        onCheckedChange={onManualChange}
+        disabled={disabled}
+      />
+    </div>
+  </div>
+);
+
 export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   teams,
   divisionId,
@@ -78,26 +128,12 @@ export const SeedOverrideControls: React.FC<SeedOverrideControlsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Seed Management</CardTitle>
-          <div className="flex items-center gap-4">
-            {hasConflicts && (
-              <Badge variant="destructive" className="flex items-center gap-1">
-                <AlertCircle className="size-3" />
-                {validation.conflicts.length} conflicts
-              </Badge>
-            )}
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="seed-mode"
-                checked={state.mode === 'manual'}
-                onCheckedChange={(checked) => actions.setMode(checked ? 'manual' : 'automatic')}
-                disabled={isUpdating}
-              />
-              <Label htmlFor="seed-mode">Manual seeding</Label>
-            </div>
-          </div>
-        </div>
+        <SeedManagementHeader
+          conflictCount={hasConflicts ? validation.conflicts.length : null}
+          manualChecked={state.mode === 'manual'}
+          onManualChange={(checked) => actions.setMode(checked ? 'manual' : 'automatic')}
+          disabled={isUpdating}
+        />
       </CardHeader>
 
       <CardContent className="space-y-4">

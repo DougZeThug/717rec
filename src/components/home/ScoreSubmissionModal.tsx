@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Users } from 'lucide-react';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -40,6 +40,131 @@ interface ScoreSubmissionModalProps {
   open: boolean;
   onClose: () => void;
 }
+
+// Teams, date and place of the match being reported
+const ScoreMatchInfo: React.FC<{ match: PendingMatch }> = ({ match }) => (
+  <div className="border rounded-lg p-3 bg-muted/50">
+    <div className="flex items-center justify-between gap-3 mb-2">
+      <div className="flex items-center gap-2">
+        {match.team1_logo && (
+          <img
+            src={match.team1_logo}
+            alt={`${match.team1_name} logo`}
+            className="size-6 rounded-full object-cover"
+          />
+        )}
+        <span className="font-medium text-sm">{match.team1_name}</span>
+      </div>
+      <Users className="size-4 text-muted-foreground" />
+      <div className="flex items-center gap-2">
+        <span className="font-medium text-sm">{match.team2_name}</span>
+        {match.team2_logo && (
+          <img
+            src={match.team2_logo}
+            alt={`${match.team2_name} logo`}
+            className="size-6 rounded-full object-cover"
+          />
+        )}
+      </div>
+    </div>
+    <div className="text-xs text-muted-foreground text-center">
+      {formatDate(match.date)} at {formatTime(match.date)}
+      {match.location && ` • ${match.location}`}
+    </div>
+  </div>
+);
+
+interface ScoreSubmissionFooterProps {
+  isSubmitting: boolean;
+  onCancel: () => void;
+}
+
+const ScoreSubmissionFooter: React.FC<ScoreSubmissionFooterProps> = ({
+  isSubmitting,
+  onCancel,
+}) => (
+  <ResponsiveDialogFooter>
+    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+      Cancel
+    </Button>
+    <Button type="submit" disabled={isSubmitting}>
+      {isSubmitting ? 'Submitting...' : 'Submit Report'}
+    </Button>
+  </ResponsiveDialogFooter>
+);
+
+interface ScoreSubmissionFormProps {
+  form: UseFormReturn<ScoreSubmissionFormData>;
+  onSubmit: (data: ScoreSubmissionFormData) => Promise<void>;
+  isSubmitting: boolean;
+  onCancel: () => void;
+}
+
+const ScoreSubmissionForm: React.FC<ScoreSubmissionFormProps> = ({
+  form,
+  onSubmit,
+  isSubmitting,
+  onCancel,
+}) => (
+  <Form {...form}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <FormField
+        control={form.control}
+        name="submitter_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              Your Name <span className="text-destructive-text">*</span>
+            </FormLabel>
+            <FormControl>
+              <Input placeholder="Enter your name" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="submitter_team"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Your Team (optional)</FormLabel>
+            <FormControl>
+              <Input placeholder="e.g., Team Alpha" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="message"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              Score Report <span className="text-destructive-text">*</span>
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
+                rows={3}
+                {...field}
+              />
+            </FormControl>
+            <FormMessage />
+            <p className="text-xs text-muted-foreground">
+              Include the final score and any relevant details about the match.
+            </p>
+          </FormItem>
+        )}
+      />
+
+      <ScoreSubmissionFooter isSubmitting={isSubmitting} onCancel={onCancel} />
+    </form>
+  </Form>
+);
 
 export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
   match,
@@ -84,102 +209,14 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
           </ResponsiveDialogDescription>
         </ResponsiveDialogHeader>
 
-        {/* Match Info */}
-        <div className="border rounded-lg p-3 bg-muted/50">
-          <div className="flex items-center justify-between gap-3 mb-2">
-            <div className="flex items-center gap-2">
-              {match.team1_logo && (
-                <img
-                  src={match.team1_logo}
-                  alt={`${match.team1_name} logo`}
-                  className="size-6 rounded-full object-cover"
-                />
-              )}
-              <span className="font-medium text-sm">{match.team1_name}</span>
-            </div>
-            <Users className="size-4 text-muted-foreground" />
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">{match.team2_name}</span>
-              {match.team2_logo && (
-                <img
-                  src={match.team2_logo}
-                  alt={`${match.team2_name} logo`}
-                  className="size-6 rounded-full object-cover"
-                />
-              )}
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground text-center">
-            {formatDate(match.date)} at {formatTime(match.date)}
-            {match.location && ` • ${match.location}`}
-          </div>
-        </div>
+        <ScoreMatchInfo match={match} />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="submitter_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Your Name <span className="text-destructive-text">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="submitter_team"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Your Team (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Team Alpha" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Score Report <span className="text-destructive-text">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="e.g., Team Alpha beat Team Beta 2-1. Great match!"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <p className="text-xs text-muted-foreground">
-                    Include the final score and any relevant details about the match.
-                  </p>
-                </FormItem>
-              )}
-            />
-
-            <ResponsiveDialogFooter>
-              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit Report'}
-              </Button>
-            </ResponsiveDialogFooter>
-          </form>
-        </Form>
+        <ScoreSubmissionForm
+          form={form}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          onCancel={handleClose}
+        />
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

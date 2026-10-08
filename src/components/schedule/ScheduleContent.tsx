@@ -1,5 +1,5 @@
 import { format, isSameDay, isToday, parseISO } from 'date-fns';
-import { Calendar, CalendarDays, CheckCircle, Clock, Trophy } from 'lucide-react';
+import { Calendar, CalendarDays, CheckCircle, Clock, type LucideIcon, Trophy } from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -44,6 +44,49 @@ interface ScheduleContentProps {
    */
   hasAnyTimeslots?: boolean;
 }
+
+interface ScheduleTabProps {
+  value: string;
+  icon: LucideIcon;
+  label: string;
+  className: string;
+}
+
+// One tab button: icon beside its label
+const ScheduleTab: React.FC<ScheduleTabProps> = ({ value, icon: Icon, label, className }) => (
+  <TabsTrigger value={value} className={className}>
+    <div className="flex items-center justify-center">
+      <Icon className="size-4 mr-1 shrink-0" />
+      <span className="text-sm md:text-base md:whitespace-nowrap">{label}</span>
+    </div>
+  </TabsTrigger>
+);
+
+// The sticky tab strip. Its TabsList reads the Tabs context from ScheduleContent.
+const ScheduleTabsBar: React.FC = () => (
+  <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 pb-2 -mx-1 px-1">
+    <TabsList className="w-full md:min-w-[340px] font-inter bg-secondary">
+      <ScheduleTab
+        value="timeslots"
+        icon={Clock}
+        label="Timeslots"
+        className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition"
+      />
+      <ScheduleTab
+        value="upcoming"
+        icon={Calendar}
+        label="Upcoming"
+        className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition"
+      />
+      <ScheduleTab
+        value="completed"
+        icon={CheckCircle}
+        label="Completed"
+        className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition"
+      />
+    </TabsList>
+  </div>
+);
 
 const ScheduleContent: React.FC<ScheduleContentProps> = ({
   activeTab,
@@ -274,37 +317,7 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
   return (
     <WinterSection showIcicles lightIcicles>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 pb-2 -mx-1 px-1">
-          <TabsList className="w-full md:min-w-[340px] font-inter bg-secondary">
-            <TabsTrigger
-              value="timeslots"
-              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-amber-600 dark:data-[state=active]:border-amber-400 px-2 md:px-6 min-h-[44px] transition"
-            >
-              <div className="flex items-center justify-center">
-                <Clock className="size-4 mr-1 shrink-0" />
-                <span className="text-sm md:text-base md:whitespace-nowrap">Timeslots</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="upcoming"
-              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-blue-600 dark:data-[state=active]:border-blue-400 px-2 md:px-6 min-h-[44px] transition"
-            >
-              <div className="flex items-center justify-center">
-                <Calendar className="size-4 mr-1 shrink-0" />
-                <span className="text-sm md:text-base md:whitespace-nowrap">Upcoming</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="flex-1 md:grow-0 data-[state=active]:bg-card data-[state=active]:border-b-2 data-[state=active]:border-emerald-600 dark:data-[state=active]:border-emerald-400 px-2 md:px-6 min-h-[44px] transition"
-            >
-              <div className="flex items-center justify-center">
-                <CheckCircle className="size-4 mr-1 shrink-0" />
-                <span className="text-sm md:text-base md:whitespace-nowrap">Completed</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-        </div>
+        <ScheduleTabsBar />
 
         <TabsContent value="timeslots" className="mt-3">
           {showNothingScheduled ? (

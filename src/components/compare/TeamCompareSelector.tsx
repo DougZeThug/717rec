@@ -33,6 +33,36 @@ const TeamOption: React.FC<{ team: Team }> = ({ team }) => (
   </div>
 );
 
+interface TeamSelectProps {
+  label: string;
+  teams: Team[];
+  selected: Team | null;
+  /** The team picked on the other side, left out of this list. */
+  excluded: Team | null;
+  onChange: (value: string) => void;
+}
+
+const TeamSelect: React.FC<TeamSelectProps> = ({ label, teams, selected, excluded, onChange }) => (
+  <Select value={selected?.id || ''} onValueChange={onChange}>
+    {/* The placeholder is the only text here, and it disappears the
+        moment a team is picked, leaving the control with no name. */}
+    <SelectTrigger className="w-full h-12" aria-label={label}>
+      <SelectValue placeholder={`Select ${label}`}>
+        {selected && <TeamOption team={selected} />}
+      </SelectValue>
+    </SelectTrigger>
+    <SelectContent>
+      {teams
+        .filter((t) => t.id !== excluded?.id)
+        .map((team) => (
+          <SelectItem key={team.id} value={team.id}>
+            <TeamOption team={team} />
+          </SelectItem>
+        ))}
+    </SelectContent>
+  </Select>
+);
+
 export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
   teams,
   team1,
@@ -55,24 +85,13 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
     <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
       {/* Team 1 Selector */}
       <div className="flex-1 w-full">
-        <Select value={team1?.id || ''} onValueChange={handleTeam1Change}>
-          {/* The placeholder is the only text here, and it disappears the
-              moment a team is picked, leaving the control with no name. */}
-          <SelectTrigger className="w-full h-12" aria-label="Team 1">
-            <SelectValue placeholder="Select Team 1">
-              {team1 && <TeamOption team={team1} />}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {teams
-              .filter((t) => t.id !== team2?.id)
-              .map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  <TeamOption team={team} />
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
+        <TeamSelect
+          label="Team 1"
+          teams={teams}
+          selected={team1}
+          excluded={team2}
+          onChange={handleTeam1Change}
+        />
       </div>
 
       {/* Swap Button */}
@@ -89,22 +108,13 @@ export const TeamCompareSelector: React.FC<TeamCompareSelectorProps> = ({
 
       {/* Team 2 Selector */}
       <div className="flex-1 w-full">
-        <Select value={team2?.id || ''} onValueChange={handleTeam2Change}>
-          <SelectTrigger className="w-full h-12" aria-label="Team 2">
-            <SelectValue placeholder="Select Team 2">
-              {team2 && <TeamOption team={team2} />}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {teams
-              .filter((t) => t.id !== team1?.id)
-              .map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  <TeamOption team={team} />
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
+        <TeamSelect
+          label="Team 2"
+          teams={teams}
+          selected={team2}
+          excluded={team1}
+          onChange={handleTeam2Change}
+        />
       </div>
     </div>
   );

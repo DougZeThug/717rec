@@ -224,7 +224,7 @@ export const AdminCorrectionsService = {
     if (gamesError) handleDatabaseError(gamesError, 'Failed to list live-scored matches');
 
     const matchIds = Array.from(
-      new Set((gameRows ?? []).map((r) => r.match_id).filter((v): v is string => !!v))
+      new Set((gameRows ?? []).map((r) => r.match_id).filter((v): v is string => Boolean(v)))
     );
     if (matchIds.length === 0) return [];
 

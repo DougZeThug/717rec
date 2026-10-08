@@ -135,7 +135,7 @@ const TeamsContainer: React.FC<TeamsContainerProps> = ({ displayMode, viewMode, 
         </m.div>
       </AnimatePresence>
       <TeamDeleteDialog
-        isOpen={!!deleteTeamId}
+        isOpen={Boolean(deleteTeamId)}
         onClose={() => setDeleteTeamId(null)}
         onConfirm={handleDeleteTeam}
         isDeleting={isDeleting}

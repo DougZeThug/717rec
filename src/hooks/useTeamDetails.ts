@@ -6,7 +6,7 @@ export const useTeamDetails = (teamId: string | undefined) => {
   const teamQuery = useQuery({
     queryKey: ['team-details', teamId],
     queryFn: () => (teamId ? fetchTeamDetails(teamId) : Promise.resolve(null)),
-    enabled: !!teamId,
+    enabled: Boolean(teamId),
   });
 
   return {

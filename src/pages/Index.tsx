@@ -17,6 +17,15 @@ import SeoHead from '@/components/seo/SeoHead';
 import PageTransition from '@/components/transitions/PageTransition';
 import { useIsMobile } from '@/hooks/useMobile';
 
+/** League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */
+const LeagueHistorySlot: React.FC = () => (
+  <div className="hidden md:block">
+    <PageTransition animation="fadeIn" immediate>
+      <LeagueHistoryBar />
+    </PageTransition>
+  </div>
+);
+
 /**
  * The home page. It only decides the order of the sections: each one in
  * `components/home/IndexSections` loads its own data and draws its own loading,
@@ -44,12 +53,7 @@ const Index: React.FC = () => {
         <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
           <HeroCardsSection />
 
-          {/* League History - rendered immediately for LCP optimization (hidden on mobile, in nav grid) */}
-          <div className="hidden md:block">
-            <PageTransition animation="fadeIn" immediate>
-              <LeagueHistoryBar />
-            </PageTransition>
-          </div>
+          <LeagueHistorySlot />
 
           <MyNextMatchSection />
           <ParticipationSection />

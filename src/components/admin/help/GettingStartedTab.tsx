@@ -107,6 +107,97 @@ const StepBody: React.FC<{ item: WorkflowStep }> = ({ item }) => (
   </>
 );
 
+/** Numbered list of the setup steps, each opening the section or page it is done in. */
+const WorkflowCard: React.FC = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-lg flex items-center gap-2">
+        <CheckCircle2 className="size-5 text-primary" />
+        League Setup Workflow
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <ol className="space-y-4">
+        {workflowSteps.map((item, index) => (
+          <li key={item.step} className="flex items-start gap-4">
+            <div className="shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-sm font-semibold text-primary">{item.step}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              {item.href ? (
+                <Link to={item.href} className={`block ${rowClasses}`}>
+                  <StepBody item={item} />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className={rowClasses}
+                  onClick={() => item.tab && switchAdminTab(item.tab)}
+                >
+                  <StepBody item={item} />
+                </button>
+              )}
+            </div>
+            {index < workflowSteps.length - 1 && (
+              <ArrowRight className="size-4 text-muted-foreground/50 shrink-0 mt-2" />
+            )}
+          </li>
+        ))}
+      </ol>
+    </CardContent>
+  </Card>
+);
+
+/** One button per admin section, each switching the dashboard to that section. */
+const SectionReferenceCard: React.FC = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-lg">All {adminSectionGuide.length} admin sections</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {adminSectionGuide.map((section) => (
+          <button
+            key={section.id}
+            type="button"
+            className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 text-left transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            onClick={() => switchAdminTab(section.id)}
+          >
+            <div className="p-2 rounded-md bg-background">
+              <section.icon className="size-4 text-primary" aria-hidden />
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-sm">{section.label}</p>
+              <p className="text-xs text-muted-foreground">{section.description}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const TipsCard: React.FC = () => (
+  <Card>
+    <CardHeader>
+      <CardTitle className="text-lg flex items-center gap-2">
+        <Lightbulb className="size-5 text-amber-500" />
+        Pro Tips
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      <ul className="space-y-2">
+        {tips.map((tip) => (
+          <li key={tip} className="flex items-start gap-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
+            {tip}
+          </li>
+        ))}
+      </ul>
+    </CardContent>
+  </Card>
+);
+
 const GettingStartedTab: React.FC = () => {
   return (
     <div className="space-y-6">
@@ -117,90 +208,13 @@ const GettingStartedTab: React.FC = () => {
       </div>
 
       {/* Workflow Steps */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <CheckCircle2 className="size-5 text-primary" />
-            League Setup Workflow
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ol className="space-y-4">
-            {workflowSteps.map((item, index) => (
-              <li key={item.step} className="flex items-start gap-4">
-                <div className="shrink-0 size-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-semibold text-primary">{item.step}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  {item.href ? (
-                    <Link to={item.href} className={`block ${rowClasses}`}>
-                      <StepBody item={item} />
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      className={rowClasses}
-                      onClick={() => item.tab && switchAdminTab(item.tab)}
-                    >
-                      <StepBody item={item} />
-                    </button>
-                  )}
-                </div>
-                {index < workflowSteps.length - 1 && (
-                  <ArrowRight className="size-4 text-muted-foreground/50 shrink-0 mt-2" />
-                )}
-              </li>
-            ))}
-          </ol>
-        </CardContent>
-      </Card>
+      <WorkflowCard />
 
       {/* Section reference */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">All {adminSectionGuide.length} admin sections</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {adminSectionGuide.map((section) => (
-              <button
-                key={section.id}
-                type="button"
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 text-left transition-colors hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                onClick={() => switchAdminTab(section.id)}
-              >
-                <div className="p-2 rounded-md bg-background">
-                  <section.icon className="size-4 text-primary" aria-hidden />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-medium text-sm">{section.label}</p>
-                  <p className="text-xs text-muted-foreground">{section.description}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <SectionReferenceCard />
 
       {/* Tips */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Lightbulb className="size-5 text-amber-500" />
-            Pro Tips
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-2">
-            {tips.map((tip) => (
-              <li key={tip} className="flex items-start gap-2 text-sm text-muted-foreground">
-                <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
-                {tip}
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      <TipsCard />
     </div>
   );
 };

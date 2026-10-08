@@ -57,6 +57,47 @@ const accentClasses = {
   },
 };
 
+const AnimatedScore: React.FC<{
+  value: number;
+  direction: 'up' | 'down';
+  isAnimating: boolean;
+  className: string;
+}> = ({ value, direction, isAnimating, className }) => (
+  <div
+    className={cn(
+      'relative flex items-center justify-center font-bold tabular-nums overflow-hidden',
+      className
+    )}
+  >
+    <AnimatePresence mode="popLayout" initial={false}>
+      <m.span
+        key={value}
+        initial={{
+          y: direction === 'up' ? 20 : -20,
+          opacity: 0,
+        }}
+        animate={{
+          y: 0,
+          opacity: 1,
+        }}
+        exit={{
+          y: direction === 'up' ? -20 : 20,
+          opacity: 0,
+        }}
+        transition={{
+          type: 'spring',
+          stiffness: 500,
+          damping: 30,
+          duration: 0.15,
+        }}
+        className={cn(isAnimating && 'text-primary')}
+      >
+        {value}
+      </m.span>
+    </AnimatePresence>
+  </div>
+);
+
 /** Plus/minus score input with an animated digit, team label, and optional leader highlight. */
 export const ScoreStepper: React.FC<ScoreStepperProps> = ({
   value,
@@ -147,39 +188,12 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
         </Button>
 
         {/* Score Display */}
-        <div
-          className={cn(
-            'relative flex items-center justify-center font-bold tabular-nums overflow-hidden',
-            sizes.score
-          )}
-        >
-          <AnimatePresence mode="popLayout" initial={false}>
-            <m.span
-              key={value}
-              initial={{
-                y: direction === 'up' ? 20 : -20,
-                opacity: 0,
-              }}
-              animate={{
-                y: 0,
-                opacity: 1,
-              }}
-              exit={{
-                y: direction === 'up' ? -20 : 20,
-                opacity: 0,
-              }}
-              transition={{
-                type: 'spring',
-                stiffness: 500,
-                damping: 30,
-                duration: 0.15,
-              }}
-              className={cn(isAnimating && 'text-primary')}
-            >
-              {value}
-            </m.span>
-          </AnimatePresence>
-        </div>
+        <AnimatedScore
+          value={value}
+          direction={direction}
+          isAnimating={isAnimating}
+          className={sizes.score}
+        />
 
         {/* Increment Button */}
         <Button

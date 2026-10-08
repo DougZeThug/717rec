@@ -180,6 +180,20 @@ const FlipDialogBody: React.FC<{ action: FlipAction }> = ({ action }) => (
   </>
 );
 
+/** Title and consequence copy for the pending revert/re-apply action. */
+const FlipDialogHeader: React.FC<{ action: FlipAction }> = ({ action }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>
+      {action === 'revert'
+        ? 'Go back to the old power scores?'
+        : 'Apply the new unified power scores?'}
+    </AlertDialogTitle>
+    <AlertDialogDescription className="space-y-2">
+      <FlipDialogBody action={action} />
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
 interface ConfirmFlipDialogProps {
   action: FlipAction;
   isFlipping: boolean;
@@ -198,16 +212,7 @@ const ConfirmFlipDialog: React.FC<ConfirmFlipDialogProps> = ({
   return (
     <AlertDialog open={action !== null} onOpenChange={(open) => !open && onClose()}>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {action === 'revert'
-              ? 'Go back to the old power scores?'
-              : 'Apply the new unified power scores?'}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <FlipDialogBody action={action} />
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+        <FlipDialogHeader action={action} />
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isFlipping}>Cancel</AlertDialogCancel>
           <AlertDialogAction

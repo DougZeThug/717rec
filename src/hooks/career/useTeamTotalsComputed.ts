@@ -159,7 +159,7 @@ export const useTeamTotalsComputed = (teamId: string) => {
   const query = useQuery({
     queryKey: ['team-totals', teamId],
     queryFn: () => (teamId ? computeTeamTotals(teamId) : Promise.resolve(null)),
-    enabled: !!teamId,
+    enabled: Boolean(teamId),
     staleTime: 5 * 60 * 1000, // 5 minutes - career stats change rarely
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
     refetchOnMount: false, // Trust the cache

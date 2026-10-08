@@ -27,6 +27,141 @@ import {
 import { useTeamMembership } from '@/hooks/useTeamMembership';
 import { toLocalDateString } from '@/utils/formatDateSafe';
 
+type Membership = NonNullable<ReturnType<typeof useTeamMembership>['membership']>;
+
+// Team logo, name, approval badge and status text for the member's own team
+const MembershipIdentity: React.FC<{ membership: Membership }> = ({ membership }) => (
+  <div className="flex min-w-0 flex-1 items-center gap-3">
+    <TeamLogo
+      imageUrl={membership.team?.imageUrl || membership.team?.logoUrl}
+      teamName={membership.team?.name || 'Team'}
+      size="md"
+      rounded
+      className="shrink-0"
+    />
+    <div className="min-w-0">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="truncate font-medium">{membership.team?.name}</p>
+        {membership.is_approved ? (
+          <Badge variant="default" className="bg-green-600">
+            <CheckCircle className="size-3 mr-1" />
+            Approved
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-yellow-600">
+            <Clock className="size-3 mr-1" />
+            Pending Approval
+          </Badge>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+        {membership.is_approved && membership.approved_at
+          ? `Approved ${toLocalDateString(membership.approved_at)}`
+          : `Requested ${toLocalDateString(membership.joined_at)}`}
+      </p>
+      {membership.is_approved && (
+        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+          <Edit className="size-3 inline mr-1" />
+          You can edit team details
+        </p>
+      )}
+    </div>
+  </div>
+);
+
+interface LeaveTeamDialogProps {
+  teamName: string | undefined;
+  onLeave: () => void;
+}
+
+const LeaveTeamDialog: React.FC<LeaveTeamDialogProps> = ({ teamName, onLeave }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button
+        variant="outline"
+        size="sm"
+        className="shrink-0 self-start text-destructive-text sm:self-auto"
+      >
+        <LogOut className="size-4 mr-2" />
+        Leave Team
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Leave team?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Are you sure you want to leave {teamName}? You will lose your association with this team
+          and any editing privileges.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={onLeave}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          Leave Team
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+const DeclinedHeading: React.FC<{ teamName: string | undefined }> = ({ teamName }) => (
+  <div className="flex items-center gap-2">
+    <Badge variant="secondary" className="bg-red-600">
+      <XCircle className="size-3 mr-1" />
+      Request declined
+    </Badge>
+    <p className="font-medium">{teamName}</p>
+  </div>
+);
+
+// Red card that says a join request was declined, with the date when we have it.
+const DeclinedRequestCard: React.FC<{ membership: Membership | null | undefined }> = ({
+  membership,
+}) => (
+  <Card className="mb-4 bg-red-50 dark:bg-red-950/20">
+    <CardContent className="pt-6">
+      <DeclinedHeading teamName={membership?.team?.name} />
+      <p className="text-xs text-muted-foreground mt-2" suppressHydrationWarning>
+        {membership?.rejected_at
+          ? `An admin declined this request on ${toLocalDateString(membership.rejected_at)}.`
+          : 'An admin declined this request.'}{' '}
+        You can ask to join a team again below.
+      </p>
+    </CardContent>
+  </Card>
+);
+
+// The team picker on the join form.
+const JoinTeamSelect: React.FC<{
+  teams: ReturnType<typeof useTeamMembership>['availableTeams'];
+  value: string;
+  onValueChange: (teamId: string) => void;
+}> = ({ teams, value, onValueChange }) => (
+  <Select value={value} onValueChange={onValueChange}>
+    <SelectTrigger aria-label="Team to join">
+      <SelectValue placeholder="Select a team to join" />
+    </SelectTrigger>
+    <SelectContent>
+      {teams.map((team) => (
+        <SelectItem key={team.id} value={team.id}>
+          <div className="flex items-center gap-2">
+            <TeamLogo
+              imageUrl={team.logoUrl || team.imageUrl}
+              teamName={team.name}
+              size="sm"
+              rounded
+            />
+            <span>{team.name}</span>
+          </div>
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+);
+
 const TeamMembershipSection: React.FC = () => {
   const { membership, availableTeams, isLoading, isFetching, joinTeam, leaveTeam } =
     useTeamMembership();
@@ -66,25 +201,7 @@ const TeamMembershipSection: React.FC = () => {
         again reuses this same row — one membership row per user is a database
         rule — and clears the refusal.
       */}
-      {isRefused && (
-        <Card className="mb-4 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-red-600">
-                <XCircle className="size-3 mr-1" />
-                Request declined
-              </Badge>
-              <p className="font-medium">{membership?.team?.name}</p>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2" suppressHydrationWarning>
-              {membership?.rejected_at
-                ? `An admin declined this request on ${toLocalDateString(membership.rejected_at)}.`
-                : 'An admin declined this request.'}{' '}
-              You can ask to join a team again below.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      {isRefused && <DeclinedRequestCard membership={membership} />}
 
       {membership && !isRefused ? (
         <Card
@@ -96,73 +213,9 @@ const TeamMembershipSection: React.FC = () => {
         >
           <CardContent className="pt-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                <TeamLogo
-                  imageUrl={membership.team?.imageUrl || membership.team?.logoUrl}
-                  teamName={membership.team?.name || 'Team'}
-                  size="md"
-                  rounded
-                  className="shrink-0"
-                />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate font-medium">{membership.team?.name}</p>
-                    {membership.is_approved ? (
-                      <Badge variant="default" className="bg-green-600">
-                        <CheckCircle className="size-3 mr-1" />
-                        Approved
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="bg-yellow-600">
-                        <Clock className="size-3 mr-1" />
-                        Pending Approval
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground" suppressHydrationWarning>
-                    {membership.is_approved && membership.approved_at
-                      ? `Approved ${toLocalDateString(membership.approved_at)}`
-                      : `Requested ${toLocalDateString(membership.joined_at)}`}
-                  </p>
-                  {membership.is_approved && (
-                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      <Edit className="size-3 inline mr-1" />
-                      You can edit team details
-                    </p>
-                  )}
-                </div>
-              </div>
+              <MembershipIdentity membership={membership} />
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0 self-start text-destructive-text sm:self-auto"
-                  >
-                    <LogOut className="size-4 mr-2" />
-                    Leave Team
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Leave team?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to leave {membership.team?.name}? You will lose your
-                      association with this team and any editing privileges.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={leaveTeam}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Leave Team
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <LeaveTeamDialog teamName={membership.team?.name} onLeave={leaveTeam} />
             </div>
           </CardContent>
         </Card>
@@ -176,26 +229,11 @@ const TeamMembershipSection: React.FC = () => {
       ) : (
         <div className="space-y-4">
           <div className="grid gap-2">
-            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-              <SelectTrigger aria-label="Team to join">
-                <SelectValue placeholder="Select a team to join" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTeams.map((team) => (
-                  <SelectItem key={team.id} value={team.id}>
-                    <div className="flex items-center gap-2">
-                      <TeamLogo
-                        imageUrl={team.logoUrl || team.imageUrl}
-                        teamName={team.name}
-                        size="sm"
-                        rounded
-                      />
-                      <span>{team.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <JoinTeamSelect
+              teams={availableTeams}
+              value={selectedTeamId}
+              onValueChange={setSelectedTeamId}
+            />
           </div>
 
           <Button

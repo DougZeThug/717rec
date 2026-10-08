@@ -383,7 +383,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
         {content}
         {selectedOpponent && (
           <OpponentHistoryModal
-            isOpen={!!selectedOpponent}
+            isOpen={Boolean(selectedOpponent)}
             onClose={() => setSelectedOpponent(null)}
             teamId={teamId}
             opponentId={selectedOpponent.id}
@@ -408,7 +408,7 @@ const HeadToHeadRecords: React.FC<HeadToHeadRecordsProps> = ({
 
       {selectedOpponent && (
         <OpponentHistoryModal
-          isOpen={!!selectedOpponent}
+          isOpen={Boolean(selectedOpponent)}
           onClose={() => setSelectedOpponent(null)}
           teamId={teamId}
           opponentId={selectedOpponent.id}

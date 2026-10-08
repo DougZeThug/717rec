@@ -23,6 +23,25 @@ interface ApproveSubmissionDialogProps {
   isSubmitting?: boolean;
 }
 
+interface ApproveFooterProps {
+  onCancel: () => void;
+  onConfirm: () => void;
+  isSubmitting: boolean;
+  canConfirm: boolean;
+}
+
+const ApproveFooter = ({ onCancel, onConfirm, isSubmitting, canConfirm }: ApproveFooterProps) => (
+  <ResponsiveDialogFooter>
+    <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+      Cancel
+    </Button>
+    <Button type="button" onClick={onConfirm} disabled={!canConfirm}>
+      <CheckCircle className="size-4 mr-1" />
+      {isSubmitting ? 'Saving...' : 'Record and approve'}
+    </Button>
+  </ResponsiveDialogFooter>
+);
+
 /**
  * Ask the admin for the result a score report describes, then approve.
  *
@@ -93,15 +112,12 @@ const ApproveSubmissionDialog = ({
           />
         </div>
 
-        <ResponsiveDialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button type="button" onClick={handleConfirm} disabled={!canConfirm}>
-            <CheckCircle className="size-4 mr-1" />
-            {isSubmitting ? 'Saving...' : 'Record and approve'}
-          </Button>
-        </ResponsiveDialogFooter>
+        <ApproveFooter
+          onCancel={onClose}
+          onConfirm={handleConfirm}
+          isSubmitting={isSubmitting}
+          canConfirm={canConfirm}
+        />
       </ResponsiveDialogContent>
     </ResponsiveDialog>
   );

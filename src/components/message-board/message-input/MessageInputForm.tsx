@@ -21,6 +21,25 @@ interface MessageInputFormProps {
 
 const MAX_MESSAGE_LENGTH = 500;
 
+const SendButton: React.FC<{ disabled: boolean }> = ({ disabled }) => (
+  <Button
+    size="sm"
+    type="submit"
+    aria-label="Send message"
+    variant="blueOrange"
+    disabled={disabled}
+    className="rounded-full size-8 p-0"
+  >
+    <Send className="size-4" />
+  </Button>
+);
+
+const FloatingSendButton: React.FC<{ disabled: boolean }> = ({ disabled }) => (
+  <div className="absolute bottom-2 right-2">
+    <SendButton disabled={disabled} />
+  </div>
+);
+
 /** Renders the message composer, validation, and optional admin category picker. */
 const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
   const [message, setMessage] = useState('');
@@ -93,18 +112,7 @@ const MessageInputForm: React.FC<MessageInputFormProps> = ({ onSend }) => {
             className="resize-none min-h-[80px] pr-16"
             disabled={isSending}
           />
-          <div className="absolute bottom-2 right-2">
-            <Button
-              size="sm"
-              type="submit"
-              aria-label="Send message"
-              variant="blueOrange"
-              disabled={isSending || message.length > MAX_MESSAGE_LENGTH}
-              className="rounded-full size-8 p-0"
-            >
-              <Send className="size-4" />
-            </Button>
-          </div>
+          <FloatingSendButton disabled={isSending || message.length > MAX_MESSAGE_LENGTH} />
         </div>
 
         <div className="flex justify-between items-center">

@@ -63,7 +63,7 @@ export function FinalStandings({ bracketId, show = true }: FinalStandingsProps) 
   const { data: standings, isLoading } = useQuery({
     queryKey: ['final-standings', bracketId],
     queryFn: () => fetchFinalStandings(bracketId),
-    enabled: show && !!bracketId,
+    enabled: show && Boolean(bracketId),
   });
 
   if (!show) return null;

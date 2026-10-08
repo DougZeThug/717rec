@@ -16,6 +16,50 @@ import { cn } from '@/lib/utils';
 import { animations, gradients } from '@/styles/design-system';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
+/** The sticky title and filter bar at the top of the board. */
+const MessageBoardHeader: React.FC<
+  Pick<
+    React.ComponentProps<typeof MessageFilterBar>,
+    'filterOptions' | 'onFilterChange' | 'onRefresh' | 'isRefreshing'
+  >
+> = ({ filterOptions, onFilterChange, onRefresh, isRefreshing }) => (
+  <div
+    className={cn(
+      'sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3 pt-1',
+      gradients.section.subtle
+    )}
+  >
+    <PageHeader
+      title={
+        <div className="flex items-center space-x-2">
+          <MessageSquare className="size-6 text-primary" />
+          <span>Message Board</span>
+        </div>
+      }
+      description="Chat with other teams and participants"
+      className={cn(animations.fadeInSlideDown, 'mb-3')}
+      compact
+    />
+
+    {/* Filter Bar with Refresh button */}
+    <div className={cn(animations.fadeInSlideDown)}>
+      <MessageFilterBar
+        filterOptions={filterOptions}
+        onFilterChange={onFilterChange}
+        onRefresh={onRefresh}
+        isRefreshing={isRefreshing}
+      />
+    </div>
+  </div>
+);
+
+/** The live region around the feed; it reads "busy" while messages load. */
+const MessageFeedRegion: React.FC<React.ComponentProps<typeof MessageFeed>> = (feedProps) => (
+  <div className={animations.fadeInSlideUp} aria-live="polite" aria-busy={feedProps.isLoading}>
+    <MessageFeed {...feedProps} />
+  </div>
+);
+
 const MessageBoard: React.FC = () => {
   const {
     messages,
@@ -67,50 +111,26 @@ const MessageBoard: React.FC = () => {
       />
       <PageTransition animation="fadeInSlideDown">
         <div className="container max-w-4xl mx-auto pb-20 md:pb-24 px-px">
-          <div
-            className={cn(
-              'sticky top-0 z-10 bg-background/80 backdrop-blur-md pb-3 pt-1',
-              gradients.section.subtle
-            )}
-          >
-            <PageHeader
-              title={
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="size-6 text-primary" />
-                  <span>Message Board</span>
-                </div>
-              }
-              description="Chat with other teams and participants"
-              className={cn(animations.fadeInSlideDown, 'mb-3')}
-              compact
-            />
+          <MessageBoardHeader
+            filterOptions={filterOptions}
+            onFilterChange={setFilter}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+          />
 
-            {/* Filter Bar with Refresh button */}
-            <div className={cn(animations.fadeInSlideDown)}>
-              <MessageFilterBar
-                filterOptions={filterOptions}
-                onFilterChange={setFilter}
-                onRefresh={handleRefresh}
-                isRefreshing={isRefreshing}
-              />
-            </div>
-          </div>
-
-          <div className={animations.fadeInSlideUp} aria-live="polite" aria-busy={isLoading}>
-            <MessageFeed
-              messages={messages}
-              isLoading={isLoading}
-              error={error}
-              onDeleteMessage={deleteMessage}
-              onEditMessage={editMessage}
-              hasMore={hasMore}
-              onLoadMore={loadMoreMessages}
-              loadingMore={loadingMore}
-              // Wait for auth to settle, or a reload flashes the sign-in
-              // prompt at a signed-in reader before the session is restored.
-              isSignedOut={authInitialized && !user}
-            />
-          </div>
+          <MessageFeedRegion
+            messages={messages}
+            isLoading={isLoading}
+            error={error}
+            onDeleteMessage={deleteMessage}
+            onEditMessage={editMessage}
+            hasMore={hasMore}
+            onLoadMore={loadMoreMessages}
+            loadingMore={loadingMore}
+            // Wait for auth to settle, or a reload flashes the sign-in
+            // prompt at a signed-in reader before the session is restored.
+            isSignedOut={authInitialized && !user}
+          />
 
           <div className={cn(animations.fadeIn, 'animation-delay-300')}>
             {user ? <MessageInput onSend={postMessage} /> : <LoginPrompt />}

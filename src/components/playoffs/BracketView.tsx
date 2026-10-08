@@ -41,14 +41,14 @@ const useBracketViewLogging = (
     renderCount.current++;
     log(`BracketView hooks called: ${hookCallCount.current}, render: ${renderCount.current}`, {
       bracketId,
-      hasLegacyBracket: !!legacyBracket,
+      hasLegacyBracket: Boolean(legacyBracket),
     });
   });
 
   bracketLog('BracketView rendering with props:', {
     bracketId,
-    hasLegacyBracket: !!legacyBracket,
-    hasLegacyTeams: !!legacyTeams,
+    hasLegacyBracket: Boolean(legacyBracket),
+    hasLegacyTeams: Boolean(legacyTeams),
   });
 
   useEffect(() => {
@@ -61,7 +61,7 @@ const useBracketViewLogging = (
   useEffect(() => {
     debugLog('BracketView props changed:', {
       bracketId,
-      hasLegacyBracket: !!legacyBracket,
+      hasLegacyBracket: Boolean(legacyBracket),
     });
   }, [bracketId, legacyBracket, legacyTeams]);
 };

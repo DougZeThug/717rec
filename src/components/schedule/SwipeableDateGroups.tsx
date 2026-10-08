@@ -23,6 +23,54 @@ interface SwipeableDateGroupsProps {
   liveScoredMatchIds?: ReadonlySet<string>;
 }
 
+interface SwipeableGroupPanelProps {
+  group: DateGroup;
+  index: number;
+  selectedDate: Date;
+  onEditMatch?: (match: Match) => void;
+  onDeleteMatch?: (matchId: string) => void;
+  liveScoredMatchIds?: ReadonlySet<string>;
+  onDragEnd: (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => void;
+}
+
+// The animated, draggable card for the date group on screen
+const SwipeableGroupPanel: React.FC<SwipeableGroupPanelProps> = ({
+  group,
+  index,
+  selectedDate,
+  onEditMatch,
+  onDeleteMatch,
+  liveScoredMatchIds,
+  onDragEnd,
+}) => (
+  <div className="overflow-hidden touch-pan-y">
+    <AnimatePresence mode="wait" initial={false}>
+      <m.div
+        key={index}
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -50 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={onDragEnd}
+        className="cursor-grab active:cursor-grabbing"
+      >
+        <DateMatchGroup
+          date={group.date}
+          matches={group.matches}
+          isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
+          isFirstGroup={index === 0}
+          onEditMatch={onEditMatch}
+          onDeleteMatch={onDeleteMatch}
+          liveScoredMatchIds={liveScoredMatchIds}
+        />
+      </m.div>
+    </AnimatePresence>
+  </div>
+);
+
 const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
   groupedMatches,
   selectedDate,
@@ -137,34 +185,15 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-muted/50 to-transparent z-10 pointer-events-none sm:hidden" />
         )}
 
-        <div className="overflow-hidden touch-pan-y">
-          <AnimatePresence mode="wait" initial={false}>
-            <m.div
-              key={safeIndex}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={handleDragEnd}
-              className="cursor-grab active:cursor-grabbing"
-            >
-              <DateMatchGroup
-                date={currentGroup.date}
-                matches={currentGroup.matches}
-                isCurrentDay={
-                  isToday(currentGroup.date) || isSameDay(currentGroup.date, selectedDate)
-                }
-                isFirstGroup={safeIndex === 0}
-                onEditMatch={onEditMatch}
-                onDeleteMatch={onDeleteMatch}
-                liveScoredMatchIds={liveScoredMatchIds}
-              />
-            </m.div>
-          </AnimatePresence>
-        </div>
+        <SwipeableGroupPanel
+          group={currentGroup}
+          index={safeIndex}
+          selectedDate={selectedDate}
+          onEditMatch={onEditMatch}
+          onDeleteMatch={onDeleteMatch}
+          liveScoredMatchIds={liveScoredMatchIds}
+          onDragEnd={handleDragEnd}
+        />
 
         {/* Right peek indicator */}
         {canGoNext && (

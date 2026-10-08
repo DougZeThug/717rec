@@ -1,4 +1,4 @@
-import { LogIn, LogOut, Settings, Shield, User } from 'lucide-react';
+import { LogIn, LogOut, type LucideIcon, Settings, Shield, User } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 
@@ -19,6 +19,30 @@ import { confirmDiscardUnsavedWork, confirmLeavingClick } from '@/utils/unsavedC
 interface UserMenuProps {
   className?: string;
 }
+
+interface MenuLinkItemProps {
+  to: string;
+  icon: LucideIcon;
+  onClick: React.MouseEventHandler<HTMLAnchorElement>;
+  onSelect: () => void;
+  children: React.ReactNode;
+}
+
+/** One link row in the user menu. The Link stays the direct child of the menu item. */
+const MenuLinkItem: React.FC<MenuLinkItemProps> = ({
+  to,
+  icon: Icon,
+  onClick,
+  onSelect,
+  children,
+}) => (
+  <DropdownMenuItem asChild onSelect={onSelect}>
+    <Link to={to} onClick={onClick} className="cursor-pointer flex items-center">
+      <Icon className="size-4 mr-2" />
+      {children}
+    </Link>
+  </DropdownMenuItem>
+);
 
 const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className }) => {
   const { user, profile, signOut } = useAuth();
@@ -100,54 +124,46 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
 
         {isAdminAccessGranted && (
           <>
-            <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-              <Link
-                to="/admin"
-                onClick={handleAdminLinkClick}
-                className="cursor-pointer flex items-center"
-              >
-                <Shield className="size-4 mr-2" />
-                Admin Panel
-              </Link>
-            </DropdownMenuItem>
+            <MenuLinkItem
+              to="/admin"
+              icon={Shield}
+              onClick={handleAdminLinkClick}
+              onSelect={handleMenuItemClick}
+            >
+              Admin Panel
+            </MenuLinkItem>
             <DropdownMenuSeparator />
           </>
         )}
 
         {/* Always /my-team: it is the only page with Leave Team and the team
             edit control, so a member must be able to reach it. */}
-        <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-          <Link
-            to="/my-team"
-            onClick={confirmLeavingClick}
-            className="cursor-pointer flex items-center"
-          >
-            <User className="size-4 mr-2" />
-            {membership?.team ? 'My Team' : 'Join a Team'}
-          </Link>
-        </DropdownMenuItem>
+        <MenuLinkItem
+          to="/my-team"
+          icon={User}
+          onClick={confirmLeavingClick}
+          onSelect={handleMenuItemClick}
+        >
+          {membership?.team ? 'My Team' : 'Join a Team'}
+        </MenuLinkItem>
 
-        <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-          <Link
-            to="/message-board"
-            onClick={confirmLeavingClick}
-            className="cursor-pointer flex items-center"
-          >
-            <Settings className="size-4 mr-2" />
-            Message Board
-          </Link>
-        </DropdownMenuItem>
+        <MenuLinkItem
+          to="/message-board"
+          icon={Settings}
+          onClick={confirmLeavingClick}
+          onSelect={handleMenuItemClick}
+        >
+          Message Board
+        </MenuLinkItem>
 
-        <DropdownMenuItem asChild onSelect={handleMenuItemClick}>
-          <Link
-            to="/setup-profile"
-            onClick={confirmLeavingClick}
-            className="cursor-pointer flex items-center"
-          >
-            <Settings className="size-4 mr-2" />
-            Edit Profile
-          </Link>
-        </DropdownMenuItem>
+        <MenuLinkItem
+          to="/setup-profile"
+          icon={Settings}
+          onClick={confirmLeavingClick}
+          onSelect={handleMenuItemClick}
+        >
+          Edit Profile
+        </MenuLinkItem>
 
         <DropdownMenuSeparator />
         <DropdownMenuItem

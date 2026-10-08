@@ -18,6 +18,29 @@ import { animations } from '@/styles/design-system';
 import TeamContainer from './TeamsContainer';
 import TeamsHeader from './TeamsHeader';
 
+interface CompactDropdownProps {
+  label: string;
+  valueLabel: string;
+  items: { label: string; onSelect: () => void }[];
+}
+
+// Inline "Label: value" menu used by the mobile controls
+const CompactDropdown: React.FC<CompactDropdownProps> = ({ label, valueLabel, items }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
+      {label}: <span className="text-foreground font-medium">{valueLabel}</span>
+      <ChevronDown className="size-3" />
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="start">
+      {items.map((item) => (
+        <DropdownMenuItem key={item.label} onClick={item.onSelect}>
+          {item.label}
+        </DropdownMenuItem>
+      ))}
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
 const TeamsPageContainer: React.FC = () => {
   const isMobile = useIsMobile();
 
@@ -57,49 +80,32 @@ const TeamsPageContainer: React.FC = () => {
       <TeamsHeader title="Teams" description="Browse all teams or view by division">
         {/* Mobile: Compact inline controls */}
         <div className="flex sm:hidden flex-wrap items-center gap-x-1 text-sm w-full">
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
-              Sort:{' '}
-              <span className="text-foreground font-medium">
-                {sortMode === 'rank' ? 'Rank' : 'A-Z'}
-              </span>
-              <ChevronDown className="size-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setSortMode('rank')}>Rank</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSortMode('alpha')}>A-Z</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <CompactDropdown
+            label="Sort"
+            valueLabel={sortMode === 'rank' ? 'Rank' : 'A-Z'}
+            items={[
+              { label: 'Rank', onSelect: () => setSortMode('rank') },
+              { label: 'A-Z', onSelect: () => setSortMode('alpha') },
+            ]}
+          />
           <span className="text-muted-foreground mx-1">·</span>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
-              View:{' '}
-              <span className="text-foreground font-medium">
-                {displayMode === 'grouped' ? 'By Division' : 'All'}
-              </span>
-              <ChevronDown className="size-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setDisplayMode('grouped')}>
-                By Division
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setDisplayMode('all')}>All Teams</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <CompactDropdown
+            label="View"
+            valueLabel={displayMode === 'grouped' ? 'By Division' : 'All'}
+            items={[
+              { label: 'By Division', onSelect: () => setDisplayMode('grouped') },
+              { label: 'All Teams', onSelect: () => setDisplayMode('all') },
+            ]}
+          />
           <span className="text-muted-foreground mx-1">·</span>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex min-h-11 items-center gap-0.5 text-muted-foreground hover:text-foreground">
-              Style:{' '}
-              <span className="text-foreground font-medium">
-                {viewMode === 'grid' ? 'Grid' : 'List'}
-              </span>
-              <ChevronDown className="size-3" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setViewMode('grid')}>Grid</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setViewMode('list')}>List</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <CompactDropdown
+            label="Style"
+            valueLabel={viewMode === 'grid' ? 'Grid' : 'List'}
+            items={[
+              { label: 'Grid', onSelect: () => setViewMode('grid') },
+              { label: 'List', onSelect: () => setViewMode('list') },
+            ]}
+          />
         </div>
 
         {/* Desktop: Toggle buttons */}

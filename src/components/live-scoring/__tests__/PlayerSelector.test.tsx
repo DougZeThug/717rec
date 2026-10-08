@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -68,6 +68,16 @@ describe('PlayerSelector', () => {
     expect(onChange).toHaveBeenCalledWith([]);
   });
 
+  it('closes the picker when the scorer taps Done', async () => {
+    renderSelector([]);
+    await userEvent.click(screen.getByRole('button', { name: /select players/i }));
+    expect(await screen.findByRole('checkbox', { name: 'Doug' })).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    await waitFor(() => expect(screen.queryByRole('checkbox', { name: 'Doug' })).toBeNull());
+  });
+
   it('adds a new player by name', async () => {
     renderSelector([]);
     await userEvent.click(screen.getByRole('button', { name: /select players/i }));
@@ -75,5 +85,14 @@ describe('PlayerSelector', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Add player' }));
 
     expect(onAddPlayer).toHaveBeenCalledWith('New Guy');
+  });
+
+  it('adds a new player when Enter is pressed in the name box', async () => {
+    renderSelector([]);
+    await userEvent.click(screen.getByRole('button', { name: /select players/i }));
+    await userEvent.type(await screen.findByLabelText('New player name'), 'Late Arrival{Enter}');
+
+    expect(onAddPlayer).toHaveBeenCalledWith('Late Arrival');
+    expect(screen.getByLabelText('New player name')).toHaveValue('');
   });
 });

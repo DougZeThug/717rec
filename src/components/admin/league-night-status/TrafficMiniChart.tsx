@@ -12,6 +12,7 @@ import {
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDailyTraffic } from '@/hooks/useDailyTraffic';
+import type { DailyTrafficRow } from '@/services/traffic/TrafficService';
 
 const DAYS = 30;
 
@@ -19,6 +20,36 @@ const fmtDay = (iso: string): string => {
   const date = new Date(`${iso}T12:00:00Z`);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
+
+const VisitorsLineChart: React.FC<{ rows: DailyTrafficRow[] }> = ({ rows }) => (
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
+      <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
+      <XAxis
+        dataKey="day"
+        tickFormatter={fmtDay}
+        tick={{ fontSize: 10 }}
+        interval="preserveStartEnd"
+      />
+      <YAxis tick={{ fontSize: 10 }} allowDecimals={false} width={30} />
+      <Tooltip
+        labelFormatter={(v) => fmtDay(String(v))}
+        formatter={(value, name) => [
+          value as number,
+          name === 'visitors' ? 'Visitors' : String(name),
+        ]}
+        contentStyle={{ fontSize: 12 }}
+      />
+      <Line
+        type="monotone"
+        dataKey="visitors"
+        stroke="hsl(var(--primary))"
+        strokeWidth={2}
+        dot={false}
+      />
+    </LineChart>
+  </ResponsiveContainer>
+);
 
 const TrafficMiniChart: React.FC = () => {
   const query = useDailyTraffic(DAYS);
@@ -70,33 +101,7 @@ const TrafficMiniChart: React.FC = () => {
               aria-label={`Line chart of daily visitors from ${fmtDay(rows[0].day)} to ${fmtDay(rows[rows.length - 1].day)}. The ${last7.length} most recent days with visits had ${totals7.visitors} visitors in total.`}
               className="h-40"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-                  <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.2} />
-                  <XAxis
-                    dataKey="day"
-                    tickFormatter={fmtDay}
-                    tick={{ fontSize: 10 }}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis tick={{ fontSize: 10 }} allowDecimals={false} width={30} />
-                  <Tooltip
-                    labelFormatter={(v) => fmtDay(String(v))}
-                    formatter={(value, name) => [
-                      value as number,
-                      name === 'visitors' ? 'Visitors' : String(name),
-                    ]}
-                    contentStyle={{ fontSize: 12 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="visitors"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <VisitorsLineChart rows={rows} />
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <Smartphone className="size-3.5" aria-hidden="true" />

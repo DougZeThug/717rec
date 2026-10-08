@@ -153,6 +153,28 @@ describe('hero cards sections/views', () => {
     expect(onChange).toHaveBeenCalledWith('icon_name', expect.any(String));
   });
 
+  it('advanced settings pass each raw colour and the homepage switch up to the form', async () => {
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <AdvancedSettingsSection
+        formData={baseForm}
+        onChange={onChange}
+        isOpen
+        onOpenChange={vi.fn()}
+      />
+    );
+    await userEvent.type(screen.getByLabelText('Custom Background (Tailwind)'), 'x');
+    expect(onChange).toHaveBeenCalledWith('background_color', expect.any(String));
+    await userEvent.type(screen.getByLabelText('Custom Text Color (Tailwind)'), 'x');
+    expect(onChange).toHaveBeenCalledWith('text_color', expect.any(String));
+    await userEvent.type(screen.getByLabelText('Accent Color (Tailwind)'), 'x');
+    expect(onChange).toHaveBeenCalledWith('accent_color', expect.any(String));
+
+    rerender(<TargetingDisplaySection formData={baseForm} onChange={onChange} />);
+    await userEvent.click(screen.getByRole('switch', { name: 'Show on Homepage' }));
+    expect(onChange).toHaveBeenCalledWith('is_visible', !baseForm.is_visible);
+  });
+
   it('champions and event winners editors update metadata', async () => {
     const onChange = vi.fn();
     wrap(

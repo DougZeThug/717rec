@@ -29,6 +29,90 @@ interface MatchCommentItemProps {
   onDelete: (id: string) => Promise<boolean>;
 }
 
+const CommentBody: React.FC<{ comment: MatchComment }> = ({ comment }) => (
+  <div className="flex-1 min-w-0">
+    <div className="flex items-center gap-2">
+      <TeamNameDisplay username={comment.username} teamName={comment.team_name} compact />
+    </div>
+    <div className="mt-1 text-sm whitespace-pre-wrap wrap-break-word">{comment.content}</div>
+  </div>
+);
+
+interface CommentActionsMenuProps {
+  isDeleting: boolean;
+  onDeleteClick: () => void;
+}
+
+const CommentActionsMenu: React.FC<CommentActionsMenuProps> = ({ isDeleting, onDeleteClick }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" size="sm" className="size-8 p-0 rounded-full" disabled={isDeleting}>
+        {isDeleting ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <MoreHorizontal className="size-4" />
+        )}
+        <span className="sr-only">{isDeleting ? 'Deleting...' : 'Open menu'}</span>
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end" className="w-36">
+      <DropdownMenuItem
+        onClick={onDeleteClick}
+        disabled={isDeleting}
+        className="text-destructive-text focus:text-destructive-text cursor-pointer"
+      >
+        <Trash className="size-4 mr-2" />
+        Delete
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+interface DeleteCommentDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  isDeleting: boolean;
+  onConfirm: () => void;
+}
+
+const DeleteCommentDialog: React.FC<DeleteCommentDialogProps> = ({
+  open,
+  onOpenChange,
+  isDeleting,
+  onConfirm,
+}) => (
+  <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+        <AlertDialogDescription>
+          Are you sure you want to delete this comment? This action cannot be undone.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={(e) => {
+            e.preventDefault();
+            onConfirm();
+          }}
+          disabled={isDeleting}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          {isDeleting ? (
+            <>
+              <Loader2 className="size-4 mr-2 animate-spin" />
+              Deleting...
+            </>
+          ) : (
+            'Delete'
+          )}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }) => {
   const { user } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -55,77 +139,25 @@ const MatchCommentItem: React.FC<MatchCommentItemProps> = ({ comment, onDelete }
         )}
       >
         {/* Comment content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <TeamNameDisplay username={comment.username} teamName={comment.team_name} compact />
-          </div>
-          <div className="mt-1 text-sm whitespace-pre-wrap wrap-break-word">{comment.content}</div>
-        </div>
+        <CommentBody comment={comment} />
 
         {/* Comment actions */}
         {isAuthor && (
           <div className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="size-8 p-0 rounded-full"
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <MoreHorizontal className="size-4" />
-                  )}
-                  <span className="sr-only">{isDeleting ? 'Deleting...' : 'Open menu'}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-36">
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={isDeleting}
-                  className="text-destructive-text focus:text-destructive-text cursor-pointer"
-                >
-                  <Trash className="size-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <CommentActionsMenu
+              isDeleting={isDeleting}
+              onDeleteClick={() => setShowDeleteConfirm(true)}
+            />
           </div>
         )}
       </div>
 
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this comment? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleDelete();
-              }}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteCommentDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        isDeleting={isDeleting}
+        onConfirm={handleDelete}
+      />
     </>
   );
 };

@@ -46,6 +46,149 @@ interface SignupToDelete {
   name: string;
 }
 
+interface NightSelectProps {
+  night: string;
+  nights: string[];
+  onNightChange: (night: string) => void;
+}
+
+const NightSelect: React.FC<NightSelectProps> = ({ night, nights, onNightChange }) => (
+  <>
+    <label htmlFor="signup-night" className="text-sm font-medium">
+      Night
+    </label>
+    <Select value={night} onValueChange={onNightChange}>
+      <SelectTrigger id="signup-night" className="w-[170px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL_NIGHTS}>All nights</SelectItem>
+        {nights.map((key) => (
+          <SelectItem key={key} value={key}>
+            {formatLeagueNight(key)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </>
+);
+
+const SignupCountBadge: React.FC<{ count: number }> = ({ count }) => (
+  <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
+    <Users className="size-4 text-primary" />
+    <span className="font-semibold text-primary text-sm">{count} signed up</span>
+  </div>
+);
+
+interface SignupsHeaderRowProps extends NightSelectProps {
+  count: number;
+}
+
+const SignupsHeaderRow: React.FC<SignupsHeaderRowProps> = ({
+  night,
+  nights,
+  onNightChange,
+  count,
+}) => (
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+      <Shuffle className="size-5 text-primary" />
+      Blind Draw Signups
+    </CardTitle>
+    <div className="flex flex-wrap items-center gap-2">
+      <NightSelect night={night} nights={nights} onNightChange={onNightChange} />
+      <SignupCountBadge count={count} />
+    </div>
+  </div>
+);
+
+interface RemoveSignupDialogProps {
+  signup: SignupToDelete | null;
+  isPending: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}
+
+const RemoveSignupHeader: React.FC<{ name: string | undefined }> = ({ name }) => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>Remove Signup</AlertDialogTitle>
+    <AlertDialogDescription>
+      Are you sure you want to remove <strong>{name}</strong> from the signup list? This action
+      cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
+const RemoveSignupDialog: React.FC<RemoveSignupDialogProps> = ({
+  signup,
+  isPending,
+  onClose,
+  onConfirm,
+}) => (
+  <AlertDialog open={Boolean(signup)} onOpenChange={(open) => !open && onClose()}>
+    <AlertDialogContent>
+      <RemoveSignupHeader name={signup?.name} />
+      <AlertDialogFooter>
+        <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+          onClick={(e) => {
+            e.preventDefault();
+            onConfirm();
+          }}
+          disabled={isPending}
+          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="size-4 mr-2 animate-spin" />
+              Removing...
+            </>
+          ) : (
+            'Remove'
+          )}
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+interface MessageEditorRowProps {
+  message: string;
+  onMessageChange: (value: string) => void;
+  onSave: () => void;
+  canSave: boolean;
+  isSaving: boolean;
+}
+
+const MessageEditorRow: React.FC<MessageEditorRowProps> = ({
+  message,
+  onMessageChange,
+  onSave,
+  canSave,
+  isSaving,
+}) => (
+  <div className="flex gap-2">
+    <Input
+      id="signup-confirmation-message"
+      value={message}
+      onChange={(e) => onMessageChange(e.target.value)}
+      placeholder="You're signed up! See you there!"
+      className="flex-1"
+      maxLength={100}
+    />
+    <Button onClick={onSave} disabled={!canSave} size="sm" className="shrink-0">
+      {isSaving ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <>
+          <Save className="size-4 mr-1" />
+          Save
+        </>
+      )}
+    </Button>
+  </div>
+);
+
 const BlindDrawSettingsCard: React.FC = () => {
   const { data: settings, isLoading } = useBlindDrawSettings();
   const updateSettings = useUpdateBlindDrawSettings();
@@ -84,31 +227,13 @@ const BlindDrawSettingsCard: React.FC = () => {
           <p className="text-xs text-muted-foreground">
             Shown to players after they sign up (toast + inline text)
           </p>
-          <div className="flex gap-2">
-            <Input
-              id="signup-confirmation-message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="You're signed up! See you there!"
-              className="flex-1"
-              maxLength={100}
-            />
-            <Button
-              onClick={handleSave}
-              disabled={!hasChanges || updateSettings.isPending}
-              size="sm"
-              className="shrink-0"
-            >
-              {updateSettings.isPending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <>
-                  <Save className="size-4 mr-1" />
-                  Save
-                </>
-              )}
-            </Button>
-          </div>
+          <MessageEditorRow
+            message={message}
+            onMessageChange={setMessage}
+            onSave={handleSave}
+            canSave={hasChanges && !updateSettings.isPending}
+            isSaving={updateSettings.isPending}
+          />
         </div>
       </CardContent>
     </Card>
@@ -164,36 +289,12 @@ const BlindDrawSignupsTab: React.FC = () => {
 
       <Card>
         <CardHeader className="pb-3 px-3 sm:px-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Shuffle className="size-5 text-primary" />
-              Blind Draw Signups
-            </CardTitle>
-            <div className="flex flex-wrap items-center gap-2">
-              <label htmlFor="signup-night" className="text-sm font-medium">
-                Night
-              </label>
-              <Select value={night} onValueChange={setChosenNight}>
-                <SelectTrigger id="signup-night" className="w-[170px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_NIGHTS}>All nights</SelectItem>
-                  {nights.map((key) => (
-                    <SelectItem key={key} value={key}>
-                      {formatLeagueNight(key)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex items-center gap-2 bg-primary/10 px-3 py-1.5 rounded-full w-fit">
-                <Users className="size-4 text-primary" />
-                <span className="font-semibold text-primary text-sm">
-                  {visibleSignups.length} signed up
-                </span>
-              </div>
-            </div>
-          </div>
+          <SignupsHeaderRow
+            night={night}
+            nights={nights}
+            onNightChange={setChosenNight}
+            count={visibleSignups.length}
+          />
         </CardHeader>
         <CardContent className="space-y-4 px-3 sm:px-6">
           {visibleSignups.length > 0 && (
@@ -300,40 +401,12 @@ const BlindDrawSignupsTab: React.FC = () => {
         pendingLabel="Clearing..."
       />
 
-      <AlertDialog
-        open={!!deletingSignup}
-        onOpenChange={(open) => !open && setDeletingSignup(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove Signup</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to remove <strong>{deletingSignup?.name}</strong> from the
-              signup list? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteSignup.isPending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => {
-                e.preventDefault();
-                handleConfirmDelete();
-              }}
-              disabled={deleteSignup.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleteSignup.isPending ? (
-                <>
-                  <Loader2 className="size-4 mr-2 animate-spin" />
-                  Removing...
-                </>
-              ) : (
-                'Remove'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <RemoveSignupDialog
+        signup={deletingSignup}
+        isPending={deleteSignup.isPending}
+        onClose={() => setDeletingSignup(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };

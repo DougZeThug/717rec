@@ -22,7 +22,7 @@ export const useMatchHeadToHead = (
   const { data, isLoading } = useQuery({
     queryKey: ['match-head-to-head', team1Id, team2Id],
     queryFn: () => getMatchHeadToHead(team1Id, team2Id),
-    enabled: !!(team1Id && team2Id && team1Id !== team2Id),
+    enabled: Boolean(team1Id && team2Id && team1Id !== team2Id),
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 

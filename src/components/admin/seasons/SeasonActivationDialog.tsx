@@ -26,6 +26,41 @@ interface SeasonActivationDialogProps {
   season: Season;
 }
 
+interface ActivationChecklistProps {
+  hasActiveSeason: boolean;
+  showOverlapOption: boolean;
+  keepOldPlayoffsActive: boolean;
+  activeSeasonName: string | undefined;
+  seasonName: string | undefined;
+}
+
+const ActivationChecklist: React.FC<ActivationChecklistProps> = ({
+  hasActiveSeason,
+  showOverlapOption,
+  keepOldPlayoffsActive,
+  activeSeasonName,
+  seasonName,
+}) => (
+  <div className="space-y-2 text-sm text-muted-foreground">
+    <p>When you activate this season:</p>
+    <ul className="list-disc list-inside space-y-1 ml-4">
+      <li>It becomes the primary season for all league activities</li>
+      <li>New matches will be associated with this season</li>
+      <li>Team stats will be tracked for this season</li>
+      {hasActiveSeason && !keepOldPlayoffsActive && (
+        <li>The current active season will be deactivated</li>
+      )}
+      {showOverlapOption && keepOldPlayoffsActive && (
+        <>
+          <li>{activeSeasonName}&apos;s regular-season matches will be archived</li>
+          <li>{activeSeasonName}&apos;s playoff bracket will stay in progress</li>
+          <li>Team wins/losses counters will reset for {seasonName}</li>
+        </>
+      )}
+    </ul>
+  </div>
+);
+
 const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
   isOpen,
   onClose,
@@ -37,7 +72,7 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
   const [keepOldPlayoffsActive, setKeepOldPlayoffsActive] = useState(false);
 
   const activeSeason = seasons?.find((s) => s.is_active);
-  const hasActiveSeason = !!activeSeason;
+  const hasActiveSeason = Boolean(activeSeason);
   const showOverlapOption = hasActiveSeason && activeSeason?.id !== season.id;
 
   const handleActivate = async () => {
@@ -114,24 +149,13 @@ const SeasonActivationDialog: React.FC<SeasonActivationDialogProps> = ({
           </div>
         )}
 
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p>When you activate this season:</p>
-          <ul className="list-disc list-inside space-y-1 ml-4">
-            <li>It becomes the primary season for all league activities</li>
-            <li>New matches will be associated with this season</li>
-            <li>Team stats will be tracked for this season</li>
-            {hasActiveSeason && !keepOldPlayoffsActive && (
-              <li>The current active season will be deactivated</li>
-            )}
-            {showOverlapOption && keepOldPlayoffsActive && (
-              <>
-                <li>{activeSeason?.name}&apos;s regular-season matches will be archived</li>
-                <li>{activeSeason?.name}&apos;s playoff bracket will stay in progress</li>
-                <li>Team wins/losses counters will reset for {season?.name}</li>
-              </>
-            )}
-          </ul>
-        </div>
+        <ActivationChecklist
+          hasActiveSeason={hasActiveSeason}
+          showOverlapOption={showOverlapOption}
+          keepOldPlayoffsActive={keepOldPlayoffsActive}
+          activeSeasonName={activeSeason?.name}
+          seasonName={season?.name}
+        />
 
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>

@@ -13,6 +13,27 @@ interface Props {
   lastSeenAt: string;
 }
 
+interface NotificationDateStampProps {
+  absolute: string;
+  relative: string;
+  iso: string;
+}
+
+const NotificationDateStamp: React.FC<NotificationDateStampProps> = ({
+  absolute,
+  relative,
+  iso,
+}) => (
+  <time
+    dateTime={iso}
+    title={iso}
+    className="flex shrink-0 flex-col text-right text-2xs leading-tight text-muted-foreground sm:items-end"
+  >
+    <span className="font-medium text-foreground/80 tabular-nums">{absolute}</span>
+    {relative && <span className="text-muted-foreground">{relative}</span>}
+  </time>
+);
+
 const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }) => {
   const { isAdminAccessGranted } = useAdminAccess();
   const del = useDeleteNotification();
@@ -35,14 +56,7 @@ const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }
           <h4 className="text-sm font-semibold text-foreground sm:truncate">
             {notification.title}
           </h4>
-          <time
-            dateTime={iso}
-            title={iso}
-            className="flex shrink-0 flex-col text-right text-2xs leading-tight text-muted-foreground sm:items-end"
-          >
-            <span className="font-medium text-foreground/80 tabular-nums">{absolute}</span>
-            {relative && <span className="text-muted-foreground">{relative}</span>}
-          </time>
+          <NotificationDateStamp absolute={absolute} relative={relative} iso={iso} />
         </div>
         <p className="mt-1 whitespace-pre-wrap wrap-break-word text-sm text-muted-foreground">
           {notification.body}

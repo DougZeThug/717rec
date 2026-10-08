@@ -20,6 +20,104 @@ import TeamLogoCard from './TeamLogoCard';
 type FilterStatus = 'all' | LogoStatus;
 type SortOption = 'name' | 'status';
 
+interface StatCardProps {
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ icon, value, label }) => (
+  <Card>
+    <CardContent className="p-4 flex items-center space-x-3">
+      {icon}
+      <div>
+        <p className="text-2xl font-bold">{value}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+interface LogoFiltersProps {
+  searchTerm: string;
+  onSearchTermChange: (value: string) => void;
+  filterStatus: FilterStatus;
+  onFilterStatusChange: (value: FilterStatus) => void;
+  sortBy: SortOption;
+  onSortByChange: (value: SortOption) => void;
+}
+
+const LogoFilters: React.FC<LogoFiltersProps> = ({
+  searchTerm,
+  onSearchTermChange,
+  filterStatus,
+  onFilterStatusChange,
+  sortBy,
+  onSortByChange,
+}) => (
+  <div className="flex flex-col sm:flex-row gap-4">
+    <div className="relative flex-1">
+      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
+      <Input
+        placeholder="Search teams..."
+        aria-label="Search teams"
+        value={searchTerm}
+        onChange={(e) => onSearchTermChange(e.target.value)}
+        className="pl-10"
+      />
+    </div>
+    <Select value={filterStatus} onValueChange={(v) => onFilterStatusChange(v as FilterStatus)}>
+      <SelectTrigger aria-label="Filter teams by logo status" className="w-full sm:w-40">
+        <SelectValue placeholder="Filter status" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Logos</SelectItem>
+        <SelectItem value="optimized">🟢 Optimized</SelectItem>
+        <SelectItem value="legacy">🟡 Needs Update</SelectItem>
+        <SelectItem value="missing">🔴 Missing</SelectItem>
+      </SelectContent>
+    </Select>
+    <Select value={sortBy} onValueChange={(v) => onSortByChange(v as SortOption)}>
+      <SelectTrigger aria-label="Sort teams for bulk logo update" className="w-full sm:w-40">
+        <SelectValue placeholder="Sort by" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="status">By Priority</SelectItem>
+        <SelectItem value="name">By Name</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+);
+
+interface ProgressCardProps {
+  optimized: number;
+  total: number;
+  percentage: number;
+}
+
+const ProgressCard: React.FC<ProgressCardProps> = ({ optimized, total, percentage }) => (
+  <Card>
+    <CardContent className="p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium">Logo Optimization Progress</span>
+        <span className="text-sm text-muted-foreground">
+          {optimized}/{total} ({percentage}%)
+        </span>
+      </div>
+      <Progress value={percentage} className="h-2" />
+    </CardContent>
+  </Card>
+);
+
+const BulkLogoHeader: React.FC = () => (
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Image className="size-5" />
+      Bulk Logo Update
+    </CardTitle>
+  </CardHeader>
+);
+
 const BulkLogoUpdateTab: React.FC = () => {
   const { data: teams, isLoading, error, refetch } = useTeamsQuery({ includeHidden: true });
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,102 +200,48 @@ const BulkLogoUpdateTab: React.FC = () => {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4 flex items-center space-x-3">
-            <Image className="size-8 text-primary" />
-            <div>
-              <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-sm text-muted-foreground">Total Teams</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center space-x-3">
-            <CheckCircle className="size-8 text-green-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.optimized}</p>
-              <p className="text-sm text-muted-foreground">Optimized</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center space-x-3">
-            <AlertCircle className="size-8 text-yellow-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.legacy}</p>
-              <p className="text-sm text-muted-foreground">Needs Update</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 flex items-center space-x-3">
-            <XCircle className="size-8 text-red-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.missing}</p>
-              <p className="text-sm text-muted-foreground">Missing Logo</p>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={<Image className="size-8 text-primary" />}
+          value={stats.total}
+          label="Total Teams"
+        />
+        <StatCard
+          icon={<CheckCircle className="size-8 text-green-500" />}
+          value={stats.optimized}
+          label="Optimized"
+        />
+        <StatCard
+          icon={<AlertCircle className="size-8 text-yellow-500" />}
+          value={stats.legacy}
+          label="Needs Update"
+        />
+        <StatCard
+          icon={<XCircle className="size-8 text-red-500" />}
+          value={stats.missing}
+          label="Missing Logo"
+        />
       </div>
 
       {/* Progress Bar */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Logo Optimization Progress</span>
-            <span className="text-sm text-muted-foreground">
-              {stats.optimized}/{stats.total} ({optimizationPercentage}%)
-            </span>
-          </div>
-          <Progress value={optimizationPercentage} className="h-2" />
-        </CardContent>
-      </Card>
+      <ProgressCard
+        optimized={stats.optimized}
+        total={stats.total}
+        percentage={optimizationPercentage}
+      />
 
       {/* Main Content Card */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Image className="size-5" />
-            Bulk Logo Update
-          </CardTitle>
-        </CardHeader>
+        <BulkLogoHeader />
         <CardContent className="space-y-4">
           {/* Filters */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground size-4" />
-              <Input
-                placeholder="Search teams..."
-                aria-label="Search teams"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)}>
-              <SelectTrigger aria-label="Filter teams by logo status" className="w-full sm:w-40">
-                <SelectValue placeholder="Filter status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Logos</SelectItem>
-                <SelectItem value="optimized">🟢 Optimized</SelectItem>
-                <SelectItem value="legacy">🟡 Needs Update</SelectItem>
-                <SelectItem value="missing">🔴 Missing</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-              <SelectTrigger
-                aria-label="Sort teams for bulk logo update"
-                className="w-full sm:w-40"
-              >
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="status">By Priority</SelectItem>
-                <SelectItem value="name">By Name</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <LogoFilters
+            searchTerm={searchTerm}
+            onSearchTermChange={setSearchTerm}
+            filterStatus={filterStatus}
+            onFilterStatusChange={setFilterStatus}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+          />
 
           {/* Teams Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">

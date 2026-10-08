@@ -15,6 +15,21 @@ interface MatchCommentsProps {
   matchId: string;
 }
 
+const CommentsTrigger: React.FC<{ commentCount: number }> = ({ commentCount }) => (
+  <CollapsibleTrigger asChild>
+    <Button
+      variant="ghost"
+      size="sm"
+      className="p-0 h-auto font-normal hover:bg-transparent hover:underline flex items-center gap-1 text-muted-foreground hover:text-foreground"
+    >
+      <MessageSquare className="size-4" />
+      <span className="text-sm">
+        {commentCount} Comment{commentCount !== 1 ? 's' : ''}
+      </span>
+    </Button>
+  </CollapsibleTrigger>
+);
+
 const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
   const { comments, isLoading, addComment, deleteComment } = useMatchComments(matchId);
   const [isOpen, setIsOpen] = React.useState(false);
@@ -41,18 +56,7 @@ const MatchComments: React.FC<MatchCommentsProps> = ({ matchId }) => {
     <div className={cn(animations.fadeIn)}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-0 h-auto font-normal hover:bg-transparent hover:underline flex items-center gap-1 text-muted-foreground hover:text-foreground"
-            >
-              <MessageSquare className="size-4" />
-              <span className="text-sm">
-                {commentCount} Comment{commentCount !== 1 ? 's' : ''}
-              </span>
-            </Button>
-          </CollapsibleTrigger>
+          <CommentsTrigger commentCount={commentCount} />
         </div>
 
         <CollapsibleContent className="space-y-2">

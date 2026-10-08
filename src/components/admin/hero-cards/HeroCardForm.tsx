@@ -24,6 +24,7 @@ import {
   HeroCardPreview,
   TargetingDisplaySection,
 } from './form-sections';
+import type { FormSectionProps } from './form-sections/types';
 
 interface HeroCardFormProps {
   card: HeroCard | null;
@@ -108,6 +109,40 @@ const buildPreviewCard = (
   created_at: card?.created_at || new Date().toISOString(),
   updated_at: new Date().toISOString(),
 });
+
+interface HeroCardFormFieldsProps extends FormSectionProps {
+  advancedOpen: boolean;
+  onAdvancedOpenChange: (open: boolean) => void;
+}
+
+/** Left column of the form: every field section for the chosen card type. */
+const HeroCardFormFields: React.FC<HeroCardFormFieldsProps> = ({
+  formData,
+  onChange,
+  metadataError,
+  advancedOpen,
+  onAdvancedOpenChange,
+}) => (
+  <div className="space-y-6">
+    <CardBasicsSection formData={formData} onChange={onChange} />
+    <CallToActionSection formData={formData} onChange={onChange} />
+    <DesignAppearanceSection formData={formData} onChange={onChange} />
+    <TargetingDisplaySection formData={formData} onChange={onChange} />
+    {formData.card_type === 'champions' && (
+      <ChampionsEditor formData={formData} onChange={onChange} metadataError={metadataError} />
+    )}
+    {formData.card_type === 'event' && (
+      <EventWinnersEditor formData={formData} onChange={onChange} metadataError={metadataError} />
+    )}
+    <AdvancedSettingsSection
+      formData={formData}
+      onChange={onChange}
+      metadataError={metadataError}
+      isOpen={advancedOpen}
+      onOpenChange={onAdvancedOpenChange}
+    />
+  </div>
+);
 
 const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
   const { createCard, updateCard, isCreating, isUpdating } = useHeroCardMutations();
@@ -212,33 +247,13 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Form Fields */}
-          <div className="space-y-6">
-            <CardBasicsSection formData={formData} onChange={handleChange} />
-            <CallToActionSection formData={formData} onChange={handleChange} />
-            <DesignAppearanceSection formData={formData} onChange={handleChange} />
-            <TargetingDisplaySection formData={formData} onChange={handleChange} />
-            {formData.card_type === 'champions' && (
-              <ChampionsEditor
-                formData={formData}
-                onChange={handleChange}
-                metadataError={metadataError}
-              />
-            )}
-            {formData.card_type === 'event' && (
-              <EventWinnersEditor
-                formData={formData}
-                onChange={handleChange}
-                metadataError={metadataError}
-              />
-            )}
-            <AdvancedSettingsSection
-              formData={formData}
-              onChange={handleChange}
-              metadataError={metadataError}
-              isOpen={advancedOpen}
-              onOpenChange={setAdvancedOpen}
-            />
-          </div>
+          <HeroCardFormFields
+            formData={formData}
+            onChange={handleChange}
+            metadataError={metadataError}
+            advancedOpen={advancedOpen}
+            onAdvancedOpenChange={setAdvancedOpen}
+          />
 
           {/* Right Column - Live Preview */}
           <HeroCardPreview card={previewCard} />
@@ -246,7 +261,7 @@ const HeroCardForm: React.FC<HeroCardFormProps> = ({ card, onClose }) => {
 
         <FormActions
           isSubmitting={isCreating || isUpdating}
-          isEditing={!!card}
+          isEditing={Boolean(card)}
           disabled={metadataError !== null}
           onCancel={handleClose}
         />

@@ -33,6 +33,28 @@ export interface ChangeGameWinnerDialogProps {
   isSubmitting: boolean;
 }
 
+interface WinnerSelectProps {
+  team1: { id: string; name: string };
+  team2: { id: string; name: string };
+  value: string;
+  onValueChange: (value: string) => void;
+}
+
+const WinnerSelect: React.FC<WinnerSelectProps> = ({ team1, team2, value, onValueChange }) => (
+  <div className="space-y-2">
+    <Label htmlFor="winner-select">Winner</Label>
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger id="winner-select">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={team1.id}>{team1.name}</SelectItem>
+        <SelectItem value={team2.id}>{team2.name}</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+);
+
 export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
   open,
   onOpenChange,
@@ -77,18 +99,7 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2">
-          <Label htmlFor="winner-select">Winner</Label>
-          <Select value={winnerId} onValueChange={setWinnerId}>
-            <SelectTrigger id="winner-select">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={team1.id}>{team1.name}</SelectItem>
-              <SelectItem value={team2.id}>{team2.name}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <WinnerSelect team1={team1} team2={team2} value={winnerId} onValueChange={setWinnerId} />
 
         {roundsDisagree && (
           <div

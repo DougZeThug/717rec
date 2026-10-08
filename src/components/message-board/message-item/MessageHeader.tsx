@@ -19,6 +19,46 @@ interface MessageHeaderProps {
   isAnnouncement: boolean;
 }
 
+/** Hover target for the team name. Must sit inside a Tooltip. */
+const TeamNameTrigger: React.FC<
+  Pick<MessageHeaderProps, 'username' | 'teamName' | 'powerScore'>
+> = ({ username, teamName, powerScore }) => (
+  <TooltipTrigger asChild>
+    <div>
+      <TeamNameDisplay username={username} teamName={teamName} powerScore={powerScore} compact />
+    </div>
+  </TooltipTrigger>
+);
+
+const TeamNameTooltip: React.FC<
+  Pick<MessageHeaderProps, 'username' | 'teamName' | 'powerScore'>
+> = ({ username, teamName, powerScore }) => (
+  <TooltipProvider>
+    <Tooltip delayDuration={300}>
+      <TeamNameTrigger username={username} teamName={teamName} powerScore={powerScore} />
+      {powerScore && (
+        <TooltipContent side="top" className="px-3 py-1.5">
+          <p className="text-xs font-medium">Team Power Score: {powerScore.toFixed(1)}</p>
+        </TooltipContent>
+      )}
+    </Tooltip>
+  </TooltipProvider>
+);
+
+const MessageTime: React.FC<
+  Pick<MessageHeaderProps, 'timeString' | 'timeTitle' | 'timeDateTime'>
+> = ({ timeString, timeTitle, timeDateTime }) => (
+  <time
+    className="text-xs text-muted-foreground flex items-center whitespace-nowrap"
+    dateTime={timeDateTime || undefined}
+    title={timeTitle || undefined}
+    aria-label={timeTitle || undefined}
+  >
+    <Clock className="size-3 opacity-70 inline mr-0.5" />
+    {timeString}
+  </time>
+);
+
 const MessageHeader: React.FC<MessageHeaderProps> = ({
   username,
   teamName,
@@ -32,35 +72,9 @@ const MessageHeader: React.FC<MessageHeaderProps> = ({
     <>
       <div className="flex items-center justify-between gap-1 mb-1">
         <div className="flex items-center gap-2 max-w-full">
-          <TooltipProvider>
-            <Tooltip delayDuration={300}>
-              <TooltipTrigger asChild>
-                <div>
-                  <TeamNameDisplay
-                    username={username}
-                    teamName={teamName}
-                    powerScore={powerScore}
-                    compact
-                  />
-                </div>
-              </TooltipTrigger>
-              {powerScore && (
-                <TooltipContent side="top" className="px-3 py-1.5">
-                  <p className="text-xs font-medium">Team Power Score: {powerScore.toFixed(1)}</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-          </TooltipProvider>
+          <TeamNameTooltip username={username} teamName={teamName} powerScore={powerScore} />
 
-          <time
-            className="text-xs text-muted-foreground flex items-center whitespace-nowrap"
-            dateTime={timeDateTime || undefined}
-            title={timeTitle || undefined}
-            aria-label={timeTitle || undefined}
-          >
-            <Clock className="size-3 opacity-70 inline mr-0.5" />
-            {timeString}
-          </time>
+          <MessageTime timeString={timeString} timeTitle={timeTitle} timeDateTime={timeDateTime} />
         </div>
       </div>
 

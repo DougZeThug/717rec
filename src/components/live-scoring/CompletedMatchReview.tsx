@@ -40,6 +40,58 @@ interface CompletedMatchReviewProps {
   team2Id?: string | null;
 }
 
+interface PlayerStatsTableProps {
+  playerLines: ReturnType<typeof computePlayerStatLines>;
+  playerNames: Record<string, string>;
+}
+
+const PlayerStatsTable: React.FC<PlayerStatsTableProps> = ({ playerLines, playerNames }) => (
+  <table className="w-full text-sm">
+    <thead>
+      <tr className="text-left text-xs text-muted-foreground">
+        <th scope="col" className="pb-1 pr-2 font-medium">
+          Player
+        </th>
+        <th scope="col" className="px-2 pb-1 text-right font-medium">
+          Rounds
+        </th>
+        <th scope="col" className="px-2 pb-1 text-right font-medium">
+          Points
+        </th>
+        <th scope="col" className="px-2 pb-1 text-right font-medium">
+          PPR
+        </th>
+        <th scope="col" className="px-2 pb-1 text-right font-medium" title="Bags in the hole">
+          Hole%
+        </th>
+        <th scope="col" className="px-2 pb-1 text-right font-medium" title="Bags on the board">
+          Board%
+        </th>
+        <th scope="col" className="pb-1 pl-2 text-right font-medium" title="Four-baggers">
+          4B
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {playerLines.map((line) => (
+        <tr key={line.playerId} className="tabular-nums">
+          <td className="py-0.5 pr-2">{playerNames[line.playerId] ?? 'Former player'}</td>
+          <td className="px-2 py-0.5 text-right">{line.roundsThrown}</td>
+          <td className="px-2 py-0.5 text-right">{line.pointsFor}</td>
+          <td className="px-2 py-0.5 text-right font-medium">{formatRatio(line.ppr)}</td>
+          <td className="px-2 py-0.5 text-right">
+            {formatPercent(percentage(line.bagsIn, line.totalBags))}
+          </td>
+          <td className="px-2 py-0.5 text-right">
+            {formatPercent(percentage(line.bagsOn, line.totalBags))}
+          </td>
+          <td className="py-0.5 pl-2 text-right">{line.totalBags > 0 ? line.fourBaggers : '–'}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
 export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
   team1Name,
   team2Name,
@@ -121,60 +173,7 @@ export const CompletedMatchReview: React.FC<CompletedMatchReviewProps> = ({
         <div className="rounded-lg border bg-card p-4">
           <h3 className="mb-2 text-sm font-semibold">Player stats</h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-muted-foreground">
-                  <th scope="col" className="pb-1 pr-2 font-medium">
-                    Player
-                  </th>
-                  <th scope="col" className="px-2 pb-1 text-right font-medium">
-                    Rounds
-                  </th>
-                  <th scope="col" className="px-2 pb-1 text-right font-medium">
-                    Points
-                  </th>
-                  <th scope="col" className="px-2 pb-1 text-right font-medium">
-                    PPR
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-2 pb-1 text-right font-medium"
-                    title="Bags in the hole"
-                  >
-                    Hole%
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-2 pb-1 text-right font-medium"
-                    title="Bags on the board"
-                  >
-                    Board%
-                  </th>
-                  <th scope="col" className="pb-1 pl-2 text-right font-medium" title="Four-baggers">
-                    4B
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {playerLines.map((line) => (
-                  <tr key={line.playerId} className="tabular-nums">
-                    <td className="py-0.5 pr-2">{playerNames[line.playerId] ?? 'Former player'}</td>
-                    <td className="px-2 py-0.5 text-right">{line.roundsThrown}</td>
-                    <td className="px-2 py-0.5 text-right">{line.pointsFor}</td>
-                    <td className="px-2 py-0.5 text-right font-medium">{formatRatio(line.ppr)}</td>
-                    <td className="px-2 py-0.5 text-right">
-                      {formatPercent(percentage(line.bagsIn, line.totalBags))}
-                    </td>
-                    <td className="px-2 py-0.5 text-right">
-                      {formatPercent(percentage(line.bagsOn, line.totalBags))}
-                    </td>
-                    <td className="py-0.5 pl-2 text-right">
-                      {line.totalBags > 0 ? line.fourBaggers : '–'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <PlayerStatsTable playerLines={playerLines} playerNames={playerNames} />
           </div>
         </div>
       )}

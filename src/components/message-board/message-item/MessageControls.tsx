@@ -24,6 +24,34 @@ interface MessageControlsProps {
   onEdit: () => void;
 }
 
+const DeleteDialogHeader: React.FC = () => (
+  <AlertDialogHeader>
+    <AlertDialogTitle>Delete Message</AlertDialogTitle>
+    <AlertDialogDescription>
+      Are you sure you want to delete this message? This action cannot be undone.
+    </AlertDialogDescription>
+  </AlertDialogHeader>
+);
+
+const DeleteDialogFooter: React.FC<{ isDeleting: boolean; onDelete: () => Promise<void> }> = ({
+  isDeleting,
+  onDelete,
+}) => (
+  <AlertDialogFooter>
+    <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+    <AlertDialogAction
+      disabled={isDeleting}
+      onClick={(e) => {
+        e.preventDefault();
+        onDelete();
+      }}
+      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+    >
+      {isDeleting ? 'Deleting...' : 'Delete'}
+    </AlertDialogAction>
+  </AlertDialogFooter>
+);
+
 const MessageControls: React.FC<MessageControlsProps> = ({
   isAuthor,
   showOptions,
@@ -95,25 +123,8 @@ const MessageControls: React.FC<MessageControlsProps> = ({
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Message</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this message? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isDeleting}
-              onClick={(e) => {
-                e.preventDefault();
-                onDelete();
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          <DeleteDialogHeader />
+          <DeleteDialogFooter isDeleting={isDeleting} onDelete={onDelete} />
         </AlertDialogContent>
       </AlertDialog>
     </>

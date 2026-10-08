@@ -15,6 +15,17 @@ interface PowerScoreChartCardProps {
   data: PowerScoreDataItem[];
 }
 
+const PowerScoreChartBody: React.FC<{ data: PowerScoreDataItem[]; isMobile: boolean }> = ({
+  data,
+  isMobile,
+}) => (
+  <CardContent className={isMobile ? 'p-2 pt-1' : 'p-4 pt-2'}>
+    <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-xl" />}>
+      <PowerScoreChart data={data} />
+    </Suspense>
+  </CardContent>
+);
+
 const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
   const { resolvedTheme } = useTheme();
   const isMobile = useIsMobile();
@@ -56,11 +67,7 @@ const PowerScoreChartCard: React.FC<PowerScoreChartCardProps> = ({ data }) => {
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent className={isMobile ? 'p-2 pt-1' : 'p-4 pt-2'}>
-          <Suspense fallback={<Skeleton className="h-[240px] w-full rounded-xl" />}>
-            <PowerScoreChart data={data} />
-          </Suspense>
-        </CardContent>
+        <PowerScoreChartBody data={data} isMobile={isMobile} />
       </Card>
     </AnimatedChartWrapper>
   );

@@ -43,6 +43,14 @@ describe('getStatusColor', () => {
   });
 });
 
+describe('unknown logo status', () => {
+  it('throws instead of guessing a colour, label or icon', () => {
+    expect(() => getStatusColor('bogus' as never)).toThrow('Unhandled logo status: bogus');
+    expect(() => getStatusLabel('bogus' as never)).toThrow('Unhandled logo status: bogus');
+    expect(() => getStatusIcon('bogus' as never)).toThrow('Unhandled logo status: bogus');
+  });
+});
+
 describe('getStatusLabel', () => {
   it('returns Optimized', () => expect(getStatusLabel('optimized')).toBe('Optimized'));
   it('returns Needs Update', () => expect(getStatusLabel('legacy')).toBe('Needs Update'));

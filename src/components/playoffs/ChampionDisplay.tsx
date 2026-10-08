@@ -15,6 +15,39 @@ interface ChampionDisplayProps {
   teams: Team[];
 }
 
+interface ChampionCardProps {
+  champion: Team;
+  isLight: boolean;
+}
+
+const ChampionCard: React.FC<ChampionCardProps> = ({ champion, isLight }) => (
+  <div
+    className={cn(
+      'flex items-center justify-center gap-3 p-4 rounded-lg',
+      isLight
+        ? 'bg-white shadow-xs border border-amber-200'
+        : 'bg-gray-800/50 border border-amber-900/30'
+    )}
+  >
+    <div className="size-12 rounded-full overflow-hidden bg-gray-200">
+      {(champion.imageUrl || champion.logoUrl) && (
+        <img
+          src={champion.imageUrl || champion.logoUrl || undefined}
+          alt={champion.name}
+          className="size-full object-contain"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
+          }}
+        />
+      )}
+    </div>
+    <div className="text-left">
+      <h4 className="font-bold text-lg">{champion.name}</h4>
+      <p className="text-sm text-muted-foreground">{champion.divisionName || 'Division Winner'}</p>
+    </div>
+  </div>
+);
+
 const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) => {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
@@ -23,6 +56,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
   const championFoundId = champion?.id;
 
   useEffect(() => {
+    // skipcq: JS-0098 -- fire and forget: `void` marks the promise as deliberately not awaited.
     if (championFoundId) void fireChampionConfettiOnce(championFoundId);
   }, [championFoundId]);
 
@@ -63,33 +97,7 @@ const ChampionDisplay: React.FC<ChampionDisplayProps> = ({ championId, teams }) 
         >
           Tournament Champion
         </h3>
-        <div
-          className={cn(
-            'flex items-center justify-center gap-3 p-4 rounded-lg',
-            isLight
-              ? 'bg-white shadow-xs border border-amber-200'
-              : 'bg-gray-800/50 border border-amber-900/30'
-          )}
-        >
-          <div className="size-12 rounded-full overflow-hidden bg-gray-200">
-            {(champion.imageUrl || champion.logoUrl) && (
-              <img
-                src={champion.imageUrl || champion.logoUrl || undefined}
-                alt={champion.name}
-                className="size-full object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = FALLBACK_TEAM_IMAGE;
-                }}
-              />
-            )}
-          </div>
-          <div className="text-left">
-            <h4 className="font-bold text-lg">{champion.name}</h4>
-            <p className="text-sm text-muted-foreground">
-              {champion.divisionName || 'Division Winner'}
-            </p>
-          </div>
-        </div>
+        <ChampionCard champion={champion} isLight={isLight} />
       </div>
     </div>
   );

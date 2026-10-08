@@ -192,6 +192,19 @@ const RearrangeBody: React.FC<Omit<RearrangeBracketDialogProps, 'open'>> = ({
   );
 };
 
+const RearrangeHeader: React.FC = () => (
+  <DialogHeader>
+    <DialogTitle className="flex items-center gap-2">
+      <Shuffle className="size-5" />
+      Rearrange Teams
+    </DialogTitle>
+    <DialogDescription>
+      Drag a team onto an open BYE spot to move it there, or onto another team to swap the two.
+      Nothing is saved until you review and confirm.
+    </DialogDescription>
+  </DialogHeader>
+);
+
 /**
  * Admin dialog: rearrange the losers bracket freely after the bracket has
  * started. Shows every losers-bracket round side by side; drag a team onto a
@@ -207,16 +220,7 @@ const RearrangeBracketDialog: React.FC<RearrangeBracketDialogProps> = ({
 }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="flex max-h-[85vh] flex-col overflow-y-auto sm:max-w-5xl">
-      <DialogHeader>
-        <DialogTitle className="flex items-center gap-2">
-          <Shuffle className="size-5" />
-          Rearrange Teams
-        </DialogTitle>
-        <DialogDescription>
-          Drag a team onto an open BYE spot to move it there, or onto another team to swap the two.
-          Nothing is saved until you review and confirm.
-        </DialogDescription>
-      </DialogHeader>
+      <RearrangeHeader />
       {/* State lives in the body, keyed by bracket: the closed dialog unmounts
           it entirely, so drags reset on reopen without state-syncing effects. */}
       <RearrangeBody

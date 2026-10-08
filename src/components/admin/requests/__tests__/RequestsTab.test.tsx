@@ -127,6 +127,18 @@ describe('RequestsTab', () => {
     expect(mutateAsync).not.toHaveBeenCalled();
   });
 
+  it('closes the dialog with Escape without calling the mutation', async () => {
+    const user = userEvent.setup();
+    render(<RequestsTab />);
+
+    await user.click(screen.getByRole('button', { name: /reject/i }));
+    expect(screen.getByText('Reject Request')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByText('Reject Request')).not.toBeInTheDocument());
+    expect(mutateAsync).not.toHaveBeenCalled();
+  });
+
   it('hides approve/reject actions for non-pending requests', () => {
     mockUseAllRequests.mockReturnValue({
       data: [{ ...baseRequest, status: 'APPROVED', admin_notes: 'done' }],

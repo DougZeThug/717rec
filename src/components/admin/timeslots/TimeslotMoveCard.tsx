@@ -18,6 +18,13 @@ interface TimeslotMoveCardProps {
   onDismiss: () => void;
 }
 
+const MoveTitle: React.FC<{ title: string }> = ({ title }) => (
+  <h3 className="font-semibold flex items-center gap-2">
+    <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+    {title}
+  </h3>
+);
+
 /**
  * The change an approved request asks for, stated in words, with one button.
  *
@@ -51,10 +58,7 @@ const TimeslotMoveCard: React.FC<TimeslotMoveCardProps> = ({
     >
       <CardContent className="p-4 space-y-3">
         <div className="space-y-1">
-          <h3 className="font-semibold flex items-center gap-2">
-            <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
-            {words.title}
-          </h3>
+          <MoveTitle title={words.title} />
           <p className="text-sm text-muted-foreground">{words.body}</p>
           {/* Moving a booking changes when a team is expected. It does not
               change a match that has already been created for that night. */}

@@ -13,7 +13,7 @@ export const useBlindDrawSignupCount = (eventDate?: string) => {
       if (!eventDate) return 0;
       return BlindDrawService.fetchBlindDrawSignupCount(eventDate);
     },
-    enabled: !!eventDate,
+    enabled: Boolean(eventDate),
     staleTime: 1000 * 60 * 2,
   });
 };

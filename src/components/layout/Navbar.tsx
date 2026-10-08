@@ -49,6 +49,17 @@ const NavbarControls: React.FC<{ isMobile: boolean }> = ({ isMobile }) => (
   </div>
 );
 
+/** The brand on the left and its controls on the right. */
+const NavbarRow: React.FC<{ isMobile: boolean }> = ({ isMobile }) => (
+  <div className="flex justify-between items-center py-2 md:py-1">
+    <div className="flex items-center">
+      <NavBrand />
+    </div>
+
+    <NavbarControls isMobile={isMobile} />
+  </div>
+);
+
 const Navbar: React.FC = React.memo(() => {
   // Use base theme hook - no location dependency
   const { isWinterTheme } = useSeasonalThemeBase();
@@ -74,13 +85,7 @@ const Navbar: React.FC = React.memo(() => {
         )}
       >
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center py-2 md:py-1">
-            <div className="flex items-center">
-              <NavBrand />
-            </div>
-
-            <NavbarControls isMobile={isMobile} />
-          </div>
+          <NavbarRow isMobile={isMobile} />
         </div>
       </nav>
     </>

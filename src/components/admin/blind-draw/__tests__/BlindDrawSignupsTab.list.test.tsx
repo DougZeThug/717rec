@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -101,6 +101,30 @@ describe('Blind Draw signups list', () => {
 
     expect(await screen.findByRole('alertdialog')).toHaveTextContent('Casey W.');
     expect(deleteSignup).not.toHaveBeenCalled();
+  });
+
+  it('closes the remove dialog on Cancel without removing anyone', async () => {
+    render(<BlindDrawSignupsTab />);
+
+    const rows = screen.getAllByRole('row').slice(1);
+    await userEvent.click(within(rows[0]).getByRole('button', { name: /remove/i }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(deleteSignup).not.toHaveBeenCalled();
+  });
+
+  it('removes the chosen signup when Remove is confirmed, then closes the dialog', async () => {
+    deleteSignup.mockResolvedValue(undefined); // skipcq: JS-W1042
+    render(<BlindDrawSignupsTab />);
+
+    const rows = screen.getAllByRole('row').slice(1);
+    await userEvent.click(within(rows[1]).getByRole('button', { name: /remove/i }));
+    const dialog = await screen.findByRole('alertdialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Remove' }));
+
+    await waitFor(() => expect(deleteSignup).toHaveBeenCalledWith('signup-2'));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 
   it('stands in with a skeleton that shows the same headings while loading', () => {

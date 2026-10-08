@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -129,6 +129,28 @@ describe('HeroCardsList', () => {
 
     expect(await screen.findByRole('alertdialog')).toHaveTextContent('Blind Draw');
     expect(deleteCard).not.toHaveBeenCalled();
+  });
+
+  it('keeps the card when the delete dialog is cancelled', async () => {
+    renderList();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Delete card' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Cancel' }));
+
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
+    expect(deleteCard).not.toHaveBeenCalled();
+  });
+
+  it('deletes the card once the dialog is confirmed, then closes it', async () => {
+    deleteCard.mockResolvedValue(undefined); // skipcq: JS-W1042
+    renderList();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Delete card' }));
+    const dialog = await screen.findByRole('alertdialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+
+    await waitFor(() => expect(deleteCard).toHaveBeenCalledWith('card-1'));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
   });
 
   it('shows its own empty state rather than an empty table', () => {

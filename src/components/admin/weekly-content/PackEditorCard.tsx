@@ -26,6 +26,43 @@ interface PackEditorCardProps {
   onDownload: () => void;
 }
 
+interface PackActionsProps {
+  isGeneratingCaption: boolean;
+  isExporting: boolean;
+  captionIsEmpty: boolean;
+  onGenerateCaption: () => void;
+  onCopyCaption: () => void;
+  onDownload: () => void;
+}
+
+const PackActions: React.FC<PackActionsProps> = ({
+  isGeneratingCaption,
+  isExporting,
+  captionIsEmpty,
+  onGenerateCaption,
+  onCopyCaption,
+  onDownload,
+}) => (
+  <div className="flex flex-wrap gap-2">
+    <Button variant="secondary" onClick={onGenerateCaption} disabled={isGeneratingCaption}>
+      {isGeneratingCaption ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : (
+        <Wand2 className="size-4" />
+      )}
+      Write it for me
+    </Button>
+    <Button variant="outline" onClick={onCopyCaption} disabled={captionIsEmpty}>
+      <Copy className="size-4" />
+      Copy caption
+    </Button>
+    <Button variant="outline" onClick={onDownload} disabled={isExporting}>
+      {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+      Download graphics
+    </Button>
+  </div>
+);
+
 const PackEditorCard: React.FC<PackEditorCardProps> = ({
   draft,
   isGeneratingCaption,
@@ -86,28 +123,14 @@ const PackEditorCard: React.FC<PackEditorCardProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={onGenerateCaption} disabled={isGeneratingCaption}>
-            {isGeneratingCaption ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Wand2 className="size-4" />
-            )}
-            Write it for me
-          </Button>
-          <Button variant="outline" onClick={onCopyCaption} disabled={draft.caption.trim() === ''}>
-            <Copy className="size-4" />
-            Copy caption
-          </Button>
-          <Button variant="outline" onClick={onDownload} disabled={isExporting}>
-            {isExporting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Download className="size-4" />
-            )}
-            Download graphics
-          </Button>
-        </div>
+        <PackActions
+          isGeneratingCaption={isGeneratingCaption}
+          isExporting={isExporting}
+          captionIsEmpty={draft.caption.trim() === ''}
+          onGenerateCaption={onGenerateCaption}
+          onCopyCaption={onCopyCaption}
+          onDownload={onDownload}
+        />
       </CardContent>
     </Card>
   );

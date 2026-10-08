@@ -48,6 +48,12 @@ const teamNames = (match: Match) => ({
   team2Name: match.team2Details?.name || 'Unknown Team',
 });
 
+const MatchCardHeadToHeadRow: React.FC<React.ComponentProps<typeof MatchHeadToHead>> = (props) => (
+  <div className="mt-1.5">
+    <MatchHeadToHead {...props} />
+  </div>
+);
+
 const MatchCard: React.FC<MatchCardProps> = ({
   match,
   onEdit,
@@ -111,16 +117,14 @@ const MatchCard: React.FC<MatchCardProps> = ({
           />
 
           {/* H2H Record */}
-          <div className="mt-1.5">
-            <MatchHeadToHead
-              team1Id={match.team1Id}
-              team2Id={match.team2Id}
-              team1Name={team1Name}
-              team2Name={team2Name}
-              prefetchedData={prefetchedH2H}
-              isBatchLoading={isBatchH2HLoading}
-            />
-          </div>
+          <MatchCardHeadToHeadRow
+            team1Id={match.team1Id}
+            team2Id={match.team2Id}
+            team1Name={team1Name}
+            team2Name={team2Name}
+            prefetchedData={prefetchedH2H}
+            isBatchLoading={isBatchH2HLoading}
+          />
 
           <MatchCardUpcomingExtras
             isCompleted={isCompleted}

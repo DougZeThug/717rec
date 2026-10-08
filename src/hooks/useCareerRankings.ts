@@ -90,7 +90,7 @@ export function useCareerRankings(options?: CareerRankingsOptions) {
       // Sort by career power score (descending)
       return rankings.sort((a, b) => b.careerPowerScore - a.careerPowerScore);
     },
-    enabled: !!teams && !isLoadingTeams && !teamsError,
+    enabled: Boolean(teams) && !isLoadingTeams && !teamsError,
     staleTime: 1000 * 60 * 10, // 10 minutes - career data is extremely static
   });
 

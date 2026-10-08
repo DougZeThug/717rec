@@ -51,8 +51,8 @@ const TeamSearchList: React.FC<TeamSearchListProps> = ({ teams, selectedTeamId, 
   </Command>
 );
 
-/** Which team the request is for: a searchable list, because there are many. */
-const RequestTeamPicker: React.FC<RequestTeamPickerProps> = ({
+/** The button and its popover, so the picker's own tree stays shallow. */
+const TeamPickerPopover: React.FC<RequestTeamPickerProps> = ({
   teams,
   isLoading,
   selectedTeamId,
@@ -70,42 +70,43 @@ const RequestTeamPicker: React.FC<RequestTeamPickerProps> = ({
   );
 
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium opacity-90">Select your team</Label>
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={isOpen}
-            aria-controls={listboxId}
-            className={cn(
-              'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
-              'text-inherit hover:text-inherit'
-            )}
-            disabled={isLoading}
-          >
-            {label}
-            <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent
-          id={listboxId}
-          className="w-[min(300px,calc(100vw-1rem))] p-0"
-          align="start"
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-controls={listboxId}
+          className={cn(
+            'w-full justify-between bg-background/20 border-white/20 hover:bg-background/30',
+            'text-inherit hover:text-inherit'
+          )}
+          disabled={isLoading}
         >
-          <TeamSearchList
-            teams={teams}
-            selectedTeamId={selectedTeamId}
-            onSelect={(teamId) => {
-              onSelect(teamId);
-              setIsOpen(false);
-            }}
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
+          {label}
+          <ChevronDown className="ml-2 size-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent id={listboxId} className="w-[min(300px,calc(100vw-1rem))] p-0" align="start">
+        <TeamSearchList
+          teams={teams}
+          selectedTeamId={selectedTeamId}
+          onSelect={(teamId) => {
+            onSelect(teamId);
+            setIsOpen(false);
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 };
+
+/** Which team the request is for: a searchable list, because there are many. */
+const RequestTeamPicker: React.FC<RequestTeamPickerProps> = (props) => (
+  <div className="space-y-2">
+    <Label className="text-sm font-medium opacity-90">Select your team</Label>
+    <TeamPickerPopover {...props} />
+  </div>
+);
 
 export default RequestTeamPicker;

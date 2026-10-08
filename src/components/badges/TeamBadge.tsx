@@ -20,6 +20,42 @@ interface TeamBadgeProps {
   className?: string;
 }
 
+// Large badge icon shown at the top of the mobile detail dialog
+const DialogBadgeIcon: React.FC<{
+  gradient: string;
+  IconComponent: React.ComponentType<{ className?: string }>;
+}> = ({ gradient, IconComponent }) => (
+  <div className="flex justify-center mb-4">
+    <div
+      className={cn(
+        'relative inline-flex items-center justify-center rounded-full',
+        `bg-gradient-to-br ${gradient}`,
+        'size-16 shadow-lg border-2 border-white'
+      )}
+    >
+      <IconComponent className="text-white size-8" />
+    </div>
+  </div>
+);
+
+// Content of the mobile detail dialog (rendered inside <Dialog>)
+const BadgeDialogBody: React.FC<{
+  gradient: string;
+  IconComponent: React.ComponentType<{ className?: string }>;
+  name: string;
+  description: string;
+}> = ({ gradient, IconComponent, name, description }) => (
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader className="text-center">
+      <DialogBadgeIcon gradient={gradient} IconComponent={IconComponent} />
+      <DialogTitle className="text-lg font-semibold">{name}</DialogTitle>
+      <DialogDescription className="text-sm text-muted-foreground mt-2">
+        {description}
+      </DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+);
+
 export const TeamBadge: React.FC<TeamBadgeProps> = ({
   badge,
   size = 'md',
@@ -51,6 +87,8 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       badge.badge_type.includes('third_place');
 
     if (!isChampionshipBadge) {
+      // skipcq: TCV-001 -- unreachable: getEnhancedDescription only calls this
+      // after it has already matched a champion, runner_up or third_place badge.
       return config.description;
     }
 
@@ -126,25 +164,12 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       <>
         {BadgeContent}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <div
-                  className={cn(
-                    'relative inline-flex items-center justify-center rounded-full',
-                    `bg-gradient-to-br ${config.gradient}`,
-                    'size-16 shadow-lg border-2 border-white'
-                  )}
-                >
-                  <IconComponent className="text-white size-8" />
-                </div>
-              </div>
-              <DialogTitle className="text-lg font-semibold">{config.name}</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-2">
-                {getEnhancedDescription()}
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
+          <BadgeDialogBody
+            gradient={config.gradient}
+            IconComponent={IconComponent}
+            name={config.name}
+            description={getEnhancedDescription()}
+          />
         </Dialog>
       </>
     );

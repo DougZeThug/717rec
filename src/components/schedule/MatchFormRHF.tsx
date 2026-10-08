@@ -46,6 +46,51 @@ const timeSlots = [
 
 const missingScore: number | undefined = undefined;
 
+// FormControl must keep SelectTrigger as its direct child: it passes the field id/aria down.
+const TeamSelectControl: React.FC<{ placeholder: string }> = ({ placeholder }) => (
+  <FormControl>
+    <SelectTrigger>
+      <SelectValue placeholder={placeholder} />
+    </SelectTrigger>
+  </FormControl>
+);
+
+interface MatchFormActionsProps {
+  isEdit: boolean;
+  isSubmitDisabled: boolean;
+  onCancel: () => void;
+}
+
+const MatchFormActions: React.FC<MatchFormActionsProps> = ({
+  isEdit,
+  isSubmitDisabled,
+  onCancel,
+}) => (
+  <div className="flex justify-end gap-2">
+    <Button type="button" variant="outline" onClick={onCancel}>
+      <X className="size-4 mr-2" />
+      Cancel
+    </Button>
+    <Button
+      type="submit"
+      className="bg-cornhole-navy hover:bg-cornhole-navy/90"
+      disabled={isSubmitDisabled}
+    >
+      {isEdit ? (
+        <>
+          <Save className="size-4 mr-2" />
+          Update Match
+        </>
+      ) : (
+        <>
+          <Plus className="size-4 mr-2" />
+          Create Match
+        </>
+      )}
+    </Button>
+  </div>
+);
+
 const MatchFormRHF: React.FC<MatchFormProps> = ({
   match,
   teams,
@@ -106,11 +151,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
               <FormItem>
                 <FormLabel>Team 1</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value} required>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Team 1" />
-                    </SelectTrigger>
-                  </FormControl>
+                  <TeamSelectControl placeholder="Select Team 1" />
                   <SelectContent>
                     {teams
                       .filter((team) => team.id !== team2Id)
@@ -134,11 +175,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
               <FormItem>
                 <FormLabel>Team 2</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value} required>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Team 2" />
-                    </SelectTrigger>
-                  </FormControl>
+                  <TeamSelectControl placeholder="Select Team 2" />
                   <SelectContent>
                     {teams
                       .filter((team) => team.id !== team1Id)
@@ -300,29 +337,13 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
           </div>
         )}
 
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            <X className="size-4 mr-2" />
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="bg-cornhole-navy hover:bg-cornhole-navy/90"
-            disabled={!timeSlotValue || form.formState.isSubmitting || isUpdating || isCreating}
-          >
-            {match ? (
-              <>
-                <Save className="size-4 mr-2" />
-                Update Match
-              </>
-            ) : (
-              <>
-                <Plus className="size-4 mr-2" />
-                Create Match
-              </>
-            )}
-          </Button>
-        </div>
+        <MatchFormActions
+          isEdit={Boolean(match)}
+          isSubmitDisabled={
+            !timeSlotValue || form.formState.isSubmitting || isUpdating || isCreating
+          }
+          onCancel={onCancel}
+        />
       </form>
     </Form>
   );

@@ -6,7 +6,7 @@ import BlindDrawSignupForm from '@/components/home/BlindDrawSignupForm';
 import { Card, CardContent } from '@/components/ui/card';
 import { useBlindDrawSignupCount } from '@/hooks/useBlindDrawSignups';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
-import { useStartCountdown } from '@/hooks/useStartCountdown';
+import { type StartCountdown, useStartCountdown } from '@/hooks/useStartCountdown';
 import { cn } from '@/lib/utils';
 import { HeroCard } from '@/types/heroCard';
 
@@ -153,11 +153,158 @@ const BlindDrawSignupSection: React.FC<BlindDrawSignupSectionProps> = ({
   </div>
 );
 
+interface EventColumnProps {
+  card: HeroCard;
+  meta: EventMetadata;
+  startCountdown: StartCountdown;
+  showCountdown: boolean;
+  shouldApplyWinter: boolean;
+}
+
+// Left Column - Header, Date, Countdown (desktop)
+const EventLeftColumn: React.FC<EventColumnProps> = ({
+  card,
+  meta: { isActiveEvent, checkInTimeStr },
+  startCountdown,
+  showCountdown,
+  shouldApplyWinter,
+}) => (
+  <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:shrink-0">
+    <div className="flex items-center gap-2">
+      <m.div
+        initial={{ rotate: -10, opacity: 0 }}
+        animate={{ rotate: 0, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Shuffle className="size-6 md:size-8" />
+      </m.div>
+      <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">{card.title}</h2>
+      <m.div
+        initial={{ rotate: 10, opacity: 0 }}
+        animate={{ rotate: 0, opacity: 1 }}
+        transition={{ duration: 0.4 }}
+      >
+        <Shuffle className="size-6 md:size-8" />
+      </m.div>
+    </div>
+
+    <EventSubtitleBadge
+      subtitle={card.subtitle}
+      isActiveEvent={isActiveEvent}
+      checkInTimeStr={checkInTimeStr}
+      shouldApplyWinter={shouldApplyWinter}
+    />
+
+    {showCountdown && (
+      <EventCountdown
+        text={startCountdown.text}
+        percent={startCountdown.percent}
+        shouldApplyWinter={shouldApplyWinter}
+        className="hidden md:block w-full mt-2"
+      />
+    )}
+  </div>
+);
+
+interface EventRightColumnProps extends EventColumnProps {
+  eventDate: string | null;
+  signupCount: number | undefined;
+}
+
+// Right Column - Details, Winners, Signup
+const EventRightColumn: React.FC<EventRightColumnProps> = ({
+  card,
+  meta: { isActiveEvent, checkInTimeStr, startTimeStr, buyIn, payouts, pastWinners },
+  startCountdown,
+  showCountdown,
+  shouldApplyWinter,
+  eventDate,
+  signupCount,
+}) => (
+  <div className="flex-1 flex flex-col items-center md:items-stretch space-y-3 mt-4 md:mt-0">
+    {isActiveEvent && (
+      <EventDetails
+        checkInTimeStr={checkInTimeStr}
+        startTimeStr={startTimeStr}
+        buyIn={buyIn}
+        payouts={payouts}
+        shouldApplyWinter={shouldApplyWinter}
+      />
+    )}
+
+    <PastWinnersDisplay pastWinners={pastWinners} shouldApplyWinter={shouldApplyWinter} />
+
+    {card.body && (
+      <p
+        className={cn(
+          'text-sm font-inter text-center md:text-left',
+          shouldApplyWinter ? 'text-cyan-200/80' : 'text-white/80'
+        )}
+      >
+        {card.body}
+      </p>
+    )}
+
+    {showCountdown && (
+      <EventCountdown
+        text={startCountdown.text}
+        percent={startCountdown.percent}
+        shouldApplyWinter={shouldApplyWinter}
+        className="md:hidden w-full max-w-sm mt-2"
+      />
+    )}
+
+    {isActiveEvent && card.slug === 'blind-draw' && eventDate && (
+      <BlindDrawSignupSection
+        eventDate={eventDate}
+        signupCount={signupCount}
+        shouldApplyWinter={shouldApplyWinter}
+      />
+    )}
+  </div>
+);
+
+const EventCardContent: React.FC<EventRightColumnProps> = ({
+  card,
+  meta,
+  startCountdown,
+  showCountdown,
+  shouldApplyWinter,
+  eventDate,
+  signupCount,
+}) => (
+  <CardContent className="relative z-10 p-4 md:p-6">
+    <div
+      className={cn(
+        'flex flex-col md:flex-row md:gap-8',
+        shouldApplyWinter ? 'text-cyan-50' : 'text-white'
+      )}
+    >
+      <EventLeftColumn
+        card={card}
+        meta={meta}
+        startCountdown={startCountdown}
+        showCountdown={showCountdown}
+        shouldApplyWinter={shouldApplyWinter}
+      />
+      <EventRightColumn
+        card={card}
+        meta={meta}
+        startCountdown={startCountdown}
+        showCountdown={showCountdown}
+        shouldApplyWinter={shouldApplyWinter}
+        eventDate={eventDate}
+        signupCount={signupCount}
+      />
+    </div>
+  </CardContent>
+);
+
 const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
   const { shouldApplyWinter } = useSeasonalTheme();
 
-  const { isActiveEvent, checkInTimeStr, startTimeStr, buyIn, payouts, pastWinners } =
-    parseEventMetadata(card);
+  const eventMeta = parseEventMetadata(card);
+  const { isActiveEvent, startTimeStr } = eventMeta;
 
   const eventDate = startTimeStr ? getEventDateEST(startTimeStr) : null;
   const { data: signupCount } = useBlindDrawSignupCount(eventDate ?? undefined);
@@ -191,96 +338,15 @@ const EventHeroCard: React.FC<EventHeroCardProps> = ({ card }) => {
       >
         <EventBackdrop shouldApplyWinter={shouldApplyWinter} />
 
-        <CardContent className="relative z-10 p-4 md:p-6">
-          <div
-            className={cn(
-              'flex flex-col md:flex-row md:gap-8',
-              shouldApplyWinter ? 'text-cyan-50' : 'text-white'
-            )}
-          >
-            {/* Left Column - Header, Date, Countdown (desktop) */}
-            <div className="flex flex-col items-center text-center space-y-3 md:w-1/3 md:shrink-0">
-              <div className="flex items-center gap-2">
-                <m.div
-                  initial={{ rotate: -10, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Shuffle className="size-6 md:size-8" />
-                </m.div>
-                <h2 className="text-xl md:text-2xl font-bebas uppercase tracking-wide">
-                  {card.title}
-                </h2>
-                <m.div
-                  initial={{ rotate: 10, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Shuffle className="size-6 md:size-8" />
-                </m.div>
-              </div>
-
-              <EventSubtitleBadge
-                subtitle={card.subtitle}
-                isActiveEvent={isActiveEvent}
-                checkInTimeStr={checkInTimeStr}
-                shouldApplyWinter={shouldApplyWinter}
-              />
-
-              {showCountdown && (
-                <EventCountdown
-                  text={startCountdown.text}
-                  percent={startCountdown.percent}
-                  shouldApplyWinter={shouldApplyWinter}
-                  className="hidden md:block w-full mt-2"
-                />
-              )}
-            </div>
-
-            {/* Right Column - Details, Winners, Signup */}
-            <div className="flex-1 flex flex-col items-center md:items-stretch space-y-3 mt-4 md:mt-0">
-              {isActiveEvent && (
-                <EventDetails
-                  checkInTimeStr={checkInTimeStr}
-                  startTimeStr={startTimeStr}
-                  buyIn={buyIn}
-                  payouts={payouts}
-                  shouldApplyWinter={shouldApplyWinter}
-                />
-              )}
-
-              <PastWinnersDisplay pastWinners={pastWinners} shouldApplyWinter={shouldApplyWinter} />
-
-              {card.body && (
-                <p
-                  className={cn(
-                    'text-sm font-inter text-center md:text-left',
-                    shouldApplyWinter ? 'text-cyan-200/80' : 'text-white/80'
-                  )}
-                >
-                  {card.body}
-                </p>
-              )}
-
-              {showCountdown && (
-                <EventCountdown
-                  text={startCountdown.text}
-                  percent={startCountdown.percent}
-                  shouldApplyWinter={shouldApplyWinter}
-                  className="md:hidden w-full max-w-sm mt-2"
-                />
-              )}
-
-              {isActiveEvent && card.slug === 'blind-draw' && eventDate && (
-                <BlindDrawSignupSection
-                  eventDate={eventDate}
-                  signupCount={signupCount}
-                  shouldApplyWinter={shouldApplyWinter}
-                />
-              )}
-            </div>
-          </div>
-        </CardContent>
+        <EventCardContent
+          card={card}
+          meta={eventMeta}
+          startCountdown={startCountdown}
+          showCountdown={showCountdown}
+          shouldApplyWinter={shouldApplyWinter}
+          eventDate={eventDate}
+          signupCount={signupCount}
+        />
       </Card>
     </m.div>
   );

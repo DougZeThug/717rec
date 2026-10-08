@@ -228,6 +228,21 @@ const TeamCareerSection = ({
 /** Sections a link may name, matching the ids on the page. */
 const LINKABLE_SECTIONS = ['performance', 'stats', 'h2h', 'matches', 'career'];
 
+const MobileBackButton = ({ onBack }: { onBack: () => void }) => (
+  <div className="flex items-center md:hidden">
+    <Button
+      variant="ghost"
+      size="sm"
+      className="min-h-11 px-3"
+      onClick={onBack}
+      aria-label="Go back to previous page"
+    >
+      <ArrowLeft size={16} className="mr-1" aria-hidden="true" />
+      Back
+    </Button>
+  </div>
+);
+
 const TeamDetailsPage = () => {
   const { teamId: teamParam } = useParams<{ teamId: string }>();
   const { teamId, isResolving } = useResolveTeamSlug(teamParam);
@@ -386,18 +401,7 @@ const TeamDetailsPage = () => {
         </div>
 
         {/* Mobile back button only */}
-        <div className="flex items-center md:hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="min-h-11 px-3"
-            onClick={handleBack}
-            aria-label="Go back to previous page"
-          >
-            <ArrowLeft size={16} className="mr-1" aria-hidden="true" />
-            Back
-          </Button>
-        </div>
+        <MobileBackButton onBack={handleBack} />
 
         {/* Desktop back button */}
         <Button

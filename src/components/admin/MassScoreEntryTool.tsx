@@ -21,6 +21,18 @@ import { useScoreEntryData } from './mass-score-entry/hooks/useScoreEntryData';
 import MatchesTable from './mass-score-entry/MatchesTable';
 import { isSubmittableMatch } from './mass-score-entry/utils/submissionEligibility';
 
+const FullWidthMatchesTable: React.FC<React.ComponentProps<typeof MatchesTable>> = (props) => (
+  <div className="w-full">
+    <MatchesTable {...props} />
+  </div>
+);
+
+const SubmitBar: React.FC<React.ComponentProps<typeof SubmitButton>> = (props) => (
+  <StickySubmitBar>
+    <SubmitButton {...props} />
+  </StickySubmitBar>
+);
+
 const MassScoreEntryTool: React.FC = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -193,29 +205,25 @@ const MassScoreEntryTool: React.FC = () => {
             onClear={() => clearErrors()}
           />
 
-          <div className="w-full">
-            <MatchesTable
-              matches={matches}
-              loading={loading}
-              submitting={submitting}
-              failedMatches={failedMatches}
-              errorMessages={errorMessages}
-              onScoreChange={handleScoreChange}
-              onGameWinsChange={handleGameWinsChange}
-              onMarkCompleted={handleMarkCompleted}
-              onClearError={clearErrors}
-              onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
-            />
-          </div>
+          <FullWidthMatchesTable
+            matches={matches}
+            loading={loading}
+            submitting={submitting}
+            failedMatches={failedMatches}
+            errorMessages={errorMessages}
+            onScoreChange={handleScoreChange}
+            onGameWinsChange={handleGameWinsChange}
+            onMarkCompleted={handleMarkCompleted}
+            onClearError={clearErrors}
+            onDeleteMatch={(matchId) => setDeleteMatchId(matchId)}
+          />
 
-          <StickySubmitBar>
-            <SubmitButton
-              onClick={handleSubmitAll}
-              submitting={submitting}
-              disabled={disableSubmit}
-              editedMatchCount={validEditedMatchesCount}
-            />
-          </StickySubmitBar>
+          <SubmitBar
+            onClick={handleSubmitAll}
+            submitting={submitting}
+            disabled={disableSubmit}
+            editedMatchCount={validEditedMatchesCount}
+          />
         </CardContent>
       </Card>
 

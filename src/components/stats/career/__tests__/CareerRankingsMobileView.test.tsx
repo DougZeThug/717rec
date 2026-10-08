@@ -172,6 +172,26 @@ describe('CareerRankingsMobileView', () => {
     expect(link).toHaveAttribute('href', '/teams/rail-riders');
   });
 
+  it('opens the team page without also triggering a click on the surrounding card', async () => {
+    const user = userEvent.setup();
+    const onOuterClick = vi.fn();
+    render(
+      <MemoryRouter>
+        <div onClick={onOuterClick}>
+          <CareerRankingsMobileView
+            rankings={rankings}
+            sortOptions={sortOptions}
+            onSortChange={vi.fn()}
+          />
+        </div>
+      </MemoryRouter>
+    );
+
+    await user.click(screen.getByRole('link', { name: /View Rail Riders team details/ }));
+
+    expect(onOuterClick).not.toHaveBeenCalled();
+  });
+
   it('renders an empty list without error when there are no rankings', () => {
     renderView({ rankings: [] });
     expect(screen.queryByRole('link')).not.toBeInTheDocument();

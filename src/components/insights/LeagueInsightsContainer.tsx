@@ -6,7 +6,11 @@ import { ErrorDisplay } from '@/components/ui/error-display';
 import { LoadingState } from '@/components/ui/loading-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import WinterSection from '@/components/winter/WinterSection';
-import { useLeagueInsights } from '@/hooks/useLeagueInsights';
+import {
+  type DivisionStrength,
+  type ParityMetrics,
+  useLeagueInsights,
+} from '@/hooks/useLeagueInsights';
 import { useSeasonalTheme } from '@/hooks/useSeasonalTheme';
 import { cn } from '@/lib/utils';
 
@@ -22,6 +26,20 @@ const DivisionStrengthChart = lazy(() => import('./DivisionStrengthChart'));
  * whole page, with no heading for a screen reader to land on.
  */
 const LOADING_HEADING = <h1 className="sr-only">League Insights</h1>;
+
+/** Division strength chart beside the parity card. */
+const ChartsRow: React.FC<{
+  divisionStrength: DivisionStrength[];
+  parity: ParityMetrics | null;
+  totalTeams: number;
+}> = ({ divisionStrength, parity, totalTeams }) => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <Suspense fallback={<Skeleton className="h-[320px] w-full rounded-lg" />}>
+      <DivisionStrengthChart divisions={divisionStrength} />
+    </Suspense>
+    {parity && <LeagueParityCard parity={parity} totalTeams={totalTeams} />}
+  </div>
+);
 
 /** Loads league insights and lays out overview cards, charts, matchups, and top performers. */
 const LeagueInsightsContainer: React.FC = () => {
@@ -88,12 +106,11 @@ const LeagueInsightsContainer: React.FC = () => {
         <LeagueOverviewCards overview={overview} />
 
         {/* Charts row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Suspense fallback={<Skeleton className="h-[320px] w-full rounded-lg" />}>
-            <DivisionStrengthChart divisions={divisionStrength} />
-          </Suspense>
-          {parity && <LeagueParityCard parity={parity} totalTeams={overview.totalTeams} />}
-        </div>
+        <ChartsRow
+          divisionStrength={divisionStrength}
+          parity={parity}
+          totalTeams={overview.totalTeams}
+        />
 
         {/* Division-vs-division aggregate records */}
         <DivisionMatchupsCard />

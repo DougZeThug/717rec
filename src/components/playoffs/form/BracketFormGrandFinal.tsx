@@ -6,6 +6,28 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import type { BracketFormValues } from './BracketFormSchema';
 
+function GrandFinalOption({
+  value,
+  label,
+  description,
+}: {
+  value: string;
+  label: string;
+  description: string;
+}) {
+  return (
+    <FormItem className="flex items-center space-x-3 space-y-0">
+      <FormControl>
+        <RadioGroupItem value={value} />
+      </FormControl>
+      <div className="space-y-1 leading-none">
+        <FormLabel className="font-normal">{label}</FormLabel>
+        <FormDescription className="text-xs">{description}</FormDescription>
+      </div>
+    </FormItem>
+  );
+}
+
 export function BracketFormGrandFinal({ form }: { form: UseFormReturn<BracketFormValues> }) {
   const format = form.watch('format');
 
@@ -30,29 +52,16 @@ export function BracketFormGrandFinal({ form }: { form: UseFormReturn<BracketFor
               defaultValue={field.value || 'simple'}
               className="flex flex-col space-y-1"
             >
-              <FormItem className="flex items-center space-x-3 space-y-0">
-                <FormControl>
-                  <RadioGroupItem value="simple" />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-normal">Simple Grand Final</FormLabel>
-                  <FormDescription className="text-xs">
-                    One match determines champion (faster, simpler)
-                  </FormDescription>
-                </div>
-              </FormItem>
-              <FormItem className="flex items-center space-x-3 space-y-0">
-                <FormControl>
-                  <RadioGroupItem value="double" />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="font-normal">Double Grand Final (Bracket Reset)</FormLabel>
-                  <FormDescription className="text-xs">
-                    If lower bracket champion wins first match, play second match (traditional
-                    fairness)
-                  </FormDescription>
-                </div>
-              </FormItem>
+              <GrandFinalOption
+                value="simple"
+                label="Simple Grand Final"
+                description="One match determines champion (faster, simpler)"
+              />
+              <GrandFinalOption
+                value="double"
+                label="Double Grand Final (Bracket Reset)"
+                description="If lower bracket champion wins first match, play second match (traditional fairness)"
+              />
             </RadioGroup>
           </FormControl>
         </FormItem>

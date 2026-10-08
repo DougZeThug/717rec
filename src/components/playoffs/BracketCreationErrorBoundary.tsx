@@ -16,6 +16,28 @@ interface BracketCreationErrorBoundaryProps {
   onReset?: () => void;
 }
 
+interface ErrorActionsProps {
+  onReset: () => void;
+  // Set only in development, when there is an error to inspect.
+  onDebug?: () => void;
+}
+
+const ErrorActions: React.FC<ErrorActionsProps> = ({ onReset, onDebug }) => (
+  <div className="flex gap-2">
+    <Button variant="outline" size="sm" onClick={onReset} className="flex items-center gap-2">
+      <RefreshCw className="size-4" />
+      Try Again
+    </Button>
+
+    {onDebug && (
+      <Button variant="outline" size="sm" onClick={onDebug} className="flex items-center gap-2">
+        <Bug className="size-4" />
+        Debug Info
+      </Button>
+    )}
+  </div>
+);
+
 export class BracketCreationErrorBoundary extends React.Component<
   BracketCreationErrorBoundaryProps,
   ErrorBoundaryState
@@ -115,31 +137,14 @@ export class BracketCreationErrorBoundary extends React.Component<
               </div>
             )}
 
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={this.handleReset}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw className="size-4" />
-                Try Again
-              </Button>
-
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    errorLog('Full error details:', this.state.error, this.state.errorInfo)
-                  }
-                  className="flex items-center gap-2"
-                >
-                  <Bug className="size-4" />
-                  Debug Info
-                </Button>
-              )}
-            </div>
+            <ErrorActions
+              onReset={this.handleReset}
+              onDebug={
+                process.env.NODE_ENV === 'development' && this.state.error
+                  ? () => errorLog('Full error details:', this.state.error, this.state.errorInfo)
+                  : undefined
+              }
+            />
           </AlertDescription>
         </Alert>
       );

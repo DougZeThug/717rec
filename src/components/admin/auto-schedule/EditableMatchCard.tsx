@@ -27,6 +27,99 @@ interface EditableMatchCardProps {
   warningMessage?: string;
 }
 
+interface TeamSelectProps {
+  id: string;
+  label: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  selectedTeam: Team | null;
+  options: Team[];
+}
+
+const TeamSelect: React.FC<TeamSelectProps> = ({
+  id,
+  label,
+  value,
+  onValueChange,
+  selectedTeam,
+  options,
+}) => (
+  <div className="flex-1 min-w-0">
+    <label htmlFor={id} className="text-xs text-muted-foreground mb-1 block">
+      {label}
+    </label>
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger id={id} className="w-full">
+        <SelectValue placeholder="Select team">
+          {selectedTeam && (
+            <div className="flex items-center gap-2">
+              <TeamLogo
+                imageUrl={selectedTeam.imageUrl || ''}
+                teamName={selectedTeam.name}
+                className="size-4 shrink-0"
+              />
+              <span className="truncate">{selectedTeam.name}</span>
+            </div>
+          )}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <div className="max-h-[300px] overflow-auto">
+          {options.map((team) => (
+            <SelectItem key={team.id} value={team.id}>
+              <div className="flex items-center gap-2">
+                <TeamLogo imageUrl={team.imageUrl || ''} teamName={team.name} className="size-4" />
+                <span>{team.name}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </div>
+      </SelectContent>
+    </Select>
+  </div>
+);
+
+interface TimeslotSelectProps {
+  id: string;
+  value: string;
+  onValueChange: (value: string) => void;
+}
+
+const TimeslotSelect: React.FC<TimeslotSelectProps> = ({ id, value, onValueChange }) => (
+  <div className="flex-1">
+    <label htmlFor={id} className="text-xs text-muted-foreground mb-1 block">
+      Timeslot
+    </label>
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger id={id} className="w-full">
+        <SelectValue placeholder="Select time" />
+      </SelectTrigger>
+      <SelectContent>
+        {ALL_BLOCK_TIMES.map((time) => (
+          <SelectItem key={time} value={time}>
+            {time}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+);
+
+/** Icon button that swaps team 1 and team 2. */
+const SwapTeamsButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <Button
+    type="button"
+    variant="ghost"
+    size="sm"
+    onClick={onClick}
+    className="self-center sm:mt-5 shrink-0"
+    title="Swap teams"
+    aria-label="Swap teams"
+  >
+    <ArrowLeftRight className="size-4 rotate-90 sm:rotate-0" />
+  </Button>
+);
+
 /** Card for editing one auto-scheduled match: team pickers, timeslot, swap, and remove. */
 const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
   match,
@@ -79,138 +172,36 @@ const EditableMatchCard: React.FC<EditableMatchCardProps> = ({
         {/* Team Selections - Stack on mobile, row on desktop */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Team 1 */}
-          <div className="flex-1 min-w-0">
-            <label
-              htmlFor={`team1-${match.id}`}
-              className="text-xs text-muted-foreground mb-1 block"
-            >
-              Team 1
-            </label>
-            <Select
-              value={match.team1Id || ''}
-              onValueChange={(value) => onUpdateTeam(match.id, 'team1', value)}
-            >
-              <SelectTrigger id={`team1-${match.id}`} className="w-full">
-                <SelectValue placeholder="Select team">
-                  {team1 && (
-                    <div className="flex items-center gap-2">
-                      <TeamLogo
-                        imageUrl={team1.imageUrl || ''}
-                        teamName={team1.name}
-                        className="size-4 shrink-0"
-                      />
-                      <span className="truncate">{team1.name}</span>
-                    </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <div className="max-h-[300px] overflow-auto">
-                  {teams
-                    .filter((team) => team.id !== match.team2Id)
-                    .map((team) => (
-                      <SelectItem key={team.id} value={team.id}>
-                        <div className="flex items-center gap-2">
-                          <TeamLogo
-                            imageUrl={team.imageUrl || ''}
-                            teamName={team.name}
-                            className="size-4"
-                          />
-                          <span>{team.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                </div>
-              </SelectContent>
-            </Select>
-          </div>
+          <TeamSelect
+            id={`team1-${match.id}`}
+            label="Team 1"
+            value={match.team1Id || ''}
+            onValueChange={(value) => onUpdateTeam(match.id, 'team1', value)}
+            selectedTeam={team1}
+            options={teams.filter((team) => team.id !== match.team2Id)}
+          />
 
           {/* Swap Button - Rotate icon on mobile */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => onSwapTeams(match.id)}
-            className="self-center sm:mt-5 shrink-0"
-            title="Swap teams"
-            aria-label="Swap teams"
-          >
-            <ArrowLeftRight className="size-4 rotate-90 sm:rotate-0" />
-          </Button>
+          <SwapTeamsButton onClick={() => onSwapTeams(match.id)} />
 
           {/* Team 2 */}
-          <div className="flex-1 min-w-0">
-            <label
-              htmlFor={`team2-${match.id}`}
-              className="text-xs text-muted-foreground mb-1 block"
-            >
-              Team 2
-            </label>
-            <Select
-              value={match.team2Id || ''}
-              onValueChange={(value) => onUpdateTeam(match.id, 'team2', value)}
-            >
-              <SelectTrigger id={`team2-${match.id}`} className="w-full">
-                <SelectValue placeholder="Select team">
-                  {team2 && (
-                    <div className="flex items-center gap-2">
-                      <TeamLogo
-                        imageUrl={team2.imageUrl || ''}
-                        teamName={team2.name}
-                        className="size-4 shrink-0"
-                      />
-                      <span className="truncate">{team2.name}</span>
-                    </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <div className="max-h-[300px] overflow-auto">
-                  {teams
-                    .filter((team) => team.id !== match.team1Id)
-                    .map((team) => (
-                      <SelectItem key={team.id} value={team.id}>
-                        <div className="flex items-center gap-2">
-                          <TeamLogo
-                            imageUrl={team.imageUrl || ''}
-                            teamName={team.name}
-                            className="size-4"
-                          />
-                          <span>{team.name}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                </div>
-              </SelectContent>
-            </Select>
-          </div>
+          <TeamSelect
+            id={`team2-${match.id}`}
+            label="Team 2"
+            value={match.team2Id || ''}
+            onValueChange={(value) => onUpdateTeam(match.id, 'team2', value)}
+            selectedTeam={team2}
+            options={teams.filter((team) => team.id !== match.team1Id)}
+          />
         </div>
 
         {/* Timeslot and Actions */}
         <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <label
-              htmlFor={`timeslot-${match.id}`}
-              className="text-xs text-muted-foreground mb-1 block"
-            >
-              Timeslot
-            </label>
-            <Select
-              value={match.timeslot || ''}
-              onValueChange={(value) => onUpdateTimeslot(match.id, value)}
-            >
-              <SelectTrigger id={`timeslot-${match.id}`} className="w-full">
-                <SelectValue placeholder="Select time" />
-              </SelectTrigger>
-              <SelectContent>
-                {ALL_BLOCK_TIMES.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {time}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <TimeslotSelect
+            id={`timeslot-${match.id}`}
+            value={match.timeslot || ''}
+            onValueChange={(value) => onUpdateTimeslot(match.id, value)}
+          />
 
           <DestructiveIconButton
             onClick={() => onRemove(match.id)}

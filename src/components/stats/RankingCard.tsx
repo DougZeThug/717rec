@@ -26,6 +26,39 @@ interface RankingCardProps {
   prefetchedBadges?: import('@/types/badges').TeamBadgeEvent[];
 }
 
+const TeamIdentityLink: React.FC<{ ranking: Ranking }> = ({ ranking }) => (
+  <Link
+    to={`/teams/${toTeamSlug(ranking.teamName)}`}
+    state={{ from: '/stats' }}
+    aria-label={`View ${ranking.teamName} team details`}
+    className="flex items-center gap-2 min-w-0 group"
+  >
+    <TeamLogo
+      imageUrl={ranking.imageUrl || ranking.logoUrl}
+      teamName={ranking.teamName}
+      size="sm"
+      className="shrink-0"
+    />
+    <div className="min-w-0">
+      <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
+        {ranking.teamName}
+      </h3>
+      <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
+    </div>
+  </Link>
+);
+
+const StatTile: React.FC<{
+  label: string;
+  valueClassName: string;
+  children: React.ReactNode;
+}> = ({ label, valueClassName, children }) => (
+  <div className="rounded-md bg-muted/50 px-2 py-1.5">
+    <p className="text-xs text-muted-foreground leading-tight">{label}</p>
+    <p className={valueClassName}>{children}</p>
+  </div>
+);
+
 const RankingCard: React.FC<RankingCardProps> = ({
   ranking,
   index,
@@ -89,25 +122,7 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
       {/* Team row: logo + name + division */}
       <div className="flex items-center justify-between mb-2">
-        <Link
-          to={`/teams/${toTeamSlug(ranking.teamName)}`}
-          state={{ from: '/stats' }}
-          aria-label={`View ${ranking.teamName} team details`}
-          className="flex items-center gap-2 min-w-0 group"
-        >
-          <TeamLogo
-            imageUrl={ranking.imageUrl || ranking.logoUrl}
-            teamName={ranking.teamName}
-            size="sm"
-            className="shrink-0"
-          />
-          <div className="min-w-0">
-            <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
-              {ranking.teamName}
-            </h3>
-            <p className="text-xs text-muted-foreground">{ranking.divisionName}</p>
-          </div>
-        </Link>
+        <TeamIdentityLink ranking={ranking} />
         <span className="text-base font-bold tabular-nums text-foreground shrink-0">
           {ranking.wins}-{ranking.losses}
         </span>
@@ -122,45 +137,39 @@ const RankingCard: React.FC<RankingCardProps> = ({
 
         {/* 2x2 stat grid */}
         <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">Games</p>
-            <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
-              {ranking.gamesWon}-{ranking.gamesLost}
-            </p>
-          </div>
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">Win %</p>
-            <p
-              className={cn(
-                'text-sm font-bold tabular-nums leading-tight',
-                winPercentageColorClass
-              )}
-            >
-              {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
-            </p>
-          </div>
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">SOS</p>
-            <p
-              className={cn(
-                'text-sm font-bold tabular-nums leading-tight',
-                getSosColor(ranking.sos || 0)
-              )}
-            >
-              {(ranking.sos || 0).toFixed(3)}
-            </p>
-          </div>
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">Game %</p>
-            <p
-              className={cn(
-                'text-sm font-bold tabular-nums leading-tight',
-                gameWinPercentageColorClass
-              )}
-            >
-              {gameWinPercentage.toFixed(1)}%
-            </p>
-          </div>
+          <StatTile
+            label="Games"
+            valueClassName="text-sm font-bold tabular-nums text-foreground leading-tight"
+          >
+            {ranking.gamesWon}-{ranking.gamesLost}
+          </StatTile>
+          <StatTile
+            label="Win %"
+            valueClassName={cn(
+              'text-sm font-bold tabular-nums leading-tight',
+              winPercentageColorClass
+            )}
+          >
+            {hasGames ? `${winPercentage.toFixed(1)}%` : '—'}
+          </StatTile>
+          <StatTile
+            label="SOS"
+            valueClassName={cn(
+              'text-sm font-bold tabular-nums leading-tight',
+              getSosColor(ranking.sos || 0)
+            )}
+          >
+            {(ranking.sos || 0).toFixed(3)}
+          </StatTile>
+          <StatTile
+            label="Game %"
+            valueClassName={cn(
+              'text-sm font-bold tabular-nums leading-tight',
+              gameWinPercentageColorClass
+            )}
+          >
+            {gameWinPercentage.toFixed(1)}%
+          </StatTile>
         </div>
       </div>
     </EntityCard>

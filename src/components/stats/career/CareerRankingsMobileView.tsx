@@ -33,6 +33,116 @@ const gameWinPercentageColorClass = (pct: number) => {
   return 'text-red-600 dark:text-red-500';
 };
 
+const CompactRecord: React.FC<{
+  ranking: CareerRanking;
+  formatPercentage: (v: number) => string;
+}> = ({ ranking, formatPercentage }) => (
+  <p className="text-xs text-muted-foreground tabular-nums">
+    <span className="font-bold">
+      {ranking.careerMatchWins}-{ranking.careerMatchLosses}
+    </span>
+    <span className={cn('ml-1', getWinPercentageColor(ranking.careerWinPercentage))}>
+      ({formatPercentage(ranking.careerWinPercentage)})
+    </span>
+  </p>
+);
+
+// Team logo, name and record, linked to the team page (compact card)
+const CompactTeamLink: React.FC<{
+  ranking: CareerRanking;
+  formatPercentage: (v: number) => string;
+}> = ({ ranking, formatPercentage }) => (
+  <Link
+    to={`/teams/${toTeamSlug(ranking.teamName)}`}
+    aria-label={`View ${ranking.teamName} team details`}
+    className="flex items-center gap-2 flex-1 min-w-0 group"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <TeamLogo
+      imageUrl={ranking.imageUrl || ranking.logoUrl}
+      teamName={ranking.teamName}
+      size="sm"
+      className="shrink-0"
+    />
+    <div className="min-w-0 flex-1">
+      <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
+        {ranking.teamName}
+      </h3>
+      <CompactRecord ranking={ranking} formatPercentage={formatPercentage} />
+    </div>
+  </Link>
+);
+
+// Team logo and name, linked to the team page (detailed card)
+const DetailedTeamLink: React.FC<{ ranking: CareerRanking }> = ({ ranking }) => (
+  <Link
+    to={`/teams/${toTeamSlug(ranking.teamName)}`}
+    aria-label={`View ${ranking.teamName} team details`}
+    className="flex items-center gap-2 min-w-0 group"
+  >
+    <TeamLogo
+      imageUrl={ranking.imageUrl || ranking.logoUrl}
+      teamName={ranking.teamName}
+      size="sm"
+      className="shrink-0"
+    />
+    <div className="min-w-0">
+      <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
+        {ranking.teamName}
+      </h3>
+    </div>
+  </Link>
+);
+
+// 2x2 grid of Win %, SOS, Games and Game % (detailed card)
+const DetailedStatGrid: React.FC<{
+  ranking: CareerRanking;
+  formatPercentage: (v: number) => string;
+  gameWinPercentageColorClass: (pct: number) => string;
+}> = ({ ranking, formatPercentage, gameWinPercentageColorClass }) => (
+  <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
+    <div className="rounded-md bg-muted/50 px-2 py-1.5">
+      <p className="text-xs text-muted-foreground leading-tight">Win %</p>
+      <p
+        className={cn(
+          'text-sm font-bold tabular-nums leading-tight',
+          getWinPercentageColor(ranking.careerWinPercentage)
+        )}
+      >
+        {formatPercentage(ranking.careerWinPercentage)}
+      </p>
+    </div>
+    <div className="rounded-md bg-muted/50 px-2 py-1.5">
+      <p className="text-xs text-muted-foreground leading-tight">SOS</p>
+      <p
+        className={cn(
+          'text-sm font-bold tabular-nums leading-tight',
+          getSosColor(ranking.careerSos)
+        )}
+      >
+        {ranking.careerSos.toFixed(3)}
+      </p>
+    </div>
+    <div className="rounded-md bg-muted/50 px-2 py-1.5">
+      <p className="text-xs text-muted-foreground leading-tight">Games</p>
+      <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
+        {ranking.careerGameWins}-{ranking.careerGameLosses}
+      </p>
+    </div>
+    <div className="rounded-md bg-muted/50 px-2 py-1.5">
+      <p className="text-xs text-muted-foreground leading-tight">Game %</p>
+      <p
+        className={cn(
+          'text-sm font-bold tabular-nums leading-tight',
+          gameWinPercentageColorClass(ranking.careerGameWinPercentage)
+        )}
+      >
+        {formatPercentage(ranking.careerGameWinPercentage)}
+      </p>
+    </div>
+  </div>
+);
+
 // Compact card - mirrors standings compact design
 const CareerCompactCard: React.FC<{
   ranking: CareerRanking;
@@ -48,32 +158,7 @@ const CareerCompactCard: React.FC<{
         </div>
 
         {/* Team logo + name + record */}
-        <Link
-          to={`/teams/${toTeamSlug(ranking.teamName)}`}
-          aria-label={`View ${ranking.teamName} team details`}
-          className="flex items-center gap-2 flex-1 min-w-0 group"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <TeamLogo
-            imageUrl={ranking.imageUrl || ranking.logoUrl}
-            teamName={ranking.teamName}
-            size="sm"
-            className="shrink-0"
-          />
-          <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold leading-tight text-foreground group-hover:text-primary transition-colors">
-              {ranking.teamName}
-            </h3>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              <span className="font-bold">
-                {ranking.careerMatchWins}-{ranking.careerMatchLosses}
-              </span>
-              <span className={cn('ml-1', getWinPercentageColor(ranking.careerWinPercentage))}>
-                ({formatPercentage(ranking.careerWinPercentage)})
-              </span>
-            </p>
-          </div>
-        </Link>
+        <CompactTeamLink ranking={ranking} formatPercentage={formatPercentage} />
 
         {/* Championship trophies */}
         {ranking.championships > 0 && (
@@ -138,23 +223,7 @@ const CareerDetailedCard: React.FC<{
 
       {/* Team row: logo + name + record */}
       <div className="flex items-center justify-between mb-2">
-        <Link
-          to={`/teams/${toTeamSlug(ranking.teamName)}`}
-          aria-label={`View ${ranking.teamName} team details`}
-          className="flex items-center gap-2 min-w-0 group"
-        >
-          <TeamLogo
-            imageUrl={ranking.imageUrl || ranking.logoUrl}
-            teamName={ranking.teamName}
-            size="sm"
-            className="shrink-0"
-          />
-          <div className="min-w-0">
-            <h3 className="font-semibold text-sm transition-colors truncate text-foreground group-hover:text-primary">
-              {ranking.teamName}
-            </h3>
-          </div>
-        </Link>
+        <DetailedTeamLink ranking={ranking} />
         <span className="text-base font-bold tabular-nums text-foreground shrink-0">
           {ranking.careerMatchWins}-{ranking.careerMatchLosses}
         </span>
@@ -168,47 +237,11 @@ const CareerDetailedCard: React.FC<{
         </div>
 
         {/* 2x2 stat grid */}
-        <div className="grid grid-cols-2 gap-1.5 flex-1 min-w-0">
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">Win %</p>
-            <p
-              className={cn(
-                'text-sm font-bold tabular-nums leading-tight',
-                getWinPercentageColor(ranking.careerWinPercentage)
-              )}
-            >
-              {formatPercentage(ranking.careerWinPercentage)}
-            </p>
-          </div>
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">SOS</p>
-            <p
-              className={cn(
-                'text-sm font-bold tabular-nums leading-tight',
-                getSosColor(ranking.careerSos)
-              )}
-            >
-              {ranking.careerSos.toFixed(3)}
-            </p>
-          </div>
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">Games</p>
-            <p className="text-sm font-bold tabular-nums text-foreground leading-tight">
-              {ranking.careerGameWins}-{ranking.careerGameLosses}
-            </p>
-          </div>
-          <div className="rounded-md bg-muted/50 px-2 py-1.5">
-            <p className="text-xs text-muted-foreground leading-tight">Game %</p>
-            <p
-              className={cn(
-                'text-sm font-bold tabular-nums leading-tight',
-                gameWinPercentageColorClass(ranking.careerGameWinPercentage)
-              )}
-            >
-              {formatPercentage(ranking.careerGameWinPercentage)}
-            </p>
-          </div>
-        </div>
+        <DetailedStatGrid
+          ranking={ranking}
+          formatPercentage={formatPercentage}
+          gameWinPercentageColorClass={gameWinPercentageColorClass}
+        />
       </div>
     </EntityCard>
   );

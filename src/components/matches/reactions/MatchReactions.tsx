@@ -17,6 +17,34 @@ interface MatchReactionsProps {
   matchId: string;
 }
 
+interface AddReactionPopoverProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (emoji: string) => void;
+}
+
+const AddReactionPopover: React.FC<AddReactionPopoverProps> = ({
+  open,
+  onOpenChange,
+  onSelect,
+}) => (
+  <Popover open={open} onOpenChange={onOpenChange}>
+    <PopoverTrigger asChild>
+      <Button
+        variant="outline"
+        size="xs"
+        className="py-0 h-6 px-1.5 gap-1 text-xs border"
+        aria-label="Add reaction"
+      >
+        <SmilePlus className="size-3.5" />
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent className="w-auto p-0 border-none shadow-md" align="start" sideOffset={5}>
+      <MatchReactionPicker onSelect={onSelect} />
+    </PopoverContent>
+  </Popover>
+);
+
 const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
   const { reactionCounts, toggleReaction, isLoading } = useMatchReactions(matchId);
   const { user } = useAuth();
@@ -60,21 +88,7 @@ const MatchReactions: React.FC<MatchReactionsProps> = ({ matchId }) => {
         />
       ))}
 
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="xs"
-            className="py-0 h-6 px-1.5 gap-1 text-xs border"
-            aria-label="Add reaction"
-          >
-            <SmilePlus className="size-3.5" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0 border-none shadow-md" align="start" sideOffset={5}>
-          <MatchReactionPicker onSelect={handleReaction} />
-        </PopoverContent>
-      </Popover>
+      <AddReactionPopover open={open} onOpenChange={setOpen} onSelect={handleReaction} />
     </div>
   );
 };

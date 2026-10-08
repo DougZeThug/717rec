@@ -21,6 +21,28 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
+// Team logo that links to the team page
+const TeamLogoLink: React.FC<{ name: string; logo: string }> = ({ name, logo }) => (
+  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="shrink-0">
+    <Avatar className="size-7 md:size-8">
+      <AvatarImage src={logo} alt={name} />
+      <AvatarFallback>{name.charAt(0)}</AvatarFallback>
+    </Avatar>
+  </TransitionLink>
+);
+
+// Team name that links to the team page; the caller sets winner / loser colours
+const TeamNameLink: React.FC<{ name: string; labelClassName: string }> = ({
+  name,
+  labelClassName,
+}) => (
+  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="truncate hover:underline">
+    <span className={labelClassName} title={name}>
+      {name}
+    </span>
+  </TransitionLink>
+);
+
 /** Match row with date, linked team names/logos, and game wins; can color winner and loser. */
 const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
   match,
@@ -68,28 +90,16 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
       >
         {/* Home - Left side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1">
-          <TransitionLink to={`/teams/${toTeamSlug(homeName)}`} className="shrink-0">
-            <Avatar className="size-7 md:size-8">
-              <AvatarImage src={homeLogo} alt={homeName} />
-              <AvatarFallback>{homeName.charAt(0)}</AvatarFallback>
-            </Avatar>
-          </TransitionLink>
-          <TransitionLink
-            to={`/teams/${toTeamSlug(homeName)}`}
-            className="truncate hover:underline"
-          >
-            <span
-              className={cn(
-                'truncate',
-                'font-bebas uppercase tracking-wide',
-                highlightWinnerLoser && winnerTeamId === homeTeamId && 'text-green-600 font-medium',
-                highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-500'
-              )}
-              title={homeName}
-            >
-              {homeName}
-            </span>
-          </TransitionLink>
+          <TeamLogoLink name={homeName} logo={homeLogo} />
+          <TeamNameLink
+            name={homeName}
+            labelClassName={cn(
+              'truncate',
+              'font-bebas uppercase tracking-wide',
+              highlightWinnerLoser && winnerTeamId === homeTeamId && 'text-green-600 font-medium',
+              highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-500'
+            )}
+          />
         </div>
         {/* Game score - center */}
         <div
@@ -102,28 +112,16 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
         </div>
         {/* Away - Right side */}
         <div className="flex items-center min-w-0 gap-x-2 flex-1 justify-end">
-          <TransitionLink
-            to={`/teams/${toTeamSlug(awayName)}`}
-            className="truncate hover:underline"
-          >
-            <span
-              className={cn(
-                'truncate text-right',
-                'font-bebas uppercase tracking-wide',
-                highlightWinnerLoser && winnerTeamId === awayTeamId && 'text-green-600 font-medium',
-                highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-500'
-              )}
-              title={awayName}
-            >
-              {awayName}
-            </span>
-          </TransitionLink>
-          <TransitionLink to={`/teams/${toTeamSlug(awayName)}`} className="shrink-0">
-            <Avatar className="size-7 md:size-8">
-              <AvatarImage src={awayLogo} alt={awayName} />
-              <AvatarFallback>{awayName.charAt(0)}</AvatarFallback>
-            </Avatar>
-          </TransitionLink>
+          <TeamNameLink
+            name={awayName}
+            labelClassName={cn(
+              'truncate text-right',
+              'font-bebas uppercase tracking-wide',
+              highlightWinnerLoser && winnerTeamId === awayTeamId && 'text-green-600 font-medium',
+              highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-500'
+            )}
+          />
+          <TeamLogoLink name={awayName} logo={awayLogo} />
         </div>
       </div>
     </div>
