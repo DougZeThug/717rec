@@ -69,6 +69,14 @@ const RouteErrorActions: React.FC<{
   </div>
 );
 
+const goBack = () => {
+  window.history.back();
+};
+
+const goHome = () => {
+  window.location.href = '/';
+};
+
 export class RouteErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -104,14 +112,6 @@ export class RouteErrorBoundary extends Component<Props, State> {
     this.setState({ hasError: false, error: null });
   };
 
-  handleGoBack = () => {
-    window.history.back();
-  };
-
-  handleGoHome = () => {
-    window.location.href = '/';
-  };
-
   render() {
     if (this.state.hasError) {
       // The page's code never arrived, so there is nothing to try again here.
@@ -142,11 +142,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
               </div>
             )}
 
-            <RouteErrorActions
-              onRetry={this.handleRetry}
-              onGoBack={this.handleGoBack}
-              onGoHome={this.handleGoHome}
-            />
+            <RouteErrorActions onRetry={this.handleRetry} onGoBack={goBack} onGoHome={goHome} />
           </div>
         </div>
       );

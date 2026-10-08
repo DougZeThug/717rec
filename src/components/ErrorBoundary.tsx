@@ -44,6 +44,14 @@ const ErrorActions: React.FC<{ onReload: () => void; onGoHome: () => void }> = (
   </div>
 );
 
+const reloadPage = () => {
+  window.location.reload();
+};
+
+const goHome = () => {
+  window.location.href = '/';
+};
+
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -64,14 +72,6 @@ export class ErrorBoundary extends Component<Props, State> {
       componentStack: errorInfo.componentStack,
     });
   }
-
-  handleReload = () => {
-    window.location.reload();
-  };
-
-  handleGoHome = () => {
-    window.location.href = '/';
-  };
 
   render() {
     if (this.state.hasError) {
@@ -106,7 +106,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </div>
             )}
 
-            <ErrorActions onReload={this.handleReload} onGoHome={this.handleGoHome} />
+            <ErrorActions onReload={reloadPage} onGoHome={goHome} />
           </div>
         </div>
       );
