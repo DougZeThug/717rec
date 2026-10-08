@@ -21,7 +21,7 @@ const parse = (text, file) => {
   for (const key of ['name', 'description', 'tools']) {
     if (!meta[key]) throw new Error(`${file}: frontmatter needs "${key}"`);
   }
-  return { meta, body: m[2].trim() };
+  return { meta, body: frontmatter[2].trim() };
 };
 
 const basic = (s) => JSON.stringify(s); // JSON string is valid TOML basic string
