@@ -29,9 +29,9 @@ function makeTeam(id: string, tier: number): Team {
 
 function makeMatch(slot: string, a: Team, b: Team): ScheduledMatch {
   const getTierNum = (t: Team) => {
-    const d = (t.divisionName || '').toLowerCase();
-    if (d.includes('competitive')) return 1;
-    if (d.includes('intermediate')) return 2;
+    const division = (t.divisionName || '').toLowerCase();
+    if (division.includes('competitive')) return 1;
+    if (division.includes('intermediate')) return 2;
     return 3;
   };
   return {

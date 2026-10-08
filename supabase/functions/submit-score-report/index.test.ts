@@ -99,9 +99,9 @@ function stubFetch() {
       }
 
       // Dedupe pre-check: parse match_id, status, message eq filters.
-      const u = new URL(url);
+      const requestUrl = new URL(url);
       const eqValue = (param: string): string | null => {
-        const raw = u.searchParams.get(param);
+        const raw = requestUrl.searchParams.get(param);
         if (!raw) return null;
         return raw.startsWith('eq.') ? decodeURIComponent(raw.slice(3)) : null;
       };
