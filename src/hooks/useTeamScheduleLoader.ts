@@ -30,7 +30,7 @@ export const useTeamScheduleLoader = () => {
 
       try {
         scheduleLog('loadTeamsForDate called with:', {
-          date: date,
+          date,
           normalizedDate: normalizeDate(date, 'loadTeamsForDate'),
           dualBlockMode,
         });

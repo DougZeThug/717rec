@@ -297,7 +297,7 @@ export const useOptimisticScoreMutation = (bracketId: string | null) => {
                 team2Score: team2GameWins,
                 team1_score: team1GameWins,
                 team2_score: team2GameWins,
-                winnerId: winnerId,
+                winnerId,
                 winner_id: winnerId,
                 status: 'completed',
               };

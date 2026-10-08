@@ -80,8 +80,8 @@ export const BracketsViewerAdapter = {
     return {
       data: {
         stages: castToViewer<ViewerStage[]>(bracketData.stage || []),
-        groups: groups,
-        rounds: rounds,
+        groups,
+        rounds,
         matches: matchesWithSources,
         matchGames: castToViewer<ViewerMatchGame[]>(bracketData.match_game || []),
         participants: (bracketData.participant || []) as ViewerParticipant[],

@@ -54,7 +54,7 @@ export const scheduleStandardPairings = async (
       haveTeamsPlayedFn: haveTeamsPlayedBefore,
       getCompatibilityScoreFn: calculateDivisionOnlyCompatibility,
       weights: config.weights,
-      playedPairsSet: playedPairsSet,
+      playedPairsSet,
     });
 
     // Store pairings for this block
