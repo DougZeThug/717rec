@@ -87,6 +87,8 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       badge.badge_type.includes('third_place');
 
     if (!isChampionshipBadge) {
+      // skipcq: TCV-001 -- unreachable: getEnhancedDescription only calls this
+      // after it has already matched a champion, runner_up or third_place badge.
       return config.description;
     }
 

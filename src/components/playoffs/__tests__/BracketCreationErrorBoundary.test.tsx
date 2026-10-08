@@ -56,6 +56,20 @@ describe('BracketCreationErrorBoundary', () => {
     expect(screen.getByText('Add teams to your divisions first')).toBeInTheDocument();
   });
 
+  it('explains a divisions failure with suggested fixes', () => {
+    render(
+      <BracketCreationErrorBoundary>
+        <Boom message="could not load divisions" />
+      </BracketCreationErrorBoundary>
+    );
+
+    expect(screen.getByText(/Failed to load divisions/)).toBeInTheDocument();
+    expect(
+      screen.getByText('Ensure at least one division exists in your database')
+    ).toBeInTheDocument();
+    expect(screen.getByText('Check database connectivity')).toBeInTheDocument();
+  });
+
   it('shows the raw message and no fix list for an unknown failure', () => {
     render(
       <BracketCreationErrorBoundary>

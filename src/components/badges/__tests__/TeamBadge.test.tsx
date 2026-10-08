@@ -52,6 +52,28 @@ describe('TeamBadge on a phone', () => {
   });
 });
 
+describe('TeamBadge season descriptions on a phone', () => {
+  beforeEach(() => {
+    mockIsMobile.value = true;
+  });
+
+  it.each([
+    ['intermediate_champion', '2025 Intermediate Champion'],
+    ['competitive_runner_up', '2025 Competitive Runner-up'],
+    ['recreational_third_place', '2025 Recreational Third Place'],
+    ['intermediate_third_place', '2025 Intermediate Third Place'],
+    ['competitive_champion', '2025 Competitive Champion'],
+  ] as const)('describes %s as "%s"', async (badgeType, expected) => {
+    const user = userEvent.setup();
+    const { container } = render(<TeamBadge badge={badge({ badge_type: badgeType })} />);
+
+    await user.click(container.firstElementChild as HTMLElement);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent(expected);
+  });
+});
+
 describe('TeamBadge on desktop', () => {
   it('shows no dialog and keeps the badge icon visible', () => {
     mockIsMobile.value = false;

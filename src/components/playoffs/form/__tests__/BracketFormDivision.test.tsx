@@ -17,7 +17,7 @@ const mockDivisions = [
 
 const mockOnDivisionChange = vi.fn();
 
-const TestWrapper = () => {
+const TestWrapper = ({ divisions = mockDivisions }: { divisions?: typeof mockDivisions }) => {
   const form = useForm({
     resolver: zodResolver(bracketFormSchema),
     defaultValues: {
@@ -34,7 +34,7 @@ const TestWrapper = () => {
       <form>
         <BracketFormDivision
           form={form}
-          divisions={mockDivisions}
+          divisions={divisions}
           onDivisionChange={mockOnDivisionChange}
         />
       </form>
@@ -63,5 +63,23 @@ describe('BracketFormDivision', () => {
 
     expect(division1[0]).toBeInTheDocument();
     expect(division2[0]).toBeInTheDocument();
+  });
+
+  it('tells the admin to create divisions when none exist', () => {
+    render(<TestWrapper divisions={[]} />);
+
+    expect(screen.getByText('Division')).toBeInTheDocument();
+    expect(
+      screen.getByText('No divisions available. Please create divisions first.')
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  it('shows the same message when only the Hidden division exists', () => {
+    render(<TestWrapper divisions={[{ id: 'hidden', name: 'Hidden' }]} />);
+
+    expect(
+      screen.getByText('No divisions available. Please create divisions first.')
+    ).toBeInTheDocument();
   });
 });
