@@ -42,11 +42,11 @@ vi.mock('@/utils/autoSchedule/dateUtils', () => ({
   validateScheduleDate: (...args: unknown[]) => mockValidateScheduleDate(...args),
   normalizeScheduleDate: (date: Date | string | null) => {
     if (!date) return '';
-    const d = date instanceof Date ? date : new Date(date);
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${day}`;
+    const dateValue = date instanceof Date ? date : new Date(date);
+    const year = dateValue.getFullYear();
+    const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+    const day = String(dateValue.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   },
 }));
 

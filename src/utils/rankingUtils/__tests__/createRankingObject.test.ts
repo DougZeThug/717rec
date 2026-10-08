@@ -31,8 +31,8 @@ describe('createRankingObject', () => {
   const divisionWeights = new Map([['div-1', 0.9]]);
 
   it('creates a ranking object with all required fields populated', () => {
-    const t = makeTeam('t1');
-    const result = createRankingObject(t, [t, makeTeam('t2')], [], {}, divisionWeights);
+    const team = makeTeam('t1');
+    const result = createRankingObject(team, [team, makeTeam('t2')], [], {}, divisionWeights);
 
     expect(result.teamId).toBe('t1');
     expect(result.teamName).toBe('Team t1');
@@ -46,33 +46,33 @@ describe('createRankingObject', () => {
   });
 
   it('returns winPercentage of 0 when team has no wins and no losses', () => {
-    const t = makeTeam('t1', { wins: 0, losses: 0 });
-    const result = createRankingObject(t, [t], [], {}, divisionWeights);
+    const team = makeTeam('t1', { wins: 0, losses: 0 });
+    const result = createRankingObject(team, [team], [], {}, divisionWeights);
     expect(result.winPercentage).toBe(0);
   });
 
   it('uses power_score from team object directly', () => {
-    const t = makeTeam('t1', { power_score: 42.5 });
-    const result = createRankingObject(t, [t], [], {}, divisionWeights);
+    const team = makeTeam('t1', { power_score: 42.5 });
+    const result = createRankingObject(team, [team], [], {}, divisionWeights);
     expect(result.powerScore).toBe(42.5);
   });
 
   it('preserves null powerScore when team.power_score is undefined (no data)', () => {
-    const t = makeTeam('t1', { power_score: undefined });
-    const result = createRankingObject(t, [t], [], {}, divisionWeights);
+    const team = makeTeam('t1', { power_score: undefined });
+    const result = createRankingObject(team, [team], [], {}, divisionWeights);
     expect(result.powerScore).toBeNull();
   });
 
   it('sets previousRank and initialises rankChange to 0 before sorting', () => {
-    const t = makeTeam('t1');
-    const result = createRankingObject(t, [t], [], { t1: 3 }, divisionWeights);
+    const team = makeTeam('t1');
+    const result = createRankingObject(team, [team], [], { t1: 3 }, divisionWeights);
     expect(result.previousRank).toBe(3);
     expect(result.rankChange).toBe(0);
   });
 
   it('sets rankChange to undefined when no previous rank exists', () => {
-    const t = makeTeam('t1');
-    const result = createRankingObject(t, [t], [], {}, divisionWeights);
+    const team = makeTeam('t1');
+    const result = createRankingObject(team, [team], [], {}, divisionWeights);
     expect(result.rankChange).toBeUndefined();
   });
 });
