@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  calculatePercentile,
-  formatOrdinal,
-  getPercentileTier,
-} from '../percentileUtils';
+import { calculatePercentile, formatOrdinal, getPercentileTier } from '../percentileUtils';
 
 describe('calculatePercentile', () => {
   it('returns zeros for empty array', () => {
