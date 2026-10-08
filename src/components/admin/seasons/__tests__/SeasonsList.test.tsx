@@ -179,3 +179,18 @@ describe('SeasonsList activation control', () => {
     expect(screen.getByRole('alertdialog')).toHaveTextContent(/Spring 2026/);
   });
 });
+
+describe('SeasonsList loading state', () => {
+  it('shows placeholder cards and no seasons while loading', () => {
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const { container } = render(
+      <QueryClientProvider client={qc}>
+        <SeasonsList seasons={[makeSeason()]} isLoading onEditSeason={vi.fn()} />
+      </QueryClientProvider>
+    );
+
+    expect(container.querySelectorAll('.space-y-4 > div')).toHaveLength(3);
+    expect(screen.queryByText('Spring 2026')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+});

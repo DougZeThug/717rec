@@ -5,6 +5,8 @@ import React from 'react';
 import { MemoryRouter, useNavigate } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { errorLog } from '@/utils/logger';
+
 import TimeslotsTab from '../TimeslotsTab';
 
 const toast = vi.fn();
@@ -45,6 +47,7 @@ vi.mock('@/components/timeslots/TimeslotAssignment', () => ({
       <button onClick={() => onAssign('team-1', 'BYE')}>assign-bye</button>
       <button onClick={() => onBatchAssign(['team-1', 'team-2'], '7:00 PM')}>batch-regular</button>
       <button onClick={() => onBatchAssign(['team-1', 'team-2'], 'BYE')}>batch-bye</button>
+      <button onClick={() => onBatchAssign(['team-1'], '7:00 PM')}>batch-single</button>
       <button onClick={() => onBatchAssignDoubleHeaders(['team-1'], '6:00 PM', '7:00 PM')}>
         batch-double
       </button>
@@ -221,6 +224,94 @@ describe('TimeslotsTab', () => {
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith(expect.objectContaining({ variant: 'destructive' }))
     );
+  });
+
+  it('names the team in the toast when a block is booked for one team', async () => {
+    mockUseTeamsQuery.mockReturnValue({
+      data: [{ id: 'team-1', name: 'Alpha' }],
+      isLoading: false,
+    });
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('batch-single'));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Block booked',
+          description: expect.stringContaining('Alpha booked for the 7:00 + 7:30 PM block'),
+        })
+      )
+    );
+  });
+
+  it('counts the team in the toast when the one booked is not in the loaded list', async () => {
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('batch-single'));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          description: expect.stringContaining('1 team booked for the 7:00 + 7:30 PM block'),
+        })
+      )
+    );
+  });
+
+  it('shows an error toast when a block booking fails', async () => {
+    batchAssignTimeslots.mockRejectedValueOnce(new Error('boom'));
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('batch-regular'));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Error', variant: 'destructive' })
+      )
+    );
+    expect(errorLog).toHaveBeenCalledWith('Error during batch assignment:', expect.any(Error));
+    expect(toast).not.toHaveBeenCalledWith(expect.objectContaining({ title: 'Block booked' }));
+  });
+
+  it('shows an error toast when double headers fail to save', async () => {
+    batchAssignDoubleHeaders.mockRejectedValueOnce(new Error('boom'));
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('batch-double'));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Error', variant: 'destructive' })
+      )
+    );
+    expect(errorLog).toHaveBeenCalledWith(
+      'Error during double header assignment:',
+      expect.any(Error)
+    );
+    expect(toast).not.toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Double Headers Assigned' })
+    );
+  });
+
+  it('shows an error toast when a timeslot cannot be removed', async () => {
+    deleteTimeslot.mockRejectedValueOnce(new Error('boom'));
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.click(screen.getByText('delete-regular'));
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Error', variant: 'destructive' })
+      )
+    );
+    expect(errorLog).toHaveBeenCalledWith('Error removing timeslot:', expect.any(Error));
+    expect(toast).not.toHaveBeenCalledWith(expect.objectContaining({ title: 'Timeslot Removed' }));
   });
 
   it('splits batch assignment between regular and BYE paths', async () => {
@@ -444,6 +535,22 @@ describe('TimeslotsTab, opened by an approved request', () => {
     await waitFor(() => expect(moveTeamBooking).toHaveBeenCalled());
     expect(screen.getByText('Move 3 Amigos')).toBeInTheDocument();
     expect(toast).not.toHaveBeenCalled();
+  });
+
+  // moveTeamBooking already raised the reason, so only a log line is left.
+  it('adds no second toast when the move throws', async () => {
+    const user = userEvent.setup();
+    moveTeamBooking.mockRejectedValueOnce(new Error('boom'));
+    setNight(blockRows('6:00 PM', '6:30 PM'));
+
+    renderTab(`/admin/timeslots?date=2026-09-17&team=${TEAM_ID}&slot=7%3A00+PM`);
+    await user.click(screen.getByRole('button', { name: 'Move them' }));
+
+    await waitFor(() =>
+      expect(errorLog).toHaveBeenCalledWith('Error moving a booking:', expect.any(Error))
+    );
+    expect(toast).not.toHaveBeenCalled();
+    expect(screen.getByText('Move 3 Amigos')).toBeInTheDocument();
   });
 
   it('offers no button, and no guess, when the team has two games that night', () => {

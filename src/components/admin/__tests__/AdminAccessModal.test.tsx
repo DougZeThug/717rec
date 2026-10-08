@@ -43,4 +43,16 @@ describe('AdminAccessModal', () => {
     await user.click(screen.getByRole('button', { name: 'Back to Home' }));
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
+
+  it('stays open when the visitor tries to close it with Escape', async () => {
+    mockUseAuth.mockReturnValue({ user: null });
+    const user = userEvent.setup();
+
+    render(<AdminAccessModal isOpen />);
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.getByText('Access Restricted')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in to continue' })).toBeInTheDocument();
+  });
 });
