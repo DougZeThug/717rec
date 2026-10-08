@@ -124,10 +124,10 @@ const NEUTRAL_SOFT: DivisionSoftClasses = {
 export const getDivisionSoftClasses = (
   division: string | null | undefined
 ): DivisionSoftClasses => {
-  const d = (division ?? '').toLowerCase();
-  if (d.includes('competitive')) return SOFT_CLASSES.competitive;
-  if (d.includes('intermediate')) return SOFT_CLASSES.intermediate;
-  if (d.includes('recreational')) return SOFT_CLASSES.recreational;
+  const divisionLower = (division ?? '').toLowerCase();
+  if (divisionLower.includes('competitive')) return SOFT_CLASSES.competitive;
+  if (divisionLower.includes('intermediate')) return SOFT_CLASSES.intermediate;
+  if (divisionLower.includes('recreational')) return SOFT_CLASSES.recreational;
   return NEUTRAL_SOFT;
 };
 

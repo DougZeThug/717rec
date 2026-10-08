@@ -42,10 +42,10 @@ export function calculatePercentile(
 /**
  * Format a number as an ordinal (1st, 2nd, 3rd, etc.)
  */
-export function formatOrdinal(n: number): string {
+export function formatOrdinal(rank: number): string {
   const suffixes = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+  const lastTwoDigits = rank % 100;
+  return rank + (suffixes[(lastTwoDigits - 20) % 10] || suffixes[lastTwoDigits] || suffixes[0]);
 }
 
 /**

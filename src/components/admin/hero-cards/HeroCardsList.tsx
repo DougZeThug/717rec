@@ -178,9 +178,9 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
   const nextFreeCopy = (slug: string, title: string) => {
     const taken = new Set(cards.map((c) => c.slug));
     if (!taken.has(`${slug}-copy`)) return { slug: `${slug}-copy`, title: `${title} (Copy)` };
-    let n = 2;
-    while (taken.has(`${slug}-copy-${n}`)) n += 1;
-    return { slug: `${slug}-copy-${n}`, title: `${title} (Copy ${n})` };
+    let copyNumber = 2;
+    while (taken.has(`${slug}-copy-${copyNumber}`)) copyNumber += 1;
+    return { slug: `${slug}-copy-${copyNumber}`, title: `${title} (Copy ${copyNumber})` };
   };
 
   const handleDuplicate = async (card: HeroCard) => {

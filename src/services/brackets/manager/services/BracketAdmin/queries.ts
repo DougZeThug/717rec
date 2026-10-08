@@ -68,9 +68,12 @@ export async function collectDownstreamChain(
   });
 
   allMatches.sort((matchA, matchB) => {
-    const a = positionOf(matchA);
-    const b = positionOf(matchB);
-    return (a?.group ?? 0) - (b?.group ?? 0) || (a?.round ?? 0) - (b?.round ?? 0);
+    const positionA = positionOf(matchA);
+    const positionB = positionOf(matchB);
+    return (
+      (positionA?.group ?? 0) - (positionB?.group ?? 0) ||
+      (positionA?.round ?? 0) - (positionB?.round ?? 0)
+    );
   });
 
   const trackedIds = new Set<number | string>();

@@ -33,18 +33,18 @@ interface PersistedRoundDraft {
   team2: { score: number | null; bagsIn: number | null };
 }
 
-const isPersistedSide = (v: unknown): v is PersistedRoundDraft['team1'] => {
-  if (typeof v !== 'object' || v === null) return false;
-  const side = v as Record<string, unknown>;
+const isPersistedSide = (value: unknown): value is PersistedRoundDraft['team1'] => {
+  if (typeof value !== 'object' || value === null) return false;
+  const side = value as Record<string, unknown>;
   const scoreOk = side.score === null || typeof side.score === 'number';
   const bagsOk = side.bagsIn === null || typeof side.bagsIn === 'number';
   return scoreOk && bagsOk;
 };
 
 /** Everything but the version, which is all the two shapes differ by. */
-const hasDraftFields = (v: unknown): v is Omit<PersistedRoundDraft, 'v'> => {
-  if (typeof v !== 'object' || v === null) return false;
-  const draft = v as Record<string, unknown>;
+const hasDraftFields = (value: unknown): value is Omit<PersistedRoundDraft, 'v'> => {
+  if (typeof value !== 'object' || value === null) return false;
+  const draft = value as Record<string, unknown>;
   return (
     typeof draft.gameId === 'string' &&
     typeof draft.roundNumber === 'number' &&
@@ -54,12 +54,12 @@ const hasDraftFields = (v: unknown): v is Omit<PersistedRoundDraft, 'v'> => {
   );
 };
 
-const isPersistedRoundDraft = (v: unknown): v is PersistedRoundDraft =>
-  hasDraftFields(v) && (v as { v?: unknown }).v === 2;
+const isPersistedRoundDraft = (value: unknown): value is PersistedRoundDraft =>
+  hasDraftFields(value) && (value as { v?: unknown }).v === 2;
 
 /** A draft written by a build from before drafts were kept per round. */
-const isLegacyRoundDraft = (v: unknown): v is Omit<PersistedRoundDraft, 'v'> =>
-  hasDraftFields(v) && (v as { v?: unknown }).v === 1;
+const isLegacyRoundDraft = (value: unknown): value is Omit<PersistedRoundDraft, 'v'> =>
+  hasDraftFields(value) && (value as { v?: unknown }).v === 1;
 
 /**
  * One slot per round, not one per game.

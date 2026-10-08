@@ -228,10 +228,10 @@ const SeasonParticipationTab: React.FC = () => {
     ].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `participation-${selectedSeasonId}.csv`;
-    a.click();
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = `participation-${selectedSeasonId}.csv`;
+    downloadLink.click();
     URL.revokeObjectURL(url);
   };
 

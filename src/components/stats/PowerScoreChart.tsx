@@ -31,10 +31,10 @@ const PowerScoreLabel: React.FC<{
   width?: number;
   value?: number;
   textColor?: string;
-}> = ({ x = 0, y = 0, width = 0, value = 0, textColor }) => (
+}> = ({ x: left = 0, y: top = 0, width = 0, value = 0, textColor }) => (
   <text
-    x={x + width + 6}
-    y={y + 14}
+    x={left + width + 6}
+    y={top + 14}
     fill={textColor}
     fontSize={11}
     textAnchor="start"
