@@ -63,8 +63,9 @@ describe('ThursdayDatePicker', () => {
 
     await user.click(screen.getByRole('button', { name: /pick a thursday/i }));
     await screen.findAllByRole('button', { name: /^Thursday,/ });
+    // Today's cell is labelled "Today, Thursday, ..." when today is a Thursday.
     const others = dayButtons().filter(
-      (day) => !/^Thursday,/.test(day.getAttribute('aria-label') ?? '')
+      (day) => !/^(Today, )?Thursday,/.test(day.getAttribute('aria-label') ?? '')
     );
     expect(others.length).toBeGreaterThan(0);
     for (const day of others) expect(day).toBeDisabled();
