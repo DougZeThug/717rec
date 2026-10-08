@@ -342,4 +342,3 @@ describe('updateRankChanges', () => {
     expect(result[0].rankChange).toBeUndefined();
   });
 });
-
