@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DatabaseError } from '@/types/errors';
+import { DatabaseError, NotFoundError } from '@/types/errors';
 
 // ─── Supabase mock ────────────────────────────────────────────────────────────
 
@@ -45,6 +45,18 @@ const loadSnapshotsChain = (result: { data: unknown; error: unknown | null }) =>
   }),
 });
 
+/**
+ * Returns a chain mock for querying the 'seasons' table:
+ *   .from('seasons').select('id').eq('is_active', true).maybeSingle()
+ */
+const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) => ({
+  select: () => ({
+    eq: () => ({
+      maybeSingle: () => Promise.resolve(result),
+    }),
+  }),
+});
+
 // ─── loadRankingsFromDatabase ────────────────────────────────────────────────
 
 describe('loadRankingsFromDatabase', () => {
@@ -80,5 +92,51 @@ describe('loadRankingsFromDatabase', () => {
     mockFrom.mockReturnValue(loadSnapshotsChain({ data: null, error: pgError('select failed') }));
 
     await expect(loadRankingsFromDatabase('season-1')).rejects.toThrow(DatabaseError);
+  });
+
+  it('resolves the active season id via getCurrentSeasonId when seasonId is omitted', async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        return seasonsSelectChain({ data: { id: 'active-season' }, error: null });
+      }
+      if (table === 'ranking_snapshots') {
+        return loadSnapshotsChain({
+          data: [
+            { team_id: 't1', rank_position: 1 },
+            { team_id: 't2', rank_position: 2 },
+          ],
+          error: null,
+        });
+      }
+      throw new Error(`Unexpected table: ${table}`);
+    });
+
+    const result = await loadRankingsFromDatabase();
+
+    expect(result).toEqual({ t1: 1, t2: 2 });
+    expect(mockFrom).toHaveBeenCalledWith('seasons');
+    expect(mockFrom).toHaveBeenCalledWith('ranking_snapshots');
+  });
+
+  it('throws NotFoundError when seasonId is omitted and no active season exists', async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        return seasonsSelectChain({ data: null, error: null });
+      }
+      return loadSnapshotsChain({ data: [], error: null });
+    });
+
+    await expect(loadRankingsFromDatabase()).rejects.toThrow(NotFoundError);
+  });
+
+  it('throws DatabaseError when seasonId is omitted and the seasons query fails', async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        return seasonsSelectChain({ data: null, error: pgError('seasons fetch failed') });
+      }
+      return loadSnapshotsChain({ data: [], error: null });
+    });
+
+    await expect(loadRankingsFromDatabase()).rejects.toThrow(DatabaseError);
   });
 });
