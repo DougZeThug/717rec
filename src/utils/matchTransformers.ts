@@ -106,18 +106,18 @@ interface RawPlayoffMatchRow {
  */
 function extractTeamDetails(team: RawTeamJoin): Match['team1Details'] {
   if (!team) return null;
-  const t = Array.isArray(team) ? team[0] : team;
-  if (!t) return null;
+  const teamRow = Array.isArray(team) ? team[0] : team;
+  if (!teamRow) return null;
 
   return {
-    team_id: t.team_id || t.id || '',
-    name: t.name ?? '',
-    image_url: t.image_url ?? null,
-    logo_url: t.logo_url ?? null,
-    divisionName: t.divisionname ?? t.divisionName ?? null,
-    division_id: t.division_id ?? null,
-    power_score: t.power_score ?? null,
-    sos: t.sos ?? null,
+    team_id: teamRow.team_id || teamRow.id || '',
+    name: teamRow.name ?? '',
+    image_url: teamRow.image_url ?? null,
+    logo_url: teamRow.logo_url ?? null,
+    divisionName: teamRow.divisionname ?? teamRow.divisionName ?? null,
+    division_id: teamRow.division_id ?? null,
+    power_score: teamRow.power_score ?? null,
+    sos: teamRow.sos ?? null,
   };
 }
 
@@ -128,12 +128,12 @@ function extractPlayoffTeam(
   team: RawTeamJoin
 ): { id: string; name: string; logoUrl: string | null } | undefined {
   if (!team) return undefined;
-  const t = Array.isArray(team) ? team[0] : team;
-  if (!t) return undefined;
+  const teamRow = Array.isArray(team) ? team[0] : team;
+  if (!teamRow) return undefined;
   return {
-    id: t.id ?? t.team_id ?? '',
-    name: t.name ?? '',
-    logoUrl: t.image_url || t.logo_url || null,
+    id: teamRow.id ?? teamRow.team_id ?? '',
+    name: teamRow.name ?? '',
+    logoUrl: teamRow.image_url || teamRow.logo_url || null,
   };
 }
 

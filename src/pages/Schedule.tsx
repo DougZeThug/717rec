@@ -79,8 +79,8 @@ const nightsMatching = (
     try {
       const date = typeof match.date === 'string' ? parseISO(match.date) : match.date;
       keys.add(format(date, 'yyyy-MM-dd'));
-    } catch (e) {
-      errorLog('Failed to parse match date "%s":', match.date, e);
+    } catch (error) {
+      errorLog('Failed to parse match date "%s":', match.date, error);
     }
   });
 

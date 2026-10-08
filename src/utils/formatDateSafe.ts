@@ -11,8 +11,8 @@ const DATE_ONLY_RE = /^\d{4}-\d{2}-\d{2}$/;
 const parseSafe = (value: string | number | Date): Date => {
   if (typeof value === 'string') {
     if (DATE_ONLY_RE.test(value)) {
-      const [y, m, d] = value.split('-').map(Number);
-      return new Date(y, m - 1, d);
+      const [year, month, day] = value.split('-').map(Number);
+      return new Date(year, month - 1, day);
     }
     return parseISO(value);
   }

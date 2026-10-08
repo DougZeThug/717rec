@@ -172,9 +172,9 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const idx = groupedMatches.findIndex((g) => {
-      const d = new Date(g.date);
-      d.setHours(0, 0, 0, 0);
-      return d.getTime() >= today.getTime();
+      const groupDate = new Date(g.date);
+      groupDate.setHours(0, 0, 0, 0);
+      return groupDate.getTime() >= today.getTime();
     });
     return idx === -1 ? groupedMatches.length - 1 : idx;
   }, [activeTab, groupedMatches]);

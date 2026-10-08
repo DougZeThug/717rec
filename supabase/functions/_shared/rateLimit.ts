@@ -50,8 +50,8 @@ export function parseForwardedFor(xff: string, trustedProxyCount: number): strin
     .filter((p) => p.length > 0);
   if (parts.length === 0) return null;
 
-  const n = Math.max(1, Math.floor(trustedProxyCount));
-  const idx = parts.length - n;
+  const hopCount = Math.max(1, Math.floor(trustedProxyCount));
+  const idx = parts.length - hopCount;
   return parts[idx >= 0 ? idx : 0];
 }
 

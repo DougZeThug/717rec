@@ -57,8 +57,8 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const yOffset = -80;
-          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: scrollBehavior });
+          const scrollTop = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: scrollTop, behavior: scrollBehavior });
         });
       });
     }

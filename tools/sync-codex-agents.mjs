@@ -11,17 +11,17 @@ const outDir = join(root, '.codex/agents');
 const check = process.argv.includes('--check');
 
 const parse = (text, file) => {
-  const m = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
-  if (!m) throw new Error(`${file}: missing frontmatter`);
+  const frontmatter = text.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!frontmatter) throw new Error(`${file}: missing frontmatter`);
   const meta = {};
-  for (const line of m[1].split('\n')) {
+  for (const line of frontmatter[1].split('\n')) {
     const kv = line.match(/^([a-zA-Z_-]+):\s*(.*)$/);
     if (kv) meta[kv[1]] = kv[2].trim();
   }
   for (const key of ['name', 'description', 'tools']) {
     if (!meta[key]) throw new Error(`${file}: frontmatter needs "${key}"`);
   }
-  return { meta, body: m[2].trim() };
+  return { meta, body: frontmatter[2].trim() };
 };
 
 const basic = (s) => JSON.stringify(s); // JSON string is valid TOML basic string

@@ -16,11 +16,15 @@ const QuickPostNotificationForm: React.FC = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const t = title.trim();
-    const b = body.trim();
-    if (!t || !b) return;
+    const trimmedTitle = title.trim();
+    const trimmedBody = body.trim();
+    if (!trimmedTitle || !trimmedBody) return;
     try {
-      await create.mutateAsync({ title: t, body: b, createdBy: user?.id ?? null });
+      await create.mutateAsync({
+        title: trimmedTitle,
+        body: trimmedBody,
+        createdBy: user?.id ?? null,
+      });
       setTitle('');
       setBody('');
       toast({ title: 'Notification posted' });

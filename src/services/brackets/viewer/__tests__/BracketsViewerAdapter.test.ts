@@ -42,6 +42,9 @@ vi.mock('../MatchTransformer', () => ({
 }));
 
 import { BracketsViewerAdapter } from '../BracketsViewerAdapter';
+import { transformBracket, transformGames, transformMatches } from '../MatchTransformer';
+import { transformParticipants, transformStoredParticipants } from '../ParticipantTransformer';
+import { calculateSourceNodeIds } from '../SourceNodeCalculator';
 
 const pgError = () => ({
   message: 'query failed',
@@ -242,5 +245,160 @@ describe('BracketsViewerAdapter.transformFromSql', () => {
 
     expect(result.data.matches).toEqual([]);
     expect(result.data.participants).toEqual([]);
+  });
+});
+
+describe('BracketsViewerAdapter.transformFromJsonb', () => {
+  it('passes brackets-manager position markers to the source-node calculator', () => {
+    const bracketData = {
+      stage: [{ id: 1 }],
+      group: [{ id: 1, stage_id: 1, number: 1 }],
+      round: [{ id: 1, stage_id: 1, group_id: 1, number: 1 }],
+      match: [
+        { id: 10, opponent1: { id: 1, position: 3 }, opponent2: { id: 2, position: 4 } },
+        { id: 11, opponent1: { id: 3 }, opponent2: { id: 4 } },
+      ],
+      match_game: [{ id: 1 }],
+      participant: [{ id: 1, name: 'Aces' }],
+    };
+
+    const result = BracketsViewerAdapter.transformFromJsonb(bracketData as never, 'b1');
+
+    const [matchesArg, groupsArg, roundsArg, slotPositions] =
+      vi.mocked(calculateSourceNodeIds).mock.calls[0];
+    expect(matchesArg).toHaveLength(2);
+    expect(groupsArg).toEqual(bracketData.group);
+    expect(roundsArg).toEqual(bracketData.round);
+    // Only the match with a marker is recorded; ids are keyed as strings.
+    expect(slotPositions?.get('10')).toEqual({ opponent1: 3, opponent2: 4 });
+    expect(slotPositions?.has('11')).toBe(false);
+    expect(result.data.stages).toEqual(bracketData.stage);
+    expect(result.data.groups).toEqual(bracketData.group);
+    expect(result.data.rounds).toEqual(bracketData.round);
+    expect(result.data.matchGames).toEqual(bracketData.match_game);
+    expect(result.data.participants).toEqual(bracketData.participant);
+    expect(result.getPlayoffMatchId(10)).toBeUndefined();
+  });
+
+  it('returns empty datasets when the bracket data is empty', () => {
+    const result = BracketsViewerAdapter.transformFromJsonb({} as never, 'b1');
+
+    expect(result.data).toEqual({
+      stages: [],
+      groups: [],
+      rounds: [],
+      matches: [],
+      matchGames: [],
+      participants: [],
+    });
+  });
+});
+
+describe('BracketsViewerAdapter.transform', () => {
+  const roundMatches = [
+    { id: 1, round_id: 1, group_id: 1 },
+    { id: 2, round_id: 1, group_id: 1 },
+    { id: 3, round_id: 2, group_id: 2 },
+  ];
+
+  const setupTransformers = () => {
+    vi.mocked(transformBracket).mockReturnValue({ id: 1, name: 'Playoffs' } as never);
+    vi.mocked(transformGames).mockReturnValue([{ id: 5 }] as never);
+    vi.mocked(transformParticipants).mockReturnValue([{ id: 7, name: 'Aces' }] as never);
+    vi.mocked(transformMatches).mockImplementation(((
+      _matches: unknown,
+      _matchIdMap: Map<string, number>,
+      reverseMatchIdMap: Map<number, string>
+    ) => {
+      reverseMatchIdMap.set(1, 'match-uuid-1');
+      return roundMatches;
+    }) as never);
+  };
+
+  const bracket = (format: string) =>
+    ({ id: 'b1', format, state: 'in_progress', matches: [{ id: 'm1' }] }) as never;
+
+  it('builds one winners group and one round per round id for single elimination', () => {
+    setupTransformers();
+
+    const result = BracketsViewerAdapter.transform(bracket('Single Elimination'), [
+      { id: 't1', name: 'Aces' },
+    ]);
+
+    const [, groupsArg, roundsArg] = vi.mocked(calculateSourceNodeIds).mock.calls[0];
+    expect(groupsArg).toEqual([{ id: 1, stage_id: 1, number: 1 }]);
+    expect(roundsArg).toEqual([
+      { id: 1, stage_id: 1, group_id: 1, number: 1 },
+      { id: 2, stage_id: 1, group_id: 2, number: 2 },
+    ]);
+    expect(result.data.stages).toEqual([{ id: 1, name: 'Playoffs' }]);
+    expect(result.data.groups).toEqual(groupsArg);
+    expect(result.data.rounds).toEqual(roundsArg);
+    expect(result.data.matches).toEqual(roundMatches);
+    expect(result.data.matchGames).toEqual([{ id: 5 }]);
+    expect(result.data.participants).toEqual([{ id: 7, name: 'Aces' }]);
+    expect(transformParticipants).toHaveBeenCalled();
+    expect(transformStoredParticipants).not.toHaveBeenCalled();
+  });
+
+  it('adds a losers group for double elimination', () => {
+    setupTransformers();
+
+    BracketsViewerAdapter.transform(bracket('Double Elimination'), []);
+
+    const [, groupsArg] = vi.mocked(calculateSourceNodeIds).mock.calls[0];
+    expect(groupsArg).toEqual([
+      { id: 1, stage_id: 1, number: 1 },
+      { id: 2, stage_id: 1, number: 2 },
+    ]);
+  });
+
+  it('uses the stored participants when there are any', () => {
+    setupTransformers();
+    const stored = [{ position: 1, team_id: 't1', name: 'Aces' }];
+
+    BracketsViewerAdapter.transform(bracket('Single Elimination'), [], stored);
+
+    expect(transformStoredParticipants).toHaveBeenCalledWith(stored, expect.any(Map));
+    expect(transformParticipants).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the teams when the stored participants are empty', () => {
+    setupTransformers();
+
+    BracketsViewerAdapter.transform(bracket('Single Elimination'), [], []);
+
+    expect(transformParticipants).toHaveBeenCalled();
+    expect(transformStoredParticipants).not.toHaveBeenCalled();
+  });
+
+  it('maps a viewer match id back to the playoff match id', () => {
+    setupTransformers();
+
+    const result = BracketsViewerAdapter.transform(bracket('Single Elimination'), []);
+
+    expect(result.getPlayoffMatchId(1)).toBe('match-uuid-1');
+    expect(result.getPlayoffMatchId(99)).toBeUndefined();
+  });
+
+  it('handles a bracket with no matches', () => {
+    vi.mocked(transformBracket).mockReturnValue({ id: 1 } as never);
+    vi.mocked(transformGames).mockReturnValue([] as never);
+    vi.mocked(transformParticipants).mockReturnValue([] as never);
+    vi.mocked(transformMatches).mockReturnValue([] as never);
+
+    const result = BracketsViewerAdapter.transform(
+      { id: 'b1', format: 'Single Elimination', state: 'pending' } as never,
+      []
+    );
+
+    expect(transformMatches).toHaveBeenCalledWith(
+      [],
+      expect.any(Map),
+      expect.any(Map),
+      expect.any(Map)
+    );
+    expect(result.data.rounds).toEqual([]);
+    expect(result.data.matches).toEqual([]);
   });
 });

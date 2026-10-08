@@ -50,8 +50,8 @@ export const createRankingObject = (
     teamName: team.name || 'Unknown Team',
     logoUrl: team.logoUrl,
     imageUrl: team.imageUrl,
-    wins: wins,
-    losses: losses,
+    wins,
+    losses,
     winPercentage,
     // Use divisionName which now contains the display_division from the database
     divisionName: team.divisionName,

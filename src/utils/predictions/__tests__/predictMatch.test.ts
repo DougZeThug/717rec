@@ -19,7 +19,7 @@ const createTeamStats = (
   careerWinPercentage: number | null = null
 ): TeamStats => ({
   power_score: powerScore,
-  sos: sos,
+  sos,
   division_id: divisionId,
   career_power_score: careerPowerScore,
   career_sos: careerSos,

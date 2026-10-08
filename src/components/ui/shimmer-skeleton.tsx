@@ -30,8 +30,8 @@ const sizes = {
 const ShimmerSkeleton = React.forwardRef<HTMLDivElement, ShimmerSkeletonProps>(
   ({ className, width, height, circle, count = 1, variant = 'input', style, ...props }, ref) => {
     const skeletonStyle: React.CSSProperties = {
-      width: width,
-      height: height,
+      width,
+      height,
       ...style,
     };
 

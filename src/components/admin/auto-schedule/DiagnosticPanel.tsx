@@ -216,7 +216,7 @@ export const DiagnosticPanel: React.FC<DiagnosticPanelProps> = ({
         teamAssignments.push({
           teamId: team.id,
           teamName: team.name,
-          block: block,
+          block,
           isDoubleHeader: currentBlocks.length === 2, // Exactly 2 blocks = valid double header
           isInvalid: currentBlocks.length > 2, // 3+ blocks = invalid
         });

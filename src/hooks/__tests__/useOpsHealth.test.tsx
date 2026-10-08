@@ -17,7 +17,7 @@ vi.mock('@/integrations/supabase/client', () => {
     __rtHelpers: { subscribeCallbacks, removeChannel },
     supabase: {
       channel: () => ({
-        on: function on() {
+        on() {
           return this;
         },
         subscribe: (cb: (status: string) => void) => {

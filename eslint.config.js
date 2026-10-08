@@ -40,6 +40,12 @@ export default tseslint.config(
       // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
 
+      // Prefer Boolean()/Number()/String() over !!x, +x, "" + x (DeepSource JS-0066).
+      'no-implicit-coercion': 'error',
+
+      // An empty function needs a comment that says why (DeepSource JS-0321).
+      'no-empty-function': 'error',
+
       // TypeScript
       '@typescript-eslint/no-unused-vars': [
         'warn',

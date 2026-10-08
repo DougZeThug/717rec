@@ -96,7 +96,7 @@ describe('MatchPrediction', () => {
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(
-      screen.getByText(/Season: 100 vs 80 · Career: 110 vs 90 · Win%: 60% vs 40% · H2H: 3-1/)
+      screen.getByText(/Season: 100 vs 80 · Career: 110 vs 90 · Win%: 60% vs 40% · H2H: 3-1/u)
     ).toBeInTheDocument();
     expect(
       screen.getByText('Heuristic model: 65% Career + 25% Season + 10% Head-to-Head')

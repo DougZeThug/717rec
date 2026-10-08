@@ -145,19 +145,19 @@ function pickKeyGame(
     if (marginA !== marginB) return marginA - marginB;
     return b.game.game_number - a.game.game_number;
   });
-  const g = sorted[0];
+  const keyGame = sorted[0];
   const winnerName =
-    g.game.winner_team_id === null
+    keyGame.game.winner_team_id === null
       ? null
-      : g.game.winner_team_id === team1Id
+      : keyGame.game.winner_team_id === team1Id
         ? team1Name
         : team2Name;
   return {
-    gameNumber: g.game.game_number,
-    team1Score: g.totals.team1,
-    team2Score: g.totals.team2,
+    gameNumber: keyGame.game.game_number,
+    team1Score: keyGame.totals.team1,
+    team2Score: keyGame.totals.team2,
     winnerName,
-    margin: Math.abs(g.totals.team1 - g.totals.team2),
+    margin: Math.abs(keyGame.totals.team1 - keyGame.totals.team2),
   };
 }
 
@@ -170,13 +170,13 @@ function teamBagTotals(
   let bagsOn = 0;
   let bagsOff = 0;
   for (const r of rounds) {
-    const i = side === 1 ? r.team1_bags_in : r.team2_bags_in;
-    const o = side === 1 ? r.team1_bags_on : r.team2_bags_on;
-    const f = side === 1 ? r.team1_bags_off : r.team2_bags_off;
-    if (i == null || o == null || f == null) continue;
-    bagsIn += i;
-    bagsOn += o;
-    bagsOff += f;
+    const roundBagsIn = side === 1 ? r.team1_bags_in : r.team2_bags_in;
+    const roundBagsOn = side === 1 ? r.team1_bags_on : r.team2_bags_on;
+    const roundBagsOff = side === 1 ? r.team1_bags_off : r.team2_bags_off;
+    if (roundBagsIn == null || roundBagsOn == null || roundBagsOff == null) continue;
+    bagsIn += roundBagsIn;
+    bagsOn += roundBagsOn;
+    bagsOff += roundBagsOff;
   }
   return { in: bagsIn, on: bagsOn, off: bagsOff, total: bagsIn + bagsOn + bagsOff };
 }

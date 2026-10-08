@@ -152,7 +152,7 @@ export const normalizeDateWithTime = (date: Date | string | null, context = 'unk
         const withTime = `${date}T12:00:00.000Z`;
         timezoneLog(`[${context}] Added default time to date:`, {
           original: date,
-          withTime: withTime,
+          withTime,
         });
         return withTime;
       }

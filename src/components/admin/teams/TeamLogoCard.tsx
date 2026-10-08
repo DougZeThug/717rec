@@ -38,7 +38,7 @@ const TeamLogoCard: React.FC<TeamLogoCardProps> = ({ team, onUpdate }) => {
     setIsUploading(true);
     try {
       const imageUrl = await uploadTeamImage(file, team.id);
-      await updateTeam(team.id, { ...team, imageUrl: imageUrl });
+      await updateTeam(team.id, { ...team, imageUrl });
 
       toast({
         title: 'Logo Updated',

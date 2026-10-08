@@ -40,10 +40,10 @@ const DISPLAY_OPTIONS: DisplayDivision[] = [
 ];
 
 const normalizeDisplay = (value: string | null | undefined): DisplayDivision => {
-  const v = (value ?? '').toLowerCase();
-  if (v.includes('competitive')) return 'Competitive';
-  if (v.includes('intermediate')) return 'Intermediate';
-  if (v === 'hidden') return 'Hidden';
+  const valueLower = (value ?? '').toLowerCase();
+  if (valueLower.includes('competitive')) return 'Competitive';
+  if (valueLower.includes('intermediate')) return 'Intermediate';
+  if (valueLower === 'hidden') return 'Hidden';
   return 'Recreational';
 };
 

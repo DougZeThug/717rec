@@ -141,7 +141,7 @@ describe('RankingCard', () => {
 
     it('appends the division name when showDivision is on', () => {
       renderCard({ compactView: true, showDivision: true });
-      expect(screen.getByText(/· Competitive/)).toBeInTheDocument();
+      expect(screen.getByText(/· Competitive/u)).toBeInTheDocument();
     });
 
     it('hides expanded details until the card is clicked', async () => {
