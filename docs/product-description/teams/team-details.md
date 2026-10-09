@@ -133,8 +133,8 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | In-app navigation away, or switching tab within the page | Which sections were open is lost. Nothing else is held. | No effect; nothing is ever in flight from this page but reads. |
 | Browser back or forward | Leaves the page. Coming back gives a fresh page with the default sections and no memory of what was opened. **Back from here to `/teams` restores that list's scroll position**; the breadcrumb link to Teams does not, because it is a new navigation rather than a history move. | Same. |
 | Reload, or the tab closed | The page rebuilds from the database with every section closed again. | Same. |
-| Network lost mid-request | The page stays a skeleton indefinitely, or shows **Team Not Found** if the read fails outright. There is no message that the network is the problem. | An open section that has not loaded shows its own retry card; the Advanced Stats block offers "We couldn't load advanced stats. Please try again." |
-| The request fails or times out | Reads are retried once. A failed team read gives **Team Not Found** — which is the same screen as a team that genuinely does not exist. | As above, per section. |
+| Network lost mid-request | The page stays a skeleton indefinitely, or shows a retry card if the read fails outright. There is no message that the network is the problem. | An open section that has not loaded shows its own retry card; the Advanced Stats block offers "We couldn't load advanced stats. Please try again." |
+| The request fails or times out | Reads are retried once. A failed team read gives the retry card; only a team that genuinely does not exist gives **Team Not Found**. | As above, per section. |
 | The session expires | No effect. Every part of this page is public. | No effect. |
 | The same record changed in another tab, or by another user | No realtime. A score entered elsewhere does not reach an open team page. | Same. Match history is treated as never fresh, so it does update on the next mount or tab return, while the team's record and power score wait for the five-minute window. |
 | Browser autofill or a password manager writes into the form | No effect. There are no fields. | No effect. |
@@ -194,10 +194,10 @@ data and writes nothing.
 
 ## Edge cases
 
-- **Team Not Found means three different things.** A name that matches nothing,
-  an id that matches nothing, and a read that failed all give the same screen:
-  "Team Not Found — The team you're looking for doesn't exist." with a **Back to
-  Teams** button.
+- **Team Not Found means two different things.** A name that matches nothing and
+  an id that matches nothing both give "Team Not Found — The team you're looking
+  for doesn't exist." with a **Back to Teams** button. A read that failed gives
+  the retry card instead.
 - **Renaming a team changes its address.** Every existing link and bookmark to
   the old name lands on Team Not Found, silently. Nothing redirects.
 - **Two teams whose names reduce to the same address collide.** The first match
@@ -230,10 +230,9 @@ data and writes nothing.
   sit behind the fixed bar on a small screen. `/compare` has the same shape; see
   [`compare-teams.md`](compare-teams.md). **May be worth treating as a bug rather
   than documenting.**
-- **A failed read is indistinguishable from a missing team.** Telling a user a
-  team does not exist when the network dropped is misleading, and the read does
-  throw a distinguishable error. **May be worth treating as a bug rather than
-  documenting.**
+- Resolved: **a failed read is no longer indistinguishable from a missing team.**
+  A failed read now shows the retry card; a team that genuinely does not exist
+  still gives Team Not Found.
 - Not confirmed by hand: whether renaming a team really does break its old links
   in production, or whether something outside the app redirects.
 - Not confirmed by hand: what the section bar does on a very narrow screen, where
@@ -248,4 +247,5 @@ data and writes nothing.
   avoid fetching data nobody asked for. The code says the second part; the first
   is inferred.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the failed-read behaviour
+above, which was changed after that commit.
