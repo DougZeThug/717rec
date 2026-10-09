@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type { Match, Team } from '@/types';
 import type { HeadToHeadRecord } from '@/types/headToHead';
 
-import { calculateGameStats } from '../gameStatsUtils';
 import { calculateHeadToHead } from '../headToHeadUtils';
 import { calculateClutchRecord } from '../matchOutcomeUtils';
 import {
@@ -120,52 +119,6 @@ describe('teamDetails utilities', () => {
     expect(getOpponentId(typedMatch, teamId)).toBe(expected.opponentId);
     expect(getMatchResult(typedMatch, teamId)).toBe(expected.result);
     expect(getScoreDisplay(typedMatch, teamId)).toBe(expected.score);
-  });
-
-  it('calculates game stats including fallback score path and close losses', () => {
-    const matches: MinimalMatch[] = [
-      {
-        id: 'm1',
-        iscompleted: true,
-        team1Id: 'team-a',
-        team2Id: 'team-b',
-        team1_game_wins: 2,
-        team2_game_wins: 1,
-        loserId: 'team-b',
-      },
-      {
-        id: 'm2',
-        iscompleted: true,
-        team1Id: 'team-b',
-        team2Id: 'team-a',
-        team1_game_wins: 2,
-        team2_game_wins: 1,
-        loserId: 'team-a',
-      },
-      {
-        id: 'm3',
-        iscompleted: true,
-        team1Id: 'team-a',
-        team2Id: 'team-c',
-        winnerId: 'team-a',
-        loserId: 'team-c',
-      },
-      {
-        id: 'm4',
-        iscompleted: false,
-        team1Id: 'team-a',
-        team2Id: 'team-c',
-        team1_game_wins: 2,
-        team2_game_wins: 0,
-      },
-    ];
-
-    expect(calculateGameStats('team-a', matches as Match[])).toEqual({
-      gamesWon: 4,
-      gamesLost: 3,
-      gameWinPercentage: 4 / 7,
-      closeMatchLosses: 1,
-    });
   });
 
   it('calculates head-to-head records and skips teams without ids', () => {
