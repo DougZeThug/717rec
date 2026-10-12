@@ -115,6 +115,18 @@ export const DivisionService = {
       );
     }
 
+    // Block deletion if any team ever sat in this division. The database
+    // cascades team_division_history, so the delete would erase it silently.
+    const { count: historyCount, error: historyCountError } = await supabase
+      .from('team_division_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('division_id', id);
+
+    if (historyCountError) handleDatabaseError(historyCountError, 'Failed to check division usage');
+    if ((historyCount ?? 0) > 0) {
+      throw new BusinessLogicError('Division has team-division history and cannot be deleted.');
+    }
+
     const { error } = await supabase.from('divisions').delete().eq('id', id);
     if (error) handleDatabaseError(error, 'Failed to delete division');
   },

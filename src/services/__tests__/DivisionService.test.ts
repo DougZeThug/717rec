@@ -153,6 +153,43 @@ describe('DivisionService.deleteDivision', () => {
     expect(deleted).not.toHaveBeenCalled();
   });
 
+  // team_division_history cascades on division delete, so without this check an
+  // admin would silently erase which division each team played in.
+  it('refuses a division that has team-division history', async () => {
+    const deleted = mockTables({ team_division_history: 3 });
+
+    const thrown = await DivisionService.deleteDivision('d1').catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect((thrown as Error).message).toBe(
+      'Division has team-division history and cannot be deleted.'
+    );
+    expect(deleted).not.toHaveBeenCalled();
+  });
+
+  it('deletes once the history count is zero', async () => {
+    const deleted = mockTables({ team_division_history: 0 });
+
+    await expect(DivisionService.deleteDivision('d1')).resolves.toBeUndefined();
+
+    expect(deleted).toHaveBeenCalledWith('id', 'd1');
+  });
+
+  it('throws DatabaseError when the history check fails', async () => {
+    mockFrom.mockImplementation((table: string) => ({
+      select: () => ({
+        eq: () =>
+          Promise.resolve(
+            table === 'team_division_history'
+              ? { count: null, error: pgError() }
+              : { count: 0, error: null }
+          ),
+      }),
+    }));
+
+    await expect(DivisionService.deleteDivision('d1')).rejects.toThrow(DatabaseError);
+  });
+
   it('throws DatabaseError when the snapshot check fails', async () => {
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({
