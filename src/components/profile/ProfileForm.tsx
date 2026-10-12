@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -81,43 +81,42 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   }, [form]);
 
   // Check username availability. The debounce effect below only calls this for
-  // names of 3+ characters, so shorter names never get here.
-  const handleUsernameAvailabilityCheck = useCallback(
-    async (value: string) => {
-      latestCheckIdRef.current += 1;
-      const checkId = latestCheckIdRef.current;
-      setIsCheckingUsername(true);
-      const { available } = await checkUsernameAvailability({
-        username: value,
-        currentUsername: initialUsername,
-      });
+  // names of 3+ characters, so shorter names never get here. It is an effect
+  // event, so the effect reads the latest props and form without restarting its
+  // 500 ms wait when they change.
+  const handleUsernameAvailabilityCheck = useEffectEvent(async (value: string) => {
+    latestCheckIdRef.current += 1;
+    const checkId = latestCheckIdRef.current;
+    setIsCheckingUsername(true);
+    const { available } = await checkUsernameAvailability({
+      username: value,
+      currentUsername: initialUsername,
+    });
 
-      // Ignore stale responses — only apply if this is still the latest check
-      if (latestCheckIdRef.current !== checkId) return;
+    // Ignore stale responses — only apply if this is still the latest check
+    if (latestCheckIdRef.current !== checkId) return;
 
-      // The field changed while this check ran, and no newer check has started
-      // (the new name may be one we skip, such as one the schema refuses).
-      // Drop the reply so it cannot set an error on a name it was not for.
-      if (form.getValues('username') !== value) {
-        setIsCheckingUsername(false);
-        return;
-      }
-
-      setAvailability({ name: value, available });
-
-      if (available === false) {
-        form.setError('username', {
-          type: 'manual',
-          message: 'This name is already taken',
-        });
-      } else {
-        clearTakenError();
-      }
-
+    // The field changed while this check ran, and no newer check has started
+    // (the new name may be one we skip, such as one the schema refuses).
+    // Drop the reply so it cannot set an error on a name it was not for.
+    if (form.getValues('username') !== value) {
       setIsCheckingUsername(false);
-    },
-    [initialUsername, form, clearTakenError]
-  );
+      return;
+    }
+
+    setAvailability({ name: value, available });
+
+    if (available === false) {
+      form.setError('username', {
+        type: 'manual',
+        message: 'This name is already taken',
+      });
+    } else {
+      clearTakenError();
+    }
+
+    setIsCheckingUsername(false);
+  });
 
   // Debounce username checks
   useEffect(() => {
@@ -139,7 +138,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     return () => {
       clearTimeout(handler);
     };
-  }, [username, recheckCount, handleUsernameAvailabilityCheck, clearTakenError]);
+  }, [username, recheckCount, clearTakenError]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
