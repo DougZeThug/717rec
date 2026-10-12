@@ -24,7 +24,6 @@ vi.mock('@/utils/logger', () => ({
 
 vi.mock('@/utils/rankingUtils', () => ({
   updateRankChanges: vi.fn((rankings: unknown[]) => rankings),
-  saveRankingsToStorage: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('@/utils/rankingUtils/calculateStreak', () => ({
@@ -35,7 +34,6 @@ import { usePreviousRankings } from '@/hooks/rankings/usePreviousRankings';
 import { useRankingsData } from '@/hooks/rankings/useRankingsData';
 import { useTeams } from '@/hooks/useTeams';
 import { errorLog } from '@/utils/logger';
-import { saveRankingsToStorage } from '@/utils/rankingUtils';
 import { calculateStreak } from '@/utils/rankingUtils/calculateStreak';
 
 const makeTeam = (id: string, powerScore: number | null = 80, overrides: Partial<Team> = {}) =>
@@ -296,18 +294,6 @@ describe('useTeamRankings', () => {
     // there could send the same failure twice. Once, and only once.
     await waitFor(() => expect(errorLog).toHaveBeenCalledTimes(1));
     expect(errorLog).toHaveBeenCalledWith('Error calculating rankings:', expect.any(Error));
-  });
-
-  it('never persists snapshots as a side effect of rendering (pure read)', async () => {
-    (useTeams as ReturnType<typeof vi.fn>).mockReturnValue({
-      teams: [makeTeam('persist-1', 88), makeTeam('persist-2', 77)],
-      isLoading: false,
-    });
-
-    const { result } = renderHook(() => useTeamRankings());
-
-    await waitFor(() => expect(result.current.rankings.length).toBe(2));
-    expect(saveRankingsToStorage).not.toHaveBeenCalled();
   });
 
   it('propagates a teams fetch error', () => {

@@ -1,7 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Ranking } from '@/types';
 import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
-import { debugLog } from '@/utils/logger';
 
 /**
  * Get the current active season ID
@@ -20,50 +18,6 @@ async function getCurrentSeasonId(): Promise<string> {
   }
 
   return ensureFound(data?.id, 'Active season');
-}
-
-/**
- * Save current rankings to the database
- * Creates or updates ranking snapshots for each team in a specific season
- * @param rankings - The rankings to save
- * @param seasonId - Optional season ID. If not provided, uses the current active season.
- * @throws {DatabaseError} When database operations fail
- * @throws {NotFoundError} When no active season exists
- */
-export async function saveRankingsToDatabase(
-  rankings: Ranking[],
-  seasonId?: string
-): Promise<void> {
-  if (rankings.length === 0) {
-    return;
-  }
-
-  // Use provided seasonId, or fall back to the current active season
-  const resolvedSeasonId = seasonId ?? (await getCurrentSeasonId());
-
-  // Prepare ranking snapshots for upsert
-  const snapshots = rankings.map((ranking, index) => ({
-    team_id: ranking.teamId,
-    season_id: resolvedSeasonId,
-    rank_position: index + 1,
-  }));
-
-  // Upsert all rankings in one batch
-  const { error } = await supabase.from('ranking_snapshots').upsert(snapshots, {
-    onConflict: 'team_id,season_id',
-    ignoreDuplicates: false,
-  });
-
-  if (error) {
-    // RLS rejects writes from non-admin users. That's expected — only admins
-    // are allowed to persist snapshots. Swallow it instead of throwing so we
-    // don't spam logs from every signed-in non-admin viewing the rankings.
-    if (error.code === '42501') {
-      debugLog('Skipping ranking snapshot upsert: user is not an admin.');
-      return;
-    }
-    handleDatabaseError(error, 'Failed to save rankings to database');
-  }
 }
 
 /**
@@ -95,42 +49,4 @@ export async function loadRankingsFromDatabase(seasonId?: string): Promise<Recor
   });
 
   return rankingsMap;
-}
-
-/**
- * Migrate existing localStorage rankings to database
- * This is a one-time migration helper
- * @throws {DatabaseError} When database operations fail
- * @throws {NotFoundError} When no active season exists
- */
-export async function migrateLocalStorageToDatabase(): Promise<void> {
-  const savedRankings = localStorage.getItem('previousRankings');
-  if (!savedRankings) {
-    // Nothing to migrate
-    return;
-  }
-
-  const rankingsMap: Record<string, number> = JSON.parse(savedRankings);
-  const seasonId = await getCurrentSeasonId();
-
-  // Convert map to array of snapshots
-  const snapshots = Object.entries(rankingsMap).map(([teamId, rankPosition]) => ({
-    team_id: teamId,
-    season_id: seasonId,
-    rank_position: rankPosition,
-  }));
-
-  // Upsert all rankings
-  const { error } = await supabase.from('ranking_snapshots').upsert(snapshots, {
-    onConflict: 'team_id,season_id',
-    ignoreDuplicates: false,
-  });
-
-  if (error) {
-    handleDatabaseError(error, 'Failed to migrate rankings to database');
-  }
-
-  // Clear localStorage after successful migration
-  localStorage.removeItem('previousRankings');
-  localStorage.removeItem('rankingsLastUpdated');
 }

@@ -4,9 +4,4 @@ export * from './divisionWeightsCache';
 export * from './sortAndUpdateRankings';
 
 // Export functions from the main rankingUtils file to avoid circular dependencies
-export {
-  loadRankingsFromStorage,
-  saveRankingsToStorage,
-  sortRankings,
-  updateRankChanges,
-} from '../rankingUtils';
+export { sortRankings, updateRankChanges } from '../rankingUtils';
