@@ -15,8 +15,9 @@ vi.mock('@/services/brackets/BracketWriteService', () => ({
   updatePlayoffMatchScores: (...args: unknown[]) => updatePlayoffMatchScores(...args),
 }));
 vi.mock('@/services/brackets/manager', () => ({ bracketManagerService: { updateMatch: vi.fn() } }));
+// A bare vi.fn() returns undefined, not a promise, and the hook awaits this.
 vi.mock('@/hooks/matches/utils/queryCacheUtils', () => ({
-  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined),
+  invalidateMatchRelatedQueries: vi.fn().mockResolvedValue(undefined), // skipcq: JS-W1042
 }));
 vi.mock('@/hooks/useToast', () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({}) }));
@@ -27,8 +28,9 @@ describe('usePlayoffMatchUpdate (legacy bracket) — game winners', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fetchPlayoffMatchTeams.mockResolvedValue({ team1_id: 't1', team2_id: 't2' });
-    updatePlayoffMatchScores.mockResolvedValue(undefined);
-    replacePlayoffGames.mockResolvedValue(undefined);
+    // The hook awaits both; vi.fn() alone returns undefined, not a promise.
+    updatePlayoffMatchScores.mockResolvedValue(undefined); // skipcq: JS-W1042
+    replacePlayoffGames.mockResolvedValue(undefined); // skipcq: JS-W1042
   });
 
   it('saves no winner for a tied or 0-0 placeholder game', async () => {
