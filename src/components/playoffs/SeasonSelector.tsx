@@ -24,6 +24,13 @@ const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSea
     return null;
   }
 
+  // The address can name any season (?season=...). Radix shows its placeholder
+  // only for an empty value, so an id that is not in the list left the trigger
+  // blank. Treat an unknown id as no selection.
+  const knownSelection = seasons.some((season) => season.id === selectedSeasonId)
+    ? (selectedSeasonId ?? undefined)
+    : undefined;
+
   return (
     <div className="flex items-center gap-3">
       <label
@@ -32,7 +39,7 @@ const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSea
       >
         Season:
       </label>
-      <Select value={selectedSeasonId ?? undefined} onValueChange={onSeasonChange}>
+      <Select value={knownSelection} onValueChange={onSeasonChange}>
         <SelectTrigger id={triggerId} className="w-[220px] bg-card border-border">
           <SelectValue placeholder="Select season" />
         </SelectTrigger>
