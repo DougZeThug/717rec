@@ -17,6 +17,20 @@ import { DatabaseError, ValidationError } from '@/types/errors';
 import { scoreLog } from '@/utils/logger';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
+/**
+ * A tied game (the 0-0 placeholder row the score editor allows) has no winner.
+ * playoff_games.winner_id is nullable, so save null rather than a team: a team
+ * id there is counted as a game win when the bracket is read back.
+ */
+const getGameWinnerId = (
+  game: { team1Score: number; team2Score: number },
+  matchData: { team1_id: string | null; team2_id: string | null }
+): string | null => {
+  if (game.team1Score > game.team2Score) return matchData.team1_id;
+  if (game.team2Score > game.team1Score) return matchData.team2_id;
+  return null;
+};
+
 export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -158,17 +172,12 @@ export const usePlayoffMatchUpdate = (bracket: PlayoffBracket | null) => {
 
         // Save games
         if (games && games.length > 0) {
-          const gameInserts = games.map((game, index) => {
-            const gameWinnerId =
-              game.team1Score > game.team2Score ? matchData.team1_id : matchData.team2_id;
-
-            return {
-              game_number: index + 1,
-              team1_score: game.team1Score,
-              team2_score: game.team2Score,
-              winner_id: gameWinnerId,
-            };
-          });
+          const gameInserts = games.map((game, index) => ({
+            game_number: index + 1,
+            team1_score: game.team1Score,
+            team2_score: game.team2Score,
+            winner_id: getGameWinnerId(game, matchData),
+          }));
 
           // Atomic replace via RPC — DELETE + INSERT happen in one transaction,
           // so a failed insert no longer wipes out the match's game history.

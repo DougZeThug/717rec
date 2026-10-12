@@ -41,6 +41,20 @@ describe('SeasonSelector', () => {
     expect(screen.getByLabelText('Season:')).toBeInTheDocument();
   });
 
+  it('shows the name of the selected season', () => {
+    mockUseSeasons.mockReturnValue({ data: seasons, isLoading: false });
+    render(<SeasonSelector selectedSeasonId="s2" onSeasonChange={vi.fn()} />);
+
+    expect(screen.getByLabelText('Season:')).toHaveTextContent('Spring 2026');
+  });
+
+  it('falls back to the "Select season" hint when the id is not a real season', () => {
+    mockUseSeasons.mockReturnValue({ data: seasons, isLoading: false });
+    render(<SeasonSelector selectedSeasonId="typo-id" onSeasonChange={vi.fn()} />);
+
+    expect(screen.getByLabelText('Season:')).toHaveTextContent('Select season');
+  });
+
   // The Playoffs page mounts the selector twice. Each copy needs its own id, or
   // the label of one points at the other.
   it('gives each mounted copy its own id so every label points at its own picker', () => {

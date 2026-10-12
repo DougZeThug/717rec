@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/auth-context';
 import { useDeleteNotification } from '@/hooks/notifications/useNotificationMutations';
 import { useAdminAccess } from '@/hooks/useAdminAccess';
 import { cn } from '@/lib/utils';
@@ -36,9 +37,13 @@ const NotificationDateStamp: React.FC<NotificationDateStampProps> = ({
 
 const NotificationItemComponent: React.FC<Props> = ({ notification, lastSeenAt }) => {
   const { isAdminAccessGranted } = useAdminAccess();
+  const { user } = useAuth();
   const del = useDeleteNotification();
 
-  const isUnread = (Date.parse(notification.created_at) || 0) > (Date.parse(lastSeenAt) || 0);
+  // A signed-out visitor has no read history: their last-seen time is the epoch,
+  // so every announcement would look unread. The bell badge has the same rule.
+  const isUnread =
+    Boolean(user) && (Date.parse(notification.created_at) || 0) > (Date.parse(lastSeenAt) || 0);
 
   const { absolute, relative, iso } = formatNotificationDate(notification.created_at);
 

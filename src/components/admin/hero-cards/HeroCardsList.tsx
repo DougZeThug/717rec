@@ -160,14 +160,25 @@ const HeroCardsList: React.FC<HeroCardsListProps> = ({ cards, isLoading, onEdit 
 
   const cardToDelete = deletingCardId ? cards.find((c) => c.id === deletingCardId) : null;
 
+  // toggleVisibility and deleteCard are mutateAsync, so they reject. The hook
+  // already toasts; without a catch the rejection is unhandled on top of that.
   const handleToggleVisibility = async (card: HeroCard) => {
-    await toggleVisibility({ id: card.id, is_visible: !card.is_visible });
+    try {
+      await toggleVisibility({ id: card.id, is_visible: !card.is_visible });
+    } catch {
+      // The hook toasted the failure.
+    }
   };
 
   const handleConfirmDelete = async () => {
     if (!deletingCardId) return;
-    await deleteCard(deletingCardId);
-    setDeletingCardId(null);
+    try {
+      await deleteCard(deletingCardId);
+    } catch {
+      // The hook toasted the failure.
+    } finally {
+      setDeletingCardId(null);
+    }
   };
 
   /**

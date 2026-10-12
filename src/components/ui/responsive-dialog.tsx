@@ -22,6 +22,11 @@ import { cn } from '@/lib/utils';
 interface ResponsiveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * Phone drawer only: false stops a swipe-down from closing it. Pair it with
+   * a guard in `onOpenChange`, which covers Esc and overlay clicks on desktop.
+   */
+  dismissible?: boolean;
   children: React.ReactNode;
 }
 
@@ -58,6 +63,7 @@ const ResponsiveDialogContext = React.createContext<{ isMobile: boolean }>({
 export const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   open,
   onOpenChange,
+  dismissible = true,
   children,
 }) => {
   const isMobile = useIsMobile();
@@ -65,7 +71,7 @@ export const ResponsiveDialog: React.FC<ResponsiveDialogProps> = ({
   return (
     <ResponsiveDialogContext.Provider value={{ isMobile }}>
       {isMobile ? (
-        <Drawer open={open} onOpenChange={onOpenChange}>
+        <Drawer open={open} onOpenChange={onOpenChange} dismissible={dismissible}>
           {children}
         </Drawer>
       ) : (

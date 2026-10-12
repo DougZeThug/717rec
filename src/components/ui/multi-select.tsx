@@ -1,3 +1,4 @@
+import { defaultFilter } from 'cmdk';
 import { Check, ChevronsUpDown, X } from 'lucide-react';
 import React from 'react';
 
@@ -53,12 +54,21 @@ const SelectIndicators: React.FC<{
   </div>
 );
 
+/**
+ * cmdk tells rows apart by `value`, so that has to be the unique id: team names
+ * are not unique, and two rows with one name could not both be reached from
+ * the keyboard. The id is not something a person searches for, so search reads
+ * the label only (passed as a keyword), with cmdk's usual fuzzy match.
+ */
+const filterByLabel = (_value: string, search: string, keywords?: string[]): number =>
+  defaultFilter(keywords?.join(' ') ?? '', search);
+
 const OptionsCommand: React.FC<{
   options: MultiSelectOption[];
   selected: string[];
   onSelect: (value: string) => void;
 }> = ({ options, selected, onSelect }) => (
-  <Command>
+  <Command filter={filterByLabel}>
     <CommandInput placeholder="Search teams..." aria-label="Search teams" />
     <CommandList>
       <CommandEmpty>No teams found.</CommandEmpty>
@@ -66,7 +76,8 @@ const OptionsCommand: React.FC<{
         {options.map((option) => (
           <CommandItem
             key={option.value}
-            value={option.label}
+            value={option.value}
+            keywords={[option.label]}
             onSelect={() => onSelect(option.value)}
           >
             <Check

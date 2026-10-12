@@ -69,6 +69,63 @@ describe('MultiSelect', () => {
     expect(await screen.findByText('No teams found.')).toBeInTheDocument();
   });
 
+  describe('two teams with the same name', () => {
+    const twins = [
+      { value: 'id-1', label: 'Falcons' },
+      { value: 'id-2', label: 'Lions' },
+      { value: 'id-3', label: 'Falcons' },
+    ];
+
+    const openTwins = async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<MultiSelect options={twins} selected={[]} onChange={onChange} />);
+      await user.click(screen.getByRole('combobox'));
+      await user.type(await screen.findByLabelText('Search teams'), 'Falcons');
+      return { user, onChange };
+    };
+
+    it('lets the keyboard reach the second one', async () => {
+      const { user, onChange } = await openTwins();
+
+      await user.keyboard('{ArrowDown}{Enter}');
+
+      expect(onChange).toHaveBeenCalledWith(['id-3']);
+    });
+
+    it('highlights only one of them at a time', async () => {
+      await openTwins();
+
+      const listbox = await screen.findByRole('listbox');
+      expect(listbox.querySelectorAll('[cmdk-item]')).toHaveLength(2);
+      expect(listbox.querySelectorAll('[cmdk-item][aria-selected="true"]')).toHaveLength(1);
+    });
+  });
+
+  it('searches the team name, not the id behind it', async () => {
+    const user = userEvent.setup();
+    render(
+      <MultiSelect
+        options={[
+          { value: 'zzz-1', label: 'Tigers' },
+          { value: 'zzz-2', label: 'Lions' },
+        ]}
+        selected={[]}
+        onChange={vi.fn()}
+      />
+    );
+    await user.click(screen.getByRole('combobox'));
+    const search = await screen.findByLabelText('Search teams');
+
+    await user.type(search, 'zzz');
+    expect(await screen.findByText('No teams found.')).toBeInTheDocument();
+
+    await user.clear(search);
+    await user.type(search, 'lion');
+    expect(screen.getByText('Lions')).toBeInTheDocument();
+    expect(screen.queryByText('Tigers')).not.toBeInTheDocument();
+  });
+
   it('clears every pick from the X without opening the list', async () => {
     const user = userEvent.setup();
     const { onChange } = setup(['t1']);

@@ -123,6 +123,19 @@ describe('TeamsDivisionSection', () => {
     expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }));
   });
 
+  it('brings the opened header to the top of the screen, with no header offset', () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ top: 250 } as DOMRect);
+    const { rerender } = renderSection();
+
+    rerender(<TeamsDivisionSection {...baseProps} isExpanded scrollIntoViewOnExpand />);
+
+    // jsdom's pageYOffset is 0, so the target is the section's own top.
+    expect(scrollTo).toHaveBeenCalledWith({ top: 250, behavior: 'smooth' });
+    rect.mockRestore();
+  });
+
   it('does not scroll the page for a division that opens by default', () => {
     // The real sequence: closed on mount while the teams load, then opened by
     // the parent once they arrive. Nobody pressed anything, so the page must

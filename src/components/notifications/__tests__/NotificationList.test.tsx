@@ -22,6 +22,7 @@ const mockMutate = vi.hoisted(() => vi.fn());
 vi.mock('@/hooks/notifications/useNotificationMutations', () => ({
   useDeleteNotification: () => mockUseDeleteNotification(),
 }));
+vi.mock('@/contexts/auth-context', () => ({ useAuth: () => ({ user: { id: 'user-1' } }) }));
 vi.mock('@/hooks/useAdminAccess', () => ({
   useAdminAccess: () => mockUseAdminAccess(),
 }));

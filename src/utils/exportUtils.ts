@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+
 /**
  * Escape a value for CSV format
  */
@@ -73,6 +75,38 @@ export const exportHeadToHeadToCSV = (
   const filename = `${safeTeamName}_HeadToHead_${date}.csv`;
 
   downloadFile(csv, filename);
+};
+
+/**
+ * Export a season's team participation answers to CSV
+ */
+export const exportParticipationToCSV = (
+  rows: Array<{
+    name: string;
+    divisionName?: string | null;
+    status: string;
+    updatedAt?: string | null;
+    submittedBy?: string | null;
+  }>,
+  seasonId: string
+): void => {
+  const data = rows.map((r) => ({
+    team_name: r.name,
+    division: r.divisionName ?? '',
+    status: r.status,
+    updated_at: r.updatedAt ? format(new Date(r.updatedAt), 'yyyy-MM-dd HH:mm') : '',
+    submitted_by: r.submittedBy ?? '',
+  }));
+
+  const columns = [
+    { key: 'team_name' as const, header: 'Team Name' },
+    { key: 'division' as const, header: 'Division' },
+    { key: 'status' as const, header: 'Status' },
+    { key: 'updated_at' as const, header: 'Updated At' },
+    { key: 'submitted_by' as const, header: 'Submitted By' },
+  ];
+
+  downloadFile(arrayToCSV(data, columns), `participation-${seasonId}.csv`);
 };
 
 /**

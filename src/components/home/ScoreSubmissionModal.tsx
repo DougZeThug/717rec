@@ -195,12 +195,15 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
   };
 
   const handleClose = () => {
+    // Esc, an overlay click or a swipe must not close the modal mid-send: the
+    // form would reset and a failed report would be lost.
+    if (isSubmitting) return;
     form.reset();
     onClose();
   };
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={handleClose}>
+    <ResponsiveDialog open={open} onOpenChange={handleClose} dismissible={!isSubmitting}>
       <ResponsiveDialogContent className="sm:max-w-md">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Report Match Score</ResponsiveDialogTitle>

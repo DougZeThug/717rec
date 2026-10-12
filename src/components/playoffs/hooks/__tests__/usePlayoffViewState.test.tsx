@@ -93,6 +93,45 @@ describe('usePlayoffViewState', () => {
     );
   });
 
+  describe('when admin rights are lost', () => {
+    const renderAs = (isAdmin: boolean) => {
+      const data = { ...createData(), isAdmin };
+      const handlers = createHandlers() as unknown as ReturnType<typeof usePlayoffHandlers>;
+      return renderHook(
+        (props: { data: typeof data }) =>
+          usePlayoffViewState(props.data as unknown as PlayoffPageData, handlers),
+        { initialProps: { data } }
+      );
+    };
+
+    it('closes the create and delete dialogs', () => {
+      const { result, rerender } = renderAs(true);
+
+      act(() => {
+        result.current.handleCreateBracket();
+        result.current.handleDeleteBracket('bracket-1', 'Spring Playoffs');
+      });
+      expect(result.current.bracketDialogOpen).toBe(true);
+      expect(result.current.deletingBracket).not.toBeNull();
+
+      rerender({ data: { ...createData(), isAdmin: false } });
+
+      expect(result.current.bracketDialogOpen).toBe(false);
+      expect(result.current.deletingBracket).toBeNull();
+    });
+
+    it('leaves the dialogs alone while the user stays an admin', () => {
+      const { result, rerender } = renderAs(true);
+
+      act(() => {
+        result.current.handleCreateBracket();
+      });
+      rerender({ data: { ...createData(), isAdmin: true } });
+
+      expect(result.current.bracketDialogOpen).toBe(true);
+    });
+  });
+
   it('closes the dialog and shows a separate warning toast when delete succeeds but refetch fails', async () => {
     const data = createData();
     // The delete must resolve so the hook goes on to the refetch that fails.

@@ -132,6 +132,17 @@ describe('MatchFormRHF (edit mode)', () => {
     expect(screen.getByRole('switch')).toBeInTheDocument();
   });
 
+  it('names the completion switch and toggles it from its label', () => {
+    render(<MatchFormRHF match={upcoming} teams={teams} onSubmit={vi.fn()} onCancel={vi.fn()} />);
+
+    const toggle = screen.getByRole('switch', { name: 'Match Completed' });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+
+    fireEvent.click(screen.getByText('Match Completed'));
+
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
+  });
+
   it('falls back to the slot implied by the date when the match names none', () => {
     render(
       <MatchFormRHF
