@@ -84,6 +84,28 @@ describe('CreateDivisionDialog', () => {
     expect(mutate).not.toHaveBeenCalled();
   });
 
+  it('starts with a fresh form after Cancel and reopen', async () => {
+    const user = userEvent.setup();
+    const Parent = () => {
+      const [open, setOpen] = React.useState(true);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Reopen
+          </button>
+          <CreateDivisionDialog open={open} onOpenChange={setOpen} />
+        </>
+      );
+    };
+    render(<Parent />);
+
+    await user.type(screen.getByLabelText('Name'), 'Stale Name');
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Reopen' }));
+
+    expect(screen.getByLabelText('Name')).toHaveValue('');
+  });
+
   it('submits the display division the admin picked', async () => {
     const user = userEvent.setup();
     renderDialog();

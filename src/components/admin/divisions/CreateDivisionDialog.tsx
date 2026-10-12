@@ -144,14 +144,15 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
     );
   };
 
+  // Every way of closing (Esc, overlay, X, Cancel) goes through here so the
+  // form always starts fresh on the next open.
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) reset();
+    onOpenChange(nextOpen);
+  };
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        if (!o) reset();
-        onOpenChange(o);
-      }}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create Division</DialogTitle>
@@ -166,7 +167,7 @@ const CreateDivisionDialog: React.FC<Props> = ({ open, onOpenChange }) => {
           {error && <p className="text-sm text-destructive-text">{error}</p>}
           <CreateDivisionFooter
             isPending={createDivision.isPending}
-            onCancel={() => onOpenChange(false)}
+            onCancel={() => handleOpenChange(false)}
           />
         </form>
       </DialogContent>
