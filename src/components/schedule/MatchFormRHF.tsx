@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -263,7 +262,7 @@ const MatchFormRHF: React.FC<MatchFormProps> = ({
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
-                <Label htmlFor="isCompleted">Match Completed</Label>
+                <FormLabel>Match Completed</FormLabel>
                 <FormMessage />
               </FormItem>
             )}
