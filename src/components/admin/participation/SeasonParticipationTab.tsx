@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import { Check, Download, HelpCircle, Users, X } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
@@ -17,6 +16,7 @@ import { useSeasonParticipations } from '@/hooks/useSeasonParticipation';
 import { useSeasons } from '@/hooks/useSeasons';
 import { useTeams } from '@/hooks/useTeams';
 import { cn } from '@/lib/utils';
+import { exportParticipationToCSV } from '@/utils/exportUtils';
 import { formatWithPattern } from '@/utils/formatDateSafe';
 
 type StatusFilter = 'all' | 'PLAYING' | 'NOT_PLAYING' | 'NO_RESPONSE';
@@ -212,28 +212,7 @@ const SeasonParticipationTab: React.FC = () => {
     return { playing, notPlaying, noResponse, total: teamsWithStatus.length };
   }, [teamsWithStatus]);
 
-  const handleExportCsv = () => {
-    const headers = ['Team Name', 'Division', 'Status', 'Updated At', 'Submitted By'];
-    const rows = filteredTeams.map((t) => [
-      t.name,
-      t.divisionName ?? '',
-      t.status,
-      t.updatedAt ? format(new Date(t.updatedAt), 'yyyy-MM-dd HH:mm') : '',
-      t.submittedBy ?? '',
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((r) => r.map((c) => `"${c}"`).join(',')),
-    ].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const downloadLink = document.createElement('a');
-    downloadLink.href = url;
-    downloadLink.download = `participation-${selectedSeasonId}.csv`;
-    downloadLink.click();
-    URL.revokeObjectURL(url);
-  };
+  const handleExportCsv = () => exportParticipationToCSV(filteredTeams, selectedSeasonId);
 
   const isLoading = seasonsLoading || teamsLoading || participationsLoading;
 
