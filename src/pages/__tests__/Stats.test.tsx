@@ -14,7 +14,14 @@ import type { Ranking, Team } from '@/types';
 
 // --- Data layer + shell mocks -------------------------------------------------
 vi.mock('@/hooks/useScrollRestoration', () => ({ default: vi.fn() }));
-vi.mock('@/components/seo/SeoHead', () => ({ default: () => null }));
+// Keep the last jsonLd the page handed to the head, so a test can read it.
+const seoHead = vi.hoisted(() => ({ jsonLd: undefined as unknown }));
+vi.mock('@/components/seo/SeoHead', () => ({
+  default: (props: { jsonLd?: unknown }) => {
+    seoHead.jsonLd = props.jsonLd;
+    return null;
+  },
+}));
 vi.mock('@/components/layout/PageLayout', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
@@ -200,5 +207,46 @@ describe('Stats page', () => {
     renderStats();
 
     expect(screen.getByText('myTeamId:none')).toBeInTheDocument();
+  });
+
+  describe('standings structured data', () => {
+    const listUrls = () => {
+      const [standings] = seoHead.jsonLd as Array<{
+        mainEntity: { itemListElement: Array<{ url: string }> };
+      }>;
+      return standings.mainEntity.itemListElement.map((item) => item.url);
+    };
+
+    it('lists each team at the readable address its own page declares as canonical', () => {
+      setTeamsQuery({
+        data: [makeTeam({ id: 't1', name: 'Alpha' }), makeTeam({ id: 't2', name: 'Bag Bandits' })],
+      });
+      setTeamRankings([
+        makeRanking({ teamId: 't1', teamName: 'Alpha' }),
+        makeRanking({ teamId: 't2', teamName: 'Bag Bandits' }),
+      ]);
+      renderStats();
+
+      expect(listUrls()).toEqual([
+        'https://717rec.app/teams/alpha',
+        'https://717rec.app/teams/bag-bandits',
+      ]);
+    });
+
+    it('falls back to the team id when two teams share one readable address', () => {
+      setTeamsQuery({
+        data: [makeTeam({ id: 't1', name: 'Falcons' }), makeTeam({ id: 't2', name: 'Falcons' })],
+      });
+      setTeamRankings([
+        makeRanking({ teamId: 't1', teamName: 'Falcons' }),
+        makeRanking({ teamId: 't2', teamName: 'Falcons' }),
+      ]);
+      renderStats();
+
+      expect(listUrls()).toEqual([
+        'https://717rec.app/teams/falcons',
+        'https://717rec.app/teams/t2',
+      ]);
+    });
   });
 });
