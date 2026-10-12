@@ -8,10 +8,12 @@ const mockUseDeleteNotification = vi.hoisted(() => vi.fn());
 const mockUseAdminAccess = vi.hoisted(() => vi.fn());
 const mockMutate = vi.hoisted(() => vi.fn());
 const mockFormatNotificationDate = vi.hoisted(() => vi.fn());
+const mockUseAuth = vi.hoisted(() => vi.fn());
 
 vi.mock('@/hooks/notifications/useNotificationMutations', () => ({
   useDeleteNotification: () => mockUseDeleteNotification(),
 }));
+vi.mock('@/contexts/auth-context', () => ({ useAuth: () => mockUseAuth() }));
 vi.mock('@/hooks/useAdminAccess', () => ({
   useAdminAccess: () => mockUseAdminAccess(),
 }));
@@ -44,6 +46,7 @@ describe('NotificationItem', () => {
     vi.clearAllMocks();
     mockUseDeleteNotification.mockReturnValue({ mutate: mockMutate, isPending: false });
     mockUseAdminAccess.mockReturnValue({ isAdminAccessGranted: false });
+    mockUseAuth.mockReturnValue({ user: { id: 'user-1' } });
     mockFormatNotificationDate.mockReturnValue({
       absolute: 'Jun 30, 2026, 10:00 AM EDT',
       relative: 'about 1 hour ago',
@@ -68,6 +71,16 @@ describe('NotificationItem', () => {
     const dot = getDot(container);
     expect(dot).toHaveClass('bg-primary');
     expect(dot).not.toHaveClass('bg-transparent');
+  });
+
+  it('shows no unread dot to a signed-out visitor, whatever lastSeenAt says', () => {
+    mockUseAuth.mockReturnValue({ user: null });
+    const { container } = render(
+      <NotificationItem notification={notification} lastSeenAt="1970-01-01T00:00:00.000Z" />
+    );
+    const dot = getDot(container);
+    expect(dot).toHaveClass('bg-transparent');
+    expect(dot).not.toHaveClass('bg-primary');
   });
 
   it('marks the dot as read (bg-transparent) when created before lastSeenAt', () => {
