@@ -513,7 +513,7 @@ describe('useMessageBoard', () => {
   describe('postMessage', () => {
     it('sends the text in the General category by default', async () => {
       mockFetchMessages.mockResolvedValue([]);
-      mockCreateMessage.mockResolvedValue(undefined);
+      mockCreateMessage.mockImplementation(() => Promise.resolve());
       const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 

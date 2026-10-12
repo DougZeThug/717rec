@@ -19,6 +19,10 @@ const clientAnswering = (result: QueryResult) => {
   return { client: { from } as unknown as SupabaseClient, from, select, eq };
 };
 
+// A named `undefined`: these calls need a second argument, and `vi.stubEnv(name, undefined)`
+// is how a test removes an env var.
+const UNSET: string | undefined = undefined;
+
 const ctx = { getToken: () => 'oauth-token' } as unknown as ToolContext;
 
 describe('userClient', () => {
@@ -42,7 +46,7 @@ describe('userClient', () => {
 
   it('falls back to the anon key when no publishable key is set', () => {
     vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
-    vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', undefined);
+    vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', UNSET);
     vi.stubEnv('SUPABASE_ANON_KEY', 'anon-key');
 
     userClient(ctx);
@@ -55,7 +59,7 @@ describe('userClient', () => {
   });
 
   it('refuses to build a client when the project URL is missing', () => {
-    vi.stubEnv('SUPABASE_URL', undefined);
+    vi.stubEnv('SUPABASE_URL', UNSET);
     vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', 'publishable-key');
 
     expect(() => userClient(ctx)).toThrow(/SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY/);
@@ -64,8 +68,8 @@ describe('userClient', () => {
 
   it('refuses to build a client when no key is set', () => {
     vi.stubEnv('SUPABASE_URL', 'https://example.supabase.co');
-    vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', undefined);
-    vi.stubEnv('SUPABASE_ANON_KEY', undefined);
+    vi.stubEnv('SUPABASE_PUBLISHABLE_KEY', UNSET);
+    vi.stubEnv('SUPABASE_ANON_KEY', UNSET);
 
     expect(() => userClient(ctx)).toThrow(/must be set/);
     expect(createClient).not.toHaveBeenCalled();
@@ -76,7 +80,7 @@ describe('requireAdmin', () => {
   it('says no without asking the database when there is no signed-in user', async () => {
     const { client, from } = clientAnswering({ data: { is_admin: true }, error: null });
 
-    await expect(requireAdmin(client, undefined)).resolves.toBe(false);
+    await expect(requireAdmin(client, UNSET)).resolves.toBe(false);
     expect(from).not.toHaveBeenCalled();
   });
 
@@ -137,16 +141,16 @@ describe('getActiveSeasonId', () => {
 
 describe('isHiddenTeamRow without a division join', () => {
   it('falls back to the cached division label for a Hidden team', () => {
-    expect(isHiddenTeamRow('Hidden', undefined)).toBe(true);
+    expect(isHiddenTeamRow('Hidden', UNSET)).toBe(true);
     expect(isHiddenTeamRow('Hidden2', null)).toBe(true);
   });
 
   it('keeps a team with an ordinary cached division visible', () => {
-    expect(isHiddenTeamRow('Intermediate High', undefined)).toBe(false);
+    expect(isHiddenTeamRow('Intermediate High', UNSET)).toBe(false);
   });
 
   it('keeps a team with no division information visible', () => {
-    expect(isHiddenTeamRow(null, undefined)).toBe(false);
+    expect(isHiddenTeamRow(null, UNSET)).toBe(false);
   });
 
   it('falls back to the cached label when the embedded team has no division', () => {
