@@ -47,7 +47,10 @@ export default defineConfig(({ mode }) => ({
               test: /[\\/]node_modules[\\/](react|react-dom|react-router)[\\/]/,
               priority: 20,
             },
-            { name: 'vendor-motion', test: /[\\/]node_modules[\\/]framer-motion[\\/]/ },
+            {
+              name: 'vendor-motion',
+              test: /[\\/]node_modules[\\/](framer-motion|motion-dom|motion-utils)[\\/]/,
+            },
             {
               name: 'vendor-supabase',
               test: /[\\/]node_modules[\\/]@supabase[\\/]supabase-js[\\/]/,
