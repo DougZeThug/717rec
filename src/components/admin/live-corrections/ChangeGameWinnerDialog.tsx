@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -68,10 +68,22 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
 }) => {
   const [winnerId, setWinnerId] = useState<string>(currentWinnerId ?? team1.id);
 
+  // Which game the form currently holds. Cleared on close so reopening always
+  // reloads the stored winner.
+  const loadedGameKeyRef = useRef<number | null>(null);
+
+  // Load the stored winner when the dialog opens or a different game is picked,
+  // but NOT when realtime hands us a new currentWinnerId for the game already
+  // being edited: that would silently undo the admin's pick.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form to the newly opened game
-    if (open) setWinnerId(currentWinnerId ?? team1.id);
-  }, [open, currentWinnerId, team1.id]);
+    if (!open) {
+      loadedGameKeyRef.current = null;
+      return;
+    }
+    if (loadedGameKeyRef.current === gameNumber) return;
+    loadedGameKeyRef.current = gameNumber;
+    setWinnerId(currentWinnerId ?? team1.id);
+  }, [open, currentWinnerId, team1.id, gameNumber]);
 
   /**
    * Whether the rounds underneath support the winner being chosen.

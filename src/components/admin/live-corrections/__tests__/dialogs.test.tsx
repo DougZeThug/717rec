@@ -423,6 +423,58 @@ describe('live correction dialogs', () => {
     />
   );
 
+  // A realtime refetch can hand the dialog a new currentWinnerId while the admin
+  // is mid-correction. It must not undo the pick they already made.
+  it('keeps the admin pick when currentWinnerId changes while open', async () => {
+    const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+    const { rerender } = render(winnerDialog({ team1: 18, team2: 21 }, onConfirm));
+
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Team B' }));
+
+    rerender(
+      <ChangeGameWinnerDialog
+        open
+        onOpenChange={vi.fn()}
+        gameNumber={1}
+        team1={{ id: 'team-a', name: 'Team A' }}
+        team2={{ id: 'team-b', name: 'Team B' }}
+        currentWinnerId={null}
+        totals={{ team1: 18, team2: 21 }}
+        onConfirm={onConfirm}
+        isSubmitting={false}
+      />
+    );
+    await user.click(screen.getByRole('button', { name: 'Set winner' }));
+
+    expect(onConfirm).toHaveBeenCalledWith('team-b');
+  });
+
+  it('resets to the stored winner after the dialog is closed and reopened', async () => {
+    const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+    const props = {
+      onOpenChange: vi.fn(),
+      gameNumber: 1,
+      team1: { id: 'team-a', name: 'Team A' },
+      team2: { id: 'team-b', name: 'Team B' },
+      currentWinnerId: 'team-a',
+      totals: { team1: 18, team2: 21 },
+      onConfirm,
+      isSubmitting: false,
+    };
+    const { rerender } = render(<ChangeGameWinnerDialog open {...props} />);
+
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Team B' }));
+    rerender(<ChangeGameWinnerDialog open={false} {...props} />);
+    rerender(<ChangeGameWinnerDialog open {...props} />);
+    await user.click(screen.getByRole('button', { name: 'Set winner' }));
+
+    expect(onConfirm).toHaveBeenCalledWith('team-a');
+  });
+
   it('warns when the rounds decide nobody, and still allows the change', async () => {
     const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
     const user = userEvent.setup();
