@@ -18,6 +18,8 @@ vi.mock('../SeasonForm', () => ({
   default: ({ season, onClose }: { season?: Season; onClose: () => void }) => (
     <div>
       <span>{season ? `Editing ${season.name}` : 'New season form'}</span>
+      {/* Uncontrolled, like the real form's state: it keeps what was typed unless remounted. */}
+      <input aria-label="Season name" defaultValue={season?.name ?? ''} />
       <button onClick={onClose}>Close form</button>
     </div>
   ),
@@ -30,7 +32,15 @@ vi.mock('../SeasonsList', () => ({
   }: {
     seasons: Season[];
     onEditSeason: (season: Season) => void;
-  }) => <button onClick={() => onEditSeason(seasons[0])}>Edit first season</button>,
+  }) => (
+    <>
+      {seasons.map((s) => (
+        <button key={s.id} onClick={() => onEditSeason(s)}>
+          Edit {s.name}
+        </button>
+      ))}
+    </>
+  ),
 }));
 
 import SeasonManagementTab from '../SeasonManagementTab';
@@ -95,8 +105,41 @@ describe('SeasonManagementTab', () => {
     seasonsFromHook = [makeSeason({ name: 'Fall 2026' })];
     render(<SeasonManagementTab />);
 
-    await user.click(screen.getByRole('button', { name: 'Edit first season' }));
+    await user.click(screen.getByRole('button', { name: 'Edit Fall 2026' }));
 
     expect(screen.getByText('Editing Fall 2026')).toBeInTheDocument();
+  });
+
+  // The form keeps its own state, so without a key it carried one season's
+  // typing into the next: the edit overwrote the wrong season, or a create
+  // reused the previous values.
+  it('resets the form when another season is picked for editing', async () => {
+    const user = userEvent.setup();
+    seasonsFromHook = [
+      makeSeason({ id: 's-1', name: 'Fall 2026' }),
+      makeSeason({ id: 's-2', name: 'Winter 2026' }),
+    ];
+    render(<SeasonManagementTab />);
+
+    await user.click(screen.getByRole('button', { name: 'Edit Fall 2026' }));
+    await user.type(screen.getByLabelText('Season name'), ' typo');
+    expect(screen.getByLabelText('Season name')).toHaveValue('Fall 2026 typo');
+
+    await user.click(screen.getByRole('button', { name: 'Edit Winter 2026' }));
+
+    expect(screen.getByText('Editing Winter 2026')).toBeInTheDocument();
+    expect(screen.getByLabelText('Season name')).toHaveValue('Winter 2026');
+  });
+
+  it('starts a create form empty after editing a season', async () => {
+    const user = userEvent.setup();
+    seasonsFromHook = [makeSeason({ name: 'Fall 2026' })];
+    render(<SeasonManagementTab />);
+
+    await user.click(screen.getByRole('button', { name: 'Edit Fall 2026' }));
+    await user.click(screen.getByRole('button', { name: /Create New Season/ }));
+
+    expect(screen.getByText('New season form')).toBeInTheDocument();
+    expect(screen.getByLabelText('Season name')).toHaveValue('');
   });
 });

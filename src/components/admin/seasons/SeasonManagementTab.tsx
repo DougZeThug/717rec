@@ -123,7 +123,11 @@ const SeasonManagementTab = () => {
 
         {/* Season Form */}
         {showCreateForm && (
-          <SeasonForm season={editingSeason ?? undefined} onClose={handleCloseForm} />
+          <SeasonForm
+            key={editingSeason?.id ?? 'new'}
+            season={editingSeason ?? undefined}
+            onClose={handleCloseForm}
+          />
         )}
 
         {/* Seasons List */}
