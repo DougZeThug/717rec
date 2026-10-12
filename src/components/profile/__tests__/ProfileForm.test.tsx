@@ -150,6 +150,44 @@ describe('ProfileForm name availability', () => {
     expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument();
   });
 
+  // The edit lands on a name we never check, so no new reply will ever come to
+  // replace the "taken" message. It must not stay on the new value.
+  it('clears the taken message when the name is edited to one the format rules refuse', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: false });
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await screen.findByText('This name is already taken', undefined, {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+
+    await user.type(input, '!');
+
+    await waitFor(() =>
+      expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument()
+    );
+  });
+
+  it('clears the taken message when the name is shortened below 3 characters', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: false });
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await screen.findByText('This name is already taken', undefined, {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+
+    await user.type(input, '{Backspace}');
+
+    await waitFor(() =>
+      expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument()
+    );
+  });
+
   // The old guard compared names, so a slow check for "ABC" passed it again
   // once the user had typed away and back, and it overwrote the fresh answer.
   it('does not let a stale check overwrite a fresh one for the same name', async () => {

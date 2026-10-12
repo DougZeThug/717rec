@@ -108,7 +108,9 @@ leave a stale tick behind.
 only letters, numbers, and underscores. These are checked on submit, not while
 typing. A name that breaks these rules is never sent for the "is it free" check, so
 it never shows "Name is available", and a late reply for an older name does not
-wipe the format error.
+wipe the format error. If "This name is already taken" is showing and the user
+edits to a name that is not checked (under 3 characters, or one that breaks these
+rules), that "taken" message goes away. It was for the old name.
 
 | Field | Rule | Message shown |
 | --- | --- | --- |

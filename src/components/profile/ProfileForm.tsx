@@ -72,6 +72,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   // an older in-flight check for the same name look current.
   const latestCheckIdRef = useRef<number>(0);
 
+  // Clear only the "taken" error a check set. A format error from the schema
+  // stays: a name can be free and still be invalid.
+  const clearTakenError = useCallback(() => {
+    if (form.getFieldState('username', form.formState).error?.type === 'manual') {
+      form.clearErrors('username');
+    }
+  }, [form]);
+
   // Check username availability. The debounce effect below only calls this for
   // names of 3+ characters, so shorter names never get here.
   const handleUsernameAvailabilityCheck = useCallback(
@@ -102,22 +110,27 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           type: 'manual',
           message: 'This name is already taken',
         });
-      } else if (form.getFieldState('username', form.formState).error?.type === 'manual') {
-        // Clear only the "taken" error this check set. A format error from the
-        // schema stays: a name can be free and still be invalid.
-        form.clearErrors('username');
+      } else {
+        clearTakenError();
       }
 
       setIsCheckingUsername(false);
     },
-    [initialUsername, form]
+    [initialUsername, form, clearTakenError]
   );
 
   // Debounce username checks
   useEffect(() => {
-    if (!username || username.length < 3) return undefined;
+    // A name we skip is not the one that was reported taken, so drop that error.
+    if (!username || username.length < 3) {
+      clearTakenError();
+      return undefined;
+    }
     // A name the schema rejects can never be saved, so do not ask if it is free.
-    if (!profileSchema.shape.username.safeParse(username).success) return undefined;
+    if (!profileSchema.shape.username.safeParse(username).success) {
+      clearTakenError();
+      return undefined;
+    }
 
     const handler = setTimeout(() => {
       handleUsernameAvailabilityCheck(username);
@@ -126,7 +139,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
     return () => {
       clearTimeout(handler);
     };
-  }, [username, recheckCount, handleUsernameAvailabilityCheck]);
+  }, [username, recheckCount, handleUsernameAvailabilityCheck, clearTakenError]);
 
   const onSubmit = async (data: ProfileFormData) => {
     if (!user) return;
