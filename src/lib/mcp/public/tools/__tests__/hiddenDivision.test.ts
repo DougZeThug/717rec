@@ -121,8 +121,21 @@ describe('matchesDivisionFilter', () => {
     expect(matchesDivisionFilter(null, null, 'Competitive')).toBe(false);
   });
 
+  it('matches nothing for a spaces-only filter, even for a team with no label', () => {
+    expect(
+      matchesDivisionFilter(
+        'Competitive',
+        { divisions: { display_division: null, name: 'X' } },
+        '  '
+      )
+    ).toBe(false);
+    expect(matchesDivisionFilter(null, null, '  ')).toBe(false);
+    expect(matchesDivisionFilter(null, { divisions: null }, '  ')).toBe(false);
+  });
+
   it('behaves identically in the authenticated tool helpers', () => {
     expect(matchesDivisionFilterAuthed('Recreational', team, 'Intermediate High')).toBe(true);
     expect(matchesDivisionFilterAuthed('Recreational', team, 'Recreational')).toBe(false);
+    expect(matchesDivisionFilterAuthed(null, null, '  ')).toBe(false);
   });
 });

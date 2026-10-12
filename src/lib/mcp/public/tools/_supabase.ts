@@ -157,6 +157,7 @@ export function matchesDivisionFilter(
   filter: string
 ): boolean {
   const wanted = filter.trim().toLowerCase();
+  if (!wanted) return false;
   const live = firstOrSelf(firstOrSelf(team)?.divisions);
   const labels = live ? [live.display_division, live.name] : [divisionName];
   return labels.some((label) => (label ?? '').trim().toLowerCase() === wanted);
