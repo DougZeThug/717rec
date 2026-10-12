@@ -47,17 +47,18 @@ export const TeamsDivisionSection: React.FC<TeamsDivisionSectionProps> = ({
   const scrollBehavior = useScrollBehavior();
   const contentId = React.useId();
 
-  // Only a section the visitor opened scrolls itself under the header. The
-  // division that opens by default must leave the page where it is — including
-  // the position the Teams page restored on the way back from a team.
+  // Only a section the visitor opened scrolls itself to the top of the screen.
+  // The division that opens by default must leave the page where it is —
+  // including the position the Teams page restored on the way back from a team.
+  // No offset: nothing on this page is pinned at the top (the navbar scrolls
+  // away), so the section header can sit right at the top edge.
   // Use double requestAnimationFrame to prevent forced reflow
   useEffect(() => {
     if (scrollIntoViewOnExpand && sectionRef.current) {
       const element = sectionRef.current;
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const yOffset = -80;
-          const scrollTop = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          const scrollTop = element.getBoundingClientRect().top + window.pageYOffset;
           window.scrollTo({ top: scrollTop, behavior: scrollBehavior });
         });
       });
