@@ -142,6 +142,22 @@ export const DivisionService = {
       );
     }
 
+    // Block deletion if the weight was ever edited. The database cascades
+    // division_weight_history, so the delete would erase past weights that
+    // old power scores use. A new division carries one open row (valid_to is
+    // null) from its trigger, so count only closed rows: those are edits.
+    const { count: weightEditCount, error: weightEditCountError } = await supabase
+      .from('division_weight_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('division_id', id)
+      .not('valid_to', 'is', null);
+
+    if (weightEditCountError)
+      handleDatabaseError(weightEditCountError, 'Failed to check division usage');
+    if ((weightEditCount ?? 0) > 0) {
+      throw new BusinessLogicError('Division has weight history and cannot be deleted.');
+    }
+
     const { error } = await supabase.from('divisions').delete().eq('id', id);
     if (error) handleDatabaseError(error, 'Failed to delete division');
   },

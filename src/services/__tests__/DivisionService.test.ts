@@ -102,12 +102,18 @@ describe('DivisionService.deleteDivision', () => {
    */
   const mockTables = (
     counts: Record<string, number>,
-    deleteResult: { error: unknown } = { error: null }
+    deleteResult: { error: unknown } = { error: null },
+    closed: Record<string, number> = {}
   ) => {
     const deleted = vi.fn(() => Promise.resolve(deleteResult));
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({
-        eq: () => Promise.resolve({ count: counts[table] ?? 0, error: null }),
+        // A plain count resolves to counts[table]. Chaining .not('valid_to', ...)
+        // narrows it to closed rows, which the test gives as `closed[table]`.
+        eq: () =>
+          Object.assign(Promise.resolve({ count: counts[table] ?? 0, error: null }), {
+            not: () => Promise.resolve({ count: closed[table] ?? 0, error: null }),
+          }),
       }),
       delete: () => ({ eq: deleted }),
     }));
@@ -222,6 +228,55 @@ describe('DivisionService.deleteDivision', () => {
               ? { count: null, error: pgError() }
               : { count: 0, error: null }
           ),
+      }),
+      delete: () => ({ eq: deleted }),
+    }));
+
+    await expect(DivisionService.deleteDivision('d1')).rejects.toThrow(DatabaseError);
+    expect(deleted).not.toHaveBeenCalled();
+  });
+
+  // A trigger gives every new division one open weight row, so a plain row
+  // count would block every delete. Only closed rows (an edited weight) count.
+  it('refuses a division whose weight was edited', async () => {
+    const deleted = mockTables(
+      { division_weight_history: 2 },
+      { error: null },
+      { division_weight_history: 1 }
+    );
+
+    const thrown = await DivisionService.deleteDivision('d1').catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect((thrown as Error).message).toBe('Division has weight history and cannot be deleted.');
+    expect(deleted).not.toHaveBeenCalled();
+  });
+
+  it('deletes a division that has only its one open weight row', async () => {
+    const deleted = mockTables(
+      { division_weight_history: 1 },
+      { error: null },
+      { division_weight_history: 0 }
+    );
+
+    await expect(DivisionService.deleteDivision('d1')).resolves.toBeUndefined();
+
+    expect(deleted).toHaveBeenCalledWith('id', 'd1');
+  });
+
+  it('throws DatabaseError when the weight history check fails', async () => {
+    const deleted = vi.fn();
+    mockFrom.mockImplementation((table: string) => ({
+      select: () => ({
+        eq: () =>
+          Object.assign(Promise.resolve({ count: 0, error: null }), {
+            not: () =>
+              Promise.resolve(
+                table === 'division_weight_history'
+                  ? { count: null, error: pgError() }
+                  : { count: 0, error: null }
+              ),
+          }),
       }),
       delete: () => ({ eq: deleted }),
     }));
