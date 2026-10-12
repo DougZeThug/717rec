@@ -94,7 +94,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
           type: 'manual',
           message: 'This name is already taken',
         });
-      } else {
+      } else if (form.getFieldState('username', form.formState).error?.type === 'manual') {
+        // Clear only the "taken" error this check set. A format error from the
+        // schema stays: a name can be free and still be invalid.
         form.clearErrors('username');
       }
 
@@ -106,6 +108,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   // Debounce username checks
   useEffect(() => {
     if (!username || username.length < 3) return undefined;
+    // A name the schema rejects can never be saved, so do not ask if it is free.
+    if (!profileSchema.shape.username.safeParse(username).success) return undefined;
 
     const handler = setTimeout(() => {
       handleUsernameAvailabilityCheck(username);

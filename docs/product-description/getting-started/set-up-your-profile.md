@@ -106,7 +106,9 @@ leave a stale tick behind.
 
 **The field rules.** The first name must be at least 3 characters and may contain
 only letters, numbers, and underscores. These are checked on submit, not while
-typing.
+typing. A name that breaks these rules is never sent for the "is it free" check, so
+it never shows "Name is available", and a late reply for an older name does not
+wipe the format error.
 
 | Field | Rule | Message shown |
 | --- | --- | --- |
