@@ -87,6 +87,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
       // Ignore stale responses — only apply if this is still the latest check
       if (latestCheckIdRef.current !== checkId) return;
 
+      // The field changed while this check ran, and no newer check has started
+      // (the new name may be one we skip, such as one the schema refuses).
+      // Drop the reply so it cannot set an error on a name it was not for.
+      if (form.getValues('username') !== value) {
+        setIsCheckingUsername(false);
+        return;
+      }
+
       setAvailability({ name: value, available });
 
       if (available === false) {

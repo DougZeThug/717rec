@@ -128,6 +128,32 @@ describe('ProfileForm name availability', () => {
     expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
   });
 
+  // Same gap, but the older check comes back "taken". The name in the field is
+  // now invalid, so a "taken" message for the old name must not show.
+  it('shows no taken message when an older check comes back taken for a name now invalid', async () => {
+    let resolveSlow!: (value: { available: boolean | null }) => void;
+    mockCheckUsernameAvailability.mockReturnValueOnce(
+      new Promise<{ available: boolean | null }>((resolve) => {
+        resolveSlow = resolve;
+      })
+    );
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+    await user.type(input, '!');
+
+    await act(async () => {
+      resolveSlow({ available: false });
+    });
+
+    expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument();
+  });
+
   // The old guard compared names, so a slow check for "ABC" passed it again
   // once the user had typed away and back, and it overwrote the fresh answer.
   it('does not let a stale check overwrite a fresh one for the same name', async () => {
