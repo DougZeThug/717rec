@@ -19,6 +19,19 @@ export function usePlayoffViewState(
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
+  // The page stays mounted when admin rights are lost (the profile refetches on
+  // a token refresh), and a dialog that was open would stay on screen over the
+  // public view with every save refused. Close both when the flag drops.
+  // Reset while rendering, not in an effect, so there is no extra paint.
+  const [wasAdmin, setWasAdmin] = useState(data.isAdmin);
+  if (wasAdmin !== data.isAdmin) {
+    setWasAdmin(data.isAdmin);
+    if (wasAdmin && !data.isAdmin) {
+      setBracketDialogOpen(false);
+      setDeletingBracket(null);
+    }
+  }
+
   const handleCreateBracket = () => {
     bracketLog('usePlayoffViewState: Create bracket clicked, setting dialog open to true');
     bracketLog('usePlayoffViewState: Current bracketDialogOpen state:', bracketDialogOpen);
