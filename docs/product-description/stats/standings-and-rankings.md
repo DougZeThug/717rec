@@ -246,8 +246,10 @@ nothing, records nothing, and writes no snapshot.
   "Unassigned" when a team has no division at all.
 - **The leaderboard strip counts every team**, including teams with no matches,
   in its "N teams" label.
-- **The trend arrow is blank, not zero, for a team that has never been ranked**;
-  a team that has not moved shows "0".
+- **The Trend column is blank for a team that has never been ranked and for a
+  team that has not moved.** On purpose: a "0" on every unmoved row was noise.
+  The **#** column still tells them apart: it shows "0" for a team that has not
+  moved and "-" for a team that has never been ranked.
 
 ## Open questions and verification
 
