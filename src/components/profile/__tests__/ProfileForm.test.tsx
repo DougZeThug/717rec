@@ -120,9 +120,7 @@ describe('ProfileForm name availability', () => {
     await user.click(screen.getByRole('button', { name: 'Save Profile' }));
     await screen.findByText(/can only contain letters/i);
 
-    await act(async () => {
-      resolveSlow({ available: true });
-    });
+    await act(() => Promise.resolve(resolveSlow({ available: true })));
 
     expect(screen.getByText(/can only contain letters/i)).toBeInTheDocument();
     expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
@@ -147,9 +145,7 @@ describe('ProfileForm name availability', () => {
     });
     await user.type(input, '!');
 
-    await act(async () => {
-      resolveSlow({ available: false });
-    });
+    await act(() => Promise.resolve(resolveSlow({ available: false })));
 
     expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument();
   });
