@@ -106,7 +106,11 @@ leave a stale tick behind.
 
 **The field rules.** The first name must be at least 3 characters and may contain
 only letters, numbers, and underscores. These are checked on submit, not while
-typing.
+typing. A name that breaks these rules is never sent for the "is it free" check, so
+it never shows "Name is available", and a late reply for an older name does not
+wipe the format error. If "This name is already taken" is showing and the user
+edits to a name that is not checked (under 3 characters, or one that breaks these
+rules), that "taken" message goes away. It was for the old name.
 
 | Field | Rule | Message shown |
 | --- | --- | --- |

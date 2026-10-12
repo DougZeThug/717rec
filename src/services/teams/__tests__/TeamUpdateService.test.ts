@@ -424,6 +424,47 @@ describe('updateTeamApi', () => {
     await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
   });
 
+  // The database stats job writes divisions.display_division. This write must
+  // use the same label, or the cached column flips between two names.
+  it.each([
+    { label: 'display_division', display: 'Intermediate', expected: 'Intermediate' },
+    { label: 'name when display_division is unset', display: null, expected: 'Division A' },
+  ])('writes $label to the season stats division_name', async ({ display, expected }) => {
+    setupFullSuccess();
+    const base = mockFrom.getMockImplementation();
+    const statsUpdates: unknown[] = [];
+    mockFrom.mockImplementation((table: string) => {
+      // Run the base mock first: its call counter picks the right teams branch.
+      const baseResult = base ? base(table) : {};
+      if (table === 'divisions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: () =>
+                Promise.resolve({
+                  data: { id: 'div-1', name: 'Division A', display_division: display },
+                  error: null,
+                }),
+            }),
+          }),
+        };
+      }
+      if (table === 'team_season_stats') {
+        return {
+          update: (values: unknown) => {
+            statsUpdates.push(values);
+            return { eq: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }) };
+          },
+        };
+      }
+      return baseResult;
+    });
+
+    await updateTeamApi(TEAM_ID, makeTeamData());
+
+    expect(statsUpdates).toEqual([{ division_name: expected }]);
+  });
+
   it('throws DatabaseError when writing the season stats division name fails', async () => {
     setupFullSuccess();
     const base = mockFrom.getMockImplementation();

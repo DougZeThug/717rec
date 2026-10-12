@@ -83,6 +83,111 @@ describe('ProfileForm name availability', () => {
     expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
   });
 
+  // "ab!" is 3 characters but has a symbol the schema refuses. It used to be
+  // sent for a check and could come back as "Name is available".
+  it('does not check or praise a name the format rules refuse', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: true });
+    renderForm();
+
+    await typeName('ab!');
+    // Longer than the 500ms debounce, so a check would have started by now.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    });
+
+    expect(mockCheckUsernameAvailability).not.toHaveBeenCalled();
+    expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
+  });
+
+  // A check for a good name was still in flight when the field became invalid.
+  // Its "available" answer used to wipe the format error off the screen.
+  it('keeps the format error when an older check comes back available', async () => {
+    let resolveSlow!: (value: { available: boolean | null }) => void;
+    mockCheckUsernameAvailability.mockReturnValueOnce(
+      new Promise<{ available: boolean | null }>((resolve) => {
+        resolveSlow = resolve;
+      })
+    );
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+    await user.type(input, '!');
+    await user.click(screen.getByRole('button', { name: 'Save Profile' }));
+    await screen.findByText(/can only contain letters/i);
+
+    await act(() => Promise.resolve(resolveSlow({ available: true })));
+
+    expect(screen.getByText(/can only contain letters/i)).toBeInTheDocument();
+    expect(screen.queryByText('Name is available')).not.toBeInTheDocument();
+  });
+
+  // Same gap, but the older check comes back "taken". The name in the field is
+  // now invalid, so a "taken" message for the old name must not show.
+  it('shows no taken message when an older check comes back taken for a name now invalid', async () => {
+    let resolveSlow!: (value: { available: boolean | null }) => void;
+    mockCheckUsernameAvailability.mockReturnValueOnce(
+      new Promise<{ available: boolean | null }>((resolve) => {
+        resolveSlow = resolve;
+      })
+    );
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await waitFor(() => expect(mockCheckUsernameAvailability).toHaveBeenCalledTimes(1), {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+    await user.type(input, '!');
+
+    await act(() => Promise.resolve(resolveSlow({ available: false })));
+
+    expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument();
+  });
+
+  // The edit lands on a name we never check, so no new reply will ever come to
+  // replace the "taken" message. It must not stay on the new value.
+  it('clears the taken message when the name is edited to one the format rules refuse', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: false });
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await screen.findByText('This name is already taken', undefined, {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+
+    await user.type(input, '!');
+
+    await waitFor(() =>
+      expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument()
+    );
+  });
+
+  it('clears the taken message when the name is shortened below 3 characters', async () => {
+    mockCheckUsernameAvailability.mockResolvedValue({ available: false });
+    renderForm();
+    const user = userEvent.setup();
+    const input = screen.getByPlaceholderText('Enter your first name');
+
+    await user.type(input, 'abc');
+    await screen.findByText('This name is already taken', undefined, {
+      timeout: SETTLE_TIMEOUT_MS,
+    });
+
+    await user.type(input, '{Backspace}');
+
+    await waitFor(() =>
+      expect(screen.queryByText('This name is already taken')).not.toBeInTheDocument()
+    );
+  });
+
   // The old guard compared names, so a slow check for "ABC" passed it again
   // once the user had typed away and back, and it overwrote the fresh answer.
   it('does not let a stale check overwrite a fresh one for the same name', async () => {

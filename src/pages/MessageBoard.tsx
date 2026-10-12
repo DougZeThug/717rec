@@ -70,6 +70,7 @@ const MessageBoard: React.FC = () => {
     deleteMessage,
     hasMore,
     loadingMore,
+    loadMoreError,
     loadMoreMessages,
     refreshMessages,
     filterOptions,
@@ -127,6 +128,7 @@ const MessageBoard: React.FC = () => {
             hasMore={hasMore}
             onLoadMore={loadMoreMessages}
             loadingMore={loadingMore}
+            loadMoreError={loadMoreError}
             // Wait for auth to settle, or a reload flashes the sign-in
             // prompt at a signed-in reader before the session is restored.
             isSignedOut={authInitialized && !user}

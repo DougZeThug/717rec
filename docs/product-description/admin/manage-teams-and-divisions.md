@@ -150,8 +150,14 @@ with the server's own reason.
 division *name*? This cannot be undone. Divisions currently assigned to any team
 or bracket cannot be deleted." Pressing Delete checks both of those and refuses
 with a counted message — "Division is in use by 3 teams and cannot be deleted" —
-rather than deleting. When nothing references it, the division is deleted
-permanently.
+rather than deleting. It also refuses a division that has power-score snapshots
+or team-division history ("Division has team-division history and cannot be
+deleted"), so a division any team ever sat in cannot be deleted. It also
+refuses a division that archived season data still names ("Division is used by
+archived season data and cannot be deleted") and a division whose weight was
+ever edited ("Division has weight history and cannot be deleted"). A new
+division with its first weight untouched can still be deleted. When nothing
+references it, the division is deleted permanently.
 
 ## Hiding a team
 
@@ -268,7 +274,7 @@ live season's power scores; archived seasons do not move.
 - **A division's weight accepts any positive number**, including values far
   outside the 0.7–1.0 range the help text suggests.
 - **Deleting a division that no team uses succeeds instantly** and cannot be
-  undone; the weight history it carried goes with it.
+  undone, unless its weight was edited or archived season data names it.
 
 ## Open questions and verification
 

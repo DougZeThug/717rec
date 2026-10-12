@@ -6,6 +6,7 @@ import {
   errorResult,
   getActiveSeasonId,
   isHiddenTeamRow,
+  matchesDivisionFilter,
   textResult,
 } from './_supabase';
 
@@ -24,13 +25,12 @@ export default defineTool({
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
 
-    let query = supabase
+    const query = supabase
       .from('team_season_stats')
       .select(
         'team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name, divisions(name, display_division))'
       )
       .eq('season_id', seasonId);
-    if (division) query = query.ilike('division_name', division);
     // team_id breaks power_score ties. Rank is the row's position, so without
     // it tied teams can swap ranks between calls.
     const { data, error } = await query
@@ -41,6 +41,7 @@ export default defineTool({
     // Filter before ranking, so ranks stay contiguous.
     const rows = (data ?? [])
       .filter((row) => !isHiddenTeamRow(row.division_name, row.teams))
+      .filter((row) => !division || matchesDivisionFilter(row.division_name, row.teams, division))
       .map((row, index) => {
         const { teams, ...rest } = row as typeof row & { teams?: { name?: string } | null };
         return { rank: index + 1, team_name: teams?.name ?? null, ...rest };

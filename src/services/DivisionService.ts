@@ -115,6 +115,49 @@ export const DivisionService = {
       );
     }
 
+    // Block deletion if any team ever sat in this division. The database
+    // cascades team_division_history, so the delete would erase it silently.
+    const { count: historyCount, error: historyCountError } = await supabase
+      .from('team_division_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('division_id', id);
+
+    if (historyCountError) handleDatabaseError(historyCountError, 'Failed to check division usage');
+    if ((historyCount ?? 0) > 0) {
+      throw new BusinessLogicError('Division has team-division history and cannot be deleted.');
+    }
+
+    // Block deletion if an archived season still names this division. That
+    // table has no foreign key, so the database would not stop the delete and
+    // the archived rows would be left pointing at a division that is gone.
+    const { count: archiveCount, error: archiveCountError } = await supabase
+      .from('team_details_archive')
+      .select('team_id', { count: 'exact', head: true })
+      .eq('division_id', id);
+
+    if (archiveCountError) handleDatabaseError(archiveCountError, 'Failed to check division usage');
+    if ((archiveCount ?? 0) > 0) {
+      throw new BusinessLogicError(
+        'Division is used by archived season data and cannot be deleted.'
+      );
+    }
+
+    // Block deletion if the weight was ever edited. The database cascades
+    // division_weight_history, so the delete would erase past weights that
+    // old power scores use. A new division carries one open row (valid_to is
+    // null) from its trigger, so count only closed rows: those are edits.
+    const { count: weightEditCount, error: weightEditCountError } = await supabase
+      .from('division_weight_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('division_id', id)
+      .not('valid_to', 'is', null);
+
+    if (weightEditCountError)
+      handleDatabaseError(weightEditCountError, 'Failed to check division usage');
+    if ((weightEditCount ?? 0) > 0) {
+      throw new BusinessLogicError('Division has weight history and cannot be deleted.');
+    }
+
     const { error } = await supabase.from('divisions').delete().eq('id', id);
     if (error) handleDatabaseError(error, 'Failed to delete division');
   },

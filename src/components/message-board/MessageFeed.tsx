@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { useNavigate } from 'react-router';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,6 +24,12 @@ interface MessageFeedProps {
   onLoadMore: () => void;
   loadingMore: boolean;
   /**
+   * True after a "load more" fetch failed. Stops the scroll trigger from firing
+   * again on its own, which would retry about twice a second. The reader retries
+   * with the button.
+   */
+  loadMoreError?: boolean;
+  /**
    * True when nobody is signed in. The board's only SELECT policy is granted TO
    * authenticated, so a signed-out reader gets zero rows and no error — which is
    * indistinguishable from an empty board unless the caller says which it is.
@@ -40,6 +47,7 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
     hasMore,
     onLoadMore,
     loadingMore,
+    loadMoreError = false,
     isSignedOut = false,
   }) => {
     const navigate = useNavigate();
@@ -51,10 +59,10 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
 
     // Load more messages when the load more element comes into view
     useEffect(() => {
-      if (inView && hasMore && !loadingMore) {
+      if (inView && hasMore && !loadingMore && !loadMoreError) {
         onLoadMore();
       }
-    }, [inView, hasMore, onLoadMore, loadingMore]);
+    }, [inView, hasMore, onLoadMore, loadingMore, loadMoreError]);
 
     if (isLoading && messages.length === 0) {
       return <MessageFeedSkeleton count={5} />;
@@ -135,6 +143,15 @@ const MessageFeed: React.FC<MessageFeedProps> = React.memo(
                       <span className="text-sm text-muted-foreground">
                         Loading more messages...
                       </span>
+                    </div>
+                  ) : loadMoreError ? (
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm text-muted-foreground">
+                        Couldn&apos;t load more messages
+                      </span>
+                      <Button variant="outline" size="sm" onClick={() => onLoadMore()}>
+                        Try again
+                      </Button>
                     </div>
                   ) : (
                     <span className="text-sm text-muted-foreground">Scroll for more messages</span>

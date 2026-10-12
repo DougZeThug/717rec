@@ -86,6 +86,13 @@ function isHiddenTeamRow(divisionName, team) {
   }
   return isHiddenDivision(divisionName);
 }
+function matchesDivisionFilter(divisionName, team, filter) {
+  const wanted = filter.trim().toLowerCase();
+  if (!wanted) return false;
+  const live = firstOrSelf(firstOrSelf(team)?.divisions);
+  const labels = live ? [live.display_division, live.name] : [divisionName];
+  return labels.some((label) => (label ?? "").trim().toLowerCase() === wanted);
+}
 
 // src/lib/mcp/public/tools/get-bracket.ts
 var STATUS_LABELS = {
@@ -232,13 +239,12 @@ var get_standings_default = defineTool3({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    let query = supabase.from("team_season_stats").select(
+    const query = supabase.from("team_season_stats").select(
       "team_id, division_name, match_wins, match_losses, game_wins, game_losses, power_score, playoff_rank, teams(name, divisions(name, display_division))"
     ).eq("season_id", seasonId);
-    if (division) query = query.ilike("division_name", division);
     const { data, error } = await query.order("power_score", { ascending: false, nullsFirst: false }).order("team_id", { ascending: true });
     if (error) return errorResult(error.message);
-    const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).map((row, index) => {
+    const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).filter((row) => !division || matchesDivisionFilter(row.division_name, row.teams, division)).map((row, index) => {
       const { teams, ...rest } = row;
       return { rank: index + 1, team_name: teams?.name ?? null, ...rest };
     });
@@ -262,16 +268,15 @@ var list_teams_default = defineTool4({
     const { data: seasonId, error: seasonError } = await getActiveSeasonId(supabase);
     if (seasonError) return errorResult(seasonError);
     if (!seasonId) return textResult([]);
-    let query = supabase.from("team_season_stats").select(
+    const query = supabase.from("team_season_stats").select(
       "team_id, division_name, match_wins, match_losses, power_score, teams(name, divisions(name, display_division))"
     ).eq("season_id", seasonId);
-    if (division) query = query.ilike("division_name", division);
     const { data, error } = await query.order("power_score", {
       ascending: false,
       nullsFirst: false
     });
     if (error) return errorResult(error.message);
-    const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).map((row) => {
+    const rows = (data ?? []).filter((row) => !isHiddenTeamRow(row.division_name, row.teams)).filter((row) => !division || matchesDivisionFilter(row.division_name, row.teams, division)).map((row) => {
       const { teams, ...rest } = row;
       return { team_name: teams?.name ?? null, ...rest };
     });
