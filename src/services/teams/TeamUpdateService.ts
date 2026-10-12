@@ -57,7 +57,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
   if (teamData.division_id != null) {
     const { data: divisionExists, error: divCheckError } = await supabase
       .from('divisions')
-      .select('id, name')
+      .select('id, name, display_division')
       .eq('id', teamData.division_id)
       .maybeSingle();
 
@@ -65,7 +65,9 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
       handleDatabaseError(divCheckError, 'Failed to check if division exists');
     }
 
-    divisionName = ensureFound(divisionExists, 'Division', teamData.division_id).name;
+    const division = ensureFound(divisionExists, 'Division', teamData.division_id);
+    // Same label the database stats job writes, so the cached copy does not flip.
+    divisionName = division.display_division ?? division.name;
   }
 
   // Update the team
