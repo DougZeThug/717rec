@@ -190,6 +190,46 @@ describe('DivisionService.deleteDivision', () => {
     await expect(DivisionService.deleteDivision('d1')).rejects.toThrow(DatabaseError);
   });
 
+  // team_details_archive has no foreign key, so the database never blocks the
+  // delete. Without this check the archived season would name a missing division.
+  it('refuses a division that archived season data names', async () => {
+    const deleted = mockTables({ team_details_archive: 5 });
+
+    const thrown = await DivisionService.deleteDivision('d1').catch((error: unknown) => error);
+
+    expect(thrown).toBeInstanceOf(BusinessLogicError);
+    expect((thrown as Error).message).toBe(
+      'Division is used by archived season data and cannot be deleted.'
+    );
+    expect(deleted).not.toHaveBeenCalled();
+  });
+
+  it('deletes once the archived-data count is zero', async () => {
+    const deleted = mockTables({ team_details_archive: 0 });
+
+    await expect(DivisionService.deleteDivision('d1')).resolves.toBeUndefined();
+
+    expect(deleted).toHaveBeenCalledWith('id', 'd1');
+  });
+
+  it('throws DatabaseError when the archived-data check fails', async () => {
+    const deleted = vi.fn();
+    mockFrom.mockImplementation((table: string) => ({
+      select: () => ({
+        eq: () =>
+          Promise.resolve(
+            table === 'team_details_archive'
+              ? { count: null, error: pgError() }
+              : { count: 0, error: null }
+          ),
+      }),
+      delete: () => ({ eq: deleted }),
+    }));
+
+    await expect(DivisionService.deleteDivision('d1')).rejects.toThrow(DatabaseError);
+    expect(deleted).not.toHaveBeenCalled();
+  });
+
   it('throws DatabaseError when the snapshot check fails', async () => {
     mockFrom.mockImplementation((table: string) => ({
       select: () => ({

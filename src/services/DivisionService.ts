@@ -127,6 +127,21 @@ export const DivisionService = {
       throw new BusinessLogicError('Division has team-division history and cannot be deleted.');
     }
 
+    // Block deletion if an archived season still names this division. That
+    // table has no foreign key, so the database would not stop the delete and
+    // the archived rows would be left pointing at a division that is gone.
+    const { count: archiveCount, error: archiveCountError } = await supabase
+      .from('team_details_archive')
+      .select('team_id', { count: 'exact', head: true })
+      .eq('division_id', id);
+
+    if (archiveCountError) handleDatabaseError(archiveCountError, 'Failed to check division usage');
+    if ((archiveCount ?? 0) > 0) {
+      throw new BusinessLogicError(
+        'Division is used by archived season data and cannot be deleted.'
+      );
+    }
+
     const { error } = await supabase.from('divisions').delete().eq('id', id);
     if (error) handleDatabaseError(error, 'Failed to delete division');
   },

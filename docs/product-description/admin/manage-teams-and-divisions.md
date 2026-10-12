@@ -152,8 +152,10 @@ or bracket cannot be deleted." Pressing Delete checks both of those and refuses
 with a counted message — "Division is in use by 3 teams and cannot be deleted" —
 rather than deleting. It also refuses a division that has power-score snapshots
 or team-division history ("Division has team-division history and cannot be
-deleted"), so a division any team ever sat in cannot be deleted. When nothing
-references it, the division is deleted permanently.
+deleted"), so a division any team ever sat in cannot be deleted. It also
+refuses a division that archived season data still names ("Division is used by
+archived season data and cannot be deleted"). When nothing references it, the
+division is deleted permanently.
 
 ## Hiding a team
 
