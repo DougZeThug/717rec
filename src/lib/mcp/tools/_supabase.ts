@@ -134,3 +134,25 @@ export function isHiddenTeamRow(
   }
   return isHiddenDivision(divisionName);
 }
+
+/**
+ * Division filter for a team_season_stats row.
+ *
+ * Matches the team's CURRENT division, by group (display_division, e.g.
+ * "Intermediate") or sub-division (name, e.g. "Intermediate High"), exact and
+ * case-insensitive. The cached team_season_stats.division_name is not used for
+ * filtering: it only refreshes on the next stats upsert, so a team just moved
+ * to another division would show under its old one.
+ *
+ * Falls back to the cached label when the division join is absent.
+ */
+export function matchesDivisionFilter(
+  divisionName: string | null | undefined,
+  team: EmbeddedTeam | EmbeddedTeam[] | undefined,
+  filter: string
+): boolean {
+  const wanted = filter.trim().toLowerCase();
+  const live = firstOrSelf(firstOrSelf(team)?.divisions);
+  const labels = live ? [live.display_division, live.name] : [divisionName];
+  return labels.some((label) => (label ?? '').trim().toLowerCase() === wanted);
+}

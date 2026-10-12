@@ -3,8 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   isHiddenDivision as isHiddenDivisionAuthed,
   isHiddenTeamRow as isHiddenTeamRowAuthed,
+  matchesDivisionFilter as matchesDivisionFilterAuthed,
 } from '../../../tools/_supabase';
-import { isHiddenDivision, isHiddenTeamRow } from '../_supabase';
+import { isHiddenDivision, isHiddenTeamRow, matchesDivisionFilter } from '../_supabase';
 
 // Hidden-division teams leaked into get_standings and list_teams because those
 // tools read team_season_stats, which has no Hidden filter of its own.
@@ -94,5 +95,34 @@ describe('isHiddenTeamRow', () => {
     expect(
       isHiddenTeamRowAuthed('Hidden', { divisions: { display_division: 'Competitive' } })
     ).toBe(false);
+  });
+});
+
+describe('matchesDivisionFilter', () => {
+  const team = { divisions: { display_division: 'Intermediate', name: 'Intermediate High' } };
+
+  it('matches the live group or sub-division name, ignoring case', () => {
+    expect(matchesDivisionFilter('Recreational', team, 'intermediate')).toBe(true);
+    expect(matchesDivisionFilter('Recreational', team, 'INTERMEDIATE HIGH')).toBe(true);
+  });
+
+  it('ignores the cached label when the live division is known', () => {
+    expect(matchesDivisionFilter('Recreational', team, 'Recreational')).toBe(false);
+  });
+
+  it('is an exact match, so a partial name or wildcard does not match', () => {
+    expect(matchesDivisionFilter('Recreational', team, 'Intermed')).toBe(false);
+    expect(matchesDivisionFilter('Recreational', team, '%')).toBe(false);
+  });
+
+  it('falls back to the cached label when the division join is missing', () => {
+    expect(matchesDivisionFilter('Competitive', null, 'competitive')).toBe(true);
+    expect(matchesDivisionFilter('Competitive', { divisions: null }, 'Recreational')).toBe(false);
+    expect(matchesDivisionFilter(null, null, 'Competitive')).toBe(false);
+  });
+
+  it('behaves identically in the authenticated tool helpers', () => {
+    expect(matchesDivisionFilterAuthed('Recreational', team, 'Intermediate High')).toBe(true);
+    expect(matchesDivisionFilterAuthed('Recreational', team, 'Recreational')).toBe(false);
   });
 });

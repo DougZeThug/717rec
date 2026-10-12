@@ -31,7 +31,6 @@ type Row = Record<string, unknown>;
 interface QueryCalls {
   table?: string;
   select?: string;
-  ilike: [string, string][];
   order: [string, { ascending?: boolean; nullsFirst?: boolean }?][];
 }
 
@@ -52,7 +51,7 @@ function asCtx(stub: Partial<ToolContext>): ToolContext {
  * Every .order() call is recorded, in order, in `calls.order`.
  */
 function makeClient(rows: Row[], error: { message: string } | null = null) {
-  const calls: QueryCalls = { ilike: [], order: [] };
+  const calls: QueryCalls = { order: [] };
   const ordered = {
     order(col: string, opts?: { ascending?: boolean; nullsFirst?: boolean }) {
       calls.order.push([col, opts]);
@@ -71,10 +70,6 @@ function makeClient(rows: Row[], error: { message: string } | null = null) {
       return builder;
     },
     eq() {
-      return builder;
-    },
-    ilike(col: string, val: string) {
-      calls.ilike.push([col, val]);
       return builder;
     },
     order: ordered.order,
@@ -138,6 +133,21 @@ const VISIBLE_B: Row = {
   teams: { name: 'Bravo', divisions: { display_division: 'Competitive', name: 'Competitive Low' } },
 };
 
+// Cached label is stale (Recreational); the team now sits in Intermediate High.
+const MOVED_TO_INT_HIGH: Row = {
+  team_id: 'm',
+  division_name: 'Recreational',
+  match_wins: 2,
+  match_losses: 1,
+  game_wins: 4,
+  game_losses: 3,
+  power_score: 0.7,
+  teams: {
+    name: 'Mover',
+    divisions: { display_division: 'Intermediate', name: 'Intermediate High' },
+  },
+};
+
 const usePublicClient = (client: SupabaseClient) => vi.mocked(anonClient).mockReturnValue(client);
 const useAuthedClient = (client: SupabaseClient) => vi.mocked(userClient).mockReturnValue(client);
 
@@ -179,13 +189,49 @@ describe('public get_standings handler', () => {
     expect(rows[0].team_name).toBe('Alpha');
   });
 
-  it('passes a division filter through to the query', async () => {
+  // The filter runs in code on the live division, not in SQL on the cached
+  // division_name, so a team moved to another division shows up under it at once.
+  it('does not filter on the cached division_name in the query', async () => {
     const { client, calls } = makeClient([VISIBLE_A]);
     usePublicClient(client);
 
     await publicGetStandings.handler({ division: 'Competitive' }, AUTHED);
 
-    expect(calls.ilike).toEqual([['division_name', 'Competitive']]);
+    expect(calls).not.toHaveProperty('ilike');
+  });
+
+  it('finds a team moved into a sub-division by group name and by sub-division name', async () => {
+    const { client } = makeClient([MOVED_TO_INT_HIGH, VISIBLE_A]);
+    usePublicClient(client);
+
+    const byGroup = parse(await publicGetStandings.handler({ division: 'Intermediate' }, AUTHED));
+    const bySub = parse(
+      await publicGetStandings.handler({ division: 'intermediate high' }, AUTHED)
+    );
+
+    expect(byGroup.map((r: Row) => r.team_id)).toEqual(['m']);
+    expect(bySub.map((r: Row) => r.team_id)).toEqual(['m']);
+  });
+
+  it('does not show a moved team under its stale cached division', async () => {
+    const { client } = makeClient([MOVED_TO_INT_HIGH, VISIBLE_A]);
+    usePublicClient(client);
+
+    const rows = parse(await publicGetStandings.handler({ division: 'Recreational' }, AUTHED));
+
+    expect(rows).toEqual([]);
+  });
+
+  it('keeps ranks contiguous when a division filter drops rows', async () => {
+    const { client } = makeClient([VISIBLE_A, MOVED_TO_INT_HIGH, VISIBLE_B]);
+    usePublicClient(client);
+
+    const rows = parse(await publicGetStandings.handler({ division: 'Competitive' }, AUTHED));
+
+    expect(rows.map((r: Row) => [r.team_id, r.rank])).toEqual([
+      ['a', 1],
+      ['b', 2],
+    ]);
   });
 
   // Ties on power_score come back in no defined order, so rank would flip
@@ -243,6 +289,17 @@ describe('public list_teams handler', () => {
   });
 });
 
+describe('public list_teams division filter', () => {
+  it('filters on the live division, not the cached label', async () => {
+    const { client } = makeClient([MOVED_TO_INT_HIGH, VISIBLE_A]);
+    usePublicClient(client);
+
+    const rows = parse(await publicListTeams.handler({ division: 'Intermediate' }, AUTHED));
+
+    expect(rows.map((r: Row) => r.team_id)).toEqual(['m']);
+  });
+});
+
 describe('authenticated tools', () => {
   it('get_standings refuses an unauthenticated caller', async () => {
     const result = await authedGetStandings.handler(NO_FILTER, ANON);
@@ -266,6 +323,19 @@ describe('authenticated tools', () => {
       ['power_score', { ascending: false, nullsFirst: false }],
       ['team_id', { ascending: true }],
     ]);
+  });
+
+  it('get_standings and list_teams filter on the live division for authenticated callers', async () => {
+    const { client } = makeClient([MOVED_TO_INT_HIGH, VISIBLE_A]);
+    useAuthedClient(client);
+
+    const standings = parse(
+      await authedGetStandings.handler({ division: 'Intermediate High' }, AUTHED)
+    );
+    const teams = parse(await authedListTeams.handler({ division: 'Intermediate' }, AUTHED));
+
+    expect(standings.map((r: Row) => r.team_id)).toEqual(['m']);
+    expect(teams.map((r: Row) => r.team_id)).toEqual(['m']);
   });
 
   it('get_standings filters hidden teams for authenticated callers too', async () => {
