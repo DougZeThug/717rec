@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,10 +22,28 @@ vi.mock('../utils', () => ({
   formatTime: (_d: string) => '6:30 PM',
 }));
 
+// The props the modal hands to ResponsiveDialog, so a test can fire the Esc /
+// overlay / swipe close (onOpenChange) that no button in the form reaches.
+const dialogProps = vi.hoisted(() => ({
+  current: {} as { onOpenChange?: (open: boolean) => void; dismissible?: boolean },
+}));
+
 // Make ResponsiveDialog always render its children so we can test form content
 vi.mock('@/components/ui/responsive-dialog', () => ({
-  ResponsiveDialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-    open ? <div role="dialog">{children}</div> : null,
+  ResponsiveDialog: ({
+    children,
+    open,
+    onOpenChange,
+    dismissible,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    dismissible?: boolean;
+  }) => {
+    dialogProps.current = { onOpenChange, dismissible };
+    return open ? <div role="dialog">{children}</div> : null;
+  },
   ResponsiveDialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ResponsiveDialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   ResponsiveDialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
@@ -201,5 +219,30 @@ describe('ScoreSubmissionModal', () => {
     // Button text changes to "Submitting..." when isSubmitting is true
     expect(screen.getByRole('button', { name: /submitting/i })).toBeDisabled();
     expect(screen.getByRole('button', { name: /cancel/i })).toBeDisabled();
+  });
+
+  describe('while the report is being sent', () => {
+    it('ignores Esc, overlay and swipe closes and keeps what was typed', async () => {
+      const { onClose, rerender } = renderModal();
+      await userEvent.type(screen.getByPlaceholderText('Enter your name'), 'Sam');
+
+      mockIsSubmitting.mockImplementation(() => true);
+      rerender(<ScoreSubmissionModal match={mockMatch} open onClose={onClose} />);
+
+      act(() => dialogProps.current.onOpenChange?.(false));
+
+      expect(onClose).not.toHaveBeenCalled();
+      expect(screen.getByPlaceholderText('Enter your name')).toHaveValue('Sam');
+      expect(dialogProps.current.dismissible).toBe(false);
+    });
+
+    it('closes on Esc, overlay and swipe once sending is done', () => {
+      const { onClose } = renderModal();
+
+      expect(dialogProps.current.dismissible).toBe(true);
+      act(() => dialogProps.current.onOpenChange?.(false));
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
   });
 });
