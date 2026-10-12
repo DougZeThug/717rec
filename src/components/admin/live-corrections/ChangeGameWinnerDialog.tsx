@@ -1,5 +1,5 @@
 import { AlertTriangle } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -55,10 +55,21 @@ const WinnerSelect: React.FC<WinnerSelectProps> = ({ team1, team2, value, onValu
   </div>
 );
 
-export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
-  open,
+type WinnerFormProps = Pick<
+  ChangeGameWinnerDialogProps,
+  'onOpenChange' | 'team1' | 'team2' | 'currentWinnerId' | 'totals' | 'onConfirm' | 'isSubmitting'
+>;
+
+/**
+ * The pick lives here, not in the dialog, so React resets it by remounting.
+ * Radix unmounts the dialog content on close, so reopening loads the stored
+ * winner again. The dialog keys this form by game number, so a different game
+ * loads its own winner too. A new currentWinnerId for the game already being
+ * edited (realtime refetch) does NOT remount the form, because the initial
+ * value is read once: resetting then would silently undo the admin's pick.
+ */
+const WinnerForm: React.FC<WinnerFormProps> = ({
   onOpenChange,
-  gameNumber,
   team1,
   team2,
   currentWinnerId,
@@ -67,23 +78,6 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
   isSubmitting,
 }) => {
   const [winnerId, setWinnerId] = useState<string>(currentWinnerId ?? team1.id);
-
-  // Which game the form currently holds. Cleared on close so reopening always
-  // reloads the stored winner.
-  const loadedGameKeyRef = useRef<number | null>(null);
-
-  // Load the stored winner when the dialog opens or a different game is picked,
-  // but NOT when realtime hands us a new currentWinnerId for the game already
-  // being edited: that would silently undo the admin's pick.
-  useEffect(() => {
-    if (!open) {
-      loadedGameKeyRef.current = null;
-      return;
-    }
-    if (loadedGameKeyRef.current === gameNumber) return;
-    loadedGameKeyRef.current = gameNumber;
-    setWinnerId(currentWinnerId ?? team1.id);
-  }, [open, currentWinnerId, team1.id, gameNumber]);
 
   /**
    * Whether the rounds underneath support the winner being chosen.
@@ -100,45 +94,70 @@ export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
   const roundsDisagree = roundsGiveItTo !== chosenSide;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Change game {gameNumber} winner</DialogTitle>
-          <DialogDescription>
-            Current totals: {team1.name} {totals.team1}, {team2.name} {totals.team2}. Choose the
-            correct winner. This changes the game only. On a finalized match, finish with
-            &quot;Reopen &amp; re-save result&quot; so the official result follows.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <WinnerSelect team1={team1} team2={team2} value={winnerId} onValueChange={setWinnerId} />
 
-        <WinnerSelect team1={team1} team2={team2} value={winnerId} onValueChange={setWinnerId} />
+      {roundsDisagree && (
+        <div
+          role="status"
+          className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <span>
+            {roundsGiveItTo === null
+              ? `The rounds do not decide this game. No side has reached ${DEFAULT_GAME_RULES.targetScore} with a lead of ${DEFAULT_GAME_RULES.winBy}.`
+              : `The rounds give this game to ${roundsGiveItTo === 1 ? team1.name : team2.name}.`}{' '}
+            You can still set this winner. League Night Status will list the match under
+            &quot;Matches that disagree with their rounds&quot; until the rounds and the result
+            agree.
+          </span>
+        </div>
+      )}
 
-        {roundsDisagree && (
-          <div
-            role="status"
-            className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
-          >
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
-            <span>
-              {roundsGiveItTo === null
-                ? `The rounds do not decide this game. No side has reached ${DEFAULT_GAME_RULES.targetScore} with a lead of ${DEFAULT_GAME_RULES.winBy}.`
-                : `The rounds give this game to ${roundsGiveItTo === 1 ? team1.name : team2.name}.`}{' '}
-              You can still set this winner. League Night Status will list the match under
-              &quot;Matches that disagree with their rounds&quot; until the rounds and the result
-              agree.
-            </span>
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            Cancel
-          </Button>
-          <Button onClick={() => onConfirm(winnerId)} disabled={isSubmitting}>
-            {isSubmitting ? 'Saving…' : 'Set winner'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          Cancel
+        </Button>
+        <Button onClick={() => onConfirm(winnerId)} disabled={isSubmitting}>
+          {isSubmitting ? 'Saving…' : 'Set winner'}
+        </Button>
+      </DialogFooter>
+    </>
   );
 };
+
+export const ChangeGameWinnerDialog: React.FC<ChangeGameWinnerDialogProps> = ({
+  open,
+  onOpenChange,
+  gameNumber,
+  team1,
+  team2,
+  currentWinnerId,
+  totals,
+  onConfirm,
+  isSubmitting,
+}) => (
+  <Dialog open={open} onOpenChange={onOpenChange}>
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Change game {gameNumber} winner</DialogTitle>
+        <DialogDescription>
+          Current totals: {team1.name} {totals.team1}, {team2.name} {totals.team2}. Choose the
+          correct winner. This changes the game only. On a finalized match, finish with &quot;Reopen
+          &amp; re-save result&quot; so the official result follows.
+        </DialogDescription>
+      </DialogHeader>
+
+      <WinnerForm
+        key={gameNumber}
+        onOpenChange={onOpenChange}
+        team1={team1}
+        team2={team2}
+        currentWinnerId={currentWinnerId}
+        totals={totals}
+        onConfirm={onConfirm}
+        isSubmitting={isSubmitting}
+      />
+    </DialogContent>
+  </Dialog>
+);

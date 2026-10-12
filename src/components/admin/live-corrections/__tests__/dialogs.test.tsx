@@ -475,6 +475,29 @@ describe('live correction dialogs', () => {
     expect(onConfirm).toHaveBeenCalledWith('team-a');
   });
 
+  it('loads the stored winner of a different game when another game is picked', async () => {
+    const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
+    const user = userEvent.setup();
+    const props = {
+      onOpenChange: vi.fn(),
+      team1: { id: 'team-a', name: 'Team A' },
+      team2: { id: 'team-b', name: 'Team B' },
+      totals: { team1: 18, team2: 21 },
+      onConfirm,
+      isSubmitting: false,
+    };
+    const { rerender } = render(
+      <ChangeGameWinnerDialog open gameNumber={1} currentWinnerId="team-a" {...props} />
+    );
+
+    await user.click(screen.getByRole('combobox'));
+    await user.click(screen.getByRole('option', { name: 'Team B' }));
+    rerender(<ChangeGameWinnerDialog open gameNumber={2} currentWinnerId="team-a" {...props} />);
+    await user.click(screen.getByRole('button', { name: 'Set winner' }));
+
+    expect(onConfirm).toHaveBeenCalledWith('team-a');
+  });
+
   it('warns when the rounds decide nobody, and still allows the change', async () => {
     const onConfirm = vi.fn().mockImplementation(() => Promise.resolve());
     const user = userEvent.setup();
