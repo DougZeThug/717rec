@@ -165,6 +165,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   const isLoading =
     messagesQuery.isLoading || (messagesQuery.isFetching && !messagesQuery.isFetchingNextPage);
   const loadingMore = messagesQuery.isFetchingNextPage;
+  const loadMoreError = messagesQuery.isFetchNextPageError;
   // Only surface a full error state on initial-load failures. Pagination or
   // refetch failures keep the cached feed visible and rely on the toast at
   // loadMoreMessages() below.
@@ -410,6 +411,7 @@ export const useMessageBoard = (): UseMessageBoardResult => {
     messages,
     isLoading,
     loadingMore,
+    loadMoreError,
     error,
     hasMore,
     filterOptions,

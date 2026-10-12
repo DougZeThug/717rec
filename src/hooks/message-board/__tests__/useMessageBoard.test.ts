@@ -201,6 +201,33 @@ describe('useMessageBoard', () => {
     );
   });
 
+  // The feed stops its automatic retry on this flag, so it has to be set by a
+  // failed page fetch and cleared by the next good one.
+  it('flags a failed load-more and clears the flag when a retry succeeds', async () => {
+    mockFetchMessages
+      .mockResolvedValueOnce(
+        Array.from({ length: 10 }, (_, i) => ({ ...baseMessage, id: `m${i}` }))
+      )
+      .mockRejectedValueOnce(new Error('load more failed'))
+      .mockResolvedValueOnce([{ ...baseMessage, id: 'older' }]);
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.loadMoreError).toBe(false);
+
+    await act(async () => {
+      await result.current.loadMoreMessages();
+    });
+    await waitFor(() => expect(result.current.loadMoreError).toBe(true));
+    expect(result.current.messages).toHaveLength(10);
+
+    await act(async () => {
+      await result.current.loadMoreMessages();
+    });
+    await waitFor(() => expect(result.current.loadMoreError).toBe(false));
+    expect(result.current.messages).toHaveLength(11);
+  });
+
   // A realtime message can land before the first fetch has filled the cache.
   // The optimistic page written there is gone now, so this guards what it used
   // to do for us: the message still arrives, held in the realtime buffer that

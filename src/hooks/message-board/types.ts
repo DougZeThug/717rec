@@ -6,6 +6,8 @@ export interface UseMessageBoardResult {
   messages: Message[];
   isLoading: boolean;
   loadingMore: boolean;
+  /** True after a "load more" fetch failed, until a fetch succeeds. */
+  loadMoreError: boolean;
   error: string | null;
   hasMore: boolean;
   filterOptions: FilterOptions;
