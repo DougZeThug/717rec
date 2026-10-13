@@ -3628,6 +3628,12 @@ argument fails `npm run typecheck` with "Expected 1 arguments, but got 0"
 whenever the mock is typed. Five call sites already carry
 `// skipcq: JS-W1042` for exactly this; follow them.
 
+*No longer the only fix.* `cab1dca8` removed the same `undefined`s by code
+change rather than suppression: typing the redundant argument as
+`const UNSET: string | undefined = undefined` and passing `UNSET`, and swapping
+`mockResolvedValue(undefined)` for `mockImplementation(() => Promise.resolve())`.
+Both typecheck without a `// skipcq`; new code can suppress or fix either way.
+
 *No longer true, and the difference matters.* **#1470**, merged into `main` on
 2026-09-16, carried `DeepSource: JavaScript — Analysis passed`. The backlog that
 kept this status red has been worked off, so **a red JavaScript status is now
