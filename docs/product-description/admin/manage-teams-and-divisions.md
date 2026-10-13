@@ -274,7 +274,7 @@ live season's power scores; archived seasons do not move.
 - **A division's weight accepts any positive number**, including values far
   outside the 0.7–1.0 range the help text suggests.
 - **Deleting a division that no team uses succeeds instantly** and cannot be
-  undone, unless its weight was edited or archived season data names it.
+  undone, unless a history check above refuses it.
 
 ## Open questions and verification
 
