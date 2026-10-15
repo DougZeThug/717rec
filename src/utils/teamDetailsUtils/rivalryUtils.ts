@@ -1,5 +1,4 @@
 import type { HeadToHeadRecord } from '@/types/headToHead';
-import { assertNever } from '@/utils/assertNever';
 
 export type RivalryType = 'rival' | 'dominated' | 'favorite' | 'nemesis' | 'tough_matchup';
 
@@ -91,28 +90,4 @@ export const rivalryBadgeConfig: Record<RivalryType, { label: string; className:
     label: 'Tough Matchup',
     className: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30',
   },
-};
-
-/**
- * Gets a narrative label for a rivalry matchup on the schedule.
- */
-export const getRivalryLabel = (
-  type: RivalryType,
-  teamName: string,
-  record: { wins: number; losses: number; matches_played: number }
-): string => {
-  switch (type) {
-    case 'nemesis':
-      return `${teamName} is ${record.wins}-${record.losses} all-time`;
-    case 'tough_matchup':
-      return `Tough matchup: ${record.wins}-${record.losses} all-time`;
-    case 'rival':
-      return `Rivalry: ${record.wins}-${record.losses} all-time`;
-    case 'favorite':
-      return `Favorite: ${record.wins}-${record.losses} all-time`;
-    case 'dominated':
-      return `${teamName} is ${record.wins}-${record.losses} all-time`;
-    default:
-      return assertNever(type, 'rivalry type');
-  }
 };
