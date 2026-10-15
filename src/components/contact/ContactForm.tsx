@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -23,23 +24,9 @@ interface ContactFormProps {
   onSent: () => void;
 }
 
-/**
- * The league's one message form (UX audit H-02).
- *
- * There used to be two — one at the bottom of the home page for league
- * business, one here for support — with different fields, and each told the
- * reader to use the other. This is their union: a "What is this about?" list
- * whose answer decides which fields appear and which inbox it lands in.
- *
- * A signed-in member's name and team come from their profile and lock, the way
- * the home form did, so the league can still tell a verified request from an
- * anonymous one.
- */
 export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
   const [searchParams] = useSearchParams();
 
-  // Read once, on arrival. `?type=` seeds the picker; after that the picker is
-  // the reader's, so mirroring it back would fight them.
   const [initialTopic] = useState<ContactTopic>(
     () => findContactTopic(searchParams.get('type'))?.value ?? DEFAULT_CONTACT_TOPIC
   );
@@ -49,23 +36,33 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
   const [message, setMessage] = useState('');
   const [website, setWebsite] = useState('');
 
+  const [isSolo, setIsSolo] = useState(() => searchParams.get('solo') === 'true');
+
   const topic = findContactTopic(topicValue) ?? CONTACT_TOPIC_OPTIONS[0];
   const { isSignedIn, name, team, contact, setName, setTeam, setContact, nameLocked, teamLocked } =
     useVerifiedIdentity({ allowNewTeamName: Boolean(topic.needsTeam) });
   const { errors, isSending, submit } = useContactSubmit(onSent);
 
-  // Answered by email means the contact field has to be one.
   const isAnsweredByEmail = topic.channel === 'support';
-  const showTeam = topic.needsTeam || Boolean(team) || !isAnsweredByEmail;
+  const isJoining = topic.value === 'join_league';
+  const showTeam =
+    (topic.needsTeam || Boolean(team) || !isAnsweredByEmail) && !(isJoining && isSolo);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await submit({ topic, name, contact, team, players, message, website });
+    await submit({
+      topic,
+      name,
+      contact,
+      team: isJoining && isSolo ? 'Solo player' : team,
+      players: isJoining && isSolo ? name : players,
+      message,
+      website,
+    });
   };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4" noValidate>
-      {/* Honeypot: hidden from real users; bots auto-fill it. */}
       <input
         type="text"
         name="website"
@@ -102,6 +99,19 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
           error={errors.contact}
         />
 
+        {isJoining && (
+          <div className="flex items-center space-x-2 md:col-span-2 py-1">
+            <Checkbox
+              id="solo-join"
+              checked={isSolo}
+              onCheckedChange={(checked) => setIsSolo(checked === true)}
+            />
+            <Label htmlFor="solo-join" className="cursor-pointer">
+              I’m joining solo
+            </Label>
+          </div>
+        )}
+
         {showTeam && (
           <LockableField
             id="contact-team"
@@ -115,16 +125,16 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
           />
         )}
 
-        {topic.needsPlayers && (
+        {topic.needsPlayers && !isSolo && (
           <div className="md:col-span-2">
-            <Label htmlFor="contact-players">Players</Label>
+            <Label htmlFor="contact-players">Players / teammates</Label>
             <Textarea
               id="contact-players"
               value={players}
               onChange={(e) => setPlayers(e.target.value)}
               rows={2}
               maxLength={1000}
-              placeholder="Names of teammates joining with you"
+              placeholder="Your name and your partner’s name"
               className="mt-1"
             />
           </div>

@@ -8,3 +8,4 @@ established, and the order of work.
 
 Do not modify anything outside `docs/product-description/`. The application code
 is read-only reference material for this work.
+- **Join flow**: Solo players bypass team name requirements and are marked as 'Solo player' automatically.

@@ -58,6 +58,14 @@ const fillMessage = (text = 'Please move our match to the later slot.') =>
   userEvent.type(screen.getByLabelText(/^message$/i), text);
 
 beforeEach(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = vi.fn();
+    }
+  );
   mockUser = null;
   mockProfile = null;
   mockMembership = null;
@@ -133,6 +141,35 @@ describe('ContactForm', () => {
 
     expect(await screen.findByText(/give the team name/i)).toBeInTheDocument();
     expect(mockSubmit).not.toHaveBeenCalled();
+  });
+
+  it('sends a solo sign-up without requiring a team name', async () => {
+    renderForm('/contact?type=join_league&solo=true');
+    expect(screen.getByRole('checkbox', { name: /joining solo/i })).toBeChecked();
+    expect(screen.queryByLabelText(/proposed team name/i)).not.toBeInTheDocument();
+    await userEvent.type(screen.getByLabelText(/^name/i), 'Sam Solo');
+    await userEvent.type(screen.getByLabelText(/contact/i), 'solo@example.com');
+    await fillMessage('I would like to join and need a partner.');
+    await userEvent.click(screen.getByRole('button', { name: /send message/i }));
+    await waitFor(() =>
+      expect(mockSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({
+          team: 'Solo player',
+          players: 'Sam Solo',
+          topic: expect.objectContaining({ value: 'join_league' }),
+        })
+      )
+    );
+    expect(onSent).toHaveBeenCalled();
+  });
+
+  it('keeps the team draft when switching solo off again', async () => {
+    renderForm('/contact?type=join_league');
+    await userEvent.type(screen.getByLabelText(/proposed team name/i), 'Bag Boys');
+    await userEvent.click(screen.getByRole('checkbox', { name: /joining solo/i }));
+    expect(screen.queryByLabelText(/proposed team name/i)).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('checkbox', { name: /joining solo/i }));
+    expect(screen.getByLabelText(/proposed team name/i)).toHaveValue('Bag Boys');
   });
 
   it('asks for an email, not a phone number, on a topic answered by email', async () => {
@@ -368,5 +405,73 @@ describe('ContactForm', () => {
 
       expect(screen.queryByLabelText(/team name/i)).not.toBeInTheDocument();
     });
+  });
+});
+
+describe('solo player join', () => {
+  it('seeds the solo checkbox from the address', () => {
+    renderForm('/contact?type=join_league&solo=true');
+
+    const checkbox = screen.getByRole('checkbox', { name: /joining solo/i });
+    expect(checkbox).toBeChecked();
+    expect(screen.queryByLabelText(/proposed team name/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/teammates/i)).not.toBeInTheDocument();
+  });
+
+  it('hides team and players fields when solo is checked', async () => {
+    renderForm('/contact?type=join_league');
+
+    const checkbox = screen.getByRole('checkbox', { name: /joining solo/i });
+    expect(checkbox).not.toBeChecked();
+    expect(screen.getByLabelText(/proposed team name/i)).toBeInTheDocument();
+
+    await userEvent.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+    expect(screen.queryByLabelText(/proposed team name/i)).not.toBeInTheDocument();
+  });
+
+  it('preserves the team name draft when toggling solo back and forth', async () => {
+    renderForm('/contact?type=join_league');
+
+    const teamInput = screen.getByLabelText(/proposed team name/i);
+    await userEvent.type(teamInput, 'Bag Boys');
+
+    const checkbox = screen.getByRole('checkbox', { name: /joining solo/i });
+    await userEvent.click(checkbox);
+    expect(screen.queryByLabelText(/proposed team name/i)).not.toBeInTheDocument();
+
+    await userEvent.click(checkbox);
+    expect(screen.getByLabelText(/proposed team name/i)).toHaveValue('Bag Boys');
+  });
+
+  it('submits "Solo player" as team and user name as players when solo', async () => {
+    renderForm('/contact?type=join_league&solo=true');
+
+    await userEvent.type(screen.getByLabelText(/^name/i), 'Solo Sam');
+    await userEvent.type(screen.getByLabelText(/contact/i), 'sam@example.com');
+    await fillMessage('I want to join as a solo player.');
+    await userEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    await waitFor(() => expect(mockSubmit).toHaveBeenCalled());
+    expect(mockSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Solo Sam',
+        team: 'Solo player',
+        players: 'Solo Sam',
+      })
+    );
+  });
+
+  it('still requires a team name when NOT solo', async () => {
+    renderForm('/contact?type=join_league');
+
+    await userEvent.type(screen.getByLabelText(/^name/i), 'Casey Captain');
+    await userEvent.type(screen.getByLabelText(/contact/i), 'captain@example.com');
+    await fillMessage('We want to join.');
+    await userEvent.click(screen.getByRole('button', { name: /send message/i }));
+
+    expect(await screen.findByText(/give the team name/i)).toBeInTheDocument();
+    expect(mockSubmit).not.toHaveBeenCalled();
   });
 });

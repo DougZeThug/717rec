@@ -84,30 +84,13 @@ When Doug corrects a rule, workflow, scoring assumption, or league behavior:
 
 ## Running tests
 
-The `vitest` binary lives at `node_modules/.bin/vitest`. Many sandboxed agent
-shells do **not** have `node_modules/.bin` on `PATH`, so a bare `vitest ...`
-call will fail with `sh: 1: vitest: not found`. Use one of these instead:
-
-```bash
-# Full suite
-npm test
-
-# Single file (recommended — npm injects node_modules/.bin into PATH)
-npm run test:file -- src/path/to/File.test.tsx
-
-# Or use npx, which resolves the local binary automatically
-npx vitest run src/path/to/File.test.tsx
-
-# Last resort: call the binary directly
-./node_modules/.bin/vitest run src/path/to/File.test.tsx
-```
+Use `npm run test:file -- <path>` for focused tests; never bare `vitest`.
+Use `npm test` for the full suite. npm adds the local binary to PATH.
 
 ## Typechecking
 
-The root `tsconfig.json` has `"files": []` and delegates to
-`tsconfig.app.json` / `tsconfig.node.json` via project references. A bare
-`tsc --noEmit` compiles an empty file list and exits 0 **even when types are
-broken** — it is silently useless, not a clean pass.
+The root config delegates through project references. Never bare `tsc --noEmit`:
+it checks an empty file list. Use the checks below.
 
 ```bash
 # The real check
@@ -135,5 +118,7 @@ npm run typecheck:full
 See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial fallback is `npm run test:coverage:serial`. For diagnosing a slow or stuck non-coverage run, use `npm run test:debug` (serial + verbose, 10-min cap).
 
 ## More project conventions
+
+- The public Join page reuses the league contact form for team and solo requests; keep one submission path so requests stay in one admin inbox.
 
 See `CLAUDE.md` for architecture rules, error handling, and testing patterns.
