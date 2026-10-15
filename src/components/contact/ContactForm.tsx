@@ -127,14 +127,14 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
 
         {topic.needsPlayers && !isSolo && (
           <div className="md:col-span-2">
-            <Label htmlFor="contact-players">Teammates</Label>
+            <Label htmlFor="contact-players">Players / teammates</Label>
             <Textarea
               id="contact-players"
               value={players}
               onChange={(e) => setPlayers(e.target.value)}
               rows={2}
               maxLength={1000}
-              placeholder="Names of teammates joining with you"
+              placeholder="Your name and your partner’s name"
               className="mt-1"
             />
           </div>
