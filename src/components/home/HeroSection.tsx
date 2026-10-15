@@ -1,4 +1,4 @@
-import { Calendar, History, Trophy, Users } from 'lucide-react';
+import { Calendar, History, Trophy, UserPlus, Users } from 'lucide-react';
 import React from 'react';
 import { Link } from 'react-router';
 
@@ -30,7 +30,13 @@ const NavButton: React.FC<NavButtonProps> = ({ to, icon, label, className }) => 
 
 // Desktop hero call-to-action buttons
 const HeroCtaButtons: React.FC<{ shouldApplyWinter: boolean }> = ({ shouldApplyWinter }) => (
-  <div className="flex gap-4 justify-center items-center w-full max-w-md mx-auto">
+  <div className="flex flex-wrap gap-4 justify-center items-center w-full max-w-2xl mx-auto">
+    <Button asChild size="lg" className="gap-2">
+      <Link to="/join">
+        <UserPlus size={20} aria-hidden />
+        Join the League
+      </Link>
+    </Button>
     <Button
       asChild
       size="lg"
@@ -136,6 +142,12 @@ const HeroSection = () => {
           >
             Where Bags Fly and Beers Flow.
           </p>
+          <Button asChild className="mt-4 gap-2 w-full">
+            <Link to="/join">
+              <UserPlus size={18} aria-hidden />
+              Join the League
+            </Link>
+          </Button>
         </div>
       </section>
 

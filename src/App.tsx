@@ -60,6 +60,7 @@ const MessageBoard = lazy(() => import('./pages/MessageBoard'));
 const MyTeam = lazy(() => import('./pages/MyTeam'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Contact = lazy(() => import('./pages/Contact'));
+const Join = lazy(() => import('./pages/Join'));
 const Compare = lazy(() => import('./pages/Compare'));
 const Insights = lazy(() => import('./pages/Insights'));
 const PlayoffBracketE2EProof = lazy(() => import('./components/playoffs/PlayoffBracketE2EProof'));
@@ -397,6 +398,14 @@ const appRoutes = (
       element={
         <RouteErrorBoundary routeName="Compare">
           <Compare />
+        </RouteErrorBoundary>
+      }
+    />
+    <Route
+      path="/join"
+      element={
+        <RouteErrorBoundary routeName="Join the League">
+          <Join />
         </RouteErrorBoundary>
       }
     />

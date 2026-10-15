@@ -7,6 +7,7 @@
 ## Pages
 
 - [Home](/): League overview and current season highlights.
+- [Join the League](/join): Thursday nights at Marion Court Room, team fee, team and solo sign-ups.
 - [Teams](/teams): Roster of all teams across every division.
 - [Schedule](/schedule): Upcoming and recent match schedule.
 - [Standings](/stats): Current standings, power scores, and rankings.
