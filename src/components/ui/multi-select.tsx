@@ -42,18 +42,6 @@ const SelectionSummary: React.FC<{ selected: string[]; placeholder: string }> = 
   </div>
 );
 
-const SelectIndicators: React.FC<{
-  hasSelection: boolean;
-  onClear: (e: React.MouseEvent) => void;
-}> = ({ hasSelection, onClear }) => (
-  <div className="flex items-center gap-2">
-    {hasSelection && (
-      <X className="size-4 shrink-0 opacity-50 hover:opacity-100" onClick={onClear} />
-    )}
-    <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-  </div>
-);
-
 /**
  * cmdk tells rows apart by `value`, so that has to be the unique id: team names
  * are not unique, and two rows with one name could not both be reached from
@@ -111,28 +99,36 @@ export function MultiSelect({
     onChange(newSelected);
   };
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onChange([]);
-  };
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          aria-controls={listboxId}
-          className={cn('w-full justify-between', className)}
+    <div className="relative w-full">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            aria-controls={listboxId}
+            className={cn('w-full justify-between', className)}
+          >
+            <SelectionSummary selected={selected} placeholder={placeholder} />
+            <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent id={listboxId} className="w-full p-0" align="start">
+          <OptionsCommand options={options} selected={selected} onSelect={handleSelect} />
+        </PopoverContent>
+      </Popover>
+      {/* A sibling of the trigger, not a child: a button inside a button is invalid. */}
+      {selected.length > 0 && (
+        <button
+          type="button"
+          aria-label="Clear selection"
+          onClick={() => onChange([])}
+          className="absolute right-9 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-sm opacity-50 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <SelectionSummary selected={selected} placeholder={placeholder} />
-          <SelectIndicators hasSelection={selected.length > 0} onClear={handleClear} />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent id={listboxId} className="w-full p-0" align="start">
-        <OptionsCommand options={options} selected={selected} onSelect={handleSelect} />
-      </PopoverContent>
-    </Popover>
+          <X className="size-4" aria-hidden="true" />
+        </button>
+      )}
+    </div>
   );
 }
