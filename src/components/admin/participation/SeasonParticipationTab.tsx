@@ -251,7 +251,7 @@ const SeasonParticipationTab: React.FC = () => {
             <p className="text-center text-destructive-text">
               Could not load participation for this season.
             </p>
-            <Button variant="outline" size="sm" onClick={() => void refetchParticipations()}>
+            <Button variant="outline" size="sm" onClick={() => refetchParticipations()}>
               Try again
             </Button>
           </CardContent>

@@ -123,10 +123,11 @@ describe('loadRankingsFromDatabase', () => {
       { data: null, error: null },
       { data: { id: 'playoff-season' }, error: null },
     ];
+    let seasonCall = 0;
     const snapshotEq = vi.fn();
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {
-        return seasonsSelectChain(seasonResults.shift()!);
+        return seasonsSelectChain(seasonResults[seasonCall++]);
       }
       return {
         select: () => ({
