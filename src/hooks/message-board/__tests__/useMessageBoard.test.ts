@@ -681,6 +681,19 @@ describe('useMessageBoard', () => {
       await waitFor(() => expect(result.current.messages.map((m) => m.id)).toEqual(['m1']));
     });
 
+    it('rejects refreshMessages when the refetch fails so the page can show its error toast', async () => {
+      mockFetchMessages.mockResolvedValue([baseMessage]);
+      const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      mockFetchMessages.mockRejectedValue(new Error('offline'));
+      await expect(
+        act(async () => {
+          await result.current.refreshMessages();
+        })
+      ).rejects.toThrow('offline');
+    });
+
     it('keeps only the newest 100 buffered inserts', async () => {
       mockFetchMessages.mockResolvedValue([]);
       const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
