@@ -131,10 +131,27 @@ describe('MultiSelect', () => {
     const { onChange } = setup(['t1']);
 
     const combobox = screen.getByRole('combobox');
-    const clear = combobox.querySelector('svg.lucide-x') as SVGElement;
-    await user.click(clear);
+    await user.click(screen.getByRole('button', { name: 'Clear selection' }));
 
     expect(onChange).toHaveBeenCalledWith([]);
     expect(combobox).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('clears from the keyboard with Tab then Enter', async () => {
+    const user = userEvent.setup();
+    const { onChange } = setup(['t1']);
+
+    await user.tab();
+    expect(screen.getByRole('combobox')).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Clear selection' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    expect(onChange).toHaveBeenCalledWith([]);
+  });
+
+  it('shows no clear button when nothing is selected', () => {
+    setup([]);
+    expect(screen.queryByRole('button', { name: 'Clear selection' })).not.toBeInTheDocument();
   });
 });

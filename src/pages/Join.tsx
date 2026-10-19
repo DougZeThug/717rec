@@ -26,7 +26,7 @@ const Join: React.FC = () => {
               Join the League
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl font-light italic">
-              Experience Lancaster's premier recreational cornhole competition.
+              Experience Lancaster&apos;s premier recreational cornhole competition.
             </p>
             <Button asChild size="lg" className="mt-6">
               <Link to="/contact?type=join_league">Sign up for the league</Link>
@@ -94,8 +94,8 @@ const Join: React.FC = () => {
             <div className="border-t border-border py-4 flex gap-3 max-w-lg">
               <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
               <p className="text-sm text-muted-foreground">
-                Registering a team? You'll need a team name and both players’ names. Joining solo?
-                Let the league know you need a partner.
+                Registering a team? You&apos;ll need a team name and both players’ names. Joining
+                solo? Let the league know you need a partner.
               </p>
             </div>
 

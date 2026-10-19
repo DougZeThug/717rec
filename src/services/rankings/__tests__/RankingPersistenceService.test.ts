@@ -118,6 +118,44 @@ describe('loadRankingsFromDatabase', () => {
     expect(mockFrom).toHaveBeenCalledWith('ranking_snapshots');
   });
 
+  it('falls back to the playoffs-active season when no season is active', async () => {
+    const seasonResults = [
+      { data: null, error: null },
+      { data: { id: 'playoff-season' }, error: null },
+    ];
+    let seasonCall = 0;
+    const snapshotEq = vi.fn();
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        return seasonsSelectChain(seasonResults[seasonCall++]);
+      }
+      return {
+        select: () => ({
+          eq: (...args: unknown[]) => {
+            snapshotEq(...args);
+            return Promise.resolve({ data: [{ team_id: 't1', rank_position: 1 }], error: null });
+          },
+        }),
+      };
+    });
+
+    const result = await loadRankingsFromDatabase();
+
+    expect(result).toEqual({ t1: 1 });
+    expect(snapshotEq).toHaveBeenCalledWith('season_id', 'playoff-season');
+  });
+
+  it('throws DatabaseError when the playoffs-active season lookup fails', async () => {
+    const seasonResults = [
+      { data: null, error: null },
+      { data: null, error: pgError('playoffs lookup failed') },
+    ];
+    let seasonCall = 0;
+    mockFrom.mockImplementation(() => seasonsSelectChain(seasonResults[seasonCall++]));
+
+    await expect(loadRankingsFromDatabase()).rejects.toThrow(DatabaseError);
+  });
+
   it('throws NotFoundError when seasonId is omitted and no active season exists', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {

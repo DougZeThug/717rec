@@ -75,7 +75,6 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     .from('teams')
     .update({
       name: teamData.name,
-      logo_url: teamData.logoUrl,
       image_url: teamData.imageUrl || null,
       players: teamData.players, // Players is now a string[]
       division_id: teamData.division_id, // This will be null when no division is selected

@@ -93,7 +93,14 @@ export const ResponsiveDialogContent: React.FC<ResponsiveDialogContentProps> = (
   if (isMobile) {
     return (
       <DrawerContent
-        className={cn('max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh]', className)}
+        // `sm:max-w-none` comes last so a desktop width cap such as `sm:max-w-md`
+        // cannot shrink the sheet in the 640-767px band, where `sm:` is on but
+        // this drawer is still used. It would also pull the sheet to the left.
+        className={cn(
+          'max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh]',
+          className,
+          'sm:max-w-none'
+        )}
       >
         <div className="overflow-y-auto max-h-[80vh] supports-[height:80dvh]:max-h-[80dvh] px-4 pb-4">
           {children}

@@ -144,7 +144,7 @@ const ExportCsvButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 interface SummaryCardProps {
   title: string;
   icon: React.ReactNode;
-  value: number;
+  value: number | string;
 }
 
 const SummaryCard: React.FC<SummaryCardProps> = ({ title, icon, value }) => (
@@ -176,9 +176,15 @@ const SeasonParticipationTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const selectedSeasonId = selectedSeasonOverride || defaultSeasonId;
 
-  const { data: participations, isLoading: participationsLoading } = useSeasonParticipations(
-    selectedSeasonId || undefined
-  );
+  const {
+    data: participations,
+    isLoading: participationsLoading,
+    isError: participationsError,
+    refetch: refetchParticipations,
+  } = useSeasonParticipations(selectedSeasonId || undefined);
+
+  // No data is not the same as "no response": only show statuses once the fetch worked.
+  const hasParticipationData = participations !== undefined;
 
   // Combine teams with their participation status
   const teamsWithStatus = useMemo(() => {
@@ -235,52 +241,67 @@ const SeasonParticipationTab: React.FC = () => {
           <StatusFilterSelect value={statusFilter} onValueChange={setStatusFilter} />
 
           {/* Export */}
-          <ExportCsvButton onClick={handleExportCsv} />
+          {hasParticipationData && <ExportCsvButton onClick={handleExportCsv} />}
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <SummaryCard
-          title="Playing"
-          icon={<Check className="size-5 text-green-500" />}
-          value={counts.playing}
-        />
-        <SummaryCard
-          title="Not Playing"
-          icon={<X className="size-5 text-red-500" />}
-          value={counts.notPlaying}
-        />
-        <SummaryCard
-          title="No Response"
-          icon={<HelpCircle className="size-5 text-yellow-500" />}
-          value={counts.noResponse}
-        />
-        <SummaryCard
-          title="Total Teams"
-          icon={<Users className="size-5 text-primary" />}
-          value={counts.total}
-        />
-      </div>
-
-      {/* Table */}
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-48">
-              <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
-            </div>
-          ) : (
-            <ResponsiveTable
-              caption="Season participation by team"
-              columns={participationColumns}
-              rows={filteredTeams}
-              rowKey={(team) => team.id}
-              empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
+      {participationsError && !hasParticipationData ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
+            <p className="text-center text-destructive-text">
+              Could not load participation for this season.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refetchParticipations()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Summary cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <SummaryCard
+              title="Playing"
+              icon={<Check className="size-5 text-green-500" />}
+              value={hasParticipationData ? counts.playing : '-'}
             />
-          )}
-        </CardContent>
-      </Card>
+            <SummaryCard
+              title="Not Playing"
+              icon={<X className="size-5 text-red-500" />}
+              value={hasParticipationData ? counts.notPlaying : '-'}
+            />
+            <SummaryCard
+              title="No Response"
+              icon={<HelpCircle className="size-5 text-yellow-500" />}
+              value={hasParticipationData ? counts.noResponse : '-'}
+            />
+            <SummaryCard
+              title="Total Teams"
+              icon={<Users className="size-5 text-primary" />}
+              value={counts.total}
+            />
+          </div>
+
+          {/* Table */}
+          <Card>
+            <CardContent className="p-0">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-48">
+                  <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
+                </div>
+              ) : (
+                <ResponsiveTable
+                  caption="Season participation by team"
+                  columns={participationColumns}
+                  rows={filteredTeams}
+                  rowKey={(team) => team.id}
+                  empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
+                />
+              )}
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   );
 };

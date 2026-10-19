@@ -403,9 +403,13 @@ export const useMessageBoard = (): UseMessageBoardResult => {
   );
 
   // Refresh messages function
+  // refetch() resolves with the error instead of rejecting, so rethrow it here:
+  // the page shows its "Refresh failed" toast only when this promise rejects.
+  // fetchInitialMessages stays non-throwing because realtime calls it unawaited.
   const refreshMessages = useCallback(async () => {
-    await fetchInitialMessages();
-  }, [fetchInitialMessages]);
+    const result = await messagesQuery.refetch();
+    if (result.error) throw result.error;
+  }, [messagesQuery]);
 
   return {
     messages,
