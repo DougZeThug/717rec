@@ -13,13 +13,13 @@ describe('Join Page', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText(/Jan 7, 2027/i)).toBeInTheDocument();
-    expect(screen.getByText(/Thursdays/i)).toBeInTheDocument();
-    expect(screen.getByText(/6:00 PM – 10:00 PM/i)).toBeInTheDocument();
-    expect(screen.getByText(/Marion Court Room/i)).toBeInTheDocument();
-    expect(screen.getByText(/7 E Marion St, Lancaster PA 17602/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$50 per team/i)).toBeInTheDocument();
-    expect(screen.getByText(/2 players \(Solo allowed\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Jan 7, 2027/iu)).toBeInTheDocument();
+    expect(screen.getByText(/Thursdays/iu)).toBeInTheDocument();
+    expect(screen.getByText(/6:00 PM – 10:00 PM/iu)).toBeInTheDocument();
+    expect(screen.getByText(/Marion Court Room/iu)).toBeInTheDocument();
+    expect(screen.getByText(/7 E Marion St, Lancaster PA 17602/iu)).toBeInTheDocument();
+    expect(screen.getByText(/\$50 per team/iu)).toBeInTheDocument();
+    expect(screen.getByText(/2 players \(Solo allowed\)/iu)).toBeInTheDocument();
   });
 
   it('contains links to contact form with correct types', () => {
