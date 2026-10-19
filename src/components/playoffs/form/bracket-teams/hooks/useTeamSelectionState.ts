@@ -11,7 +11,7 @@ import { BracketFormStateResult } from '../types';
 export const useTeamSelectionState = (
   maxTeams: number,
   initialSelected: Set<string> = new Set(),
-  availableTeamsCount = 0,
+  _availableTeamsCount = 0,
   minTeams = MIN_BRACKET_TEAMS
 ): BracketFormStateResult => {
   // Ensure we have valid numbers to prevent React errors. The fallbacks are the
