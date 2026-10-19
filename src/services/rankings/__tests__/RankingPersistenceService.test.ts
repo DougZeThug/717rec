@@ -145,6 +145,17 @@ describe('loadRankingsFromDatabase', () => {
     expect(snapshotEq).toHaveBeenCalledWith('season_id', 'playoff-season');
   });
 
+  it('throws DatabaseError when the playoffs-active season lookup fails', async () => {
+    const seasonResults = [
+      { data: null, error: null },
+      { data: null, error: pgError('playoffs lookup failed') },
+    ];
+    let seasonCall = 0;
+    mockFrom.mockImplementation(() => seasonsSelectChain(seasonResults[seasonCall++]));
+
+    await expect(loadRankingsFromDatabase()).rejects.toThrow(DatabaseError);
+  });
+
   it('throws NotFoundError when seasonId is omitted and no active season exists', async () => {
     mockFrom.mockImplementation((table: string) => {
       if (table === 'seasons') {

@@ -14,6 +14,7 @@ const mockUpdateMessage = vi.fn();
 const mockDeleteMessage = vi.fn();
 const mockToast = vi.fn();
 
+let realtimeReconnect: (() => Promise<void>) | null = null;
 let realtimeHandlers: {
   onMessageInserted: ((message: Message) => void) | null;
   onMessageUpdated: ((message: Message) => void) | null;
@@ -33,9 +34,11 @@ vi.mock('../useMessageRealtime', () => ({
   useMessageRealtime: (
     onMessageInserted: (message: Message) => void,
     onMessageUpdated: (message: Message) => void,
-    onMessageDeleted: (message: Message) => void
+    onMessageDeleted: (message: Message) => void,
+    onReconnect: () => Promise<void>
   ) => {
     realtimeHandlers = { onMessageInserted, onMessageUpdated, onMessageDeleted };
+    realtimeReconnect = onReconnect;
   },
 }));
 
@@ -692,6 +695,21 @@ describe('useMessageBoard', () => {
           await result.current.refreshMessages();
         })
       ).rejects.toThrow('offline');
+    });
+
+    it('refetches the board when the realtime connection comes back', async () => {
+      mockFetchMessages.mockResolvedValue([baseMessage]);
+      const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      expect(mockFetchMessages).toHaveBeenCalledTimes(1);
+
+      const missed: Message = { ...baseMessage, id: 'm2', created_at: '2026-04-21T10:00:00.000Z' };
+      mockFetchMessages.mockResolvedValue([missed, baseMessage]);
+      await act(async () => {
+        await realtimeReconnect?.();
+      });
+
+      await waitFor(() => expect(result.current.messages.map((m) => m.id)).toEqual(['m2', 'm1']));
     });
 
     it('keeps only the newest 100 buffered inserts', async () => {

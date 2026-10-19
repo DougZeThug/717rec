@@ -42,6 +42,31 @@ describe('SeasonParticipationTab', () => {
     mockUseSeasonParticipations.mockReturnValue({ data: [], isLoading: false });
   });
 
+  it('shows an error with a retry button, not fake "No Response" counts, when the fetch fails', async () => {
+    const user = userEvent.setup();
+    const refetch = vi.fn();
+    teams = [{ id: 't1', name: 'Alpha' }];
+    mockUseSeasonParticipations.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      refetch,
+    });
+
+    render(
+      <MemoryRouter>
+        <SeasonParticipationTab />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Could not load participation');
+    expect(screen.queryByText('No Response')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Export CSV/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
   it('uses the active season as the selected season as soon as seasons load', () => {
     const { unmount } = render(
       <MemoryRouter>
