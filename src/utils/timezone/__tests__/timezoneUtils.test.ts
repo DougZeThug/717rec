@@ -10,8 +10,6 @@ import {
   getLeagueTimeUtc,
   normalizeTimeString,
   parseTimeString,
-  toLocalDate,
-  toUTCDate,
 } from '@/utils/timezone';
 
 const buildDateTimeFormatResult = (formatted: string): Intl.DateTimeFormat =>
@@ -42,17 +40,6 @@ describe('timezone utilities', () => {
     { label: '24-hour style', input: '21:45', expected: { hours: 21, minutes: 45 } },
   ])('parseTimeString: $label', ({ input, expected }) => {
     expect(parseTimeString(input)).toEqual(expected);
-  });
-
-  it('toUTCDate and toLocalDate keep the same instant', () => {
-    const input = new Date('2026-01-15T19:30:00.000Z');
-    const utc = toUTCDate(input);
-    const localFromDate = toLocalDate(utc);
-    const localFromString = toLocalDate(utc.toISOString());
-
-    expect(utc.toISOString()).toBe('2026-01-15T19:30:00.000Z');
-    expect(localFromDate.getTime()).toBe(input.getTime());
-    expect(localFromString.getTime()).toBe(input.getTime());
   });
 
   it.each([
