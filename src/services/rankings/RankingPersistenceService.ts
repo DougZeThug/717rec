@@ -4,7 +4,7 @@ import { ensureFound, handleDatabaseError } from '@/utils/errorHandler';
 /**
  * Get the current active season ID
  * @throws {DatabaseError} When database operations fail
- * @throws {NotFoundError} When no active season exists
+ * @throws {NotFoundError} When no active or playoffs-active season exists
  */
 async function getCurrentSeasonId(): Promise<string> {
   const { data, error } = await supabase
@@ -17,7 +17,20 @@ async function getCurrentSeasonId(): Promise<string> {
     handleDatabaseError(error, 'Failed to fetch current season');
   }
 
-  return ensureFound(data?.id, 'Active season');
+  if (data?.id) return data.id;
+
+  // Playoffs window: partial archive clears is_active but the season is still playing.
+  const { data: playoffSeason, error: playoffError } = await supabase
+    .from('seasons')
+    .select('id')
+    .eq('playoffs_active', true)
+    .maybeSingle();
+
+  if (playoffError) {
+    handleDatabaseError(playoffError, 'Failed to fetch playoffs-active season');
+  }
+
+  return ensureFound(playoffSeason?.id, 'Active season');
 }
 
 /**
