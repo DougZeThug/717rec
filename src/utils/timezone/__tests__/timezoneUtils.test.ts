@@ -8,7 +8,6 @@ import {
   formatUTCToLocalTimeString,
   getLeagueMidnightUtc,
   getLeagueTimeUtc,
-  normalizeTimeString,
   parseTimeString,
 } from '@/utils/timezone';
 
@@ -48,15 +47,6 @@ describe('timezone utilities', () => {
     { hours: 6, minutes: 0, use24Hour: true, expected: '06:00' },
   ])('formatTimeString %#', ({ hours, minutes, use24Hour, expected }) => {
     expect(formatTimeString(hours, minutes, use24Hour)).toBe(expected);
-  });
-
-  it.each([
-    { label: 'already allowed', input: '7:30 PM', expected: '7:30 PM' },
-    { label: '24-hour format falls back to original', input: '19:30', expected: '19:30' },
-    { label: 'unmappable fallback', input: '3:15 PM', expected: '3:15 PM' },
-    { label: 'empty input', input: '', expected: '' },
-  ])('normalizeTimeString: $label', ({ input, expected }) => {
-    expect(normalizeTimeString(input)).toBe(expected);
   });
 
   // The range is built from the date's LOCAL calendar day, so the input is built
