@@ -23,6 +23,7 @@ const EXACT_ROUTE_NAMES: Record<string, string> = {
   '/my-team': 'My Team',
   '/help': 'Help',
   '/contact': 'Contact',
+  '/join': 'Join',
   '/compare': 'Compare',
   '/insights': 'Insights',
   '/oauth/consent': 'Authorize App',
