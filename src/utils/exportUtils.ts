@@ -1,11 +1,12 @@
 import { format } from 'date-fns';
+import { neutralizeFormula } from '@/utils/spreadsheetSafe';
 
 /**
  * Escape a value for CSV format
  */
 const escapeCSVValue = (value: string | number | null | undefined): string => {
   if (value === null || value === undefined) return '';
-  const stringValue = String(value);
+  const stringValue = String(neutralizeFormula(value));
   // Escape quotes and wrap in quotes if contains comma, quote, or newline
   if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
     return `"${stringValue.replace(/"/g, '""')}"`;

@@ -1,7 +1,8 @@
 import { SeasonOpponentData } from '@/hooks/useSeasonOpponentHistory';
+import { neutralizeFormula } from '@/utils/spreadsheetSafe';
 
 const escapeHtml = (value: string | number): string =>
-  String(value)
+  String(neutralizeFormula(value))
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
