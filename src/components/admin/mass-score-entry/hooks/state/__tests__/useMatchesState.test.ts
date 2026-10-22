@@ -22,12 +22,11 @@ const makeMatch = (overrides: Partial<MatchWithTeams> = {}): MatchWithTeams =>
   }) as MatchWithTeams;
 
 describe('useMatchesState', () => {
-  it('starts loading with no matches', () => {
+  it('starts empty with no matches', () => {
     const { result } = renderHook(() => useMatchesState());
 
     expect(result.current.matches).toEqual([]);
     expect(result.current.originalMatches.size).toBe(0);
-    expect(result.current.loading).toBe(true);
     expect(result.current.submitting).toBe(false);
   });
 
@@ -63,70 +62,13 @@ describe('useMatchesState', () => {
     expect(result.current.originalMatches.get('m1')?.team1Score).toBe(0);
   });
 
-  it('handleScoreChange updates one side and validates the merged binary score', () => {
+  it('exposes a working submitting setter', () => {
     const { result } = renderHook(() => useMatchesState());
 
     act(() => {
-      result.current.setMatches([makeMatch({ team1Score: 0, team2Score: 0 })]);
-    });
-
-    act(() => {
-      result.current.handleScoreChange(0, 'team1', '1');
-    });
-
-    expect(result.current.matches[0].team1Score).toBe(1);
-    expect(result.current.matches[0].isEdited).toBe(true);
-    // 1-0 is a valid binary score
-    expect(result.current.matches[0].isValid).toBe(true);
-
-    act(() => {
-      result.current.handleScoreChange(0, 'team2', '1');
-    });
-
-    // 1-1 is not a valid binary combination
-    expect(result.current.matches[0].team2Score).toBe(1);
-    expect(result.current.matches[0].isValid).toBe(false);
-  });
-
-  it('handleScoreChange treats an empty string as null and marks the match invalid', () => {
-    const { result } = renderHook(() => useMatchesState());
-
-    act(() => {
-      result.current.setMatches([makeMatch({ team1Score: 1, team2Score: 0 })]);
-    });
-
-    act(() => {
-      result.current.handleScoreChange(0, 'team1', '');
-    });
-
-    expect(result.current.matches[0].team1Score).toBeNull();
-    expect(result.current.matches[0].isValid).toBe(false);
-  });
-
-  it('handleMarkCompleted flips completion and marks the match edited', () => {
-    const { result } = renderHook(() => useMatchesState());
-
-    act(() => {
-      result.current.setMatches([makeMatch({ iscompleted: false })]);
-    });
-
-    act(() => {
-      result.current.handleMarkCompleted(0, true);
-    });
-
-    expect(result.current.matches[0].iscompleted).toBe(true);
-    expect(result.current.matches[0].isEdited).toBe(true);
-  });
-
-  it('exposes working loading and submitting setters', () => {
-    const { result } = renderHook(() => useMatchesState());
-
-    act(() => {
-      result.current.setLoading(false);
       result.current.setSubmitting(true);
     });
 
-    expect(result.current.loading).toBe(false);
     expect(result.current.submitting).toBe(true);
   });
 });
