@@ -57,6 +57,24 @@ visitors, pageviews, and how many were iOS, Android, or something else.
 
 ## What is recorded when something breaks
 
+### League sign-up totals
+
+In the published app, a successful league sign-up request sends a
+`join_league_signup` event to the existing Google Analytics property. It carries
+only `source` (`join_page` or `contact_page`) and `signup_kind` (`solo` or `team`).
+The Join page's three sign-up links carry the source into the shared form.
+No names, contacts, players' names or message text are sent with this event.
+Failed requests, incomplete forms, clicks and bot-trap submissions do not count.
+An analytics failure does not change the saved request or ask the player to resend.
+
+In Google Analytics, open **Reports → Engagement → Events** and select
+**join_league_signup**. Its event count is submitted requests, not unique players,
+paid registrations or approved teams. Use source and signup kind as event-scoped
+custom dimensions for breakdowns. Tracking starts after publication; old requests
+have no source attribution. Browser blocking or a lost response can undercount;
+the Contact Inbox remains the saved record. These totals do not appear in the
+Lovable visitor report or the app's daily traffic table.
+
 Errors go to a monitoring service in the published build only.
 
 - **What is sent:** the error, its stack, and which part of the screen it came

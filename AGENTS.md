@@ -120,5 +120,6 @@ See `TESTING.md`. Default fast gate is `npm run test:coverage`; serial fallback 
 ## More project conventions
 
 - The public Join page reuses the league contact form for team and solo requests; keep one submission path so requests stay in one admin inbox.
+- Join conversion events run after successful contact submission, exclude honeypots, and carry only allowlisted source and solo/team metadata; analytics failure must not suggest resending a saved request.
 
 See `CLAUDE.md` for architecture rules, error handling, and testing patterns.

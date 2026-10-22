@@ -29,7 +29,7 @@ const Join: React.FC = () => {
               Experience Lancaster&apos;s premier recreational cornhole competition.
             </p>
             <Button asChild size="lg" className="mt-6">
-              <Link to="/contact?type=join_league">Sign up for the league</Link>
+              <Link to="/contact?type=join_league&source=join_page">Sign up for the league</Link>
             </Button>
           </div>
 
@@ -101,7 +101,7 @@ const Join: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
               <Button asChild size="lg" className="h-14 px-8 text-lg font-semibold">
-                <Link to="/contact?type=join_league">
+                <Link to="/contact?type=join_league&source=join_page">
                   <Users className="mr-2 h-5 w-5" />
                   Join as a Team
                 </Link>
@@ -112,7 +112,7 @@ const Join: React.FC = () => {
                 variant="outline"
                 className="h-14 px-8 text-lg font-semibold"
               >
-                <Link to="/contact?type=join_league&solo=true">Join as a Solo Player</Link>
+                <Link to="/contact?type=join_league&solo=true&source=join_page">Join as a Solo Player</Link>
               </Button>
             </div>
           </div>

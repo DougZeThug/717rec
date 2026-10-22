@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { toast } from '@/hooks/useToast';
 import { submitContactMessage } from '@/services/contact/ContactSubmissionService';
 import type { ContactTopicDefinition } from '@/services/contact/contactTopics';
-import { trackContactForm } from '@/utils/analytics';
+import { type LeagueSignupEvent, trackContactForm, trackLeagueSignup } from '@/utils/analytics';
 import { getUIErrorMessage } from '@/utils/errorHandler';
 
 import { type ContactFieldErrors, contactFormSchema, toFieldErrors } from './contactFormSchema';
@@ -17,6 +17,7 @@ interface ContactDraft {
   message: string;
   /** Honeypot. */
   website: string;
+  signupTracking?: LeagueSignupEvent;
 }
 
 interface ContactSubmit {
@@ -60,7 +61,18 @@ export const useContactSubmit = (onSent: () => void): ContactSubmit => {
       });
       // Same event name as before the two forms merged, so the history stays
       // comparable; the topic takes the place of the old subject.
-      trackContactForm(draft.topic.value);
+      // A bot trap returns a success response without storing a request.
+      // Tracking must never turn an already saved request into a retry prompt.
+      if (!parsed.data.website) {
+        try {
+          trackContactForm(draft.topic.value);
+          if (draft.topic.value === 'join_league' && draft.signupTracking) {
+            trackLeagueSignup(draft.signupTracking);
+          }
+        } catch {
+          // Analytics is best-effort; the request is already saved.
+        }
+      }
       onSent();
     } catch (error) {
       toast({
