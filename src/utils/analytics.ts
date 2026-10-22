@@ -85,6 +85,7 @@ const trackEvent = (eventName: string, params?: Record<string, string | number |
     return;
   }
 
+  if (!gtagReady) loadGtag();
   window.gtag?.('event', eventName, { ...(params ?? {}), transport_type: 'beacon' });
 };
 
@@ -94,4 +95,17 @@ const trackEvent = (eventName: string, params?: Record<string, string | number |
 
 export const trackContactForm = (subject: string) => {
   trackEvent('contact_form_submit', { subject });
+};
+
+export interface LeagueSignupEvent {
+  source: 'join_page' | 'contact_page';
+  signup_kind: 'solo' | 'team';
+}
+
+/** Successful requests, not clicks, unique players or paid registrations. */
+export const trackLeagueSignup = (signup: LeagueSignupEvent) => {
+  trackEvent('join_league_signup', {
+    source: signup.source,
+    signup_kind: signup.signup_kind,
+  });
 };

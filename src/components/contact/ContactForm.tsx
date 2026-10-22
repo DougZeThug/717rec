@@ -58,6 +58,12 @@ export const ContactForm: React.FC<ContactFormProps> = ({ onSent }) => {
       players: isJoining && isSolo ? name : players,
       message,
       website,
+      signupTracking: isJoining
+        ? {
+            source: searchParams.get('source') === 'join_page' ? 'join_page' : 'contact_page',
+            signup_kind: isSolo ? 'solo' : 'team',
+          }
+        : undefined,
     });
   };
 
