@@ -19,6 +19,11 @@ vi.mock('@/hooks/useTeamMembership', () => ({
 import { ContactForm } from '../ContactForm';
 
 beforeEach(() => {
+  vi.stubGlobal('ResizeObserver', class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+  });
   vi.clearAllMocks();
   mocks.submit.mockResolvedValue(undefined);
 });
