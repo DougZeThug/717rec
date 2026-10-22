@@ -3,9 +3,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CONTACT_TOPIC_OPTIONS } from '@/services/contact/contactTopics';
 
-const mocks = vi.hoisted(() => ({ submit: vi.fn(), contact: vi.fn(), signup: vi.fn(), toast: vi.fn() }));
-vi.mock('@/services/contact/ContactSubmissionService', () => ({ submitContactMessage: mocks.submit }));
-vi.mock('@/utils/analytics', () => ({ trackContactForm: mocks.contact, trackLeagueSignup: mocks.signup }));
+const mocks = vi.hoisted(() => ({
+  submit: vi.fn(),
+  contact: vi.fn(),
+  signup: vi.fn(),
+  toast: vi.fn(),
+}));
+vi.mock('@/services/contact/ContactSubmissionService', () => ({
+  submitContactMessage: mocks.submit,
+}));
+vi.mock('@/utils/analytics', () => ({
+  trackContactForm: mocks.contact,
+  trackLeagueSignup: mocks.signup,
+}));
 vi.mock('@/hooks/useToast', () => ({ toast: mocks.toast }));
 
 import { useContactSubmit } from '../useContactSubmit';
@@ -29,21 +39,42 @@ beforeEach(() => {
 describe('Join conversion tracking', () => {
   it('counts a team request only after the save succeeds', async () => {
     let finish: (() => void) | undefined;
-    mocks.submit.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
+    mocks.submit.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        })
+    );
     const sent = vi.fn();
     const { result } = renderHook(() => useContactSubmit(sent));
     let pending: Promise<void> | undefined;
-    act(() => { pending = result.current.submit(draft); });
+    act(() => {
+      pending = result.current.submit(draft);
+    });
     expect(mocks.signup).not.toHaveBeenCalled();
-    await act(async () => { finish?.(); await pending; });
-    expect(mocks.signup).toHaveBeenCalledExactlyOnceWith({ source: 'join_page', signup_kind: 'team' });
+    await act(async () => {
+      finish?.();
+      await pending;
+    });
+    expect(mocks.signup).toHaveBeenCalledExactlyOnceWith({
+      source: 'join_page',
+      signup_kind: 'team',
+    });
     expect(sent).toHaveBeenCalledOnce();
   });
 
   it('counts a solo request without personal details', async () => {
     const { result } = renderHook(() => useContactSubmit(vi.fn()));
-    await act(() => result.current.submit({ ...draft, signupTracking: { source: 'join_page', signup_kind: 'solo' } }));
-    expect(mocks.signup).toHaveBeenCalledExactlyOnceWith({ source: 'join_page', signup_kind: 'solo' });
+    await act(() =>
+      result.current.submit({
+        ...draft,
+        signupTracking: { source: 'join_page', signup_kind: 'solo' },
+      })
+    );
+    expect(mocks.signup).toHaveBeenCalledExactlyOnceWith({
+      source: 'join_page',
+      signup_kind: 'solo',
+    });
   });
 
   it('does not count a failed save', async () => {
@@ -75,7 +106,9 @@ describe('Join conversion tracking', () => {
   });
 
   it('keeps saved requests successful when analytics throws', async () => {
-    mocks.signup.mockImplementation(() => { throw new Error('Blocked'); });
+    mocks.signup.mockImplementation(() => {
+      throw new Error('Blocked');
+    });
     const sent = vi.fn();
     const { result } = renderHook(() => useContactSubmit(sent));
     await act(() => result.current.submit(draft));

@@ -33,6 +33,9 @@ describe('Join Page', () => {
     expect(teamLink).toHaveAttribute('href', '/contact?type=join_league&source=join_page');
 
     const soloLink = screen.getByRole('link', { name: /Join as a Solo Player/i });
-    expect(soloLink).toHaveAttribute('href', '/contact?type=join_league&solo=true&source=join_page');
+    expect(soloLink).toHaveAttribute(
+      'href',
+      '/contact?type=join_league&solo=true&source=join_page'
+    );
   });
 });

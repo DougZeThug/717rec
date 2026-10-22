@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-afterEach(() => { vi.unstubAllEnvs(); vi.resetModules(); });
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.resetModules();
+});
 
 describe('League signup analytics', () => {
   it('queues the first successful request before gtag loads, without personal fields', async () => {
@@ -10,7 +13,8 @@ describe('League signup analytics', () => {
     const { trackLeagueSignup } = await import('../analytics');
     trackLeagueSignup({ source: 'join_page', signup_kind: 'solo' });
     expect(window.dataLayer).toContainEqual([
-      'event', 'join_league_signup',
+      'event',
+      'join_league_signup',
       { source: 'join_page', signup_kind: 'solo', transport_type: 'beacon' },
     ]);
   });

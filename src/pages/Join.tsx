@@ -112,7 +112,9 @@ const Join: React.FC = () => {
                 variant="outline"
                 className="h-14 px-8 text-lg font-semibold"
               >
-                <Link to="/contact?type=join_league&solo=true&source=join_page">Join as a Solo Player</Link>
+                <Link to="/contact?type=join_league&solo=true&source=join_page">
+                  Join as a Solo Player
+                </Link>
               </Button>
             </div>
           </div>
