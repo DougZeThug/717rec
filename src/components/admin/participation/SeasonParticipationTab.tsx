@@ -161,6 +161,17 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, icon, value }) => (
   </Card>
 );
 
+const ErrorCard: React.FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => (
+  <Card>
+    <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
+      <p className="text-center text-destructive-text">{message}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </CardContent>
+  </Card>
+);
+
 const SeasonParticipationTab: React.FC = () => {
   const {
     data: seasons,
@@ -251,14 +262,7 @@ const SeasonParticipationTab: React.FC = () => {
       </div>
 
       {seasonsError && !seasons ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
-            <p className="text-center text-destructive-text">Could not load seasons.</p>
-            <Button variant="outline" size="sm" onClick={() => refetchSeasons()}>
-              Try again
-            </Button>
-          </CardContent>
-        </Card>
+        <ErrorCard message="Could not load seasons." onRetry={() => refetchSeasons()} />
       ) : seasons?.length === 0 ? (
         <Card>
           <CardContent className="py-8">
@@ -266,16 +270,10 @@ const SeasonParticipationTab: React.FC = () => {
           </CardContent>
         </Card>
       ) : participationsError && !hasParticipationData ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
-            <p className="text-center text-destructive-text">
-              Could not load participation for this season.
-            </p>
-            <Button variant="outline" size="sm" onClick={() => refetchParticipations()}>
-              Try again
-            </Button>
-          </CardContent>
-        </Card>
+        <ErrorCard
+          message="Could not load participation for this season."
+          onRetry={() => refetchParticipations()}
+        />
       ) : (
         <>
           {/* Summary cards */}
