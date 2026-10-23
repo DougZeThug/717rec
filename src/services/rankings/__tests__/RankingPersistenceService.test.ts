@@ -49,13 +49,20 @@ const loadSnapshotsChain = (result: { data: unknown; error: unknown | null }) =>
  * Returns a chain mock for querying the 'seasons' table:
  *   .from('seasons').select('id').eq('is_active', true).maybeSingle()
  */
-const seasonsSelectChain = (result: { data: unknown; error: unknown | null }) => ({
-  select: () => ({
-    eq: () => ({
-      maybeSingle: () => Promise.resolve(result),
-    }),
-  }),
-});
+const seasonsSelectChain = (
+  result: { data: unknown; error: unknown | null },
+  eqCalls: unknown[][] = []
+) => {
+  // eq() can be chained: the playoffs fallback filters on two columns.
+  const chain = {
+    eq: (...args: unknown[]) => {
+      eqCalls.push(args);
+      return chain;
+    },
+    maybeSingle: () => Promise.resolve(result),
+  };
+  return { select: () => chain };
+};
 
 // ─── loadRankingsFromDatabase ────────────────────────────────────────────────
 
@@ -143,6 +150,29 @@ describe('loadRankingsFromDatabase', () => {
 
     expect(result).toEqual({ t1: 1 });
     expect(snapshotEq).toHaveBeenCalledWith('season_id', 'playoff-season');
+  });
+
+  it('ignores an archived season that still has playoffs_active set', async () => {
+    const playoffEqCalls: unknown[][] = [];
+    const seasonResults = [
+      { data: null, error: null },
+      { data: { id: 'playoff-season' }, error: null },
+    ];
+    let seasonCall = 0;
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'seasons') {
+        const call = seasonCall++;
+        return seasonsSelectChain(seasonResults[call], call === 1 ? playoffEqCalls : []);
+      }
+      return loadSnapshotsChain({ data: [], error: null });
+    });
+
+    await loadRankingsFromDatabase();
+
+    expect(playoffEqCalls).toEqual([
+      ['playoffs_active', true],
+      ['is_archived', false],
+    ]);
   });
 
   it('throws DatabaseError when the playoffs-active season lookup fails', async () => {
