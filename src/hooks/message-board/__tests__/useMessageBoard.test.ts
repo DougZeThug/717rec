@@ -478,6 +478,44 @@ describe('useMessageBoard', () => {
     );
   });
 
+  // fetchNextPage() cancels a running refresh, so load-more waits it out.
+  it('does not load more while a refresh is running', async () => {
+    mockFetchMessages.mockResolvedValue(tenMessages());
+
+    const { result } = renderHook(() => useMessageBoard(), { wrapper: createWrapper() });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    let finishRefresh: (messages: Message[]) => void = vi.fn();
+    mockFetchMessages.mockClear();
+    mockFetchMessages.mockReturnValue(
+      new Promise<Message[]>((resolve) => {
+        finishRefresh = resolve;
+      })
+    );
+
+    let refresh: Promise<void> = Promise.resolve();
+    act(() => {
+      refresh = result.current.refreshMessages();
+    });
+    await waitFor(() => expect(mockFetchMessages).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      await result.current.loadMoreMessages();
+    });
+
+    // Only the refresh ran: no second call asking for older messages.
+    expect(mockFetchMessages).toHaveBeenCalledTimes(1);
+    expect(mockFetchMessages).not.toHaveBeenCalledWith(
+      expect.objectContaining({ olderThan: expect.anything() }),
+      expect.anything()
+    );
+
+    await act(async () => {
+      finishRefresh(tenMessages());
+      await refresh;
+    });
+  });
+
   it('starts from the filters saved in this browser session', async () => {
     sessionStorage.setItem(
       'messageBoardFilters',

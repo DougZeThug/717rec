@@ -161,16 +161,184 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, icon, value }) => (
   </Card>
 );
 
+const ErrorCard: React.FC<{ message: string; onRetry: () => void }> = ({ message, onRetry }) => (
+  <Card>
+    <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
+      <p className="text-center text-destructive-text">{message}</p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        Try again
+      </Button>
+    </CardContent>
+  </Card>
+);
+
+// Default to the active season, else the most recent one.
+const pickDefaultSeasonId = (seasons: { id: string; is_active?: boolean | null }[] | undefined) =>
+  seasons?.find((s) => s.is_active)?.id ?? seasons?.[0]?.id ?? '';
+
+// Combine teams with their participation status, then filter and count them.
+const useParticipationRows = (
+  teams: ReturnType<typeof useTeams>['teams'],
+  participations: ReturnType<typeof useSeasonParticipations>['data'],
+  statusFilter: StatusFilter
+) => {
+  const teamsWithStatus = useMemo(() => {
+    const participationMap = new Map(participations?.map((p) => [p.team_id, p]) ?? []);
+
+    return (teams ?? []).map((team) => {
+      const participation = participationMap.get(team.id);
+      return {
+        ...team,
+        participation,
+        status: participation?.status ?? ('NO_RESPONSE' as const),
+        updatedAt: participation?.updated_at,
+        submittedBy: participation?.submitted_by_name,
+      };
+    });
+  }, [teams, participations]);
+
+  const filteredTeams = useMemo(
+    () =>
+      statusFilter === 'all'
+        ? teamsWithStatus
+        : teamsWithStatus.filter((t) => t.status === statusFilter),
+    [teamsWithStatus, statusFilter]
+  );
+
+  const counts = useMemo(() => {
+    const countOf = (status: ParticipationStatus) =>
+      teamsWithStatus.filter((t) => t.status === status).length;
+    return {
+      playing: countOf('PLAYING'),
+      notPlaying: countOf('NOT_PLAYING'),
+      noResponse: countOf('NO_RESPONSE'),
+      total: teamsWithStatus.length,
+    };
+  }, [teamsWithStatus]);
+
+  return { filteredTeams, counts };
+};
+
+interface ParticipationCounts {
+  playing: number;
+  notPlaying: number;
+  noResponse: number;
+  total: number;
+}
+
+const ParticipationSummary: React.FC<{ counts: ParticipationCounts; hasData: boolean }> = ({
+  counts,
+  hasData,
+}) => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <SummaryCard
+      title="Playing"
+      icon={<Check className="size-5 text-green-500" />}
+      value={hasData ? counts.playing : '-'}
+    />
+    <SummaryCard
+      title="Not Playing"
+      icon={<X className="size-5 text-red-500" />}
+      value={hasData ? counts.notPlaying : '-'}
+    />
+    <SummaryCard
+      title="No Response"
+      icon={<HelpCircle className="size-5 text-yellow-500" />}
+      value={hasData ? counts.noResponse : '-'}
+    />
+    <SummaryCard
+      title="Total Teams"
+      icon={<Users className="size-5 text-primary" />}
+      value={counts.total}
+    />
+  </div>
+);
+
+const ParticipationTable: React.FC<{ rows: ParticipationRow[]; isLoading: boolean }> = ({
+  rows,
+  isLoading,
+}) => (
+  <Card>
+    <CardContent className="p-0">
+      {isLoading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      ) : (
+        <ResponsiveTable
+          caption="Season participation by team"
+          columns={participationColumns}
+          rows={rows}
+          rowKey={(team) => team.id}
+          empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
+        />
+      )}
+    </CardContent>
+  </Card>
+);
+
+interface ParticipationBodyProps {
+  seasons: unknown[] | undefined;
+  seasonsError: boolean;
+  onRetrySeasons: () => void;
+  participationsError: boolean;
+  onRetryParticipations: () => void;
+  hasParticipationData: boolean;
+  counts: ParticipationCounts;
+  rows: ParticipationRow[];
+  isLoading: boolean;
+}
+
+// Never show statuses the app does not have: each failed or empty state stops here.
+const ParticipationBody: React.FC<ParticipationBodyProps> = ({
+  seasons,
+  seasonsError,
+  onRetrySeasons,
+  participationsError,
+  onRetryParticipations,
+  hasParticipationData,
+  counts,
+  rows,
+  isLoading,
+}) => {
+  if (seasonsError && !seasons) {
+    return <ErrorCard message="Could not load seasons." onRetry={onRetrySeasons} />;
+  }
+  if (seasons?.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">No seasons yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  if (participationsError && !hasParticipationData) {
+    return (
+      <ErrorCard
+        message="Could not load participation for this season."
+        onRetry={onRetryParticipations}
+      />
+    );
+  }
+  return (
+    <>
+      <ParticipationSummary counts={counts} hasData={hasParticipationData} />
+      <ParticipationTable rows={rows} isLoading={isLoading} />
+    </>
+  );
+};
+
 const SeasonParticipationTab: React.FC = () => {
-  const { data: seasons, isLoading: seasonsLoading } = useSeasons();
+  const {
+    data: seasons,
+    isLoading: seasonsLoading,
+    isError: seasonsError,
+    refetch: refetchSeasons,
+  } = useSeasons();
   const { teams, isLoading: teamsLoading } = useTeams();
 
-  // Default to most recent active season
-  const defaultSeasonId = useMemo(() => {
-    if (!seasons?.length) return '';
-    const activeSeason = seasons.find((s) => s.is_active);
-    return activeSeason?.id ?? seasons[0]?.id ?? '';
-  }, [seasons]);
+  const defaultSeasonId = useMemo(() => pickDefaultSeasonId(seasons), [seasons]);
 
   const [selectedSeasonOverride, setSelectedSeasonOverride] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -186,37 +354,7 @@ const SeasonParticipationTab: React.FC = () => {
   // No data is not the same as "no response": only show statuses once the fetch worked.
   const hasParticipationData = participations !== undefined;
 
-  // Combine teams with their participation status
-  const teamsWithStatus = useMemo(() => {
-    if (!teams) return [];
-
-    const participationMap = new Map(participations?.map((p) => [p.team_id, p]) ?? []);
-
-    return teams.map((team) => {
-      const participation = participationMap.get(team.id);
-      return {
-        ...team,
-        participation,
-        status: participation?.status ?? ('NO_RESPONSE' as const),
-        updatedAt: participation?.updated_at,
-        submittedBy: participation?.submitted_by_name,
-      };
-    });
-  }, [teams, participations]);
-
-  // Filter based on status
-  const filteredTeams = useMemo(() => {
-    if (statusFilter === 'all') return teamsWithStatus;
-    return teamsWithStatus.filter((t) => t.status === statusFilter);
-  }, [teamsWithStatus, statusFilter]);
-
-  // Counts
-  const counts = useMemo(() => {
-    const playing = teamsWithStatus.filter((t) => t.status === 'PLAYING').length;
-    const notPlaying = teamsWithStatus.filter((t) => t.status === 'NOT_PLAYING').length;
-    const noResponse = teamsWithStatus.filter((t) => t.status === 'NO_RESPONSE').length;
-    return { playing, notPlaying, noResponse, total: teamsWithStatus.length };
-  }, [teamsWithStatus]);
+  const { filteredTeams, counts } = useParticipationRows(teams, participations, statusFilter);
 
   const handleExportCsv = () => exportParticipationToCSV(filteredTeams, selectedSeasonId);
 
@@ -245,63 +383,17 @@ const SeasonParticipationTab: React.FC = () => {
         </div>
       </div>
 
-      {participationsError && !hasParticipationData ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
-            <p className="text-center text-destructive-text">
-              Could not load participation for this season.
-            </p>
-            <Button variant="outline" size="sm" onClick={() => refetchParticipations()}>
-              Try again
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <SummaryCard
-              title="Playing"
-              icon={<Check className="size-5 text-green-500" />}
-              value={hasParticipationData ? counts.playing : '-'}
-            />
-            <SummaryCard
-              title="Not Playing"
-              icon={<X className="size-5 text-red-500" />}
-              value={hasParticipationData ? counts.notPlaying : '-'}
-            />
-            <SummaryCard
-              title="No Response"
-              icon={<HelpCircle className="size-5 text-yellow-500" />}
-              value={hasParticipationData ? counts.noResponse : '-'}
-            />
-            <SummaryCard
-              title="Total Teams"
-              icon={<Users className="size-5 text-primary" />}
-              value={counts.total}
-            />
-          </div>
-
-          {/* Table */}
-          <Card>
-            <CardContent className="p-0">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-48">
-                  <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
-                </div>
-              ) : (
-                <ResponsiveTable
-                  caption="Season participation by team"
-                  columns={participationColumns}
-                  rows={filteredTeams}
-                  rowKey={(team) => team.id}
-                  empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
+      <ParticipationBody
+        seasons={seasons}
+        seasonsError={seasonsError}
+        onRetrySeasons={() => refetchSeasons()}
+        participationsError={participationsError}
+        onRetryParticipations={() => refetchParticipations()}
+        hasParticipationData={hasParticipationData}
+        counts={counts}
+        rows={filteredTeams}
+        isLoading={isLoading}
+      />
     </div>
   );
 };

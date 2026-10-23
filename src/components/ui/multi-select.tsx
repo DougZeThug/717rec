@@ -91,6 +91,7 @@ export function MultiSelect({
 }: MultiSelectProps) {
   const [open, setOpen] = React.useState(false);
   const listboxId = React.useId();
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   const handleSelect = (value: string) => {
     const newSelected = selected.includes(value)
@@ -104,6 +105,7 @@ export function MultiSelect({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
+            ref={triggerRef}
             variant="outline"
             role="combobox"
             aria-expanded={open}
@@ -123,7 +125,11 @@ export function MultiSelect({
         <button
           type="button"
           aria-label="Clear selection"
-          onClick={() => onChange([])}
+          onClick={() => {
+            onChange([]);
+            // The X unmounts when the list empties. Move focus to the picker so keyboard users keep their place.
+            triggerRef.current?.focus();
+          }}
           className="absolute right-9 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-sm opacity-50 hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <X className="size-4" aria-hidden="true" />

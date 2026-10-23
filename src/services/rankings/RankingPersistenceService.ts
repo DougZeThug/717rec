@@ -24,6 +24,8 @@ async function getCurrentSeasonId(): Promise<string> {
     .from('seasons')
     .select('id')
     .eq('playoffs_active', true)
+    // An archived season can keep playoffs_active = true. It is not "current".
+    .eq('is_archived', false)
     .maybeSingle();
 
   if (playoffError) {

@@ -148,6 +148,7 @@ describe('MultiSelect', () => {
     await user.keyboard('{Enter}');
 
     expect(onChange).toHaveBeenCalledWith([]);
+    expect(screen.getByRole('combobox')).toHaveFocus();
   });
 
   it('shows no clear button when nothing is selected', () => {

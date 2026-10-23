@@ -191,7 +191,8 @@ export const useMessageBoard = (): UseMessageBoardResult => {
 
   // Load more messages
   const loadMoreMessages = useCallback(async () => {
-    if (!messagesQuery.hasNextPage || messagesQuery.isFetchingNextPage) return;
+    // isFetching is also true during a refresh. fetchNextPage() would cancel it.
+    if (!messagesQuery.hasNextPage || messagesQuery.isFetching) return;
 
     try {
       const result = await messagesQuery.fetchNextPage();
