@@ -219,6 +219,116 @@ const useParticipationRows = (
   return { filteredTeams, counts };
 };
 
+interface ParticipationCounts {
+  playing: number;
+  notPlaying: number;
+  noResponse: number;
+  total: number;
+}
+
+const ParticipationSummary: React.FC<{ counts: ParticipationCounts; hasData: boolean }> = ({
+  counts,
+  hasData,
+}) => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <SummaryCard
+      title="Playing"
+      icon={<Check className="size-5 text-green-500" />}
+      value={hasData ? counts.playing : '-'}
+    />
+    <SummaryCard
+      title="Not Playing"
+      icon={<X className="size-5 text-red-500" />}
+      value={hasData ? counts.notPlaying : '-'}
+    />
+    <SummaryCard
+      title="No Response"
+      icon={<HelpCircle className="size-5 text-yellow-500" />}
+      value={hasData ? counts.noResponse : '-'}
+    />
+    <SummaryCard
+      title="Total Teams"
+      icon={<Users className="size-5 text-primary" />}
+      value={counts.total}
+    />
+  </div>
+);
+
+const ParticipationTable: React.FC<{ rows: ParticipationRow[]; isLoading: boolean }> = ({
+  rows,
+  isLoading,
+}) => (
+  <Card>
+    <CardContent className="p-0">
+      {isLoading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
+        </div>
+      ) : (
+        <ResponsiveTable
+          caption="Season participation by team"
+          columns={participationColumns}
+          rows={rows}
+          rowKey={(team) => team.id}
+          empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
+        />
+      )}
+    </CardContent>
+  </Card>
+);
+
+interface ParticipationBodyProps {
+  seasons: unknown[] | undefined;
+  seasonsError: boolean;
+  onRetrySeasons: () => void;
+  participationsError: boolean;
+  onRetryParticipations: () => void;
+  hasParticipationData: boolean;
+  counts: ParticipationCounts;
+  rows: ParticipationRow[];
+  isLoading: boolean;
+}
+
+// Never show statuses the app does not have: each failed or empty state stops here.
+const ParticipationBody: React.FC<ParticipationBodyProps> = ({
+  seasons,
+  seasonsError,
+  onRetrySeasons,
+  participationsError,
+  onRetryParticipations,
+  hasParticipationData,
+  counts,
+  rows,
+  isLoading,
+}) => {
+  if (seasonsError && !seasons) {
+    return <ErrorCard message="Could not load seasons." onRetry={onRetrySeasons} />;
+  }
+  if (seasons?.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">No seasons yet</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  if (participationsError && !hasParticipationData) {
+    return (
+      <ErrorCard
+        message="Could not load participation for this season."
+        onRetry={onRetryParticipations}
+      />
+    );
+  }
+  return (
+    <>
+      <ParticipationSummary counts={counts} hasData={hasParticipationData} />
+      <ParticipationTable rows={rows} isLoading={isLoading} />
+    </>
+  );
+};
+
 const SeasonParticipationTab: React.FC = () => {
   const {
     data: seasons,
@@ -273,65 +383,17 @@ const SeasonParticipationTab: React.FC = () => {
         </div>
       </div>
 
-      {seasonsError && !seasons ? (
-        <ErrorCard message="Could not load seasons." onRetry={() => refetchSeasons()} />
-      ) : seasons?.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-center text-muted-foreground">No seasons yet</p>
-          </CardContent>
-        </Card>
-      ) : participationsError && !hasParticipationData ? (
-        <ErrorCard
-          message="Could not load participation for this season."
-          onRetry={() => refetchParticipations()}
-        />
-      ) : (
-        <>
-          {/* Summary cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <SummaryCard
-              title="Playing"
-              icon={<Check className="size-5 text-green-500" />}
-              value={hasParticipationData ? counts.playing : '-'}
-            />
-            <SummaryCard
-              title="Not Playing"
-              icon={<X className="size-5 text-red-500" />}
-              value={hasParticipationData ? counts.notPlaying : '-'}
-            />
-            <SummaryCard
-              title="No Response"
-              icon={<HelpCircle className="size-5 text-yellow-500" />}
-              value={hasParticipationData ? counts.noResponse : '-'}
-            />
-            <SummaryCard
-              title="Total Teams"
-              icon={<Users className="size-5 text-primary" />}
-              value={counts.total}
-            />
-          </div>
-
-          {/* Table */}
-          <Card>
-            <CardContent className="p-0">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-48">
-                  <div className="animate-spin size-8 border-4 border-primary border-t-transparent rounded-full" />
-                </div>
-              ) : (
-                <ResponsiveTable
-                  caption="Season participation by team"
-                  columns={participationColumns}
-                  rows={filteredTeams}
-                  rowKey={(team) => team.id}
-                  empty={<p className="text-center text-muted-foreground py-8">No teams found</p>}
-                />
-              )}
-            </CardContent>
-          </Card>
-        </>
-      )}
+      <ParticipationBody
+        seasons={seasons}
+        seasonsError={seasonsError}
+        onRetrySeasons={() => refetchSeasons()}
+        participationsError={participationsError}
+        onRetryParticipations={() => refetchParticipations()}
+        hasParticipationData={hasParticipationData}
+        counts={counts}
+        rows={filteredTeams}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
