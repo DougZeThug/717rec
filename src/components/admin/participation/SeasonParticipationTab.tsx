@@ -162,7 +162,12 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, icon, value }) => (
 );
 
 const SeasonParticipationTab: React.FC = () => {
-  const { data: seasons, isLoading: seasonsLoading } = useSeasons();
+  const {
+    data: seasons,
+    isLoading: seasonsLoading,
+    isError: seasonsError,
+    refetch: refetchSeasons,
+  } = useSeasons();
   const { teams, isLoading: teamsLoading } = useTeams();
 
   // Default to most recent active season
@@ -245,7 +250,22 @@ const SeasonParticipationTab: React.FC = () => {
         </div>
       </div>
 
-      {participationsError && !hasParticipationData ? (
+      {seasonsError && !seasons ? (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
+            <p className="text-center text-destructive-text">Could not load seasons.</p>
+            <Button variant="outline" size="sm" onClick={() => refetchSeasons()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : seasons?.length === 0 ? (
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-muted-foreground">No seasons yet</p>
+          </CardContent>
+        </Card>
+      ) : participationsError && !hasParticipationData ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-8" role="alert">
             <p className="text-center text-destructive-text">
