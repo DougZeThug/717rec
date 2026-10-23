@@ -172,6 +172,53 @@ const ErrorCard: React.FC<{ message: string; onRetry: () => void }> = ({ message
   </Card>
 );
 
+// Default to the active season, else the most recent one.
+const pickDefaultSeasonId = (seasons: { id: string; is_active?: boolean | null }[] | undefined) =>
+  seasons?.find((s) => s.is_active)?.id ?? seasons?.[0]?.id ?? '';
+
+// Combine teams with their participation status, then filter and count them.
+const useParticipationRows = (
+  teams: ReturnType<typeof useTeams>['teams'],
+  participations: ReturnType<typeof useSeasonParticipations>['data'],
+  statusFilter: StatusFilter
+) => {
+  const teamsWithStatus = useMemo(() => {
+    const participationMap = new Map(participations?.map((p) => [p.team_id, p]) ?? []);
+
+    return (teams ?? []).map((team) => {
+      const participation = participationMap.get(team.id);
+      return {
+        ...team,
+        participation,
+        status: participation?.status ?? ('NO_RESPONSE' as const),
+        updatedAt: participation?.updated_at,
+        submittedBy: participation?.submitted_by_name,
+      };
+    });
+  }, [teams, participations]);
+
+  const filteredTeams = useMemo(
+    () =>
+      statusFilter === 'all'
+        ? teamsWithStatus
+        : teamsWithStatus.filter((t) => t.status === statusFilter),
+    [teamsWithStatus, statusFilter]
+  );
+
+  const counts = useMemo(() => {
+    const countOf = (status: ParticipationStatus) =>
+      teamsWithStatus.filter((t) => t.status === status).length;
+    return {
+      playing: countOf('PLAYING'),
+      notPlaying: countOf('NOT_PLAYING'),
+      noResponse: countOf('NO_RESPONSE'),
+      total: teamsWithStatus.length,
+    };
+  }, [teamsWithStatus]);
+
+  return { filteredTeams, counts };
+};
+
 const SeasonParticipationTab: React.FC = () => {
   const {
     data: seasons,
@@ -181,12 +228,7 @@ const SeasonParticipationTab: React.FC = () => {
   } = useSeasons();
   const { teams, isLoading: teamsLoading } = useTeams();
 
-  // Default to most recent active season
-  const defaultSeasonId = useMemo(() => {
-    if (!seasons?.length) return '';
-    const activeSeason = seasons.find((s) => s.is_active);
-    return activeSeason?.id ?? seasons[0]?.id ?? '';
-  }, [seasons]);
+  const defaultSeasonId = useMemo(() => pickDefaultSeasonId(seasons), [seasons]);
 
   const [selectedSeasonOverride, setSelectedSeasonOverride] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -202,37 +244,7 @@ const SeasonParticipationTab: React.FC = () => {
   // No data is not the same as "no response": only show statuses once the fetch worked.
   const hasParticipationData = participations !== undefined;
 
-  // Combine teams with their participation status
-  const teamsWithStatus = useMemo(() => {
-    if (!teams) return [];
-
-    const participationMap = new Map(participations?.map((p) => [p.team_id, p]) ?? []);
-
-    return teams.map((team) => {
-      const participation = participationMap.get(team.id);
-      return {
-        ...team,
-        participation,
-        status: participation?.status ?? ('NO_RESPONSE' as const),
-        updatedAt: participation?.updated_at,
-        submittedBy: participation?.submitted_by_name,
-      };
-    });
-  }, [teams, participations]);
-
-  // Filter based on status
-  const filteredTeams = useMemo(() => {
-    if (statusFilter === 'all') return teamsWithStatus;
-    return teamsWithStatus.filter((t) => t.status === statusFilter);
-  }, [teamsWithStatus, statusFilter]);
-
-  // Counts
-  const counts = useMemo(() => {
-    const playing = teamsWithStatus.filter((t) => t.status === 'PLAYING').length;
-    const notPlaying = teamsWithStatus.filter((t) => t.status === 'NOT_PLAYING').length;
-    const noResponse = teamsWithStatus.filter((t) => t.status === 'NO_RESPONSE').length;
-    return { playing, notPlaying, noResponse, total: teamsWithStatus.length };
-  }, [teamsWithStatus]);
+  const { filteredTeams, counts } = useParticipationRows(teams, participations, statusFilter);
 
   const handleExportCsv = () => exportParticipationToCSV(filteredTeams, selectedSeasonId);
 
