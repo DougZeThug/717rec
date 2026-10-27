@@ -1,7 +1,7 @@
 type Token = { char: string; any: boolean };
 
 /** Find the first index >= from where `segment` matches `text` (`any` = one-char wildcard). */
-const findSegment = (text: string, segment: Token[], from: number): number => {
+const findSegment = (text: string[], segment: Token[], from: number): number => {
   for (let start = from; start + segment.length <= text.length; start += 1) {
     let ok = true;
     for (let j = 0; j < segment.length; j += 1) {
@@ -16,7 +16,7 @@ const findSegment = (text: string, segment: Token[], from: number): number => {
   return -1;
 };
 
-const segmentMatchesAt = (text: string, segment: Token[], at: number): boolean =>
+const segmentMatchesAt = (text: string[], segment: Token[], at: number): boolean =>
   at >= 0 && at + segment.length <= text.length && findSegment(text, segment, at) === at;
 
 /**
@@ -37,8 +37,10 @@ const segmentMatchesAt = (text: string, segment: Token[], at: number): boolean =
  * wildcards cannot cause catastrophic backtracking and freeze the page.
  */
 export const matchesIlikeContains = (text: string, query: string): boolean => {
-  const wrapped = `%${query}%`.toLowerCase();
-  const subject = text.toLowerCase();
+  // Arrays of whole characters: Postgres counts a character, JS strings count
+  // UTF-16 units, so an emoji would otherwise be two characters to `_`.
+  const wrapped = Array.from(`%${query}%`.toLowerCase());
+  const subject = Array.from(text.toLowerCase());
   const segments: Token[][] = [[]];
   for (let i = 0; i < wrapped.length; i += 1) {
     const char = wrapped[i];
