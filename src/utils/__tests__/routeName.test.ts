@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 // working directory, so the test does not care where vitest was started from.
 import appSource from '@/App.tsx?raw';
 
-import { getRouteName } from '../routeName';
+import { getPageViewTitle, getRouteName } from '../routeName';
 
 describe('getRouteName', () => {
   it('maps known exact paths to friendly names', () => {
@@ -141,5 +141,16 @@ describe('admin section addresses', () => {
     expect(getRouteName('/admin')).toBe('Admin Dashboard');
     expect(getRouteName('/admin/scores')).toBe('Admin Dashboard');
     expect(getRouteName('/admin/pending-matches')).toBe('Admin Dashboard');
+  });
+});
+
+describe('getPageViewTitle', () => {
+  it('names the page from the path, before its lazy chunk has set document.title', () => {
+    expect(getPageViewTitle('/schedule')).toBe('Schedule | 717REC');
+    expect(getPageViewTitle('/teams/abc')).toBe('Team Details | 717REC');
+  });
+
+  it('is what App sends with every pageview', () => {
+    expect(appSource).toContain('trackPageView(pathname, getPageViewTitle(pathname))');
   });
 });

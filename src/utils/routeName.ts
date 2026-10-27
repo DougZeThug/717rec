@@ -63,3 +63,10 @@ export const getRouteName = (pathname: string): string => {
 
   return 'Page Not Found';
 };
+
+/**
+ * Title sent with a Google Analytics pageview. Built from the path because the
+ * pageview fires before the lazy page loads, when `document.title` still holds
+ * the previous page's title.
+ */
+export const getPageViewTitle = (pathname: string): string => `${getRouteName(pathname)} | 717REC`;
