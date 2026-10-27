@@ -66,8 +66,25 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     // Convert to Date object if string is passed
     const dateObj = typeof date === 'string' ? new Date(date) : date;
 
-    // Convert UTC to local time for display
-    const formattedTime = formatUTCToLocalTimeString(dateObj);
+    // Read hours/minutes from formatToParts in the viewer's clock. Matching on
+    // Intl's own 12-hour text breaks in locales that write 'p. m.' or use
+    // non-Latin digits, so the slot label is rebuilt from the numbers instead.
+    const parts = new Intl.DateTimeFormat(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: false,
+      numberingSystem: 'latn',
+    }).formatToParts(dateObj);
+
+    const read = (type: string): number =>
+      Number(parts.find((part) => part.type === type)?.value ?? NaN);
+
+    // Some ICU builds report midnight as hour 24 under hour12: false.
+    const hours = read('hour') % 24;
+    const minutes = read('minute');
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return 'No Time';
+
+    const formattedTime = formatTimeString(hours, minutes);
 
     timezoneLog('Extracted time slot from UTC date', {
       input: typeof date === 'string' ? date : date.toISOString(),
@@ -96,17 +113,6 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
 
     // If no exact match, try to find the closest time slot
     // This helps with slight time variations due to timezone conversion
-    const timeParts = formattedTime.match(/(\d+):(\d+)\s?(AM|PM)/i);
-    if (!timeParts) return 'No Time';
-
-    let hours = parseInt(timeParts[1], 10);
-    const minutes = parseInt(timeParts[2], 10);
-    const period = timeParts[3].toUpperCase();
-
-    // Convert to 24-hour format for easier comparison
-    if (period === 'PM' && hours < 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-
     // FIXED: Calculate minutes from 6:00 PM baseline instead of 6:30 PM
     const minutesFromBaseline = (hours - 18) * 60 + minutes;
 

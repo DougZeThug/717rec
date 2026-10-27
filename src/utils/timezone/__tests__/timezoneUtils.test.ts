@@ -62,25 +62,45 @@ describe('timezone utilities', () => {
     });
   });
 
-  it('extractTimeSlotFromUTC returns exact slots when formatter output matches', () => {
+  const mockClockParts = (hour: string | null, minute: string, text = 'unused'): void => {
     vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function () {
-      return buildDateTimeFormatResult('7:30 PM');
+      return {
+        ...buildDateTimeFormatResult(text),
+        formatToParts: () => [
+          ...(hour === null ? [] : [{ type: 'hour', value: hour }]),
+          { type: 'literal', value: ':' },
+          { type: 'minute', value: minute },
+        ],
+      } as unknown as Intl.DateTimeFormat;
     } as unknown as typeof Intl.DateTimeFormat);
+  };
+
+  it('extractTimeSlotFromUTC returns exact slots', () => {
+    mockClockParts('19', '30');
 
     expect(extractTimeSlotFromUTC('2026-03-01T00:00:00.000Z')).toBe('7:30 PM');
   });
 
   it.each([
-    { formatted: '6:10 PM', expected: '6:00 PM' },
-    { formatted: '6:40 PM', expected: '6:30 PM' },
-    { formatted: '9:50 PM', expected: '10:00 PM' },
-    { formatted: 'bad-data', expected: 'No Time' },
-  ])('extractTimeSlotFromUTC normalization for $formatted', ({ formatted, expected }) => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function () {
-      return buildDateTimeFormatResult(formatted);
-    } as unknown as typeof Intl.DateTimeFormat);
+    { hour: '18', minute: '10', expected: '6:00 PM' },
+    { hour: '18', minute: '40', expected: '6:30 PM' },
+    { hour: '21', minute: '50', expected: '10:00 PM' },
+    { hour: '24', minute: '05', expected: '6:00 PM' },
+    { hour: null, minute: '05', expected: 'No Time' },
+  ])('extractTimeSlotFromUTC normalization for $hour:$minute', ({ hour, minute, expected }) => {
+    mockClockParts(hour, minute);
 
     expect(extractTimeSlotFromUTC(new Date('2026-03-01T00:00:00.000Z'))).toBe(expected);
+  });
+
+  it('extractTimeSlotFromUTC ignores locale-specific day-period text', () => {
+    mockClockParts('19', '30', '午後7:30');
+
+    expect(extractTimeSlotFromUTC(new Date('2026-03-01T00:00:00.000Z'))).toBe('7:30 PM');
+  });
+
+  it('extractTimeSlotFromUTC gives No Time for an invalid date', () => {
+    expect(extractTimeSlotFromUTC(new Date('not a date'))).toBe('No Time');
   });
 
   it('formatUTCToLocalTimeString supports 24-hour and seconds options', () => {
