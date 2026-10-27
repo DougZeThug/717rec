@@ -19,6 +19,19 @@ describe('getRouteName', () => {
     expect(getRouteName('/teams/')).toBe('Teams');
   });
 
+  // The router tolerates any run of trailing slashes, e.g. after a back/forward
+  // navigation to a hand-typed address, so the announcer must too.
+  it.each([
+    ['/teams//', 'Teams'],
+    ['/schedule//', 'Schedule'],
+    ['/teams/falcons//', 'Team Details'],
+    ['/matches/123/live//', 'Live Scoring'],
+    ['/admin/scores//', 'Admin Dashboard'],
+    ['//', 'Home'],
+  ])('ignores repeated trailing slashes on %s', (path, name) => {
+    expect(getRouteName(path)).toBe(name);
+  });
+
   it('matches dynamic team detail routes by shape', () => {
     expect(getRouteName('/teams/123')).toBe('Team Details');
     expect(getRouteName('/teams/abc-def')).toBe('Team Details');
