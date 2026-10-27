@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ScoreStepper } from '@/components/ui/score-stepper';
 
@@ -12,6 +12,24 @@ const setup = (props: Partial<React.ComponentProps<typeof ScoreStepper>> = {}) =
 };
 
 describe('ScoreStepper', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('leaves no animation timer running once it unmounts', () => {
+    vi.useFakeTimers();
+    const onChange = vi.fn();
+    const { unmount } = render(<ScoreStepper value={5} onChange={onChange} />);
+
+    act(() => {
+      screen.getByRole('button', { name: 'Increase score' }).click();
+    });
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it('shows the score and the team label', () => {
     setup({ label: 'Tigers', teamName: 'Tigers', teamLogo: '/tigers.png' });
 
