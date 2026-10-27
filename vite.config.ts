@@ -63,6 +63,9 @@ export default defineConfig(({ mode }) => ({
             // entry file. The size-limit "Main entry" check globs
             // `dist/assets/index-*.js` and would otherwise count this lazy chunk
             // as part of first paint.
+            // Admin matchup exporter only, behind a dynamic import. Named so the
+            // lazy chunk is not called `index-*.js` and counted as main.
+            { name: 'vendor-exceljs', test: /[\\/]node_modules[\\/]exceljs[\\/]/ },
             { name: 'vendor-html-to-image', test: /[\\/]node_modules[\\/]html-to-image[\\/]/ },
             // Same trick for confetti: it is only reached through a dynamic
             // import in utils/confetti.ts, so naming it keeps its chunk from

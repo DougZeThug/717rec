@@ -1,22 +1,31 @@
 import { SeasonOpponentData } from '@/hooks/useSeasonOpponentHistory';
 import { neutralizeFormula } from '@/utils/spreadsheetSafe';
 
-const escapeHtml = (value: string | number): string =>
-  String(neutralizeFormula(value))
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-const renderCell = (value: string | number, tag: 'td' | 'th' = 'td'): string =>
-  `<${tag}>${escapeHtml(value)}</${tag}>`;
+type Cell = string | number;
 
-const renderRow = (cells: Array<string | number>, tag: 'td' | 'th' = 'td'): string =>
-  `<tr>${cells.map((cell) => renderCell(cell, tag)).join('')}</tr>`;
+const safeRow = (cells: Cell[]): Cell[] => cells.map(neutralizeFormula);
 
-export const exportMatchupsToExcel = (data: SeasonOpponentData): void => {
-  const summaryRows = data.teams.map((team) =>
-    renderRow([
+export const exportMatchupsToExcel = async (data: SeasonOpponentData): Promise<void> => {
+  // exceljs is large, so it loads only when an admin clicks Export.
+  const { default: ExcelJS } = await import('exceljs');
+
+  const workbook = new ExcelJS.Workbook();
+
+  const addSheet = (name: string, header: string[], rows: Cell[][]) => {
+    const sheet = workbook.addWorksheet(name);
+    sheet.addRow(header).font = { bold: true };
+    rows.forEach((row) => sheet.addRow(safeRow(row)));
+    sheet.columns.forEach((column) => {
+      column.width = 16;
+    });
+  };
+
+  addSheet(
+    'Team Summary',
+    ['Team', 'Division', '# Opponents', '# Matches'],
+    data.teams.map((team) => [
       team.teamName,
       team.divisionName || '—',
       team.uniqueOpponentCount,
@@ -24,9 +33,11 @@ export const exportMatchupsToExcel = (data: SeasonOpponentData): void => {
     ])
   );
 
-  const detailRows = data.teams.flatMap((team) =>
-    team.opponents.map((opp) =>
-      renderRow([
+  addSheet(
+    'Matchup Details',
+    ['Team', 'Division', 'Opponent', 'Opp. Division', 'Matches', 'Wins', 'Losses', 'Record'],
+    data.teams.flatMap((team) =>
+      team.opponents.map((opp) => [
         team.teamName,
         team.divisionName || '—',
         opp.opponentName,
@@ -39,38 +50,12 @@ export const exportMatchupsToExcel = (data: SeasonOpponentData): void => {
     )
   );
 
-  const workbookHtml = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <style>
-    table { border-collapse: collapse; margin-bottom: 24px; }
-    th, td { border: 1px solid #999; padding: 6px 10px; }
-    th { background: #e0e0e0; font-weight: 700; }
-  </style>
-</head>
-<body>
-  <h1>${escapeHtml(data.seasonName)} Matchups</h1>
-  <h2>Team Summary</h2>
-  <table>
-    <thead>${renderRow(['Team', 'Division', '# Opponents', '# Matches'], 'th')}</thead>
-    <tbody>${summaryRows.join('')}</tbody>
-  </table>
-  <h2>Matchup Details</h2>
-  <table>
-    <thead>${renderRow(['Team', 'Division', 'Opponent', 'Opp. Division', 'Matches', 'Wins', 'Losses', 'Record'], 'th')}</thead>
-    <tbody>${detailRows.join('')}</tbody>
-  </table>
-</body>
-</html>`;
-
   const date = new Date().toISOString().split('T')[0];
   const safeName = data.seasonName.replace(/[^a-zA-Z0-9]/g, '_');
-  const filename = `${safeName}_Matchups_${date}.xls`;
+  const filename = `${safeName}_Matchups_${date}.xlsx`;
 
-  const blob = new Blob([workbookHtml], {
-    type: 'application/vnd.ms-excel;charset=utf-8',
-  });
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: XLSX_MIME });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
