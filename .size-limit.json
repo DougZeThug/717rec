@@ -7,8 +7,14 @@
   },
   {
     "name": "All JS chunks (gzip)",
-    "path": "dist/assets/*.js",
+    "path": ["dist/assets/*.js", "!dist/assets/vendor-exceljs-*.js"],
     "limit": "1300 KB",
+    "gzip": true
+  },
+  {
+    "name": "Excel export chunk (lazy, loads on Export click)",
+    "path": "dist/assets/vendor-exceljs-*.js",
+    "limit": "290 KB",
     "gzip": true
   }
 ]
