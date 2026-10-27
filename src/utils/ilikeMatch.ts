@@ -16,6 +16,7 @@ const findSegment = (text: string[], segment: Token[], from: number): number => 
   return -1;
 };
 
+/** Does `segment` match `text` starting exactly at index `at`? */
 const segmentMatchesAt = (text: string[], segment: Token[], at: number): boolean =>
   at >= 0 && at + segment.length <= text.length && findSegment(text, segment, at) === at;
 

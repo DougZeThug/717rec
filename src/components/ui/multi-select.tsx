@@ -82,6 +82,7 @@ const OptionsCommand: React.FC<{
   </Command>
 );
 
+/** Searchable multi-pick dropdown: the list is as wide as its trigger and a clear button resets it. */
 export function MultiSelect({
   options,
   selected,

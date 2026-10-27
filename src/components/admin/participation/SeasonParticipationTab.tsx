@@ -291,7 +291,7 @@ interface ParticipationBodyProps {
   isLoading: boolean;
 }
 
-// Never show statuses the app does not have: each failed or empty state stops here.
+/** Never show statuses the app does not have: each failed or empty state stops here. */
 const ParticipationBody: React.FC<ParticipationBodyProps> = ({
   seasons,
   seasonsError,
@@ -337,6 +337,7 @@ const ParticipationBody: React.FC<ParticipationBodyProps> = ({
   );
 };
 
+/** Admin tab showing which teams are playing, not playing, or have not responded this season. */
 const SeasonParticipationTab: React.FC = () => {
   const {
     data: seasons,

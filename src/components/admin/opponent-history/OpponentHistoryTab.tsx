@@ -169,6 +169,7 @@ const OpponentHistoryTab: React.FC = () => {
   const [divisionFilter, setDivisionFilter] = useState<string>('all');
   const [isExporting, setIsExporting] = useState(false);
 
+  /** Export the season's matchups to Excel, keeping the button busy until it finishes. */
   const handleExport = async () => {
     if (!data) return;
     setIsExporting(true);

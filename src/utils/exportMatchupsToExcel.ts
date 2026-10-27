@@ -5,14 +5,20 @@ const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.s
 
 type Cell = string | number;
 
+/** Neutralize formula-looking text in every cell so spreadsheet apps read it as text. */
 const safeRow = (cells: Cell[]): Cell[] => cells.map(neutralizeFormula);
 
+/**
+ * Download the season's matchups as a two-sheet .xlsx workbook (team summary and
+ * matchup details). exceljs loads on demand, so it stays out of the main bundle.
+ */
 export const exportMatchupsToExcel = async (data: SeasonOpponentData): Promise<void> => {
   // exceljs is large, so it loads only when an admin clicks Export.
   const { default: ExcelJS } = await import('exceljs');
 
   const workbook = new ExcelJS.Workbook();
 
+  /** Add a worksheet with a bold header row and formula-safe data rows. */
   const addSheet = (name: string, header: string[], rows: Cell[][]) => {
     const sheet = workbook.addWorksheet(name);
     sheet.addRow(header).font = { bold: true };

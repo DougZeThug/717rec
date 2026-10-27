@@ -62,6 +62,7 @@ describe('timezone utilities', () => {
     });
   });
 
+  /** Make the shared slot formatter report the given hour and minute parts. */
   const mockClockParts = (hour: string | null, minute: string): void => {
     vi.spyOn(Intl.DateTimeFormat.prototype, 'formatToParts').mockReturnValue([
       ...(hour === null ? [] : [{ type: 'hour' as const, value: hour }]),

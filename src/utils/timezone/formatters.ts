@@ -80,6 +80,7 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     // Read hours/minutes from formatToParts, not from Intl's localized text.
     const parts = SLOT_CLOCK_FORMATTER.formatToParts(dateObj);
 
+    /** Read one numeric part (hour or minute) from the formatted parts, or NaN. */
     const read = (type: string): number =>
       Number(parts.find((part) => part.type === type)?.value ?? NaN);
 
