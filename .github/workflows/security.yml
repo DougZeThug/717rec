@@ -76,9 +76,20 @@ jobs:
           const offenders = [];
           for (const [pkg, info] of Object.entries(vulns)) {
             if (!['high', 'critical'].includes(info.severity)) continue;
-            const viaIds = (info.via || [])
-              .filter(v => typeof v === 'object' && (v.source || v.url))
-              .map(v => String(v.source ?? (v.url || '').split('/').pop()));
+            // A package that only pulls in a vulnerable dependency lists that
+            // dependency's name in `via`. Follow those names down to the advisories.
+            const collectIds = (name, seen = new Set()) => {
+              if (seen.has(name) || !vulns[name]) return [];
+              seen.add(name);
+              return (vulns[name].via || []).flatMap(v =>
+                typeof v === 'string'
+                  ? collectIds(v, seen)
+                  : v.source || v.url
+                    ? [String(v.source ?? (v.url || '').split('/').pop())]
+                    : []
+              );
+            };
+            const viaIds = [...new Set(collectIds(pkg))];
             const allAllowed = viaIds.length > 0 && viaIds.every(id => allowedIds.has(id));
             if (allAllowed) {
               console.log(`::notice::Allowlisted ${info.severity} advisory for ${pkg} (via ${viaIds.join(', ')})`);
