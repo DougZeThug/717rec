@@ -28,7 +28,7 @@ beforeEach(() => {
     }
   );
   vi.clearAllMocks();
-  mocks.submit.mockImplementation(async () => undefined);
+  mocks.submit.mockImplementation(() => Promise.resolve());
 });
 
 describe('Join form attribution', () => {
