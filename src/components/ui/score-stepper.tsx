@@ -115,15 +115,20 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<'up' | 'down'>('up');
-  const animationTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const animationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // A timer left running after unmount calls setState on a gone component, and in
   // tests it can fire after the test environment is torn down.
-  useEffect(() => () => clearTimeout(animationTimer.current), []);
+  useEffect(
+    () => () => {
+      if (animationTimer.current) clearTimeout(animationTimer.current);
+    },
+    []
+  );
 
   /** Stop the digit animation after its 150ms slide, replacing any earlier timer. */
   const endAnimationSoon = () => {
-    clearTimeout(animationTimer.current);
+    if (animationTimer.current) clearTimeout(animationTimer.current);
     animationTimer.current = setTimeout(() => setIsAnimating(false), 150);
   };
 
