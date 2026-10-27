@@ -33,7 +33,7 @@ const draft = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.submit.mockResolvedValue(undefined);
+  mocks.submit.mockImplementation(async () => undefined);
 });
 
 describe('Join conversion tracking', () => {
