@@ -82,10 +82,18 @@ describe('timezone utilities', () => {
   });
 
   it.each([
+    { hour: '17', minute: '10', expected: '5:00 PM' },
+    { hour: '17', minute: '20', expected: '5:30 PM' },
+    { hour: '17', minute: '40', expected: '5:30 PM' },
+    { hour: '17', minute: '50', expected: '6:00 PM' },
     { hour: '18', minute: '10', expected: '6:00 PM' },
+    { hour: '18', minute: '20', expected: '6:30 PM' },
     { hour: '18', minute: '40', expected: '6:30 PM' },
+    { hour: '21', minute: '10', expected: '9:00 PM' },
+    { hour: '21', minute: '20', expected: '9:30 PM' },
     { hour: '21', minute: '50', expected: '10:00 PM' },
-    { hour: '24', minute: '05', expected: '6:00 PM' },
+    { hour: '15', minute: '00', expected: '5:00 PM' },
+    { hour: '24', minute: '05', expected: '5:00 PM' },
     { hour: null, minute: '05', expected: 'No Time' },
   ])('extractTimeSlotFromUTC normalization for $hour:$minute', ({ hour, minute, expected }) => {
     mockClockParts(hour, minute);

@@ -113,25 +113,29 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
 
     // If no exact match, try to find the closest time slot
     // This helps with slight time variations due to timezone conversion
-    // FIXED: Calculate minutes from 6:00 PM baseline instead of 6:30 PM
-    const minutesFromBaseline = (hours - 18) * 60 + minutes;
+    // Minutes since 5:00 PM, the first standard slot. Earlier times land in it.
+    const minutesFromBaseline = (hours - 17) * 60 + minutes;
 
-    // UPDATED: Map to standard time slots at 30-minute intervals starting from 6:00 PM
+    // Map to the nearest standard slot at 30-minute intervals
     if (minutesFromBaseline < 15)
-      return '6:00 PM'; // 6:00-6:14 PM
+      return '5:00 PM'; // up to 5:14 PM
     else if (minutesFromBaseline < 45)
-      return '6:30 PM'; // 6:15-6:44 PM
+      return '5:30 PM'; // 5:15-5:44 PM
     else if (minutesFromBaseline < 75)
-      return '7:00 PM'; // 6:45-7:14 PM
+      return '6:00 PM'; // 5:45-6:14 PM
     else if (minutesFromBaseline < 105)
-      return '7:30 PM'; // 7:15-7:44 PM
+      return '6:30 PM'; // 6:15-6:44 PM
     else if (minutesFromBaseline < 135)
-      return '8:00 PM'; // 7:45-8:14 PM
+      return '7:00 PM'; // 6:45-7:14 PM
     else if (minutesFromBaseline < 165)
-      return '8:30 PM'; // 8:15-8:44 PM
+      return '7:30 PM'; // 7:15-7:44 PM
     else if (minutesFromBaseline < 195)
-      return '9:00 PM'; // 8:45-9:14 PM
+      return '8:00 PM'; // 7:45-8:14 PM
     else if (minutesFromBaseline < 225)
+      return '8:30 PM'; // 8:15-8:44 PM
+    else if (minutesFromBaseline < 255)
+      return '9:00 PM'; // 8:45-9:14 PM
+    else if (minutesFromBaseline < 285)
       return '9:30 PM'; // 9:15-9:44 PM
     else return '10:00 PM'; // 9:45 PM and later
   } catch (error) {
