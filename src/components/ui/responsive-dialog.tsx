@@ -109,7 +109,18 @@ export const ResponsiveDialogContent: React.FC<ResponsiveDialogContentProps> = (
     );
   }
 
-  return <DialogContent className={className}>{children}</DialogContent>;
+  // The panel is a fixed, centred grid, so without a cap a tall dialog runs off
+  // the screen and Radix's scroll lock leaves no way to reach the rest.
+  return (
+    <DialogContent
+      className={cn(
+        'max-h-[90vh] supports-[height:90dvh]:max-h-[90dvh] overflow-y-auto',
+        className
+      )}
+    >
+      {children}
+    </DialogContent>
+  );
 };
 
 /** Header that renders as DrawerHeader on mobile and DialogHeader on desktop. */

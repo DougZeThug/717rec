@@ -11,6 +11,7 @@ ResponsiveDialog automatically:
 - Shows as centered Dialog on desktop
 - Shows as bottom Drawer on mobile (swipe to dismiss)
 - Provides better touch targets and scrolling on mobile
+- Caps desktop dialogs at 90% of the screen height and scrolls them when content is taller
 
 ### Use AlertDialog for:
 - Confirmation dialogs (delete, archive, etc.)
