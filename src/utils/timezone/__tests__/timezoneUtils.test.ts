@@ -81,6 +81,10 @@ describe('timezone utilities', () => {
     { hour: '17', minute: '20', expected: '5:30 PM' },
     { hour: '17', minute: '40', expected: '5:30 PM' },
     { hour: '17', minute: '50', expected: '6:00 PM' },
+    { hour: '18', minute: '50', expected: '7:00 PM' },
+    { hour: '19', minute: '20', expected: '7:30 PM' },
+    { hour: '19', minute: '50', expected: '8:00 PM' },
+    { hour: '20', minute: '20', expected: '8:30 PM' },
     { hour: '18', minute: '10', expected: '6:00 PM' },
     { hour: '18', minute: '20', expected: '6:30 PM' },
     { hour: '18', minute: '40', expected: '6:30 PM' },
@@ -104,6 +108,10 @@ describe('timezone utilities', () => {
 
   it('extractTimeSlotFromUTC gives No Time for an invalid date', () => {
     expect(extractTimeSlotFromUTC(new Date('not a date'))).toBe('No Time');
+  });
+
+  it('formatUTCToLocalTimeString gives an empty string for an invalid date', () => {
+    expect(formatUTCToLocalTimeString(new Date('not a date'))).toBe('');
   });
 
   it('formatUTCToLocalTimeString supports 24-hour and seconds options', () => {

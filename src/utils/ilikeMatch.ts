@@ -57,11 +57,8 @@ export const matchesIlikeContains = (text: string, query: string): boolean => {
     }
   }
 
-  if (segments.length === 1) {
-    const only = segments[0];
-    return only.length === subject.length && segmentMatchesAt(subject, only, 0);
-  }
-
+  // The pattern always opens with an unescaped %, so there are at least two
+  // segments: an empty first one and the rest.
   const first = segments[0];
   const last = segments[segments.length - 1];
   if (!segmentMatchesAt(subject, first, 0)) return false;
