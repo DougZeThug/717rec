@@ -5,6 +5,14 @@ import { teamLog } from '@/utils/logger';
 import { assertNonEmptyString, assertValidUuid } from '@/utils/validation';
 
 /**
+ * Readers fall back to the legacy logo_url when image_url is empty, so clearing
+ * the image must clear that column too or the old logo comes back. Setting an
+ * image leaves logo_url alone.
+ */
+const clearedLegacyLogo = (imageUrl: string | null | undefined): { logo_url?: null } =>
+  imageUrl ? {} : { logo_url: null };
+
+/**
  * Update only a team's name and image_url (used by team members with edit access).
  * @throws {Error} When database operation fails
  */
@@ -18,6 +26,7 @@ export const updateTeamNameAndImage = async (
     .update({
       name,
       image_url: imageUrl,
+      ...clearedLegacyLogo(imageUrl),
     })
     .eq('id', teamId);
 
@@ -76,6 +85,7 @@ export const updateTeamApi = async (teamId: string, teamData: Omit<Team, 'id' | 
     .update({
       name: teamData.name,
       image_url: teamData.imageUrl || null,
+      ...clearedLegacyLogo(teamData.imageUrl),
       players: teamData.players, // Players is now a string[]
       division_id: teamData.division_id, // This will be null when no division is selected
     })
