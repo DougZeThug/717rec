@@ -34,6 +34,19 @@ describe('MultiSelect', () => {
     expect(screen.getByRole('combobox')).toHaveTextContent('Select items...');
   });
 
+  // jsdom cannot measure layout, so this checks the class that sizes the list to
+  // the trigger. A bare w-full resolved against Radix's shrink-to-fit wrapper.
+  it('sizes the open list to the trigger width, not its widest row', async () => {
+    const user = userEvent.setup();
+    setup();
+    const trigger = screen.getByRole('combobox');
+    await user.click(trigger);
+
+    const list = document.getElementById(trigger.getAttribute('aria-controls') ?? '');
+    expect(list).toHaveClass('w-(--radix-popper-anchor-width)');
+    expect(list).not.toHaveClass('w-72');
+  });
+
   it('counts the picked teams', () => {
     setup(['t1', 't2']);
     expect(screen.getByRole('combobox')).toHaveTextContent('2 teams selected');

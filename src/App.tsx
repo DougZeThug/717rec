@@ -22,6 +22,7 @@ import { useLazyRef } from '@/hooks/useLazyRef';
 import { initAnalytics, trackPageView } from '@/utils/analytics';
 import { routeLog } from '@/utils/logger';
 import { handleMutationError, handleQueryError } from '@/utils/queryErrorToast';
+import { getPageViewTitle } from '@/utils/routeName';
 import { preloadCoreRoutes } from '@/utils/routePrefetch';
 import { metrics } from '@/utils/sentry';
 
@@ -179,7 +180,7 @@ const AppLayout = () => {
   // number, so it was removed rather than reordered.
   useEffect(() => {
     routeLog(`Navigating to: ${pathname}`);
-    trackPageView(pathname);
+    trackPageView(pathname, getPageViewTitle(pathname));
 
     metrics.count('page_view', 1, { route: pathname });
   }, [pathname]);

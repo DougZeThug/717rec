@@ -1,6 +1,6 @@
 import { AnimatePresence, m } from 'framer-motion';
 import { Minus, Plus } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -115,6 +115,22 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<'up' | 'down'>('up');
+  const animationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // A timer left running after unmount calls setState on a gone component, and in
+  // tests it can fire after the test environment is torn down.
+  useEffect(
+    () => () => {
+      if (animationTimer.current) clearTimeout(animationTimer.current);
+    },
+    []
+  );
+
+  /** Stop the digit animation after its 150ms slide, replacing any earlier timer. */
+  const endAnimationSoon = () => {
+    if (animationTimer.current) clearTimeout(animationTimer.current);
+    animationTimer.current = setTimeout(() => setIsAnimating(false), 150);
+  };
 
   /** Raise the score by 1 (up to max), animating the digit sliding upward. */
   const handleIncrement = () => {
@@ -122,7 +138,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
       setDirection('up');
       setIsAnimating(true);
       onChange(value + 1);
-      setTimeout(() => setIsAnimating(false), 150);
+      endAnimationSoon();
     }
   };
 
@@ -132,7 +148,7 @@ export const ScoreStepper: React.FC<ScoreStepperProps> = ({
       setDirection('down');
       setIsAnimating(true);
       onChange(value - 1);
-      setTimeout(() => setIsAnimating(false), 150);
+      endAnimationSoon();
     }
   };
 

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 // working directory, so the test does not care where vitest was started from.
 import appSource from '@/App.tsx?raw';
 
-import { getRouteName } from '../routeName';
+import { getPageViewTitle, getRouteName } from '../routeName';
 
 describe('getRouteName', () => {
   it('maps known exact paths to friendly names', () => {
@@ -17,6 +17,19 @@ describe('getRouteName', () => {
 
   it('ignores a trailing slash on non-root paths', () => {
     expect(getRouteName('/teams/')).toBe('Teams');
+  });
+
+  // The router tolerates any run of trailing slashes, e.g. after a back/forward
+  // navigation to a hand-typed address, so the announcer must too.
+  it.each([
+    ['/teams//', 'Teams'],
+    ['/schedule//', 'Schedule'],
+    ['/teams/falcons//', 'Team Details'],
+    ['/matches/123/live//', 'Live Scoring'],
+    ['/admin/scores//', 'Admin Dashboard'],
+    ['//', 'Home'],
+  ])('ignores repeated trailing slashes on %s', (path, name) => {
+    expect(getRouteName(path)).toBe(name);
   });
 
   it('matches dynamic team detail routes by shape', () => {
@@ -141,5 +154,16 @@ describe('admin section addresses', () => {
     expect(getRouteName('/admin')).toBe('Admin Dashboard');
     expect(getRouteName('/admin/scores')).toBe('Admin Dashboard');
     expect(getRouteName('/admin/pending-matches')).toBe('Admin Dashboard');
+  });
+});
+
+describe('getPageViewTitle', () => {
+  it('names the page from the path, before its lazy chunk has set document.title', () => {
+    expect(getPageViewTitle('/schedule')).toBe('Schedule | 717REC');
+    expect(getPageViewTitle('/teams/abc')).toBe('Team Details | 717REC');
+  });
+
+  it('is what App sends with every pageview', () => {
+    expect(appSource).toContain('trackPageView(pathname, getPageViewTitle(pathname))');
   });
 });

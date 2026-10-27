@@ -484,6 +484,32 @@ describe('updateTeamApi', () => {
     await expect(updateTeamApi(TEAM_ID, makeTeamData())).rejects.toThrow(DatabaseError);
   });
 
+  it.each([
+    { imageUrl: '', expected: { logo_url: null } },
+    { imageUrl: 'https://img.example.com/new.png', expected: {} },
+  ])('legacy logo_url on update with image "$imageUrl"', async ({ imageUrl, expected }) => {
+    setupFullSuccess();
+    const base = mockFrom.getMockImplementation();
+    const payloads: Record<string, unknown>[] = [];
+    mockFrom.mockImplementation((table: string) => {
+      const result = base ? base(table) : {};
+      if (table !== 'teams' || !('update' in result)) return result;
+      const update = result.update as (values: Record<string, unknown>) => unknown;
+      return {
+        ...result,
+        update: (values: Record<string, unknown>) => {
+          payloads.push(values);
+          return update(values);
+        },
+      };
+    });
+
+    await updateTeamApi(TEAM_ID, makeTeamData({ imageUrl }));
+
+    expect(payloads[0]).toMatchObject(expected);
+    expect('logo_url' in payloads[0]).toBe('logo_url' in expected);
+  });
+
   it('skips division check when division_id is null', async () => {
     let divisionChecked = false;
     let callCount = 0;
@@ -604,7 +630,7 @@ describe('updateTeamNameAndImage', () => {
     expect(updates).toEqual([{ name: 'Renamed', image_url: 'https://img.example.com/a.png' }]);
   });
 
-  it('passes a null image through rather than dropping the field', async () => {
+  it('clears the legacy logo too, so a cleared image stays cleared', async () => {
     const updates: Record<string, unknown>[] = [];
     mockFrom.mockImplementation(() => ({
       update: (payload: Record<string, unknown>) => {
@@ -615,7 +641,7 @@ describe('updateTeamNameAndImage', () => {
 
     await updateTeamNameAndImage(TEAM_ID, 'Renamed', null);
 
-    expect(updates).toEqual([{ name: 'Renamed', image_url: null }]);
+    expect(updates).toEqual([{ name: 'Renamed', image_url: null, logo_url: null }]);
   });
 
   it('throws DatabaseError when the write fails', async () => {

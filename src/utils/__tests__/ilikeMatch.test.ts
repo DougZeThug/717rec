@@ -48,4 +48,16 @@ describe('matchesIlikeContains', () => {
     expect(matchesIlikeContains('abc', 'a.c')).toBe(false);
     expect(matchesIlikeContains('a.c', 'a.c')).toBe(true);
   });
+
+  it('counts an emoji as one character for _, like Postgres', () => {
+    expect(matchesIlikeContains('🎉', '__')).toBe(false);
+    expect(matchesIlikeContains('🎉', '_')).toBe(true);
+    expect(matchesIlikeContains('a🎉c', 'a_c')).toBe(true);
+    expect(matchesIlikeContains('a🎉🎉c', 'a_c')).toBe(false);
+    expect(matchesIlikeContains('a🎉🎉c', 'a__c')).toBe(true);
+  });
+
+  it('lets a backslash escape a whole astral character', () => {
+    expect(matchesIlikeContains('party 🎉', '\\🎉')).toBe(true);
+  });
 });

@@ -281,6 +281,8 @@ interface ParticipationBodyProps {
   seasons: unknown[] | undefined;
   seasonsError: boolean;
   onRetrySeasons: () => void;
+  teamsFailed: boolean;
+  onRetryTeams: () => void;
   participationsError: boolean;
   onRetryParticipations: () => void;
   hasParticipationData: boolean;
@@ -289,11 +291,13 @@ interface ParticipationBodyProps {
   isLoading: boolean;
 }
 
-// Never show statuses the app does not have: each failed or empty state stops here.
+/** Never show statuses the app does not have: each failed or empty state stops here. */
 const ParticipationBody: React.FC<ParticipationBodyProps> = ({
   seasons,
   seasonsError,
   onRetrySeasons,
+  teamsFailed,
+  onRetryTeams,
   participationsError,
   onRetryParticipations,
   hasParticipationData,
@@ -313,6 +317,10 @@ const ParticipationBody: React.FC<ParticipationBodyProps> = ({
       </Card>
     );
   }
+  // A failed teams fetch with nothing cached looks like a league with no teams.
+  if (teamsFailed) {
+    return <ErrorCard message="Could not load teams." onRetry={onRetryTeams} />;
+  }
   if (participationsError && !hasParticipationData) {
     return (
       <ErrorCard
@@ -329,6 +337,7 @@ const ParticipationBody: React.FC<ParticipationBodyProps> = ({
   );
 };
 
+/** Admin tab showing which teams are playing, not playing, or have not responded this season. */
 const SeasonParticipationTab: React.FC = () => {
   const {
     data: seasons,
@@ -336,7 +345,7 @@ const SeasonParticipationTab: React.FC = () => {
     isError: seasonsError,
     refetch: refetchSeasons,
   } = useSeasons();
-  const { teams, isLoading: teamsLoading } = useTeams();
+  const { teams, isLoading: teamsLoading, error: teamsError, fetchTeams } = useTeams();
 
   const defaultSeasonId = useMemo(() => pickDefaultSeasonId(seasons), [seasons]);
 
@@ -355,6 +364,8 @@ const SeasonParticipationTab: React.FC = () => {
   const hasParticipationData = participations !== undefined;
 
   const { filteredTeams, counts } = useParticipationRows(teams, participations, statusFilter);
+
+  const teamsFailed = Boolean(teamsError) && teams.length === 0;
 
   const handleExportCsv = () => exportParticipationToCSV(filteredTeams, selectedSeasonId);
 
@@ -379,7 +390,7 @@ const SeasonParticipationTab: React.FC = () => {
           <StatusFilterSelect value={statusFilter} onValueChange={setStatusFilter} />
 
           {/* Export */}
-          {hasParticipationData && <ExportCsvButton onClick={handleExportCsv} />}
+          {hasParticipationData && !teamsFailed && <ExportCsvButton onClick={handleExportCsv} />}
         </div>
       </div>
 
@@ -387,6 +398,8 @@ const SeasonParticipationTab: React.FC = () => {
         seasons={seasons}
         seasonsError={seasonsError}
         onRetrySeasons={() => refetchSeasons()}
+        teamsFailed={teamsFailed}
+        onRetryTeams={() => fetchTeams()}
         participationsError={participationsError}
         onRetryParticipations={() => refetchParticipations()}
         hasParticipationData={hasParticipationData}

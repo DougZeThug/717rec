@@ -1,17 +1,53 @@
 {
   "advisories": [
     {
-      "id": "GHSA-frvp-7c67-39w9",
-      "package": "@hono/node-server",
-      "reason": "Transitive dep of @lovable.dev/mcp-js -> @modelcontextprotocol/sdk. Used only inside the Supabase edge function (supabase/functions/mcp) and MCP tools under src/lib/mcp — never bundled into the browser client. Advisory is Windows-only path traversal in serve-static; the edge function runs on Deno/Linux and does not serve static files. No upstream fix available.",
-      "expires": "2026-10-21"
+      "id": "1241339",
+      "package": "@modelcontextprotocol/sdk",
+      "reason": "Pinned exactly by @lovable.dev/mcp-js (3.2.2, 3.3.0). Not fixable here: no mcp-js release, including 4.0.0-rc.1, pulls in a patched SDK. The deployed supabase/functions/mcp and mcp-public import mcp-js through Deno npm: specifiers, so this exposure is real in those functions until upstream releases a fix. Re-check when mcp-js pins @modelcontextprotocol/sdk >=1.32.",
+      "expires": "2026-11-27"
     },
     {
-      "id": "GHSA-g7r4-m6w7-qqqr",
-      "package": "esbuild",
-      "reason": "Nested under node_modules/@lovable.dev/mcp-js/node_modules/esbuild. Advisory affects only the esbuild dev server on Windows; this copy is never invoked as a dev server (mcp-js uses esbuild as a build helper). Project's top-level esbuild is already on a fixed version. Waiting on upstream mcp-js to bump.",
-      "expires": "2026-10-21"
+      "id": "1242628",
+      "package": "@modelcontextprotocol/sdk",
+      "reason": "Same as 1241339: pinned by @lovable.dev/mcp-js, no upstream fix, re-check by 2026-11-27.",
+      "expires": "2026-11-27"
+    },
+    {
+      "id": "1242630",
+      "package": "@modelcontextprotocol/sdk",
+      "reason": "Same as 1241339: pinned by @lovable.dev/mcp-js, no upstream fix, re-check by 2026-11-27.",
+      "expires": "2026-11-27"
+    },
+    {
+      "id": "1242649",
+      "package": "@modelcontextprotocol/sdk",
+      "reason": "Same as 1241339: pinned by @lovable.dev/mcp-js, no upstream fix, re-check by 2026-11-27.",
+      "expires": "2026-11-27"
+    },
+    {
+      "id": "1242667",
+      "package": "@modelcontextprotocol/sdk",
+      "reason": "Same as 1241339: pinned by @lovable.dev/mcp-js, no upstream fix, re-check by 2026-11-27.",
+      "expires": "2026-11-27"
+    },
+    {
+      "id": "1242647",
+      "package": "@modelcontextprotocol/server",
+      "reason": "Pinned exactly at 2.0.0 by @lovable.dev/mcp-js (3.2.2, 3.3.0, 4.0.0-rc.1); fixed in 2.3.0. Not fixable here without upstream. Real exposure in the deployed MCP edge functions, same as 1241339. Re-check by 2026-11-27.",
+      "expires": "2026-11-27"
+    },
+    {
+      "id": "1242648",
+      "package": "@modelcontextprotocol/server",
+      "reason": "Same as 1242647: pinned by @lovable.dev/mcp-js, no upstream fix, re-check by 2026-11-27.",
+      "expires": "2026-11-27"
+    },
+    {
+      "id": "1242666",
+      "package": "@modelcontextprotocol/server",
+      "reason": "Same as 1242647: pinned by @lovable.dev/mcp-js, no upstream fix, re-check by 2026-11-27.",
+      "expires": "2026-11-27"
     }
   ],
-  "notes": "Add { \"id\": \"<GHSA/npm advisory id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known non-exploitable PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. Reviewed quarterly."
+  "notes": "Add { \"id\": \"<GHSA/npm advisory id>\", \"package\": \"<name>\", \"reason\": \"<why non-exploitable>\", \"expires\": \"YYYY-MM-DD\" } entries here to allowlist known PRODUCTION advisories. Dev-only advisories are already excluded via --omit=dev. A package passes only when every advisory behind it is listed, including advisories reached through its dependencies. Reviewed quarterly."
 }

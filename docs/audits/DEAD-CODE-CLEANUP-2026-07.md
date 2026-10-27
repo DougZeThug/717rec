@@ -20,6 +20,7 @@ deletion (zero live importers required, name-twin files checked individually).
 - **16 npm packages**: 14 dependencies (unused @radix-ui primitives,
   react-resizable-panels, usehooks-ts, sonner, input-otp, exceljs, nanoid,
   @types/uuid) and 2 devDependencies (@tailwindcss/typography, glob).
+- `exceljs` was later restored (lazy-loaded) for the admin matchup export.
 - Also fixed: two obsolete FAB tests that had been failing since the
   "Removed mobile FAB" change, plus stale README/SCHEDULER_README references.
 

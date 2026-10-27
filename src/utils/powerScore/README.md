@@ -6,11 +6,11 @@ single 0-100 number.
 
 ## Scale and Storage
 
-| Context | Scale | Example |
-|---------|-------|---------|
-| Database (`team_season_stats`) | 0-1 | `0.858` |
-| View (`v_team_details`) | 0-100 | `85.8` |
-| UI Display | 0-100 | `85.8` |
+| Context                        | Scale | Example |
+| ------------------------------ | ----- | ------- |
+| Database (`team_season_stats`) | 0-1   | `0.858` |
+| View (`v_team_details`)        | 0-100 | `85.8`  |
+| UI Display                     | 0-100 | `85.8`  |
 
 The `normalizePowerScore()` utility handles conversion between these scales.
 
@@ -25,7 +25,7 @@ There are two SQL definitions. Standings, team pages and per-season records use
 
 **The three weights are admin-adjustable.** The live triple is the latest row
 of `power_score_weight_history` (seeded 40/45/15), and the two SQL functions
-are *regenerated* from it by the admin **Power Score Sandbox** tab
+are _regenerated_ from it by the admin **Power Score Sandbox** tab
 (`admin_set_power_score_weights()` — see the sandbox architecture below). The
 formulas here show the default weights.
 
@@ -57,12 +57,12 @@ to the long-run career rating. `v_team_details` and `v_team_season_agg` expose b
 numbers: `power_score` (plain) and `career_power_score` (floored). `team_season_stats`
 stores both per season.
 
-| Term | Meaning |
-|------|---------|
-| **Weighted match win rate** | `SUM(win × opponent division weight) / SUM(opponent division weight)`, over wins and losses only. A true weighted average on a 0-1 scale. Beating a strong opponent counts more than beating a weak one, but winning every match still reads as 1.0 whoever you played. **A tie leaves both the top and the bottom** of this term, the same as Win % = wins ÷ (wins + losses) (migration `20261006120000_exclude_ties_from_win_rate.sql`). A team with no rated win or loss (only ties) reads 0 on this term. |
-| **Strength of schedule (SOS)** | Average `division_weight` of the opponents faced, clamped to `[0.1, 1.0]`. This is the term that rewards a harder schedule. It is **not** the average power score of opponents. |
-| **Weighted game win rate** | `SUM(game wins × opponent weight) / SUM(total games × opponent weight)`. Same weighted-average shape as the match term. Games from a tied match still count here, and the tied opponent still counts in SOS: the games were played and the opponent was faced. |
-| **Performance** (career only) | The blend of the two win-rate terms on a 0-1 scale. A team at 0.30 performance keeps 100% of its SOS credit; a team at 0.15 performance keeps 50%. This lowers the career floor for teams with very poor long-run records without touching teams above the threshold. |
+| Term                           | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Weighted match win rate**    | `SUM(win × opponent division weight) / SUM(opponent division weight)`, over wins and losses only. A true weighted average on a 0-1 scale. Beating a strong opponent counts more than beating a weak one, but winning every match still reads as 1.0 whoever you played. **A tie leaves both the top and the bottom** of this term, the same as Win % = wins ÷ (wins + losses) (migration `20261006120000_exclude_ties_from_win_rate.sql`). A team with no rated win or loss (only ties) reads 0 on this term. |
+| **Strength of schedule (SOS)** | Average `division_weight` of the opponents faced, clamped to `[0.1, 1.0]`. This is the term that rewards a harder schedule. It is **not** the average power score of opponents.                                                                                                                                                                                                                                                                                                                               |
+| **Weighted game win rate**     | `SUM(game wins × opponent weight) / SUM(total games × opponent weight)`. Same weighted-average shape as the match term. Games from a tied match still count here, and the tied opponent still counts in SOS: the games were played and the opponent was faced.                                                                                                                                                                                                                                                |
+| **Performance** (career only)  | The blend of the two win-rate terms on a 0-1 scale. A team at 0.30 performance keeps 100% of its SOS credit; a team at 0.15 performance keeps 50%. This lowers the career floor for teams with very poor long-run records without touching teams above the threshold.                                                                                                                                                                                                                                         |
 
 ### Division weights
 
@@ -91,21 +91,21 @@ flag: a team that drops out is moved to the `Hidden` division, which overwrites
 their real division with no history.
 
 `v_power_score_team_matches_rated` resolves this through a chain, and **every
-step returns a real `divisions.id`** — no step turns a division *name* into a
+step returns a real `divisions.id`** — no step turns a division _name_ into a
 weight. Names cannot be reversed: `division_name` has several writers with
 different meanings, and for a season with two brackets in one display division
 it holds synthetic strings like `'Intermediate 1'` that match no row in
 `divisions` at all.
 
-| Priority | Source | `resolved_by` |
-|---|---|---|
-| 1 | newest weekly snapshot at or before the match date | `snapshot_at_date` |
-| 2 | earliest snapshot that season | `snapshot_earliest_in_season` |
-| 3 | `team_details_archive.division_id`, cross-checked against `divisionname` | `archive_division_id` |
-| 4 | playoff bracket participation | `bracket_division_id` |
-| 5 | current `teams.division_id` | `current_division` |
-| 6 | last division ever observed for that team | `last_known_division` |
-| 7 | nothing resolves → dropped from the weighted terms only | `unresolved` |
+| Priority | Source                                                                   | `resolved_by`                 |
+| -------- | ------------------------------------------------------------------------ | ----------------------------- |
+| 1        | newest weekly snapshot at or before the match date                       | `snapshot_at_date`            |
+| 2        | earliest snapshot that season                                            | `snapshot_earliest_in_season` |
+| 3        | `team_details_archive.division_id`, cross-checked against `divisionname` | `archive_division_id`         |
+| 4        | playoff bracket participation                                            | `bracket_division_id`         |
+| 5        | current `teams.division_id`                                              | `current_division`            |
+| 6        | last division ever observed for that team                                | `last_known_division`         |
+| 7        | nothing resolves → dropped from the weighted terms only                  | `unresolved`                  |
 
 Hidden and weightless divisions are filtered out by `v_division_rateable`, so
 the chain can never resolve to one. Seasons listed in
@@ -158,16 +158,16 @@ Career = weighted average of season Power Scores   (weighted by matches played)
 
 Bonuses:
 
-| Bonus | Value |
-|---|---|
-| Championship | `7 × weight²` |
-| Runner-up | `4 × weight²` |
+| Bonus                    | Value                          |
+| ------------------------ | ------------------------------ |
+| Championship             | `7 × weight²`                  |
+| Runner-up                | `4 × weight²`                  |
 | Playoff record over .500 | `(winRate − 0.5) × 4 × weight` |
-| Competitive playoff win | `+0.5` each |
+| Competitive playoff win  | `+0.5` each                    |
 
 `weight` is the **live** `divisions.division_weight` of the division the result
 happened in — resolved in `src/utils/career/divisionBonusWeight.ts`, never
-hardcoded. Only the *name* mapping lives in code, because
+hardcoded. Only the _name_ mapping lives in code, because
 `team_season_stats.division_name` holds synthetic labels ("Intermediate 1",
 "Intermediate 2") that match no row in `divisions`.
 
@@ -266,11 +266,11 @@ so SQL and TS cannot drift silently. Runbook for applying the migration:
 
 ## Utilities in This Directory
 
-| File | Purpose |
-|------|---------|
-| `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales |
-| `formatPowerScore.ts` | Renders a score to 1 decimal, `—` when null |
-| `getTrendingTeams.ts` | Finds teams with biggest recent power score gains |
+| File                     | Purpose                                           |
+| ------------------------ | ------------------------------------------------- |
+| `normalizePowerScore.ts` | Converts between 0-1 and 0-100 scales             |
+| `formatPowerScore.ts`    | Renders a score to 1 decimal, `—` when null       |
+| `getTrendingTeams.ts`    | Finds teams with biggest recent power score gains |
 
 ## Related Code
 

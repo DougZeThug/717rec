@@ -57,6 +57,17 @@ export const formatTimeString = (hours: number, minutes: number, use24Hour = fal
   return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
 };
 
+// Built once: constructing an Intl.DateTimeFormat is slow and this runs for
+// every match on the schedule. It reads the viewer's clock. Matching on Intl's
+// own 12-hour text breaks in locales that write 'p. m.' or use non-Latin
+// digits, so the slot label is rebuilt from numeric parts instead.
+const SLOT_CLOCK_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: false,
+  numberingSystem: 'latn',
+});
+
 /**
  * Extract a standardized time slot from a UTC date
  * Useful for grouping matches by time slot
@@ -66,8 +77,19 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     // Convert to Date object if string is passed
     const dateObj = typeof date === 'string' ? new Date(date) : date;
 
-    // Convert UTC to local time for display
-    const formattedTime = formatUTCToLocalTimeString(dateObj);
+    // Read hours/minutes from formatToParts, not from Intl's localized text.
+    const parts = SLOT_CLOCK_FORMATTER.formatToParts(dateObj);
+
+    /** Read one numeric part (hour or minute) from the formatted parts, or NaN. */
+    const read = (type: string): number =>
+      Number(parts.find((part) => part.type === type)?.value ?? NaN);
+
+    // Some ICU builds report midnight as hour 24 under hour12: false.
+    const hours = read('hour') % 24;
+    const minutes = read('minute');
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return 'No Time';
+
+    const formattedTime = formatTimeString(hours, minutes);
 
     timezoneLog('Extracted time slot from UTC date', {
       input: typeof date === 'string' ? date : date.toISOString(),
@@ -96,36 +118,29 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
 
     // If no exact match, try to find the closest time slot
     // This helps with slight time variations due to timezone conversion
-    const timeParts = formattedTime.match(/(\d+):(\d+)\s?(AM|PM)/i);
-    if (!timeParts) return 'No Time';
+    // Minutes since 5:00 PM, the first standard slot. Earlier times land in it.
+    const minutesFromBaseline = (hours - 17) * 60 + minutes;
 
-    let hours = parseInt(timeParts[1], 10);
-    const minutes = parseInt(timeParts[2], 10);
-    const period = timeParts[3].toUpperCase();
-
-    // Convert to 24-hour format for easier comparison
-    if (period === 'PM' && hours < 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-
-    // FIXED: Calculate minutes from 6:00 PM baseline instead of 6:30 PM
-    const minutesFromBaseline = (hours - 18) * 60 + minutes;
-
-    // UPDATED: Map to standard time slots at 30-minute intervals starting from 6:00 PM
+    // Map to the nearest standard slot at 30-minute intervals
     if (minutesFromBaseline < 15)
-      return '6:00 PM'; // 6:00-6:14 PM
+      return '5:00 PM'; // up to 5:14 PM
     else if (minutesFromBaseline < 45)
-      return '6:30 PM'; // 6:15-6:44 PM
+      return '5:30 PM'; // 5:15-5:44 PM
     else if (minutesFromBaseline < 75)
-      return '7:00 PM'; // 6:45-7:14 PM
+      return '6:00 PM'; // 5:45-6:14 PM
     else if (minutesFromBaseline < 105)
-      return '7:30 PM'; // 7:15-7:44 PM
+      return '6:30 PM'; // 6:15-6:44 PM
     else if (minutesFromBaseline < 135)
-      return '8:00 PM'; // 7:45-8:14 PM
+      return '7:00 PM'; // 6:45-7:14 PM
     else if (minutesFromBaseline < 165)
-      return '8:30 PM'; // 8:15-8:44 PM
+      return '7:30 PM'; // 7:15-7:44 PM
     else if (minutesFromBaseline < 195)
-      return '9:00 PM'; // 8:45-9:14 PM
+      return '8:00 PM'; // 7:45-8:14 PM
     else if (minutesFromBaseline < 225)
+      return '8:30 PM'; // 8:15-8:44 PM
+    else if (minutesFromBaseline < 255)
+      return '9:00 PM'; // 8:45-9:14 PM
+    else if (minutesFromBaseline < 285)
       return '9:30 PM'; // 9:15-9:44 PM
     else return '10:00 PM'; // 9:45 PM and later
   } catch (error) {

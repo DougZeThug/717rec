@@ -49,9 +49,9 @@ const DYNAMIC_ROUTE_NAMES: Array<{ pattern: RegExp; name: string }> = [
  * "Page Not Found" for anything unrecognized (mirrors the `*` route).
  */
 export const getRouteName = (pathname: string): string => {
-  // Normalize a trailing slash (except the root path) so "/teams/" matches "/teams".
-  const normalized =
-    pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  // Drop every trailing slash (except on the root path): the router accepts any
+  // run of them, so "/teams//" renders Teams and must be announced as Teams.
+  const normalized = pathname.replace(/\/+$/, '') || '/';
 
   const exact = EXACT_ROUTE_NAMES[normalized];
   if (exact) return exact;
@@ -63,3 +63,10 @@ export const getRouteName = (pathname: string): string => {
 
   return 'Page Not Found';
 };
+
+/**
+ * Title sent with a Google Analytics pageview. Built from the path because the
+ * pageview fires before the lazy page loads, when `document.title` still holds
+ * the previous page's title.
+ */
+export const getPageViewTitle = (pathname: string): string => `${getRouteName(pathname)} | 717REC`;
