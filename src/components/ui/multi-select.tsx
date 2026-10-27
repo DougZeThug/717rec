@@ -116,7 +116,11 @@ export function MultiSelect({
             <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent id={listboxId} className="w-full p-0" align="start">
+        <PopoverContent
+          id={listboxId}
+          className="w-(--radix-popper-anchor-width) p-0"
+          align="start"
+        >
           <OptionsCommand options={options} selected={selected} onSelect={handleSelect} />
         </PopoverContent>
       </Popover>
