@@ -57,6 +57,17 @@ export const formatTimeString = (hours: number, minutes: number, use24Hour = fal
   return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
 };
 
+// Built once: constructing an Intl.DateTimeFormat is slow and this runs for
+// every match on the schedule. It reads the viewer's clock. Matching on Intl's
+// own 12-hour text breaks in locales that write 'p. m.' or use non-Latin
+// digits, so the slot label is rebuilt from numeric parts instead.
+const SLOT_CLOCK_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: false,
+  numberingSystem: 'latn',
+});
+
 /**
  * Extract a standardized time slot from a UTC date
  * Useful for grouping matches by time slot
@@ -66,15 +77,8 @@ export const extractTimeSlotFromUTC = (date: Date | string): string => {
     // Convert to Date object if string is passed
     const dateObj = typeof date === 'string' ? new Date(date) : date;
 
-    // Read hours/minutes from formatToParts in the viewer's clock. Matching on
-    // Intl's own 12-hour text breaks in locales that write 'p. m.' or use
-    // non-Latin digits, so the slot label is rebuilt from the numbers instead.
-    const parts = new Intl.DateTimeFormat(undefined, {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: false,
-      numberingSystem: 'latn',
-    }).formatToParts(dateObj);
+    // Read hours/minutes from formatToParts, not from Intl's localized text.
+    const parts = SLOT_CLOCK_FORMATTER.formatToParts(dateObj);
 
     const read = (type: string): number =>
       Number(parts.find((part) => part.type === type)?.value ?? NaN);

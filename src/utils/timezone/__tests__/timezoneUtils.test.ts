@@ -62,17 +62,12 @@ describe('timezone utilities', () => {
     });
   });
 
-  const mockClockParts = (hour: string | null, minute: string, text = 'unused'): void => {
-    vi.spyOn(Intl, 'DateTimeFormat').mockImplementation(function () {
-      return {
-        ...buildDateTimeFormatResult(text),
-        formatToParts: () => [
-          ...(hour === null ? [] : [{ type: 'hour', value: hour }]),
-          { type: 'literal', value: ':' },
-          { type: 'minute', value: minute },
-        ],
-      } as unknown as Intl.DateTimeFormat;
-    } as unknown as typeof Intl.DateTimeFormat);
+  const mockClockParts = (hour: string | null, minute: string): void => {
+    vi.spyOn(Intl.DateTimeFormat.prototype, 'formatToParts').mockReturnValue([
+      ...(hour === null ? [] : [{ type: 'hour' as const, value: hour }]),
+      { type: 'literal' as const, value: ':' },
+      { type: 'minute' as const, value: minute },
+    ]);
   };
 
   it('extractTimeSlotFromUTC returns exact slots', () => {
@@ -102,7 +97,7 @@ describe('timezone utilities', () => {
   });
 
   it('extractTimeSlotFromUTC ignores locale-specific day-period text', () => {
-    mockClockParts('19', '30', '午後7:30');
+    mockClockParts('19', '30');
 
     expect(extractTimeSlotFromUTC(new Date('2026-03-01T00:00:00.000Z'))).toBe('7:30 PM');
   });
