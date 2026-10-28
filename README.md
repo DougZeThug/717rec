@@ -81,7 +81,7 @@ Four GitHub Actions workflows live in `.github/workflows/`:
 
 ### Bundle-size budgets
 
-`.size-limit.json` holds two, both enforced by the `build-size` job:
+`.size-limit.json` holds three, all enforced by the `build-size` job:
 
 - **Main entry (index)** — 155 KB gzipped. This guards the entry chunk's own
   code, the part visitors download first. It is not the whole first paint: the
@@ -93,11 +93,15 @@ Four GitHub Actions workflows live in `.github/workflows/`:
   its own `vendor-html-to-image` code-splitting group. `canvas-confetti`
   (`vendor-canvas-confetti`) and Howler, the audio engine behind `use-sound`
   (`vendor-howler`), are named the same way.
-- **All JS chunks** — 1250 KB gzipped. This counts _every_ chunk, including
-  admin-only lazy ones no visitor ever downloads, so it grows whenever the admin
-  console does. Raised from 1200 KB when the Weekly Content Pack landed (an
-  admin section, a public recap page and `html-to-image`, ~23 KB gzipped, none
-  of it on the first-paint path).
+- **All JS chunks** — 1250 KB gzipped. This counts _every_ chunk except the
+  lazy Excel export, including admin-only lazy ones no visitor ever downloads,
+  so it grows whenever the admin console does. Raised from 1200 KB when the
+  Weekly Content Pack landed (an admin section, a public recap page and
+  `html-to-image`, ~23 KB gzipped, none of it on the first-paint path).
+- **Excel export chunk** — 290 KB gzipped. The lazy `vendor-exceljs-*` chunk
+  that loads on demand when an admin clicks Export in the matchup exporter;
+  budgeted on its own so the admin-only exceljs dependency does not count
+  against the rest.
 
 Lighthouse assertions (`lighthouserc.json`) are error-level and fail the
 `browser` job when breached: performance ≥ 0.25, accessibility ≥ 0.90,
