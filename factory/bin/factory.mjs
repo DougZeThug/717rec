@@ -27,8 +27,9 @@ const all = () => (existsSync(tasksDir) ? readdirSync(tasksDir).filter((f) => f.
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24);
 
 const runIntegrity = () => {
-  const base = git(['rev-parse', '--verify', `origin/${cfg.baseBranch}`], root) ? `origin/${cfg.baseBranch}` : cfg.baseBranch;
-  const diff = git(['diff', `${base}...HEAD`], root) + '\n' + git(['diff', 'HEAD'], root);
+  // A task scans only its own changes: `check` passes the commit the task started from.
+  const base = process.env.FACTORY_TASK_BASE || (git(['rev-parse', '--verify', `origin/${cfg.baseBranch}`], root) ? `origin/${cfg.baseBranch}` : cfg.baseBranch);
+  const diff = git(['diff', `${base}...HEAD`, '--', '.', ':!.factory'], root) + '\n' + git(['diff', 'HEAD', '--', '.', ':!.factory'], root);
   const findings = scanDiff(diff);
   console.log(findings.length ? findings.join('\n') : 'integrity: no weakened tests or suppressed checks found');
   return findings.length ? 1 : 0;
@@ -85,7 +86,7 @@ const sub = {
     if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks or pass: -- <cmd>`);
     mkdirSync(join(evDir, id), { recursive: true });
     const started = Date.now();
-    const r = spawnSync(cmd, { shell: true, cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    const r = spawnSync(cmd, { shell: true, cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, FACTORY_TASK_BASE: t.baseSha || '' } });
     const log = join('.factory', 'evidence', id, `${name}.log`);
     writeFileSync(join(root, log), `$ ${cmd}\n${r.stdout ?? ''}\n${r.stderr ?? ''}\nexit ${r.status}\n`);
     t.checks[name] = { result: r.status === 0 ? 'pass' : 'fail', exit: r.status, sha: head(), dirty: dirty(), at: now(), seconds: Math.round((Date.now() - started) / 1000), cmd, log };

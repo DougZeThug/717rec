@@ -11,19 +11,23 @@
   "criteria": [
     {
       "text": "Strings starting with = + - @ tab or CR come back with a leading apostrophe",
-      "done": false
+      "done": true,
+      "evidence": "Test cases at spreadsheetSafe.test.ts:7-12 cover all six prefixes; unit passed; per-prefix mutation script caught each"
     },
     {
       "text": "Safe strings (Team A, empty, a=b, leading space) are unchanged",
-      "done": false
+      "done": true,
+      "evidence": "Test line 17 covers Team A, empty, a=b, ' =x'; unit passed"
     },
     {
       "text": "Numbers (-5, 0, 3.14) come back unchanged as numbers",
-      "done": false
+      "done": true,
+      "evidence": "Test line 21-25 covers -5, 0, 3.14 with typeof number; unit passed"
     },
     {
       "text": "Already-prefixed string is unchanged (pins current behavior)",
-      "done": false
+      "done": true,
+      "evidence": "Test line 27-29 pins \"'=x\" unchanged; unit passed"
     },
     {
       "text": "New test file passes; typecheck, lint, unit gates pass on the final commit",
@@ -40,6 +44,36 @@
       "seconds": 20,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7a2420763d0c755dc71df4c2aec37d3fe83fe99c",
+      "dirty": false,
+      "at": "2026-10-30T19:11:30.085Z",
+      "seconds": 111,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/lint.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7a2420763d0c755dc71df4c2aec37d3fe83fe99c",
+      "dirty": false,
+      "at": "2026-10-30T19:22:01.097Z",
+      "seconds": 625,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/unit.log"
+    },
+    "integrity": {
+      "result": "fail",
+      "exit": 1,
+      "sha": "7a2420763d0c755dc71df4c2aec37d3fe83fe99c",
+      "dirty": false,
+      "at": "2026-10-30T19:22:05.887Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/integrity.log"
     }
   },
   "reviews": [],
@@ -47,5 +81,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-10-30T19:09:38.581Z"
+  "updatedAt": "2026-10-30T19:22:16.167Z"
 }

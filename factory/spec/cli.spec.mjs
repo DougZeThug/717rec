@@ -60,6 +60,16 @@ test('committing only task records does not make evidence stale', () => {
   git('add', '-A'); git('commit', '-qm', 'only factory files');
   assert.doesNotMatch(f('gate', id).stdout, /stale/);
 });
+test('integrity scans only the task own changes, and catches a skipped test', () => {
+  const id = f('status').stdout.match(/T-\d+-first-thing/)[0];
+  const integrity = 'node ' + cli + ' integrity';
+  writeFileSync(join(repo, 'old.test.js'), 'it.skip("x", () => {})\n'); git('add', '-A'); git('commit', '-qm', 'pre-existing skip');
+  const t = JSON.parse(execFileSync('node', [cli, 'show', id], { cwd: repo, encoding: 'utf8' }));
+  assert.equal(f('check', id, 'integrity', '--', integrity).status, 1, 'baseSha predates the skip, so it is found');
+  f('set', id, 'baseSha', git('rev-parse', 'HEAD').trim());
+  assert.equal(f('check', id, 'integrity', '--', integrity).status, 0, 'a skip from before the task is not blamed on it');
+  assert.ok(t.baseSha);
+});
 test('a failing check is recorded as failing', () => {
   const id = f('status').stdout.match(/T-\d+-first-thing/)[0];
   assert.equal(f('check', id, 'bad').status, 1);
