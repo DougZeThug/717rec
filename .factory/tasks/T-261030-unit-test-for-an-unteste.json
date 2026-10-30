@@ -39,9 +39,9 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
+      "sha": "3e7bdd2ae80e44f6827a9ac3bfd6cb2ef3179877",
       "dirty": false,
-      "at": "2026-10-30T19:38:13.671Z",
+      "at": "2026-10-30T20:55:43.908Z",
       "seconds": 17,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/typecheck.log"
@@ -69,9 +69,9 @@
     "integrity": {
       "result": "fail",
       "exit": 1,
-      "sha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
+      "sha": "3e7bdd2ae80e44f6827a9ac3bfd6cb2ef3179877",
       "dirty": false,
-      "at": "2026-10-30T19:37:56.410Z",
+      "at": "2026-10-30T20:55:26.552Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/integrity.log"
@@ -103,7 +103,7 @@
       "at": "2026-10-30T19:35:53.577Z"
     }
   ],
-  "updatedAt": "2026-10-30T19:51:09.443Z",
+  "updatedAt": "2026-10-30T20:55:43.909Z",
   "readySha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
   "readyAt": "2026-10-30T19:51:09.443Z"
 }
