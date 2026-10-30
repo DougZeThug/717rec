@@ -1,0 +1,19 @@
+{
+  "id": "T-261030-unit-test-for-an-unteste",
+  "title": "Unit test for an untested util",
+  "kind": "build",
+  "status": "intake",
+  "request": "Find one small pure utility in src/utils that has no unit test and add a focused unit test. Test-only. No product code changes.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "578afc93752d55eebc4bf7b90df77070f9a444a2",
+  "createdAt": "2026-10-30T19:05:33.432Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-10-30T19:05:47.395Z"
+}
