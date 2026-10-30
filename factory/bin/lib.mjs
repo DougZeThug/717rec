@@ -46,19 +46,20 @@ export const currentBranch = (cwd) => git(['rev-parse', '--abbrev-ref', 'HEAD'],
 
 // Turn a glob-ish path rule into a RegExp. "dir/" matches everything below it,
 // "*" matches within one path segment, "**" crosses segments.
+const esc = (text) => text.replace(/[.+^${}()|[\]\\*?]/g, '\\$&');
 export const pathRule = (rule) => {
   if (rule.endsWith('/')) return new RegExp(`(^|/)${esc(rule)}`);
   const body = esc(rule).replace(/\\\*\\\*/g, '.*').replace(/\\\*/g, '[^/]*');
   return new RegExp(`(^|/)${body}$`);
 };
-const esc = (s) => s.replace(/[.+^${}()|[\]\\*?]/g, '\\$&');
-export const matchesAny = (path, rules) => rules.some((r) => pathRule(r).test(path));
+export const matchesAny = (path, rules) => rules.some((rule) => pathRule(rule).test(path));
 
 // ---- integrity scan: catches "made the test pass by weakening it" ----
 const SUSPECT = /(\.skip\(|\bxit\(|\bxdescribe\(|\.todo\(|\.only\(|eslint-disable|@ts-ignore|@ts-expect-error|@ts-nocheck)/;
 export const scanDiff = (diff) => {
   const findings = [];
   let fileName = '';
+  let oldName = '';
   let removedAsserts = 0;
   let addedAsserts = 0;
   const flushAsserts = () => {
@@ -67,7 +68,8 @@ export const scanDiff = (diff) => {
     removedAsserts = addedAsserts = 0;
   };
   for (const line of diff.split('\n')) {
-    if (line.startsWith('+++ ')) { flushAsserts(); fileName = line.slice(6); continue; }
+    if (line.startsWith('--- ')) { oldName = line.slice(6); continue; }
+    if (line.startsWith('+++ ')) { flushAsserts(); fileName = line === '+++ /dev/null' ? oldName : line.slice(6); continue; }
     if (line.startsWith('+') && SUSPECT.test(line)) findings.push(`${fileName}: added "${line.slice(1).trim().slice(0, 80)}"`);
     if (line.startsWith('-') && !line.startsWith('---') && /\b(expect|assert)\w*\(/.test(line)) removedAsserts++;
     if (line.startsWith('+') && !line.startsWith('+++') && /\b(expect|assert)\w*\(/.test(line)) addedAsserts++;
@@ -76,3 +78,12 @@ export const scanDiff = (diff) => {
   return findings;
 };
 
+
+// Thrown by CLI commands to end with an exit code. The entry point turns it into process.exitCode.
+export class FactoryExit extends Error {
+  constructor(code, message = '') {
+    super(message);
+    this.name = 'FactoryExit';
+    this.code = code;
+  }
+}
