@@ -39,39 +39,39 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "eb1274c3d6d635fe35715b2bc7ecc4eef6d9aa0d",
+      "sha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
       "dirty": false,
-      "at": "2026-10-30T19:23:27.671Z",
-      "seconds": 16,
+      "at": "2026-10-30T19:38:13.671Z",
+      "seconds": 17,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "eb1274c3d6d635fe35715b2bc7ecc4eef6d9aa0d",
+      "sha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
       "dirty": false,
-      "at": "2026-10-30T19:25:29.964Z",
-      "seconds": 122,
+      "at": "2026-10-30T19:40:08.075Z",
+      "seconds": 114,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/lint.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "eb1274c3d6d635fe35715b2bc7ecc4eef6d9aa0d",
+      "sha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
       "dirty": false,
-      "at": "2026-10-30T19:35:38.332Z",
-      "seconds": 608,
+      "at": "2026-10-30T19:50:19.607Z",
+      "seconds": 611,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/unit.log"
     },
     "integrity": {
       "result": "fail",
       "exit": 1,
-      "sha": "eb1274c3d6d635fe35715b2bc7ecc4eef6d9aa0d",
+      "sha": "4a395a24bee6ad8d3ed797b5e8f43a3aaf3f4e30",
       "dirty": false,
-      "at": "2026-10-30T19:23:11.379Z",
+      "at": "2026-10-30T19:37:56.410Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/integrity.log"
@@ -96,7 +96,7 @@
       "at": "2026-10-30T19:35:53.577Z"
     }
   ],
-  "updatedAt": "2026-10-30T19:35:54.158Z",
+  "updatedAt": "2026-10-30T19:50:19.607Z",
   "readySha": "eb1274c3d6d635fe35715b2bc7ecc4eef6d9aa0d",
   "readyAt": "2026-10-30T19:35:54.158Z"
 }
