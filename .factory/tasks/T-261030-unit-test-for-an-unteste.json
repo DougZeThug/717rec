@@ -2,18 +2,39 @@
   "id": "T-261030-unit-test-for-an-unteste",
   "title": "Unit test for an untested util",
   "kind": "build",
-  "status": "intake",
+  "status": "building",
   "request": "Find one small pure utility in src/utils that has no unit test and add a focused unit test. Test-only. No product code changes.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "578afc93752d55eebc4bf7b90df77070f9a444a2",
   "createdAt": "2026-10-30T19:05:33.432Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Strings starting with = + - @ tab or CR come back with a leading apostrophe",
+      "done": false
+    },
+    {
+      "text": "Safe strings (Team A, empty, a=b, leading space) are unchanged",
+      "done": false
+    },
+    {
+      "text": "Numbers (-5, 0, 3.14) come back unchanged as numbers",
+      "done": false
+    },
+    {
+      "text": "Already-prefixed string is unchanged (pins current behavior)",
+      "done": false
+    },
+    {
+      "text": "New test file passes; typecheck, lint, unit gates pass on the final commit",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-10-30T19:05:47.395Z"
+  "updatedAt": "2026-10-30T19:06:05.465Z"
 }
