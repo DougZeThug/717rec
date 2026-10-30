@@ -39,3 +39,6 @@ coverage
 # Playwright artifacts
 playwright-report/
 test-results/
+
+# Factory: evidence logs and screenshots stay local; task records and the ledger are committed
+.factory/evidence/

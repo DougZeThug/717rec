@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)", "Bash(npm test*)", "Bash(npm ci*)", "Bash(npm outdated*)", "Bash(npm audit*)", "Bash(npx vitest *)", "Bash(npx playwright *)", "Bash(npx tsc *)", "Bash(npx eslint *)",
+      "Bash(node factory/*)", "Bash(node tools/*)",
+      "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(git branch*)", "Bash(git checkout*)", "Bash(git switch*)", "Bash(git add*)", "Bash(git commit*)", "Bash(git stash*)", "Bash(git fetch*)", "Bash(git worktree*)", "Bash(git push*)",
+      "Bash(ls*)", "Bash(cat *)", "Bash(grep *)", "Bash(curl -s*127.0.0.1*)", "Bash(curl -s*localhost*)"
+    ],
+    "ask": [
+      "Edit(.claude/settings.json)", "Edit(.claude/settings.local.json)", "Edit(.factory/config.json)", "Edit(factory/hooks/**)", "Write(.claude/settings.json)", "Write(.factory/config.json)", "Write(factory/hooks/**)"
+    ],
+    "deny": [
+      "Read(./.env)", "Read(./.env.*)", "Edit(./.env)", "Edit(./.env.*)", "Write(./.env)", "Write(./.env.*)",
+      "Bash(gh pr merge*)", "Bash(git push --force *)", "Bash(git push -f *)", "Bash(git push origin main*)", "Bash(git push origin master*)",
+      "Bash(supabase db push*)", "Bash(supabase migration up*)", "Bash(supabase functions deploy*)", "Bash(wrangler deploy*)", "Bash(npm publish*)",
+      "mcp__github__merge_pull_request", "mcp__github__delete_file", "mcp__github__enable_pr_auto_merge",
+      "mcp__Supabase__apply_migration", "mcp__Supabase__execute_sql", "mcp__Supabase__merge_branch", "mcp__Supabase__reset_branch", "mcp__Supabase__delete_branch", "mcp__Supabase__create_edge_function_secret", "mcp__Supabase__deploy_edge_function", "mcp__Supabase__pause_project", "mcp__Supabase__restore_project",
+      "mcp__Vercel__create_deployment", "mcp__Vercel__request_promote", "mcp__Vercel__request_rollback", "mcp__Vercel__assign_alias", "mcp__Vercel__create_project_env", "mcp__Vercel__edit_project_env",
+      "mcp__Lovable__deploy_project", "mcp__Lovable__send_message"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|NotebookEdit",
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/factory/hooks/guard.mjs\"", "timeout": 20, "onFailure": "block" }]
+      }
+    ],
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/factory/hooks/session-start.mjs\"", "timeout": 10 }] }
+    ]
+  }
+}

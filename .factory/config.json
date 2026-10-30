@@ -1,0 +1,36 @@
+{
+  "project": "717rec",
+  "baseBranch": "main",
+  "protectedBranches": ["main", "master"],
+  "protectedPaths": [".env", ".env.*", "src/integrations/supabase/types.ts", "public/", "bun.lock"],
+  "appendOnlyPaths": ["supabase/migrations/"],
+  "controlPlanePaths": [".claude/settings.json", ".claude/settings.local.json", ".factory/config.json", "factory/hooks/", ".github/workflows/"],
+  "blockedCommands": [
+    { "pattern": "supabase\\.co/(rest|auth|storage)/v1", "reason": "Never call the live Supabase API from the shell. Use mocks." }
+  ],
+  "limits": { "repairAttemptsPerIssue": 3, "concurrentFeatures": 1 },
+  "verify": {
+    "required": ["typecheck", "lint", "unit"],
+    "checks": {
+      "typecheck": "npm run typecheck",
+      "lint": "npm run lint",
+      "unit": "npm run test:coverage",
+      "build": "npm run build",
+      "knip": "npm run knip",
+      "e2e": "npm run e2e",
+      "integrity": "node factory/bin/factory.mjs integrity"
+    }
+  },
+  "preview": {
+    "command": "npm run dev -- --host 127.0.0.1",
+    "url": "http://127.0.0.1:8080",
+    "blockedHosts": ["supabase.co", "supabase.com"],
+    "routes": ["/", "/standings", "/schedule"]
+  },
+  "specialists": ["competition-scoring", "supabase-data", "security-reliability", "frontend-mobile-ux", "product-league-operations", "skeptic"],
+  "projectContext": ["CLAUDE.md", "docs/agents/LEAGUE_CONTEXT.md"],
+  "productionBoundaries": [
+    "Never edit or delete live league data. Never run production migrations (hand-apply only: docs/OPERATIONS.md section 6).",
+    "Never change scoring or ranking meaning without Doug's answer."
+  ]
+}
