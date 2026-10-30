@@ -21,6 +21,15 @@ Run every other command with npm.
 - **Always talk to me like I have ADHD** — give the answer first, keep it short,
   use bullets, make the key point bold, no walls of text.
 
+## Software factory
+
+Doug types `/factory-build`, `/factory-fix`, `/factory-polish`, `/factory-review`,
+`/factory-status` or `/factory-maintain`. The playbook is `factory/PIPELINE.md`.
+Guide: `factory/README.md`. Project settings: `.factory/config.json`.
+The factory never merges, deploys or touches live data. Hooks and permission
+rules in `.claude/settings.json` enforce this. Do not edit them without Doug.
+It sits beside the specialist team below and reuses it.
+
 ## Specialist agent team
 
 The main session is the **Lead Product Engineer**. It does not guess. It sends

@@ -88,6 +88,15 @@ Edit agents in `.claude/agents/*.md`. Then run `node tools/sync-codex-agents.mjs
 to rebuild the generated Codex copies in `.codex/agents/`. `AGENTS.md` repeats
 the short form of this workflow for Codex; keep the two in step.
 
+## Software factory
+
+Doug types `/factory-build`, `/factory-fix`, `/factory-polish`, `/factory-review`,
+`/factory-status` or `/factory-maintain`. The playbook is `factory/PIPELINE.md`.
+Guide: `factory/README.md`. Project settings: `.factory/config.json`.
+The factory never merges, deploys or touches live data. Hooks and permission
+rules in `.claude/settings.json` enforce this. Do not edit them without Doug.
+It sits beside the specialist team below and reuses it.
+
 ## Architecture Rules
 
 - **Separation of concerns**: All Supabase calls go through `src/services/` — hooks and components must **never** import the Supabase client directly
