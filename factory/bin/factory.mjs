@@ -16,7 +16,8 @@ const ACTIVE = ['intake', 'planned', 'building', 'verifying', 'reviewing', 'repa
 const BUILD_KINDS = ['build', 'polish'];
 const now = () => new Date().toISOString();
 const die = (msg, code = 1) => (console.error(msg), process.exit(code));
-const head = () => git(['rev-parse', 'HEAD'], root);
+// Evidence is tied to the last commit that changed real code. Commits that only touch .factory/ (task records) do not make evidence stale.
+const head = () => git(['log', '-1', '--format=%H', '--', '.', ':!.factory'], root) || git(['rev-parse', 'HEAD'], root);
 const dirty = () => git(['status', '--porcelain', '--', '.', ':!.factory'], root) !== '';
 
 const file = (id) => join(tasksDir, `${id}.json`);

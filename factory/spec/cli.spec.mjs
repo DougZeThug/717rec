@@ -48,6 +48,18 @@ test('gate refuses without evidence, passes with fresh evidence and review', () 
   assert.equal(stale.status, 1);
   assert.match(stale.stdout, /stale/);
 });
+test('committing only task records does not make evidence stale', () => {
+  const id = f('status').stdout.match(/T-\d+-first-thing/)[0];
+  git('add', '-A'); git('commit', '-qm', 'task state');
+  assert.equal(f('check', id, 'unit').status, 0);
+  f('check', id, 'integrity', '--', 'node -e "0"');
+  f('review', id, 'code', 'APPROVE', 'ok');
+  git('commit', '-q', '--allow-empty', '-m', 'noop');
+  mkdirSync(join(repo, '.factory'), { recursive: true });
+  writeFileSync(join(repo, '.factory', 'note.txt'), 'x');
+  git('add', '-A'); git('commit', '-qm', 'only factory files');
+  assert.doesNotMatch(f('gate', id).stdout, /stale/);
+});
 test('a failing check is recorded as failing', () => {
   const id = f('status').stdout.match(/T-\d+-first-thing/)[0];
   assert.equal(f('check', id, 'bad').status, 1);
