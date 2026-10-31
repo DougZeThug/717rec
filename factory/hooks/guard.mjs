@@ -71,13 +71,14 @@ const checkStagedSecrets = (cmd, toolInput) => {
 
 const decideBash = (toolInput, cfg, branch) => {
   const raw = String(toolInput.command ?? '');
-  // Heredoc bodies are file content, not commands. Quoted text is still scanned: `bash -c "..."` runs it.
-  const cmd = raw.replace(HEREDOC, '');
-  return checkBlockedCommands(cmd, cfg)
-    ?? checkPush(cmd, cfg, branch)
-    ?? checkCommit(cmd, cfg, branch)
-    ?? checkProtectedTargets(cmd, cfg)
-    ?? checkStagedSecrets(cmd, toolInput);
+  // The block lists scan the RAW command: `bash <<EOF` and `bash -c "..."` run their text.
+  // Only the protected-path scan skips heredoc bodies and quotes, because a file body that
+  // merely mentions "rm public/" is data, not a delete.
+  return checkBlockedCommands(raw, cfg)
+    ?? checkPush(raw, cfg, branch)
+    ?? checkCommit(raw, cfg, branch)
+    ?? checkProtectedTargets(raw, cfg)
+    ?? checkStagedSecrets(raw, toolInput);
 };
 
 const decideEdit = (toolInput, cfg) => {
