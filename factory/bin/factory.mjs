@@ -17,10 +17,10 @@ const now = () => new Date().toISOString();
 const die = (msg, code = 1) => {
   throw new FactoryExit(code, msg);
 };
-// Evidence is tied to the last commit that changed real code. Commits that only touch .factory/ (task records) do not make evidence stale.
-const head = () => git(['log', '-1', '--format=%H', '--', '.', ...BOOKKEEPING], root) || git(['rev-parse', 'HEAD'], root);
 // Task records, evidence and metrics are bookkeeping. .factory/config.json is NOT: it defines the checks.
 const BOOKKEEPING = [':!.factory/tasks', ':!.factory/evidence', ':!.factory/ledger.jsonl'];
+// Evidence is tied to the last commit that changed real code. Commits that only touch bookkeeping do not make evidence stale.
+const head = () => git(['log', '-1', '--format=%H', '--', '.', ...BOOKKEEPING], root) || git(['rev-parse', 'HEAD'], root);
 const dirty = () => git(['status', '--porcelain', '--', '.', ...BOOKKEEPING], root) !== '';
 
 const file = (id) => join(tasksDir, `${id}.json`);

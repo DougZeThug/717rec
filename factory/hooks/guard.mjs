@@ -21,7 +21,8 @@ const BUILTIN_BLOCKED = [
   [/\bgit\s+push\b[^\n;&|]*\s--(all|mirror|prune)\b/, 'Bulk pushes (--all, --mirror, --prune) can reach protected branches. Push one named branch.'],
 ];
 
-const HEREDOC = /<<-?\s*['"]?(\w+)['"]?[^\n]*\n[\s\S]*?\n\s*\1\b/g;
+// Matches a heredoc. Group 1 is the opener line (redirects there are real); the body after it is data.
+const HEREDOC = /(<<-?\s*['"]?(\w+)['"]?[^\n]*)\n[\s\S]*?\n\s*\2\b/g;
 
 const checkPush = (cmd, cfg, branch) => {
   const push = cmd.match(/git\s+push\b([^\n;&|]*)/);
@@ -51,7 +52,7 @@ const protectedTarget = (segment, cfg) => {
 
 const checkProtectedTargets = (cmd, cfg) => {
   // Look only at real command words: drop heredoc bodies and quoted text first.
-  const code = cmd.replace(HEREDOC, '').replace(/"[^"]*"|'[^']*'/g, '""');
+  const code = cmd.replace(HEREDOC, '$1').replace(/"[^"]*"|'[^']*'/g, '""');
   for (const segment of code.split(/&&|\|\||[;|\n]/)) {
     const hit = protectedTarget(segment, cfg);
     if (hit) return { block: `"${hit}" is protected (artwork, secrets or history). Ask the human.` };

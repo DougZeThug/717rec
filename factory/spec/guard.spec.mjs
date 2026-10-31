@@ -29,6 +29,10 @@ test('a blocked command cannot hide next to or inside a heredoc', () => {
   assert.ok(bash('bash <<EOF\ngh pr merge 5\nEOF')?.block);
   assert.ok(bash('cat <<EOF\nx\nEOF\ngit push origin main')?.block);
 });
+test('a write into a protected path on the heredoc opener line is blocked', () => {
+  assert.ok(bash('cat <<EOF > public/a.txt\nhello\nEOF')?.block);
+  assert.equal(bash('cat <<EOF > notes.txt\nrm public/a.txt\nEOF'), null);
+});
 test('blocks deleting protected assets', () => {
   assert.ok(bash('rm -rf public/images')?.block);
   assert.ok(bash('git rm supabase/migrations/2026_a.sql')?.block);
