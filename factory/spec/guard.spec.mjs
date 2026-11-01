@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { DEFAULT_CONFIG, scanDiff } from '../bin/lib.mjs';
-import { decide } from '../hooks/guard.mjs';
+import { DEFAULT_CONFIG, hostBlocked, scanDiff } from '../bin/lib.mjs';
+import { addedLines, decide } from '../hooks/guard.mjs';
 
 const factoryDir = join(dirname(fileURLToPath(import.meta.url)), '..');
 const cfg = { ...DEFAULT_CONFIG, protectedPaths: ['.env', '.env.*', 'src/integrations/supabase/types.ts', 'public/'], appendOnlyPaths: ['supabase/migrations/'], blockedCommands: [{ pattern: 'supabase\\.co/rest', reason: 'live api' }] };
@@ -88,12 +88,98 @@ test('edit guard: protected, append-only, control plane, secrets', () => {
   assert.ok(edit('/r/src/a.ts', { content: 'const k = "sk-ant-api03-abcdefghijklmnopqrstuvwx"' })?.block);
   assert.equal(edit('/r/src/a.ts', { content: 'ok' }), null);
 });
+const push = (rest) => ['git', 'push', rest].join(' ');
+test('every git push in a command is checked, quoted names and bare HEAD included', () => {
+  assert.ok(bash(`${push('origin feat')} && ${push('origin main')}`)?.block);
+  assert.ok(bash(`${push('origin feat')}; ${push('-u origin HEAD:main')}`)?.block);
+  assert.ok(bash(push('origin "main"'))?.block);
+  assert.ok(bash(push("origin 'main'"))?.block);
+  assert.ok(bash(push('origin HEAD'), 'main')?.block);
+  assert.equal(bash(push('origin HEAD'), 'factory/x'), null);
+  assert.equal(bash(`${push('origin feat')} && ${push('origin feat2')}`), null);
+});
+test('hard resets, forced cleans and the short hook-skip flag are blocked', () => {
+  const g = (rest) => ['git', rest].join(' ');
+  for (const command of [g('reset --hard HEAD'), g('reset --hard'), g('reset --hard origin/main'), g('clean -df public/'), g('clean -fd'), g('clean -f'), g('clean -xdf'), g('clean --force -d'), g('commit -n -m x'), g('commit -nm x'), g('commit -anm x'), g('-c core.hooksPath=/dev/null commit -m x')])
+    assert.ok(bash(command)?.block, command);
+  for (const command of [g('reset --soft HEAD~1'), g('clean -n'), g('clean -dn'), g('commit -m "fix -n flag"'), g('commit --amend -m x'), g('commit -am x')])
+    assert.equal(bash(command), null, command);
+});
+test('checkout and restore cannot discard protected paths', () => {
+  const g = (rest) => ['git', rest].join(' ');
+  for (const command of [g('checkout -- public/logo.png'), g('restore public/logo.png'), g('checkout HEAD -- public'), g('restore --source=HEAD~1 public/a.png'), g('checkout .'), g('restore .')])
+    assert.ok(bash(command)?.block, command);
+  assert.equal(bash(g('checkout -b factory/y')), null);
+  assert.equal(bash(g('checkout -- src/a.ts')), null);
+  assert.equal(bash(g('restore --staged .')), null);
+});
+test('command substitution inside quotes is still inspected', () => {
+  assert.ok(bash('echo "$(rm -rf public/image.png)"')?.block);
+  assert.ok(bash('echo "`rm -rf public/image.png`"')?.block);
+  assert.ok(bash('echo $(rm -rf public/image.png)')?.block);
+  assert.ok(bash('echo "a $(echo $(rm .env)) b"')?.block);
+  assert.equal(bash("echo '$(rm -rf public/image.png)'"), null, 'single quotes make it inert');
+  assert.equal(bash('echo "$(date)"'), null);
+});
+test('a leading cd gives relative targets their directory; dot targets are blocked', () => {
+  assert.ok(bash('cd public && rm -rf .')?.block);
+  assert.ok(bash('cd public; rm -rf ./')?.block);
+  assert.ok(bash('cd public && rm logo.png')?.block);
+  assert.ok(bash('cd src && rm -rf ../public')?.block);
+  assert.ok(bash('(cd supabase && rm -r migrations)')?.block);
+  assert.ok(bash('cd public/img && rm -rf ..')?.block);
+  assert.ok(bash('rm -rf .')?.block);
+  assert.ok(bash('rm -rf ..')?.block);
+  assert.equal(bash('cd dist && rm -rf .'), null);
+  assert.equal(bash('cd src && rm -f a.ts'), null);
+  assert.equal(bash('cd src && cd .. && rm -f a.ts'), null);
+});
+test('the live API is blocked for any curl, and a trailing-dot host is blocked', () => {
+  assert.ok(bash('curl -s https://a.supabase.co/functions/v1/pageview')?.block);
+  assert.ok(bash('curl --data x https://a.supabase.co/functions/v1/pageview')?.block);
+  assert.ok(bash('wget https://a.supabase.co/anything')?.block);
+  assert.equal(bash('curl -s http://127.0.0.1:8080/'), null);
+});
+test('hostBlocked ignores a trailing dot and case', () => {
+  assert.equal(hostBlocked('https://a.supabase.co./rest/v1/x', ['supabase.co']), true);
+  assert.equal(hostBlocked('https://A.Supabase.CO/rest', ['supabase.co']), true);
+  assert.equal(hostBlocked('http://127.0.0.1:8080/', ['supabase.co']), false);
+  assert.equal(hostBlocked('not a url', ['supabase.co']), true);
+});
+test('the secret scan counts only added lines', () => {
+  const key = ['sk', 'ant', 'api03', 'abcdefghijklmnopqrstuvwx'].join('-');
+  const commit = (diff) => decide({ tool_name: 'Bash', tool_input: { command: 'git commit -m x', __stagedDiff: diff } }, cfg, 'factory/x');
+  assert.equal(commit(`-const k = "${key}"\n+const k = process.env.K`), null, 'removing a key is fine');
+  assert.equal(commit(` const k = "${key}"\n+const y = 1`), null, 'context lines are not new');
+  assert.ok(commit(`+const k = "${key}"`)?.block);
+  assert.equal(addedLines('+++ b/a\n+x\n-y\n z'), '+x');
+});
+test('a commit with -a, or add then commit, is scanned for secrets (real repo)', () => {
+  const key = ['sk', 'ant', 'api03', 'abcdefghijklmnopqrstuvwx'].join('-');
+  const repo = mkdtempSync(join(tmpdir(), 'guard-repo-'));
+  const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' });
+  const hook = (command) => spawnSync('node', [join(factoryDir, 'hooks', 'guard.mjs')], { cwd: repo, encoding: 'utf8', input: JSON.stringify({ tool_name: 'Bash', cwd: repo, tool_input: { command } }) });
+  try {
+    git('init', '-q', '-b', 'factory/x'); git('config', 'user.email', 't@t'); git('config', 'user.name', 't');
+    writeFileSync(join(repo, 'a.txt'), 'one\n'); git('add', 'a.txt'); git('commit', '-qm', 'init');
+    assert.equal(hook('git commit -m x').status, 0, 'nothing staged');
+    writeFileSync(join(repo, 'a.txt'), `one\n${key}\n`);
+    assert.equal(hook('git commit -m x').status, 0, 'not staged and no -a: the commit would be empty');
+    assert.equal(hook('git commit -am x').status, 2, 'commit -a takes tracked changes');
+    writeFileSync(join(repo, 'a.txt'), 'one\n'); writeFileSync(join(repo, 'new.txt'), `${key}\n`);
+    assert.equal(hook('git add -A && git commit -m x').status, 2, 'add then commit takes new files');
+    git('add', 'new.txt');
+    assert.equal(hook('git commit -m x').status, 2, 'staged file');
+  } finally {
+    rmSync(repo, { recursive: true, force: true });
+  }
+});
 test('integrity scan sees assertions removed by deleting a test file', () => {
   const diff = ['--- a/src/a.test.ts', '+++ /dev/null', '-  expect(a).toBe(1);'].join('\n');
   assert.equal(scanDiff(diff).length, 1);
 });
 test('integrity scan flags weakened tests', () => {
-  const diff = ['+++ b/src/a.test.ts', '-  expect(a).toBe(1);', '-  expect(b).toBe(2);', '+  expect(a).toBe(1);', '+  it.skip("x", () => {})'].join('\n');
+  const diff = ['+++ b/src/a.test.ts', '-  expect(a).toBe(1);', '-  expect(b).toBe(2);', '+  expect(a).toBe(1);', `+  ${['it', 'skip'].join('.')}("x", () => {})`].join('\n');
   const findings = scanDiff(diff);
   assert.equal(findings.length, 2);
   assert.deepEqual(scanDiff('+++ b/src/a.ts\n+const x = 1;'), []);

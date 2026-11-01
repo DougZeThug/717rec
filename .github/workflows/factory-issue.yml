@@ -4,6 +4,8 @@ name: Factory (issue to branch)
 # FACTORY_ENABLED=true and adds ONE secret (CLAUDE_CODE_OAUTH_TOKEN or
 # ANTHROPIC_API_KEY). Label an issue "factory" to start one run.
 # It prepares a branch and an open pull request. It never merges or deploys.
+# Approval: only people with triage rights can add the label, so adding it IS the approval.
+# Read the issue first. Its text is untrusted input and the run has write access.
 # NOT YET TESTED: needs the secret and the Claude GitHub App. See factory/README.md.
 
 on:
@@ -53,3 +55,10 @@ jobs:
           claude_args: |
             --max-turns 80
             --max-budget-usd 10
+      # .factory/evidence is git-ignored, so give reviewers the screenshots and check logs here.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: factory-evidence-issue-${{ github.event.issue.number }}
+          path: .factory/evidence/
+          if-no-files-found: ignore

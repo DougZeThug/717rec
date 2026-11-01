@@ -1,6 +1,6 @@
 // Screenshot a running app at phone + desktop size and report console errors.
 // Fail-closed for data safety: any request to a blocked host is answered locally
-// (GET/OPTIONS -> empty JSON, everything else -> aborted). Nothing reaches production.
+// (GET/HEAD/OPTIONS -> empty local answer, every other method -> aborted). Nothing reaches production.
 // Usage: node factory/bin/shoot.mjs --out <dir> [--url <base>] [--routes /,/x] [--mock <module.mjs>]
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';

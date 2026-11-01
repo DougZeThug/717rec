@@ -2,7 +2,7 @@
   "id": "T-261030-unit-test-for-an-unteste",
   "title": "Unit test for an untested util",
   "kind": "build",
-  "status": "ready",
+  "status": "verifying",
   "request": "Find one small pure utility in src/utils that has no unit test and add a focused unit test. Test-only. No product code changes.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -103,14 +103,6 @@
   "issues": {},
   "interventions": [],
   "notes": [],
-  "waivers": [
-    {
-      "check": "integrity",
-      "reason": "False positive: factory/spec/cli.spec.mjs holds the text it.skip( as a test fixture string. No test in src/ was skipped or weakened (checked by QA and reviewer).",
-      "at": "2026-10-30T19:35:53.577Z"
-    }
-  ],
-  "updatedAt": "2026-11-01T17:46:44.461Z",
-  "readySha": "17b42ce753b8fc6373a98c635694cb3f61e615e7",
-  "readyAt": "2026-10-31T14:44:40.598Z"
+  "waivers": [],
+  "updatedAt": "2026-11-01T17:46:44.461Z"
 }

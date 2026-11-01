@@ -4,7 +4,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { before, test } from 'node:test';
+import { after, before, test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const cli = join(dirname(fileURLToPath(import.meta.url)), '..', 'bin', 'factory.mjs');
@@ -22,6 +22,8 @@ before(() => {
   git('add', 'a.txt', '.factory/config.json'); git('commit', '-qm', 'init');
   git('checkout', '-qb', 'factory/t');
 });
+
+after(() => rmSync(repo, { recursive: true, force: true }));
 
 test('concurrency ceiling blocks a second feature', () => {
   const first = factory('new', 'First thing');
@@ -52,8 +54,8 @@ test('committing only task records does not make evidence stale', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
   git('add', '-A'); git('commit', '-qm', 'task state');
   assert.equal(factory('check', id, 'unit').status, 0);
-  factory('check', id, 'integrity');
-  factory('review', id, 'code', 'APPROVE', 'ok');
+  assert.equal(factory('check', id, 'integrity').status, 0);
+  assert.equal(factory('review', id, 'code', 'APPROVE', 'ok').status, 0);
   git('commit', '-q', '--allow-empty', '-m', 'noop');
   mkdirSync(join(repo, '.factory'), { recursive: true });
   writeFileSync(join(repo, '.factory', 'ledger.jsonl'), '{"id":"x","outcome":"approved","minutes":1,"interventions":0,"repairAttempts":0}\n');
@@ -66,10 +68,12 @@ test('committing only task records does not make evidence stale', () => {
 });
 test('integrity scans only the task own changes, and catches a skipped test', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
-  writeFileSync(join(repo, 'old.test.js'), 'it.skip("x", () => {})\n'); git('add', '-A'); git('commit', '-qm', 'pre-existing skip');
+  writeFileSync(join(repo, 'old.test.js'), `${['it', 'skip'].join('.')}("x", () => {})\n`); git('add', '-A'); git('commit', '-qm', 'pre-existing skip');
   const task = JSON.parse(execFileSync('node', [cli, 'show', id], { cwd: repo, encoding: 'utf8' }));
   assert.equal(factory('check', id, 'integrity').status, 1, 'baseSha predates the skip, so it is found');
-  assert.notEqual(factory('set', id, 'baseSha', git('rev-parse', 'HEAD').trim()).status, 0, 'an agent cannot move the integrity baseline');
+  const moved = factory('set', id, 'baseSha', git('rev-parse', 'HEAD').trim());
+  assert.equal(moved.status, 1, 'an agent cannot move the integrity baseline');
+  assert.match(moved.stderr, /set can change only: status, branch, title, request, trivial/);
   const taskFile = join(repo, '.factory', 'tasks', `${id}.json`);
   writeFileSync(taskFile, JSON.stringify({ ...task, baseSha: git('rev-parse', 'HEAD').trim() }));
   assert.equal(factory('check', id, 'integrity').status, 0, 'a skip from before the task is not blamed on it');

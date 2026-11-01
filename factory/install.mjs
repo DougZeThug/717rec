@@ -1,6 +1,7 @@
 // Install or update the factory in another repository.
 //   node factory/install.mjs /path/to/target-repo [--with-github] [--dry-run]
 // Copies only the portable kit. Never copies this project's config, agents or docs.
+import { execFileSync } from 'node:child_process';
 import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -27,31 +28,65 @@ const install = () => {
     cpSync(join(src, rel), join(target, rel), { recursive: true });
   };
 
+  // 0. Read and parse every existing JSON file first. A bad file must stop the run before anything is written.
+  const readJson = (file) => {
+    if (!existsSync(file)) return {};
+    try {
+      return JSON.parse(readFileSync(file, 'utf8'));
+    } catch (error) {
+      throw new Error(`${file} is not valid JSON (${error.message}). Fix it, then run the installer again. Nothing was written.`);
+    }
+  };
+  const pkgFile = join(target, 'package.json');
+  const setPath = join(target, '.claude/settings.json');
+  let pkg;
+  let cur;
+  try {
+    pkg = readJson(pkgFile);
+    cur = readJson(setPath);
+  } catch (error) {
+    fail(error.message);
+    return;
+  }
+  const tpl = JSON.parse(readFileSync(join(src, 'factory/settings.template.json'), 'utf8'));
+
   // 1. Portable files (the manifest).
   copy('factory');
   for (const skill of readdirSync(join(src, '.claude/skills'))) if (skill.startsWith('factory-')) copy(`.claude/skills/${skill}`);
   for (const agent of readdirSync(join(src, '.claude/agents'))) if (agent.startsWith('factory-')) copy(`.claude/agents/${agent}`);
-  if (flags.includes('--with-github')) copy('.github/workflows/factory-issue.yml');
+  if (flags.includes('--with-github')) {
+    if (existsSync(join(target, '.github/workflows/factory-issue.yml'))) log('skip .github/workflows/factory-issue.yml (already exists, not overwritten)');
+    else copy('.github/workflows/factory-issue.yml');
+  }
+
+  // The integrity check diffs against baseBranch, so it must exist in the target.
+  const detectBase = () => {
+    const tryGit = (...args) => { try { return execFileSync('git', ['-C', target, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); } catch { return ''; } };
+    const remoteHead = tryGit('symbolic-ref', '--short', 'refs/remotes/origin/HEAD').replace(/^origin\//, '');
+    const found = remoteHead || ['main', 'master', 'develop', 'trunk'].find((name) => tryGit('rev-parse', '--verify', '--quiet', `refs/heads/${name}`));
+    if (!found) console.warn('WARNING: could not detect the base branch. baseBranch is set to "main". Set it in .factory/config.json, or the integrity check will diff against a branch that does not exist.');
+    return found || 'main';
+  };
 
   // 2. Project config: created once, never overwritten.
   const cfgPath = join(target, '.factory/config.json');
   if (!existsSync(cfgPath)) {
-    const pkgFile = join(target, 'package.json');
-    const pkg = existsSync(pkgFile) ? JSON.parse(readFileSync(pkgFile, 'utf8')) : {};
     const scripts = pkg.scripts ?? {};
     const pick = (...names) => names.find((name) => scripts[name]);
     const found = { typecheck: pick('typecheck', 'check'), lint: pick('lint'), unit: pick('test:ci', 'test'), build: pick('build'), e2e: pick('e2e', 'test:e2e') };
     const checks = {};
     for (const [name, script] of Object.entries(found)) if (script) checks[name] = `npm run ${script}`;
     const required = ['typecheck', 'lint', 'unit'].filter((name) => checks[name]);
+    if (required.length === 0) console.warn('WARNING: no typecheck, lint or test script was found. verify.required is EMPTY, so a task can reach "ready" with no test run. Add your checks to .factory/config.json (verify.checks and verify.required) before you use the factory.');
     checks.integrity = 'node factory/bin/factory.mjs integrity';
+    const base = detectBase();
     const cfg = {
       project: pkg.name ?? 'new-project',
-      baseBranch: 'main',
-      protectedBranches: ['main', 'master'],
+      baseBranch: base,
+      protectedBranches: [...new Set([base, 'main', 'master'])],
       protectedPaths: ['.env', '.env.*'],
       appendOnlyPaths: [],
-      controlPlanePaths: ['.claude/settings.json', '.claude/settings.local.json', '.factory/config.json', 'factory/hooks/', '.github/workflows/'],
+      controlPlanePaths: ['.claude/settings.json', '.claude/settings.local.json', '.factory/config.json', 'factory/hooks/', 'factory/bin/lib.mjs', '.github/workflows/'],
       blockedCommands: [],
       limits: { repairAttemptsPerIssue: 3, concurrentFeatures: 1 },
       verify: { required, checks },
@@ -68,16 +103,14 @@ const install = () => {
   }
 
   // 3. Settings: merge, never replace. Existing rules stay.
-  const tpl = JSON.parse(readFileSync(join(src, 'factory/settings.template.json'), 'utf8'));
-  const setPath = join(target, '.claude/settings.json');
-  const cur = existsSync(setPath) ? JSON.parse(readFileSync(setPath, 'utf8')) : {};
   const union = (first = [], second = []) => [...new Set([...first, ...second])];
   cur.permissions = { ...cur.permissions };
   for (const kind of ['allow', 'ask', 'deny']) cur.permissions[kind] = union(cur.permissions[kind], tpl.permissions[kind]);
   cur.hooks = { ...cur.hooks };
   for (const [ev, groups] of Object.entries(tpl.hooks)) {
-    const have = JSON.stringify(cur.hooks[ev] ?? []);
-    cur.hooks[ev] = [...(cur.hooks[ev] ?? []), ...groups.filter((group) => !have.includes(JSON.stringify(group.hooks[0].command).slice(1, -1)))];
+    // Exact command match: a substring could skip a hook the target does not really have.
+    const have = new Set((cur.hooks[ev] ?? []).flatMap((group) => (group.hooks ?? []).map((hook) => hook.command)));
+    cur.hooks[ev] = [...(cur.hooks[ev] ?? []), ...groups.filter((group) => !group.hooks.every((hook) => have.has(hook.command)))];
   }
   log('merge .claude/settings.json');
   if (!dry) {
@@ -87,7 +120,8 @@ const install = () => {
 
   // 4. Small touches, both idempotent: .gitignore and a pointer in CLAUDE.md.
   const ign = join(target, '.gitignore');
-  if (!existsSync(ign) || !readFileSync(ign, 'utf8').includes('.factory/evidence/')) {
+  const ignored = existsSync(ign) && readFileSync(ign, 'utf8').split(/\r?\n/).some((line) => ['.factory/evidence/', '/.factory/evidence/', '.factory/evidence', '/.factory/evidence'].includes(line.trim()));
+  if (!ignored) {
     log('append .gitignore');
     if (!dry) appendFileSync(ign, '\n# Factory evidence stays local\n.factory/evidence/\n');
   }

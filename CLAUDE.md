@@ -95,7 +95,7 @@ Doug types `/factory-build`, `/factory-fix`, `/factory-polish`, `/factory-review
 Guide: `factory/README.md`. Project settings: `.factory/config.json`.
 The factory never merges, deploys or touches live data. Hooks and permission
 rules in `.claude/settings.json` enforce this. Do not edit them without Doug.
-It sits beside the specialist team below and reuses it.
+It sits beside the specialist team above and reuses it.
 
 ## Architecture Rules
 
