@@ -59,10 +59,10 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
+      "sha": "b0573948ba9aa6c5cf256483a5672cf70d90a5f7",
       "dirty": false,
-      "at": "2026-11-01T20:06:38.409Z",
-      "seconds": 580,
+      "at": "2026-11-01T20:40:34.835Z",
+      "seconds": 637,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/unit.log"
     },
@@ -131,7 +131,7 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-01T20:29:57.274Z",
+  "updatedAt": "2026-11-01T20:40:34.835Z",
   "readySha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
   "readyAt": "2026-11-01T20:09:06.372Z"
 }
