@@ -2,7 +2,7 @@
   "id": "T-261030-unit-test-for-an-unteste",
   "title": "Unit test for an untested util",
   "kind": "build",
-  "status": "verifying",
+  "status": "ready",
   "request": "Find one small pure utility in src/utils that has no unit test and add a focused unit test. Test-only. No product code changes.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -49,20 +49,20 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "b5c32329f2b1eb0bffb8c9c3593fafd4b62bf11e",
+      "sha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
       "dirty": false,
-      "at": "2026-11-01T17:37:08.714Z",
-      "seconds": 109,
+      "at": "2026-11-01T19:56:58.728Z",
+      "seconds": 113,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/lint.log"
     },
     "unit": {
-      "result": "fail",
-      "exit": 1,
-      "sha": "b5c32329f2b1eb0bffb8c9c3593fafd4b62bf11e",
+      "result": "pass",
+      "exit": 0,
+      "sha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
       "dirty": false,
-      "at": "2026-11-01T17:46:44.460Z",
-      "seconds": 576,
+      "at": "2026-11-01T20:06:38.409Z",
+      "seconds": 580,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/unit.log"
     },
@@ -75,6 +75,26 @@
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/integrity.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
+      "dirty": false,
+      "at": "2026-11-01T20:06:47.389Z",
+      "seconds": 9,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/build.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
+      "dirty": false,
+      "at": "2026-11-01T20:06:52.927Z",
+      "seconds": 5,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/knip.log"
     }
   },
   "reviews": [
@@ -98,11 +118,20 @@
       "sha": "17b42ce753b8fc6373a98c635694cb3f61e615e7",
       "at": "2026-10-31T14:44:40.431Z",
       "summary": "Independent review of final commit: guard raw-command scan, heredoc opener redirects, BOOKKEEPING order. 18/18 tool tests, probes run by reviewer."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
+      "at": "2026-11-01T20:07:03.125Z",
+      "summary": "Independent review of the final batch (about 60 guard probes, scanner, installer, settings, 46/46 tool tests). One non-blocking installer gap noted: valid JSON that is not an object crashes after files are copied."
     }
   ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-01T19:55:05.776Z"
+  "updatedAt": "2026-11-01T20:07:03.231Z",
+  "readySha": "7463c09b3d1cd3d6a3a97e70958396653fe4ce82",
+  "readyAt": "2026-11-01T20:07:03.231Z"
 }
