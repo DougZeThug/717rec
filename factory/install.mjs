@@ -39,8 +39,8 @@ const install = () => {
   };
   const pkgFile = join(target, 'package.json');
   const setPath = join(target, '.claude/settings.json');
-  let pkg;
-  let cur;
+  let pkg = null;
+  let cur = null;
   try {
     pkg = readJson(pkgFile);
     cur = readJson(setPath);

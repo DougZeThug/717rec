@@ -38,7 +38,7 @@ const runIntegrity = () => {
   // A task scans only its own changes: `check` passes the commit the task started from.
   const base = process.env.FACTORY_TASK_BASE || (git(['rev-parse', '--verify', `origin/${cfg.baseBranch}`], root) ? `origin/${cfg.baseBranch}` : cfg.baseBranch);
   // A failed diff must fail the check. An empty string would look like "nothing changed".
-  let diff;
+  let diff = '';
   try {
     diff = `${gitStrict(['diff', `${base}...HEAD`, '--', '.', ...BOOKKEEPING], root)}\n${gitStrict(['diff', 'HEAD', '--', '.', ...BOOKKEEPING], root)}`;
   } catch (error) {

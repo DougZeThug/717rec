@@ -41,6 +41,11 @@ const checkPush = (cmd, cfg, branch) => {
   return null;
 };
 
+// Quoted text becomes one inert word: its spaces and shell operators turn into a filler character.
+// Quoted paths stay visible, so `rm -rf "public/x"` is still caught.
+const FILLER = String.fromCharCode(1);
+const neutralise = (cmd) => cmd.replace(HEREDOC, '$1').replace(/"([^"]*)"|'([^']*)'/g, (_match, double, single) => (double ?? single).replace(/[\s<>|;&]/g, FILLER));
+
 // The short form of the hook-skip flag. Look at flag words only: quoted text is neutralised first.
 const checkCommitFlags = (cmd) => {
   const code = neutralise(cmd);
@@ -53,10 +58,6 @@ const checkBlockedCommands = (cmd, cfg) => {
   const custom = cfg.blockedCommands.find((rule) => new RegExp(rule.pattern).test(cmd));
   return custom ? { block: custom.reason } : null;
 };
-
-// Quoted text becomes one inert word: its spaces and shell operators turn into a filler character.
-// Quoted paths stay visible, so `rm -rf "public/x"` is still caught.
-const neutralise = (cmd) => cmd.replace(HEREDOC, '$1').replace(/"([^"]*)"|'([^']*)'/g, (_match, double, single) => (double ?? single).replace(/[\s<>|;&]/g, '\u0001'));
 
 // Bodies of $( ) and backtick substitutions. They run even inside double quotes; single quotes make them inert.
 const substitutions = (cmd) => {
@@ -111,7 +112,7 @@ const checkProtectedTargets = (cmd, cfg, depth = 0) => {
   let cwd = '';
   for (const segment of neutralise(cmd).split(/&&|\|\||[;|\n]/)) {
     const hit = protectedTarget(segment, cfg, cwd === '.' ? '' : cwd);
-    if (hit) return { block: `"${hit.replace(/\u0001/g, ' ')}" is protected (artwork, secrets or history). Ask the human.` };
+    if (hit) return { block: `"${hit.replaceAll(FILLER, ' ')}" is protected (artwork, secrets or history). Ask the human.` };
     cwd = nextCwd(segment, cwd);
   }
   // Substitutions run even inside double quotes, so check each body as a command of its own.
@@ -149,7 +150,7 @@ const commitContent = (cmd, root, execFileSync) => {
     for (const file of run(['ls-files', '--others', '--exclude-standard', '-z']).split('\0').filter(Boolean)) {
       try {
         const text = readFileSync(join(root, file), 'utf8');
-        if (text.length < 2e6) diff += text.split('\n').map((line) => `+${line}`).join('\n') + '\n';
+        if (text.length < 2e6) diff += `${text.split('\n').map((line) => `+${line}`).join('\n')}\n`;
       } catch { /* unreadable or binary */ }
     }
   }

@@ -99,19 +99,19 @@ test('every git push in a command is checked, quoted names and bare HEAD include
   assert.equal(bash(`${push('origin feat')} && ${push('origin feat2')}`), null);
 });
 test('hard resets, forced cleans and the short hook-skip flag are blocked', () => {
-  const g = (rest) => ['git', rest].join(' ');
-  for (const command of [g('reset --hard HEAD'), g('reset --hard'), g('reset --hard origin/main'), g('clean -df public/'), g('clean -fd'), g('clean -f'), g('clean -xdf'), g('clean --force -d'), g('commit -n -m x'), g('commit -nm x'), g('commit -anm x'), g('-c core.hooksPath=/dev/null commit -m x')])
+  const gitCmd = (rest) => ['git', rest].join(' ');
+  for (const command of [gitCmd('reset --hard HEAD'), gitCmd('reset --hard'), gitCmd('reset --hard origin/main'), gitCmd('clean -df public/'), gitCmd('clean -fd'), gitCmd('clean -f'), gitCmd('clean -xdf'), gitCmd('clean --force -d'), gitCmd('commit -n -m x'), gitCmd('commit -nm x'), gitCmd('commit -anm x'), gitCmd('-c core.hooksPath=/dev/null commit -m x')])
     assert.ok(bash(command)?.block, command);
-  for (const command of [g('reset --soft HEAD~1'), g('clean -n'), g('clean -dn'), g('commit -m "fix -n flag"'), g('commit --amend -m x'), g('commit -am x')])
+  for (const command of [gitCmd('reset --soft HEAD~1'), gitCmd('clean -n'), gitCmd('clean -dn'), gitCmd('commit -m "fix -n flag"'), gitCmd('commit --amend -m x'), gitCmd('commit -am x')])
     assert.equal(bash(command), null, command);
 });
 test('checkout and restore cannot discard protected paths', () => {
-  const g = (rest) => ['git', rest].join(' ');
-  for (const command of [g('checkout -- public/logo.png'), g('restore public/logo.png'), g('checkout HEAD -- public'), g('restore --source=HEAD~1 public/a.png'), g('checkout .'), g('restore .')])
+  const gitCmd = (rest) => ['git', rest].join(' ');
+  for (const command of [gitCmd('checkout -- public/logo.png'), gitCmd('restore public/logo.png'), gitCmd('checkout HEAD -- public'), gitCmd('restore --source=HEAD~1 public/a.png'), gitCmd('checkout .'), gitCmd('restore .')])
     assert.ok(bash(command)?.block, command);
-  assert.equal(bash(g('checkout -b factory/y')), null);
-  assert.equal(bash(g('checkout -- src/a.ts')), null);
-  assert.equal(bash(g('restore --staged .')), null);
+  assert.equal(bash(gitCmd('checkout -b factory/y')), null);
+  assert.equal(bash(gitCmd('checkout -- src/a.ts')), null);
+  assert.equal(bash(gitCmd('restore --staged .')), null);
 });
 test('command substitution inside quotes is still inspected', () => {
   assert.ok(bash('echo "$(rm -rf public/image.png)"')?.block);
