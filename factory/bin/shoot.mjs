@@ -22,7 +22,10 @@ const VIEWPORTS = { phone: { width: 390, height: 844 }, desktop: { width: 1280, 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 
 const { chromium } = await import('playwright').catch(() => import('@playwright/test'));
-const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined });
+// Network boundary: the browser itself cannot resolve a blocked host, so a redirect hop, a service worker or a
+// WebSocket cannot reach it either. The route handler below only supplies local stand-in answers.
+const dnsBlock = blocked.flatMap((host) => [`MAP ${host} ~NOTFOUND`, `MAP *.${host} ~NOTFOUND`]).join(', ');
+const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined, args: [`--host-resolver-rules=${dnsBlock}`] });
 const mock = arg('mock') ? (await import(pathToFileURL(resolve(arg('mock'))).href)).default : null;
 mkdirSync(out, { recursive: true });
 const report = { base, shots: [], consoleErrors: [], blockedRequests: [], overflow: [] };
@@ -33,13 +36,7 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
   await page.route('**/*', async (route) => {
     const req = route.request();
     if (!hostBlocked(req.url(), blocked)) {
-      // Playwright runs this handler once per request, not for each redirect hop. Fetch without following
-      // redirects and hand any 3xx back to the browser: its next hop is a new request that comes through here again.
-      try {
-        await route.fulfill({ response: await route.fetch({ maxRedirects: 0 }) });
-      } catch {
-        await route.abort();
-      }
+      await route.continue();
       return;
     }
     const target = new URL(req.url());

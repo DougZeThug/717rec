@@ -19,6 +19,7 @@ Claude Code, set up as a small software team. You describe the goal. It plans, b
 - **Agents** (`.claude/agents/factory-*.md`): architect, builder, ux, qa, repair, reviewer. Project specialists stay separate and are listed in `.factory/config.json`.
 - **Task ledger:** `node factory/bin/factory.mjs` keeps task records in `.factory/tasks/`, metrics in `.factory/ledger.jsonl`. The **gate** refuses "ready" unless criteria are shown, checks pass **on the current commit**, no test was weakened, and an independent review approves that commit.
 - **Browser evidence:** `factory/bin/shoot.mjs` takes phone + desktop screenshots and reports console errors. It answers every request to a blocked host (production) locally.
+- **Screenshot data safety:** the tool refuses to run with an empty `preview.blockedHosts`, answers requests to those hosts locally, blocks service workers, and also tells the browser not to resolve those hosts. The last layer stops redirect hops and WebSockets. It works when the browser resolves names itself. It is **not proven behind an HTTP proxy**, which resolves names on its own. On a proxied network, check the first run's `blockedRequests` list.
 - **Safety layers:** (1) `.claude/settings.json` permission rules, (2) `factory/hooks/guard.mjs`, (3) GitHub branch protection. Layer 3 is yours to turn on (`docs/OPERATIONS.md` section 5). Hooks cannot stop every shell trick.
 - **Project config:** `.factory/config.json` (checks, protected paths, limits, preview, specialists). The only file that differs per app.
 
