@@ -3,7 +3,8 @@
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { currentBranch, FactoryExit, git, loadConfig, repoRoot, scanDiff } from './lib.mjs';
+import { fileURLToPath } from 'node:url';
+import { currentBranch, FactoryExit, git, gitStrict, loadConfig, repoRoot, scanDiff } from './lib.mjs';
 
 const root = repoRoot();
 const cfg = loadConfig(root);
@@ -36,10 +37,53 @@ const slug = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^
 const runIntegrity = () => {
   // A task scans only its own changes: `check` passes the commit the task started from.
   const base = process.env.FACTORY_TASK_BASE || (git(['rev-parse', '--verify', `origin/${cfg.baseBranch}`], root) ? `origin/${cfg.baseBranch}` : cfg.baseBranch);
-  const diff = `${git(['diff', `${base}...HEAD`, '--', '.', ...BOOKKEEPING], root)}\n${git(['diff', 'HEAD', '--', '.', ...BOOKKEEPING], root)}`;
+  // A failed diff must fail the check. An empty string would look like "nothing changed".
+  let diff;
+  try {
+    diff = `${gitStrict(['diff', `${base}...HEAD`, '--', '.', ...BOOKKEEPING], root)}\n${gitStrict(['diff', 'HEAD', '--', '.', ...BOOKKEEPING], root)}`;
+  } catch (error) {
+    console.error(`integrity: could not read the diff against "${base}". ${error.message}`);
+    return 1;
+  }
   const findings = scanDiff(diff);
   console.log(findings.length ? findings.join('\n') : 'integrity: no weakened tests or suppressed checks found');
   return findings.length ? 1 : 0;
+};
+
+// Fields `set` may change, and how to read the value. Everything else (kind, checks, waivers, reviews...) has its own command.
+const SETTABLE = {
+  status: (text) => text,
+  branch: (text) => text,
+  title: (text) => text,
+  request: (text) => text,
+  trivial: (text) => (['true', 'false'].includes(text) ? text === 'true' : die('trivial must be true or false')),
+};
+// A required check must run its configured command. A custom command could pass without running the real check.
+const requiredChecks = () => [...new Set([...cfg.verify.required, 'integrity'])];
+const BUILTIN_CHECKS = { integrity: `node ${JSON.stringify(fileURLToPath(import.meta.url))} integrity` };
+
+// Everything the delivery gate and an approved close must see. Empty list means ready.
+const gateProblems = (task, sha) => {
+  const problems = [];
+  if (task.criteria.length === 0) problems.push('no acceptance criteria recorded');
+  task.criteria.forEach((criterion, index) => !criterion.done && problems.push(`criterion ${index + 1} not shown: ${criterion.text}`));
+  for (const name of requiredChecks()) {
+    const recorded = task.checks[name];
+    const waived = task.waivers.some((waiver) => waiver.check === name);
+    if (waived) continue;
+    if (!recorded) problems.push(`check "${name}" never ran`);
+    else if (recorded.result !== 'pass') problems.push(`check "${name}" failed`);
+    else if (recorded.sha !== sha || recorded.dirty) problems.push(`check "${name}" is stale (ran on ${recorded.sha.slice(0, 7)}${recorded.dirty ? '+uncommitted' : ''}, HEAD is ${sha.slice(0, 7)}). Commit, then rerun.`);
+  }
+  if (!task.trivial) {
+    const latest = [...task.reviews].reverse().find((entry) => entry.mode === 'code');
+    if (!latest) problems.push('no independent code review recorded');
+    else if (latest.verdict !== 'APPROVE') problems.push(`latest code review is ${latest.verdict}`);
+    else if (latest.sha !== sha) problems.push('code review is stale: code changed after the review');
+  }
+  for (const [key, issue] of Object.entries(task.issues)) if (issue.escalated && !issue.resolved) problems.push(`issue "${key}" is escalated and unresolved`);
+  if (dirty()) problems.push('uncommitted changes in the working tree');
+  return problems;
 };
 
 const sub = {
@@ -68,7 +112,8 @@ const sub = {
       const busy = all().filter((other) => other.id !== id && BUILD_KINDS.includes(other.kind) && ACTIVE.includes(other.status));
       if (busy.length >= cfg.limits.concurrentFeatures) die('Concurrency ceiling reached.', 4);
     }
-    task[field] = value.join(' ');
+    if (!Object.hasOwn(SETTABLE, field)) die(`set can change only: ${Object.keys(SETTABLE).join(', ')}`);
+    task[field] = SETTABLE[field](value.join(' '));
     save(task);
   },
 
@@ -89,7 +134,9 @@ const sub = {
   check([id, name, ...rest]) {
     const task = load(id);
     const sep = rest.indexOf('--');
-    const cmd = sep >= 0 ? rest.slice(sep + 1).join(' ') : cfg.verify.checks[name];
+    const required = requiredChecks().includes(name);
+    if (required && sep >= 0) die(`"${name}" is a required check. It runs its configured command only: no "-- <cmd>" override.`);
+    const cmd = sep >= 0 ? rest.slice(sep + 1).join(' ') : (cfg.verify.checks[name] ?? (required ? BUILTIN_CHECKS[name] : undefined));
     if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks or pass: -- <cmd>`);
     mkdirSync(join(evDir, id), { recursive: true });
     const started = Date.now();
@@ -136,26 +183,7 @@ const sub = {
   gate([id]) {
     const task = load(id);
     const sha = head();
-    const problems = [];
-    if (task.criteria.length === 0) problems.push('no acceptance criteria recorded');
-    task.criteria.forEach((criterion, index) => !criterion.done && problems.push(`criterion ${index + 1} not shown: ${criterion.text}`));
-    const required = [...new Set([...cfg.verify.required, 'integrity'])];
-    for (const name of required) {
-      const recorded = task.checks[name];
-      const waived = task.waivers.some((waiver) => waiver.check === name);
-      if (waived) continue;
-      if (!recorded) problems.push(`check "${name}" never ran`);
-      else if (recorded.result !== 'pass') problems.push(`check "${name}" failed`);
-      else if (recorded.sha !== sha || recorded.dirty) problems.push(`check "${name}" is stale (ran on ${recorded.sha.slice(0, 7)}${recorded.dirty ? '+uncommitted' : ''}, HEAD is ${sha.slice(0, 7)}). Commit, then rerun.`);
-    }
-    if (!task.trivial) {
-      const latest = [...task.reviews].reverse().find((entry) => entry.mode === 'code');
-      if (!latest) problems.push('no independent code review recorded');
-      else if (latest.verdict !== 'APPROVE') problems.push(`latest code review is ${latest.verdict}`);
-      else if (latest.sha !== sha) problems.push('code review is stale: code changed after the review');
-    }
-    for (const [key, issue] of Object.entries(task.issues)) if (issue.escalated && !issue.resolved) problems.push(`issue "${key}" is escalated and unresolved`);
-    if (dirty()) problems.push('uncommitted changes in the working tree');
+    const problems = gateProblems(task, sha);
     if (problems.length) {
       console.log(`GATE: NOT READY\n- ${problems.join('\n- ')}`);
       throw new FactoryExit(1);
@@ -168,6 +196,11 @@ const sub = {
   close([id, outcome = 'approved']) {
     const task = load(id);
     if (task.status !== 'ready' && outcome === 'approved') die('Only a task that passed "gate" can be closed as approved.');
+    if (outcome === 'approved') {
+      // "ready" can be old. Check the evidence again against the code as it is now.
+      const problems = gateProblems(task, head());
+      if (problems.length) die(`Cannot close as approved: the gate no longer passes.\n- ${problems.join('\n- ')}`);
+    }
     const checks = Object.values(task.checks);
     const line = { id, title: task.title, kind: task.kind, outcome, created: task.createdAt, closed: now(), minutes: Math.round((Date.now() - Date.parse(task.createdAt)) / 60000), interventions: task.interventions.length, repairAttempts: Object.values(task.issues).reduce((total, issue) => total + issue.attempts, 0), unresolved: Object.entries(task.issues).filter(([, issue]) => !issue.resolved).map(([key]) => key), checksRun: checks.length, checksPassed: checks.filter((entry) => entry.result === 'pass').length, usage: task.usage ?? null };
     appendFileSync(ledger, `${JSON.stringify(line)}\n`);

@@ -5,7 +5,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { loadConfig } from './lib.mjs';
+import { hostBlocked, loadConfig } from './lib.mjs';
 
 const arg = (name, fallback) => { const at = process.argv.indexOf(`--${name}`); return at > 0 ? process.argv[at + 1] : fallback; };
 const cfg = loadConfig();
@@ -13,6 +13,11 @@ const base = arg('url', cfg.preview?.url ?? 'http://localhost:8080');
 const routes = (arg('routes') ?? (cfg.preview?.routes ?? ['/']).join(',')).split(',');
 const out = resolve(arg('out', '.factory/evidence/screens'));
 const blocked = cfg.preview?.blockedHosts ?? [];
+// Fail closed: with no blocklist every request would reach the real backend.
+if (!Array.isArray(blocked) || blocked.length === 0) {
+  console.error('shoot: preview.blockedHosts in .factory/config.json is empty. Add the production hosts (for example "supabase.co") so no screenshot run can reach live data.');
+  process.exit(2);
+}
 const VIEWPORTS = { phone: { width: 390, height: 844 }, desktop: { width: 1280, height: 800 } };
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 
@@ -23,16 +28,22 @@ mkdirSync(out, { recursive: true });
 const report = { base, shots: [], consoleErrors: [], blockedRequests: [], overflow: [] };
 
 for (const [vp, size] of Object.entries(VIEWPORTS)) {
-  const ctx = await browser.newContext({ viewport: size });
+  const ctx = await browser.newContext({ viewport: size, serviceWorkers: 'block' });
   const page = await ctx.newPage();
   await page.route('**/*', async (route) => {
     const req = route.request();
-    const host = new URL(req.url()).hostname;
-    if (!blocked.some((suffix) => host.endsWith(suffix))) {
-      await route.continue();
+    if (!hostBlocked(req.url(), blocked)) {
+      // Playwright runs this handler once per request, not for each redirect hop. Fetch without following
+      // redirects and hand any 3xx back to the browser: its next hop is a new request that comes through here again.
+      try {
+        await route.fulfill({ response: await route.fetch({ maxRedirects: 0 }) });
+      } catch {
+        await route.abort();
+      }
       return;
     }
-    report.blockedRequests.push(`${req.method()} ${host}${new URL(req.url()).pathname}`);
+    const target = new URL(req.url());
+    report.blockedRequests.push(`${req.method()} ${target.hostname}${target.pathname}`);
     if (mock && (await mock(route))) return;
     if (['GET', 'OPTIONS', 'HEAD'].includes(req.method())) {
       await route.fulfill({ status: req.method() === 'OPTIONS' ? 204 : 200, contentType: 'application/json', headers: CORS, body: req.method() === 'OPTIONS' ? '' : '[]' });
@@ -40,7 +51,8 @@ for (const [vp, size] of Object.entries(VIEWPORTS)) {
     }
     await route.abort();
   });
-  page.on('console', (msg) => msg.type() === 'error' && !/Failed to load resource/.test(msg.text()) && report.consoleErrors.push(`[${vp}] ${msg.text().slice(0, 200)}`));
+  // A failed load is only expected for a blocked host (we aborted it on purpose). Any other failed load is a real error.
+  page.on('console', (msg) => msg.type() === 'error' && !(/Failed to load resource/.test(msg.text()) && (msg.location()?.url ?? '') !== '' && hostBlocked(msg.location().url, blocked)) && report.consoleErrors.push(`[${vp}] ${msg.text().slice(0, 200)}`));
   page.on('pageerror', (error) => report.consoleErrors.push(`[${vp}] uncaught: ${error.message.slice(0, 200)}`));
   for (const route of routes) {
     await page.goto(`${base}${route}`, { waitUntil: 'networkidle', timeout: 30000 }).catch((error) => report.consoleErrors.push(`[${vp}] navigation ${route}: ${error.message.slice(0, 120)}`));

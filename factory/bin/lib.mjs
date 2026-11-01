@@ -42,6 +42,15 @@ export const git = (args, cwd = repoRoot()) => {
   }
 };
 
+// Like git(), but a failure throws. Use it where an empty answer would look like "nothing found".
+export const gitStrict = (args, cwd = repoRoot()) => {
+  try {
+    return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 }).trim();
+  } catch (error) {
+    throw new Error(`git ${args[0]} failed: ${String(error.stderr ?? error.message).trim().split('\n')[0]}`);
+  }
+};
+
 export const currentBranch = (cwd) => git(['rev-parse', '--abbrev-ref', 'HEAD'], cwd);
 
 // Turn a glob-ish path rule into a RegExp. "dir/" matches everything below it,
@@ -53,6 +62,16 @@ export const pathRule = (rule) => {
   return new RegExp(`(^|/)${body}$`);
 };
 export const matchesAny = (path, rules) => rules.some((rule) => pathRule(rule).test(path));
+
+// True when the URL points at a host the preview must never reach (suffix match). A bad URL counts as blocked.
+export const hostBlocked = (url, blockedHosts) => {
+  try {
+    const host = new URL(url).hostname;
+    return blockedHosts.some((suffix) => host.endsWith(suffix));
+  } catch {
+    return true;
+  }
+};
 
 // ---- integrity scan: catches "made the test pass by weakening it" ----
 const SUSPECT = /(\.skip\(|\bxit\(|\bxdescribe\(|\.todo\(|\.only\(|eslint-disable|@ts-ignore|@ts-expect-error|@ts-nocheck)/;

@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { cpSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { DEFAULT_CONFIG, scanDiff } from '../bin/lib.mjs';
 import { decide } from '../hooks/guard.mjs';
 
+const factoryDir = join(dirname(fileURLToPath(import.meta.url)), '..');
 const cfg = { ...DEFAULT_CONFIG, protectedPaths: ['.env', '.env.*', 'src/integrations/supabase/types.ts', 'public/'], appendOnlyPaths: ['supabase/migrations/'], blockedCommands: [{ pattern: 'supabase\\.co/rest', reason: 'live api' }] };
 const bash = (command, branch = 'factory/x') => decide({ tool_name: 'Bash', tool_input: { command } }, cfg, branch);
 const edit = (file_path, extra = {}) => decide({ tool_name: 'Edit', tool_input: { file_path, ...extra } }, cfg, 'factory/x');
@@ -37,6 +43,41 @@ test('blocks deleting protected assets', () => {
   assert.ok(bash('rm -rf public/images')?.block);
   assert.ok(bash('git rm supabase/migrations/2026_a.sql')?.block);
   assert.ok(bash('echo x > .env')?.block);
+});
+test('quoted paths are still protected, quoted prose is not', () => {
+  assert.ok(bash('rm -rf "public/images"')?.block);
+  assert.ok(bash("rm -rf 'public/images'")?.block);
+  assert.ok(bash('echo x > ".env"')?.block);
+  assert.ok(bash('rm "public/my file.png"')?.block);
+  assert.equal(bash('git commit -m "docs: rm public/a note > .env"'), null);
+  assert.equal(bash('echo "rm public/a; rm .env" > notes.txt'), null);
+});
+test('a here-string is not a heredoc', () => {
+  assert.ok(bash('cat <<<EOF\nrm -rf public/\nEOF')?.block);
+});
+test('a directory without a trailing slash, and absolute history paths, are protected', () => {
+  assert.ok(bash('rm -rf public')?.block);
+  assert.ok(bash('rm -rf ./public/')?.block);
+  assert.ok(bash('rm /repo/supabase/migrations/a.sql')?.block);
+  assert.ok(bash('rm -rf supabase/migrations')?.block);
+  assert.equal(bash('rm -rf publication'), null);
+});
+test('the guard still blocks when its own path has a space, #, % or non-ASCII', () => {
+  const holder = mkdtempSync(join(tmpdir(), 'guard '));
+  try {
+    for (const name of ['my repo', 'a#b%c', 'café']) {
+      const home = join(holder, name);
+      mkdirSync(join(home, 'factory'), { recursive: true });
+      cpSync(join(factoryDir, 'hooks'), join(home, 'factory', 'hooks'), { recursive: true });
+      cpSync(join(factoryDir, 'bin'), join(home, 'factory', 'bin'), { recursive: true });
+      const push = ['git', 'push', 'origin', 'main'].join(' ');
+      const run = spawnSync('node', [join(home, 'factory', 'hooks', 'guard.mjs')], { cwd: home, encoding: 'utf8', input: JSON.stringify({ tool_name: 'Bash', cwd: home, tool_input: { command: push } }) });
+      assert.equal(run.status, 2, `${name}: ${run.stderr}`);
+      assert.match(run.stderr, /FACTORY GUARD/);
+    }
+  } finally {
+    rmSync(holder, { recursive: true, force: true });
+  }
 });
 test('edit guard: protected, append-only, control plane, secrets', () => {
   assert.ok(edit('/r/.env')?.block);

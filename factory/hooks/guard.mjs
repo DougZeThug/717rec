@@ -1,7 +1,8 @@
 // PreToolUse guard. Reads the tool call on stdin and blocks (exit 2) or asks.
 // Layer 2 of 3: permission deny rules (settings.json) first, this hook second,
 // GitHub branch protection last. Hooks are best-effort for Bash, so never the only layer.
-import { readFileSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import { currentBranch, loadConfig, matchesAny, repoRoot } from '../bin/lib.mjs';
 
 const SECRET = [/sk-ant-[A-Za-z0-9_-]{20,}/, /AKIA[0-9A-Z]{16}/, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /eyJ[A-Za-z0-9_-]{15,}\.eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{10,}/];
@@ -22,7 +23,7 @@ const BUILTIN_BLOCKED = [
 ];
 
 // Matches a heredoc. Group 1 is the opener line (redirects there are real); the body after it is data.
-const HEREDOC = /(<<-?\s*['"]?(\w+)['"]?[^\n]*)\n[\s\S]*?\n\s*\2\b/g;
+const HEREDOC = /((?<!<)<<(?!<)-?\s*['"]?(\w+)['"]?[^\n]*)\n[\s\S]*?\n\s*\2\b/g;
 
 const checkPush = (cmd, cfg, branch) => {
   const push = cmd.match(/git\s+push\b([^\n;&|]*)/);
@@ -47,12 +48,16 @@ const protectedTarget = (segment, cfg) => {
   const removes = ['rm', 'mv', 'truncate', 'shred'].includes(words[0]) || isGitRm;
   const redirects = [...segment.matchAll(/(?:^|[^>])>{1,2}\s*([^\s<>|;&]+)/g)].map((found) => found[1].replace(/^\.\//, ''));
   const targets = [...(removes ? words.slice(1) : []), ...redirects];
-  return targets.find((target) => target && !target.startsWith('-') && (matchesAny(target, cfg.protectedPaths) || (removes && cfg.appendOnlyPaths.some((prefix) => target.startsWith(prefix)))));
+  // Also test the directory form, so `rm -rf public` matches the rule `public/`.
+  const asDir = (target) => `${target.replace(/\/+$/, '')}/`;
+  return targets.find((target) => target && !target.startsWith('-') && (matchesAny(target, cfg.protectedPaths) || matchesAny(asDir(target), cfg.protectedPaths) || (removes && cfg.appendOnlyPaths.some((prefix) => asDir(target).includes(prefix)))));
 };
 
 const checkProtectedTargets = (cmd, cfg) => {
   // Look only at real command words: drop heredoc bodies and quoted text first.
-  const code = cmd.replace(HEREDOC, '$1').replace(/"[^"]*"|'[^']*'/g, '""');
+  // Quoted text stays visible so `rm -rf "public/x"` is caught. Its spaces and shell operators
+  // become a filler character, so a commit message is one inert word, not commands or redirects.
+  const code = cmd.replace(HEREDOC, '$1').replace(/"([^"]*)"|'([^']*)'/g, (_match, double, single) => (double ?? single).replace(/[\s<>|;&]/g, '\u0001'));
   for (const segment of code.split(/&&|\|\||[;|\n]/)) {
     const hit = protectedTarget(segment, cfg);
     if (hit) return { block: `"${hit}" is protected (artwork, secrets or history). Ask the human.` };
@@ -99,7 +104,13 @@ export const decide = (input, cfg, branch) => {
   return null;
 };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// import.meta.url is a percent-encoded URL. A raw `file://` + path breaks on spaces, #, % and non-ASCII,
+// and the guard would then do nothing and exit 0. Compare real file URLs instead.
+const isMain = () => {
+  if (!process.argv[1]) return false;
+  try { return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href; } catch { return import.meta.url === pathToFileURL(process.argv[1]).href; }
+};
+if (isMain()) {
   const input = JSON.parse(readFileSync(0, 'utf8') || '{}');
   const root = repoRoot(input.cwd);
   const toolInput = (input.tool_input ??= {});

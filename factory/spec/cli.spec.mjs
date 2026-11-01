@@ -1,7 +1,7 @@
 // End-to-end test of the task ledger gates inside a throwaway git repo.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { before, test } from 'node:test';
@@ -38,7 +38,7 @@ test('gate refuses without evidence, passes with fresh evidence and review', () 
   factory('criteria', id, 'add', 'a.txt exists');
   factory('criteria', id, 'done', '1', 'ls shows it');
   assert.equal(factory('check', id, 'unit').status, 0);
-  assert.equal(factory('check', id, 'integrity', '--', 'node -e "0"').status, 0);
+  assert.equal(factory('check', id, 'integrity').status, 0);
   factory('review', id, 'code', 'APPROVE', 'looks right');
   const ok = factory('gate', id);
   assert.equal(ok.status, 0, ok.stdout);
@@ -52,7 +52,7 @@ test('committing only task records does not make evidence stale', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
   git('add', '-A'); git('commit', '-qm', 'task state');
   assert.equal(factory('check', id, 'unit').status, 0);
-  factory('check', id, 'integrity', '--', 'node -e "0"');
+  factory('check', id, 'integrity');
   factory('review', id, 'code', 'APPROVE', 'ok');
   git('commit', '-q', '--allow-empty', '-m', 'noop');
   mkdirSync(join(repo, '.factory'), { recursive: true });
@@ -66,12 +66,13 @@ test('committing only task records does not make evidence stale', () => {
 });
 test('integrity scans only the task own changes, and catches a skipped test', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
-  const integrity = `node ${cli} integrity`;
   writeFileSync(join(repo, 'old.test.js'), 'it.skip("x", () => {})\n'); git('add', '-A'); git('commit', '-qm', 'pre-existing skip');
   const task = JSON.parse(execFileSync('node', [cli, 'show', id], { cwd: repo, encoding: 'utf8' }));
-  assert.equal(factory('check', id, 'integrity', '--', integrity).status, 1, 'baseSha predates the skip, so it is found');
-  factory('set', id, 'baseSha', git('rev-parse', 'HEAD').trim());
-  assert.equal(factory('check', id, 'integrity', '--', integrity).status, 0, 'a skip from before the task is not blamed on it');
+  assert.equal(factory('check', id, 'integrity').status, 1, 'baseSha predates the skip, so it is found');
+  assert.notEqual(factory('set', id, 'baseSha', git('rev-parse', 'HEAD').trim()).status, 0, 'an agent cannot move the integrity baseline');
+  const taskFile = join(repo, '.factory', 'tasks', `${id}.json`);
+  writeFileSync(taskFile, JSON.stringify({ ...task, baseSha: git('rev-parse', 'HEAD').trim() }));
+  assert.equal(factory('check', id, 'integrity').status, 0, 'a skip from before the task is not blamed on it');
   assert.ok(task.baseSha);
 });
 test('a failing check is recorded as failing', () => {
@@ -91,4 +92,45 @@ test('repair loop stops at the ceiling and on a repeated fix', () => {
 test('close refuses an unready task', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
   assert.notEqual(factory('close', id).status, 0);
+});
+
+test('a required check cannot be satisfied by a substitute command', () => {
+  const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
+  for (const name of ['unit', 'integrity']) {
+    const run = factory('check', id, name, '--', 'node -e "0"');
+    assert.notEqual(run.status, 0, name);
+    assert.match(run.stderr, /required check/);
+  }
+  assert.equal(factory('check', id, 'extra-note', '--', 'node -e "0"').status, 0, 'a non-required check may still use a custom command');
+});
+test('integrity fails when the base diff cannot be read', () => {
+  const run = spawnSync('node', [cli, 'integrity'], { cwd: repo, encoding: 'utf8', env: { ...process.env, FACTORY_TASK_BASE: 'no-such-commit-0000' } });
+  assert.equal(run.status, 1);
+  assert.match(run.stderr, /could not read the diff/);
+});
+test('set accepts only known fields and reads trivial as a boolean', () => {
+  const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
+  const task = () => JSON.parse(factory('show', id).stdout);
+  assert.notEqual(factory('set', id, 'checks', 'x').status, 0);
+  assert.notEqual(factory('set', id, 'readySha', 'abc').status, 0);
+  assert.notEqual(factory('set', id, 'trivial', 'maybe').status, 0);
+  assert.equal(factory('set', id, 'trivial', 'true').status, 0);
+  assert.strictEqual(task().trivial, true);
+  assert.equal(factory('set', id, 'trivial', 'false').status, 0);
+  assert.strictEqual(task().trivial, false);
+});
+test('close as approved re-checks the gate', () => {
+  const made = factory('new', 'Closer', '--kind', 'fix', '--trivial');
+  const id = made.stdout.trim();
+  factory('criteria', id, 'add', 'works');
+  factory('criteria', id, 'done', '1', 'shown');
+  assert.equal(factory('check', id, 'unit').status, 0);
+  assert.equal(factory('check', id, 'integrity').status, 0);
+  assert.equal(factory('gate', id).status, 0);
+  writeFileSync(join(repo, 'dirty.txt'), 'x');
+  const refused = factory('close', id);
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stderr, /gate no longer passes/);
+  rmSync(join(repo, 'dirty.txt'));
+  assert.equal(factory('close', id).status, 0);
 });

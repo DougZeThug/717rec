@@ -5,12 +5,13 @@
       "Bash(npm run *)", "Bash(npm test*)", "Bash(npm ci*)", "Bash(npm outdated*)", "Bash(npm audit*)", "Bash(npx vitest *)", "Bash(npx playwright *)", "Bash(npx tsc *)", "Bash(npx eslint *)",
       "Bash(node factory/*)", "Bash(node tools/*)",
       "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(git branch*)", "Bash(git checkout*)", "Bash(git switch*)", "Bash(git add*)", "Bash(git commit*)", "Bash(git stash*)", "Bash(git fetch*)", "Bash(git worktree*)", "Bash(git push*)",
-      "Bash(ls*)", "Bash(cat *)", "Bash(grep *)", "Bash(curl -s*127.0.0.1*)", "Bash(curl -s*localhost*)"
+      "Bash(ls*)", "Bash(curl -s http://127.0.0.1*)", "Bash(curl -s http://localhost*)"
     ],
     "ask": [
       "Edit(.claude/settings.json)", "Edit(.claude/settings.local.json)", "Edit(.factory/config.json)", "Edit(factory/hooks/**)", "Write(.claude/settings.json)", "Write(.factory/config.json)", "Write(factory/hooks/**)"
     ],
     "deny": [
+      "Bash(* .env)", "Bash(* .env.*)", "Bash(* ./.env)", "Bash(* ./.env.*)",
       "Read(./.env)", "Read(./.env.*)", "Edit(./.env)", "Edit(./.env.*)", "Write(./.env)", "Write(./.env.*)",
       "Bash(gh pr merge*)", "Bash(git push --force *)", "Bash(git push -f *)", "Bash(git push origin main*)", "Bash(git push origin master*)",
       "Bash(supabase db push*)", "Bash(supabase migration up*)", "Bash(supabase functions deploy*)", "Bash(wrangler deploy*)", "Bash(npm publish*)",

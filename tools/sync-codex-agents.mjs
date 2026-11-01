@@ -32,7 +32,8 @@ const toToml = ({ meta, body }, file) => {
   const canWrite = tools.includes('Edit') || tools.includes('Write');
   const canRun = tools.includes('Bash');
   // Reviewers: read-only. QA runs checks (needs temp writes). Implementer edits code.
-  const sandbox = canWrite || canRun ? 'workspace-write' : 'read-only';
+  // A source file can force read-only with `sandbox: read-only` (the reviewer only runs read commands).
+  const sandbox = meta.sandbox === 'read-only' ? 'read-only' : canWrite || canRun ? 'workspace-write' : 'read-only';
   return [
     `# GENERATED from .claude/agents/${file} - do not edit. Run: node tools/sync-codex-agents.mjs`,
     `name = ${basic(meta.name)}`,
