@@ -57,12 +57,12 @@
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/lint.log"
     },
     "unit": {
-      "result": "pass",
-      "exit": 0,
-      "sha": "17b42ce753b8fc6373a98c635694cb3f61e615e7",
+      "result": "fail",
+      "exit": 1,
+      "sha": "b5c32329f2b1eb0bffb8c9c3593fafd4b62bf11e",
       "dirty": false,
-      "at": "2026-10-31T14:44:36.850Z",
-      "seconds": 437,
+      "at": "2026-11-01T17:46:44.460Z",
+      "seconds": 576,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/unit.log"
     },
@@ -110,7 +110,7 @@
       "at": "2026-10-30T19:35:53.577Z"
     }
   ],
-  "updatedAt": "2026-11-01T17:37:08.714Z",
+  "updatedAt": "2026-11-01T17:46:44.461Z",
   "readySha": "17b42ce753b8fc6373a98c635694cb3f61e615e7",
   "readyAt": "2026-10-31T14:44:40.598Z"
 }
