@@ -38,9 +38,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
       "dirty": false,
-      "at": "2026-11-02T20:18:32.018Z",
+      "at": "2026-11-02T20:34:45.998Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/integrity.log"
@@ -96,5 +96,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T20:20:46.324Z"
+  "updatedAt": "2026-11-02T20:34:45.998Z"
 }
