@@ -58,4 +58,4 @@ Per-app ideas: FloorForge -> protect approved artwork folders, add a screenshot-
 - The `factory-reviewer` and `factory-qa` read-only rule is prompt text on the Claude side. The generated Codex copies set a sandbox (`read-only` for the reviewer, `workspace-write` for QA because it must run checks that write temp files and coverage).
 - The issue workflow gives the agent write access. The only approval step is that a person with triage rights must add the `factory` label. Read the issue before you label it: its text is untrusted input.
 - A reinstall adds a settings hook only when its exact command is missing. If you changed a hook command by hand, the old and new command can both stay.
-- `queue: max` for the workflow concurrency group is not used: it is not a confirmed GitHub Actions key. Extra labels wait as GitHub's concurrency group allows (one running, one pending).
+- The workflow does not set `queue: max`. Without it, GitHub keeps one running and one pending run, and a new run replaces the pending one. So a label event can be dropped when labels arrive close together. Re-label an issue if its run does not start.
