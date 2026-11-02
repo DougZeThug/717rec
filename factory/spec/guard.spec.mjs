@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -9,6 +9,8 @@ import { DEFAULT_CONFIG, hostBlocked, scanDiff } from '../bin/lib.mjs';
 import { addedLines, decide } from '../hooks/guard.mjs';
 
 const factoryDir = join(dirname(fileURLToPath(import.meta.url)), '..');
+// Built from pieces, so no file in factory/ holds the whole fake key (the guard blocks a Write that does).
+const FAKE_KEY = ['sk', 'ant', 'api03', 'abcdefghijklmnopqrstuvwx'].join('-');
 const cfg = { ...DEFAULT_CONFIG, protectedPaths: ['.env', '.env.*', 'src/integrations/supabase/types.ts', 'public/'], appendOnlyPaths: ['supabase/migrations/'], blockedCommands: [{ pattern: 'supabase\\.co/rest', reason: 'live api' }] };
 const bash = (command, branch = 'factory/x') => decide({ tool_name: 'Bash', tool_input: { command } }, cfg, branch);
 const edit = (file_path, extra = {}) => decide({ tool_name: 'Edit', tool_input: { file_path, ...extra } }, cfg, 'factory/x');
@@ -85,8 +87,13 @@ test('edit guard: protected, append-only, control plane, secrets', () => {
   assert.ok(edit('/r/supabase/migrations/old.sql', { __exists: true })?.block);
   assert.equal(edit('/r/supabase/migrations/new.sql', { __exists: false }), null);
   assert.ok(edit('/r/.claude/settings.json')?.ask);
-  assert.ok(edit('/r/src/a.ts', { content: 'const k = "sk-ant-api03-abcdefghijklmnopqrstuvwx"' })?.block);
+  assert.ok(edit('/r/src/a.ts', { content: `const k = "${FAKE_KEY}"` })?.block);
   assert.equal(edit('/r/src/a.ts', { content: 'ok' }), null);
+});
+test('no factory source file holds a whole credential, so the guard lets the factory write its own files', () => {
+  const names = ['spec', 'hooks', 'bin'].flatMap((folder) => readdirSync(join(factoryDir, folder)).filter((file) => file.endsWith('.mjs')).map((file) => join(factoryDir, folder, file)));
+  assert.ok(names.length >= 8, `expected the factory sources, found ${names.length}`);
+  for (const name of names) assert.equal(decide({ tool_name: 'Write', tool_input: { file_path: '/r/src/copy.mjs', content: readFileSync(name, 'utf8') } }, cfg, 'factory/x'), null, name);
 });
 const push = (rest) => ['git', 'push', rest].join(' ');
 test('every git push in a command is checked, quoted names and bare HEAD included', () => {
@@ -147,7 +154,7 @@ test('hostBlocked ignores a trailing dot and case', () => {
   assert.equal(hostBlocked('not a url', ['supabase.co']), true);
 });
 test('the secret scan counts only added lines', () => {
-  const key = ['sk', 'ant', 'api03', 'abcdefghijklmnopqrstuvwx'].join('-');
+  const key = FAKE_KEY;
   const commit = (diff) => decide({ tool_name: 'Bash', tool_input: { command: 'git commit -m x', __stagedDiff: diff } }, cfg, 'factory/x');
   assert.equal(commit(`-const k = "${key}"\n+const k = process.env.K`), null, 'removing a key is fine');
   assert.equal(commit(` const k = "${key}"\n+const y = 1`), null, 'context lines are not new');
@@ -155,7 +162,7 @@ test('the secret scan counts only added lines', () => {
   assert.equal(addedLines('+++ b/a\n+x\n-y\n z'), '+x');
 });
 test('a commit with -a, or add then commit, is scanned for secrets (real repo)', () => {
-  const key = ['sk', 'ant', 'api03', 'abcdefghijklmnopqrstuvwx'].join('-');
+  const key = FAKE_KEY;
   const repo = mkdtempSync(join(tmpdir(), 'guard-repo-'));
   const git = (...args) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' });
   const hook = (command) => spawnSync('node', [join(factoryDir, 'hooks', 'guard.mjs')], { cwd: repo, encoding: 'utf8', input: JSON.stringify({ tool_name: 'Bash', cwd: repo, tool_input: { command } }) });
