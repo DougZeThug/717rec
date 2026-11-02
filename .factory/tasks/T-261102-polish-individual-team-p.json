@@ -46,7 +46,18 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "dirty": false,
+      "at": "2026-11-02T15:39:52.836Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261102-polish-individual-team-p/integrity.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
@@ -57,5 +68,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T15:09:52.173Z"
+  "updatedAt": "2026-11-02T15:39:52.836Z"
 }
