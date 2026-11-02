@@ -11,35 +11,43 @@
   "criteria": [
     {
       "text": "Match History team names are readable at 390 and 360: name box wider (was 75.6px at 390), up to 2 lines, logo link no longer forces 44px width",
-      "done": false
+      "done": true,
+      "evidence": "QA: name box 91.6px at 390 (was 75.6), 76.6 at 360 (was 60.6), up to 2 lines, 0 overlaps. Shots .factory/evidence/T-261102-polish-individual-team-p/before/ vs .factory/evidence/T-261102-polish-individual-team-p/after/phone-teams-fake-team-bravo-with-a-very-long-name-here.png"
     },
     {
       "text": "Match History logo links are not extra tab stops (aria-hidden + tabIndex -1); the name link stays focusable",
-      "done": false
+      "done": true,
+      "evidence": "QA: logo links aria-hidden + tabindex -1; tab order 2 stops per row (was 4); name link shows focus ring"
     },
     {
       "text": "Match History team names meet 4.5:1 contrast in the light theme",
-      "done": false
+      "done": true,
+      "evidence": "QA light theme: winner 4.95:1, loser 6.42:1 (was 3.22 / 3.81); dark colours unchanged"
     },
     {
       "text": "Roster chips show names up to about 160px wide without cutting them at 80px (PlayerList only, PlayerChip default unchanged)",
-      "done": false
+      "done": true,
+      "evidence": "QA: Fake Player 1A/1B/1C ~82px, not cut (max 160); 192px name cut with title"
     },
     {
       "text": "Career power-score chart: first x label and y-axis title are not clipped at 360 and 390",
-      "done": false
+      "done": true,
+      "evidence": "QA: chart first x label 6.6px inside, y title 29px from left, centred, at 360/390; desktop checked"
     },
     {
       "text": "Last match link is at least 44px tall and 'Last match:' does not wrap; Report Card Season/Career toggles are at least 44px tall",
-      "done": false
+      "done": true,
+      "evidence": "QA: Last match link 44px tall, one line with long opponent; Season/Career toggles 66.7x44 and 62.8x44; badges still open dialogs"
     },
     {
       "text": "Back button on a direct or shared link goes to /teams instead of leaving the app",
-      "done": false
+      "done": true,
+      "evidence": "QA: direct link then Back -> /teams (also after #stats and sticky-nav tap); /stats -> team -> Back -> /stats"
     },
     {
       "text": "Error text has no double period, and 'No Match History' text is hidden when matches failed to load",
-      "done": false
+      "done": true,
+      "evidence": "QA: no double period on team-not-found and load errors; matches 500 shows one alert and hides 'No Match History'; matches [] still shows it"
     },
     {
       "text": "No new console errors, no sideways scroll at 360 and 390 on all four team routes, touched components' tests pass",
@@ -56,6 +64,56 @@
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "dirty": false,
+      "at": "2026-11-02T15:40:07.936Z",
+      "seconds": 15,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261102-polish-individual-team-p/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "dirty": false,
+      "at": "2026-11-02T15:41:54.392Z",
+      "seconds": 106,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261102-polish-individual-team-p/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "dirty": false,
+      "at": "2026-11-02T15:41:59.083Z",
+      "seconds": 5,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261102-polish-individual-team-p/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "dirty": false,
+      "at": "2026-11-02T15:42:08.466Z",
+      "seconds": 9,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261102-polish-individual-team-p/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "dirty": false,
+      "at": "2026-11-02T15:54:38.280Z",
+      "seconds": 750,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261102-polish-individual-team-p/unit.log"
     }
   },
   "reviews": [],
@@ -65,8 +123,12 @@
     {
       "at": "2026-11-02T15:09:52.172Z",
       "text": "Left alone on purpose: hero logo size 144 vs 112 (look change, needs Doug), hero badges div->button (shared with home/standings cards), sticky nav wrong active pill (logic change, follow-up), shared colours/components (power-score colours, Tabs, Select, site header), global scroll-padding. Human choice earlier: fake-data screenshots."
+    },
+    {
+      "at": "2026-11-02T15:58:47.330Z",
+      "text": "QA low findings, accepted: names needing 3+ lines are cut at 2 (right-aligned side shows no ellipsis; full name in title); hero ~20px taller because Last match link is now 44px."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T15:39:52.836Z"
+  "updatedAt": "2026-11-02T15:58:47.330Z"
 }
