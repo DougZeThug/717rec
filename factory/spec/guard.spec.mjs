@@ -6,7 +6,7 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { DEFAULT_CONFIG, hostBlocked, scanDiff } from '../bin/lib.mjs';
-import { addedLines, decide } from '../hooks/guard.mjs';
+import { addedLines, decide, hardenConfig } from '../hooks/guard.mjs';
 
 const factoryDir = join(dirname(fileURLToPath(import.meta.url)), '..');
 // Built from pieces, so no file in factory/ holds the whole fake key (the guard blocks a Write that does).
@@ -190,4 +190,110 @@ test('integrity scan flags weakened tests', () => {
   const findings = scanDiff(diff);
   assert.equal(findings.length, 2);
   assert.deepEqual(scanDiff('+++ b/src/a.ts\n+const x = 1;'), []);
+});
+
+// ---- fail closed: a broken guard, config, input or git must never read as "allowed" ----
+const GUARD = join(factoryDir, 'hooks', 'guard.mjs');
+const spawnGuard = (input, { cwd = factoryDir, env = {}, text } = {}) => spawnSync('node', [GUARD], { cwd, encoding: 'utf8', input: text ?? JSON.stringify(input), env: { ...process.env, ...env } });
+const withRepo = (config, body) => {
+  const repo = mkdtempSync(join(tmpdir(), 'guard-cfg-'));
+  try {
+    execFileSync('git', ['init', '-q', '-b', 'factory/x'], { cwd: repo });
+    if (config !== undefined) {
+      mkdirSync(join(repo, '.factory'));
+      writeFileSync(join(repo, '.factory', 'config.json'), config);
+    }
+    body(repo);
+  } finally {
+    rmSync(repo, { recursive: true, force: true });
+  }
+};
+const hookIn = (repo, tool_name, tool_input) => spawnGuard({ tool_name, cwd: repo, tool_input }, { cwd: repo });
+const askedFor = (result) => JSON.parse(result.stdout).hookSpecificOutput.permissionDecision;
+
+test('a config that cannot be read: Bash exits 2, every edit asks, .env stays blocked', () => {
+  withRepo('{ not json', (repo) => {
+    const plain = hookIn(repo, 'Edit', { file_path: join(repo, 'public', 'a.png') });
+    assert.equal(plain.status, 0, plain.stderr);
+    assert.equal(askedFor(plain), 'ask');
+    assert.equal(askedFor(hookIn(repo, 'Write', { file_path: join(repo, 'src', 'a.ts'), content: 'ok' })), 'ask');
+    for (const tool of ['Edit', 'Write']) {
+      const env = hookIn(repo, tool, { file_path: join(repo, '.env'), content: 'x', new_string: 'x' });
+      assert.equal(env.status, 2, `${tool} .env: ${env.stderr}`);
+      assert.match(env.stderr, /FACTORY GUARD/);
+    }
+    const shell = hookIn(repo, 'Bash', { command: 'git status' });
+    assert.equal(shell.status, 2, 'Bash must not run on a guard that cannot read its config');
+    assert.match(shell.stderr, /FACTORY GUARD/);
+  });
+});
+test('a valid but weak config cannot switch the built-in protection off', () => {
+  for (const weak of [{ protectedPaths: [], protectedBranches: [], controlPlanePaths: [] }, { protectedPaths: 'public/', protectedBranches: 'none', appendOnlyPaths: 7 }]) {
+    withRepo(JSON.stringify(weak), (repo) => {
+      const env = hookIn(repo, 'Edit', { file_path: join(repo, '.env'), new_string: 'x' });
+      assert.equal(env.status, 2, env.stderr);
+      const push = hookIn(repo, 'Bash', { command: ['git', 'push', 'origin', 'main'].join(' ') });
+      assert.equal(push.status, 2, push.stderr);
+      assert.equal(askedFor(hookIn(repo, 'Edit', { file_path: join(repo, '.claude', 'settings.json'), new_string: 'x' })), 'ask');
+      assert.equal(hookIn(repo, 'Bash', { command: 'git status' }).status, 0, 'ordinary commands still run');
+    });
+  }
+});
+test('hardenConfig adds the built-in rules to the project rules and drops bad entries', () => {
+  const hard = hardenConfig({ protectedPaths: ['public/', 7, '.env'], protectedBranches: ['release'], appendOnlyPaths: 'x', blockedCommands: [{ pattern: 'a', reason: 'b' }] });
+  assert.deepEqual(hard.protectedPaths, ['.env', '.env.*', 'public/']);
+  assert.deepEqual(hard.protectedBranches, ['main', 'master', 'release']);
+  assert.deepEqual(hard.appendOnlyPaths, []);
+  assert.ok(hard.controlPlanePaths.includes('factory/hooks/'));
+  assert.equal(hard.blockedCommands.length, 1);
+});
+test('unparsable or empty input exits 2, never 0 or 1', () => {
+  for (const text of ['', '   \n', 'not json', '{"tool_name":', 'null', '[]', '"Bash"']) {
+    const result = spawnGuard(undefined, { text });
+    assert.equal(result.status, 2, `${JSON.stringify(text)} -> ${result.status} ${result.stderr}`);
+    assert.match(result.stderr, /FACTORY GUARD/);
+  }
+});
+test('a git failure while scanning a commit exits 2', () => {
+  const holder = mkdtempSync(join(tmpdir(), 'guard-nogit-'));
+  try {
+    const noRepo = { cwd: holder, env: { GIT_DIR: join(holder, 'missing.git') } };
+    const commit = spawnGuard({ tool_name: 'Bash', cwd: holder, tool_input: { command: 'git commit -m x' } }, noRepo);
+    assert.equal(commit.status, 2, 'git cannot run, so the commit cannot be scanned');
+    assert.match(commit.stderr, /FACTORY GUARD/);
+    assert.equal(spawnGuard({ tool_name: 'Bash', cwd: holder, tool_input: { command: 'git status' } }, noRepo).status, 0, 'no commit, no scan');
+  } finally {
+    rmSync(holder, { recursive: true, force: true });
+  }
+});
+// A pin, not a new rule: it passes on the old guard too. Failing closed on `git diff HEAD` must not block the first commit.
+test('a repo with no commit yet can make its first commit, and a key in it is still caught', () => {
+  withRepo(undefined, (repo) => {
+    writeFileSync(join(repo, 'a.txt'), 'one\n');
+    assert.equal(hookIn(repo, 'Bash', { command: 'git add -A && git commit -m init' }).status, 0, 'first commit of a fresh repo');
+    writeFileSync(join(repo, 'b.txt'), `${FAKE_KEY}\n`);
+    assert.equal(hookIn(repo, 'Bash', { command: 'git add -A && git commit -m init' }).status, 2, 'a key in a fresh repo is still caught');
+  });
+});
+test('the hook command in both settings files fails closed when the guard cannot start', () => {
+  const command = 'node "$CLAUDE_PROJECT_DIR/factory/hooks/guard.mjs" || exit 2';
+  const root = join(factoryDir, '..');
+  for (const file of [join(root, '.claude', 'settings.json'), join(factoryDir, 'settings.template.json')]) {
+    const hook = JSON.parse(readFileSync(file, 'utf8')).hooks.PreToolUse[0].hooks[0];
+    assert.equal(hook.command, command, file);
+    const sh = (projectDir, input = '{}') => spawnSync('sh', ['-c', hook.command], { encoding: 'utf8', input, env: { ...process.env, CLAUDE_PROJECT_DIR: projectDir } });
+    const home = mkdtempSync(join(tmpdir(), 'guard-start-'));
+    try {
+      assert.equal(sh(home).status, 2, `${file}: guard file missing`);
+      assert.equal(sh('').status, 2, `${file}: project dir unset`);
+      mkdirSync(join(home, 'factory', 'hooks'), { recursive: true });
+      writeFileSync(join(home, 'factory', 'hooks', 'guard.mjs'), 'export const = ;\n');
+      assert.equal(sh(home).status, 2, `${file}: guard file has a syntax error`);
+      const push = JSON.stringify({ tool_name: 'Bash', cwd: root, tool_input: { command: ['git', 'push', 'origin', 'main'].join(' ') } });
+      assert.equal(sh(root, push).status, 2, `${file}: the real guard still blocks`);
+      assert.equal(sh(root, JSON.stringify({ tool_name: 'Bash', cwd: root, tool_input: { command: 'git status' } })).status, 0, `${file}: the real guard still allows`);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  }
 });

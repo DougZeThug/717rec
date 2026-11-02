@@ -4,7 +4,7 @@
 import { readFileSync, realpathSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { currentBranch, loadConfig, matchesAny, repoRoot } from '../bin/lib.mjs';
+import { DEFAULT_CONFIG, currentBranch, loadConfig, matchesAny, repoRoot } from '../bin/lib.mjs';
 
 const SECRET = [/sk-ant-[A-Za-z0-9_-]{20,}/, /AKIA[0-9A-Z]{16}/, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /eyJ[A-Za-z0-9_-]{15,}\.eyJ[A-Za-z0-9_-]{15,}\.[A-Za-z0-9_-]{10,}/];
 
@@ -141,11 +141,16 @@ const checkStagedSecrets = (cmd, toolInput) => {
 // What the coming commit will contain. `git commit -a` and `git add ... && git commit` take working-tree
 // changes too, so look at those (and new files) as well as the index.
 const commitContent = (cmd, root, execFileSync) => {
-  const run = (args) => { try { return execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 32e6 }); } catch { return ''; } };
+  // A git failure must not read as "nothing to scan" (that would let a key through): it throws, and the guard exits 2.
+  const run = (args, input) => {
+    try { return execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 32e6, stdio: ['pipe', 'pipe', 'pipe'], input }); } catch (error) { throw new Error(`git ${args[0]} failed, so the commit cannot be scanned: ${String(error.stderr || error.message).trim().split('\n')[0]}`); }
+  };
+  // A repo with no commit yet has no HEAD: compare with the empty tree. Any other failure throws.
+  const hasHead = () => { try { execFileSync('git', ['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: root, stdio: 'ignore' }); return true; } catch (error) { if (error.status === 1) return false; throw new Error(`git rev-parse failed, so the commit cannot be scanned: ${error.message}`); } };
   let diff = run(['diff', '--cached']);
   const takesAll = /\bgit\s+commit\b[^\n;&|]*\s(-[a-zA-Z]*a[a-zA-Z]*|--all)(?=\s|$)/.test(cmd);
   const adds = /\bgit\s+add\b/.test(cmd);
-  if (takesAll || adds) diff += run(['diff', 'HEAD']);
+  if (takesAll || adds) diff += run(['diff', hasHead() ? 'HEAD' : run(['hash-object', '-t', 'tree', '--stdin'], '').trim()]);
   if (adds) {
     for (const file of run(['ls-files', '--others', '--exclude-standard', '-z']).split('\0').filter(Boolean)) {
       try {
@@ -180,12 +185,27 @@ const decideEdit = (toolInput, cfg) => {
   return null;
 };
 
+const EDIT_TOOLS = ['Edit', 'Write', 'NotebookEdit'];
+
 export const decide = (input, cfg, branch) => {
   const toolInput = input.tool_input ?? {};
   if (input.tool_name === 'Bash') return decideBash(toolInput, cfg, branch);
-  if (['Edit', 'Write', 'NotebookEdit'].includes(input.tool_name)) return decideEdit(toolInput, cfg);
+  if (EDIT_TOOLS.includes(input.tool_name)) return decideEdit(toolInput, cfg);
   return null;
 };
+
+// The project config can only ADD protection. The built-in paths and branches always stay on, and a
+// wrong type (a string where a list belongs) becomes an empty list instead of crashing or switching a rule off.
+const strings = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === 'string') : []);
+const union = (...lists) => [...new Set(lists.flat())];
+export const hardenConfig = (cfg) => ({
+  ...cfg,
+  protectedBranches: union(DEFAULT_CONFIG.protectedBranches, strings(cfg.protectedBranches)),
+  protectedPaths: union(DEFAULT_CONFIG.protectedPaths, strings(cfg.protectedPaths)),
+  appendOnlyPaths: strings(cfg.appendOnlyPaths),
+  controlPlanePaths: union(DEFAULT_CONFIG.controlPlanePaths, strings(cfg.controlPlanePaths)),
+  blockedCommands: Array.isArray(cfg.blockedCommands) ? cfg.blockedCommands : [],
+});
 
 // import.meta.url is a percent-encoded URL. A raw `file://` + path breaks on spaces, #, % and non-ASCII,
 // and the guard would then do nothing and exit 0. Compare real file URLs instead.
@@ -193,17 +213,48 @@ const isMain = () => {
   if (!process.argv[1]) return false;
   try { return import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href; } catch { return import.meta.url === pathToFileURL(process.argv[1]).href; }
 };
-if (isMain()) {
-  const input = JSON.parse(readFileSync(0, 'utf8') || '{}');
+// Fail closed. Empty, unparsable or odd input, an unreadable config (for Bash) and any internal error end in exit 2.
+// Exit 1 would let the tool call run. A crash that happens before this code runs (a syntax error in this file,
+// a missing file, no node) is caught by `|| exit 2` in the hook command in settings.json.
+const readInput = () => {
+  const text = readFileSync(0, 'utf8');
+  if (!text.trim()) throw new Error('the tool call on stdin was empty');
+  const input = JSON.parse(text);
+  if (input === null || typeof input !== 'object' || Array.isArray(input)) throw new Error('the tool call on stdin was not a JSON object');
+  return input;
+};
+
+const guard = async () => {
+  const input = readInput();
   const root = repoRoot(input.cwd);
   const toolInput = (input.tool_input ??= {});
+  // An unreadable config: an edit falls back to the built-in rules and asks the human. Bash throws (exit 2).
+  let cfg;
+  let configBroken = false;
+  try {
+    cfg = hardenConfig(loadConfig(root));
+  } catch (error) {
+    if (!EDIT_TOOLS.includes(input.tool_name)) throw new Error(`the factory config (.factory/config.json) cannot be read: ${error.message}`);
+    cfg = hardenConfig(DEFAULT_CONFIG);
+    configBroken = true;
+  }
   const { existsSync } = await import('node:fs');
   const { execFileSync } = await import('node:child_process');
   if (toolInput.file_path) toolInput.__exists = existsSync(toolInput.file_path);
   if (input.tool_name === 'Bash' && /\bgit\s+commit\b/.test(String(toolInput.command))) {
     toolInput.__stagedDiff = commitContent(String(toolInput.command), root, execFileSync);
   }
-  const decision = decide(input, loadConfig(root), currentBranch(root));
+  let decision = decide(input, cfg, currentBranch(root));
+  if (configBroken && !decision?.block) decision = { ask: 'The factory config (.factory/config.json) cannot be read, so only the built-in rules apply. A human must approve this edit.' };
   if (decision?.block) { console.error(`FACTORY GUARD: ${decision.block}`); process.exitCode = 2; }
   else if (decision?.ask) console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: decision.ask } }));
+};
+
+if (isMain()) {
+  try {
+    await guard();
+  } catch (error) {
+    console.error(`FACTORY GUARD: the guard could not finish (${error?.message ?? error}). Blocking to be safe.`);
+    process.exitCode = 2;
+  }
 }

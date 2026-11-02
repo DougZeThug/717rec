@@ -29,7 +29,7 @@
     "PreToolUse": [
       {
         "matcher": "Bash|Edit|Write|NotebookEdit",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/factory/hooks/guard.mjs\"", "timeout": 20, "onFailure": "block" }]
+        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/factory/hooks/guard.mjs\" || exit 2", "timeout": 20, "onFailure": "block" }]
       }
     ],
     "SessionStart": [
