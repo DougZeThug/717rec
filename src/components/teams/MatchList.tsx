@@ -13,6 +13,8 @@ import TeamGameScoreRow from './TeamGameScoreRow';
 interface MatchListProps {
   matches: Match[];
   isLoading?: boolean;
+  /** The matches failed to load. An empty list then is not "no history", so say nothing here. */
+  hasError?: boolean;
   teamId: string;
   title?: string;
   isPast?: boolean;
@@ -40,6 +42,7 @@ const VirtualizedMatchRow: React.FC<{
 const MatchList: React.FC<MatchListProps> = ({
   matches,
   isLoading,
+  hasError = false,
   teamId,
   title = 'Current Season Match History',
   isPast = true,
@@ -67,15 +70,17 @@ const MatchList: React.FC<MatchListProps> = ({
   const matchContent = isLoading ? (
     <Skeleton className="h-32 w-full rounded" />
   ) : matches.length === 0 ? (
-    <InlineEmptyState
-      icon={History}
-      message={isPast ? 'No Match History' : 'No Upcoming Matches'}
-      description={
-        isPast
-          ? 'Match history will appear after games are played'
-          : 'No upcoming matches scheduled'
-      }
-    />
+    hasError ? null : (
+      <InlineEmptyState
+        icon={History}
+        message={isPast ? 'No Match History' : 'No Upcoming Matches'}
+        description={
+          isPast
+            ? 'Match history will appear after games are played'
+            : 'No upcoming matches scheduled'
+        }
+      />
+    )
   ) : shouldVirtualize ? (
     <VirtualizedList
       items={matches}
