@@ -36,11 +36,11 @@
   ],
   "checks": {
     "integrity": {
-      "result": "fail",
-      "exit": 1,
-      "sha": "3ae839379ba214806b17ef981fb85a8a354897a4",
+      "result": "pass",
+      "exit": 0,
+      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
       "dirty": false,
-      "at": "2026-11-02T20:17:41.587Z",
+      "at": "2026-11-02T20:18:32.018Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/integrity.log"
@@ -48,12 +48,42 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "3ae839379ba214806b17ef981fb85a8a354897a4",
+      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
       "dirty": false,
-      "at": "2026-11-02T20:17:54.594Z",
-      "seconds": 13,
+      "at": "2026-11-02T20:18:46.582Z",
+      "seconds": 15,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "dirty": false,
+      "at": "2026-11-02T20:20:34.526Z",
+      "seconds": 108,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "dirty": false,
+      "at": "2026-11-02T20:20:38.149Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "dirty": false,
+      "at": "2026-11-02T20:20:46.323Z",
+      "seconds": 8,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/build.log"
     }
   },
   "reviews": [],
@@ -66,5 +96,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T20:17:54.595Z"
+  "updatedAt": "2026-11-02T20:20:46.324Z"
 }
