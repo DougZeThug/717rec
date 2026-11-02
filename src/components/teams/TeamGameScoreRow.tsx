@@ -21,9 +21,16 @@ interface TeamDetails {
   divisionname?: string | null;
 }
 
-// Team logo that links to the team page
+// Team logo that links to the team page. The name link beside it goes to the same
+// place, so the logo link stays out of the tab order and the screen reader list.
+// min-w-0 undoes TransitionLink's 44px minimum width, which took 16px from the name.
 const TeamLogoLink: React.FC<{ name: string; logo: string }> = ({ name, logo }) => (
-  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="shrink-0">
+  <TransitionLink
+    to={`/teams/${toTeamSlug(name)}`}
+    className="shrink-0 min-w-0"
+    aria-hidden="true"
+    tabIndex={-1}
+  >
     <Avatar className="size-7 md:size-8">
       <AvatarImage src={logo} alt={name} />
       <AvatarFallback>{name.charAt(0)}</AvatarFallback>
@@ -36,7 +43,7 @@ const TeamNameLink: React.FC<{ name: string; labelClassName: string }> = ({
   name,
   labelClassName,
 }) => (
-  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="truncate hover:underline">
+  <TransitionLink to={`/teams/${toTeamSlug(name)}`} className="hover:underline">
     <span className={labelClassName} title={name}>
       {name}
     </span>
@@ -94,10 +101,12 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
           <TeamNameLink
             name={homeName}
             labelClassName={cn(
-              'truncate',
+              'line-clamp-2 break-words',
               'font-bebas uppercase tracking-wide',
-              highlightWinnerLoser && winnerTeamId === homeTeamId && 'text-green-600 font-medium',
-              highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-500'
+              highlightWinnerLoser &&
+                winnerTeamId === homeTeamId &&
+                'text-green-700 dark:text-green-600 font-medium',
+              highlightWinnerLoser && loserTeamId === homeTeamId && 'text-red-700 dark:text-red-500'
             )}
           />
         </div>
@@ -115,10 +124,12 @@ const TeamGameScoreRowComponent: React.FC<TeamGameScoreRowProps> = ({
           <TeamNameLink
             name={awayName}
             labelClassName={cn(
-              'truncate text-right',
+              'line-clamp-2 break-words text-right',
               'font-bebas uppercase tracking-wide',
-              highlightWinnerLoser && winnerTeamId === awayTeamId && 'text-green-600 font-medium',
-              highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-500'
+              highlightWinnerLoser &&
+                winnerTeamId === awayTeamId &&
+                'text-green-700 dark:text-green-600 font-medium',
+              highlightWinnerLoser && loserTeamId === awayTeamId && 'text-red-700 dark:text-red-500'
             )}
           />
           <TeamLogoLink name={awayName} logo={awayLogo} />
