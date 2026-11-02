@@ -1,0 +1,49 @@
+{
+  "id": "T-261102-ui-follow-ups-hero-badge",
+  "title": "UI follow-ups: hero badges, sticky nav pill, desktop navbar overlap",
+  "kind": "fix",
+  "status": "planned",
+  "request": "Hero badges not keyboard-reachable; wrong active pill in the team-page sticky nav; Home pill overlapping the wordmark at 1024 to 1280px",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+  "createdAt": "2026-11-02T19:28:57.557Z",
+  "criteria": [
+    {
+      "text": "Team-page hero badges are real buttons with an accessible name (the badge name), reachable by Tab, opened by Enter and Space and by tap, at least 44x44 with a visible focus ring, and open the same dialog as before",
+      "done": false
+    },
+    {
+      "text": "Badges on other pages that share the component (home Top Teams cards, /stats rows) look the same as before and are never a button nested inside a link (no nested interactive elements)",
+      "done": false
+    },
+    {
+      "text": "Sticky nav: the active pill matches the section in view after tapping Overview, Stats, Matchups, Matches and Career, and while scrolling; aria-current is correct",
+      "done": false
+    },
+    {
+      "text": "Sticky nav: the active pill is scrolled into view in the 390px bar, and each button's accessible name contains its visible words",
+      "done": false
+    },
+    {
+      "text": "At 1024, 1100, 1280 and 1440px the 717REC wordmark is not overlapped by the Home pill or any nav pill; the navbar is unchanged at 390, 360 and 1440",
+      "done": false
+    },
+    {
+      "text": "No new console errors, no sideways scroll at 360 and 390 on / , /stats and a team page and at 1024 to 1440, touched components' tests pass",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [
+    {
+      "at": "2026-11-02T19:29:04.861Z",
+      "text": "From the earlier audits. Known causes: TeamBadge.tsx:143-158 is a div onClick (40x40, no role or name, Tab skips it; TeamBadgeCollection is shared with home TeamCard, RankingCard, RankingCardCompact, RankingTeamCell: check none sits inside a link); TeamDetailsStickyNav.tsx:56-79 lets the last intersecting entry win; desktop brand is squeezed to 61px at 1280 so the wordmark runs into the Home pill (Navbar.tsx)."
+    }
+  ],
+  "waivers": [],
+  "updatedAt": "2026-11-02T19:29:04.861Z"
+}
