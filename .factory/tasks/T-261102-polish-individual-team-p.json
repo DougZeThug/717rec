@@ -1,0 +1,19 @@
+{
+  "id": "T-261102-polish-individual-team-p",
+  "title": "Polish individual team pages on mobile",
+  "kind": "polish",
+  "status": "intake",
+  "request": "individual team pages on mobile",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+  "createdAt": "2026-11-02T14:42:26.780Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-02T14:42:26.780Z"
+}
