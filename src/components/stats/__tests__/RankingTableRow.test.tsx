@@ -27,7 +27,9 @@ vi.mock('@/hooks/useSeasonalTheme', () => ({
 vi.mock('@/utils/logger', () => ({ debugLog: vi.fn() }));
 
 vi.mock('@/components/badges/TeamBadgeCollection', () => ({
-  default: ({ teamId }: { teamId: string }) => <div data-testid={`badges-${teamId}`} />,
+  default: ({ teamId, interactive }: { teamId: string; interactive?: boolean }) => (
+    <div data-testid={`badges-${teamId}`} data-interactive={String(interactive)} />
+  ),
 }));
 
 import { Ranking } from '@/types';
@@ -123,6 +125,16 @@ describe('RankingTableRow', () => {
       'href',
       expect.stringContaining('/teams/')
     );
+  });
+
+  // The badges sit inside the team link: a button there would be nested
+  // interactive content.
+  it('keeps the badges non-interactive because they sit inside the team link', () => {
+    renderRow();
+
+    const link = screen.getByRole('link', { name: 'View Team One team details' });
+    expect(link).toContainElement(screen.getByTestId('badges-team-1'));
+    expect(screen.getByTestId('badges-team-1')).toHaveAttribute('data-interactive', 'false');
   });
 
   it('links to the compare page for the team', () => {

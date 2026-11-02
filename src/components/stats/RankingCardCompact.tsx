@@ -149,8 +149,10 @@ export const RankingCardCompact: React.FC<RankingCardCompactProps> = ({
 
         <TeamColumn ranking={ranking} showDivision={showDivision} />
 
-        {/* Badges */}
-        <div className="shrink-0">
+        {/* Badges. A badge opens its own dialog, so a tap here, and any tap
+            inside that dialog, must not also expand the card (React passes
+            clicks from the portalled dialog up to this card). */}
+        <div className="shrink-0" onClick={stopCardToggle}>
           <TeamBadgeCollection
             teamId={ranking.teamId}
             size="sm"

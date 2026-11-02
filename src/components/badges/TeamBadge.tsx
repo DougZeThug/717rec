@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import {
   Dialog,
@@ -18,6 +18,12 @@ interface TeamBadgeProps {
   size?: 'sm' | 'md' | 'lg';
   showDescription?: boolean;
   className?: string;
+  /**
+   * Set false where the badge sits inside a link (or another button). A button
+   * there would be nested interactive content, which is invalid and breaks both
+   * the click and the keyboard. The badge then stays a plain tooltip target.
+   */
+  interactive?: boolean;
 }
 
 // Large badge icon shown at the top of the mobile detail dialog
@@ -44,8 +50,9 @@ const BadgeDialogBody: React.FC<{
   IconComponent: React.ComponentType<{ className?: string }>;
   name: string;
   description: string;
-}> = ({ gradient, IconComponent, name, description }) => (
-  <DialogContent className="sm:max-w-md">
+  onCloseAutoFocus: (event: Event) => void;
+}> = ({ gradient, IconComponent, name, description, onCloseAutoFocus }) => (
+  <DialogContent className="sm:max-w-md" onCloseAutoFocus={onCloseAutoFocus}>
     <DialogHeader className="text-center">
       <DialogBadgeIcon gradient={gradient} IconComponent={IconComponent} />
       <DialogTitle className="text-lg font-semibold">{name}</DialogTitle>
@@ -61,11 +68,13 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
   size = 'md',
   showDescription: _showDescription = false,
   className,
+  interactive = true,
 }) => {
   const config = getBadgeConfig(badge.badge_type, badge);
   const IconComponent = config.icon;
   const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const sizeClasses = {
     sm: isMobile ? 'size-8 text-xs' : 'size-6 text-xs',
@@ -139,27 +148,46 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     badge.badge_type.includes('runner_up') ||
     badge.badge_type.includes('third_place');
 
-  const BadgeContent = (
-    <div
+  // Only a phone tap opens the detail dialog; the desktop badge is a hover
+  // tooltip with nothing to press, so it stays a plain element there.
+  const opensDialog = interactive && isMobile;
+
+  const badgeClassName = cn(
+    'relative inline-flex items-center justify-center rounded-full',
+    `bg-gradient-to-br ${config.gradient}`,
+    sizeClasses[size],
+    'shadow-xs border-2 border-white',
+    'transition-all duration-200',
+    // Championship badges get hover glow
+    isChampionshipBadge && 'hover:shadow-lg hover:shadow-yellow-400/30 hover:scale-105',
+    opensDialog ? 'cursor-pointer active:scale-95' : 'cursor-help hover:scale-105',
+    className
+  );
+  const badgeIcon = <IconComponent className={cn('text-white', iconSizes[size])} />;
+
+  // A real button, so Tab reaches it and Enter or Space opens the dialog.
+  // hit-area-44 grows the tap area to 44px without changing the drawn size.
+  const BadgeContent = opensDialog ? (
+    <button
+      ref={buttonRef}
+      type="button"
+      aria-label={config.name}
+      aria-haspopup="dialog"
+      onClick={() => setIsDialogOpen(true)}
       className={cn(
-        'relative inline-flex items-center justify-center rounded-full',
-        `bg-gradient-to-br ${config.gradient}`,
-        sizeClasses[size],
-        'shadow-xs border-2 border-white',
-        'transition-all duration-200',
-        // Championship badges get hover glow
-        isChampionshipBadge && 'hover:shadow-lg hover:shadow-yellow-400/30 hover:scale-105',
-        isMobile ? 'cursor-pointer active:scale-95' : 'cursor-help hover:scale-105',
-        className
+        badgeClassName,
+        'hit-area-44',
+        'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
-      onClick={isMobile ? () => setIsDialogOpen(true) : undefined}
     >
-      <IconComponent className={cn('text-white', iconSizes[size])} />
-    </div>
+      {badgeIcon}
+    </button>
+  ) : (
+    <div className={badgeClassName}>{badgeIcon}</div>
   );
 
   // Mobile: Use dialog for tap interaction
-  if (isMobile) {
+  if (opensDialog) {
     return (
       <>
         {BadgeContent}
@@ -169,13 +197,19 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
             IconComponent={IconComponent}
             name={config.name}
             description={getEnhancedDescription()}
+            // Radix hands focus back to a Dialog.Trigger, and this dialog has
+            // none, so without this a keyboard user lands on the page top.
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              buttonRef.current?.focus();
+            }}
           />
         </Dialog>
       </>
     );
   }
 
-  // Desktop: Use tooltip for hover interaction
+  // Desktop, or inside a link: a hover tooltip
   return (
     <TooltipProvider>
       <Tooltip>
