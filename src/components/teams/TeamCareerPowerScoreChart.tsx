@@ -146,7 +146,10 @@ const CareerChartPlot = ({ seasonData, chartHeight, isMobile, isDark }: CareerCh
           position: 'insideLeft',
           // The title is turned -90 degrees. By default its end sits at the middle of the
           // plot, so it runs off the top of the short phone chart. Middle centres it.
-          style: { fontSize: 12, fill: 'currentColor', textAnchor: 'middle' },
+          // Recharts reads this as the svg text-anchor attribute, so keep it here and not
+          // in the CSS style.
+          textAnchor: 'middle',
+          style: { fontSize: 12, fill: 'currentColor' },
         }}
         tick={{ fontSize: 11, fill: 'currentColor' }}
         stroke="currentColor"

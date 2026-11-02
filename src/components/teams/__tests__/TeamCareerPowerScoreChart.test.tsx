@@ -130,6 +130,33 @@ describe('TeamCareerPowerScoreChart', () => {
     expect(container.querySelectorAll('circle[stroke="white"]')).toHaveLength(1);
   });
 
+  it.each([
+    { device: 'phone', mobile: true, left: '32' },
+    { device: 'desktop', mobile: false, left: '6' },
+  ])('keeps $left px free left of the y axis on a $device', ({ mobile, left }) => {
+    isMobile = mobile;
+    const { container } = render(<TeamCareerPowerScoreChart teamId="t1" standalone />);
+
+    // The y axis box starts at the chart's left margin. On a phone the margin holds the
+    // first season name, which slants to the left of the plot.
+    const yAxisLine = container.querySelector(
+      'line[orientation="left"].recharts-cartesian-axis-line'
+    );
+    expect(yAxisLine).toHaveAttribute('x', left);
+  });
+
+  it('centres the y axis title with the svg text-anchor attribute', () => {
+    const { container } = render(<TeamCareerPowerScoreChart teamId="t1" standalone />);
+
+    // The attribute, not a CSS style: Recharts reads the label's own textAnchor and sets
+    // it as the attribute. Its default for this label is 'start', which runs the turned
+    // title off the top of the short phone chart.
+    const title = Array.from(container.querySelectorAll('svg text')).find(
+      (el) => el.textContent === 'Power Score'
+    );
+    expect(title).toHaveAttribute('text-anchor', 'middle');
+  });
+
   it('folds itself into a collapsible section when it is not standalone', () => {
     // The section heading reads the route for its seasonal styling.
     render(

@@ -316,6 +316,8 @@ const TeamDetailsPage = () => {
    * (a blank page). Send that visitor to the teams list instead.
    */
   const handleBack = () => {
+    // A team address typed by hand, reloaded, or opened from outside the app also has the
+    // key 'default'. Back goes to /teams for those visitors too. That is intended.
     if (locationKey === 'default') {
       navigate('/teams');
       return;
