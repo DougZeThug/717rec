@@ -19,7 +19,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
         class="flex justify-between items-center py-2 md:py-1"
       >
         <div
-          class="flex items-center self-start shrink-0 lg:shrink"
+          class="flex items-center self-start shrink-0"
         >
           <a
             class="flex items-center space-x-2 mr-3 min-h-11"
@@ -46,13 +46,14 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
           >
             <a
               aria-current="page"
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3 bg-white/20 text-white"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3 bg-white/20 text-white"
               data-discover="true"
               href="/"
+              title="Home"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-house lucide-home mr-2"
+                class="lucide lucide-house lucide-home xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -71,19 +72,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Home
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/teams"
+              title="Teams"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-users mr-2"
+                class="lucide lucide-users xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -110,19 +112,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Teams
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/schedule"
+              title="Schedule"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-calendar mr-2"
+                class="lucide lucide-calendar xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -151,19 +154,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Schedule
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/stats"
+              title="Standings"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-chart-column lucide-bar-chart-3 mr-2"
+                class="lucide lucide-chart-column lucide-bar-chart-3 xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -188,19 +192,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Standings
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/playoffs"
+              title="Playoffs"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-trophy mr-2"
+                class="lucide lucide-trophy xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -231,19 +236,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Playoffs
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/history"
+              title="History"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-clock mr-2"
+                class="lucide lucide-clock xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -264,19 +270,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 History
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/message-board"
+              title="Messages"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-message-square mr-2"
+                class="lucide lucide-message-square xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -292,19 +299,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Messages
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/help"
+              title="Help"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-circle-question-mark lucide-help-circle lucide-circle-help mr-2"
+                class="lucide lucide-circle-question-mark lucide-help-circle lucide-circle-help xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -328,19 +336,20 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Help
               </span>
             </a>
             <a
-              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3"
+              class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-2 min-[1320px]:px-3"
               data-discover="true"
               href="/contact"
+              title="Contact"
             >
               <svg
                 aria-hidden="true"
-                class="lucide lucide-mail mr-2"
+                class="lucide lucide-mail xl:mr-2"
                 fill="none"
                 height="16"
                 stroke="currentColor"
@@ -363,7 +372,7 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
                 />
               </svg>
               <span
-                class=""
+                class="max-xl:sr-only"
               >
                 Contact
               </span>

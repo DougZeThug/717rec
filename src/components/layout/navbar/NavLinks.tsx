@@ -29,12 +29,27 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
   const { isAdminAccessGranted, isLoading: adminCheckLoading } = useAdminAccess();
   const { pathname } = useLocation();
   const activeClass = 'bg-white/20 text-white';
-  // px-3, not px-4: the row holds nine links, three account controls, the search
-  // button and — for an admin — Admin, inside a container that stops growing at
-  // 1368px. The extra 8px a side was 72px the row could not spare.
+  // Held back until the profile has loaded, so Admin does not appear late.
+  const showAdminLink = isAdminAccessGranted && !adminCheckLoading;
+  // The row holds nine links, three account controls, the search button and —
+  // for an admin — Admin, inside a container that stops growing at 1368px, and
+  // the brand keeps its full width beside it. Full pills (px-3, label and icon)
+  // need about 1320px, or 1420px with Admin. Short of that they tighten to px-2,
+  // and short of about 1280 (1340 with Admin) only the icon shows, with the
+  // label left for screen readers: at 1024 the row ran 244px past the window
+  // and pushed Sign in, the theme toggle and search out of sight. Each class is
+  // written out whole so that Tailwind finds it.
+  const desktopFit = showAdminLink
+    ? {
+        padding: 'px-2 min-[1420px]:px-3',
+        icon: 'min-[1340px]:mr-2',
+        label: 'max-[1340px]:sr-only',
+      }
+    : { padding: 'px-2 min-[1320px]:px-3', icon: 'xl:mr-2', label: 'max-xl:sr-only' };
   const baseClass = isMobile
     ? 'flex items-center w-full px-4 py-3 text-sm font-medium text-white hover:bg-white/10 rounded-md transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-cornhole-navy'
-    : 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 px-3';
+    : 'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=open]:bg-accent data-[state=open]:text-muted-foreground hover:bg-accent hover:text-muted-foreground h-9 ' +
+      desktopFit.padding;
 
   // Memoize handler to prevent recreating on each render
   const handleLinkClick = useCallback(
@@ -73,13 +88,12 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
     // X-03: the Admin Panel used to be reachable from the user menu and nowhere
     // else. This list is rendered both across the header and inside the phone
     // hamburger, so one entry here puts it in the primary navigation on both.
-    // Held back until the profile has loaded, so it does not appear late.
-    if (isAdminAccessGranted && !adminCheckLoading) {
+    if (showAdminLink) {
       items.push({ href: '/admin', label: 'Admin', icon: Shield });
     }
 
     return items;
-  }, [isAdminAccessGranted, adminCheckLoading]);
+  }, [showAdminLink]);
 
   return (
     <>
@@ -91,6 +105,9 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
           onMouseEnter={() => prefetchRoute(item.href)}
           onFocus={() => prefetchRoute(item.href)}
           onTouchStart={() => prefetchRoute(item.href)}
+          // The icon-only desktop pills have no visible name, so give a mouse
+          // user one on hover.
+          title={isMobile ? undefined : item.label}
           className={({ isActive }) => cn(baseClass, isActive ? activeClass : undefined)}
         >
           {({ isActive }) => (
@@ -98,9 +115,9 @@ const NavLinks: React.FC<NavLinksProps> = React.memo(({ isMobile = false, onLink
               <item.icon
                 size={ICON_SIZES.md}
                 strokeWidth={isActive ? ICON_STROKE.bold : ICON_STROKE.normal}
-                className={isMobile ? 'mr-3' : 'mr-2'}
+                className={isMobile ? 'mr-3' : desktopFit.icon}
               />
-              <span className={isMobile ? 'text-base' : ''}>{item.label}</span>
+              <span className={isMobile ? 'text-base' : desktopFit.label}>{item.label}</span>
             </>
           )}
         </NavLink>
