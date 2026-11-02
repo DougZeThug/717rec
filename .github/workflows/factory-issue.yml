@@ -18,7 +18,9 @@ permissions:
   issues: write
   id-token: write
 
-# Concurrency ceiling: one factory run at a time. Extra labels wait in line.
+# Concurrency ceiling: one factory run at a time. GitHub keeps only ONE more run
+# waiting. If a third label arrives, the waiting run is cancelled and replaced,
+# so re-label an issue if its run does not start. (Running jobs are never cancelled.)
 concurrency:
   group: factory-run
   cancel-in-progress: false
