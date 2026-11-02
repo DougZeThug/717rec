@@ -67,10 +67,16 @@ describe('ScheduleHeader', () => {
     // The react-day-picker calendar grid is rendered inside the popover.
     const grid = await screen.findByRole('grid');
 
-    // Pick the first selectable day cell (a button whose label is a day number).
+    // Pick the first day cell (a button whose label is a day number) that is not already
+    // selected. The header selects today, and clicking the selected day deselects it, so on a
+    // month whose first grid cell is today the old "first cell" pick never fired onDateSelect.
     const dayButton = within(grid)
       .getAllByRole('button')
-      .find((btn) => /^\d+$/.test((btn.textContent ?? '').trim()));
+      .find(
+        (btn) =>
+          /^\d+$/.test((btn.textContent ?? '').trim()) &&
+          !/selected/i.test(btn.getAttribute('aria-label') ?? '')
+      );
     expect(dayButton).toBeDefined();
 
     await userEvent.click(dayButton as HTMLElement);
