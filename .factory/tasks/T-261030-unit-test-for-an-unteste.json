@@ -69,9 +69,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "b0573948ba9aa6c5cf256483a5672cf70d90a5f7",
+      "sha": "8d35726338bb3a8a869cf4297d5e54f7359ea2c4",
       "dirty": false,
-      "at": "2026-11-01T20:27:23.357Z",
+      "at": "2026-11-02T13:17:07.974Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261030-unit-test-for-an-unteste/integrity.log"
@@ -138,7 +138,7 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-01T20:41:08.925Z",
+  "updatedAt": "2026-11-02T13:17:08.034Z",
   "readySha": "b0573948ba9aa6c5cf256483a5672cf70d90a5f7",
   "readyAt": "2026-11-01T20:41:08.925Z"
 }
