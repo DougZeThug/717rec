@@ -2,7 +2,7 @@
   "id": "T-261102-polish-individual-team-p",
   "title": "Polish individual team pages on mobile",
   "kind": "polish",
-  "status": "planned",
+  "status": "verifying",
   "request": "individual team pages on mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -51,7 +51,8 @@
     },
     {
       "text": "No new console errors, no sideways scroll at 360 and 390 on all four team routes, touched components' tests pass",
-      "done": false
+      "done": true,
+      "evidence": "All 6 required checks pass at HEAD (typecheck, lint, unit 750s, build, knip, integrity). QA: 0 console errors and no sideways scroll at 360/390 on 4 routes and /stats. Developer ran 27 test files / 207 tests in src/components/teams + TeamDetails."
     }
   ],
   "checks": {
@@ -130,5 +131,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T15:58:47.330Z"
+  "updatedAt": "2026-11-02T15:59:12.165Z"
 }
