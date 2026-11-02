@@ -96,15 +96,27 @@
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
+      "at": "2026-11-02T20:54:02.209Z",
+      "summary": "UI follow-ups re-reviewed at HEAD (whole task diff): desktop badges are Tab-reachable buttons with names and focus tooltips; in-link badges (home TeamCard, RankingTeamCell) have no tab stop and no nested button; RankingCard/Compact phone-only; controlled-tooltip flag cannot stick (checked in Radix source and by mutation); rAF hold fix and test verified by mutation; no suppressions in the diff; 46/46 targeted tests pass."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [
     {
       "at": "2026-11-02T19:29:04.861Z",
       "text": "From the earlier audits. Known causes: TeamBadge.tsx:143-158 is a div onClick (40x40, no role or name, Tab skips it; TeamBadgeCollection is shared with home TeamCard, RankingCard, RankingCardCompact, RankingTeamCell: check none sits inside a link); TeamDetailsStickyNav.tsx:56-79 lets the last intersecting entry win; desktop brand is squeezed to 61px at 1280 so the wordmark runs into the Home pill (Navbar.tsx)."
+    },
+    {
+      "at": "2026-11-02T20:54:02.265Z",
+      "text": "Reviewer nits, not blocking: tooltip text repeats the badge name for screen readers; no tooltip after the dialog closes for keyboard users; title attr also shows at >=1280 where labels are visible. Behaviour changes to tell Doug: desktop badge click now opens the dialog; phone taps on badges inside the home Top Teams card link now just follow the link. Navbar signed-in/admin at 1024px simulated only."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T20:50:55.467Z"
+  "updatedAt": "2026-11-02T20:54:02.266Z"
 }
