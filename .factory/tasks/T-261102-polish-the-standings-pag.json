@@ -1,0 +1,19 @@
+{
+  "id": "T-261102-polish-the-standings-pag",
+  "title": "Polish the standings page on phone",
+  "kind": "polish",
+  "status": "intake",
+  "request": "the standings page on my phone",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "a843bf9b6823c6cbbecef0bbcf3fa1dc7b75bd08",
+  "createdAt": "2026-11-02T13:54:40.080Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-02T13:54:40.080Z"
+}
