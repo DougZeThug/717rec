@@ -28,7 +28,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         value="division"
         aria-label="View by Division"
         className={cn(
-          'transition-all duration-200 px-3 py-1.5 text-sm font-medium rounded-md',
+          'transition-all duration-200 min-h-11 min-w-11 px-3 py-1.5 text-sm font-medium rounded-md',
           view === 'division'
             ? isWinterTheme
               ? 'btn-winter-primary'
@@ -45,7 +45,7 @@ const ViewToggle = ({ view, onViewChange }: ViewToggleProps) => {
         value="all"
         aria-label="View All Teams"
         className={cn(
-          'transition-all duration-200 px-3 py-1.5 text-sm font-medium rounded-md',
+          'transition-all duration-200 min-h-11 min-w-11 px-3 py-1.5 text-sm font-medium rounded-md',
           view === 'all'
             ? isWinterTheme
               ? 'btn-winter-primary'

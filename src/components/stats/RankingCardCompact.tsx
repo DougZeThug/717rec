@@ -99,7 +99,7 @@ const TeamColumn: React.FC<{ ranking: Ranking; showDivision: boolean }> = ({
     to={`/teams/${toTeamSlug(ranking.teamName)}`}
     state={{ from: '/stats' }}
     aria-label={`View ${ranking.teamName} team details`}
-    className="flex items-center gap-2 flex-1 min-w-0 group"
+    className="flex items-center gap-2 flex-1 min-w-0 min-h-11 group"
     onClick={stopCardToggle}
   >
     <TeamLogo

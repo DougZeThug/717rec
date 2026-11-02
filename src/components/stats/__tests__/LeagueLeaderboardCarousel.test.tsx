@@ -58,6 +58,8 @@ describe('LeagueLeaderboardCarousel', () => {
     expect(links[0]).toHaveTextContent('Bravo');
     expect(links[1]).toHaveTextContent('Charlie');
     expect(links[2]).toHaveTextContent('Delta');
+    // The name may be cut at two lines; the full name stays in the title.
+    expect(screen.getByTitle('Bravo')).toHaveTextContent('Bravo');
     expect(screen.queryByText('Alpha')).not.toBeInTheDocument();
   });
 });

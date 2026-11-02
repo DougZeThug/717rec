@@ -150,10 +150,14 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <ToggleGroupItem
             value="compact"
             className={cn(
-              'text-xs px-2.5 py-1 rounded-md transition-all',
+              'text-xs min-h-11 min-w-11 px-2.5 py-1 rounded-md transition-all',
               !detailedView
-                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
-                : 'text-muted-foreground hover:bg-accent'
+                ? isWinterTheme
+                  ? 'btn-winter-primary'
+                  : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
+                : isWinterTheme
+                  ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
+                  : 'text-muted-foreground hover:bg-accent'
             )}
           >
             Compact
@@ -161,10 +165,14 @@ const RankingsMobileView: React.FC<RankingsMobileViewProps> = ({
           <ToggleGroupItem
             value="detailed"
             className={cn(
-              'text-xs px-2.5 py-1 rounded-md transition-all',
+              'text-xs min-h-11 min-w-11 px-2.5 py-1 rounded-md transition-all',
               detailedView
-                ? 'bg-cornhole-navy text-white ring-2 ring-blue-400/70 ring-offset-1 ring-offset-background shadow-[0_0_8px_rgba(96,165,250,0.5)]'
-                : 'text-muted-foreground hover:bg-accent'
+                ? isWinterTheme
+                  ? 'btn-winter-primary'
+                  : 'bg-gradient-to-br from-blue-600 to-amber-600 text-white shadow-xs'
+                : isWinterTheme
+                  ? 'text-[hsl(var(--muted-foreground))] hover:bg-frost-primary/10'
+                  : 'text-muted-foreground hover:bg-accent'
             )}
           >
             Detailed
