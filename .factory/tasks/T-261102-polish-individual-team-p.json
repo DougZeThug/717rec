@@ -69,10 +69,10 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:40:07.936Z",
-      "seconds": 15,
+      "at": "2026-11-02T16:08:32.616Z",
+      "seconds": 14,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/typecheck.log"
     },
@@ -143,7 +143,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T16:08:18.300Z",
+  "updatedAt": "2026-11-02T16:08:32.616Z",
   "readySha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
   "readyAt": "2026-11-02T16:02:22.801Z"
 }
