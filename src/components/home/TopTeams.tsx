@@ -93,6 +93,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams, error, onRetry }) => {
         icon={Trophy}
         iconColor={shouldApplyWinter ? 'text-cyan-400' : 'text-amber-500'}
         description="Based on highest power score ranking"
+        className="gap-y-3"
         action={
           <Button
             asChild
@@ -122,7 +123,7 @@ const TopTeams: React.FC<TopTeamsProps> = ({ teams, error, onRetry }) => {
           <CarouselContent className="-ml-2">
             {topTenTeams.map((team, index) => (
               <CarouselItem key={team.id} className="pl-2 basis-[140px]">
-                <div className="pt-5 pb-1">
+                <div className="pt-5 pb-1 h-full">
                   <TeamCardCompact team={team} rank={index + 1} isWinter={shouldApplyWinter} />
                 </div>
               </CarouselItem>

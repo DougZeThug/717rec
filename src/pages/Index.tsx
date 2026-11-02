@@ -46,9 +46,14 @@ const Index: React.FC = () => {
         compact={isMobile}
         gradientVariant="blueOrange"
       >
-        <PageTransition animation="fadeInSlideDown" immediate>
-          <HeroSection />
-        </PageTransition>
+        {/* The gap-4 above sits on the outer div, but PageLayout puts its children
+            in an inner one, so it never reached the hero. This spaces it from the
+            first hero card. */}
+        <div className="mb-4">
+          <PageTransition animation="fadeInSlideDown" immediate>
+            <HeroSection />
+          </PageTransition>
+        </div>
 
         <div className="container mx-auto px-4 flex flex-col gap-4 md:gap-8">
           <HeroCardsSection />

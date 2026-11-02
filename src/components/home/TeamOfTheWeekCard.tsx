@@ -53,7 +53,7 @@ const TeamOfTheWeekInfo: React.FC<TeamOfTheWeekLinkProps> = ({ trend, shouldAppl
     <h3
       className={cn(
         typeScale.h2,
-        'transition-colors truncate',
+        'transition-colors line-clamp-2 break-words',
         shouldApplyWinter
           ? 'text-cyan-50 group-hover:text-cyan-300'
           : 'text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400'

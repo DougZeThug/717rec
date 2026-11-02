@@ -19,7 +19,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
     <Link
       to={`/teams/${toTeamSlug(team.name)}`}
       className={cn(
-        'relative flex flex-col items-center p-3 rounded-lg',
+        'relative flex flex-col items-center p-3 rounded-lg h-full',
         'border border-border/50',
         'shadow-xs hover:shadow-md transition-shadow',
         'min-w-[100px] flex-1',
@@ -56,7 +56,7 @@ const TeamCardCompact: React.FC<TeamCardCompactProps> = ({ team, rank, isWinter 
       {/* Team name */}
       <h3
         className={cn(
-          'font-bebas text-sm uppercase tracking-wide text-center truncate w-full',
+          'font-bebas text-sm uppercase tracking-wide text-center line-clamp-2 break-words w-full',
           isWinter ? 'text-cyan-100' : blueAmberHeading()
         )}
       >
