@@ -2,7 +2,7 @@
   "id": "T-261102-polish-individual-team-p",
   "title": "Polish individual team pages on mobile",
   "kind": "polish",
-  "status": "verifying",
+  "status": "ready",
   "request": "individual team pages on mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -117,7 +117,15 @@
       "log": ".factory/evidence/T-261102-polish-individual-team-p/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "at": "2026-11-02T16:02:22.542Z",
+      "summary": "Team page polish: components used only by TeamDetails, Back button key handling verified in router source, aria-hidden valid with tabIndex -1, dark: covers winter, mock fake-only with no network calls, 36/36 tests pass."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [
@@ -128,8 +136,14 @@
     {
       "at": "2026-11-02T15:58:47.330Z",
       "text": "QA low findings, accepted: names needing 3+ lines are cut at 2 (right-aligned side shows no ellipsis; full name in title); hero ~20px taller because Last match link is now 44px."
+    },
+    {
+      "at": "2026-11-02T16:02:22.693Z",
+      "text": "Reviewer suggestions, not blocking: put textAnchor:'middle' directly on the chart label object (works today via CSS style); comment that a hand-typed URL also Back->/teams; no unit test for chart margins."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T15:59:12.165Z"
+  "updatedAt": "2026-11-02T16:02:22.801Z",
+  "readySha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+  "readyAt": "2026-11-02T16:02:22.801Z"
 }
