@@ -1,0 +1,19 @@
+{
+  "id": "T-261102-factory-follow-ups-guard",
+  "title": "Factory follow-ups: guard gaps, npm allow-list, tests and docs",
+  "kind": "fix",
+  "status": "intake",
+  "request": "Fix the open factory follow-ups: shell redirects bypass the control-plane approval rule; combined git push flags like -fu bypass the force-push check; backslash-escaped quotes hide commands from the protected-path scan; npm run * is auto-allowed; a test holds a fake key that matches the secret pattern; a weak CLI test; two PIPELINE.md notes (F new branch step, --trivial skips review)",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
+  "createdAt": "2026-11-02T21:12:43.066Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-02T21:12:43.066Z"
+}
