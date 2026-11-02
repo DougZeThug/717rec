@@ -48,42 +48,52 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
       "dirty": false,
-      "at": "2026-11-02T20:18:46.582Z",
-      "seconds": 15,
+      "at": "2026-11-02T20:35:04.503Z",
+      "seconds": 18,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
       "dirty": false,
-      "at": "2026-11-02T20:20:34.526Z",
-      "seconds": 108,
+      "at": "2026-11-02T20:37:03.735Z",
+      "seconds": 119,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
       "dirty": false,
-      "at": "2026-11-02T20:20:38.149Z",
-      "seconds": 4,
+      "at": "2026-11-02T20:37:08.300Z",
+      "seconds": 5,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "1fc916426da724d4c1545dd0be64b9e1b1d4e23a",
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
       "dirty": false,
-      "at": "2026-11-02T20:20:46.323Z",
-      "seconds": 8,
+      "at": "2026-11-02T20:37:15.406Z",
+      "seconds": 7,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
+      "dirty": false,
+      "at": "2026-11-02T20:50:55.467Z",
+      "seconds": 820,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/unit.log"
     }
   },
   "reviews": [],
@@ -96,5 +106,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T20:34:45.998Z"
+  "updatedAt": "2026-11-02T20:50:55.467Z"
 }
