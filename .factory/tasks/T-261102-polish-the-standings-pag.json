@@ -109,6 +109,13 @@
       "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
       "at": "2026-11-02T14:42:16.237Z",
       "summary": "Standings polish: 7 stats components only, no scoring/data change, focus ring kept, winter branch handled, 34 tests pass, mock is fake-only with no network calls."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
+      "at": "2026-11-02T16:09:19.161Z",
+      "summary": "Re-review at HEAD 5917eef: src/components/stats unchanged since the 596f608 approval (git diff 596f608 HEAD -- src/components/stats is empty); later commits touch only src/components/teams, TeamDetails and the fake-data mock; 37/37 touched tests pass."
     }
   ],
   "issues": {},
@@ -133,7 +140,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T16:01:33.408Z",
+  "updatedAt": "2026-11-02T16:09:19.161Z",
   "readySha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
   "readyAt": "2026-11-02T14:42:16.354Z"
 }
