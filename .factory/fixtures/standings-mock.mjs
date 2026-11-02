@@ -1,9 +1,17 @@
 // FAKE DATA ONLY. Mock for `node factory/bin/shoot.mjs --mock`. No real league names or people.
-// Serves the /stats page reads: seasons, v_team_details, matches, theme_settings. Other reads get [] from the tool.
+// Serves the /stats page and every section of /teams/<slug> (full data for "Fake Team Bravo ...").
+// Tables: seasons, v_team_details, matches, theme_settings, teams, divisions, team_season_stats, matches_archive,
+// team_badge_events, v_player_season_stats, ranking_snapshots. RPC: get_head_to_head_records.
+// Other reads get [] from the tool.
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 const ID = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const SEASON = ID(1);
-const DIVS = [{ id: ID(11), name: 'Fake Division North' }, { id: ID(12), name: 'Fake Division South' }];
+const BRAVO = 1; // index in T of the team whose page is filled in
+// tier = season-style label (team_season_stats, career tiers); weight/display = divisions table columns
+const DIVS = [
+  { id: ID(11), name: 'Fake Division North', tier: 'Competitive 1', display: 'Competitive', weight: 0.95 },
+  { id: ID(12), name: 'Fake Division South', tier: 'Intermediate 1', display: 'Intermediate', weight: 0.75 },
+];
 // [name, division index, wins, losses, game wins, game losses, power score, sos]
 const T = [
   ['Fake Team Alpha', 0, 9, 1, 19, 6, 88.2, 0.56],
@@ -17,51 +25,210 @@ const T = [
   ['Fake Team India', 1, 3, 7, 8, 16, 35.9, 0.53],
   ['Fake Team Juliet', 1, 2, 8, 6, 17, 28.7, 0.47],
 ];
+// v_team_details rows. `players` is an array of name strings (the view returns text[]).
 const teams = T.map(([name, d, w, l, gw, gl, ps, sos], i) => ({
   team_id: ID(100 + i), name, logo_url: null, image_url: null, wins: w, losses: l, game_wins: gw, game_losses: gl,
   division_id: DIVS[d].id, divisionname: DIVS[d].name, sos, power_score: ps, career_power_score: ps,
   win_percentage: +(w / (w + l)).toFixed(3), game_win_percentage: +(gw / (gw + gl)).toFixed(3),
-  players: `Fake Player ${i}A, Fake Player ${i}B`, created_at: '2026-01-01T00:00:00Z', close_match_losses: i % 3,
+  players: ['A', 'B', ...(i === BRAVO ? ['C', 'D With A Long Name'] : [])].map((s) => `Fake Player ${i}${s}`),
+  created_at: '2026-01-01T00:00:00Z', close_match_losses: i % 3,
 }));
+const divOf = (t) => DIVS.find((d) => d.id === t.division_id);
+const teamId = (i) => teams[i].team_id;
+
+// ---- Seasons: the active one plus three archived ones ----
 const season = {
   id: SEASON, name: 'Fake Season 2026', is_active: true, is_archived: false, playoffs_active: false,
   start_date: '2026-01-05', end_date: '2026-06-30', created_at: '2026-01-01T00:00:00Z',
   champion_team_id: null, runner_up_team_id: null, confirmation_open: false,
 };
-// Completed matches: team i beats team i+1 within the same list, one per week.
-const matches = teams.slice(0, 9).map((t, i) => ({
-  id: ID(200 + i), team1_id: t.team_id, team2_id: teams[i + 1].team_id, team1_score: 21, team2_score: 15 - i,
-  date: new Date(Date.UTC(2026, 2, 1 + i * 7, 23)).toISOString(), location: 'Fake Lanes', iscompleted: true,
-  winner_id: t.team_id, loser_id: teams[i + 1].team_id, round_number: null, position: null, bracket_id: null,
-  match_type: 'regular', next_match_id: null, next_loser_match_id: null, best_of: 1,
-  team1_game_wins: 2, team2_game_wins: 1, created_at: '2026-03-01T00:00:00Z',
-})).reverse();
+const OLD = [
+  ['Fake Season 2024 Fall', '2024-08-05', '2024-12-14'],
+  ['Fake Season 2025 Spring', '2025-01-06', '2025-06-28'],
+  ['Fake Season 2025 Fall', '2025-08-04', '2025-12-13'],
+].map(([name, start, end], i) => ({
+  ...season, id: ID(2 + i), name, is_active: false, is_archived: true, start_date: start, end_date: end, created_at: `${start}T00:00:00Z`,
+}));
+
+// ---- Matches ----
+// [team1, team2, team1 won?, loser's score, loser's games, week]. Winner scores 21 and wins 2 games.
+// First 9: team i beats team i+1, one per week. Then 8 more so Bravo has 10 completed matches (8-2):
+// 3 vs Charlie, 2 vs Delta, 1 vs Echo, 2 vs Foxtrot, and 2 losses to Alpha.
+const PLAYED = [
+  ...Array.from({ length: 9 }, (_, i) => [i, i + 1, true, 15 - i, 1, i]),
+  [1, 3, true, 12, 0, 2], [4, 1, false, 14, 0, 3], [1, 2, true, 16, 1, 4], [0, 1, true, 11, 0, 5],
+  [1, 5, true, 13, 0, 6], [3, 1, false, 17, 1, 7], [1, 2, true, 10, 0, 8], [1, 5, true, 15, 1, 9],
+];
+const matchBase = {
+  location: 'Fake Lanes', round_number: null, position: null, bracket_id: null, match_type: 'regular',
+  next_match_id: null, next_loser_match_id: null, best_of: 1, season_id: SEASON, metadata: null, created_at: '2026-03-01T00:00:00Z',
+};
+// Embedded team for the join-selects. One object fits both shapes the app asks for:
+// v_team_details!team1_id(...) and teams!matches_team1_id_fkey(id, divisions(name)).
+const brief = (i) => ({
+  team_id: teamId(i), id: teamId(i), name: teams[i].name, image_url: null, logo_url: null,
+  divisionname: teams[i].divisionname, divisions: { name: divOf(teams[i]).tier },
+});
+const played = PLAYED.map(([a, b, aWon, loseScore, loseGames, week], n) => ({
+  ...matchBase, id: ID(200 + n), team1_id: teamId(a), team2_id: teamId(b),
+  team1_score: aWon ? 21 : loseScore, team2_score: aWon ? loseScore : 21,
+  team1_game_wins: aWon ? 2 : loseGames, team2_game_wins: aWon ? loseGames : 2,
+  date: new Date(Date.UTC(2026, 2, 1 + week * 7, 23)).toISOString(), iscompleted: true,
+  winner_id: teamId(aWon ? a : b), loser_id: teamId(aWon ? b : a), team1: brief(a), team2: brief(b),
+}));
+// Bravo's next match, always three days from now so it stays "upcoming".
+const soon = new Date(Date.now() + 3 * 864e5);
+soon.setUTCHours(23, 0, 0, 0);
+const upcoming = {
+  ...matchBase, id: ID(230), team1_id: teamId(BRAVO), team2_id: teamId(0), team1_score: null, team2_score: null,
+  team1_game_wins: null, team2_game_wins: null, date: soon.toISOString(), iscompleted: false,
+  winner_id: null, loser_id: null, team1: brief(BRAVO), team2: brief(0),
+};
+const matches = [...played, upcoming];
+
 const themes = ['light', 'dark', 'winter'].map((k, i) => ({
   id: ID(300 + i), theme_key: k, label: k, is_enabled: true, sort_order: i, updated_at: '2026-01-01T00:00:00Z',
 }));
-const TABLES = { seasons: [season], v_team_details: teams, matches, theme_settings: themes };
+
+// ---- Career: divisions, teams (with embedded division), team_season_stats ----
+const divisions = DIVS.map((d) => ({ id: d.id, name: d.name, division_weight: d.weight, display_division: d.display, created_at: '2026-01-01T00:00:00Z' }));
+const teamRows = teams.map((t) => ({
+  id: t.team_id, name: t.name, image_url: null, logo_url: null, division_id: t.division_id, wins: t.wins, losses: t.losses,
+  divisions: { name: divOf(t).tier, division_weight: divOf(t).weight, display_division: divOf(t).display },
+}));
+// Playoff order per old season, best first (North teams only). Bravo: runner-up, then champion, then third.
+const FINISH = [[0, 1, 2, 3], [1, 0, 2, 4], [0, 2, 1, 3]];
+const seasonStats = OLD.flatMap((s, si) => T.map(([, d, w, , , , ps, sos], i) => {
+  const mw = Math.min(10, Math.max(0, w + [-1, 1, 0][si] * (i % 2 ? 1 : -1)));
+  const ml = 10 - mw;
+  const rank = FINISH[si].indexOf(i) + 1 || null;
+  const power = +Math.min(0.97, Math.max(0.05, ps / 100 + [-0.04, 0.03, -0.02][si])).toFixed(3); // 0-1 scale here
+  return {
+    team_id: teamId(i), season_id: s.id, match_wins: mw, match_losses: ml,
+    game_wins: 2 * mw + Math.ceil(ml / 2), game_losses: 2 * ml + Math.ceil(mw / 2), sos: +(sos + (si - 1) * 0.01).toFixed(3),
+    power_score: power, career_power_score: power, champion: rank === 1, runner_up: rank === 2, playoff_rank: rank,
+    division_name: DIVS[d].tier, seasons: { id: s.id, name: s.name, start_date: s.start_date },
+  };
+}));
+
+// ---- Archived matches (Bravo, old seasons): feed career sweep and clutch figures ----
+// Each old season gets 10 results matching Bravo's team_season_stats row. Wins are 2-0 sweeps unless k is a multiple of 3 (2-1).
+const archive = OLD.flatMap((s) => {
+  const wins = seasonStats.find((r) => r.season_id === s.id && r.team_id === teamId(BRAVO)).match_wins;
+  return Array.from({ length: 10 }, (_, k) => {
+    const won = k < wins;
+    const lostGames = k % 3 === 0 ? 1 : 0;
+    return {
+      season_id: s.id, iscompleted: true, team1_id: teamId(BRAVO), team2_id: teamId([0, 2, 3, 4][k % 4]),
+      winner_id: teamId(won ? BRAVO : [0, 2, 3, 4][k % 4]), loser_id: teamId(won ? [0, 2, 3, 4][k % 4] : BRAVO),
+      team1_game_wins: won ? 2 : lostGames, team2_game_wins: won ? lostGames : 2,
+    };
+  });
+});
+
+// ---- Badges (Bravo only, active) ----
+const badges = [
+  ['competitive_champion', OLD[1], '2025-06-29', 3, 0],
+  ['competitive_runner_up', OLD[0], '2024-12-15', 2, 1],
+  ['clutch_performer', season, '2026-04-20', 0, 0],
+].map(([type, s, at, pw, pl], k) => ({
+  id: ID(600 + k), team_id: teamId(BRAVO), badge_type: type, season_id: s.id, awarded_at: `${at}T12:00:00Z`, is_active: true,
+  created_at: `${at}T12:00:00Z`, metadata: { season_name: s.name, division_name: 'Competitive 1', playoff_wins: pw, playoff_losses: pl },
+}));
+
+// ---- Live-scoring player stats (Bravo, active season) ----
+// [name suffix, rounds thrown, points for, points against]
+const playerStats = [['1A', 64, 158, 120], ['1B', 60, 141, 118], ['1C', 24, 52, 55]].map(([n, r, pf, pa], k) => ({
+  season_id: SEASON, team_id: teamId(BRAVO), player_id: ID(400 + k), display_name: `Fake Player ${n}`, matches_with_rounds: 8,
+  rounds_thrown: r, rounds_won: Math.round(r * 0.55), points_for: pf, points_against: pa, net_points_won: pf - pa,
+  bags_in: Math.round(r * 1.1), bags_on: Math.round(r * 1.4), bags_off: Math.round(r * 1.5), four_baggers: k,
+  game_wins: 14 - k * 4, game_losses: 5 + k * 2, match_wins: 7 - k * 2, match_losses: 1 + k,
+}));
+
+// ---- Rankings baseline: last week Bravo was 3rd and Foxtrot 2nd (so Bravo shows up 1, Foxtrot down 1) ----
+const snapshots = [...teams].sort((a, b) => b.power_score - a.power_score).map((t, i) => ({
+  team_id: t.team_id, season_id: SEASON, rank_position: t.name.includes('Bravo') ? i + 2 : t.name.includes('Foxtrot') ? i : i + 1,
+}));
+
+const TABLES = {
+  seasons: [season, ...OLD], v_team_details: teams, matches, theme_settings: themes, teams: teamRows, divisions,
+  team_season_stats: seasonStats, matches_archive: archive, team_badge_events: badges, v_player_season_stats: playerStats, ranking_snapshots: snapshots,
+};
+
+// RPC get_head_to_head_records for Bravo (all-time, so larger than this season).
+// [opponent index, played, wins, game wins, game losses, last played]. Gives a nemesis (Alpha),
+// a dominated opponent (Charlie, Golf) and two close rivals (Delta, Foxtrot).
+const H2H = [
+  [0, 6, 1, 7, 12, '2026-04-05'], [2, 4, 4, 8, 3, '2026-04-26'], [3, 3, 2, 5, 3, '2026-04-12'],
+  [4, 2, 2, 4, 0, '2026-03-22'], [5, 4, 2, 6, 6, '2026-05-03'], [6, 3, 3, 6, 1, '2025-11-15'],
+];
+const headToHead = (id) => (id !== teamId(BRAVO) ? [] : H2H.map(([o, played, wins, gw, gl, last]) => ({
+  team_id: id, opponent_id: teamId(o), matches_played: played, wins, losses: played - wins, game_wins: gw, game_losses: gl,
+  win_pct: +((wins / played) * 100).toFixed(1), last_played_at: `${last}T23:00:00Z`,
+})));
+
+// ---- PostgREST helpers: just the filters and sorts the app uses ----
+const RESERVED = ['select', 'order', 'limit', 'offset', 'or', 'and'];
+// One condition such as "eq.5", "neq.x", "in.(a,b)", "is.null", "not.is.null". Other operators do not filter.
+const test = (cell, spec) => {
+  if (spec.startsWith('not.')) return !test(cell, spec.slice(4));
+  const dot = spec.indexOf('.');
+  const [op, val, text] = [spec.slice(0, dot), spec.slice(dot + 1), String(cell)];
+  if (op === 'eq' || op === 'is') return text === val;
+  if (op === 'neq') return text !== val;
+  if (op === 'in') return val.slice(1, -1).split(',').includes(text);
+  return true;
+};
+// "col" or an embedded column written "embed(col)", as in order=seasons(start_date).desc
+const cellOf = (row, path) => {
+  const m = /^(\w+)\((\w+)\)$/.exec(path);
+  return m ? row[m[1]]?.[m[2]] : row[path];
+};
+const sortRows = (rows, order) => {
+  const keys = order.split(',').map((o) => { const [path, dir] = o.split('.'); return [path, dir === 'desc' ? -1 : 1]; });
+  return [...rows].sort((a, b) => {
+    for (const [path, sign] of keys) {
+      const [x, y] = [cellOf(a, path), cellOf(b, path)];
+      if (x !== y) return (x > y ? 1 : -1) * sign;
+    }
+    return 0;
+  });
+};
+const json = (route, body, status = 200) => route.fulfill({ status, contentType: 'application/json', headers: CORS, body: JSON.stringify(body) });
 
 export default async (route) => {
   const req = route.request();
   if (req.method() === 'OPTIONS') { await route.fulfill({ status: 204, headers: CORS, body: '' }); return true; }
-  if (req.method() !== 'GET') return false;
   const url = new URL(req.url());
+  // RPC calls are POSTs with a JSON body. Only the head-to-head one is served.
+  if (req.method() === 'POST' && url.pathname.endsWith('/rest/v1/rpc/get_head_to_head_records')) {
+    let body = {};
+    try { body = req.postDataJSON() ?? {}; } catch { /* not JSON: answer with no rows */ }
+    await json(route, headToHead(body.p_team_id));
+    return true;
+  }
+  if (req.method() !== 'GET') return false;
   const table = url.pathname.split('/rest/v1/')[1];
   if (!(table in TABLES)) return false;
   let rows = TABLES[table];
-  // Simple filters only: col=eq.value
   for (const [k, v] of url.searchParams) {
-    if (!v.startsWith('eq.') || ['select', 'order', 'limit'].includes(k)) continue;
-    const want = v.slice(3);
-    rows = rows.filter((r) => String(r[k]) === want);
+    // Skip control params and embedded-table filters such as divisions.display_division=neq.Hidden
+    if (RESERVED.includes(k) || k.includes('.')) continue;
+    rows = rows.filter((r) => test(r[k], v));
   }
-  const single = (req.headers().accept ?? '').includes('vnd.pgrst.object');
-  if (single) {
-    await route.fulfill(rows.length
-      ? { status: 200, contentType: 'application/json', headers: CORS, body: JSON.stringify(rows[0]) }
-      : { status: 406, contentType: 'application/json', headers: CORS, body: JSON.stringify({ code: 'PGRST116', message: 'no rows', details: null, hint: null }) });
+  // or=(team1_id.eq.X,team2_id.eq.X): keep a row when any term matches
+  const or = url.searchParams.get('or');
+  if (or) {
+    const terms = or.slice(1, -1).split(',').map((t) => [t.slice(0, t.indexOf('.')), t.slice(t.indexOf('.') + 1)]);
+    rows = rows.filter((r) => terms.some(([col, spec]) => test(r[col], spec)));
+  }
+  if (url.searchParams.has('order')) rows = sortRows(rows, url.searchParams.get('order'));
+  if (url.searchParams.has('limit')) rows = rows.slice(0, Number(url.searchParams.get('limit')));
+  // A single-object request gets the first row as an object, or the "no rows" error PostgREST sends.
+  if ((req.headers().accept ?? '').includes('vnd.pgrst.object')) {
+    await (rows.length ? json(route, rows[0]) : json(route, { code: 'PGRST116', message: 'no rows', details: null, hint: null }, 406));
     return true;
   }
-  await route.fulfill({ status: 200, contentType: 'application/json', headers: CORS, body: JSON.stringify(rows) });
+  await json(route, rows);
   return true;
 };
