@@ -19,10 +19,10 @@ exports[`Navbar > matches snapshot in closed state 1`] = `
         class="flex justify-between items-center py-2 md:py-1"
       >
         <div
-          class="flex items-center"
+          class="flex items-center self-start shrink-0 lg:shrink"
         >
           <a
-            class="flex items-center space-x-2 mr-3"
+            class="flex items-center space-x-2 mr-3 min-h-11"
             data-discover="true"
             href="/"
           >

@@ -155,6 +155,21 @@ describe('Navbar', () => {
     expect(screen.queryByTestId('command-palette')).toBeNull();
   });
 
+  // The open phone menu grows the row, and items-center used to carry the brand
+  // down to the middle of it. self-start keeps it at the top; shrink-0 stops a
+  // narrow phone squeezing it under the Sign in button.
+  it('keeps the brand at the top of the row and unsqueezed on a phone', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Navbar />
+      </MemoryRouter>
+    );
+
+    const brandBox = screen.getByRole('link', { name: /717Rec League Logo/i }).parentElement;
+
+    expect(brandBox).toHaveClass('self-start', 'shrink-0');
+  });
+
   it('matches snapshot in closed state', () => {
     const { asFragment } = render(
       <MemoryRouter>

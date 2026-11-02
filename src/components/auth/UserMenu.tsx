@@ -92,11 +92,14 @@ const UserMenu: React.FC<UserMenuProps> = React.memo(({ className: _className })
         <Button
           variant="secondary"
           size="sm"
-          className="whitespace-nowrap flex! items-center! px-2"
+          className="whitespace-nowrap flex! items-center! px-2 min-w-11 min-[380px]:min-w-0"
           onClick={handleLoginClick}
+          aria-label="Sign in"
         >
-          <LogIn className="size-4 mr-1" />
-          <span className="block!">Sign in</span>
+          {/* Below 380px only the icon shows, so the button no longer covers the
+              717Rec wordmark. The aria-label keeps its name. */}
+          <LogIn className="size-4 min-[380px]:mr-1" />
+          <span className="hidden! min-[380px]:block!">Sign in</span>
         </Button>
       </div>
     );

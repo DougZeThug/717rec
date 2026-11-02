@@ -63,6 +63,18 @@ describe('UserMenu', () => {
     }
   });
 
+  // Below 380px only the icon shows, so Sign in no longer covers the wordmark.
+  // The word is hidden with CSS, so the button needs its own name.
+  it('keeps the name Sign in when the word is hidden on a narrow phone', () => {
+    mockUseAuth.mockReturnValue({ user: null, profile: null, signOut: mockSignOut });
+    renderMenu();
+
+    const button = screen.getByRole('button', { name: 'Sign in' });
+
+    expect(button).toHaveAttribute('aria-label', 'Sign in');
+    expect(screen.getByText('Sign in')).toHaveClass('hidden!', 'min-[380px]:block!');
+  });
+
   it('sends an approved member to /my-team, where Leave Team lives', async () => {
     mockUseTeamMembership.mockReturnValue({
       activeMembership: { team_id: 'team-1', team: { name: 'Rail Riders' } },

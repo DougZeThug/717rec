@@ -52,7 +52,11 @@ const NavbarControls: React.FC<{ isMobile: boolean }> = ({ isMobile }) => (
 /** The brand on the left and its controls on the right. */
 const NavbarRow: React.FC<{ isMobile: boolean }> = ({ isMobile }) => (
   <div className="flex justify-between items-center py-2 md:py-1">
-    <div className="flex items-center">
+    {/* self-start: the open phone menu grows this row, and items-center used to
+        carry the brand down to the middle of it. shrink-0 stops the brand being
+        squeezed under the buttons on a narrow phone; from lg up the links row
+        needs the room, so it keeps shrinking there as before. */}
+    <div className="flex items-center self-start shrink-0 lg:shrink">
       <NavBrand />
     </div>
 
