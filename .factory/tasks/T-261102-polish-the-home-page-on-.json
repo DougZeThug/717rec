@@ -2,7 +2,7 @@
   "id": "T-261102-polish-the-home-page-on-",
   "title": "Polish the home page on mobile",
   "kind": "polish",
-  "status": "planned",
+  "status": "ready",
   "request": "the home page specifically for mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -11,39 +11,48 @@
   "criteria": [
     {
       "text": "At 360px the Sign in button no longer covers the 717REC wordmark; Sign in keeps an accessible name",
-      "done": false
+      "done": true,
+      "evidence": "QA: at 360 wordmark ink 56-109px, Sign in 146-190 (44x44, icon only), gap 37px (was overlap); word shows from 380px; one button named 'Sign in' at 320-430; 390 closed navbar pixel-identical. .factory/evidence/T-261102-polish-the-home-page-on-/qa/"
     },
     {
       "text": "Open mobile menu: brand logo stays at the top of the panel and the panel is laid out normally (checked at 390 and 360; navbar checked on /, /stats and a team page)",
-      "done": false
+      "done": true,
+      "evidence": "QA: brand at (16,16) 93x44 when open on /, /stats, team page at 390 and 360 (was y~264 mid-left); 9 menu items min 48px tall; Escape closes and returns focus; 1280 closed navbar identical (0px diff). LIMIT: the menu list itself is unchanged (right-aligned, 243px at 390); a full-width list is not done and is on Doug's list. Before/after: scratchpad/home/{before,after}/home@390-open.png"
     },
     {
       "text": "Pending Scores team names are readable: wider name boxes (were 28px and 112px at 390) and up to 2 lines",
-      "done": false
+      "done": true,
+      "evidence": "QA: name boxes equalised: 78.3/78.3px at 390 (was 28/112), 63.3/63.3 at 360 (was 19/92); up to 2 lines; nothing overlaps; Report still opens. LIMIT: the wide box got narrower and at 360 two names with the same first words can both read 'Fake Team...'. .factory/evidence/T-261102-polish-the-home-page-on-/after/phone-home.png"
     },
     {
       "text": "There is at least 16px between the hero 2x2 grid and the first hero card (was 0px)",
-      "done": false
+      "done": true,
+      "evidence": "QA: hero grid bottom 405, first card top 421 = 16px at 390 and 360 (was 0). .factory/evidence/T-261102-polish-the-home-page-on-/after/phone-home.png"
     },
     {
       "text": "Team of the Week name and Top Teams card names show up to 2 lines (were cut at 149px and 106px)",
-      "done": false
+      "done": true,
+      "evidence": "QA: Team of the Week name 2 lines (box 56px); Top Teams names 1-2 lines; all 10 cards 150px; swipe still works"
     },
     {
       "text": "Light theme: Team of the Week label, +8.2%, '13% shot', 'W4' and the negative mover meet 4.5:1",
-      "done": false
+      "done": true,
+      "evidence": "QA light theme ratios at 390: 4.71, 4.78, 5.97, 5.47, 5.51 (were 3.01, 3.23, 2.57, 2.66, 4.09); dark colours unchanged"
     },
     {
       "text": "Hero cards no longer add dead Tab stops (tabIndex -1 on the motion wrappers); real links and buttons stay focusable",
-      "done": false
+      "done": true,
+      "evidence": "QA: 60 Tab stops all links/buttons, 0 dead stops (was 6); announcement, help, Join the League, hero buttons still reached"
     },
     {
       "text": "'View All' keeps at least 12px gap below the description when it wraps",
-      "done": false
+      "done": true,
+      "evidence": "QA: View All gap 12px (was 0), button 86.7x44"
     },
     {
       "text": "No new console errors, no sideways scroll at 360 and 390, touched components' tests pass",
-      "done": false
+      "done": true,
+      "evidence": "All 6 required checks pass (typecheck, lint, unit 656s, build, knip, integrity). QA: no new console errors (only aborted third-party hosts and the mock's 406), no sideways scroll at 360/390 on /, /stats, team page, menu closed and open; reviewer ran 32 touched tests, builder ran 49 files/340 tests."
     }
   ],
   "checks": {
@@ -127,8 +136,14 @@
     {
       "at": "2026-11-02T19:19:01.908Z",
       "text": "Reviewer notes, not blocking: mover red uses text-red-700 dark:text-red-400 not the text-destructive-text token (same pair of palette classes as before); mb-4 under the hero also applies on desktop (+16px); pre-existing at 1024-1280: Home pill overlaps the 717REC wordmark (separate task); new tests check classes, not layout."
+    },
+    {
+      "at": "2026-11-02T19:21:33.541Z",
+      "text": "QA low notes: Index.tsx mb-4 also adds 16px under the hero from 768 to 1280 (was 0; arguably better, use md:mb-0 to revert); Toggle theme button is 42px wide (existing)."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T19:19:01.908Z"
+  "updatedAt": "2026-11-02T19:21:33.651Z",
+  "readySha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+  "readyAt": "2026-11-02T19:21:33.651Z"
 }
