@@ -57,6 +57,20 @@ test('quoted paths are still protected, quoted prose is not', () => {
 test('a here-string is not a heredoc', () => {
   assert.ok(bash('cat <<<EOF\nrm -rf public/\nEOF')?.block);
 });
+// A backslash before a newline joins the two lines, so the shell reads one word. Built by concatenation: the test data must stay visible.
+const BSNL = '\\\n';
+test('a backslash-newline inside a word cannot hide a push to main or a protected path', () => {
+  assert.ok(bash(['git push origin ma', 'in'].join(BSNL))?.block, 'mid-word split of the branch name');
+  assert.ok(bash(['git push origin ma', 'in'].join('\\\r\n'))?.block, 'Windows line ending');
+  assert.ok(bash(['rm -rf pub', 'lic'].join(BSNL))?.block, 'mid-word split of a protected path');
+  assert.ok(bash(['echo x > .e', 'nv'].join(BSNL))?.block, 'mid-word split of a redirect target');
+  assert.ok(bash(['git re', 'set --hard'].join(BSNL))?.block, 'mid-word split of a command word');
+});
+test('an escaped backslash before a newline is not a line join: the next line is its own command', () => {
+  // `echo a\\` then a newline: the shell sees an escaped backslash, then a real newline, then `rm -rf public`.
+  assert.ok(bash(['echo a', '\\\\', '\n', 'rm -rf public'].join(''))?.block, 'even run');
+  assert.ok(bash(['echo a', '\\\\\\\\', '\n', 'rm -rf public'].join(''))?.block, 'four backslashes');
+});
 test('a directory without a trailing slash, and absolute history paths, are protected', () => {
   assert.ok(bash('rm -rf public')?.block);
   assert.ok(bash('rm -rf ./public/')?.block);

@@ -162,8 +162,13 @@ const commitContent = (cmd, root, execFileSync) => {
   return diff;
 };
 
+// Join backslash-newline pairs the way the shell does: `ma\<newline>in` is the one word `main`. Join with
+// NOTHING, not a space. An even run of backslashes is escaped backslashes, so the newline after it is real
+// and stays a command separator. (?<!\\) plus pairs means only an odd run, whose last backslash escapes the newline.
+const joinContinuations = (command) => command.replace(/(?<!\\)((?:\\\\)*)\\\r?\n/g, '$1');
+
 const decideBash = (toolInput, cfg, branch) => {
-  const raw = String(toolInput.command ?? '');
+  const raw = joinContinuations(String(toolInput.command ?? ''));
   // The block lists scan the RAW command: `bash <<EOF` and `bash -c "..."` run their text.
   // Only the protected-path scan skips heredoc bodies and quotes, because a file body that
   // merely mentions "rm public/" is data, not a delete.
