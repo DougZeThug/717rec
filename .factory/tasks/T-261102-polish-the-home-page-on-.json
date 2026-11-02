@@ -1,0 +1,19 @@
+{
+  "id": "T-261102-polish-the-home-page-on-",
+  "title": "Polish the home page on mobile",
+  "kind": "polish",
+  "status": "intake",
+  "request": "the home page specifically for mobile",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "5917eefed437a6b52de5105e492a027794367ef2",
+  "createdAt": "2026-11-02T18:10:47.947Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-02T18:10:47.947Z"
+}
