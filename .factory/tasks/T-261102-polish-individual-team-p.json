@@ -109,10 +109,10 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:54:38.280Z",
-      "seconds": 750,
+      "at": "2026-11-02T16:54:29.078Z",
+      "seconds": 577,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/unit.log"
     }
@@ -124,6 +124,13 @@
       "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
       "at": "2026-11-02T16:02:22.542Z",
       "summary": "Team page polish: components used only by TeamDetails, Back button key handling verified in router source, aria-hidden valid with tabIndex -1, dark: covers winter, mock fake-only with no network calls, 36/36 tests pass."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
+      "at": "2026-11-02T17:06:04.493Z",
+      "summary": "Re-review at HEAD 5917eef: follow-up commit verified (Recharts reads textAnchor attribute; margin tests 32/6 match component and can fail); only src/components/teams, TeamDetails and the fake-data mock changed since the cf1021d approval; 37/37 touched tests pass."
     }
   ],
   "issues": {},
@@ -143,7 +150,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T16:10:29.187Z",
-  "readySha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
-  "readyAt": "2026-11-02T16:02:22.801Z"
+  "updatedAt": "2026-11-02T17:06:04.578Z",
+  "readySha": "5917eefed437a6b52de5105e492a027794367ef2",
+  "readyAt": "2026-11-02T17:06:04.577Z"
 }

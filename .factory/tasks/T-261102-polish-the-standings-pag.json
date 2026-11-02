@@ -44,9 +44,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:59:15.261Z",
+      "at": "2026-11-02T16:54:29.442Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/integrity.log"
@@ -54,9 +54,9 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:59:31.101Z",
+      "at": "2026-11-02T16:54:45.517Z",
       "seconds": 16,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/typecheck.log"
@@ -64,19 +64,19 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T16:01:21.557Z",
-      "seconds": 110,
+      "at": "2026-11-02T16:56:33.004Z",
+      "seconds": 107,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T16:01:25.919Z",
+      "at": "2026-11-02T16:56:37.502Z",
       "seconds": 4,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/knip.log"
@@ -84,20 +84,20 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T16:01:33.408Z",
-      "seconds": 7,
+      "at": "2026-11-02T16:56:44.010Z",
+      "seconds": 6,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T14:41:14.475Z",
-      "seconds": 565,
+      "at": "2026-11-02T17:05:54.603Z",
+      "seconds": 551,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/unit.log"
     }
@@ -140,7 +140,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T16:09:19.161Z",
-  "readySha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
-  "readyAt": "2026-11-02T14:42:16.354Z"
+  "updatedAt": "2026-11-02T17:06:04.670Z",
+  "readySha": "5917eefed437a6b52de5105e492a027794367ef2",
+  "readyAt": "2026-11-02T17:06:04.670Z"
 }
