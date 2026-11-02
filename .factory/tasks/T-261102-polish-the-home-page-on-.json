@@ -2,18 +2,60 @@
   "id": "T-261102-polish-the-home-page-on-",
   "title": "Polish the home page on mobile",
   "kind": "polish",
-  "status": "intake",
+  "status": "planned",
   "request": "the home page specifically for mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "5917eefed437a6b52de5105e492a027794367ef2",
   "createdAt": "2026-11-02T18:10:47.947Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "At 360px the Sign in button no longer covers the 717REC wordmark; Sign in keeps an accessible name",
+      "done": false
+    },
+    {
+      "text": "Open mobile menu: brand logo stays at the top of the panel and the panel is laid out normally (checked at 390 and 360; navbar checked on /, /stats and a team page)",
+      "done": false
+    },
+    {
+      "text": "Pending Scores team names are readable: wider name boxes (were 28px and 112px at 390) and up to 2 lines",
+      "done": false
+    },
+    {
+      "text": "There is at least 16px between the hero 2x2 grid and the first hero card (was 0px)",
+      "done": false
+    },
+    {
+      "text": "Team of the Week name and Top Teams card names show up to 2 lines (were cut at 149px and 106px)",
+      "done": false
+    },
+    {
+      "text": "Light theme: Team of the Week label, +8.2%, '13% shot', 'W4' and the negative mover meet 4.5:1",
+      "done": false
+    },
+    {
+      "text": "Hero cards no longer add dead Tab stops (tabIndex -1 on the motion wrappers); real links and buttons stay focusable",
+      "done": false
+    },
+    {
+      "text": "'View All' keeps at least 12px gap below the description when it wraps",
+      "done": false
+    },
+    {
+      "text": "No new console errors, no sideways scroll at 360 and 390, touched components' tests pass",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-02T18:34:05.354Z",
+      "text": "Left alone / needs Doug: Champions amber card white text ~2:1 and Event card contrast (look change); Join the League button style 1.05:1; Report drawer focus trap (vaul autoFocus, 6 files); global scroll-padding-bottom for the bottom nav (all pages, recommend yes); hero grid colours; announcement preset text (database data); Top Teams swipe peek 8px at 360; No Logo Available text; Pending title font; loading layout shift; heading levels. External hosts contacted by the page: progressier.app/.com and cdn.gpteng.co (not league data). Human choice: fake-data screenshots."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-02T18:10:47.947Z"
+  "updatedAt": "2026-11-02T18:34:05.355Z"
 }
