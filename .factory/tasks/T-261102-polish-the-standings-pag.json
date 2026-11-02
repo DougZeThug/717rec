@@ -2,18 +2,53 @@
   "id": "T-261102-polish-the-standings-pag",
   "title": "Polish the standings page on phone",
   "kind": "polish",
-  "status": "intake",
+  "status": "planned",
   "request": "the standings page on my phone",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "a843bf9b6823c6cbbecef0bbcf3fa1dc7b75bd08",
   "createdAt": "2026-11-02T13:54:40.080Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Podium team names show up to 2 lines and have a title, so teams with a shared prefix are told apart at 390px",
+      "done": false
+    },
+    {
+      "text": "Selected Compact/Detailed item is visually distinct from keyboard focus (focus ring stays, selected uses fill only)",
+      "done": false
+    },
+    {
+      "text": "Compact-row team link is at least 44px tall",
+      "done": false
+    },
+    {
+      "text": "Division/All and Compact/Detailed toggle items are at least 44px tall and wide",
+      "done": false
+    },
+    {
+      "text": "Empty-state text no longer mentions a division control that is not on that screen",
+      "done": false
+    },
+    {
+      "text": "No new console errors, no sideways scroll at 360 and 390px, touched components' tests pass",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
-  "interventions": [],
-  "notes": [],
+  "interventions": [
+    {
+      "at": "2026-11-02T14:06:28.535Z",
+      "why": "Asked Doug how to get data for screenshots; answer: fake test data (mock)"
+    }
+  ],
+  "notes": [
+    {
+      "at": "2026-11-02T14:06:28.490Z",
+      "text": "Left alone on purpose: power-score light-theme contrast (shared by ~10 views, needs Doug), chart dead space, error-state height, decorative dot. Human choice: fake-data screenshots."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-02T13:54:40.080Z"
+  "updatedAt": "2026-11-02T14:06:28.535Z"
 }
