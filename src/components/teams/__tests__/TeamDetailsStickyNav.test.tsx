@@ -335,8 +335,8 @@ describe('TeamDetailsStickyNav', () => {
 
     afterEach(() => {
       rectSpy.mockRestore();
-      // @ts-expect-error jsdom does not define Element.scrollTo; remove the stub.
-      delete Element.prototype.scrollTo;
+      // jsdom does not define Element.scrollTo, so remove the stub added in beforeEach.
+      Reflect.deleteProperty(Element.prototype, 'scrollTo');
     });
 
     it('scrolls the highlighted pill to the middle of the bar', () => {

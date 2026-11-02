@@ -44,6 +44,16 @@
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "3ae839379ba214806b17ef981fb85a8a354897a4",
+      "dirty": false,
+      "at": "2026-11-02T20:17:54.594Z",
+      "seconds": 13,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261102-ui-follow-ups-hero-badge/typecheck.log"
     }
   },
   "reviews": [],
@@ -56,5 +66,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T20:17:41.588Z"
+  "updatedAt": "2026-11-02T20:17:54.595Z"
 }
