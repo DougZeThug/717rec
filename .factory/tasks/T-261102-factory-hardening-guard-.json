@@ -50,7 +50,18 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "factory-specs": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
+      "dirty": true,
+      "at": "2026-11-02T21:39:05.186Z",
+      "seconds": 5,
+      "cmd": "node --test factory/spec/*.spec.mjs",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/factory-specs.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
@@ -61,5 +72,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T21:32:17.429Z"
+  "updatedAt": "2026-11-02T21:39:05.187Z"
 }

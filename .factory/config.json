@@ -18,6 +18,7 @@
       "build": "npm run build",
       "knip": "npm run knip",
       "e2e": "npm run e2e",
+      "factory-specs": "node --test factory/spec/*.spec.mjs",
       "integrity": "node factory/bin/factory.mjs integrity"
     }
   },
