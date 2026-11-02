@@ -54,10 +54,10 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
       "dirty": false,
-      "at": "2026-11-02T14:10:09.849Z",
-      "seconds": 12,
+      "at": "2026-11-02T15:59:31.101Z",
+      "seconds": 16,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/typecheck.log"
     },
@@ -133,7 +133,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T15:59:15.262Z",
+  "updatedAt": "2026-11-02T15:59:31.101Z",
   "readySha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
   "readyAt": "2026-11-02T14:42:16.354Z"
 }
