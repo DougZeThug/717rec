@@ -151,19 +151,134 @@ describe('TeamBadge season descriptions on a phone', () => {
 });
 
 describe('TeamBadge on desktop', () => {
-  it('shows no dialog and keeps the badge icon visible', () => {
+  beforeEach(() => {
     mockIsMobile.value = false;
+  });
+
+  it('shows no dialog and keeps the badge icon visible', () => {
     const { container } = render(<TeamBadge badge={badge()} />);
 
     expect(container.querySelector('svg')).not.toBeNull();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  // The desktop badge is a hover tooltip with nothing to press.
-  it('stays a plain element, not a button', () => {
-    mockIsMobile.value = false;
+  it('is a real button named after the badge, with the same focus ring as on a phone', () => {
     render(<TeamBadge badge={badge()} />);
 
+    const button = screen.getByRole('button', { name: 'Recreational Champion' });
+    expect(button.tagName).toBe('BUTTON');
+    expect(button).toHaveAttribute('type', 'button');
+    expect(button).toHaveClass(
+      'focus-visible:outline-hidden',
+      'focus-visible:ring-2',
+      'focus-visible:ring-ring',
+      'focus-visible:ring-offset-2'
+    );
+    // The 44px tap area is phone-only: on desktop neighbouring areas would overlap.
+    expect(button).not.toHaveClass('hit-area-44');
+  });
+
+  it('is reached with Tab and shows its tooltip on keyboard focus', async () => {
+    const user = userEvent.setup();
+    render(<TeamBadge badge={badge()} />);
+
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+
+    await user.tab();
+
+    const button = screen.getByRole('button', { name: 'Recreational Champion' });
+    expect(button).toHaveFocus();
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent('Recreational Champion');
+    expect(tooltip).toHaveTextContent('2025 Recreational Champion');
+    // The tooltip text is also the button's description for a screen reader.
+    expect(button).toHaveAttribute('aria-describedby');
+  });
+
+  it('closes the tooltip when it loses focus', async () => {
+    const user = userEvent.setup();
+    render(<TeamBadge badge={badge()} />);
+
+    await user.tab();
+    await screen.findByRole('tooltip');
+    await user.tab();
+
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+  });
+
+  it('closes the tooltip with Escape', async () => {
+    const user = userEvent.setup();
+    render(<TeamBadge badge={badge()} />);
+
+    await user.tab();
+    await screen.findByRole('tooltip');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Recreational Champion' })).toHaveFocus();
+  });
+
+  it('opens the same dialog as a phone with Enter, a click and Space', async () => {
+    const user = userEvent.setup();
+    render(<TeamBadge badge={badge()} />);
+
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('dialog')).toHaveTextContent('2025 Recreational Champion');
+
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // Focus comes back to the badge, so the keyboard user keeps their place.
+    expect(screen.getByRole('button', { name: 'Recreational Champion' })).toHaveFocus();
+
+    await user.keyboard(' ');
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await user.click(screen.getByRole('button', { name: 'Recreational Champion' }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('leaves no tooltip on screen when focus comes back after the dialog closes', async () => {
+    const user = userEvent.setup();
+    render(<TeamBadge badge={badge()} />);
+
+    await user.click(screen.getByRole('button', { name: 'Recreational Champion' }));
+    await screen.findByRole('dialog');
+    await user.keyboard('{Escape}');
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'Recreational Champion' })).toHaveFocus();
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+  });
+
+  it('stays a plain element with no tab stop when it sits inside a link (interactive off)', async () => {
+    const user = userEvent.setup();
+    render(
+      <a href="/teams/team-1" onClick={(event) => event.preventDefault()}>
+        <TeamBadge badge={badge()} interactive={false} />
+      </a>
+    );
+
+    const link = screen.getByRole('link');
+    const plainBadge = link.firstElementChild as HTMLElement;
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(plainBadge.tagName).toBe('DIV');
+    expect(plainBadge).not.toHaveAttribute('tabindex');
+
+    // Tab lands on the link and the next Tab leaves it: no stop inside.
+    await user.tab();
+    expect(link).toHaveFocus();
+    await user.tab();
+    expect(link).not.toHaveFocus();
+    expect(document.body).toHaveFocus();
+
+    // The hover tooltip still works for the pointer.
+    await user.hover(plainBadge);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Recreational Champion');
+
+    await user.click(plainBadge);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

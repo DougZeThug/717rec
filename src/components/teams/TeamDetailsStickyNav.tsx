@@ -195,6 +195,9 @@ const TeamDetailsStickyNav: React.FC<TeamDetailsStickyNavProps> = ({ className }
             const elementPosition = element.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.scrollY - offset;
 
+            // On a busy main thread the settle timer can fire before these
+            // frames run and clear the hold, so take it again with the timer.
+            tappedRef.current = sectionId;
             holdTappedSection();
             window.scrollTo({
               top: offsetPosition,

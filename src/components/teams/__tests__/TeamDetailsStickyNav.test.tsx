@@ -292,6 +292,36 @@ describe('TeamDetailsStickyNav', () => {
         expect(activePills()).toEqual(['Matchups']);
       });
 
+      it('keeps the tapped pill when the frames run late, after the settle timer fired', () => {
+        // A busy main thread: queue the frames and run them after the timer.
+        const frames: FrameRequestCallback[] = [];
+        vi.stubGlobal('requestAnimationFrame', (frameCallback: FrameRequestCallback) => {
+          frames.push(frameCallback);
+          return frames.length;
+        });
+        render(<TeamDetailsStickyNav />);
+        scrollPageTo(250);
+
+        fireEvent.click(screen.getByText('Matchups'));
+        act(() => {
+          vi.advanceTimersByTime(200);
+        });
+        act(() => {
+          while (frames.length > 0) frames.shift()?.(0);
+        });
+
+        // The smooth scroll starts now and passes other sections on the way.
+        act(() => reportEntries?.([['stats', true]]));
+        expect(activePills()).toEqual(['Matchups']);
+
+        act(() => {
+          vi.advanceTimersByTime(400);
+        });
+        act(() => reportEntries?.([['career', true]]));
+        // Settled: the topmost section in view (Stats) takes the highlight.
+        expect(activePills()).toEqual(['Stats']);
+      });
+
       it('hands the highlight back to scrolling once the page has settled', () => {
         render(<TeamDetailsStickyNav />);
         scrollPageTo(250);

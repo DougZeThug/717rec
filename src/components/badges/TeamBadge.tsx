@@ -21,7 +21,8 @@ interface TeamBadgeProps {
   /**
    * Set false where the badge sits inside a link (or another button). A button
    * there would be nested interactive content, which is invalid and breaks both
-   * the click and the keyboard. The badge then stays a plain tooltip target.
+   * the click and the keyboard. The badge then stays a plain tooltip target
+   * with no tab stop.
    */
   interactive?: boolean;
 }
@@ -74,7 +75,12 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
   const IconComponent = config.icon;
   const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isTooltipOpen, setIsTooltipOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  // True while focus goes back to the button after the dialog closes. Radix
+  // opens a tooltip on any focus, and that one would stay on screen after a
+  // mouse user closes the dialog.
+  const restoringFocusRef = useRef(false);
 
   const sizeClasses = {
     sm: isMobile ? 'size-8 text-xs' : 'size-6 text-xs',
@@ -148,9 +154,12 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     badge.badge_type.includes('runner_up') ||
     badge.badge_type.includes('third_place');
 
-  // Only a phone tap opens the detail dialog; the desktop badge is a hover
-  // tooltip with nothing to press, so it stays a plain element there.
-  const opensDialog = interactive && isMobile;
+  // Outside a link the badge is a real button on every screen size, so Tab
+  // reaches it and a press (Enter, Space or a click) opens the detail dialog.
+  const opensDialog = interactive;
+  // A phone has no hover, so its button needs no tooltip. Desktop keeps the
+  // tooltip on hover and shows it on keyboard focus too.
+  const showsTooltip = !opensDialog || !isMobile;
 
   const badgeClassName = cn(
     'relative inline-flex items-center justify-center rounded-full',
@@ -161,12 +170,15 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     // Championship badges get hover glow
     isChampionshipBadge && 'hover:shadow-lg hover:shadow-yellow-400/30 hover:scale-105',
     opensDialog ? 'cursor-pointer active:scale-95' : 'cursor-help hover:scale-105',
+    opensDialog && !isMobile && 'hover:scale-105',
     className
   );
   const badgeIcon = <IconComponent className={cn('text-white', iconSizes[size])} />;
 
   // A real button, so Tab reaches it and Enter or Space opens the dialog.
-  // hit-area-44 grows the tap area to 44px without changing the drawn size.
+  // hit-area-44 grows the tap area to 44px without changing the drawn size. It
+  // is phone-only: on desktop the 44px areas of neighbouring badges would
+  // overlap and the hover tooltip would open from the gap between them.
   const BadgeContent = opensDialog ? (
     <button
       ref={buttonRef}
@@ -176,7 +188,7 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
       onClick={() => setIsDialogOpen(true)}
       className={cn(
         badgeClassName,
-        'hit-area-44',
+        isMobile && 'hit-area-44',
         'focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
       )}
     >
@@ -186,39 +198,53 @@ export const TeamBadge: React.FC<TeamBadgeProps> = ({
     <div className={badgeClassName}>{badgeIcon}</div>
   );
 
-  // Mobile: Use dialog for tap interaction
-  if (opensDialog) {
+  const dialog = opensDialog && (
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <BadgeDialogBody
+        gradient={config.gradient}
+        IconComponent={IconComponent}
+        name={config.name}
+        description={getEnhancedDescription()}
+        // Radix hands focus back to a Dialog.Trigger, and this dialog has
+        // none, so without this a keyboard user lands on the page top.
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          restoringFocusRef.current = true;
+          buttonRef.current?.focus();
+          restoringFocusRef.current = false;
+        }}
+      />
+    </Dialog>
+  );
+
+  // Phone button: the dialog is the only detail view
+  if (!showsTooltip) {
     return (
       <>
         {BadgeContent}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <BadgeDialogBody
-            gradient={config.gradient}
-            IconComponent={IconComponent}
-            name={config.name}
-            description={getEnhancedDescription()}
-            // Radix hands focus back to a Dialog.Trigger, and this dialog has
-            // none, so without this a keyboard user lands on the page top.
-            onCloseAutoFocus={(event) => {
-              event.preventDefault();
-              buttonRef.current?.focus();
-            }}
-          />
-        </Dialog>
+        {dialog}
       </>
     );
   }
 
-  // Desktop, or inside a link: a hover tooltip
+  // Desktop, or inside a link: a tooltip on hover and on keyboard focus
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>{BadgeContent}</TooltipTrigger>
-        <TooltipContent side="top" className="max-w-xs">
-          <div className="font-semibold">{config.name}</div>
-          <div className="text-gray-300 text-xs mt-1">{getEnhancedDescription()}</div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <>
+      <TooltipProvider>
+        <Tooltip
+          open={isTooltipOpen}
+          onOpenChange={(open) => {
+            if (!(open && restoringFocusRef.current)) setIsTooltipOpen(open);
+          }}
+        >
+          <TooltipTrigger asChild>{BadgeContent}</TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            <div className="font-semibold">{config.name}</div>
+            <div className="text-gray-300 text-xs mt-1">{getEnhancedDescription()}</div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+      {dialog}
+    </>
   );
 };
