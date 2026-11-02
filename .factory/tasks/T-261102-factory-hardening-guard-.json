@@ -1,0 +1,65 @@
+{
+  "id": "T-261102-factory-hardening-guard-",
+  "title": "Factory hardening: guard, allow list, tests, docs",
+  "kind": "fix",
+  "status": "planned",
+  "request": "Close the open factory follow-ups after the plan review: fail-closed guard, backslash-newline and escaped-quote gaps, combined push flags, Bash writes to control-plane files ask the human, tighter allow list, fake key in a spec, a weak CLI test, two PIPELINE.md notes. Plan: scratchpad PLAN-factory-follow-ups.md (v2).",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "6fc7d70c28e0f1d5294a1c58c7be9d92250c2359",
+  "createdAt": "2026-11-02T21:32:04.849Z",
+  "criteria": [
+    {
+      "text": "No factory source file matches the guard's own secret pattern: the fake key in guard.spec.mjs is built from pieces, and a new test proves it for every file under factory/spec, factory/hooks and factory/bin",
+      "done": false
+    },
+    {
+      "text": "The guard fails closed: any internal error, unparsable or empty input, or a failed git read during the secret scan blocks Bash commands (exit 2); the hook command in .claude/settings.json and the template ends with an exit-2 fallback so load-time failures (missing file, syntax error) also block; Edit and Write fall back to the built-in blocks and then ask on every other edit; built-in protected paths are always merged into a weak or empty config (spawn tests)",
+      "done": false
+    },
+    {
+      "text": "A backslash plus newline cannot hide a command, using an odd-run-aware join that keeps an even run of backslashes as it is today: split-word push-to-main and protected-path-delete examples are blocked and the existing even-run case stays blocked",
+      "done": false
+    },
+    {
+      "text": "Backslash-escaped quotes and dollar-single-quote strings no longer hide commands, in both the main quote scanner and the substitution scanner; no existing test changed; the replacer cannot crash on an escape pair",
+      "done": false
+    },
+    {
+      "text": "git push with combined short flags that contain f and plus-prefixed refspecs are blocked; -u, --follow-tags, --set-upstream, -o, --force-with-lease and a push followed by an unrelated command stay allowed",
+      "done": false
+    },
+    {
+      "text": "Bash writes to control-plane files ask the human (redirects; tee, cp, install, ln, rsync, mv, rm and similar by the right argument; sed -i; dd of=; curl -o; git checkout or restore from a ref; git apply, patch, am; an anchored python/node/bash -c or -e with a literal path); reads, git add, git commit with a heredoc that mentions a control file, node --test and branch switches stay silent (negative tests); a block always wins over an ask; one spawn test sees permissionDecision ask; a manual smoke result is recorded",
+      "done": false
+    },
+    {
+      "text": "The npm, node and playwright allow rules are tightened to explicit names in .claude/settings.json and the template; the installer derives allow rules from the target's verify checks and preview command, never adds a blanket npm run rule, warns if one exists, and never deletes user rules; a settings test proves every verify check and the preview command of this repo still matches an allow rule",
+      "done": false
+    },
+    {
+      "text": "cli.spec asserts READY (exit 0) and NOT READY (exit 1) explicitly; changing APPROVE to CHANGES in the setup, and dropping the commit in the setup, both pass the old test and fail the new one (mutation proof, run and shown)",
+      "done": false
+    },
+    {
+      "text": "PIPELINE.md Stage 1 branch order (new, then switch, then set branch) and the --trivial rule are corrected in PIPELINE.md, the factory-maintain skill and the README; the README Known limits state honestly what shell-write matching covers and what it does not, and the stale cd and tested-by notes are fixed",
+      "done": false
+    },
+    {
+      "text": "The guard specs run as a non-required check named factory-specs and pass after every commit; all factory specs pass; the repo checks pass (integrity, typecheck, lint, knip, build, unit); no existing assertion weakened; any assertion that must change is listed in the report",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [
+    {
+      "at": "2026-11-02T21:32:17.429Z",
+      "text": "Plan v2 in scratchpad/PLAN-factory-follow-ups.md after an independent PLAN review (CHANGES accepted). Exact attack strings live only in spec files because the guard blocks quoted prose that contains them. Open decisions for Doug: refuse the check double-dash override unless the check is configured (recommend yes); CODEOWNERS (recommend not now: a sole owner deadlocks own PRs). Edits to factory/**, .claude/settings.json and .factory/config.json ask the human."
+    }
+  ],
+  "waivers": [],
+  "updatedAt": "2026-11-02T21:32:17.429Z"
+}
