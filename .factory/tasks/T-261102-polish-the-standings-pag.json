@@ -34,7 +34,28 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "dirty": false,
+      "at": "2026-11-02T14:09:57.348Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261102-polish-the-standings-pag/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "dirty": false,
+      "at": "2026-11-02T14:10:09.849Z",
+      "seconds": 12,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261102-polish-the-standings-pag/typecheck.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [
@@ -50,5 +71,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T14:06:28.535Z"
+  "updatedAt": "2026-11-02T14:10:09.850Z"
 }
