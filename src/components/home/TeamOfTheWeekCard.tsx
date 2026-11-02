@@ -87,7 +87,7 @@ const TeamOfTheWeekDelta: React.FC<TeamOfTheWeekLinkProps> = ({ trend, shouldApp
     >
       {formatPowerScore(trend.previousScore)} → {formatPowerScore(trend.currentScore)}
     </span>
-    <span className="text-xs tabular-nums text-emerald-600 dark:text-emerald-400">
+    <span className="text-xs tabular-nums text-emerald-700 dark:text-emerald-400">
       +{trend.percentChange.toFixed(1)}%
     </span>
   </div>
@@ -137,7 +137,7 @@ const TeamOfTheWeekHeader: React.FC<{ shouldApplyWinter: boolean; weekNumber: nu
       <span
         className={cn(
           'text-xs font-semibold uppercase tracking-wider',
-          shouldApplyWinter ? 'text-cyan-300' : 'text-amber-600 dark:text-amber-400'
+          shouldApplyWinter ? 'text-cyan-300' : 'text-amber-700 dark:text-amber-400'
         )}
       >
         Team of the Week

@@ -119,7 +119,7 @@ function UpsetMobileContent({ upset, winter }: UpsetRowProps) {
         {upset.matchResult && (
           <span className="text-xs font-bold tabular-nums">{upset.matchResult}</span>
         )}
-        <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
+        <span className="text-xs font-semibold text-yellow-800 dark:text-yellow-400 bg-yellow-500/15 px-1.5 py-0.5 rounded whitespace-nowrap">
           {formatOdds(upset.winnerProbability)}
         </span>
       </div>
