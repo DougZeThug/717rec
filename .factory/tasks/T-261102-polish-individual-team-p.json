@@ -79,9 +79,9 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:41:54.392Z",
+      "at": "2026-11-02T16:10:18.619Z",
       "seconds": 106,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/lint.log"
@@ -89,20 +89,20 @@
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:41:59.083Z",
-      "seconds": 5,
+      "at": "2026-11-02T16:10:22.544Z",
+      "seconds": 4,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:42:08.466Z",
-      "seconds": 9,
+      "at": "2026-11-02T16:10:29.187Z",
+      "seconds": 7,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/build.log"
     },
@@ -143,7 +143,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T16:08:32.616Z",
+  "updatedAt": "2026-11-02T16:10:29.187Z",
   "readySha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
   "readyAt": "2026-11-02T16:02:22.801Z"
 }
