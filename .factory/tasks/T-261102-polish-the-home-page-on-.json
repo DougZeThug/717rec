@@ -46,7 +46,18 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+      "dirty": false,
+      "at": "2026-11-02T19:03:02.505Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261102-polish-the-home-page-on-/integrity.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
@@ -57,5 +68,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T18:34:05.355Z"
+  "updatedAt": "2026-11-02T19:03:02.506Z"
 }
