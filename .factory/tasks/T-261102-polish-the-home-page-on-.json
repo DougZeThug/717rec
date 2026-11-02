@@ -108,15 +108,27 @@
       "log": ".factory/evidence/T-261102-polish-the-home-page-on-/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+      "at": "2026-11-02T19:19:01.836Z",
+      "summary": "Home page polish: tabIndex -1 only on 5 motion wrappers (no links/buttons); Tailwind v4 important modifiers valid and ordered in built CSS; Sign in aria-label equals visible text from 380px; other users of changed components checked; dark/winter unchanged; snapshots add only new attributes; mock fake-only with no network calls; 32/32 touched tests pass."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [
     {
       "at": "2026-11-02T18:34:05.354Z",
       "text": "Left alone / needs Doug: Champions amber card white text ~2:1 and Event card contrast (look change); Join the League button style 1.05:1; Report drawer focus trap (vaul autoFocus, 6 files); global scroll-padding-bottom for the bottom nav (all pages, recommend yes); hero grid colours; announcement preset text (database data); Top Teams swipe peek 8px at 360; No Logo Available text; Pending title font; loading layout shift; heading levels. External hosts contacted by the page: progressier.app/.com and cdn.gpteng.co (not league data). Human choice: fake-data screenshots."
+    },
+    {
+      "at": "2026-11-02T19:19:01.908Z",
+      "text": "Reviewer notes, not blocking: mover red uses text-red-700 dark:text-red-400 not the text-destructive-text token (same pair of palette classes as before); mb-4 under the hero also applies on desktop (+16px); pre-existing at 1024-1280: Home pill overlaps the 717REC wordmark (separate task); new tests check classes, not layout."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T19:16:13.885Z"
+  "updatedAt": "2026-11-02T19:19:01.908Z"
 }
