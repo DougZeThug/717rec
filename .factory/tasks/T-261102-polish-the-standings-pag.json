@@ -2,7 +2,7 @@
   "id": "T-261102-polish-the-standings-pag",
   "title": "Polish the standings page on phone",
   "kind": "polish",
-  "status": "planned",
+  "status": "verifying",
   "request": "the standings page on my phone",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -36,7 +36,8 @@
     },
     {
       "text": "No new console errors, no sideways scroll at 360 and 390px, touched components' tests pass",
-      "done": false
+      "done": true,
+      "evidence": "All 6 required checks pass at HEAD (typecheck, lint, unit 565s, build, knip, integrity). QA measured no sideways scroll at 360/390, 0 console errors with the mock run."
     }
   ],
   "checks": {
@@ -89,6 +90,16 @@
       "seconds": 7,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "dirty": false,
+      "at": "2026-11-02T14:41:14.475Z",
+      "seconds": 565,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261102-polish-the-standings-pag/unit.log"
     }
   },
   "reviews": [],
@@ -110,5 +121,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T14:13:52.734Z"
+  "updatedAt": "2026-11-02T14:41:21.059Z"
 }
