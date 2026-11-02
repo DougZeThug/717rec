@@ -2,18 +2,60 @@
   "id": "T-261102-polish-individual-team-p",
   "title": "Polish individual team pages on mobile",
   "kind": "polish",
-  "status": "intake",
+  "status": "planned",
   "request": "individual team pages on mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
   "createdAt": "2026-11-02T14:42:26.780Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Match History team names are readable at 390 and 360: name box wider (was 75.6px at 390), up to 2 lines, logo link no longer forces 44px width",
+      "done": false
+    },
+    {
+      "text": "Match History logo links are not extra tab stops (aria-hidden + tabIndex -1); the name link stays focusable",
+      "done": false
+    },
+    {
+      "text": "Match History team names meet 4.5:1 contrast in the light theme",
+      "done": false
+    },
+    {
+      "text": "Roster chips show names up to about 160px wide without cutting them at 80px (PlayerList only, PlayerChip default unchanged)",
+      "done": false
+    },
+    {
+      "text": "Career power-score chart: first x label and y-axis title are not clipped at 360 and 390",
+      "done": false
+    },
+    {
+      "text": "Last match link is at least 44px tall and 'Last match:' does not wrap; Report Card Season/Career toggles are at least 44px tall",
+      "done": false
+    },
+    {
+      "text": "Back button on a direct or shared link goes to /teams instead of leaving the app",
+      "done": false
+    },
+    {
+      "text": "Error text has no double period, and 'No Match History' text is hidden when matches failed to load",
+      "done": false
+    },
+    {
+      "text": "No new console errors, no sideways scroll at 360 and 390 on all four team routes, touched components' tests pass",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
-  "notes": [],
+  "notes": [
+    {
+      "at": "2026-11-02T15:09:52.172Z",
+      "text": "Left alone on purpose: hero logo size 144 vs 112 (look change, needs Doug), hero badges div->button (shared with home/standings cards), sticky nav wrong active pill (logic change, follow-up), shared colours/components (power-score colours, Tabs, Select, site header), global scroll-padding. Human choice earlier: fake-data screenshots."
+    }
+  ],
   "waivers": [],
-  "updatedAt": "2026-11-02T14:42:26.780Z"
+  "updatedAt": "2026-11-02T15:09:52.173Z"
 }
