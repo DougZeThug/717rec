@@ -2,7 +2,7 @@
   "id": "T-261102-polish-the-standings-pag",
   "title": "Polish the standings page on phone",
   "kind": "polish",
-  "status": "verifying",
+  "status": "ready",
   "request": "the standings page on my phone",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -102,7 +102,15 @@
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "at": "2026-11-02T14:42:16.237Z",
+      "summary": "Standings polish: 7 stats components only, no scoring/data change, focus ring kept, winter branch handled, 34 tests pass, mock is fake-only with no network calls."
+    }
+  ],
   "issues": {},
   "interventions": [
     {
@@ -118,8 +126,14 @@
     {
       "at": "2026-11-02T14:13:52.733Z",
       "text": "Observation, not fixed: at 1280px the first division table's Trend header is clipped at the right edge (same in before and after shots; may come from the long fake names)."
+    },
+    {
+      "at": "2026-11-02T14:42:16.285Z",
+      "text": "Follow-up (reviewer): CareerRankingsMobileView toggles still use the old ring style, now differ from standings toggles. Compact rows are >=64px tall (density tradeoff, accepted)."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T14:41:21.059Z"
+  "updatedAt": "2026-11-02T14:42:16.354Z",
+  "readySha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+  "readyAt": "2026-11-02T14:42:16.354Z"
 }
