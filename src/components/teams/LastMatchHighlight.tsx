@@ -45,7 +45,7 @@ const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
     <div
       className={cn('inline-flex items-center gap-1.5 text-xs text-muted-foreground', className)}
     >
-      <span className="opacity-70">Last match:</span>
+      <span className="whitespace-nowrap opacity-70">Last match:</span>
       <span
         className={cn(
           'font-semibold',
@@ -60,7 +60,7 @@ const LastMatchHighlight: React.FC<LastMatchHighlightProps> = ({
       <span className="opacity-70">vs</span>
       <Link
         to={`/teams/${toTeamSlug(opponentName)}`}
-        className="font-medium text-foreground hover:text-primary transition-colors inline-flex min-h-6 items-center gap-0.5"
+        className="font-medium text-foreground hover:text-primary transition-colors inline-flex min-h-11 items-center gap-0.5"
       >
         {opponentName}
         <ChevronRight

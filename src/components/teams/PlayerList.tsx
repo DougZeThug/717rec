@@ -28,7 +28,8 @@ const PlayerList = ({ players }: PlayerListProps) => {
             // unrelated entries change.
             const occurrence = players.slice(0, index).filter((p) => p === player).length;
             const key = occurrence === 0 ? player : `${player}#${occurrence}`;
-            return <PlayerChip key={key} playerName={player} />;
+            // The chip cuts a name at 80px. A roster has room for 160px, so most names show in full.
+            return <PlayerChip key={key} playerName={player} className="[&>span]:max-w-40" />;
           })}
         </div>
       )}
