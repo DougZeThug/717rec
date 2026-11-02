@@ -1,7 +1,11 @@
 // FAKE DATA ONLY. Mock for `node factory/bin/shoot.mjs --mock`. No real league names or people.
-// Serves the /stats page and every section of /teams/<slug> (full data for "Fake Team Bravo ...").
+// Serves the /stats page, every section of /teams/<slug> (full data for "Fake Team Bravo ...") and the signed-out
+// home page (/): hero cards, Team of the Week, Weekly Recap, Pending Scores, Top Teams.
 // Tables: seasons, v_team_details, matches, theme_settings, teams, divisions, team_season_stats, matches_archive,
-// team_badge_events, v_player_season_stats, ranking_snapshots. RPC: get_head_to_head_records.
+// team_badge_events, v_player_season_stats, ranking_snapshots, power_score_snapshots, hero_cards, v_pending_matches.
+// RPC: get_head_to_head_records, get_batch_head_to_head, get_blind_draw_signup_count.
+// Not served on purpose (the tool answers []): brackets (would flip the recap to playoff mode), recap_editions,
+// admin_notifications. Every image field is null so no fake row can make the page call an image host.
 // Other reads get [] from the tool.
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
 const ID = (n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -150,9 +154,62 @@ const snapshots = [...teams].sort((a, b) => b.power_score - a.power_score).map((
   team_id: t.team_id, season_id: SEASON, rank_position: t.name.includes('Bravo') ? i + 2 : t.name.includes('Foxtrot') ? i : i + 1,
 }));
 
+// ---- Home page: weekly power-score snapshots (Team of the Week, Recap movers) ----
+// Week 17 matches v_team_details. Week 16 = week 17 minus a delta, so Bravo, Charlie and Foxtrot rose and Echo fell.
+// Team of the Week is the biggest riser (Bravo). The recap shows the next two risers and the one faller.
+const WEEK_DELTA = { 1: 6, 2: 3, 5: 1.5, 4: -4 }; // team index in T -> power score change into week 17
+const powerSnapshots = [16, 17].flatMap((week) => teams.map((t, i) => ({
+  id: ID(800 + (week - 16) * 10 + i), season_id: SEASON, team_id: t.team_id, week_number: week,
+  power_score: +(t.power_score - (week === 16 ? (WEEK_DELTA[i] ?? 0) : 0)).toFixed(1), division_id: t.division_id,
+  snapshot_date: week === 16 ? '2026-04-27' : '2026-05-04', created_at: '2026-05-04T06:00:00Z',
+  match_wins: t.wins, match_losses: t.losses, game_wins: t.game_wins, game_losses: t.game_losses, sos: t.sos,
+})));
+
+// ---- Home page: hero cards ----
+// A function, so times are worked out when the page asks. The event starts 5 hours from now (plus 30 seconds, so the
+// countdown still reads "5h 0m until start" after the page loads) and checks in 4 hours from now.
+// Class strings are copied from src/constants/heroCardPresets.ts. The event slug must not be "blind-draw".
+const heroCards = () => {
+  const at = (hours, extraMs = 0) => new Date(Date.now() + hours * 36e5 + extraMs).toISOString();
+  const base = {
+    subtitle: null, body: null, cta_label: null, cta_url: null, accent_color: null, image_url: null, icon_name: null,
+    is_visible: true, target_type: 'none', target_id: null, metadata: {},
+    created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+  };
+  return [
+    { ...base, id: ID(700), slug: 'fake-announcement', sort_order: 1, card_type: 'announcement', title: 'Fake Season Playoffs Start Soon',
+      subtitle: 'Fake Lanes, bring your own bags', icon_name: 'Trophy', cta_url: '/schedule',
+      background_color: 'bg-gradient-to-r from-blue-600 to-amber-500', text_color: 'text-white' },
+    { ...base, id: ID(701), slug: 'fake-champions', sort_order: 2, card_type: 'champions', title: '🏆 Fake Season 2025 Fall Champions',
+      background_color: 'bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600', text_color: 'text-amber-900',
+      metadata: { champions: { Competitive: teamId(0), Intermediate: teamId(5) } } },
+    { ...base, id: ID(702), slug: 'fake-weekly-event', sort_order: 3, card_type: 'event', title: 'Fake Mixer Night',
+      subtitle: 'Fake Lanes, every Thursday', body: 'Fake prize pool. Fake fun for everyone.', icon_name: 'Shuffle',
+      background_color: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500', text_color: 'text-white',
+      metadata: {
+        is_active_event: true, check_in_time: at(4), start_time: at(5, 30000), buy_in: '$10', payouts: 'Top 3',
+        past_winners: [
+          { week: 1, winners: [{ place: 1, names: 'Fake Player 1A and 2B' }, { place: 2, names: 'Fake Player 3A and 4B' }] },
+          { week: 2, winners: [{ place: 1, names: 'Fake Player 5A and 6B' }, { place: 2, names: 'Fake Player 7A and 8B' }] },
+        ],
+      } },
+    { ...base, id: ID(703), slug: 'fake-standard', sort_order: 4, card_type: 'standard', title: 'Fake League Help And Rules',
+      icon_name: 'Megaphone', cta_url: '/help', background_color: 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500', text_color: 'text-white' },
+  ];
+};
+
+// ---- Home page: pending scores (v_pending_matches) ----
+// Two matches two days old (the real view only lists matches at least 16 hours old). Logos are null on purpose.
+const pendingMatches = () => [[2, 3, 0], [6, 7, 1]].map(([a, b, k]) => ({
+  id: ID(900 + k), date: new Date(Date.now() - 2 * 864e5 - k * 36e5).toISOString(), location: 'Fake Lanes',
+  team1_id: teamId(a), team1_name: teams[a].name, team1_logo: null, team2_id: teamId(b), team2_name: teams[b].name, team2_logo: null,
+}));
+
+// A value that is a function is called on each request, so "now" is the time the page asks.
 const TABLES = {
   seasons: [season, ...OLD], v_team_details: teams, matches, theme_settings: themes, teams: teamRows, divisions,
   team_season_stats: seasonStats, matches_archive: archive, team_badge_events: badges, v_player_season_stats: playerStats, ranking_snapshots: snapshots,
+  power_score_snapshots: powerSnapshots, hero_cards: heroCards, v_pending_matches: pendingMatches,
 };
 
 // RPC get_head_to_head_records for Bravo (all-time, so larger than this season).
@@ -166,6 +223,15 @@ const headToHead = (id) => (id !== teamId(BRAVO) ? [] : H2H.map(([o, played, win
   team_id: id, opponent_id: teamId(o), matches_played: played, wins, losses: played - wins, game_wins: gw, game_losses: gl,
   win_pct: +((wins / played) * 100).toFixed(1), last_played_at: `${last}T23:00:00Z`,
 })));
+
+// RPC answers by function name. Each gets the JSON body the app sent.
+// get_batch_head_to_head ([]: every matchup reads as a first meeting) must answer, or the whole Weekly Recap card hides.
+// get_blind_draw_signup_count: the event hero card asks for it; the number only shows on the "blind-draw" slug.
+const RPC = {
+  get_head_to_head_records: (body) => headToHead(body.p_team_id),
+  get_batch_head_to_head: () => [],
+  get_blind_draw_signup_count: () => 12,
+};
 
 // ---- PostgREST helpers: just the filters and sorts the app uses ----
 const RESERVED = ['select', 'order', 'limit', 'offset', 'or', 'and'];
@@ -200,17 +266,18 @@ export default async (route) => {
   const req = route.request();
   if (req.method() === 'OPTIONS') { await route.fulfill({ status: 204, headers: CORS, body: '' }); return true; }
   const url = new URL(req.url());
-  // RPC calls are POSTs with a JSON body. Only the head-to-head one is served.
-  if (req.method() === 'POST' && url.pathname.endsWith('/rest/v1/rpc/get_head_to_head_records')) {
+  // RPC calls are POSTs with a JSON body. Only the ones listed in RPC are served.
+  const rpc = req.method() === 'POST' ? RPC[url.pathname.split('/rest/v1/rpc/')[1]] : undefined;
+  if (rpc) {
     let body = {};
-    try { body = req.postDataJSON() ?? {}; } catch { /* not JSON: answer with no rows */ }
-    await json(route, headToHead(body.p_team_id));
+    try { body = req.postDataJSON() ?? {}; } catch { /* not JSON: answer as if no arguments were sent */ }
+    await json(route, rpc(body));
     return true;
   }
   if (req.method() !== 'GET') return false;
   const table = url.pathname.split('/rest/v1/')[1];
   if (!(table in TABLES)) return false;
-  let rows = TABLES[table];
+  let rows = typeof TABLES[table] === 'function' ? TABLES[table]() : TABLES[table];
   for (const [k, v] of url.searchParams) {
     // Skip control params and embedded-table filters such as divisions.display_division=neq.Hidden
     if (RESERVED.includes(k) || k.includes('.')) continue;
