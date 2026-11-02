@@ -11,23 +11,28 @@
   "criteria": [
     {
       "text": "Podium team names show up to 2 lines and have a title, so teams with a shared prefix are told apart at 390px",
-      "done": false
+      "done": true,
+      "evidence": "QA measured at 360/390: podium name 2 lines, 30px tall, title = full name. Shots .factory/evidence/T-261102-polish-the-standings-pag/before/phone-stats.png vs .factory/evidence/T-261102-polish-the-standings-pag/after/phone-stats.png"
     },
     {
       "text": "Selected Compact/Detailed item is visually distinct from keyboard focus (focus ring stays, selected uses fill only)",
-      "done": false
+      "done": true,
+      "evidence": "QA measured: selected+unfocused has fill, no ring; selected+focused shows 2px+2px ring. .factory/evidence/T-261102-polish-the-standings-pag/after/phone-stats.png"
     },
     {
       "text": "Compact-row team link is at least 44px tall",
-      "done": false
+      "done": true,
+      "evidence": "QA measured compact links: 44, 68.5, 44, 68.5 px at 360; 44, 51, 44, 51 at 390 (before 33.5 single-line)"
     },
     {
       "text": "Division/All and Compact/Detailed toggle items are at least 44px tall and wide",
-      "done": false
+      "done": true,
+      "evidence": "QA measured toggles 99.2x44, 63x44, 72.1x44, 67.2x44 (before 40 tall). Desktop shot unchanged: .factory/evidence/T-261102-polish-the-standings-pag/after/desktop-stats.png"
     },
     {
       "text": "Empty-state text no longer mentions a division control that is not on that screen",
-      "done": false
+      "done": true,
+      "evidence": "Seen in .factory/evidence/T-261102-polish-the-standings-pag/after-empty/phone-stats.png: 'There are no teams to show right now.' / 'No teams have been added yet.'; test StatsContainer 6/6 pass"
     },
     {
       "text": "No new console errors, no sideways scroll at 360 and 390px, touched components' tests pass",
@@ -54,6 +59,36 @@
       "seconds": 12,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-polish-the-standings-pag/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "dirty": false,
+      "at": "2026-11-02T14:12:03.303Z",
+      "seconds": 113,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261102-polish-the-standings-pag/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "dirty": false,
+      "at": "2026-11-02T14:12:07.828Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261102-polish-the-standings-pag/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "596f608c062e5c7b90bd839cf5efddb39cb45ff8",
+      "dirty": false,
+      "at": "2026-11-02T14:12:15.011Z",
+      "seconds": 7,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261102-polish-the-standings-pag/build.log"
     }
   },
   "reviews": [],
@@ -68,8 +103,12 @@
     {
       "at": "2026-11-02T14:06:28.490Z",
       "text": "Left alone on purpose: power-score light-theme contrast (shared by ~10 views, needs Doug), chart dead space, error-state height, decorative dot. Human choice: fake-data screenshots."
+    },
+    {
+      "at": "2026-11-02T14:13:52.733Z",
+      "text": "Observation, not fixed: at 1280px the first division table's Trend header is clipped at the right edge (same in before and after shots; may come from the long fake names)."
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T14:10:09.850Z"
+  "updatedAt": "2026-11-02T14:13:52.734Z"
 }
