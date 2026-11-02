@@ -59,9 +59,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
+      "sha": "5917eefed437a6b52de5105e492a027794367ef2",
       "dirty": false,
-      "at": "2026-11-02T15:39:52.836Z",
+      "at": "2026-11-02T16:08:18.299Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-polish-individual-team-p/integrity.log"
@@ -143,7 +143,7 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T16:02:22.801Z",
+  "updatedAt": "2026-11-02T16:08:18.300Z",
   "readySha": "cf1021d6f10eeac00fbac384ac801f3afca6e158",
   "readyAt": "2026-11-02T16:02:22.801Z"
 }
