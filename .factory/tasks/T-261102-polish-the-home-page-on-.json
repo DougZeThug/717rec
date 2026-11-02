@@ -66,6 +66,46 @@
       "seconds": 14,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-polish-the-home-page-on-/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+      "dirty": false,
+      "at": "2026-11-02T19:05:05.112Z",
+      "seconds": 108,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261102-polish-the-home-page-on-/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+      "dirty": false,
+      "at": "2026-11-02T19:05:09.860Z",
+      "seconds": 5,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261102-polish-the-home-page-on-/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+      "dirty": false,
+      "at": "2026-11-02T19:05:17.553Z",
+      "seconds": 8,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261102-polish-the-home-page-on-/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "10fea961381f874d74ecf4afd8da95f8cd8f4816",
+      "dirty": false,
+      "at": "2026-11-02T19:16:13.885Z",
+      "seconds": 656,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261102-polish-the-home-page-on-/unit.log"
     }
   },
   "reviews": [],
@@ -78,5 +118,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-02T19:03:16.586Z"
+  "updatedAt": "2026-11-02T19:16:13.885Z"
 }
