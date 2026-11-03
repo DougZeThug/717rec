@@ -62,7 +62,7 @@ stateDiagram-v2
     detail --> list : browser back, or Back to brackets
     list --> failed : a list request failed
     failed --> list : press Try again
-    detail --> failed : the chosen bracket failed to load
+    opening --> failed : the chosen bracket failed to load
     list --> list : change season (reloads the list)
 ```
 
@@ -145,20 +145,22 @@ which returns to the automatic choice.
 
 Choosing a bracket does three things at once: it sets `?bracket=<id>`, it starts
 loading that bracket, and it starts a realtime subscription to that bracket's
-matches. The page jumps to the top and shows a spinner reading "Loading
-bracket..." in place of the list. The drawn bracket replaces the spinner when the
-data has arrived and its id matches the one asked for. If the load fails, the
-list comes back with a "Loading bracket" banner above it.
+matches. While the bracket loads, the page scrolls to the top and shows a spinner
+reading "Loading bracket..." in place of the list. A bracket opened earlier is
+already in the cache and opens at once. The drawn bracket replaces the spinner
+when the data has arrived and its id matches the one asked for. If the load
+fails, the list comes back with a "Loading bracket" banner above it.
 
 When the subscription is live, a green signal sits in the bottom-right corner. On
 a screen 768 pixels wide or more it is a small pill reading "Live updates
-enabled". On a phone it is only a pulsing green dot, above the tab bar, so it
-does not cover the bracket. A tap on the dot goes through to whatever is under
-it, and a screen reader still hears the words. A score entered by an admin
-anywhere else arrives within a second or two: the bracket redraws and a toast
-says "Bracket Updated — Match scores have been updated." One admin save writes
-several rows; the page collapses that burst into a single refresh and a single
-toast.
+enabled". On a phone it is only a pulsing green dot, above the tab bar. The dot
+covers far less of the bracket than the pill did. A tap on the dot goes through
+to whatever is under it. A screen reader still hears the words.
+
+A score entered by an admin anywhere else arrives within a second or two: the
+bracket redraws and a toast says "Bracket Updated — Match scores have been
+updated." One admin save writes several rows; the page collapses that burst into
+a single refresh and a single toast.
 
 ### Submit
 
@@ -239,9 +241,9 @@ rearrange, edit, and delete a bracket as well as view it. See
 [`cross-cutting/on-a-phone.md`](../cross-cutting/on-a-phone.md).
 
 **Accessibility.** The season dropdown has a real label. The drawn bracket is a
-labelled region. The failure banners are alerts. Replacing the list with a
-bracket is not announced — a screen reader user is moved to new content with no
-warning that it happened.
+labelled region. The failure banners are alerts. The "Loading bracket..." spinner
+is announced as a status. The bracket that then replaces it is not announced — a
+screen reader user is moved to new content with no warning that it happened.
 
 **Side effects the user can notice.** None from viewing. Opening a bracket
 preloads its data into the cache, which is why a bracket opened once and closed
@@ -250,9 +252,10 @@ opens again instantly.
 ## Edge cases
 
 - **A bracket that predates the current engine cannot be opened.** Its row shows
-  a "Legacy" badge and a working button, but the loader returns nothing for it,
-  no error is raised, and the list simply stays on screen with `?bracket=<id>`
-  now in the address. Nothing tells the user what happened. See
+  a "Legacy" badge and a working button, but the loader returns nothing for it
+  and no error is raised. The page shows "Loading bracket..." for a moment, then
+  shows the list again, with `?bracket=<id>` now in the address. Nothing tells
+  the user what happened. See
   [Open questions](#open-questions-and-verification).
 - **The season shown and the season being played can differ**, and the page says
   so: "Showing *X* playoffs — regular season play is on *Y*." That banner appears
@@ -279,11 +282,11 @@ opens again instantly.
 ## Open questions and verification
 
 - **A legacy bracket's "View Live Bracket" button does nothing visible.** The
-  loader returns null for any bracket not built with the current engine, so the
-  page adds `?bracket=<id>` to the address, shows "Loading bracket..." for a
-  moment, and then shows the list again at the top with no message at all (read
-  from the code, not seen in a browser). The row already carries a "Legacy"
-  badge, so the state is known.
+  loader returns null for any bracket not built with the current engine. The page
+  adds `?bracket=<id>` to the address and shows "Loading bracket..." for a
+  moment. Then it shows the list again at the top, with no message at all. This
+  was read from the code and not seen in a browser. The row already carries a
+  "Legacy" badge, so the state is known.
   **May be worth treating as a bug rather than documenting.**
 - **The chosen season is lost on reload while the bracket in the address is
   not.** After a reload the season dropdown can name one season while the open
@@ -306,5 +309,5 @@ opens again instantly.
   the page explains it, and the only sign is the overlap banner.
 
 Verified against `717rec` commit `ea5c8f4`, except the wait after "View Live
-Bracket" and the phone "Live updates" dot above. Both changed after that commit,
-in the playoffs mobile polish.
+Bracket" and the phone "Live updates" dot above. Both changed after that commit.
+Neither is a triaged bug.
