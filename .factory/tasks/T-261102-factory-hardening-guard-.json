@@ -48,6 +48,10 @@
     {
       "text": "The guard specs run as a non-required check named factory-specs and pass after every commit; all factory specs pass; the repo checks pass (integrity, typecheck, lint, knip, build, unit); no existing assertion weakened; any assertion that must change is listed in the report",
       "done": false
+    },
+    {
+      "text": "The check command refuses a '-- <cmd>' override for a name that is not configured and for a required check, and runs nothing. A configured check that is not required still accepts it (a known gap, written in the README). Shown by the CLI spec.",
+      "done": false
     }
   ],
   "checks": {
@@ -72,5 +76,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T16:06:05.135Z"
+  "updatedAt": "2026-11-03T16:07:20.519Z"
 }
