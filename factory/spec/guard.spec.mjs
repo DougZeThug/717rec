@@ -115,6 +115,24 @@ test('a closing paren inside quotes does not end a substitution early and hide t
   assert.ok(bash(String.raw`echo $(grep ")" f) "$(rm -rf public)"`)?.block, 'the same with double quotes');
   assert.equal(bash(String.raw`echo $(grep ')' f) '$(rm -rf public)'`), null, 'a later substitution in single quotes is still inert');
 });
+// A deep nest of substitutions must not make the guard slow. Each distinct body is checked once, not once per way to reach it.
+// The bound is generous on purpose: the check takes a few milliseconds, and a slow machine still has a wide margin.
+const nested = (depth, inner) => `echo ${'$('.repeat(depth)}${inner}${')'.repeat(depth)}`;
+test('deeply nested substitutions are checked fast', () => {
+  const depth = 60;
+  const started = performance.now();
+  assert.equal(bash(nested(depth, 'echo hi')), null, 'a harmless nest is allowed');
+  assert.ok(bash(nested(depth, 'rm -rf public'))?.block, 'a delete at the bottom of the nest is blocked');
+  assert.ok(bash(nested(depth, 'echo x > .claude/settings.json'))?.ask, 'a control-file write at the bottom of the nest asks');
+  const elapsed = performance.now() - started;
+  assert.ok(elapsed < 3000, `three commands nested ${depth} deep took ${Math.round(elapsed)} ms`);
+});
+test('a nested attack is still found at a shallow depth and after a quoted paren', () => {
+  assert.ok(bash(nested(3, 'rm -rf public'))?.block, 'three deep, delete');
+  assert.ok(bash(nested(3, 'echo x > .claude/settings.json'))?.ask, 'three deep, control-file write');
+  assert.ok(bash(nested(8, 'rm -rf public'))?.block, 'eight deep, past the depth limit of the second look');
+  assert.ok(bash(String.raw`echo $(grep ')' f) "$(echo $(rm -rf public))"`)?.block, 'a quoted paren, then a nested substitution');
+});
 test('escape handling keeps working for the allowed and the already-blocked forms', () => {
   // Built by concatenation: a String.raw literal cannot end in a backslash. Shell text: echo \\"; rm -rf public; echo "
   assert.equal(bash(['echo \\\\', '"; rm -rf public; echo "'].join('')), null, 'an escaped backslash, then a real quoted string: inert');

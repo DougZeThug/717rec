@@ -127,7 +127,16 @@ const nextCwd = (segment, cwd) => {
   return words[1].startsWith('/') || words[1].startsWith('~') ? posix.normalize(words[1]) : posix.normalize(posix.join(cwd || '.', words[1]));
 };
 
-const checkProtectedTargets = (cmd, cfg, depth = 0) => {
+// True the first time a body is visited at a depth, false after. What a visit finds depends only on the body and the depth,
+// so a second visit would give the same answer. Without this a deep nest is checked once per way to reach each body.
+const firstVisit = (seen, depth, body) => {
+  const key = `${depth}:${body}`;
+  if (seen.has(key)) return false;
+  seen.add(key);
+  return true;
+};
+
+const checkProtectedTargets = (cmd, cfg, depth = 0, seen = new Set()) => {
   // Look only at real command words: drop heredoc bodies and quoted text first.
   let cwd = '';
   for (const segment of neutralise(cmd).split(/&&|\|\||[;|\n]/)) {
@@ -138,7 +147,8 @@ const checkProtectedTargets = (cmd, cfg, depth = 0) => {
   // Substitutions run even inside double quotes, so check each body as a command of its own.
   if (depth < 4) {
     for (const body of substitutions(cmd.replace(HEREDOC, '$1'))) {
-      const inner = checkProtectedTargets(body, cfg, depth + 1);
+      if (!firstVisit(seen, depth + 1, body)) continue;
+      const inner = checkProtectedTargets(body, cfg, depth + 1, seen);
       if (inner) return inner;
     }
   }
@@ -234,6 +244,7 @@ const checkControlPlaneWrites = (cmd, cfg, startDir, root) => {
   const asDir = (path) => `${path.replace(/\/+$/, '')}/`;
   // A control path itself, a path inside a control folder, or a folder that holds a control path (`rm -rf .claude`).
   const controls = (path) => path === '.' || matchesAny(path, rules) || matchesAny(asDir(path), rules) || rules.some((rule) => rule.startsWith(asDir(path)));
+  const seen = new Set();
   const scan = (text, dir, depth) => {
     let cwd = dir;
     for (const segment of neutralise(text).replace(/>\|/g, '>').split(/&&|\|\||[;|\n]/)) {
@@ -250,6 +261,7 @@ const checkControlPlaneWrites = (cmd, cfg, startDir, root) => {
     // Substitutions run even inside double quotes, so check each body as a command of its own.
     if (depth < 4) {
       for (const body of substitutions(text.replace(HEREDOC, '$1'))) {
+        if (!firstVisit(seen, depth + 1, body)) continue;
         const inner = scan(body, dir, depth + 1);
         if (inner) return inner;
       }
