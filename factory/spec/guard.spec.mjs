@@ -73,7 +73,7 @@ test('an escaped backslash before a newline is not a line join: the next line is
 });
 // The shell does not always join a backslash-newline pair. A comment ends at the newline. A quoted heredoc keeps the pair as plain text.
 // So the guard checks the text before the join and after it. Lines are joined with '\n' so that a line may end in a backslash.
-test('a backslash-newline join cannot hide a command that the shell still runs', () => {
+test('the guard checks the written text and the joined text, so a join cannot hide a command in either reading', () => {
   const rm = 'rm -rf public';
   assert.ok(bash(['echo hi # note\\', rm].join('\n'))?.block, 'a comment that ends in a backslash ends at the newline');
   assert.ok(bash(["cat <<'EOF'", 'foo\\', 'EOF', rm, 'EOF'].join('\n'))?.block, 'a quoted heredoc ends at its first EOF, and the line after it is a command');
