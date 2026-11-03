@@ -68,9 +68,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
       "dirty": false,
-      "at": "2026-11-03T16:09:12.974Z",
+      "at": "2026-11-03T18:04:23.324Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/integrity.log"
@@ -78,10 +78,10 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
       "dirty": false,
-      "at": "2026-11-03T16:09:56.266Z",
-      "seconds": 43,
+      "at": "2026-11-03T18:04:36.081Z",
+      "seconds": 13,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/typecheck.log"
     },
@@ -157,5 +157,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T18:02:07.669Z"
+  "updatedAt": "2026-11-03T18:04:36.082Z"
 }
