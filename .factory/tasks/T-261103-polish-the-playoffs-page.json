@@ -2,18 +2,67 @@
   "id": "T-261103-polish-the-playoffs-page",
   "title": "Polish the playoffs page for mobile",
   "kind": "polish",
-  "status": "intake",
+  "status": "planned",
   "request": "/factory-polish the playoffs page for mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
   "createdAt": "2026-11-03T20:44:07.515Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "Bracket names fit: at 360 and 390 px wide the team names in the bracket boxes are no longer cut with an ellipsis, except at most the two longest fake names (before: 15 of 28 cut in the 8-team bracket). Match height does not grow. Before and after shots.",
+      "done": false
+    },
+    {
+      "text": "Bracket padding on phone is 8px 12px, so the first round starts near the left edge (before: 50px inside). Measured before and after.",
+      "done": false
+    },
+    {
+      "text": "Bracket text meets 4.5:1 in dark and light themes: loser rows, winner green, and the Winner-of hint and seed grey. Contrast measured before and after.",
+      "done": false
+    },
+    {
+      "text": "The match label chip (for example WB 1.1) no longer overlaps the first row text. Measured on all matches of the 8-team bracket, phone and desktop.",
+      "done": false
+    },
+    {
+      "text": "Light theme: the division title and View buttons on the bracket list meet 4.5:1 (before: 3.74, 3.16, 3.80, 4.49). Dark theme looks the same.",
+      "done": false
+    },
+    {
+      "text": "Season picker on phone is at least 44px tall, shows the Current label at 360 px, and its dropdown rows are at least 44px tall. Measured.",
+      "done": false
+    },
+    {
+      "text": "The bracket card header wraps cleanly and the status badge is not clipped at 320 px. Before and after shots at 320, 360 and 390.",
+      "done": false
+    },
+    {
+      "text": "The loading spinners are visible in the dark theme (at least 3:1) and the page loading view is announced as a status.",
+      "done": false
+    },
+    {
+      "text": "After tapping View Live Bracket, a loading view shows at once instead of the division list, and the screen starts at the top of the bracket. Covered by a new test and a slow-network shot.",
+      "done": false
+    },
+    {
+      "text": "On phone the Live updates pill no longer covers bracket rows, buttons or footer text (it shrinks to a dot with an accessible name). Unchanged from 768px up. DEFAULT chosen without asking: Doug can veto.",
+      "done": false
+    },
+    {
+      "text": "Final standings rows line up: the logo column is the same for places 1 to 3 and for place 4 and below. Measured.",
+      "done": false
+    },
+    {
+      "text": "No new console errors; the page does not scroll sideways at 390, 360 and 320; desktop 1280 looks the same except the label-chip fix; existing tests pass; all required checks pass; the left-alone list is reported (back-to-list button, bracket spinner position, BYE text, duplicate stage title).",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-03T20:44:07.515Z"
+  "updatedAt": "2026-11-03T21:22:11.715Z"
 }
