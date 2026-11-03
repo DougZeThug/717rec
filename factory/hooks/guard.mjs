@@ -298,19 +298,30 @@ const commitContent = (cmd, root, execFileSync) => {
 // and stays a command separator. (?<!\\) plus pairs means only an odd run, whose last backslash escapes the newline.
 const joinContinuations = (command) => command.replace(/(?<!\\)((?:\\\\)*)\\\r?\n/g, '$1');
 
+// All the Bash checks, in order, on one text. The order lives here and nowhere else.
+// The block lists scan the RAW command: `bash <<EOF` and `bash -c "..."` run their text.
+// Only the protected-path scan skips heredoc bodies and quotes, because a file body that
+// merely mentions "rm public/" is data, not a delete.
+// The control-plane check is LAST: it only asks, so every block above it wins.
+const bashChecks = (text, toolInput, cfg, branch, root, startDir) => checkBlockedCommands(text, cfg)
+  ?? checkPush(text, cfg, branch)
+  ?? checkCommitFlags(text)
+  ?? checkCommit(text, cfg, branch)
+  ?? checkProtectedTargets(text, cfg)
+  ?? checkStagedSecrets(text, toolInput)
+  ?? checkControlPlaneWrites(text, cfg, startDir, root);
+
+// The shell does not always join a backslash-newline pair: a comment ends at the newline, and a quoted
+// heredoc body keeps the pair as plain text. A join can therefore hide a command that really runs.
+// So check the text as written AND the joined text. Any block wins. An ask from either text is kept.
 const decideBash = (toolInput, cfg, branch, root, startDir) => {
-  const raw = joinContinuations(String(toolInput.command ?? ''));
-  // The block lists scan the RAW command: `bash <<EOF` and `bash -c "..."` run their text.
-  // Only the protected-path scan skips heredoc bodies and quotes, because a file body that
-  // merely mentions "rm public/" is data, not a delete.
-  // The control-plane check is LAST: it only asks, so every block above it wins.
-  return checkBlockedCommands(raw, cfg)
-    ?? checkPush(raw, cfg, branch)
-    ?? checkCommitFlags(raw)
-    ?? checkCommit(raw, cfg, branch)
-    ?? checkProtectedTargets(raw, cfg)
-    ?? checkStagedSecrets(raw, toolInput)
-    ?? checkControlPlaneWrites(raw, cfg, startDir, root);
+  const written = String(toolInput.command ?? '');
+  const first = bashChecks(written, toolInput, cfg, branch, root, startDir);
+  if (first?.block) return first;
+  const joined = joinContinuations(written);
+  if (joined === written) return first;
+  const second = bashChecks(joined, toolInput, cfg, branch, root, startDir);
+  return second?.block ? second : first ?? second;
 };
 
 const decideEdit = (toolInput, cfg) => {

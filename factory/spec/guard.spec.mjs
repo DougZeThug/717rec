@@ -71,6 +71,30 @@ test('an escaped backslash before a newline is not a line join: the next line is
   assert.ok(bash(['echo a', '\\\\', '\n', 'rm -rf public'].join(''))?.block, 'even run');
   assert.ok(bash(['echo a', '\\\\\\\\', '\n', 'rm -rf public'].join(''))?.block, 'four backslashes');
 });
+// The shell does not always join a backslash-newline pair. A comment ends at the newline. A quoted heredoc keeps the pair as plain text.
+// So the guard checks the text before the join and after it. Lines are joined with '\n' so that a line may end in a backslash.
+test('a backslash-newline join cannot hide a command that the shell still runs', () => {
+  const rm = 'rm -rf public';
+  assert.ok(bash(['echo hi # note\\', rm].join('\n'))?.block, 'a comment that ends in a backslash ends at the newline');
+  assert.ok(bash(["cat <<'EOF'", 'foo\\', 'EOF', rm, 'EOF'].join('\n'))?.block, 'a quoted heredoc ends at its first EOF, and the line after it is a command');
+  assert.ok(bash(['git push origin ma\\', 'in'].join('\n'))?.block, 'a split branch name is still joined and blocked');
+  assert.ok(bash(['rm -rf pub\\', 'lic'].join('\n'))?.block, 'a split protected path is still joined and blocked');
+  assert.ok(bash(['echo a', '\\\\', '\n', rm].join(''))?.block, 'an even run of backslashes is still not a join');
+  assert.equal(bash(['echo a \\', 'b'].join('\n')), null, 'a harmless line join stays allowed');
+});
+test('a block found in either text wins over an ask found in the other', () => {
+  const ctl = 'echo x > .claude/settings.json';
+  const rm = 'rm -rf public';
+  const before = bash(['echo hi # note\\', rm, 'echo x > .claude/set\\', 'tings.json'].join('\n'));
+  assert.ok(before?.block, 'a block in the text before the join, an ask only in the joined text');
+  assert.equal(before.ask, undefined);
+  const after = bash([ctl, 'git push origin ma\\', 'in'].join('\n'));
+  assert.ok(after?.block, 'an ask in the text before the join, a block only in the joined text');
+  assert.equal(after.ask, undefined);
+  const kept = bash(["cat <<'EOF'", 'foo\\', 'EOF', ctl, 'EOF'].join('\n'));
+  assert.ok(kept?.ask, 'an ask found only in the text before the join is kept');
+  assert.equal(kept.block, undefined);
+});
 // String.raw keeps the backslashes exactly as the shell would read them. Each command below is real shell text.
 test('an escaped quote does not open a quoted string that hides a command', () => {
   assert.ok(bash(String.raw`echo \"; rm -rf public; echo \"`)?.block, 'escaped double quotes');
