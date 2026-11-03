@@ -126,7 +126,15 @@
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/unit.log"
     }
   },
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
+      "at": "2026-11-03T18:33:31.128Z",
+      "summary": "Round 2 at b534e5c: B1, B2, N2, N5 closed with exit-2 proof; 0 regressions vs base in ~50k real-bash fuzz cases; 94/94 specs, no assertion removed. Open notes (none are regressions): mixed join (comment or quoted heredoc plus split word) still hides a command in both texts and in base; nested-quote substitution; nested $( ) speed back to base level; ask-from-joined-text untested."
+    }
+  ],
   "issues": {
     "review-b1": {
       "attempts": 1,
@@ -157,5 +165,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T18:15:37.438Z"
+  "updatedAt": "2026-11-03T18:33:31.129Z"
 }
