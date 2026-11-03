@@ -256,6 +256,18 @@
    Match Labels & Status
    ============================================ */
 
+/*
+  The chip that names a match ("WB 1.1") inherits the page's 1.5 line height, so
+  its background was 21.6px tall and covered the top 4.6px of the first team's
+  logo. A line height of 1 makes it 14.4px tall, and 2px less lift keeps it
+  centred on the match border. The text keeps its size. The chip is positioned
+  absolutely, so the match height and the connector lines do not move.
+*/
+.brackets-viewer .opponents > span {
+  line-height: 1;
+  top: -8px;
+}
+
 .brackets-viewer .match-label {
   color: var(--label-color);
   font-size: 0.75rem;
