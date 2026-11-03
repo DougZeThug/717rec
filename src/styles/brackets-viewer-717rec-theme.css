@@ -242,6 +242,15 @@
   padding: 1rem;
 }
 
+/*
+  "Winner Bracket" and "Loser Bracket" are the library's `.bracket h2`, which it
+  colours plain `gray`. That is 3.95:1 on the light page, under the 4.5:1 that
+  21px text needs. The theme's label colour is 4.83:1 on light and 6.15:1 on dark.
+*/
+.brackets-viewer .bracket h2 {
+  color: var(--label-color);
+}
+
 .brackets-viewer .upper-bracket {
   margin-bottom: 2rem;
 }
