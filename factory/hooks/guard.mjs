@@ -28,7 +28,8 @@ const BUILTIN_BLOCKED = [
 // Matches a heredoc. Group 1 is the opener line (redirects there are real); the body after it is data.
 const HEREDOC = /((?<!<)<<(?!<)-?\s*['"]?(\w+)['"]?[^\n]*)\n[\s\S]*?\n\s*\2\b/g;
 
-const unquote = (word) => word.replace(/^['"]+|['"]+$/g, '');
+// The shell removes every quote mark of a word: ma""in, ma''in and m"a"in are all the word main.
+const unquote = (word) => word.replace(/['"]/g, '');
 
 const checkPush = (cmd, cfg, branch) => {
   for (const push of cmd.matchAll(/git\s+push\b([^\n;&|]*)/g)) {

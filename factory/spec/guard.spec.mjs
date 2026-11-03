@@ -170,6 +170,12 @@ test('every git push in a command is checked, quoted names and bare HEAD include
   assert.equal(bash(push('origin HEAD'), 'factory/x'), null);
   assert.equal(bash(`${push('origin feat')} && ${push('origin feat2')}`), null);
 });
+test('quote marks inside a branch name do not hide a push to a protected branch', () => {
+  // The shell removes the quote marks and reads each of these as the word main.
+  for (const name of ['ma""in', "ma''in", 'm"a"in', 'm\'a\'i"n"', '"ma"in', "ma'in'", '+ma""in', 'HEAD:ma""in', 'refs/heads/m"a"in']) assert.ok(bash(push(`origin ${name}`))?.block, push(`origin ${name}`));
+  assert.equal(bash(push('origin fe""at')), null, 'quote marks inside a feature branch name stay allowed');
+  assert.equal(bash(push('origin "fe"at')), null);
+});
 test('a force flag cannot hide in a short flag group or a plus-prefixed ref', () => {
   for (const rest of ['-fu origin factory/x', '-uf origin factory/x', 'origin factory/x -fu', 'origin +factory/x', 'origin "+factory/x"']) {
     const decision = bash(push(rest));
