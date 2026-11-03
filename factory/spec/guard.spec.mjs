@@ -109,6 +109,12 @@ test('command substitution is found after an escaped quote, an ANSI-C quote or a
   assert.ok(bash(String.raw`echo "it's" "$(echo $(rm .env))"`)?.block, 'nested substitution after an apostrophe');
   assert.equal(bash(String.raw`echo '$(rm -rf public)' $'$(rm -rf public)'`), null, 'single and ANSI-C quotes still make it inert');
 });
+test('a closing paren inside quotes does not end a substitution early and hide the next one', () => {
+  // The paren count does not know about quotes, so the first body ends early. The text after it must still be read in the right quote state.
+  assert.ok(bash(String.raw`echo $(grep ')' f) "$(rm -rf public)"`)?.block, 'a quoted paren, then a second substitution');
+  assert.ok(bash(String.raw`echo $(grep ")" f) "$(rm -rf public)"`)?.block, 'the same with double quotes');
+  assert.equal(bash(String.raw`echo $(grep ')' f) '$(rm -rf public)'`), null, 'a later substitution in single quotes is still inert');
+});
 test('escape handling keeps working for the allowed and the already-blocked forms', () => {
   // Built by concatenation: a String.raw literal cannot end in a backslash. Shell text: echo \\"; rm -rf public; echo "
   assert.equal(bash(['echo \\\\', '"; rm -rf public; echo "'].join('')), null, 'an escaped backslash, then a real quoted string: inert');

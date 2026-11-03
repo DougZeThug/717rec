@@ -67,7 +67,9 @@ const checkBlockedCommands = (cmd, cfg) => {
 };
 
 // Bodies of $( ) and backtick substitutions. They run even inside double quotes; single and ANSI-C ($'...') quotes make them inert.
-// A backslash skips the next character. An apostrophe inside double quotes is plain text. Each body is checked again by the caller, so a body is skipped here.
+// A backslash skips the next character. An apostrophe inside double quotes is plain text. The caller checks each body again as a command of its own.
+// The scan does NOT jump over a $( ) body: the paren count does not know about quotes, so a `)` inside quotes ends the body early,
+// and the text after it must still be read with the right quote state.
 const substitutions = (cmd) => {
   const bodies = [];
   let quote = ''; // '' = none, '"' = double quotes, "'" = single quotes, "$'" = ANSI-C quotes
@@ -88,7 +90,6 @@ const substitutions = (cmd) => {
       let end = at + 2;
       for (; end < cmd.length && depth > 0; end++) depth += cmd[end] === '(' ? 1 : cmd[end] === ')' ? -1 : 0;
       bodies.push(cmd.slice(at + 2, end - 1));
-      at = end - 1;
     } else if (ch === '`') {
       const end = cmd.indexOf('`', at + 1);
       if (end < 0) break;
