@@ -9,6 +9,7 @@ import {
   getDivisionBadgeColor,
   getDivisionGradientClass,
   getDivisionHeaderClass,
+  getDivisionSoftClasses,
   getDivisionTextClass,
 } from '../divisionColors';
 import { getDivisionHexColor } from '../divisionHexColors';
@@ -81,6 +82,17 @@ describe('color modules table-driven coverage', () => {
   ])('division classes include expected fragment for $input', ({ fn, input, fragment }) => {
     expect(fn(input)).toContain(fragment);
   });
+
+  // The soft tone fails 4.5:1 as text on a light page, so text and button labels use
+  // the darker `-soft-text` token. Fills and borders keep the soft tone.
+  it.each(['competitive', 'intermediate', 'recreational'])(
+    'soft text and button classes for %s read the -soft-text token',
+    (division) => {
+      const { text, button } = getDivisionSoftClasses(division);
+      expect(text).toContain(`text-[hsl(var(--${division}-soft-text))]`);
+      expect(button).toContain(`text-[hsl(var(--${division}-soft-text))]`);
+    }
+  );
 
   it.each([
     {
