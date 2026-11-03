@@ -343,3 +343,86 @@ test('the hook command in both settings files fails closed when the guard cannot
     }
   }
 });
+
+// ---- a shell write into the factory's own control files asks the human. Reads stay silent. A block still wins. ----
+const gitLine = (rest) => ['git', rest].join(' ');
+const GUARD_FILE = 'factory/hooks/guard.mjs';
+const asks = (command) => {
+  const decision = bash(command);
+  assert.ok(decision?.ask, `${JSON.stringify(command)} should ask`);
+  assert.equal(decision.block, undefined, `${JSON.stringify(command)} should ask, not block`);
+};
+const stays = (command) => assert.equal(bash(command), null, `${JSON.stringify(command)} should stay silent`);
+
+test('part A: redirects, tee, sed -i, cp, mv, install, ln, rsync, dd, truncate, rm, curl and wget that write a control file ask', () => {
+  for (const command of [
+    'echo x > .claude/settings.json', 'echo x >> .claude/settings.json', 'echo x &> .claude/settings.json', 'echo x >| .claude/settings.json', 'echo x 2> .claude/settings.json',
+    'echo x > .claude/settings.local.json', 'echo x > .factory/config.json', 'echo x > factory/bin/lib.mjs', `echo x > ${GUARD_FILE}`,
+    'cat <<EOF > .claude/settings.json\n{}\nEOF',
+    'echo x | tee -a .claude/settings.json', `echo x | tee ${GUARD_FILE}`,
+    "sed -i 's/a/b/' .claude/settings.json", 'sed -i.bak s/a/b/ .claude/settings.json', 'sed -ni s/a/b/p .claude/settings.json', 'sed --in-place s/a/b/ .claude/settings.json', 'perl -pi s/a/b/ .claude/settings.json',
+    `cp x ${GUARD_FILE}`, `mv x ${GUARD_FILE}`, `install -m 644 x ${GUARD_FILE}`, `ln -sf x ${GUARD_FILE}`, `rsync -a x ${GUARD_FILE}`,
+    'cp x factory/hooks', 'cp -r x factory/hooks/', 'cp -t factory/hooks x', 'cp --target-directory=factory/hooks x', 'cp --target-directory factory/hooks x', 'install -t factory/hooks x',
+    `dd if=x of=${GUARD_FILE}`, `dd if=x of=${GUARD_FILE} bs=1`,
+    `truncate -s 0 ${GUARD_FILE}`, `shred -u ${GUARD_FILE}`, `unlink ${GUARD_FILE}`,
+    `rm ${GUARD_FILE}`, `rm -f ${GUARD_FILE}`, 'rm -rf .claude', 'rm -rf factory', 'rm -rf factory/', 'rm -rf .factory', 'rm -rf factory/hooks', 'rm -rf factory/bin',
+    gitLine(`rm ${GUARD_FILE}`), gitLine(`mv ${GUARD_FILE} x`), gitLine('rm -r factory'),
+    `curl -o ${GUARD_FILE} https://example.com/x`, `curl -sSLo ${GUARD_FILE} https://example.com/x`, `curl --output ${GUARD_FILE} https://example.com/x`, `curl --output=${GUARD_FILE} https://example.com/x`,
+    `wget -O ${GUARD_FILE} https://example.com/x`, `wget -qO ${GUARD_FILE} https://example.com/x`, `wget --output-document ${GUARD_FILE} https://example.com/x`, `wget --output-document=${GUARD_FILE} https://example.com/x`,
+  ]) asks(command);
+});
+test('part A: a control file is found after cd, in a quoted path, in a group and inside a substitution', () => {
+  for (const command of [
+    'cd factory/hooks && echo x > guard.mjs', '(cd factory/hooks && echo x > guard.mjs)', 'cd factory; cd hooks; cp x guard.mjs', 'cd factory && rm -rf hooks', 'cd src && echo x > ../.claude/settings.json', 'cd .claude && rm settings.json',
+    'echo x > "./.claude/settings.json"', "echo x > './factory/../.claude/settings.json'", 'echo x > ./.claude//settings.json', 'echo ok && echo x > .claude/settings.json && echo done',
+    'echo "$(echo x > .claude/settings.json)"', 'echo "`echo x > .claude/settings.json`"', 'echo $(cp x factory/hooks/guard.mjs)', 'echo $(echo $(rm -rf .claude))',
+    'cp x factory/hooks/guard.mjs &', '(echo x > .claude/settings.json) 2>&1',
+  ]) asks(command);
+});
+test('part A: the reason names the control file', () => {
+  assert.match(bash('echo x > .claude/settings.json').ask, /^"\.claude\/settings\.json" controls the factory's own safety rules\. A human must approve this shell command\.$/);
+  assert.match(bash('cd factory/hooks && echo x > guard.mjs').ask, /"factory\/hooks\/guard\.mjs" controls/, 'the path after cd');
+});
+test('part A: reads and writes outside the control files stay silent', () => {
+  for (const command of [
+    `git add ${GUARD_FILE}`, gitLine('checkout -b factory/T-1'), gitLine('checkout factory/T-1'), gitLine('diff main...HEAD -- factory/hooks/'), gitLine('diff .claude/settings.json'), gitLine('show HEAD:.claude/settings.json'), gitLine('log -p -- factory/hooks/'),
+    'node --test factory/spec/*.spec.mjs', 'node factory/bin/factory.mjs check T-1 unit',
+    `cp ${GUARD_FILE} /tmp/x`, 'cp -r factory/hooks /tmp/backup', 'rsync -a factory/hooks/ /tmp/b/', 'cp -t /tmp/b factory/hooks/guard.mjs', 'ln -s factory/hooks/guard.mjs',
+    'rm -rf /tmp/w/factory', 'rm -rf .factory/evidence/T-1', 'rm -rf dist', 'rm .claude/../dist/a.txt',
+    `cat ${GUARD_FILE}`, 'ls -la factory/hooks .claude', `diff ${GUARD_FILE} /tmp/x`, `sed -n 1,5p ${GUARD_FILE}`, 'grep -n x .claude/settings.json', 'head -3 .claude/settings.json | tee /tmp/h.txt',
+    'echo hi > /tmp/out.txt', 'echo hi 2>/dev/null', 'echo hi > /dev/null 2>&1', 'echo x > notes.txt', 'echo x > .claude/agents/new.md', 'echo x > .factory/evidence/T-1/unit.json', 'cd src && echo x > a.txt', 'cd factory/spec && echo x > a.txt',
+    `echo "cp x ${GUARD_FILE}" > /tmp/note.txt`, `echo 'rm -rf .claude' && echo ok`, `cat > /tmp/n.md <<EOF\ncp x ${GUARD_FILE}\necho x > .claude/settings.json\nEOF`,
+    `curl -o /tmp/x https://example.com/x`, 'wget -O /tmp/x https://example.com/x', 'curl -s http://127.0.0.1:8080/',
+    ['git commit -m "$(cat <<\'EOF\'', `Guard: ${GUARD_FILE} now asks`, '', 'Also .claude/settings.json, "cp x factory/hooks/" and node -e in prose.', 'EOF', ')"'].join('\n'),
+  ]) stays(command);
+});
+test('part A: the control list comes from the config, and a folder that holds a control path asks too', () => {
+  const wide = { ...cfg, controlPlanePaths: [...cfg.controlPlanePaths, '.github/workflows/'] };
+  const run = (command) => decide({ tool_name: 'Bash', tool_input: { command } }, wide, 'factory/x');
+  assert.ok(run('echo x > .github/workflows/ci.yml')?.ask);
+  assert.ok(run('rm -rf .github')?.ask);
+  assert.equal(run('echo x > .github/CODEOWNERS'), null);
+  assert.equal(bash('echo x > .github/workflows/ci.yml'), null, 'the plain test config does not list workflows');
+});
+test('part A: a relative path is read from the directory the command starts in (root passed to decide)', () => {
+  const run = (command, cwd, root = '/r') => decide({ tool_name: 'Bash', cwd, tool_input: { command } }, cfg, 'factory/x', root);
+  for (const [command, cwd] of [['echo x > guard.mjs', '/r/factory/hooks'], ['echo x > hooks/guard.mjs', '/r/factory'], ['echo x > ../factory/hooks/guard.mjs', '/r/src'], ['echo x > /r/factory/hooks/guard.mjs', '/r'], ['cd .. && echo x > guard.mjs', '/r/factory/hooks/sub'], ['echo x > factory/hooks/guard.mjs', '/r'], ['echo x > factory/hooks/guard.mjs', undefined]])
+    assert.ok(run(command, cwd)?.ask, `${command} from ${cwd}`);
+  for (const [command, cwd] of [['echo x > guard.mjs', '/r/src'], ['echo x > guard.mjs', '/r'], ['echo x > /other/factory/hooks/guard.mjs', '/r'], ['echo x > ../../factory/hooks/guard.mjs', '/r/src'], ['echo x > guard.mjs', '/elsewhere/factory/hooks'], ['echo x > ~/factory/hooks/guard.mjs', '/r'], ['cd ~/factory/hooks && echo x > guard.mjs', '/r']])
+    assert.equal(run(command, cwd), null, `${command} from ${cwd}`);
+  assert.equal(decide({ tool_name: 'Bash', cwd: '/r/factory/hooks', tool_input: { command: 'echo x > guard.mjs' } }, cfg, 'factory/x'), null, 'no root: the old three-argument call has no starting directory');
+});
+test('part A: a block always wins over an ask', () => {
+  for (const command of [`echo x > .claude/settings.json && ${push('origin main')}`, `${push('origin main')}; echo x > .claude/settings.json`, 'echo x > .claude/settings.json && rm -rf public', 'cp x .claude/settings.json && echo y > .env']) {
+    const decision = bash(command);
+    assert.ok(decision?.block, command);
+    assert.equal(decision.ask, undefined, command);
+  }
+});
+test('part A: the real hook asks (exit 0, ask on stdout) for a redirect into a control file', () => {
+  const root = join(factoryDir, '..');
+  const result = spawnGuard({ tool_name: 'Bash', cwd: root, tool_input: { command: `echo x > ${GUARD_FILE}` } }, { cwd: root });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /"permissionDecision":"ask"/);
+  assert.equal(spawnGuard({ tool_name: 'Bash', cwd: root, tool_input: { command: `cat ${GUARD_FILE}` } }, { cwd: root }).stdout, '', 'a read stays silent');
+});

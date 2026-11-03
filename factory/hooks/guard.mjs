@@ -2,7 +2,7 @@
 // Layer 2 of 3: permission deny rules (settings.json) first, this hook second,
 // GitHub branch protection last. Hooks are best-effort for Bash, so never the only layer.
 import { readFileSync, realpathSync } from 'node:fs';
-import { join, posix } from 'node:path';
+import { isAbsolute, join, posix, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { DEFAULT_CONFIG, currentBranch, loadConfig, matchesAny, repoRoot } from '../bin/lib.mjs';
 
@@ -142,6 +142,93 @@ const checkProtectedTargets = (cmd, cfg, depth = 0) => {
   return null;
 };
 
+// ---- Control-plane writes. A shell command that rewrites the factory's own safety files must ask the human. ----
+// Reads stay silent. Like checkProtectedTargets this reads command words only: a path built by a variable,
+// a glob or xargs is not seen. It is the last check, so a block always wins over this ask.
+
+const realPath = (path) => { try { return realpathSync(path); } catch { return resolve(path); } };
+
+// Where the shell starts, as a path under the repo root: '' is the root itself. null means outside the repo.
+const startDirOf = (cwd, root) => {
+  if (typeof cwd !== 'string' || !cwd || !root) return '';
+  const inside = relative(realPath(root), realPath(cwd)).replace(/\\/g, '/');
+  return inside === '..' || inside.startsWith('../') || isAbsolute(inside) ? null : inside;
+};
+
+// A shell path as a path under the repo root ('.' is the root). undefined = not in this repo: absolute and
+// elsewhere, `~`, or `..` out of the root. `cwd` is the directory set by `cd` ('' is the root).
+const repoPath = (target, cwd, base) => {
+  if (!target || target.startsWith('~')) return undefined;
+  const joined = target.startsWith('/') || !cwd ? target : posix.join(cwd, target);
+  if (joined.startsWith('~')) return undefined;
+  let path = posix.normalize(joined);
+  if (path.startsWith('/')) {
+    if (!base || (path !== base && !path.startsWith(`${base}/`))) return undefined;
+    path = path.slice(base.length).replace(/^\/+/, '') || '.';
+  }
+  return path === '..' || path.startsWith('../') ? undefined : path;
+};
+
+const nonFlags = (words) => words.filter((word) => word && !word.startsWith('-'));
+// The values of one flag: `-o f`, `--output f` and `--output=f`.
+const flagValues = (words, short, long) => words.flatMap((word, at) => {
+  if (short.test(word) || word === long) return words[at + 1] ? [words[at + 1]] : [];
+  return word.startsWith(`${long}=`) ? [word.slice(long.length + 1)] : [];
+});
+
+// The paths one command segment would write, change or remove. `clean` has no ( ) { } around it.
+const writeTargets = (clean) => {
+  const words = clean.split(/\s+/);
+  const [name, sub] = words;
+  const args = words.slice(1);
+  const plain = nonFlags(args);
+  const redirects = [...clean.matchAll(/(?:^|[^>])>{1,2}\s*([^\s<>|;&]+)/g)].map((found) => found[1]);
+  let targets = [];
+  if (['cp', 'install', 'ln', 'rsync'].includes(name)) {
+    // Only the destination is written. `-t dir` makes every other word a source.
+    const into = name === 'rsync' ? [] : flagValues(args, /^-[a-zA-Z]*t$/, '--target-directory');
+    targets = into.length ? into : plain.length > 1 ? plain.slice(-1) : [];
+  } else if (['mv', 'tee', 'rm', 'shred', 'truncate', 'unlink'].includes(name)) targets = plain;
+  else if (['sed', 'perl'].includes(name) && args.some((word) => /^-[a-zA-Z]*i/.test(word) || /^--in-place(=|$)/.test(word))) targets = plain;
+  else if (name === 'dd') targets = args.filter((word) => word.startsWith('of=')).map((word) => word.slice(3));
+  else if (name === 'curl') targets = flagValues(args, /^-[a-zA-Z]*o$/, '--output');
+  else if (name === 'wget') targets = flagValues(args, /^-[a-zA-Z]*O$/, '--output-document');
+  else if (name === 'git' && ['rm', 'mv'].includes(sub)) targets = nonFlags(words.slice(2));
+  return [...redirects, ...targets].map((target) => target.replace(/[)}]+$/, ''));
+};
+
+const controlAsk = (path) => ({ ask: `"${path.replaceAll(FILLER, ' ')}" controls the factory's own safety rules. A human must approve this shell command.` });
+
+const checkControlPlaneWrites = (cmd, cfg, startDir, root) => {
+  if (startDir === null) return null;
+  const rules = cfg.controlPlanePaths;
+  const base = root ? realPath(root).replace(/\\/g, '/').replace(/\/+$/, '') : undefined;
+  const asDir = (path) => `${path.replace(/\/+$/, '')}/`;
+  // A control path itself, a path inside a control folder, or a folder that holds a control path (`rm -rf .claude`).
+  const controls = (path) => path === '.' || matchesAny(path, rules) || matchesAny(asDir(path), rules) || rules.some((rule) => rule.startsWith(asDir(path)));
+  const scan = (text, dir, depth) => {
+    let cwd = dir;
+    for (const segment of neutralise(text).replace(/>\|/g, '>').split(/&&|\|\||[;|\n]/)) {
+      // A trailing `&` (run in the background) is not a word of the command.
+      const clean = segment.trim().replace(/^[({\s]+/, '').replace(/[)}&\s]+$/, '');
+      for (const target of writeTargets(clean)) {
+        const path = repoPath(target, cwd, base);
+        if (path !== undefined && controls(path)) return controlAsk(path);
+      }
+      cwd = nextCwd(segment, cwd);
+    }
+    // Substitutions run even inside double quotes, so check each body as a command of its own.
+    if (depth < 4) {
+      for (const body of substitutions(text.replace(HEREDOC, '$1'))) {
+        const inner = scan(body, dir, depth + 1);
+        if (inner) return inner;
+      }
+    }
+    return null;
+  };
+  return scan(cmd, startDir, 0);
+};
+
 const checkCommit = (cmd, cfg, branch) => {
   if (/\bgit\s+(commit|merge|rebase)\b/.test(cmd) && cfg.protectedBranches.includes(branch)) return { block: `You are on protected branch "${branch}". Create a feature branch first.` };
   return null;
@@ -184,17 +271,19 @@ const commitContent = (cmd, root, execFileSync) => {
 // and stays a command separator. (?<!\\) plus pairs means only an odd run, whose last backslash escapes the newline.
 const joinContinuations = (command) => command.replace(/(?<!\\)((?:\\\\)*)\\\r?\n/g, '$1');
 
-const decideBash = (toolInput, cfg, branch) => {
+const decideBash = (toolInput, cfg, branch, root, startDir) => {
   const raw = joinContinuations(String(toolInput.command ?? ''));
   // The block lists scan the RAW command: `bash <<EOF` and `bash -c "..."` run their text.
   // Only the protected-path scan skips heredoc bodies and quotes, because a file body that
   // merely mentions "rm public/" is data, not a delete.
+  // The control-plane check is LAST: it only asks, so every block above it wins.
   return checkBlockedCommands(raw, cfg)
     ?? checkPush(raw, cfg, branch)
     ?? checkCommitFlags(raw)
     ?? checkCommit(raw, cfg, branch)
     ?? checkProtectedTargets(raw, cfg)
-    ?? checkStagedSecrets(raw, toolInput);
+    ?? checkStagedSecrets(raw, toolInput)
+    ?? checkControlPlaneWrites(raw, cfg, startDir, root);
 };
 
 const decideEdit = (toolInput, cfg) => {
@@ -209,9 +298,10 @@ const decideEdit = (toolInput, cfg) => {
 
 const EDIT_TOOLS = ['Edit', 'Write', 'NotebookEdit'];
 
-export const decide = (input, cfg, branch) => {
+// `root` is the repo root. Only the control-plane shell check uses it, to read relative paths from `input.cwd`.
+export const decide = (input, cfg, branch, root) => {
   const toolInput = input.tool_input ?? {};
-  if (input.tool_name === 'Bash') return decideBash(toolInput, cfg, branch);
+  if (input.tool_name === 'Bash') return decideBash(toolInput, cfg, branch, root, startDirOf(input.cwd, root));
   if (EDIT_TOOLS.includes(input.tool_name)) return decideEdit(toolInput, cfg);
   return null;
 };
@@ -266,7 +356,7 @@ const guard = async () => {
   if (input.tool_name === 'Bash' && /\bgit\s+commit\b/.test(String(toolInput.command))) {
     toolInput.__stagedDiff = commitContent(String(toolInput.command), root, execFileSync);
   }
-  let decision = decide(input, cfg, currentBranch(root));
+  let decision = decide(input, cfg, currentBranch(root), root);
   if (configBroken && !decision?.block) decision = { ask: 'The factory config (.factory/config.json) cannot be read, so only the built-in rules apply. A human must approve this edit.' };
   if (decision?.block) { console.error(`FACTORY GUARD: ${decision.block}`); process.exitCode = 2; }
   else if (decision?.ask) console.log(JSON.stringify({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'ask', permissionDecisionReason: decision.ask } }));
