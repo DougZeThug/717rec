@@ -426,3 +426,41 @@ test('part A: the real hook asks (exit 0, ask on stdout) for a redirect into a c
   assert.match(result.stdout, /"permissionDecision":"ask"/);
   assert.equal(spawnGuard({ tool_name: 'Bash', cwd: root, tool_input: { command: `cat ${GUARD_FILE}` } }, { cwd: root }).stdout, '', 'a read stays silent');
 });
+
+// ---- part B: git checkout -- <path>, git restore, git apply, patch, git am and inline interpreters ----
+test('part B: git checkout <ref> -- <path>, git restore, git apply, git am and patch that can rewrite a control file ask', () => {
+  for (const command of [
+    gitLine('checkout main -- factory'), gitLine('checkout -- .claude/settings.json'), gitLine(`checkout HEAD~1 -- ${GUARD_FILE}`), gitLine('checkout main -- src/a.ts factory/hooks'),
+    gitLine('restore .factory/config.json'), gitLine(`restore --source=HEAD~1 ${GUARD_FILE}`), gitLine('restore --worktree --staged .claude/settings.json'), gitLine('restore -s HEAD .claude'),
+    gitLine('apply fix.patch'), gitLine('apply --index fix.patch'), gitLine('apply --reverse fix.patch'), gitLine('am 0001.patch'), 'patch -p1 < fix.patch', 'patch -p1 -i fix.patch', 'cd src && git apply ../fix.patch',
+  ]) asks(command);
+  assert.match(bash(gitLine('apply fix.patch')).ask, /git apply/, 'the reason names the command');
+  assert.match(bash(gitLine('am 0001.patch')).ask, /git am/, 'the reason names the command');
+  assert.match(bash('patch -p1 < fix.patch').ask, /patch/, 'the reason names the command');
+  assert.match(bash(gitLine('checkout main -- factory')).ask, /"factory" controls the factory's own safety rules/, 'the reason names the path');
+});
+test('part B: python, node, ruby, perl, bash and sh one-liners and heredocs that name a control file ask', () => {
+  for (const command of [
+    `python3 -c "open('${GUARD_FILE}', 'w').write('x')"`, `python -c "open('${GUARD_FILE}', 'w').write('x')"`, `python3 -c 'import shutil; shutil.rmtree("factory/hooks")'`,
+    `node -e "require('fs').writeFileSync('${GUARD_FILE}', 'x')"`, `node -p "require('fs').rmSync('.claude/settings.json')"`, `ruby -e "File.write('${GUARD_FILE}', 'x')"`, `perl -e "unlink '${GUARD_FILE}'"`,
+    `bash -c "echo x > ${GUARD_FILE}"`, `sh -c 'cp x factory/hooks/guard.mjs'`, `cd src && node -e "require('fs').rmSync('../.claude/settings.json')"`,
+    `bash <<EOF\necho x > ${GUARD_FILE}\nEOF`, `sh <<'EOF'\nrm -f .claude/settings.json\nEOF`, `bash <<-EOF\n\tcp x ${GUARD_FILE}\nEOF`,
+  ]) asks(command);
+});
+test('part B: look-alike commands stay silent', () => {
+  for (const command of [
+    gitLine('checkout -b factory/T-1'), gitLine('checkout factory/T-1'), gitLine('checkout main'), gitLine('switch main'), gitLine('switch -c factory/T-2'), gitLine('checkout -- src/a.ts'), gitLine('checkout main -- src/a.ts'),
+    gitLine('restore --staged .claude/settings.json'), gitLine('restore src/a.ts'), gitLine('restore -s HEAD src/a.ts'),
+    gitLine('apply --check fix.patch'), gitLine('apply --stat fix.patch'), gitLine('apply --numstat fix.patch'), gitLine('apply --summary fix.patch'), gitLine('apply --check --verbose fix.patch'),
+    'python3 -c "print(1)"', 'node -e "console.log(1)"', 'bash -c "echo hi"', 'bash <<EOF\necho hi\nEOF', `python3 script.py ${GUARD_FILE}`, `node ${GUARD_FILE}`, `node --check ${GUARD_FILE}`, 'python3 -m pytest factory/spec', `bash factory/bin/run.sh .claude/settings.json`,
+    `echo "python3 -c ${GUARD_FILE}"`, `echo 'node -e .claude/settings.json'`, `grep -n "node -e" ${GUARD_FILE}`, `cat > /tmp/n.md <<EOF\nnode -e ${GUARD_FILE}\nbash <<X\nEOF`,
+    ['git commit -m "$(cat <<\'EOF\'', `fix: python3 -c and node -e now ask when they name ${GUARD_FILE}`, 'EOF', ')"'].join('\n'),
+  ]) stays(command);
+});
+test('part B: a block still wins over an ask', () => {
+  for (const command of [`${gitLine('apply fix.patch')} && ${push('origin main')}`, `python3 -c "open('${GUARD_FILE}')" && ${push('origin main')}`, `${gitLine('checkout main -- factory')} && rm -rf public`, `${gitLine('restore .claude/settings.json')}; echo x > .env`]) {
+    const decision = bash(command);
+    assert.ok(decision?.block, command);
+    assert.equal(decision.ask, undefined, command);
+  }
+});

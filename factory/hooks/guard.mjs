@@ -194,10 +194,35 @@ const writeTargets = (clean) => {
   else if (name === 'curl') targets = flagValues(args, /^-[a-zA-Z]*o$/, '--output');
   else if (name === 'wget') targets = flagValues(args, /^-[a-zA-Z]*O$/, '--output-document');
   else if (name === 'git' && ['rm', 'mv'].includes(sub)) targets = nonFlags(words.slice(2));
+  // `git checkout x` and `git checkout -b x` name a branch. Only the words after a lone `--` are paths.
+  else if (name === 'git' && sub === 'checkout') targets = words.includes('--') ? words.slice(words.indexOf('--') + 1).filter(Boolean) : [];
+  // `git restore --staged` only unstages, so it writes no file (the same rule as `restores` in protectedTarget).
+  else if (name === 'git' && sub === 'restore' && !(words.includes('--staged') && !words.includes('--worktree'))) targets = nonFlags(words.slice(2));
   return [...redirects, ...targets].map((target) => target.replace(/[)}]+$/, ''));
 };
 
 const controlAsk = (path) => ({ ask: `"${path.replaceAll(FILLER, ' ')}" controls the factory's own safety rules. A human must approve this shell command.` });
+
+// `git apply` without these flags writes. The flags only report.
+const APPLY_READ_ONLY = ['--check', '--stat', '--numstat', '--summary'];
+const INTERPRETERS = ['python3', 'python', 'node', 'ruby', 'perl', 'bash', 'sh'];
+
+// Commands that can rewrite any file, with no path to look at. `raw` is the whole command before neutralising:
+// quoted code is only visible there. An interpreter counts only as the FIRST word of a segment (so the usual
+// `git commit -m "$(cat <<'EOF' ... EOF)"` never asks) and only when its code is inline (-c, -e, -p, or a
+// bash/sh heredoc) and the raw text names a control path.
+const writesAnywhere = (clean, raw, rules) => {
+  const [name, ...args] = clean.split(/\s+/);
+  const sub = args[0];
+  if (name === 'patch' || (name === 'git' && sub === 'am') || (name === 'git' && sub === 'apply' && !args.some((word) => APPLY_READ_ONLY.includes(word)))) {
+    return { ask: `"${name === 'patch' ? 'patch' : `git ${sub}`}" can rewrite any file, including the factory's own safety rules. A human must approve this shell command.` };
+  }
+  if (!INTERPRETERS.includes(name)) return null;
+  const inline = args.some((word) => ['-c', '-e', '-p'].includes(word)) || (['bash', 'sh'].includes(name) && clean.includes('<<'));
+  // A control folder also counts without its trailing slash: `shutil.rmtree('factory/hooks')`.
+  const named = inline ? rules.find((rule) => raw.includes(rule) || raw.includes(rule.replace(/\/+$/, ''))) : undefined;
+  return named ? controlAsk(named) : null;
+};
 
 const checkControlPlaneWrites = (cmd, cfg, startDir, root) => {
   if (startDir === null) return null;
@@ -215,6 +240,8 @@ const checkControlPlaneWrites = (cmd, cfg, startDir, root) => {
         const path = repoPath(target, cwd, base);
         if (path !== undefined && controls(path)) return controlAsk(path);
       }
+      const anywhere = writesAnywhere(clean, cmd, rules);
+      if (anywhere) return anywhere;
       cwd = nextCwd(segment, cwd);
     }
     // Substitutions run even inside double quotes, so check each body as a command of its own.
