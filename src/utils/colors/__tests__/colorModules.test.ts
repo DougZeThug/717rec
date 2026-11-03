@@ -70,7 +70,7 @@ describe('color modules table-driven coverage', () => {
     {
       fn: getDivisionTextClass,
       input: 'Recreational',
-      fragment: 'text-[hsl(var(--recreational-soft))]',
+      fragment: 'text-[hsl(var(--recreational-soft-text))]',
     },
     {
       fn: getDivisionBadgeColor,
