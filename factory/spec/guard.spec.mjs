@@ -71,6 +71,27 @@ test('an escaped backslash before a newline is not a line join: the next line is
   assert.ok(bash(['echo a', '\\\\', '\n', 'rm -rf public'].join(''))?.block, 'even run');
   assert.ok(bash(['echo a', '\\\\\\\\', '\n', 'rm -rf public'].join(''))?.block, 'four backslashes');
 });
+// String.raw keeps the backslashes exactly as the shell would read them. Each command below is real shell text.
+test('an escaped quote does not open a quoted string that hides a command', () => {
+  assert.ok(bash(String.raw`echo \"; rm -rf public; echo \"`)?.block, 'escaped double quotes');
+  assert.ok(bash(String.raw`echo \'; rm -rf public; echo \'`)?.block, 'escaped single quotes');
+  assert.ok(bash(String.raw`echo "\""; rm -rf public; echo "\""`)?.block, 'escaped quote inside double quotes');
+  assert.ok(bash(String.raw`echo $'\''; rm -rf public; echo $'\''`)?.block, 'ANSI-C quote that holds an escaped quote');
+});
+test('command substitution is found after an escaped quote, an ANSI-C quote or an apostrophe in double quotes', () => {
+  assert.ok(bash(String.raw`echo $'\'' "$(rm -rf public)"`)?.block, 'ANSI-C quote, then a substitution');
+  assert.ok(bash(String.raw`echo $'a\'b' $(rm -rf public)`)?.block, 'ANSI-C quote with text around the escaped quote');
+  assert.ok(bash(String.raw`echo "it's" "$(rm -rf public)"`)?.block, 'an apostrophe inside double quotes does not make the rest inert');
+  assert.ok(bash(String.raw`echo "it's" "$(echo $(rm .env))"`)?.block, 'nested substitution after an apostrophe');
+  assert.equal(bash(String.raw`echo '$(rm -rf public)' $'$(rm -rf public)'`), null, 'single and ANSI-C quotes still make it inert');
+});
+test('escape handling keeps working for the allowed and the already-blocked forms', () => {
+  // Built by concatenation: a String.raw literal cannot end in a backslash. Shell text: echo \\"; rm -rf public; echo "
+  assert.equal(bash(['echo \\\\', '"; rm -rf public; echo "'].join('')), null, 'an escaped backslash, then a real quoted string: inert');
+  assert.ok(bash(['echo "x\\\\', '"; rm -rf public'].join(''))?.block, 'the quote after an escaped backslash closes the string');
+  assert.equal(bash(String.raw`git commit -m "docs: say \"rm public\" and > .env"`), null, 'quoted prose with escaped quotes');
+  assert.equal(bash(String.raw`echo "a \$(rm -rf public) b"`), null, 'an escaped dollar sign runs nothing');
+});
 test('a directory without a trailing slash, and absolute history paths, are protected', () => {
   assert.ok(bash('rm -rf public')?.block);
   assert.ok(bash('rm -rf ./public/')?.block);

@@ -44,7 +44,11 @@ const checkPush = (cmd, cfg, branch) => {
 // Quoted text becomes one inert word: its spaces and shell operators turn into a filler character.
 // Quoted paths stay visible, so `rm -rf "public/x"` is still caught.
 const FILLER = String.fromCharCode(1);
-const neutralise = (cmd) => cmd.replace(HEREDOC, '$1').replace(/"([^"]*)"|'([^']*)'/g, (_match, double, single) => (double ?? single).replace(/[\s<>|;&]/g, FILLER));
+// An escaped character (`\"`, `\'`) is skipped first, so it cannot open a quoted string. `$'...'` may hold `\'`.
+const neutralise = (cmd) => cmd.replace(HEREDOC, '$1').replace(/\\[\s\S]|"((?:[^"\\]|\\[\s\S])*)"|\$'((?:[^'\\]|\\[\s\S])*)'|'([^']*)'/g, (match, double, ansi, single) => {
+  const text = double ?? ansi ?? single;
+  return text === undefined ? match : text.replace(/[\s<>|;&]/g, FILLER);
+});
 
 // The short form of the hook-skip flag. Look at flag words only: quoted text is neutralised first.
 const checkCommitFlags = (cmd) => {
@@ -59,20 +63,30 @@ const checkBlockedCommands = (cmd, cfg) => {
   return custom ? { block: custom.reason } : null;
 };
 
-// Bodies of $( ) and backtick substitutions. They run even inside double quotes; single quotes make them inert.
+// Bodies of $( ) and backtick substitutions. They run even inside double quotes; single and ANSI-C ($'...') quotes make them inert.
+// A backslash skips the next character. An apostrophe inside double quotes is plain text. Each body is checked again by the caller, so a body is skipped here.
 const substitutions = (cmd) => {
   const bodies = [];
-  let single = false;
+  let quote = ''; // '' = none, '"' = double quotes, "'" = single quotes, "$'" = ANSI-C quotes
   for (let at = 0; at < cmd.length; at++) {
     const ch = cmd[at];
-    if (ch === "'") single = !single;
-    else if (!single && ch === '\\') at++;
-    else if (!single && ch === '$' && cmd[at + 1] === '(') {
+    if (quote === "'") {
+      if (ch === "'") quote = '';
+    } else if (ch === '\\') at++;
+    else if (quote === "$'") {
+      if (ch === "'") quote = '';
+    } else if (ch === '"') quote = quote === '"' ? '' : '"';
+    else if (ch === "'" && !quote) quote = "'";
+    else if (ch === '$' && cmd[at + 1] === "'" && !quote) {
+      quote = "$'";
+      at++;
+    } else if (ch === '$' && cmd[at + 1] === '(') {
       let depth = 1;
       let end = at + 2;
       for (; end < cmd.length && depth > 0; end++) depth += cmd[end] === '(' ? 1 : cmd[end] === ')' ? -1 : 0;
       bodies.push(cmd.slice(at + 2, end - 1));
-    } else if (!single && ch === '`') {
+      at = end - 1;
+    } else if (ch === '`') {
       const end = cmd.indexOf('`', at + 1);
       if (end < 0) break;
       bodies.push(cmd.slice(at + 1, end));
