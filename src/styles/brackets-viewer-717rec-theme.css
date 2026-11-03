@@ -312,6 +312,17 @@
     --match-width: 232px;
     --round-margin: 24px;
   }
+
+  /*
+    The viewer library gives the bracket 50px of padding on each side, which on
+    a phone was 50px of empty space before the first round. The element's own
+    `p-4 md:p-8` (BracketsViewerComponent) loses to the library's rule, because
+    the library stylesheet loads after Tailwind's. This file loads after the
+    library's, so the phone padding is set here. Desktop keeps the library's.
+  */
+  .brackets-viewer {
+    padding: 8px 12px;
+  }
   
   .brackets-viewer .participant .name {
     font-size: 15px;
