@@ -56,7 +56,9 @@ stateDiagram-v2
     [*] --> loading : open /playoffs
     loading --> list : brackets and divisions arrived
     loading --> empty : no divisions to show
-    list --> detail : press View Live Bracket (adds ?bracket=<id>)
+    list --> opening : press View Live Bracket (adds ?bracket=<id>)
+    opening --> detail : the bracket arrived
+    opening --> list : nothing to draw (a legacy bracket)
     detail --> list : browser back, or Back to brackets
     list --> failed : a list request failed
     failed --> list : press Try again
@@ -143,14 +145,20 @@ which returns to the automatic choice.
 
 Choosing a bracket does three things at once: it sets `?bracket=<id>`, it starts
 loading that bracket, and it starts a realtime subscription to that bracket's
-matches. While the bracket loads, the list stays on screen; the drawn bracket
-replaces it only when the data has arrived and its id matches the one asked for.
+matches. The page jumps to the top and shows a spinner reading "Loading
+bracket..." in place of the list. The drawn bracket replaces the spinner when the
+data has arrived and its id matches the one asked for. If the load fails, the
+list comes back with a "Loading bracket" banner above it.
 
-When the subscription is live, a small green pill reading "Live updates enabled"
-sits in the bottom-right corner. A score entered by an admin anywhere else
-arrives within a second or two: the bracket redraws and a toast says "Bracket
-Updated — Match scores have been updated." One admin save writes several rows;
-the page collapses that burst into a single refresh and a single toast.
+When the subscription is live, a green signal sits in the bottom-right corner. On
+a screen 768 pixels wide or more it is a small pill reading "Live updates
+enabled". On a phone it is only a pulsing green dot, above the tab bar, so it
+does not cover the bracket. A tap on the dot goes through to whatever is under
+it, and a screen reader still hears the words. A score entered by an admin
+anywhere else arrives within a second or two: the bracket redraws and a toast
+says "Bracket Updated — Match scores have been updated." One admin save writes
+several rows; the page collapses that burst into a single refresh and a single
+toast.
 
 ### Submit
 
@@ -272,8 +280,10 @@ opens again instantly.
 
 - **A legacy bracket's "View Live Bracket" button does nothing visible.** The
   loader returns null for any bracket not built with the current engine, so the
-  page keeps the list, adds `?bracket=<id>` to the address, and shows no message
-  at all. The row already carries a "Legacy" badge, so the state is known.
+  page adds `?bracket=<id>` to the address, shows "Loading bracket..." for a
+  moment, and then shows the list again at the top with no message at all (read
+  from the code, not seen in a browser). The row already carries a "Legacy"
+  badge, so the state is known.
   **May be worth treating as a bug rather than documenting.**
 - **The chosen season is lost on reload while the bracket in the address is
   not.** After a reload the season dropdown can name one season while the open
@@ -295,4 +305,6 @@ opens again instantly.
 - Assumption: the automatic season choice is meant to be invisible. Nothing in
   the page explains it, and the only sign is the overlap banner.
 
-Verified against `717rec` commit `ea5c8f4`.
+Verified against `717rec` commit `ea5c8f4`, except the wait after "View Live
+Bracket" and the phone "Live updates" dot above. Both changed after that commit,
+in the playoffs mobile polish.
