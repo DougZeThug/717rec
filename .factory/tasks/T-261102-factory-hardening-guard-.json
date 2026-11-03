@@ -84,6 +84,46 @@
       "seconds": 43,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "dirty": false,
+      "at": "2026-11-03T16:11:59.707Z",
+      "seconds": 123,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "dirty": false,
+      "at": "2026-11-03T16:12:09.464Z",
+      "seconds": 10,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "dirty": false,
+      "at": "2026-11-03T16:12:20.466Z",
+      "seconds": 11,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "dirty": false,
+      "at": "2026-11-03T16:24:34.485Z",
+      "seconds": 734,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/unit.log"
     }
   },
   "reviews": [],
@@ -96,5 +136,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T16:09:56.266Z"
+  "updatedAt": "2026-11-03T16:24:34.485Z"
 }
