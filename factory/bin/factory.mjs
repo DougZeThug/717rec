@@ -136,8 +136,10 @@ const sub = {
     const sep = rest.indexOf('--');
     const required = requiredChecks().includes(name);
     if (required && sep >= 0) die(`"${name}" is a required check. It runs its configured command only: no "-- <cmd>" override.`);
+    // The allow list runs this CLI without a prompt, so an override must not turn an unknown name into a shell. hasOwn keeps "__proto__" and "constructor" out.
+    if (sep >= 0 && !required && !Object.hasOwn(cfg.verify.checks ?? {}, name)) die(`"${name}" is not a configured check, so it cannot run a "-- <cmd>" override. Add it to .factory/config.json verify.checks first.`);
     const cmd = sep >= 0 ? rest.slice(sep + 1).join(' ') : (cfg.verify.checks[name] ?? (required ? BUILTIN_CHECKS[name] : undefined));
-    if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks or pass: -- <cmd>`);
+    if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks.`);
     mkdirSync(join(evDir, id), { recursive: true });
     const started = Date.now();
     const run = spawnSync(cmd, { shell: true, cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, env: { ...process.env, FACTORY_TASK_BASE: task.baseSha || '' } });

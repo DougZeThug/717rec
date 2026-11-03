@@ -1,7 +1,7 @@
 // End-to-end test of the task ledger gates inside a throwaway git repo.
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { after, before, test } from 'node:test';
@@ -104,14 +104,47 @@ test('close refuses an unready task', () => {
   assert.notEqual(factory('close', id).status, 0);
 });
 
-test('a required check cannot be satisfied by a substitute command', () => {
+test('a required check and an unconfigured name both refuse a substitute command', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
   for (const name of ['unit', 'integrity']) {
     const run = factory('check', id, name, '--', 'node -e "0"');
     assert.notEqual(run.status, 0, name);
     assert.match(run.stderr, /required check/);
   }
-  assert.equal(factory('check', id, 'extra-note', '--', 'node -e "0"').status, 0, 'a non-required check may still use a custom command');
+  const unknown = factory('check', id, 'extra-note', '--', 'node -e "0"');
+  assert.notEqual(unknown.status, 0, 'a name that is not configured may not run a custom command');
+  assert.match(unknown.stderr, /not a configured check/);
+});
+test('a refused "-- <cmd>" override runs nothing and leaves no trace', () => {
+  const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
+  const marker = `${repo}-ran`;
+  try {
+    const run = factory('check', id, 'extra-note', '--', `node -e "require('node:fs').writeFileSync('${marker}', 'x')"`);
+    assert.notEqual(run.status, 0);
+    assert.match(run.stderr, /not a configured check/);
+    assert.equal(existsSync(marker), false, 'the command must not run');
+    assert.equal(existsSync(join(repo, '.factory', 'evidence', id, 'extra-note.log')), false, 'no log file');
+    assert.equal(Object.hasOwn(JSON.parse(factory('show', id).stdout).checks, 'extra-note'), false, 'no recorded result');
+  } finally {
+    rmSync(marker, { force: true });
+  }
+});
+test('a configured check that is not required still accepts a "-- <cmd>" override', () => {
+  const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
+  const configured = JSON.parse(readFileSync(join(repo, '.factory', 'config.json'), 'utf8')).verify;
+  assert.ok(Object.hasOwn(configured.checks, 'extra'), 'extra must be configured by an earlier test');
+  assert.ok(!configured.required.includes('extra'), 'extra must not be required');
+  const run = factory('check', id, 'extra', '--', 'node -e "0"');
+  assert.equal(run.status, 0, run.stdout + run.stderr);
+  assert.equal(JSON.parse(factory('show', id).stdout).checks.extra.cmd, 'node -e "0"', 'the override ran, not the configured command');
+});
+test('names that exist only on Object.prototype never count as configured', () => {
+  const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
+  for (const name of ['__proto__', 'constructor']) {
+    const run = factory('check', id, name, '--', 'node -e "0"');
+    assert.notEqual(run.status, 0, name);
+    assert.match(run.stderr, /not a configured check/, name);
+  }
 });
 test('integrity fails when the base diff cannot be read', () => {
   const run = spawnSync('node', [cli, 'integrity'], { cwd: repo, encoding: 'utf8', env: { ...process.env, FACTORY_TASK_BASE: 'no-such-commit-0000' } });
