@@ -60,11 +60,17 @@ test('committing only task records does not make evidence stale', () => {
   mkdirSync(join(repo, '.factory'), { recursive: true });
   writeFileSync(join(repo, '.factory', 'ledger.jsonl'), '{"id":"x","outcome":"approved","minutes":1,"interventions":0,"repairAttempts":0}\n');
   git('add', '-A'); git('commit', '-qm', 'only factory files');
-  assert.doesNotMatch(factory('gate', id).stdout, /stale/);
+  const bookkeepingOnly = factory('gate', id);
+  assert.doesNotMatch(bookkeepingOnly.stdout, /stale/, bookkeepingOnly.stdout);
+  assert.equal(bookkeepingOnly.status, 0, bookkeepingOnly.stdout);
+  assert.match(bookkeepingOnly.stdout, /GATE: READY/, bookkeepingOnly.stdout);
   // but a change to the check definitions is real code: evidence goes stale
   writeFileSync(join(repo, '.factory', 'config.json'), JSON.stringify({ verify: { required: ['unit'], checks: { unit: 'node -e "process.exit(0)"', extra: 'true', bad: 'node -e "process.exit(1)"' } } }));
   git('add', '-A'); git('commit', '-qm', 'change check config');
-  assert.match(factory('gate', id).stdout, /stale/);
+  const afterConfigChange = factory('gate', id);
+  assert.match(afterConfigChange.stdout, /stale/, afterConfigChange.stdout);
+  assert.equal(afterConfigChange.status, 1, afterConfigChange.stdout);
+  assert.match(afterConfigChange.stdout, /GATE: NOT READY/, afterConfigChange.stdout);
 });
 test('integrity scans only the task own changes, and catches a skipped test', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
