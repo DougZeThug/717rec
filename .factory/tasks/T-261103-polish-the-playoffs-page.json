@@ -58,11 +58,62 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7d6e4f67a2c417197d3080a942668122f2086013",
+      "dirty": false,
+      "at": "2026-11-03T22:26:09.338Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261103-polish-the-playoffs-page/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7d6e4f67a2c417197d3080a942668122f2086013",
+      "dirty": false,
+      "at": "2026-11-03T22:26:21.595Z",
+      "seconds": 12,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261103-polish-the-playoffs-page/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7d6e4f67a2c417197d3080a942668122f2086013",
+      "dirty": false,
+      "at": "2026-11-03T22:28:08.287Z",
+      "seconds": 107,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261103-polish-the-playoffs-page/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7d6e4f67a2c417197d3080a942668122f2086013",
+      "dirty": false,
+      "at": "2026-11-03T22:28:11.993Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261103-polish-the-playoffs-page/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "7d6e4f67a2c417197d3080a942668122f2086013",
+      "dirty": false,
+      "at": "2026-11-03T22:28:18.377Z",
+      "seconds": 6,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261103-polish-the-playoffs-page/build.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-03T21:22:11.715Z"
+  "updatedAt": "2026-11-03T22:28:18.377Z"
 }
