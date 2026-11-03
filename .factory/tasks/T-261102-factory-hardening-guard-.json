@@ -58,10 +58,10 @@
     "factory-specs": {
       "result": "pass",
       "exit": 0,
-      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
+      "sha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
       "dirty": false,
-      "at": "2026-11-03T18:15:37.438Z",
-      "seconds": 5,
+      "at": "2026-11-03T20:28:18.908Z",
+      "seconds": 6,
       "cmd": "node --test factory/spec/*.spec.mjs",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/factory-specs.log"
     },
@@ -88,40 +88,40 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
+      "sha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
       "dirty": false,
-      "at": "2026-11-03T18:06:17.537Z",
-      "seconds": 101,
+      "at": "2026-11-03T20:18:06.588Z",
+      "seconds": 117,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
+      "sha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
       "dirty": false,
-      "at": "2026-11-03T18:06:21.482Z",
-      "seconds": 4,
+      "at": "2026-11-03T20:18:11.259Z",
+      "seconds": 5,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
+      "sha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
       "dirty": false,
-      "at": "2026-11-03T18:06:27.790Z",
-      "seconds": 6,
+      "at": "2026-11-03T20:18:19.283Z",
+      "seconds": 8,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/build.log"
     },
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "b534e5c2df9c48d559ada9f3c85e6225920f2c8f",
+      "sha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
       "dirty": false,
-      "at": "2026-11-03T18:15:22.542Z",
-      "seconds": 535,
+      "at": "2026-11-03T20:28:01.761Z",
+      "seconds": 582,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/unit.log"
     }
@@ -165,5 +165,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T20:16:09.533Z"
+  "updatedAt": "2026-11-03T20:28:18.908Z"
 }
