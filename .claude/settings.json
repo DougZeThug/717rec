@@ -10,7 +10,7 @@
     ],
     "ask": [
       "Edit(.claude/settings.json)", "Edit(.claude/settings.local.json)", "Edit(.factory/config.json)", "Write(.claude/settings.json)", "Write(.factory/config.json)",
-      "Edit(factory/**)", "Write(factory/**)", "Edit(tools/**)", "Write(tools/**)",
+      "Edit(factory/hooks/**)", "Write(factory/hooks/**)", "Edit(factory/bin/lib.mjs)", "Write(factory/bin/lib.mjs)", "Edit(tools/**)", "Write(tools/**)",
       "Edit(package.json)", "Write(package.json)", "Edit(vite.config.*)", "Edit(vitest.config.*)", "Edit(playwright.config.*)",
       "Edit(.github/workflows/**)", "Write(.github/workflows/**)"
     ],
