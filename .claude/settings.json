@@ -5,7 +5,7 @@
       "Bash(npm run *)", "Bash(npm test*)", "Bash(npm ci*)", "Bash(npm outdated*)", "Bash(npm audit*)", "Bash(npx vitest *)", "Bash(npx playwright *)", "Bash(npx tsc *)", "Bash(npx eslint *)",
       "Bash(node factory/*)", "Bash(node tools/*)",
       "Bash(git status*)", "Bash(git diff*)", "Bash(git log*)", "Bash(git show*)", "Bash(git branch*)", "Bash(git checkout*)", "Bash(git switch*)", "Bash(git add*)", "Bash(git commit*)", "Bash(git stash*)", "Bash(git fetch*)", "Bash(git worktree*)", "Bash(git push*)",
-      "Bash(ls*)"
+      "Bash(ls*)", "Bash(cd *)", "Bash(grep *)", "Bash(wc *)", "Bash(head *)", "Bash(tail *)", "Bash(node --test*)"
     ],
     "ask": [
       "Edit(.claude/settings.json)", "Edit(.claude/settings.local.json)", "Edit(.factory/config.json)", "Write(.claude/settings.json)", "Write(.factory/config.json)",
