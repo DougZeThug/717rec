@@ -15,12 +15,11 @@ const RealtimeIndicator: React.FC<RealtimeIndicatorProps> = ({ enabled }) => {
     // Portalled so it stays on the screen, and lifted above the phone tab bar.
     // On a phone it is only the pulsing dot: the full pill covered bracket rows,
     // buttons and the footer. The words stay in the page for screen readers
-    // (sr-only) and as a tooltip, and `pointer-events-none` lets a tap go through
-    // to whatever is underneath. From md up it is the full pill.
+    // (sr-only), and `pointer-events-none` lets a tap go through to whatever is
+    // underneath. From md up it is the full pill.
     <ViewportPortal>
       <div
         role="status"
-        title="Live updates enabled"
         className="pointer-events-none md:pointer-events-auto fixed bottom-[calc(var(--bottom-nav-h)+1rem)] md:bottom-4 right-4 z-20 bg-green-100 dark:bg-green-900/30 rounded-full p-2 md:px-3 md:py-1 text-xs flex items-center shadow-md"
       >
         <span
