@@ -140,6 +140,17 @@ test('every git push in a command is checked, quoted names and bare HEAD include
   assert.equal(bash(push('origin HEAD'), 'factory/x'), null);
   assert.equal(bash(`${push('origin feat')} && ${push('origin feat2')}`), null);
 });
+test('a force flag cannot hide in a short flag group or a plus-prefixed ref', () => {
+  for (const rest of ['-fu origin factory/x', '-uf origin factory/x', 'origin factory/x -fu', 'origin +factory/x', 'origin "+factory/x"']) {
+    const decision = bash(push(rest));
+    assert.ok(decision?.block, push(rest));
+    assert.match(decision.block, /--force-with-lease/, `${push(rest)}: the reason says what to do instead`);
+  }
+});
+test('safe push forms stay allowed next to the force rules', () => {
+  const allowed = [push('-u origin factory/x'), push('--force-with-lease -u origin factory/x'), `${push('origin factory/x')} && rm -rf dist`, push('--follow-tags origin factory/x'), push('--set-upstream origin factory/x'), push('-o ci.skip origin factory/x')];
+  for (const command of allowed) assert.equal(bash(command), null, command);
+});
 test('hard resets, forced cleans and the short hook-skip flag are blocked', () => {
   const gitCmd = (rest) => ['git', rest].join(' ');
   for (const command of [gitCmd('reset --hard HEAD'), gitCmd('reset --hard'), gitCmd('reset --hard origin/main'), gitCmd('clean -df public/'), gitCmd('clean -fd'), gitCmd('clean -f'), gitCmd('clean -xdf'), gitCmd('clean --force -d'), gitCmd('commit -n -m x'), gitCmd('commit -nm x'), gitCmd('commit -anm x'), gitCmd('-c core.hooksPath=/dev/null commit -m x')])
