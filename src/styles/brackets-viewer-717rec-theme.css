@@ -10,10 +10,10 @@
   --secondary-background: #f8f9fa;
   --match-background: #ffffff;
   --font-color: #1a1a1a;
-  --win-color: #16a34a;
-  --loss-color: #dc2626;
+  --win-color: #15803d;           /* 5.0:1 on white (was #16a34a, 3.3:1) */
+  --loss-color: #dc2626;          /* 4.8:1 on white at full opacity */
   --label-color: #6b7280;
-  --hint-color: #9ca3af;
+  --hint-color: #6b7280;          /* 4.8:1 on white (was #9ca3af, 2.5:1) */
   --connector-color: #d1d5db;
   --border-color: #e5e7eb;
   --border-hover-color: #3b82f6;
@@ -103,7 +103,7 @@
   --match-background: #161b22;
   --font-color: #e6edf3;          /* Brighter than default #d9d9d9 */
   --win-color: #50b649;
-  --loss-color: #e61a1a;
+  --loss-color: #f87171;          /* 6.25:1 on #161b22 (was #e61a1a, 3.73:1, then faded to 1.98:1) */
   --label-color: #8b949e;         /* More visible than grey */
   --hint-color: #adbac7;          /* Brighter than default #a7a7a7 */
   --connector-color: #30363d;     /* More visible connectors */
@@ -164,7 +164,8 @@
 
 .brackets-viewer .participant.loss {
   color: var(--loss-color);
-  opacity: 0.6;
+  /* Not faded: opacity 0.6 took the red below 2:1 on the dark card. Red text and
+     the bold winner already tell the two teams apart. */
 }
 
 /* ============================================
