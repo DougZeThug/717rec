@@ -35,7 +35,8 @@ const checkPush = (cmd, cfg, branch) => {
     const words = push[1].split(/\s+/).map(unquote).filter(Boolean);
     const refs = words.filter((word) => !word.startsWith('-'));
     // Line 20 sees only a lone -f. A short flag group that holds f (-fu, -uf) and a +ref also force. A -- flag never matches.
-    if (words.some((word) => /^-[a-zA-Z]*f[a-zA-Z]*$/.test(word)) || refs.some((ref) => ref.startsWith('+'))) return { block: 'A force push (-f in a flag group, or a +ref) is blocked: use --force-with-lease on your own branch, and the human pushes to a protected branch.' };
+    // Two plain tests, not one pattern with two open-ended parts: that pattern is slow on a very long word.
+    if (words.some((word) => /^-[a-zA-Z]+$/.test(word) && word.includes('f')) ||refs.some((ref) => ref.startsWith('+'))) return { block: 'A force push (-f in a flag group, or a +ref) is blocked: use --force-with-lease on your own branch, and the human pushes to a protected branch.' };
     // A bare HEAD means "the branch I am on".
     const targets = refs.slice(1).map((ref) => ref.replace(/^\+/, '').split(':').pop().replace(/^refs\/heads\//, '')).map((target) => (target === 'HEAD' ? branch : target));
     const hitsProtected = targets.some((target) => cfg.protectedBranches.includes(target)) || (targets.length === 0 && cfg.protectedBranches.includes(branch));

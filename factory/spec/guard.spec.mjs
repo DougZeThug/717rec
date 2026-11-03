@@ -177,6 +177,15 @@ test('a force flag cannot hide in a short flag group or a plus-prefixed ref', ()
     assert.match(decision.block, /--force-with-lease/, `${push(rest)}: the reason says what to do instead`);
   }
 });
+test('the force-flag check stays fast on a very long flag word', () => {
+  // A flag word of many f letters that ends in a character no flag may hold. A backtracking pattern takes a long time on it.
+  const long = 'f'.repeat(50000);
+  const started = performance.now();
+  bash(push(`-${long}! origin factory/x`));
+  const elapsed = performance.now() - started;
+  assert.ok(elapsed < 500, `took ${Math.round(elapsed)} ms`);
+  assert.ok(bash(push(`-${long} origin factory/x`))?.block, 'a long group of only f letters is still a force flag');
+});
 test('safe push forms stay allowed next to the force rules', () => {
   const allowed = [push('-u origin factory/x'), push('--force-with-lease -u origin factory/x'), `${push('origin factory/x')} && rm -rf dist`, push('--follow-tags origin factory/x'), push('--set-upstream origin factory/x'), push('-o ci.skip origin factory/x')];
   for (const command of allowed) assert.equal(bash(command), null, command);
