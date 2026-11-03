@@ -19,6 +19,35 @@ const problem = !targetArg
   : (!existsSync(join(target, '.git')) && `${target} is not a git repository root.`) || (target === src && 'Target is the kit itself.');
 if (problem) fail(problem);
 
+// Allow rules for the target's own commands (its verify.checks and preview.command).
+// A wildcard goes only on a clearly safe prefix. When unsure, the rule is the exact command plus "*".
+// A one-word command with no arguments stays exact, so "make" never becomes "make*".
+const NPM_RUN = /^npm run ([\w:][\w:.-]*)(?:\s|$)/;
+const LAUNCHERS = new Set(['node', 'nodejs', 'python', 'python3', 'ruby', 'perl', 'php', 'sh', 'bash', 'zsh', 'env', 'sudo', 'eval', 'exec', 'xargs', 'nohup', 'time', 'timeout']);
+const NEEDS_ARGUMENT = new Set(['run', 'exec', 'x', 'dlx']);
+const ruleForPiece = (piece) => {
+  const script = NPM_RUN.exec(piece)?.[1];
+  if (script) return { rule: `Bash(npm run ${script}*)`, script };
+  const words = piece.split(/\s+/);
+  let count = 0;
+  while (count < words.length && /^[a-z][a-z0-9_:-]*$/.test(words[count])) count += 1;
+  const prefix = words.slice(0, count);
+  // "node --test x" has the one plain word "node": a bare interpreter rule would allow any script.
+  // "npm run -s lint" has the prefix "npm run": that would allow any script or package, so it is not used either.
+  const tooWide = prefix.length === 2 && NEEDS_ARGUMENT.has(prefix[1]);
+  if (prefix.length >= 2 && !LAUNCHERS.has(prefix[0]) && !tooWide) return { rule: `Bash(${prefix.join(' ')}*)` };
+  return { rule: words.length === 1 || (tooWide && words.length === 2) ? `Bash(${piece})` : `Bash(${piece}*)` };
+};
+const allowRulesFor = (command) => {
+  const text = typeof command === 'string' ? command.trim() : '';
+  if (!text) return [];
+  // A chain with quotes cannot be split safely: use the exact command.
+  if (/["'`$]/.test(text) && /&&|\|\||[;|\n]/.test(text)) return [{ rule: `Bash(${text}*)` }];
+  // Each part of a chain is its own command. After a pipe only the first command counts, so the tail is never pre-approved.
+  return text.split(/&&|\|\||[;\n]/).map((piece) => piece.split('|')[0].trim()).filter(Boolean).map(ruleForPiece);
+};
+const BLANKET_NPM_RUN = /^Bash\(npm run(?: \*|:\*|\*)\)$/;
+
 const install = () => {
   const log = (message) => console.log(`${dry ? '[dry-run] ' : ''}${message}`);
   const copy = (rel) => {
@@ -39,11 +68,14 @@ const install = () => {
   };
   const pkgFile = join(target, 'package.json');
   const setPath = join(target, '.claude/settings.json');
+  const cfgPath = join(target, '.factory/config.json');
   let pkg = null;
   let cur = null;
+  let projectCfg = null; // the config the allow rules come from: the existing one, or the one step 2 creates
   try {
     pkg = readJson(pkgFile);
     cur = readJson(setPath);
+    projectCfg = readJson(cfgPath);
   } catch (error) {
     fail(error.message);
     return;
@@ -69,7 +101,6 @@ const install = () => {
   };
 
   // 2. Project config: created once, never overwritten.
-  const cfgPath = join(target, '.factory/config.json');
   if (!existsSync(cfgPath)) {
     const scripts = pkg.scripts ?? {};
     const pick = (...names) => names.find((name) => scripts[name]);
@@ -95,6 +126,7 @@ const install = () => {
       projectContext: ['CLAUDE.md'],
       productionBoundaries: ['TODO: list what must never change (live data, approved assets, deploy targets).'],
     };
+    projectCfg = cfg;
     log('create .factory/config.json (EDIT IT: protectedPaths, preview, productionBoundaries)');
     if (!dry) {
       mkdirSync(dirname(cfgPath), { recursive: true });
@@ -105,7 +137,30 @@ const install = () => {
   // 3. Settings: merge, never replace. Existing rules stay.
   const union = (first = [], second = []) => [...new Set([...first, ...second])];
   cur.permissions = { ...cur.permissions };
-  for (const kind of ['allow', 'ask', 'deny']) cur.permissions[kind] = union(cur.permissions[kind], tpl.permissions[kind]);
+  // Allow rules: the template's fixed rules (git, factory.mjs, shoot.mjs, ...), but never its npm run rules.
+  // The npm run rules come from this project's own checks, plus the scripts those checks call.
+  const scripts = pkg.scripts ?? {};
+  const derived = new Set();
+  const seen = new Set();
+  const addScript = (name) => {
+    if (seen.has(name)) return;
+    seen.add(name);
+    derived.add(`Bash(npm run ${name}*)`);
+    for (const called of String(scripts[name] ?? '').matchAll(/\bnpm run ([\w:][\w:.-]*)/g)) if (scripts[called[1]] !== undefined) addScript(called[1]);
+  };
+  const checks = projectCfg?.verify?.checks;
+  const commands = [...Object.values(checks && typeof checks === 'object' ? checks : {}), projectCfg?.preview?.command];
+  for (const { rule, script } of commands.flatMap((command) => allowRulesFor(command))) {
+    derived.add(rule);
+    if (script) addScript(script);
+  }
+  log(`allow rules from this project's checks: ${[...derived].join(' ') || '(none)'}`);
+  const fixed = tpl.permissions.allow.filter((rule) => !rule.startsWith('Bash(npm run '));
+  // Never delete a rule the user already has, but say so when it lets every npm script run.
+  for (const rule of (cur.permissions.allow ?? []).filter((item) => BLANKET_NPM_RUN.test(item)))
+    console.warn(`WARNING: .claude/settings.json already has the rule "${rule}". It lets every npm script run without asking. The installer kept it. Remove it to be asked before scripts such as deploy.`);
+  cur.permissions.allow = union(cur.permissions.allow, [...fixed, ...derived]);
+  for (const kind of ['ask', 'deny']) cur.permissions[kind] = union(cur.permissions[kind], tpl.permissions[kind]);
   cur.hooks = { ...cur.hooks };
   for (const [ev, groups] of Object.entries(tpl.hooks)) {
     // Exact command match: a substring could skip a hook the target does not really have.
