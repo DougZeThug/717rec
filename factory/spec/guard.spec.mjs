@@ -95,6 +95,14 @@ test('a block found in either text wins over an ask found in the other', () => {
   assert.ok(kept?.ask, 'an ask found only in the text before the join is kept');
   assert.equal(kept.block, undefined);
 });
+test('an ask that shows only after the backslash-newline join is kept', () => {
+  // Written, the target is `.claude/set\` and the next line is `tings.json`: no control file. Joined, it is `.claude/settings.json`.
+  for (const command of [['echo x > .claude/set\\', 'tings.json'].join('\n'), ['cp x factory/hoo\\', 'ks/guard.mjs'].join('\n')]) {
+    const decision = bash(command);
+    assert.ok(decision?.ask, `${JSON.stringify(command)} should ask`);
+    assert.equal(decision.block, undefined, `${JSON.stringify(command)} should ask, not block`);
+  }
+});
 // String.raw keeps the backslashes exactly as the shell would read them. Each command below is real shell text.
 test('an escaped quote does not open a quoted string that hides a command', () => {
   assert.ok(bash(String.raw`echo \"; rm -rf public; echo \"`)?.block, 'escaped double quotes');
