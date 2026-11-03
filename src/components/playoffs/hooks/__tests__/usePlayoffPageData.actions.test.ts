@@ -99,6 +99,29 @@ describe('usePlayoffPageData setSelectedBracketId', () => {
     );
   });
 
+  // Opening a bracket swaps a long division list for a short bracket page. A
+  // reader who had scrolled the list would otherwise land part way down it.
+  it('scrolls to the top when a bracket opens', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.setSelectedBracketId('b-1'));
+
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+    scrollTo.mockRestore();
+  });
+
+  it('leaves the scroll position alone when a bracket closes', () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    searchParams = new URLSearchParams('bracket=b-1');
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.setSelectedBracketId(null));
+
+    expect(scrollTo).not.toHaveBeenCalled();
+    scrollTo.mockRestore();
+  });
+
   it('closes the bracket and takes it out of the address', () => {
     searchParams = new URLSearchParams('bracket=b-1');
     const { result } = renderHook(() => usePlayoffPageData());

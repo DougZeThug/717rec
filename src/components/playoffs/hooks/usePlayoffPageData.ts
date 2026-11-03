@@ -106,6 +106,10 @@ export function usePlayoffPageData(): PlayoffPageData {
       setSelectedBracketIdState(id);
 
       if (id) {
+        // The list is long and the bracket page is short. Without this a reader
+        // who had scrolled the list lands part way down the bracket.
+        window.scrollTo({ top: 0 });
+
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.set('bracket', id);
         setSearchParams(newSearchParams);

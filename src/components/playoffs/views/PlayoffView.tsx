@@ -5,6 +5,7 @@ import BracketList from '@/components/playoffs/BracketList';
 import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
+import { PlayoffLoadingView } from '../layout/PlayoffLoadingView';
 import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface PlayoffViewProps {
@@ -26,12 +27,23 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
     onCreateBracket();
   };
 
+  // A bracket was chosen and its data is still on the way. `undefined` is "not
+  // here yet"; `null` is "loaded, and there is nothing" (a legacy or removed
+  // bracket), which must not wait for ever. A failure has its own banner.
+  const bracketLoading =
+    Boolean(data.selectedBracketId) && data.bracket === undefined && !data.selectedBracketError;
+  const showList = !bracketLoading && (!data.selectedBracketId || !data.bracket);
+
   return (
     <>
       <PlayoffErrorBanners data={data} />
 
+      {/* Tapping "View Live Bracket" used to leave the division list on screen
+          until the bracket arrived, which looked like the tap had done nothing. */}
+      {bracketLoading && <PlayoffLoadingView label="Loading bracket..." />}
+
       {/* Show BracketList only when no bracket is selected */}
-      <div className={!data.selectedBracketId || !data.bracket ? 'block' : 'hidden'}>
+      <div className={showList ? 'block' : 'hidden'}>
         <BracketList
           divisions={data.availableDivisions}
           bracketsByDivision={data.typesafeBracketsByDivision}
@@ -42,7 +54,7 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
           // Same test the wrapper's `hidden` class uses: while a bracket is
           // open the list is still mounted, and no season means the projected
           // seeds behind it stay unfetched.
-          seasonId={!data.selectedBracketId || !data.bracket ? data.selectedSeasonId : null}
+          seasonId={showList ? data.selectedSeasonId : null}
         />
       </div>
 
