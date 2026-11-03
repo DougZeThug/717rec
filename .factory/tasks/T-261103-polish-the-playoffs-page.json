@@ -1,0 +1,19 @@
+{
+  "id": "T-261103-polish-the-playoffs-page",
+  "title": "Polish the playoffs page for mobile",
+  "kind": "polish",
+  "status": "intake",
+  "request": "/factory-polish the playoffs page for mobile",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "705428f14352a77b3e16872f376b0fb9bb933aeb",
+  "createdAt": "2026-11-03T20:44:07.515Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-03T20:44:07.515Z"
+}
