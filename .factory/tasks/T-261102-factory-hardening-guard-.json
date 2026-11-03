@@ -2,7 +2,7 @@
   "id": "T-261102-factory-hardening-guard-",
   "title": "Factory hardening: guard, allow list, tests, docs",
   "kind": "fix",
-  "status": "planned",
+  "status": "repairing",
   "request": "Close the open factory follow-ups after the plan review: fail-closed guard, backslash-newline and escaped-quote gaps, combined push flags, Bash writes to control-plane files ask the human, tighter allow list, fake key in a spec, a weak CLI test, two PIPELINE.md notes. Plan: scratchpad PLAN-factory-follow-ups.md (v2).",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -127,7 +127,28 @@
     }
   },
   "reviews": [],
-  "issues": {},
+  "issues": {
+    "review-b1": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-03T16:36:27.036Z",
+          "summary": "The backslash-newline join hides a command after a comment that ends in a backslash and after a quoted heredoc body. Fix: check the raw text and the joined text, a block wins."
+        }
+      ],
+      "escalated": false
+    },
+    "review-b2": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-03T16:36:27.100Z",
+          "summary": "The substitution body skip loses the quote state when a closing paren sits inside quotes. Fix: remove the skip."
+        }
+      ],
+      "escalated": false
+    }
+  },
   "interventions": [],
   "notes": [
     {
@@ -136,5 +157,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T16:24:34.485Z"
+  "updatedAt": "2026-11-03T16:36:27.100Z"
 }
