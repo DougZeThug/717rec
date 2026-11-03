@@ -9,13 +9,20 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
 ## Rules that never bend
 1. **Evidence, not claims.** Only `F check`, QA's own observations and the reviewer's verdict count. A builder saying "done" counts for nothing.
 2. **Boundaries** (also enforced by hooks and permissions): no merge to a protected branch, no deploy, no production data or migration, no secrets, no deleting protected assets, no weakening tests or security. Hit one? Stop and report. Do not look for a way around it.
-3. **Smallest change.** Reuse existing systems. A trivial change gets no team: Director edits, runs checks, one reviewer pass (or `--trivial` for a one-line doc or copy fix).
+3. **Smallest change.** Reuse existing systems. A trivial change gets no team: Director edits, runs checks, one reviewer pass.
+   - For a one-line doc or copy fix only, the Director may mark the task trivial: `F new ... --trivial`, or `F set <id> trivial true`.
+   - Trivial skips **only** the independent code review at the gate. Criteria, every required check, integrity, escalated issues and the clean tree still count.
+   - Only the Director sets it. A builder or other agent never does. The code does not check who sets it or what the change is, so this is a rule for the Director, not a lock.
 4. **Ask the human only** when a product, rule or look-and-feel decision changes the outcome. Pick a default, state it, and continue on everything else. Log each human touch: `F intervention <id> "<why>"`.
 5. **Resume from the repo.** On start run `F status` and `git status`. Trust the code and the git log, not old notes.
 6. Respect `productionBoundaries` and `projectContext` in `.factory/config.json`.
 
 ## Stages
-1. **Intake.** `F new "<title>" --kind <k> --request "<user's words>"` (stops at the concurrency ceiling). Create a branch `factory/<id>` from the base branch unless one is already checked out for this task. Read `projectContext` files.
+1. **Intake.** Do these in order. The task id exists only after step 1, so the branch comes after it.
+   1. `F new "<title>" --kind <k> --request "<user's words>"`. It prints the task id. A build or polish task stops at the concurrency ceiling. It records the branch that is checked out right now.
+   2. Make the task branch: `git switch -c factory/<id> <base>`. `<base>` is `baseBranch` in `.factory/config.json`. Skip this step if a branch is already checked out for this task.
+   3. Tell the ledger: `F set <id> branch factory/<id>`. Skip this step too if you skipped step 2: step 1 already recorded that branch. `F status` marks a task whose recorded branch is not the one checked out.
+   4. Read the `projectContext` files.
 2. **Plan.** Complex or unclear task: spawn `factory-architect`. Trivial task: write the criteria yourself. Record criteria: `F criteria <id> add "<text>"`. Set `F set <id> status planned`.
 3. **Challenge.** Significant plan (more than ~3 files, new behavior, data or security touched): spawn `factory-reviewer` in PLAN mode. Fix the plan for blocking objections. Record: `F review <id> plan <verdict> "<summary>"`.
 4. **Decompose.** Independent tasks with disjoint files -> run builders in parallel, each with `isolation: "worktree"`, then merge their branches yourself and resolve conflicts. Coupled tasks -> sequential. Default: **one builder**. Use `factory-ux` for interface work.
@@ -23,7 +30,14 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
 6. **Verify.** Commit first (evidence is tied to the commit). `F set <id> status verifying`. Spawn `factory-qa`. It runs the checks through `F check` and the browser checks. UI changes need phone + desktop screenshots in `.factory/evidence/<id>/`.
 7. **Repair.** On a failure: `F repair <id> <issue-key> "<what the fix tries>"`. Exit code 3 means ESCALATE: stop, do not try again, and follow **Blocked tasks** below (set the task blocked, note it, report). Do not go to Stage 9. Otherwise spawn `factory-repair` with the failure log path. Then rerun the failed check and QA. Max **3 attempts per issue** (`limits.repairAttemptsPerIssue`). The same fix twice is escalated automatically. After a fix: `F resolve <id> <issue-key> "<how>"`.
 8. **Review.** Spawn `factory-reviewer` in CODE mode (a different agent from the builder). `F review <id> code <verdict> "<summary>"`. CHANGES means back to Stage 5 or 7. The review must be on the final commit.
-9. **Delivery.** `F gate <id>`. READY only if criteria are shown, checks pass at HEAD, integrity passes, and review approves HEAD. If not ready, fix what it lists. Push the branch (`git push -u origin <branch>`). Open a PR only if the user asked for one or the project says to; the PR body needs: what changed, evidence, screenshots paths, risks, hand-apply steps. Never merge.
+9. **Delivery.** `F gate <id>`. READY only if all of these are true:
+   - Criteria are shown.
+   - Every required check passes on the current commit. That means `verify.required` plus `integrity`. A check a human waived with `F waive` is skipped. A commit that only changes `.factory/tasks`, `.factory/evidence` or `.factory/ledger.jsonl` does not make evidence stale.
+   - No repair issue is escalated and unresolved.
+   - The tree has no uncommitted changes outside the task records.
+   - An independent code review approves the current commit.
+
+   A `--trivial` task skips **only** the last item. For a trivial task the gate reads no code review at all, so a CHANGES or REJECT review on record does not block it. If not ready, fix what it lists. Push the branch (`git push -u origin <branch>`). Open a PR only if the user asked for one or the project says to; the PR body needs: what changed, evidence, screenshots paths, risks, hand-apply steps. Never merge.
 10. **Report** (to the human, short, answer first):
     - Verdict: READY / BLOCKED / NEEDS DECISION.
     - What changed (plain words). Branch / PR.
