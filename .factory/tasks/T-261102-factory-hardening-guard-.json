@@ -64,6 +64,26 @@
       "seconds": 7,
       "cmd": "node --test factory/spec/*.spec.mjs",
       "log": ".factory/evidence/T-261102-factory-hardening-guard-/factory-specs.log"
+    },
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "dirty": false,
+      "at": "2026-11-03T16:09:12.974Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "2942aaf0721039f20a63d54c5280dfb795b7d352",
+      "dirty": false,
+      "at": "2026-11-03T16:09:56.266Z",
+      "seconds": 43,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261102-factory-hardening-guard-/typecheck.log"
     }
   },
   "reviews": [],
@@ -76,5 +96,5 @@
     }
   ],
   "waivers": [],
-  "updatedAt": "2026-11-03T16:07:20.519Z"
+  "updatedAt": "2026-11-03T16:09:56.266Z"
 }
