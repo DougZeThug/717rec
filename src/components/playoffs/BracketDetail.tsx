@@ -128,7 +128,7 @@ const BracketDetail: React.FC<BracketDetailProps> = ({
       <CardContent className="p-0">
         {bracketLoading ? (
           <div className="flex justify-center py-12">
-            <Loader2 className="size-8 animate-spin text-cornhole-navy" />
+            <Loader2 className="size-8 animate-spin text-primary" />
           </div>
         ) : (
           <>
