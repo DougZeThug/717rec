@@ -133,6 +133,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           className={cn(
             'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
             'min-h-[44px] min-w-[44px]', // Touch target
+            'scroll-mt-16', // Keyboard focus lands below the sticky tab bar
             canGoPrev
               ? 'text-primary hover:bg-primary/10 active:scale-95'
               : 'text-muted-foreground/50 cursor-not-allowed'
@@ -156,7 +157,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
                 onClick={() => onIndexChange(idx)}
                 aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
                 aria-current={idx === safeIndex ? 'true' : undefined}
-                className="group flex min-h-11 min-w-6 items-center justify-center"
+                className="group flex min-h-11 min-w-6 scroll-mt-16 items-center justify-center"
               >
                 <span
                   className={cn(
@@ -179,6 +180,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           className={cn(
             'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all',
             'min-h-[44px] min-w-[44px]', // Touch target
+            'scroll-mt-16', // Keyboard focus lands below the sticky tab bar
             canGoNext
               ? 'text-primary hover:bg-primary/10 active:scale-95'
               : 'text-muted-foreground/50 cursor-not-allowed'
