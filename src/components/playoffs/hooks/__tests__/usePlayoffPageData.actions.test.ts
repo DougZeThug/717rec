@@ -17,9 +17,13 @@ const { queryClient, deleteBracketService } = vi.hoisted(() => ({
 
 /** The address bar, shared by the hook and the assertions. */
 let searchParams = new URLSearchParams();
-const setSearchParams = vi.fn((next: URLSearchParams) => {
-  searchParams = new URLSearchParams(next);
-});
+// The second argument is typed so a test can read it: `{ replace: true }` swaps
+// the current history entry, no argument pushes a new one.
+const setSearchParams = vi.fn<(next: URLSearchParams, options?: { replace?: boolean }) => void>(
+  (next) => {
+    searchParams = new URLSearchParams(next);
+  }
+);
 
 // Each test sets these once. The hook sees the same objects on every render,
 // as it would from a settled query.
@@ -133,6 +137,31 @@ describe('usePlayoffPageData setSelectedBracketId', () => {
     expect(searchParams.has('bracket')).toBe(false);
     expect(queryClient.prefetchQuery).not.toHaveBeenCalled();
   });
+
+  // Opening a bracket is a step forward, so it adds a history entry. Back then
+  // returns the reader to the list.
+  it('adds a history entry when a bracket opens', () => {
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.setSelectedBracketId('b-1'));
+
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams.mock.lastCall?.[1]).toBeUndefined();
+  });
+
+  // Closing swaps the entry instead. Otherwise the phone's Back button would
+  // open the bracket the reader just closed.
+  it('replaces the history entry when a bracket closes', () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.setSelectedBracketId(null));
+
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+    });
+  });
 });
 
 describe('usePlayoffPageData deleteBracket', () => {
@@ -153,6 +182,19 @@ describe('usePlayoffPageData deleteBracket', () => {
     expect(queryClient.removeQueries).toHaveBeenCalledWith({ queryKey: ['bracket-data', 'b-1'] });
     expect(result.current.selectedBracketId).toBeNull();
     expect(searchParams.has('bracket')).toBe(false);
+  });
+
+  // The deleted bracket no longer exists. Back must not return to its address.
+  it('replaces the history entry when the open bracket is deleted', async () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    await act(() => result.current.deleteBracket('b-1', 'Gold'));
+
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+    });
   });
 
   it('keeps the open bracket when another one is deleted', async () => {

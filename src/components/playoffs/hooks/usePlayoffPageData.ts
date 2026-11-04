@@ -123,7 +123,9 @@ export function usePlayoffPageData(): PlayoffPageData {
       } else {
         const newSearchParams = new URLSearchParams(searchParams);
         newSearchParams.delete('bracket');
-        setSearchParams(newSearchParams);
+        // Replace, not push. This closes a bracket that was just left, failed to
+        // load or was deleted, and the phone's Back button must not open it again.
+        setSearchParams(newSearchParams, { replace: true });
 
         bracketLog('Removed bracket from URL');
       }
