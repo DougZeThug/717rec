@@ -2,18 +2,72 @@
   "id": "T-261104-polish-the-schedule-page",
   "title": "Polish the schedule page for mobile",
   "kind": "polish",
-  "status": "intake",
+  "status": "planned",
   "request": "the schedule page on mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "e83e613f6cc550d674defb6bb81eeced34fa444d",
   "createdAt": "2026-11-04T19:10:23.534Z",
-  "criteria": [],
+  "criteria": [
+    {
+      "text": "C1 Carousel (phone): each date reached with Next or swipe opens with its first time slot showing, not a closed header over a blank screen. Unit test RED then GREEN. Before and after pictures. The stacked list on desktop is unchanged.",
+      "done": false
+    },
+    {
+      "text": "C2 Search box: 44 px tall at 360, 390 and 430, text 16 px on phones, border at least 3:1 against its background (the project 3:1 rule). The desktop row still fits. Measured before and after.",
+      "done": false
+    },
+    {
+      "text": "C3 Timeslots tab: the time header band and the team tiles line up with the card edge, and the tiles are wider so names are cut less. Measured offsets and pictures before and after. Desktop looks right.",
+      "done": false
+    },
+    {
+      "text": "C4 A search with no hits shows No matches for the text and a Clear search button that empties the search. The chip and My team empty message and the Timeslots empty message do not change. Unit tests RED then GREEN, plus a real-browser picture.",
+      "done": false
+    },
+    {
+      "text": "C5 Calendar: the pop-up closes when a date is picked (unit test RED then GREEN, and in the browser). The month arrows sit inside the pop-up in line with the month name. The shared calendar component file is not edited.",
+      "done": false
+    },
+    {
+      "text": "C6 Keyboard: the pager dots and Next scroll clear of the sticky tab bar, and the date strip focus ring is at least 3:1 against its background in dark, light and winter. Measured.",
+      "done": false
+    },
+    {
+      "text": "C7 Contrast of 12 px text: the winner name is at least 4.5:1 in light, and the FINAL pill is at least 4.5:1 in dark, light and winter. Measured before and after in all three themes.",
+      "done": false
+    },
+    {
+      "text": "C8 The Swipe to see more dates hint no longer pulses and stays at least 4.5:1. The global loading pulse rule in index.css is not touched.",
+      "done": false
+    },
+    {
+      "text": "C9 Tap targets on phones: the time-group header buttons are 44 px tall, and the All and Int chips are at least 44 px wide. Desktop sizes do not change. Measured.",
+      "done": false
+    },
+    {
+      "text": "C10 Date dots row with 19 nights (long scenario): Previous and Next stay on screen at 360 and 390 px. Picture before and after.",
+      "done": false
+    },
+    {
+      "text": "C11 No new console errors and no sideways scroll at 360, 390, 430 and desktop 1280, in dark, light and winter. Nothing else on the page moved: I compared the before and after pictures myself.",
+      "done": false
+    },
+    {
+      "text": "C12 All required repo checks and the factory-specs check pass on the final commit. Docs changed in the same change: the schedule page doc, the verification rows and the totals. A fresh independent code review approves. Left alone and reported: load jump, reaction button width, long-name clamp, the 14 date-strip tab stops, shared calendar cells and arrows, theme toggle size.",
+      "done": false
+    }
+  ],
   "checks": {},
   "reviews": [],
   "issues": {},
-  "interventions": [],
+  "interventions": [
+    {
+      "at": "2026-11-04T19:44:16.835Z",
+      "why": "Doug answered yes to three small behavior changes: each carousel date opens with its first time slot showing; a search with no hits says No matches for the text plus a Clear search button; the calendar pop-up closes after a date is picked."
+    }
+  ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T19:10:23.534Z"
+  "updatedAt": "2026-11-04T19:44:17.557Z"
 }
