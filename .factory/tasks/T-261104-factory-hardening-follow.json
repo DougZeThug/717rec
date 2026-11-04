@@ -125,11 +125,18 @@
       "sha": "824a8d434af9c4497f6a98b1b63bb4085c827e7f",
       "at": "2026-11-04T15:50:23.168Z",
       "summary": "Independent PLAN review: CHANGES, all points accepted in plan v2. The first push fix would have opened a hole (git push 2>/dev/null on main) and missed five forms; the cap must also bound width; the work copy needs .claude, .github and tools; keep the two specific override refusals."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "at": "2026-11-04T18:16:39.297Z",
+      "summary": "Fresh reviewer: CHANGES. (1) REGRESSION, verified: a bare 'push' or 'push <remote>' on a protected branch, inside $( ) or backticks or an array subscript, with text glued after the closer, was blocked by the old guard and is allowed now. (2) The paren floor in parenDepth has no test. (3) New false positives: a protected name in ( ) [ ] { } after a push word in a commit message or PR body. (4) The cap does not bound run time for a very large body. (5) parenDepth counts parens inside quotes. (6) Some mutants survive. (7) README says F resolve crashes on a prototype key; it does not. CLI changes A1-A3 reviewed as fine."
     }
   ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T16:55:03.800Z"
+  "updatedAt": "2026-11-04T18:16:39.297Z"
 }
