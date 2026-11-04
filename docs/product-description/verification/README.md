@@ -18,11 +18,11 @@ time.
 | [admin.md](admin.md) | `admin/*` |
 | [cross-cutting.md](cross-cutting.md) | `cross-cutting/*` |
 
-There are **1,939 items** across the nine files, **117** of them P1 rows marked
-**(suspected bug)**. `admin.md` is the largest at 384 and carries a safety warning:
+There are **1,958 items** across the nine files, **117** of them P1 rows marked
+**(suspected bug)**. `admin.md` is the largest at 386 and carries a safety warning:
 the dev server writes to the league's real database, and 70 of its items are
-marked **(destructive)**. An item is a table row whose first cell is an ID and
-whose second cell is a priority.
+marked **(destructive)**. An item is a table row whose first cell is an ID, such
+as `ROUND-12` or `STAND-11a`, and whose second cell is a priority.
 
 Each file has one table per document. Each row is an item with a stable ID
 (`CONTACT-07`, `ROUND-12`), a priority, what it needs, the claim with a link to
