@@ -2,7 +2,7 @@
   "id": "T-261104-polish-the-schedule-page",
   "title": "Polish the schedule page for mobile",
   "kind": "polish",
-  "status": "planned",
+  "status": "building",
   "request": "the schedule page on mobile",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -56,18 +56,34 @@
     {
       "text": "C12 All required repo checks and the factory-specs check pass on the final commit. Docs changed in the same change: the schedule page doc, the verification rows and the totals. A fresh independent code review approves. Left alone and reported: load jump, reaction button width, long-name clamp, the 14 date-strip tab stops, shared calendar cells and arrows, theme toggle size.",
       "done": false
+    },
+    {
+      "text": "C13 Date dots: with 9 dates or fewer the dots look and tap as today (24 px wide); with more than 9 dates text like 3 of 19 replaces them and updates on Next and Previous. Unit tests for 9 dates, 10 dates and Next.",
+      "done": false
     }
   ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "e83e613f6cc550d674defb6bb81eeced34fa444d",
+      "at": "2026-11-04T19:53:26.019Z",
+      "summary": "Independent plan review: CHANGES, all accepted and the plan revised. Blockers: (U4) ScheduleContent has no search text, so a search prop and a clear callback are passed from Schedule.tsx, and chips win over search; (U12) narrowing the dots breaks the 24 px floor, so it went to Doug, who chose text after 9 dates. Also fixed in the plan: U1 test mock cannot see isFirstGroup, U6 needs exact classes and no edit to the shared calendar, U10 ring may vanish on the selected chip in light, U5 needs open plus onOpenChange and the undefined date, desktop effect of U2 and U3 stated (U3 kept desktop-identical), U8 old value stated, docs list completed (SCHED-19 rewritten)."
+    }
+  ],
   "issues": {},
   "interventions": [
     {
       "at": "2026-11-04T19:44:16.835Z",
       "why": "Doug answered yes to three small behavior changes: each carousel date opens with its first time slot showing; a search with no hits says No matches for the text plus a Clear search button; the calendar pop-up closes after a date is picked."
+    },
+    {
+      "at": "2026-11-04T19:53:25.885Z",
+      "why": "Doug chose text after 9 dates for the carousel date dots (shows N of M with more than 9 dates; dots stay as today up to 9). Not shrunk, not scrolled."
     }
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T19:44:17.557Z"
+  "updatedAt": "2026-11-04T19:53:26.085Z"
 }
