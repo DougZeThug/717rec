@@ -75,11 +75,12 @@ const gateProblems = (task, sha) => {
     else if (recorded.result !== 'pass') problems.push(`check "${name}" failed`);
     else if (recorded.sha !== sha || recorded.dirty) problems.push(`check "${name}" is stale (ran on ${recorded.sha.slice(0, 7)}${recorded.dirty ? '+uncommitted' : ''}, HEAD is ${sha.slice(0, 7)}). Commit, then rerun.`);
   }
+  // A recorded CHANGES or REJECT blocks every task, trivial or not. A missing or stale review blocks only a task that is not trivial. Plan reviews never count.
+  const latest = [...task.reviews].reverse().find((entry) => entry.mode === 'code');
+  if (latest && latest.verdict !== 'APPROVE') problems.push(`latest code review is ${latest.verdict}`);
   if (!task.trivial) {
-    const latest = [...task.reviews].reverse().find((entry) => entry.mode === 'code');
     if (!latest) problems.push('no independent code review recorded');
-    else if (latest.verdict !== 'APPROVE') problems.push(`latest code review is ${latest.verdict}`);
-    else if (latest.sha !== sha) problems.push('code review is stale: code changed after the review');
+    else if (latest.verdict === 'APPROVE' && latest.sha !== sha) problems.push('code review is stale: code changed after the review');
   }
   for (const [key, issue] of Object.entries(task.issues)) if (issue.escalated && !issue.resolved) problems.push(`issue "${key}" is escalated and unresolved`);
   if (dirty()) problems.push('uncommitted changes in the working tree');

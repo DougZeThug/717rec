@@ -214,3 +214,41 @@ test('close as approved re-checks the gate', () => {
   rmSync(join(repo, 'dirty.txt'));
   assert.equal(factory('close', id).status, 0);
 });
+test('a recorded CHANGES or REJECT code review blocks a trivial task too; plan reviews and missing or stale reviews do not', () => {
+  const id = factory('new', 'Trivial review chain', '--kind', 'fix', '--trivial').stdout.trim();
+  factory('criteria', id, 'add', 'works');
+  factory('criteria', id, 'done', '1', 'shown');
+  assert.equal(factory('check', id, 'unit').status, 0);
+  assert.equal(factory('check', id, 'integrity').status, 0);
+  const ready = (label) => {
+    const run = factory('gate', id);
+    assert.equal(run.status, 0, `${label}: ${run.stdout}${run.stderr}`);
+    assert.match(run.stdout, /GATE: READY/, label);
+  };
+  const blocked = (label, problem) => {
+    const run = factory('gate', id);
+    assert.equal(run.status, 1, `${label}: ${run.stdout}${run.stderr}`);
+    assert.match(run.stdout, /GATE: NOT READY/, label);
+    assert.match(run.stdout, problem, label);
+  };
+  ready('a trivial task with no review is ready');
+  assert.equal(factory('review', id, 'code', 'CHANGES', 'needs work').status, 0);
+  blocked('CHANGES blocks a trivial task', /latest code review is CHANGES/);
+  assert.equal(factory('review', id, 'code', 'APPROVE', 'fixed').status, 0);
+  ready('a later APPROVE clears it');
+  assert.equal(factory('review', id, 'code', 'REJECT', 'wrong approach').status, 0);
+  blocked('REJECT blocks a trivial task', /latest code review is REJECT/);
+  assert.equal(factory('review', id, 'code', 'APPROVE', 'redone').status, 0);
+  assert.equal(factory('review', id, 'plan', 'REJECT', 'a plan review is not a code review').status, 0);
+  ready('a plan review never counts, even after an APPROVE');
+  // A stale APPROVE stays fine for a trivial task: pinned on purpose. Only a recorded CHANGES or REJECT blocks it.
+  writeFileSync(join(repo, 'a.txt'), 'trivial change'); git('commit', '-qam', 'change after the review');
+  assert.equal(factory('check', id, 'unit').status, 0);
+  assert.equal(factory('check', id, 'integrity').status, 0);
+  const lastCodeReview = JSON.parse(factory('show', id).stdout).reviews.findLast((entry) => entry.mode === 'code');
+  assert.notEqual(lastCodeReview.sha, git('rev-parse', 'HEAD').trim(), 'the APPROVE must be stale for this check to mean anything');
+  ready('a stale APPROVE is allowed for a trivial task');
+  // The same task, not trivial, still gets the stale-review problem with the same text as before.
+  assert.equal(factory('set', id, 'trivial', 'false').status, 0);
+  blocked('a stale APPROVE blocks a task that is not trivial', /code review is stale: code changed after the review/);
+});
