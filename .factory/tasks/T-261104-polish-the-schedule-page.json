@@ -62,7 +62,68 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "dirty": false,
+      "at": "2026-11-04T21:27:47.698Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261104-polish-the-schedule-page/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "dirty": false,
+      "at": "2026-11-04T21:28:01.491Z",
+      "seconds": 14,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261104-polish-the-schedule-page/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "dirty": false,
+      "at": "2026-11-04T21:29:45.918Z",
+      "seconds": 104,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261104-polish-the-schedule-page/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "dirty": false,
+      "at": "2026-11-04T21:29:50.203Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261104-polish-the-schedule-page/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "dirty": false,
+      "at": "2026-11-04T21:29:57.823Z",
+      "seconds": 8,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261104-polish-the-schedule-page/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "73e0e2b50dc9df7a33869cdb557d1a2e8867d2d3",
+      "dirty": false,
+      "at": "2026-11-04T21:40:22.637Z",
+      "seconds": 625,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261104-polish-the-schedule-page/unit.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -85,5 +146,5 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T19:53:26.085Z"
+  "updatedAt": "2026-11-04T21:40:22.637Z"
 }
