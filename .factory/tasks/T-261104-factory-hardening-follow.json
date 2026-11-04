@@ -46,7 +46,78 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:42:25.412Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:42:44.903Z",
+      "seconds": 19,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:44:36.061Z",
+      "seconds": 111,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:44:41.197Z",
+      "seconds": 5,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:44:48.851Z",
+      "seconds": 8,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:54:55.857Z",
+      "seconds": 607,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/unit.log"
+    },
+    "factory-specs": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "dirty": false,
+      "at": "2026-11-04T16:55:03.799Z",
+      "seconds": 8,
+      "cmd": "node --test factory/spec/*.spec.mjs",
+      "log": ".factory/evidence/T-261104-factory-hardening-follow/factory-specs.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -60,5 +131,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T15:50:23.219Z"
+  "updatedAt": "2026-11-04T16:55:03.800Z"
 }
