@@ -202,7 +202,7 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
       </div>
 
       {/* Swipe hint for mobile - enhanced visibility */}
-      <p className="text-center text-xs text-muted-foreground mt-3 sm:hidden animate-pulse">
+      <p className="text-center text-xs text-muted-foreground mt-3 sm:hidden">
         ← Swipe to see more dates →
       </p>
     </div>
