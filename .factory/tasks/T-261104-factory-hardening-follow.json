@@ -50,9 +50,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "sha": "68eaf290ea50b0082906c32ad21de467c86d8b83",
       "dirty": false,
-      "at": "2026-11-04T16:42:25.412Z",
+      "at": "2026-11-04T18:47:17.794Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261104-factory-hardening-follow/integrity.log"
@@ -60,40 +60,40 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "sha": "68eaf290ea50b0082906c32ad21de467c86d8b83",
       "dirty": false,
-      "at": "2026-11-04T16:42:44.903Z",
-      "seconds": 19,
+      "at": "2026-11-04T18:47:51.429Z",
+      "seconds": 34,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261104-factory-hardening-follow/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "sha": "68eaf290ea50b0082906c32ad21de467c86d8b83",
       "dirty": false,
-      "at": "2026-11-04T16:44:36.061Z",
-      "seconds": 111,
+      "at": "2026-11-04T18:49:36.119Z",
+      "seconds": 105,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261104-factory-hardening-follow/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "sha": "68eaf290ea50b0082906c32ad21de467c86d8b83",
       "dirty": false,
-      "at": "2026-11-04T16:44:41.197Z",
-      "seconds": 5,
+      "at": "2026-11-04T18:49:44.271Z",
+      "seconds": 8,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261104-factory-hardening-follow/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "f57ffb71021713818f7e089f079b92bd41ab5198",
+      "sha": "68eaf290ea50b0082906c32ad21de467c86d8b83",
       "dirty": false,
-      "at": "2026-11-04T16:44:48.851Z",
-      "seconds": 8,
+      "at": "2026-11-04T18:49:53.250Z",
+      "seconds": 9,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261104-factory-hardening-follow/build.log"
     },
@@ -183,5 +183,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T18:46:50.718Z"
+  "updatedAt": "2026-11-04T18:49:53.250Z"
 }
