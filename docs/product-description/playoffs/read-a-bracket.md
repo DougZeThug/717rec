@@ -20,11 +20,12 @@ are defined in
 ## The simple case
 
 A player presses "View Live Bracket". The Playoffs page first shows its own
-"Loading bracket..." spinner (see [the Playoffs page](the-playoffs-page.md)). A
-progress bar counts through four steps —
+"Loading bracket..." spinner (see [`the-playoffs-page.md`](the-playoffs-page.md)).
+A progress bar counts through four steps —
 "Loading bracket info...", "Fetching stage & participants...", "Loading
 matches...", "Fetching team details..." — and then the bracket appears inside a
-card.
+card. Nobody has confirmed by hand that the progress bar is ever visible after
+that spinner; see [Open questions](#open-questions-and-verification).
 
 The card's header names the bracket, its division, its format, and its state as a
 coloured pill: grey "Pending", blue "In progress", green "Completed".
@@ -272,4 +273,6 @@ a session takes noticeably longer than the second.
 
 Verified against `717rec` commit `ea5c8f4`, except the phone behaviour of the
 admin toolbar above, which was changed after that commit — see
-[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone).
+[B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone) —
+and the "Loading bracket..." spinner that now shows first, which changed after it
+too.
