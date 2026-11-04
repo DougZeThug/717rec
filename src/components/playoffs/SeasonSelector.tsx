@@ -16,8 +16,8 @@ interface SeasonSelectorProps {
 
 const SeasonSelector: React.FC<SeasonSelectorProps> = ({ selectedSeasonId, onSeasonChange }) => {
   const { data: seasons, isLoading } = useSeasons();
-  // The Playoffs page mounts this twice (desktop and the phone bar). A fixed id
-  // made the phone label point at the hidden desktop copy.
+  // useId gives each mounted copy its own id, so the label always points at its
+  // own trigger. A fixed id would collide if this were ever mounted twice.
   const triggerId = useId();
 
   if (isLoading || !seasons || seasons.length <= 1) {

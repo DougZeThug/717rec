@@ -40,9 +40,10 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
       <PlayoffErrorBanners data={data} />
 
       {/* Whenever the list is hidden (the spinner below, then the open bracket) the
-          reader needs a way back. The error banner has its own "Back to brackets",
-          so this one stays out while the banner shows: the list is back, or a loaded
-          bracket stays up after a failed refresh. The page keeps exactly one. */}
+          reader needs a way back. Only the "Loading bracket" error banner
+          (data.selectedBracketError) has its own "Back to brackets"; the other banners
+          do not. So this one stays out while that banner shows: the list is back, or a
+          loaded bracket stays up after a failed refresh. The page keeps exactly one. */}
       {!showList && !data.selectedBracketError && (
         <BackToBracketsButton onBack={() => data.setSelectedBracketId(null)} />
       )}
