@@ -2,7 +2,7 @@
   "id": "T-261104-factory-hardening-follow",
   "title": "Factory hardening follow-up: guard gaps, check override, trivial gate",
   "kind": "build",
-  "status": "planned",
+  "status": "building",
   "request": "Doug said yes to the factory hardening follow-up: (1) a trivial task must still be blocked by a recorded REJECT or CHANGES review; (2) refuse the check -- <cmd> override for every check; (3) close the push-to-a-protected-branch gap inside $( ), backticks, <( ), >( ), a subshell and a glued redirect; (4) stop the F check constructor crash; (5) a fail-closed cap on deep nesting in the guard; (6) README wording fixes plus the smoke-test result; (7) two test pins. Doug also confirmed by hand on 2026-11-04 that the hook ask prompted him in Auto mode, even when an allow rule matched.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -47,10 +47,18 @@
     }
   ],
   "checks": {},
-  "reviews": [],
+  "reviews": [
+    {
+      "mode": "plan",
+      "verdict": "CHANGES",
+      "sha": "824a8d434af9c4497f6a98b1b63bb4085c827e7f",
+      "at": "2026-11-04T15:50:23.168Z",
+      "summary": "Independent PLAN review: CHANGES, all points accepted in plan v2. The first push fix would have opened a hole (git push 2>/dev/null on main) and missed five forms; the cap must also bound width; the work copy needs .claude, .github and tools; keep the two specific override refusals."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T15:33:39.649Z"
+  "updatedAt": "2026-11-04T15:50:23.219Z"
 }
