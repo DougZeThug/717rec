@@ -77,8 +77,12 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
   return (
     // A native scroll box, not Radix ScrollArea: ScrollArea with both scrollbars
     // mounted loops forever under React 19.3 ("Maximum update depth exceeded").
-    <div className="w-full overflow-x-auto whitespace-nowrap [scrollbar-width:thin]">
-      <div className="flex gap-1 py-1 px-0.5">
+    // The padding leaves room for the focus ring (2px) and its offset (2px) and
+    // the 5% growth of the selected chip, which the scroll box would otherwise
+    // clip. The negative margins give that room back, so the chips stay where
+    // they were.
+    <div className="-mx-1 -my-0.5 overflow-x-auto whitespace-nowrap [scrollbar-width:thin]">
+      <div className="flex gap-1 px-1.5 py-1.5">
         {dates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isTodayDate = isToday(date);
@@ -92,7 +96,7 @@ const DateStrip: React.FC<DateStripProps> = ({ selectedDate, onDateSelect, match
               onClick={() => onDateSelect(date)}
               className={cn(
                 'flex flex-col items-center px-3 py-1.5 rounded-xl min-w-[50px] transition-all duration-200',
-                'hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/50',
+                'ring-offset-background hover:bg-muted focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                 isSelected &&
                   'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105',
                 isTodayDate && !isSelected && 'ring-1 ring-primary/60',
