@@ -20,7 +20,8 @@ interface BackToBracketsButtonProps {
 const BackToBracketsButton: React.FC<BackToBracketsButtonProps> = ({ onBack }) => {
   const handleClick = () => {
     onBack();
-    // The reader may be far down a tall bracket; the list should show from its top.
+    // Bring the page header and the season picker back into view, so the list shows
+    // from its top.
     window.scrollTo({ top: 0 });
   };
 
