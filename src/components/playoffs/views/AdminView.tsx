@@ -7,6 +7,7 @@ import BracketDetail from '../BracketDetail';
 import BracketList from '../BracketList';
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import TeamDivisionTable from '../TeamDivisionTable';
+import BackToBracketsButton from './BackToBracketsButton';
 import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface AdminViewProps {
@@ -81,6 +82,11 @@ const AdminView: React.FC<AdminViewProps> = ({
             seasonId={!data.selectedBracketId || !data.bracket ? data.selectedSeasonId : null}
           />
         </div>
+
+        {/* Shown whenever the list above is hidden: the opposite of its test. */}
+        {data.selectedBracketId && data.bracket && (
+          <BackToBracketsButton onBack={() => data.setSelectedBracketId(null)} />
+        )}
 
         {data.ready &&
           data.selectedBracketId &&

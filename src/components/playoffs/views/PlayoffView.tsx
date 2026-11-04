@@ -6,6 +6,7 @@ import type { PlayoffBracket } from '@/utils/playoffs/playoffTypes';
 
 import { PlayoffPageData } from '../hooks/usePlayoffPageData';
 import { PlayoffLoadingView } from '../layout/PlayoffLoadingView';
+import BackToBracketsButton from './BackToBracketsButton';
 import PlayoffErrorBanners from './PlayoffErrorBanners';
 
 interface PlayoffViewProps {
@@ -37,6 +38,11 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
   return (
     <>
       <PlayoffErrorBanners data={data} />
+
+      {/* Whenever the list is hidden (the spinner below, then the open bracket) the
+          reader needs a way back. When it is showing, the error banner has its own
+          "Back to brackets", so this one stays out to keep exactly one on the page. */}
+      {!showList && <BackToBracketsButton onBack={() => data.setSelectedBracketId(null)} />}
 
       {/* Tapping "View Live Bracket" used to leave the division list on screen
           until the bracket arrived, which looked like the tap had done nothing. */}
