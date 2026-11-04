@@ -152,9 +152,10 @@ fails, the list comes back with a "Loading bracket" banner above it.
 
 A "Back to brackets" button sits above the spinner, and then above the drawn
 bracket. Pressing it clears `?bracket=<id>`, shows the division list and scrolls
-to the top. The admin Brackets tab has the same button. While the list is
-showing, the button is not drawn. So a failed load still has one "Back to
-brackets" button: the one in the banner.
+to the top. The admin Brackets tab has the same button above an open bracket. It
+has no spinner: the list stays until the bracket arrives. The error banner has
+its own "Back to brackets" button, so the new button is not drawn while the
+banner shows. The page never has two.
 
 When the subscription is live, a green signal sits in the bottom-right corner. On
 a screen 768 pixels wide or more it is a small pill reading "Live updates

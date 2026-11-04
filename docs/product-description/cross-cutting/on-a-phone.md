@@ -134,9 +134,9 @@ step. Its six documents start at
   list or history. Labels there were 9 to 11 pixels, which is unreadable in a
   bar. The schedule's weekday strip and the playoff bracket's participant names
   are still smaller; they are tracked separately.
-- The phone's safe areas are honoured in four places: the top bar, the bottom tab
-  bar, the padding under every page, and the playoffs page's own bottom bar. A
-  notch or a home indicator does not sit over them.
+- The phone's safe areas are honoured in the top bar, the bottom tab bar and the
+  padding under every page. A notch or a home indicator does not sit over them.
+  The playoffs page has no bottom bar of its own.
 - The bottom tab bar reaches four of the app's twenty routes. Everything else —
   the message board, history, help, contact, and Admin for an admin — is behind
   the hamburger; my team and the profile are in the user menu. Insights and
