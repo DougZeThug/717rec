@@ -1,0 +1,52 @@
+{
+  "id": "T-261104-add-a-back-to-brackets-b",
+  "title": "Add a Back to brackets button and fix the season-picker docs",
+  "kind": "polish",
+  "status": "planned",
+  "request": "Follow-up to the playoffs mobile polish. Doug said yes to: add a Back to brackets button, and fix the wrong season-picker docs (the docs say the picker is pinned to the bottom on a phone; the code puts it at the top).",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "640047de4c640eb85856a82173e35ffbdf1f299b",
+  "createdAt": "2026-11-04T12:56:53.492Z",
+  "criteria": [
+    {
+      "text": "A Back to brackets button shows above the bracket whenever a bracket is open, on phone and on desktop. It is at least 44 px tall on a phone. Pressing it clears ?bracket=<id>, shows the division list and starts the page at the top. Before and after shots at 390, 360 and 320 px and at 1280 px.",
+      "done": false
+    },
+    {
+      "text": "The button also shows while the Loading bracket... spinner is on screen, so a slow or stuck load has a way back. Shot on a slow network (tools/playoffs-mock.mjs FAKE_DELAY_MS).",
+      "done": false
+    },
+    {
+      "text": "The button does not show on the division list. When a bracket fails to load, the page still has exactly ONE Back to brackets button (the one in the error banner). Covered by tests and a shot of the error-bracket scenario.",
+      "done": false
+    },
+    {
+      "text": "The admin view gets the same button above its bracket. It is covered by a unit test; it is NOT seen in a browser (no admin sign-in here). Reported as such.",
+      "done": false
+    },
+    {
+      "text": "Test first: the new tests fail (RED) before the code and pass (GREEN) after it. Existing playoff tests still pass. No test is skipped or weakened.",
+      "done": false
+    },
+    {
+      "text": "Nothing else moved: a pixel diff of before and after phone and desktop bracket shots shows only the new button row (and the content below it shifted down by the row height). No new console errors. The page does not scroll sideways at 390, 360 and 320 px.",
+      "done": false
+    },
+    {
+      "text": "Docs: the playoffs page doc and the verification list describe the new button, and the sentence that says the page has exactly two controls is corrected. A SEPARATE commit fixes the season-picker location (top on every screen size) in the-playoffs-page.md and verification/standings.md PLAYOFF-21, checked against PlayoffPageLayout.tsx.",
+      "done": false
+    },
+    {
+      "text": "All required repo checks pass on the final commit and an independent code review approves it. Left alone and reported: the other 3 doc wording nits (cache time limit, pill wording in 3 rows, read-a-bracket progress bar).",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-04T12:57:04.256Z"
+}
