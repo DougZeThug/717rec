@@ -11,7 +11,7 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
 2. **Boundaries** (also enforced by hooks and permissions): no merge to a protected branch, no deploy, no production data or migration, no secrets, no deleting protected assets, no weakening tests or security. Hit one? Stop and report. Do not look for a way around it.
 3. **Smallest change.** Reuse existing systems. A trivial change gets no team: Director edits, runs checks, one reviewer pass.
    - For a one-line doc or copy fix only, the Director may mark the task trivial: `F new ... --trivial`, or `F set <id> trivial true`.
-   - Trivial skips **only** the independent code review at the gate. Criteria, every required check, integrity, escalated issues and the clean tree still count.
+   - Trivial skips **only** the need for an independent code review at the gate. A recorded CHANGES or REJECT review still blocks it. Criteria, every required check, integrity, escalated issues and the clean tree still count.
    - Only the Director sets it. A builder or other agent never does. The code does not check who sets it or what the change is, so this is a rule for the Director, not a lock.
 4. **Ask the human only** when a product, rule or look-and-feel decision changes the outcome. Pick a default, state it, and continue on everything else. Log each human touch: `F intervention <id> "<why>"`.
 5. **Resume from the repo.** On start run `F status` and `git status`. Trust the code and the git log, not old notes.
@@ -37,7 +37,7 @@ The ledger CLI: `node factory/bin/factory.mjs` (called `F` below). It holds task
    - The tree has no uncommitted changes outside the task records.
    - An independent code review approves the current commit.
 
-   A `--trivial` task skips **only** the last item. For a trivial task the gate reads no code review at all, so a CHANGES or REJECT review on record does not block it. If not ready, fix what it lists. Push the branch (`git push -u origin <branch>`). Open a PR only if the user asked for one or the project says to; the PR body needs: what changed, evidence, screenshots paths, risks, hand-apply steps. Never merge.
+   A `--trivial` task skips **only** the need for the last item: it passes with no review, or with a stale APPROVE. A latest code review of CHANGES or REJECT still blocks it, until a later review approves. If not ready, fix what it lists. Push the branch (`git push -u origin <branch>`). Open a PR only if the user asked for one or the project says to; the PR body needs: what changed, evidence, screenshots paths, risks, hand-apply steps. Never merge.
 10. **Report** (to the human, short, answer first):
     - Verdict: READY / BLOCKED / NEEDS DECISION.
     - What changed (plain words). Branch / PR.
