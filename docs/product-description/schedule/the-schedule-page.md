@@ -119,7 +119,9 @@ highlighted.
 
 **The calendar button.** It opens a month picker with no limits, so a date
 outside the fourteen-day strip can be chosen. When one is, no date in the strip
-appears selected.
+appears selected. Picking a day closes the picker at once. Pressing the day that
+is already selected also closes it and changes nothing. Escape, or a press
+anywhere outside it, closes it too.
 
 **The search box.** It matches, case-insensitively, against either team's name or
 the match's location. It applies to Upcoming and Completed and does nothing to
@@ -163,7 +165,7 @@ that own their own commits.
 | The record's state | Each match's own state decides which card it gets and which tab it appears in. Completed matches are only in Completed, everything else only in Upcoming — including a match whose result was never recorded, which counts as Upcoming rather than falling out of both tabs. | A match completed elsewhere does not move between tabs here until the schedule is re-fetched, which this page does not do on its own. |
 | The season's state (active, archived, playoffs on) | Only the active season's matches are ever listed. With no active season the page is empty rather than broken. Archived seasons are read at [`history/past-seasons.md`](../history/past-seasons.md). | A season activated elsewhere does not reach this page until a reload. |
 | Viewport | On a wide screen every date group is stacked down the page and time groups lay their cards out in up to three columns. On a narrow screen the date groups become a **swipeable carousel**: one date at a time, with Previous and Next, a row of dots, and a "Swipe to see more dates" hint. | Rotating a phone to landscape can cross the breakpoint and swap the stacked list for the carousel, losing which groups were open. |
-| Keys the form honours | Nothing is focused on arrival. Tab reaches the date strip, the search box, the calendar button, the tabs, and every group heading. | Left and Right arrows move between the three tabs. Escape closes the calendar popover. Enter or Space opens and closes a group. There are no shortcuts and no type-ahead. |
+| Keys the form honours | Nothing is focused on arrival. Tab reaches the date strip, the search box, the calendar button, the tabs, and every group heading. | Left and Right arrows move between the three tabs. Escape closes the calendar popover, as does picking a day. Enter or Space opens and closes a group. There are no shortcuts and no type-ahead. |
 
 ## Cancel and interrupt
 
@@ -301,5 +303,7 @@ ordinary pageview.
   itself from the data when that guess lands on an empty night.
 
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
-UX audit item W8 (the division and My team chips). Those passages were written
-from the change and its tests, not from a fresh pass over the running app.
+UX audit item W8 (the division and My team chips) and for the phone polish of
+the schedule page (the calendar picker closing after a pick). Those passages
+were written from the change and its tests, not from a fresh pass over the
+running app.

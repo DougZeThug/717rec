@@ -62,10 +62,17 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
   isRefreshing = false,
   onRefresh,
 }) => {
+  // Controlled, so a pick can close the pop-up. onOpenChange keeps Escape,
+  // an outside press and the trigger button working.
+  const [calendarOpen, setCalendarOpen] = React.useState(false);
+
   const handleDateSelect = (date: Date | undefined) => {
     if (date && onDateSelect) {
       onDateSelect(date);
     }
+    // Close on any click on a day. Pressing the selected day again hands back
+    // undefined, and the pop-up closes then too.
+    setCalendarOpen(false);
   };
 
   return (
@@ -87,7 +94,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
         <div className="flex items-center gap-2">
           <SearchSlot value={searchTerm} onChange={setSearchTerm} />
           {onDateSelect && (
-            <Popover>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
