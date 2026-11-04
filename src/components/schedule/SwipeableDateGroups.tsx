@@ -66,7 +66,10 @@ const SwipeableGroupPanel: React.FC<SwipeableGroupPanelProps> = ({
           date={group.date}
           matches={group.matches}
           isCurrentDay={isToday(group.date) || isSameDay(group.date, selectedDate)}
-          isFirstGroup={index === 0}
+          // The carousel shows one date at a time, so the date on screen is the
+          // first group the reader sees. Opening only index 0 left every later
+          // date as a closed header over a blank screen.
+          isFirstGroup
           onEditMatch={onEditMatch}
           onDeleteMatch={onDeleteMatch}
           liveScoredMatchIds={liveScoredMatchIds}

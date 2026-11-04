@@ -64,6 +64,22 @@ describe('DateMatchGroup', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 
+  it('opens as the first group even when it is not the current day', () => {
+    render(<DateMatchGroup date={date} matches={matches} isCurrentDay={false} isFirstGroup />);
+
+    const trigger = screen.getByRole('button', { name: new RegExp(formattedDate) });
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByTestId('time-slot-group').length).toBeGreaterThan(0);
+  });
+
+  it('stays closed when it is neither the current day nor the first group', () => {
+    render(<DateMatchGroup date={date} matches={matches} isCurrentDay={false} />);
+
+    const trigger = screen.getByRole('button', { name: new RegExp(formattedDate) });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryAllByTestId('time-slot-group')).toHaveLength(0);
+  });
+
   it('shows the empty-state message when there are no matches', () => {
     render(<DateMatchGroup date={date} matches={[]} isCurrentDay />);
 

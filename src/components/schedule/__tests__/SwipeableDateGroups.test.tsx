@@ -16,10 +16,13 @@ vi.mock('framer-motion', () => ({
   },
 }));
 
-// Sentinel child that reveals which group's date it received.
+// Sentinel child that reveals which group's date it received, and whether it was
+// told to open itself as the first group.
 vi.mock('@/components/schedule/DateMatchGroup', () => ({
-  default: ({ date }: { date: Date }) => (
-    <div data-testid="date-match-group">{date.toISOString()}</div>
+  default: ({ date, isFirstGroup }: { date: Date; isFirstGroup?: boolean }) => (
+    <div data-testid="date-match-group" data-first={String(Boolean(isFirstGroup))}>
+      {date.toISOString()}
+    </div>
   ),
 }));
 
@@ -149,6 +152,29 @@ describe('SwipeableDateGroups', () => {
     );
 
     expect(container.firstChild).toBeNull();
+  });
+
+  describe('the group on screen', () => {
+    it.each([0, 1, 2])(
+      'is told to open itself, whichever date the carousel is on (index %i)',
+      (activeIndex) => {
+        render(
+          <SwipeableDateGroups
+            groupedMatches={groups}
+            selectedDate={new Date('2026-06-01T00:00:00.000Z')}
+            activeIndex={activeIndex}
+            onIndexChange={vi.fn()}
+          />
+        );
+
+        const shown = screen.getByTestId('date-match-group');
+        expect(shown).toHaveTextContent(groups[activeIndex].date.toISOString());
+        // The carousel shows one date at a time, so the date on screen is always
+        // the first thing the reader sees. A date that opened closed showed a
+        // header and an empty screen.
+        expect(shown).toHaveAttribute('data-first', 'true');
+      }
+    );
   });
 
   describe('with many dates', () => {

@@ -38,8 +38,9 @@ upcoming matches, and otherwise **Timeslots**.
 The Upcoming tab lists matches grouped by date, oldest first. Each date is a
 collapsible heading like "Thursday, June 12". Inside a date, matches are grouped
 again by start time — "7:00 PM", with a count badge — and inside that sit the
-match cards. The first date group and its first time group are open; the rest are
-closed.
+match cards. On a wide screen the first date group and its first time group are
+open; the rest are closed. On a phone only one date shows at a time, and each
+date opens with its first time group showing.
 
 The Completed tab is the same, newest date first, and every card reads "Final".
 
@@ -238,8 +239,10 @@ need to be: it is chosen to suit the night, so a link to a past night opens on
 Completed by itself.
 
 **On a phone.** The date strip scrolls sideways. The date groups become a swipeable
-carousel that starts on today's group, or the next future one. The tab bar sticks
-to the top of the screen as the list scrolls under it.
+carousel that starts on today's group, or the next future one. Every date the
+carousel moves to opens with its first time group showing, so pressing Next never
+lands on a bare date heading. The tab bar sticks to the top of the screen as the
+list scrolls under it.
 
 **Accessibility.** Every group heading is a real button and reports whether it is
 expanded. The date strip's buttons are reachable by Tab but announce only a
@@ -304,6 +307,7 @@ ordinary pageview.
 
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit item W8 (the division and My team chips) and for the phone polish of
-the schedule page (the calendar picker closing after a pick). Those passages
+the schedule page (the calendar picker closing after a pick, and each phone
+carousel date opening with its first time group showing). Those passages
 were written from the change and its tests, not from a fresh pass over the
 running app.
