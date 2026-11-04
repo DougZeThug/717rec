@@ -2,9 +2,11 @@ import { Calendar } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { LastUpdated } from '@/components/ui/LastUpdated';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 import DateStrip from './DateStrip';
 import ScheduleSearch from './ScheduleSearch';
@@ -23,6 +25,25 @@ interface ScheduleHeaderProps {
   isRefreshing?: boolean;
   onRefresh?: () => void;
 }
+
+// The shared calendar draws its month arrows with `absolute` and no anchor, so
+// in this pop-up they sit above its top edge instead of beside "November 2026".
+// These keys put them on that row. An override replaces the whole class string
+// of its key, so each one repeats the shared base from ui/calendar.tsx. That
+// file is left alone because other pickers use it. `top-4` is the row's offset
+// on a phone, where the months stack with a 1rem gap; from `sm` up there is no
+// gap and the row starts at the top. `z-10` keeps the caption row, which is
+// drawn later, from covering the arrows.
+const monthArrowClass = cn(
+  buttonVariants({ variant: 'outline' }),
+  'size-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+);
+const calendarClassNames = {
+  months: 'relative flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+  nav: 'absolute inset-x-0 top-4 z-10 flex h-7 items-center justify-between px-1 sm:top-0',
+  button_previous: monthArrowClass,
+  button_next: monthArrowClass,
+};
 
 const SearchSlot: React.FC<React.ComponentProps<typeof ScheduleSearch>> = (props) => (
   <div className="flex-1">
@@ -86,6 +107,7 @@ const ScheduleHeader: React.FC<ScheduleHeaderProps> = ({
                   selected={selectedDate}
                   onSelect={handleDateSelect}
                   className="p-3 pointer-events-auto"
+                  classNames={calendarClassNames}
                 />
               </PopoverContent>
             </Popover>
