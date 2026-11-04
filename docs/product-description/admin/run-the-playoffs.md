@@ -252,7 +252,7 @@ is selected**. Selecting a bracket hides it. It is read-only to everyone.
 | The user's role | A visitor or player sees `/playoffs` with no controls at all. An admin sees the tab strip and every button. Blind Draw and Hero are inside `/admin` and gated by its guard. | Losing admin leaves the controls on screen until the profile is re-read; the writes then fail. |
 | The record's state | `pending` allows seeding and rearranging. `in_progress` allows neither. `completed` disables everything but Recalculate Standings and Delete. | A result entered elsewhere moves the bracket to `in_progress`; the seeding dialog does not notice until it is reopened, and the save then fails. |
 | The season's state | The season picker chooses which season's brackets are listed, and a new bracket is stamped with it. When the playoff season and the active season differ, a banner says which is which. | Changing the season reloads the list and clears the selected bracket. |
-| Viewport | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker moves to a fixed bar at the foot of the screen. | No effect. |
+| Viewport | Below the medium breakpoint the six bracket admin controls collapse into one **⋯** menu; above it they are a row of buttons. The season picker does not move: it is under the heading on every screen size. | No effect. |
 | Keys the form honours | The create, seeding, rearrange, and delete dialogs are proper dialogs: Escape closes, Tab is trapped. The seeding list can be reordered from the keyboard. | Escape cancels without writing — except that the Seeds tab inside the create dialog has already saved anything it saved. |
 
 ## Cancel and interrupt
@@ -411,4 +411,5 @@ dialog's team list above, all changed after that commit — see
 [B-24](../bug-triage.md#b-24-bracket-administration-is-unreachable-on-a-phone),
 [pull request 1556](https://github.com/DougZeThug/717rec/pull/1556), and
 [pull request 1559](https://github.com/DougZeThug/717rec/pull/1559) (the Edit
-teams rebuild and the division filter).
+teams rebuild and the division filter). The season picker is described as the
+code has it now: under the heading on every screen size.
