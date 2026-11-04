@@ -13,6 +13,11 @@ interface DateGroup {
   matches: Match[];
 }
 
+// Past this many nights the dots no longer fit beside Previous and Next on a
+// 360 px phone, so a season of 19 weeks pushed "Next" off the screen. Above it
+// the row shows "3 of 19" instead.
+const MAX_DOTS = 9;
+
 interface SwipeableDateGroupsProps {
   groupedMatches: DateGroup[];
   selectedDate: Date;
@@ -137,28 +142,34 @@ const SwipeableDateGroups: React.FC<SwipeableDateGroupsProps> = ({
           <span className="hidden sm:inline">Previous</span>
         </button>
 
-        <div className="flex items-center">
-          {groupedMatches.map((group, idx) => (
-            // The button is the 44px tap area; the span inside is the visible dot.
-            <button
-              type="button"
-              key={group.date.toISOString()}
-              onClick={() => onIndexChange(idx)}
-              aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
-              aria-current={idx === safeIndex ? 'true' : undefined}
-              className="group flex min-h-11 min-w-6 items-center justify-center"
-            >
-              <span
-                className={cn(
-                  'size-2.5 rounded-full transition-all',
-                  idx === safeIndex
-                    ? 'bg-primary scale-125'
-                    : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'
-                )}
-              />
-            </button>
-          ))}
-        </div>
+        {groupedMatches.length > MAX_DOTS ? (
+          <span role="status" className="text-sm text-muted-foreground tabular-nums">
+            {`${safeIndex + 1} of ${groupedMatches.length}`}
+          </span>
+        ) : (
+          <div className="flex items-center">
+            {groupedMatches.map((group, idx) => (
+              // The button is the 44px tap area; the span inside is the visible dot.
+              <button
+                type="button"
+                key={group.date.toISOString()}
+                onClick={() => onIndexChange(idx)}
+                aria-label={`Go to ${format(group.date, 'EEE, MMM d')}`}
+                aria-current={idx === safeIndex ? 'true' : undefined}
+                className="group flex min-h-11 min-w-6 items-center justify-center"
+              >
+                <span
+                  className={cn(
+                    'size-2.5 rounded-full transition-all',
+                    idx === safeIndex
+                      ? 'bg-primary scale-125'
+                      : 'bg-muted-foreground/30 group-hover:bg-muted-foreground/50'
+                  )}
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         <button
           type="button"

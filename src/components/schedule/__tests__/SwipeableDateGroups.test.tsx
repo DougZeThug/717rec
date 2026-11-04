@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { Match } from '@/types';
@@ -33,6 +33,27 @@ const groups: DateGroup[] = [
   { date: new Date('2026-07-02T00:00:00.000Z'), matches: [] },
   { date: new Date('2026-07-03T00:00:00.000Z'), matches: [] },
 ];
+
+// One group per night, a day apart.
+const makeGroups = (count: number): DateGroup[] =>
+  Array.from({ length: count }, (_, i) => ({
+    date: new Date(Date.UTC(2026, 6, 1 + i)),
+    matches: [],
+  }));
+
+// The page owns the index, so a small stand-in owns it here.
+const WithIndex = ({ count }: { count: number }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const nights = makeGroups(count);
+  return (
+    <SwipeableDateGroups
+      groupedMatches={nights}
+      selectedDate={nights[0].date}
+      activeIndex={activeIndex}
+      onIndexChange={setActiveIndex}
+    />
+  );
+};
 
 describe('SwipeableDateGroups', () => {
   beforeEach(() => {
@@ -128,5 +149,51 @@ describe('SwipeableDateGroups', () => {
     );
 
     expect(container.firstChild).toBeNull();
+  });
+
+  describe('with many dates', () => {
+    it('keeps one dot per night for nine nights', () => {
+      const nights = makeGroups(9);
+      render(
+        <SwipeableDateGroups
+          groupedMatches={nights}
+          selectedDate={nights[0].date}
+          activeIndex={0}
+          onIndexChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getAllByRole('button', { name: /go to/i })).toHaveLength(9);
+      expect(screen.queryByText(/ of 9$/)).not.toBeInTheDocument();
+    });
+
+    it('shows "n of N" text instead of dots for ten nights, so Previous and Next stay in reach', () => {
+      const nights = makeGroups(10);
+      render(
+        <SwipeableDateGroups
+          groupedMatches={nights}
+          selectedDate={nights[0].date}
+          activeIndex={0}
+          onIndexChange={vi.fn()}
+        />
+      );
+
+      expect(screen.getByText('1 of 10')).toBeInTheDocument();
+      expect(screen.queryAllByRole('button', { name: /go to/i })).toHaveLength(0);
+      expect(screen.getByRole('button', { name: 'Previous date' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Next date' })).toBeEnabled();
+    });
+
+    it('moves the text on when Next is pressed, and back when Previous is pressed', () => {
+      render(<WithIndex count={19} />);
+
+      expect(screen.getByText('1 of 19')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next date' }));
+      expect(screen.getByText('2 of 19')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Previous date' }));
+      expect(screen.getByText('1 of 19')).toBeInTheDocument();
+    });
   });
 });
