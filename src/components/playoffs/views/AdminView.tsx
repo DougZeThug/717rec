@@ -83,8 +83,9 @@ const AdminView: React.FC<AdminViewProps> = ({
           />
         </div>
 
-        {/* Shown whenever the list above is hidden: the opposite of its test. */}
-        {data.selectedBracketId && data.bracket && (
+        {/* Shown whenever the list above is hidden: the opposite of its test. Not while
+            the error banner shows, because the banner has its own "Back to brackets". */}
+        {data.selectedBracketId && data.bracket && !data.selectedBracketError && (
           <BackToBracketsButton onBack={() => data.setSelectedBracketId(null)} />
         )}
 

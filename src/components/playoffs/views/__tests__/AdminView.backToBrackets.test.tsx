@@ -113,4 +113,17 @@ describe('AdminView "Back to brackets" button', () => {
 
     expect(screen.queryByRole('button', BACK)).not.toBeInTheDocument();
   });
+
+  // A bracket that loaded stays on screen when a later refresh fails (the query
+  // keeps its old data), and the error banner shows above it with its own button.
+  it('keeps exactly one button when a loaded bracket stays up after a failed refresh', () => {
+    renderBracketsTab({
+      selectedBracketId: 'bracket-1',
+      bracket: { id: 'bracket-1' } as PlayoffPageData['bracket'],
+      selectedBracketError: 'refresh failed',
+    });
+
+    expect(screen.getByTestId('bracket-detail')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', BACK)).toHaveLength(1);
+  });
 });
