@@ -146,6 +146,21 @@ test('names that exist only on Object.prototype never count as configured', () =
     assert.match(run.stderr, /not a configured check/, name);
   }
 });
+test('a check name that exists only on Object.prototype ends in the plain "No command" error, not a crash', () => {
+  const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
+  const taskFile = join(repo, '.factory', 'tasks', `${id}.json`);
+  const recordedBefore = Object.keys(JSON.parse(readFileSync(taskFile, 'utf8')).checks);
+  for (const name of ['constructor', '__proto__', 'toString']) {
+    const run = factory('check', id, name);
+    assert.equal(run.status, 1, `${name}: ${run.stdout}${run.stderr}`);
+    assert.match(run.stderr, /No command for check/, name);
+    assert.doesNotMatch(run.stdout + run.stderr, /TypeError/, name);
+    assert.equal(existsSync(join(repo, '.factory', 'evidence', id, `${name}.log`)), false, `${name}: no log file`);
+    assert.equal(Object.hasOwn(JSON.parse(factory('show', id).stdout).checks, name), false, `${name}: no recorded result`);
+    assert.doesNotMatch(readFileSync(taskFile, 'utf8'), new RegExp(`"${name}"\\s*:`), `${name}: the task file has no such key`);
+  }
+  assert.deepEqual(Object.keys(JSON.parse(readFileSync(taskFile, 'utf8')).checks), recordedBefore, 'no check record was added');
+});
 test('integrity fails when the base diff cannot be read', () => {
   const run = spawnSync('node', [cli, 'integrity'], { cwd: repo, encoding: 'utf8', env: { ...process.env, FACTORY_TASK_BASE: 'no-such-commit-0000' } });
   assert.equal(run.status, 1);
