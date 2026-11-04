@@ -42,11 +42,62 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "8e72c09afe7888afd408ca9f347701e2c8e98c97",
+      "dirty": false,
+      "at": "2026-11-04T13:23:20.790Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261104-add-a-back-to-brackets-b/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "8e72c09afe7888afd408ca9f347701e2c8e98c97",
+      "dirty": false,
+      "at": "2026-11-04T13:23:34.474Z",
+      "seconds": 14,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261104-add-a-back-to-brackets-b/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "8e72c09afe7888afd408ca9f347701e2c8e98c97",
+      "dirty": false,
+      "at": "2026-11-04T13:25:21.536Z",
+      "seconds": 107,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261104-add-a-back-to-brackets-b/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "8e72c09afe7888afd408ca9f347701e2c8e98c97",
+      "dirty": false,
+      "at": "2026-11-04T13:25:27.033Z",
+      "seconds": 5,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261104-add-a-back-to-brackets-b/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "8e72c09afe7888afd408ca9f347701e2c8e98c97",
+      "dirty": false,
+      "at": "2026-11-04T13:25:39.246Z",
+      "seconds": 12,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261104-add-a-back-to-brackets-b/build.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T12:57:04.256Z"
+  "updatedAt": "2026-11-04T13:25:39.246Z"
 }
