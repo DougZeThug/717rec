@@ -194,6 +194,19 @@ test('ordinary parentheses are not a nest', () => {
   assert.equal(bash('git commit -m "fix (a) and (b) (see (c))"'), null, 'parentheses in a commit message');
   assert.equal(bash('echo $(( 1 + 2 ))'), null, 'arithmetic');
 });
+test('a run of close parens in quoted text does not lower the depth count below zero', () => {
+  // 200 close parens come first, then a nest of 250. If the count could go below zero it would start at -200 and the nest
+  // would only reach 50, under the limit, so the command would be checked slowly (about 1 s) instead of blocked at once.
+  const { decision, elapsed } = timed(`echo "${')'.repeat(200)}" ${nested(250, 'echo hi')}`);
+  assert.ok(decision?.block, 'the nest after the close parens is blocked');
+  assert.match(decision.block, NEST_REASON);
+  assert.ok(elapsed < 500, `took ${elapsed} ms`);
+});
+test('a heredoc body full of substitution text does not count toward the cap', () => {
+  // The body is data. 400 `$(` inside it must not trip the count of 300.
+  const body = Array.from({ length: 400 }, () => '$(echo hi)').join(' ');
+  assert.equal(bash(`cat > notes.txt <<'EOF'\n${body}\nEOF`), null);
+});
 // Two pins on the memory of bodies already checked (firstVisit). Each fails if that memory is changed the wrong way.
 test('a body first seen where the depth limit stops the look is still checked where it is shallow', () => {
   // The body `echo $(rm .env) tail` is met twice: deep inside the quoted nest, where the depth limit hides its inner `$( )`,
@@ -337,6 +350,31 @@ test('a bare push or a HEAD push on a protected branch is blocked inside a const
     'HEAD, error redirect': push('origin HEAD 2>/dev/null'),
     'bare push, file redirect': push('>log.txt'),
   }, 'main'), []);
+});
+// The tidy reading cuts at the closing paren, so text glued after it looks like a named branch and the push seems to have a target.
+// The plain reading must still see a push that names no branch, so nothing the earlier rule blocked is let through.
+test('a push that names no branch is blocked on a protected branch when text is glued after its closer', () => {
+  const bare = ['git', 'push'].join(' ');
+  const cases = {
+    'remote only, dot after the paren inside quotes': `echo "$(${push('origin')})."`,
+    'remote only, text after the paren': `echo $(${push('origin')})x`,
+    'bare push, a second substitution glued on': `echo $(${bare})$(date)`,
+    'remote only, array index': `a[$(${push('origin')})]=1`,
+    'remote only, text after the backtick': `echo ${BT}${push('origin')}${BT}x`,
+  };
+  assert.deepEqual(notBlocked(cases, 'main'), []);
+  // Off a protected branch the same pushes are ordinary.
+  assert.deepEqual(notAllowed(cases, 'factory/x'), []);
+});
+test('a protected name inside braces or brackets after a push word is not a branch name', () => {
+  // Cutting at `{ } [ ]` once made these prose lines look like pushes to main. A real push to main inside a group or a subscript is still found by the paren cut.
+  assert.deepEqual(notAllowed({
+    'brackets in a commit message': `git commit -m "Close the ${['git', 'push'].join(' ')} gap [main]"`,
+    'braces in a commit message': `git commit -m "The ${['git', 'push'].join(' ')} guard {main}"`,
+    'brackets after a feature push': push('origin factory/x [main]'),
+  }), []);
+  assert.ok(bash(`{ ${push('origin main')}; }`)?.block, 'a group');
+  assert.ok(bash(`a[$(${push('origin main')})]=1`)?.block, 'a subscript');
 });
 test('a closing paren inside quotes does not hide a protected branch after it', () => {
   assert.ok(bash(push('origin "x)" main'))?.block);

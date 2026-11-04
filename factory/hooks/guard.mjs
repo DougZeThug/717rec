@@ -31,25 +31,36 @@ const HEREDOC = /((?<!<)<<(?!<)-?\s*['"]?(\w+)['"]?[^\n]*)\n[\s\S]*?\n\s*\2\b/g;
 // The shell removes every quote mark of a word: ma""in, ma''in and m"a"in are all the word main.
 const unquote = (word) => word.replace(/['"]/g, '');
 
+// Judges one list of push words. Returns a block, or null.
+const judgePush = (words, cfg, branch) => {
+  const refs = words.filter((word) => !word.startsWith('-'));
+  // Line 20 sees only a lone -f. A short flag group that holds f (-fu, -uf) and a +ref also force. A -- flag never matches.
+  // Two plain tests, not one pattern with two open-ended parts: that pattern is slow on a very long word.
+  if (words.some((word) => /^-[a-zA-Z]+$/.test(word) && word.includes('f')) || refs.some((ref) => ref.startsWith('+'))) return { block: 'A force push (-f in a flag group, or a +ref) is blocked: use --force-with-lease on your own branch, and the human pushes to a protected branch.' };
+  // A bare HEAD means "the branch I am on".
+  const targets = refs.slice(1).map((ref) => ref.replace(/^\+/, '').split(':').pop().replace(/^refs\/heads\//, '')).map((target) => (target === 'HEAD' ? branch : target));
+  const hitsProtected = targets.some((target) => cfg.protectedBranches.includes(target)) || (targets.length === 0 && cfg.protectedBranches.includes(branch));
+  return hitsProtected ? { block: `Pushing to ${cfg.protectedBranches.join('/')} is blocked. Push a feature branch and open a PR.` } : null;
+};
+
 const checkPush = (cmd, cfg, branch) => {
   for (const push of cmd.matchAll(/git\s+push\b([^\n;&|]*)/g)) {
     // The match stops at ; & | and a newline only, so a closing paren, a backtick or a redirect can still be glued to the last word
-    // (`$(git push origin main)`, `git push origin main>/dev/null`). Drop each redirect and what is glued to it, then cut at
-    // whitespace, parens, backticks, braces and brackets. A lone number left from `2>/dev/null` is a file descriptor, not a ref.
-    const words = push[1]
-      .replace(/(^|[\s()`{}[\]])\d+(?=[<>])/g, '$1')
+    // (`$(git push origin main)`, `git push origin main>/dev/null`). Each push is read two ways, and a block from either one wins.
+    // Tidy reading: drop each redirect and what is glued to it, then cut at whitespace, parens and backticks. Braces and brackets
+    // stay inside a word: `{main}` and `[main]` are not the branch `main`, and cutting there only blocked prose.
+    // A lone number left from `2>/dev/null` is a file descriptor, not a ref. This reading sees `main` in `$(git push origin main)`.
+    const tidy = push[1]
+      .replace(/(^|[\s()`])\d+(?=[<>])/g, '$1')
       .replace(/[<>]+[^\s<>()`]*/g, ' ')
-      .split(/[\s()`{}[\]]+/)
+      .split(/[\s()`]+/)
       .map(unquote)
       .filter(Boolean);
-    const refs = words.filter((word) => !word.startsWith('-'));
-    // Line 20 sees only a lone -f. A short flag group that holds f (-fu, -uf) and a +ref also force. A -- flag never matches.
-    // Two plain tests, not one pattern with two open-ended parts: that pattern is slow on a very long word.
-    if (words.some((word) => /^-[a-zA-Z]+$/.test(word) && word.includes('f')) ||refs.some((ref) => ref.startsWith('+'))) return { block: 'A force push (-f in a flag group, or a +ref) is blocked: use --force-with-lease on your own branch, and the human pushes to a protected branch.' };
-    // A bare HEAD means "the branch I am on".
-    const targets = refs.slice(1).map((ref) => ref.replace(/^\+/, '').split(':').pop().replace(/^refs\/heads\//, '')).map((target) => (target === 'HEAD' ? branch : target));
-    const hitsProtected = targets.some((target) => cfg.protectedBranches.includes(target)) || (targets.length === 0 && cfg.protectedBranches.includes(branch));
-    if (hitsProtected) return { block: `Pushing to ${cfg.protectedBranches.join('/')} is blocked. Push a feature branch and open a PR.` };
+    // Plain reading: cut at whitespace only. This is what the rule did before the tidy reading, so everything it blocked stays blocked.
+    // Without it, `echo "$(git push origin)."` on a protected branch would slip through: the tidy reading takes the glued `.` for a named branch.
+    const plain = push[1].split(/\s+/).map(unquote).filter(Boolean);
+    const verdict = judgePush(tidy, cfg, branch) ?? judgePush(plain, cfg, branch);
+    if (verdict) return verdict;
   }
   return null;
 };
@@ -336,7 +347,10 @@ const bashChecks = (text, toolInput, cfg, branch, root, startDir) => checkBlocke
 
 // A fail-closed cap. The substitution checks cost more with every level of nesting and every `$(` beside another.
 // A very deep or very wide command could run past the hook time limit, and what a timeout does is not known.
-// So such a command is blocked before any check reads it. Both counts are linear and cheap. Normal commands stay far below them.
+// So such a command is blocked before any check reads it. Normal commands stay far below both limits.
+// The cap bounds NESTING, not size. The paren count is one pass. The substitution count first removes heredoc bodies with the same
+// pattern the checks use, and that pattern is slow on a very large command with thousands of heredoc openers that never close.
+// A command that large can still run past the hook time limit (see the README, "Not covered").
 const MAX_NEST_DEPTH = 64;
 const MAX_SUBSTITUTIONS = 300;
 // The deepest run of open parens. A close paren lowers the count, but never below 0.
@@ -360,7 +374,7 @@ const decideBash = (toolInput, cfg, branch, root, startDir) => {
   const written = String(toolInput.command ?? '');
   const joined = joinContinuations(written);
   // Both texts are measured: a join can make `$` + backslash-newline + `(` into a `$(` that the written text does not show.
-  if (nestedTooMuch(written) || nestedTooMuch(joined)) return { block: 'This command nests substitutions too deeply to check safely. Split it into smaller commands.' };
+  if (nestedTooMuch(written) || (joined !== written && nestedTooMuch(joined))) return { block: 'This command nests substitutions too deeply to check safely. Split it into smaller commands.' };
   const first = bashChecks(written, toolInput, cfg, branch, root, startDir);
   if (first?.block) return first;
   if (joined === written) return first;
