@@ -1,0 +1,48 @@
+{
+  "id": "T-261104-playoffs-follow-ups-back",
+  "title": "Playoffs follow-ups: Back replaces history, docs wording and totals",
+  "kind": "polish",
+  "status": "planned",
+  "request": "Follow-up to the Back to brackets task. Doug said yes to: (1) use replace instead of push when a bracket is closed, so the phone Back button does not re-open it; (4) fix the small docs wording nits and the stale checklist totals in verification/README.md.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "93f791b9fe7358f7b5ba3898d923756e2f5f2b74",
+  "createdAt": "2026-11-04T14:34:33.355Z",
+  "criteria": [
+    {
+      "text": "Closing a bracket uses a history REPLACE, not a push, on every route that closes one (the Back to brackets button, the error banner button, and deleting a bracket). Opening a bracket still pushes. A hook test for each is written first (RED, then GREEN).",
+      "done": false
+    },
+    {
+      "text": "Real browser proof of the history stack with the fake data (390 px, touch): open the list, open a bracket, press Back to brackets, then press the browser Back. Report the URL after each step. Also the direct-link case (open /playoffs?bracket=<id> first). Report the real behaviour honestly, including any extra Back step.",
+      "done": false
+    },
+    {
+      "text": "Docs follow the code: the cache time limit (a bracket stays cached 5 minutes after its last use), the scroll sentence, the pill wording in the Playoffs page row and in checklist rows PLAYOFF-25 and PLAYOFF-29 (a dot on a phone), the Loading bracket banner wording, one line in read-a-bracket.md about the new spinner, and the history behaviour (state diagram, Cancel and interrupt rows, a checklist row). Every sentence checked against the code.",
+      "done": false
+    },
+    {
+      "text": "The totals in docs/product-description/verification/README.md are recounted with a script and match the checklist files. The counting method is stated in the commit.",
+      "done": false
+    },
+    {
+      "text": "Two code comments are corrected to match the code: SeasonSelector.tsx (it says the component is mounted twice; check what is true) and PlayoffView.tsx (the Loading bracket banner is the only banner with a Back button).",
+      "done": false
+    },
+    {
+      "text": "Nothing else changes: existing playoff tests pass, no test is skipped or weakened, and the real tap test still works (open a bracket, press Back to brackets, the list shows, the address loses bracket=).",
+      "done": false
+    },
+    {
+      "text": "All required repo checks pass on the final commit and a fresh independent reviewer approves it. Left alone and reported.",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-04T14:34:33.795Z"
+}
