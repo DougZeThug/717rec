@@ -38,11 +38,62 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "bcfe095b91e6abe1deb29aede51e9e3c30258b88",
+      "dirty": false,
+      "at": "2026-11-04T14:48:03.153Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261104-playoffs-follow-ups-back/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "bcfe095b91e6abe1deb29aede51e9e3c30258b88",
+      "dirty": false,
+      "at": "2026-11-04T14:48:19.211Z",
+      "seconds": 16,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261104-playoffs-follow-ups-back/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "bcfe095b91e6abe1deb29aede51e9e3c30258b88",
+      "dirty": false,
+      "at": "2026-11-04T14:50:18.628Z",
+      "seconds": 119,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261104-playoffs-follow-ups-back/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "bcfe095b91e6abe1deb29aede51e9e3c30258b88",
+      "dirty": false,
+      "at": "2026-11-04T14:50:22.753Z",
+      "seconds": 4,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261104-playoffs-follow-ups-back/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "bcfe095b91e6abe1deb29aede51e9e3c30258b88",
+      "dirty": false,
+      "at": "2026-11-04T14:50:29.559Z",
+      "seconds": 7,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261104-playoffs-follow-ups-back/build.log"
+    }
+  },
   "reviews": [],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T14:34:33.795Z"
+  "updatedAt": "2026-11-04T14:50:29.560Z"
 }
