@@ -118,25 +118,47 @@ test('a required check and an unconfigured name both refuse a substitute command
 test('a refused "-- <cmd>" override runs nothing and leaves no trace', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
   const marker = `${repo}-ran`;
+  // extra-note is not configured. extra is configured but not required (an earlier test added it to the config).
+  const refusals = [['extra-note', /not a configured check/], ['extra', /override is not supported/]];
   try {
-    const run = factory('check', id, 'extra-note', '--', `node -e "require('node:fs').writeFileSync('${marker}', 'x')"`);
-    assert.notEqual(run.status, 0);
-    assert.match(run.stderr, /not a configured check/);
-    assert.equal(existsSync(marker), false, 'the command must not run');
-    assert.equal(existsSync(join(repo, '.factory', 'evidence', id, 'extra-note.log')), false, 'no log file');
-    assert.equal(Object.hasOwn(JSON.parse(factory('show', id).stdout).checks, 'extra-note'), false, 'no recorded result');
+    for (const [name, refusal] of refusals) {
+      const run = factory('check', id, name, '--', `node -e "require('node:fs').writeFileSync('${marker}', 'x')"`);
+      assert.notEqual(run.status, 0, name);
+      assert.match(run.stderr, refusal, name);
+      assert.equal(existsSync(marker), false, `${name}: the command must not run`);
+      assert.equal(existsSync(join(repo, '.factory', 'evidence', id, `${name}.log`)), false, `${name}: no log file`);
+      assert.equal(Object.hasOwn(JSON.parse(factory('show', id).stdout).checks, name), false, `${name}: no recorded result`);
+    }
   } finally {
     rmSync(marker, { force: true });
   }
 });
-test('a configured check that is not required still accepts a "-- <cmd>" override', () => {
+// DELIBERATE PRODUCT DECISION by Doug (task T-261104-factory-hardening-follow), not a weakened test.
+// This test replaces one that proved a configured, not-required check ACCEPTED a "-- <cmd>" override.
+// That old behaviour is removed on purpose: the allow rule for this CLI would run any such command with no prompt.
+// The override is now refused for every name. The checks run their configured command only.
+test('a configured check that is not required also refuses a "-- <cmd>" override', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];
   const configured = JSON.parse(readFileSync(join(repo, '.factory', 'config.json'), 'utf8')).verify;
   assert.ok(Object.hasOwn(configured.checks, 'extra'), 'extra must be configured by an earlier test');
   assert.ok(!configured.required.includes('extra'), 'extra must not be required');
-  const run = factory('check', id, 'extra', '--', 'node -e "0"');
-  assert.equal(run.status, 0, run.stdout + run.stderr);
-  assert.equal(JSON.parse(factory('show', id).stdout).checks.extra.cmd, 'node -e "0"', 'the override ran, not the configured command');
+  const marker = `${repo}-ran-extra`;
+  try {
+    const run = factory('check', id, 'extra', '--', `node -e "require('node:fs').writeFileSync('${marker}', 'x')"`);
+    assert.notEqual(run.status, 0, run.stdout + run.stderr);
+    assert.match(run.stderr, /override is not supported/);
+    assert.match(run.stderr, /configured command only/);
+    assert.match(run.stderr, /\.factory\/config\.json verify\.checks/);
+    assert.equal(existsSync(marker), false, 'the override command must not run');
+    assert.equal(existsSync(join(repo, '.factory', 'evidence', id, 'extra.log')), false, 'no log file');
+    assert.equal(Object.hasOwn(JSON.parse(factory('show', id).stdout).checks, 'extra'), false, 'no recorded result');
+  } finally {
+    rmSync(marker, { force: true });
+  }
+  // The refusal is only for the override. Without it, the configured command still runs.
+  const plain = factory('check', id, 'extra');
+  assert.equal(plain.status, 0, plain.stdout + plain.stderr);
+  assert.equal(JSON.parse(factory('show', id).stdout).checks.extra.cmd, configured.checks.extra, 'the configured command ran');
 });
 test('names that exist only on Object.prototype never count as configured', () => {
   const id = factory('status').stdout.match(/T-\d+-first-thing/)[0];

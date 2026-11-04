@@ -138,9 +138,11 @@ const sub = {
     if (required && sep >= 0) die(`"${name}" is a required check. It runs its configured command only: no "-- <cmd>" override.`);
     // The allow list runs this CLI without a prompt, so an override must not turn an unknown name into a shell. hasOwn keeps "__proto__" and "constructor" out.
     if (sep >= 0 && !required && !Object.hasOwn(cfg.verify.checks ?? {}, name)) die(`"${name}" is not a configured check, so it cannot run a "-- <cmd>" override. Add it to .factory/config.json verify.checks first.`);
+    // Doug's decision: no check accepts an override, not even a configured one that is not required. The allow list would run it with no prompt.
+    if (sep >= 0) die(`The "-- <cmd>" override is not supported. "${name}" runs its configured command only. To change the command, edit .factory/config.json verify.checks.`);
     // hasOwn, not a plain lookup: a name like "constructor" or "__proto__" would otherwise pick up a member of Object.prototype.
     const configured = Object.hasOwn(cfg.verify.checks ?? {}, name) ? cfg.verify.checks[name] : undefined;
-    const cmd = sep >= 0 ? rest.slice(sep + 1).join(' ') : (configured ?? (required && Object.hasOwn(BUILTIN_CHECKS, name) ? BUILTIN_CHECKS[name] : undefined));
+    const cmd = configured ?? (required && Object.hasOwn(BUILTIN_CHECKS, name) ? BUILTIN_CHECKS[name] : undefined);
     if (!cmd) die(`No command for check "${name}". Add it to .factory/config.json verify.checks.`);
     mkdirSync(join(evDir, id), { recursive: true });
     const started = Date.now();
