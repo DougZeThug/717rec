@@ -33,7 +33,15 @@ const unquote = (word) => word.replace(/['"]/g, '');
 
 const checkPush = (cmd, cfg, branch) => {
   for (const push of cmd.matchAll(/git\s+push\b([^\n;&|]*)/g)) {
-    const words = push[1].split(/\s+/).map(unquote).filter(Boolean);
+    // The match stops at ; & | and a newline only, so a closing paren, a backtick or a redirect can still be glued to the last word
+    // (`$(git push origin main)`, `git push origin main>/dev/null`). Drop each redirect and what is glued to it, then cut at
+    // whitespace, parens, backticks, braces and brackets. A lone number left from `2>/dev/null` is a file descriptor, not a ref.
+    const words = push[1]
+      .replace(/(^|[\s()`{}[\]])\d+(?=[<>])/g, '$1')
+      .replace(/[<>]+[^\s<>()`]*/g, ' ')
+      .split(/[\s()`{}[\]]+/)
+      .map(unquote)
+      .filter(Boolean);
     const refs = words.filter((word) => !word.startsWith('-'));
     // Line 20 sees only a lone -f. A short flag group that holds f (-fu, -uf) and a +ref also force. A -- flag never matches.
     // Two plain tests, not one pattern with two open-ended parts: that pattern is slow on a very long word.
@@ -326,14 +334,35 @@ const bashChecks = (text, toolInput, cfg, branch, root, startDir) => checkBlocke
   ?? checkStagedSecrets(text, toolInput)
   ?? checkControlPlaneWrites(text, cfg, startDir, root);
 
+// A fail-closed cap. The substitution checks cost more with every level of nesting and every `$(` beside another.
+// A very deep or very wide command could run past the hook time limit, and what a timeout does is not known.
+// So such a command is blocked before any check reads it. Both counts are linear and cheap. Normal commands stay far below them.
+const MAX_NEST_DEPTH = 64;
+const MAX_SUBSTITUTIONS = 300;
+// The deepest run of open parens. A close paren lowers the count, but never below 0.
+const parenDepth = (text) => {
+  let depth = 0;
+  let deepest = 0;
+  for (const ch of text) {
+    if (ch === '(') deepest = Math.max(deepest, ++depth);
+    else if (ch === ')' && depth > 0) depth--;
+  }
+  return deepest;
+};
+// How many `$(` the text holds. A heredoc body is data, so it is left out (the checks leave it out too).
+const substitutionCount = (text) => (text.replace(HEREDOC, '$1').match(/\$\(/g) ?? []).length;
+const nestedTooMuch = (text) => parenDepth(text) > MAX_NEST_DEPTH || substitutionCount(text) > MAX_SUBSTITUTIONS;
+
 // The shell does not always join a backslash-newline pair: a comment ends at the newline, and a quoted
 // heredoc body keeps the pair as plain text. A join can therefore hide a command that really runs.
 // So check the text as written AND the joined text. Any block wins. An ask from either text is kept.
 const decideBash = (toolInput, cfg, branch, root, startDir) => {
   const written = String(toolInput.command ?? '');
+  const joined = joinContinuations(written);
+  // Both texts are measured: a join can make `$` + backslash-newline + `(` into a `$(` that the written text does not show.
+  if (nestedTooMuch(written) || nestedTooMuch(joined)) return { block: 'This command nests substitutions too deeply to check safely. Split it into smaller commands.' };
   const first = bashChecks(written, toolInput, cfg, branch, root, startDir);
   if (first?.block) return first;
-  const joined = joinContinuations(written);
   if (joined === written) return first;
   const second = bashChecks(joined, toolInput, cfg, branch, root, startDir);
   return second?.block ? second : first ?? second;

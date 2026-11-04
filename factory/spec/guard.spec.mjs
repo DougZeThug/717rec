@@ -141,6 +141,74 @@ test('a nested attack is still found at a shallow depth and after a quoted paren
   assert.ok(bash(nested(8, 'rm -rf public'))?.block, 'eight deep, past the depth limit of the second look');
   assert.ok(bash(String.raw`echo $(grep ')' f) "$(echo $(rm -rf public))"`)?.block, 'a quoted paren, then a nested substitution');
 });
+// ---- A fail-closed cap on deep or wide nesting. Past 64 levels of parens, or past 300 `$(`, the command is blocked unread. ----
+// The checks cost more with every level and every sibling. A very deep or very wide command could run the hook past its time limit,
+// and nobody knows what a timeout does. So the guard refuses such a command with a plain reason.
+const BT = '`';
+const NEST_REASON = /nests substitutions too deeply/;
+const siblings = (count) => Array.from({ length: count }, (_, at) => `$(echo ${at})`).join(' ');
+// `levels` deep, and each level also holds `width` substitutions of its own.
+const wide = (levels, width) => (levels === 0 ? 'echo hi' : `echo ${siblings(width)} $(${wide(levels - 1, width)})`);
+const timed = (command) => {
+  const started = performance.now();
+  const decision = bash(command);
+  return { decision, elapsed: Math.round(performance.now() - started) };
+};
+test('a nest of 64 is allowed and a nest of 65 is blocked with a plain reason', () => {
+  assert.equal(bash(nested(64, 'echo hi')), null, 'depth 64 is allowed');
+  const decision = bash(nested(65, 'echo hi'));
+  assert.ok(decision?.block, 'depth 65 is blocked');
+  assert.match(decision.block, NEST_REASON);
+  assert.match(decision.block, /Split it into smaller commands/);
+});
+test('a very deep nest is blocked at once instead of being checked slowly', () => {
+  const { decision, elapsed } = timed(nested(400, 'echo hi'));
+  assert.ok(decision?.block, 'depth 400 is blocked');
+  assert.match(decision.block, NEST_REASON);
+  // Without the cap this command takes about 2 s. The block plus this bound prove the cap runs first.
+  assert.ok(elapsed < 500, `took ${elapsed} ms`);
+});
+test('many substitutions are blocked at once, even when no level is deeper than 64', () => {
+  // 64 levels with 10 siblings each: 704 `$(` in all, and the deepest paren is level 64. The count rule blocks it, not the depth rule.
+  const { decision, elapsed } = timed(wide(64, 10));
+  assert.ok(decision?.block, '64 levels with 10 siblings each is blocked');
+  assert.match(decision.block, NEST_REASON);
+  assert.ok(elapsed < 500, `took ${elapsed} ms`);
+  assert.equal(bash(`echo ${siblings(300)}`), null, '300 side by side are allowed');
+  assert.match(bash(`echo ${siblings(301)}`)?.block ?? '', NEST_REASON, '301 side by side are blocked');
+});
+test('a line continuation cannot hide a wide nest from the count', () => {
+  // The shell joins a dollar sign, a backslash, a newline and an open paren into `$(`. The count must read the joined text as well.
+  const hidden = '$\\\n(echo hi)';
+  const decision = bash(`echo ${Array.from({ length: 301 }, () => hidden).join(' ')}`);
+  assert.ok(decision?.block, '301 hidden substitutions are blocked');
+  assert.match(decision.block, NEST_REASON);
+});
+test('the cap does not hide a real finding: a protected delete at depth 60 is blocked for the right reason', () => {
+  const decision = bash(nested(60, ['rm', '-rf', 'public'].join(' ')));
+  assert.ok(decision?.block, 'the delete is blocked');
+  assert.match(decision.block, /is protected/);
+  assert.doesNotMatch(decision.block, NEST_REASON);
+});
+test('ordinary parentheses are not a nest', () => {
+  assert.equal(bash('git commit -m "fix (a) and (b) (see (c))"'), null, 'parentheses in a commit message');
+  assert.equal(bash('echo $(( 1 + 2 ))'), null, 'arithmetic');
+});
+// Two pins on the memory of bodies already checked (firstVisit). Each fails if that memory is changed the wrong way.
+test('a body first seen where the depth limit stops the look is still checked where it is shallow', () => {
+  // The body `echo $(rm .env) tail` is met twice: deep inside the quoted nest, where the depth limit hides its inner `$( )`,
+  // and again as a top-level backtick. The memory must key on the depth too. Keyed on the body alone, the deep visit
+  // would mark it as seen and the shallow visit would be skipped, so the delete would be allowed.
+  const body = `echo $(${['rm', '.env'].join(' ')}) tail`;
+  const command = `"echo $(echo $(echo $(${BT}${body}${BT}) tail) tail) tail" ; ${BT}${body}${BT}`;
+  assert.ok(bash(command)?.block, 'the delete in the shallow visit is found');
+});
+test('one harmless command nested 64 deep is checked in well under a second', () => {
+  // Without the memory this takes about 4.5 s. With it, a few milliseconds.
+  const { decision, elapsed } = timed(nested(64, 'echo hi'));
+  assert.equal(decision, null, 'a harmless nest of 64 is allowed');
+  assert.ok(elapsed < 500, `took ${elapsed} ms`);
+});
 test('escape handling keeps working for the allowed and the already-blocked forms', () => {
   // Built by concatenation: a String.raw literal cannot end in a backslash. Shell text: echo \\"; rm -rf public; echo "
   assert.equal(bash(['echo \\\\', '"; rm -rf public; echo "'].join('')), null, 'an escaped backslash, then a real quoted string: inert');
@@ -221,6 +289,78 @@ test('the force-flag check stays fast on a very long flag word', () => {
 test('safe push forms stay allowed next to the force rules', () => {
   const allowed = [push('-u origin factory/x'), push('--force-with-lease -u origin factory/x'), `${push('origin factory/x')} && rm -rf dist`, push('--follow-tags origin factory/x'), push('--set-upstream origin factory/x'), push('-o ci.skip origin factory/x')];
   for (const command of allowed) assert.equal(bash(command), null, command);
+});
+// ---- A push to a protected branch inside a construct, or with a redirect glued to the last word ----
+// The shell reads a closing paren, a backtick or a redirect as its own token. The push check must not see it glued to a name.
+// Each helper returns the labels that were NOT blocked, so one failing run lists every form that got through.
+const notBlocked = (cases, branch = 'factory/x') => Object.entries(cases).filter(([, command]) => !bash(command, branch)?.block).map(([label]) => label);
+const notAllowed = (cases, branch = 'factory/x') => Object.entries(cases).filter(([, command]) => bash(command, branch) !== null).map(([label]) => label);
+test('a push to a protected branch is blocked inside a substitution, a subshell or a process substitution', () => {
+  const main = push('origin main');
+  assert.deepEqual(notBlocked({
+    'dollar-paren': `echo $(${main})`,
+    backticks: `echo ${BT}${main}${BT}`,
+    'process substitution in': `cat <(${main})`,
+    'process substitution out': `tee >(${main})`,
+    'subshell with no space': `(${main})`,
+    'inside double quotes': `echo "$(${main})"`,
+    'two substitutions deep': `echo $(echo $(${main}))`,
+    'single-quoted name': `echo $(${push("origin 'main'")})`,
+    'double-quoted name inside double quotes': `echo "$(${push('origin "main"')})"`,
+    'text glued after the paren': `echo $(${main})x`,
+    'redirect glued after the paren': `(${main})2>&1`,
+    'redirect after the paren': `(${main}) 2>&1`,
+    'two substitutions side by side': `echo $(${main})$(date)`,
+    'text glued after the backtick': `echo ${BT}${main}${BT}x`,
+    'parameter default': `echo \${x:-$(${main})}`,
+    'array index': `a[$(${main})]=1`,
+    'full ref name': `echo $(${push('origin HEAD:refs/heads/main')})`,
+  }), []);
+});
+test('a push to a protected branch is blocked with a redirect glued to it', () => {
+  assert.deepEqual(notBlocked({
+    'redirect glued to the name': `${push('origin main')}>/dev/null`,
+    'redirect after a space': `${push('origin main')} >log.txt`,
+    'error redirect': `${push('origin main')} 2>/dev/null`,
+    'comment after the name': `${push('origin main')} #note`,
+    'tab between the words': ['git', 'push', 'origin', 'main'].join('\t'),
+    'a second ref after the name': push('origin main extra'),
+  }), []);
+});
+test('a bare push or a HEAD push on a protected branch is blocked inside a construct or beside a redirect', () => {
+  assert.deepEqual(notBlocked({
+    'HEAD in a substitution': `echo $(${push('origin HEAD')})`,
+    'bare push in a substitution': `echo $(${['git', 'push'].join(' ')})`,
+    'bare push, error redirect': push('2>/dev/null'),
+    'bare push, flag and error redirect': push('-q 2>/dev/null'),
+    'remote only, error redirect': push('origin 2>/dev/null'),
+    'HEAD, error redirect': push('origin HEAD 2>/dev/null'),
+    'bare push, file redirect': push('>log.txt'),
+  }, 'main'), []);
+});
+test('a closing paren inside quotes does not hide a protected branch after it', () => {
+  assert.ok(bash(push('origin "x)" main'))?.block);
+  assert.ok(bash(push("origin 'x)' main"))?.block);
+});
+// Only a number written right before a redirect sign (2>/dev/null) is a file descriptor. A remote named with digits is a word of its own,
+// and a filter that dropped every all-digit word would hide the branch after it.
+test('a remote named with digits does not hide a protected branch after it', () => {
+  assert.ok(bash(push('1 main'))?.block);
+  assert.ok(bash(push('-u 2 main'))?.block);
+  assert.ok(bash(`echo $(${push('3 main')})`)?.block);
+});
+test('safe pushes stay allowed inside constructs and beside redirects', () => {
+  assert.deepEqual(notAllowed({
+    'feature branch in a substitution': `echo $(${push('origin factory/x')})`,
+    'plain feature push': push('-u origin factory/x'),
+    'merged error output': `${push('-u origin factory/x')} 2>&1`,
+    'output to a file': `${push('-u origin factory/x')} > out.txt`,
+    'output to a file named like main.log': `${push('-u origin factory/x')} > main.log`,
+    'inside an if': `if ${push('origin factory/x')}; then echo ok; fi`,
+    'commit message with parens and a redirect sign, then a push': `git commit -m "fix (a) > b" && ${push('origin factory/x')}`,
+    'commit message with a closing paren and a redirect sign, then a push': `git commit -m "x) > y" && ${push('-u origin factory/x')}`,
+    'HEAD in a substitution, off the protected branch': `echo $(${push('origin HEAD')})`,
+  }), []);
 });
 test('hard resets, forced cleans and the short hook-skip flag are blocked', () => {
   const gitCmd = (rest) => ['git', rest].join(' ');
