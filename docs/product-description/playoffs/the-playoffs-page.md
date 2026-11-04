@@ -158,6 +158,10 @@ has no spinner: the list stays until the bracket arrives. The "Loading bracket"
 error banner has its own "Back to brackets" button, so the new button is not drawn
 while that banner shows. The page never has two.
 
+Opening a bracket adds a step to the browser history. Closing one replaces that
+step, so the browser Back button never opens a bracket the reader just closed. See
+[Cancel and interrupt](#cancel-and-interrupt).
+
 When the subscription is live, a green signal sits in the bottom-right corner. On
 a screen 768 pixels wide or more it is a small pill reading "Live updates
 enabled". On a phone it is only a pulsing green dot, above the tab bar. The dot
@@ -193,7 +197,7 @@ none. A league in its first season therefore never sees it.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket. The "Back to brackets" button above the bracket and browser back are the ways out of one. |
 | In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not. An in-flight load is abandoned. |
-| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
+| Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Closing a bracket with "Back to brackets", after a failed load or after a delete replaces its history step instead of adding one, so Back never opens that bracket again. The first Back press after that lands on the earlier list step and shows no change. The next press leaves the page. A link that opened straight on a bracket has one step, so Back leaves at once. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
 | Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. |
 | Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill (a dot on a phone) disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
 | The request fails or times out | Each failing request gets its own banner, stacked above the list: "Loading brackets" and "Loading divisions" for the list, "Loading bracket" for the chosen one. The brackets banner has a "Try again" button. | The chosen bracket failing shows a "Loading bracket" banner with both "Try again" and "Back to brackets". **"Back to brackets" is the only thing that clears `?bracket=<id>`**, so without it a reload just retries the same broken bracket forever. |
