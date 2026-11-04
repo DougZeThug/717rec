@@ -447,6 +447,8 @@ const Schedule = () => {
             hasAnyTimeslots={Object.keys(groupedTimeslots).length > 0}
             hasFilters={hasFilters}
             onClearFilters={clearFilters}
+            searchTerm={searchTerm}
+            onClearSearch={() => setSearchTerm('')}
             timeslotsLoading={timeslotsLoading}
             hasMatchesOnSelectedDate={hasMatchesOnSelectedDate}
             lastPlayedDate={lastPlayedDate}

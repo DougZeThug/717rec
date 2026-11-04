@@ -142,6 +142,98 @@ describe('ScheduleContent', () => {
     expect(setActiveTab).toHaveBeenCalledWith('completed');
   });
 
+  // A search that finds nothing used to say "No Upcoming Matches ... check back
+  // soon", a claim about the league that the search caused.
+  describe('a search that finds nothing', () => {
+    it('says nothing matches, names what was typed, and offers to clear it', async () => {
+      const onClearSearch = vi.fn();
+      renderContent({ activeTab: 'upcoming', searchTerm: 'zzzz', onClearSearch });
+
+      expect(screen.getByRole('heading', { name: 'No matches' })).toBeInTheDocument();
+      expect(screen.getByText(/Nothing matches "zzzz"/)).toBeInTheDocument();
+      expect(screen.queryByText('No Upcoming Matches')).not.toBeInTheDocument();
+      expect(screen.queryByText(/check back soon/i)).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Clear search' }));
+      expect(onClearSearch).toHaveBeenCalledTimes(1);
+    });
+
+    it('does the same on the completed tab, not "No Completed Matches"', () => {
+      renderContent({ activeTab: 'completed', searchTerm: 'zzzz', onClearSearch: vi.fn() });
+
+      expect(screen.getByRole('heading', { name: 'No matches' })).toBeInTheDocument();
+      expect(screen.queryByText('No Completed Matches')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument();
+    });
+
+    it('treats spaces alone as no search, and keeps the ordinary empty state', () => {
+      renderContent({ activeTab: 'upcoming', searchTerm: '   ', onClearSearch: vi.fn() });
+
+      expect(screen.getByText('No Upcoming Matches')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+    });
+
+    it('keeps the ordinary empty state when nothing was typed', () => {
+      renderContent({ activeTab: 'upcoming', searchTerm: '', onClearSearch: vi.fn() });
+
+      expect(screen.getByText('No Upcoming Matches')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+    });
+
+    it('lets a division or My team chip win, because it is the likelier cause', () => {
+      renderContent({
+        activeTab: 'upcoming',
+        searchTerm: 'zzzz',
+        hasFilters: true,
+        onClearFilters: vi.fn(),
+        onClearSearch: vi.fn(),
+      });
+
+      expect(screen.getByText('No matches match these filters')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+    });
+
+    it('shows no clear button when the page gave it nothing to call', () => {
+      renderContent({ activeTab: 'upcoming', searchTerm: 'zzzz' });
+
+      expect(screen.getByRole('heading', { name: 'No matches' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+    });
+
+    it('cuts a very long word short so it cannot push the page sideways', () => {
+      const longWord = 'x'.repeat(80);
+      renderContent({ activeTab: 'upcoming', searchTerm: longWord, onClearSearch: vi.fn() });
+
+      expect(screen.queryByText(new RegExp(longWord))).not.toBeInTheDocument();
+      expect(screen.getByText(/Nothing matches "x{20,40}…"/)).toBeInTheDocument();
+    });
+
+    it('does not touch the timeslots tab, which the search does not apply to', () => {
+      renderContent({
+        activeTab: 'timeslots',
+        searchTerm: 'zzzz',
+        onClearSearch: vi.fn(),
+        hasMatchesOnSelectedDate: false,
+      });
+
+      expect(screen.getByText('Nothing scheduled for Wed Jul 15')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+      expect(screen.queryByText('No matches')).not.toBeInTheDocument();
+    });
+
+    it('does not show the search message when there are matches to list', () => {
+      renderContent({
+        activeTab: 'upcoming',
+        searchTerm: 'alpha',
+        onClearSearch: vi.fn(),
+        filteredMatches: [buildMatch({ id: 'm1', date: '2026-07-15', iscompleted: false })],
+      });
+
+      expect(screen.queryByText('No matches')).not.toBeInTheDocument();
+      expect(screen.getAllByTestId('date-match-group')).toHaveLength(1);
+    });
+  });
+
   // UX audit SC-01: a date with no timeslots and no matches rendered a bare
   // "No timeslots scheduled for this date." card with nothing to do next.
   describe('the timeslots tab with nothing scheduled', () => {

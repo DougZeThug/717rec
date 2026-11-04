@@ -126,9 +126,15 @@ anywhere outside it, closes it too.
 
 **The search box.** It matches, case-insensitively, against either team's name or
 the match's location. It applies to Upcoming and Completed and does nothing to
-Timeslots. There is no clear button and no result count. Searching to zero
-results gives the ordinary "No Upcoming Matches" empty state, not a
-search-specific one.
+Timeslots. There is no clear button in the box itself and no result count.
+Searching to zero results gives its own empty state, "No matches", which repeats
+what was typed (cut off after thirty characters) and has a **Clear search**
+button that empties the box. That message replaces the season-level "No Upcoming
+Matches" and "No Completed Matches", which would blame the league for what the
+search did. A division or My team chip that is also on wins: the filtered-out
+message below is shown instead, because a chip is the likelier cause. Spaces
+alone are not a search for this message, so they still give the ordinary empty
+state.
 
 **The division chips.** One chip per *display* division, so a league running
 "Competitive High" and "Competitive Low" shows one **Competitive** chip covering
@@ -274,6 +280,10 @@ ordinary pageview.
   date looks selected.
 - **The search box searches locations too**, so typing a venue name finds matches
   the user was not looking for by team.
+- **Spaces alone still narrow the list.** The filter looks for those spaces in a
+  team name or location, finds none, and the page then shows the ordinary "No
+  Upcoming Matches" state, with no Clear search button, because the page does
+  not count spaces as a search.
 - **Expanding a later timeslot on the Timeslots tab can collapse again** when the
   minute poll brings back changed data.
 - **A completed match with no game wins recorded** shows "0 – 0" under a "Final"
@@ -307,7 +317,8 @@ ordinary pageview.
 
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit item W8 (the division and My team chips) and for the phone polish of
-the schedule page (the calendar picker closing after a pick, and each phone
-carousel date opening with its first time group showing). Those passages
+the schedule page (the calendar picker closing after a pick, each phone carousel
+date opening with its first time group showing, and a search with no hits getting
+its own message). Those passages
 were written from the change and its tests, not from a fresh pass over the
 running app.
