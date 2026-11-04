@@ -1,0 +1,56 @@
+{
+  "id": "T-261104-factory-hardening-follow",
+  "title": "Factory hardening follow-up: guard gaps, check override, trivial gate",
+  "kind": "build",
+  "status": "planned",
+  "request": "Doug said yes to the factory hardening follow-up: (1) a trivial task must still be blocked by a recorded REJECT or CHANGES review; (2) refuse the check -- <cmd> override for every check; (3) close the push-to-a-protected-branch gap inside $( ), backticks, <( ), >( ), a subshell and a glued redirect; (4) stop the F check constructor crash; (5) a fail-closed cap on deep nesting in the guard; (6) README wording fixes plus the smoke-test result; (7) two test pins. Doug also confirmed by hand on 2026-11-04 that the hook ask prompted him in Auto mode, even when an allow rule matched.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "824a8d434af9c4497f6a98b1b63bb4085c827e7f",
+  "createdAt": "2026-11-04T15:33:39.112Z",
+  "criteria": [
+    {
+      "text": "F check <id> constructor, __proto__ and toString end with a plain No command for check error (exit 1): no TypeError, and no check record is written. Test first (RED on the old code).",
+      "done": false
+    },
+    {
+      "text": "F check <id> <name> -- <cmd> is refused for EVERY name (required, configured, or unknown): nothing runs and no record is written. The old test that expected a configured, not-required check to accept the override is replaced by its inverse. That is a deliberate decision by Doug (follow-up yes), not a weakened test. Test first.",
+      "done": false
+    },
+    {
+      "text": "A --trivial task whose latest code review is CHANGES or REJECT is NOT ready. A trivial task with an APPROVE, or with no review at all, still passes. Test first. factory/PIPELINE.md (two places) and the README line say so.",
+      "done": false
+    },
+    {
+      "text": "The guard blocks a push to a protected branch inside $( ), backticks, <( ), >( ), a no-space subshell and with a redirect glued to the branch word. Controls stay true: a quoted ) before main is still blocked, and a feature-branch push inside $( ) is still allowed. Tests first: they fail on the old guard (I saw the old guard allow all six).",
+      "done": false
+    },
+    {
+      "text": "A command that nests more than 64 levels deep is BLOCKED by the guard (fail closed) with a plain reason, in well under a second. A command nested 60 deep is still checked normally. Real timings before and after are saved (before: 100 deep 216 ms, 250 deep 1039 ms, 400 deep 4270 ms).",
+      "done": false
+    },
+    {
+      "text": "Two test pins: (a) a test that fails if the visited-set key stopped including the depth, and (b) a deeper timing test with a generous bound. Each is shown to fail when the thing it pins is broken (mutation run).",
+      "done": false
+    },
+    {
+      "text": "factory/README.md: the three wording fixes (the quoted-heredoc form needs a second EOF line; the quote-nesting limit also holds for a single-quoted word with a double quote; deep-nest timings vary by machine), the smoke-test result (dated 2026-11-04: Doug saw a prompt for both tests, so the hook ask prompted in Auto mode and beat an allow rule), and every known-limit line this task fixes is rewritten. Nothing else in the README changes meaning.",
+      "done": false
+    },
+    {
+      "text": "The guard was developed on a COPY and installed in one step: the installed factory/hooks/guard.mjs is byte-identical (sha256) to the copy that passed the specs, and node --check passes on it. The hook was never left in a broken state.",
+      "done": false
+    },
+    {
+      "text": "All required repo checks and the factory-specs check pass on the final commit, and a fresh independent reviewer approves it. Left alone and reported: git -C and git -c push or commit forms, the secret scan skip for those forms, the other documented limits.",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-04T15:33:39.649Z"
+}
