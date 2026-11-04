@@ -144,18 +144,19 @@ which returns to the automatic choice.
 
 Choosing a bracket does three things at once: it sets `?bracket=<id>`, it starts
 loading that bracket, and it starts a realtime subscription to that bracket's
-matches. While the bracket loads, the page scrolls to the top and shows a spinner
-reading "Loading bracket..." in place of the list. A bracket opened earlier is
-already in the cache and opens at once. The drawn bracket replaces the spinner
-when the data has arrived and its id matches the one asked for. If the load
-fails, the list comes back with a "Loading bracket" banner above it.
+matches. The page scrolls to the top. While the bracket loads, it shows a spinner
+reading "Loading bracket..." in place of the list. A bracket that was on screen in
+the last five minutes is still in the cache and opens at once. The drawn bracket
+replaces the spinner when the data has arrived and its id matches the one asked
+for. If the load fails, the list comes back with a "Loading bracket" banner above
+it.
 
 A "Back to brackets" button sits above the spinner, and then above the drawn
 bracket. Pressing it clears `?bracket=<id>`, shows the division list and scrolls
 to the top. The admin Brackets tab has the same button above an open bracket. It
-has no spinner: the list stays until the bracket arrives. The error banner has
-its own "Back to brackets" button, so the new button is not drawn while the
-banner shows. The page never has two.
+has no spinner: the list stays until the bracket arrives. The "Loading bracket"
+error banner has its own "Back to brackets" button, so the new button is not drawn
+while that banner shows. The page never has two.
 
 When the subscription is live, a green signal sits in the bottom-right corner. On
 a screen 768 pixels wide or more it is a small pill reading "Live updates
@@ -194,7 +195,7 @@ none. A league in its first season therefore never sees it.
 | In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not. An in-flight load is abandoned. |
 | Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
 | Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. |
-| Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
+| Network lost mid-request | The page shows its loading spinner and then the failure banners for whichever request failed. | The realtime pill (a dot on a phone) disappears. The bracket keeps showing what it last had. Nothing is queued; the next refetch recovers. |
 | The request fails or times out | Each failing request gets its own banner, stacked above the list: "Loading brackets" and "Loading divisions" for the list, "Loading bracket" for the chosen one. The brackets banner has a "Try again" button. | The chosen bracket failing shows a "Loading bracket" banner with both "Try again" and "Back to brackets". **"Back to brackets" is the only thing that clears `?bracket=<id>`**, so without it a reload just retries the same broken bracket forever. |
 | The session expires | No effect. Everything on this page is public to read. | No effect for a player. An admin keeps seeing the admin controls and their next write fails. |
 | The same record changed in another tab, or by another user | Not applicable before arriving. | **This is normal here, not an edge case.** With a bracket open, a score entered by an admin arrives over realtime and the bracket redraws with a toast. The bracket *list* has no subscription: a bracket created, renamed, or deleted elsewhere is invisible until the page is remounted. |
@@ -252,8 +253,8 @@ is announced as a status. The bracket that then replaces it is not announced —
 screen reader user is moved to new content with no warning that it happened.
 
 **Side effects the user can notice.** None from viewing. Opening a bracket
-preloads its data into the cache, which is why a bracket opened once and closed
-opens again instantly.
+preloads its data into the cache, which is why a bracket that was on screen in the
+last five minutes opens again instantly.
 
 ## Edge cases
 
@@ -301,7 +302,8 @@ opens again instantly.
 - **Realtime here contradicts the foundations.**
   [`foundations/saving-and-freshness.md`](../foundations/saving-and-freshness.md)
   says realtime exists only on live scoring. This page opens two subscriptions
-  and shows a "Live updates enabled" pill. The foundation needs correcting.
+  and shows a "Live updates enabled" pill (a dot on a phone). The foundation needs
+  correcting.
 - **No route resets scroll position, but `/stats`, `/insights` and `/history`
   restore it and `/playoffs` does not.** Returning to a long bracket list by
   browser back leaves the user wherever the browser puts them.

@@ -19,7 +19,9 @@ are defined in
 
 ## The simple case
 
-A player presses "View Live Bracket". A progress bar counts through four steps —
+A player presses "View Live Bracket". The Playoffs page first shows its own
+"Loading bracket..." spinner (see [the Playoffs page](the-playoffs-page.md)). A
+progress bar counts through four steps —
 "Loading bracket info...", "Fetching stage & participants...", "Loading
 matches...", "Fetching team details..." — and then the bracket appears inside a
 card.
