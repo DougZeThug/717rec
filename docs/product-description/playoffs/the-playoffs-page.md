@@ -57,7 +57,7 @@ stateDiagram-v2
     loading --> empty : no divisions to show
     list --> opening : press View Live Bracket (adds ?bracket=<id>)
     opening --> detail : the bracket arrived
-    opening --> list : nothing to draw (a legacy bracket)
+    opening --> list : nothing to draw (a legacy bracket), or Back to brackets
     detail --> list : browser back, or Back to brackets
     list --> failed : a list request failed
     failed --> list : press Try again
@@ -127,9 +127,9 @@ season, not the admin tab.
 
 ### Begin editing
 
-There is no editing here for a player. The page has exactly two controls: the
-season dropdown and the per-bracket buttons. Neither makes the page dirty,
-because neither is a form.
+There is no editing here for a player. The page has three kinds of control: the
+season dropdown, the per-bracket buttons and, above an open bracket, a "Back to
+brackets" button. None of them makes the page dirty, because none is a form.
 
 An admin sees more: a Brackets/Teams tab strip, a Create Bracket button on an
 empty division, a Delete button beside each bracket, and — inside a bracket — a
@@ -149,6 +149,12 @@ reading "Loading bracket..." in place of the list. A bracket opened earlier is
 already in the cache and opens at once. The drawn bracket replaces the spinner
 when the data has arrived and its id matches the one asked for. If the load
 fails, the list comes back with a "Loading bracket" banner above it.
+
+A "Back to brackets" button sits above the spinner, and then above the drawn
+bracket. Pressing it clears `?bracket=<id>`, shows the division list and scrolls
+to the top. The admin Brackets tab has the same button. While the list is
+showing, the button is not drawn. So a failed load still has one "Back to
+brackets" button: the one in the banner.
 
 When the subscription is live, a green signal sits in the bottom-right corner. On
 a screen 768 pixels wide or more it is a small pill reading "Live updates
@@ -174,7 +180,7 @@ admin writes.
 | The record's state | A bracket's state decides its button and its badge: pending and in-progress read "View Live Bracket", completed reads "View Final Results" and carries a grey "Completed" badge. A bracket not built with the current engine carries a "Legacy" badge. | A bracket completing while the page is open changes the drawn bracket over realtime, but the list behind it keeps the old button until the page refetches. |
 | The season's state | The page prefers a season named in the address, then the open bracket's own season, then the season with playoffs active, then the active season. When the last two differ, a banner says so by name. An archived season is selectable and shows its brackets frozen. | Changing the season in the dropdown reloads the list and closes any open bracket, because that bracket belongs to the season being left. |
 | Viewport | The season picker sits under the heading on every screen size. On a wide screen the admin toolbar buttons are a row. On a phone they collapse into one **⋯** menu. | No effect beyond re-flowing on rotation. |
-| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the season dropdown, then each bracket button in turn. | Escape closes the season dropdown. Arrow keys move within it. Nothing else. |
+| Keys the page honours | Nothing is focused on arrival and there are no shortcuts. Tab reaches the season dropdown, then each bracket button in turn. With a bracket open, it reaches "Back to brackets" right after the dropdown. | Escape closes the season dropdown. Arrow keys move within it. Nothing else. |
 
 The season picker is **absent, not disabled**, when the league has one season or
 none. A league in its first season therefore never sees it.
@@ -183,7 +189,7 @@ none. A league in its first season therefore never sees it.
 
 | Event | Before the first edit | While editing or submitting |
 | --- | --- | --- |
-| Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket — "Back to brackets" and browser back are the only ways out of one, and "Back to brackets" appears only when the bracket failed to load. |
+| Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes the season dropdown if it is open. It does not close an open bracket. The "Back to brackets" button above the bracket and browser back are the ways out of one. |
 | In-app navigation away, or switching tab within the page | Nothing is lost, because nothing was entered. The realtime subscription closes. | The admin's Brackets/Teams choice is remembered for the browser session and restored on return. The chosen season is not. An in-flight load is abandoned. |
 | Browser back or forward | Returns to the previous page. Nothing is recorded. | Back from an open bracket removes `?bracket=<id>` and returns to the list, which is the intended way out. Forward re-opens it. Back over a season chosen from the picker restores the previous season, and the picker follows. Scroll position is not restored on this route. |
 | Reload, or the tab closed | Reloads the page from scratch. | The bracket and the season are both in the address, so a reload returns to the same bracket under the same season. |
@@ -308,6 +314,7 @@ opens again instantly.
   the page explains it, and the only sign is the overlap banner.
 
 Verified against `717rec` commit `ea5c8f4`, except the wait after "View Live
-Bracket" and the phone "Live updates" dot above. Both changed after that commit.
-Neither is a triaged bug. The season picker is described as the code has it now:
+Bracket", the "Back to brackets" button above an open bracket and the phone "Live
+updates" dot above. All three changed after that commit. None is a triaged bug.
+The season picker is described as the code has it now:
 under the heading on every screen size.
