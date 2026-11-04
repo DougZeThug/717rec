@@ -2,7 +2,7 @@
   "id": "T-261104-factory-hardening-follow",
   "title": "Factory hardening follow-up: guard gaps, check override, trivial gate",
   "kind": "build",
-  "status": "building",
+  "status": "repairing",
   "request": "Doug said yes to the factory hardening follow-up: (1) a trivial task must still be blocked by a recorded REJECT or CHANGES review; (2) refuse the check -- <cmd> override for every check; (3) close the push-to-a-protected-branch gap inside $( ), backticks, <( ), >( ), a subshell and a glued redirect; (4) stop the F check constructor crash; (5) a fail-closed cap on deep nesting in the guard; (6) README wording fixes plus the smoke-test result; (7) two test pins. Doug also confirmed by hand on 2026-11-04 that the hook ask prompted him in Auto mode, even when an allow rule matched.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
@@ -134,9 +134,54 @@
       "summary": "Fresh reviewer: CHANGES. (1) REGRESSION, verified: a bare 'push' or 'push <remote>' on a protected branch, inside $( ) or backticks or an array subscript, with text glued after the closer, was blocked by the old guard and is allowed now. (2) The paren floor in parenDepth has no test. (3) New false positives: a protected name in ( ) [ ] { } after a push word in a commit message or PR body. (4) The cap does not bound run time for a very large body. (5) parenDepth counts parens inside quotes. (6) Some mutants survive. (7) README says F resolve crashes on a prototype key; it does not. CLI changes A1-A3 reviewed as fine."
     }
   ],
-  "issues": {},
+  "issues": {
+    "review1-push-regression": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-04T18:46:50.350Z",
+          "summary": "Read each push two ways (tidy and plain); a block from either wins. Zero regressions against the old guard on 729 curated pushes, 420 spec inputs, 166 normal commands, 374 depth cases and 3 fuzz seeds checked against real bash."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in e6fcced and 68eaf29, verified by test and by corpus"
+    },
+    "review1-test-gaps": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-04T18:46:50.392Z",
+          "summary": "Added tests for the paren floor, for a heredoc body not counting toward the cap, for the push with glued text, and for braces and brackets. Six deliberate breakages of the guard are each caught by a test."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in e6fcced and 68eaf29, verified by test and by corpus"
+    },
+    "review1-false-positives": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-04T18:46:50.452Z",
+          "summary": "Braces and brackets no longer cut the words of a push. Fewer prose false positives with no push missed. The README lists the ones that remain."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in e6fcced and 68eaf29, verified by test and by corpus"
+    },
+    "review1-doc-gaps": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-04T18:46:50.500Z",
+          "summary": "README: size limit with measured times, parens in quotes, the repair and resolve prototype-key wording checked by running the CLI. The comment on the cap no longer calls the counts cheap."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in e6fcced and 68eaf29, verified by test and by corpus"
+    }
+  },
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-04T18:16:39.297Z"
+  "updatedAt": "2026-11-04T18:46:50.718Z"
 }
