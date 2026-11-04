@@ -1,0 +1,19 @@
+{
+  "id": "T-261104-polish-the-schedule-page",
+  "title": "Polish the schedule page for mobile",
+  "kind": "polish",
+  "status": "intake",
+  "request": "the schedule page on mobile",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "e83e613f6cc550d674defb6bb81eeced34fa444d",
+  "createdAt": "2026-11-04T19:10:23.534Z",
+  "criteria": [],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-04T19:10:23.534Z"
+}
