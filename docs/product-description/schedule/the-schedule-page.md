@@ -171,7 +171,7 @@ that own their own commits.
 | The user's role (visitor, player, admin) | A visitor and a player see the same page. A player who may score one of the listed matches also sees "Live score this match" on that card. An admin additionally sees an Edit and a Delete button on every card. | Admin granted or revoked elsewhere does not reach this page until something re-fetches the profile. The buttons stay as they were. |
 | The record's state | Each match's own state decides which card it gets and which tab it appears in. Completed matches are only in Completed, everything else only in Upcoming — including a match whose result was never recorded, which counts as Upcoming rather than falling out of both tabs. | A match completed elsewhere does not move between tabs here until the schedule is re-fetched, which this page does not do on its own. |
 | The season's state (active, archived, playoffs on) | Only the active season's matches are ever listed. With no active season the page is empty rather than broken. Archived seasons are read at [`history/past-seasons.md`](../history/past-seasons.md). | A season activated elsewhere does not reach this page until a reload. |
-| Viewport | On a wide screen every date group is stacked down the page and time groups lay their cards out in up to three columns. On a narrow screen the date groups become a **swipeable carousel**: one date at a time, with Previous and Next, a row of dots, and a "Swipe to see more dates" hint. | Rotating a phone to landscape can cross the breakpoint and swap the stacked list for the carousel, losing which groups were open. |
+| Viewport | On a wide screen every date group is stacked down the page and time groups lay their cards out in up to three columns. On a narrow screen the date groups become a **swipeable carousel**: one date at a time, with Previous and Next, a row of dots, and a "Swipe to see more dates" hint. With more than nine dates the dots give way to text such as "3 of 19", so Previous and Next always stay on the screen. | Rotating a phone to landscape can cross the breakpoint and swap the stacked list for the carousel, losing which groups were open. |
 | Keys the form honours | Nothing is focused on arrival. Tab reaches the date strip, the search box, the calendar button, the tabs, and every group heading. | Left and Right arrows move between the three tabs. Escape closes the calendar popover, as does picking a day. Enter or Space opens and closes a group. There are no shortcuts and no type-ahead. |
 
 ## Cancel and interrupt
@@ -253,7 +253,8 @@ list scrolls under it.
 **Accessibility.** Every group heading is a real button and reports whether it is
 expanded. The date strip's buttons are reachable by Tab but announce only a
 weekday and a number, not the full date or whether that date has matches. The
-carousel's dots carry full dates. The tab bar keeps a 44-pixel touch height.
+carousel's dots carry full dates. With more than nine dates they are replaced by
+a text counter such as "3 of 19", which is announced when it changes. The tab bar keeps a 44-pixel touch height.
 
 **Side effects the user can notice.** The page publishes its first twenty upcoming
 matches as structured data for search engines, including team names, date,
@@ -318,7 +319,7 @@ ordinary pageview.
 Verified against `717rec` commit `ea5c8f4`, and amended alongside the code for
 UX audit item W8 (the division and My team chips) and for the phone polish of
 the schedule page (the calendar picker closing after a pick, each phone carousel
-date opening with its first time group showing, and a search with no hits getting
-its own message). Those passages
+date opening with its first time group showing, the "3 of 19" counter past nine
+dates, and a search with no hits getting its own message). Those passages
 were written from the change and its tests, not from a fresh pass over the
 running app.
