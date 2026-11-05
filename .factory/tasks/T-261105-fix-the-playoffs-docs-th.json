@@ -47,9 +47,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "c30ba412d0690e945c6e8d693cc5ee859944d79d",
+      "sha": "fe7af96d583fbb4ab30d15d9f1b1e03ef2bfd24c",
       "dirty": false,
-      "at": "2026-11-05T03:20:09.416Z",
+      "at": "2026-11-05T03:36:56.932Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/integrity.log"
@@ -57,40 +57,40 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "c30ba412d0690e945c6e8d693cc5ee859944d79d",
+      "sha": "fe7af96d583fbb4ab30d15d9f1b1e03ef2bfd24c",
       "dirty": false,
-      "at": "2026-11-05T03:20:19.977Z",
-      "seconds": 11,
+      "at": "2026-11-05T03:37:06.436Z",
+      "seconds": 9,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/typecheck.log"
     },
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "c30ba412d0690e945c6e8d693cc5ee859944d79d",
+      "sha": "fe7af96d583fbb4ab30d15d9f1b1e03ef2bfd24c",
       "dirty": false,
-      "at": "2026-11-05T03:21:55.150Z",
-      "seconds": 95,
+      "at": "2026-11-05T03:38:31.644Z",
+      "seconds": 85,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "c30ba412d0690e945c6e8d693cc5ee859944d79d",
+      "sha": "fe7af96d583fbb4ab30d15d9f1b1e03ef2bfd24c",
       "dirty": false,
-      "at": "2026-11-05T03:21:58.967Z",
-      "seconds": 4,
+      "at": "2026-11-05T03:38:34.864Z",
+      "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/knip.log"
     },
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "c30ba412d0690e945c6e8d693cc5ee859944d79d",
+      "sha": "fe7af96d583fbb4ab30d15d9f1b1e03ef2bfd24c",
       "dirty": false,
-      "at": "2026-11-05T03:22:03.646Z",
-      "seconds": 5,
+      "at": "2026-11-05T03:38:38.970Z",
+      "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/build.log"
     },
@@ -133,6 +133,13 @@
       "sha": "fe7af96d583fbb4ab30d15d9f1b1e03ef2bfd24c",
       "at": "2026-11-05T03:36:54.112Z",
       "summary": "Independent reviewer on c30ba41 (the URL-state fix Doug asked for): the new list is mostly true; found 1 wrong route name that I wrote (/profile-setup, the route is /setup-profile) and many more lines that say the opposite: navigation.md (record row, an edge case saying filters are lost on every navigation), compare-teams.md (two only-page claims) and COMPARE-27, schedule page doc and SCHED-15/33/34 (search, date, chips said lost on Back and reload; they come back), stats rows STAND-10/14/29 and the stats interrupt table, on-a-phone.md and PHONE-34, admin rows DASH-13/23, BUILD-34, BULK-34, LIVEFIX-31 and pending-scores.md (address said to be /admin only), league-objects, read-a-bracket, team-and-player-stats, contact doc and CONTACT-25, permissions and PERM-28. Verified by the reviewer: 0 broken links, totals 1,958 and 116, only markdown changed."
+    },
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "60184dc1a1183282254edd4e30a35d43b523d49a",
+      "at": "2026-11-05T03:41:33.307Z",
+      "summary": "Independent re-check on fb77e9a: every changed sentence verified (schedule Back, Forward, reload and link return in a real browser; stats view and sort; Compare; team hash; admin section ids from code; contact reads type, solo and source); 0 broken links, totals 1,958 and 116, markdown only. One blocker left: schedule/timeslot-preferences.md said the date is invisible to the URL, but the Timeslots tab reads the same selected night that the address holds (?date=). Smaller: league-objects counted three addressed objects (a season can also be named), seasons.md named a /standings route that does not exist (it is /stats), contact doc said /contact stays /contact, no chip pressed should be the All chip pressed, on-a-phone list needs for example."
     }
   ],
   "issues": {
@@ -168,6 +175,17 @@
       ],
       "escalated": false,
       "resolved": "fixed in the fourth docs commit; 2,704 links, 0 broken; totals unchanged; fresh review follows"
+    },
+    "review4-timeslot-url": {
+      "attempts": 1,
+      "history": [
+        {
+          "at": "2026-11-05T03:41:33.362Z",
+          "summary": "Fix the Timeslots doc sentence and the smaller points. Checked the code first: the Timeslots tab reads selectedDate from the URL hook."
+        }
+      ],
+      "escalated": false,
+      "resolved": "fixed in the fifth docs commit; links 0 broken; totals unchanged; delta re-check follows"
     }
   },
   "interventions": [
@@ -178,7 +196,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T03:36:54.196Z",
+  "updatedAt": "2026-11-05T03:41:33.410Z",
   "readySha": "673af161251667af7422eaddbecf23284a4567fc",
   "readyAt": "2026-11-05T02:03:36.845Z"
 }
