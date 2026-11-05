@@ -47,9 +47,9 @@
     "integrity": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "dirty": false,
-      "at": "2026-11-05T03:54:37.103Z",
+      "at": "2026-11-05T03:58:43.938Z",
       "seconds": 0,
       "cmd": "node factory/bin/factory.mjs integrity",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/integrity.log"
@@ -57,9 +57,9 @@
     "typecheck": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "dirty": false,
-      "at": "2026-11-05T03:54:46.734Z",
+      "at": "2026-11-05T03:58:53.699Z",
       "seconds": 10,
       "cmd": "npm run typecheck",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/typecheck.log"
@@ -67,19 +67,19 @@
     "lint": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "dirty": false,
-      "at": "2026-11-05T03:56:09.548Z",
-      "seconds": 83,
+      "at": "2026-11-05T04:00:20.659Z",
+      "seconds": 87,
       "cmd": "npm run lint",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/lint.log"
     },
     "knip": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "dirty": false,
-      "at": "2026-11-05T03:56:12.684Z",
+      "at": "2026-11-05T04:00:23.689Z",
       "seconds": 3,
       "cmd": "npm run knip",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/knip.log"
@@ -87,9 +87,9 @@
     "build": {
       "result": "pass",
       "exit": 0,
-      "sha": "aa5ed9306061d5752b732dec252555394ec866ad",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "dirty": false,
-      "at": "2026-11-05T03:56:16.405Z",
+      "at": "2026-11-05T04:00:27.399Z",
       "seconds": 4,
       "cmd": "npm run build",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/build.log"
@@ -97,10 +97,10 @@
     "unit": {
       "result": "pass",
       "exit": 0,
-      "sha": "673af161251667af7422eaddbecf23284a4567fc",
+      "sha": "85e2addba37f76f762c47be34fa968ada689c919",
       "dirty": false,
-      "at": "2026-11-05T02:02:47.537Z",
-      "seconds": 458,
+      "at": "2026-11-05T04:08:03.221Z",
+      "seconds": 456,
       "cmd": "npm run test:coverage",
       "log": ".factory/evidence/T-261105-fix-the-playoffs-docs-th/unit.log"
     }
@@ -268,7 +268,7 @@
   ],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T03:58:41.580Z",
+  "updatedAt": "2026-11-05T04:08:03.221Z",
   "readySha": "673af161251667af7422eaddbecf23284a4567fc",
   "readyAt": "2026-11-05T02:03:36.845Z"
 }
