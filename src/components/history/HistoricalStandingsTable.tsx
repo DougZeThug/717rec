@@ -35,10 +35,10 @@ interface HistoricalStandingsTableProps {
 }
 
 const getWinPercentageColor = (percentage: number): string => {
-  if (percentage >= 75) return 'text-green-600 dark:text-green-500';
-  if (percentage >= 60) return 'text-blue-600 dark:text-blue-500';
-  if (percentage >= 40) return 'text-orange-500 dark:text-orange-400';
-  return 'text-red-600 dark:text-red-500';
+  if (percentage >= 75) return 'text-green-700 dark:text-green-500';
+  if (percentage >= 60) return 'text-blue-600 dark:text-blue-400';
+  if (percentage >= 40) return 'text-orange-700 dark:text-orange-400';
+  return 'text-red-600 dark:text-red-400';
 };
 
 // Small stat cell for mobile grid — matches RankingCard style
@@ -135,8 +135,18 @@ const MobileTeamRow: React.FC<{
       >
         {/* Header row: badge + logo + name + record */}
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="size-4 text-yellow-500 shrink-0" />}
-          {team.runner_up && <Medal className="size-4 text-muted-foreground shrink-0" />}
+          {team.champion && (
+            <>
+              <Crown className="size-4 text-amber-700 dark:text-yellow-500 shrink-0" />
+              <span className="sr-only">Champion</span>
+            </>
+          )}
+          {team.runner_up && (
+            <>
+              <Medal className="size-4 text-muted-foreground shrink-0" />
+              <span className="sr-only">Runner-up</span>
+            </>
+          )}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}
@@ -145,7 +155,7 @@ const MobileTeamRow: React.FC<{
           />
           <span
             className={cn(
-              'font-semibold text-sm truncate',
+              'font-semibold text-sm line-clamp-2 break-words',
               isWinterTheme ? 'text-white' : 'text-foreground'
             )}
           >
@@ -215,8 +225,18 @@ const DesktopTeamRow: React.FC<{
       </div>
       <div className="py-2 px-2 flex-1 min-w-[120px]">
         <div className="flex items-center gap-2">
-          {team.champion && <Crown className="size-4 text-yellow-500 shrink-0" />}
-          {team.runner_up && <Medal className="size-4 text-muted-foreground shrink-0" />}
+          {team.champion && (
+            <>
+              <Crown className="size-4 text-amber-700 dark:text-yellow-500 shrink-0" />
+              <span className="sr-only">Champion</span>
+            </>
+          )}
+          {team.runner_up && (
+            <>
+              <Medal className="size-4 text-muted-foreground shrink-0" />
+              <span className="sr-only">Runner-up</span>
+            </>
+          )}
           <TeamLogo
             imageUrl={team.team_image_url || team.team_logo_url}
             teamName={team.team_name}

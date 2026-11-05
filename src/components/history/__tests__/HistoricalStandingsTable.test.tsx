@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -142,6 +142,64 @@ describe('HistoricalStandingsTable', () => {
     });
   });
 
+  describe.each([
+    ['desktop', false],
+    ['phone', true],
+  ])('champion and runner-up on a %s', (_layout, isMobile) => {
+    beforeEach(() => {
+      state.isMobile = isMobile;
+    });
+
+    const podium = () => (
+      <HistoricalStandingsTable
+        teams={[
+          team({ team_id: 'a', team_name: 'Alphas', champion: true, playoff_rank: 1 }),
+          team({ team_id: 'b', team_name: 'Bravos', runner_up: true, playoff_rank: 2 }),
+          team({ team_id: 'c', team_name: 'Charlies', playoff_rank: 3 }),
+        ]}
+      />
+    );
+
+    it('tells a screen reader who is the champion and who is the runner-up', () => {
+      render(podium());
+
+      // Each text sits next to the icon in its own team's row, and is hidden from the eye.
+      const champion = screen.getByText('Champion');
+      const runnerUp = screen.getByText('Runner-up');
+      expect(champion).toHaveClass('sr-only');
+      expect(runnerUp).toHaveClass('sr-only');
+      expect(champion.parentElement).toContainElement(screen.getByText('Alphas'));
+      expect(runnerUp.parentElement).toContainElement(screen.getByText('Bravos'));
+    });
+
+    it('says nothing extra for a team that did not finish first or second', () => {
+      render(podium());
+
+      const charlieRow = screen.getByText('Charlies').parentElement as HTMLElement;
+      expect(within(charlieRow).queryByText('Champion')).not.toBeInTheDocument();
+      expect(within(charlieRow).queryByText('Runner-up')).not.toBeInTheDocument();
+      expect(screen.getAllByText('Champion')).toHaveLength(1);
+      expect(screen.getAllByText('Runner-up')).toHaveLength(1);
+    });
+
+    it('keeps the crown and the medal hidden from a screen reader', () => {
+      const { container } = render(podium());
+
+      // The text above says it, so the pictures must not say it a second time.
+      expect(container.querySelector('.lucide-crown')).toHaveAttribute('aria-hidden', 'true');
+      expect(container.querySelector('.lucide-medal')).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('draws the crown in a darker amber that reads on a light card', () => {
+      const { container } = render(podium());
+
+      expect(container.querySelector('.lucide-crown')).toHaveClass(
+        'text-amber-700',
+        'dark:text-yellow-500'
+      );
+    });
+  });
+
   describe('on a desktop', () => {
     it('shows a header and one row of numbers per team', () => {
       render(<HistoricalStandingsTable teams={[team()]} />);
@@ -203,9 +261,9 @@ describe('HistoricalStandingsTable', () => {
         />
       );
 
-      expect(screen.getByText('80.0%')).toHaveClass('text-green-600');
+      expect(screen.getByText('80.0%')).toHaveClass('text-green-700');
       expect(screen.getByText('60.0%')).toHaveClass('text-blue-600');
-      expect(screen.getByText('50.0%')).toHaveClass('text-orange-500');
+      expect(screen.getByText('50.0%')).toHaveClass('text-orange-700');
       expect(screen.getByText('10.0%')).toHaveClass('text-red-600');
     });
 
