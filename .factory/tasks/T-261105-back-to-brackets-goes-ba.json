@@ -30,7 +30,68 @@
       "done": false
     }
   ],
-  "checks": {},
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "14422214f8f96e4557d7b534ac36be2d0ecd7a72",
+      "dirty": false,
+      "at": "2026-11-05T12:51:56.547Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261105-back-to-brackets-goes-ba/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "14422214f8f96e4557d7b534ac36be2d0ecd7a72",
+      "dirty": false,
+      "at": "2026-11-05T12:52:06.622Z",
+      "seconds": 10,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261105-back-to-brackets-goes-ba/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "14422214f8f96e4557d7b534ac36be2d0ecd7a72",
+      "dirty": false,
+      "at": "2026-11-05T12:53:28.636Z",
+      "seconds": 82,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261105-back-to-brackets-goes-ba/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "14422214f8f96e4557d7b534ac36be2d0ecd7a72",
+      "dirty": false,
+      "at": "2026-11-05T12:53:31.669Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261105-back-to-brackets-goes-ba/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "14422214f8f96e4557d7b534ac36be2d0ecd7a72",
+      "dirty": false,
+      "at": "2026-11-05T12:53:37.683Z",
+      "seconds": 6,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261105-back-to-brackets-goes-ba/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "14422214f8f96e4557d7b534ac36be2d0ecd7a72",
+      "dirty": false,
+      "at": "2026-11-05T13:01:12.852Z",
+      "seconds": 455,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261105-back-to-brackets-goes-ba/unit.log"
+    }
+  },
   "reviews": [
     {
       "mode": "plan",
@@ -44,5 +105,5 @@
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T12:38:53.708Z"
+  "updatedAt": "2026-11-05T13:01:12.852Z"
 }
