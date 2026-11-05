@@ -134,6 +134,17 @@ describe('ScheduleContent', () => {
     expect(screen.queryByTestId('date-match-group')).not.toBeInTheDocument();
   });
 
+  // The tab panel takes keyboard focus and the browser scrolls it to the top of
+  // the page, under the 60px sticky bar. scroll-mt-16 leaves room for the bar.
+  it.each(['timeslots', 'upcoming', 'completed'])(
+    'leaves room under the sticky bar when the %s panel is scrolled into view',
+    (activeTab) => {
+      renderContent({ activeTab });
+
+      expect(screen.getByRole('tabpanel')).toHaveClass('scroll-mt-16');
+    }
+  );
+
   it('calls setActiveTab when the Completed tab trigger is clicked (controlled tabs)', async () => {
     const { setActiveTab } = renderContent({ activeTab: 'upcoming', filteredMatches: [] });
 

@@ -365,7 +365,10 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <ScheduleTabsBar />
 
-        <TabsContent value="timeslots" className="mt-3">
+        {/* The tab panel takes keyboard focus, and the browser scrolls it to the very
+            top. That put the pager row under the 60px sticky bar. scroll-mt-16 leaves
+            room for the bar, as the pager buttons do in SwipeableDateGroups. */}
+        <TabsContent value="timeslots" className="mt-3 scroll-mt-16">
           {showNothingScheduled ? (
             <EmptyState
               icon={CalendarDays}
@@ -384,11 +387,11 @@ const ScheduleContent: React.FC<ScheduleContentProps> = ({
           )}
         </TabsContent>
 
-        <TabsContent value="upcoming" className="mt-3">
+        <TabsContent value="upcoming" className="mt-3 scroll-mt-16">
           {matchGroupsContent}
         </TabsContent>
 
-        <TabsContent value="completed" className="mt-3">
+        <TabsContent value="completed" className="mt-3 scroll-mt-16">
           {matchGroupsContent}
         </TabsContent>
       </Tabs>
