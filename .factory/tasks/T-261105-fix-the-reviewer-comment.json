@@ -2,18 +2,137 @@
   "id": "T-261105-fix-the-reviewer-comment",
   "title": "Fix the reviewer comments on PR 1729",
   "kind": "fix",
-  "status": "intake",
+  "status": "ready",
   "request": "Doug said: lets move onto the fixing the actual reviewers comments on the pr. PR #1729 has 44 open review threads (cubic P1/P2/P3 and React Doctor warnings). Verify each claim against the code, fix what is real in proportion, reply with a reason where not, resolve the threads.",
   "trivial": false,
   "branch": "claude/affectionate-dirac-icive8",
   "baseSha": "cbe00ddc8bab9322b67e2d92c96ba5a706f1f3cf",
   "createdAt": "2026-11-05T15:42:55.859Z",
-  "criteria": [],
-  "checks": {},
-  "reviews": [],
+  "criteria": [
+    {
+      "text": "Docs: every reviewer point that was right is fixed in the docs, with no broken link and the verification totals still true",
+      "done": true,
+      "evidence": "Docs: link check 2,737 links, 0 broken; verification totals recounted by script: 1,958 rows and 120 P1 suspected-bug rows, as the README says; cubic marked its docs notes Addressed; reviewer sampled 14 doc claims against the code, all hold"
+    },
+    {
+      "text": "React Doctor: MatchList, TeamBadge and PlayoffView pass React Doctor 0.9.14 with 0 findings and the pages behave as before",
+      "done": true,
+      "evidence": "React Doctor 0.9.14 found 0 issues on the three files; the React Doctor bot reported no new issues on commits 40c9944 and dd357c3; reviewer read old and new code line by line and ran 92 + 54 tests, all pass"
+    },
+    {
+      "text": "Selected view-toggle label reads at 4.5:1 or better in the light and dark themes",
+      "done": true,
+      "evidence": "Real browser, light and dark theme: selected toggle labels are white, lowest contrast 4.91:1, highest 5.13:1 (was 3.2:1 at the amber end); winter branch untouched; unit test pins the classes"
+    },
+    {
+      "text": "The signed-in header button shows only its icon below 640px, and the header fits from 320px to 768px",
+      "done": true,
+      "evidence": "Real browser with a stand-in button using the real classes: 44x44 at 320, 360, 375, 390px; header does not overlap or leave the screen at 320, 360, 375, 390, 640, 768px with a short and a 21-letter name; matches the signed-out header at 320px; unit test pins the classes"
+    },
+    {
+      "text": "The admin menu row does not run past its container at any width from 1280px to 1920px",
+      "done": true,
+      "evidence": "Real browser: admin row runs 0px past its container at 1280, 1340, 1380, 1420, 1500, 1920px; the old classes ran 11px past at 1420px and above (Admin link is a copy of a pill with the code's classes, no admin sign-in here)"
+    },
+    {
+      "text": "The home hero gap is 16px on phones and 32px from 768px, and no bracket-header bullet ends a line",
+      "done": true,
+      "evidence": "Real browser: hero gap 16px at 390px and 32px at 1280px; bracket header checked in 27 cases (3 brackets, 3 phone widths, 3 narrower widths each): no bullet ends a line"
+    },
+    {
+      "text": "Factory fixes: the settings rule is narrowed, the mock filters ranges, the guard loads its imports together, and all 117 factory specs pass",
+      "done": true,
+      "evidence": "node --test factory/spec: 117 of 117 pass after every factory change; settings rule is now node --test factory/spec/*.spec.mjs* with two new negative cases; mock filters gt/gte/lt/lte; guard loads imports together and reads its config in readConfig(); reviewer ran old and new guard on the same inputs, identical"
+    },
+    {
+      "text": "DeepSource: the 26 code-style findings are fixed with the behaviour unchanged, and every new-code line it listed as uncovered has a test that asserts real behaviour",
+      "done": true,
+      "evidence": "DeepSource: 25 of the 26 style findings fixed with behaviour unchanged (strings compared with a parser, 35 mock responses compared, installer run 16 times old versus new, all identical); the 26th (useRef(undefined)) is kept with a skipcq note because React 19 types require the argument (typecheck fails otherwise, reviewer confirmed in @types/react); all 24 uncovered lines now have tests, the four files measured at 100% by the builder; reviewer broke the new tests on purpose 47 times in a scratch copy and 46 were caught; six checks pass at 967818d"
+    }
+  ],
+  "checks": {
+    "integrity": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "dirty": false,
+      "at": "2026-11-05T16:54:50.809Z",
+      "seconds": 0,
+      "cmd": "node factory/bin/factory.mjs integrity",
+      "log": ".factory/evidence/T-261105-fix-the-reviewer-comment/integrity.log"
+    },
+    "typecheck": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "dirty": false,
+      "at": "2026-11-05T16:55:01.093Z",
+      "seconds": 10,
+      "cmd": "npm run typecheck",
+      "log": ".factory/evidence/T-261105-fix-the-reviewer-comment/typecheck.log"
+    },
+    "lint": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "dirty": false,
+      "at": "2026-11-05T16:56:27.732Z",
+      "seconds": 87,
+      "cmd": "npm run lint",
+      "log": ".factory/evidence/T-261105-fix-the-reviewer-comment/lint.log"
+    },
+    "knip": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "dirty": false,
+      "at": "2026-11-05T16:56:30.911Z",
+      "seconds": 3,
+      "cmd": "npm run knip",
+      "log": ".factory/evidence/T-261105-fix-the-reviewer-comment/knip.log"
+    },
+    "build": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "dirty": false,
+      "at": "2026-11-05T16:56:35.861Z",
+      "seconds": 5,
+      "cmd": "npm run build",
+      "log": ".factory/evidence/T-261105-fix-the-reviewer-comment/build.log"
+    },
+    "unit": {
+      "result": "pass",
+      "exit": 0,
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "dirty": false,
+      "at": "2026-11-05T17:04:30.210Z",
+      "seconds": 474,
+      "cmd": "npm run test:coverage",
+      "log": ".factory/evidence/T-261105-fix-the-reviewer-comment/unit.log"
+    }
+  },
+  "reviews": [
+    {
+      "mode": "code",
+      "verdict": "CHANGES",
+      "sha": "dd357c3508c44a97ac33f4cf6324f3b7a48aa30b",
+      "at": "2026-11-05T16:48:04.705Z",
+      "summary": "Independent review at dd357c3: one real finding. The signed-in header button is about 28px wide on a phone after the username was hidden, because it lost the min-w-11 tap target the Sign in button keeps (UserMenu.tsx). Everything else checked clean: React Doctor refactors keep behaviour, guard change is safe, settings change is one narrowed rule, 14 doc claims hold, counts match. Optional: the node --test rule's star still crosses a slash."
+    },
+    {
+      "mode": "code",
+      "verdict": "APPROVE",
+      "sha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+      "at": "2026-11-05T17:05:32.107Z",
+      "summary": "Independent review at 967818d, 8 areas inspected. guard.mjs change is one readConfig() helper; behaviour identical (old and new guard gave the same output and exit code on the same inputs, broken-config case run in a /tmp copy). install.mjs split: 16 runs old versus new, identical output and file trees. guard.spec: no assertion weakened. Mock: 59 responses compared, 0 differences. 47 deliberate breakages of the new tests in a scratch copy: 46 caught. No skip/todo/only/eslint-disable. skipcq claim true (React 19 types have no useRef call without an argument). Notes, none blocking: UserMenu sm:min-w-0 is not exactly the old auto width at 640px and wider (inferred); the hero card test has no http:// case; guard.mjs is a control file so the owner's approval is worth confirming."
+    }
+  ],
   "issues": {},
   "interventions": [],
   "notes": [],
   "waivers": [],
-  "updatedAt": "2026-11-05T15:42:55.859Z"
+  "updatedAt": "2026-11-05T17:05:38.080Z",
+  "readySha": "967818d332fd87e31b1fa42eb7c7014f408578f2",
+  "readyAt": "2026-11-05T17:05:38.080Z"
 }
