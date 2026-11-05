@@ -132,8 +132,8 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | --- | --- | --- |
 | Escape, or a Cancel button | No effect. There is no Cancel on this page. | Closes an open badge dialog. Nothing else. |
 | In-app navigation away, or switching tab within the page | Which sections were open is lost. Nothing else is held. | No effect; nothing is ever in flight from this page but reads. |
-| Browser back or forward | Leaves the page. Coming back gives a fresh page with the default sections and no memory of what was opened. **Back from here to `/teams` restores that list's scroll position**; the breadcrumb link to Teams does not, because it is a new navigation rather than a history move. | Same. |
-| Reload, or the tab closed | The page rebuilds from the database with every section closed again. | Same. |
+| Browser back or forward | Leaves the page. Coming back by a link gives a fresh page in the default arrangement, with no memory of what was opened. Coming back with Back to an address that holds a section hash (`#career`) opens that section as well. **Back from here to `/teams` restores that list's scroll position**; the breadcrumb link to Teams does not, because it is a new navigation rather than a history move. | Same. |
+| Reload, or the tab closed | The page rebuilds from the database in the default arrangement, Roster and Match History open and the rest closed, plus the section named in the address, if there is one. | Same. |
 | Network lost mid-request | The page stays a skeleton indefinitely, or shows a retry card if the read fails outright. There is no message that the network is the problem. | An open section that has not loaded shows its own retry card; the Advanced Stats block offers "We couldn't load advanced stats. Please try again." |
 | The request fails or times out | Reads are retried once. A failed team read gives the retry card; only a team that genuinely does not exist gives **Team Not Found**. | As above, per section. |
 | The session expires | No effect. Every part of this page is public. | No effect. |
@@ -141,8 +141,9 @@ Nothing is submitted. Every write that touches this team happens elsewhere.
 | Browser autofill or a password manager writes into the form | No effect. There are no fields. | No effect. |
 | The window loses focus | Nothing. | **Returning refetches the match history immediately and everything else if it is over five minutes old.** Numbers in an open section can change under the user. |
 
-After an interrupt the page is rebuilt from scratch with every section closed.
-Nothing about the arrangement survives leaving.
+After an interrupt the page is rebuilt from scratch in the default arrangement.
+The only part of the arrangement that survives is the section named in the address
+(`#career`), which opens again.
 
 ## Interactions with other systems
 
