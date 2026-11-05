@@ -34,6 +34,7 @@ const makeData = (overrides: Partial<PlayoffPageData>): PlayoffPageData =>
     isAdmin: true,
     selectedBracketId: null,
     setSelectedBracketId: vi.fn(),
+    closeBracket: vi.fn(),
     ready: true,
     error: null,
     divisionsError: null,
@@ -83,12 +84,17 @@ const isBefore = (first: HTMLElement, second: HTMLElement) =>
   Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
 
 describe('AdminView "Back to brackets" button', () => {
-  it('shows above an open bracket, and a tap clears the choice', async () => {
+  // The page decides how to go back (a step back in the history, or a swap in
+  // place). The button only asks it to close, so it must not clear the choice
+  // itself.
+  it('shows above an open bracket, and a tap closes it', async () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const closeBracket = vi.fn();
     const setSelectedBracketId = vi.fn();
     renderBracketsTab({
       selectedBracketId: 'bracket-1',
       bracket: { id: 'bracket-1' } as PlayoffPageData['bracket'],
+      closeBracket,
       setSelectedBracketId,
     });
 
@@ -97,8 +103,8 @@ describe('AdminView "Back to brackets" button', () => {
 
     await userEvent.click(button);
 
-    expect(setSelectedBracketId).toHaveBeenCalledTimes(1);
-    expect(setSelectedBracketId).toHaveBeenCalledWith(null);
+    expect(closeBracket).toHaveBeenCalledTimes(1);
+    expect(setSelectedBracketId).not.toHaveBeenCalled();
   });
 
   it('does not show beside the division list when no bracket is chosen', () => {

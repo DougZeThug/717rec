@@ -45,7 +45,7 @@ const PlayoffView: React.FC<PlayoffViewProps> = ({
           do not. So this one stays out while that banner shows: the list is back, or a
           loaded bracket stays up after a failed refresh. The page keeps exactly one. */}
       {!showList && !data.selectedBracketError && (
-        <BackToBracketsButton onBack={() => data.setSelectedBracketId(null)} />
+        <BackToBracketsButton onBack={() => data.closeBracket()} />
       )}
 
       {/* Tapping "View Live Bracket" used to leave the division list on screen

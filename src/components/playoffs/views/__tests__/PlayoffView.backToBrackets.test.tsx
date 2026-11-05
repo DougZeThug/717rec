@@ -24,6 +24,7 @@ const makeData = (overrides: Partial<PlayoffPageData> = {}): PlayoffPageData =>
     isAdmin: false,
     selectedBracketId: null,
     setSelectedBracketId: vi.fn(),
+    closeBracket: vi.fn(),
     ready: false,
     error: null,
     divisionsError: null,
@@ -73,14 +74,19 @@ afterEach(() => {
 });
 
 describe('PlayoffView "Back to brackets" button', () => {
-  it('shows above an open bracket, and a tap clears the choice and starts at the top', async () => {
+  // The page decides how to go back (a step back in the history, or a swap in
+  // place). The button only asks it to close, so it must not clear the choice
+  // itself.
+  it('shows above an open bracket, and a tap closes it and starts at the top', async () => {
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+    const closeBracket = vi.fn();
     const setSelectedBracketId = vi.fn();
     renderView(
       makeData({
         selectedBracketId: 'bracket-1',
         ready: true,
         bracket: { id: 'bracket-1' } as PlayoffPageData['bracket'],
+        closeBracket,
         setSelectedBracketId,
       })
     );
@@ -90,16 +96,22 @@ describe('PlayoffView "Back to brackets" button', () => {
 
     await userEvent.click(button);
 
-    expect(setSelectedBracketId).toHaveBeenCalledTimes(1);
-    expect(setSelectedBracketId).toHaveBeenCalledWith(null);
+    expect(closeBracket).toHaveBeenCalledTimes(1);
+    expect(setSelectedBracketId).not.toHaveBeenCalled();
     expect(scrollTo).toHaveBeenCalledTimes(1);
     expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
   });
 
   it('shows above the "Loading bracket..." spinner, so a slow load has a way back', async () => {
+    const closeBracket = vi.fn();
     const setSelectedBracketId = vi.fn();
     renderView(
-      makeData({ selectedBracketId: 'bracket-1', bracket: undefined, setSelectedBracketId })
+      makeData({
+        selectedBracketId: 'bracket-1',
+        bracket: undefined,
+        closeBracket,
+        setSelectedBracketId,
+      })
     );
 
     const button = screen.getByRole('button', BACK);
@@ -107,7 +119,8 @@ describe('PlayoffView "Back to brackets" button', () => {
     expect(isBefore(button, screen.getByRole('status'))).toBe(true);
 
     await userEvent.click(button);
-    expect(setSelectedBracketId).toHaveBeenCalledWith(null);
+    expect(closeBracket).toHaveBeenCalledTimes(1);
+    expect(setSelectedBracketId).not.toHaveBeenCalled();
   });
 
   it('does not show beside the division list when no bracket is chosen', () => {

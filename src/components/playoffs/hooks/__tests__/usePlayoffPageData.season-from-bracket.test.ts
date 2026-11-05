@@ -15,10 +15,14 @@ const bracketRef = {
 
 /** The address bar, shared by the hook and the assertions. */
 let searchParams = new URLSearchParams();
-const setSearchParams = vi.fn((next: URLSearchParams, options?: { replace?: boolean }) => {
-  searchParams = new URLSearchParams(next);
-  return options;
-});
+const setSearchParams = vi.fn(
+  (next: URLSearchParams, options?: { replace?: boolean; state?: unknown }) => {
+    searchParams = new URLSearchParams(next);
+    return options;
+  }
+);
+/** The history entry the page is on. `state` holds the "opened from the list" mark. */
+const currentLocation: { state: unknown } = { state: null };
 
 vi.mock('@tanstack/react-query', async () => {
   const actual =
@@ -35,6 +39,8 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('react-router', () => ({
   useSearchParams: () => [searchParams, setSearchParams] as const,
+  useLocation: () => currentLocation,
+  useNavigate: () => vi.fn(),
 }));
 
 vi.mock('@/hooks/useSeasons', () => ({
@@ -80,6 +86,7 @@ import { usePlayoffPageData } from '../usePlayoffPageData';
 beforeEach(() => {
   vi.clearAllMocks();
   searchParams = new URLSearchParams();
+  currentLocation.state = null;
   playoffSeasonRef.current = { id: 'current-season' };
   activeSeasonRef.current = { id: 'current-season' };
   bracketRef.current = { data: null, isLoading: false, error: null };
@@ -151,9 +158,33 @@ describe('usePlayoffPageData season and the bracket in the URL', () => {
 
     renderHook(() => usePlayoffPageData());
 
-    expect(setSearchParams).toHaveBeenCalledWith(expect.any(URLSearchParams), { replace: true });
+    // The entry has no state here, so the write passes its own (null) along.
+    expect(setSearchParams).toHaveBeenCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+      state: null,
+    });
     expect(searchParams.get('season')).toBe('past-season');
     expect(searchParams.get('bracket')).toBe('b-past');
+  });
+
+  // Writing the season swaps the history entry. A swap with no state wipes it,
+  // and "Back to brackets" reads the "opened from the list" mark in that state.
+  it('keeps the "opened from the list" mark when it writes the season', () => {
+    searchParams = new URLSearchParams('bracket=b-past');
+    currentLocation.state = { fromList: true };
+    bracketRef.current = {
+      data: { id: 'b-past', seasonId: 'past-season' },
+      isLoading: false,
+      error: null,
+    };
+
+    renderHook(() => usePlayoffPageData());
+
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+      state: { fromList: true },
+    });
   });
 
   // Back and Forward change the address without remounting the page. Resolving

@@ -18,12 +18,17 @@ const { queryClient, deleteBracketService } = vi.hoisted(() => ({
 /** The address bar, shared by the hook and the assertions. */
 let searchParams = new URLSearchParams();
 // The second argument is typed so a test can read it: `{ replace: true }` swaps
-// the current history entry, no argument pushes a new one.
-const setSearchParams = vi.fn<(next: URLSearchParams, options?: { replace?: boolean }) => void>(
-  (next) => {
-    searchParams = new URLSearchParams(next);
-  }
-);
+// the current history entry, no argument pushes a new one. `state` is what the
+// new entry carries.
+const setSearchParams = vi.fn<
+  (next: URLSearchParams, options?: { replace?: boolean; state?: unknown }) => void
+>((next) => {
+  searchParams = new URLSearchParams(next);
+});
+/** The history entry the page is on. `state` holds the "opened from the list" mark. */
+const currentLocation: { state: unknown } = { state: null };
+/** Called with `-1` for one step back in the browser history. */
+const navigate = vi.fn();
 
 // Each test sets these once. The hook sees the same objects on every render,
 // as it would from a settled query.
@@ -38,6 +43,8 @@ vi.mock('@tanstack/react-query', async () => {
 
 vi.mock('react-router', () => ({
   useSearchParams: () => [searchParams, setSearchParams] as const,
+  useLocation: () => currentLocation,
+  useNavigate: () => navigate,
 }));
 
 vi.mock('@/hooks/useSeasons', () => ({
@@ -83,6 +90,7 @@ import { usePlayoffPageData } from '../usePlayoffPageData';
 
 beforeEach(() => {
   searchParams = new URLSearchParams();
+  currentLocation.state = null;
   divisionsRef.current = [];
   bracketsByDivisionRef.current = {};
   queryClient.invalidateQueries.mockImplementation(() => Promise.resolve());
@@ -146,7 +154,36 @@ describe('usePlayoffPageData setSelectedBracketId', () => {
     act(() => result.current.setSelectedBracketId('b-1'));
 
     expect(setSearchParams).toHaveBeenCalledTimes(1);
-    expect(setSearchParams.mock.lastCall?.[1]).toBeUndefined();
+    expect(setSearchParams.mock.lastCall?.[1]?.replace).toBeUndefined();
+  });
+
+  // The new entry is marked as opened from this page's own list. "Back to
+  // brackets" reads the mark to step back to that list.
+  it('marks the new history entry as opened from the list', () => {
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.setSelectedBracketId('b-1'));
+
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
+      state: { fromList: true },
+    });
+  });
+
+  // The list also shows over a `?bracket=` address, while a bracket loads or
+  // fails. A tap there starts from a bracket entry, not the list. A mark on it
+  // would send "Back to brackets" to that other bracket.
+  it('does not mark the entry when the address already names a bracket', () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.setSelectedBracketId('b-2'));
+
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(searchParams.get('bracket')).toBe('b-2');
+    const options = setSearchParams.mock.lastCall?.[1];
+    expect(options?.state).toBeUndefined();
+    expect(options?.replace).toBeUndefined();
   });
 
   // Closing swaps the entry instead. Otherwise the phone's Back button would
@@ -158,6 +195,56 @@ describe('usePlayoffPageData setSelectedBracketId', () => {
     act(() => result.current.setSelectedBracketId(null));
 
     expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+    });
+  });
+});
+
+describe('usePlayoffPageData closeBracket', () => {
+  // The reader opened the bracket from the list on this page. The list is the
+  // step just behind, so "Back to brackets" goes back to it. No second list step
+  // is left for the Back button to land on.
+  it('goes back one history step when the bracket was opened from the list', () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    currentLocation.state = { fromList: true };
+    const { result } = renderHook(() => usePlayoffPageData());
+    expect(result.current.selectedBracketId).toBe('b-1');
+
+    act(() => result.current.closeBracket());
+
+    expect(navigate).toHaveBeenCalledTimes(1);
+    expect(navigate).toHaveBeenCalledWith(-1);
+    expect(setSearchParams).not.toHaveBeenCalled();
+    // The list shows at once, before the browser finishes the step back.
+    expect(result.current.selectedBracketId).toBeNull();
+  });
+
+  // A shared link, a link made by an admin, or a bracket link that failed to
+  // load: there is no list step behind the entry, so it is swapped in place.
+  it('replaces the history entry when the bracket was not opened from the list', () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.closeBracket());
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+    });
+    expect(result.current.selectedBracketId).toBeNull();
+    expect(searchParams.has('bracket')).toBe(false);
+  });
+
+  it('only trusts the mark when it is exactly true', () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    currentLocation.state = { fromList: 'yes' };
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    act(() => result.current.closeBracket());
+
+    expect(navigate).not.toHaveBeenCalled();
     expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
       replace: true,
     });
@@ -195,6 +282,23 @@ describe('usePlayoffPageData deleteBracket', () => {
     expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
       replace: true,
     });
+  });
+
+  // Going back would land on a list that still shows the deleted bracket. The
+  // mark on the entry must not turn the delete into a step back.
+  it('still replaces the history entry when the entry carries the list mark', async () => {
+    searchParams = new URLSearchParams('bracket=b-1');
+    currentLocation.state = { fromList: true };
+    const { result } = renderHook(() => usePlayoffPageData());
+
+    await act(() => result.current.deleteBracket('b-1', 'Gold'));
+
+    expect(navigate).not.toHaveBeenCalled();
+    expect(setSearchParams).toHaveBeenCalledTimes(1);
+    expect(setSearchParams).toHaveBeenLastCalledWith(expect.any(URLSearchParams), {
+      replace: true,
+    });
+    expect(result.current.selectedBracketId).toBeNull();
   });
 
   it('keeps the open bracket when another one is deleted', async () => {

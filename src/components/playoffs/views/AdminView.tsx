@@ -87,7 +87,7 @@ const AdminView: React.FC<AdminViewProps> = ({
             the "Loading bracket" error banner (data.selectedBracketError) shows, because
             only that banner has its own "Back to brackets"; the other banners do not. */}
         {data.selectedBracketId && data.bracket && !data.selectedBracketError && (
-          <BackToBracketsButton onBack={() => data.setSelectedBracketId(null)} />
+          <BackToBracketsButton onBack={() => data.closeBracket()} />
         )}
 
         {data.ready &&
