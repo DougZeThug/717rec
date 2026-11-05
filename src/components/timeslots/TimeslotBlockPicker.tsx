@@ -99,14 +99,14 @@ export const TimeslotBlockPicker: React.FC<TimeslotBlockPickerProps> = ({
             value={choice.value}
             title={choice.description}
             className={`
-                  px-3 py-1.5 transition-colors
+                  border min-h-[44px] px-3 py-1.5 transition-colors
                   ${
                     choice.value === 'BYE'
                       ? selectedTimeslot === choice.value
-                        ? 'bg-orange-600 text-white'
-                        : 'border-orange-600 text-orange-600 hover:bg-orange-50 dark:border-orange-200! dark:text-orange-200! dark:hover:bg-orange-200/10'
+                        ? 'border-orange-700 data-[state=on]:bg-orange-700 data-[state=on]:text-white dark:data-[state=on]:border-orange-200'
+                        : 'border-orange-700 text-orange-700 hover:bg-orange-50 dark:border-orange-200! dark:text-orange-200! dark:hover:bg-orange-200/10'
                       : selectedTimeslot === choice.value
-                        ? 'bg-cornhole-navy text-white'
+                        ? 'border-cornhole-navy data-[state=on]:bg-cornhole-navy data-[state=on]:text-white dark:data-[state=on]:bg-blue-600 dark:data-[state=on]:text-white dark:data-[state=on]:border-blue-200'
                         : 'border-cornhole-navy text-cornhole-navy dark:border-blue-200! dark:text-blue-200!'
                   }
                 `}
