@@ -1,0 +1,40 @@
+{
+  "id": "T-261105-fix-the-playoffs-docs-th",
+  "title": "Fix the playoffs docs that say the season is not in the address",
+  "kind": "fix",
+  "status": "building",
+  "request": "Fix the older playoffs doc lines that say the season is not in the address. The page itself puts ?season=<id> in the address, keeps it on reload, and the picker sets it.",
+  "trivial": false,
+  "branch": "claude/affectionate-dirac-icive8",
+  "baseSha": "cfeeaaca861eea871683bf12cb9c8626964d3d86",
+  "createdAt": "2026-11-05T01:35:54.634Z",
+  "criteria": [
+    {
+      "text": "E1 The page doc no longer says the season is missing from the address: the What survives lines, While editing, After any interrupt, Season scoping, URL state and the footer say it is there, and the open question about a season lost on reload is removed because it no longer happens.",
+      "done": false
+    },
+    {
+      "text": "E2 Checklist rows PLAYOFF-11, PLAYOFF-13 and PLAYOFF-28 say what the page does (shown in a real browser with fake data). PLAYOFF-28 loses the suspected-bug mark, and the verification README count goes from 117 to 116 (recount by the README method: 1,958 items, 116 P1 suspected-bug rows).",
+      "done": false
+    },
+    {
+      "text": "E3 Every new sentence is true: read against usePlayoffPageData.ts and shown in a real browser (a bracket link gets its season; a bare /playoffs gets ?season=; picking a season changes the address, adds a step, closes the bracket and survives a reload; a bracket in a non-automatic season survives a reload with its season).",
+      "done": false
+    },
+    {
+      "text": "E4 Docs only: no code, test, config or lock file changed. All required repo checks pass on the final commit and a fresh independent reviewer approves.",
+      "done": false
+    },
+    {
+      "text": "E5 No other doc in docs/ still says the old thing (search for the old phrases comes back empty).",
+      "done": false
+    }
+  ],
+  "checks": {},
+  "reviews": [],
+  "issues": {},
+  "interventions": [],
+  "notes": [],
+  "waivers": [],
+  "updatedAt": "2026-11-05T01:38:01.722Z"
+}
