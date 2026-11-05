@@ -178,8 +178,10 @@ export still works, because it uses what is already in the browser.
 **Toasts and notifications.** None at all. Every failure here is a line of text
 inside the section, and the CSV download is silent.
 
-**URL state.** Nothing. The open section, the search text, the sort order, and
-the open dialog are all invisible to the URL, so none of them can be linked to.
+**URL state.** The section can be linked to as `#h2h`, which opens it on arrival;
+the Matchups button on the team page's section bar writes that. The search text,
+the sort order, and the open dialog are invisible to the URL, so none of them can
+be linked to.
 
 **On a phone.** The table becomes a card list, the sortable headings become a
 four-choice dropdown, and the Export button shrinks to "CSV". The details dialog

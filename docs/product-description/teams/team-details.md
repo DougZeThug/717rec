@@ -107,10 +107,11 @@ Not applicable. Opening and closing sections is the whole of the interaction,
 and each is immediate and local.
 
 The section bar at the top appears once the page is scrolled past about 200
-pixels and disappears when it is scrolled back. It highlights whichever section
-is currently under the top of the window. Pressing one of its buttons scrolls
-smoothly to that section — but the section is still **closed**, so the user
-arrives at a folded heading and has to open it.
+pixels and disappears when it is scrolled back. It starts on Overview, then highlights
+whichever section is currently under the top of the window. Pressing one of its
+buttons scrolls smoothly to that section. For Stats, Matchups and Career the
+section is still **closed**, so the user arrives at a folded heading and has to
+open it; the address now names that section, so a reload opens it.
 
 ### Submit
 
@@ -210,8 +211,6 @@ data and writes nothing.
   winner reads L with the two scores beside it.
 - **The last-match line links to the opponent by name.** If the opponent is
   missing it reads "Unknown" and links to a page that does not exist.
-- **The section bar starts by highlighting Stats**, not Overview, until the first
-  scroll corrects it.
 - **The section bar's buttons scroll to closed sections.** Three of the five
   (Stats, Matchups and Career) land the user on a folded heading. Overview lands on
   the cards and Matches on a section that is already open.
